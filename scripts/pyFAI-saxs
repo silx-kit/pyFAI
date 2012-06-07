@@ -1,0 +1,131 @@
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
+#
+#    Project: Azimuthal integration 
+#             https://forge.epn-campus.eu/projects/azimuthal
+#
+#    File: "$Id$"
+#
+#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#
+#    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+""" 
+saxs_integrate is the Saxs script of pyFAI that allows data reduction for Small Angle Scattering.
+
+Parameters:
+ -p=param.poni         PyFAI parameter file 
+ -w=9.31e-11           wavelength (in meter)
+ -d=-2                 dummy value for dead pixels
+ -dd=-1.1              delta dummy 
+ -mask=mask            mask image
+ -dark=darkImage       dark current image
+ -flat=flatImage       name of the file containing the flat field       
+ -background=filename  name of the file containing the background
+ -h                    print help and exit
+ 
+    Usage:
+python saxs_integrate.py -p=param.poni -w=0.154e-9 file.edf file2.edf file3.edf
+"""
+__author__ = "Jerome Kieffer"
+__contact__ = "Jerome.Kieffer@ESRF.eu"
+__license__ = "GPLv3+"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "30/11/2011"
+
+import os, sys, time
+import fabio
+import pyFAI
+from pyFAI import AzimuthalIntegrator
+
+
+if __name__ == "__main__":
+    paramFile = None
+    processFile = []
+    wavelength = None
+    dummy = None
+    delta_dummy = None
+    integrator = AzimuthalIntegrator()
+    for param in sys.argv[1:]:
+        if param.startswith("--"):
+            param = param[1:]
+        if param.startswith("-p="):
+            paramFile = param.split("=", 1)[1]
+        elif param.startswith("-w="):
+            wavelength = float(param.split("=", 1)[1])
+        elif param.startswith("-d="):
+            dummy = float(param.split("=", 1)[1])
+        elif param.startswith("-dd="):
+            delta_dummy = float(param.split("=", 1)[1])
+        elif param.startswith("-mask="):
+            integrator.maskfile = param.split("=", 1)[1]
+        elif param.startswith("-flat="):
+            integrator.flatfield = param.split("=", 1)[1]
+        elif param.startswith("-dark="):
+            integrator.darkcurrent = param.split("=", 1)[1]
+        elif param.startswith("-background="):
+            integrator.background = param.split("=", 1)[1]
+        elif param.startswith("--version"):
+            print(pyFAI.version + os.linesep)
+            sys.exit(0)
+        elif param.find("-h") in [0, 1]:
+            print(__doc__)
+            sys.exit(0)
+        elif os.path.isfile(param):
+            processFile.append(param)
+
+    if paramFile and processFile:
+        integrator.load(paramFile)
+        if wavelength is not None:
+            integrator.wavelength = wavelength
+        print integrator
+        if integrator.maskfile is not None:
+            fabiomask = fabio.open(integrator.maskfile)
+            if  isinstance(fabiomask, fabio.fit2dmaskimage.fit2dmaskimage):
+                mask = 1 - fabiomask.data
+            else:
+                mask = fabiomask.data
+        else:
+            mask = None
+
+        for oneFile in processFile:
+            t0 = time.time()
+            fabioFile = fabio.open(oneFile)
+            outFile = os.path.splitext(oneFile)[0] + ".dat"
+            if fabioFile.nframes > 1:
+                res = integrator.saxs(data=fabioFile.data,
+                                nbPt=min(fabioFile.data.shape),
+                                dummy=dummy,
+                                delta_dummy=delta_dummy,
+                                filename=outFile,
+                                mask=mask,
+                                variance=fabioFile.next().data,
+                                method="BBox")
+            else:
+                res = integrator.saxs(data=fabioFile.data,
+                                nbPt=min(fabioFile.data.shape),
+                                dummy=dummy,
+                                delta_dummy=delta_dummy,
+                                filename=outFile,
+                                mask=mask,
+                                method="BBox")
+            t1 = time.time()
+
+            print("Integration took %6.3fs %s --> %s" % (t1 - t0, oneFile, outFile))
+
+    else:
+        print(__doc__)
+

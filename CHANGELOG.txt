@@ -1,0 +1,7 @@
+0.1: Geometry is OK (05/2011)
+0.2: Azimuthal integration using cython histogramming is working (07/2011)
+0.3: Azimuthal integration splits pixels like fit2d (11/2011)
+0.4: global clean up of the code regarding options from command line and better design
+     correct the orientation of the azimuthal angle chi
+     rename scripts in pyFAI-calib, pyFAI-saxs and pyFAI-waxs 
+0.5:  
