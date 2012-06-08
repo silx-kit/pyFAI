@@ -358,7 +358,7 @@ def histGPU1d(numpy.ndarray weights not None,
                     raise RuntimeError('Failed to configure 1D integrator with Ndata=%s and Nbins=%s'%(size,bins))
 
                 if 0!= integr.configure(<char*> OCL_KERNEL):
-                    raise RuntimeError('Failed to compile kernel at %s'%(kernel))
+                    raise RuntimeError('Failed to compile kernel at %s'%(OCL_KERNEL))
 
                 if 0!= integr.loadTth(cpos0, dpos0, pos0_min, pos0_max):
                     raise RuntimeError("Failed to upload 2th arrays")
