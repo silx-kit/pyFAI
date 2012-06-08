@@ -47,7 +47,8 @@ class Geometry(object):
     histogram algorithm by Manolo S. del Rio and V.A Sole
      
     """
-    def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0, pixel1=1, pixel2=1, splineFile=None, detector=None):
+    def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0, 
+                 pixel1=1, pixel2=1, splineFile=None, detector=None):
         """
         @param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
         @param poni1: coordinate of the point of normal incidence along the detector's first dimension, in meter
@@ -67,6 +68,7 @@ class Geometry(object):
         self._rot3 = rot3
         self.param = [self._dist, self._poni1, self._poni2, self._rot1, self._rot2, self._rot3]
         self.chiDiscAtPi = True #position of the discontinuity of chi in radians, pi by default
+        self._rotation_matrix = None
         self._ttha = None
         self._dttha = None
         self._dssa = None
@@ -120,8 +122,113 @@ class Geometry(object):
         p1, p2 = self.detector.calc_catesian_positions(d1, d2)
         return p1 - poni1, p2 - poni2
 
+
+    def rotation_matrix(self, param=None):
+         """
+         Compute and return the detector tilts as a single matrix
+         Corresponds to rotations about axes 1 then 2 then 3(==0)
+
+         For those using spd (PB = Peter Boesecke), tilts relate to
+         this system (JK = Jerome Kieffer) as follows:
+         JK1 = PB2 (Y)
+         JK2 = PB1 (X)
+         JK3 = -PB3 (-Z)
+          ...slight differences will result from the order
+          FIXME: make backwards and forwards converter helper function
+
+         axis1 appears to be horizontal and perpendicular to beam
+         axis2 appears to be vertical and perpendicular to beam
+         axis3 (==axis0) is along the beam
+
+         Caches result in self._rotation_matrix which is managed by self.reset
+
+         @param param: list of geometry parameters, defaults to self.param
+                       uses elements [3],[4],[5]
+         @type: list of floats
+         @return rotation matrix
+         @rtype: 3x3 float array
+         """
+         if self._rotation_matrix is None:
+             if param == None:
+                 param = self.param
+             cosRot1 = cos(param[3])
+             cosRot2 = cos(param[4])
+             cosRot3 = cos(param[5])
+             sinRot1 = sin(param[3])
+             sinRot2 = sin(param[4])
+             sinRot3 = sin(param[5])
+             rot1 = [[ cosRot1, 0 ,-sinRot1 ],
+                     [       0, 1 ,       0 ],
+                     [ sinRot1, 0 , cosRot1 ] ]  # Rotation about axis 1
+             rot2 = [[ cosRot2, sinRot2,  0 ],
+                     [-sinRot2, cosRot2,  0 ],
+                     [       0,       0,  1 ] ]  # Rotation about axis 2
+             rot3 = [[ 1,        0,       0 ],
+                     [ 0,  cosRot3,-sinRot3 ],
+                     [ 0,  sinRot3, cosRot3 ] ]  # Rotation about axis 0 (3 via a mod??)
+             self._rotation_matrix = numpy.dot( numpy.dot( rot3, rot2 ) , rot1 ) # 3x3 matrix
+         return self._rotation_matrix
+         
+
+ 
+    def _calcRotatedCartesianPositions(self, d1, d2, param):
+        """
+        Calculates the centers of a given pixel (or set of pixels) in the 
+        laboratory co-ordinate system
+        @param d1: position(s) in pixel in first dimension (c order)
+        @type d1: scalar or array of scalar
+        @param d2: position(s) in pixel in second dimension (c order)
+        @type d2: scalar or array of scalar
+        @return pixel positions in meters in 0,1,2 axis directions
+        @rtype: 3tuple of (numbers like d1, d2)
+        """
+        if param == None:
+            param = self.param
+         # p0,p1,p2 == point positions on axis 1,2,3
+        p0 = param[0] # distance 
+         # Find points in detector frame
+        p1, p2 = self._calcCatesianPositions(d1, d2, param[1], param[2])
+        # Get the matrix to rotate the detector in one step. This factorises
+        # the rotation as (r3.r2.r1).x instead of r3.(r2.(r1.x))
+        r = self.rotation_matrix( param )
+        #  rotatedpoints = np.dot( r, [p1,p2,p3] )
+        # ... but distance, p0, is a scalar
+        # ... p1 & p2 can be scalar, 1D or 2D
+        # ... so we expand it out to avoid worrying about shapes
+        rp0 = r[0,0]*p0 + r[0,1]*p1 + r[0,2]*p2
+        rp1 = r[1,0]*p0 + r[1,1]*p1 + r[1,2]*p2
+        rp2 = r[2,0]*p0 + r[2,1]*p1 + r[2,2]*p2
+        # "rp" == rotated points
+        return rp0, rp1, rp2
+ 
+
     def tth(self, d1, d2, param=None):
         """
+        Calculates the 2theta value for the center of a given pixel (or set of pixels)
+        @param d1: position(s) in pixel in first dimension (c order)
+        @type d1: scalar or array of scalar
+        @param d2: position(s) in pixel in second dimension (c order)
+        @type d2: scalar or array of scalar
+        @return 2theta in radians 
+        @rtype: float or array of floats.
+        """
+        if param == None:
+            param = self.param
+        # Find pixel positions in laboratory axes
+        rp0, rp1, rp2 = self._calcRotatedCartesianPositions( d1, d2, param )
+        # Find tth as arctan2 of :
+        # .... component perpendicular to axis 0
+        perp_ax_0 = sqrt( rp1*rp1 + rp2*rp2 )
+        # divided by component along axis 0
+        tmp = numpy.arctan2( perp_ax_0, rp0 )
+        # arctan2 is prefered to cosine for extra precision in ultra-small angle
+        # scattering and microradian diffaction
+        return tmp
+
+
+    def oldtth(self, d1, d2, param=None):
+        """
+        DEPRECATED - for testing against the new tth implementation
         Calculates the 2theta value for the center of a given pixel (or set of pixels)
         @param d1: position(s) in pixel in first dimension (c order)
         @type d1: scalar or array of scalar
@@ -158,22 +265,9 @@ class Geometry(object):
         @return q in in nm^(-1) 
         @rtype: float or array of floats.
         """
-
-        if param == None:
-            param = self.param
-        cosRot1 = cos(param[3])
-        cosRot2 = cos(param[4])
-        cosRot3 = cos(param[5])
-        sinRot1 = sin(param[3])
-        sinRot2 = sin(param[4])
-        sinRot3 = sin(param[5])
-        p1, p2 = self._calcCatesianPositions(d1, d2, param[1], param[2])
-        tmp = ((param[0] * cosRot1 * cosRot2 - p2 * cosRot2 * sinRot1 + p1 * sinRot2) / \
-                     (sqrt((-param[0] * cosRot1 * cosRot2 + p2 * cosRot2 * sinRot1 - p1 * sinRot2) ** 2 + \
-                            (p1 * cosRot2 * cosRot3 + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - param[0] * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)) ** 2 + \
-                             (p1 * cosRot2 * sinRot3 - param[0] * (-cosRot3 * sinRot1 + cosRot1 * sinRot2 * sinRot3) + p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3)) ** 2)))
-
-        return  2.0e-9 * numpy.pi * sqrt(1.0 - tmp ** 2) / self.wavelength
+        # Goes via tth - possibly there is a more efficient route?
+        tth = self.tth( d1, d2, param )
+        return  4.0e-9 * numpy.pi * sin(tth/2) / self.wavelength
 
 
     def qArray(self, shape):
@@ -219,6 +313,24 @@ class Geometry(object):
 
     def chi(self, d1, d2):
         """
+        Calculate the chi (azimuthal angle) for the centre of a pixel at coordinate d1,d2 
+        which in the lab ref has coordinate from self.calcRotatedCartesianPositions
+        X0 is along beam and Chi is chosen such that:
+           tan(Chi) = -X1 / X2
+        
+        @param d1: pixel coordinate along the 1st dimention (C convention)
+        @type d1: float or array of them
+        @param d2: pixel coordinate along the 2nd dimention (C convention)
+        @type d2: float or array of them
+        @return: chi, the azimuthal angle in rad
+        """
+        rp0, rp1, rp2 = self._calcRotatedCartesianPositions( d1, d2, self.param )
+        return numpy.arctan2(-rp1,rp2)
+ 
+
+    def oldchi(self, d1, d2):
+        """
+        DEPRECATED : hard to understand
         Calculate the chi (azimuthal angle) for the centre of a pixel at coordinate d1,d2 
         which in the lab ref has coordinate:
         X1 = p1*Cos(rot2)*Cos(rot3) + p2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) -  L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))
@@ -661,6 +773,7 @@ class Geometry(object):
         self._dqa = None
         self._corner4Da = None
         self._corner4Dqa = None
+        self._rotation_matrix = None
 
 ################################################################################
 # Accessors and public properties of the class
