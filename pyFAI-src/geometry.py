@@ -257,7 +257,10 @@ class Geometry(object):
 
     def qFunction(self, d1, d2, param=None):
         """
-        Calculates the q value for the center of a given pixel (or set of pixels)
+        Calculates the q value for the center of a given pixel (or set of pixels) in nm-1
+        
+        q = 4pi/lambda sin( theta )
+        
         @param d1: position(s) in pixel in first dimension (c order)
         @type d1: scalar or array of scalar
         @param d2: position(s) in pixel in second dimension (c order)
