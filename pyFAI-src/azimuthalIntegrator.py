@@ -331,6 +331,69 @@ class AzimuthalIntegrator(Geometry):
     #Default implementation:
     xrpd = xrpd_splitBBox
 
+    @timeit
+    def xrpd_OpenCL(self, data, nbPt, filename=None, correctSolidAngle=True,
+                       tthRange=None, mask=None, dummy=None, delta_dummy=None):
+        """
+        Calculate the powder diffraction pattern from a set of data, an image. Cython implementation
+        @param data: 2D array from the CCD camera
+        @type data: ndarray
+        @param nbPt: number of points in the output pattern
+        @type nbPt: integer
+        @param filename: file to save data in ascii format 2 column
+        @type filename: string
+        @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
+        @type correctSolidAngle: boolean
+        @param tthRange: The lower and upper range of the 2theta. If not provided, range is simply (data.min(), data.max()).
+                        Values outside the range are ignored. 
+        @type tthRange: (float, float), optional
+        @param chiRange: The lower and upper range of the chi angle. If not provided, range is simply (data.min(), data.max()).
+                        Values outside the range are ignored. 
+        @type chiRange: (float, float), optional, disabled for now
+        @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
+        @param  dummy: value for dead/masked pixels 
+        @param delta_dummy: precision for dummy value
+        @return: (2theta, I) in degrees
+        @rtype: 2-tuple of 1D arrays
+        """
+        try:
+            import ocl_azim  #IGNORE:F0401
+        except ImportError as error:#IGNORE:W0703
+            logger.error("Import error (%s), falling back on old method !" % error)
+            return self.xrpd_splitBBox(data=data,
+                                       nbPt=nbPt,
+                                       filename=filename,
+                                       correctSolidAngle=correctSolidAngle,
+                                       tthRange=tthRange,
+                                       mask=mask,
+                                       dummy=dummy,
+                                       delta_dummy=delta_dummy)
+
+        shape = data.shape
+        tth = self.twoThetaArray(data.shape)
+        dtth = self.delta2Theta(data.shape)
+        mask = self.makeMask(data, mask, dummy, delta_dummy)
+        if dummy is None:
+            dummy = 0.0
+        if tthRange is not None:
+            tthRange = tuple([numpy.deg2rad(i) for i in tthRange[:2]])
+#        if chiRange is not None:
+#            chiRange = tuple([numpy.deg2rad(i) for i in chiRange[:2]])
+        if correctSolidAngle: #outPos, outMerge, outData, outCount
+            data = (data / self.solidAngleArray(data.shape))[mask]
+        else:
+            data = data[mask]
+        tthAxis, I, a = ocl_azim.histGPU1d(weights=data,
+                                                 pos0=tth[mask],
+                                                 delta_pos0=dtth[mask],
+                                                 bins=nbPt,
+                                                 pos0Range=tthRange,
+                                                 dummy=dummy)
+        tthAxis = numpy.degrees(tthAxis)
+        if filename:
+            open(filename, "w").writelines(["%s\t%s%s" % (t, i, os.linesep) for t, i in zip(tthAxis, I)])
+        return tthAxis, I
+
 
     def xrpd2_numpy(self, data, nbPt2Th, nbPtChi=360, filename=None, correctSolidAngle=True,
                          tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None):

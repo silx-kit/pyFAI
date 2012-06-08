@@ -1,0 +1,2 @@
+recursive-include openCL *.c *.h *.pyx *.hpp *.cpp *.pxd *.cl
+include stdeb.cfg

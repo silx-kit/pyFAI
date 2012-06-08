@@ -35,6 +35,7 @@ from libcpp cimport bool as cpp_bool
 cimport numpy
 import numpy
 import threading
+import cython
 
 cdef class Integrator1d:
     """
@@ -44,6 +45,7 @@ cdef class Integrator1d:
     cdef char* _devicetype
     cdef int _nBins,_nData,_platformid,_devid
     cdef cpp_bool _useFp64
+    cdef float tth_min, tth_max
     
     def __cinit__(self, filename=None):
         self._nBins = -1
@@ -98,15 +100,10 @@ cdef class Integrator1d:
         
         loadTth is required and must be called at least once after a configure()"""
         cdef numpy.ndarray[numpy.float32_t, ndim = 1]  tthc,dtthc
-        if tth.dtype == numpy.float32:
-            tthc = numpy.ascontiguousarray(tth.ravel())
-        else:
-            tthc = numpy.ascontiguousarray(tth.astype(numpy.float32).ravel())
-        if dtth.dtype == numpy.float32:
-            dtthc = numpy.ascontiguousarray(dtth.ravel())
-        else:
-            dtthc = numpy.ascontiguousarray(dtth.astype(numpy.float32).ravel())
-
+        tthc = numpy.ascontiguousarray(tth.ravel(),dtype="float32")
+        dtthc = numpy.ascontiguousarray(dtth.ravel(),dtype="float32")
+        self.tth_min=tth_min
+        self.tth_max=tth_max
         return self.cpp_integrator.loadTth(<float*> tthc.data, <float*> dtthc.data, <float> tth_min, <float> tth_max)
 
 
@@ -181,27 +178,38 @@ cdef class Integrator1d:
         @param upperBound: usually tth_max
         @return: integer 
         """
+        self.tth_min = lowerBound
+        self.tth_max = upperBound
         return self.cpp_integrator.setRange(lowerBound, upperBound)
 
     def unsetRange(self):
         "Resets the 2th integration range back to tth_min, tth_max"
+        self.tth_min = None
+        self.tth_max = None
         return self.cpp_integrator.unsetRange()
 
+    @cython.cdivision(True)
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def execute(self, numpy.ndarray image not None):
         """Take an image, integrate and return the histogram and weights
         set / unset and loadTth methods have a direct impact on the execute() method.
         All the rest of the methods will require at least a new configuration via configure()"""
-        cdef int rc
-        cdef numpy.ndarray[numpy.float32_t, ndim = 1] cimage, histogram,bins
+        cdef int rc,i
+        cdef numpy.ndarray[numpy.float32_t, ndim = 1] cimage, histogram,bins, outPos
         cimage = numpy.ascontiguousarray(image.ravel(),dtype="float32")
+        outPos = numpy.zeros(self._nBins,dtype="float32")
         histogram = numpy.zeros(self._nBins,dtype="float32")
         bins = numpy.zeros(self._nBins,dtype="float32")
         assert cimage.size == self._nData
-        with nogil:
+        cdef float delta = (self.tth_max - self.tth_min) / (< float > (self._nBins))
+        with nogil:    
+            for i in range(self._nBins):
+                outPos[i] = self.tth_min + (0.5 +< float > i) * delta
             rc = self.cpp_integrator.execute(<float*> cimage.data, <float*> histogram.data, <float*> bins.data)
         if rc!=0:
             raise RuntimeError("OpenCL integrator failed with RC=%s"%rc)
-        return histogram,bins
+        return outPos,histogram,bins
 
     def clean(self, int preserve_context=0):
         """Free OpenCL related resources.
@@ -359,3 +367,9 @@ def histGPU1d(numpy.ndarray weights not None,
     integr = _INTEGRATORS_1D[(size,bins)]
     return integr.execute(cdata)
     
+def initocl_azim(*arg,**kwarg):
+    """Place holder:
+    It seams this must exist in this module to be valid"""
+    print("Calling initocl_azim with:")
+    print(arg)
+    print(kwarg)
