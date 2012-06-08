@@ -319,7 +319,7 @@ class Geometry(object):
         Calculate the chi (azimuthal angle) for the centre of a pixel at coordinate d1,d2 
         which in the lab ref has coordinate from self.calcRotatedCartesianPositions
         X0 is along beam and Chi is chosen such that:
-           tan(Chi) = -X1 / X2
+           tan(Chi) = X1 / X2
         
         @param d1: pixel coordinate along the 1st dimention (C convention)
         @type d1: float or array of them
@@ -328,7 +328,7 @@ class Geometry(object):
         @return: chi, the azimuthal angle in rad
         """
         rp0, rp1, rp2 = self._calcRotatedCartesianPositions( d1, d2, self.param )
-        return numpy.arctan2(-rp1,rp2)
+        return numpy.arctan2(rp1,rp2)
  
 
     def oldchi(self, d1, d2):

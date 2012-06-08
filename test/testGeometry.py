@@ -40,10 +40,11 @@ class TestGeometry(ParameterisedTestCase):
         oldret = getattr(g, oldfunc)(*args)
         newret = getattr(g, newfunc)(*args)
         nerr = numpy.testing.utils.nulp_diff( oldret, newret )
+        msg = "%s %s %s %s"%(str(self.param),str(nerr),str(oldret),str(newret))
         if expectedFail:
-            self.assertTrue( nerr > 20 , str(self.param)+" "+str(nerr))
+            self.assertTrue( nerr > 20 , msg)
         else:
-            self.assertFalse( nerr > 20 , str(self.param)+" "+str(nerr))
+            self.assertFalse( nerr > 20 , msg)
 
 TESTCASES = [
  ( "tth", "oldtth", (1,1), {'rot1':-1, 'rot2':1, 'rot3':1},False),
