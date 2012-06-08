@@ -356,7 +356,7 @@ class AzimuthalIntegrator(Geometry):
         @param  dummy: value for dead/masked pixels 
         @param delta_dummy: precision for dummy value
         OpenCL specific parameters:
-        @param deviceType: "cpu" or "gpu" or "all"  or "def"
+        @param devicetype: "cpu" or "gpu" or "all"  or "def"
         @param useFp64: shall histogram be done in double precision (adviced)
         @param platformid: platform number 
         @param deviceid: device number
@@ -377,11 +377,7 @@ class AzimuthalIntegrator(Geometry):
                                        tthRange=tthRange,
                                        mask=mask,
                                        dummy=dummy,
-                                       delta_dummy=delta_dummy,
-                                       devicetype=devicetype,
-                                       useFp64=useFp64,
-                                       platformid=platformid,
-                                       deviceid=deviceid)
+                                       delta_dummy=delta_dummy)
         shape = data.shape
         tth = self.twoThetaArray(data.shape)
         dtth = self.delta2Theta(data.shape)
@@ -401,7 +397,11 @@ class AzimuthalIntegrator(Geometry):
                                                  delta_pos0=dtth[mask],
                                                  bins=nbPt,
                                                  pos0Range=tthRange,
-                                                 dummy=dummy)
+                                                 dummy=dummy,
+                                                 devicetype=devicetype,
+                                                 useFp64=useFp64,
+                                                 platformid=platformid,
+                                                 deviceid=deviceid)
         tthAxis = numpy.degrees(tthAxis)
         if filename:
             open(filename, "w").writelines(["%s\t%s%s" % (t, i, os.linesep) for t, i in zip(tthAxis, I)])

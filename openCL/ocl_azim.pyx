@@ -312,7 +312,7 @@ def histGPU1d(numpy.ndarray weights not None,
     @param bins: number of output bins
     @param pos0Range: minimum and maximum  of the 2th range
     @param dummy: value for bins without pixels
-    @param deviceType: "cpu" or "gpu" or "all"  or "def"
+    @param devicetype: "cpu" or "gpu" or "all"  or "def"
     @param useFp64: shall histogram be done in double precision (adviced)
     @param platformid: platform number 
     @param deviceid: device number
