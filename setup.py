@@ -84,7 +84,6 @@ bilinear_dic = dict(name="bilinear",
                         include_dirs=get_numpy_include_dirs(),
                         sources=[src['bilinear']])
 
-print ocl_azim
 ocl_azim_dict = dict(name="ocl_azim",
                     sources=ocl_azim,
                     include_dirs=["openCL"] + get_numpy_include_dirs(),
