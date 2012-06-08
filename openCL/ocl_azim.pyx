@@ -37,8 +37,6 @@ import numpy
 import threading
 import cython
 
-OCL_KERNEL = os.path.join(os.path.dirname(os.path.abspath(__file__)),"ocl_azim_kernel_2.cl")
-
 
 cdef class Integrator1d:
     """
@@ -338,7 +336,8 @@ def histGPU1d(numpy.ndarray weights not None,
         pos0_min = max(0,cpos0.min())
         pos0_maxin = cpos0.max()
     pos0_max = pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps)
-
+    OCL_KERNEL = os.path.join(os.path.dirname(os.path.abspath(__file__)),"ocl_azim_kernel_2.cl")
+    
 
     if  (size,bins) not in _INTEGRATORS_1D:
         with lock:
