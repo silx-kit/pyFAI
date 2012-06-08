@@ -36,6 +36,7 @@ cimport numpy
 import numpy
 import threading
 import cython
+import time
 
 
 cdef class Integrator1d:
@@ -101,8 +102,8 @@ cdef class Integrator1d:
         
         loadTth is required and must be called at least once after a configure()"""
         cdef numpy.ndarray[numpy.float32_t, ndim = 1]  tthc,dtthc
-        tthc = numpy.ascontiguousarray(tth.ravel(),dtype="float32")
-        dtthc = numpy.ascontiguousarray(dtth.ravel(),dtype="float32")
+        tthc = numpy.ascontiguousarray(tth.ravel(),dtype=numpy.float32)
+        dtthc = numpy.ascontiguousarray(dtth.ravel(),dtype=numpy.float32)
         self.tth_min=tth_min
         self.tth_max=tth_max
         return self.cpp_integrator.loadTth(<float*> tthc.data, <float*> dtthc.data, <float> tth_min, <float> tth_max)
@@ -119,10 +120,7 @@ cdef class Integrator1d:
          @return: integer
          """
         cdef numpy.ndarray[numpy.float32_t, ndim = 1]  cSolidAngle
-        if solidAngle.dtype == numpy.float32:
-            cSolidAngle = numpy.ascontiguousarray(solidAngle.ravel())
-        else:
-            cSolidAngle = numpy.ascontiguousarray(solidAngle.astype(numpy.float32).ravel())
+        cSolidAngle = numpy.ascontiguousarray(solidAngle.ravel(),dtype=numpy.float32)
          
         return self.cpp_integrator.setSolidAngle(<float*> cSolidAngle.data)
 
@@ -198,16 +196,19 @@ cdef class Integrator1d:
         All the rest of the methods will require at least a new configuration via configure()"""
         cdef int rc,i
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] cimage, histogram,bins, outPos
-        cimage = numpy.ascontiguousarray(image.ravel(),dtype="float32")
-        outPos = numpy.zeros(self._nBins,dtype="float32")
-        histogram = numpy.zeros(self._nBins,dtype="float32")
-        bins = numpy.zeros(self._nBins,dtype="float32")
+        cimage = numpy.ascontiguousarray(image.ravel(),dtype=numpy.float32)
+        outPos = numpy.zeros(self._nBins,dtype=numpy.float32)
+        histogram = numpy.zeros(self._nBins,dtype=numpy.float32)
+        bins = numpy.zeros(self._nBins,dtype=numpy.float32)
         assert cimage.size == self._nData
         cdef float delta = (self.tth_max - self.tth_min) / (< float > (self._nBins))
         with nogil:    
             for i in range(self._nBins):
                 outPos[i] = self.tth_min + (0.5 +< float > i) * delta
+        t0=time.time()
+        with nogil:
             rc = self.cpp_integrator.execute(<float*> cimage.data, <float*> histogram.data, <float*> bins.data)
+        print("Executation time in Cython: %.3fms"%(1000*(time.time()-t0)))
         if rc!=0:
             raise RuntimeError("OpenCL integrator failed with RC=%s"%rc)
         return outPos,histogram,bins
@@ -316,32 +317,29 @@ def histGPU1d(numpy.ndarray weights not None,
     @param useFp64: shall histogram be done in double precision (adviced)
     @param platformid: platform number 
     @param deviceid: device number
-    @return 2theta, I, weighted histogram, unweighted histogram
+    @return 2theta, I, unweighted histogram
     """
     cdef long  size = weights.size
     assert pos0.size == size
     assert delta_pos0.size == size
     assert  bins > 1
-    cdef numpy.ndarray[numpy.float32_t, ndim = 1] cdata = numpy.ascontiguousarray(weights.ravel(),dtype="float32")
-    cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos0, dpos0
-    cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype="float32")
-    dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype="float32")
     cdef float pos0_min,pos0_max,pos0_maxin
-    if pos0Range is not None and len(pos0Range) > 1:
-        pos0_min = min(pos0Range)
-        if pos0_min < 0.0:
-            pos0_min = 0.0
-        pos0_maxin = max(pos0Range)
-    else:
-        pos0_min = max(0,cpos0.min())
-        pos0_maxin = cpos0.max()
-    pos0_max = pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps)
-    OCL_KERNEL = os.path.join(os.path.dirname(os.path.abspath(__file__)),"ocl_azim_kernel_2.cl")
     
 
     if  (size,bins) not in _INTEGRATORS_1D:
         with lock:
             if  (size,bins) not in _INTEGRATORS_1D:
+                if pos0Range is not None and len(pos0Range) > 1:
+                    pos0_min = min(pos0Range)
+                    pos0_maxin = max(pos0Range)
+                else:
+                    pos0_min = pos0.min()
+                    pos0_maxin = pos0.max()
+                if pos0_min < 0.0:
+                    pos0_min = 0.0
+                pos0_max = pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps)
+                OCL_KERNEL = os.path.join(os.path.dirname(os.path.abspath(__file__)),"ocl_azim_kernel_2.cl")
+
                 integr = Integrator1d()
                 if platformid and deviceid:
                     rc = integr.init(devicetype=devicetype,
@@ -359,14 +357,14 @@ def histGPU1d(numpy.ndarray weights not None,
                 if 0!= integr.configure(<char*> OCL_KERNEL):
                     raise RuntimeError('Failed to compile kernel at %s'%(OCL_KERNEL))
 
-                if 0!= integr.loadTth(cpos0, dpos0, pos0_min, pos0_max):
+                if 0!= integr.loadTth(pos0, delta_pos0, pos0_min, pos0_max):
                     raise RuntimeError("Failed to upload 2th arrays")
 #if 0!= integr.setSolidAngle(solid)
 #a.setMask(mask)
                 else:
                     _INTEGRATORS_1D[(size,bins)]=integr
     integr = _INTEGRATORS_1D[(size,bins)]
-    return integr.execute(cdata)
+    return integr.execute(weights)
     
 def initocl_azim(*arg,**kwarg):
     """Place holder:
