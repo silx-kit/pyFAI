@@ -37,6 +37,9 @@ import numpy
 import threading
 import cython
 
+OCL_KERNEL = os.path.join(os.path.dirname(os.path.abspath(__file__)),"ocl_azim_kernel_2.cl")
+
+
 cdef class Integrator1d:
     """
     Simple wrapper for ocl_xrpd1d.ocl_xrpd1D_fullsplit C++ class
@@ -325,7 +328,6 @@ def histGPU1d(numpy.ndarray weights not None,
     cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos0, dpos0
     cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype="float32")
     dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype="float32")
-    kernel = os.path.join(os.path.dirname(__file__),"ocl_azim_kernel_2.cl")
     cdef float pos0_min,pos0_max,pos0_maxin
     if pos0Range is not None and len(pos0Range) > 1:
         pos0_min = min(pos0Range)
@@ -355,7 +357,7 @@ def histGPU1d(numpy.ndarray weights not None,
                 if 0!= integr.getConfiguration(size, bins):
                     raise RuntimeError('Failed to configure 1D integrator with Ndata=%s and Nbins=%s'%(size,bins))
 
-                if 0!= integr.configure(<char*> kernel):
+                if 0!= integr.configure(<char*> OCL_KERNEL):
                     raise RuntimeError('Failed to compile kernel at %s'%(kernel))
 
                 if 0!= integr.loadTth(cpos0, dpos0, pos0_min, pos0_max):
