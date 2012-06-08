@@ -333,7 +333,9 @@ class AzimuthalIntegrator(Geometry):
 
     @timeit
     def xrpd_OpenCL(self, data, nbPt, filename=None, correctSolidAngle=True,
-                       tthRange=None, mask=None, dummy=None, delta_dummy=None):
+                       tthRange=None, mask=None, dummy=None, delta_dummy=None,
+                        devicetype="all", useFp64=True, platformid=None, deviceid=None):
+
         """
         Calculate the powder diffraction pattern from a set of data, an image. Cython implementation
         @param data: 2D array from the CCD camera
@@ -353,6 +355,14 @@ class AzimuthalIntegrator(Geometry):
         @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
         @param  dummy: value for dead/masked pixels 
         @param delta_dummy: precision for dummy value
+        OpenCL specific parameters:
+        @param deviceType: "cpu" or "gpu" or "all"  or "def"
+        @param useFp64: shall histogram be done in double precision (adviced)
+        @param platformid: platform number 
+        @param deviceid: device number
+        @return 2theta, I, weighted histogram, unweighted histogram
+
+
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
         """
@@ -367,8 +377,11 @@ class AzimuthalIntegrator(Geometry):
                                        tthRange=tthRange,
                                        mask=mask,
                                        dummy=dummy,
-                                       delta_dummy=delta_dummy)
-
+                                       delta_dummy=delta_dummy,
+                                       devicetype=devicetype,
+                                       useFp64=useFp64,
+                                       platformid=platformid,
+                                       deviceid=deviceid)
         shape = data.shape
         tth = self.twoThetaArray(data.shape)
         dtth = self.delta2Theta(data.shape)
