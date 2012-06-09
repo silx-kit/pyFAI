@@ -9,6 +9,8 @@
 \newcounter{mathematicapage}
 \begin{document}
 
+Axis 1 is along first dimension of detector (when not tilted), this is the slow dimension of the image array in C or Y
+
 \begin{doublespace}
 \noindent\(\pmb{\text{x1}=\{1,0,0\}}\)
 \end{doublespace}
@@ -17,6 +19,8 @@
 \noindent\(\{1,0,0\}\)
 \end{doublespace}
 
+ Axis 2 is along second dimension of detector (when not tilted), this is the fast dimension of the image in C or X
+
 \begin{doublespace}
 \noindent\(\pmb{\text{x2}=\{0,1,0\}}\)
 \end{doublespace}
@@ -24,6 +28,8 @@
 \begin{doublespace}
 \noindent\(\{0,1,0\}\)
 \end{doublespace}
+
+Axis 3 is along the incident X-Ray beam
 
 \begin{doublespace}
 \noindent\(\pmb{\text{x3}=\{0,0,1\}}\)
@@ -50,18 +56,6 @@
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\pmb{\text{}}\)
-\end{doublespace}
-
-\begin{doublespace}
-\noindent\(\pmb{\text{rotM1}}\)
-\end{doublespace}
-
-\begin{doublespace}
-\noindent\(\{\{1,0,0\},\{0,\text{Cos}[\text{rot1}],-\text{Sin}[\text{rot1}]\},\{0,\text{Sin}[\text{rot1}],\text{Cos}[\text{rot1}]\}\}\)
-\end{doublespace}
-
-\begin{doublespace}
 \noindent\(\pmb{\text{rotM2} =\text{  }\text{RotationMatrix}[\text{rot2},\text{x2}]}\)
 \end{doublespace}
 
@@ -77,6 +71,8 @@
 \noindent\(\{\{\text{Cos}[\text{rot3}],-\text{Sin}[\text{rot3}],0\},\{\text{Sin}[\text{rot3}],\text{Cos}[\text{rot3}],0\},\{0,0,1\}\}\)
 \end{doublespace}
 
+Rotations of the detector are applied first Rot around axis 1, then axis 2 and finally around axis 3
+
 \begin{doublespace}
 \noindent\(\pmb{R=\text{rotM3}.\text{rotM2}.\text{rotM1}}\)
 \end{doublespace}
@@ -90,181 +86,153 @@
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\pmb{R.\text{x1}}\)
+\noindent\(\pmb{\text{CForm}[R.\text{x1}]}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\{\text{Cos}[\text{rot2}] \text{Cos}[\text{rot3}],\text{Cos}[\text{rot2}] \text{Sin}[\text{rot3}],-\text{Sin}[\text{rot2}]\}\)
+\noindent\(\text{List(Cos(rot2)*Cos(rot3),Cos(rot2)*Sin(rot3),-Sin(rot2))}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\pmb{R.\text{x2}}\)
+\noindent\(\pmb{\text{CForm}[R.\text{x2}]}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\{\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}]-\text{Cos}[\text{rot1}] \text{Sin}[\text{rot3}],\text{Cos}[\text{rot1}]
-\text{Cos}[\text{rot3}]+\text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}],\text{Cos}[\text{rot2}] \text{Sin}[\text{rot1}]\}\)
+\noindent\(\text{List(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3),Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3),
+   Cos(rot2)*Sin(rot1))}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\pmb{R.\text{x3}}\)
+\noindent\(\pmb{\text{CForm}[R.\text{x3}]}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\{\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}] \text{Sin}[\text{rot2}]+\text{Sin}[\text{rot1}] \text{Sin}[\text{rot3}],-\text{Cos}[\text{rot3}]
-\text{Sin}[\text{rot1}]+\text{Cos}[\text{rot1}] \text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}],\text{Cos}[\text{rot1}] \text{Cos}[\text{rot2}]\}\)
+\noindent\(\text{List(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3),-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3),
+   Cos(rot1)*Cos(rot2))}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\pmb{\text{Det}[R]}\)
+\noindent\(\pmb{\text{CForm}[\text{Det}[R]]}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\text{Cos}[\text{rot1}]^2 \text{Cos}[\text{rot2}]^2 \text{Cos}[\text{rot3}]^2+\text{Cos}[\text{rot2}]^2 \text{Cos}[\text{rot3}]^2 \text{Sin}[\text{rot1}]^2+\text{Cos}[\text{rot1}]^2
-\text{Cos}[\text{rot3}]^2 \text{Sin}[\text{rot2}]^2+\text{Cos}[\text{rot3}]^2 \text{Sin}[\text{rot1}]^2 \text{Sin}[\text{rot2}]^2+\text{Cos}[\text{rot1}]^2
-\text{Cos}[\text{rot2}]^2 \text{Sin}[\text{rot3}]^2+\text{Cos}[\text{rot2}]^2 \text{Sin}[\text{rot1}]^2 \text{Sin}[\text{rot3}]^2+\text{Cos}[\text{rot1}]^2
-\text{Sin}[\text{rot2}]^2 \text{Sin}[\text{rot3}]^2+\text{Sin}[\text{rot1}]^2 \text{Sin}[\text{rot2}]^2 \text{Sin}[\text{rot3}]^2\)
+\noindent\(\text{Power(Cos(rot1),2)*Power(Cos(rot2),2)*Power(Cos(rot3),2) +
+   Power(Cos(rot2),2)*Power(Cos(rot3),2)*Power(Sin(rot1),2) +
+   Power(Cos(rot1),2)*Power(Cos(rot3),2)*Power(Sin(rot2),2) +
+   Power(Cos(rot3),2)*Power(Sin(rot1),2)*Power(Sin(rot2),2) +
+   Power(Cos(rot1),2)*Power(Cos(rot2),2)*Power(Sin(rot3),2) +
+   Power(Cos(rot2),2)*Power(Sin(rot1),2)*Power(Sin(rot3),2) +
+   Power(Cos(rot1),2)*Power(Sin(rot2),2)*Power(Sin(rot3),2) +
+   Power(Sin(rot1),2)*Power(Sin(rot2),2)*Power(Sin(rot3),2)}\)
+\end{doublespace}
+
+Any pixel on detector plan at coordianate (d1, d2) in meters. Detector is at z=L
+
+\begin{doublespace}
+\noindent\(\pmb{P=\{\text{d1},\text{d2},L\}}\\
+\pmb{\text{CForm}[R.P]}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\pmb{P=\{\text{pix1}*(\text{d1}+0.5)-\text{PONI1},\text{pix2}*(\text{d2}+0.5)-\text{PONI2},-L\}}\\
-\pmb{R.P}\)
+\noindent\(\{\text{d1},\text{d2},L\}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\{(0.5\, +\text{d1}) \text{pix1}-\text{PONI1},(0.5\, +\text{d2}) \text{pix2}-\text{PONI2},-L\}\)
+\noindent\(\text{List(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) +
+    L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
+   d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) +
+    d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),
+   L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2))}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\{((0.5\, +\text{d1}) \text{pix1}-\text{PONI1}) \text{Cos}[\text{rot2}] \text{Cos}[\text{rot3}]+((0.5\, +\text{d2}) \text{pix2}-\text{PONI2})
-(\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}]-\text{Cos}[\text{rot1}] \text{Sin}[\text{rot3}])-L (\text{Cos}[\text{rot1}]
-\text{Cos}[\text{rot3}] \text{Sin}[\text{rot2}]+\text{Sin}[\text{rot1}] \text{Sin}[\text{rot3}]),((0.5\, +\text{d1}) \text{pix1}-\text{PONI1}) \text{Cos}[\text{rot2}]
-\text{Sin}[\text{rot3}]-L (-\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}]+\text{Cos}[\text{rot1}] \text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}])+((0.5\,
-+\text{d2}) \text{pix2}-\text{PONI2}) (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}]+\text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}]),-L
-\text{Cos}[\text{rot1}] \text{Cos}[\text{rot2}]+((0.5\, +\text{d2}) \text{pix2}-\text{PONI2}) \text{Cos}[\text{rot2}] \text{Sin}[\text{rot1}]-((0.5\,
-+\text{d1}) \text{pix1}-\text{PONI1}) \text{Sin}[\text{rot2}]\}\)
+\noindent\(\pmb{\text{Distance} \text{sample} \text{to} \text{detector} \text{point} (\text{d1},\text{d2})}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\pmb{\text{Norm}[R.P]}\)
+\noindent\(\pmb{\text{CForm}[\text{Norm}[R.P]]}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\surd \left(\text{Abs}[-L \text{Cos}[\text{rot1}] \text{Cos}[\text{rot2}]+((0.5\, +\text{d2}) \text{pix2}-\text{PONI2}) \text{Cos}[\text{rot2}]
-\text{Sin}[\text{rot1}]-((0.5\, +\text{d1}) \text{pix1}-\text{PONI1}) \text{Sin}[\text{rot2}]]^2+\text{Abs}[((0.5\, +\text{d1}) \text{pix1}-\text{PONI1})
-\text{Cos}[\text{rot2}] \text{Cos}[\text{rot3}]+((0.5\, +\text{d2}) \text{pix2}-\text{PONI2}) (\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}]-\text{Cos}[\text{rot1}]
-\text{Sin}[\text{rot3}])-L (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}] \text{Sin}[\text{rot2}]+\text{Sin}[\text{rot1}] \text{Sin}[\text{rot3}])]^2+\text{Abs}[((0.5\,
-+\text{d1}) \text{pix1}-\text{PONI1}) \text{Cos}[\text{rot2}] \text{Sin}[\text{rot3}]-L (-\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}]+\text{Cos}[\text{rot1}]
-\text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}])+((0.5\, +\text{d2}) \text{pix2}-\text{PONI2}) (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}]+\text{Sin}[\text{rot1}]
-\text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}])]^2\right)\)
+\noindent\(\text{Sqrt(Power(Abs(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2)),2) +
+    Power(Abs(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) +
+       L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))),2) +
+    Power(Abs(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) +
+       d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3))),2))}\)
+\end{doublespace}
+
+cos(2theta) is defined as (R.P component along x3) over the distance $|$R.P$|$
+
+\begin{doublespace}
+\noindent\(\pmb{\text{tth} = \text{ArcCos} [-(R.P).\text{x3}/\text{Norm}[R.P]]}\\
+\pmb{\text{CForm}[\text{tth}]}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\pmb{\text{tth} = \text{ArcCos} [-(R.P).\text{x3}/\text{Norm}[R.P]]}\)
+\noindent\(\text{ArcCos}\left[(-L \text{Cos}[\text{rot1}] \text{Cos}[\text{rot2}]-\text{d2} \text{Cos}[\text{rot2}] \text{Sin}[\text{rot1}]+\text{d1}
+\text{Sin}[\text{rot2}])\left/\left(\surd \left(\text{Abs}[L \text{Cos}[\text{rot1}] \text{Cos}[\text{rot2}]+\text{d2} \text{Cos}[\text{rot2}] \text{Sin}[\text{rot1}]-\text{d1}
+\text{Sin}[\text{rot2}]]^2+\text{Abs}[\text{d1} \text{Cos}[\text{rot2}] \text{Cos}[\text{rot3}]+\text{d2} (\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}]
+\text{Sin}[\text{rot2}]-\text{Cos}[\text{rot1}] \text{Sin}[\text{rot3}])+L (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}] \text{Sin}[\text{rot2}]+\text{Sin}[\text{rot1}]
+\text{Sin}[\text{rot3}])]^2+\text{Abs}[\text{d1} \text{Cos}[\text{rot2}] \text{Sin}[\text{rot3}]+L (-\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}]+\text{Cos}[\text{rot1}]
+\text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}])+\text{d2} (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}]+\text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}]
+\text{Sin}[\text{rot3}])]^2\right)\right)\right.\right]\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\text{ArcCos}\left[(L \text{Cos}[\text{rot1}] \text{Cos}[\text{rot2}]-((0.5\, +\text{d2}) \text{pix2}-\text{PONI2}) \text{Cos}[\text{rot2}]
-\text{Sin}[\text{rot1}]+((0.5\, +\text{d1}) \text{pix1}-\text{PONI1}) \text{Sin}[\text{rot2}])\left/\left(\surd \left(\text{Abs}[-L \text{Cos}[\text{rot1}]
-\text{Cos}[\text{rot2}]+((0.5\, +\text{d2}) \text{pix2}-\text{PONI2}) \text{Cos}[\text{rot2}] \text{Sin}[\text{rot1}]-((0.5\, +\text{d1}) \text{pix1}-\text{PONI1})
-\text{Sin}[\text{rot2}]]^2+\text{Abs}[((0.5\, +\text{d1}) \text{pix1}-\text{PONI1}) \text{Cos}[\text{rot2}] \text{Cos}[\text{rot3}]+((0.5\, +\text{d2})
-\text{pix2}-\text{PONI2}) (\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}]-\text{Cos}[\text{rot1}] \text{Sin}[\text{rot3}])-L
-(\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}] \text{Sin}[\text{rot2}]+\text{Sin}[\text{rot1}] \text{Sin}[\text{rot3}])]^2+\text{Abs}[((0.5\, +\text{d1})
-\text{pix1}-\text{PONI1}) \text{Cos}[\text{rot2}] \text{Sin}[\text{rot3}]-L (-\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}]+\text{Cos}[\text{rot1}]
-\text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}])+((0.5\, +\text{d2}) \text{pix2}-\text{PONI2}) (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}]+\text{Sin}[\text{rot1}]
-\text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}])]^2\right)\right)\right.\right]\)
+\noindent\(\text{ArcCos((-(L*Cos(rot1)*Cos(rot2)) - d2*Cos(rot2)*Sin(rot1) + d1*Sin(rot2))/
+    Sqrt(Power(Abs(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2)),2) +
+      Power(Abs(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) +
+         L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))),2) +
+      Power(Abs(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) +
+         d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3))),2)))}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\pmb{\text{sign} = \text{Sign}[(R.P).\text{x2}]}\)
+\noindent\(\pmb{\text{Tangeant} \text{of} \text{angle} \text{chi} \text{is} \text{defined} \text{as} (R.P \text{component} \text{along} \text{x1})
+\text{over} (R.P \text{component} \text{along} \text{x2}). \text{Arctan2} \text{should} \text{be} }\\
+\pmb{\text{used} \text{in} \text{actual} \text{calculation}}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\text{Sign}[((0.5\, +\text{d1}) \text{pix1}-\text{PONI1}) \text{Cos}[\text{rot2}] \text{Sin}[\text{rot3}]-L (-\text{Cos}[\text{rot3}]
-\text{Sin}[\text{rot1}]+\text{Cos}[\text{rot1}] \text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}])+((0.5\, +\text{d2}) \text{pix2}-\text{PONI2}) (\text{Cos}[\text{rot1}]
-\text{Cos}[\text{rot3}]+\text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}])]\)
+\noindent\(\pmb{\text{chi} =\text{ArcTan}[((R.P).\text{x1})\text{  }, ((R.P).\text{x2})]}\\
+\pmb{\text{CForm}[\text{chi}]}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\pmb{\text{chi} =\text{sign}* \text{ArcCos}[(R.P).\text{x1}/\text{Norm}[R.P]]}\)
+\noindent\(\text{ArcTan}[\text{d1} \text{Cos}[\text{rot2}] \text{Cos}[\text{rot3}]+\text{d2} (\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}]-\text{Cos}[\text{rot1}]
+\text{Sin}[\text{rot3}])+L (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}] \text{Sin}[\text{rot2}]+\text{Sin}[\text{rot1}] \text{Sin}[\text{rot3}]),\text{d1}
+\text{Cos}[\text{rot2}] \text{Sin}[\text{rot3}]+L (-\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}]+\text{Cos}[\text{rot1}] \text{Sin}[\text{rot2}]
+\text{Sin}[\text{rot3}])+\text{d2} (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}]+\text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}])]\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\text{ArcCos}\left[(((0.5\, +\text{d1}) \text{pix1}-\text{PONI1}) \text{Cos}[\text{rot2}] \text{Cos}[\text{rot3}]+((0.5\, +\text{d2})
-\text{pix2}-\text{PONI2}) (\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}]-\text{Cos}[\text{rot1}] \text{Sin}[\text{rot3}])-L
-(\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}] \text{Sin}[\text{rot2}]+\text{Sin}[\text{rot1}] \text{Sin}[\text{rot3}]))\left/\left(\surd \left(\text{Abs}[-L
-\text{Cos}[\text{rot1}] \text{Cos}[\text{rot2}]+((0.5\, +\text{d2}) \text{pix2}-\text{PONI2}) \text{Cos}[\text{rot2}] \text{Sin}[\text{rot1}]-((0.5\,
-+\text{d1}) \text{pix1}-\text{PONI1}) \text{Sin}[\text{rot2}]]^2+\text{Abs}[((0.5\, +\text{d1}) \text{pix1}-\text{PONI1}) \text{Cos}[\text{rot2}]
-\text{Cos}[\text{rot3}]+((0.5\, +\text{d2}) \text{pix2}-\text{PONI2}) (\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}]-\text{Cos}[\text{rot1}]
-\text{Sin}[\text{rot3}])-L (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}] \text{Sin}[\text{rot2}]+\text{Sin}[\text{rot1}] \text{Sin}[\text{rot3}])]^2+\text{Abs}[((0.5\,
-+\text{d1}) \text{pix1}-\text{PONI1}) \text{Cos}[\text{rot2}] \text{Sin}[\text{rot3}]-L (-\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}]+\text{Cos}[\text{rot1}]
-\text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}])+((0.5\, +\text{d2}) \text{pix2}-\text{PONI2}) (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}]+\text{Sin}[\text{rot1}]
-\text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}])]^2\right)\right)\right.\right] \text{Sign}[((0.5\, +\text{d1}) \text{pix1}-\text{PONI1}) \text{Cos}[\text{rot2}]
-\text{Sin}[\text{rot3}]-L (-\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}]+\text{Cos}[\text{rot1}] \text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}])+((0.5\,
-+\text{d2}) \text{pix2}-\text{PONI2}) (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}]+\text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}])]\)
+\noindent\(\text{ArcTan(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) +
+    L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
+   d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) +
+    d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)))}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\pmb{\text{Area}= \text{Cross}[(R.\{\text{p1}+0.5,\text{p2},-L\}-R.\{\text{p1}-0.5,\text{p2},-L\}),(R.\{\text{p1},\text{p2}+0.5,-L\}-R.\{\text{p1},\text{p2}-0.5,-L\})]}\)
+\noindent\(\pmb{\text{Coodinates} \text{of} \text{the} \text{Point} \text{of} \text{Normal} \text{Incidence}}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\left\{1. \text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}] \text{Sin}[\text{rot2}]+1. \text{Cos}[\text{rot2}]^2 \text{Sin}[\text{rot1}]
-\text{Sin}[\text{rot3}]+1. \text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}]^2 \text{Sin}[\text{rot3}],-1. \text{Cos}[\text{rot2}]^2 \text{Cos}[\text{rot3}]
-\text{Sin}[\text{rot1}]-1. \text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}]^2+1. \text{Cos}[\text{rot1}] \text{Sin}[\text{rot2}]
-\text{Sin}[\text{rot3}],0.\, +1. \text{Cos}[\text{rot1}] \text{Cos}[\text{rot2}] \text{Cos}[\text{rot3}]^2+1. \text{Cos}[\text{rot1}] \text{Cos}[\text{rot2}]
-\text{Sin}[\text{rot3}]^2\right\}\)
+\noindent\(\pmb{\text{PONI} = R.\{0,0,L\}}\\
+\pmb{\text{CForm}[\text{PONI}]}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\pmb{\text{diffSolidAngle} = -\text{Area}.(R.P)/\text{Norm}[R.P]}\)
+\noindent\(\{L (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}] \text{Sin}[\text{rot2}]+\text{Sin}[\text{rot1}] \text{Sin}[\text{rot3}]),L (-\text{Cos}[\text{rot3}]
+\text{Sin}[\text{rot1}]+\text{Cos}[\text{rot1}] \text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}]),L \text{Cos}[\text{rot1}] \text{Cos}[\text{rot2}]\}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\left(-(-L \text{Cos}[\text{rot1}] \text{Cos}[\text{rot2}]+((0.5\, +\text{d2}) \text{pix2}-\text{PONI2}) \text{Cos}[\text{rot2}] \text{Sin}[\text{rot1}]-((0.5\,
-+\text{d1}) \text{pix1}-\text{PONI1}) \text{Sin}[\text{rot2}]) \left(0.\, +1. \text{Cos}[\text{rot1}] \text{Cos}[\text{rot2}] \text{Cos}[\text{rot3}]^2+1.
-\text{Cos}[\text{rot1}] \text{Cos}[\text{rot2}] \text{Sin}[\text{rot3}]^2\right)-\left(1. \text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}] \text{Sin}[\text{rot2}]+1.
-\text{Cos}[\text{rot2}]^2 \text{Sin}[\text{rot1}] \text{Sin}[\text{rot3}]+1. \text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}]^2 \text{Sin}[\text{rot3}]\right)
-(((0.5\, +\text{d1}) \text{pix1}-\text{PONI1}) \text{Cos}[\text{rot2}] \text{Cos}[\text{rot3}]+((0.5\, +\text{d2}) \text{pix2}-\text{PONI2}) (\text{Cos}[\text{rot3}]
-\text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}]-\text{Cos}[\text{rot1}] \text{Sin}[\text{rot3}])-L (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}]
-\text{Sin}[\text{rot2}]+\text{Sin}[\text{rot1}] \text{Sin}[\text{rot3}]))-\left(-1. \text{Cos}[\text{rot2}]^2 \text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}]-1.
-\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}]^2+1. \text{Cos}[\text{rot1}] \text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}]\right)
-(((0.5\, +\text{d1}) \text{pix1}-\text{PONI1}) \text{Cos}[\text{rot2}] \text{Sin}[\text{rot3}]-L (-\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}]+\text{Cos}[\text{rot1}]
-\text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}])+((0.5\, +\text{d2}) \text{pix2}-\text{PONI2}) (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}]+\text{Sin}[\text{rot1}]
-\text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}]))\right)/\left(\surd \left(\text{Abs}[-L \text{Cos}[\text{rot1}] \text{Cos}[\text{rot2}]+((0.5\,
-+\text{d2}) \text{pix2}-\text{PONI2}) \text{Cos}[\text{rot2}] \text{Sin}[\text{rot1}]-((0.5\, +\text{d1}) \text{pix1}-\text{PONI1}) \text{Sin}[\text{rot2}]]^2+\text{Abs}[((0.5\,
-+\text{d1}) \text{pix1}-\text{PONI1}) \text{Cos}[\text{rot2}] \text{Cos}[\text{rot3}]+((0.5\, +\text{d2}) \text{pix2}-\text{PONI2}) (\text{Cos}[\text{rot3}]
-\text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}]-\text{Cos}[\text{rot1}] \text{Sin}[\text{rot3}])-L (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}]
-\text{Sin}[\text{rot2}]+\text{Sin}[\text{rot1}] \text{Sin}[\text{rot3}])]^2+\text{Abs}[((0.5\, +\text{d1}) \text{pix1}-\text{PONI1}) \text{Cos}[\text{rot2}]
-\text{Sin}[\text{rot3}]-L (-\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}]+\text{Cos}[\text{rot1}] \text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}])+((0.5\,
-+\text{d2}) \text{pix2}-\text{PONI2}) (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}]+\text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}])]^2\right)\right)\)
-\end{doublespace}
-
-\begin{doublespace}
-\noindent\(\pmb{\text{PONI} = R.\{0,0,-L\}}\)
-\end{doublespace}
-
-\begin{doublespace}
-\noindent\(\{-L (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}] \text{Sin}[\text{rot2}]+\text{Sin}[\text{rot1}] \text{Sin}[\text{rot3}]),-L (-\text{Cos}[\text{rot3}]
-\text{Sin}[\text{rot1}]+\text{Cos}[\text{rot1}] \text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}]),-L \text{Cos}[\text{rot1}] \text{Cos}[\text{rot2}]\}\)
+\noindent\(\text{List(L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
+   L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)),L*Cos(rot1)*Cos(rot2))}\)
 \end{doublespace}
 
 \begin{doublespace}
 \noindent\(\pmb{\text{}}\)
-\end{doublespace}
-
-\begin{doublespace}
-\noindent\(\pmb{\text{Area} = \text{Cross}[(R.\{\text{pix1}*(\text{d1}+1)-\text{PONI1},\text{pix2}*(\text{d2}+0.5)-\text{PONI2},-L\}-R.\{\text{pix1}*\text{d1}-\text{PONI1},\text{pix2}*(\text{d2}+0.5)-\text{PONI2},-L\}),}\\
-\pmb{(R.\{\text{pix1}*(\text{d1}+0.5)-\text{PONI1},\text{pix2}*(\text{d2}+1)-\text{PONI2},-L\}-R.\{\text{pix1}*(\text{d1}+0.5)-\text{PONI1},\text{pix2}*\text{d2}-\text{PONI2},-L\})]}\)
-\end{doublespace}
-
-\begin{doublespace}
-\noindent\(\left\{\text{pix1} \text{pix2} \text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}] \text{Sin}[\text{rot2}]+\text{pix1} \text{pix2} \text{Cos}[\text{rot2}]^2
-\text{Sin}[\text{rot1}] \text{Sin}[\text{rot3}]+\text{pix1} \text{pix2} \text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}]^2 \text{Sin}[\text{rot3}],-\text{pix1}
-\text{pix2} \text{Cos}[\text{rot2}]^2 \text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}]-\text{pix1} \text{pix2} \text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}]
-\text{Sin}[\text{rot2}]^2+\text{pix1} \text{pix2} \text{Cos}[\text{rot1}] \text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}],\text{pix1} \text{pix2}
-\text{Cos}[\text{rot1}] \text{Cos}[\text{rot2}] \text{Cos}[\text{rot3}]^2+\text{pix1} \text{pix2} \text{Cos}[\text{rot1}] \text{Cos}[\text{rot2}]
-\text{Sin}[\text{rot3}]^2\right\}\)
 \end{doublespace}
 
 \end{document}

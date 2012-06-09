@@ -1,55 +1,91 @@
-x1={1,0,0}
-{1,0,0}
-x2={0,1,0}
-{0,1,0}
-x3={0,0,1}
-{0,0,1}
-id3={x1,x2,x3}
-{{1,0,0},{0,1,0},{0,0,1}}
-rotM1=RotationMatrix[rot1,x1]
-{{1,0,0},{0,Cos[rot1],-Sin[rot1]},{0,Sin[rot1],Cos[rot1]}}
+Axis 1 is along first dimension of detector (when not tilted), this is the slow dimension of the image array in C or Y
+In[1]:= x1={1,0,0}
+Out[1]= {1,0,0}
+ Axis 2 is along second dimension of detector (when not tilted), this is the fast dimension of the image in C or X
+In[2]:= x2={0,1,0}
+Out[2]= {0,1,0}
+Axis 3 is along the incident X-Ray beam
+In[3]:= x3={0,0,1}
+Out[3]= {0,0,1}
+In[4]:= id3={x1,x2,x3}
+Out[4]= {{1,0,0},{0,1,0},{0,0,1}}
+In[5]:= rotM1=RotationMatrix[rot1,x1]
+Out[5]= {{1,0,0},{0,Cos[rot1],-Sin[rot1]},{0,Sin[rot1],Cos[rot1]}}
+In[6]:= rotM2 =  RotationMatrix[rot2,x2]
+Out[6]= {{Cos[rot2],0,Sin[rot2]},{0,1,0},{-Sin[rot2],0,Cos[rot2]}}
+In[7]:= rotM3 =  RotationMatrix[rot3,x3]
+Out[7]= {{Cos[rot3],-Sin[rot3],0},{Sin[rot3],Cos[rot3],0},{0,0,1}}
+Rotations of the detector are applied first Rot around axis 1, then axis 2 and finally around axis 3
+In[8]:= R=rotM3.rotM2.rotM1
+Out[8]= {{Cos[rot2] Cos[rot3],Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3],Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3]},{Cos[rot2] Sin[rot3],Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3],-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3]},{-Sin[rot2],Cos[rot2] Sin[rot1],Cos[rot1] Cos[rot2]}}
+In[15]:= CForm[R.x1]
 
-rotM1
+Out[15]//CForm=
+List(Cos(rot2)*Cos(rot3),Cos(rot2)*Sin(rot3),-Sin(rot2))
+In[16]:= CForm[R.x2]
 
-{{1,0,0},{0,Cos[rot1],-Sin[rot1]},{0,Sin[rot1],Cos[rot1]}}
-rotM2 =  RotationMatrix[rot2,x2]
-{{Cos[rot2],0,Sin[rot2]},{0,1,0},{-Sin[rot2],0,Cos[rot2]}}
-rotM3 =  RotationMatrix[rot3,x3]
-{{Cos[rot3],-Sin[rot3],0},{Sin[rot3],Cos[rot3],0},{0,0,1}}
-R=rotM3.rotM2.rotM1
-{{Cos[rot2] Cos[rot3],Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3],Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3]},{Cos[rot2] Sin[rot3],Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3],-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3]},{-Sin[rot2],Cos[rot2] Sin[rot1],Cos[rot1] Cos[rot2]}}
-R.x1
+Out[16]//CForm=
+List(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3),Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3),
+   Cos(rot2)*Sin(rot1))
+In[17]:= CForm[R.x3]
+Out[17]//CForm=
+List(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3),-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3),
+   Cos(rot1)*Cos(rot2))
+In[18]:= CForm[Det[R]]
+Out[18]//CForm=
+Power(Cos(rot1),2)*Power(Cos(rot2),2)*Power(Cos(rot3),2) + 
+   Power(Cos(rot2),2)*Power(Cos(rot3),2)*Power(Sin(rot1),2) + 
+   Power(Cos(rot1),2)*Power(Cos(rot3),2)*Power(Sin(rot2),2) + 
+   Power(Cos(rot3),2)*Power(Sin(rot1),2)*Power(Sin(rot2),2) + 
+   Power(Cos(rot1),2)*Power(Cos(rot2),2)*Power(Sin(rot3),2) + 
+   Power(Cos(rot2),2)*Power(Sin(rot1),2)*Power(Sin(rot3),2) + 
+   Power(Cos(rot1),2)*Power(Sin(rot2),2)*Power(Sin(rot3),2) + 
+   Power(Sin(rot1),2)*Power(Sin(rot2),2)*Power(Sin(rot3),2)
+Any pixel on detector plan at coordianate (d1, d2) in meters. Detector is at z=L
+In[21]:= P={d1,d2,L}
+CForm[R.P]
 
-{Cos[rot2] Cos[rot3],Cos[rot2] Sin[rot3],-Sin[rot2]}
-R.x2
+Out[21]= {d1,d2,L}
+Out[22]//CForm=
+List(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + 
+    L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
+   d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + 
+    d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),
+   L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2))
+Distance sample to detector point (d1,d2)
+In[23]:= CForm[Norm[R.P]]
+Out[23]//CForm=
+Sqrt(Power(Abs(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2)),2) + 
+    Power(Abs(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + 
+       L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))),2) + 
+    Power(Abs(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + 
+       d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3))),2))
+cos(2theta) is defined as (R.P component along x3) over the distance |R.P|
+In[36]:= tth = ArcCos [-(R.P).x3/Norm[R.P]]
+CForm[tth]
 
-{Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3],Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3],Cos[rot2] Sin[rot1]}
-R.x3
-{Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3],-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3],Cos[rot1] Cos[rot2]}
-Det[R]
-Cos[rot1]^2 Cos[rot2]^2 Cos[rot3]^2+Cos[rot2]^2 Cos[rot3]^2 Sin[rot1]^2+Cos[rot1]^2 Cos[rot3]^2 Sin[rot2]^2+Cos[rot3]^2 Sin[rot1]^2 Sin[rot2]^2+Cos[rot1]^2 Cos[rot2]^2 Sin[rot3]^2+Cos[rot2]^2 Sin[rot1]^2 Sin[rot3]^2+Cos[rot1]^2 Sin[rot2]^2 Sin[rot3]^2+Sin[rot1]^2 Sin[rot2]^2 Sin[rot3]^2
-P={pix1*(d1+0.5)-PONI1,pix2*(d2+0.5)-PONI2,-L}
-R.P
+Out[36]= ArcCos[(-L Cos[rot1] Cos[rot2]-d2 Cos[rot2] Sin[rot1]+d1 Sin[rot2])/(√(Abs[L Cos[rot1] Cos[rot2]+d2 Cos[rot2] Sin[rot1]-d1 Sin[rot2]]^2+Abs[d1 Cos[rot2] Cos[rot3]+d2 (Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3])+L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3])]^2+Abs[d1 Cos[rot2] Sin[rot3]+L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+d2 (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3])]^2))]
+Out[37]//CForm=
+ArcCos((-(L*Cos(rot1)*Cos(rot2)) - d2*Cos(rot2)*Sin(rot1) + d1*Sin(rot2))/
+    Sqrt(Power(Abs(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2)),2) + 
+      Power(Abs(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + 
+         L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))),2) + 
+      Power(Abs(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + 
+         d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3))),2)))
+Tangeant of angle chi is defined as (R.P component along x1) over (R.P component along x2). Arctan2 should be used in actual calculation
+In[34]:= chi =ArcTan[((R.P).x1)  , ((R.P).x2)]
+CForm[chi]
+Out[34]= ArcTan[d1 Cos[rot2] Cos[rot3]+d2 (Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3])+L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3]),d1 Cos[rot2] Sin[rot3]+L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+d2 (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3])]
+Out[35]//CForm=
+ArcTan(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + 
+    L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
+   d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + 
+    d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)))
+Coodinates of the Point of Normal Incidence
+In[32]:= PONI = R.{0,0,L}
+CForm[PONI]
+Out[32]= {L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3]),L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3]),L Cos[rot1] Cos[rot2]}
+Out[33]//CForm=
+List(L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
+   L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)),L*Cos(rot1)*Cos(rot2))
 
-{(0.5 +d1) pix1-PONI1,(0.5 +d2) pix2-PONI2,-L}
-{((0.5 +d1) pix1-PONI1) Cos[rot2] Cos[rot3]+((0.5 +d2) pix2-PONI2) (Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3])-L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3]),((0.5 +d1) pix1-PONI1) Cos[rot2] Sin[rot3]-L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+((0.5 +d2) pix2-PONI2) (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3]),-L Cos[rot1] Cos[rot2]+((0.5 +d2) pix2-PONI2) Cos[rot2] Sin[rot1]-((0.5 +d1) pix1-PONI1) Sin[rot2]}
-Norm[R.P]
-√(Abs[-L Cos[rot1] Cos[rot2]+((0.5 +d2) pix2-PONI2) Cos[rot2] Sin[rot1]-((0.5 +d1) pix1-PONI1) Sin[rot2]]^2+Abs[((0.5 +d1) pix1-PONI1) Cos[rot2] Cos[rot3]+((0.5 +d2) pix2-PONI2) (Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3])-L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3])]^2+Abs[((0.5 +d1) pix1-PONI1) Cos[rot2] Sin[rot3]-L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+((0.5 +d2) pix2-PONI2) (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3])]^2)
-tth = ArcCos [-(R.P).x3/Norm[R.P]]
-
-ArcCos[(L Cos[rot1] Cos[rot2]-((0.5 +d2) pix2-PONI2) Cos[rot2] Sin[rot1]+((0.5 +d1) pix1-PONI1) Sin[rot2])/(√(Abs[-L Cos[rot1] Cos[rot2]+((0.5 +d2) pix2-PONI2) Cos[rot2] Sin[rot1]-((0.5 +d1) pix1-PONI1) Sin[rot2]]^2+Abs[((0.5 +d1) pix1-PONI1) Cos[rot2] Cos[rot3]+((0.5 +d2) pix2-PONI2) (Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3])-L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3])]^2+Abs[((0.5 +d1) pix1-PONI1) Cos[rot2] Sin[rot3]-L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+((0.5 +d2) pix2-PONI2) (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3])]^2))]
-sign = Sign[(R.P).x2]
-Sign[((0.5 +d1) pix1-PONI1) Cos[rot2] Sin[rot3]-L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+((0.5 +d2) pix2-PONI2) (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3])]
-chi =sign* ArcCos[(R.P).x1/Norm[R.P]]
-ArcCos[(((0.5 +d1) pix1-PONI1) Cos[rot2] Cos[rot3]+((0.5 +d2) pix2-PONI2) (Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3])-L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3]))/(√(Abs[-L Cos[rot1] Cos[rot2]+((0.5 +d2) pix2-PONI2) Cos[rot2] Sin[rot1]-((0.5 +d1) pix1-PONI1) Sin[rot2]]^2+Abs[((0.5 +d1) pix1-PONI1) Cos[rot2] Cos[rot3]+((0.5 +d2) pix2-PONI2) (Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3])-L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3])]^2+Abs[((0.5 +d1) pix1-PONI1) Cos[rot2] Sin[rot3]-L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+((0.5 +d2) pix2-PONI2) (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3])]^2))] Sign[((0.5 +d1) pix1-PONI1) Cos[rot2] Sin[rot3]-L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+((0.5 +d2) pix2-PONI2) (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3])]
-Area= Cross[(R.{p1+0.5,p2,-L}-R.{p1-0.5,p2,-L}),(R.{p1,p2+0.5,-L}-R.{p1,p2-0.5,-L})]
-{1. Cos[rot1] Cos[rot3] Sin[rot2]+1. Cos[rot2]^2 Sin[rot1] Sin[rot3]+1. Sin[rot1] Sin[rot2]^2 Sin[rot3],-1. Cos[rot2]^2 Cos[rot3] Sin[rot1]-1. Cos[rot3] Sin[rot1] Sin[rot2]^2+1. Cos[rot1] Sin[rot2] Sin[rot3],0. +1. Cos[rot1] Cos[rot2] Cos[rot3]^2+1. Cos[rot1] Cos[rot2] Sin[rot3]^2}
-diffSolidAngle = -Area.(R.P)/Norm[R.P]
-(-(-L Cos[rot1] Cos[rot2]+((0.5 +d2) pix2-PONI2) Cos[rot2] Sin[rot1]-((0.5 +d1) pix1-PONI1) Sin[rot2]) (0. +1. Cos[rot1] Cos[rot2] Cos[rot3]^2+1. Cos[rot1] Cos[rot2] Sin[rot3]^2)-(1. Cos[rot1] Cos[rot3] Sin[rot2]+1. Cos[rot2]^2 Sin[rot1] Sin[rot3]+1. Sin[rot1] Sin[rot2]^2 Sin[rot3]) (((0.5 +d1) pix1-PONI1) Cos[rot2] Cos[rot3]+((0.5 +d2) pix2-PONI2) (Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3])-L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3]))-(-1. Cos[rot2]^2 Cos[rot3] Sin[rot1]-1. Cos[rot3] Sin[rot1] Sin[rot2]^2+1. Cos[rot1] Sin[rot2] Sin[rot3]) (((0.5 +d1) pix1-PONI1) Cos[rot2] Sin[rot3]-L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+((0.5 +d2) pix2-PONI2) (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3])))/(√(Abs[-L Cos[rot1] Cos[rot2]+((0.5 +d2) pix2-PONI2) Cos[rot2] Sin[rot1]-((0.5 +d1) pix1-PONI1) Sin[rot2]]^2+Abs[((0.5 +d1) pix1-PONI1) Cos[rot2] Cos[rot3]+((0.5 +d2) pix2-PONI2) (Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3])-L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3])]^2+Abs[((0.5 +d1) pix1-PONI1) Cos[rot2] Sin[rot3]-L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+((0.5 +d2) pix2-PONI2) (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3])]^2))
-PONI = R.{0,0,-L}
-{-L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3]),-L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3]),-L Cos[rot1] Cos[rot2]}
-
-
-Area = Cross[(R.{pix1*(d1+1)-PONI1,pix2*(d2+0.5)-PONI2,-L}-R.{pix1*d1-PONI1,pix2*(d2+0.5)-PONI2,-L}),(R.{pix1*(d1+0.5)-PONI1,pix2*(d2+1)-PONI2,-L}-R.{pix1*(d1+0.5)-PONI1,pix2*d2-PONI2,-L})]
-
-{pix1 pix2 Cos[rot1] Cos[rot3] Sin[rot2]+pix1 pix2 Cos[rot2]^2 Sin[rot1] Sin[rot3]+pix1 pix2 Sin[rot1] Sin[rot2]^2 Sin[rot3],-pix1 pix2 Cos[rot2]^2 Cos[rot3] Sin[rot1]-pix1 pix2 Cos[rot3] Sin[rot1] Sin[rot2]^2+pix1 pix2 Cos[rot1] Sin[rot2] Sin[rot3],pix1 pix2 Cos[rot1] Cos[rot2] Cos[rot3]^2+pix1 pix2 Cos[rot1] Cos[rot2] Sin[rot3]^2}

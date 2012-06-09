@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 #
-#    Project: Azimuthal integration 
+#    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
 #
 #    File: "$Id$"
@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/12/2011"
+__date__ = "09/06/2012"
 __status__ = "beta"
 
 import os, threading, logging
@@ -43,9 +43,89 @@ logger = logging.getLogger("pyFAI.geometry")
 
 class Geometry(object):
     """
-    This class is an azimuthal integrator based on P. Boesecke's geometry and 
+    This class is an azimuthal integrator based on P. Boesecke's geometry and
     histogram algorithm by Manolo S. del Rio and V.A Sole
-     
+
+    Detector is assumed to be corrected from "raster orientation" effect.
+    It is not addressed here but rather in the Detector object or at read time.
+    Considering there is no tilt:
+    Detector fast dimension (dim2) is supposed to be horizontal (dimension X of the image)
+    Detector slow dimension (dim1) is supposed to be vertical, upwards (dimension Y of the image)
+    The third dimension is chose such as the referential is orthonormal, so dim3 is along incoming X-ray beam
+
+    Demonstration of the equation done using Mathematica.
+    =====================================================
+
+
+    Axis 1 is along first dimension of detector (when not tilted), this is the slow dimension of the image array in C or Y
+     x1={1,0,0}
+    Axis 2 is along second dimension of detector (when not tilted), this is the fast dimension of the image in C or X
+     x2={0,1,0}
+    Axis 3 is along the incident X-Ray beam
+     x3={0,0,1}
+    We define the 3 rotation around axis 1, 2 and 3:
+     rotM1 = RotationMatrix[rot1,x1] =  {{1,0,0},{0,cos[rot1],-sin[rot1]},{0,sin[rot1],cos[rot1]}}
+     rotM2 =  RotationMatrix[rot2,x2] = {{cos[rot2],0,sin[rot2]},{0,1,0},{-sin[rot2],0,cos[rot2]}}
+     rotM3 =  RotationMatrix[rot3,x3] = {{cos[rot3],-sin[rot3],0},{sin[rot3],cos[rot3],0},{0,0,1}}
+
+
+    Rotations of the detector are applied first Rot around axis 1, then axis 2 and finally around axis 3:
+     R = rotM3.rotM2.rotM1
+       = {{cos[rot2] cos[rot3],cos[rot3] sin[rot1] sin[rot2]-cos[rot1] sin[rot3],cos[rot1] cos[rot3] sin[rot2]+sin[rot1] sin[rot3]},
+          {cos[rot2] sin[rot3],cos[rot1] cos[rot3]+sin[rot1] sin[rot2] sin[rot3],-cos[rot3] sin[rot1]+cos[rot1] sin[rot2] sin[rot3]},
+          {-sin[rot2],cos[rot2] sin[rot1],cos[rot1] cos[rot2]}}
+    In Python notation:
+    PForm[R.x1] = [cos(rot2)*cos(rot3),cos(rot2)*sin(rot3),-sin(rot2)]
+    PForm[R.x2] = [cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3),cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3), cos(rot2)*sin(rot1)]
+    PForm[R.x3] = [cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3),-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3), cos(rot1)*cos(rot2)]
+    PForm[Det[R]] = pow(cos(rot1),2)*pow(cos(rot2),2)*pow(cos(rot3),2) +
+                    pow(cos(rot2),2)*pow(cos(rot3),2)*pow(sin(rot1),2) +
+                    pow(cos(rot1),2)*pow(cos(rot3),2)*pow(sin(rot2),2) +
+                    pow(cos(rot3),2)*pow(sin(rot1),2)*pow(sin(rot2),2) +
+                    pow(cos(rot1),2)*pow(cos(rot2),2)*pow(sin(rot3),2) +
+                    pow(cos(rot2),2)*pow(sin(rot1),2)*pow(sin(rot3),2) +
+                    pow(cos(rot1),2)*pow(sin(rot2),2)*pow(sin(rot3),2) +
+                    pow(sin(rot1),2)*pow(sin(rot2),2)*pow(sin(rot3),2) = 1.0 of course it is a rotation.
+
+    * Coordinates of the Point of Normal Incidence:
+     PONI = R.{0,0,L}
+     PForm[PONI] = [L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3)),
+                   L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)),L*cos(rot1)*cos(rot2)]
+
+
+    * Any pixel on detector plan at coordinate (d1, d2) in meters. Detector is at z=L
+     P={d1,d2,L}
+     PForm[R.P]=[d1*cos(rot2)*cos(rot3) + d2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) +
+                L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3)),
+               d1*cos(rot2)*sin(rot3) + L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)) +
+                d2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3)),
+               L*cos(rot1)*cos(rot2) + d2*cos(rot2)*sin(rot1) - d1*sin(rot2)]
+
+    * Distance sample (origin) to detector point (d1,d2)
+     FForm[Norm[R.P]] = sqrt(pow(Abs(L*cos(rot1)*cos(rot2) + d2*cos(rot2)*sin(rot1) - d1*sin(rot2)),2) +
+                        pow(Abs(d1*cos(rot2)*cos(rot3) + d2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) +
+                        L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3))),2) +
+                        pow(Abs(d1*cos(rot2)*sin(rot3) + L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)) +
+                        d2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3))),2))
+
+    * cos(2theta) is defined as (R.P component along x3) over the distance from origin to data point|R.P|
+     tth = ArcCos [-(R.P).x3/Norm[R.P]]
+     FForm[tth] = Arccos((-(L*cos(rot1)*cos(rot2)) - d2*cos(rot2)*sin(rot1) + d1*sin(rot2))/
+                        sqrt(pow(Abs(L*cos(rot1)*cos(rot2) + d2*cos(rot2)*sin(rot1) - d1*sin(rot2)),2) +
+                          pow(Abs(d1*cos(rot2)*cos(rot3) + d2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) +
+                         L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3))),2) +
+                          pow(Abs(d1*cos(rot2)*sin(rot3) + L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)) +
+                         d2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3))),2)))
+
+    * Tangeant of angle chi is defined as (R.P component along x1) over (R.P component along x2). Arctan2 should be used in actual calculation
+     chi = ArcTan[((R.P).x1) / ((R.P).x2)]
+     FForm[chi] = ArcTan2(d1*cos(rot2)*cos(rot3) + d2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) +
+                            L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3)),
+                          d1*cos(rot2)*sin(rot3) + L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)) +
+                            d2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3)))
+
+
+
     """
     def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0, pixel1=1, pixel2=1, splineFile=None, detector=None):
         """
@@ -57,7 +137,7 @@ class Geometry(object):
         @param rot3: third rotation from sample ref to detector's ref, in radians
         @param pixel1: pixel size of the fist dimension of the detector,  in meter
         @param pixel2: pixel size of the second dimension of the detector,  in meter
-        @param splineFile: file containing the geometric distortion of the detector. Overrides the pixel size.  
+        @param splineFile: file containing the geometric distortion of the detector. Overrides the pixel size.
         """
         self._dist = dist
         self._poni1 = poni1
@@ -100,14 +180,14 @@ class Geometry(object):
 
     def _calcCatesianPositions(self, d1, d2, poni1=None, poni2=None):
         """
-        Calculate the position in cartesian coordinate (centered on the PONI) 
-        and in meter of a couple of coordinates. 
+        Calculate the position in cartesian coordinate (centered on the PONI)
+        and in meter of a couple of coordinates.
         The half pixel offset is taken into account here !!!
-        
+
         @param d1: ndarray of dimention 1/2 containing the Y pixel positions
         @param d2: ndarray of dimention 1/2 containing the X pixel positions
-        @param poni1: value in the Y direction of the poni coordinate (in meter) 
-        @param poni2: value in the X direction of the poni coordinate (in meter) 
+        @param poni1: value in the Y direction of the poni coordinate (in meter)
+        @param poni2: value in the X direction of the poni coordinate (in meter)
         @return: 2-arrays of same shape as d1 & d2 with the position in meter
 
         d1 and d2 must have the same shape, returned array will have the same shape.
@@ -127,7 +207,7 @@ class Geometry(object):
         @type d1: scalar or array of scalar
         @param d2: position(s) in pixel in second dimension (c order)
         @type d2: scalar or array of scalar
-        @return 2theta in radians 
+        @return 2theta in radians
         @rtype: floar or array of floats.
         """
 
@@ -155,7 +235,7 @@ class Geometry(object):
         @type d1: scalar or array of scalar
         @param d2: position(s) in pixel in second dimension (c order)
         @type d2: scalar or array of scalar
-        @return q in in nm^(-1) 
+        @return q in in nm^(-1)
         @rtype: float or array of floats.
         """
 
@@ -178,7 +258,7 @@ class Geometry(object):
 
     def qArray(self, shape):
         """
-        Generate an array of the given shape with q(i,j) for all elements.  
+        Generate an array of the given shape with q(i,j) for all elements.
         """
         if self._qa is None:
             with self._sem:
@@ -200,7 +280,7 @@ class Geometry(object):
         @type d1: scalar or array of scalar
         @param d2: position(s) in pixel in second dimension (c order)
         @type d2: scalar or array of scalar
-        @return 2theta in radians 
+        @return 2theta in radians
         @rtype: floar or array of floats.
         """
         return self.tth(d1 - 0.5, d2 - 0.5)
@@ -208,7 +288,7 @@ class Geometry(object):
 
     def twoThetaArray(self, shape):
         """
-        Generate an array of the given shape with two-theta(i,j) for all elements.  
+        Generate an array of the given shape with two-theta(i,j) for all elements.
         """
         if self._ttha is None:
             with self._sem:
@@ -219,13 +299,13 @@ class Geometry(object):
 
     def chi(self, d1, d2):
         """
-        Calculate the chi (azimuthal angle) for the centre of a pixel at coordinate d1,d2 
+        Calculate the chi (azimuthal angle) for the centre of a pixel at coordinate d1,d2
         which in the lab ref has coordinate:
-        X1 = p1*Cos(rot2)*Cos(rot3) + p2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) -  L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))
-        X2 = p1*Cos(rot2)*Sin(rot3) - L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) +  p2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3))
-        X3 = -(L*Cos(rot1)*Cos(rot2)) + p2*Cos(rot2)*Sin(rot1) - p1*Sin(rot2)
+        X1 = p1*cos(rot2)*cos(rot3) + p2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) -  L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3))
+        X2 = p1*cos(rot2)*sin(rot3) - L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)) +  p2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3))
+        X3 = -(L*cos(rot1)*cos(rot2)) + p2*cos(rot2)*sin(rot1) - p1*sin(rot2)
         hence tan(Chi) =  X2 / X1
-        
+
         @param d1: pixel coordinate along the 1st dimention (C convention)
         @type d1: float or array of them
         @param d2: pixel coordinate along the 2nd dimention (C convention)
@@ -247,13 +327,13 @@ class Geometry(object):
 
     def chi_corner(self, d1, d2):
         """
-        Calculate the chi (azimuthal angle) for the corner of a pixel at coordinate d1,d2 
+        Calculate the chi (azimuthal angle) for the corner of a pixel at coordinate d1,d2
         which in the lab ref has coordinate:
-        X1 = p1*Cos(rot2)*Cos(rot3) + p2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) -  L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))
-        X2 = p1*Cos(rot2)*Sin(rot3) - L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) +  p2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3))
-        X3 = -(L*Cos(rot1)*Cos(rot2)) + p2*Cos(rot2)*Sin(rot1) - p1*Sin(rot2)
+        X1 = p1*cos(rot2)*cos(rot3) + p2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) -  L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3))
+        X2 = p1*cos(rot2)*sin(rot3) - L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)) +  p2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3))
+        X3 = -(L*cos(rot1)*cos(rot2)) + p2*cos(rot2)*sin(rot1) - p1*sin(rot2)
         hence tan(Chi) =  X2 / X1
-        
+
         @param d1: pixel coordinate along the 1st dimention (C convention)
         @type d1: float or array of them
         @param d2: pixel coordinate along the 2nd dimention (C convention)
@@ -264,7 +344,7 @@ class Geometry(object):
 
     def chiArray(self, shape):
         """
-        Generate an array of the given shape with chi(i,j) (azimuthal angle) for all elements.  
+        Generate an array of the given shape with chi(i,j) (azimuthal angle) for all elements.
         """
         if self._chia is None:
             if self.chiDiscAtPi:
@@ -276,7 +356,7 @@ class Geometry(object):
 
     def cornerArray(self, shape):
         """
-        Generate a 3D array of the given shape with (i,j) (azimuthal angle) for all elements.  
+        Generate a 3D array of the given shape with (i,j) (azimuthal angle) for all elements.
         """
 ################################################################################
 # TODO : add the center to the 4 corners when splitpixel algo is ready
@@ -304,7 +384,7 @@ class Geometry(object):
 
     def cornerQArray(self, shape):
         """
-        Generate a 3D array of the given shape with (i,j) (azimuthal angle) for all elements.  
+        Generate a 3D array of the given shape with (i,j) (azimuthal angle) for all elements.
         """
 ################################################################################
 # TODO : add the center to the 4 corners when splitpixel algo is ready
@@ -333,7 +413,7 @@ class Geometry(object):
 
     def delta2Theta(self, shape):
         """
-        Generate a 3D array of the given shape with (i,j) with the max distance between the center and any corner in 2 theta  
+        Generate a 3D array of the given shape with (i,j) with the max distance between the center and any corner in 2 theta
         """
         tth_center = self.twoThetaArray(shape)
         if self._dttha is None:
@@ -351,7 +431,7 @@ class Geometry(object):
 
     def deltaChi(self, shape):
         """
-        Generate a 3D array of the given shape with (i,j) with the max distance between the center and any corner in chi-angle  
+        Generate a 3D array of the given shape with (i,j) with the max distance between the center and any corner in chi-angle
         """
         chi_center = self.chiArray(shape)
         if self._dchia is None:
@@ -370,7 +450,7 @@ class Geometry(object):
 
     def deltaQ(self, shape):
         """
-        Generate a 3D array of the given shape with (i,j) with the max distance between the center and any corner in q_vector  
+        Generate a 3D array of the given shape with (i,j) with the max distance between the center and any corner in q_vector
         """
         q_center = self.qArray(shape)
         if self._dqa is None:
@@ -396,7 +476,7 @@ class Geometry(object):
 
         ########################################################################
         # Nota: the solid angle correction should be done in flat field correction
-        # Here is dual-correction 
+        # Here is dual-correction
         ########################################################################
 
 #        if self.spline is None:
@@ -415,7 +495,7 @@ class Geometry(object):
 
     def solidAngleArray(self, shape):
         """
-        Generate an array of the given shape with the solid angle of the current element two-theta(i,j) for all elements.  
+        Generate an array of the given shape with the solid angle of the current element two-theta(i,j) for all elements.
         """
         if self._dssa is None:
             self._dssa = numpy.fromfunction(self.diffSolidAngle, shape, dtype="float32")
@@ -448,10 +528,10 @@ class Geometry(object):
     @classmethod
     def sload(cls, filename):
         """
-        A static method combining the constructor and the loader from a 
+        A static method combining the constructor and the loader from a
         @param filename: name of the file to load
         @type filename: string
-        @return: instance of Gerometry of AzimuthalIntegrator set-up with the parameter from the file.  
+        @return: instance of Gerometry of AzimuthalIntegrator set-up with the parameter from the file.
         """
         inst = cls()
         inst.load(filename)
@@ -529,7 +609,7 @@ class Geometry(object):
 
     def getFit2D(self):
         """
-        return a dict with parameters compatible with fit2D geometry 
+        return a dict with parameters compatible with fit2D geometry
         """
         cosTilt = cos(self._rot1) * cos(self._rot2)
         sinTilt = sqrt(1 - cosTilt * cosTilt)
@@ -557,15 +637,15 @@ class Geometry(object):
 
     def setFit2D(self, direct, centerX, centerY, tilt=0., tiltPlanRotation=0., pixelX=None, pixelY=None, splineFile=None):
         """
-        Set the Fit2D-like parameter set: For geometry description see  HPR 1996 (14) pp-240 
-        @param direct: direct distance from sample to detector along the incident beam (in millimeter as in fit2d) 
-        @param tilt: tilt in degrees 
-        @param tiltPlanRotation: Rotation (in degrees) of the tilt plan arround the Z-detector axis 
+        Set the Fit2D-like parameter set: For geometry description see  HPR 1996 (14) pp-240
+        @param direct: direct distance from sample to detector along the incident beam (in millimeter as in fit2d)
+        @param tilt: tilt in degrees
+        @param tiltPlanRotation: Rotation (in degrees) of the tilt plan arround the Z-detector axis
                 * 0deg -> Y does not move, +X goes to Z<0
                 * 90deg -> X does not move, +Y goes to Z<0
                 * 180deg -> Y does not move, +X goes to Z>0
                 * 270deg -> X does not move, +Y goes to Z>0
-                
+
         @param pixelX,pixelY: as in fit2d they ar given in micron, not in meter
         @param centerX, centerY: pixel position of the beam center
         @param splineFile: name of the file containing the spline
@@ -602,7 +682,7 @@ class Geometry(object):
         """
         Set the position of the discontinuity of the chi axis between 0 and 2pi.
         By default it is between pi and -pi
-        
+
         """
         self.chiDiscAtPi = False
         self._chia = None
@@ -613,7 +693,7 @@ class Geometry(object):
         """
         Set the position of the discontinuity of the chi axis between -pi and +pi.
         This is the default behavour
-        
+
         """
         self.chiDiscAtPi = True
         self._chia = None
@@ -649,7 +729,7 @@ class Geometry(object):
 
     def reset(self):
         """
-        reset most arrays that are cached: used when a parameter changes. 
+        reset most arrays that are cached: used when a parameter changes.
         """
         self.param = [self._dist, self._poni1, self._poni2, self._rot1, self._rot2, self._rot3]
         self._ttha = None
