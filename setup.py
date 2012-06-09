@@ -44,16 +44,17 @@ except ImportError:
     build_ext = None
 
 src = {}
-print build_ext
-for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear"]:
-    if build_ext:
+
+if build_ext:
+    ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.pyx", "ocl_base.cpp", "ocl_tools.cc", "ocl_xrpd1d_fullsplit.cpp")]
+    for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear"]:
         src[ext] = os.path.join("src", ext + ".pyx")
-    else:
+else:
+    ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.cpp", "ocl_base.cpp", "ocl_tools.cc", "ocl_xrpd1d_fullsplit.cpp")]
+    for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear"]:
         src[ext] = os.path.join("src", ext + ".c")
 
 installDir = os.path.join(get_python_lib(), "pyFAI")
-
-print src
 
 hist_dic = dict(name="histogram",
                     include_dirs=get_numpy_include_dirs(),
@@ -82,6 +83,13 @@ relabel_dic = dict(name="relabel",
 bilinear_dic = dict(name="bilinear",
                         include_dirs=get_numpy_include_dirs(),
                         sources=[src['bilinear']])
+
+ocl_azim_dict = dict(name="ocl_azim",
+                    sources=ocl_azim,
+                    include_dirs=["openCL"] + get_numpy_include_dirs(),
+                    language="c++",
+                    libraries=["stdc++", "OpenCL"],
+                    )
 
 if sys.platform == "win32":
     data_files = [(installDir, [os.path.join("dll", "pthreadGC2.dll")])]
@@ -127,12 +135,15 @@ setup(name='pyFAI',
                    Extension(**relabel_dic),
                    Extension(**split_dic),
                    Extension(**splitBBox_dic),
-                   Extension(**bilinear_dic)],
+                   Extension(**bilinear_dic),
+                   Extension(**ocl_azim_dict)
+                   ],
       packages=["pyFAI"],
       package_dir={"pyFAI": "pyFAI-src" },
 #      data_files=data_files,
       test_suite="test",
-      cmdclass={'build_ext': build_ext}
+      cmdclass={'build_ext': build_ext},
+      data_files=[(installDir, [os.path.join("openCL", i) for i in ("ocl_azim_kernel_2.cl", "ocl_azim_kernel2d_2.cl")])]
       )
 
 ################################################################################

@@ -4,4 +4,4 @@
 0.4: global clean up of the code regarding options from command line and better design
      correct the orientation of the azimuthal angle chi
      rename scripts in pyFAI-calib, pyFAI-saxs and pyFAI-waxs 
-0.5:  
+0.5: include OpenCL version of azimuthal integration 

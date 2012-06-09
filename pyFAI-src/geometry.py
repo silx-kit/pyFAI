@@ -230,7 +230,10 @@ class Geometry(object):
 
     def qFunction(self, d1, d2, param=None):
         """
-        Calculates the q value for the center of a given pixel (or set of pixels)
+        Calculates the q value for the center of a given pixel (or set of pixels) in nm-1
+        
+        q = 4pi/lambda sin( theta )
+        
         @param d1: position(s) in pixel in first dimension (c order)
         @type d1: scalar or array of scalar
         @param d2: position(s) in pixel in second dimension (c order)
@@ -239,22 +242,21 @@ class Geometry(object):
         @rtype: float or array of floats.
         """
 
-        if param == None:
-            param = self.param
-        cosRot1 = cos(param[3])
-        cosRot2 = cos(param[4])
-        cosRot3 = cos(param[5])
-        sinRot1 = sin(param[3])
-        sinRot2 = sin(param[4])
-        sinRot3 = sin(param[5])
-        p1, p2 = self._calcCatesianPositions(d1, d2, param[1], param[2])
-        tmp = ((param[0] * cosRot1 * cosRot2 - p2 * cosRot2 * sinRot1 + p1 * sinRot2) / \
-                     (sqrt((-param[0] * cosRot1 * cosRot2 + p2 * cosRot2 * sinRot1 - p1 * sinRot2) ** 2 + \
-                            (p1 * cosRot2 * cosRot3 + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - param[0] * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)) ** 2 + \
-                             (p1 * cosRot2 * sinRot3 - param[0] * (-cosRot3 * sinRot1 + cosRot1 * sinRot2 * sinRot3) + p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3)) ** 2)))
-
-        return  2.0e-9 * numpy.pi * sqrt(1.0 - tmp ** 2) / self.wavelength
-
+#        if param == None:
+#            param = self.param
+#        cosRot1 = cos(param[3])
+#        cosRot2 = cos(param[4])
+#        cosRot3 = cos(param[5])
+#        sinRot1 = sin(param[3])
+#        sinRot2 = sin(param[4])
+#        sinRot3 = sin(param[5])
+#        p1, p2 = self._calcCatesianPositions(d1, d2, param[1], param[2])
+#        tmp = ((param[0] * cosRot1 * cosRot2 - p2 * cosRot2 * sinRot1 + p1 * sinRot2) / \
+#                     (sqrt((-param[0] * cosRot1 * cosRot2 + p2 * cosRot2 * sinRot1 - p1 * sinRot2) ** 2 + \
+#                            (p1 * cosRot2 * cosRot3 + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - param[0] * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)) ** 2 + \
+#                             (p1 * cosRot2 * sinRot3 - param[0] * (-cosRot3 * sinRot1 + cosRot1 * sinRot2 * sinRot3) + p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3)) ** 2)))
+#        return  2.0e-9 * numpy.pi * sqrt(1.0 - tmp ** 2) / self.wavelength
+        return   4e-9 * numpy.pi / self.wavelength * numpy.sin(self.tth(d1=d1, d2=d2, param=param))
 
     def qArray(self, shape):
         """
