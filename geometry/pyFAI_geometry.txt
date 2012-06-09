@@ -1,0 +1,55 @@
+x1={1,0,0}
+{1,0,0}
+x2={0,1,0}
+{0,1,0}
+x3={0,0,1}
+{0,0,1}
+id3={x1,x2,x3}
+{{1,0,0},{0,1,0},{0,0,1}}
+rotM1=RotationMatrix[rot1,x1]
+{{1,0,0},{0,Cos[rot1],-Sin[rot1]},{0,Sin[rot1],Cos[rot1]}}
+
+rotM1
+
+{{1,0,0},{0,Cos[rot1],-Sin[rot1]},{0,Sin[rot1],Cos[rot1]}}
+rotM2 =  RotationMatrix[rot2,x2]
+{{Cos[rot2],0,Sin[rot2]},{0,1,0},{-Sin[rot2],0,Cos[rot2]}}
+rotM3 =  RotationMatrix[rot3,x3]
+{{Cos[rot3],-Sin[rot3],0},{Sin[rot3],Cos[rot3],0},{0,0,1}}
+R=rotM3.rotM2.rotM1
+{{Cos[rot2] Cos[rot3],Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3],Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3]},{Cos[rot2] Sin[rot3],Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3],-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3]},{-Sin[rot2],Cos[rot2] Sin[rot1],Cos[rot1] Cos[rot2]}}
+R.x1
+
+{Cos[rot2] Cos[rot3],Cos[rot2] Sin[rot3],-Sin[rot2]}
+R.x2
+
+{Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3],Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3],Cos[rot2] Sin[rot1]}
+R.x3
+{Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3],-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3],Cos[rot1] Cos[rot2]}
+Det[R]
+Cos[rot1]^2 Cos[rot2]^2 Cos[rot3]^2+Cos[rot2]^2 Cos[rot3]^2 Sin[rot1]^2+Cos[rot1]^2 Cos[rot3]^2 Sin[rot2]^2+Cos[rot3]^2 Sin[rot1]^2 Sin[rot2]^2+Cos[rot1]^2 Cos[rot2]^2 Sin[rot3]^2+Cos[rot2]^2 Sin[rot1]^2 Sin[rot3]^2+Cos[rot1]^2 Sin[rot2]^2 Sin[rot3]^2+Sin[rot1]^2 Sin[rot2]^2 Sin[rot3]^2
+P={pix1*(d1+0.5)-PONI1,pix2*(d2+0.5)-PONI2,-L}
+R.P
+
+{(0.5 +d1) pix1-PONI1,(0.5 +d2) pix2-PONI2,-L}
+{((0.5 +d1) pix1-PONI1) Cos[rot2] Cos[rot3]+((0.5 +d2) pix2-PONI2) (Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3])-L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3]),((0.5 +d1) pix1-PONI1) Cos[rot2] Sin[rot3]-L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+((0.5 +d2) pix2-PONI2) (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3]),-L Cos[rot1] Cos[rot2]+((0.5 +d2) pix2-PONI2) Cos[rot2] Sin[rot1]-((0.5 +d1) pix1-PONI1) Sin[rot2]}
+Norm[R.P]
+√(Abs[-L Cos[rot1] Cos[rot2]+((0.5 +d2) pix2-PONI2) Cos[rot2] Sin[rot1]-((0.5 +d1) pix1-PONI1) Sin[rot2]]^2+Abs[((0.5 +d1) pix1-PONI1) Cos[rot2] Cos[rot3]+((0.5 +d2) pix2-PONI2) (Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3])-L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3])]^2+Abs[((0.5 +d1) pix1-PONI1) Cos[rot2] Sin[rot3]-L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+((0.5 +d2) pix2-PONI2) (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3])]^2)
+tth = ArcCos [-(R.P).x3/Norm[R.P]]
+
+ArcCos[(L Cos[rot1] Cos[rot2]-((0.5 +d2) pix2-PONI2) Cos[rot2] Sin[rot1]+((0.5 +d1) pix1-PONI1) Sin[rot2])/(√(Abs[-L Cos[rot1] Cos[rot2]+((0.5 +d2) pix2-PONI2) Cos[rot2] Sin[rot1]-((0.5 +d1) pix1-PONI1) Sin[rot2]]^2+Abs[((0.5 +d1) pix1-PONI1) Cos[rot2] Cos[rot3]+((0.5 +d2) pix2-PONI2) (Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3])-L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3])]^2+Abs[((0.5 +d1) pix1-PONI1) Cos[rot2] Sin[rot3]-L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+((0.5 +d2) pix2-PONI2) (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3])]^2))]
+sign = Sign[(R.P).x2]
+Sign[((0.5 +d1) pix1-PONI1) Cos[rot2] Sin[rot3]-L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+((0.5 +d2) pix2-PONI2) (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3])]
+chi =sign* ArcCos[(R.P).x1/Norm[R.P]]
+ArcCos[(((0.5 +d1) pix1-PONI1) Cos[rot2] Cos[rot3]+((0.5 +d2) pix2-PONI2) (Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3])-L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3]))/(√(Abs[-L Cos[rot1] Cos[rot2]+((0.5 +d2) pix2-PONI2) Cos[rot2] Sin[rot1]-((0.5 +d1) pix1-PONI1) Sin[rot2]]^2+Abs[((0.5 +d1) pix1-PONI1) Cos[rot2] Cos[rot3]+((0.5 +d2) pix2-PONI2) (Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3])-L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3])]^2+Abs[((0.5 +d1) pix1-PONI1) Cos[rot2] Sin[rot3]-L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+((0.5 +d2) pix2-PONI2) (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3])]^2))] Sign[((0.5 +d1) pix1-PONI1) Cos[rot2] Sin[rot3]-L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+((0.5 +d2) pix2-PONI2) (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3])]
+Area= Cross[(R.{p1+0.5,p2,-L}-R.{p1-0.5,p2,-L}),(R.{p1,p2+0.5,-L}-R.{p1,p2-0.5,-L})]
+{1. Cos[rot1] Cos[rot3] Sin[rot2]+1. Cos[rot2]^2 Sin[rot1] Sin[rot3]+1. Sin[rot1] Sin[rot2]^2 Sin[rot3],-1. Cos[rot2]^2 Cos[rot3] Sin[rot1]-1. Cos[rot3] Sin[rot1] Sin[rot2]^2+1. Cos[rot1] Sin[rot2] Sin[rot3],0. +1. Cos[rot1] Cos[rot2] Cos[rot3]^2+1. Cos[rot1] Cos[rot2] Sin[rot3]^2}
+diffSolidAngle = -Area.(R.P)/Norm[R.P]
+(-(-L Cos[rot1] Cos[rot2]+((0.5 +d2) pix2-PONI2) Cos[rot2] Sin[rot1]-((0.5 +d1) pix1-PONI1) Sin[rot2]) (0. +1. Cos[rot1] Cos[rot2] Cos[rot3]^2+1. Cos[rot1] Cos[rot2] Sin[rot3]^2)-(1. Cos[rot1] Cos[rot3] Sin[rot2]+1. Cos[rot2]^2 Sin[rot1] Sin[rot3]+1. Sin[rot1] Sin[rot2]^2 Sin[rot3]) (((0.5 +d1) pix1-PONI1) Cos[rot2] Cos[rot3]+((0.5 +d2) pix2-PONI2) (Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3])-L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3]))-(-1. Cos[rot2]^2 Cos[rot3] Sin[rot1]-1. Cos[rot3] Sin[rot1] Sin[rot2]^2+1. Cos[rot1] Sin[rot2] Sin[rot3]) (((0.5 +d1) pix1-PONI1) Cos[rot2] Sin[rot3]-L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+((0.5 +d2) pix2-PONI2) (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3])))/(√(Abs[-L Cos[rot1] Cos[rot2]+((0.5 +d2) pix2-PONI2) Cos[rot2] Sin[rot1]-((0.5 +d1) pix1-PONI1) Sin[rot2]]^2+Abs[((0.5 +d1) pix1-PONI1) Cos[rot2] Cos[rot3]+((0.5 +d2) pix2-PONI2) (Cos[rot3] Sin[rot1] Sin[rot2]-Cos[rot1] Sin[rot3])-L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3])]^2+Abs[((0.5 +d1) pix1-PONI1) Cos[rot2] Sin[rot3]-L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3])+((0.5 +d2) pix2-PONI2) (Cos[rot1] Cos[rot3]+Sin[rot1] Sin[rot2] Sin[rot3])]^2))
+PONI = R.{0,0,-L}
+{-L (Cos[rot1] Cos[rot3] Sin[rot2]+Sin[rot1] Sin[rot3]),-L (-Cos[rot3] Sin[rot1]+Cos[rot1] Sin[rot2] Sin[rot3]),-L Cos[rot1] Cos[rot2]}
+
+
+Area = Cross[(R.{pix1*(d1+1)-PONI1,pix2*(d2+0.5)-PONI2,-L}-R.{pix1*d1-PONI1,pix2*(d2+0.5)-PONI2,-L}),(R.{pix1*(d1+0.5)-PONI1,pix2*(d2+1)-PONI2,-L}-R.{pix1*(d1+0.5)-PONI1,pix2*d2-PONI2,-L})]
+
+{pix1 pix2 Cos[rot1] Cos[rot3] Sin[rot2]+pix1 pix2 Cos[rot2]^2 Sin[rot1] Sin[rot3]+pix1 pix2 Sin[rot1] Sin[rot2]^2 Sin[rot3],-pix1 pix2 Cos[rot2]^2 Cos[rot3] Sin[rot1]-pix1 pix2 Cos[rot3] Sin[rot1] Sin[rot2]^2+pix1 pix2 Cos[rot1] Sin[rot2] Sin[rot3],pix1 pix2 Cos[rot1] Cos[rot2] Cos[rot3]^2+pix1 pix2 Cos[rot1] Cos[rot2] Sin[rot3]^2}
