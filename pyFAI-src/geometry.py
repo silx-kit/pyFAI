@@ -33,8 +33,7 @@ __status__ = "beta"
 
 import os, threading, logging
 import numpy
-from numpy import sin, cos, arccos, sqrt, radians, degrees
-
+from numpy import   radians, degrees, arccos, arctan2, sin, cos, sqrt
 import detectors
 from utils import timeit
 logger = logging.getLogger("pyFAI.geometry")
@@ -78,14 +77,6 @@ class Geometry(object):
     PForm[R.x1] = [cos(rot2)*cos(rot3),cos(rot2)*sin(rot3),-sin(rot2)]
     PForm[R.x2] = [cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3),cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3), cos(rot2)*sin(rot1)]
     PForm[R.x3] = [cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3),-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3), cos(rot1)*cos(rot2)]
-    PForm[Det[R]] = pow(cos(rot1),2)*pow(cos(rot2),2)*pow(cos(rot3),2) +
-                    pow(cos(rot2),2)*pow(cos(rot3),2)*pow(sin(rot1),2) +
-                    pow(cos(rot1),2)*pow(cos(rot3),2)*pow(sin(rot2),2) +
-                    pow(cos(rot3),2)*pow(sin(rot1),2)*pow(sin(rot2),2) +
-                    pow(cos(rot1),2)*pow(cos(rot2),2)*pow(sin(rot3),2) +
-                    pow(cos(rot2),2)*pow(sin(rot1),2)*pow(sin(rot3),2) +
-                    pow(cos(rot1),2)*pow(sin(rot2),2)*pow(sin(rot3),2) +
-                    pow(sin(rot1),2)*pow(sin(rot2),2)*pow(sin(rot3),2) = 1.0 of course it is a rotation.
 
     * Coordinates of the Point of Normal Incidence:
      PONI = R.{0,0,L}
@@ -95,11 +86,10 @@ class Geometry(object):
 
     * Any pixel on detector plan at coordinate (d1, d2) in meters. Detector is at z=L
      P={d1,d2,L}
-     PForm[R.P]=[d1*cos(rot2)*cos(rot3) + d2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) +
-                L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3)),
-               d1*cos(rot2)*sin(rot3) + L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)) +
-                d2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3)),
-               L*cos(rot1)*cos(rot2) + d2*cos(rot2)*sin(rot1) - d1*sin(rot2)]
+     PForm[R.P] =  [t1, t2, t3] =
+                = [d1*cos(rot2)*cos(rot3) + d2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) + L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3)),
+                   d1*cos(rot2)*sin(rot3)  + d2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3)) + L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)),
+                   d2*cos(rot2)*sin(rot1) - d1*sin(rot2) + L*cos(rot1)*cos(rot2)]
 
     * Distance sample (origin) to detector point (d1,d2)
      FForm[Norm[R.P]] = sqrt(pow(Abs(L*cos(rot1)*cos(rot2) + d2*cos(rot2)*sin(rot1) - d1*sin(rot2)),2) +
@@ -117,16 +107,20 @@ class Geometry(object):
                           pow(Abs(d1*cos(rot2)*sin(rot3) + L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)) +
                          d2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3))),2)))
 
+    * tan(2theta) is defined as sqrt(t1**2 + t2**2) / t3
+     tth = ArcTan2 [sqrt(t1**2 + t2**2) , t3 ]
+
+    Getting 2theta from it's tangeant seems both more precise (around beam stop very far from sample) and faster by about 25%
+    Currently there is a swich in the method to follow one path or the other.
+
     * Tangeant of angle chi is defined as (R.P component along x1) over (R.P component along x2). Arctan2 should be used in actual calculation
      chi = ArcTan[((R.P).x1) / ((R.P).x2)]
      FForm[chi] = ArcTan2(d1*cos(rot2)*cos(rot3) + d2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) +
                             L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3)),
                           d1*cos(rot2)*sin(rot3) + L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)) +
                             d2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3)))
-
-
-
     """
+
     def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0, pixel1=1, pixel2=1, splineFile=None, detector=None):
         """
         @param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
@@ -178,7 +172,7 @@ class Geometry(object):
         return os.linesep.join(lstTxt)
 
 
-    def _calcCatesianPositions(self, d1, d2, poni1=None, poni2=None):
+    def _calcCartesianPositions(self, d1, d2, poni1=None, poni2=None):
         """
         Calculate the position in cartesian coordinate (centered on the PONI)
         and in meter of a couple of coordinates.
@@ -200,7 +194,8 @@ class Geometry(object):
         p1, p2 = self.detector.calc_catesian_positions(d1, d2)
         return p1 - poni1, p2 - poni2
 
-    def tth(self, d1, d2, param=None):
+
+    def tth(self, d1, d2, param=None, path="tan"):
         """
         Calculates the 2theta value for the center of a given pixel (or set of pixels)
         @param d1: position(s) in pixel in first dimension (c order)
@@ -210,30 +205,39 @@ class Geometry(object):
         @return 2theta in radians
         @rtype: floar or array of floats.
         """
-
         if param == None:
             param = self.param
+        L = param[0]
         cosRot1 = cos(param[3])
         cosRot2 = cos(param[4])
         cosRot3 = cos(param[5])
         sinRot1 = sin(param[3])
         sinRot2 = sin(param[4])
         sinRot3 = sin(param[5])
-        p1, p2 = self._calcCatesianPositions(d1, d2, param[1], param[2])
-
-        tmp = arccos((param[0] * cosRot1 * cosRot2 - p2 * cosRot2 * sinRot1 + p1 * sinRot2) / \
-                     (sqrt((-param[0] * cosRot1 * cosRot2 + p2 * cosRot2 * sinRot1 - p1 * sinRot2) ** 2 + \
-                            (p1 * cosRot2 * cosRot3 + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - param[0] * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)) ** 2 + \
-                             (p1 * cosRot2 * sinRot3 - param[0] * (-cosRot3 * sinRot1 + cosRot1 * sinRot2 * sinRot3) + p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3)) ** 2)))
+        p1, p2 = self._calcCartesianPositions(d1, d2, param[1], param[2])
+        if path == "cos":
+            tmp = arccos((p1 * sinRot2 - p2 * cosRot2 * sinRot1 + L * cosRot1 * cosRot2) / \
+                         (sqrt((p2 * cosRot2 * sinRot1 - p1 * sinRot2 - L * cosRot1 * cosRot2) ** 2 + \
+                                (p1 * cosRot2 * cosRot3 + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)) ** 2 + \
+                                 (p1 * cosRot2 * sinRot3 - L * (-cosRot3 * sinRot1 + cosRot1 * sinRot2 * sinRot3) + p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3)) ** 2)))
+        else:
+            t1 = p1 * cosRot2 * cosRot3 + \
+                 p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) + \
+                 L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
+            t2 = p1 * cosRot2 * sinRot3 + \
+                 p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) + \
+                 L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
+            t3 = p2 * cosRot2 * sinRot1 - p1 * sinRot2 + L * cosRot1 * cosRot2
+            tmp = arctan2(sqrt(t1 ** 2 + t2 ** 2), t3)
         return tmp
 
 
     def qFunction(self, d1, d2, param=None):
         """
         Calculates the q value for the center of a given pixel (or set of pixels) in nm-1
-        
+
         q = 4pi/lambda sin( theta )
-        
+
         @param d1: position(s) in pixel in first dimension (c order)
         @type d1: scalar or array of scalar
         @param d2: position(s) in pixel in second dimension (c order)
@@ -241,22 +245,8 @@ class Geometry(object):
         @return q in in nm^(-1)
         @rtype: float or array of floats.
         """
-
-#        if param == None:
-#            param = self.param
-#        cosRot1 = cos(param[3])
-#        cosRot2 = cos(param[4])
-#        cosRot3 = cos(param[5])
-#        sinRot1 = sin(param[3])
-#        sinRot2 = sin(param[4])
-#        sinRot3 = sin(param[5])
-#        p1, p2 = self._calcCatesianPositions(d1, d2, param[1], param[2])
-#        tmp = ((param[0] * cosRot1 * cosRot2 - p2 * cosRot2 * sinRot1 + p1 * sinRot2) / \
-#                     (sqrt((-param[0] * cosRot1 * cosRot2 + p2 * cosRot2 * sinRot1 - p1 * sinRot2) ** 2 + \
-#                            (p1 * cosRot2 * cosRot3 + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - param[0] * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)) ** 2 + \
-#                             (p1 * cosRot2 * sinRot3 - param[0] * (-cosRot3 * sinRot1 + cosRot1 * sinRot2 * sinRot3) + p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3)) ** 2)))
-#        return  2.0e-9 * numpy.pi * sqrt(1.0 - tmp ** 2) / self.wavelength
         return   4e-9 * numpy.pi / self.wavelength * numpy.sin(self.tth(d1=d1, d2=d2, param=param))
+
 
     def qArray(self, shape):
         """
@@ -267,6 +257,7 @@ class Geometry(object):
                 if self._qa is None:
                     self._qa = numpy.fromfunction(self.qFunction, shape, dtype="float32")
         return self._qa
+
 
     def qCornerFunct(self, d1, d2):
         """
@@ -321,11 +312,12 @@ class Geometry(object):
         sinRot2 = sin(self._rot2)
         sinRot3 = sin(self._rot3)
         L = self._dist
-        p1, p2 = self._calcCatesianPositions(d1, d2, self.poni1, self.poni2)
+        p1, p2 = self._calcCartesianPositions(d1, d2, self.poni1, self.poni2)
         num = p1 * cosRot2 * cosRot3 + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
         den = p1 * cosRot2 * sinRot3 - L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3) + p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3)
         return numpy.arctan2(num, den)
 #        return numpy.arctan2(-den, num)
+
 
     def chi_corner(self, d1, d2):
         """
@@ -343,6 +335,7 @@ class Geometry(object):
         @return: chi, the azimuthal angle in rad
         """
         return self.chi(d1 - 0.5, d2 - 0.5)
+
 
     def chiArray(self, shape):
         """
@@ -410,7 +403,6 @@ class Geometry(object):
 #                    self._corner4Dqa[:, :, 4, 0] = q_center
 #                    self._corner4Dqa[:, :, 4, 1] = chi_center
         return self._corner4Dqa
-
 
 
     def delta2Theta(self, shape):
@@ -503,6 +495,7 @@ class Geometry(object):
             self._dssa = numpy.fromfunction(self.diffSolidAngle, shape, dtype="float32")
         return self._dssa
 
+
     def save(self, filename):
         """
         Save the refined parameters.
@@ -526,6 +519,7 @@ class Geometry(object):
         except IOError:
             logger.error("IOError while writing to file %s" % filename)
     write = save
+
 
     @classmethod
     def sload(cls, filename):
@@ -580,6 +574,7 @@ class Geometry(object):
         self.reset()
     read = load
 
+
     def getPyFAI(self):
         """
         return the parameter set from the PyFAI geometry as a dictionary
@@ -592,6 +587,7 @@ class Geometry(object):
         out["rot2"] = self._rot2,
         out["rot3"] = self._rot3
         return out
+
 
     def setPyFAI(self, **kwargs):
         """
@@ -637,6 +633,7 @@ class Geometry(object):
         out["TiltPlanRot"] = tpr
         return out
 
+
     def setFit2D(self, direct, centerX, centerY, tilt=0., tiltPlanRotation=0., pixelX=None, pixelY=None, splineFile=None):
         """
         Set the Fit2D-like parameter set: For geometry description see  HPR 1996 (14) pp-240
@@ -680,6 +677,7 @@ class Geometry(object):
         self._rot3 = rot3
         self.reset()
 
+
     def setChiDiscAtZero(self):
         """
         Set the position of the discontinuity of the chi axis between 0 and 2pi.
@@ -701,6 +699,7 @@ class Geometry(object):
         self._chia = None
         self._corner4Da = None
         self._corner4Dqa = None
+
 
     def setOversampling(self, iOversampling):
         """
@@ -728,6 +727,7 @@ class Geometry(object):
             for j in range(self._oversampling):
                 new[i::self._oversampling, j::self._oversampling] = myarray
         return new
+
 
     def reset(self):
         """
