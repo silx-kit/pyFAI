@@ -9,7 +9,7 @@
 \newcounter{mathematicapage}
 \begin{document}
 
-Axis 1 is along first dimension of detector (when not tilted), this is the slow dimension of the image array in C or Y
+Axis 1 is allong first dimension of detector (when not tilted), this is the slow dimension of the image array in C or Y
 
 \begin{doublespace}
 \noindent\(\pmb{\text{x1}=\{1,0,0\}}\)
@@ -19,7 +19,7 @@ Axis 1 is along first dimension of detector (when not tilted), this is the slow 
 \noindent\(\{1,0,0\}\)
 \end{doublespace}
 
- Axis 2 is along second dimension of detector (when not tilted), this is the fast dimension of the image in C or X
+ Axis 2 is allong second dimension of detector (when not tilted), this is the fast dimension of the image in C or X
 
 \begin{doublespace}
 \noindent\(\pmb{\text{x2}=\{0,1,0\}}\)
@@ -41,6 +41,14 @@ Axis 3 is along the incident X-Ray beam
 
 \begin{doublespace}
 \noindent\(\pmb{\text{id3}=\{\text{x1},\text{x2},\text{x3}\}}\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\{\{1,0,0\},\{0,1,0\},\{0,0,1\}\}\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\pmb{\{\{1,0,0\},\{0,1,0\},\{0,0,1\}\}}\)
 \end{doublespace}
 
 \begin{doublespace}
@@ -98,8 +106,7 @@ Rotations of the detector are applied first Rot around axis 1, then axis 2 and f
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\text{List(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3),Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3),
-   Cos(rot2)*Sin(rot1))}\)
+\noindent\(\text{List(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3),Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3),Cos(rot2)*Sin(rot1))}\)
 \end{doublespace}
 
 \begin{doublespace}
@@ -107,8 +114,7 @@ Rotations of the detector are applied first Rot around axis 1, then axis 2 and f
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\text{List(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3),-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3),
-   Cos(rot1)*Cos(rot2))}\)
+\noindent\(\text{List(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3),-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3),Cos(rot1)*Cos(rot2))}\)
 \end{doublespace}
 
 \begin{doublespace}
@@ -116,17 +122,18 @@ Rotations of the detector are applied first Rot around axis 1, then axis 2 and f
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\text{Power(Cos(rot1),2)*Power(Cos(rot2),2)*Power(Cos(rot3),2) +
-   Power(Cos(rot2),2)*Power(Cos(rot3),2)*Power(Sin(rot1),2) +
-   Power(Cos(rot1),2)*Power(Cos(rot3),2)*Power(Sin(rot2),2) +
-   Power(Cos(rot3),2)*Power(Sin(rot1),2)*Power(Sin(rot2),2) +
-   Power(Cos(rot1),2)*Power(Cos(rot2),2)*Power(Sin(rot3),2) +
-   Power(Cos(rot2),2)*Power(Sin(rot1),2)*Power(Sin(rot3),2) +
-   Power(Cos(rot1),2)*Power(Sin(rot2),2)*Power(Sin(rot3),2) +
-   Power(Sin(rot1),2)*Power(Sin(rot2),2)*Power(Sin(rot3),2)}\)
+\noindent\(\text{Power(Cos(rot1),2)*Power(Cos(rot2),2)*Power(Cos(rot3),2) + Power(Cos(rot2),2)*Power(Cos(rot3),2)*Power(Sin(rot1),2) + Power(Cos(rot1),2)*Power(Cos(rot3),2)*Power(Sin(rot2),2)
++ 
+   Power(Cos(rot3),2)*Power(Sin(rot1),2)*Power(Sin(rot2),2) + Power(Cos(rot1),2)*Power(Cos(rot2),2)*Power(Sin(rot3),2) + Power(Cos(rot2),2)*Power(Sin(rot1),2)*Power(Sin(rot3),2)
++ 
+   Power(Cos(rot1),2)*Power(Sin(rot2),2)*Power(Sin(rot3),2) + Power(Sin(rot1),2)*Power(Sin(rot2),2)*Power(Sin(rot3),2)}\)
 \end{doublespace}
 
 Any pixel on detector plan at coordianate (d1, d2) in meters. Detector is at z=L
+
+\begin{doublespace}
+\noindent\(\pmb{\text{}}\)
+\end{doublespace}
 
 \begin{doublespace}
 \noindent\(\pmb{P=\{\text{d1},\text{d2},L\}}\\
@@ -138,34 +145,84 @@ Any pixel on detector plan at coordianate (d1, d2) in meters. Detector is at z=L
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\text{List(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) +
-    L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
-   d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) +
-    d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),
-   L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2))}\)
+\noindent\(\text{List(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
+   d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),L*Cos(rot1)*Cos(rot2)
++ d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2))}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\pmb{\text{Distance} \text{sample} \text{to} \text{detector} \text{point} (\text{d1},\text{d2})}\)
+\noindent\(\pmb{\text{t1} = R.P.\text{x1}}\\
+\pmb{\text{CForm}[\text{t1}]}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\pmb{\text{CForm}[\text{Norm}[R.P]]}\)
+\noindent\(\text{d1} \text{Cos}[\text{rot2}] \text{Cos}[\text{rot3}]+\text{d2} (\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}]-\text{Cos}[\text{rot1}]
+\text{Sin}[\text{rot3}])+L (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}] \text{Sin}[\text{rot2}]+\text{Sin}[\text{rot1}] \text{Sin}[\text{rot3}])\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\text{Sqrt(Power(Abs(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2)),2) +
-    Power(Abs(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) +
-       L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))),2) +
-    Power(Abs(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) +
-       d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3))),2))}\)
+\noindent\(\text{d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))}\)
 \end{doublespace}
 
-cos(2theta) is defined as (R.P component along x3) over the distance $|$R.P$|$
+\begin{doublespace}
+\noindent\(\pmb{\text{t2} = R.P.\text{x2}}\\
+\pmb{\text{CForm}[\text{t2}]}\)
+\end{doublespace}
 
 \begin{doublespace}
-\noindent\(\pmb{\text{tth} = \text{ArcCos} [-(R.P).\text{x3}/\text{Norm}[R.P]]}\\
-\pmb{\text{CForm}[\text{tth}]}\)
+\noindent\(\text{d1} \text{Cos}[\text{rot2}] \text{Sin}[\text{rot3}]+L (-\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}]+\text{Cos}[\text{rot1}]
+\text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}])+\text{d2} (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}]+\text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}]
+\text{Sin}[\text{rot3}])\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\text{d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3))}\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\pmb{\text{t3}=R.P.\text{x3}}\\
+\pmb{\text{CForm}[\text{t3}]}\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(L \text{Cos}[\text{rot1}] \text{Cos}[\text{rot2}]+\text{d2} \text{Cos}[\text{rot2}] \text{Sin}[\text{rot1}]-\text{d1} \text{Sin}[\text{rot2}]\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\text{L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2)}\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\pmb{}\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\pmb{\text{dist} = \text{Norm}[R.P]}\\
+\pmb{\text{CForm}[\text{dist}]}\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\surd \left(\text{Abs}[L \text{Cos}[\text{rot1}] \text{Cos}[\text{rot2}]+\text{d2} \text{Cos}[\text{rot2}] \text{Sin}[\text{rot1}]-\text{d1}
+\text{Sin}[\text{rot2}]]^2+\text{Abs}[\text{d1} \text{Cos}[\text{rot2}] \text{Cos}[\text{rot3}]+\text{d2} (\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}]
+\text{Sin}[\text{rot2}]-\text{Cos}[\text{rot1}] \text{Sin}[\text{rot3}])+L (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}] \text{Sin}[\text{rot2}]+\text{Sin}[\text{rot1}]
+\text{Sin}[\text{rot3}])]^2+\text{Abs}[\text{d1} \text{Cos}[\text{rot2}] \text{Sin}[\text{rot3}]+L (-\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}]+\text{Cos}[\text{rot1}]
+\text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}])+\text{d2} (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}]+\text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}]
+\text{Sin}[\text{rot3}])]^2\right)\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\text{Sqrt(Power(Abs(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2)),2) + Power(Abs(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2)
+- Cos(rot1)*Sin(rot3)) + 
+       L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))),2) + Power(Abs(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3))
++ d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3))),
+     2))}\)
+\end{doublespace}
+
+cos(2theta) can be defined as (R.P component along x3) over the distance $|$R.P$|$
+
+\begin{doublespace}
+\noindent\(\pmb{\text{tthc} = \text{ArcCos} [-(R.P).\text{x3}/\text{Norm}[R.P]]}\\
+\pmb{\text{CForm}[\text{tthc}]}\)
 \end{doublespace}
 
 \begin{doublespace}
@@ -180,21 +237,42 @@ cos(2theta) is defined as (R.P component along x3) over the distance $|$R.P$|$
 
 \begin{doublespace}
 \noindent\(\text{ArcCos((-(L*Cos(rot1)*Cos(rot2)) - d2*Cos(rot2)*Sin(rot1) + d1*Sin(rot2))/
-    Sqrt(Power(Abs(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2)),2) +
-      Power(Abs(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) +
-         L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))),2) +
-      Power(Abs(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) +
+    Sqrt(Power(Abs(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2)),2) + Power(Abs(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2)
+- Cos(rot1)*Sin(rot3)) + 
+         L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))),2) + Power(Abs(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3))
++ 
          d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3))),2)))}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\pmb{\text{Tangeant} \text{of} \text{angle} \text{chi} \text{is} \text{defined} \text{as} (R.P \text{component} \text{along} \text{x1})
-\text{over} (R.P \text{component} \text{along} \text{x2}). \text{Arctan2} \text{should} \text{be} }\\
-\pmb{\text{used} \text{in} \text{actual} \text{calculation}}\)
+\noindent\(\pmb{}\\
+\pmb{}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\pmb{\text{chi} =\text{ArcTan}[((R.P).\text{x1})\text{  }, ((R.P).\text{x2})]}\\
+\noindent\(\pmb{\text{ttht} = \text{ArcTan}[\text{t3},\text{Sqrt}[\text{t1}{}^{\wedge}2 + \text{t2}{}^{\wedge}2]]}\\
+\pmb{\text{}}\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\text{ArcTan}\left[L \text{Cos}[\text{rot1}] \text{Cos}[\text{rot2}]+\text{d2} \text{Cos}[\text{rot2}] \text{Sin}[\text{rot1}]-\text{d1}
+\text{Sin}[\text{rot2}],\surd \left((\text{d1} \text{Cos}[\text{rot2}] \text{Cos}[\text{rot3}]+\text{d2} (\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}]
+\text{Sin}[\text{rot2}]-\text{Cos}[\text{rot1}] \text{Sin}[\text{rot3}])+L (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}] \text{Sin}[\text{rot2}]+\text{Sin}[\text{rot1}]
+\text{Sin}[\text{rot3}]))^2+(\text{d1} \text{Cos}[\text{rot2}] \text{Sin}[\text{rot3}]+L (-\text{Cos}[\text{rot3}] \text{Sin}[\text{rot1}]+\text{Cos}[\text{rot1}]
+\text{Sin}[\text{rot2}] \text{Sin}[\text{rot3}])+\text{d2} (\text{Cos}[\text{rot1}] \text{Cos}[\text{rot3}]+\text{Sin}[\text{rot1}] \text{Sin}[\text{rot2}]
+\text{Sin}[\text{rot3}]))^2\right)\right]\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\text{ArcTan(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2)
+- Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
+      2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))}\)
+\end{doublespace}
+
+Tangeant of angle chi is defined as (R.P component along x1) over (R.P component along x2). Arctan2 should be used in actual calculation
+
+\begin{doublespace}
+\noindent\(\pmb{\text{chi} =\text{ArcTan}[\text{t1}\text{  }, \text{t2}]}\\
 \pmb{\text{CForm}[\text{chi}]}\)
 \end{doublespace}
 
@@ -206,14 +284,14 @@ cos(2theta) is defined as (R.P component along x3) over the distance $|$R.P$|$
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\text{ArcTan(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) +
-    L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
-   d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) +
-    d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)))}\)
+\noindent\(\text{ArcTan(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
+   d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)))}\)
 \end{doublespace}
 
+Coodinates of the Point of Normal Incidence
+
 \begin{doublespace}
-\noindent\(\pmb{\text{Coodinates} \text{of} \text{the} \text{Point} \text{of} \text{Normal} \text{Incidence}}\)
+\noindent\(\pmb{\text{}}\)
 \end{doublespace}
 
 \begin{doublespace}
@@ -227,12 +305,159 @@ cos(2theta) is defined as (R.P component along x3) over the distance $|$R.P$|$
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\text{List(L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
-   L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)),L*Cos(rot1)*Cos(rot2))}\)
+\noindent\(\text{List(L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)),L*Cos(rot1)*Cos(rot2))}\)
 \end{doublespace}
 
 \begin{doublespace}
-\noindent\(\pmb{\text{}}\)
+\noindent\(\pmb{}\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\pmb{\text{CForm}[D[\text{ttht},\text{d1}]]}\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\text{((L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2))*(2*Cos(rot2)*Cos(rot3)*(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2)
+- Cos(rot1)*Sin(rot3)) + 
+           L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))) + 2*Cos(rot2)*Sin(rot3)*
+         (d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)))))/
+    (2.*Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2)
++ 
+        Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2))*
+      (Power(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),2) + Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2)
+- Cos(rot1)*Sin(rot3)) + 
+          L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3))
++ d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))
+     + (Sin(rot2)*Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2)
++ Sin(rot1)*Sin(rot3)),2) + 
+        Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))/
+    (Power(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),2) + Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) -
+Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
+       2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2))}\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\pmb{\text{CForm}[D[\text{ttht},\text{d2}]]}\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\text{((L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2))*(2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3))*
+         (d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)))
++ 
+        2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3))*(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3))
++ d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)))))/
+    (2.*Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2)
++ 
+        Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2))*
+      (Power(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),2) + Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2)
+- Cos(rot1)*Sin(rot3)) + 
+          L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3))
++ d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))
+     - (Cos(rot2)*Sin(rot1)*Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2)
++ Sin(rot1)*Sin(rot3)),2) + 
+        Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))/
+    (Power(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),2) + Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) -
+Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
+       2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2))}\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\pmb{\text{CForm}[D[\text{ttht},L]]}\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\text{((L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2))*(2*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3))*
+         (d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)))
++ 
+        2*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3))*(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3))
++ d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)))))/
+    (2.*Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2)
++ 
+        Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2))*
+      (Power(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),2) + Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2)
+- Cos(rot1)*Sin(rot3)) + 
+          L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3))
++ d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))
+     - (Cos(rot1)*Cos(rot2)*Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2)
++ Sin(rot1)*Sin(rot3)),2) + 
+        Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))/
+    (Power(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),2) + Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) -
+Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
+       2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2))}\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\pmb{\text{CForm}[D[\text{ttht},\text{rot1}]]}\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\text{((L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2))*(2*(L*(-(Cos(rot3)*Sin(rot1)*Sin(rot2)) + Cos(rot1)*Sin(rot3))
++ d2*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)))*
+         (d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)))
++ 
+        2*(d2*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + L*(-(Cos(rot1)*Cos(rot3)) - Sin(rot1)*Sin(rot2)*Sin(rot3)))*
+         (d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)))))/
+    (2.*Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2)
++ 
+        Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2))*
+      (Power(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),2) + Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2)
+- Cos(rot1)*Sin(rot3)) + 
+          L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3))
++ d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))
+     - ((d2*Cos(rot1)*Cos(rot2) - L*Cos(rot2)*Sin(rot1))*Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3))
++ L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) + 
+        Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))/
+    (Power(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),2) + Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) -
+Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),
+       2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2))}\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\pmb{\text{CForm}[D[\text{ttht},\text{rot2}]]}\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\text{((L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2))*(2*(L*Cos(rot1)*Cos(rot2)*Cos(rot3) + d2*Cos(rot2)*Cos(rot3)*Sin(rot1)
+- d1*Cos(rot3)*Sin(rot2))*
+         (d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)))
++ 
+        2*(L*Cos(rot1)*Cos(rot2)*Sin(rot3) + d2*Cos(rot2)*Sin(rot1)*Sin(rot3) - d1*Sin(rot2)*Sin(rot3))*
+         (d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)))))/
+    (2.*Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2)
++ 
+        Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2))*
+      (Power(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),2) + Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2)
+- Cos(rot1)*Sin(rot3)) + 
+          L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3))
++ d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))
+     - ((-(d1*Cos(rot2)) - L*Cos(rot1)*Sin(rot2) - d2*Sin(rot1)*Sin(rot2))*Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2)
+- Cos(rot1)*Sin(rot3)) + 
+          L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3))
++ d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))
+     /(Power(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),2) + Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2)
+- Cos(rot1)*Sin(rot3)) + 
+        L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3))
++ d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2))}\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\pmb{\text{CForm}[D[\text{ttht},\text{rot3}]]}\)
+\end{doublespace}
+
+\begin{doublespace}
+\noindent\(\text{((L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2))*(2*(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2)
+- Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)))*
+        (-(d1*Cos(rot2)*Sin(rot3)) + L*(Cos(rot3)*Sin(rot1) - Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(-(Cos(rot1)*Cos(rot3)) - Sin(rot1)*Sin(rot2)*Sin(rot3)))
++ 
+       2*(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)))*
+        (d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)))))/
+   (2.*Sqrt(Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) - Cos(rot1)*Sin(rot3)) + L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2)
++ 
+       Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3)) + d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2))*
+     (Power(L*Cos(rot1)*Cos(rot2) + d2*Cos(rot2)*Sin(rot1) - d1*Sin(rot2),2) + Power(d1*Cos(rot2)*Cos(rot3) + d2*(Cos(rot3)*Sin(rot1)*Sin(rot2) -
+Cos(rot1)*Sin(rot3)) + 
+         L*(Cos(rot1)*Cos(rot3)*Sin(rot2) + Sin(rot1)*Sin(rot3)),2) + Power(d1*Cos(rot2)*Sin(rot3) + L*(-(Cos(rot3)*Sin(rot1)) + Cos(rot1)*Sin(rot2)*Sin(rot3))
++ d2*(Cos(rot1)*Cos(rot3) + Sin(rot1)*Sin(rot2)*Sin(rot3)),2)))}\)
 \end{doublespace}
 
 \end{document}
