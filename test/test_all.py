@@ -66,6 +66,7 @@ from testGeometryRefinement   import test_suite_all_GeometryRefinement
 from testAzimuthalIntegrator  import test_suite_all_AzimuthalIntegration
 from testHistogram            import test_suite_all_Histogram
 from testPeakPicking          import test_suite_all_PeakPicking
+from testGeometry             import  test_suite_all_Geometry
 
 def test_suite_all():
     testSuite = unittest.TestSuite()
@@ -73,6 +74,7 @@ def test_suite_all():
     testSuite.addTest(test_suite_all_GeometryRefinement())
     testSuite.addTest(test_suite_all_AzimuthalIntegration())
     testSuite.addTest(test_suite_all_PeakPicking())
+
     return testSuite
 
 if __name__ == '__main__':

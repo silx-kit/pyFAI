@@ -54,7 +54,7 @@ except:
 
 from utilstest import UtilsTest
 from pyFAI.geometryRefinement import GeometryRefinement
-
+from pyFAI.geometry import Geometry
 class test_geometryRefinement(unittest.TestCase):
     """ tests geometric refinements with or without spline"""
 
@@ -115,11 +115,15 @@ class test_geometryRefinement(unittest.TestCase):
 [2598.0000021676074, 386.99999979901884, 0.94195419730133967],
 [2959.9998766657627, 410.00000323183838, 0.94195419730133967],
 ]
-        r = GeometryRefinement(data, dist=0.1, poni1=0.00, poni2=0.00, pixel1=pixelSize[0], pixel2=pixelSize[1])
+        r = GeometryRefinement(data, pixel1=pixelSize[0], pixel2=pixelSize[1])
         r.refine2(10000000)
 
         ref = numpy.array([0.089652, 0.030970, 0.027668, -0.699407 , 0.010067  , 0.000001])
-        assert abs(numpy.array(r.param) - ref).max() < 1e-3
+#        print "Réference:"
+#        print Geometry(*ref, pixel1=15e-6, pixel2=15e-6)
+#        print "Obtained:"
+#        print r
+        self.assertAlmostEqual(abs(numpy.array(r.param) - ref).max(), 0.0, 3, "ref=%s obt=%s delta=%s" % (list(ref), r.param, abs(numpy.array(r.param) - ref)))
 
 
     def test_Spline(self):

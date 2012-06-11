@@ -215,19 +215,12 @@ class Geometry(object):
         sinRot2 = sin(param[4])
         sinRot3 = sin(param[5])
         p1, p2 = self._calcCartesianPositions(d1, d2, param[1], param[2])
+        t1 = p1 * cosRot2 * cosRot3 + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
+        t2 = p1 * cosRot2 * sinRot3 + p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
+        t3 = (p1 * sinRot2 - p2 * cosRot2 * sinRot1 + L * cosRot1 * cosRot2)
         if path == "cos":
-            tmp = arccos((p1 * sinRot2 - p2 * cosRot2 * sinRot1 + L * cosRot1 * cosRot2) / \
-                         (sqrt((p2 * cosRot2 * sinRot1 - p1 * sinRot2 - L * cosRot1 * cosRot2) ** 2 + \
-                                (p1 * cosRot2 * cosRot3 + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)) ** 2 + \
-                                 (p1 * cosRot2 * sinRot3 - L * (-cosRot3 * sinRot1 + cosRot1 * sinRot2 * sinRot3) + p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3)) ** 2)))
+            tmp = arccos(t3 / sqrt(t1 ** 2 + t2 ** 2 + t3 ** 2))
         else:
-            t1 = p1 * cosRot2 * cosRot3 + \
-                 p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) + \
-                 L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
-            t2 = p1 * cosRot2 * sinRot3 + \
-                 p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) + \
-                 L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
-            t3 = p2 * cosRot2 * sinRot1 - p1 * sinRot2 + L * cosRot1 * cosRot2
             tmp = arctan2(sqrt(t1 ** 2 + t2 ** 2), t3)
         return tmp
 

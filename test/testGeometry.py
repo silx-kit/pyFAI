@@ -6,7 +6,7 @@ FIXME : make some tests that the functions do what is expected
 """
 
 
-import unittest, numpy
+import unittest, numpy, os
 from pyFAI import geometry as geometry
 
 
@@ -35,49 +35,42 @@ class ParameterisedTestCase(unittest.TestCase):
 class TestGeometry(ParameterisedTestCase):
 
     def testGeometryFunctions(self):
-        oldfunc, newfunc, args, kwds, expectedFail = self.param
-        g = geometry.Geometry( **kwds )
-        oldret = getattr(g, oldfunc)(*args)
-        newret = getattr(g, newfunc)(*args)
-        nerr = numpy.testing.utils.nulp_diff( oldret, newret )
+        func, statargs, varargs, kwds, expectedFail = self.param
+        g = geometry.Geometry(**kwds)
+        oldret = getattr(g, func)(*statargs, path=varargs[0])
+        newret = getattr(g, func)(*statargs, path=varargs[1])
+        maxDelta = abs(oldret - newret).max()
+        msg = "geo=%s%s max delta=%.3f" % (g, os.linesep, maxDelta)
         if expectedFail:
-            self.assertTrue( nerr > 20 , str(self.param)+" "+str(nerr))
+            self.assertNotAlmostEquals(maxDelta, 0, 3, msg)
         else:
-            self.assertFalse( nerr > 20 , str(self.param)+" "+str(nerr))
+            self.assertAlmostEquals(maxDelta, 0, 3, msg)
+        print msg
 
 TESTCASES = [
- ( "tth", "oldtth", (1,1), {'rot1':-1, 'rot2':1, 'rot3':1},False),
- ( "tth", "oldtth", (10,1), {'rot1':-.2, 'rot2':1, 'rot3':-.1},False),
- ( "tth", "oldtth", (1,10), {'rot1':-1, 'rot2':-.2, 'rot3':1},False),
- ( "tth", "oldtth", (10,10), {'rot1':1, 'rot2':5, 'rot3':.4},False),
- ( "tth", "oldtth", (2,10), {'rot1':-1.2, 'rot2':1, 'rot3':1},False),
- ( "tth", "oldtth", (1,1), {'dist':1e10, 'rot1':-1, 'rot2':1, 'rot3':1},False),
- ( "chi", "oldchi", (5,6) ,{},False),
- ( "chi", "oldchi", (-5,6) ,{},False),
- ( "chi", "oldchi", (-5,-6) ,{},False),
- ( "chi", "oldchi", (5,-6) ,{},False),
- ( "chi", "oldchi", (1,10), {'rot1':1},False),
- ( "chi", "oldchi", (2,1) , {'dist':2, 'rot2':1},False),
- ( "chi", "oldchi", (2,1) , {'rot2':-1},False),
- ( "chi", "oldchi", (2,1) , {'rot2':10},False),
- ( "chi", "oldchi", (-1,1), {'rot3':1},False),
- ( "chi", "oldchi", (-2,-3), {'rot1':1, 'rot2':2},False),
- ( "chi", "oldchi", (1,-1), {'rot1':0.5, 'rot2':1, 'rot3':5.9},False),
+ ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'dist':1, 'rot1':0, 'rot2':0, 'rot3':0}, False),
+ ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'rot1':-1, 'rot2':1, 'rot3':1}, False),
+ ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'rot1':-.2, 'rot2':1, 'rot3':-.1}, False),
+ ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'rot1':-1, 'rot2':-.2, 'rot3':1}, False),
+ ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'rot1':1, 'rot2':5, 'rot3':.4}, False),
+ ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'rot1':-1.2, 'rot2':1, 'rot3':1}, False),
+ ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'dist':1e10, 'rot1':-2, 'rot2':2, 'rot3':1}, False),
+ ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'dist':1, 'rot1':3, 'rot2':0, 'rot3':0}, False),
+ ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'rot1':-1, 'rot2':1, 'rot3':3}, False),
+ ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'rot1':-.2, 'rot2':1, 'rot3':-.1}, False),
+ ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'rot1':-3, 'rot2':-.2, 'rot3':1}, False),
+ ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'rot1':1, 'rot2':5, 'rot3':.4}, False),
+ ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'rot1':-1.2, 'rot2':1.6, 'rot3':1}, False),
+ ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'dist':1e10, 'rot1':0, 'rot2':0, 'rot3':0}, False),
  ]
-#trial( "qFunction", "rqFunction", (1,1), wavelength=1.0e-10 , dist=1e10)
-
-# u-saxs, detector is far back. Issue with acos(1)
-#trial( "tth", "newtth", (1,1), dist=1e9, True)
-
-
 
 
 def test_suite_all_Geometry():
     testSuite = unittest.TestSuite()
-    i=0
+    i = 0
     for param in TESTCASES:
-        testSuite.addTest( ParameterisedTestCase.parameterise( 
-                TestGeometry, param) )
+        testSuite.addTest(ParameterisedTestCase.parameterise(
+                TestGeometry, param))
     return testSuite
 
 
