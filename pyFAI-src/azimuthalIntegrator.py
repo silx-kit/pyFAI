@@ -253,26 +253,28 @@ class AzimuthalIntegrator(Geometry):
             dchi = None
         tth = self.twoThetaArray(data.shape)
         dtth = self.delta2Theta(data.shape)
-        mask = self.makeMask(data, mask, dummy, delta_dummy)
-        if dummy is None:
-            dummy = 0.0
+#        mask = self.makeMask(data, mask, dummy, delta_dummy)
+#        if dummy is None:
+#            dummy = -1
         if tthRange is not None:
             tthRange = tuple([numpy.deg2rad(i) for i in tthRange[:2]])
         if chiRange is not None:
             chiRange = tuple([numpy.deg2rad(i) for i in chiRange[:2]])
         if correctSolidAngle: #outPos, outMerge, outData, outCount
-            data = (data / self.solidAngleArray(data.shape))[mask]
+            data = (data / self.solidAngleArray(data.shape))
         else:
-            data = data[mask]
+            data = data
         tthAxis, I, a, b = splitBBox.histoBBox1d(weights=data,
-                                                 pos0=tth[mask],
-                                                 delta_pos0=dtth[mask],
+                                                 pos0=tth,
+                                                 delta_pos0=dtth,
                                                  pos1=chi,
                                                  delta_pos1=dchi,
                                                  bins=nbPt,
                                                  pos0Range=tthRange,
                                                  pos1Range=chiRange,
-                                                 dummy=dummy)
+                                                 dummy=dummy,
+                                                 delta_dummy=delta_dummy,
+                                                 mask=mask)
         tthAxis = numpy.degrees(tthAxis)
         if filename:
             open(filename, "w").writelines(["%s\t%s%s" % (t, i, os.linesep) for t, i in zip(tthAxis, I)])
@@ -383,7 +385,7 @@ class AzimuthalIntegrator(Geometry):
         dtth = self.delta2Theta(data.shape)
         mask = self.makeMask(data, mask, dummy, delta_dummy)
         if dummy is None:
-            dummy = 0.0
+            dummy = -1
         if tthRange is not None:
             tthRange = tuple([numpy.deg2rad(i) for i in tthRange[:2]])
 #        if chiRange is not None:
