@@ -45,14 +45,20 @@ cdef class Integrator1d:
     """
     cdef ocl_xrpd1d.ocl_xrpd1D_fullsplit* cpp_integrator
     cdef char* _devicetype
-    cdef int _nBins,_nData,_platformid,_devid
+    cdef int _nBins, _nData, _platformid, _devid, _tth_id, _dtth_id, _mask_id, _solid_angle_id 
     cdef cpp_bool _useFp64
     cdef float tth_min, tth_max
+#    cdef numpy.ndarray[numpy.float32_t, ndim = 1] _tth, _dtth, _mask, _solid_angle
+    
     
     def __cinit__(self, filename=None):
         self._nBins = -1
         self._nData = -1
         self._useFp64 = False
+        self._tth_id = 0
+        self._dtth_id = 0
+        self._mask_id = 0
+        self._solid_angle_id = 0
         self._devicetype = "gpu"
         if filename is None:
             self.cpp_integrator = new ocl_xrpd1d.ocl_xrpd1D_fullsplit()
@@ -78,7 +84,7 @@ cdef class Integrator1d:
             rc = self.cpp_integrator.getConfiguration(<int> 1024, <int> Nimage, <int> Nbins, <cpp_bool> self._useFp64)
         return rc
 
-    def configure(self, kernel="ocl_azim_kernel_2.cl"):
+    def configure(self, kernel=None):
         """configure is possibly the most crucial method of the class.
         It is responsible of allocating the required memory and compile the OpenCL kernels
         based on the configuration of the integration.
@@ -88,11 +94,22 @@ cdef class Integrator1d:
         
         @param kernel: name or path to the file containing the kernel
         """
-        kernel = str(kernel)
+#        TODO
+        kernel_name = "ocl_azim_kernel_2.cl"
+        if kernel is None:
+            if os.path.isfile(kernel_name):
+                kernel = kernel_name
+            else:
+                kernel = os.path.join(os.path.dirname(os.path.abspath(__file__)),kernel_name)
+        else:
+            kernel = str(kernel)
+#        print kernel
+        #if non existant, look in installed path
         cdef char* ckernel = <char*> kernel
         cdef int rc
+#        with self._sem:
         with nogil:
-            rc = self.cpp_integrator.configure(ckernel)
+                rc = self.cpp_integrator.configure(ckernel)
         return rc
     
     def loadTth(self, numpy.ndarray tth not None, numpy.ndarray dtth not None, float tth_min, float tth_max):
@@ -100,13 +117,18 @@ cdef class Integrator1d:
         loadTth maybe be recalled at any time of the execution in order to update
         the 2th arrays.
         
-        loadTth is required and must be called at least once after a configure()"""
+        loadTth is required and must be called at least once after a configure()
+        """
+        cdef int rc
         cdef numpy.ndarray[numpy.float32_t, ndim = 1]  tthc,dtthc
         tthc = numpy.ascontiguousarray(tth.ravel(),dtype=numpy.float32)
         dtthc = numpy.ascontiguousarray(dtth.ravel(),dtype=numpy.float32)
+#        if id(tthc) !=
         self.tth_min=tth_min
         self.tth_max=tth_max
-        return self.cpp_integrator.loadTth(<float*> tthc.data, <float*> dtthc.data, <float> tth_min, <float> tth_max)
+        with nogil:
+            rc=self.cpp_integrator.loadTth(<float*> tthc.data, <float*> dtthc.data, <float> tth_min, <float> tth_max)
+        return rc
 
 
     def setSolidAngle(self, numpy.ndarray solidAngle not None):
@@ -156,12 +178,17 @@ cdef class Integrator1d:
         """
         return self.cpp_integrator.unsetMask()
 
-    def setDummyValue(self, float dummyVal):
+    def setDummyValue(self, float dummy, float delta_dummy):
         """
         Enables dummy value functionality and uploads the value to the OpenCL device.
         Image values that are similar to the dummy value are set to 0.
+        @param dummy
+        @param delta_dummy
         """
-        return self.cpp_integrator.setDummyValue(dummyVal)
+        cdef int rc
+        with nogil:
+            rc=self.cpp_integrator.setDummyValue(dummy,delta_dummy)
+        return rc
     
     def unsetDummyValue(self):
         """Disable a dummy value. 
@@ -205,10 +232,10 @@ cdef class Integrator1d:
         with nogil:    
             for i in range(self._nBins):
                 outPos[i] = self.tth_min + (0.5 +< float > i) * delta
-        t0=time.time()
+#        t0=time.time()
         with nogil:
             rc = self.cpp_integrator.execute(<float*> cimage.data, <float*> histogram.data, <float*> bins.data)
-        print("Executation time in Cython: %.3fms"%(1000*(time.time()-t0)))
+#        print("Executation time in Cython: %.3fms"%(1000*(time.time()-t0)))
         if rc!=0:
             raise RuntimeError("OpenCL integrator failed with RC=%s"%rc)
         return outPos,histogram,bins
@@ -286,6 +313,13 @@ cdef class Integrator1d:
         "Returns the time spent on memory copies"
         return self.cpp_integrator.get_memCpy_time()
 
+    def get_status(self):
+        "return a dictionnary with the status of the integrator"
+        retbin = numpy.binary_repr(self.cpp_integrator.get_status(),8)
+        out={}
+        for i,v in enumerate(['dummy', 'mask', 'solid_angle', 'pos1', 'pos0', 'compiled', 'size', 'context']):
+            out[v]=bool(int(retbin[i]))
+        return out
 _INTEGRATORS_1D={} #key=(Nimage,NBins), value=instance of Integrator1d
 lock =threading.Semaphore()
 

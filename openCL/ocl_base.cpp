@@ -120,11 +120,13 @@ void ocl::ContructorInit()
   hasProgram    = 0;
   hasKernels    = 0;
   hasTthLoaded  = 0;
+  hasChiLoaded  = 0;
   
   useSolidAngle = 0;
   useMask       = 0;
   useDummyVal   = 0;
   useTthRange   = 0;
+  useChiRange   = 0;
 
   reset_time();
   
@@ -318,6 +320,39 @@ unsigned int ocl::get_exec_count()
   return execCount;
 }
 
+/*
+ * Get the status of the intergator as an integer
+ * bit 0: has context
+ * bit 1: size are set
+ * bit 2: is configured (kernel compiled)
+ * bit 3: pos0/delta_pos0 arrays are loaded (radial angle)
+ * bit 4: pos1/delta_pos1 arrays are loaded (azimuthal angle)
+ * bit 5: solid angle correction is set
+ * bit 6: mask is set
+ * bit 7: use dummy value
+ */
+int ocl::get_status(){
+	int value=0;
+	if (hasActiveContext)
+		value+=1;
+	if  (isConfigured)
+		value+=2;
+	if (hasProgram)
+		value+=4;
+	if (hasTthLoaded)
+		value+=8;
+	if (hasChiLoaded)
+		value+=16;
+	if (useSolidAngle)
+		value+=32;
+	if (useMask)
+		value+=64;
+	if (useDummyVal)
+		value+=256;
+	return value;
+
+
+}
 /**
  * \brief Progressive OpenCL buffer release
  *

@@ -234,18 +234,18 @@ solidangle_correction(      __global float *intensity,
  */
 __kernel void
 dummyval_correction(      __global float *intensity,
-                    const __global float *dummyval
+                    const __global float *dummyval,
+                    const __global float *deltadummyval
 )
 {
   uint gid = get_global_id(0);
-  float epsilon = 1e-6f;
   float img_val;
 
   if(gid < NN)
   {
     img_val = intensity[gid];
     barrier(CLK_LOCAL_MEM_FENCE);
-    if(fabs(img_val - dummyval[0])<=epsilon)
+    if(fabs(img_val - dummyval[0])<=deltadummyval[0])
     {
       intensity[gid]=0.0f;
     }

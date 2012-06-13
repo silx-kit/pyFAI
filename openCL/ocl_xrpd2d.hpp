@@ -78,8 +78,6 @@ public:
   int clean(int preserve_context=0);
 
 private:
-  int hasChiLoaded;
-  int useChiRange;
   int set_kernel_arguments();
   int allocate_CL_buffers();
 };

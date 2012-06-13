@@ -49,7 +49,7 @@ cdef extern from "ocl_xrpd1d.hpp":
 
         # Enables dummy value functionality and uploads the value to the OpenCL device.
         # Image values that are similar to the dummy value are set to 0.
-        int setDummyValue(float dummyVal) nogil
+        int setDummyValue(float dummyVal, float deltaDummyVal) nogil
 
         # Disable a dummy value. May be reenabled at any time by setDummyValue
         int unsetDummyValue() nogil
@@ -108,3 +108,5 @@ cdef extern from "ocl_xrpd1d.hpp":
 
         #Returns the time spent on memory copies
         float get_memCpy_time() nogil
+
+        int get_status() nogil

@@ -86,9 +86,10 @@ def histoBBox1d(numpy.ndarray weights not None,
     cdef int checkpos1 = 0, check_mask = 0, check_dummy = 0
 
     cdef numpy.ndarray[numpy.float32_t, ndim = 1] cdata = numpy.ascontiguousarray(weights.ravel(),dtype="float32")
-    cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos0, dpos0, cpos1, dpos1
+    cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos0, dpos0, cpos1, dpos1,cpos0_lower, cpos0_upper
     cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype="float32")
     dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype="float32")
+          
     
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(bins, dtype="float64")
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype="float64")
@@ -109,15 +110,28 @@ def histoBBox1d(numpy.ndarray weights not None,
         cdummy = float(dummy)
     else:
         cdummy=0.0
+
+    cpos0_lower = numpy.zeros(size, dtype="float32")
+    cpos0_upper = numpy.zeros(size, dtype="float32")
+    pos0_min=cpos0[0]
+    pos0_max=cpos0[0]
+    with nogil:
+        for idx in range(size):
+            min0 = cpos0[idx] - dpos0[idx]
+            max0 = cpos0[idx] + dpos0[idx]
+            cpos0_upper[idx]=max0
+            cpos0_lower[idx]=min0
+            if max0>pos0_max:
+                pos0_max=max0
+            if min0<pos0_min:
+                pos0_min=min0
         
     if pos0Range is not None and len(pos0Range) > 1:
         pos0_min = min(pos0Range)
-        if pos0_min < 0.0:
-            pos0_min = 0.0
         pos0_maxin = max(pos0Range)
     else:
-        pos0_min = max(0,cpos0.min())
-        pos0_maxin = cpos0.max()
+        pos0_maxin = pos0_max
+    if pos0_min<0: pos0_min=0
     pos0_max = pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps)
 
     if pos1Range is not None and len(pos1Range) > 1:
@@ -144,8 +158,8 @@ def histoBBox1d(numpy.ndarray weights not None,
             if check_dummy and fabs(data-cdummy)<ddummy:
                 continue 
             
-            min0 = cpos0[idx] - dpos0[idx]
-            max0 = cpos0[idx] + dpos0[idx]
+            min0 = cpos0_lower[idx]
+            max0 = cpos0_upper[idx]
             
             if checkpos1:
                 if ((cpos1[idx]+dpos1[idx]) < pos1_min) or ((cpos1[idx]-dpos1[idx]) > pos1_max):
