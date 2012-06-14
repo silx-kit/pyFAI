@@ -261,8 +261,6 @@ def histoBBox2d(numpy.ndarray weights not None,
     cdef numpy.ndarray[numpy.float32_t, ndim = 1] dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(),dtype=numpy.float32)
     cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos0_upper = numpy.zeros(size, dtype=numpy.float32)
     cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos0_lower = numpy.zeros(size, dtype=numpy.float32)
-#    cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos1_upper = numpy.zeros(size, dtype=numpy.float32)
-#    cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos1_lower = numpy.zeros(size, dtype=numpy.float32)
     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outData = numpy.zeros((bins0, bins1), dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outCount = numpy.zeros((bins0, bins1), dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float32_t, ndim = 2] outMerge = numpy.zeros((bins0, bins1), dtype=numpy.float32)
@@ -286,15 +284,6 @@ def histoBBox2d(numpy.ndarray weights not None,
                 pos0_max=max0
             if min0<pos0_min:
                 pos0_min=min0
-#        for idx in range(size):
-#            min1 = cpos1[idx] - dpos1[idx]
-#            max1 = cpos1[idx] + dpos1[idx]
-#            cpos1_upper[idx]=max1
-#            cpos1_lower[idx]=min1
-#            if max1>pos1_max:
-#                pos1_max=max1
-#            if min1<pos1_min:
-#                pos1_min=min1
 
     if (pos0Range is not None) and (len(pos0Range) == 2):
         pos0_min = min(pos0Range)
