@@ -36,6 +36,8 @@ cimport numpy
 import numpy
 import threading
 import cython
+from stdlib cimport free, malloc
+from libc.string cimport memcpy
 
 
 
@@ -45,9 +47,11 @@ cdef class Integrator1d:
     """
     cdef ocl_xrpd1d.ocl_xrpd1D_fullsplit* cpp_integrator
     cdef char* _devicetype
-    cdef int _nBins, _nData, _platformid, _devid, _tth_id, _dtth_id, _mask_id, _solid_angle_id
+    cdef char* filename
+    cdef int _nBins, _nData, _platformid, _devid,
     cdef cpp_bool _useFp64
     cdef float tth_min, tth_max,_tth_min, _tth_max
+    cdef float* ctth_out
 
     def __cinit__(self, filename=None):
         """
@@ -55,27 +59,25 @@ cdef class Integrator1d:
         """
         self._nBins = -1
         self._nData = -1
+        self._platformid = -1
+        self._devid = -1
         self._useFp64 = False
-        self._tth_id = 0
-        self._dtth_id = 0
-        self._mask_id = 0
-        self._solid_angle_id = 0
         self._devicetype = "gpu"
         if filename is None:
             self.cpp_integrator = new ocl_xrpd1d.ocl_xrpd1D_fullsplit()
         else:
-            name = str(filename)
-            self.cpp_integrator = new ocl_xrpd1d.ocl_xrpd1D_fullsplit(name)
-
-    def __init__(self,filename=None):
-        """
-        Python  constructor
-        """
-        self.filename = filename
-        self.tth_out = None
+            self.filename = filename
+            self.cpp_integrator = new ocl_xrpd1d.ocl_xrpd1D_fullsplit(self.filename)
 
     def __dealloc__(self):
+        if self.ctth_out:
+            free(self.ctth_out)
         del self.cpp_integrator
+
+    def __repr__(self):
+        return os.linesep.join(["Cython wrapper for ocl_xrpd1d.ocl_xrpd1D_fullsplit C++ class. Logging in %s"%self.filename,
+                                "device: %s, platform %s device %s 64bits:%s image size: %s histogram size: %s"%(self._devicetype,self._platformid,self._devid, self._useFp64, self._nData,self._nBins),
+                                ",\t ".join(["%s: %s"%(k,v) for k,v in self.get_status().items()])])
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
@@ -86,12 +88,15 @@ cdef class Integrator1d:
         """
         self.tth_min = lower
         self.tth_max = upper
-        cdef numpy.ndarray[numpy.float32_t, ndim = 1] tth_out = numpy.empty(self._nBins,dtype=numpy.float32)
+#        cdef numpy.ndarray[numpy.float32_t, ndim = 1] tth_out = numpy.empty(self._nBins,dtype=numpy.float32)
+        if self.ctth_out:
+            free(self.ctth_out)
+        self.ctth_out= <float*> malloc(self._nBins*sizeof(float))
         cdef float delta = (upper - lower ) / (< float > (self._nBins))
         with nogil:
             for i in range(self._nBins):
-                tth_out[i] = self.tth_min + (0.5 +< float > i) * delta
-        self.tth_out = tth_out
+                self.ctth_out[i] = <float>( self.tth_min + (0.5 +< float > i) * delta)
+#        self.tth_out = tth_out
 
 
     def getConfiguration(self, int Nimage, int Nbins, useFp64=None):
@@ -244,17 +249,19 @@ cdef class Integrator1d:
         set / unset and loadTth methods have a direct impact on the execute() method.
         All the rest of the methods will require at least a new configuration via configure()"""
         cdef int rc,i
-        cdef numpy.ndarray[numpy.float32_t, ndim = 1] cimage, histogram, bins
+        cdef numpy.ndarray[numpy.float32_t, ndim = 1] cimage, histogram, bins,tth_out
         cimage = numpy.ascontiguousarray(image.ravel(),dtype=numpy.float32)
-        outPos = numpy.zeros(self._nBins,dtype=numpy.float32)
-        histogram = numpy.zeros(self._nBins,dtype=numpy.float32)
-        bins = numpy.zeros(self._nBins,dtype=numpy.float32)
+        histogram = numpy.empty(self._nBins,dtype=numpy.float32)
+        bins = numpy.empty(self._nBins,dtype=numpy.float32)
+        tth_out = numpy.empty(self._nBins,dtype=numpy.float32)
         assert cimage.size == self._nData
         with nogil:
             rc = self.cpp_integrator.execute(<float*> cimage.data, <float*> histogram.data, <float*> bins.data)
         if rc!=0:
             raise RuntimeError("OpenCL integrator failed with RC=%s"%rc)
-        return self.tth_out,histogram,bins
+
+        memcpy(tth_out.data,self.ctth_out,self._nBins*sizeof(float))
+        return tth_out,histogram,bins
 
     def clean(self, int preserve_context=0):
         """Free OpenCL related resources.
