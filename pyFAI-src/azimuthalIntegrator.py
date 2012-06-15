@@ -217,7 +217,7 @@ class AzimuthalIntegrator(Geometry):
             open(filename, "w").writelines(["%s\t%s%s" % (t, i, os.linesep) for t, i in zip(tthAxis, I)])
         return tthAxis, I
 
-    @timeit
+#    @timeit
     def xrpd_splitBBox(self, data, nbPt, filename=None, correctSolidAngle=True,
                        tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None):
         """
@@ -336,7 +336,7 @@ class AzimuthalIntegrator(Geometry):
     #Default implementation:
     xrpd = xrpd_splitBBox
 
-    @timeit
+#    @timeit
     def xrpd_OpenCL(self, data, nbPt, filename=None, correctSolidAngle=True,
                        tthRange=None, mask=None, dummy=None, delta_dummy=None,
                         devicetype="all", useFp64=True, platformid=None, deviceid=None, safe=True):
@@ -474,9 +474,9 @@ class AzimuthalIntegrator(Geometry):
             ref, binsChi, bins2Th = numpy.histogram2d(chi, tth, bins=list(bins))
             self._nbPixCache[bins] = numpy.maximum(1.0, ref)
         if correctSolidAngle:
-            data = (data / self.solidAngleArray(data.shape))[mask]
+            data = (data / self.solidAngleArray(data.shape))[mask].astype("float64")
         else:
-            data = data[mask]
+            data = data[mask].astype("float64")
         if tthRange is not None:
             tthRange = [numpy.deg2rad(i) for i in tthRange]
         else:
@@ -488,8 +488,9 @@ class AzimuthalIntegrator(Geometry):
 
         val, binsChi, bins2Th = numpy.histogram2d(chi, tth,
                                                   bins=list(bins),
-                                                  weights=data,
-                                                  range=[chiRange, tthRange])
+                                                  weights=data)
+#        ,
+#                                                  range=[chiRange, tthRange])
         I = val / self._nbPixCache[bins]
         return I, bins2Th, binsChi
 
