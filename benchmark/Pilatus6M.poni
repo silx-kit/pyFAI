@@ -1,0 +1,10 @@
+# Nota: C-Order, 1 refers to the Y axis, 2 to the X axis 
+PixelSize1: 0.000172
+PixelSize2: 0.000172
+Distance: 0.3
+Poni1: 0.225406
+Poni2: 0.2115772
+Rot1: 0.0
+Rot2: 0.0
+Rot3: 0
+SplineFile: None

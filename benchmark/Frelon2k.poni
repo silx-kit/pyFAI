@@ -1,0 +1,10 @@
+# Nota: C-Order, 1 refers to the Y axis, 2 to the X axis 
+PixelSize1: 4.683152e-05
+PixelSize2: 4.722438e-05
+Distance: 0.1057363
+Poni1: 0.05301968
+Poni2: 0.05660461
+Rot1: 0.027767
+Rot2: 0.016991
+Rot3: -1.8e-05
+SplineFile: frelon.spline
