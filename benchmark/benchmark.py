@@ -94,7 +94,7 @@ out=ai.xrpd2(data,500,360)""" % (param, fn)
                 t1 = time.time()
             except Exception as error:
                 print("Failed to find an OpenCL GPU (useFp64:%s) %s" % (useFp64, error))
-                break
+                continue
             else:
                 ai._ocl.print_devices()
 
@@ -119,8 +119,8 @@ if __name__ == "__main__":
         n = 1
     print("Averaging over %i repetitions (best of 5)." % n)
     b = Bench()
-#    b.bench_cpu1d(n)
-#    b.bench_cpu2d(n)
-#    b.bench_gpu1d(n, True)
+    b.bench_cpu1d(n)
+    b.bench_cpu2d(n)
+    b.bench_gpu1d(n, True)
     b.bench_gpu1d(n, False)
 
