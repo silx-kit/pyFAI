@@ -1,46 +1,6 @@
 # Nota: C-Order, 1 refers to the Y axis, 2 to the X axis 
 PixelSize1: 0.000172
 PixelSize2: 0.000172
-Distance: 1.57244978939
-Poni1: 0.00867965669497
-Poni2: -0.111815479711
-Rot1: -0.0905190032593
-Rot2: 0.0232332591893
-Rot3: -0.00177145091372
-SplineFile: None
-# Nota: C-Order, 1 refers to the Y axis, 2 to the X axis 
-PixelSize1: 0.000172
-PixelSize2: 0.000172
-Distance: 1.58335615602
-Poni1: 0.045423415811
-Poni2: 0.030873975843
-Rot1: -5.01441303538e-05
-Rot2: -2.26940287422e-05
-Rot3: 8.0432729242e-11
-SplineFile: None
-# Nota: C-Order, 1 refers to the Y axis, 2 to the X axis 
-PixelSize1: 0.000172
-PixelSize2: 0.000172
-Distance: 1.58335263365
-Poni1: 0.0454330511336
-Poni2: 0.0308764386575
-Rot1: -4.85951429731e-05
-Rot2: -2.87817276971e-05
-Rot3: 6.47470159625e-09
-SplineFile: None
-# Nota: C-Order, 1 refers to the Y axis, 2 to the X axis 
-PixelSize1: 0.000172
-PixelSize2: 0.000172
-Distance: 1.58317737936
-Poni1: 0.0312856378805
-Poni2: 0.044647392771
-Rot1: 0.00864672449879
-Rot2: 0.00890391504745
-Rot3: -3.40216939338e-09
-SplineFile: None
-# Nota: C-Order, 1 refers to the Y axis, 2 to the X axis 
-PixelSize1: 0.000172
-PixelSize2: 0.000172
 Distance: 1.58323111834
 Poni1: 0.0334170169115
 Poni2: 0.0412277798782
