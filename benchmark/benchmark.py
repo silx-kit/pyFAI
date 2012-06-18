@@ -6,6 +6,8 @@ sys.path.append(join(dirname(dirname(abspath(__file__))), "test"))
 import utilstest
 pyFAI = utilstest.UtilsTest.pyFAI
 
+from pylab import *
+
 datasets = {"Fairchild.poni":utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
             "halfccd.poni":utilstest.UtilsTest.getimage("1882/halfccd.edf"),
             "Frelon2k.poni":utilstest.UtilsTest.getimage("1881/Frelon2k.edf"),
@@ -90,7 +92,7 @@ out=ai.xrpd2(data,500,360)""" % (param, fn)
 
             try:
                 t0 = time.time()
-                _ = ai.xrpd_OpenCL(data, N, devicetype="gpu", useFp64=useFp64)
+                res = ai.xrpd_OpenCL(data, N, devicetype="gpu", useFp64=useFp64)
                 t1 = time.time()
             except Exception as error:
                 print("Failed to find an OpenCL GPU (useFp64:%s) %s" % (useFp64, error))
@@ -98,8 +100,11 @@ out=ai.xrpd2(data,500,360)""" % (param, fn)
             else:
                 ai._ocl.print_devices()
 
-            ai = None
             self.print_init(t1 - t0)
+            ref = ai.xrpd(data, N)
+            R = utilstest.Rwp(res, ref)
+            print("Results are bad with R=%.3f" % R if R > 6 else"Results are good with R=%.3f" % R)
+            ai = None
             setup = """
 import pyFAI,fabio
 ai=pyFAI.load("%s")
