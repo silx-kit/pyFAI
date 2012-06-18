@@ -36,6 +36,7 @@ import unittest
 import os
 import numpy
 import logging, time
+logger = logging.getLogger(os.path.basename(__file__))
 import sys
 import fabio
 force_build = False
@@ -49,7 +50,6 @@ for opts in sys.argv[1:]:
     elif opts in ["-f", "--force"]:
         force_build = True
         sys.argv.pop(sys.argv.index(opts))
-logger = logging.getLogger("testAzimuthalIntegrator")
 
 try:
     logger.debug("tests loaded from file: %s" % __file__)

@@ -150,6 +150,18 @@ public:
  */
   float get_memCpy_time();
 
+  /*
+   * Get the status of the intergator as an integer
+   * bit 0: has context
+   * bit 1: size are set
+   * bit 2: is configured (kernel compiled)
+   * bit 3: pos0/delta_pos0 arrays are loaded (radial angle)
+   * bit 4: pos1/delta_pos1 arrays are loaded (azimuthal angle)
+   * bit 5: solid angle correction is set
+   * bit 6: mask is set
+   * bit 7: use dummy value
+   */
+  int get_status();
 /**
  * \brief Holds the documentation message
  */  
@@ -199,6 +211,7 @@ protected:
   int useMask;       //!< Set by setMask(), reset by unsetMask()
   int useDummyVal;   //!< Set by setDummyVal(), reset by unsetDummyVal()
   int useTthRange;   //!< Set by setTthRange(), reset by unsetTthRange()
+  int useChiRange;   //!< Set by setChiRange(), reset by unsetChiRange()
 
   /**@}*/
   

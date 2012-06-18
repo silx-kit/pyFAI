@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 #
-#    Project: Azimuthal integration 
+#    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
 #
 #    File: "$Id$"
@@ -28,10 +28,10 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/12/2011"
+__date__ = "13/06/2012"
 __status__ = "beta"
 
-import os, logging
+import os, logging, tempfile, threading
 import numpy
 from numpy import degrees
 from geometry import Geometry
@@ -43,11 +43,11 @@ logger = logging.getLogger("pyFAI.azimuthalIntegrator")
 
 class AzimuthalIntegrator(Geometry):
     """
-    This class is an azimuthal integrator based on P. Boesecke's geometry and 
+    This class is an azimuthal integrator based on P. Boesecke's geometry and
     histogram algorithm by Manolo S. del Rio and V.A Sole
-    
+
     All geometry calculation are done in the Geometry class
-    
+
     """
     def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0, pixel1=1, pixel2=1, splineFile=None):
         """
@@ -59,7 +59,7 @@ class AzimuthalIntegrator(Geometry):
         @param rot3: third rotation from sample ref to detector's ref, in radians
         @param pixel1: pixel size of the fist dimension of the detector,  in meter
         @param pixel2: pixel size of the second dimension of the detector,  in meter
-        @param splineFile: file containing the geometric distortion of the detector. Overrides the pixel size.  
+        @param splineFile: file containing the geometric distortion of the detector. Overrides the pixel size.
         """
         Geometry.__init__(self, dist, poni1, poni2, rot1, rot2, rot3, pixel1, pixel2, splineFile)
         self._nbPixCache = {} #key=shape, value: array
@@ -74,13 +74,16 @@ class AzimuthalIntegrator(Geometry):
         self._flatfields = {}
         self._darkcurrents = {}
 
+        self._ocl = None
+        self._ocl_sem = threading.Semaphore()
+
     def makeMask(self, data, mask=None, dummy=None, delta_dummy=None, invertMask=None):
         """
         Combines a mask
-        
+
         For the mask: 1 for good pixels, 0 for bas pixels
-        @param data: input array of 
-        @param mask: input mask 
+        @param data: input array of
+        @param mask: input mask
         @param dummy: value of dead pixels
         @param delta_dumy: precision of dummy pixels
         @param invertMask: to force inversion of the input mask
@@ -130,10 +133,10 @@ class AzimuthalIntegrator(Geometry):
         @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
         @type correctSolidAngle: boolean
         @param tthRange: The lower and upper range of 2theta. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored. 
+                        Values outside the range are ignored.
         @type tthRange: (float, float), optional
         @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
-        @param  dummy: value for dead/masked pixels 
+        @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
@@ -179,10 +182,10 @@ class AzimuthalIntegrator(Geometry):
         @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
         @type correctSolidAngle: boolean
         @param tthRange: The lower and upper range of the 2theta. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored. 
+                        Values outside the range are ignored.
         @type tthRange: (float, float), optional
         @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
-        @param  dummy: value for dead/masked pixels 
+        @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
@@ -214,7 +217,7 @@ class AzimuthalIntegrator(Geometry):
             open(filename, "w").writelines(["%s\t%s%s" % (t, i, os.linesep) for t, i in zip(tthAxis, I)])
         return tthAxis, I
 
-    @timeit
+#    @timeit
     def xrpd_splitBBox(self, data, nbPt, filename=None, correctSolidAngle=True,
                        tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None):
         """
@@ -228,13 +231,13 @@ class AzimuthalIntegrator(Geometry):
         @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
         @type correctSolidAngle: boolean
         @param tthRange: The lower and upper range of the 2theta. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored. 
+                        Values outside the range are ignored.
         @type tthRange: (float, float), optional
         @param chiRange: The lower and upper range of the chi angle. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored. 
+                        Values outside the range are ignored.
         @type chiRange: (float, float), optional
         @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
-        @param  dummy: value for dead/masked pixels 
+        @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
@@ -253,26 +256,28 @@ class AzimuthalIntegrator(Geometry):
             dchi = None
         tth = self.twoThetaArray(data.shape)
         dtth = self.delta2Theta(data.shape)
-        mask = self.makeMask(data, mask, dummy, delta_dummy)
-        if dummy is None:
-            dummy = 0.0
+#        mask = self.makeMask(data, mask, dummy, delta_dummy)
+#        if dummy is None:
+#            dummy = -1
         if tthRange is not None:
             tthRange = tuple([numpy.deg2rad(i) for i in tthRange[:2]])
         if chiRange is not None:
             chiRange = tuple([numpy.deg2rad(i) for i in chiRange[:2]])
         if correctSolidAngle: #outPos, outMerge, outData, outCount
-            data = (data / self.solidAngleArray(data.shape))[mask]
+            data = (data / self.solidAngleArray(data.shape))
         else:
-            data = data[mask]
+            data = data
         tthAxis, I, a, b = splitBBox.histoBBox1d(weights=data,
-                                                 pos0=tth[mask],
-                                                 delta_pos0=dtth[mask],
+                                                 pos0=tth,
+                                                 delta_pos0=dtth,
                                                  pos1=chi,
                                                  delta_pos1=dchi,
                                                  bins=nbPt,
                                                  pos0Range=tthRange,
                                                  pos1Range=chiRange,
-                                                 dummy=dummy)
+                                                 dummy=dummy,
+                                                 delta_dummy=delta_dummy,
+                                                 mask=mask)
         tthAxis = numpy.degrees(tthAxis)
         if filename:
             open(filename, "w").writelines(["%s\t%s%s" % (t, i, os.linesep) for t, i in zip(tthAxis, I)])
@@ -282,10 +287,10 @@ class AzimuthalIntegrator(Geometry):
     def xrpd_splitPixel(self, data, nbPt, filename=None, correctSolidAngle=True,
                         tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None):
         """
-        Calculate the powder diffraction pattern from a set of data, an image. 
-        
+        Calculate the powder diffraction pattern from a set of data, an image.
+
         Cython implementation
-        
+
         @param data: 2D array from the CCD camera
         @type data: ndarray
         @param nbPt: number of points in the output pattern
@@ -293,7 +298,7 @@ class AzimuthalIntegrator(Geometry):
         @param filename: file to save data in
         @type filename: string
         @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
-        @param  dummy: value for dead/masked pixels 
+        @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
@@ -331,10 +336,10 @@ class AzimuthalIntegrator(Geometry):
     #Default implementation:
     xrpd = xrpd_splitBBox
 
-    @timeit
+#    @timeit
     def xrpd_OpenCL(self, data, nbPt, filename=None, correctSolidAngle=True,
                        tthRange=None, mask=None, dummy=None, delta_dummy=None,
-                        devicetype="all", useFp64=True, platformid=None, deviceid=None):
+                        devicetype="all", useFp64=True, platformid=None, deviceid=None, safe=True):
 
         """
         Calculate the powder diffraction pattern from a set of data, an image. Cython implementation
@@ -347,19 +352,20 @@ class AzimuthalIntegrator(Geometry):
         @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
         @type correctSolidAngle: boolean
         @param tthRange: The lower and upper range of the 2theta. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored. 
+                        Values outside the range are ignored.
         @type tthRange: (float, float), optional
         @param chiRange: The lower and upper range of the chi angle. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored. 
+                        Values outside the range are ignored.
         @type chiRange: (float, float), optional, disabled for now
         @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
-        @param  dummy: value for dead/masked pixels 
+        @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
         OpenCL specific parameters:
         @param devicetype: "cpu" or "gpu" or "all"  or "def"
         @param useFp64: shall histogram be done in double precision (adviced)
-        @param platformid: platform number 
+        @param platformid: platform number
         @param deviceid: device number
+        @param safe: set to false if you think your GPU is already set-up correctly (2theta, mask, solid angle...)
         @return 2theta, I, weighted histogram, unweighted histogram
 
 
@@ -379,29 +385,60 @@ class AzimuthalIntegrator(Geometry):
                                        dummy=dummy,
                                        delta_dummy=delta_dummy)
         shape = data.shape
-        tth = self.twoThetaArray(data.shape)
-        dtth = self.delta2Theta(data.shape)
-        mask = self.makeMask(data, mask, dummy, delta_dummy)
-        if dummy is None:
-            dummy = 0.0
-        if tthRange is not None:
-            tthRange = tuple([numpy.deg2rad(i) for i in tthRange[:2]])
-#        if chiRange is not None:
-#            chiRange = tuple([numpy.deg2rad(i) for i in chiRange[:2]])
-        if correctSolidAngle: #outPos, outMerge, outData, outCount
-            data = (data / self.solidAngleArray(data.shape))[mask]
-        else:
-            data = data[mask]
-        tthAxis, I, a = ocl_azim.histGPU1d(weights=data,
-                                                 pos0=tth[mask],
-                                                 delta_pos0=dtth[mask],
-                                                 bins=nbPt,
-                                                 pos0Range=tthRange,
-                                                 dummy=dummy,
-                                                 devicetype=devicetype,
-                                                 useFp64=useFp64,
-                                                 platformid=platformid,
-                                                 deviceid=deviceid)
+        if self._ocl is None:
+            with self._ocl_sem:
+                if self._ocl is None:
+                    size = data.size
+                    fd, tmpfile = tempfile.mkstemp(".log", "pyfai-opencl-")
+                    os.close(fd)
+                    integr = ocl_azim.Integrator1d(tmpfile)
+                    if platformid and deviceid:
+                        rc = integr.init(devicetype=devicetype,
+                                    platformid=platformid,
+                                    devid=deviceid,
+                                    useFp64=useFp64)
+                    else:
+                        rc = integr.init(devicetype, useFp64)
+                    if rc != 0:
+                        raise RuntimeError('Failed to initialize OpenCL deviceType %s (%s,%s) 64bits: %s' % (devicetype, platformid, deviceid, useFp64))
+
+                    if 0 != integr.getConfiguration(size, nbPt):
+                        raise RuntimeError('Failed to configure 1D integrator with Ndata=%s and Nbins=%s' % (size, nbPt))
+
+                    if 0 != integr.configure():
+                        raise RuntimeError('Failed to compile kernel')
+                    pos0 = self.twoThetaArray(shape)
+                    delta_pos0 = self.delta2Theta(shape)
+                    if tthRange is not None and len(tthRange) > 1:
+                        pos0_min = numpy.deg2rad(min(tthRange))
+                        pos0_maxin = numpy.deg2rad(max(tthRange))
+                    else:
+                        pos0_min = pos0.min()
+                        pos0_maxin = pos0.max()
+                    if pos0_min < 0.0:
+                        pos0_min = 0.0
+                    pos0_max = pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps)
+                    if 0 != integr.loadTth(pos0, delta_pos0, pos0_min, pos0_max):
+                        raise RuntimeError("Failed to upload 2th arrays")
+                    self._ocl = integr
+        with self._ocl_sem:
+            if safe:
+                param = self._ocl.get_status()
+                if (dummy is None) and param["dummy"]:
+                    self._ocl.unsetDummyValue()
+                elif (dummy is not None) and not param["dummy"]:
+                    if delta_dummy is None:
+                        delta_dummy = 1e-6
+                    self._ocl.setDummyValue(dummy, delta_dummy)
+                if correctSolidAngle and not param["solid_angle"]:
+                    self._ocl.setSolidAngle(self.solidAngleArray(shape))
+                elif (not correctSolidAngle) and param["solid_angle"]:
+                    self._ocl.unsetSolidAngle()
+                if (mask is not None) and not param["mask"]:
+                    self._ocl.setMask(mask)
+                elif (mask is None) and param["mask"]:
+                    self._ocl.unsetMask()
+            tthAxis, I, a, = self._ocl.execute(data)
         tthAxis = numpy.degrees(tthAxis)
         if filename:
             open(filename, "w").writelines(["%s\t%s%s" % (t, i, os.linesep) for t, i in zip(tthAxis, I)])
@@ -412,19 +449,19 @@ class AzimuthalIntegrator(Geometry):
                          tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None):
         """
         Calculate the 2D powder diffraction pattern (2Theta,Chi) from a set of data, an image
-        
+
         Pure numpy implementation (VERY SLOW !!!)
-        
+
         @param data: 2D array from the CCD camera
         @type data: ndarray
         @param nbPt2Th: number of points in the output pattern in the Radial (horizontal) axis (2 theta)
         @type nbPt: integer
-        @param nbPtChi: number of points in the output pattern along the Azimuthal (vertical) axis (chi) 
+        @param nbPtChi: number of points in the output pattern along the Azimuthal (vertical) axis (chi)
         @type nbPtChi: integer
         @param filename: file to save data in
         @type filename: string
         @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
-        @param  dummy: value for dead/masked pixels 
+        @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
         @return: azimuthaly regrouped data, 2theta pos and chipos
         @rtype: 3-tuple of ndarrays
@@ -437,9 +474,9 @@ class AzimuthalIntegrator(Geometry):
             ref, binsChi, bins2Th = numpy.histogram2d(chi, tth, bins=list(bins))
             self._nbPixCache[bins] = numpy.maximum(1.0, ref)
         if correctSolidAngle:
-            data = (data / self.solidAngleArray(data.shape))[mask]
+            data = (data / self.solidAngleArray(data.shape))[mask].astype("float64")
         else:
-            data = data[mask]
+            data = data[mask].astype("float64")
         if tthRange is not None:
             tthRange = [numpy.deg2rad(i) for i in tthRange]
         else:
@@ -451,8 +488,9 @@ class AzimuthalIntegrator(Geometry):
 
         val, binsChi, bins2Th = numpy.histogram2d(chi, tth,
                                                   bins=list(bins),
-                                                  weights=data,
-                                                  range=[chiRange, tthRange])
+                                                  weights=data)
+#        ,
+#                                                  range=[chiRange, tthRange])
         I = val / self._nbPixCache[bins]
         return I, bins2Th, binsChi
 
@@ -460,19 +498,19 @@ class AzimuthalIntegrator(Geometry):
                               tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None):
         """
         Calculate the 2D powder diffraction pattern (2Theta,Chi) from a set of data, an image
-        
+
         Cython implementation: fast but incaccurate
-        
+
         @param data: 2D array from the CCD camera
         @type data: ndarray
         @param nbPt2Th: number of points in the output pattern in the Radial (horizontal) axis (2 theta)
         @type nbPt: integer
-        @param nbPtChi: number of points in the output pattern along the Azimuthal (vertical) axis (chi) 
+        @param nbPtChi: number of points in the output pattern along the Azimuthal (vertical) axis (chi)
         @type nbPtChi: integer
         @param filename: file to save data in
         @type filename: string
         @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
-        @param  dummy: value for dead/masked pixels 
+        @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
         @return: azimuthaly regrouped data, 2theta pos and chipos
         @rtype: 3-tuple of ndarrays
@@ -513,27 +551,27 @@ class AzimuthalIntegrator(Geometry):
                          tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None):
         """
         Calculate the 2D powder diffraction pattern (2Theta,Chi) from a set of data, an image
-        
+
         Split pixels according to their coordinate and a bounding box
-        
+
         @param data: 2D array from the CCD camera
         @type data: ndarray
         @param nbPt2Th: number of points in the output pattern in the Radial (horizontal) axis (2 theta)
         @type nbPt: integer
-        @param nbPtChi: number of points in the output pattern along the Azimuthal (vertical) axis (chi) 
+        @param nbPtChi: number of points in the output pattern along the Azimuthal (vertical) axis (chi)
         @type nbPtChi: integer
         @param filename: file to save data in
         @type filename: string
         @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
         @type correctSolidAngle: boolean
         @param tthRange: The lower and upper range of the 2theta. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored. 
+                        Values outside the range are ignored.
         @type tthRange: (float, float), optional
         @param chiRange: The lower and upper range of the azimuthal angle. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored. 
+                        Values outside the range are ignored.
         @type chiRange: (float, float), optional
         @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
-        @param  dummy: value for dead/masked pixels 
+        @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
         @rtype: 3-tuple of ndarrays
@@ -579,27 +617,27 @@ class AzimuthalIntegrator(Geometry):
                          tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None):
         """
         Calculate the 2D powder diffraction pattern (2Theta,Chi) from a set of data, an image
-        
+
         Split pixels according to their corner positions
-        
+
         @param data: 2D array from the CCD camera
         @type data: ndarray
         @param nbPt2Th: number of points in the output pattern in the Radial (horizontal) axis (2 theta)
         @type nbPt: integer
-        @param nbPtChi: number of points in the output pattern along the Azimuthal (vertical) axis (chi) 
+        @param nbPtChi: number of points in the output pattern along the Azimuthal (vertical) axis (chi)
         @type nbPtChi: integer
         @param filename: file to save data in
         @type filename: string
         @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
         @type correctSolidAngle: boolean
         @param tthRange: The lower and upper range of the 2theta. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored. 
+                        Values outside the range are ignored.
         @type tthRange: (float, float), optional
         @param chiRange: The lower and upper range of the azimuthal angle. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored. 
+                        Values outside the range are ignored.
         @type chiRange: (float, float), optional
         @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
-        @param  dummy: value for dead/masked pixels 
+        @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
         @rtype: 3-tuple of ndarrays
@@ -670,10 +708,10 @@ class AzimuthalIntegrator(Geometry):
              qRange=None, chiRange=None, mask=None, dummy=None,
              delta_dummy=None, method="bbox"):
         """
-        Calculate the azimuthal integrated Saxs curve  
-        
+        Calculate the azimuthal integrated Saxs curve
+
         Multi algorithm implementation (tries to be bullet proof)
-        
+
         @param data: 2D array from the CCD camera
         @type data: ndarray
         @param nbPt: number of points in the output pattern
@@ -681,19 +719,19 @@ class AzimuthalIntegrator(Geometry):
         @param filename: file to save data to
         @type filename: string
         @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
-        @type correctSolidAngle: boolean     
+        @type correctSolidAngle: boolean
         @param variance: array containing the variance of the data
         @type variance: ndarray
         @param qRange: The lower and upper range of the sctter vector q. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored. 
+                        Values outside the range are ignored.
         @type qRange: (float, float), optional
         @param chiRange: The lower and upper range of the chi angle. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored. 
+                        Values outside the range are ignored.
         @type chiRange: (float, float), optional
         @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
-        @param  dummy: value for dead/masked pixels 
+        @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
-        @param method: can be "numpy", "cython", "BBox" or "splitpixel" 
+        @param method: can be "numpy", "cython", "BBox" or "splitpixel"
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
         @rtype: 3-tuple of ndarrays
         """

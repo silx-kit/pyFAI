@@ -1,0 +1,10 @@
+# Nota: C-Order, 1 refers to the Y axis, 2 to the X axis 
+PixelSize1: 4.842252e-05
+PixelSize2: 4.684483e-05
+Distance: 0.0994744403007
+Poni1: 0.026453455358
+Poni2: 0.0481217639198
+Rot1: -0.000125830018938
+Rot2: -0.0160719674782
+Rot3: 1.57079531561
+SplineFile: halfccd.spline

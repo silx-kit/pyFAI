@@ -131,7 +131,7 @@ public:
    * Enables dummy value functionality and uploads the value to the OpenCL device.
    * Image values that are similar to the dummy value are set to 0.
    */
-  int setDummyValue(float dummyVal);
+  int setDummyValue(float dummyVal, float deltaDummyVal);
 
   /*
    * Disable a dummy value. May be reenabled at any time by setDummyValue

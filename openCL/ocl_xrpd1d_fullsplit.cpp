@@ -87,6 +87,7 @@ enum NAMED_CL_BUFFERS
   CLMEM_TTH_DELTA,
   CLMEM_MASK,
   CLMEM_DUMMYVAL,
+  CLMEM_DUMMYVAL_DELTA,
   CLMEM_TTH_RANGE
 } ;
 
@@ -462,26 +463,30 @@ int ocl_xrpd1D_fullsplit::unsetMask()
  * setDummyValue can be called at any point and as many times required after a valid configuration is created.
  *
  * @param dummyVal A float with the value to be set as a dummy
+ * @param deltaDummyVal A float with the value to be set as a delta dummy
  */
-int ocl_xrpd1D_fullsplit::setDummyValue(float dummyVal)
+int ocl_xrpd1D_fullsplit::setDummyValue(float dummyVal, float deltaDummyVal)
 {
   fprintf(stream,"Setting Dummy Value\n");
 
   if(!oclconfig->Nbuffers || !isConfigured){
-    fprintf(stderr,"You may not call setMask() at this point, the required buffers are not allocated (Hint: run config())\n");
+    fprintf(stderr,"You may not call setDummyValue() at this point, the required buffers are not allocated (Hint: run configure())\n");
     return -2;
   }
 
   if(!hasActiveContext){
-    fprintf(stderr,"You may not call setMask() at this point. There is no Active context. (Hint: run init())\n");
+    fprintf(stderr,"You may not call setDummyValue() at this point. There is no Active context. (Hint: run init())\n");
     return -2;
   }
 
   CR(
     clEnqueueWriteBuffer(oclconfig->oclcmdqueue,oclconfig->oclmemref[CLMEM_DUMMYVAL],CL_TRUE,0,sizeof(cl_float),(void*)&dummyVal,0,0,&oclconfig->t_s[0]) );
+  CR(
+    clEnqueueWriteBuffer(oclconfig->oclcmdqueue,oclconfig->oclmemref[CLMEM_DUMMYVAL_DELTA],CL_TRUE,0,sizeof(cl_float),(void*)&deltaDummyVal,0,0,&oclconfig->t_s[1]) );
 
-  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0],"Load Dummy Value",stream);
+  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[1],"Load Dummy Value",stream);
   clReleaseEvent(oclconfig->t_s[0]);
+  clReleaseEvent(oclconfig->t_s[1]);
 
   useDummyVal=1;
   return 0;
@@ -719,7 +724,7 @@ int ocl_xrpd1D_fullsplit::allocate_CL_buffers()
 {
 
   cl_int err;
-  oclconfig->oclmemref   = (cl_mem*)malloc(13*sizeof(cl_mem));
+  oclconfig->oclmemref   = (cl_mem*)malloc(14*sizeof(cl_mem));
   if(!oclconfig->oclmemref){
     fprintf(stderr,"Fatal error in allocate_CL_buffers. Cannot allocate memrefs\n");
     return -2;
@@ -738,7 +743,7 @@ int ocl_xrpd1D_fullsplit::allocate_CL_buffers()
   else
     ualloc += (sgs->Nbins * sizeof(cl_uint)) *2;
     
-  ualloc += 5*sizeof(cl_float);
+  ualloc += 6*sizeof(cl_float);
 
   /*
    * Note that an OpenCL context also requires some memory, as well as Event and other OpenCL functionalities.
@@ -824,8 +829,12 @@ int ocl_xrpd1D_fullsplit::allocate_CL_buffers()
     clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_ONLY,(size_t)(sizeof(cl_float)),0,&err);//Dummy Value -11
   if(err){fprintf(stderr,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);return -1;};i++;
 
+  oclconfig->oclmemref[CLMEM_DUMMYVAL_DELTA]=
+    clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_ONLY,(size_t)(sizeof(cl_float)),0,&err);//Dummy Value Delta -12
+  if(err){fprintf(stderr,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);return -1;};i++;
+
   oclconfig->oclmemref[CLMEM_TTH_RANGE]=
-    clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_ONLY,(size_t)(2*sizeof(cl_float)),0,&err);//TTH Range -12
+    clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_ONLY,(size_t)(2*sizeof(cl_float)),0,&err);//TTH Range -13
   if(err){fprintf(stderr,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);return -1;};i++;
   
   fprintf(stream,"Allocated %d buffers (%.3f Mb) on device\n",i,(float)ualloc/1024./1024.);
@@ -897,6 +906,7 @@ int ocl_xrpd1D_fullsplit::set_kernel_arguments()
   //-----------------------dummyval_correction
   CR( clSetKernelArg(oclconfig->oclkernels[CLKERN_DUMMYVAL_CORRECTION],i++,sizeof(cl_mem),&oclconfig->oclmemref[CLMEM_IMAGE]) ); //Image
   CR( clSetKernelArg(oclconfig->oclkernels[CLKERN_DUMMYVAL_CORRECTION],i++,sizeof(cl_mem),&oclconfig->oclmemref[CLMEM_DUMMYVAL]) ); //Dummy
+  CR( clSetKernelArg(oclconfig->oclkernels[CLKERN_DUMMYVAL_CORRECTION],i++,sizeof(cl_mem),&oclconfig->oclmemref[CLMEM_DUMMYVAL_DELTA]) ); //Dummy
 
 return 0;
 }

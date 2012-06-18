@@ -100,13 +100,11 @@ enum NAMED_CL_KERNELS
 ocl_xrpd2D_fullsplit::ocl_xrpd2D_fullsplit():ocl()
 {
   setDocstring("OpenCL 2d Azimuthal integrator. Check the readme file for more details\n","ocl_xrpd2d_fullsplit.readme");
-  useChiRange = 0;
 }
 
 ocl_xrpd2D_fullsplit::ocl_xrpd2D_fullsplit(const char* fname):ocl(fname)
 {
   setDocstring("OpenCL 2d Azimuthal integrator. Check the readme file for more details\n","ocl_xrpd2d_fullsplit.readme");
-  useChiRange = 0;
 }
 
 ocl_xrpd2D_fullsplit::~ocl_xrpd2D_fullsplit()
