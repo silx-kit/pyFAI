@@ -8,7 +8,7 @@
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
  *   Last revision: 11/05/2012
- *    
+ *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
  *   by the Free Software Foundation, either version 3 of the License, or
@@ -55,7 +55,7 @@
 
 #define GROUP_SIZE BLOCK_SIZE
 
-/**  
+/**
  * \brief Sets the values of two unsigned integer input arrays to zero.
  *
  * Gridsize = size of arrays + padding.
@@ -72,7 +72,7 @@ uimemset2(__global UINTType *array0,
 {
   uint gid = get_global_id(0);
   //Global memory guard for padding
-  if(gid < NN)
+  if(gid < BINS)
   {
     array0[get_global_id(0)]=0;
     array1[get_global_id(0)]=0;
@@ -115,7 +115,7 @@ ui2f2(const __global UINTType *uarray0,
     binval = (float)uarray0[gid]/UACCf;
     histval = (float)uarray1[gid]/UACCf;
 
-    barrier(CLK_LOCAL_MEM_FENCE);
+    //barrier(CLK_LOCAL_MEM_FENCE);  //does not really matter.Breaks CPU OCLs
     farray0[gid] = binval;
     if(binval) farray1[gid] = histval / binval;
     else farray1[gid] = 0.0f;
@@ -149,7 +149,7 @@ get_spans(const __global float *tth,
   if(gid < NN)
   {
     value = tth[gid];
-    
+
     tth_max = tth_range[1];
     tth_min = tth_range[0];
     tthb = (tth_max - tth_min) / BINS;
@@ -184,9 +184,14 @@ group_spans(__global float *span_range)
   GroupSize = GROUP_SIZE;
   Ngroups = NN / GroupSize;
 
+  loc_max[tid] = 0;
+    barrier(CLK_LOCAL_MEM_FENCE);
+
   if(gid < NN)
   {
     loc_max[tid] = span_range[gid];
+  }//Broke the if here as it is not really needed further on (except that it made blockID<Ngroups obsolete)
+   //Unfortunately CPU OCLs break with barriers in such if clauses. NV works ok
     barrier(CLK_LOCAL_MEM_FENCE);
 
     for(uint s=BLOCK_SIZE/2; s>0; s>>=1){
@@ -199,10 +204,9 @@ group_spans(__global float *span_range)
     barrier(CLK_LOCAL_MEM_FENCE);
     //Reduced 2 results are compared by the first thread of every block. Non elegant operation but it reduces
     // the result array from size BLOCKS*2 to size BLOCKS. Where BLOCKS = global_size/BLOCK_SIZE
-    if(tid==0){
+    if(tid==0 && blockId < Ngroups){
       span_range[blockId]=loc_max[0];
     }
-  }
 }
 
 /**
@@ -274,94 +278,6 @@ dummyval_correction(      __global float *intensity,
  *                     If tth range is not specified the this array points to tth_min_max.
  */
 __kernel void
-create_histo_binarray_no_rounding_the_other_fairs_better(const __global float    *tth,
-                      const __global float    *dtth,
-                            __global UINTType *binarray,
-                      const __global float    *tth_min_max,
-                      const __global float    *intensity,
-                            __global UINTType *histogram,
-                      const __global float    *span_range,
-                      const __global int      *mask,
-                      const __global float    *tth_range
-)
-{
-
-  uint gid;
-  UINTType convert0, convert1;
-  float tth_min, tth_max;
-  float tth_rmin, tth_rmax;
-  float fbin0_min, fbin0_max;
-  int    bin0_min, bin0_max;
-  int    cbin;
-  float  fbin;
-  float  a0, b0;
-  float epsilon = 1e-6f;
-  int spread, N, Nbins;
-
-  float x_interp;
-  float I_interp;
-  float fbinsize;
-  float inrange;
-
-  gid=get_global_id(0);
-
-  //Load tth min and max from slow global to fast register cache
-  tth_min = tth_min_max[0];
-  tth_max = tth_min_max[1];
-  tth_rmin= tth_range[0];
-  tth_rmax= tth_range[1];
-
-  N = NN;
-  Nbins = BINS;
-
-  if(gid < NN)
-  {
-    if(!mask[gid])
-    {
-      a0=tth[gid] + dtth[gid];
-      b0=tth[gid] - dtth[gid];
-      barrier(CLK_LOCAL_MEM_FENCE);
-
-      fbinsize = (tth_rmax - tth_rmin)/Nbins;
-
-  //     if( (( (max0 + min0)/2.0f + fbinsize/2.0f ) >= tth_rmin) &&
-  //          ( (max0 + min0)/2.0f - fbinsize/2.0f ) <= tth_rmax)
-      if(b0  >= tth_rmin && a0 <= tth_rmax )
-      {
-        fbin0_min=(b0 - epsilon - tth_rmin) * (BINS) / (tth_rmax - tth_rmin);
-        fbin0_max=(a0 - epsilon - tth_rmin) * (BINS) / (tth_rmax - tth_rmin);
-        bin0_min = (int)fbin0_min;
-        bin0_max = (int)fbin0_max;
-
-        spread = span_range[gid/GROUP_SIZE];
-
-        I_interp = (fbin0_max - fbin0_min)/fbinsize;
-        I_interp = I_interp * (I_interp < 1.0f) + 1.0f * (I_interp >= 1.0f);
-        for(int spreadloop=0;spreadloop<spread+1;spreadloop++)
-        {
-          fbin = fbin0_min + spreadloop;
-          cbin = (int)fbin;
-          inrange = (cbin<=bin0_max);
-
-          x_interp = ( ( 1.0f - (fbin - cbin) )* (cbin == bin0_min) ) +
-                      ( ( fbin - cbin ) * ( cbin == bin0_max)       ) +
-                      (1.0f * ( (cbin > bin0_min)&&(cbin < bin0_max) ) );
-
-          convert0 = (UINTType)((x_interp * I_interp)*UACC);
-          convert1 = (UINTType)((x_interp * I_interp * intensity[gid])*UACC);
-          barrier(CLK_LOCAL_MEM_FENCE);
-          if(inrange && cbin < BINS){
-            atom_add(&binarray[cbin],convert0);
-            atom_add(&histogram[cbin],convert1);
-          }
-        }
-      }
-    }
-  }
-}
-
-//Testing
-__kernel void
 create_histo_binarray(const __global float    *tth,
                       const __global float    *dtth,
                             __global UINTType *binarray,
@@ -383,14 +299,14 @@ create_histo_binarray(const __global float    *tth,
   int    cbin;
   float  fbin;
   float  a0, b0, center;
-  float epsilon = 1e-6f;
+//  float epsilon = 1e-6f;
   int spread, N, Nbins;
 
   float x_interp;
   float I_interp;
   float fbinsize;
   float inrange;
-
+  //histogram[1023] = 0;
   gid=get_global_id(0);
 
   //Load tth min and max from slow global to fast register cache
@@ -407,20 +323,19 @@ create_histo_binarray(const __global float    *tth,
     if(!mask[gid])
     {
       center = tth[gid];
-      barrier(CLK_LOCAL_MEM_FENCE);
+
+      fbinsize = (tth_rmax - tth_rmin)/Nbins;
 
       a0=center + dtth[gid];
       b0=center - dtth[gid];
-      barrier(CLK_LOCAL_MEM_FENCE);
 
-      fbinsize = (tth_rmax - tth_rmin)/Nbins;
 
       if(center  >= tth_rmin && center <= tth_rmax )
       {
         if(b0 < tth_rmin) b0 = center;
         if(a0 > tth_rmax) a0 = center;
-        fbin0_min=(b0 - epsilon - tth_rmin) * (BINS) / (tth_rmax - tth_rmin);
-        fbin0_max=(a0 - epsilon - tth_rmin) * (BINS) / (tth_rmax - tth_rmin);
+        fbin0_min=(b0 - tth_rmin) * (BINS) / (tth_rmax - tth_rmin);
+        fbin0_max=(a0 - tth_rmin) * (BINS) / (tth_rmax - tth_rmin);
         bin0_min = (int)fbin0_min;
         bin0_max = (int)fbin0_max;
 
@@ -428,6 +343,7 @@ create_histo_binarray(const __global float    *tth,
 
         I_interp = (fbin0_max - fbin0_min)/fbinsize;
         I_interp = I_interp * (I_interp < 1.0f) + 1.0f * (I_interp >= 1.0f);
+        //barrier(CLK_LOCAL_MEM_FENCE); //does not really matter, but breaks CPU OCLs
         for(int spreadloop=0;spreadloop<spread+1;spreadloop++)
         {
           fbin = fbin0_min + spreadloop;
@@ -440,13 +356,13 @@ create_histo_binarray(const __global float    *tth,
 
           convert0 = (UINTType)((x_interp * I_interp)*UACC);
           convert1 = (UINTType)((x_interp * I_interp * intensity[gid])*UACC);
-          barrier(CLK_LOCAL_MEM_FENCE);
+          //barrier(CLK_LOCAL_MEM_FENCE); //CPU OCLs
           if(inrange && cbin < BINS){
             atom_add(&binarray[cbin],convert0);
             atom_add(&histogram[cbin],convert1);
           }
         }
       }
-    }
-  }
+    }//mask
+  }//gid guard
 }

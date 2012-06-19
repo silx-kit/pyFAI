@@ -150,8 +150,8 @@ cdef class Integrator1d:
         tthc = numpy.ascontiguousarray(tth.ravel(),dtype=numpy.float32)
         dtthc = numpy.ascontiguousarray(dtth.ravel(),dtype=numpy.float32)
 
-        self._tth_max=(tthc+dtthc).max()#*(1.0 + numpy.finfo(numpy.float32).eps)
-        self._tth_min=(tthc-dtthc).min()
+        self._tth_max=(tthc+dtthc).max()*(1.0 + numpy.finfo(numpy.float32).eps)
+        self._tth_min=max(0.0,(tthc-dtthc).min())
         if tth_min is None:
             tth_min = self._tth_min
 
