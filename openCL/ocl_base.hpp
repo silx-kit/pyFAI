@@ -20,7 +20,7 @@
  *                             Grenoble, France
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
- *   Last revision: 11/05/2012
+ *   Last revision: 21/06/2012
  *    
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -51,7 +51,10 @@
 #define OCL_BASE_H
 
 #ifdef _WIN32
-#define _CRT_SECURE_NO_WARNINGS 1
+	#ifndef _CRT_SECURE_NO_WARNINGS
+		#define _CRT_SECURE_NO_WARNINGS
+	#endif
+	#pragma warning(disable : 4996)
 #endif
 
 #include <iostream>
@@ -112,18 +115,12 @@ public:
 /*
  * Prints a list of OpenCL capable devices, their platforms and their ids
  */  
-  void show_devices();
+  void show_devices(int ignoreStream=1);
 
 /*
- * Same as show_devices but displays the results always on stdout even
- * if the stream is set to a file
- */
- void print_devices();
-
-/*
- * Print details of a selected device
+ * Prints some basic information about the device in use
  */  
-  void show_device_details();
+  void show_device_details(int ignoreStream=1);
 
 /*
  * Provide help message for interactive environments
@@ -163,11 +160,16 @@ public:
    */
   int get_status();
 
-  void print_active_platform_info();
-  void print_active_device_info();
+ /*
+  *Returns the pair ID (platform.device) of the active device
+  */
+  void get_contexed_Ids(int &platform, int &device);
 
-  void return_pair(int &platform, int &device);
-  
+ /*
+  *Returns the -C++- pair ID (platform.device) of the active device
+  */
+  std::pair<int,int> get_contexed_Ids()  ;
+
 /**
  * \brief Holds the documentation message
  */  
@@ -266,6 +268,8 @@ protected:
  *
  */  
   void setDocstring(const char *default_text, const char *filename);
+
+  void promote_device_details();
 };
 
 #endif

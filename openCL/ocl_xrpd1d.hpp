@@ -41,7 +41,10 @@
 #define OCL_XRPD1D_H
  
 #ifdef _WIN32
-#define _CRT_SECURE_NO_WARNINGS 1
+	#ifndef _CRT_SECURE_NO_WARNINGS
+		#define _CRT_SECURE_NO_WARNINGS
+	#endif
+	#pragma warning(disable : 4996)
 #endif
 
 #include <iostream>

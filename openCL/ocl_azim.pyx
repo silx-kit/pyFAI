@@ -303,12 +303,6 @@ cdef class Integrator1d:
         "Prints a list of OpenCL capable devices, their platforms and their ids"
         self.cpp_integrator.show_devices()
 
-
-    def print_devices(self):
-        """Same as show_devices but displays the results always on stdout even
-        if the stream is set to a file"""
-        self.cpp_integrator. print_devices()
-
     def  show_device_details(self):
         "Print details of a selected device"
         self.cpp_integrator.show_device_details()
@@ -337,26 +331,12 @@ cdef class Integrator1d:
             out[v]=bool(int(retbin[i]))
         return out
 
-    def print_active_platform_info(self):
-        """
-        Print (on stdout) information of the current platform
-        Todo: return the string by modifying stdout if can be done
-        """
-        self.cpp_integrator.print_active_platform_info()
-
-    def print_active_device_info(self):
-        """
-        Print (on stdout) information of the current device
-        Todo: return the string by modifying stdout if can be done
-        """
-        self.cpp_integrator.print_active_device_info()
-
     def get_ids(self):
         """
         @return: 2-tuple of integers corresponding to (platform_id, device_id)
         """
         cdef int platform = -1, device = -1
-        self.cpp_integrator.return_pair(platform, device)
+        self.cpp_integrator.get_contexed_Ids(platform, device)
         return (platform, device)
 
 _INTEGRATORS_1D={} #key=(Nimage,NBins), value=instance of Integrator1d

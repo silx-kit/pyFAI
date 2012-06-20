@@ -20,7 +20,7 @@
  *                           Grenoble, France
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
- *   Last revision: 11/05/2011
+ *   Last revision: 21/06/2011
  *    
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -54,10 +54,6 @@
 
 #define CER CL_CHECK_ERR_PR_RET
 #define CR  CL_CHECK_PR_RET
-
-#ifdef _WIN32
-#define _CRT_SECURE_NO_WARNINGS 1
-#endif
 
 //#define silent
 #ifdef _SILENT
@@ -98,9 +94,8 @@ ocl::ocl(){
 
 ocl::~ocl(){
   clean();
+  ocl_tools_destroy(oclconfig);
   delete oclconfig;
-  ocl_platform_info_del(platform_info);
-  ocl_device_info_del(device_info);
   delete sgs;
   if(!usesStdout) fclose(stream);
   delete[] docstr;
@@ -134,12 +129,8 @@ void ocl::ContructorInit()
   
   sgs = new az_argtype;
   oclconfig = new ocl_config_type;
-  oclconfig->Nbuffers=0;
-  oclconfig->Nkernels=0;
-  oclconfig->oclmemref =NULL;
-  oclconfig->oclkernels=NULL;
-  ocl_platform_info_init(platform_info);
-  ocl_device_info_init(device_info);
+  ocl_tools_initialise(oclconfig);
+
   sgs->Nx = 0;
   sgs->Nimage = 0;
   sgs->Nbins = 0;
@@ -153,69 +144,81 @@ void ocl::ContructorInit()
 /**
  *  \brief Prints a list of OpenCL capable devices, their platforms and their ids to stream
  */  
-void ocl::show_devices(){
+void ocl::show_devices(int ignoreStream){
 
-  //Print all the probed devices to stream
-  ocl_check_platforms(stream);
+  //Print all the probed devices
+  if(ignoreStream) ocl_check_platforms();
+  else ocl_check_platforms(stream);
+
 return;
 }
 
-void ocl::print_active_platform_info()
-{
-  if(hasActiveContext)
-  {
-    ocl_current_platform_info(oclconfig, platform_info);
-  }
-    std::cout<<"Platform name: " << platform_info.name<<std::endl;
-    std::cout<<"Platform version: " << platform_info.version<<std::endl;
-    std::cout<<"Platform vendor: " << platform_info.vendor<<std::endl;
-    std::cout<<"Platform extensions: " << platform_info.extensions<<std::endl;
-  //}
-return;  
-}
-
-void ocl::print_active_device_info()
-{
-  if(hasActiveContext)
-  {
-    ocl_current_device_info(oclconfig, device_info);
-  }
-    std::cout<<"Device name: " << device_info.name<<std::endl;
-    std::cout<<"Device type: " << device_info.type<<std::endl;
-    std::cout<<"Device version: " << device_info.version<<std::endl;
-    std::cout<<"Device driver version: " << device_info.driver_version<<std::endl;
-    std::cout<<"Device extensions: " << device_info.extensions<<std::endl;
-    std::cout<<"Device Max Memory: " << device_info.global_mem<<std::endl;
-  //}
-return;
-}
-
-void ocl::return_pair(int &platform, int &device)
+/**
+ * \brief Returns the pair ID (platform.device) of the active device
+ */
+void ocl::get_contexed_Ids(int &platform, int &device)
 {
   platform = oclconfig->platfid;
   device   = oclconfig->devid;
-
 return;  
 }
 
 /**
- *  \brief Prints a list of OpenCL capable devices, their platforms and their ids to stdout
+ * \brief Returns the -C++- pair ID (platform.device) of the active device
  */
-void ocl::print_devices(){
+std::pair<int,int> ocl::get_contexed_Ids()
+{
+return std::make_pair(oclconfig->platfid, oclconfig->devid);  
+}
 
-  //Print all the probed devices to stdout
-  ocl_check_platforms();
+/**
+ * \brief Prints some basic information about the device in use
+ */
+void ocl::show_device_details(int ignoreStream){
+	
+	if(hasActiveContext)
+	{
+		int dev,plat;
+		std::string heading;
+		char cast_plat,cast_dev;
+		FILE *tmp;
+
+		get_contexed_Ids(plat,dev);
+
+		cast_plat = '0' + (char)plat;
+		cast_dev  = '0' + (char)dev;
+
+		heading = '(' + cast_plat + '.' + cast_dev + ')' + ' ';
+
+		//We need to do the following with fprintf because the stream is FILE and not ofstream.
+		if(ignoreStream) tmp = stdout;
+		else tmp = stream;
+
+		fprintf(tmp,"%s Platform name: %s\n", heading.c_str(), platform_info.name);
+		fprintf(tmp,"%s Platform version: %s\n", heading.c_str(), platform_info.version);
+		fprintf(tmp,"%s Platform vendor: %s\n", heading.c_str(), platform_info.vendor);
+		fprintf(tmp,"%s Platform extensions: %s\n", heading.c_str(), platform_info.extensions);
+
+		fprintf(tmp,"\n");
+
+		fprintf(tmp,"%s Device name: %s\n", heading.c_str(), device_info.name);
+		fprintf(tmp,"%s Device type: %s\n", heading.c_str(), device_info.type);
+		fprintf(tmp,"%s Device version: %s\n", heading.c_str(), device_info.version);
+		fprintf(tmp,"%s Device driver version: %s\n", heading.c_str(), device_info.driver_version);
+		fprintf(tmp,"%s Device extensions: %s\n", heading.c_str(), device_info.extensions);
+		fprintf(tmp,"%s Device Max Memory: %s\n", heading.c_str(), device_info.global_mem);
+	}
 return;
 }
 
 /**
- * \brief Not implemented
+ * \brief Makes platform and device info datafields visible to external callers
  */
-void ocl::show_device_details(){
-
-  return;
+void ocl::promote_device_details()
+{
+	platform_info = oclconfig->platform_info;
+	device_info   = oclconfig->device_info;
 }
-
 /**
  * \brief Returns a documentation string
  */
@@ -241,6 +244,8 @@ int ocl::init(const bool useFp64){
   clean();
   if(ocl_init_context(oclconfig,"DEF",(int)useFp64,stream)) return -1;
   else hasActiveContext=1;
+  promote_device_details();
+
 return 0;
 }
 
@@ -261,6 +266,7 @@ int ocl::init(const char *devicetype,const bool useFp64){
   this->clean();
   if(ocl_init_context(oclconfig,devicetype,(int)useFp64,stream)) return -1;
   else hasActiveContext=1;
+  promote_device_details();
 
 return 0;
 }
@@ -285,6 +291,8 @@ int ocl::init(const char *devicetype,int platformid,int devid,const bool useFp64
   clean();
   if(ocl_init_context(oclconfig,devicetype,platformid,devid,(int)useFp64,stream)) return -1;
   else hasActiveContext=1;
+  promote_device_details();
+
 return 0;
 }
 
@@ -436,7 +444,7 @@ void ocl::setDocstring(const char *default_text, const char *filename)
   strcpy(docstr,bkp);
 
   ifstream readme;
-  int len=0;
+  std::streamoff len=0;
 
   readme.open(filename,ios::in);
 
