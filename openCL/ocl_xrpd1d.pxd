@@ -97,7 +97,7 @@ cdef extern from "ocl_xrpd1d.hpp":
         #Print details of a selected device
         void show_device_details() nogil
 
-        #Resets the internal profiling timers to 0  
+        #Resets the internal profiling timers to 0
         void  reset_time() nogil
 
         #Returns the internal profiling timer for the kernel executions
@@ -110,3 +110,9 @@ cdef extern from "ocl_xrpd1d.hpp":
         float get_memCpy_time() nogil
 
         int get_status() nogil
+
+        void print_active_platform_info() nogil
+
+        void print_active_device_info() nogil
+
+        void return_pair(int & platform, int & device) nogil

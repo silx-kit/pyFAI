@@ -273,16 +273,16 @@ cdef class Integrator1d:
 ################################################################################
 # Methods inherited from ocl_base class
 ################################################################################
-    def init(self,devicetype="gpu", platformid=None, deviceid=None, useFp64=True):
+    def init(self,devicetype="gpu",useFp64=True, platformid=None, deviceid=None ):
         """Initial configuration: Choose a device and initiate a context. Devicetypes can be GPU,gpu,CPU,cpu,DEF,ACC,ALL.
         Suggested are GPU,CPU. For each setting to work there must be such an OpenCL device and properly installed.
         E.g.: If Nvidia driver is installed, GPU will succeed but CPU will fail. The AMD SDK kit is required for CPU via OpenCL.
+        @param devicetype: string in ["cpu","gpu", "all", "acc"]
         @param useFp64: boolean specifying if double precision will be used
-        @param devicetype: string in ["cpu","gpu"]
         @param platformid: integer
         @param devid: integer
         """
-        cdef int forceIDs, rc 
+        cdef int forceIDs, rc
         self._useFp64 = <cpp_bool> useFp64
         self._devicetype = <char*> devicetype
         if (platformid is not None) and (deviceid is not None):
@@ -291,15 +291,14 @@ cdef class Integrator1d:
             forceIDs = 1
         else:
             forceIDs = 0
-            
-#        print "interface %s %s %s %s %s"%( self._devicetype, self._platformid, self._deviceid, self._useFp64,  forceIDs)           
+
         with nogil:
             if forceIDs:
                 rc = self.cpp_integrator.init(<char*>self._devicetype, <int>self._platformid, <int>self._deviceid, <cpp_bool> self._useFp64)
             else:
                 rc = self.cpp_integrator.init(<char*>self._devicetype, <cpp_bool> self._useFp64)
         return rc
-    
+
     def show_devices(self):
         "Prints a list of OpenCL capable devices, their platforms and their ids"
         self.cpp_integrator.show_devices()
@@ -337,6 +336,29 @@ cdef class Integrator1d:
         for i,v in enumerate(['dummy', 'mask', 'solid_angle', 'pos1', 'pos0', 'compiled', 'size', 'context']):
             out[v]=bool(int(retbin[i]))
         return out
+
+    def print_active_platform_info(self):
+        """
+        Print (on stdout) information of the current platform
+        Todo: return the string by modifying stdout if can be done
+        """
+        self.cpp_integrator.print_active_platform_info()
+
+    def print_active_device_info(self):
+        """
+        Print (on stdout) information of the current device
+        Todo: return the string by modifying stdout if can be done
+        """
+        self.cpp_integrator.print_active_device_info()
+
+    def get_ids(self):
+        """
+        @return: 2-tuple of integers corresponding to (platform_id, device_id)
+        """
+        cdef int platform = -1, device = -1
+        self.cpp_integrator.return_pair(platform, device)
+        return (platform, device)
+
 _INTEGRATORS_1D={} #key=(Nimage,NBins), value=instance of Integrator1d
 lock =threading.Semaphore()
 
