@@ -279,7 +279,7 @@ int ocl_xrpd1D_fullsplit::configure(const char* kernel_path)
   CR(
     clEnqueueNDRangeKernel(oclconfig->oclcmdqueue,oclconfig->oclkernels[CLKERN_IMEMSET],1,0,wdim,tdim,0,0,&oclconfig->t_s[0]) );
 
-  execTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0],  "Initialise Mask to 0");
+  execTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0],  "Initialise Mask to 0", stream);
   clReleaseEvent(oclconfig->t_s[0]);
   
 return 0;

@@ -99,6 +99,8 @@ ocl::ocl(){
 ocl::~ocl(){
   clean();
   delete oclconfig;
+  ocl_platform_info_del(platform_info);
+  ocl_device_info_del(device_info);
   delete sgs;
   if(!usesStdout) fclose(stream);
   delete[] docstr;
@@ -136,6 +138,8 @@ void ocl::ContructorInit()
   oclconfig->Nkernels=0;
   oclconfig->oclmemref =NULL;
   oclconfig->oclkernels=NULL;
+  ocl_platform_info_init(platform_info);
+  ocl_device_info_init(device_info);
   sgs->Nx = 0;
   sgs->Nimage = 0;
   sgs->Nbins = 0;
@@ -154,6 +158,44 @@ void ocl::show_devices(){
   //Print all the probed devices to stream
   ocl_check_platforms(stream);
 return;
+}
+
+void ocl::print_active_platform_info()
+{
+  if(hasActiveContext)
+  {
+    ocl_current_platform_info(oclconfig, platform_info);
+  }
+    std::cout<<"Platform name: " << platform_info.name<<std::endl;
+    std::cout<<"Platform version: " << platform_info.version<<std::endl;
+    std::cout<<"Platform vendor: " << platform_info.vendor<<std::endl;
+    std::cout<<"Platform extensions: " << platform_info.extensions<<std::endl;
+  //}
+return;  
+}
+
+void ocl::print_active_device_info()
+{
+  if(hasActiveContext)
+  {
+    ocl_current_device_info(oclconfig, device_info);
+  }
+    std::cout<<"Device name: " << device_info.name<<std::endl;
+    std::cout<<"Device type: " << device_info.type<<std::endl;
+    std::cout<<"Device version: " << device_info.version<<std::endl;
+    std::cout<<"Device driver version: " << device_info.driver_version<<std::endl;
+    std::cout<<"Device extensions: " << device_info.extensions<<std::endl;
+    std::cout<<"Device Max Memory: " << device_info.global_mem<<std::endl;
+  //}
+return;
+}
+
+void ocl::return_pair(int &platform, int &device)
+{
+  platform = oclconfig->platfid;
+  device   = oclconfig->devid;
+
+return;  
 }
 
 /**
@@ -395,7 +437,6 @@ void ocl::setDocstring(const char *default_text, const char *filename)
 
   ifstream readme;
   int len=0;
-  size_t count;
 
   readme.open(filename,ios::in);
 
