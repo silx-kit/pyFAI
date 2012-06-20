@@ -48,8 +48,8 @@
 #else
   #pragma OPENCL EXTENSION cl_khr_fp64 : disable
   #pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable
-  #define UACC  1000
-  #define UACCf 1000.0f
+  #define UACC  100
+  #define UACCf 100.0f
   typedef unsigned int UINTType;
 #endif
 

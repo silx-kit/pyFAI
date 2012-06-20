@@ -7,10 +7,10 @@ import utilstest
 pyFAI = utilstest.UtilsTest.pyFAI
 
 
-datasets = {#"Fairchild.poni":utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
+datasets = {"Fairchild.poni":utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
             "halfccd.poni":utilstest.UtilsTest.getimage("1882/halfccd.edf"),
-            #"Frelon2k.poni":utilstest.UtilsTest.getimage("1881/Frelon2k.edf"),
-            #"Pilatus6M.poni":utilstest.UtilsTest.getimage("1884/Pilatus6M.cbf"),
+            "Frelon2k.poni":utilstest.UtilsTest.getimage("1881/Frelon2k.edf"),
+            "Pilatus6M.poni":utilstest.UtilsTest.getimage("1884/Pilatus6M.cbf"),
             "Pilatus1M.poni":utilstest.UtilsTest.getimage("1883/Pilatus1M.edf"),
       }
 
@@ -97,13 +97,14 @@ out=ai.xrpd2(data,500,360)""" % (param, fn)
 
             try:
                 t0 = time.time()
+#                print "bench", devicetype, useFp64, platformid, deviceid
                 res = ai.xrpd_OpenCL(data, N, devicetype=devicetype, useFp64=useFp64, platformid=platformid, deviceid=deviceid)
                 t1 = time.time()
             except Exception as error:
                 print("Failed to find an OpenCL GPU (useFp64:%s) %s" % (useFp64, error))
                 continue
-            else:
-                ai._ocl.print_devices()
+#            else:
+#                ai._ocl.print_devices()
 
             self.print_init(t1 - t0)
             ref = ai.xrpd(data, N)
@@ -115,7 +116,7 @@ import pyFAI,fabio
 ai=pyFAI.load("%s")
 data = fabio.open("%s").data
 N=min(data.shape)
-out=ai.xrpd_OpenCL(data,N,devicetype="gpu", useFp64=%s,platformid=%s, deviceid=%s)""" % (param, fn, useFp64, platformid, deviceid)
+out=ai.xrpd_OpenCL(data,N, devicetype="%s", useFp64=%s, platformid=%s, deviceid=%s)""" % (param, fn, devicetype, useFp64, platformid, deviceid)
             t = timeit.Timer("ai.xrpd_OpenCL(data,N,safe=False)", setup)
             tmin = min([i / n for i in t.repeat(repeat=5, number=n)])
             self.print_exec(tmin)
@@ -133,6 +134,8 @@ if __name__ == "__main__":
     b.bench_cpu2d(n)
     b.bench_gpu1d(n, "all", True)
     b.bench_gpu1d(n, "all", False)
+#    b.bench_gpu1d(n, "all", True, 0, 1)
+#    b.bench_gpu1d(n, "all", False, 0, 1)
 #    b.bench_gpu1d(n, "all", True, 1, 0)
 #    b.bench_gpu1d(n, "all", False, 1, 0)
 #    b.bench_gpu1d(n, "all", True, 2, 0)
