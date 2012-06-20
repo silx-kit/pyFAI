@@ -18,7 +18,7 @@
  *                                 Grenoble, France
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
- *   Last revision: 26/04/2012
+ *   Last revision: 20/06/2012
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -61,6 +61,39 @@
 #define OCL_MAX_DEVICES 5
 
 /**
+ * \brief OpenCL tools platform information struct
+ *
+ * It can be passed to ocl_platform_info to
+ * retrieve and save platform information
+ * for the currect context
+ */
+typedef struct
+{
+  char *name;
+  char *vendor;
+  char *version;
+  char *extensions;
+}ocl_plat_t;
+
+/**
+ * \brief OpenCL tools platform information struct
+ *
+ * It can be passed to ocl_device_info to
+ * retrieve and save device information
+ * for the currect context
+ */
+typedef struct
+{
+  char *name;
+  char type[4];
+  char *refcount;
+  char *version;
+  char *driver_version;
+  char *extensions;
+  unsigned long global_mem;
+}ocl_dev_t;
+
+/**
  * \brief OpenCL tools cl_program structure
  * 
  * Substruct of ocl_configuration_parameters.
@@ -89,6 +122,9 @@ typedef struct ocl_configuration_parameters{
   cl_command_queue  oclcmdqueue;
   cl_mem            *oclmemref;
 
+  int devid;
+  int platfid;
+  
   //If single .cl file:
   cl_program        oclprogram;
   size_t            *kernelstring_lens;
@@ -128,7 +164,7 @@ int ocl_find_devicetype(cl_device_type device_type, cl_platform_id &platform, cl
 /**
  * \brief Simple check for a "device_type" device. Returns the first occurance that supports double precision only
  */
-int ocl_find_devicetype_FP64(cl_device_type device_type, cl_platform_id &platform, cl_device_id &devid,FILE *stream=stdout);
+int ocl_find_devicetype_FP64(cl_device_type device_type, cl_platform_id& platform, cl_device_id& devid);
 
 /**
  * \brief Probes OpenCL platforms & devices of a given cl_device_type. Keeps the selected device in oclconfig
@@ -169,22 +205,14 @@ int ocl_init_context(ocl_config_type *oclconfig,cl_platform_id platform,cl_devic
 /**
  * \brief Destroy an OpenCL context
  */
-int ocl_destroy_context(cl_context oclcontext,FILE *stream=stdout);
-
-/**
- * \brief deprecated eval_Fp64. Use ocl_eval_FP64 instead
- */
-/*WARNING this is a deprecated function as this way may not always fail under different OpenCL compilers*/
-/* Use the new ocl_eval_FP64 instead*/
-/* Used fixed minimal kernels to check if FP64 is supported. Returns 0 on successful FP64 evaluation and -1 if only FP32. Exits on failure*/
-int _deprec_ocl_eval_FP64(ocl_config_type *oclconfig,int *eval_res,FILE *stream=stdout);
+int ocl_destroy_context(cl_context oclcontext);
 
 /**
  * \brief Queries the fp64 capability of an OpenCL device that has been selected by ocl_probe
  */
 /* Queries device capabilities to figure if it meets the minimum requirement for double precision*/
 /* Returns 0 on successful FP64 evaluation and -1 if only FP32 */
-int ocl_eval_FP64(ocl_config_type *oclconfig,int *eval_res, FILE *stream);
+int ocl_eval_FP64(ocl_config_type *oclconfig, FILE *stream);
 
 /**
  * \brief Queries the fp64 capability of an OpenCL device directly via the cl_device_id
@@ -236,6 +264,14 @@ float ocl_get_profT(cl_event *start, cl_event *stop);
  */
 int ocl_string_to_cldevtype(const char *devicetype, cl_device_type &ocldevtype);
 
+void ocl_platform_info_init(ocl_plat_t &platinfo);
+void ocl_platform_info_del(ocl_plat_t &platinfo);
+void ocl_device_info_init(ocl_dev_t &devinfo);
+void ocl_device_info_del(ocl_dev_t &devinfo);
+
+int ocl_current_platform_info(ocl_config_type *oclconfig, ocl_plat_t &platinfo);
+int ocl_current_device_info(ocl_config_type *oclconfig, ocl_dev_t &devinfo);
+
 /**
  * \brief Translate error code to error message
  */
@@ -248,7 +284,7 @@ int ocl_string_to_cldevtype(const char *devicetype, cl_device_type &ocldevtype);
  */
 /* Opencl error function. Some Opencl functions allow pfn_notify to report errors, by passing it as pointer.
       Consult the OpenCL reference card for these functions. */
-void __call_compat pfn_notify(const char *errinfo, const void *private_info, size_t cb, void *user_data);
+void __call_compat pfn_notify(const char *errinfo);
 
 /* Basic function to handle error messages */
 void ocl_errmsg(const char *userstring, const char *file, const int line);

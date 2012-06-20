@@ -18,7 +18,7 @@
  *                                 Grenoble, France
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
- *   Last revision: 11/05/2012
+ *   Last revision: 20/06/2012
  *    
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -86,7 +86,6 @@
 int ocl_probe(ocl_config_type *oclconfig,cl_device_type ocldevtype,int usefp64,FILE *stream){
 
   //OpenCL API types
-  cl_context oclcontext;
   cl_platform_id *oclplatforms;
   cl_device_id *ocldevices;
 
@@ -94,8 +93,6 @@ int ocl_probe(ocl_config_type *oclconfig,cl_device_type ocldevtype,int usefp64,F
   cl_int check_ocl=0;
   int device_found=0;
   cl_uint num_platforms,num_devices;
-  int param_value; cl_uint param_value_u;
-  long param_value_l;
   cl_bool param_value_b;
   size_t param_value_size;
   char param_value_s[1024];
@@ -127,8 +124,8 @@ int ocl_probe(ocl_config_type *oclconfig,cl_device_type ocldevtype,int usefp64,F
           {
             if(ocl_eval_FP64(ocldevices[j])) continue;
           }
-          oclconfig->ocldevice  = ocldevices[j];
-          oclconfig->oclplatform= oclplatforms[i];
+          oclconfig->ocldevice  = ocldevices[j]; oclconfig->devid = j;
+          oclconfig->oclplatform= oclplatforms[i]; oclconfig->platfid = i;
           CL_CHECK(clGetDeviceInfo(ocldevices[j],CL_DEVICE_GLOBAL_MEM_SIZE,sizeof(cl_ulong),&oclconfig->dev_mem,NULL));
           CL_CHECK(clGetDeviceInfo(ocldevices[j],CL_DEVICE_NAME,sizeof(param_value_s),&param_value_s,NULL));
           fprintf(stream,"Selected device: (%d.%d) %s. \n",i,j,param_value_s);
@@ -138,7 +135,7 @@ int ocl_probe(ocl_config_type *oclconfig,cl_device_type ocldevtype,int usefp64,F
           if(!strcmp("NVIDIA Corporation",param_value_s)){
             fprintf(stream,"Device is NVIDIA, adding nv extensions\n");
             sprintf(oclconfig->compiler_options,"-cl-nv-verbose");
-          }else sprintf(oclconfig->compiler_options,"");
+          }else sprintf(oclconfig->compiler_options," ");
           device_found = 1;
           break;
         }
@@ -185,11 +182,9 @@ int ocl_probe(ocl_config_type *oclconfig,cl_device_type ocldevtype,int preset_pl
               FILE *stream){
 
   cl_int check_ocl=0;
-  cl_context oclcontext;
   cl_platform_id *oclplatforms;
   cl_device_id *ocldevices;  
   cl_uint num_platforms,num_devices=0;
-  int param_value; cl_uint param_value_u;
   cl_bool param_value_b;
   size_t param_value_size;
   char param_value_s[1024];
@@ -239,8 +234,8 @@ int ocl_probe(ocl_config_type *oclconfig,cl_device_type ocldevtype,int preset_pl
         return -1;
       }
     }    
-    oclconfig->ocldevice  = ocldevices[preset_device];
-    oclconfig->oclplatform= oclplatforms[preset_platform];
+    oclconfig->ocldevice  = ocldevices[preset_device]; oclconfig->devid = preset_device;
+    oclconfig->oclplatform= oclplatforms[preset_platform]; oclconfig->platfid = preset_platform;
     CL_CHECK(clGetDeviceInfo(ocldevices[preset_device],CL_DEVICE_GLOBAL_MEM_SIZE,sizeof(cl_ulong),&oclconfig->dev_mem,NULL));
     CL_CHECK(clGetDeviceInfo(ocldevices[preset_device],CL_DEVICE_NAME,sizeof(param_value_s),&param_value_s,NULL));
     fprintf(stream,"Selected device: (%d.%d) %s. \n",preset_platform,preset_device,param_value_s);
@@ -248,7 +243,7 @@ int ocl_probe(ocl_config_type *oclconfig,cl_device_type ocldevtype,int preset_pl
     if(!strcmp("NVIDIA Corporation",param_value_s)){
       fprintf(stream,"Device is NVIDIA, adding nv extensions\n");
       sprintf(oclconfig->compiler_options,"-cl-nv-verbose");
-    }else sprintf(oclconfig->compiler_options,"");
+    }else sprintf(oclconfig->compiler_options," ");
     free(oclplatforms);
     free(ocldevices);       
     return 0;
@@ -287,13 +282,12 @@ int ocl_probe(ocl_config_type *oclconfig,cl_device_type ocldevtype,int preset_pl
  */
 int ocl_probe(ocl_config_type *oclconfig,cl_platform_id platform,cl_device_id device,int usefp64,FILE *stream){
 
-  cl_int check_ocl=0;
-  cl_context oclcontext;
-  int param_value; cl_uint param_value_u;
   cl_bool param_value_b;
   size_t param_value_size;
   char param_value_s[1024];
-
+  cl_uint num_platforms,num_devices;
+  int finished = 0;
+  
   CL_CHECK_PRN(clGetDeviceInfo(device,CL_DEVICE_AVAILABLE,sizeof(cl_device_info),
                                                         (void*)&param_value_b,&param_value_size));
   if(param_value_b==CL_TRUE){
@@ -307,6 +301,30 @@ int ocl_probe(ocl_config_type *oclconfig,cl_platform_id platform,cl_device_id de
     }        
     oclconfig->ocldevice  = device;
     oclconfig->oclplatform= platform;
+
+    cl_platform_id oclplatforms[OCL_MAX_PLATFORMS];
+    cl_device_id ocldevices[OCL_MAX_DEVICES];
+    CL_CHECK_PRN( clGetPlatformIDs(OCL_MAX_PLATFORMS,oclplatforms,&num_platforms) );
+    
+    for(cl_uint i =0; i<num_platforms;i++)
+    {
+      if (oclplatforms[i] == platform)
+      {
+        oclconfig->platfid = i;
+        clGetDeviceIDs(oclplatforms[i],CL_DEVICE_TYPE_ALL,OCL_MAX_DEVICES,ocldevices,&num_devices) ;
+        for(cl_uint j = 0; j<num_devices;j++)
+        {
+          if(ocldevices[j] == device)
+          {
+            oclconfig->devid = j;
+            finished=1;
+            break;
+          }
+        }
+      }
+      if(finished)break;
+    }
+    
     CL_CHECK(clGetDeviceInfo(device,CL_DEVICE_GLOBAL_MEM_SIZE,sizeof(cl_ulong),&oclconfig->dev_mem,NULL));
     CL_CHECK(clGetDeviceInfo(device,CL_DEVICE_NAME,sizeof(param_value_s),&param_value_s,NULL));
     fprintf(stream,"Selected device: %s. \n",param_value_s);
@@ -314,7 +332,7 @@ int ocl_probe(ocl_config_type *oclconfig,cl_platform_id platform,cl_device_id de
     if(!strcmp("NVIDIA Corporation",param_value_s)){
       fprintf(stream,"Device is NVIDIA, adding nv extensions\n");
       sprintf(oclconfig->compiler_options,"-cl-nv-verbose");
-    }else sprintf(oclconfig->compiler_options,"");
+    }else sprintf(oclconfig->compiler_options," ");
     return 0;
   } else {
     fprintf(stderr,"Preset device not available for computations\n");
@@ -349,7 +367,7 @@ int ocl_probe(ocl_config_type *oclconfig,cl_platform_id platform,cl_device_id de
  *         0: Success
  *        -1: OpenCL API related error
  */
-int ocl_find_devicetype(cl_device_type device_type, cl_platform_id &platform, cl_device_id &devid,FILE *stream){
+int ocl_find_devicetype(cl_device_type device_type, cl_platform_id &platform, cl_device_id &devid){
 
   cl_platform_id *oclplatforms;
   cl_device_id *ocldevices;
@@ -361,7 +379,7 @@ int ocl_find_devicetype(cl_device_type device_type, cl_platform_id &platform, cl
 
   CL_CHECK_PRN (clGetPlatformIDs(OCL_MAX_PLATFORMS,oclplatforms,&num_platforms));
   if(num_platforms){
-    for(int i=0;i<num_platforms;i++){
+    for(cl_uint i=0;i<num_platforms;i++){
       clGetDeviceIDs(oclplatforms[i],device_type,OCL_MAX_DEVICES,ocldevices,&num_devices);
       if(num_devices){
         devid = ocldevices[0];
@@ -399,7 +417,7 @@ int ocl_find_devicetype(cl_device_type device_type, cl_platform_id &platform, cl
  *         0: Success
  *        -1: OpenCL API related error
  */
-int ocl_find_devicetype_FP64(cl_device_type device_type, cl_platform_id &platform, cl_device_id &devid,FILE *stream){
+int ocl_find_devicetype_FP64(cl_device_type device_type, cl_platform_id &platform, cl_device_id &devid){
 
   cl_platform_id *oclplatforms;
   cl_device_id *ocldevices;
@@ -411,10 +429,10 @@ int ocl_find_devicetype_FP64(cl_device_type device_type, cl_platform_id &platfor
 
   CL_CHECK_PRN (clGetPlatformIDs(OCL_MAX_PLATFORMS,oclplatforms,&num_platforms));
   if(num_platforms){
-    for(int i=0;i<num_platforms;i++){
+    for(cl_uint i=0;i<num_platforms;i++){
       clGetDeviceIDs(oclplatforms[i],device_type,OCL_MAX_DEVICES,ocldevices,&num_devices);
       if(num_devices){
-				for(int idev=0;idev<num_devices; idev++){
+				for(cl_uint idev=0;idev<num_devices; idev++){
 					if(!ocl_eval_FP64(ocldevices[idev])){
 						devid = ocldevices[idev];
 						platform = oclplatforms[i];
@@ -457,7 +475,6 @@ int ocl_check_platforms(FILE *stream){
   cl_device_id *ocldevices;
   cl_uint num_platforms,num_devices;
   char param_value[10000];
-  int p2;
   size_t param_value_size=sizeof(param_value);
 
   oclplatforms = (cl_platform_id*)malloc(OCL_MAX_PLATFORMS*sizeof(cl_platform_id));
@@ -471,7 +488,7 @@ int ocl_check_platforms(FILE *stream){
     return -1;
   }else{
     fprintf(stream,"%d OpenCL platform(s) found\n",num_platforms);
-    for(int i=0;i<num_platforms;i++){
+    for(cl_uint i=0;i<num_platforms;i++){
       fprintf(stream," Platform info:\n");
 //       clGetPlatformInfo(oclplatforms[i],CL_PLATFORM_PROFILE,param_value_size,&param_value,NULL);
 //       printf(" %s\n",param_value);
@@ -485,7 +502,7 @@ int ocl_check_platforms(FILE *stream){
 //       printf(" %s\n",param_value);
       CL_CHECK_PRN( clGetDeviceIDs(oclplatforms[i],CL_DEVICE_TYPE_ALL,OCL_MAX_DEVICES,ocldevices,&num_devices) );
       fprintf(stream,"  %d Device(s) found:\n",num_devices);
-      for(int j=0;j<num_devices;j++){
+      for(cl_uint j=0;j<num_devices;j++){
           CL_CHECK_PRN(clGetDeviceInfo(ocldevices[j],CL_DEVICE_NAME,param_value_size,&param_value,NULL));
           fprintf(stream,"   (%d.%d): %s\n",i,j,param_value);
       }    
@@ -510,7 +527,7 @@ int ocl_check_platforms(FILE *stream){
  *         0: Success
  *        -1: OpenCL API related error
  */
-int ocl_destroy_context(cl_context oclcontext, FILE *stream){
+int ocl_destroy_context(cl_context oclcontext){
 
   CL_CHECK_PR_RET(clReleaseContext(oclcontext));
 
@@ -670,8 +687,7 @@ int ocl_compiler(ocl_config_type *oclconfig,const char *kernelfilename,int BLOCK
   rewind(kernel);
 
   oclconfig->kernelstrings[0] = (char*)malloc(oclconfig->kernelstring_lens[0]);
-  int counter = \
-    fread ( oclconfig->kernelstrings[0], sizeof(char), oclconfig->kernelstring_lens[0]/sizeof(char), kernel );
+  fread ( oclconfig->kernelstrings[0], sizeof(char), oclconfig->kernelstring_lens[0]/sizeof(char), kernel );
   fprintf(stream,"Loaded kernel in string\n");
   fclose(kernel);
   
@@ -696,7 +712,6 @@ int ocl_compiler(ocl_config_type *oclconfig,const char *kernelfilename,int BLOCK
 
   if(err){
     char buildinfo[100000];
-    int   binf_size;
     fprintf(stderr,"clBuildProgram has failed: %s\n",ocl_perrc(err));
     CL_CHECK_PRN (clGetProgramBuildInfo (oclconfig->oclprogram,oclconfig->ocldevice,CL_PROGRAM_BUILD_LOG,sizeof(buildinfo),&buildinfo,NULL));
     fprintf(stderr,"%s\n",buildinfo);
@@ -787,8 +802,7 @@ int ocl_compiler(ocl_config_type *oclconfig,const char **clList,int clNum,int BL
     rewind(kernel);
 
     oclconfig->prgs[clfile].kernelstrings[0] = (char*)malloc(oclconfig->prgs[clfile].kernelstring_lens[0]);
-    int counter = \
-      fread ( oclconfig->prgs[clfile].kernelstrings[0], sizeof(char), oclconfig->prgs[clfile].kernelstring_lens[0]/sizeof(char), kernel );
+    fread ( oclconfig->prgs[clfile].kernelstrings[0], sizeof(char), oclconfig->prgs[clfile].kernelstring_lens[0]/sizeof(char), kernel );
     fprintf(stream,"Loaded kernel \"%s\" in string\n",clList[clfile]);
     fclose(kernel);
 
@@ -859,7 +873,6 @@ return 0;
 int ocl_compiler(ocl_config_type *oclconfig,unsigned char **clList,unsigned int *clLen,int clNum,int BLOCK_SIZE,const char *optional, FILE *stream){
 
 
-  FILE *kernel;
   cl_int err;
 
   char compiler_options_flush[10000];
@@ -937,56 +950,6 @@ int ocl_compiler(ocl_config_type *oclconfig,unsigned char **clList,unsigned int 
 return 0;
 }
 
-/*WARNING this is a deprecated function as this way may not always fail under different OpenCL compilers*/
-/* Use the new ocl_eval_FP64 instead*/
-/* Used fixed minimal kernels to check if FP64 is supported. Returns 0 on successful FP64 evaluation and -1 if only FP32. Exits on failure*/
-/**
- * This implementation is deprecated and it uses brute-force compilation to figure if the fp64 extension
- * is supported. It is based on the idea that supported extensions are automatically defined by the compiler
- * in the resulting program. Attempt to enable a non-supported extension should leab to compile failure.
- * However, the behaviour of this approach is unpredictable from one implementation of version of OpenCL
- * to another. I.e. Intel OpenCL won't fail as supposed to, but ignore extensions it does not understand.
- * This approach was initially selected as there was no easy way of figuring out if fp64 is supported, except
- * for checking the extensions string character by character.
- */
-int _deprec_ocl_eval_FP64(ocl_config_type *oclconfig,int *eval_res, FILE *stream){
-
-  //OpenCL extensions like cl_amd_fp64 and cl_khr_fp64 are automatically defined in the kernel by opencl compiled,
-  //  if they are supported. One way to check is to try to enable them in a test kernel and get the compilations status.
-  //  Another way is to get the supported extensions from the device (in a long string) and search for these extensions.
-  size_t len;
-  const char *trap[2] = {"#ifndef cl_khr_fp64\n crash and burn\n #endif \n",
-                         "#ifndef cl_amd_fp64\n crash and burn\n #endif \n"};
-
-  const char *exts[2] = {"cl_khr_fp64","cl_amd_fp64"};
-
-  cl_int err;
-  cl_program trap_prog;
-
-  for(int i=0;i<2;i++){
-    cl_build_status build_status;
-    len=strlen(trap[i]);
-    trap_prog = clCreateProgramWithSource(oclconfig->oclcontext,1,(const char**)&trap[i],(const size_t*)&len,&err);
-    if(err){fprintf(stderr,"Error in eval_FP64 while loading source:%s\n",ocl_perrc(err)); return -1;}
-    err = clBuildProgram(trap_prog, 1, &oclconfig->ocldevice, "-I.", 0, 0);
-    clGetProgramBuildInfo (trap_prog,oclconfig->ocldevice,CL_PROGRAM_BUILD_STATUS,sizeof(build_status),&build_status,NULL);
-
-    if(err != CL_SUCCESS){
-      oclconfig->fp64=0;
-      fprintf(stream,"eval with the extension: %s failed. (%s)\n",exts[i],ocl_perrc(err));
-    } else if(build_status == CL_BUILD_SUCCESS){
-      oclconfig->fp64=1;
-      fprintf(stream,"device supports double (with the extension: %s)\n",exts[i]);
-      clReleaseProgram(trap_prog);
-      return 0;
-    } else {
-      fprintf(stderr,"Unhandled case in eval_FP64\n");
-      return -2;
-    }
-  }
-return -2;
-}
-
 /* Queries device capabilities to figure if it meets the minimum requirement for double precision*/
 /* Returns 0 on successful FP64 evaluation and -1 if only FP32 */
 /**
@@ -995,7 +958,6 @@ return -2;
  *
  * @param oclconfig The OpenCL configuration containing the device to be checked. The fp64 field
  *           is updated with 1 if double precision is possible and 0 otherwise.
- * @param eval_res deprecated
  * @param stream C File stream to direct the output to. Optional argument which defaults
  *          to stdout. If another stream is used, it must be open.
  *          Error messages are always displayed to stderr
@@ -1004,9 +966,8 @@ return -2;
  *         0: The device supports an opencl_*_fp64 extension
  *        -1: The device only supports single precision
  */
-int ocl_eval_FP64(ocl_config_type *oclconfig,int *eval_res, FILE *stream){
+int ocl_eval_FP64(ocl_config_type *oclconfig, FILE *stream){
 
-  cl_int err;
   cl_device_fp_config clfp64;
 
 /* From the OpenCL 1.2 documentation:
@@ -1048,7 +1009,6 @@ int ocl_eval_FP64(ocl_config_type *oclconfig,int *eval_res, FILE *stream){
  */
 int ocl_eval_FP64(cl_device_id devid){
 
-  cl_int err;
   cl_device_fp_config clfp64;
 
 /* From the OpenCL 1.2 documentation:
@@ -1122,7 +1082,6 @@ float ocl_get_profT(cl_event* start, cl_event* stop, const char* message, FILE* 
 {
 
   cl_ulong ts,te;
-  cl_int err=0;
   CL( clWaitForEvents(1,start) );
   CL( clWaitForEvents(1,stop) );
   CL( clGetEventProfilingInfo(*stop,CL_PROFILING_COMMAND_END,sizeof(cl_ulong),&te,NULL) );
@@ -1155,6 +1114,203 @@ float ocl_get_profT(cl_event *start, cl_event *stop){
 
   tms = (te-ts)/(1e6);
   return tms;
+}
+
+/**
+ * \brief Initialises the data members of an ocl_plat_t struct.
+ *
+ * Proper initialisation is essential because all the data members
+ * are strings whose size may need to be changed via a realloc.
+ * A device context must exist for this to work.
+ *
+ * @param platinfo An ocl_plat_t structure that holds various informations
+ *          on the current platform
+ * @return Void 
+ */
+void ocl_platform_info_init(ocl_plat_t &platinfo)
+{
+  platinfo.name       = NULL;
+  platinfo.vendor     = NULL;
+  platinfo.version    = NULL;
+  platinfo.extensions = NULL;
+return;  
+}
+
+/**
+ * \brief Frees the resources used inside an ocl_plat_t struct.
+ *
+ * Because the data members get allocated inside ocl tools,
+ * ocl_tools also provides the function to free them.
+ *
+ * @param platinfo An ocl_plat_t structure that holds various informations
+ *          on the current platform
+ * @return Void
+ */
+void ocl_platform_info_del(ocl_plat_t &platinfo)
+{
+  if(platinfo.name)       free (platinfo.name)      ;
+  if(platinfo.vendor)     free (platinfo.vendor)    ;
+  if(platinfo.version)    free (platinfo.version)   ;
+  if(platinfo.extensions) free (platinfo.extensions);
+return;
+}
+
+/**
+ * \brief Initialises the data members of an ocl_dev_t struct.
+ *
+ * Proper initialisation is essential because all the data members
+ * are strings whose size may need to be changed via a realloc.
+ * A device context must exist for this to work.
+ *
+ * @param devinfo An ocl_dev_t structure that holds various informations
+ *          on the current platform
+ * @return Void
+ */
+void ocl_device_info_init(ocl_dev_t &devinfo)
+{
+  devinfo.name           = NULL;
+  devinfo.refcount       = NULL;
+  devinfo.version        = NULL;
+  devinfo.driver_version = NULL;
+  devinfo.extensions     = NULL;
+  devinfo.global_mem     = 0;
+return;  
+}
+
+/**
+ * \brief Frees the resources used inside an ocl_dev_t struct.
+ *
+ * Because the data members get allocated inside ocl tools,
+ * ocl_tools also provides the function to free them.
+ *
+ * @param devinfo An ocl_dev_t structure that holds various informations
+ *          on the current device
+ * @return Void
+ */
+void ocl_device_info_del(ocl_dev_t &devinfo)
+{
+  free (devinfo.name)          ;
+  free (devinfo.refcount)      ;
+  free (devinfo.version)       ;
+  free (devinfo.driver_version);
+  free (devinfo.extensions)    ;
+  devinfo.global_mem = 0;
+return;
+}
+
+/**
+ * \brief Updates an ocl_plat_t struct with the informations of the current platform
+ *
+ * List of info returned: CL_PLATFORM_NAME
+ *                        CL_PLATFORM_VERSION
+ *                        CL_PLATFORM_VENDOR
+ *                        CL_PLATFORM_EXTENSIONS
+ * 
+ * @param oclconfig The OCL toolbox configuration structure holding the references
+ * @param platinfo An ocl_plat_t structure that holds various informations
+ *          on the current platform
+ * @return Error code. 0 for success, -1 for OpenCL error and -2 for other error
+ */
+int ocl_current_platform_info(ocl_config_type *oclconfig, ocl_plat_t &platinfo)
+{
+  size_t pinf_size;
+  
+  CL( clGetPlatformInfo(oclconfig->oclplatform, CL_PLATFORM_NAME, 0 , NULL , &pinf_size) );
+  platinfo.name = (char *)realloc(platinfo.name, (pinf_size + 1));
+  if(!platinfo.name) {
+    ocl_errmsg("Failed to allocate platform.name",__FILE__,__LINE__);
+    return -2;
+  }
+  CL( clGetPlatformInfo(oclconfig->oclplatform, CL_PLATFORM_NAME, pinf_size , platinfo.name , 0) );
+
+  CL( clGetPlatformInfo(oclconfig->oclplatform, CL_PLATFORM_VERSION, 0 , NULL , &pinf_size) );
+  platinfo.version = (char *)realloc(platinfo.version, (pinf_size + 1));
+  if(!platinfo.version) {
+    ocl_errmsg("Failed to allocate platform.version",__FILE__,__LINE__);
+    return -2;
+  }
+  CL( clGetPlatformInfo(oclconfig->oclplatform, CL_PLATFORM_VERSION, pinf_size , platinfo.version , 0) );
+
+  CL( clGetPlatformInfo(oclconfig->oclplatform, CL_PLATFORM_VENDOR, 0 , NULL , &pinf_size) );
+  platinfo.vendor = (char *)realloc(platinfo.vendor, (pinf_size + 1));
+  if(!platinfo.vendor) {
+    ocl_errmsg("Failed to allocate platform.vendor",__FILE__,__LINE__);
+    return -2;
+  }
+  CL( clGetPlatformInfo(oclconfig->oclplatform, CL_PLATFORM_VENDOR, pinf_size , platinfo.vendor , 0) );
+
+  CL( clGetPlatformInfo(oclconfig->oclplatform, CL_PLATFORM_EXTENSIONS, 0 , NULL , &pinf_size) );
+  platinfo.extensions = (char *)realloc(platinfo.extensions, (pinf_size + 1));
+  if(!platinfo.extensions) {
+    ocl_errmsg("Failed to allocate platform.extensions",__FILE__,__LINE__);
+    return -2;
+  }
+  CL( clGetPlatformInfo(oclconfig->oclplatform, CL_PLATFORM_EXTENSIONS, pinf_size , platinfo.extensions , 0) );  
+  
+  return 0;
+}
+
+/**
+ * \brief Updates an ocl_dev_t struct with the informations of the current device
+ *
+ * List of info returned: CL_DEVICE_NAME
+ *                        CL_DEVICE_TYPE
+ *                        CL_DEVICE_VERSION
+ *                        CL_DRIVER_VERSION
+ *                        CL_DEVICE_EXTENSIONS
+ *                        CL_DEVICE_GLOBAL_MEM_SIZE
+ * 
+ * @param oclconfig The OCL toolbox configuration structure holding the references
+ * @param devinfo An ocl_dev_t structure that holds various informations
+ *          on the current device
+ * @return Error code. 0 for success, -1 for OpenCL error and -2 for other error
+ */
+int ocl_current_device_info(ocl_config_type *oclconfig, ocl_dev_t &devinfo)
+{
+  size_t pinf_size;
+  cl_device_type devtype;
+
+  CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DEVICE_NAME, 0 , NULL , &pinf_size) );
+  devinfo.name = (char *)realloc(devinfo.name, (pinf_size + 1));
+  if(!devinfo.name) {
+    ocl_errmsg("Failed to allocate devinfo.name",__FILE__,__LINE__);
+    return -2;
+  }
+  CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DEVICE_NAME, pinf_size , devinfo.name , 0) );
+
+  CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DEVICE_TYPE, sizeof(cl_device_type) , &devtype , 0) );
+  if(devtype == CL_DEVICE_TYPE_GPU) strcpy(devinfo.type,"GPU");
+  else if (devtype == CL_DEVICE_TYPE_CPU) strcpy(devinfo.type,"CPU");
+  else if (devtype == CL_DEVICE_TYPE_ACCELERATOR) strcpy(devinfo.type,"ACC");
+  else strcpy(devinfo.type,"DEF");
+
+  CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DEVICE_VERSION, 0 , NULL , &pinf_size) );
+  devinfo.version = (char *)realloc(devinfo.version, (pinf_size + 1));
+  if(!devinfo.version) {
+    ocl_errmsg("Failed to allocate devinfo.version",__FILE__,__LINE__);
+    return -2;
+  }
+  CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DEVICE_VERSION, pinf_size , devinfo.version , 0) );
+
+  CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DRIVER_VERSION, 0 , NULL , &pinf_size) );
+  devinfo.driver_version = (char *)realloc(devinfo.driver_version, (pinf_size + 1));
+  if(!devinfo.driver_version) {
+    ocl_errmsg("Failed to allocate devinfo.driver_version",__FILE__,__LINE__);
+    return -2;
+  }
+  CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DRIVER_VERSION, pinf_size , devinfo.driver_version , 0) );    
+
+  CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DEVICE_EXTENSIONS, 0 , NULL , &pinf_size) );
+  devinfo.extensions = (char *)realloc(devinfo.extensions, (pinf_size + 1));
+  if(!devinfo.extensions) {
+    ocl_errmsg("Failed to allocate devinfo.extensions",__FILE__,__LINE__);
+    return -2;
+  }
+  CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DEVICE_EXTENSIONS, pinf_size , devinfo.extensions , 0) );
+
+  CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong) , &(devinfo.global_mem) , 0) );
+  
+  return 0;
 }
 
 /**
@@ -1257,15 +1413,18 @@ return "Unknown Error";
 
 /* Opencl error function. Some Opencl functions allow pfn_notify to report errors, by passing it as pointer.
       Consult the OpenCL reference card for these functions. */
-void __call_compat pfn_notify(const char *errinfo, const void *private_info, size_t cb, void *user_data)
+void __call_compat pfn_notify(const char *errinfo)
 {
   fprintf(stderr, "OpenCL Error (via pfn_notify): %s\n", errinfo);
+  return;
 }
 
 /* Basic function to handle error messages */
 void ocl_errmsg(const char *userstring, const char *file, const int line){
   fprintf(stderr,"ocl_errmsg: %s (%s:%d)\n",userstring,file,line);
+  return;
 }
+
 
 #ifdef CL_HAS_NAMED_VECTOR_FIELDS
 
@@ -1294,7 +1453,7 @@ return conv;
 return;
 };
 
- cl_uint2 make_uint2(unsigned int x,unsigned int y){
+cl_uint2 make_uint2(unsigned int x,unsigned int y){
 
   cl_uint2 conv;
   conv.x = x;
@@ -1302,15 +1461,22 @@ return;
 
 return conv;
 };
- void make_float2(float x,float y, cl_float2 &conv){
+
+void make_float2(float x,float y, cl_float2 &conv){
+  
   conv.x = x;
   conv.y = y;
+
+return;  
 };
 
  cl_float2 make_float2(float x,float y){
+   
   cl_float2 conv;
   conv.x = x;
   conv.y = y;
+
+return conv;  
 };
  void make_double2(double x,double y, cl_double2 &conv){
 

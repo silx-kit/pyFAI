@@ -162,10 +162,19 @@ public:
    * bit 7: use dummy value
    */
   int get_status();
+
+  void print_active_platform_info();
+  void print_active_device_info();
+
+  void return_pair(int &platform, int &device);
+  
 /**
  * \brief Holds the documentation message
  */  
   char *docstr;
+
+  ocl_plat_t platform_info;
+  ocl_dev_t device_info; 
 protected:
 
   /**
