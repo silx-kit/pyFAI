@@ -53,10 +53,6 @@
 #define CER CL_CHECK_ERR_PR_RET
 #define CR  CL_CHECK_PR_RET
 
-#ifdef _WIN32
-#define _CRT_SECURE_NO_WARNINGS 1
-#endif
-
 //#define silent
 #ifdef _SILENT
   #define fprintf(stream,...)

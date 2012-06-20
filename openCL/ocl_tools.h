@@ -18,7 +18,7 @@
  *                                 Grenoble, France
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
- *   Last revision: 20/06/2012
+ *   Last revision: 21/06/2012
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -48,6 +48,10 @@
   #define __call_compat __stdcall
 #else
   #define __call_compat 
+	#ifndef _CRT_SECURE_NO_WARNINGS
+		#define _CRT_SECURE_NO_WARNINGS
+	#endif
+	#pragma warning(disable : 4996)
 #endif
 
 /**
@@ -122,9 +126,12 @@ typedef struct ocl_configuration_parameters{
   cl_command_queue  oclcmdqueue;
   cl_mem            *oclmemref;
 
+  //Active device and platform info
   int devid;
   int platfid;
-  
+  ocl_plat_t		platform_info;
+  ocl_dev_t			device_info;
+
   //If single .cl file:
   cl_program        oclprogram;
   size_t            *kernelstring_lens;
@@ -150,6 +157,9 @@ typedef struct ocl_configuration_parameters{
 /* All production functions return 0 on success, -1 on OpenCL error and -2 on other errors.
     when an error is encountered internally, it will print the message to stderr and fallback.
     It is important for the user to decide how to continue.*/
+
+void ocl_tools_initialise(ocl_config_type *oclconfig);
+void ocl_tools_destroy(ocl_config_type *oclconfig);
 
 /**
  * \brief Simple check all platforms and devices and print information
@@ -269,8 +279,8 @@ void ocl_platform_info_del(ocl_plat_t &platinfo);
 void ocl_device_info_init(ocl_dev_t &devinfo);
 void ocl_device_info_del(ocl_dev_t &devinfo);
 
-int ocl_current_platform_info(ocl_config_type *oclconfig, ocl_plat_t &platinfo);
-int ocl_current_device_info(ocl_config_type *oclconfig, ocl_dev_t &devinfo);
+int ocl_current_platform_info(ocl_config_type *oclconfig);
+int ocl_current_device_info(ocl_config_type *oclconfig);
 
 /**
  * \brief Translate error code to error message
