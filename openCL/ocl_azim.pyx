@@ -36,7 +36,7 @@ cimport numpy
 import numpy
 import threading
 import cython
-from stdlib cimport free, malloc
+from libc.stdlib cimport free, malloc
 from libc.string cimport memcpy
 
 
@@ -48,7 +48,7 @@ cdef class Integrator1d:
     cdef ocl_xrpd1d.ocl_xrpd1D_fullsplit* cpp_integrator
     cdef char* _devicetype
     cdef char* filename
-    cdef int _nBins, _nData, _platformid, _devid,
+    cdef int _nBins, _nData, _platformid, _deviceid,
     cdef cpp_bool _useFp64
     cdef float tth_min, tth_max,_tth_min, _tth_max
     cdef float* ctth_out
@@ -60,7 +60,7 @@ cdef class Integrator1d:
         self._nBins = -1
         self._nData = -1
         self._platformid = -1
-        self._devid = -1
+        self._deviceid = -1
         self._useFp64 = False
         self._devicetype = "gpu"
         if filename is None:
@@ -76,7 +76,7 @@ cdef class Integrator1d:
 
     def __repr__(self):
         return os.linesep.join(["Cython wrapper for ocl_xrpd1d.ocl_xrpd1D_fullsplit C++ class. Logging in %s"%self.filename,
-                                "device: %s, platform %s device %s 64bits:%s image size: %s histogram size: %s"%(self._devicetype,self._platformid,self._devid, self._useFp64, self._nData,self._nBins),
+                                "device: %s, platform %s device %s 64bits:%s image size: %s histogram size: %s"%(self._devicetype,self._platformid,self._deviceid, self._useFp64, self._nData,self._nBins),
                                 ",\t ".join(["%s: %s"%(k,v) for k,v in self.get_status().items()])])
 
     @cython.cdivision(True)
@@ -150,8 +150,8 @@ cdef class Integrator1d:
         tthc = numpy.ascontiguousarray(tth.ravel(),dtype=numpy.float32)
         dtthc = numpy.ascontiguousarray(dtth.ravel(),dtype=numpy.float32)
 
-        self._tth_max=(tthc+dtthc).max()#*(1.0 + numpy.finfo(numpy.float32).eps)
-        self._tth_min=(tthc-dtthc).min()
+        self._tth_max=(tthc+dtthc).max()*(1.0 + numpy.finfo(numpy.float32).eps)
+        self._tth_min=max(0.0,(tthc-dtthc).min())
         if tth_min is None:
             tth_min = self._tth_min
 
@@ -273,7 +273,7 @@ cdef class Integrator1d:
 ################################################################################
 # Methods inherited from ocl_base class
 ################################################################################
-    def init(self,*args, **kwarg):
+    def init(self,devicetype="gpu", platformid=None, deviceid=None, useFp64=True):
         """Initial configuration: Choose a device and initiate a context. Devicetypes can be GPU,gpu,CPU,cpu,DEF,ACC,ALL.
         Suggested are GPU,CPU. For each setting to work there must be such an OpenCL device and properly installed.
         E.g.: If Nvidia driver is installed, GPU will succeed but CPU will fail. The AMD SDK kit is required for CPU via OpenCL.
@@ -282,30 +282,24 @@ cdef class Integrator1d:
         @param platformid: integer
         @param devid: integer
         """
-        if "useFp64" in kwarg:
-            self._useFp64 = <cpp_bool> kwarg["useFp64"]
-        if "devicetype"  in kwarg:
-            self._devicetype = <char*> kwarg["devicetype"]
-        if "platformid" in kwarg:
-            self._platformid = <int> kwarg["platformid"]
-        if "devid"  in kwarg:
-            self._devid = <int> kwarg["devid"]
-        ids=[]
-        for arg in args:
-            if isinstance(arg, bool):
-                self._useFp64 = <cpp_bool> arg
-            elif isinstance(arg, str):
-                self._devicetype = arg
-            elif isinstance(arg,int):
-                ids.append(arg)
-        if len(ids)==2:
-            self.cpp_integrator.init(<char*>self._devicetype, <int>ids[0], <int>ids[1], <cpp_bool> self._useFp64)
+        cdef int forceIDs, rc 
+        self._useFp64 = <cpp_bool> useFp64
+        self._devicetype = <char*> devicetype
+        if (platformid is not None) and (deviceid is not None):
+            self._platformid = <int> int(platformid)
+            self._deviceid = <int> int(deviceid)
+            forceIDs = 1
         else:
-            return self.cpp_integrator.init(<char*>self._devicetype, <cpp_bool> self._useFp64)
-#    TODO
-#        virtual int init(char * devicetype, cpp_bool useFp64=true)
-#        virtual int init(char * devicetype, int platformid, int devid, cpp_bool useFp64=true)
-
+            forceIDs = 0
+            
+#        print "interface %s %s %s %s %s"%( self._devicetype, self._platformid, self._deviceid, self._useFp64,  forceIDs)           
+        with nogil:
+            if forceIDs:
+                rc = self.cpp_integrator.init(<char*>self._devicetype, <int>self._platformid, <int>self._deviceid, <cpp_bool> self._useFp64)
+            else:
+                rc = self.cpp_integrator.init(<char*>self._devicetype, <cpp_bool> self._useFp64)
+        return rc
+    
     def show_devices(self):
         "Prints a list of OpenCL capable devices, their platforms and their ids"
         self.cpp_integrator.show_devices()

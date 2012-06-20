@@ -1,10 +1,11 @@
 #!/usr/bin/python
 import fabio, sys, time, timeit
-from os.path import abspath, join, abspath, dirname
+import os.path as op
 
-sys.path.append(join(dirname(dirname(abspath(__file__))), "test"))
+sys.path.append(op.join(op.dirname(op.dirname(op.abspath(__file__))), "test"))
 import utilstest
 pyFAI = utilstest.UtilsTest.pyFAI
+
 
 datasets = {"Fairchild.poni":utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
             "halfccd.poni":utilstest.UtilsTest.getimage("1882/halfccd.edf"),
@@ -15,6 +16,12 @@ datasets = {"Fairchild.poni":utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
 
 print pyFAI
 class Bench(object):
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
 
     def get_cpu(self):
         return [i.split(": ", 1)[1] for i in open("/proc/cpuinfo") if i.startswith("model name")][0].strip()
@@ -79,8 +86,8 @@ out=ai.xrpd2(data,500,360)""" % (param, fn)
         self.print_sep()
 
 
-    def bench_gpu1d(self, n=10, useFp64=True):
-        print("Working on default GPU, in " + ("64 bits mode" if useFp64 else"32 bits mode"))
+    def bench_gpu1d(self, n=10, devicetype="gpu", useFp64=True, platformid=None, deviceid=None):
+        print("Working on %s, in " % devicetype + ("64 bits mode" if useFp64 else"32 bits mode") + "(%s.%s)" % (platformid, deviceid))
 
         for param, fn in datasets.items():
             ai = pyFAI.load(param)
@@ -90,22 +97,26 @@ out=ai.xrpd2(data,500,360)""" % (param, fn)
 
             try:
                 t0 = time.time()
-                _ = ai.xrpd_OpenCL(data, N, devicetype="gpu", useFp64=useFp64)
+#                print "bench", devicetype, useFp64, platformid, deviceid
+                res = ai.xrpd_OpenCL(data, N, devicetype=devicetype, useFp64=useFp64, platformid=platformid, deviceid=deviceid)
                 t1 = time.time()
             except Exception as error:
                 print("Failed to find an OpenCL GPU (useFp64:%s) %s" % (useFp64, error))
                 continue
-            else:
-                ai._ocl.print_devices()
+#            else:
+#                ai._ocl.print_devices()
 
-            ai = None
             self.print_init(t1 - t0)
+            ref = ai.xrpd(data, N)
+            R = utilstest.Rwp(res, ref)
+            print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > 6 else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
+            ai = None
             setup = """
 import pyFAI,fabio
 ai=pyFAI.load("%s")
 data = fabio.open("%s").data
 N=min(data.shape)
-out=ai.xrpd_OpenCL(data,N,devicetype="gpu", useFp64=%s)""" % (param, fn, useFp64)
+out=ai.xrpd_OpenCL(data,N, devicetype="%s", useFp64=%s, platformid=%s, deviceid=%s)""" % (param, fn, devicetype, useFp64, platformid, deviceid)
             t = timeit.Timer("ai.xrpd_OpenCL(data,N,safe=False)", setup)
             tmin = min([i / n for i in t.repeat(repeat=5, number=n)])
             self.print_exec(tmin)
@@ -121,6 +132,11 @@ if __name__ == "__main__":
     b = Bench()
     b.bench_cpu1d(n)
     b.bench_cpu2d(n)
-    b.bench_gpu1d(n, True)
-    b.bench_gpu1d(n, False)
-
+    b.bench_gpu1d(n, "all", True)
+    b.bench_gpu1d(n, "all", False)
+#    b.bench_gpu1d(n, "all", True, 0, 1)
+#    b.bench_gpu1d(n, "all", False, 0, 1)
+#    b.bench_gpu1d(n, "all", True, 1, 0)
+#    b.bench_gpu1d(n, "all", False, 1, 0)
+#    b.bench_gpu1d(n, "all", True, 2, 0)
+#    b.bench_gpu1d(n, "all", False, 2, 0)

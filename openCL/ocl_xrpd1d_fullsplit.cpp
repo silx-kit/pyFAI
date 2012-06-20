@@ -637,15 +637,14 @@ int ocl_xrpd1D_fullsplit::execute(float *im_inten,float *histogram,float *bins)
   //Memset
   CR(
   clEnqueueNDRangeKernel(oclconfig->oclcmdqueue,oclconfig->oclkernels[CLKERN_UIMEMSET2],1,0,wdim_reduceh,tdim_reduceh,0,0,&oclconfig->t_s[1]) );
-  
   //Get 2th span ranges
   CR(
   clEnqueueNDRangeKernel(oclconfig->oclcmdqueue,oclconfig->oclkernels[CLKERN_GET_SPANS],1,0,wdim_partialh,tdim_partialh,0,0,&oclconfig->t_s[2]) );
-  
+ 
   //Group 2th span ranges
   CR(
   clEnqueueNDRangeKernel(oclconfig->oclcmdqueue,oclconfig->oclkernels[CLKERN_GROUP_SPANS],1,0,wdim_partialh,tdim_partialh,0,0,&oclconfig->t_s[3]) );
-
+ 
   //Apply Solidangle correction if needed
   if(useSolidAngle)
   {
@@ -668,7 +667,7 @@ int ocl_xrpd1D_fullsplit::execute(float *im_inten,float *histogram,float *bins)
   //Convert to float
   CR(
   clEnqueueNDRangeKernel(oclconfig->oclcmdqueue,oclconfig->oclkernels[CLKERN_UI2F2],1,0,wdim_reduceh,tdim_reduceh,0,0,&oclconfig->t_s[5]) );
-
+  
   //Copy the results back
   CR(
     clEnqueueReadBuffer(oclconfig->oclcmdqueue,oclconfig->oclmemref[CLMEM_WEIGHTS],CL_TRUE,0,sgs->Nbins*sizeof(cl_float),(void*)bins,0,0,&oclconfig->t_s[6]) );//bins

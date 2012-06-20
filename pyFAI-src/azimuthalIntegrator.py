@@ -392,10 +392,10 @@ class AzimuthalIntegrator(Geometry):
                     fd, tmpfile = tempfile.mkstemp(".log", "pyfai-opencl-")
                     os.close(fd)
                     integr = ocl_azim.Integrator1d(tmpfile)
-                    if platformid and deviceid:
+                    if (platformid is not None) and (deviceid is not None):
                         rc = integr.init(devicetype=devicetype,
                                     platformid=platformid,
-                                    devid=deviceid,
+                                    deviceid=deviceid,
                                     useFp64=useFp64)
                     else:
                         rc = integr.init(devicetype, useFp64)
