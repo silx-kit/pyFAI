@@ -1218,7 +1218,6 @@ return;
 void ocl_device_info_init(ocl_dev_t &devinfo)
 {
   devinfo.name           = NULL;
-  devinfo.refcount       = NULL;
   devinfo.version        = NULL;
   devinfo.driver_version = NULL;
   devinfo.extensions     = NULL;
@@ -1238,11 +1237,10 @@ return;
  */
 void ocl_device_info_del(ocl_dev_t &devinfo)
 {
-  free (devinfo.name)          ;
-  free (devinfo.refcount)      ;
-  free (devinfo.version)       ;
-  free (devinfo.driver_version);
-  free (devinfo.extensions)    ;
+  if(devinfo.name)free (devinfo.name);
+  if(devinfo.version)free (devinfo.version);
+  if(devinfo.driver_version)free (devinfo.driver_version);
+  if(devinfo.extensions)free (devinfo.extensions);
   devinfo.global_mem = 0;
 return;
 }
