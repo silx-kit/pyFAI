@@ -127,16 +127,17 @@ void ocl::ContructorInit()
 
   reset_time();
   
-  sgs = new az_argtype;
   oclconfig = new ocl_config_type;
   ocl_tools_initialise(oclconfig);
 
+  sgs = new az_argtype;
   sgs->Nx = 0;
   sgs->Nimage = 0;
   sgs->Nbins = 0;
   sgs->Nbinst = 0;
   sgs->Nbinsc = 0;
   sgs->usefp64 = 0;
+  
   docstr = new char[8192];
   
 }
@@ -173,6 +174,17 @@ return std::make_pair(oclconfig->platfid, oclconfig->devid);
 
 /**
  * \brief Prints some basic information about the device in use
+ *
+ * The following platform information is displayed:
+ *     Name, Version, Vendor and Extensions
+ * Similarily for the device:
+ *     Name, Type, Version, Driver version, Extensions and Global memory
+ * To datafields are also accessible externally by platform_info and
+ * device_info structs (not oclconfig->_info!. oclconfig is protected)
+ * 
+ * @param ignoreStream Integer flag that tells the function to
+ *            ignore any active output stream (stdout or not)
+ *            and redirect output to display
  */
 void ocl::show_device_details(int ignoreStream){
 	
@@ -194,25 +206,30 @@ void ocl::show_device_details(int ignoreStream){
 		if(ignoreStream) tmp = stdout;
 		else tmp = stream;
 
-		fprintf(tmp,"%s Platform name: %s\n", heading.c_str(), platform_info.name);
-		fprintf(tmp,"%s Platform version: %s\n", heading.c_str(), platform_info.version);
-		fprintf(tmp,"%s Platform vendor: %s\n", heading.c_str(), platform_info.vendor);
-		fprintf(tmp,"%s Platform extensions: %s\n", heading.c_str(), platform_info.extensions);
+		fprintf(tmp,"%s Platform name: %s\n", heading.c_str(), oclconfig->platform_info.name);
+		fprintf(tmp,"%s Platform version: %s\n", heading.c_str(), oclconfig->platform_info.version);
+		fprintf(tmp,"%s Platform vendor: %s\n", heading.c_str(), oclconfig->platform_info.vendor);
+		fprintf(tmp,"%s Platform extensions: %s\n", heading.c_str(), oclconfig->platform_info.extensions);
 
 		fprintf(tmp,"\n");
 
-		fprintf(tmp,"%s Device name: %s\n", heading.c_str(), device_info.name);
-		fprintf(tmp,"%s Device type: %s\n", heading.c_str(), device_info.type);
-		fprintf(tmp,"%s Device version: %s\n", heading.c_str(), device_info.version);
-		fprintf(tmp,"%s Device driver version: %s\n", heading.c_str(), device_info.driver_version);
-		fprintf(tmp,"%s Device extensions: %s\n", heading.c_str(), device_info.extensions);
-		fprintf(tmp,"%s Device Max Memory: %ul\n", heading.c_str(), device_info.global_mem);
+		fprintf(tmp,"%s Device name: %s\n", heading.c_str(), oclconfig->device_info.name);
+		fprintf(tmp,"%s Device type: %s\n", heading.c_str(), oclconfig->device_info.type);
+		fprintf(tmp,"%s Device version: %s\n", heading.c_str(), oclconfig->device_info.version);
+		fprintf(tmp,"%s Device driver version: %s\n", heading.c_str(), oclconfig->device_info.driver_version);
+		fprintf(tmp,"%s Device extensions: %s\n", heading.c_str(), oclconfig->device_info.extensions);
+		fprintf(tmp,"%s Device Max Memory: %ul\n", heading.c_str(), oclconfig->device_info.global_mem);
 	}
 return;
 }
 
 /**
  * \brief Makes platform and device info datafields visible to external callers
+ *
+ * Promote_device_details() is called after each successfull context creation by an
+ * init() function. It copies the internal info structures to the public
+ * platform_info and device_info.
+ * 
  */
 void ocl::promote_device_details()
 {

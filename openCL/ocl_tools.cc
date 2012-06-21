@@ -47,6 +47,7 @@
 		#define _CRT_SECURE_NO_WARNINGS
 	#endif
 	#pragma warning(disable : 4996)
+  //This is required for OpenCL callbacks in windows.
   //This can also be achieved by setting cl.exe flags.
   // flag /Gz uses the __stdcall calling convention
   #define __call_compat __stdcall
@@ -63,6 +64,13 @@
 #define C CL_CHECK_PR      ///Short for CL_CHECK_PR
 #define CL CL_CHECK_PR_RET ///short for CL_CHECK_PR_RET
 
+/**
+ * Sets some data members of oclconfig to a default value.
+ * Calls ocl_platform_info_init() and ocl_device_info_init()
+ *
+ * @param oclconfig The OpenCL configuration to be initialised
+ * @return void
+ */
 void ocl_tools_initialise(ocl_config_type *oclconfig)
 {
   oclconfig->platfid = -1;
@@ -77,6 +85,14 @@ void ocl_tools_initialise(ocl_config_type *oclconfig)
   return;
 }
 
+/**
+ * Calls ocl_platform_info_del() and ocl_device_info_del().
+ * Other data members are cleaned internally when appropriate by
+ * other calls.
+ *
+ * @param oclconfig The OpenCL configuration to be initialised
+ * @return void
+ */
 void ocl_tools_destroy(ocl_config_type *oclconfig)
 {
   //Deallocate memory
