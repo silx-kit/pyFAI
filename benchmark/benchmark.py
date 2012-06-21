@@ -103,7 +103,7 @@ out=ai.xrpd2(data,500,360)""" % (param, fn)
             except Exception as error:
                 print("Failed to find an OpenCL GPU (useFp64:%s) %s" % (useFp64, error))
                 continue
-            print(" device: %s.%s" % ai._ocl.get_ids())
+            print(" device: %s.%s" % ai._ocl.get_contexed_Ids())
             self.print_init(t1 - t0)
             ref = ai.xrpd(data, N)
             R = utilstest.Rwp(res, ref)

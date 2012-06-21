@@ -45,13 +45,13 @@ cdef class Integrator1d:
     """
     Simple wrapper for ocl_xrpd1d.ocl_xrpd1D_fullsplit C++ class
     """
-    cdef ocl_xrpd1d.ocl_xrpd1D_fullsplit* cpp_integrator
-    cdef char* _devicetype
-    cdef char* filename
+    cdef ocl_xrpd1d.ocl_xrpd1D_fullsplit * cpp_integrator
+    cdef char * _devicetype
+    cdef char * filename
     cdef int _nBins, _nData, _platformid, _deviceid,
     cdef cpp_bool _useFp64
-    cdef float tth_min, tth_max,_tth_min, _tth_max
-    cdef float* ctth_out
+    cdef float tth_min, tth_max, _tth_min, _tth_max
+    cdef float * ctth_out
 
     def __cinit__(self, filename=None):
         """
@@ -75,14 +75,14 @@ cdef class Integrator1d:
         del self.cpp_integrator
 
     def __repr__(self):
-        return os.linesep.join(["Cython wrapper for ocl_xrpd1d.ocl_xrpd1D_fullsplit C++ class. Logging in %s"%self.filename,
-                                "device: %s, platform %s device %s 64bits:%s image size: %s histogram size: %s"%(self._devicetype,self._platformid,self._deviceid, self._useFp64, self._nData,self._nBins),
-                                ",\t ".join(["%s: %s"%(k,v) for k,v in self.get_status().items()])])
+        return os.linesep.join(["Cython wrapper for ocl_xrpd1d.ocl_xrpd1D_fullsplit C++ class. Logging in %s" % self.filename,
+                                "device: %s, platform %s device %s 64bits:%s image size: %s histogram size: %s" % (self._devicetype, self._platformid, self._deviceid, self._useFp64, self._nData, self._nBins),
+                                ",\t ".join(["%s: %s" % (k, v) for k, v in self.get_status().items()])])
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def _calc_tth_out(self,float lower, float upper):
+    def _calc_tth_out(self, float lower, float upper):
         """
         Calculate the bin-center position in 2theta
         """
@@ -91,11 +91,11 @@ cdef class Integrator1d:
 #        cdef numpy.ndarray[numpy.float32_t, ndim = 1] tth_out = numpy.empty(self._nBins,dtype=numpy.float32)
         if self.ctth_out:
             free(self.ctth_out)
-        self.ctth_out= <float*> malloc(self._nBins*sizeof(float))
-        cdef float delta = (upper - lower ) / (< float > (self._nBins))
+        self.ctth_out = < float *> malloc(self._nBins * sizeof(float))
+        cdef float delta = (upper - lower) / (< float > (self._nBins))
         with nogil:
             for i in range(self._nBins):
-                self.ctth_out[i] = <float>( self.tth_min + (0.5 +< float > i) * delta)
+                self.ctth_out[i] = < float > (self.tth_min + (0.5 +< float > i) * delta)
 #        self.tth_out = tth_out
 
 
@@ -107,11 +107,11 @@ cdef class Integrator1d:
         """
         cdef int rc
         if useFp64 is not None:
-            self._useFp64 = <cpp_bool> bool(useFp64)
+            self._useFp64 = < cpp_bool > bool(useFp64)
         self._nBins = Nbins
         self._nData = Nimage
         with nogil:
-            rc = self.cpp_integrator.getConfiguration(<int> 1024, <int> Nimage, <int> Nbins, <cpp_bool> self._useFp64)
+            rc = self.cpp_integrator.getConfiguration(< int > 1024, < int > Nimage, < int > Nbins, < cpp_bool > self._useFp64)
         return rc
 
     def configure(self, kernel=None):
@@ -129,10 +129,10 @@ cdef class Integrator1d:
             if os.path.isfile(kernel_name):
                 kernel = kernel_name
             else:
-                kernel = os.path.join(os.path.dirname(os.path.abspath(__file__)),kernel_name)
+                kernel = os.path.join(os.path.dirname(os.path.abspath(__file__)), kernel_name)
         else:
             kernel = str(kernel)
-        cdef char* ckernel = <char*> kernel
+        cdef char * ckernel = < char *> kernel
         cdef int rc
         with nogil:
                 rc = self.cpp_integrator.configure(ckernel)
@@ -146,20 +146,20 @@ cdef class Integrator1d:
         loadTth is required and must be called at least once after a configure()
         """
         cdef int rc
-        cdef numpy.ndarray[numpy.float32_t, ndim = 1]  tthc,dtthc
-        tthc = numpy.ascontiguousarray(tth.ravel(),dtype=numpy.float32)
-        dtthc = numpy.ascontiguousarray(dtth.ravel(),dtype=numpy.float32)
+        cdef numpy.ndarray[numpy.float32_t, ndim = 1]  tthc, dtthc
+        tthc = numpy.ascontiguousarray(tth.ravel(), dtype=numpy.float32)
+        dtthc = numpy.ascontiguousarray(dtth.ravel(), dtype=numpy.float32)
 
-        self._tth_max=(tthc+dtthc).max()*(1.0 + numpy.finfo(numpy.float32).eps)
-        self._tth_min=max(0.0,(tthc-dtthc).min())
+        self._tth_max = (tthc + dtthc).max()*(1.0 + numpy.finfo(numpy.float32).eps)
+        self._tth_min = max(0.0, (tthc - dtthc).min())
         if tth_min is None:
             tth_min = self._tth_min
 
         if tth_max is None:
             tth_max = self._tth_max
-        self._calc_tth_out(tth_min,tth_max)
+        self._calc_tth_out(tth_min, tth_max)
         with nogil:
-            rc=self.cpp_integrator.loadTth(<float*> tthc.data, <float*> dtthc.data, <float> self.tth_min, <float> self.tth_max)
+            rc = self.cpp_integrator.loadTth(< float *> tthc.data, < float *> dtthc.data, < float > self.tth_min, < float > self.tth_max)
         return rc
 
     def setSolidAngle(self, numpy.ndarray solidAngle not None):
@@ -173,9 +173,9 @@ cdef class Integrator1d:
          @return: integer
          """
         cdef numpy.ndarray[numpy.float32_t, ndim = 1]  cSolidAngle
-        cSolidAngle = numpy.ascontiguousarray(solidAngle.ravel(),dtype=numpy.float32)
+        cSolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float32)
 
-        return self.cpp_integrator.setSolidAngle(<float*> cSolidAngle.data)
+        return self.cpp_integrator.setSolidAngle(< float *> cSolidAngle.data)
 
     def unsetSolidAngle(self):
         """
@@ -200,7 +200,7 @@ cdef class Integrator1d:
         else:
             cMask = numpy.ascontiguousarray(mask.astype(numpy.int).ravel())
 
-        return self.cpp_integrator.setMask(<int*> cMask.data)
+        return self.cpp_integrator.setMask(< int *> cMask.data)
 
     def unsetMask(self):
         """
@@ -218,7 +218,7 @@ cdef class Integrator1d:
         """
         cdef int rc
         with nogil:
-            rc=self.cpp_integrator.setDummyValue(dummy,delta_dummy)
+            rc = self.cpp_integrator.setDummyValue(dummy, delta_dummy)
         return rc
 
     def unsetDummyValue(self):
@@ -240,7 +240,7 @@ cdef class Integrator1d:
 
     def unsetRange(self):
         "Resets the 2th integration range back to tth_min, tth_max"
-        self._calc_tth_out(self._tth_min,self._tth_max)
+        self._calc_tth_out(self._tth_min, self._tth_max)
         return self.cpp_integrator.unsetRange()
 
 
@@ -248,20 +248,20 @@ cdef class Integrator1d:
         """Take an image, integrate and return the histogram and weights
         set / unset and loadTth methods have a direct impact on the execute() method.
         All the rest of the methods will require at least a new configuration via configure()"""
-        cdef int rc,i
-        cdef numpy.ndarray[numpy.float32_t, ndim = 1] cimage, histogram, bins,tth_out
-        cimage = numpy.ascontiguousarray(image.ravel(),dtype=numpy.float32)
-        histogram = numpy.empty(self._nBins,dtype=numpy.float32)
-        bins = numpy.empty(self._nBins,dtype=numpy.float32)
-        tth_out = numpy.empty(self._nBins,dtype=numpy.float32)
+        cdef int rc, i
+        cdef numpy.ndarray[numpy.float32_t, ndim = 1] cimage, histogram, bins, tth_out
+        cimage = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
+        histogram = numpy.empty(self._nBins, dtype=numpy.float32)
+        bins = numpy.empty(self._nBins, dtype=numpy.float32)
+        tth_out = numpy.empty(self._nBins, dtype=numpy.float32)
         assert cimage.size == self._nData
         with nogil:
-            rc = self.cpp_integrator.execute(<float*> cimage.data, <float*> histogram.data, <float*> bins.data)
-        if rc!=0:
-            raise RuntimeError("OpenCL integrator failed with RC=%s"%rc)
+            rc = self.cpp_integrator.execute(< float *> cimage.data, < float *> histogram.data, < float *> bins.data)
+        if rc != 0:
+            raise RuntimeError("OpenCL integrator failed with RC=%s" % rc)
 
-        memcpy(tth_out.data,self.ctth_out,self._nBins*sizeof(float))
-        return tth_out,histogram,bins
+        memcpy(tth_out.data, self.ctth_out, self._nBins * sizeof(float))
+        return tth_out, histogram, bins
 
     def clean(self, int preserve_context=0):
         """Free OpenCL related resources.
@@ -273,7 +273,7 @@ cdef class Integrator1d:
 ################################################################################
 # Methods inherited from ocl_base class
 ################################################################################
-    def init(self,devicetype="gpu",useFp64=True, platformid=None, deviceid=None ):
+    def init(self, devicetype="gpu", useFp64=True, platformid=None, deviceid=None):
         """Initial configuration: Choose a device and initiate a context. Devicetypes can be GPU,gpu,CPU,cpu,DEF,ACC,ALL.
         Suggested are GPU,CPU. For each setting to work there must be such an OpenCL device and properly installed.
         E.g.: If Nvidia driver is installed, GPU will succeed but CPU will fail. The AMD SDK kit is required for CPU via OpenCL.
@@ -283,29 +283,35 @@ cdef class Integrator1d:
         @param devid: integer
         """
         cdef int forceIDs, rc
-        self._useFp64 = <cpp_bool> useFp64
-        self._devicetype = <char*> devicetype
+        self._useFp64 = < cpp_bool > useFp64
+        self._devicetype = < char *> devicetype
         if (platformid is not None) and (deviceid is not None):
-            self._platformid = <int> int(platformid)
-            self._deviceid = <int> int(deviceid)
+            self._platformid = < int > int(platformid)
+            self._deviceid = < int > int(deviceid)
             forceIDs = 1
         else:
             forceIDs = 0
 
         with nogil:
             if forceIDs:
-                rc = self.cpp_integrator.init(<char*>self._devicetype, <int>self._platformid, <int>self._deviceid, <cpp_bool> self._useFp64)
+                rc = self.cpp_integrator.init(< char *> self._devicetype, < int > self._platformid, < int > self._deviceid, < cpp_bool > self._useFp64)
             else:
-                rc = self.cpp_integrator.init(<char*>self._devicetype, <cpp_bool> self._useFp64)
+                rc = self.cpp_integrator.init(< char *> self._devicetype, < cpp_bool > self._useFp64)
         return rc
 
-    def show_devices(self):
-        "Prints a list of OpenCL capable devices, their platforms and their ids"
-        self.cpp_integrator.show_devices()
+    def show_devices(self, to_log=True):
+        """
+        Prints a list of OpenCL capable devices, their platforms and their ids"
+        @param to_log: Set to false if you want to have info printed on screen
+        """
+        self.cpp_integrator.show_devices(< int > to_log)
 
-    def  show_device_details(self):
-        "Print details of a selected device"
-        self.cpp_integrator.show_device_details()
+    def show_device_details(self, to_log=True):
+        """
+        Print details of a selected device
+        @param to_log: Set to false if you want to have info printed on screen
+        """
+        self.cpp_integrator.show_device_details(< int > to_log)
 
     def reset_time(self):
         'Resets the internal profiling timers to 0'
@@ -325,13 +331,13 @@ cdef class Integrator1d:
 
     def get_status(self):
         "return a dictionnary with the status of the integrator"
-        retbin = numpy.binary_repr(self.cpp_integrator.get_status(),8)
-        out={}
-        for i,v in enumerate(['dummy', 'mask', 'solid_angle', 'pos1', 'pos0', 'compiled', 'size', 'context']):
-            out[v]=bool(int(retbin[i]))
+        retbin = numpy.binary_repr(self.cpp_integrator.get_status(), 8)
+        out = {}
+        for i, v in enumerate(['dummy', 'mask', 'solid_angle', 'pos1', 'pos0', 'compiled', 'size', 'context']):
+            out[v] = bool(int(retbin[i]))
         return out
 
-    def get_ids(self):
+    def get_contexed_Ids(self):
         """
         @return: 2-tuple of integers corresponding to (platform_id, device_id)
         """
@@ -339,8 +345,8 @@ cdef class Integrator1d:
         self.cpp_integrator.get_contexed_Ids(platform, device)
         return (platform, device)
 
-_INTEGRATORS_1D={} #key=(Nimage,NBins), value=instance of Integrator1d
-lock =threading.Semaphore()
+_INTEGRATORS_1D = {} #key=(Nimage,NBins), value=instance of Integrator1d
+lock = threading.Semaphore()
 
 
 def histGPU1d(numpy.ndarray weights not None,
@@ -376,12 +382,12 @@ def histGPU1d(numpy.ndarray weights not None,
     assert pos0.size == size
     assert delta_pos0.size == size
     assert  bins > 1
-    cdef float pos0_min,pos0_max,pos0_maxin
+    cdef float pos0_min, pos0_max, pos0_maxin
 
 
-    if  (size,bins) not in _INTEGRATORS_1D:
+    if  (size, bins) not in _INTEGRATORS_1D:
         with lock:
-            if  (size,bins) not in _INTEGRATORS_1D:
+            if  (size, bins) not in _INTEGRATORS_1D:
                 if pos0Range is not None and len(pos0Range) > 1:
                     pos0_min = min(pos0Range)
                     pos0_maxin = max(pos0Range)
@@ -391,7 +397,7 @@ def histGPU1d(numpy.ndarray weights not None,
                 if pos0_min < 0.0:
                     pos0_min = 0.0
                 pos0_max = pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps)
-                OCL_KERNEL = os.path.join(os.path.dirname(os.path.abspath(__file__)),"ocl_azim_kernel_2.cl")
+                OCL_KERNEL = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ocl_azim_kernel_2.cl")
 
                 integr = Integrator1d()
                 if platformid and deviceid:
@@ -401,25 +407,25 @@ def histGPU1d(numpy.ndarray weights not None,
                                 useFp64=useFp64)
                 else:
                     rc = integr.init(devicetype, useFp64)
-                if rc!=0:
-                    raise RuntimeError('Failed to initialize OpenCL deviceType %s (%s,%s) 64bits: %s'%(devicetype,platformid,deviceid,useFp64))
+                if rc != 0:
+                    raise RuntimeError('Failed to initialize OpenCL deviceType %s (%s,%s) 64bits: %s' % (devicetype, platformid, deviceid, useFp64))
 
-                if 0!= integr.getConfiguration(size, bins):
-                    raise RuntimeError('Failed to configure 1D integrator with Ndata=%s and Nbins=%s'%(size,bins))
+                if 0 != integr.getConfiguration(size, bins):
+                    raise RuntimeError('Failed to configure 1D integrator with Ndata=%s and Nbins=%s' % (size, bins))
 
-                if 0!= integr.configure(<char*> OCL_KERNEL):
-                    raise RuntimeError('Failed to compile kernel at %s'%(OCL_KERNEL))
+                if 0 != integr.configure(< char *> OCL_KERNEL):
+                    raise RuntimeError('Failed to compile kernel at %s' % (OCL_KERNEL))
 
-                if 0!= integr.loadTth(pos0, delta_pos0, pos0_min, pos0_max):
+                if 0 != integr.loadTth(pos0, delta_pos0, pos0_min, pos0_max):
                     raise RuntimeError("Failed to upload 2th arrays")
 #if 0!= integr.setSolidAngle(solid)
 #a.setMask(mask)
                 else:
-                    _INTEGRATORS_1D[(size,bins)]=integr
-    integr = _INTEGRATORS_1D[(size,bins)]
+                    _INTEGRATORS_1D[(size, bins)] = integr
+    integr = _INTEGRATORS_1D[(size, bins)]
     return integr.execute(weights)
 
-def initocl_azim(*arg,**kwarg):
+def initocl_azim(*arg, **kwarg):
     """Place holder:
     It seams this must exist in this module to be valid"""
     print("Calling initocl_azim with:")
