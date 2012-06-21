@@ -206,7 +206,7 @@ void ocl::show_device_details(int ignoreStream){
 		fprintf(tmp,"%s Device version: %s\n", heading.c_str(), device_info.version);
 		fprintf(tmp,"%s Device driver version: %s\n", heading.c_str(), device_info.driver_version);
 		fprintf(tmp,"%s Device extensions: %s\n", heading.c_str(), device_info.extensions);
-		fprintf(tmp,"%s Device Max Memory: %s\n", heading.c_str(), device_info.global_mem);
+		fprintf(tmp,"%s Device Max Memory: %ul\n", heading.c_str(), device_info.global_mem);
 	}
 return;
 }

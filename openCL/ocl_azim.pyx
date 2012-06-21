@@ -345,6 +345,30 @@ cdef class Integrator1d:
         self.cpp_integrator.get_contexed_Ids(platform, device)
         return (platform, device)
 
+    def get_platform_info(self):
+        """
+        @return: dict with platform info
+        """
+        out={}
+        out["name"] = self.cpp_integrator.platform_info.name
+        out["vendor"] = self.cpp_integrator.platform_info.vendor
+        out["extensions"] = self.cpp_integrator.platform_info.extensions
+        out["version"] = self.cpp_integrator.platform_info.version
+        return out
+    
+    def get_device_info(self):
+        """
+        @return: dict with device info
+        """
+        out={}
+        out["name"] = self.cpp_integrator.device_info.name
+        out["type"] = self.cpp_integrator.device_info.type
+        out["version"] = self.cpp_integrator.device_info.version
+        out["driver_version"] = self.cpp_integrator.device_info.driver_version
+        out["extensions"] = self.cpp_integrator.device_info.extensions
+        out["global_mem"]=self.cpp_integrator.device_info.global_mem
+        return out
+    
 _INTEGRATORS_1D = {} #key=(Nimage,NBins), value=instance of Integrator1d
 lock = threading.Semaphore()
 

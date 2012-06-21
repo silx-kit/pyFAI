@@ -1,5 +1,33 @@
 from libcpp cimport bool
+
+cdef extern from "ocl_tools.h":
+    # OpenCL tools platform information struct
+    # 
+    # It can be passed to ocl_platform_info to
+    # retrieve and save platform information
+    # for the current context
+    struct ocl_plat_t:
+        char * name
+        char * vendor
+        char * version
+        char * extensions
+    #OpenCL tools platform information struct
+    # It can be passed to ocl_device_info to
+    # retrieve and save device information
+    # for the current context
+    struct ocl_dev_t:
+        char * name
+        char type[4]
+        char * version
+        char * driver_version
+        char * extensions
+        unsigned long global_mem
+
+
 cdef extern from "ocl_xrpd1d.hpp":
+
+
+
     cdef cppclass ocl_xrpd1D_fullsplit:
         # Default constructor - Prints messages on stdout
         ocl_xrpd1D_fullsplit()
@@ -118,4 +146,10 @@ cdef extern from "ocl_xrpd1d.hpp":
         #bit 6: mask is set
         #bit 7: use dummy value   
         int get_status() nogil
+
+        #A couple of members of the class containing the platform_info and device_info
+        ocl_plat_t platform_info
+        ocl_dev_t device_info
+
+
 
