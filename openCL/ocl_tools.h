@@ -90,7 +90,6 @@ typedef struct
 {
   char *name;
   char type[4];
-  char *refcount;
   char *version;
   char *driver_version;
   char *extensions;
@@ -129,8 +128,8 @@ typedef struct ocl_configuration_parameters{
   //Active device and platform info
   int devid;
   int platfid;
-  ocl_plat_t		platform_info;
-  ocl_dev_t			device_info;
+  ocl_plat_t        platform_info;
+  ocl_dev_t         device_info;
 
   //If single .cl file:
   cl_program        oclprogram;
@@ -158,7 +157,14 @@ typedef struct ocl_configuration_parameters{
     when an error is encountered internally, it will print the message to stderr and fallback.
     It is important for the user to decide how to continue.*/
 
+/**
+ * \brief Initialises the internals of an ocl_config_type
+ */
 void ocl_tools_initialise(ocl_config_type *oclconfig);
+
+/**
+ * \brief Deallocations inside ocl_config_type
+ */
 void ocl_tools_destroy(ocl_config_type *oclconfig);
 
 /**
@@ -274,12 +280,34 @@ float ocl_get_profT(cl_event *start, cl_event *stop);
  */
 int ocl_string_to_cldevtype(const char *devicetype, cl_device_type &ocldevtype);
 
+/**
+ * \brief Initialise an ocl_plat_t struct
+ */
 void ocl_platform_info_init(ocl_plat_t &platinfo);
+
+/**
+ * \brief Release the memory held by the strings inside an ocl_plat_t struct
+ */
 void ocl_platform_info_del(ocl_plat_t &platinfo);
+
+/**
+ * \brief Initialise an ocl_dev_t struct
+ */
 void ocl_device_info_init(ocl_dev_t &devinfo);
+
+/**
+ * \brief Release the memory held by the strings inside an ocl_dev_t struct
+ */
 void ocl_device_info_del(ocl_dev_t &devinfo);
 
+/**
+ * \brief Populates an ocl_plat_t struct
+ */
 int ocl_current_platform_info(ocl_config_type *oclconfig);
+
+/**
+ * \brief Populates an ocl_dev_t struct
+ */
 int ocl_current_device_info(ocl_config_type *oclconfig);
 
 /**
