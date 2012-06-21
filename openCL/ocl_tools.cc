@@ -47,6 +47,7 @@
 		#define _CRT_SECURE_NO_WARNINGS
 	#endif
 	#pragma warning(disable : 4996)
+  //This is required for OpenCL callbacks in windows.
   //This can also be achieved by setting cl.exe flags.
   // flag /Gz uses the __stdcall calling convention
   #define __call_compat __stdcall
@@ -63,6 +64,13 @@
 #define C CL_CHECK_PR      ///Short for CL_CHECK_PR
 #define CL CL_CHECK_PR_RET ///short for CL_CHECK_PR_RET
 
+/**
+ * Sets some data members of oclconfig to a default value.
+ * Calls ocl_platform_info_init() and ocl_device_info_init()
+ *
+ * @param oclconfig The OpenCL configuration to be initialised
+ * @return void
+ */
 void ocl_tools_initialise(ocl_config_type *oclconfig)
 {
   oclconfig->platfid = -1;
@@ -77,6 +85,14 @@ void ocl_tools_initialise(ocl_config_type *oclconfig)
   return;
 }
 
+/**
+ * Calls ocl_platform_info_del() and ocl_device_info_del().
+ * Other data members are cleaned internally when appropriate by
+ * other calls.
+ *
+ * @param oclconfig The OpenCL configuration to be initialised
+ * @return void
+ */
 void ocl_tools_destroy(ocl_config_type *oclconfig)
 {
   //Deallocate memory
@@ -1202,7 +1218,6 @@ return;
 void ocl_device_info_init(ocl_dev_t &devinfo)
 {
   devinfo.name           = NULL;
-  devinfo.refcount       = NULL;
   devinfo.version        = NULL;
   devinfo.driver_version = NULL;
   devinfo.extensions     = NULL;
@@ -1222,11 +1237,10 @@ return;
  */
 void ocl_device_info_del(ocl_dev_t &devinfo)
 {
-  free (devinfo.name)          ;
-  free (devinfo.refcount)      ;
-  free (devinfo.version)       ;
-  free (devinfo.driver_version);
-  free (devinfo.extensions)    ;
+  if(devinfo.name)free (devinfo.name);
+  if(devinfo.version)free (devinfo.version);
+  if(devinfo.driver_version)free (devinfo.driver_version);
+  if(devinfo.extensions)free (devinfo.extensions);
   devinfo.global_mem = 0;
 return;
 }
