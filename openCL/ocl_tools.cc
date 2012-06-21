@@ -728,7 +728,7 @@ int ocl_compiler(ocl_config_type *oclconfig,const char *kernelfilename,int BLOCK
   oclconfig->kernelstrings = (char**)malloc(1*sizeof(char));
 
   //Load the kernel in a string
-  kernel=fopen(kernelfilename,"r");
+  kernel=fopen(kernelfilename,"rb");
   if(!kernel){fprintf(stderr,"INVALID OpenCL file %s\n",kernelfilename);return -1;} //Fallback
   
   fseek(kernel,0,SEEK_END);
@@ -843,7 +843,7 @@ int ocl_compiler(ocl_config_type *oclconfig,const char **clList,int clNum,int BL
     oclconfig->prgs[clfile].kernelstrings = (char**)malloc(1*sizeof(char*));
 
     //Load the kernel in a string
-    kernel=fopen(clList[clfile],"r");
+    kernel=fopen(clList[clfile],"rb");
     if(!kernel){fprintf(stderr,"INVALID OpenCL file %s\n",clList[clfile]);return -1;} //Fallback
 
     fseek(kernel,0,SEEK_END);
