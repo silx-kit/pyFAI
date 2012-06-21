@@ -18,7 +18,7 @@
  *                                 Grenoble, France
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
- *   Last revision: 20/06/2012
+ *   Last revision: 21/06/2012
  *    
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -46,6 +46,7 @@
 	#ifndef _CRT_SECURE_NO_WARNINGS
 		#define _CRT_SECURE_NO_WARNINGS
 	#endif
+	#pragma warning(disable : 4996)
   //This can also be achieved by setting cl.exe flags.
   // flag /Gz uses the __stdcall calling convention
   #define __call_compat __stdcall
@@ -61,6 +62,29 @@
 #define CE CL_CHECK_ERR_PR ///Short for CL_CHECK_ERR_PR
 #define C CL_CHECK_PR      ///Short for CL_CHECK_PR
 #define CL CL_CHECK_PR_RET ///short for CL_CHECK_PR_RET
+
+void ocl_tools_initialise(ocl_config_type *oclconfig)
+{
+  oclconfig->platfid = -1;
+  oclconfig->devid = -1;
+  oclconfig->Nbuffers=0;
+  oclconfig->Nkernels=0;
+  oclconfig->oclmemref =NULL;
+  oclconfig->oclkernels=NULL;
+  ocl_platform_info_init(oclconfig->platform_info);
+  ocl_device_info_init(oclconfig->device_info);
+
+  return;
+}
+
+void ocl_tools_destroy(ocl_config_type *oclconfig)
+{
+  //Deallocate memory
+  ocl_platform_info_del(oclconfig->platform_info);
+  ocl_device_info_del(oclconfig->device_info);
+
+  return;
+}
 
 /**
  * Check for devices that match the cl_device_type specification.
@@ -200,7 +224,7 @@ int ocl_probe(ocl_config_type *oclconfig,cl_device_type ocldevtype,int preset_pl
     free(ocldevices);
     return -1;    
   }
-  if((num_platforms-1)<preset_platform){
+  if(int(num_platforms-1)<preset_platform){
     fprintf(stderr,"!!Bad choice: preset_platform %d, preset_device %d. Available platforms %d (Take care of C notation)\n",preset_platform,preset_device,num_platforms);
     free(oclplatforms);
     free(ocldevices);    
@@ -215,7 +239,7 @@ int ocl_probe(ocl_config_type *oclconfig,cl_device_type ocldevtype,int preset_pl
   
   check_ocl =  clGetDeviceIDs(oclplatforms[preset_platform],ocldevtype,OCL_MAX_DEVICES,ocldevices,&num_devices);
 
-  if((num_devices-1)<preset_device || check_ocl != CL_SUCCESS){
+  if(int(num_devices-1)<preset_device || check_ocl != CL_SUCCESS){
     fprintf(stderr,"!!Bad choice: preset_platform %d, preset_device %d. Available devices %d.(%s)\n",preset_platform,preset_device,num_devices,ocl_perrc(check_ocl));
     free(oclplatforms);
     free(ocldevices);    
@@ -570,6 +594,9 @@ int ocl_init_context(ocl_config_type *oclconfig,const char *device_type, int use
   oclconfig->oclcontext = clCreateContext(akProperties,1,&oclconfig->ocldevice,NULL/*&pfn_notify*/,NULL,&err);
   if(err){fprintf(stderr,"Context failed: %s (%d)\n",ocl_perrc(err),err);return -1; }
 
+  ocl_current_device_info(oclconfig);
+  ocl_current_platform_info(oclconfig);
+
 return 0;  
 }
 
@@ -609,6 +636,9 @@ int ocl_init_context(ocl_config_type *oclconfig,const char *device_type,int pres
   oclconfig->oclcontext = clCreateContext(akProperties,1,&oclconfig->ocldevice,NULL/*&pfn_notify*/,NULL,&err);
   if(err){fprintf(stderr,"Context failed: %s (%d)\n",ocl_perrc(err),err);return -1; }
 
+  ocl_current_device_info(oclconfig);
+  ocl_current_platform_info(oclconfig);
+
 return 0;  
 }
 
@@ -644,6 +674,9 @@ int ocl_init_context(ocl_config_type *oclconfig,cl_platform_id platform,cl_devic
   cl_context_properties akProperties[] ={CL_CONTEXT_PLATFORM, (cl_context_properties)oclconfig->oclplatform,0};
   oclconfig->oclcontext = clCreateContext(akProperties,1,&oclconfig->ocldevice,NULL/*&pfn_notify*/,NULL,&err);
   if(err){fprintf(stderr,"Context failed: %s (%d)\n",ocl_perrc(err),err);return -1; }
+
+  ocl_current_device_info(oclconfig);
+  ocl_current_platform_info(oclconfig);
 
 return 0;
 };
@@ -771,9 +804,9 @@ int ocl_compiler(ocl_config_type *oclconfig,const char **clList,int clNum,int BL
     return -2;
   }
   
-  int optlen=0;
-  int complen=strlen(oclconfig->compiler_options) +2;
-  int deflen=strlen("-I. -D BLOCK_SIZE=9999 ") + 2;
+  size_t optlen=0;
+  size_t complen=strlen(oclconfig->compiler_options) +2;
+  size_t deflen=strlen("-I. -D BLOCK_SIZE=9999 ") + 2;
   
   if(optional) optlen = strlen(optional) + 2;
   if(optlen + complen + deflen > 9999){
@@ -884,9 +917,9 @@ int ocl_compiler(ocl_config_type *oclconfig,unsigned char **clList,unsigned int 
     return -2;
   }
 
-  int optlen=0;
-  int complen=strlen(oclconfig->compiler_options) +2;
-  int deflen=strlen("-I. -D BLOCK_SIZE=9999 ") + 2;
+  size_t optlen=0;
+  size_t complen=strlen(oclconfig->compiler_options) +2;
+  size_t deflen=strlen("-I. -D BLOCK_SIZE=9999 ") + 2;
 
   if(optional) optlen = strlen(optional) + 2;
   if(optlen + complen + deflen > 9999){
@@ -1088,7 +1121,7 @@ float ocl_get_profT(cl_event* start, cl_event* stop, const char* message, FILE* 
   CL( clGetEventProfilingInfo(*start,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),&ts,NULL) );
   fprintf(stream,"%s: t %f(ms), t %f(s) \n",message,(te-ts)/(1e6),(te-ts)/(1e9));
 
-  return (te-ts)/(1e6);
+  return (te-ts)/(1e6f);
 }
 
 /**
@@ -1112,7 +1145,7 @@ float ocl_get_profT(cl_event *start, cl_event *stop){
   CL( clGetEventProfilingInfo(*stop,CL_PROFILING_COMMAND_END,sizeof(cl_ulong),&te,NULL));
   CL( clGetEventProfilingInfo(*start,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),&ts,NULL));
 
-  tms = (te-ts)/(1e6);
+  tms = (te-ts)/(1e6f);
   return tms;
 }
 
@@ -1211,41 +1244,41 @@ return;
  *          on the current platform
  * @return Error code. 0 for success, -1 for OpenCL error and -2 for other error
  */
-int ocl_current_platform_info(ocl_config_type *oclconfig, ocl_plat_t &platinfo)
+int ocl_current_platform_info(ocl_config_type *oclconfig)
 {
   size_t pinf_size;
   
   CL( clGetPlatformInfo(oclconfig->oclplatform, CL_PLATFORM_NAME, 0 , NULL , &pinf_size) );
-  platinfo.name = (char *)realloc(platinfo.name, (pinf_size + 1));
-  if(!platinfo.name) {
+  oclconfig->platform_info.name = (char *)realloc(oclconfig->platform_info.name, (pinf_size + 1));
+  if(!oclconfig->platform_info.name) {
     ocl_errmsg("Failed to allocate platform.name",__FILE__,__LINE__);
     return -2;
   }
-  CL( clGetPlatformInfo(oclconfig->oclplatform, CL_PLATFORM_NAME, pinf_size , platinfo.name , 0) );
+  CL( clGetPlatformInfo(oclconfig->oclplatform, CL_PLATFORM_NAME, pinf_size , oclconfig->platform_info.name , 0) );
 
   CL( clGetPlatformInfo(oclconfig->oclplatform, CL_PLATFORM_VERSION, 0 , NULL , &pinf_size) );
-  platinfo.version = (char *)realloc(platinfo.version, (pinf_size + 1));
-  if(!platinfo.version) {
+  oclconfig->platform_info.version = (char *)realloc(oclconfig->platform_info.version, (pinf_size + 1));
+  if(!oclconfig->platform_info.version) {
     ocl_errmsg("Failed to allocate platform.version",__FILE__,__LINE__);
     return -2;
   }
-  CL( clGetPlatformInfo(oclconfig->oclplatform, CL_PLATFORM_VERSION, pinf_size , platinfo.version , 0) );
+  CL( clGetPlatformInfo(oclconfig->oclplatform, CL_PLATFORM_VERSION, pinf_size , oclconfig->platform_info.version , 0) );
 
   CL( clGetPlatformInfo(oclconfig->oclplatform, CL_PLATFORM_VENDOR, 0 , NULL , &pinf_size) );
-  platinfo.vendor = (char *)realloc(platinfo.vendor, (pinf_size + 1));
-  if(!platinfo.vendor) {
+  oclconfig->platform_info.vendor = (char *)realloc(oclconfig->platform_info.vendor, (pinf_size + 1));
+  if(!oclconfig->platform_info.vendor) {
     ocl_errmsg("Failed to allocate platform.vendor",__FILE__,__LINE__);
     return -2;
   }
-  CL( clGetPlatformInfo(oclconfig->oclplatform, CL_PLATFORM_VENDOR, pinf_size , platinfo.vendor , 0) );
+  CL( clGetPlatformInfo(oclconfig->oclplatform, CL_PLATFORM_VENDOR, pinf_size , oclconfig->platform_info.vendor , 0) );
 
   CL( clGetPlatformInfo(oclconfig->oclplatform, CL_PLATFORM_EXTENSIONS, 0 , NULL , &pinf_size) );
-  platinfo.extensions = (char *)realloc(platinfo.extensions, (pinf_size + 1));
-  if(!platinfo.extensions) {
+  oclconfig->platform_info.extensions = (char *)realloc(oclconfig->platform_info.extensions, (pinf_size + 1));
+  if(!oclconfig->platform_info.extensions) {
     ocl_errmsg("Failed to allocate platform.extensions",__FILE__,__LINE__);
     return -2;
   }
-  CL( clGetPlatformInfo(oclconfig->oclplatform, CL_PLATFORM_EXTENSIONS, pinf_size , platinfo.extensions , 0) );  
+  CL( clGetPlatformInfo(oclconfig->oclplatform, CL_PLATFORM_EXTENSIONS, pinf_size , oclconfig->platform_info.extensions , 0) );  
   
   return 0;
 }
@@ -1265,50 +1298,50 @@ int ocl_current_platform_info(ocl_config_type *oclconfig, ocl_plat_t &platinfo)
  *          on the current device
  * @return Error code. 0 for success, -1 for OpenCL error and -2 for other error
  */
-int ocl_current_device_info(ocl_config_type *oclconfig, ocl_dev_t &devinfo)
+int ocl_current_device_info(ocl_config_type *oclconfig)
 {
   size_t pinf_size;
   cl_device_type devtype;
 
   CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DEVICE_NAME, 0 , NULL , &pinf_size) );
-  devinfo.name = (char *)realloc(devinfo.name, (pinf_size + 1));
-  if(!devinfo.name) {
-    ocl_errmsg("Failed to allocate devinfo.name",__FILE__,__LINE__);
+  oclconfig->device_info.name = (char *)realloc(oclconfig->device_info.name, (pinf_size + 1));
+  if(!oclconfig->device_info.name) {
+    ocl_errmsg("Failed to allocate device_info.name",__FILE__,__LINE__);
     return -2;
   }
-  CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DEVICE_NAME, pinf_size , devinfo.name , 0) );
+  CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DEVICE_NAME, pinf_size , oclconfig->device_info.name , 0) );
 
   CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DEVICE_TYPE, sizeof(cl_device_type) , &devtype , 0) );
-  if(devtype == CL_DEVICE_TYPE_GPU) strcpy(devinfo.type,"GPU");
-  else if (devtype == CL_DEVICE_TYPE_CPU) strcpy(devinfo.type,"CPU");
-  else if (devtype == CL_DEVICE_TYPE_ACCELERATOR) strcpy(devinfo.type,"ACC");
-  else strcpy(devinfo.type,"DEF");
+  if(devtype == CL_DEVICE_TYPE_GPU) strcpy(oclconfig->device_info.type,"GPU");
+  else if (devtype == CL_DEVICE_TYPE_CPU) strcpy(oclconfig->device_info.type,"CPU");
+  else if (devtype == CL_DEVICE_TYPE_ACCELERATOR) strcpy(oclconfig->device_info.type,"ACC");
+  else strcpy(oclconfig->device_info.type,"DEF");
 
   CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DEVICE_VERSION, 0 , NULL , &pinf_size) );
-  devinfo.version = (char *)realloc(devinfo.version, (pinf_size + 1));
-  if(!devinfo.version) {
-    ocl_errmsg("Failed to allocate devinfo.version",__FILE__,__LINE__);
+  oclconfig->device_info.version = (char *)realloc(oclconfig->device_info.version, (pinf_size + 1));
+  if(!oclconfig->device_info.version) {
+    ocl_errmsg("Failed to allocate device_info.version",__FILE__,__LINE__);
     return -2;
   }
-  CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DEVICE_VERSION, pinf_size , devinfo.version , 0) );
+  CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DEVICE_VERSION, pinf_size , oclconfig->device_info.version , 0) );
 
   CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DRIVER_VERSION, 0 , NULL , &pinf_size) );
-  devinfo.driver_version = (char *)realloc(devinfo.driver_version, (pinf_size + 1));
-  if(!devinfo.driver_version) {
-    ocl_errmsg("Failed to allocate devinfo.driver_version",__FILE__,__LINE__);
+  oclconfig->device_info.driver_version = (char *)realloc(oclconfig->device_info.driver_version, (pinf_size + 1));
+  if(!oclconfig->device_info.driver_version) {
+    ocl_errmsg("Failed to allocate device_info.driver_version",__FILE__,__LINE__);
     return -2;
   }
-  CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DRIVER_VERSION, pinf_size , devinfo.driver_version , 0) );    
+  CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DRIVER_VERSION, pinf_size , oclconfig->device_info.driver_version , 0) );    
 
   CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DEVICE_EXTENSIONS, 0 , NULL , &pinf_size) );
-  devinfo.extensions = (char *)realloc(devinfo.extensions, (pinf_size + 1));
-  if(!devinfo.extensions) {
-    ocl_errmsg("Failed to allocate devinfo.extensions",__FILE__,__LINE__);
+  oclconfig->device_info.extensions = (char *)realloc(oclconfig->device_info.extensions, (pinf_size + 1));
+  if(!oclconfig->device_info.extensions) {
+    ocl_errmsg("Failed to allocate device_info.extensions",__FILE__,__LINE__);
     return -2;
   }
-  CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DEVICE_EXTENSIONS, pinf_size , devinfo.extensions , 0) );
+  CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DEVICE_EXTENSIONS, pinf_size , oclconfig->device_info.extensions , 0) );
 
-  CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong) , &(devinfo.global_mem) , 0) );
+  CL( clGetDeviceInfo(oclconfig->ocldevice, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong) , &(oclconfig->device_info.global_mem) , 0) );
   
   return 0;
 }
