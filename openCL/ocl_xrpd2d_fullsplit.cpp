@@ -607,19 +607,19 @@ int ocl_xrpd2D_fullsplit::execute(float *im_inten,float *histogram,float *bins)
   CR(
   clEnqueueNDRangeKernel(oclconfig->oclcmdqueue,oclconfig->oclkernels[CLKERN_GROUP_SPANS],1,0,wdim_partialh,tdim_partialh
   ,0,0,&oclconfig->t_s[3]) );
-  
-  //Apply Solidangle correction if needed
-  if(useSolidAngle)
-  {
-    CR(
-    clEnqueueNDRangeKernel(oclconfig->oclcmdqueue,oclconfig->oclkernels[CLKERN_SOLIDANGLE_CORRECTION],1,0,wdim_partialh,tdim_partialh,0,0,&oclconfig->t_s[8]) );
-  }
 
   //Apply dummyval_correction if needed
   if(useDummyVal)
   {
     CR(
     clEnqueueNDRangeKernel(oclconfig->oclcmdqueue,oclconfig->oclkernels[CLKERN_DUMMYVAL_CORRECTION],1,0,wdim_partialh,tdim_partialh,0,0,&oclconfig->t_s[9]) );
+  }
+  
+  //Apply Solidangle correction if needed
+  if(useSolidAngle)
+  {
+    CR(
+    clEnqueueNDRangeKernel(oclconfig->oclcmdqueue,oclconfig->oclkernels[CLKERN_SOLIDANGLE_CORRECTION],1,0,wdim_partialh,tdim_partialh,0,0,&oclconfig->t_s[8]) );
   }
 
   //Histogram
