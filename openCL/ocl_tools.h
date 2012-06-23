@@ -322,11 +322,10 @@ int ocl_current_device_info(ocl_config_type *oclconfig);
  */
 /* Opencl error function. Some Opencl functions allow pfn_notify to report errors, by passing it as pointer.
       Consult the OpenCL reference card for these functions. */
-void __call_compat pfn_notify(const char *errinfo);
+void __call_compat pfn_notify(const char *errinfo, const void *private_info, size_t cb, void *user_data);
 
 /* Basic function to handle error messages */
 void ocl_errmsg(const char *userstring, const char *file, const int line);
-
 
 /* Vector creation functions. OpenCL allows reintepretation and conversion, but no direct clean vector initialisation like CUDA*/
 #ifdef CL_HAS_NAMED_VECTOR_FIELDS

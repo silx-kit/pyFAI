@@ -1460,7 +1460,7 @@ return "Unknown Error";
 
 /* Opencl error function. Some Opencl functions allow pfn_notify to report errors, by passing it as pointer.
       Consult the OpenCL reference card for these functions. */
-void __call_compat pfn_notify(const char *errinfo)
+void __call_compat pfn_notify(const char *errinfo, const void *private_info, size_t cb, void *user_data)
 {
   fprintf(stderr, "OpenCL Error (via pfn_notify): %s\n", errinfo);
   return;
@@ -1471,7 +1471,6 @@ void ocl_errmsg(const char *userstring, const char *file, const int line){
   fprintf(stderr,"ocl_errmsg: %s (%s:%d)\n",userstring,file,line);
   return;
 }
-
 
 #ifdef CL_HAS_NAMED_VECTOR_FIELDS
 
