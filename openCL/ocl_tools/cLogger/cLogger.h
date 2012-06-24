@@ -78,6 +78,7 @@ DllInterface void cLog_date(logger_t *hLog, enum_LOGDEPTH depth);
 DllInterface void cLog_date_text(logger_t *hLog, enum_LOGDEPTH depth, const char *format, ...);
 DllInterface void cLog_init(logger_t *hLog, FILE *stream, const char *fname, int severity, enum_LOGTYPE type, enum_LOGDEPTH depth, int perf, int timestamps);
 DllInterface void cLog_fin(logger_t *hLog);
+DllInterface void cLog_report_configuration(logger_t *hLog);
 
 #ifdef __cplusplus
 }

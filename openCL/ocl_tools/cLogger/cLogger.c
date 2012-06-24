@@ -351,4 +351,47 @@ void cLog_bench(logger_t *hLog, const char * format, ...)
   return;
 }
 
+void cLog_report_configuration(logger_t *hLog)
+{
+  char depth[10];
 
+  printf("\ncLogger Configuration\n");
+  if( (hLog) )
+  {
+    if( (*hLog).status == 0 ) printf("- Disabled \n");
+    else
+    {
+      if( (*hLog).stream == stdout )printf("- Stream: stdout \n");
+      else if( (*hLog).stream == stderr )printf("- Stream: stderr \n");
+      else printf("- Stream: s% \n", (*hLog).fname);
+
+      printf("- Speed: %s\n",((*hLog).type)?"SAFE":"FAST");
+      printf("- Depth: ");
+      switch ( (*hLog).depth )
+      {
+      case LOGDNONE:
+        printf("Nothing \n");
+        break;
+      case LOGDONLYERRORS:
+        printf("Errors \n");
+        break;
+      case LOGDBASIC:
+        printf("Basic \n");
+        break;
+      case LOGDEXTENDED:
+        printf("Extended \n");
+        break;
+      case LOGDDEBUG:
+        printf("Debug \n");
+        break;
+      default:
+        printf("Undefined \n");
+        break;
+      }
+      printf("- Profiling Information: %s\n",((*hLog).perf)?"YES":"NO");
+      printf("- Timestamps: %s\n",((*hLog).timestamps)?"YES":"NO");
+    } 
+  }else printf("- Not Initialised \n");
+
+  printf("\n");
+}
