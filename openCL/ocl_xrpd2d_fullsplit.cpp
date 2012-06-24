@@ -20,7 +20,7 @@
  *                             Grenoble, France
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
- *   Last revision: 11/05/2012
+ *   Last revision: 24/06/2012
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -43,22 +43,20 @@
 
 #include "ocl_xrpd2d.hpp"
 
-#define CE CL_CHECK_ERR_PR
-#define C  CL_CHECK_PR
+#define CE(_expr) CL_CHECK_ERR_PR(_expr, &hLog)
+#define C(_expr)  CL_CHECK_PR(_expr, &hLog)
 
-#define CEN CL_CHECK_ERR_PRN
-#define CN  CL_CHECK_PRN
+#define CEN(_expr) CL_CHECK_ERR_PRN(_expr, &hLog)
+#define CN(_expr)  CL_CHECK_PRN(_expr, &hLog)
 
-#define CER CL_CHECK_ERR_PR_RET
-#define CR  CL_CHECK_PR_RET
+#define CER(_expr) CL_CHECK_ERR_PR_RET(_expr, &hLog)
+#define CR(_expr)  CL_CHECK_PR_RET(_expr, &hLog)
 
 #ifdef _WIN32
-#define _CRT_SECURE_NO_WARNINGS 1
-#endif
-
-//#define silent
-#ifdef _SILENT
-  #define fprintf(stream,...)
+	#ifndef _CRT_SECURE_NO_WARNINGS
+		#define _CRT_SECURE_NO_WARNINGS
+	#endif
+	#pragma warning(disable : 4996)
 #endif
 
 #define BLOCK_SIZE 128
@@ -102,7 +100,13 @@ ocl_xrpd2D_fullsplit::ocl_xrpd2D_fullsplit():ocl()
   setDocstring("OpenCL 2d Azimuthal integrator. Check the readme file for more details\n","ocl_xrpd2d_fullsplit.readme");
 }
 
-ocl_xrpd2D_fullsplit::ocl_xrpd2D_fullsplit(const char* fname):ocl(fname)
+ocl_xrpd2D_fullsplit::ocl_xrpd2D_fullsplit(const char* fname, const char *identity):ocl(fname, identity)
+{
+  setDocstring("OpenCL 2d Azimuthal integrator. Check the readme file for more details\n","ocl_xrpd2d_fullsplit.readme");
+}
+
+ocl_xrpd2D_fullsplit::ocl_xrpd2D_fullsplit(FILE *stream, const char *fname, int safe, int depth, int perf_time, int timestamp, const char* identity):
+  ocl(stream, fname, safe, depth, perf_time, timestamp, identity)
 {
   setDocstring("OpenCL 2d Azimuthal integrator. Check the readme file for more details\n","ocl_xrpd2d_fullsplit.readme");
 }
@@ -119,11 +123,11 @@ int ocl_xrpd2D_fullsplit::getConfiguration(const int Nx,const int Nimage,const i
 
 
   if(Nx < 1 || Nimage < 1 || NbinsTth < 1 || NbinsChi < 1){
-    fprintf(stderr,"get_azim_args() parameters make no sense {%d %d %d %d}\n",Nx,Nimage,NbinsTth,NbinsChi);
+    cLog_critical(&hLog,"get_azim_args() parameters make no sense {%d %d %d %d}\n",Nx,Nimage,NbinsTth,NbinsChi);
     return -2;
   }
   if(!(this->sgs)){
-    ocl_errmsg("Fatal error in get_azim_args(). Cannot allocate argument structure",__FILE__,__LINE__);
+    cLog_critical(&hLog,"Fatal error in get_azim_args(). Cannot allocate argument structure (%s:%d)\n",__FILE__,__LINE__);
     return -1;
   } else {
     this->sgs->Nimage = Nimage;
@@ -143,11 +147,11 @@ int ocl_xrpd2D_fullsplit::configure()
 
   //using namespace ocl_xrpd2D_fullsplit;
   if(!sgs->Nx || !sgs->Nimage || !sgs->Nbinst || !sgs->Nbinsc){
-    fprintf(stderr,"You may not call config() at this point. Image and histogram parameters not set. (Hint: run get_azim_args())\n");
+    cLog_critical(&hLog,"You may not call config() at this point. Image and histogram parameters not set. (Hint: run get_azim_args())\n");
     return -2;
   }
   if(!hasActiveContext){
-    fprintf(stderr,"You may not call config() at this point. There is no Active context. (Hint: run init())\n");
+    cLog_critical(&hLog,"You may not call config() at this point. There is no Active context. (Hint: run init())\n");
     return -2;
   }
 
@@ -159,7 +163,7 @@ int ocl_xrpd2D_fullsplit::configure()
   //Next step after the creation of a context is to create a command queue. After this step we can enqueue command to the device
   // such as memory copies, arguments, kernels etc.
   oclconfig->oclcmdqueue = clCreateCommandQueue(oclconfig->oclcontext,oclconfig->ocldevice,CL_QUEUE_PROFILING_ENABLE,&err);
-  if(err){fprintf(stderr,"clCreateKernel error, %s\n",ocl_perrc(err));return -1;};
+  if(err){cLog_critical(&hLog,"clCreateKernel error, %s\n",ocl_perrc(err));return -1;};
   hasQueue =1;
 
   //Allocate device memory
@@ -179,40 +183,40 @@ int ocl_xrpd2D_fullsplit::configure()
   //The blocksize itself is set by the compiler function explicitly and then appends the string "optional"
   char kern_ver[100];
   sprintf(kern_ver,"ocl_azim_kernel2d_%d.cl",2);
-  fprintf(stream,"Will use kernel %s\n",kern_ver);
-  if(ocl_compiler(oclconfig,kern_ver,BLOCK_SIZE,optional,stream))return -1;
+  cLog_debug(&hLog,"Will use kernel %s\n",kern_ver);
+  if(ocl_compiler(oclconfig,kern_ver,BLOCK_SIZE,optional))return -1;
   hasProgram=1;
 
   oclconfig->oclkernels = (cl_kernel*)malloc(8*sizeof(cl_kernel));
   if(!oclconfig->oclkernels){
-    ocl_errmsg("Fatal error in ocl_config. Cannot allocate kernels",__FILE__,__LINE__);
+    cLog_critical(&hLog,"Fatal error in ocl_config. Cannot allocate kernels (%s:%d)\n",__FILE__,__LINE__);
     return -2;
   }
 
   int i=0;
   oclconfig->oclkernels[CLKERN_INTEGRATE] = clCreateKernel(oclconfig->oclprogram,"create_histo_binarray",&err);
-  if(err){fprintf(stderr,"clCreateKernel error, %s\n",ocl_perrc(err));return -1;};i++;
+  if(err){cLog_critical(&hLog,"clCreateKernel error, %s\n",ocl_perrc(err));return -1;};i++;
 
   oclconfig->oclkernels[CLKERN_UIMEMSET2] = clCreateKernel(oclconfig->oclprogram,"uimemset2",&err);
-  if(err){fprintf(stderr,"clCreateKernel error, %s\n",ocl_perrc(err));return -1;};i++;
+  if(err){cLog_critical(&hLog,"clCreateKernel error, %s\n",ocl_perrc(err));return -1;};i++;
 
   oclconfig->oclkernels[CLKERN_IMEMSET] = clCreateKernel(oclconfig->oclprogram,"imemset",&err);
-  if(err){fprintf(stderr,"clCreateKernel error, %s\n",ocl_perrc(err));return -1;};i++;
+  if(err){cLog_critical(&hLog,"clCreateKernel error, %s\n",ocl_perrc(err));return -1;};i++;
   
   oclconfig->oclkernels[CLKERN_UI2F2] = clCreateKernel(oclconfig->oclprogram,"ui2f2",&err);
-  if(err){fprintf(stderr,"clCreateKernel error, %s\n",ocl_perrc(err));return -1;};i++;
+  if(err){cLog_critical(&hLog,"clCreateKernel error, %s\n",ocl_perrc(err));return -1;};i++;
 
   oclconfig->oclkernels[CLKERN_GET_SPANS] = clCreateKernel(oclconfig->oclprogram,"get_spans",&err);
-  if(err){fprintf(stderr,"clCreateKernel error, %s\n",ocl_perrc(err));return -1;};i++;
+  if(err){cLog_critical(&hLog,"clCreateKernel error, %s\n",ocl_perrc(err));return -1;};i++;
 
   oclconfig->oclkernels[CLKERN_GROUP_SPANS] = clCreateKernel(oclconfig->oclprogram,"group_spans",&err);
-  if(err){fprintf(stderr,"clCreateKernel error, %s\n",ocl_perrc(err));return -1;};i++;
+  if(err){cLog_critical(&hLog,"clCreateKernel error, %s\n",ocl_perrc(err));return -1;};i++;
 
   oclconfig->oclkernels[CLKERN_SOLIDANGLE_CORRECTION] = clCreateKernel(oclconfig->oclprogram,"solidangle_correction",&err);
-  if(err){fprintf(stderr,"clCreateKernel error, %s\n",ocl_perrc(err));return -1;};i++;
+  if(err){cLog_critical(&hLog,"clCreateKernel error, %s\n",ocl_perrc(err));return -1;};i++;
 
   oclconfig->oclkernels[CLKERN_DUMMYVAL_CORRECTION] = clCreateKernel(oclconfig->oclprogram,"dummyval_correction",&err);
-  if(err){fprintf(stderr,"clCreateKernel error, %s\n",ocl_perrc(err));return -1;};i++;
+  if(err){cLog_critical(&hLog,"clCreateKernel error, %s\n",ocl_perrc(err));return -1;};i++;
 
   oclconfig->Nkernels=i;
   hasKernels = 1;
@@ -228,7 +232,7 @@ int ocl_xrpd2D_fullsplit::configure()
   CR(
     clEnqueueNDRangeKernel(oclconfig->oclcmdqueue,oclconfig->oclkernels[CLKERN_IMEMSET],1,0,wdim,tdim,0,0,&oclconfig->t_s[0]) );
 
-  execTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0],  "Initialise Mask to 0");
+  execTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0],  "Initialise Mask to 0",&hLog);
   clReleaseEvent(oclconfig->t_s[0]);  
 
 return 0;
@@ -237,13 +241,13 @@ return 0;
 int ocl_xrpd2D_fullsplit::loadTth(float* tth, float* dtth, float tth_min, float tth_max)
 {
 
-  fprintf(stream,"Loading Tth\n");
+  cLog_extended(&hLog,"Loading Tth\n");
   float tthmm[2];
   tthmm[0]=tth_min;
   tthmm[1]=tth_max;
 
   if(!oclconfig->Nbuffers || !isConfigured){
-    fprintf(stderr,"You may not call loadTth() at this point, OpenCL is not configured (Hint: run config())\n");
+    cLog_critical(&hLog,"You may not call loadTth() at this point, OpenCL is not configured (Hint: run config())\n");
     return -2;
   }
 
@@ -256,7 +260,7 @@ int ocl_xrpd2D_fullsplit::loadTth(float* tth, float* dtth, float tth_min, float 
   CR(
     clEnqueueWriteBuffer(oclconfig->oclcmdqueue,oclconfig->oclmemref[CLMEM_TTH_MIN_MAX],CL_TRUE,0,2*sizeof(cl_float),(void*)tthmm,0,0,&oclconfig->t_s[2]) );
 
-  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[2],"Load Tth",stream);
+  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[2],"Load Tth",&hLog);
   clReleaseEvent(oclconfig->t_s[0]);
   clReleaseEvent(oclconfig->t_s[1]);
   clReleaseEvent(oclconfig->t_s[2]);
@@ -267,18 +271,18 @@ int ocl_xrpd2D_fullsplit::loadTth(float* tth, float* dtth, float tth_min, float 
 int ocl_xrpd2D_fullsplit::loadChi(float* chi, float* dchi, float chi_min, float chi_max)
 {
 
-  fprintf(stream,"Loading Chi\n");
+  cLog_extended(&hLog,"Loading Chi\n");
   float chimm[2];
   chimm[0]=chi_min;
   chimm[1]=chi_max;
 
   if(!hasActiveContext){
-    fprintf(stderr,"You may not call loadChi() at this point. There is no Active context. (Hint: run init())\n");
+    cLog_critical(&hLog,"You may not call loadChi() at this point. There is no Active context. (Hint: run init())\n");
     return -2;
   }  
   
   if(!oclconfig->Nbuffers || !isConfigured){
-    fprintf(stderr,"You may not call loadChi() at this point, OpenCL is not configured (Hint: run configure())\n");
+    cLog_critical(&hLog,"You may not call loadChi() at this point, OpenCL is not configured (Hint: run configure())\n");
     return -2;
   }
 
@@ -291,7 +295,7 @@ int ocl_xrpd2D_fullsplit::loadChi(float* chi, float* dchi, float chi_min, float 
   CR(
     clEnqueueWriteBuffer(oclconfig->oclcmdqueue,oclconfig->oclmemref[CLMEM_CHI_MIN_MAX],CL_TRUE,0,2*sizeof(cl_float),(void*)chimm,0,0,&oclconfig->t_s[2]) );
 
-  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[2],"Load Chi",stream);
+  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[2],"Load Chi",&hLog);
   clReleaseEvent(oclconfig->t_s[0]);
   clReleaseEvent(oclconfig->t_s[1]);
   clReleaseEvent(oclconfig->t_s[2]);
@@ -302,22 +306,22 @@ int ocl_xrpd2D_fullsplit::loadChi(float* chi, float* dchi, float chi_min, float 
 int ocl_xrpd2D_fullsplit::setSolidAngle(float *SolidAngle)
 {
 
-  fprintf(stream,"Setting SolidAngle\n");
+  cLog_extended(&hLog,"Setting SolidAngle\n");
 
   if(!oclconfig->Nbuffers || !isConfigured){
-    fprintf(stderr,"You may not call setSolidAngle() at this point, the required buffers are not allocated (Hint: run config())\n");
+    cLog_critical(&hLog,"You may not call setSolidAngle() at this point, the required buffers are not allocated (Hint: run config())\n");
     return -2;
   }
 
   if(!hasActiveContext){
-    fprintf(stderr,"You may not call setSolidAngle() at this point. There is no Active context. (Hint: run init())\n");
+    cLog_critical(&hLog,"You may not call setSolidAngle() at this point. There is no Active context. (Hint: run init())\n");
     return -2;
   }
 
   CR(
     clEnqueueWriteBuffer(oclconfig->oclcmdqueue,oclconfig->oclmemref[CLMEM_SOLIDANGLE],CL_TRUE,0,sgs->Nimage*sizeof(cl_float),(void*)SolidAngle,0,0,&oclconfig->t_s[0]) );
 
-  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0],"Load SolidAngle");
+  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0],"Load SolidAngle", &hLog);
   clReleaseEvent(oclconfig->t_s[0]);
 
   useSolidAngle=1;
@@ -326,7 +330,7 @@ int ocl_xrpd2D_fullsplit::setSolidAngle(float *SolidAngle)
 
 int ocl_xrpd2D_fullsplit::unsetSolidAngle()
 {
-  fprintf(stream,"Unsetting SolidAngle\n");
+  cLog_extended(&hLog,"Unsetting SolidAngle\n");
 
   if(useSolidAngle)
   {
@@ -338,22 +342,22 @@ int ocl_xrpd2D_fullsplit::unsetSolidAngle()
 
 int ocl_xrpd2D_fullsplit::setMask(int* Mask)
 {
-  fprintf(stream,"Setting Mask\n");
+  cLog_extended(&hLog,"Setting Mask\n");
 
   if(!oclconfig->Nbuffers || !isConfigured){
-    fprintf(stderr,"You may not call setMask() at this point, the required buffers are not allocated (Hint: run config())\n");
+    cLog_critical(&hLog,"You may not call setMask() at this point, the required buffers are not allocated (Hint: run config())\n");
     return -2;
   }
 
   if(!hasActiveContext){
-    fprintf(stderr,"You may not call setMask() at this point. There is no Active context. (Hint: run init())\n");
+    cLog_critical(&hLog,"You may not call setMask() at this point. There is no Active context. (Hint: run init())\n");
     return -2;
   }
 
   CR(
     clEnqueueWriteBuffer(oclconfig->oclcmdqueue,oclconfig->oclmemref[CLMEM_MASK],CL_TRUE,0,sgs->Nimage*sizeof(cl_int),(void*)Mask,0,0,&oclconfig->t_s[0]) );
 
-  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0],"Load Mask");
+  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0],"Load Mask", &hLog);
   clReleaseEvent(oclconfig->t_s[0]);
 
   useMask=1;
@@ -363,7 +367,7 @@ int ocl_xrpd2D_fullsplit::setMask(int* Mask)
 
 int ocl_xrpd2D_fullsplit::unsetMask()
 {
-  fprintf(stream,"Unsetting Mask\n");
+  cLog_extended(&hLog,"Unsetting Mask\n");
 
   if(useMask)
   {
@@ -372,7 +376,7 @@ int ocl_xrpd2D_fullsplit::unsetMask()
     CR(
       clEnqueueNDRangeKernel(oclconfig->oclcmdqueue,oclconfig->oclkernels[CLKERN_IMEMSET],1,0,wdim,tdim,0,0,&oclconfig->t_s[0]) );
 
-    memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0],"Reset Mask to 0");
+    memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0],"Reset Mask to 0", &hLog);
     clReleaseEvent(oclconfig->t_s[0]);
     
     useMask=0;
@@ -385,22 +389,22 @@ int ocl_xrpd2D_fullsplit::unsetMask()
 
 int ocl_xrpd2D_fullsplit::setDummyValue(float dummyVal)
 {
-  fprintf(stream,"Setting Dummy Value\n");
+  cLog_extended(&hLog,"Setting Dummy Value\n");
 
   if(!oclconfig->Nbuffers || !isConfigured){
-    fprintf(stderr,"You may not call setMask() at this point, the required buffers are not allocated (Hint: run config())\n");
+    cLog_critical(&hLog,"You may not call setMask() at this point, the required buffers are not allocated (Hint: run config())\n");
     return -2;
   }
 
   if(!hasActiveContext){
-    fprintf(stderr,"You may not call setMask() at this point. There is no Active context. (Hint: run init())\n");
+    cLog_critical(&hLog,"You may not call setMask() at this point. There is no Active context. (Hint: run init())\n");
     return -2;
   }
 
   CR(
     clEnqueueWriteBuffer(oclconfig->oclcmdqueue,oclconfig->oclmemref[CLMEM_DUMMYVAL],CL_TRUE,0,sizeof(cl_float),(void*)&dummyVal,0,0,&oclconfig->t_s[0]) );
 
-  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0],"Load Dummy Value");
+  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0],"Load Dummy Value",&hLog);
   clReleaseEvent(oclconfig->t_s[0]);
 
   useDummyVal=1;
@@ -410,7 +414,7 @@ int ocl_xrpd2D_fullsplit::setDummyValue(float dummyVal)
 
 int ocl_xrpd2D_fullsplit::unsetDummyValue()
 {
-  fprintf(stream,"Unsetting Dummy Value\n");
+  cLog_extended(&hLog,"Unsetting Dummy Value\n");
 
   if(useDummyVal)
   {
@@ -437,18 +441,18 @@ int ocl_xrpd2D_fullsplit::unsetDummyValue()
  */
 int ocl_xrpd2D_fullsplit::setTthRange(float lowerBound, float upperBound)
 {
-  fprintf(stream,"Setting 2th Range\n");
+  cLog_extended(&hLog,"Setting 2th Range\n");
   float tthrmm[2];
   tthrmm[0]=lowerBound;
   tthrmm[1]=upperBound;
 
   if(!oclconfig->Nbuffers || !isConfigured){
-    fprintf(stderr,"You may not call setMask() at this point, the required buffers are not allocated (Hint: run config())\n");
+    cLog_critical(&hLog,"You may not call setMask() at this point, the required buffers are not allocated (Hint: run config())\n");
     return -2;
   }
 
   if(!hasActiveContext){
-    fprintf(stderr,"You may not call setMask() at this point. There is no Active context. (Hint: run init())\n");
+    cLog_critical(&hLog,"You may not call setMask() at this point. There is no Active context. (Hint: run init())\n");
     return -2;
   }
 
@@ -459,7 +463,7 @@ int ocl_xrpd2D_fullsplit::setTthRange(float lowerBound, float upperBound)
   CR( clSetKernelArg(oclconfig->oclkernels[CLKERN_INTEGRATE],11,sizeof(cl_mem),&oclconfig->oclmemref[CLMEM_TTH_RANGE]) ); //TTH range user values
 
 
-  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0],"Load 2th Range",stream);
+  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0],"Load 2th Range", &hLog);
   clReleaseEvent(oclconfig->t_s[0]);
 
   useTthRange=1;
@@ -474,7 +478,7 @@ int ocl_xrpd2D_fullsplit::setTthRange(float lowerBound, float upperBound)
  */
 int ocl_xrpd2D_fullsplit::unsetTthRange()
 {
-  fprintf(stream,"Unsetting 2th Range\n");
+  cLog_extended(&hLog,"Unsetting 2th Range\n");
 
   if(useTthRange)
   {
@@ -503,18 +507,18 @@ int ocl_xrpd2D_fullsplit::unsetTthRange()
  */
 int ocl_xrpd2D_fullsplit::setChiRange(float lowerBound, float upperBound)
 {
-  fprintf(stream,"Setting 2th Range\n");
+  cLog_extended(&hLog,"Setting 2th Range\n");
   float tthrmm[2];
   tthrmm[0]=lowerBound;
   tthrmm[1]=upperBound;
 
   if(!oclconfig->Nbuffers || !isConfigured){
-    fprintf(stderr,"You may not call setMask() at this point, the required buffers are not allocated (Hint: run config())\n");
+    cLog_critical(&hLog,"You may not call setMask() at this point, the required buffers are not allocated (Hint: run config())\n");
     return -2;
   }
 
   if(!hasActiveContext){
-    fprintf(stderr,"You may not call setMask() at this point. There is no Active context. (Hint: run init())\n");
+    cLog_critical(&hLog,"You may not call setMask() at this point. There is no Active context. (Hint: run init())\n");
     return -2;
   }
 
@@ -524,7 +528,7 @@ int ocl_xrpd2D_fullsplit::setChiRange(float lowerBound, float upperBound)
   //Set the tth_range argument of the kernels to point to tthRange instead of tth_min_max
   CR( clSetKernelArg(oclconfig->oclkernels[CLKERN_INTEGRATE],12,sizeof(cl_mem),&oclconfig->oclmemref[CLMEM_CHI_RANGE]) ); //TTH range user values
 
-  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0],"Load 2th Range",stream);
+  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0],"Load 2th Range", &hLog);
   clReleaseEvent(oclconfig->t_s[0]);
 
   useChiRange=1;
@@ -539,7 +543,7 @@ int ocl_xrpd2D_fullsplit::setChiRange(float lowerBound, float upperBound)
  */
 int ocl_xrpd2D_fullsplit::unsetChiRange()
 {
-  fprintf(stream,"Unsetting 2th Range\n");
+  cLog_extended(&hLog,"Unsetting 2th Range\n");
 
   if(useChiRange)
   {
@@ -559,17 +563,17 @@ int ocl_xrpd2D_fullsplit::execute(float *im_inten,float *histogram,float *bins)
 {
 
   if(!isConfigured){
-    fprintf(stderr,"You may not call execute() at this point, kernels are not configured (Hint: run configure())\n");
+    cLog_critical(&hLog,"You may not call execute() at this point, kernels are not configured (Hint: run configure())\n");
     return -2;
   }
 
   if(!hasActiveContext){
-    fprintf(stderr,"You may not call execute() at this point. There is no Active context. (Hint: run init())\n");
+    cLog_critical(&hLog,"You may not call execute() at this point. There is no Active context. (Hint: run init())\n");
     return -2;
   }
 
   if(!hasTthLoaded || !hasChiLoaded){
-    fprintf(stderr,"You may not call execute() at this point. There is no 2th or chi array loaded. (Hint: run loadTth() or loadChi()))\n");
+    cLog_critical(&hLog,"You may not call execute() at this point. There is no 2th or chi array loaded. (Hint: run loadTth() or loadChi()))\n");
     return -2;
   }
 
@@ -582,12 +586,12 @@ int ocl_xrpd2D_fullsplit::execute(float *im_inten,float *histogram,float *bins)
   size_t wdim_reduceh[] = { (sgs->Nbins/BLOCK_SIZE) * BLOCK_SIZE + (sgs->Nbins%BLOCK_SIZE) * BLOCK_SIZE, 1, 1};
   size_t tdim_reduceh[] = {BLOCK_SIZE, 1, 1};
 
-  fprintf(stream,"--Histo / Spans workdim %lu %lu %lu\n",(lui)wdim_partialh[0],(lui)wdim_partialh[1],(lui)wdim_partialh[2]);
-  fprintf(stream,"--Histo / Spans threadim %lu %lu %lu -- Blocks:%lu\n",(lui)tdim_partialh[0],(lui)tdim_partialh[1],(lui)tdim_partialh[2],\
+  cLog_debug(&hLog,"--Histo / Spans workdim %lu %lu %lu\n",(lui)wdim_partialh[0],(lui)wdim_partialh[1],(lui)wdim_partialh[2]);
+  cLog_debug(&hLog,"--Histo / Spans threadim %lu %lu %lu -- Blocks:%lu\n",(lui)tdim_partialh[0],(lui)tdim_partialh[1],(lui)tdim_partialh[2],\
                                                                   (lui)wdim_partialh[0]/(lui)tdim_partialh[0]);
 
-  fprintf(stream,"--Memset / Convert workdim %lu %lu %lu\n",(lui)wdim_reduceh[0],(lui)wdim_reduceh[1],(lui)wdim_reduceh[2]);
-  fprintf(stream,"--Memset / Convert threadim %lu %lu %lu -- Blocks:%lu\n",(lui)tdim_reduceh[0],(lui)tdim_reduceh[1],(lui)tdim_reduceh[2],\
+  cLog_debug(&hLog,"--Memset / Convert workdim %lu %lu %lu\n",(lui)wdim_reduceh[0],(lui)wdim_reduceh[1],(lui)wdim_reduceh[2]);
+  cLog_debug(&hLog,"--Memset / Convert threadim %lu %lu %lu -- Blocks:%lu\n",(lui)tdim_reduceh[0],(lui)tdim_reduceh[1],(lui)tdim_reduceh[2],\
                                                                   (lui)wdim_reduceh[0]/(lui)tdim_reduceh[0]);
 
 
@@ -637,24 +641,24 @@ int ocl_xrpd2D_fullsplit::execute(float *im_inten,float *histogram,float *bins)
   CR(
     clEnqueueReadBuffer(oclconfig->oclcmdqueue,oclconfig->oclmemref[CLMEM_HISTOGRAM],CL_TRUE,0,sgs->Nbins*sizeof(cl_float),(void*)histogram,0,0,&oclconfig->t_s[7]) );
 
-  fprintf(stream,"--Waiting for the command queue to finish\n");
+  cLog_debug(&hLog,"--Waiting for the command queue to finish\n");
   CR(clFinish(oclconfig->oclcmdqueue));
 
   //Get execution time from first memory copy to last memory copy.
 
-  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0],"copyIn    ");
-  execTime_ms += ocl_get_profT(&oclconfig->t_s[1], &oclconfig->t_s[1],  "memset    ");
-  execTime_ms += ocl_get_profT(&oclconfig->t_s[2], &oclconfig->t_s[2],  "getSpa    ");
-  execTime_ms += ocl_get_profT(&oclconfig->t_s[3], &oclconfig->t_s[3],  "groupS    ");
-  execTime_ms += ocl_get_profT(&oclconfig->t_s[4], &oclconfig->t_s[4],  "Azim GPU  ");
-  execTime_ms += ocl_get_profT(&oclconfig->t_s[5], &oclconfig->t_s[5],  "convert   ");
+  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0],"copyIn    ", &hLog);
+  execTime_ms += ocl_get_profT(&oclconfig->t_s[1], &oclconfig->t_s[1],  "memset    ", &hLog);
+  execTime_ms += ocl_get_profT(&oclconfig->t_s[2], &oclconfig->t_s[2],  "getSpa    ", &hLog);
+  execTime_ms += ocl_get_profT(&oclconfig->t_s[3], &oclconfig->t_s[3],  "groupS    ", &hLog);
+  execTime_ms += ocl_get_profT(&oclconfig->t_s[4], &oclconfig->t_s[4],  "Azim GPU  ", &hLog);
+  execTime_ms += ocl_get_profT(&oclconfig->t_s[5], &oclconfig->t_s[5],  "convert   ", &hLog);
 
   if(useSolidAngle)
-    execTime_ms += ocl_get_profT(&oclconfig->t_s[8], &oclconfig->t_s[8],"Solidan   ");
+    execTime_ms += ocl_get_profT(&oclconfig->t_s[8], &oclconfig->t_s[8],"Solidan   ", &hLog);
   if(useDummyVal)
-    execTime_ms += ocl_get_profT(&oclconfig->t_s[9], &oclconfig->t_s[9],"dummyva   ");
+    execTime_ms += ocl_get_profT(&oclconfig->t_s[9], &oclconfig->t_s[9],"dummyva   ", &hLog);
 
-  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[6], &oclconfig->t_s[7],"copyOut   ");
+  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[6], &oclconfig->t_s[7],"copyOut   ", &hLog);
 
   for(int ievent=0;ievent<8 + useSolidAngle + useDummyVal;ievent++)clReleaseEvent(oclconfig->t_s[ievent]);
   return 0;
@@ -667,12 +671,12 @@ int ocl_xrpd2D_fullsplit::allocate_CL_buffers()
   cl_int err;
   oclconfig->oclmemref   = (cl_mem*)malloc(16*sizeof(cl_mem));
   if(!oclconfig->oclmemref){
-    fprintf(stderr,"Fatal error in ocl_azim_clbuffers. Cannot allocate memrefs\n");
+    cLog_critical(&hLog,"Fatal error in ocl_azim_clbuffers. Cannot allocate memrefs\n");
     return -2;
   }
 
   if(sgs->Nimage < BLOCK_SIZE){
-    fprintf(stderr,"Fatal error in ocl_azim_clbuffers. Nimage (%d) must be >= BLOCK_SIZE (%d)\n",sgs->Nimage,BLOCK_SIZE);
+    cLog_critical(&hLog,"Fatal error in ocl_azim_clbuffers. Nimage (%d) must be >= BLOCK_SIZE (%d)\n",sgs->Nimage,BLOCK_SIZE);
     return -2;
   }
 
@@ -687,13 +691,12 @@ int ocl_xrpd2D_fullsplit::allocate_CL_buffers()
   ualloc += 2*sizeof(cl_float) * 4 + sizeof(cl_float);
 
   if(ualloc >= oclconfig->dev_mem && oclconfig->dev_mem != 0){
-    fprintf(stderr,"Fatal error in ocl_azim_clbuffers. Not enough device memory for buffers (%lu requested, %lu available)\n",\
+    cLog_critical(&hLog,"Fatal error in ocl_azim_clbuffers. Not enough device memory for buffers (%lu requested, %lu available)\n",\
                (lui)ualloc,(lui)oclconfig->dev_mem);
     return -1;
   } else {
     if(oclconfig->dev_mem == 0){
-      fprintf(stream,"Caution: Device did not return the available memory size (%lu requested)\n",(lui)ualloc);
-      if(stream!=stdout) fprintf(stderr,"Caution: Device did not return the available memory size (%lu requested)\n",(lui)ualloc);
+      cLog_extended(&hLog,"Caution: Device did not return the available memory size (%lu requested)\n",(lui)ualloc);
     }
   }
 
@@ -701,89 +704,89 @@ int ocl_xrpd2D_fullsplit::allocate_CL_buffers()
   int i=0;
   oclconfig->oclmemref[CLMEM_TTH]=
     clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_ONLY,(size_t)(sgs->Nimage*sizeof(cl_float)),0,&err);//tth array corners -0
-  if(err){fprintf(stderr,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);return -1;};i++;
+  if(err){cLog_critical(&hLog,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);return -1;};i++;
 
   oclconfig->oclmemref[CLMEM_CHI]=
     clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_ONLY,(size_t)(sgs->Nimage*sizeof(cl_float)),0,&err);//chi array corners -1
-  if(err){fprintf(stderr,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);return -1;};i++;  
+  if(err){cLog_critical(&hLog,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);return -1;};i++;  
 
   oclconfig->oclmemref[CLMEM_IMAGE]=
     clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_ONLY,(size_t)(sgs->Nimage*sizeof(cl_float)),0,&err);//Image intensity -2
-  if(err){fprintf(stderr,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
+  if(err){cLog_critical(&hLog,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
 
   oclconfig->oclmemref[CLMEM_SOLIDANGLE]=
     clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_ONLY,(size_t)(sgs->Nimage*sizeof(cl_float)),0,&err);//Solid Angle -3
-  if(err){fprintf(stderr,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
+  if(err){cLog_critical(&hLog,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
 
   oclconfig->oclmemref[CLMEM_HISTOGRAM]=
     clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_WRITE,(size_t)(sgs->Nbins*sizeof(cl_float)),0,&err);//Histogram -4
-  if(err){fprintf(stderr,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
+  if(err){cLog_critical(&hLog,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
 
   if(sgs->usefp64)
   {
     oclconfig->oclmemref[CLMEM_UHISTOGRAM]=
       clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_WRITE,(size_t)(sgs->Nbins*sizeof(cl_ulong)),0,&err);//ulHistogram -5
-    if(err){fprintf(stderr,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
+    if(err){cLog_critical(&hLog,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
   }else
   {
     oclconfig->oclmemref[CLMEM_UHISTOGRAM]=
       clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_WRITE,(size_t)(sgs->Nbins*sizeof(cl_uint)),0,&err);//ulHistogram -5
-    if(err){fprintf(stderr,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
+    if(err){cLog_critical(&hLog,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
   }
 
   oclconfig->oclmemref[CLMEM_WEIGHTS]=
    clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_WRITE,(size_t)(sgs->Nbins*sizeof(cl_float)),0,&err);//Bin array -6
-  if(err){fprintf(stderr,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
+  if(err){cLog_critical(&hLog,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
 
   if(sgs->usefp64)
   {
     oclconfig->oclmemref[CLMEM_UWEIGHTS]=
       clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_WRITE,(size_t)(sgs->Nbins*sizeof(cl_ulong)),0,&err);//uBinarray -7
-    if(err){fprintf(stderr,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
+    if(err){cLog_critical(&hLog,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
   }else
   {
     oclconfig->oclmemref[CLMEM_UWEIGHTS]=
       clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_WRITE,(size_t)(sgs->Nbins*sizeof(cl_uint)),0,&err);//uBinarray -7
-    if(err){fprintf(stderr,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
+    if(err){cLog_critical(&hLog,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
   }
 
   oclconfig->oclmemref[CLMEM_SPAN_RANGES]=
     clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_WRITE,(size_t)((sgs->Nimage * 2)*sizeof(cl_float)),0,&err);//span_ranges buffer -8
-  if(err){fprintf(stderr,"clCreateKernel error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
+  if(err){cLog_critical(&hLog,"clCreateKernel error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
 
   oclconfig->oclmemref[CLMEM_TTH_MIN_MAX]=
     clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_ONLY,(size_t)(2*sizeof(cl_float)),0,&err);//Min,Max values for tth -9
-  if(err){fprintf(stderr,"clCreateKernel error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
+  if(err){cLog_critical(&hLog,"clCreateKernel error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
 
   oclconfig->oclmemref[CLMEM_CHI_MIN_MAX]=
     clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_ONLY,(size_t)(2*sizeof(cl_float)),0,&err);//Min,Max values for chi -10
-  if(err){fprintf(stderr,"clCreateKernel error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
+  if(err){cLog_critical(&hLog,"clCreateKernel error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
 
   oclconfig->oclmemref[CLMEM_TTH_DELTA]=
     clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_WRITE,(size_t)(sgs->Nimage*sizeof(cl_float)),0,&err);//tth array min corners -12
-  if(err){fprintf(stderr,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);return -1;};i++;
+  if(err){cLog_critical(&hLog,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);return -1;};i++;
 
   oclconfig->oclmemref[CLMEM_CHI_DELTA]=
     clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_WRITE,(size_t)(sgs->Nimage*sizeof(cl_float)),0,&err);//tth array max corners -13
-  if(err){fprintf(stderr,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);return -1;};i++;
+  if(err){cLog_critical(&hLog,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);return -1;};i++;
 
   oclconfig->oclmemref[CLMEM_TTH_RANGE]=
     clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_ONLY,(size_t)(2*sizeof(cl_float)),0,&err);//Min,Max values for tth -9
-  if(err){fprintf(stderr,"clCreateKernel error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
+  if(err){cLog_critical(&hLog,"clCreateKernel error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;
 
   oclconfig->oclmemref[CLMEM_CHI_RANGE]=
     clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_ONLY,(size_t)(2*sizeof(cl_float)),0,&err);//Min,Max values for chi -10
-  if(err){fprintf(stderr,"clCreateKernel error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;  
+  if(err){cLog_critical(&hLog,"clCreateKernel error, %s (@%d)\n",ocl_perrc(err),i-1);clean_clbuffers(i-1);return -1;};i++;  
 
   oclconfig->oclmemref[CLMEM_MASK]=
     clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_WRITE,(size_t)(sgs->Nimage*sizeof(cl_int)),0,&err);//Mask -14
-  if(err){fprintf(stderr,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);return -1;};i++;
+  if(err){cLog_critical(&hLog,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);return -1;};i++;
 
   oclconfig->oclmemref[CLMEM_DUMMYVAL]=
     clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_ONLY,(size_t)(sizeof(cl_float)),0,&err);//Dummy Value -15
-  if(err){fprintf(stderr,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);return -1;};i++;
+  if(err){cLog_critical(&hLog,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);return -1;};i++;
 
-  fprintf(stream,"Allocated %d buffers (%.3f Mb) on device\n",i,(float)ualloc/1024./1024.);
+  cLog_extended(&hLog,"Allocated %d buffers (%.3f Mb) on device\n",i,(float)ualloc/1024./1024.);
   oclconfig->Nbuffers = i;
 return 0;
 }
@@ -861,7 +864,7 @@ int ocl_xrpd2D_fullsplit::clean(int preserve_context)
   if(hasBuffers)
   {
     clean_clbuffers(oclconfig->Nbuffers);
-    fprintf(stream,"--released OpenCL buffers\n");
+    cLog_debug(&hLog,"--released OpenCL buffers\n");
     hasBuffers    = 0;
     hasTthLoaded  = 0;
     hasChiLoaded  = 0;
@@ -875,21 +878,21 @@ int ocl_xrpd2D_fullsplit::clean(int preserve_context)
   if(hasKernels)
   {
     clean_clkernels(oclconfig->Nkernels);
-    fprintf(stream,"--released OpenCL kernels\n");
+    cLog_debug(&hLog,"--released OpenCL kernels\n");
     hasKernels=0;
   }
 
   if(hasProgram)
   {
     CR(clReleaseProgram(oclconfig->oclprogram));
-    fprintf(stream,"--released OpenCL program\n");
+    cLog_debug(&hLog,"--released OpenCL program\n");
     hasProgram=0;
   }
 
   if(hasQueue)
   {
     CR(clReleaseCommandQueue(oclconfig->oclcmdqueue));
-    fprintf(stream,"--released OpenCL queue\n");
+    cLog_debug(&hLog,"--released OpenCL queue\n");
     hasQueue=0;
   }
 
@@ -903,19 +906,19 @@ int ocl_xrpd2D_fullsplit::clean(int preserve_context)
     {
       free(oclconfig->oclmemref);
       oclconfig->oclmemref=NULL;
-      fprintf(stream,"--released OpenCL memory references\n");
+      cLog_debug(&hLog,"--released OpenCL memory references\n");
     }
     if(oclconfig->oclkernels)
     {
       free(oclconfig->oclkernels);
       oclconfig->oclkernels=NULL;
-      fprintf(stream,"--released OpenCL kernel references\n");
+      cLog_debug(&hLog,"--released OpenCL kernel references\n");
     }
     reset_time();
     if(hasActiveContext){
-      ocl_destroy_context(oclconfig->oclcontext);
+      ocl_destroy_context(oclconfig->oclcontext, &hLog);
       hasActiveContext=0;
-      fprintf(stream,"--released OpenCL context\n");
+      cLog_debug(&hLog,"--released OpenCL context\n");
       return 0;
     }
   }
