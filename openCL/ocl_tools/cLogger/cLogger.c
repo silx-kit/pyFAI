@@ -353,7 +353,6 @@ void cLog_bench(logger_t *hLog, const char * format, ...)
 
 void cLog_report_configuration(logger_t *hLog)
 {
-  char depth[10];
 
   printf("\ncLogger Configuration\n");
   if( (hLog) )
