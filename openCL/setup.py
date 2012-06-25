@@ -40,7 +40,7 @@ except ImportError:
 from numpy.distutils.misc_util import get_numpy_include_dirs
 
 ocl_azim_ext = Extension(name="ocl_azim",
-                    sources=[ocl_azim, "ocl_base.cpp", "/ocl_tools/ocl_tools.cc", "ocl_xrpd1d_fullsplit.cpp", "/ocl_tools/cLogger/cLogger.c"],
+                    sources=[ocl_azim, "ocl_base.cpp", "ocl_tools/ocl_tools.cc", "ocl_xrpd1d_fullsplit.cpp", "ocl_tools/cLogger/cLogger.c"],
                     include_dirs=get_numpy_include_dirs(),
                     language="c++",
                     libraries=["stdc++", "OpenCL"],

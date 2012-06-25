@@ -46,11 +46,11 @@ except ImportError:
 src = {}
 
 if build_ext:
-    ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.pyx", "ocl_base.cpp", "ocl_tools.cc", "ocl_xrpd1d_fullsplit.cpp")]
+    ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.pyx", "ocl_base.cpp", "ocl_tools/ocl_tools.cc", "ocl_tools/cLogger/cLogger.c", "ocl_xrpd1d_fullsplit.cpp")]
     for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear"]:
         src[ext] = os.path.join("src", ext + ".pyx")
 else:
-    ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.cpp", "ocl_base.cpp", "ocl_tools.cc", "ocl_xrpd1d_fullsplit.cpp")]
+    ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.cpp", "ocl_base.cpp", "ocl_tools/ocl_tools.cc", "ocl_tools/cLogger/cLogger.c", "ocl_xrpd1d_fullsplit.cpp")]
     for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear"]:
         src[ext] = os.path.join("src", ext + ".c")
 

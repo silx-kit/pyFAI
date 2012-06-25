@@ -341,7 +341,7 @@ void cLog_bench(logger_t *hLog, const char * format, ...)
 {
   va_list argp;
 
-  if((*hLog).perf == 1 && (*hLog).depth >= LOGDEXTENDED && (*hLog).status)
+  if( ((*hLog).perf == 1) && ((*hLog).status) )
   {
     if((*hLog).timestamps)fprintf((*hLog).stream,"%s ",get_timestamp());
     va_start(argp,format);

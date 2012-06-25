@@ -628,7 +628,7 @@ int ocl_xrpd1D_fullsplit::execute(float *im_inten,float *histogram,float *bins)
   //Setup the kernel execution parameters, grid,blocks and threads.
   // Notice that in CUDA, a grid is measured in blocks, while in OpenCL is measured in threads.
 
-  cLog_extended(&hLog,"\n--Integration nr. %d\n",get_exec_count() + 1);
+  cLog_bench(&hLog,"\n--Integration nr. %d\n",get_exec_count() + 1);
   size_t wdim_partialh[] = { (sgs->Nimage/BLOCK_SIZE) * BLOCK_SIZE + (sgs->Nimage%BLOCK_SIZE) * BLOCK_SIZE, 1, 1};
   size_t tdim_partialh[] = {BLOCK_SIZE, 1, 1};
   size_t wdim_reduceh[] = { (sgs->Nbins/BLOCK_SIZE) * BLOCK_SIZE + (sgs->Nbins%BLOCK_SIZE) * BLOCK_SIZE, 1, 1};
