@@ -131,10 +131,10 @@ if __name__ == "__main__":
         n = 1
     print("Averaging over %i repetitions (best of 5)." % n)
     b = Bench()
-    b.bench_cpu1d(n)
-    b.bench_cpu2d(n)
+#    b.bench_cpu1d(n)
+#    b.bench_cpu2d(n)
     b.bench_gpu1d(n, "gpu", True)
-    b.bench_gpu1d(n, "gpu", False)
+#    b.bench_gpu1d(n, "gpu", False)
 #    b.bench_gpu1d(n, "all", True, 0, 1)
 #    b.bench_gpu1d(n, "all", False, 0, 1)
 #    b.bench_gpu1d(n, "all", True, 1, 0)

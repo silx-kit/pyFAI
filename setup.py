@@ -86,7 +86,7 @@ bilinear_dic = dict(name="bilinear",
 
 ocl_azim_dict = dict(name="ocl_azim",
                     sources=ocl_azim,
-                    include_dirs=["openCL"] + get_numpy_include_dirs(),
+                    include_dirs=["openCL","openCL/ocl_tools","openCL/ocl_tools/cLogger"] + get_numpy_include_dirs(),
                     language="c++",
                     libraries=["stdc++", "OpenCL"],
                     )
