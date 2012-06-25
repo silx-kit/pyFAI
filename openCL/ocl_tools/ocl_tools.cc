@@ -811,9 +811,26 @@ return 0;
 int ocl_compiler(ocl_config_type *oclconfig,const char *kernelfilename,int BLOCK_SIZE,const char *optional)
 {
 
+  char compiler_options_flush[10000];
+  char compiler_options_temp[10000];
   
   FILE *kernel;
-  cl_int err;  
+  cl_int err; 
+
+  if(BLOCK_SIZE > 9999){
+    cLog_critical(oclconfig->hLog,"Blocksize too big");
+    return -2;
+  }
+  
+  size_t optlen=0;
+  size_t complen=strlen(oclconfig->compiler_options) +2;
+  size_t deflen=strlen("-I. -D BLOCK_SIZE=9999 ") + 2;
+  
+  if(optional) optlen = strlen(optional) + 2;
+  if(optlen + complen + deflen > 9999){
+    cLog_critical(oclconfig->hLog,"Compile string is too long\n");
+    return -2;
+  } 
 
   oclconfig->kernelstring_lens = (size_t*)malloc(1*sizeof(size_t));
   oclconfig->kernelstrings = (char**)malloc(1*sizeof(char));
@@ -837,44 +854,51 @@ int ocl_compiler(ocl_config_type *oclconfig,const char *kernelfilename,int BLOCK
     (const char**)&oclconfig->kernelstrings[0],(const size_t*)&oclconfig->kernelstring_lens[0],&err);
   if(err)cLog_critical(oclconfig->hLog,"%s\n",ocl_perrc(err));
   
-  //Compile the program
-  char *compiler_options_flush;
-	char *compiler_options_temp;
-	compiler_options_flush = (char*)malloc(10000*sizeof(char));
-	compiler_options_temp  = (char*)malloc(10000*sizeof(char));
 	sprintf(compiler_options_temp,"-I. -D BLOCK_SIZE=%d %s",BLOCK_SIZE,oclconfig->compiler_options);	
   if(optional) sprintf(compiler_options_flush,"%s %s",compiler_options_temp,optional);
 	else sprintf(compiler_options_flush,"%s",compiler_options_temp);
   cLog_debug(oclconfig->hLog,"Compiler options: %s\n",compiler_options_flush);
 
+  //Compile the program
   err = clBuildProgram(oclconfig->oclprogram, 1, &oclconfig->ocldevice, compiler_options_flush, 0, 0);
-	free(compiler_options_flush);
+
+  char    *buildinfo;
+  size_t   binf_size;
 
   if(err){
-    char buildinfo[100000];
     cLog_critical(oclconfig->hLog,"clBuildProgram has failed: %s\n",ocl_perrc(err));
-    CL_CHECK_PRN (clGetProgramBuildInfo (oclconfig->oclprogram,oclconfig->ocldevice,CL_PROGRAM_BUILD_LOG,sizeof(buildinfo),&buildinfo,NULL),
-                   oclconfig->hLog);
+    CL_CHECK_PRN (clGetProgramBuildInfo (oclconfig->oclprogram,oclconfig->ocldevice,CL_PROGRAM_BUILD_LOG,0,NULL,&binf_size),
+      oclconfig->hLog);
 
+    buildinfo = (char *)malloc((binf_size+1)*sizeof(char));
+    CL_CHECK_PRN (clGetProgramBuildInfo (oclconfig->oclprogram,oclconfig->ocldevice,CL_PROGRAM_BUILD_LOG,binf_size,buildinfo,NULL),
+      oclconfig->hLog);
+
+    buildinfo[binf_size] = '\0';
+    cLog_critical(oclconfig->hLog,"clBuildProgram log:\n");
     cLog_critical(oclconfig->hLog,"%s\n",buildinfo);
+    cLog_critical(oclconfig->hLog,"End of clBuildProgram log\n");
+    free(buildinfo);
     return -1; //Fallback
   } else{
-    char buildinfo[100000];
-    cl_build_status   build_status;        
+    cl_build_status   build_status;
     CL_CHECK_PRN (clGetProgramBuildInfo (oclconfig->oclprogram,oclconfig->ocldevice,CL_PROGRAM_BUILD_STATUS,sizeof(build_status),&build_status,NULL),
       oclconfig->hLog);
 
-    cLog_debug(oclconfig->hLog,"clBuildProgram was successful: \n");
-    cLog_debug(oclconfig->hLog,"------------------------------------------------------------\n");
-    if(build_status==CL_BUILD_SUCCESS)cLog_debug(oclconfig->hLog,"CL_BUILD_SUCCESS\n");
-    else if (build_status==CL_BUILD_NONE)cLog_debug(oclconfig->hLog,"CL_BUILD_NONEd\n");
-    else if (build_status==CL_BUILD_IN_PROGRESS)cLog_debug(oclconfig->hLog,"CL_BUILD_IN_PROGRESS\n");
-    CL_CHECK_PRN (clGetProgramBuildInfo (oclconfig->oclprogram,oclconfig->ocldevice,CL_PROGRAM_BUILD_LOG,sizeof(buildinfo),&buildinfo,NULL),
+    cLog_debug(oclconfig->hLog,"clBuildProgram was successful: %s\n",ocl_perrc(err) );
+    CL_CHECK_PRN (clGetProgramBuildInfo (oclconfig->oclprogram,oclconfig->ocldevice,CL_PROGRAM_BUILD_LOG,0,NULL,&binf_size),
       oclconfig->hLog);
-
-    cLog_debug(oclconfig->hLog,"%s\n",buildinfo);
-    cLog_debug(oclconfig->hLog,"------------------------------------------------------------\n");
-    
+    buildinfo = (char *)malloc((binf_size+1)*sizeof(char));
+    CL_CHECK_PRN (clGetProgramBuildInfo (oclconfig->oclprogram,oclconfig->ocldevice,CL_PROGRAM_BUILD_LOG,binf_size,buildinfo,NULL),
+      oclconfig->hLog);
+    buildinfo[binf_size] = '\0';
+    if(binf_size >3)
+    {
+      cLog_debug(oclconfig->hLog,"clBuildProgram log:\n");
+      cLog_debug(oclconfig->hLog,"%s\n",buildinfo);
+      cLog_debug(oclconfig->hLog,"End of clBuildProgram log\n");
+    }
+    free(buildinfo);      
   }
 return 0;
 }
@@ -972,7 +996,9 @@ int ocl_compiler(ocl_config_type *oclconfig,const char **clList,int clNum,int BL
         oclconfig->hLog);
 
       buildinfo[binf_size] = '\0';
+      cLog_critical(oclconfig->hLog,"clBuildProgram log:\n");
       cLog_critical(oclconfig->hLog,"%s\n",buildinfo);
+      cLog_critical(oclconfig->hLog,"End of clBuildProgram log\n");
       free(buildinfo);
       return -1; //Fallback
     } else{
@@ -980,21 +1006,20 @@ int ocl_compiler(ocl_config_type *oclconfig,const char **clList,int clNum,int BL
       CL_CHECK_PRN (clGetProgramBuildInfo (oclconfig->prgs[clfile].oclprogram,oclconfig->ocldevice,CL_PROGRAM_BUILD_STATUS,sizeof(build_status),&build_status,NULL),
         oclconfig->hLog);
       
-      cLog_debug(oclconfig->hLog,"clBuildProgram was successful: \n");
-      cLog_debug(oclconfig->hLog,"------------------------------------------------------------\n");
-      if(build_status==CL_BUILD_SUCCESS)cLog_debug(oclconfig->hLog,"CL_BUILD_SUCCESS\n");
-      else if (build_status==CL_BUILD_NONE)cLog_debug(oclconfig->hLog,"CL_BUILD_NONEd\n");
-      else if (build_status==CL_BUILD_IN_PROGRESS)cLog_debug(oclconfig->hLog,"CL_BUILD_IN_PROGRESS\n");
+      cLog_debug(oclconfig->hLog,"clBuildProgram was successful: %s\n",ocl_perrc(err) );
       CL_CHECK_PRN (clGetProgramBuildInfo (oclconfig->prgs[clfile].oclprogram,oclconfig->ocldevice,CL_PROGRAM_BUILD_LOG,0,NULL,&binf_size),
         oclconfig->hLog);
       buildinfo = (char *)malloc((binf_size+1)*sizeof(char));
       CL_CHECK_PRN (clGetProgramBuildInfo (oclconfig->prgs[clfile].oclprogram,oclconfig->ocldevice,CL_PROGRAM_BUILD_LOG,binf_size,buildinfo,NULL),
         oclconfig->hLog);
       buildinfo[binf_size] = '\0';      
-      cLog_debug(oclconfig->hLog,"%s\n",buildinfo);
+      if(binf_size >3)
+      {
+        cLog_debug(oclconfig->hLog,"clBuildProgram log:\n");
+        cLog_debug(oclconfig->hLog,"%s\n",buildinfo);
+        cLog_debug(oclconfig->hLog,"End of clBuildProgram log\n");
+      }
       free(buildinfo);      
-      cLog_debug(oclconfig->hLog,"------------------------------------------------------------\n");
-
     }
   }
 return 0;
@@ -1081,7 +1106,9 @@ int ocl_compiler(ocl_config_type *oclconfig,unsigned char **clList,unsigned int 
         oclconfig->hLog);
 
       buildinfo[binf_size] = '\0';
+      cLog_critical(oclconfig->hLog,"clBuildProgram log:\n");
       cLog_critical(oclconfig->hLog,"%s\n",buildinfo);
+      cLog_critical(oclconfig->hLog,"End of clBuildProgram log\n");
       free(buildinfo);
       return -1; //Fallback
     } else{
@@ -1089,11 +1116,7 @@ int ocl_compiler(ocl_config_type *oclconfig,unsigned char **clList,unsigned int 
       CL_CHECK_PRN (clGetProgramBuildInfo (oclconfig->prgs[clfile].oclprogram,oclconfig->ocldevice,CL_PROGRAM_BUILD_STATUS,sizeof(build_status),&build_status,NULL),
         oclconfig->hLog);
 
-      cLog_debug(oclconfig->hLog,"clBuildProgram was successful: \n");
-      cLog_debug(oclconfig->hLog,"------------------------------------------------------------\n");
-      if(build_status==CL_BUILD_SUCCESS)cLog_debug(oclconfig->hLog,"CL_BUILD_SUCCESS\n");
-      else if (build_status==CL_BUILD_NONE)cLog_debug(oclconfig->hLog,"CL_BUILD_NONEd\n");
-      else if (build_status==CL_BUILD_IN_PROGRESS)cLog_debug(oclconfig->hLog,"CL_BUILD_IN_PROGRESS\n");
+      cLog_debug(oclconfig->hLog,"clBuildProgram was successful: %s\n",ocl_perrc(err));
       CL_CHECK_PRN (clGetProgramBuildInfo (oclconfig->prgs[clfile].oclprogram,oclconfig->ocldevice,CL_PROGRAM_BUILD_LOG,0,NULL,&binf_size),
         oclconfig->hLog);
 
@@ -1102,9 +1125,13 @@ int ocl_compiler(ocl_config_type *oclconfig,unsigned char **clList,unsigned int 
         oclconfig->hLog);
 
       buildinfo[binf_size] = '\0';
-      cLog_debug(oclconfig->hLog,"%s\n",buildinfo);
+      if(binf_size >3)
+      {
+        cLog_debug(oclconfig->hLog,"clBuildProgram log:\n");
+        cLog_debug(oclconfig->hLog,"%s\n",buildinfo);
+        cLog_debug(oclconfig->hLog,"End of clBuildProgram log\n");
+      }
       free(buildinfo);
-      cLog_debug(oclconfig->hLog,"------------------------------------------------------------\n");
 
     }
   }

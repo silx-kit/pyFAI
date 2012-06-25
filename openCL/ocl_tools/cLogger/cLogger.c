@@ -119,7 +119,7 @@ void cLog_init(logger_t *hLog, FILE *stream, const char *fname, int severity, en
           "|  a filename is not set and cLog will be disabled.      |\n"
           "|  All messages through cLog will be directed to stdout  |\n"
           "|  or stderr (for critical messages).                    |\n"
-          "\--------------------------------------------------------/\n"
+         "\\--------------------------------------------------------/\n"
           "\n"
           );
           
@@ -320,6 +320,23 @@ void cLog_critical(logger_t *hLog, const char * format, ...)
   return;
 }
 
+void cLog(logger_t *hLog, enum_LOGDEPTH depth, const char * format, ...)
+{
+  va_list argp;
+
+  if( ((*hLog).depth >= depth) && ((*hLog).status == 1) )
+  {
+    va_start(argp,format);  
+    if((*hLog).timestamps)fprintf((*hLog).stream,"%s ",get_timestamp());
+
+    fflush((*hLog).stream);
+    vfprintf((*hLog).stream,format,argp);
+    fflush((*hLog).stream);
+    va_end(argp);
+  }
+  return;
+}
+
 void cLog_bench(logger_t *hLog, const char * format, ...)
 {
   va_list argp;
@@ -362,7 +379,7 @@ void cLog_report_configuration(logger_t *hLog)
     {
       if( (*hLog).stream == stdout )printf("- Stream: stdout \n");
       else if( (*hLog).stream == stderr )printf("- Stream: stderr \n");
-      else printf("- Stream: s% \n", (*hLog).fname);
+      else printf("- Stream: %s \n", (*hLog).fname);
 
       printf("- Speed: %s\n",((*hLog).type)?"SAFE":"FAST");
       printf("- Depth: ");
@@ -393,4 +410,47 @@ void cLog_report_configuration(logger_t *hLog)
   }else printf("- Not Initialised \n");
 
   printf("\n");
+  return;
+}
+
+void cLog_log_configuration(logger_t *hLog)
+{
+
+  if( (!hLog) || (*hLog).status == 0 ) return;
+  else
+  {
+    cLog(hLog, (enum_LOGDEPTH)(*hLog).depth,"\n");
+    cLog(hLog, (enum_LOGDEPTH)(*hLog).depth,"cLogger Configuration\n");
+    if( (*hLog).stream == stdout )cLog(hLog, (enum_LOGDEPTH)(*hLog).depth,"- Stream: stdout \n");
+    else if( (*hLog).stream == stderr )cLog(hLog, (enum_LOGDEPTH)(*hLog).depth,"- Stream: stderr \n");
+    else cLog(hLog, (enum_LOGDEPTH)(*hLog).depth,"- Stream: %s \n", (*hLog).fname);
+
+    cLog(hLog, (enum_LOGDEPTH)(*hLog).depth,"- Speed: %s\n",((*hLog).type)?"SAFE":"FAST");
+    switch ( (enum_LOGDEPTH)(*hLog).depth )
+    {
+    case LOGDNONE:
+      cLog(hLog, (enum_LOGDEPTH)(*hLog).depth,"- Depth: Nothing \n");
+      break;
+    case LOGDONLYERRORS:
+      cLog(hLog, (enum_LOGDEPTH)(*hLog).depth,"- Depth: Errors \n");
+      break;
+    case LOGDBASIC:
+      cLog(hLog, (enum_LOGDEPTH)(*hLog).depth,"- Depth: Basic \n");
+      break;
+    case LOGDEXTENDED:
+      cLog(hLog, (enum_LOGDEPTH)(*hLog).depth,"- Depth: Extended \n");
+      break;
+    case LOGDDEBUG:
+      cLog(hLog, (enum_LOGDEPTH)(*hLog).depth,"- Depth: Debug \n");
+      break;
+    default:
+      cLog(hLog, (enum_LOGDEPTH)(*hLog).depth,"- Depth: Undefined \n");
+      break;
+    }
+    cLog(hLog, (enum_LOGDEPTH)(*hLog).depth,"- Profiling Information: %s\n",((*hLog).perf)?"YES":"NO");
+    cLog(hLog, (enum_LOGDEPTH)(*hLog).depth,"- Timestamps: %s\n",((*hLog).timestamps)?"YES":"NO");
+
+    cLog(hLog, (enum_LOGDEPTH)(*hLog).depth,"\n");
+  }
+  return;
 }

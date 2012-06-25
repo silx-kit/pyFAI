@@ -79,6 +79,8 @@ ocl::ocl(FILE *stream, const char *fname, int safe, int depth, int perf_time, in
     cLog_date(&hLog,LOGDNONE);
   usesStdout = 0;
 
+  if(static_cast<enum_LOGDEPTH>(depth) >= LOGDBASIC) cLog_log_configuration(&hLog);
+
   ContructorInit();
   setDocstring("OpenCL base functionality for xrpd1d. \nFeel free to play around but you will not be able to perform integrations"\
                 "at this level.\nYou may check the OpenCL platforms and devices found in your system at this point. Try print_devices\n"\
@@ -102,6 +104,8 @@ ocl::ocl(const char *fname, const char *identity):exec_identity(identity)
     cLog_date(&hLog,LOGDNONE);
   usesStdout = 0;
 
+  cLog_log_configuration(&hLog);
+
   ContructorInit();
   setDocstring("OpenCL base functionality for xrpd1d. \nFeel free to play around but you will not be able to perform integrations"\
                 "at this level.\nYou may check the OpenCL platforms and devices found in your system at this point. Try print_devices\n"\
@@ -120,6 +124,8 @@ ocl::ocl():exec_identity(NULL){
   cLog_init(&hLog,stdout,NULL,0,LOGTFAST,LOGDDEBUG,1,1);
   cLog_date(&hLog,LOGDNONE);
   usesStdout = 1;
+
+  cLog_report_configuration(&hLog);
 
   ContructorInit();
   setDocstring("OpenCL base functionality for xrpd1d. \nFeel free to play around but you will not be able to perform integrations"\
