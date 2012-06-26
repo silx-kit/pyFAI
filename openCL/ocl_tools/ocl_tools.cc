@@ -10,15 +10,13 @@
 
 /*
  *   Project: OpenCL tools for device probe, selection, deletion, error notification
- *              and vector type conversion. This source is the low-level layer of our
- *              OpenCL Toolbox (ocl_init_context.cpp). However, it can be used directly
- *              as an API
+ *              and vector type conversion.
  *
  *   Copyright (C) 2011 - 2012 European Synchrotron Radiation Facility
  *                                 Grenoble, France
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
- *   Last revision: 24/06/2012
+ *   Last revision: 26/06/2012
  *    
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -59,7 +57,16 @@
 #define C CL_CHECK_PR      ///Short for CL_CHECK_PR
 #define CL CL_CHECK_PR_RET ///short for CL_CHECK_PR_RET
 
-void internal_init(ocl_config_type *oclconfig)
+/**
+ * \brief Initialise an ocl_config_type structure for use by ocl_tools
+ *
+ * File scope with sole puprose to be called by an ocl_tools_initialise()
+ * implementation.
+ *
+ * @param oclconfig The OpenCL configuration to be initialised
+ * @return void
+ */
+static void internal_init(ocl_config_type *oclconfig)
 {
   oclconfig->platfid = -1;
   oclconfig->devid = -1;
@@ -76,8 +83,22 @@ void internal_init(ocl_config_type *oclconfig)
  * a logger_t cLog struct is not provided or not initialised.
  * Typically this happends when the parent who is using ocl_tools
  * is not using the cLog logger.
+ * Note thata using File stream != NULL,stdout or stderr with a
+ * a fname != NULL is forbidden by cLogger.
+ *
+ * @param hLog Handle to logger_t configuration
+ * @param stream File stream to be used (can be NULL, stdout, stderr)
+ * @param fname Filename for the log (can set as NULL is stream is NULL, stdout or stderr)
+ * @param severity Unused
+ * @param type enum_LOGTYPE that evaluates to LOGTFAST (FAST) or LOGTSAFE (SAFE)
+ * @param depth enum_LOGDEPTH for the logging level.
+ * @param perf Log (1) cLog_bench() calls or not (0)
+ * @param timestamps Prepend timestamps to logs (1) or not (0)
+ * @return void
  */
-void ocl_logger_initialise(logger_t *hLog, FILE *stream, const char *fname, int severity, enum_LOGTYPE type, enum_LOGDEPTH depth, int perf, int timestamps)
+void ocl_logger_initialise(logger_t *hLog, FILE *stream, const char *fname,
+                           int severity, enum_LOGTYPE type, enum_LOGDEPTH depth,
+                           int perf, int timestamps)
 {
   cLog_init(hLog,stream,fname,severity,type,depth,perf,timestamps);
 }
@@ -110,6 +131,7 @@ void ocl_tools_initialise(ocl_config_type *oclconfig)
  * Then ocl_tools does not affect the lifetime of the handle.
  *
  * @param oclconfig The OpenCL configuration to be initialised
+ * @param hLogIN handle to an external cLogger configuration
  * @return void
  */
 void ocl_tools_initialise(ocl_config_type *oclconfig,logger_t *hLogIN)
@@ -145,7 +167,14 @@ void ocl_tools_initialise(ocl_config_type *oclconfig,logger_t *hLogIN)
  * between an ocl_tools_initialise() and an ocl_tools_destroy().
  *
  * @param oclconfig The OpenCL configuration to be initialised
- * @return handle to logger
+ * @param stream File stream to be used (can be NULL, stdout, stderr)
+ * @param fname Filename for the log (can set as NULL is stream is NULL, stdout or stderr)
+ * @param severity Unused
+ * @param type enum_LOGTYPE that evaluates to LOGTFAST (FAST) or LOGTSAFE (SAFE)
+ * @param depth enum_LOGDEPTH for the logging level.
+ * @param perf Log (1) cLog_bench() calls or not (0)
+ * @param timestamps Prepend timestamps to logs (1) or not (0)
+ * @return handle to logger_t cLog configuration
  */
 logger_t *ocl_tools_initialise(ocl_config_type *oclconfig, FILE *stream, const char *fname, 
                           int severity, enum_LOGTYPE type, enum_LOGDEPTH depth, int perf, 
@@ -196,10 +225,6 @@ void ocl_tools_destroy(ocl_config_type *oclconfig)
  *         look for:
  *         CL_DEVICE_TYPE_GPU, CL_DEVICE_TYPE_CPU, CL_DEVICE_TYPE_DEFAULT,
  *         CL_DEVICE_TYPE_ACCELERATOR and CL_DEVICE_TYPE_ALL.
- * @param stream C File stream to direct the output to. Optional argument which defaults
- *         to stdout. If another stream is used, it must be open.
- *         Error messages are always displayed to stderr.
- *
  * @return An integer that represends the ocl_tools error_code:
  *         0: Success
  *        -1: OpenCL API related error
@@ -297,10 +322,6 @@ int ocl_probe(ocl_config_type *oclconfig,cl_device_type ocldevtype,int usefp64)
  * @param preset_device Order of the device
  *          (i.e first is 0, seconds is 1).
  *          Unlike platforms, device order does not usually change on a machine.
- * @param stream C File stream to direct the output to. Optional argument which defaults
- *          to stdout. If another stream is used, it must be open.
- *          Error messages are always displayed to stderr.
- *
  * @return An integer that represends the ocl_tools error_code:
  *         0: Success
  *        -1: OpenCL API related error
@@ -401,10 +422,6 @@ int ocl_probe(ocl_config_type *oclconfig,cl_device_type ocldevtype,int preset_pl
  *          on runtime via the OpenCL API.
  * @param device The OpenCL cl_device_id for a given platform. This can be acquired on
  *          on runtime via the OpenCL API.
- * @param stream C File stream to direct the output to. Optional argument which defaults
- *          to stdout. If another stream is used, it must be open.
- *          Error messages are always displayed to stderr.
- *
  * @return An integer that represends the ocl_tools error_code:
  *         0: Success
  *        -1: OpenCL API related error
@@ -489,10 +506,7 @@ int ocl_probe(ocl_config_type *oclconfig,cl_platform_id platform,cl_device_id de
  *         which is a device_type device.
  * @param &devid The cl_device_id variable to save the first device encountered which
  *         is a device_type device.
- * @param stream C File stream to direct the output to. Optional argument which defaults
- *          to stdout. If another stream is used, it must be open.
- *          Error messages are always displayed to stderr.
- * 
+ * @param hLog handle to a cLogger configuration.
  * @return An integer that represends the ocl_tools error_code:
  *         0: Success
  *        -1: OpenCL API related error
@@ -539,10 +553,7 @@ int ocl_find_devicetype(cl_device_type device_type, cl_platform_id &platform, cl
  *         which is a device_type device.
  * @param &devid The cl_device_id variable to save the first device encountered which
  *         is a device_type device.
- * @param stream C File stream to direct the output to. Optional argument which defaults
- *          to stdout. If another stream is used, it must be open.
- *          Error messages are always displayed to stderr.
- * 
+ * @param hLog handle to a cLogger configuration.
  * @return An integer that represends the ocl_tools error_code:
  *         0: Success
  *        -1: OpenCL API related error
@@ -591,9 +602,7 @@ int ocl_find_devicetype_FP64(cl_device_type device_type, cl_platform_id &platfor
  *         which is a device_type device.
  * @param &devid The cl_device_id variable to save the first device encountered which
  *         is a device_type device.
- * @param stream C File stream to direct the output to. Optional argument which defaults
- *          to stdout. If another stream is used, it must be open.
- *          Error messages are always displayed to stderr.
+ * @param hLog handle to a cLogger configuration.
  * 
  * @return An integer that represends the ocl_tools error_code:
  *         0: Success
@@ -620,16 +629,8 @@ int ocl_check_platforms(logger_t *hLog){
     cLog_extended(hLog,"%d OpenCL platform(s) found\n",num_platforms);
     for(cl_uint i=0;i<num_platforms;i++){
       cLog_extended(hLog," Platform info:\n");
-//       clGetPlatformInfo(oclplatforms[i],CL_PLATFORM_PROFILE,param_value_size,&param_value,NULL);
-//       printf(" %s\n",param_value);
-//       CL_CHECK_PRN(clGetPlatformInfo(oclplatforms[i],CL_PLATFORM_VERSION,param_value_size,&param_value,NULL));
-//       printf(" %s\n",param_value);
       CL_CHECK_PRN(clGetPlatformInfo(oclplatforms[i],CL_PLATFORM_NAME,param_value_size,&param_value,NULL), hLog);
       cLog_extended(hLog,"  %s\n",param_value);
-//       clGetPlatformInfo(oclplatforms[i],CL_PLATFORM_VENDOR,param_value_size,&param_value,NULL);
-//       printf(" %s\n",param_value);      
-//       clGetPlatformInfo(oclplatforms[i],CL_PLATFORM_EXTENSIONS,param_value_size,&param_value,NULL);
-//       printf(" %s\n",param_value);
       CL_CHECK_PRN( clGetDeviceIDs(oclplatforms[i],CL_DEVICE_TYPE_ALL,OCL_MAX_DEVICES,ocldevices,&num_devices) , hLog);
       cLog_extended(hLog,"  %d Device(s) found:\n",num_devices);
       for(cl_uint j=0;j<num_devices;j++){
@@ -648,10 +649,7 @@ int ocl_check_platforms(logger_t *hLog){
  * Releases an OpenCL context while performing error checking.
  *
  * @param oclcontext The OpenCL context to be Released.
- * 
- * @param stream C File stream to direct the output to. Optional argument which defaults
- *          to stdout. If another stream is used, it must be open.
- *          Error messages are always displayed to stderr
+ * @param hLog handle to a cLogger configuration.
  *
  * @return An integer that represends the ocl_tools error_code:
  *         0: Success
@@ -672,9 +670,6 @@ return 0;
  * @param oclconfig oclconfig will be used to keep the resulting OpenCL configuration.
  * @param device_type A string with the device type to be used. Accepted values:
  *          "GPU","CPU","ACC","ALL","DEF".
- * @param stream C File stream to direct the output to. Optional argument which defaults
- *          to stdout. If another stream is used, it must be open.
- *          Error messages are always displayed to stderr
  *
  * @return An integer that represends the ocl_tools error_code:
  *         0: Success
@@ -715,9 +710,6 @@ return 0;
  *          "GPU","CPU","ACC","ALL","DEF".
  * @param preset_platform Explicit platform to use when probing for device_type
  * @param devid Explicit device number to use when probing for device_type
- * @param stream C File stream to direct the output to. Optional argument which defaults
- *          to stdout. If another stream is used, it must be open.
- *          Error messages are always displayed to stderr
  *
  * @return An integer that represends the ocl_tools error_code:
  *         0: Success
@@ -756,9 +748,7 @@ return 0;
  * @param oclconfig oclconfig will be used to keep the resulting OpenCL configuration.
  * @param platform cl_platform_id value for the device
  * @param device cl_device_id value of the device
- * @param stream C File stream to direct the output to. Optional argument which defaults
- *          to stdout. If another stream is used, it must be open.
- *          Error messages are always displayed to stderr
+ * @param hLog handle to a cLogger configuration.
  *
  * @return An integer that represends the ocl_tools error_code:
  *         0: Success
@@ -799,9 +789,7 @@ return 0;
  * @param BLOCK_SIZE The blockSize. This value will be defined in the compiled program.
  * @param optional A string containing additional compilation options. These options along will
  *          be appended to the compilation string included in oclconfig and the BLOCK_SIZE.
- * @param stream C File stream to direct the output to. Optional argument which defaults
- *          to stdout. If another stream is used, it must be open.
- *          Error messages are always displayed to stderr
+ * @param hLog handle to a cLogger configuration.
  *
  * @return An integer that represends the ocl_tools error_code:
  *         0: Success
@@ -917,9 +905,7 @@ return 0;
  * @param BLOCK_SIZE The blockSize. This value will be defined in the compiled program.
  * @param optional A string containing additional compilation options. These options along will
  *          be appended to the compilation string included in oclconfig and the BLOCK_SIZE.
- * @param stream C File stream to direct the output to. Optional argument which defaults
- *          to stdout. If another stream is used, it must be open.
- *          Error messages are always displayed to stderr
+ * @param hLog handle to a cLogger configuration.
  *
  * @return An integer that represends the ocl_tools error_code:
  *         0: Success
@@ -1039,9 +1025,7 @@ return 0;
  * @param BLOCK_SIZE The blockSize. This value will be defined in the compiled program.
  * @param optional A string containing additional compilation options. These options along will
  *          be appended to the compilation string included in oclconfig and the BLOCK_SIZE.
- * @param stream C File stream to direct the output to. Optional argument which defaults
- *          to stdout. If another stream is used, it must be open.
- *          Error messages are always displayed to stderr
+ * @param hLog handle to a cLogger configuration.
  *
  * @return An integer that represends the ocl_tools error_code:
  *         0: Success
@@ -1146,9 +1130,7 @@ return 0;
  *
  * @param oclconfig The OpenCL configuration containing the device to be checked. The fp64 field
  *           is updated with 1 if double precision is possible and 0 otherwise.
- * @param stream C File stream to direct the output to. Optional argument which defaults
- *          to stdout. If another stream is used, it must be open.
- *          Error messages are always displayed to stderr
+ * @param hLog handle to a cLogger configuration.
  *
  * @return An integer that represends the query status:
  *         0: The device supports an opencl_*_fp64 extension
@@ -1193,7 +1175,8 @@ int ocl_eval_FP64(ocl_config_type *oclconfig)
  * ocl_config_type data structure).
  *
  * @param cl_device_id The OpenCL internal device id representation
- *
+ * @param hLog handle to a cLogger configuration (In case of error only)
+ * 
  * @return An integer that represends the query status:
  *         0: The device supports an opencl_*_fp64 extension
  *        -1: The device only supports single precision
@@ -1263,9 +1246,7 @@ return;
  *          ending point of the profiling. If only one call is to be profiled, start and stop
  *          maybe be the same clEvent.
  * @param message Optional string to be appended on the diplayed info
- * @param stream C File stream to direct the output to. Optional argument which defaults
- *          to stdout. If another stream is used, it must be open and ocl_get_profT will report
- *          the profiling information to both stdout and this stream.
+ * @param hLog handle to a cLogger configuration. (Critical and Bench only)
  *
  * @return Returns directly a float variable containing the profiling result in milliseconds. 
  */
@@ -1288,9 +1269,7 @@ float ocl_get_profT(cl_event* start, cl_event* stop, const char* message, logger
  *
  * @param start A clEvent that was assigned to a profilable OpenCL call and is to be used as
  *          starting point of the profiling.
- * @param stop A clEvent that was assigned to a profilable OpenCL call and is to be used as
- *          ending point of the profiling. If only one call is to be profiled, start and stop
- *          maybe be the same clEvent.
+ * @param hLog handle to a cLogger configuration. (Critical and Bench only)
  *
  * @return Returns directly a float variable containing the profiling result in milliseconds.
  */
@@ -1521,6 +1500,7 @@ int ocl_current_device_info(ocl_config_type *oclconfig)
  *
  * @param devicetype The input string to convert to an opencl internal device type representation
  * @param ocldevtype The OpenCL internal representation of a device type
+ * @param hLog handle to a cLogger configuration. 
  * @return Returns 0 on success and -2 on failure to find a suitable representation
  */
 int ocl_string_to_cldevtype(const char *device_type, cl_device_type &ocldevtype, logger_t *hLog){

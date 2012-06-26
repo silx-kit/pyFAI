@@ -94,6 +94,7 @@ public:
   ocl();
   virtual ~ocl();
 
+  /* Changes settings of logger configuration in hLog*/
   void update_logger(FILE *stream, const char *fname, int safe, int depth, int perf_time, int timestamp);
 
 /*
@@ -191,9 +192,10 @@ protected:
   
   /**@}*/
   
-  FILE *stream;
-  logger_t hLog;
-  const char *exec_identity;
+  FILE *stream; //!< Deprecated, replaced by hLog. Set but not used
+  
+  logger_t hLog; //!< Logger configuration
+  const char *exec_identity; //!< Caller name or user defined string (e.g. argv[0] in C/C++)
 
   /**
    * \defgroup guards Status flags/guards

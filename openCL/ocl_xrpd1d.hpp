@@ -20,7 +20,7 @@
  *                             Grenoble, France
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
- *   Last revision: 24/06/2012
+ *   Last revision: 26/06/2012
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -58,10 +58,10 @@
 class ocl_xrpd1D_fullsplit: public ocl{
 public:
 
-  //Default constructor - Prints messages on stdout
+  //Default constructor - Prints messages on stdout with highest logging level
   ocl_xrpd1D_fullsplit();
 
-  //Prints messages on file fname
+  //cLogger is set to fname with highest logging level
   explicit ocl_xrpd1D_fullsplit(const char* fname, const char *identity=NULL);
 
   //Complete logging functionality
