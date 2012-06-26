@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 #
-#    Project: Fast Azimuthal integration 
+#    Project: Fast Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
 #
 #    File: "$Id$"
@@ -56,6 +56,12 @@ else:
 
 installDir = os.path.join(get_python_lib(), "pyFAI")
 
+j = ""
+openCL = []
+for i in "openCL/ocl_tools/cLogger".split("/"):
+    j = os.path.join(j, i)
+    openCL.append(j)
+
 hist_dic = dict(name="histogram",
                     include_dirs=get_numpy_include_dirs(),
                     sources=[src['histogram']],
@@ -86,7 +92,7 @@ bilinear_dic = dict(name="bilinear",
 
 ocl_azim_dict = dict(name="ocl_azim",
                     sources=ocl_azim,
-                    include_dirs=["openCL","openCL/ocl_tools","openCL/ocl_tools/cLogger"] + get_numpy_include_dirs(),
+                    include_dirs=openCL + get_numpy_include_dirs(),
                     language="c++",
                     libraries=["stdc++", "OpenCL"],
                     )
@@ -156,7 +162,7 @@ except ImportError:
 
 
 ################################################################################
-# check if OpenMP modules, freshly installed can import    
+# check if OpenMP modules, freshly installed can import
 ################################################################################
 pyFAI = None
 sys.path.insert(0, installDir)

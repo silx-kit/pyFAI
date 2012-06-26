@@ -222,6 +222,10 @@ class AzimuthalIntegrator(Geometry):
                        tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None):
         """
         Calculate the powder diffraction pattern from a set of data, an image. Cython implementation
+
+        TODO: add in the cython part a dark and a flat images to be corrected on the fly.
+        Flat should be combined with solid-angle
+
         @param data: 2D array from the CCD camera
         @type data: ndarray
         @param nbPt: number of points in the output pattern
@@ -256,9 +260,6 @@ class AzimuthalIntegrator(Geometry):
             dchi = None
         tth = self.twoThetaArray(data.shape)
         dtth = self.delta2Theta(data.shape)
-#        mask = self.makeMask(data, mask, dummy, delta_dummy)
-#        if dummy is None:
-#            dummy = -1
         if tthRange is not None:
             tthRange = tuple([numpy.deg2rad(i) for i in tthRange[:2]])
         if chiRange is not None:
