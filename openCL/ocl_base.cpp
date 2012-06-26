@@ -20,7 +20,7 @@
  *                           Grenoble, France
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
- *   Last revision: 24/06/2011
+ *   Last revision: 26/06/2011
  *    
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -55,19 +55,21 @@
 #define CER CL_CHECK_ERR_PR_RET
 #define CR  CL_CHECK_PR_RET
 
-//#define silent
-#ifdef _SILENT
-  #define fprintf(stream,...)
-#endif
-
-
 typedef unsigned long lui;
 
 /**
  * \brief Overloaded constructor for base class.
  *
  * Complete logging functionality
- *
+ * 
+ * @param stream File stream to be used (can be NULL, stdout, stderr)
+ * @param fname Filename for the log (can set as NULL is stream is NULL, stdout or stderr)
+ * @param type enum_LOGTYPE that evaluates to LOGTFAST (FAST) or LOGTSAFE (SAFE)
+ * @param depth enum_LOGDEPTH for the logging level.
+ * @param perf Log (1) cLog_bench() calls or not (0)
+ * @param timestamps Prepend timestamps to logs (1) or not (0)
+ * @param identity Name of calling executable or custom string.
+ *                 It will be appended next to the date upon construction of the object
  */
 ocl::ocl(FILE *stream, const char *fname, int safe, int depth, int perf_time, int timestamp, const char *identity):exec_identity(identity)
 {
@@ -91,8 +93,11 @@ ocl::ocl(FILE *stream, const char *fname, int safe, int depth, int perf_time, in
 /**
  * \brief Overloaded constructor for base class.
  *
- * Output is set to file "fname"
+ * cLogger is set to fname with highest logging level
  *
+ * @param fname Filename for the log (NULL or string)
+ * @param identity Name of calling executable or custom string.
+ *                 It will be appended next to the date upon construction of the object
  */
 ocl::ocl(const char *fname, const char *identity):exec_identity(identity)
 {
@@ -116,8 +121,8 @@ ocl::ocl(const char *fname, const char *identity):exec_identity(identity)
 /**
  * \brief Default constructor for base class.
  *
- * Output is set to stdout
- *
+ * Output is set to stdout with highest logging level
+ * @param fname Filename for the log (NULL or string)
  */
 ocl::ocl():exec_identity(NULL){
 
@@ -149,7 +154,7 @@ ocl::~ocl(){
  */
 void ocl::ContructorInit()
 {
-  stream=stdout;
+  stream=stdout; //Set but unused. Replaced by hLog
   usesStdout=1;
   
   hasActiveContext=0;
@@ -184,6 +189,18 @@ void ocl::ContructorInit()
   
 }
 
+/**
+ * \brief Changes the settings for cLogger
+ *
+ * @param stream File stream to be used (can be NULL, stdout, stderr)
+ * @param fname Filename for the log (can set as NULL is stream is NULL, stdout or stderr)
+ * @param type enum_LOGTYPE that evaluates to LOGTFAST (FAST) or LOGTSAFE (SAFE)
+ * @param depth enum_LOGDEPTH for the logging level.
+ * @param perf Log (1) cLog_bench() calls or not (0)
+ * @param timestamps Prepend timestamps to logs (1) or not (0)
+ *
+ * @return void
+ */
 void ocl::update_logger(FILE *stream, const char *fname, int safe, int depth, int perf_time, int timestamp)
 {
   cLog_fin(&hLog);
@@ -191,7 +208,13 @@ void ocl::update_logger(FILE *stream, const char *fname, int safe, int depth, in
 }
 
 /**
- *  \brief Prints a list of OpenCL capable devices, their platforms and their ids to stream
+ *  \brief Prints a list of OpenCL capable devices
+ *
+ * If ignoreStream is set to 1, configuration of logger is ignored and messages are
+ * redirected to stdout
+ *
+ * @param ignoreStream Integer flag to bypass the logger
+ * @return void
  */  
 void ocl::show_devices(int ignoreStream){
 
@@ -209,6 +232,11 @@ return;
 
 /**
  * \brief Returns the pair ID (platform.device) of the active device
+ *
+ * @param platform Reference to integer variable where to return the value of the platform
+ * @param device Reference to integer variable where to return the value of the device
+ *
+ * @return void
  */
 void ocl::get_contexed_Ids(int &platform, int &device)
 {
@@ -219,6 +247,8 @@ return;
 
 /**
  * \brief Returns the -C++- pair ID (platform.device) of the active device
+ *
+ * @return std::pair<int,int> With the platform and device values
  */
 std::pair<int,int> ocl::get_contexed_Ids()
 {
@@ -236,8 +266,9 @@ return std::make_pair(oclconfig->platfid, oclconfig->devid);
  * device_info structs (not oclconfig->_info!. oclconfig is protected)
  * 
  * @param ignoreStream Integer flag that tells the function to
- *            ignore any active output stream (stdout or not)
+ *            ignore any active cLogger configuration
  *            and redirect output to display
+ * @return void
  */
 void ocl::show_device_details(int ignoreStream){
 	
@@ -286,7 +317,8 @@ return;
  * Promote_device_details() is called after each successfull context creation by an
  * init() function. It copies the internal info structures to the public
  * platform_info and device_info.
- * 
+ *
+ * @return void
  */
 void ocl::promote_device_details()
 {
@@ -295,6 +327,8 @@ void ocl::promote_device_details()
 }
 /**
  * \brief Returns a documentation string
+ *
+ * @return void
  */
 void ocl::help(){
 
@@ -377,6 +411,8 @@ return 0;
  * It may be asked to preserve the context created by init or completely clean up OpenCL.
  * Guard/Status flags that are set will be reset.
  *
+ * @param preserve_context Flag that preserves the context (1) or destroys all OpenCL
+ *                         resources (0)
  */
 int ocl::clean(int preserve_context){
 
@@ -438,22 +474,29 @@ float ocl::get_memCpy_time()
 
 /**
  * \brief Returns the count of integrations performed
+ *
+ * @return Unsigned integer with a count of the calls to execute()
+ *         from the last reset_time() until present
  */
 unsigned int ocl::get_exec_count()
 {
   return execCount;
 }
 
-/*
- * Get the status of the intergator as an integer
- * bit 0: has context
- * bit 1: size are set
- * bit 2: is configured (kernel compiled)
- * bit 3: pos0/delta_pos0 arrays are loaded (radial angle)
- * bit 4: pos1/delta_pos1 arrays are loaded (azimuthal angle)
- * bit 5: solid angle correction is set
- * bit 6: mask is set
- * bit 7: use dummy value
+/**
+ * \brief Get the status of the integrator as an integer
+ *
+ * Added by J. Kieffer
+ * 
+ * @return Integer bitfield where:
+ *          bit 0: has context
+ *          bit 1: size are set
+ *          bit 2: is configured (kernel compiled)
+ *          bit 3: pos0/delta_pos0 arrays are loaded (radial angle)
+ *          bit 4: pos1/delta_pos1 arrays are loaded (azimuthal angle)
+ *          bit 5: solid angle correction is set
+ *          bit 6: mask is set
+ *          bit 7: use dummy value
  */
 int ocl::get_status(){
 	int value=0;
@@ -474,8 +517,6 @@ int ocl::get_status(){
 	if (useDummyVal)
 		value+=256;
 	return value;
-
-
 }
 /**
  * \brief Progressive OpenCL buffer release

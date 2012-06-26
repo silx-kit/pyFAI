@@ -10,15 +10,13 @@
 
 /*
  *   Project: OpenCL tools for device probe, selection, deletion, error notification
- *              and vector type conversion. This source is the low-level layer of our
- *              OpenCL Toolbox (ocl_init_context.cpp). However, it can be used directly
- *              as an API
+ *              and vector type conversion.
  *
  *   Copyright (C) 2011 - 2012 European Synchrotron Radiation Facility
  *                                 Grenoble, France
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
- *   Last revision: 24/06/2012
+ *   Last revision: 26/06/2012
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -153,21 +151,27 @@ typedef struct ocl_configuration_parameters{
   cl_int            Nkernels;
 
   //Logging
-  logger_t          *hLog;
-  int               external_cLogger;
+  logger_t          *hLog; //Keep track of logger
+  int               external_cLogger; //If external, do not touch the handle at finish
 }ocl_config_type;
 
 /* All production functions return 0 on success, -1 on OpenCL error and -2 on other errors.
-    when an error is encountered internally, it will print the message to stderr and fallback.
+    when an error is encountered internally, it will fallback.
     It is important for the user to decide how to continue.*/
 
 /**
- * \brief Initialises the internals of an ocl_config_type
+ * \brief Initialises the internals of an ocl_config_type and sets logger to defaults
  */
 void ocl_tools_initialise(ocl_config_type *oclconfig);
 
+/**
+ * \brief Initialises the internals of an ocl_config_type. Logger settings depend on input
+ */
 void ocl_tools_initialise(ocl_config_type *oclconfig,logger_t *hLogIN);
 
+/**
+ * \brief Initialises the internals of an ocl_config_type. Logger settings are predefined
+ */
 logger_t *ocl_tools_initialise(ocl_config_type *oclconfig, FILE *stream, const char *fname, 
                           int severity, enum_LOGTYPE type, enum_LOGDEPTH depth, int perf, 
                           int timestamps);

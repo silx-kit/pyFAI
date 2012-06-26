@@ -20,7 +20,7 @@
  *                             Grenoble, France
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
- *   Last revision: 24/06/2012
+ *   Last revision: 26/06/2012
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -121,9 +121,11 @@ ocl_xrpd1D_fullsplit::ocl_xrpd1D_fullsplit():ocl()
 /**
  * \brief Overloaded constructor for xrpd1d with filename option.
  *
- * Output is set to filename "fname" and the docstring is set
+ * cLogger is set to fname with highest logging level
  *
- * @param fname A const C-string with the name of the textfile to use as output
+ * @param fname Filename for the log (NULL or string)
+ * @param identity Name of calling executable or custom string.
+ *                 It will be appended next to the date upon construction of the object
  *
  */
 ocl_xrpd1D_fullsplit::ocl_xrpd1D_fullsplit(const char* fname, const char* identity):ocl(fname, identity)
@@ -134,10 +136,16 @@ ocl_xrpd1D_fullsplit::ocl_xrpd1D_fullsplit(const char* fname, const char* identi
 /**
  * \brief Overloaded constructor for xrpd1d with logging options.
  *
- * Output is set to filename "fname" and the docstring is set.
- * cLogger is set according to arguments
- *
- * @param fname A const C-string with the name of the textfile to use as output
+ * Complete logging functionality
+ * 
+ * @param stream File stream to be used (can be NULL, stdout, stderr)
+ * @param fname Filename for the log (can set as NULL is stream is NULL, stdout or stderr)
+ * @param type enum_LOGTYPE that evaluates to LOGTFAST (FAST) or LOGTSAFE (SAFE)
+ * @param depth enum_LOGDEPTH for the logging level.
+ * @param perf Log (1) cLog_bench() calls or not (0)
+ * @param timestamps Prepend timestamps to logs (1) or not (0)
+ * @param identity Name of calling executable or custom string.
+ *                 It will be appended next to the date upon construction of the object
  *
  */
 ocl_xrpd1D_fullsplit::ocl_xrpd1D_fullsplit(FILE *stream, const char *fname, int safe, int depth, int perf_time, int timestamp, const char* identity):
@@ -203,7 +211,7 @@ return 0;
  * If a configuration exists and configure() is called, the configuration is cleaned up first to avoid
  * OpenCL memory leaks
  *
- * kernel_path is the path to the actual kernel
+ * @param kernel_path is the path to the actual kernel
  */
 int ocl_xrpd1D_fullsplit::configure(const char* kernel_path)
 {
