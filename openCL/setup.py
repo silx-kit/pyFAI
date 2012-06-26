@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 #
-#    Project: Image Alignment  
-#             
+#    Project: Image Alignment
+#
 #
 #    File: "$Id$"
 #
@@ -28,8 +28,9 @@ __author__ = "Jérôme Kieffer"
 __copyright__ = "2012, ESRF"
 __license__ = "LGPL"
 
-from distutils.core import setup
+import os
 try:
+    from distutils.core import setup
     from Cython.Distutils.extension import Extension
     from Cython.Distutils import build_ext
     ocl_azim = "ocl_azim.pyx"
@@ -39,9 +40,15 @@ except ImportError:
     ocl_azim = "ocl_azim.cpp"
 from numpy.distutils.misc_util import get_numpy_include_dirs
 
+j = ""
+openCL = []
+for i in "openCL/ocl_tools/cLogger".split("/"):
+    j = os.path.join(j, i)
+    openCL.append(j)
+
 ocl_azim_ext = Extension(name="ocl_azim",
                     sources=[ocl_azim, "ocl_base.cpp", "ocl_tools/ocl_tools.cc", "ocl_xrpd1d_fullsplit.cpp", "ocl_tools/cLogger/cLogger.c"],
-                    include_dirs=get_numpy_include_dirs() +["ocl_tools","ocl_tools/cLogger"],
+                    include_dirs=get_numpy_include_dirs() + openCL,
                     language="c++",
                     libraries=["stdc++", "OpenCL"],
                     )
