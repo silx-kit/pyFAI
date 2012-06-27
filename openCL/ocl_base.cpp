@@ -20,7 +20,7 @@
  *                           Grenoble, France
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
- *   Last revision: 11/05/2011
+ *   Last revision: 24/06/2011
  *    
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -55,10 +55,6 @@
 #define CER CL_CHECK_ERR_PR_RET
 #define CR  CL_CHECK_PR_RET
 
-#ifdef _WIN32
-#define _CRT_SECURE_NO_WARNINGS 1
-#endif
-
 //#define silent
 #ifdef _SILENT
   #define fprintf(stream,...)
@@ -70,16 +66,50 @@ typedef unsigned long lui;
 /**
  * \brief Overloaded constructor for base class.
  *
- * Output is set to file "fname"
+ * Complete logging functionality
  *
  */
-ocl::ocl(const char *fname){
+ocl::ocl(FILE *stream, const char *fname, int safe, int depth, int perf_time, int timestamp, const char *identity):exec_identity(identity)
+{
+
+  cLog_init(&hLog,stream,fname,0,static_cast<enum_LOGTYPE>(safe),static_cast<enum_LOGDEPTH>(depth),perf_time,timestamp);
+  if(identity)
+    cLog_date_text(&hLog,LOGDNONE,"(%s)\n",identity);
+  else
+    cLog_date(&hLog,LOGDNONE);
+  usesStdout = 0;
+
+  if(static_cast<enum_LOGDEPTH>(depth) >= LOGDBASIC) cLog_log_configuration(&hLog);
+
   ContructorInit();
   setDocstring("OpenCL base functionality for xrpd1d. \nFeel free to play around but you will not be able to perform integrations"\
                 "at this level.\nYou may check the OpenCL platforms and devices found in your system at this point. Try print_devices\n"\
                 "Try any of the derived classes xrpd1d and xrpd2d for complete functionality. \n","ocl_base.hpp");
-  stream=fopen(fname,"w");
-  usesStdout=0;
+
+}
+
+/**
+ * \brief Overloaded constructor for base class.
+ *
+ * Output is set to file "fname"
+ *
+ */
+ocl::ocl(const char *fname, const char *identity):exec_identity(identity)
+{
+
+  cLog_init(&hLog,NULL,fname,0,LOGTFAST,LOGDDEBUG,1,1);
+  if(identity)
+    cLog_date_text(&hLog,LOGDNONE,"(%s)\n",identity);
+  else
+    cLog_date(&hLog,LOGDNONE);
+  usesStdout = 0;
+
+  cLog_log_configuration(&hLog);
+
+  ContructorInit();
+  setDocstring("OpenCL base functionality for xrpd1d. \nFeel free to play around but you will not be able to perform integrations"\
+                "at this level.\nYou may check the OpenCL platforms and devices found in your system at this point. Try print_devices\n"\
+                "Try any of the derived classes xrpd1d and xrpd2d for complete functionality. \n","ocl_base.hpp");
 
 }
 
@@ -89,18 +119,27 @@ ocl::ocl(const char *fname){
  * Output is set to stdout
  *
  */
-ocl::ocl(){
+ocl::ocl():exec_identity(NULL){
+
+  cLog_init(&hLog,stdout,NULL,0,LOGTFAST,LOGDDEBUG,1,1);
+  cLog_date(&hLog,LOGDNONE);
+  usesStdout = 1;
+
+  cLog_report_configuration(&hLog);
+
   ContructorInit();
   setDocstring("OpenCL base functionality for xrpd1d. \nFeel free to play around but you will not be able to perform integrations"\
                 "at this level.\nYou may check the OpenCL platforms and devices found in your system at this point. Try print_devices\n"\
                 "Try any of the derived classes xrpd1d and xrpd2d for complete functionality. \n","ocl_base.hpp");  
+
 }
 
 ocl::~ocl(){
   clean();
+  ocl_tools_destroy(oclconfig);
   delete oclconfig;
   delete sgs;
-  if(!usesStdout) fclose(stream);
+  cLog_fin(&hLog);
   delete[] docstr;
 
 }
@@ -130,50 +169,130 @@ void ocl::ContructorInit()
 
   reset_time();
   
-  sgs = new az_argtype;
   oclconfig = new ocl_config_type;
-  oclconfig->Nbuffers=0;
-  oclconfig->Nkernels=0;
-  oclconfig->oclmemref =NULL;
-  oclconfig->oclkernels=NULL;
+  ocl_tools_initialise(oclconfig,&hLog);
+
+  sgs = new az_argtype;
   sgs->Nx = 0;
   sgs->Nimage = 0;
   sgs->Nbins = 0;
   sgs->Nbinst = 0;
   sgs->Nbinsc = 0;
   sgs->usefp64 = 0;
+  
   docstr = new char[8192];
   
+}
+
+void ocl::update_logger(FILE *stream, const char *fname, int safe, int depth, int perf_time, int timestamp)
+{
+  cLog_fin(&hLog);
+  cLog_init(&hLog,stream,fname,0,static_cast<enum_LOGTYPE>(safe),static_cast<enum_LOGDEPTH>(depth),perf_time,timestamp);
 }
 
 /**
  *  \brief Prints a list of OpenCL capable devices, their platforms and their ids to stream
  */  
-void ocl::show_devices(){
+void ocl::show_devices(int ignoreStream){
 
-  //Print all the probed devices to stream
-  ocl_check_platforms(stream);
+  //Print all the probed devices
+  if(ignoreStream) 
+  {
+    oclconfig->hLog->status=0;
+    ocl_check_platforms(oclconfig->hLog);
+    oclconfig->hLog->status=1;
+  }
+  else ocl_check_platforms(oclconfig->hLog);
+
 return;
 }
 
 /**
- *  \brief Prints a list of OpenCL capable devices, their platforms and their ids to stdout
+ * \brief Returns the pair ID (platform.device) of the active device
  */
-void ocl::print_devices(){
+void ocl::get_contexed_Ids(int &platform, int &device)
+{
+  platform = oclconfig->platfid;
+  device   = oclconfig->devid;
+return;  
+}
 
-  //Print all the probed devices to stdout
-  ocl_check_platforms();
+/**
+ * \brief Returns the -C++- pair ID (platform.device) of the active device
+ */
+std::pair<int,int> ocl::get_contexed_Ids()
+{
+return std::make_pair(oclconfig->platfid, oclconfig->devid);  
+}
+
+/**
+ * \brief Prints some basic information about the device in use
+ *
+ * The following platform information is displayed:
+ *     Name, Version, Vendor and Extensions
+ * Similarily for the device:
+ *     Name, Type, Version, Driver version, Extensions and Global memory
+ * To datafields are also accessible externally by platform_info and
+ * device_info structs (not oclconfig->_info!. oclconfig is protected)
+ * 
+ * @param ignoreStream Integer flag that tells the function to
+ *            ignore any active output stream (stdout or not)
+ *            and redirect output to display
+ */
+void ocl::show_device_details(int ignoreStream){
+	
+	if(hasActiveContext)
+	{
+		int dev,plat;
+		std::ostringstream heading_stream;
+    char *heading;
+		char cast_plat,cast_dev;
+
+		get_contexed_Ids(plat,dev);
+
+		cast_plat = '0' + (char)plat;
+		cast_dev  = '0' + (char)dev;
+
+		heading_stream << '(' << cast_plat << '.' << cast_dev << ')' << ' ';
+    heading = new char [heading_stream.str().length() + 1];
+    strcpy(heading,heading_stream.str().c_str());
+		//Force cLogger to print to stdout
+    if(ignoreStream) hLog.status = 0;
+
+		cLog_extended(&hLog,"%s Platform name: %s\n", heading, oclconfig->platform_info.name);
+		cLog_extended(&hLog,"%s Platform version: %s\n", heading, oclconfig->platform_info.version);
+		cLog_extended(&hLog,"%s Platform vendor: %s\n", heading, oclconfig->platform_info.vendor);
+		cLog_extended(&hLog,"%s Platform extensions: %s\n", heading, oclconfig->platform_info.extensions);
+
+		cLog_extended(&hLog,"\n");
+
+		cLog_extended(&hLog,"%s Device name: %s\n", heading, oclconfig->device_info.name);
+		cLog_extended(&hLog,"%s Device type: %s\n", heading, oclconfig->device_info.type);
+		cLog_extended(&hLog,"%s Device version: %s\n", heading, oclconfig->device_info.version);
+		cLog_extended(&hLog,"%s Device driver version: %s\n", heading, oclconfig->device_info.driver_version);
+		cLog_extended(&hLog,"%s Device extensions: %s\n", heading, oclconfig->device_info.extensions);
+		cLog_extended(&hLog,"%s Device Max Memory: %f (MB)\n", heading, oclconfig->device_info.global_mem/1024.f/1024.f);
+
+    //Revert cLogger to normal operation
+    if(ignoreStream) hLog.status = 1;
+    delete [] heading;
+	}
 return;
 }
 
 /**
- * \brief Not implemented
+ * \brief Makes platform and device info datafields visible to external callers
+ *
+ * Promote_device_details() is called after each successfull context creation by an
+ * init() function. It copies the internal info structures to the public
+ * platform_info and device_info.
+ * 
  */
-void ocl::show_device_details(){
-
-  return;
+void ocl::promote_device_details()
+{
+	platform_info = oclconfig->platform_info;
+	device_info   = oclconfig->device_info;
 }
-
 /**
  * \brief Returns a documentation string
  */
@@ -197,8 +316,10 @@ int ocl::init(const bool useFp64){
 
   //Pick a device and initiate a context. If a context exists destroy it
   clean();
-  if(ocl_init_context(oclconfig,"DEF",(int)useFp64,stream)) return -1;
+  if(ocl_init_context(oclconfig,"DEF",(int)useFp64)) return -1;
   else hasActiveContext=1;
+  promote_device_details();
+
 return 0;
 }
 
@@ -217,8 +338,9 @@ int ocl::init(const char *devicetype,const bool useFp64){
 
   //Pick a device and initiate a context. If a context exists destroy it
   this->clean();
-  if(ocl_init_context(oclconfig,devicetype,(int)useFp64,stream)) return -1;
+  if(ocl_init_context(oclconfig,devicetype,(int)useFp64)) return -1;
   else hasActiveContext=1;
+  promote_device_details();
 
 return 0;
 }
@@ -241,8 +363,10 @@ int ocl::init(const char *devicetype,int platformid,int devid,const bool useFp64
 
   //Pick a device and initiate a context. If a context exists destroy it
   clean();
-  if(ocl_init_context(oclconfig,devicetype,platformid,devid,(int)useFp64,stream)) return -1;
+  if(ocl_init_context(oclconfig,devicetype,platformid,devid,(int)useFp64)) return -1;
   else hasActiveContext=1;
+  promote_device_details();
+
 return 0;
 }
 
@@ -260,9 +384,9 @@ int ocl::clean(int preserve_context){
   if(!preserve_context)
   {
     if(hasActiveContext){
-      ocl_destroy_context(oclconfig->oclcontext);
+      ocl_destroy_context(oclconfig->oclcontext, &hLog);
       hasActiveContext=0;
-      fprintf(stream,"--released OpenCL context\n");
+      cLog_debug(&hLog,"--released OpenCL context\n");
       return 0;
     }
   }
@@ -279,10 +403,10 @@ return -2;
 void ocl::kill_context(){
   if(hasActiveContext)
   {
-    ocl_destroy_context(this->oclconfig->oclcontext);
+    ocl_destroy_context(this->oclconfig->oclcontext, &hLog);
     hasActiveContext=0;
-    fprintf(stream,"Forced destroy context\n");
-  }else fprintf(stream,"Attempted Forced destroy context ignored\n");
+    cLog_debug(&hLog,"Forced destroy context\n");
+  }else cLog_debug(&hLog,"Attempted Forced destroy context ignored\n");
   return;
 }
 
@@ -394,10 +518,9 @@ void ocl::setDocstring(const char *default_text, const char *filename)
   strcpy(docstr,bkp);
 
   ifstream readme;
-  int len=0;
-  size_t count;
+  std::streamoff len=0;
 
-  readme.open(filename,ios::in);
+  readme.open(filename,ios::in | ios::binary);
 
   //If the file exists:
   if(readme){
@@ -432,7 +555,7 @@ void ocl::setDocstring(const char *default_text, const char *filename)
     }else delete[] bkp;
 
     //Read from file and check we read ALL the data
-    if( readme.read(docstr,len).gcount() != len) fprintf(stderr,"setDocstring read size mismatch!\n");
+    if( readme.read(docstr,len).gcount() != len) cLog_critical(&hLog,"setDocstring read size mismatch!\n");
     docstr[len] = '\0';
     readme.close();
   }

@@ -299,14 +299,12 @@ create_histo_binarray(const __global float    *tth,
   int    cbin;
   float  fbin;
   float  a0, b0, center;
-//  float epsilon = 1e-6f;
-  int spread, N, Nbins;
+  int spread;
 
   float x_interp;
   float I_interp;
   float fbinsize;
   float inrange;
-  //histogram[1023] = 0;
   gid=get_global_id(0);
 
   //Load tth min and max from slow global to fast register cache
@@ -315,16 +313,13 @@ create_histo_binarray(const __global float    *tth,
   tth_rmin= tth_range[0];
   tth_rmax= tth_range[1];
 
-  N = NN;
-  Nbins = BINS;
-
   if(gid < NN)
   {
     if(!mask[gid])
     {
       center = tth[gid];
 
-      fbinsize = (tth_rmax - tth_rmin)/Nbins;
+      fbinsize = (tth_rmax - tth_rmin)/BINS;
 
       a0=center + dtth[gid];
       b0=center - dtth[gid];
@@ -334,6 +329,7 @@ create_histo_binarray(const __global float    *tth,
       {
         if(b0 < tth_rmin) b0 = center;
         if(a0 > tth_rmax) a0 = center;
+        //As of 20/06/12 The range problem is expected to be handled at input level
         fbin0_min=(b0 - tth_rmin) * (BINS) / (tth_rmax - tth_rmin);
         fbin0_max=(a0 - tth_rmin) * (BINS) / (tth_rmax - tth_rmin);
         bin0_min = (int)fbin0_min;

@@ -20,7 +20,7 @@
  *                             Grenoble, France
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
- *   Last revision: 11/05/2012
+ *   Last revision: 24/06/2012
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -40,15 +40,10 @@
 #ifndef OCL_XRPD1D_H
 #define OCL_XRPD1D_H
  
-#ifdef _WIN32
-#define _CRT_SECURE_NO_WARNINGS 1
-#endif
-
 #include <iostream>
 #include <CL/opencl.h>
-#include "ocl_ckerr.h"
 
-#include "ocl_tools.h"
+#include "ocl_tools/ocl_tools.h"
 #include "ocl_base.hpp"
 
 /**
@@ -67,7 +62,10 @@ public:
   ocl_xrpd1D_fullsplit();
 
   //Prints messages on file fname
-  explicit ocl_xrpd1D_fullsplit(const char* fname);
+  explicit ocl_xrpd1D_fullsplit(const char* fname, const char *identity=NULL);
+
+  //Complete logging functionality
+  explicit ocl_xrpd1D_fullsplit(FILE *stream, const char *fname, int safe, int depth, int perf_time, int timestamp, const char *identity=NULL);
   ~ocl_xrpd1D_fullsplit();
 
 

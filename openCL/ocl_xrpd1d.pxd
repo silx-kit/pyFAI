@@ -1,5 +1,33 @@
 from libcpp cimport bool
+
+cdef extern from "ocl_tools.h":
+    # OpenCL tools platform information struct
+    # 
+    # It can be passed to ocl_platform_info to
+    # retrieve and save platform information
+    # for the current context
+    struct ocl_plat_t:
+        char * name
+        char * vendor
+        char * version
+        char * extensions
+    #OpenCL tools platform information struct
+    # It can be passed to ocl_device_info to
+    # retrieve and save device information
+    # for the current context
+    struct ocl_dev_t:
+        char * name
+        char type[4]
+        char * version
+        char * driver_version
+        char * extensions
+        unsigned long global_mem
+
+
 cdef extern from "ocl_xrpd1d.hpp":
+
+
+
     cdef cppclass ocl_xrpd1D_fullsplit:
         # Default constructor - Prints messages on stdout
         ocl_xrpd1D_fullsplit()
@@ -84,20 +112,16 @@ cdef extern from "ocl_xrpd1d.hpp":
         int init(char * devicetype, bool useFp64) nogil
         int init(char * devicetype, int platformid, int devid, bool useFp64) nogil
 
-
         #Prints a list of OpenCL capable devices, their platforms and their ids
-        void show_devices() nogil
-
-
-        #Same as show_devices but displays the results always on stdout even
-        #if the stream is set to a file
-        void print_devices() nogil
-
+        void show_devices(int ignoreStream) nogil
 
         #Print details of a selected device
-        void show_device_details() nogil
+        void show_device_details(int ignoreStream) nogil
 
-        #Resets the internal profiling timers to 0  
+        # Provide help message for interactive environments
+        void help() nogil
+
+        #Resets the internal profiling timers to 0
         void  reset_time() nogil
 
         #Returns the internal profiling timer for the kernel executions
@@ -109,4 +133,23 @@ cdef extern from "ocl_xrpd1d.hpp":
         #Returns the time spent on memory copies
         float get_memCpy_time() nogil
 
+        #Returns the pair ID (platform.device) of the active device
+        void get_contexed_Ids(int & platform, int & device) nogil
+
+        #Get the status of the intergator as an integer
+        #bit 0: has context
+        #bit 1: size are set
+        #bit 2: is configured (kernel compiled)
+        #bit 3: pos0/delta_pos0 arrays are loaded (radial angle)
+        #bit 4: pos1/delta_pos1 arrays are loaded (azimuthal angle)
+        #bit 5: solid angle correction is set
+        #bit 6: mask is set
+        #bit 7: use dummy value   
         int get_status() nogil
+
+        #A couple of members of the class containing the platform_info and device_info
+        ocl_plat_t platform_info
+        ocl_dev_t device_info
+
+
+
