@@ -12,7 +12,7 @@
  *   Copyright (C) 2012 Dimitrios Karkoulis
  *
  *   Principal authors: D. Karkoulis (dimitris.karkoulis@gmail.com)
- *   Last revision: 24/06/2012
+ *   Last revision: 26/06/2012
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -43,36 +43,9 @@
 #define STATINL static inline
 #endif
 
-//#ifdef _WIN32
-//#define _BUFLIMIT 1
-//#define fprintf(...)                                           \
-//  do{                                                                \
-//    if( ((*hLog).safebuf > _BUFLIMIT) && ((*hLog).type != LOGTSAFE)) \
-//      {                                                              \
-//        fflush((*hLog).stream);                                      \
-//        (*hLog).safebuf = 0;                                         \
-//      }                                                              \
-//      fprintf(__VA_ARGS__);                                          \
-//      (*hLog).safebuf++;                                             \
-//    }while(0)
-//
-//
-//#define vfprintf(...)                                           \
-//  do{                                                                \
-//    if( ((*hLog).safebuf > _BUFLIMIT) && ((*hLog).type != LOGTSAFE)) \
-//      {                                                              \
-//        fflush((*hLog).stream);                                      \
-//        (*hLog).safebuf = 0;                                         \
-//      }                                                              \
-//      vfprintf(__VA_ARGS__);                                          \
-//      (*hLog).safebuf++;                                             \
-//    }while(0)
-//
-//#else
-//#define fprintf fprintf
-//#define vfprintf vfprintf
-//#endif
-
+/**
+ *
+ */
 const char *get_date()
 {
   static char date[50];
