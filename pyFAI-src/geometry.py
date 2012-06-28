@@ -152,6 +152,7 @@ class Geometry(object):
         self._corner4Dqa = None
         self._wavelength = None
         self._oversampling = None
+        self._correct_solid_angle_for_spline = True
         self._sem = threading.Semaphore()
 
         if detector:
@@ -466,16 +467,15 @@ class Geometry(object):
         # Here is dual-correction
         ########################################################################
 
-#        if self.spline is None:
-#            ds = 1.0
-#        else:
-#            max1 = d1.max() + 1
-#            max2 = d2.max() + 1
-#            sX = self.spline.splineFuncX(numpy.arange(max2 + 1) , numpy.arange(max1) + 0.5)
-#            sY = self.spline.splineFuncY(numpy.arange(max2) + 0.5 , numpy.arange(max1 + 1))
-#            dX = sX[:, 1:] - sX[:, :-1]
-#            dY = sY[1:, : ] - sY[:-1, :]
-#            ds = (dX + 1.0) * (dY + 1.0)
+        if self.spline and self._correct_solid_angle_for_spline:
+            max1 = d1.max() + 1
+            max2 = d2.max() + 1
+            sX = self.spline.splineFuncX(numpy.arange(max2 + 1) , numpy.arange(max1) + 0.5)
+            sY = self.spline.splineFuncY(numpy.arange(max2) + 0.5 , numpy.arange(max1 + 1))
+            dX = sX[:, 1:] - sX[:, :-1]
+            dY = sY[1:, : ] - sY[:-1, :]
+            ds = (dX + 1.0) * (dY + 1.0)
+
         dsa = ds * (self._dist) / sqrt(self._dist ** 2 + p1 ** 2 + p2 ** 2)
         return dsa
 
@@ -857,3 +857,12 @@ class Geometry(object):
     def set_spline(self, spline):
         self.detector.spline = spline
     spline = property(get_spline, set_spline)
+    def get_correct_solid_angle_for_spline(self):
+        return self._correct_solid_angle_for_spline
+    def set_correct_solid_angle_for_spline(self, value):
+        v = bool(value)
+        with self._sem:
+            if v != self._correct_solid_angle_for_spline:
+                self._dssa = None
+                self._correct_solid_angle_for_spline = v
+    correct_SA_spline = property(get_correct_solid_angle_for_spline, set_correct_solid_angle_for_spline)
