@@ -1,2 +1,3 @@
 recursive-include openCL *.c *.h *.pyx *.hpp *.cpp *.pxd *.cl
+recursive-include src  *.c *.h *.pyx *.pxd
 include stdeb.cfg
