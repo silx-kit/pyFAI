@@ -585,21 +585,21 @@ class AzimuthalIntegrator(Geometry):
             return self.xrpd2_histogram(data=data, nbPt2Th=nbPt2Th, nbPtChi=nbPtChi,
                                         filename=filename, correctSolidAngle=correctSolidAngle,
                                         tthRange=tthRange, chiRange=chiRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
-        mask = self.makeMask(data, mask, dummy, delta_dummy)
-        tth = self.twoThetaArray(data.shape)[mask]
-        chi = self.chiArray(data.shape)[mask]
-        dtth = self.delta2Theta(data.shape)[mask]
-        dchi = self.deltaChi(data.shape)[mask]
+#        mask = self.makeMask(data, mask, dummy, delta_dummy)
+        tth = self.twoThetaArray(data.shape)#[mask]
+        chi = self.chiArray(data.shape)#[mask]
+        dtth = self.delta2Theta(data.shape)#[mask]
+        dchi = self.deltaChi(data.shape)#[mask]
         if tthRange is not None:
             tthRange = tuple([numpy.deg2rad(i) for i in tthRange])
         if chiRange is not None:
             chiRange = tuple([numpy.deg2rad(i) for i in chiRange])
         if correctSolidAngle:
-            data = (data / self.solidAngleArray(data.shape))[mask]
+            data = (data / self.solidAngleArray(data.shape))#[mask]
         else:
-            data = data[mask]
-        if dummy is None:
-            dummy = 0.0
+            data = data#[mask]
+#        if dummy is None:
+#            dummy = 0.0
         I, bins2Th, binsChi, a, b = splitBBox.histoBBox2d(weights=data,
                                                           pos0=tth,
                                                           delta_pos0=dtth,
@@ -608,7 +608,9 @@ class AzimuthalIntegrator(Geometry):
                                                           bins=(nbPt2Th, nbPtChi),
                                                           pos0Range=tthRange,
                                                           pos1Range=chiRange,
-                                                          dummy=dummy)
+                                                          dummy=dummy,
+                                                          delta_dummy=delta_dummy,
+                                                          mask=mask)
         bins2Th = numpy.degrees(bins2Th)
         binsChi = numpy.degrees(binsChi)
         if filename:
