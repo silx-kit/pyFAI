@@ -67,7 +67,6 @@ TESTCASES = [
 
 def test_suite_all_Geometry():
     testSuite = unittest.TestSuite()
-    i = 0
     for param in TESTCASES:
         testSuite.addTest(ParameterisedTestCase.parameterise(
                 TestGeometry, param))

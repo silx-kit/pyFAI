@@ -98,7 +98,7 @@ class UtilsTest(object):
     @classmethod
     def timeoutDuringDownload(cls):
             """
-            Function called after a timeout in the download part ... 
+            Function called after a timeout in the download part ...
             just raise an Exception.
             """
             raise RuntimeError("""Could not automatically download test images!
@@ -111,8 +111,8 @@ Otherwise please try to download the images manually from
     def getimage(cls, imagename):
         """
         Downloads the requested image from Forge.EPN-campus.eu
-        @param: name of the image. 
-        For the RedMine forge, the filename contains a directory name that is removed 
+        @param: name of the image.
+        For the RedMine forge, the filename contains a directory name that is removed
         @return: full path of the locally saved file
         """
         baseimage = os.path.basename(imagename)
@@ -158,13 +158,13 @@ Otherwise please try to download the images manually from
 
 
 def Rwp(obt, ref, comment="Rwp"):
-    """          ___________________________   
+    """          ___________________________
     Calculate  \/     4 ( obt - ref)²
                V Sum( --------------- )
                         (obt + ref)²
-    
-    This is done for symmetry reason between obt and ref  
-    
+
+    This is done for symmetry reason between obt and ref
+
     @param obt: obtained data
     @type obt: 2-list of array of the same size
     @param obt: reference data
@@ -190,7 +190,7 @@ def recursive_delete(strDirname):
     CAUTION:  This is dangerous!  For example, if top == '/', it
     could delete all your disk files.
     @param strDirname: top directory to delete
-    @type strDirname: string 
+    @type strDirname: string
     """
     for root, dirs, files in os.walk(strDirname, topdown=False):
         for name in files:
@@ -198,3 +198,26 @@ def recursive_delete(strDirname):
         for name in dirs:
             os.rmdir(os.path.join(root, name))
     os.rmdir(strDirname)
+
+def parseArgs(filename):
+    """
+    small helper function that initialized the logger and returns it
+    """
+    dirname, basename = os.path.split(filename)
+    basename = os.path.splitext(basename)
+    force_build = False
+    for opts in sys.argv[1:]:
+        if opts in ["-d", "--debug"]:
+            logging.basicConfig(level=logging.DEBUG)
+            sys.argv.pop(sys.argv.index(opts))
+        elif opts in ["-i", "--info"]:
+            logging.basicConfig(level=logging.INFO)
+            sys.argv.pop(sys.argv.index(opts))
+        elif opts in ["-f", "--force"]:
+            force_build = True
+            sys.argv.pop(sys.argv.index(opts))
+    logger = logging.getLogger(basename)
+    logger.debug("tests loaded from file: %s" % basename)
+    if force_build:
+        UtilsTest.forceBuild()
+    return logger
