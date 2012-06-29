@@ -35,9 +35,6 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __data__ = "2011-07-06"
 
 import unittest
-import os
-import logging
-import sys
 
 from utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
@@ -48,6 +45,7 @@ from testHistogram            import test_suite_all_Histogram
 from testPeakPicking          import test_suite_all_PeakPicking
 from testGeometry             import test_suite_all_Geometry
 from testMask                 import test_suite_all_Mask
+from testOpenCL               import test_suite_all_OpenCL
 
 def test_suite_all():
     testSuite = unittest.TestSuite()
@@ -55,6 +53,9 @@ def test_suite_all():
     testSuite.addTest(test_suite_all_GeometryRefinement())
     testSuite.addTest(test_suite_all_AzimuthalIntegration())
     testSuite.addTest(test_suite_all_PeakPicking())
+    testSuite.addTest(test_suite_all_Geometry())
+    testSuite.addTest(test_suite_all_Mask())
+    testSuite.addTest(test_suite_all_OpenCL())
 
     return testSuite
 
