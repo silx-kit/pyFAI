@@ -219,7 +219,8 @@ class AzimuthalIntegrator(Geometry):
 
 #    @timeit
     def xrpd_splitBBox(self, data, nbPt, filename=None, correctSolidAngle=True,
-                       tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None):
+                       tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None,
+                       dark=None, flat=None):
         """
         Calculate the powder diffraction pattern from a set of data, an image. Cython implementation
 
@@ -243,6 +244,8 @@ class AzimuthalIntegrator(Geometry):
         @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
         @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
+        @param dark: dark noise image
+        @param flat: flat field image 
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
         """
@@ -253,8 +256,8 @@ class AzimuthalIntegrator(Geometry):
             return self.xrpd_numpy(data, nbPt, filename, correctSolidAngle, tthRange)
         shape = data.shape
         if chiRange is not None:
-            chi = self.chiArray(shape)[mask]
-            dchi = self.deltaChi(shape)[mask]
+            chi = self.chiArray(shape)
+            dchi = self.deltaChi(shape)
         else:
             chi = None
             dchi = None
@@ -265,7 +268,10 @@ class AzimuthalIntegrator(Geometry):
         if chiRange is not None:
             chiRange = tuple([numpy.deg2rad(i) for i in chiRange[:2]])
         if correctSolidAngle: #outPos, outMerge, outData, outCount
-            data = (data / self.solidAngleArray(data.shape))
+            if flat is None:
+                flat = self.solidAngleArray(data.shape)
+            else:
+                flat *= self.solidAngleArray(data.shape)
         else:
             data = data
         tthAxis, I, a, b = splitBBox.histoBBox1d(weights=data,
@@ -278,7 +284,9 @@ class AzimuthalIntegrator(Geometry):
                                                  pos1Range=chiRange,
                                                  dummy=dummy,
                                                  delta_dummy=delta_dummy,
-                                                 mask=mask)
+                                                 mask=mask,
+                                                 dark=dark,
+                                                 flat=flat)
         tthAxis = numpy.degrees(tthAxis)
         if filename:
             open(filename, "w").writelines(["%s\t%s%s" % (t, i, os.linesep) for t, i in zip(tthAxis, I)])
