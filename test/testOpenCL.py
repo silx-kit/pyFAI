@@ -38,8 +38,8 @@ import numpy
 import logging, time
 import sys
 import fabio
-from utilstest import UtilsTest, Rwp, parseArgs
-logger = parseArgs(__file__)
+from utilstest import UtilsTest, Rwp, getLogger
+logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI.geometryRefinement import AzimuthalIntegrator
 from pyFAI.ocl_azim import Integrator1d

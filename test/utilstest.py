@@ -199,24 +199,26 @@ def recursive_delete(strDirname):
             os.rmdir(os.path.join(root, name))
     os.rmdir(strDirname)
 
-def parseArgs(filename):
+def getLogger(filename=__file__):
     """
     small helper function that initialized the logger and returns it
     """
-    dirname, basename = os.path.split(filename)
-    basename = os.path.splitext(basename)
+    dirname, basename = os.path.split(os.path.abspath(filename))
+    basename = os.path.splitext(basename)[0]
     force_build = False
+    level = logging.WARN
     for opts in sys.argv[1:]:
         if opts in ["-d", "--debug"]:
-            logging.basicConfig(level=logging.DEBUG)
+            level = logging.DEBUG
             sys.argv.pop(sys.argv.index(opts))
         elif opts in ["-i", "--info"]:
-            logging.basicConfig(level=logging.INFO)
+            level = logging.INFO
             sys.argv.pop(sys.argv.index(opts))
         elif opts in ["-f", "--force"]:
             force_build = True
             sys.argv.pop(sys.argv.index(opts))
     logger = logging.getLogger(basename)
+    logger.setLevel(level)
     logger.debug("tests loaded from file: %s" % basename)
     if force_build:
         UtilsTest.forceBuild()

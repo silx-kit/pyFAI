@@ -6,9 +6,11 @@ FIXME : make some tests that the functions do what is expected
 """
 
 
-import unittest, numpy, os
-from pyFAI import geometry as geometry
-
+import unittest, numpy, os, sys
+from utilstest import UtilsTest, getLogger
+logger = getLogger(__file__)
+pyFAI = sys.modules["pyFAI"]
+geometry = pyFAI.geometry
 
 class ParameterisedTestCase(unittest.TestCase):
     """ TestCase classes that want to be parameterised should
@@ -45,7 +47,7 @@ class TestGeometry(ParameterisedTestCase):
             self.assertNotAlmostEquals(maxDelta, 0, 3, msg)
         else:
             self.assertAlmostEquals(maxDelta, 0, 3, msg)
-        print msg
+        logger.info(msg)
 
 TESTCASES = [
  ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'dist':1, 'rot1':0, 'rot2':0, 'rot3':0}, False),
