@@ -240,8 +240,8 @@ return;
  */
 void ocl::get_contexed_Ids(int &platform, int &device)
 {
-  platform = oclconfig->platfid;
-  device   = oclconfig->devid;
+  platform = oclconfig->active_dev_info.platformid;
+  device   = oclconfig->active_dev_info.deviceid;
 return;  
 }
 
@@ -252,7 +252,7 @@ return;
  */
 std::pair<int,int> ocl::get_contexed_Ids()
 {
-return std::make_pair(oclconfig->platfid, oclconfig->devid);  
+return std::make_pair(oclconfig->active_dev_info.platformid, oclconfig->active_dev_info.deviceid);  
 }
 
 /**
@@ -279,10 +279,8 @@ void ocl::show_device_details(int ignoreStream){
     char *heading;
 		char cast_plat,cast_dev;
 
-		get_contexed_Ids(plat,dev);
-
-		cast_plat = '0' + (char)plat;
-		cast_dev  = '0' + (char)dev;
+		cast_plat = '0' + (char)(oclconfig->active_dev_info.platformid);
+		cast_dev  = '0' + (char)(oclconfig->active_dev_info.deviceid);
 
 		heading_stream << '(' << cast_plat << '.' << cast_dev << ')' << ' ';
     heading = new char [heading_stream.str().length() + 1];
@@ -290,19 +288,19 @@ void ocl::show_device_details(int ignoreStream){
 		//Force cLogger to print to stdout
     if(ignoreStream) hLog.status = 0;
 
-		cLog_extended(&hLog,"%s Platform name: %s\n", heading, oclconfig->platform_info.name);
-		cLog_extended(&hLog,"%s Platform version: %s\n", heading, oclconfig->platform_info.version);
-		cLog_extended(&hLog,"%s Platform vendor: %s\n", heading, oclconfig->platform_info.vendor);
-		cLog_extended(&hLog,"%s Platform extensions: %s\n", heading, oclconfig->platform_info.extensions);
+		cLog_extended(&hLog,"%s Platform name: %s\n", heading, oclconfig->active_dev_info.platform_info.name);
+		cLog_extended(&hLog,"%s Platform version: %s\n", heading, oclconfig->active_dev_info.platform_info.version);
+		cLog_extended(&hLog,"%s Platform vendor: %s\n", heading, oclconfig->active_dev_info.platform_info.vendor);
+		cLog_extended(&hLog,"%s Platform extensions: %s\n", heading, oclconfig->active_dev_info.platform_info.extensions);
 
 		cLog_extended(&hLog,"\n");
 
-		cLog_extended(&hLog,"%s Device name: %s\n", heading, oclconfig->device_info.name);
-		cLog_extended(&hLog,"%s Device type: %s\n", heading, oclconfig->device_info.type);
-		cLog_extended(&hLog,"%s Device version: %s\n", heading, oclconfig->device_info.version);
-		cLog_extended(&hLog,"%s Device driver version: %s\n", heading, oclconfig->device_info.driver_version);
-		cLog_extended(&hLog,"%s Device extensions: %s\n", heading, oclconfig->device_info.extensions);
-		cLog_extended(&hLog,"%s Device Max Memory: %f (MB)\n", heading, oclconfig->device_info.global_mem/1024.f/1024.f);
+		cLog_extended(&hLog,"%s Device name: %s\n", heading, oclconfig->active_dev_info.device_info.name);
+		cLog_extended(&hLog,"%s Device type: %s\n", heading, oclconfig->active_dev_info.device_info.type);
+		cLog_extended(&hLog,"%s Device version: %s\n", heading, oclconfig->active_dev_info.device_info.version);
+		cLog_extended(&hLog,"%s Device driver version: %s\n", heading, oclconfig->active_dev_info.device_info.driver_version);
+		cLog_extended(&hLog,"%s Device extensions: %s\n", heading, oclconfig->active_dev_info.device_info.extensions);
+		cLog_extended(&hLog,"%s Device Max Memory: %f (MB)\n", heading, oclconfig->active_dev_info.device_info.global_mem/1024.f/1024.f);
 
     //Revert cLogger to normal operation
     if(ignoreStream) hLog.status = 1;
@@ -322,8 +320,8 @@ return;
  */
 void ocl::promote_device_details()
 {
-	platform_info = oclconfig->platform_info;
-	device_info   = oclconfig->device_info;
+	platform_info = oclconfig->active_dev_info.platform_info;
+	device_info   = oclconfig->active_dev_info.device_info;
 }
 /**
  * \brief Returns a documentation string

@@ -56,12 +56,12 @@
 /**
  * \brief Maximum number of OpenCL platforms to scan
  */
-#define OCL_MAX_PLATFORMS 5
+#define OCL_MAX_PLATFORMS 10
 
 /**
  * \brief Maximum number of OpenCL devices-per platform- to scan
  */
-#define OCL_MAX_DEVICES 5
+#define OCL_MAX_DEVICES 10
 
 /**
  * \brief OpenCL tools platform information struct
@@ -95,6 +95,48 @@ typedef struct
   unsigned long global_mem;
 }ocl_dev_t;
 
+
+/**
+ * \brief OpenCL tools active device information struct
+ *
+ * Used by OCL tools to hold all the information
+ * of the platform, device and pair on the
+ * current context
+ */
+typedef struct
+{
+  int platformid;
+  int deviceid;
+  ocl_plat_t platform_info;
+  ocl_dev_t  device_info;
+}ocl_info_t;
+
+/**
+ * \brief OpenCL tools generic device information struct
+ *
+ * Used to provide information for all the OpenCL devices
+ */
+typedef struct
+{
+  unsigned int Ndevices;
+  int *device_ids;
+  ocl_plat_t platform_info;
+  ocl_dev_t  *device_info;
+}ocl_gen_dev_info_t;
+
+/**
+ * \brief OpenCL tools generic platform information struct
+ *
+ * Chains information for each pair
+ */
+typedef struct
+{
+  unsigned int Nplatforms;
+  int *platform_ids;
+  ocl_get_dev_info_t *platform;
+
+}ocl_gen_info_t;
+
 /**
  * \brief OpenCL tools cl_program structure
  * 
@@ -125,11 +167,13 @@ typedef struct ocl_configuration_parameters{
   cl_mem            *oclmemref;
 
   //Active device and platform info
-  int devid;
-  int platfid;
-  ocl_plat_t        platform_info;
-  ocl_dev_t         device_info;
+//   int devid;
+//   int platfid;
+//   ocl_plat_t        platform_info;
+//   ocl_dev_t         device_info;
 
+  ocl_info_t        active_dev_info;
+  
   //If single .cl file:
   cl_program        oclprogram;
   size_t            *kernelstring_lens;
@@ -319,6 +363,11 @@ int ocl_current_platform_info(ocl_config_type *oclconfig);
  * \brief Populates an ocl_dev_t struct
  */
 int ocl_current_device_info(ocl_config_type *oclconfig);
+
+/**
+ * \brief Returns info and pairs for all platforms and their devices
+ **/
+void ocl_all_device_info(ocl_gen_info_t *Ninfo);
 
 /**
  * \brief Translate error code to error message
