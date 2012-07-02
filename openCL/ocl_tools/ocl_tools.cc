@@ -1399,10 +1399,29 @@ return;
  */
 void ocl_platform_info_del(ocl_plat_t &platinfo)
 {
-  if(platinfo.name)       free (platinfo.name)      ;
-  if(platinfo.vendor)     free (platinfo.vendor)    ;
-  if(platinfo.version)    free (platinfo.version)   ;
-  if(platinfo.extensions) free (platinfo.extensions);
+  if(platinfo.name)       
+  {
+    free (platinfo.name);
+    platinfo.name = NULL;
+  }
+
+  if(platinfo.vendor)
+  {
+    free (platinfo.vendor);
+    platinfo.vendor = NULL;
+  }
+
+  if(platinfo.version)
+  {
+    free (platinfo.version);
+    platinfo.version = NULL;
+  }
+
+  if(platinfo.extensions)
+  { 
+    free (platinfo.extensions);
+    platinfo.extensions = NULL;
+  }
 return;
 }
 
@@ -1439,10 +1458,30 @@ return;
  */
 void ocl_device_info_del(ocl_dev_t &devinfo)
 {
-  if(devinfo.name)free (devinfo.name);
-  if(devinfo.version)free (devinfo.version);
-  if(devinfo.driver_version)free (devinfo.driver_version);
-  if(devinfo.extensions)free (devinfo.extensions);
+  if(devinfo.name)
+  {
+    free (devinfo.name);
+    devinfo.name = NULL;
+  }
+
+  if(devinfo.version)
+  {
+    free (devinfo.version);
+    devinfo.version = NULL;
+  }
+
+  if(devinfo.driver_version)
+  {
+    free (devinfo.driver_version);
+    devinfo.driver_version = NULL;
+  }
+
+  if(devinfo.extensions)
+  {
+    free (devinfo.extensions);
+    devinfo.extensions = NULL;
+  }
+
   devinfo.global_mem = 0;
 return;
 }
