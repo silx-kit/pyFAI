@@ -16,7 +16,7 @@
  *                                 Grenoble, France
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
- *   Last revision: 26/06/2012
+ *   Last revision: 02/07/2012
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -39,121 +39,18 @@
 #define OCLTOOLS_H
 
 #include <CL/opencl.h>
+#include "ocl_tools_datatypes.h"
+#include "ocl_tools_extended.h"
 #include "ocl_clogger_ckerr.h"
 #include "cLogger/cLogger.h"
 
 /*This is required for OpenCL callbacks in windows*/
 #ifdef _WIN32
-  #define __call_compat __stdcall
 	#ifndef _CRT_SECURE_NO_WARNINGS
 		#define _CRT_SECURE_NO_WARNINGS
 	#endif
 	#pragma warning(disable : 4996)
-#else
-  #define __call_compat 
 #endif
-
-/**
- * \brief Maximum number of OpenCL platforms to scan
- */
-#define OCL_MAX_PLATFORMS 5
-
-/**
- * \brief Maximum number of OpenCL devices-per platform- to scan
- */
-#define OCL_MAX_DEVICES 5
-
-/**
- * \brief OpenCL tools platform information struct
- *
- * It can be passed to ocl_platform_info to
- * retrieve and save platform information
- * for the currect context
- */
-typedef struct
-{
-  char *name;
-  char *vendor;
-  char *version;
-  char *extensions;
-}ocl_plat_t;
-
-/**
- * \brief OpenCL tools platform information struct
- *
- * It can be passed to ocl_device_info to
- * retrieve and save device information
- * for the currect context
- */
-typedef struct
-{
-  char *name;
-  char type[4];
-  char *version;
-  char *driver_version;
-  char *extensions;
-  unsigned long global_mem;
-}ocl_dev_t;
-
-/**
- * \brief OpenCL tools cl_program structure
- * 
- * Substruct of ocl_configuration_parameters.
- * It is used when multiple cl programs must be
- * built, i.e. from multiple OpenCL sources.
- */
-typedef struct{
-
-  cl_program        oclprogram;
-  size_t            *kernelstring_lens;
-  char              **kernelstrings;
-
-}ocl_program_type;
-
-/**
- * \brief OpenCL tools configuration parameters
- * 
- * OpenCL configuration structure.
- * This version supports single device, but multiple
- *   memory buffers, kernels and sources.
- */
-typedef struct ocl_configuration_parameters{
-  cl_context        oclcontext;
-  cl_device_id      ocldevice;
-  cl_platform_id    oclplatform;
-  cl_command_queue  oclcmdqueue;
-  cl_mem            *oclmemref;
-
-  //Active device and platform info
-  int devid;
-  int platfid;
-  ocl_plat_t        platform_info;
-  ocl_dev_t         device_info;
-
-  //If single .cl file:
-  cl_program        oclprogram;
-  size_t            *kernelstring_lens;
-  char              **kernelstrings;
-
-  //if multiple .cl files:
-  ocl_program_type  *prgs;
-  int               nprgs;
-
-  char              compiler_options[1000];
-  cl_kernel         *oclkernels;
-  int               fp64;
-  size_t            work_dim[3];
-  size_t            thread_dim[3];
-  cl_event          t_s[20];
-  cl_int            event_counter;
-  cl_ulong          dev_mem;
-  cl_int            Nbuffers;
-  cl_int            Nkernels;
-
-  //Logging
-  logger_t          *hLog; //Keep track of logger
-  int               external_cLogger; //If external, do not touch the handle at finish
-}ocl_config_type;
 
 /* All production functions return 0 on success, -1 on OpenCL error and -2 on other errors.
     when an error is encountered internally, it will fallback.
@@ -234,21 +131,6 @@ int ocl_init_context(ocl_config_type *oclconfig,cl_platform_id platform,cl_devic
 int ocl_destroy_context(cl_context oclcontext, logger_t *hLog);
 
 /**
- * \brief Queries the fp64 capability of an OpenCL device that has been selected by ocl_probe
- */
-/* Queries device capabilities to figure if it meets the minimum requirement for double precision*/
-/* Returns 0 on successful FP64 evaluation and -1 if only FP32 */
-int ocl_eval_FP64(ocl_config_type *oclconfig);
-
-/**
- * \brief Queries the fp64 capability of an OpenCL device directly via the cl_device_id
- */
-/* Same as above but directly query a device (as not set in ocl_config_type)
- * It is designed to be used while probing for devices so it does not print anything
- * neither it sets the fp64 field */
-int ocl_eval_FP64(cl_device_id devid, logger_t *hLog);
-
-/**
  * \brief Release N buffers referenced by oclconfig
  */
 void ocl_relNbuffers_byref(ocl_config_type *oclconfig,int level);
@@ -313,12 +195,12 @@ void ocl_device_info_del(ocl_dev_t &devinfo);
 /**
  * \brief Populates an ocl_plat_t struct
  */
-int ocl_current_platform_info(ocl_config_type *oclconfig);
+int ocl_current_platform_info(cl_platform_id *oclplatform, ocl_plat_t *platform_info, logger_t *hLog);
 
 /**
  * \brief Populates an ocl_dev_t struct
  */
-int ocl_current_device_info(ocl_config_type *oclconfig);
+int ocl_current_device_info(cl_device_id *ocldevice, ocl_dev_t *device_info, logger_t *hLog);
 
 /**
  * \brief Translate error code to error message
@@ -332,7 +214,7 @@ int ocl_current_device_info(ocl_config_type *oclconfig);
  */
 /* Opencl error function. Some Opencl functions allow pfn_notify to report errors, by passing it as pointer.
       Consult the OpenCL reference card for these functions. */
-void __call_compat pfn_notify(const char *errinfo, const void *private_info, size_t cb, void *user_data);
+void CL_CALLBACK pfn_notify(const char *errinfo, const void *private_info, size_t cb, void *user_data);
 
 /* Basic function to handle error messages */
 void ocl_errmsg(const char *userstring, const char *file, const int line);

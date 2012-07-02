@@ -20,7 +20,7 @@
  *                             Grenoble, France
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
- *   Last revision: 24/06/2012
+ *   Last revision: 02/07/2012
  *    
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -126,6 +126,16 @@ public:
  * Prints some basic information about the device in use
  */  
   void show_device_details(int ignoreStream=1);
+
+/*
+ * Returns a structure with information for all the present OpenCL devices
+ */  
+  ocl_gen_info_t *get_all_device_details();
+
+/*
+ * Prints some basic information about all the OpenCL devices present
+ */  
+  void show_all_device_details(int ignoreStream=1);
 
 /*
  * Provide help message for interactive environments
