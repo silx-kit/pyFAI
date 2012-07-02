@@ -40,24 +40,24 @@ import cython
 from libc.stdlib cimport free, malloc
 from libc.string cimport memcpy
 
-class Device:
+class Device(object):
     """
     Simple class that contains the structure of an OpenCL device
     """
-    def __init__(self, name=None, type=None, version=None, driver_version=None, extensions=None, global_mem=None):
+    def __init__(self, name=None, type=None, version=None, driver_version=None, extensions=None, memory=None):
         self.name = name
         self.type = type
         self.version = version
         self.driver_version = driver_version
         self.extensions = extensions.split()
-        self.memory = global_mem
+        self.memory = memory
 
     def __repr__(self):
         return "%s"%self.name
 
 class Platform(object):
     """
-    Simple class that contains the structure of an OpenCL platform 
+    Simple class that contains the structure of an OpenCL platform
     """
     def __init__(self,name=None, vendor=None, version=None, extensions=None):
         self.name = name
@@ -74,9 +74,9 @@ class Platform(object):
 
 cdef class OpenCL:
     """
-    Simple class that wraps the structure ocl_tools_extended.h  
+    Simple class that wraps the structure ocl_tools_extended.h
     """
-    cdef ocl_tools_extended.ocl_gen_info_t * clinfo    
+    cdef ocl_tools_extended.ocl_gen_info_t * clinfo
     platforms = []
     def __cinit__(self):
         self.clinfo = ocl_tools_extended.ocl_get_all_device_info(self.clinfo)
@@ -94,7 +94,7 @@ cdef class OpenCL:
             out.append("[%s] %s: "%(platformid, platform.name)+ ", ".join(["(%s,%s) %s"%(platformid,deviceid,dev.name) for deviceid,dev in enumerate(platform.devices)] ))
         return os.linesep.join(out)
 
-    
+
     def get_platforms(self):
         """
         return the list of platform names
@@ -109,17 +109,24 @@ cdef class OpenCL:
             pypl=Platform(platform.platform_info.name,platform.platform_info.vendor,platform.platform_info.version,platform.platform_info.extensions)
             for j in range(platform.Ndevices):
                 device = platform.device_info[j]
-                dev = Device(device.name,device.type, device.version, device.driver_version, device.extensions, device.global_mem)
+                ####################################################
+                # Nvidia does not report int64 atomics (we are using) ...
+                # this is a hack around as any nvidia GPU with double-precision supports int64 atomics
+                ####################################################
+                extensions = device.extensions
+                if (pypl.vendor == "NVIDIA Corporation") and ('cl_khr_fp64' in extensions):
+                                extensions += ' cl_khr_int64_base_atomics cl_khr_int64_extended_atomics'
+                dev = Device(device.name,device.type, device.version, device.driver_version, extensions, device.global_mem)
                 pypl.add_device(dev)
             out.append(pypl)
         return out
-    
+
     def select_device(self, type="all", memory=None, extensions=[]):
         """
         @param type: "gpu" or "cpu" or "all" ....
         @param memory: minimum amount of memory (int)
         @param extensions: list of extensions to be present
-        
+
         """
         type = type.upper()
         for platformid, platform in enumerate(self.platforms):
@@ -128,18 +135,12 @@ cdef class OpenCL:
                     if (memory is None) or (memory <=device.memory):
                         found =True
                         for ext in extensions:
-                            ####################################################
-                            # Nvidia does not report int64 atomics (we are using) ... 
-                            # this is a hack around as any nvidia GPU with double-precision supports int64 atomics 
-                            ####################################################
-                            if platform.vendor == "NVIDIA Corporation" and 'int64' in ext:
-                                ext = 'cl_khr_fp64'
                             if ext not in device.extensions:
                                 found = False
                         if found:
                             return platformid, deviceid
         return None
-        
+
 cdef class Integrator1d:
     """
     Simple wrapper for ocl_xrpd1d.ocl_xrpd1D_fullsplit C++ class
@@ -454,7 +455,7 @@ cdef class Integrator1d:
         out["extensions"] = self.cpp_integrator.platform_info.extensions
         out["version"] = self.cpp_integrator.platform_info.version
         return out
-    
+
     def get_device_info(self):
         """
         @return: dict with device info
@@ -467,7 +468,7 @@ cdef class Integrator1d:
         out["extensions"] = self.cpp_integrator.device_info.extensions
         out["global_mem"]=self.cpp_integrator.device_info.global_mem
         return out
-    
+
 _INTEGRATORS_1D = {} #key=(Nimage,NBins), value=instance of Integrator1d
 lock = threading.Semaphore()
 
