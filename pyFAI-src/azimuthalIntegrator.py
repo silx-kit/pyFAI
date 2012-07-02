@@ -39,6 +39,16 @@ import fabio
 from utils import timeit
 logger = logging.getLogger("pyFAI.azimuthalIntegrator")
 
+try:
+    import ocl_azim  #IGNORE:F0401
+except ImportError as error:#IGNORE:W0703
+    logger.warning("Unable to import pyFAI.ocl_azim")
+    ocl_azim = None
+    ocl = None
+else:
+    ocl = ocl_azim.OpenCL()
+
+
 
 
 class AzimuthalIntegrator(Geometry):
@@ -49,6 +59,8 @@ class AzimuthalIntegrator(Geometry):
     All geometry calculation are done in the Geometry class
 
     """
+#    _ocl = None
+
     def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0, pixel1=1, pixel2=1, splineFile=None):
         """
         @param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
@@ -74,7 +86,7 @@ class AzimuthalIntegrator(Geometry):
         self._flatfields = {}
         self._darkcurrents = {}
 
-        self._ocl = None
+        self._ocl_integrator = None
         self._ocl_sem = threading.Semaphore()
 
     def makeMask(self, data, mask=None, dummy=None, delta_dummy=None, invertMask=None):
@@ -245,7 +257,7 @@ class AzimuthalIntegrator(Geometry):
         @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
         @param dark: dark noise image
-        @param flat: flat field image 
+        @param flat: flat field image
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
         """
@@ -348,7 +360,7 @@ class AzimuthalIntegrator(Geometry):
 #    @timeit
     def xrpd_OpenCL(self, data, nbPt, filename=None, correctSolidAngle=True,
                        tthRange=None, mask=None, dummy=None, delta_dummy=None,
-                        devicetype="all", useFp64=True, platformid=None, deviceid=None, safe=True):
+                        devicetype="gpu", useFp64=True, platformid=None, deviceid=None, safe=True):
 
         """
         Calculate the powder diffraction pattern from a set of data, an image. Cython implementation
@@ -375,16 +387,12 @@ class AzimuthalIntegrator(Geometry):
         @param platformid: platform number
         @param deviceid: device number
         @param safe: set to false if you think your GPU is already set-up correctly (2theta, mask, solid angle...)
-        @return 2theta, I, weighted histogram, unweighted histogram
-
 
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
         """
-        try:
-            import ocl_azim  #IGNORE:F0401
-        except ImportError as error:#IGNORE:W0703
-            logger.error("Import error (%s), falling back on old method !" % error)
+        if not ocl_azim:
+            logger.error("OpenCL implementation not available falling back on old method !")
             return self.xrpd_splitBBox(data=data,
                                        nbPt=nbPt,
                                        filename=filename,
@@ -394,9 +402,10 @@ class AzimuthalIntegrator(Geometry):
                                        dummy=dummy,
                                        delta_dummy=delta_dummy)
         shape = data.shape
-        if self._ocl is None:
+
+        if self._ocl_integrator is None:
             with self._ocl_sem:
-                if self._ocl is None:
+                if self._ocl_integrator is None:
                     size = data.size
                     fd, tmpfile = tempfile.mkstemp(".log", "pyfai-opencl-")
                     os.close(fd)
@@ -407,8 +416,18 @@ class AzimuthalIntegrator(Geometry):
                                     deviceid=deviceid,
                                     useFp64=useFp64)
                     else:
-                        rc = integr.init(devicetype=devicetype,
+                        if useFp64:
+                            ids = ocl.select_device(type=devicetype, extensions=["cl_khr_int64_base_atomics"])
+                        else:
+                            ids = ocl.select_device(type=devicetype)
+                        if ids is None:
+                            rc = integr.init(devicetype=devicetype,
                                          useFp64=useFp64)
+                        else:
+                            rc = integr.init(devicetype=devicetype,
+                                         useFp64=useFp64,
+                                         platformid=ids[0],
+                                         deviceid=ids[1])
                     if rc != 0:
                         raise RuntimeError('Failed to initialize OpenCL deviceType %s (%s,%s) 64bits: %s' % (devicetype, platformid, deviceid, useFp64))
 
@@ -430,25 +449,25 @@ class AzimuthalIntegrator(Geometry):
                     pos0_max = pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps)
                     if 0 != integr.loadTth(pos0, delta_pos0, pos0_min, pos0_max):
                         raise RuntimeError("Failed to upload 2th arrays")
-                    self._ocl = integr
+                    self._ocl_integrator = integr
         with self._ocl_sem:
             if safe:
-                param = self._ocl.get_status()
+                param = self._ocl_integrator.get_status()
                 if (dummy is None) and param["dummy"]:
-                    self._ocl.unsetDummyValue()
+                    self._ocl_integrator.unsetDummyValue()
                 elif (dummy is not None) and not param["dummy"]:
                     if delta_dummy is None:
                         delta_dummy = 1e-6
-                    self._ocl.setDummyValue(dummy, delta_dummy)
+                    self._ocl_integrator.setDummyValue(dummy, delta_dummy)
                 if correctSolidAngle and not param["solid_angle"]:
-                    self._ocl.setSolidAngle(self.solidAngleArray(shape))
+                    self._ocl_integrator.setSolidAngle(self.solidAngleArray(shape))
                 elif (not correctSolidAngle) and param["solid_angle"]:
-                    self._ocl.unsetSolidAngle()
+                    self._ocl_integrator.unsetSolidAngle()
                 if (mask is not None) and not param["mask"]:
-                    self._ocl.setMask(mask)
+                    self._ocl_integrator.setMask(mask)
                 elif (mask is None) and param["mask"]:
-                    self._ocl.unsetMask()
-            tthAxis, I, a, = self._ocl.execute(data)
+                    self._ocl_integrator.unsetMask()
+            tthAxis, I, a, = self._ocl_integrator.execute(data)
         tthAxis = numpy.degrees(tthAxis)
         if filename:
             open(filename, "w").writelines(["%s\t%s%s" % (t, i, os.linesep) for t, i in zip(tthAxis, I)])
@@ -951,3 +970,4 @@ class AzimuthalIntegrator(Geometry):
                 headerLst.append("Background File: %s" % self.background)
             self.header = os.linesep.join([hdr + " " + i for i in headerLst])
         return self.header
+

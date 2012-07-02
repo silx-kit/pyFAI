@@ -72,40 +72,20 @@ class Platform(object):
     def add_device(self,device):
         self.devices.append(device)
 
-cdef class OpenCL:
+
+def sget_platforms(cls):
     """
-    Simple class that wraps the structure ocl_tools_extended.h
+    class method defined in a "cython compatible way
     """
     cdef ocl_tools_extended.ocl_gen_info_t * clinfo
-    platforms = []
-    def __cinit__(self):
-        self.clinfo = ocl_tools_extended.ocl_get_all_device_info(self.clinfo)
-        if len(self.platforms)==0:
-            for p in self.get_platforms():
-                self.platforms.append(p)
-
-    def __dealloc__(self):
-        if self.clinfo:
-            ocl_tools_extended.ocl_clr_all_device_info(self.clinfo)
-
-    def __repr__(self):
-        out = ["OpenCL devices:"]
-        for platformid,platform in enumerate(self.platforms):
-            out.append("[%s] %s: "%(platformid, platform.name)+ ", ".join(["(%s,%s) %s"%(platformid,deviceid,dev.name) for deviceid,dev in enumerate(platform.devices)] ))
-        return os.linesep.join(out)
-
-
-    def get_platforms(self):
-        """
-        return the list of platform names
-        """
-        if not self.clinfo:
-            raise RuntimeError("Devices are not initialized")
-        cdef ocl_tools_extended.ocl_gen_dev_info_t platform
-        cdef ocl_tools_extended.ocl_dev_t device
-        out=[]
-        for i in range(self.clinfo.Nplatforms):
-            platform = self.clinfo.platform[i]
+    cdef ocl_tools_extended.ocl_gen_dev_info_t platform
+    cdef ocl_tools_extended.ocl_dev_t device
+    cdef int i,j
+    if cls.platforms: #this means initialization already occurred !!!
+        return
+    clinfo = ocl_tools_extended.ocl_get_all_device_info(clinfo)
+    for i in range(clinfo.Nplatforms):
+            platform = clinfo.platform[i]
             pypl=Platform(platform.platform_info.name,platform.platform_info.vendor,platform.platform_info.version,platform.platform_info.extensions)
             for j in range(platform.Ndevices):
                 device = platform.device_info[j]
@@ -116,10 +96,26 @@ cdef class OpenCL:
                 extensions = device.extensions
                 if (pypl.vendor == "NVIDIA Corporation") and ('cl_khr_fp64' in extensions):
                                 extensions += ' cl_khr_int64_base_atomics cl_khr_int64_extended_atomics'
-                dev = Device(device.name,device.type, device.version, device.driver_version, extensions, device.global_mem)
-                pypl.add_device(dev)
-            out.append(pypl)
-        return out
+                pydev = Device(device.name,device.type, device.version, device.driver_version, extensions, device.global_mem)
+                pypl.add_device(pydev)
+            cls.platforms.append(pypl)
+#    ocl_tools_extended.ocl_clr_all_device_info(clinfo)
+
+
+cdef class OpenCL(object):
+    """
+    Simple class that wraps the structure ocl_tools_extended.h
+    """
+    platforms = []
+    _get_platforms = classmethod(sget_platforms)
+    OpenCL._get_platforms()
+
+    def __repr__(self):
+        out = ["OpenCL devices:"]
+        for platformid,platform in enumerate(self.platforms):
+            out.append("[%s] %s: "%(platformid, platform.name)+ ", ".join(["(%s,%s) %s"%(platformid,deviceid,dev.name) for deviceid,dev in enumerate(platform.devices)] ))
+        return os.linesep.join(out)
+
 
     def select_device(self, type="all", memory=None, extensions=[]):
         """

@@ -2,7 +2,7 @@ from libcpp cimport bool
 
 cdef extern from "ocl_tools/ocl_tools_datatypes.h":
     # OpenCL tools platform information struct
-    # 
+    #
     # It can be passed to ocl_platform_info to
     # retrieve and save platform information
     # for the current context
