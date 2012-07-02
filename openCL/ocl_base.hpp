@@ -19,7 +19,7 @@
  *   Copyright (C) 2011-12 European Synchrotron Radiation Facility
  *                             Grenoble, France
  *
- *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
+ *   Principal authors: D. Karkoulis (dimitris.karkoulis@gmail.com)
  *   Last revision: 02/07/2012
  *    
  *   This program is free software: you can redistribute it and/or modify
@@ -130,7 +130,7 @@ public:
 /*
  * Returns a structure with information for all the present OpenCL devices
  */  
-  ocl_gen_info_t *get_all_device_details();
+  void get_all_device_details();
 
 /*
  * Prints some basic information about all the OpenCL devices present
@@ -192,6 +192,7 @@ public:
 
   ocl_plat_t platform_info;
   ocl_dev_t device_info; 
+  ocl_gen_info_t *Ninfo;
 protected:
 
   /**
@@ -237,6 +238,8 @@ protected:
    * @{
    */
   int useSolidAngle; //!< Set by setSolidAngle(), reset by unsetSolidAngle()
+  int useDarkField;  //!< Set by setDarkField(), reset by unsetDarkField()
+  int useFlatField;  //!< Set by setFlatField(), reset by unsetFlatField()
   int useMask;       //!< Set by setMask(), reset by unsetMask()
   int useDummyVal;   //!< Set by setDummyVal(), reset by unsetDummyVal()
   int useTthRange;   //!< Set by setTthRange(), reset by unsetTthRange()

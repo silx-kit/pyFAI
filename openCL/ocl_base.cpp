@@ -146,7 +146,7 @@ ocl::~ocl(){
   delete sgs;
   cLog_fin(&hLog);
   delete[] docstr;
-
+  ocl_clr_all_device_info(Ninfo);
 }
 
 /**
@@ -176,6 +176,7 @@ void ocl::ContructorInit()
   
   oclconfig = new ocl_config_type;
   ocl_tools_initialise(oclconfig,&hLog);
+  Ninfo = NULL;
 
   sgs = new az_argtype;
   sgs->Nx = 0;
@@ -311,7 +312,8 @@ return;
 void ocl::show_all_device_details(int ignoreStream)
 {	
 
-  ocl_gen_info_t *alldevices = get_all_device_details();
+  get_all_device_details();
+  ocl_gen_info_t *alldevices = Ninfo;
 
   for(unsigned int iplatform = 0; iplatform < alldevices->Nplatforms; iplatform++)
   {
@@ -353,6 +355,7 @@ void ocl::show_all_device_details(int ignoreStream)
       delete [] heading;
     }
 	}
+  ocl_clr_all_device_info(alldevices);
 return;
 }
 
@@ -369,11 +372,10 @@ return;
  *         You do not need to allocate or free ocl_gen_info_t nor you should. Internally
  *         this structure is static.
  */
-ocl_gen_info_t *ocl::get_all_device_details()
+void ocl::get_all_device_details()
 {
-  ocl_gen_info_t *Ninfo = NULL;
   Ninfo = ocl_get_all_device_info(Ninfo);
-  return Ninfo;
+  return;
 }
 
 /**
