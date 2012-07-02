@@ -20,7 +20,7 @@
  *                           Grenoble, France
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
- *   Last revision: 26/06/2011
+ *   Last revision: 02/07/2012
  *    
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -274,7 +274,6 @@ void ocl::show_device_details(int ignoreStream){
 	
 	if(hasActiveContext)
 	{
-		int dev,plat;
 		std::ostringstream heading_stream;
     char *heading;
 		char cast_plat,cast_dev;
@@ -307,6 +306,74 @@ void ocl::show_device_details(int ignoreStream){
     delete [] heading;
 	}
 return;
+}
+
+void ocl::show_all_device_details(int ignoreStream)
+{	
+
+  ocl_gen_info_t *alldevices = get_all_device_details();
+
+  for(unsigned int iplatform = 0; iplatform < alldevices->Nplatforms; iplatform++)
+  {
+    char cast_plat;
+
+    for(unsigned int idevice = 0; idevice   < alldevices->platform[iplatform].Ndevices; idevice++)
+    {
+      std::ostringstream heading_stream;
+      char *heading;
+      char cast_dev;
+
+      cast_plat = '0' + (char)(alldevices->platform_ids[iplatform]);
+      cast_dev  = '0' + (char)(alldevices->platform[iplatform].device_ids[idevice]);
+
+      heading_stream << '(' << cast_plat << '.' << cast_dev << ')' << ' ';
+      heading = new char [heading_stream.str().length() + 1];
+      strcpy(heading,heading_stream.str().c_str());
+      //Force cLogger to print to stdout
+      if(ignoreStream) hLog.status = 0;
+
+      cLog_extended(&hLog,"\n");
+      cLog_extended(&hLog,"Pair (%c.%c)\n",cast_plat,cast_dev);
+      cLog_extended(&hLog,"%s Platform name: %s\n", heading, alldevices->platform[iplatform].platform_info.name);
+      cLog_extended(&hLog,"%s Platform version: %s\n", heading, alldevices->platform[iplatform].platform_info.version);
+      cLog_extended(&hLog,"%s Platform vendor: %s\n", heading, alldevices->platform[iplatform].platform_info.vendor);
+      cLog_extended(&hLog,"%s Platform extensions: %s\n", heading, alldevices->platform[iplatform].platform_info.extensions);
+
+      cLog_extended(&hLog,"\n");
+
+      cLog_extended(&hLog,"%s Device name: %s\n", heading, alldevices->platform[iplatform].device_info[idevice].name);
+      cLog_extended(&hLog,"%s Device type: %s\n", heading, alldevices->platform[iplatform].device_info[idevice].type);
+      cLog_extended(&hLog,"%s Device version: %s\n", heading, alldevices->platform[iplatform].device_info[idevice].version);
+      cLog_extended(&hLog,"%s Device driver version: %s\n", heading, alldevices->platform[iplatform].device_info[idevice].driver_version);
+      cLog_extended(&hLog,"%s Device extensions: %s\n", heading, alldevices->platform[iplatform].device_info[idevice].extensions);
+      cLog_extended(&hLog,"%s Device Max Memory: %f (MB)\n", heading, alldevices->platform[iplatform].device_info[idevice].global_mem/1024.f/1024.f);
+
+      //Revert cLogger to normal operation
+      if(ignoreStream) hLog.status = 1;
+      delete [] heading;
+    }
+	}
+return;
+}
+
+/**
+ * \brief Returns a structure with information for all the present OpenCL devices
+ *
+ * The following platform information is displayed:
+ *     Name, Version, Vendor and Extensions
+ * Similarily for the device:
+ *     Name, Type, Version, Driver version, Extensions and Global memory
+ * 
+ * @return ocl_gen_info_t structure with the information (see ocl_tools_extended.h).
+ *         Note that the structure's allocations are handled internally by ocl_tools.
+ *         You do not need to allocate or free ocl_gen_info_t nor you should. Internally
+ *         this structure is static.
+ */
+ocl_gen_info_t *ocl::get_all_device_details()
+{
+  ocl_gen_info_t *Ninfo = NULL;
+  Ninfo = ocl_get_all_device_info(Ninfo);
+  return Ninfo;
 }
 
 /**
