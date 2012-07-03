@@ -25,7 +25,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
-__date__ = "13/06/2012"
+__date__ = "03/07/2012"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -37,6 +37,7 @@ cimport numpy
 import numpy
 import threading
 import cython
+
 from libc.stdlib cimport free, malloc
 from libc.string cimport memcpy
 
@@ -83,6 +84,7 @@ def sget_platforms(cls):
     cdef int i,j
     if cls.platforms: #this means initialization already occurred !!!
         return
+    clinfo = NULL
     clinfo = ocl_tools_extended.ocl_get_all_device_info(clinfo)
     for i in range(clinfo.Nplatforms):
             platform = clinfo.platform[i]
@@ -99,7 +101,7 @@ def sget_platforms(cls):
                 pydev = Device(device.name,device.type, device.version, device.driver_version, extensions, device.global_mem)
                 pypl.add_device(pydev)
             cls.platforms.append(pypl)
-#    ocl_tools_extended.ocl_clr_all_device_info(clinfo)
+    ocl_tools_extended.ocl_clr_all_device_info(clinfo)
 
 
 cdef class OpenCL(object):
@@ -136,6 +138,7 @@ cdef class OpenCL(object):
                         if found:
                             return platformid, deviceid
         return None
+
 
 cdef class Integrator1d:
     """
@@ -339,12 +342,18 @@ cdef class Integrator1d:
         self._calc_tth_out(self._tth_min, self._tth_max)
         return self.cpp_integrator.unsetRange()
 
-
     def execute(self, numpy.ndarray image not None):
         """Take an image, integrate and return the histogram and weights
         set / unset and loadTth methods have a direct impact on the execute() method.
-        All the rest of the methods will require at least a new configuration via configure()"""
-        cdef int rc, i
+        All the rest of the methods will require at least a new configuration via configure()
+        
+        @param image: image to be processed as a numpy array
+        @return: tth_out, histogram, bins
+        
+        TODO: to improve performances, the image should be casted to float32 in an optimal way:
+        currently using numpy machinery but would be better if done in OpenCL
+        """
+        cdef int rc
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] cimage, histogram, bins, tth_out
         cimage = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
         histogram = numpy.empty(self._nBins, dtype=numpy.float32)
@@ -427,9 +436,9 @@ cdef class Integrator1d:
 
     def get_status(self):
         "return a dictionnary with the status of the integrator"
-        retbin = numpy.binary_repr(self.cpp_integrator.get_status(), 8)
+        retbin = numpy.binary_repr(self.cpp_integrator.get_status(), 9)
         out = {}
-        for i, v in enumerate(['dummy', 'mask', 'solid_angle', 'pos1', 'pos0', 'compiled', 'size', 'context']):
+        for i, v in enumerate(['dummy', 'mask', 'dark', 'solid_angle', 'pos1', 'pos0', 'compiled', 'size', 'context']):
             out[v] = bool(int(retbin[i]))
         return out
 

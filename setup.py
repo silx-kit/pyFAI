@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/06/2012"
+__date__ = "03/07/2012"
 __status__ = "stable"
 
 import os, sys, glob, shutil
@@ -60,8 +60,6 @@ openCL = []
 for i in "openCL/ocl_tools/cLogger".split("/"):
     j = os.path.join(j, i)
     openCL.append(j)
-
-print openCL
 
 hist_dic = dict(name="histogram",
                     include_dirs=get_numpy_include_dirs(),
@@ -95,7 +93,7 @@ ocl_azim_dict = dict(name="ocl_azim",
                     sources=ocl_azim,
                     include_dirs=openCL + get_numpy_include_dirs(),
                     language="c++",
-                    libraries=["stdc++", "OpenCL"],
+                    libraries=["stdc++", "OpenCL"]
                     )
 
 if sys.platform == "win32":

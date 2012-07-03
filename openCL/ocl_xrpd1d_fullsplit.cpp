@@ -20,7 +20,7 @@
  *                             Grenoble, France
  *
  *   Principal authors: D. Karkoulis (dimitris.karkoulis@gmail.com)
- *   Last revision: 02/07/2012
+ *   Last revision: 03/07/2012
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -87,8 +87,7 @@ enum NAMED_CL_BUFFERS
   CLMEM_DUMMYVAL,
   CLMEM_DUMMYVAL_DELTA,
   CLMEM_TTH_RANGE,
-  CLMEM_DARK_FIELD,
-  CLMEM_FLAT_FIELD
+  CLMEM_DARK
 } ;
 
 /**
@@ -435,123 +434,63 @@ int ocl_xrpd1D_fullsplit::unsetSolidAngle()
 }
 
 /**
- * \brief Instructs the program to use darkfield correction using the input array
+ * \brief Instructs the program to use dark correction using the input array
  *
- * setDarkField is optional. The default behaviour of the program is to not take
- * the dark field into account when integrating. When setDarkField is called an option
+ * setDark is optional. The default behaviour of the program is to not take
+ * the dark field into account when integrating. When setDark is called an option
  * is enabled internally to always take the dark field into account.
  *
- * setDarkField can be called at any point and as many times required
+ * setDark can be called at any point and as many times required
  * after a valid configuration is created.
  *
- * To disable the dark field unsetDarkField() can be used
+ * To disable the dark field unsetDark() can be used
  *
  * @param DarkField A float pointer to the array of size N with the dark field values
  */
-int ocl_xrpd1D_fullsplit::setDarkField(float *DarkField)
+int ocl_xrpd1D_fullsplit::setDark(float *Dark)
 {
 
-  cLog_extended(&hLog,"Setting DarkField\n");
+  cLog_extended(&hLog,"Setting Dark\n");
 
   if(!hasActiveContext){
-    cLog_critical(&hLog,"You may not call setDarkField() at this point. There is no Active context. (Hint: run init())\n");
+    cLog_critical(&hLog,"You may not call setDark() at this point. There is no Active context. (Hint: run init())\n");
     return -2;
   }
 
   if(!oclconfig->Nbuffers || !isConfigured){
-    cLog_critical(&hLog,"You may not call setDarkField() at this point, the required buffers are not allocated (Hint: run config())\n");
+    cLog_critical(&hLog,"You may not call setDark() at this point, the required buffers are not allocated (Hint: run config())\n");
     return -2;
   }
 
   CR(
-    clEnqueueWriteBuffer(oclconfig->oclcmdqueue,oclconfig->oclmemref[CLMEM_DARK_FIELD],
-                          CL_TRUE,0,sgs->Nimage*sizeof(cl_float),(void*)DarkField,0,0,&oclconfig->t_s[0]) );
+    clEnqueueWriteBuffer(oclconfig->oclcmdqueue,oclconfig->oclmemref[CLMEM_DARK],
+                          CL_TRUE,0,sgs->Nimage*sizeof(cl_float),(void*)Dark,0,0,&oclconfig->t_s[0]) );
 
-  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0],"Load DarkField",oclconfig->hLog);
+  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0],"Load Dark",oclconfig->hLog);
   clReleaseEvent(oclconfig->t_s[0]);
 
-  useDarkField=1;
+  useDark=1;
   return 0;
 }
 
 /**
- * \brief Disable DarkField correction
+ * \brief Disable Dark correction
  *
- * unsetDarkField instructs the program to disable dark field correction. If the method
- * is called when dark field corrections is not set, the method will not perform any action
+ * unsetDark instructs the program to disable dark correction. If the method
+ * is called when dark corrections is not set, the method will not perform any action
  * (return -2)
  */
-int ocl_xrpd1D_fullsplit::unsetDarkField()
+int ocl_xrpd1D_fullsplit::unsetDark()
 {
-  cLog_extended(&hLog,"Unsetting DarkField\n");
+  cLog_extended(&hLog,"Unsetting Dark\n");
 
-  if(useDarkField)
+  if(useDark)
   {
-    useDarkField=0;
+    useDark=0;
     return 0;
   }
   else return -2;
 }
-
-/**
- * \brief Instructs the program to use flat field correction using the input array
- *
- * setFlatField is optional. The default behaviour of the program is to not take
- * the flat field into account when integrating. When setFlatField is called an option
- * is enabled internally to always take the flat field into account.
- *
- * setFlatField can be called at any point and as many times required
- * after a valid configuration is created.
- *
- * To disable the flat field unsetFlatField() can be used
- *
- * @param FlatField A float pointer to the array of size N with the flat field values
- */
-int ocl_xrpd1D_fullsplit::setFlatField(float *FlatField)
-{
-
-  cLog_extended(&hLog,"Setting FlatField\n");
-
-  if(!hasActiveContext){
-    cLog_critical(&hLog,"You may not call setFlatField() at this point. There is no Active context. (Hint: run init())\n");
-    return -2;
-  }
-
-  if(!oclconfig->Nbuffers || !isConfigured){
-    cLog_critical(&hLog,"You may not call setFlatField() at this point, the required buffers are not allocated (Hint: run config())\n");
-    return -2;
-  }
-
-  CR(
-    clEnqueueWriteBuffer(oclconfig->oclcmdqueue,oclconfig->oclmemref[CLMEM_FLAT_FIELD],
-                          CL_TRUE,0,sgs->Nimage*sizeof(cl_float),(void*)FlatField,0,0,&oclconfig->t_s[0]) );
-
-  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0],"Load FlatField",oclconfig->hLog);
-  clReleaseEvent(oclconfig->t_s[0]);
-
-  useFlatField=1;
-  return 0;
-}
-
-/**
- * \brief Disable useFlatField correction
- *
- * unsetFlatField instructs the program to disable flat field correction. If the method
- * is called when flat field corrections is not set, the method will not perform any action
- * (return -2)
- */
-int ocl_xrpd1D_fullsplit::unsetFlatField()
-{
-  cLog_extended(&hLog,"Unsetting FlatField\n");
-
-  if(useFlatField)
-  {
-    useFlatField=0;
-    return 0;
-  }
-  else return -2;
-}
-
 
 /**
  * \brief Instructs the program to apply the input mask during integration
@@ -885,7 +824,7 @@ int ocl_xrpd1D_fullsplit::allocate_CL_buffers()
 {
 
   cl_int err;
-  oclconfig->oclmemref   = (cl_mem*)malloc(14*sizeof(cl_mem));
+  oclconfig->oclmemref   = (cl_mem*)malloc(15*sizeof(cl_mem));
   if(!oclconfig->oclmemref){
     cLog_critical(&hLog,"Fatal error in allocate_CL_buffers. Cannot allocate memrefs\n");
     return -2;
@@ -897,7 +836,7 @@ int ocl_xrpd1D_fullsplit::allocate_CL_buffers()
   }
     
   cl_ulong ualloc=0;
-  ualloc += (sgs->Nimage * sizeof(cl_float)) * 8;
+  ualloc += (sgs->Nimage * sizeof(cl_float)) * 7;
   ualloc += (sgs->Nbins  * sizeof(cl_float)) * 2;
   if(sgs->usefp64)
     ualloc += (sgs->Nbins * sizeof(cl_ulong)) * 2;
@@ -923,8 +862,8 @@ int ocl_xrpd1D_fullsplit::allocate_CL_buffers()
     }
   }
 
-//allocate GPU memory buffers. Notice the clean_clbuffers(i-1), If a failure occures before completing all the allocations
-// all the successfull allocations will be released.
+//allocate GPU memory buffers. Notice the clean_clbuffers(i-1), If a failure occurs before completing all the allocations
+// all the successful allocations will be released.
   int i=0;
   oclconfig->oclmemref[CLMEM_TTH]=
     clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_ONLY,(size_t)(sgs->Nimage*sizeof(cl_float)),0,&err);//tth array -0
@@ -998,13 +937,10 @@ int ocl_xrpd1D_fullsplit::allocate_CL_buffers()
     clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_ONLY,(size_t)(2*sizeof(cl_float)),0,&err);//TTH Range -13
   if(err){cLog_critical(&hLog,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);return -1;};i++;
   
-  oclconfig->oclmemref[CLMEM_DARK_FIELD]=
-    clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_ONLY,(size_t)(sizeof(cl_float)),0,&err);//Dark Field -14
+  oclconfig->oclmemref[CLMEM_DARK]=
+    clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_ONLY,(size_t)(sizeof(cl_float)),0,&err);//Dark -14
   if(err){cLog_critical(&hLog,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);return -1;};i++;
 
-  oclconfig->oclmemref[CLMEM_FLAT_FIELD]=
-    clCreateBuffer(oclconfig->oclcontext,CL_MEM_READ_ONLY,(size_t)(sizeof(cl_float)),0,&err);//Flat Field -15
-  if(err){cLog_critical(&hLog,"clCreateBuffer error, %s (@%d)\n",ocl_perrc(err),i-1);return -1;};i++;
 
   cLog_extended(&hLog,"Allocated %d buffers (%.3f Mb) on device\n",i,(float)ualloc/1024./1024.);
   oclconfig->Nbuffers = i;

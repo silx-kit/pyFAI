@@ -61,10 +61,10 @@ class test_mask(unittest.TestCase):
 #        return None
 
     def setUp(self):
-        self.datasets = [{"img":UtilsTest.getimage("1883/Pilatus1M.edf"), "poni":UtilsTest.getimage("1893/Pilatus1M.poni"), "spline": None},
+        self.datasets = [#{"img":UtilsTest.getimage("1883/Pilatus1M.edf"), "poni":UtilsTest.getimage("1893/Pilatus1M.poni"), "spline": None},
             {"img":UtilsTest.getimage("1882/halfccd.edf"), "poni":UtilsTest.getimage("1895/halfccd.poni"), "spline": UtilsTest.getimage("1461/halfccd.spline")},
             {"img":UtilsTest.getimage("1881/Frelon2k.edf"), "poni":UtilsTest.getimage("1896/Frelon2k.poni"), "spline": UtilsTest.getimage("1900/frelon.spline")},
-            {"img":UtilsTest.getimage("1884/Pilatus6M.cbf"), "poni":UtilsTest.getimage("1897/Pilatus6M.poni"), "spline": None},
+            #{"img":UtilsTest.getimage("1884/Pilatus6M.cbf"), "poni":UtilsTest.getimage("1897/Pilatus6M.poni"), "spline": None},
             {"img":UtilsTest.getimage("1880/Fairchild.edf"), "poni":UtilsTest.getimage("1898/Fairchild.poni"), "spline": None},
             ]
         for ds in self.datasets:
@@ -73,10 +73,14 @@ class test_mask(unittest.TestCase):
                 spline = os.path.basename(ds["spline"])
                 open(ds["poni"], "w").write(data.replace(" " + spline, " " + ds["spline"]))
     def test_OpenCL(self):
-        ids = pyFAI.azimuthalIntegrator.ocl.select_device(extensions=["cl_khr_int64_base_atomics"])
+        ocl = pyFAI.azimuthalIntegrator.ocl
+        ids = ocl.select_device(extensions=["cl_khr_int64_base_atomics"])
         if ids is None:
             logger.error("No suitable OpenCL device found")
             return
+        else:
+            logger.info("I found a suitable device %s: %s %s " % (ids, ocl.platforms[ids[0]], ocl.platforms[ids[0]].devices[ids[1]]))
+
         for ds in self.datasets:
             ai = pyFAI.load(ds["poni"])
             data = fabio.open(ds["img"]).data
@@ -89,7 +93,6 @@ class test_mask(unittest.TestCase):
             logger.info("For image %15s;\tspeed up is %.3fx;\trate is %.3f Hz" % (os.path.basename(ds["img"]), ((t1 - t0) / (t2 - t1)), 1. / (t2 - t1)))
             r = Rwp(ref, ocl)
             self.assertTrue(r < 6, "Rwp=%.3f for OpenCL processing of %s" % (r, ds))
-
 def test_suite_all_OpenCL():
     testSuite = unittest.TestSuite()
     testSuite.addTest(test_mask("test_OpenCL"))

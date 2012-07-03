@@ -15,7 +15,7 @@
  *   Copyright (C) 2012 Dimitrios Karkoulis
  *
  *   Principal authors: D. Karkoulis (dimitris.karkoulis@gmail.com)
- *   Last revision: 02/07/2012
+ *   Last revision: 03/07/2012
  *    
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -125,7 +125,7 @@ int ocl_eval_FP64(cl_device_id devid, logger_t *hLog){
 ocl_gen_info_t *ocl_get_all_device_info(ocl_gen_info_t *Ninfo)
 {
 
-  //Clear stalle data
+  //Clear stall data
   if(Ninfo)
   {
     ocl_clr_all_device_info(Ninfo);
@@ -238,5 +238,6 @@ void ocl_clr_all_device_info(ocl_gen_info_t *Ninfo)
     }
     Ninfo->Nplatforms = 0;
   }
+//  free(Ninfo)
 return;
 }

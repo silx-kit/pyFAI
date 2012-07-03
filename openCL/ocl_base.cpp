@@ -20,7 +20,7 @@
  *                           Grenoble, France
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
- *   Last revision: 02/07/2012
+ *   Last revision: 03/07/2012
  *    
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -171,6 +171,7 @@ void ocl::ContructorInit()
   useDummyVal   = 0;
   useTthRange   = 0;
   useChiRange   = 0;
+  useDark       = 0;
 
   reset_time();
   
@@ -561,9 +562,10 @@ unsigned int ocl::get_exec_count()
  *          bit 2: is configured (kernel compiled)
  *          bit 3: pos0/delta_pos0 arrays are loaded (radial angle)
  *          bit 4: pos1/delta_pos1 arrays are loaded (azimuthal angle)
- *          bit 5: solid angle correction is set
- *          bit 6: mask is set
- *          bit 7: use dummy value
+ *          bit 5: solid angle correction is set (also used for flat field correction)
+ *          bit 6: subtract dark current
+ *          bit 7: mask is set
+ *          bit 8: use dummy value
  */
 int ocl::get_status(){
 	int value=0;
@@ -579,8 +581,10 @@ int ocl::get_status(){
 		value+=16;
 	if (useSolidAngle)
 		value+=32;
-	if (useMask)
+	if (useDark)
 		value+=64;
+	if (useMask)
+		value+=128;
 	if (useDummyVal)
 		value+=256;
 	return value;

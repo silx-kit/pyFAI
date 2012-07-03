@@ -20,7 +20,7 @@
  *                             Grenoble, France
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
- *   Last revision: 26/06/2012
+ *   Last revision: 03/07/2012
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -112,38 +112,21 @@ public:
   int unsetSolidAngle();
 
   /*
-   * Enables Dark field correction and uploads the suitable array to the OpenCL device.
-   * By default the program will assume no dark field correction unless setDarkField() is called.
-   * From then on, all integrations will be corrected via the dark field array.
+   * Enables Dark correction and uploads the suitable array to the OpenCL device.
+   * By default the program will assume no dark correction unless setDark() is called.
+   * From then on, all integrations will be corrected via the dark array.
    *
-   * If the DarkField array needs to be changes, one may just call setDarkField() again
+   * If the Dark array needs to be changes, one may just call setDark() again
    * with that array
    */
-  int setDarkField(float *DarkField);
+  int setDark(float *Dark);
 
   /*
-   * Instructs the program to not perform dark field correction from now on.
-   * DarkField correction may be turned back on at any point
+   * Instructs the program to not perform dark correction from now on.
+   * Dark correction may be turned back on at any point
    *
    */
-  int unsetDarkField();
-
-  /*
-   * Enables Flat field correction and uploads the suitable array to the OpenCL device.
-   * By default the program will assume no flat field correction unless setFlatField() is called.
-   * From then on, all integrations will be corrected via the flat field array.
-   *
-   * If the FlatField array needs to be changes, one may just call setFlatField() again
-   * with that array
-   */
-  int setFlatField(float *FlatField);
-
-  /*
-   * Instructs the program to not perform flat field correction from now on.
-   * FlatField correction may be turned back on at any point
-   *
-   */
-  int unsetFlatField();
+  int unsetDark();
 
   /*
    * Enables the use of a Mask during integration. The Mask can be updated by

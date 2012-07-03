@@ -20,7 +20,7 @@
  *                             Grenoble, France
  *
  *   Principal authors: D. Karkoulis (dimitris.karkoulis@gmail.com)
- *   Last revision: 02/07/2012
+ *   Last revision: 03/07/2012
  *    
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -238,8 +238,7 @@ protected:
    * @{
    */
   int useSolidAngle; //!< Set by setSolidAngle(), reset by unsetSolidAngle()
-  int useDarkField;  //!< Set by setDarkField(), reset by unsetDarkField()
-  int useFlatField;  //!< Set by setFlatField(), reset by unsetFlatField()
+  int useDark;  	 //!< Set by setDark(), reset by unsetDark()
   int useMask;       //!< Set by setMask(), reset by unsetMask()
   int useDummyVal;   //!< Set by setDummyVal(), reset by unsetDummyVal()
   int useTthRange;   //!< Set by setTthRange(), reset by unsetTthRange()
