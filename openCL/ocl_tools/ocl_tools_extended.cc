@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ocl_tools_extended.h"
+#include <assert.h>
 
 /* Queries device capabilities to figure if it meets the minimum requirement for double precision*/
 /* Returns 0 on successful FP64 evaluation and -1 if only FP32 */
@@ -115,88 +116,127 @@ int ocl_eval_FP64(cl_device_id devid, logger_t *hLog){
 /**
  * \brief Returns info and pairs for all platforms and their devices
  *
- * List of info returned: pair and info for each platform - device compination
- * This function can be called without an active context
+ * List of info returned: pair and info for each platform - device combination
+ * This function can be called without an active context.
  *
  * @param Ninfo Pointer to ocl_gen_info_t. Allocated by this function. Holds all the information
  * @return Allocated pointer to Ninfo populated with OpenCL platform and device information
  **/
 ocl_gen_info_t *ocl_get_all_device_info(ocl_gen_info_t *Ninfo)
 {
-  static ocl_gen_info_t localNinfo;
 
+  //Clear stalle data
   if(Ninfo)
   {
     ocl_clr_all_device_info(Ninfo);
+  }else
+  {
+    Ninfo = (ocl_gen_info_t *)malloc(sizeof(ocl_gen_info_t));
+    assert(Ninfo != NULL);
   }
-  cl_platform_id *clplatforms;
-  cl_device_id   *cldevices;
+  cl_platform_id *clplatforms = NULL;
+  cl_device_id   *cldevices   = NULL;
   
-  unsigned int num_platforms;
-  unsigned int num_devices;
+  unsigned int num_platforms = 0;
+  unsigned int num_devices   = 0;
   
   clGetPlatformIDs(NULL,NULL,&num_platforms);
   
-  localNinfo.Nplatforms = num_platforms;
+  Ninfo->Nplatforms = num_platforms;
   
   if(num_platforms >0)
   {
-    clplatforms = (cl_platform_id *)malloc(num_platforms * sizeof(num_platforms) );
+    clplatforms = (cl_platform_id *)malloc(num_platforms * sizeof(cl_platform_id) );
+    assert (clplatforms != NULL);
+
     clGetPlatformIDs(num_platforms,clplatforms,NULL);    
-    localNinfo.platform = (ocl_gen_dev_info_t *)malloc(num_platforms * sizeof(ocl_gen_dev_info_t));
-    localNinfo.platform_ids = (unsigned int *)malloc(num_platforms * sizeof(unsigned int));
+
+    Ninfo->platform = (ocl_gen_dev_info_t *)malloc(num_platforms * sizeof(ocl_gen_dev_info_t));
+    assert ( Ninfo->platform != NULL );
+
+    Ninfo->platform_ids = (unsigned int *)malloc(num_platforms * sizeof(unsigned int));
+    assert( Ninfo->platform_ids != NULL );
+
     for(unsigned int iplat = 0; iplat < num_platforms; iplat++)
     {
-      localNinfo.platform_ids[iplat] = iplat;
-      ocl_platform_info_init( localNinfo.platform[iplat].platform_info );
-      ocl_current_platform_info( &clplatforms[iplat], &localNinfo.platform[iplat].platform_info, NULL);
+      Ninfo->platform_ids[iplat] = iplat;
+      ocl_platform_info_init( Ninfo->platform[iplat].platform_info );
+      ocl_current_platform_info( &clplatforms[iplat], &Ninfo->platform[iplat].platform_info, NULL);
       clGetDeviceIDs(clplatforms[iplat],CL_DEVICE_TYPE_ALL,NULL,NULL,&num_devices);
-      localNinfo.platform[iplat].Ndevices = num_devices;
+      Ninfo->platform[iplat].Ndevices = num_devices;
       if(num_devices > 0)
       {
-        cldevices = (cl_device_id *)malloc(num_devices * sizeof(num_devices) );
+        cldevices = (cl_device_id *)malloc(num_devices * sizeof(cl_device_id) );
+        assert( cldevices != NULL );
+
         clGetDeviceIDs(clplatforms[iplat],CL_DEVICE_TYPE_ALL,num_devices,cldevices,NULL);
-        localNinfo.platform[iplat].device_info = (ocl_dev_t *)malloc(num_devices * sizeof(ocl_dev_t) );
-        localNinfo.platform[iplat].device_ids = (unsigned int *)malloc(num_devices * sizeof(unsigned int));   
+
+        Ninfo->platform[iplat].device_info = (ocl_dev_t *)malloc(num_devices * sizeof(ocl_dev_t) );
+        assert( Ninfo->platform[iplat].device_info != NULL );
+
+        Ninfo->platform[iplat].device_ids = (unsigned int *)malloc(num_devices * sizeof(unsigned int));   
+        assert( Ninfo->platform[iplat].device_ids != NULL );
 
         for( unsigned int idev = 0 ; idev < num_devices; idev++)
         {
-          localNinfo.platform[iplat].device_ids[idev] = idev;
-          ocl_device_info_init(localNinfo.platform[iplat].device_info[idev]);
-          ocl_current_device_info( &cldevices[idev], &localNinfo.platform[iplat].device_info[idev], NULL);
+          Ninfo->platform[iplat].device_ids[idev] = idev;
+          ocl_device_info_init(Ninfo->platform[iplat].device_info[idev]);
+          ocl_current_device_info( &cldevices[idev], &Ninfo->platform[iplat].device_info[idev], NULL);
         }
+        free(cldevices);
       }else
       {
-        localNinfo.platform[iplat].device_info = NULL;
-        localNinfo.platform[iplat].device_ids  = NULL;
+        Ninfo->platform[iplat].device_info = NULL;
+        Ninfo->platform[iplat].device_ids  = NULL;
       }
-    }
-    
+    } //for(unsigned int iplat = 0; iplat < num_platforms; iplat++)
+    free(clplatforms);
   }else
   {
-    localNinfo.platform     = NULL;
-    localNinfo.platform_ids = NULL;
+    Ninfo->platform     = NULL;
+    Ninfo->platform_ids = NULL;
   }
-  return &localNinfo;
+
+  return Ninfo;
 }
 
 void ocl_clr_all_device_info(ocl_gen_info_t *Ninfo)
 {
   if(Ninfo)
   {
-    free(Ninfo->platform_ids);
+    if( Ninfo->platform_ids )
+    {
+      free(Ninfo->platform_ids);
+      Ninfo->platform_ids = NULL;
+    }
     for(unsigned int iplat = 0; iplat < Ninfo->Nplatforms; iplat++)
     {
       ocl_platform_info_del(Ninfo->platform[iplat].platform_info);
-      free(Ninfo->platform[iplat].device_ids);
+
+      if( Ninfo->platform[iplat].device_ids )
+      {
+        free(Ninfo->platform[iplat].device_ids);
+        Ninfo->platform[iplat].device_ids = NULL;
+      }
       for(unsigned int idev = 0; idev < Ninfo->platform[iplat].Ndevices; idev++)
       {
         ocl_device_info_del(Ninfo->platform[iplat].device_info[idev]);
       }
-      free(Ninfo->platform[iplat].device_info);
+
+      if( Ninfo->platform[iplat].device_info )
+      {
+        free(Ninfo->platform[iplat].device_info);
+        Ninfo->platform[iplat].device_info = NULL;
+      }
       Ninfo->platform[iplat].Ndevices = 0;
     }
-    free(Ninfo->platform);
+
+    if( Ninfo->platform )
+    {
+      free(Ninfo->platform);
+      Ninfo->platform = NULL;
+    }
     Ninfo->Nplatforms = 0;
   }
+return;
 }
