@@ -1,3 +1,11 @@
 recursive-include openCL *.c *.h *.pyx *.hpp *.cpp *.pxd *.cl
 recursive-include src  *.c *.h *.pyx *.pxd
+recursive-include test *.py *.sp *.poni
+recursive-include benchmark *.py *.spline *.poni
 include stdeb.cfg
+include MANIFEST.in
+include build-deb.sh
+include build-msi.bat
+include README.md
+include CHANGELOG.txt
+include TODO.txt
