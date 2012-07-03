@@ -12,7 +12,7 @@
  *   Copyright (C) 2012 Dimitrios Karkoulis
  *
  *   Principal authors: D. Karkoulis (dimitris.karkoulis@gmail.com)
- *   Last revision: 24/06/2012
+ *   Last revision: 02/07/2012
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -43,36 +43,9 @@
 #define STATINL static inline
 #endif
 
-//#ifdef _WIN32
-//#define _BUFLIMIT 1
-//#define fprintf(...)                                           \
-//  do{                                                                \
-//    if( ((*hLog).safebuf > _BUFLIMIT) && ((*hLog).type != LOGTSAFE)) \
-//      {                                                              \
-//        fflush((*hLog).stream);                                      \
-//        (*hLog).safebuf = 0;                                         \
-//      }                                                              \
-//      fprintf(__VA_ARGS__);                                          \
-//      (*hLog).safebuf++;                                             \
-//    }while(0)
-//
-//
-//#define vfprintf(...)                                           \
-//  do{                                                                \
-//    if( ((*hLog).safebuf > _BUFLIMIT) && ((*hLog).type != LOGTSAFE)) \
-//      {                                                              \
-//        fflush((*hLog).stream);                                      \
-//        (*hLog).safebuf = 0;                                         \
-//      }                                                              \
-//      vfprintf(__VA_ARGS__);                                          \
-//      (*hLog).safebuf++;                                             \
-//    }while(0)
-//
-//#else
-//#define fprintf fprintf
-//#define vfprintf vfprintf
-//#endif
-
+/**
+ *
+ */
 const char *get_date()
 {
   static char date[50];
@@ -157,7 +130,7 @@ void cLog_fin(logger_t *hLog)
 
 void cLog_date(logger_t *hLog, enum_LOGDEPTH depth)
 {
-  if( ((*hLog).depth >= depth) &&  ((*hLog).status == 1) )
+  if( (hLog) &&  ((*hLog).depth >= depth) &&  ((*hLog).status == 1) )
   {
     switch((*hLog).type)
     {
@@ -176,7 +149,7 @@ void cLog_date(logger_t *hLog, enum_LOGDEPTH depth)
 void cLog_date_text(logger_t *hLog, enum_LOGDEPTH depth, const char *format, ...)
 {
   va_list argp;
-  if( ((*hLog).depth >= depth) &&  ((*hLog).status == 1) )
+  if( (hLog) && ((*hLog).depth >= depth) &&  ((*hLog).status == 1) )
   {
     va_start(argp,format);
     switch((*hLog).type)
@@ -205,7 +178,7 @@ void cLog_basic(logger_t *hLog, const char * format, ...)
 {
   va_list argp;
 
-  if( ((*hLog).depth >=  LOGDBASIC) && (*hLog).status)
+  if( (hLog) && ((*hLog).depth >=  LOGDBASIC) && (*hLog).status)
   {
     if((*hLog).timestamps)fprintf((*hLog).stream,"%s ",get_timestamp());
     va_start(argp,format);
@@ -234,7 +207,7 @@ void cLog_extended(logger_t *hLog, const char * format, ...)
 {
   va_list argp;
 
-  if( ((*hLog).depth >= LOGDEXTENDED) && ((*hLog).status == 1) )
+  if( (hLog) && ((*hLog).depth >= LOGDEXTENDED) && ((*hLog).status == 1) )
   {
     if((*hLog).timestamps)fprintf((*hLog).stream,"%s ",get_timestamp());
     va_start(argp,format);
@@ -265,7 +238,7 @@ void cLog_debug(logger_t *hLog, const char * format, ...)
 {
   va_list argp;
 
-  if((*hLog).depth >= LOGDDEBUG && (*hLog).status)
+  if( (hLog) && (*hLog).depth >= LOGDDEBUG && (*hLog).status)
   {
     if((*hLog).timestamps)fprintf((*hLog).stream,"%s ",get_timestamp());
     va_start(argp,format);
@@ -296,7 +269,7 @@ void cLog_critical(logger_t *hLog, const char * format, ...)
 {
   va_list argp;
 
-  if( ((*hLog).depth >= LOGDONLYERRORS) && ((*hLog).status == 1) )
+  if( (hLog) && ((*hLog).depth >= LOGDONLYERRORS) && ((*hLog).status == 1) )
   {
     va_start(argp,format);  
     if((*hLog).timestamps)fprintf((*hLog).stream,"%s ",get_timestamp());
@@ -324,7 +297,7 @@ void cLog(logger_t *hLog, enum_LOGDEPTH depth, const char * format, ...)
 {
   va_list argp;
 
-  if( ((*hLog).depth >= depth) && ((*hLog).status == 1) )
+  if( (hLog) && ((*hLog).depth >= depth) && ((*hLog).status == 1) )
   {
     va_start(argp,format);  
     if((*hLog).timestamps)fprintf((*hLog).stream,"%s ",get_timestamp());
@@ -341,7 +314,7 @@ void cLog_bench(logger_t *hLog, const char * format, ...)
 {
   va_list argp;
 
-  if( ((*hLog).perf == 1) && ((*hLog).status) )
+  if( (hLog) && ((*hLog).perf == 1) && ((*hLog).status) )
   {
     if((*hLog).timestamps)fprintf((*hLog).stream,"%s ",get_timestamp());
     va_start(argp,format);

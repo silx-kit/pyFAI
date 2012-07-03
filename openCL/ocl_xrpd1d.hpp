@@ -20,7 +20,7 @@
  *                             Grenoble, France
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
- *   Last revision: 24/06/2012
+ *   Last revision: 03/07/2012
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -58,10 +58,10 @@
 class ocl_xrpd1D_fullsplit: public ocl{
 public:
 
-  //Default constructor - Prints messages on stdout
+  //Default constructor - Prints messages on stdout with highest logging level
   ocl_xrpd1D_fullsplit();
 
-  //Prints messages on file fname
+  //cLogger is set to fname with highest logging level
   explicit ocl_xrpd1D_fullsplit(const char* fname, const char *identity=NULL);
 
   //Complete logging functionality
@@ -110,6 +110,23 @@ public:
    *
    */
   int unsetSolidAngle();
+
+  /*
+   * Enables Dark correction and uploads the suitable array to the OpenCL device.
+   * By default the program will assume no dark correction unless setDark() is called.
+   * From then on, all integrations will be corrected via the dark array.
+   *
+   * If the Dark array needs to be changes, one may just call setDark() again
+   * with that array
+   */
+  int setDark(float *Dark);
+
+  /*
+   * Instructs the program to not perform dark correction from now on.
+   * Dark correction may be turned back on at any point
+   *
+   */
+  int unsetDark();
 
   /*
    * Enables the use of a Mask during integration. The Mask can be updated by

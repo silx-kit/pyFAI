@@ -19,8 +19,8 @@
  *   Copyright (C) 2011-12 European Synchrotron Radiation Facility
  *                             Grenoble, France
  *
- *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
- *   Last revision: 24/06/2012
+ *   Principal authors: D. Karkoulis (dimitris.karkoulis@gmail.com)
+ *   Last revision: 03/07/2012
  *    
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
@@ -94,6 +94,7 @@ public:
   ocl();
   virtual ~ocl();
 
+  /* Changes settings of logger configuration in hLog*/
   void update_logger(FILE *stream, const char *fname, int safe, int depth, int perf_time, int timestamp);
 
 /*
@@ -125,6 +126,16 @@ public:
  * Prints some basic information about the device in use
  */  
   void show_device_details(int ignoreStream=1);
+
+/*
+ * Returns a structure with information for all the present OpenCL devices
+ */  
+  void get_all_device_details();
+
+/*
+ * Prints some basic information about all the OpenCL devices present
+ */  
+  void show_all_device_details(int ignoreStream=1);
 
 /*
  * Provide help message for interactive environments
@@ -181,6 +192,7 @@ public:
 
   ocl_plat_t platform_info;
   ocl_dev_t device_info; 
+  ocl_gen_info_t *Ninfo;
 protected:
 
   /**
@@ -191,9 +203,10 @@ protected:
   
   /**@}*/
   
-  FILE *stream;
-  logger_t hLog;
-  const char *exec_identity;
+  FILE *stream; //!< Deprecated, replaced by hLog. Set but not used
+  
+  logger_t hLog; //!< Logger configuration
+  const char *exec_identity; //!< Caller name or user defined string (e.g. argv[0] in C/C++)
 
   /**
    * \defgroup guards Status flags/guards
@@ -225,6 +238,7 @@ protected:
    * @{
    */
   int useSolidAngle; //!< Set by setSolidAngle(), reset by unsetSolidAngle()
+  int useDark;  	 //!< Set by setDark(), reset by unsetDark()
   int useMask;       //!< Set by setMask(), reset by unsetMask()
   int useDummyVal;   //!< Set by setDummyVal(), reset by unsetDummyVal()
   int useTthRange;   //!< Set by setTthRange(), reset by unsetTthRange()

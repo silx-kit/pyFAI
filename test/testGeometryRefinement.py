@@ -36,23 +36,10 @@ import unittest
 import os
 import numpy
 import logging
-logger = logging.getLogger(os.path.basename(__file__))
 import sys
-
-for opts in sys.argv[1:]:
-    if opts in ["-d", "--debug"]:
-        logging.basicConfig(level=logging.DEBUG)
-        sys.argv.pop(sys.argv.index(opts))
-    elif opts in ["-i", "--info"]:
-        logging.basicConfig(level=logging.INFO)
-        sys.argv.pop(sys.argv.index(opts))
-
-try:
-    logger.debug("tests loaded from file: %s" % __file__)
-except:
-    __file__ = os.getcwd()
-
-from utilstest import UtilsTest
+from utilstest import UtilsTest, Rwp, getLogger
+logger = getLogger(__file__)
+pyFAI = sys.modules["pyFAI"]
 from pyFAI.geometryRefinement import GeometryRefinement
 from pyFAI.geometry import Geometry
 class test_geometryRefinement(unittest.TestCase):

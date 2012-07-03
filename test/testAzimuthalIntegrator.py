@@ -36,30 +36,11 @@ import unittest
 import os
 import numpy
 import logging, time
-logger = logging.getLogger(os.path.basename(__file__))
 import sys
 import fabio
-force_build = False
-for opts in sys.argv[1:]:
-    if opts in ["-d", "--debug"]:
-        logging.basicConfig(level=logging.DEBUG)
-        sys.argv.pop(sys.argv.index(opts))
-    elif opts in ["-i", "--info"]:
-        logging.basicConfig(level=logging.INFO)
-        sys.argv.pop(sys.argv.index(opts))
-    elif opts in ["-f", "--force"]:
-        force_build = True
-        sys.argv.pop(sys.argv.index(opts))
 
-try:
-    logger.debug("tests loaded from file: %s" % __file__)
-except:
-    __file__ = os.getcwd()
-    logger.debug("tests loaded from file: %s" % __file__)
-
-from utilstest import UtilsTest, Rwp
-if force_build:
-    UtilsTest.forceBuild()
+from utilstest import UtilsTest, Rwp, getLogger
+logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 if logger.getEffectiveLevel() <= logging.INFO:

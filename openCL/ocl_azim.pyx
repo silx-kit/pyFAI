@@ -25,20 +25,119 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
-__date__ = "13/06/2012"
+__date__ = "03/07/2012"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import os
+cimport ocl_tools_extended
 cimport ocl_xrpd1d
 from libcpp cimport bool as cpp_bool
 cimport numpy
 import numpy
 import threading
 import cython
+
 from libc.stdlib cimport free, malloc
 from libc.string cimport memcpy
 
+class Device(object):
+    """
+    Simple class that contains the structure of an OpenCL device
+    """
+    def __init__(self, name=None, type=None, version=None, driver_version=None, extensions=None, memory=None):
+        self.name = name
+        self.type = type
+        self.version = version
+        self.driver_version = driver_version
+        self.extensions = extensions.split()
+        self.memory = memory
+
+    def __repr__(self):
+        return "%s"%self.name
+
+class Platform(object):
+    """
+    Simple class that contains the structure of an OpenCL platform
+    """
+    def __init__(self,name=None, vendor=None, version=None, extensions=None):
+        self.name = name
+        self.vendor = vendor
+        self.version = version
+        self.extensions = extensions.split()
+        self.devices = []
+
+    def __repr__(self):
+        return "%s"%self.name
+
+    def add_device(self,device):
+        self.devices.append(device)
+
+
+def sget_platforms(cls):
+    """
+    class method defined in a "cython compatible way
+    """
+    cdef ocl_tools_extended.ocl_gen_info_t * clinfo
+    cdef ocl_tools_extended.ocl_gen_dev_info_t platform
+    cdef ocl_tools_extended.ocl_dev_t device
+    cdef int i,j
+    if cls.platforms: #this means initialization already occurred !!!
+        return
+    clinfo = NULL
+    clinfo = ocl_tools_extended.ocl_get_all_device_info(clinfo)
+    for i in range(clinfo.Nplatforms):
+            platform = clinfo.platform[i]
+            pypl=Platform(platform.platform_info.name,platform.platform_info.vendor,platform.platform_info.version,platform.platform_info.extensions)
+            for j in range(platform.Ndevices):
+                device = platform.device_info[j]
+                ####################################################
+                # Nvidia does not report int64 atomics (we are using) ...
+                # this is a hack around as any nvidia GPU with double-precision supports int64 atomics
+                ####################################################
+                extensions = device.extensions
+                if (pypl.vendor == "NVIDIA Corporation") and ('cl_khr_fp64' in extensions):
+                                extensions += ' cl_khr_int64_base_atomics cl_khr_int64_extended_atomics'
+                pydev = Device(device.name,device.type, device.version, device.driver_version, extensions, device.global_mem)
+                pypl.add_device(pydev)
+            cls.platforms.append(pypl)
+    ocl_tools_extended.ocl_clr_all_device_info(clinfo)
+
+
+cdef class OpenCL(object):
+    """
+    Simple class that wraps the structure ocl_tools_extended.h
+    """
+    platforms = []
+    _get_platforms = classmethod(sget_platforms)
+    OpenCL._get_platforms()
+
+    def __repr__(self):
+        out = ["OpenCL devices:"]
+        for platformid,platform in enumerate(self.platforms):
+            out.append("[%s] %s: "%(platformid, platform.name)+ ", ".join(["(%s,%s) %s"%(platformid,deviceid,dev.name) for deviceid,dev in enumerate(platform.devices)] ))
+        return os.linesep.join(out)
+
+
+    def select_device(self, type="all", memory=None, extensions=[]):
+        """
+        @param type: "gpu" or "cpu" or "all" ....
+        @param memory: minimum amount of memory (int)
+        @param extensions: list of extensions to be present
+
+        """
+        type = type.upper()
+        for platformid, platform in enumerate(self.platforms):
+            for deviceid, device in enumerate(platform.devices):
+                if (type in ["ALL", "DEF"]) or (device.type.upper() == type):
+                    if (memory is None) or (memory <=device.memory):
+                        found =True
+                        for ext in extensions:
+                            if ext not in device.extensions:
+                                found = False
+                        if found:
+                            return platformid, deviceid
+        return None
 
 
 cdef class Integrator1d:
@@ -243,12 +342,18 @@ cdef class Integrator1d:
         self._calc_tth_out(self._tth_min, self._tth_max)
         return self.cpp_integrator.unsetRange()
 
-
     def execute(self, numpy.ndarray image not None):
         """Take an image, integrate and return the histogram and weights
         set / unset and loadTth methods have a direct impact on the execute() method.
-        All the rest of the methods will require at least a new configuration via configure()"""
-        cdef int rc, i
+        All the rest of the methods will require at least a new configuration via configure()
+        
+        @param image: image to be processed as a numpy array
+        @return: tth_out, histogram, bins
+        
+        TODO: to improve performances, the image should be casted to float32 in an optimal way:
+        currently using numpy machinery but would be better if done in OpenCL
+        """
+        cdef int rc
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] cimage, histogram, bins, tth_out
         cimage = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
         histogram = numpy.empty(self._nBins, dtype=numpy.float32)
@@ -331,9 +436,9 @@ cdef class Integrator1d:
 
     def get_status(self):
         "return a dictionnary with the status of the integrator"
-        retbin = numpy.binary_repr(self.cpp_integrator.get_status(), 8)
+        retbin = numpy.binary_repr(self.cpp_integrator.get_status(), 9)
         out = {}
-        for i, v in enumerate(['dummy', 'mask', 'solid_angle', 'pos1', 'pos0', 'compiled', 'size', 'context']):
+        for i, v in enumerate(['dummy', 'mask', 'dark', 'solid_angle', 'pos1', 'pos0', 'compiled', 'size', 'context']):
             out[v] = bool(int(retbin[i]))
         return out
 
@@ -355,7 +460,7 @@ cdef class Integrator1d:
         out["extensions"] = self.cpp_integrator.platform_info.extensions
         out["version"] = self.cpp_integrator.platform_info.version
         return out
-    
+
     def get_device_info(self):
         """
         @return: dict with device info
@@ -368,7 +473,7 @@ cdef class Integrator1d:
         out["extensions"] = self.cpp_integrator.device_info.extensions
         out["global_mem"]=self.cpp_integrator.device_info.global_mem
         return out
-    
+
 _INTEGRATORS_1D = {} #key=(Nimage,NBins), value=instance of Integrator1d
 lock = threading.Semaphore()
 
