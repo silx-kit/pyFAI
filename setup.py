@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 #
-#    Project: Fast Azimuthal integration 
+#    Project: Fast Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
 #
 #    File: "$Id$"
@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/06/2012"
+__date__ = "03/07/2012"
 __status__ = "stable"
 
 import os, sys, glob, shutil
@@ -43,18 +43,23 @@ try:
 except ImportError:
     build_ext = None
 
-src = {}
+ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.pyx", "ocl_base.cpp", "ocl_tools/ocl_tools.cc", "ocl_tools/ocl_tools_extended.cc", "ocl_tools/cLogger/cLogger.c", "ocl_xrpd1d_fullsplit.cpp")]
 
+src = {}
 if build_ext:
-    ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.pyx", "ocl_base.cpp", "ocl_tools.cc", "ocl_xrpd1d_fullsplit.cpp")]
     for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear"]:
         src[ext] = os.path.join("src", ext + ".pyx")
 else:
-    ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.cpp", "ocl_base.cpp", "ocl_tools.cc", "ocl_xrpd1d_fullsplit.cpp")]
     for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear"]:
         src[ext] = os.path.join("src", ext + ".c")
 
 installDir = os.path.join(get_python_lib(), "pyFAI")
+
+j = ""
+openCL = []
+for i in "openCL/ocl_tools/cLogger".split("/"):
+    j = os.path.join(j, i)
+    openCL.append(j)
 
 hist_dic = dict(name="histogram",
                     include_dirs=get_numpy_include_dirs(),
@@ -86,9 +91,9 @@ bilinear_dic = dict(name="bilinear",
 
 ocl_azim_dict = dict(name="ocl_azim",
                     sources=ocl_azim,
-                    include_dirs=["openCL"] + get_numpy_include_dirs(),
+                    include_dirs=openCL + get_numpy_include_dirs(),
                     language="c++",
-                    libraries=["stdc++", "OpenCL"],
+                    libraries=["stdc++", "OpenCL"]
                     )
 
 if sys.platform == "win32":
@@ -156,7 +161,7 @@ except ImportError:
 
 
 ################################################################################
-# check if OpenMP modules, freshly installed can import    
+# check if OpenMP modules, freshly installed can import
 ################################################################################
 pyFAI = None
 sys.path.insert(0, installDir)

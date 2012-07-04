@@ -1,6 +1,6 @@
 from libcpp cimport bool
 
-cdef extern from "ocl_tools.h":
+cdef extern from "ocl_tools/ocl_tools.h":
     # OpenCL tools platform information struct
     # 
     # It can be passed to ocl_platform_info to

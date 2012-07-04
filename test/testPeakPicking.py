@@ -38,28 +38,8 @@ import numpy
 import logging, time
 import sys
 import fabio
-force_build = False
-for opts in sys.argv[1:]:
-    if opts in ["-d", "--debug"]:
-        logging.basicConfig(level=logging.DEBUG)
-        sys.argv.pop(sys.argv.index(opts))
-    elif opts in ["-i", "--info"]:
-        logging.basicConfig(level=logging.INFO)
-        sys.argv.pop(sys.argv.index(opts))
-    elif opts in ["-f", "--force"]:
-        force_build = True
-        sys.argv.pop(sys.argv.index(opts))
-logger = logging.getLogger("testPeakPicking")
-
-try:
-    logger.debug("tests loaded from file: %s" % __file__)
-except:
-    __file__ = os.getcwd()
-    logger.debug("tests loaded from file: %s" % __file__)
-
-from utilstest import UtilsTest, Rwp
-if force_build:
-    UtilsTest.forceBuild()
+from utilstest import UtilsTest, Rwp, getLogger
+logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI.peakPicker import PeakPicker
 from pyFAI.geometryRefinement import GeometryRefinement

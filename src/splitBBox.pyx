@@ -57,7 +57,9 @@ def histoBBox1d(numpy.ndarray weights not None,
                 pos1Range=None,
                 dummy=None,
                 delta_dummy=None,
-                mask=None
+                mask=None,
+                dark=None,
+                flat=None
               ):
     """
     Calculates histogram of pos0 (tth) weighted by weights
@@ -72,7 +74,11 @@ def histoBBox1d(numpy.ndarray weights not None,
     @param bins: number of output bins
     @param pos0Range: minimum and maximum  of the 2th range
     @param pos1Range: minimum and maximum  of the chi range
-    @param dummy: value for bins without pixels
+    @param dummy: value for bins without pixels & value of "no good" pixels
+    @param delta_dummy: precision of dummy value
+    @param mask: array (of int8) with masked pixels with 1 (0=not masked)
+    @param dark: array (of float32) with dark noise to be subtracted (or None)
+    @param flat: array (of float32) with flat image (including solid angle correctons or not...)
     @return 2theta, I, weighted histogram, unweighted histogram
     """
     cdef long  size = weights.size
@@ -80,12 +86,12 @@ def histoBBox1d(numpy.ndarray weights not None,
     assert delta_pos0.size == size
     assert  bins > 1
     cdef long   bin0_max, bin0_min, bin = 0
-    cdef float data, deltaR, deltaL, deltaA,p1, epsilon = 1e-10, cdummy, ddummy
+    cdef float data, deltaR, deltaL, deltaA,p1, epsilon = 1e-10, cdummy = 0, ddummy = 0
     cdef float pos0_min, pos0_max, pos0_maxin, pos1_min, pos1_max, pos1_maxin, min0, max0, fbin0_min, fbin0_max
-    cdef long checkpos1 = 0, check_mask = 0, check_dummy = 0
+    cdef int check_pos1 = 0, check_mask = 0, check_dummy = 0, do_dark = 0, do_flat=0
 
     cdef numpy.ndarray[numpy.float32_t, ndim = 1] cdata = numpy.ascontiguousarray(weights.ravel(),dtype=numpy.float32)
-    cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos0, dpos0, cpos1, dpos1,cpos0_lower, cpos0_upper
+    cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos0, dpos0, cpos1, dpos1,cpos0_lower, cpos0_upper, cdark, cflat
     cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=numpy.float32)
     dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=numpy.float32)
 
@@ -99,7 +105,7 @@ def histoBBox1d(numpy.ndarray weights not None,
     if  mask is not None:
         assert mask.size == size
         check_mask = 1
-        cmask = numpy.ascontiguousarray(mask.ravel(),dtype="int8")
+        cmask = numpy.ascontiguousarray(mask.ravel(),dtype=numpy.int8)
 
     if (dummy is not None) and delta_dummy is not None:
         check_dummy = 1
@@ -109,6 +115,17 @@ def histoBBox1d(numpy.ndarray weights not None,
         cdummy = float(dummy)
     else:
         cdummy=0.0
+
+    if dark is not None:
+        assert dark.size == size
+        do_dark=1
+        cdark = numpy.ascontiguousarray(dark.ravel(),dtype=numpy.float32)
+
+    if flat is not None:
+        assert flat.size == size
+        do_flat=1
+        cflat = numpy.ascontiguousarray(flat.ravel(),dtype=numpy.float32)
+
 
     cpos0_lower = numpy.zeros(size, dtype=numpy.float32)
     cpos0_upper = numpy.zeros(size, dtype=numpy.float32)
@@ -136,7 +153,7 @@ def histoBBox1d(numpy.ndarray weights not None,
     if pos1Range is not None and len(pos1Range) > 1:
         assert pos1.size == size
         assert delta_pos1.size == size
-        checkpos1 = 1
+        check_pos1 = 1
         cpos1 = numpy.ascontiguousarray(pos1.ravel(),dtype=numpy.float32)
         dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(),dtype=numpy.float32)
         pos1_min = min(pos1Range)
@@ -150,18 +167,17 @@ def histoBBox1d(numpy.ndarray weights not None,
                 outPos[i] = pos0_min + (0.5 +< float > i) * delta
 
         for idx in range(size):
-            if (check_mask) and cmask[idx]:
+            if (check_mask) and (cmask[idx]):
                 continue
 
             data = cdata[idx]
-            if check_dummy and fabs(data-cdummy)<ddummy:
+            if check_dummy and (fabs(data-cdummy)<=ddummy):
                 continue
 
             min0 = cpos0_lower[idx]
             max0 = cpos0_upper[idx]
 
-            if checkpos1:
-                if ((cpos1[idx]+dpos1[idx]) < pos1_min) or ((cpos1[idx]-dpos1[idx]) > pos1_max):
+            if check_pos1 and (((cpos1[idx]+dpos1[idx]) < pos1_min) or ((cpos1[idx]-dpos1[idx]) > pos1_max)):
                     continue
 
             fbin0_min = getBinNr(min0, pos0_min, delta)
@@ -175,6 +191,11 @@ def histoBBox1d(numpy.ndarray weights not None,
                 bin0_max=bins-1
             if  bin0_min<0:
                 bin0_min=0
+
+            if do_dark:
+                data-=cdark[idx]
+            if do_flat:
+                data/=cflat[idx]
 
             if bin0_min == bin0_max:
                 #All pixel is within a single bin
@@ -220,7 +241,9 @@ def histoBBox2d(numpy.ndarray weights not None,
                 bins=(100, 36),
                 pos0Range=None,
                 pos1Range=None,
-                float dummy=0.0):
+                dummy=None,
+                delta_dummy=None,
+                mask=None):
     """
     Calculate 2D histogram of pos0(tth),pos1(chi) weighted by weights
 
@@ -235,8 +258,9 @@ def histoBBox2d(numpy.ndarray weights not None,
     @param bins: number of output bins (tth=100, chi=36 by default)
     @param pos0Range: minimum and maximum  of the 2th range
     @param pos1Range: minimum and maximum  of the chi range
-    @param dummy: value for bins without pixels
-    @return 2theta, I, weighted histogram, unweighted histogram
+    @param dummy: value for bins without pixels & value of "no good" pixels
+    @param delta_dummy: precision of dummy value
+    @param mask: array (of int8) with masked pixels with 1 (0=not masked)
     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
 
@@ -269,8 +293,25 @@ def histoBBox2d(numpy.ndarray weights not None,
 
     cdef float min0, max0, min1, max1, deltaR, deltaL, deltaU, deltaD, deltaA, tmp, delta0, delta1
     cdef float pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin
-    cdef float fbin0_min, fbin0_max, fbin1_min, fbin1_max, data, epsilon = 1e-10
+    cdef float fbin0_min, fbin0_max, fbin1_min, fbin1_max, data, epsilon = 1e-10, cdummy, ddummy
     cdef long  bin0_max, bin0_min, bin1_max, bin1_min
+    cdef int check_mask = 0, check_dummy = 0
+    cdef numpy.ndarray[numpy.int8_t, ndim = 1] cmask
+
+    if  mask is not None:
+        assert mask.size == size
+        check_mask = 1
+        cmask = numpy.ascontiguousarray(mask.ravel(),dtype=numpy.int8)
+
+    if (dummy is not None) and delta_dummy is not None:
+        check_dummy = 1
+        cdummy =  float(dummy)
+        ddummy =  float(delta_dummy)
+    elif (dummy is not None):
+        cdummy = float(dummy)
+    else:
+        cdummy=0.0
+
 
     pos0_min=cpos0[0]
     pos0_max=cpos0[0]
@@ -313,6 +354,14 @@ def histoBBox2d(numpy.ndarray weights not None,
                 edges1[i] = pos1_min + (0.5 + i) * delta1
 
         for idx in range(size):
+
+            if (check_mask) and cmask[idx]:
+                continue
+
+            data = cdata[idx]
+            if (check_dummy) and (fabs(data-cdummy)<=ddummy):
+                continue
+
             data = cdata[idx]
             min0 = cpos0_lower[idx]
             max0 = cpos0_upper[idx]
@@ -415,6 +464,6 @@ def histoBBox2d(numpy.ndarray weights not None,
                 if outCount[i, j] > epsilon:
                     outMerge[i, j] = <float> (outData[i, j] / outCount[i, j])
                 else:
-                    outMerge[i, j] = dummy
+                    outMerge[i, j] = cdummy
     return outMerge.T, edges0, edges1, outData.T, outCount.T
 

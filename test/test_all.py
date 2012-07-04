@@ -35,38 +35,17 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __data__ = "2011-07-06"
 
 import unittest
-import os
-import logging
-import sys
 
-force_build = False
-
-for opts in sys.argv[:]:
-    if opts in ["-d", "--debug"]:
-        logging.basicConfig(level=logging.DEBUG)
-        sys.argv.pop(sys.argv.index(opts))
-    elif opts in ["-i", "--info"]:
-        logging.basicConfig(level=logging.INFO)
-        sys.argv.pop(sys.argv.index(opts))
-    elif opts in ["-f", "--force"]:
-        force_build = True
-        sys.argv.pop(sys.argv.index(opts))
-
-try:
-    logging.debug("tests loaded from file: %s" % __file__)
-except:
-    __file__ = os.getcwd()
-
-from utilstest import UtilsTest
-
-if force_build:
-    UtilsTest.forceBuild()
+from utilstest import UtilsTest, getLogger
+logger = getLogger(__file__)
 
 from testGeometryRefinement   import test_suite_all_GeometryRefinement
 from testAzimuthalIntegrator  import test_suite_all_AzimuthalIntegration
 from testHistogram            import test_suite_all_Histogram
 from testPeakPicking          import test_suite_all_PeakPicking
-from testGeometry             import  test_suite_all_Geometry
+from testGeometry             import test_suite_all_Geometry
+from testMask                 import test_suite_all_Mask
+from testOpenCL               import test_suite_all_OpenCL
 
 def test_suite_all():
     testSuite = unittest.TestSuite()
@@ -74,6 +53,9 @@ def test_suite_all():
     testSuite.addTest(test_suite_all_GeometryRefinement())
     testSuite.addTest(test_suite_all_AzimuthalIntegration())
     testSuite.addTest(test_suite_all_PeakPicking())
+    testSuite.addTest(test_suite_all_Geometry())
+    testSuite.addTest(test_suite_all_Mask())
+    testSuite.addTest(test_suite_all_OpenCL())
 
     return testSuite
 
