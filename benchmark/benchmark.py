@@ -6,7 +6,7 @@ sys.path.append(op.join(op.dirname(op.dirname(op.abspath(__file__))), "test"))
 import utilstest
 pyFAI = utilstest.UtilsTest.pyFAI
 
-
+ds_list = ["Pilatus1M.poni", "halfccd.poni","Frelon2k.poni","Pilatus6M.poni","Fairchild.poni"]
 datasets = {"Fairchild.poni":utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
             "halfccd.poni":utilstest.UtilsTest.getimage("1882/halfccd.edf"),
             "Frelon2k.poni":utilstest.UtilsTest.getimage("1881/Frelon2k.edf"),
@@ -41,7 +41,8 @@ class Bench(object):
 
     def bench_cpu1d(self, n=10):
         print("Working on processor: %s" % self.get_cpu())
-        for param, fn in datasets.items():
+        for param in ds_list:
+            fn=datasets[param]
             ai = pyFAI.load(param)
             data = fabio.open(fn).data
             N = min(data.shape)
@@ -65,7 +66,8 @@ out=ai.xrpd(data,N)""" % (param, fn)
 
     def bench_cpu2d(self, n=10):
         print("Working on processor: %s" % self.get_cpu())
-        for param, fn in datasets.items():
+        for param in ds_list:
+            fn=datasets[param]
             ai = pyFAI.load(param)
             data = fabio.open(fn).data
             N = (500, 360)
@@ -88,8 +90,8 @@ out=ai.xrpd2(data,500,360)""" % (param, fn)
 
     def bench_gpu1d(self, n=10, devicetype="gpu", useFp64=True, platformid=None, deviceid=None):
         print("Working on %s, in " % devicetype + ("64 bits mode" if useFp64 else"32 bits mode") + "(%s.%s)" % (platformid, deviceid))
-
-        for param, fn in datasets.items():
+        for param in ds_list:
+            fn=datasets[param]
             ai = pyFAI.load(param)
             data = fabio.open(fn).data
             N = min(data.shape)
@@ -132,11 +134,11 @@ if __name__ == "__main__":
     print("Averaging over %i repetitions (best of 5)." % n)
     b = Bench()
     b.bench_cpu1d(n)
-#    b.bench_cpu2d(n)
-    b.bench_gpu1d(n, "gpu", True,0,0)
-    b.bench_gpu1d(n, "gpu", False,0,0)
-#    b.bench_gpu1d(n, "all", True, 0, 1)
-#    b.bench_gpu1d(n, "all", False, 0, 1)
+    b.bench_cpu2d(n)
+    b.bench_gpu1d(n, "gpu", True)
+    b.bench_gpu1d(n, "gpu", False)
+    b.bench_gpu1d(n, "cpu", True, 2, 0)
+    b.bench_gpu1d(n, "cpu", False, 2, 0)
 #    b.bench_gpu1d(n, "all", True, 1, 0)
 #    b.bench_gpu1d(n, "all", False, 1, 0)
 #    b.bench_gpu1d(n, "all", True, 2, 0)
