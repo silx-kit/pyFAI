@@ -93,20 +93,15 @@ out=ai.xrpd2(data,500,360)""" % (param, fn)
             ai = pyFAI.load(param)
             data = fabio.open(fn).data
             N = min(data.shape)
-            sys.stdout.write("1D integration of %s %.1f Mpixel -> %i bins (%s)" % (fn, data.size / 1e6, N, ("64 bits mode" if useFp64 else"32 bits mode")))
+            print("1D integration of %s %.1f Mpixel -> %i bins (%s)" % (fn, data.size / 1e6, N, ("64 bits mode" if useFp64 else"32 bits mode")))
 
             try:
                 t0 = time.time()
-#                print "bench", devicetype, useFp64, platformid, deviceid
                 res = ai.xrpd_OpenCL(data, N, devicetype=devicetype, useFp64=useFp64, platformid=platformid, deviceid=deviceid)
                 t1 = time.time()
             except Exception as error:
                 print("Failed to find an OpenCL GPU (useFp64:%s) %s" % (useFp64, error))
                 continue
-#            print(" device: %s.%s" % ai._ocl.get_contexed_Ids())
-#            print(ai._ocl.get_platform_info())
-#            print(ai._ocl.get_device_info())
-
             self.print_init(t1 - t0)
             ref = ai.xrpd(data, N)
             R = utilstest.Rwp(res, ref)
@@ -132,11 +127,11 @@ if __name__ == "__main__":
     print("Averaging over %i repetitions (best of 5)." % n)
     b = Bench()
     b.bench_cpu1d(n)
-#    b.bench_cpu2d(n)
-    b.bench_gpu1d(n, "gpu", True,0,0)
-    b.bench_gpu1d(n, "gpu", False,0,0)
-#    b.bench_gpu1d(n, "all", True, 0, 1)
-#    b.bench_gpu1d(n, "all", False, 0, 1)
+    b.bench_cpu2d(n)
+    b.bench_gpu1d(n, "gpu", True)
+    b.bench_gpu1d(n, "gpu", False)
+    b.bench_gpu1d(n, "all", True)
+    b.bench_gpu1d(n, "all", False)
 #    b.bench_gpu1d(n, "all", True, 1, 0)
 #    b.bench_gpu1d(n, "all", False, 1, 0)
 #    b.bench_gpu1d(n, "all", True, 2, 0)
