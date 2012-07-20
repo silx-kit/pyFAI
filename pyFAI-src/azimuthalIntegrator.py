@@ -416,18 +416,8 @@ class AzimuthalIntegrator(Geometry):
                                     deviceid=deviceid,
                                     useFp64=useFp64)
                     else:
-                        if useFp64:
-                            ids = ocl.select_device(type=devicetype, extensions=["cl_khr_int64_base_atomics"])
-                        else:
-                            ids = ocl.select_device(type=devicetype)
-                        if ids is None:
-                            rc = integr.init(devicetype=devicetype,
-                                         useFp64=useFp64)
-                        else:
-                            rc = integr.init(devicetype=devicetype,
-                                         useFp64=useFp64,
-                                         platformid=ids[0],
-                                         deviceid=ids[1])
+                       rc = integr.init(devicetype=devicetype,
+                                        useFp64=useFp64)
                     if rc != 0:
                         raise RuntimeError('Failed to initialize OpenCL deviceType %s (%s,%s) 64bits: %s' % (devicetype, platformid, deviceid, useFp64))
 
