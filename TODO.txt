@@ -4,7 +4,7 @@ Test 2D regrouping after alignment of images (with reference image from fit2d)
 
 Saxs cannot use split pixels yet
 
-dark & flat correction even for calibration (L. Erra id11)
+dark & flat correction even for calibration (L. Erra ID11): Fixed in version 0.7
 
 Write tools to create a mask (or recycle code from Armando)
 

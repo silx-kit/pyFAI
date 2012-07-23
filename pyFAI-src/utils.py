@@ -61,7 +61,7 @@ else:
             else:
                 k0 = k1 = int(ceil(float(sigma)))
 
-            sum_init = input.astype("float32").sum()
+            sum_init = input.astype(numpy.float32).sum()
             fftOut = numpy.zeros((s0, s1), dtype=complex)
             fftIn = numpy.zeros((s0, s1), dtype=complex)
             fft = fftw3.Plan(fftIn, fftOut, direction='forward')
@@ -82,7 +82,7 @@ else:
 
             fftOut *= g2fft
             ifft()
-            out = fftIn.real.astype("float32")
+            out = fftIn.real.astype(numpy.float32)
             sum_out = out.sum()
             res = out * sum_init / sum_out
             if mode == "wrap":
@@ -166,7 +166,7 @@ def relabel(label, data, blured, max_size=None):
     return f(label)
 
 
-def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=None):
+def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=None, darks=None, flats=None):
     """
     Takes a list of filenames and create an average frame discarding all saturated pixels.
     
@@ -175,18 +175,41 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
     @param threshold: what is the upper limit? all pixel > max*(1-threshold) are discareded.
     @param minimum: minimum valid value or True
     @param maximum: maximum valid value 
+    @param darks: list of dark current images for subtraction
+    @param flats: list of flat field images for division
     """
     ld = len(listImages)
     sumImg = None
+    dark = None
+    flat = None
+
     for fn in listImages:
         logger.info("Reading %s" % fn)
         ds = fabio.open(fn).data
         logger.debug("Intensity range for %s is %s --> %s", fn, ds.min(), ds.max())
         shape = ds.shape
         if sumImg is None:
-            sumImg = numpy.zeros((shape[0], shape[1]), dtype="float64")
-        sumImg += removeSaturatedPixel(ds.astype("float32"), threshold, minimum, maximum)
-    datared = (sumImg / float(ld)).astype("float32")
+            sumImg = numpy.zeros((shape[0], shape[1]), dtype=numpy.float64)
+        if dark is None:
+            dark = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
+            if darks:
+                for f in darks:
+                    dark += fabio.open(f).data
+                dark /= max(1, len(darks))
+        if flat is None:
+            print flats
+            if flats:
+                flat = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
+                for f in flats:
+                    flat += fabio.open(f).data
+                flat /= max(1, len(flats))
+                flat -= dark
+                flat[flats < 1] = 1.0
+            else:
+                flat = numpy.ones((shape[0], shape[1]), dtype=numpy.float32)
+
+        sumImg += (removeSaturatedPixel(ds.astype(numpy.float32), threshold, minimum, maximum) - dark) / flat
+    datared = (sumImg / float(ld)).astype(numpy.float32)
     if output is None:
         prefix = ""
         for ch in zip(*listImages):

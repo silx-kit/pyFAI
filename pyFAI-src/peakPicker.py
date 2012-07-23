@@ -281,7 +281,7 @@ class ControlPoints(object):
         with self._sem:
             self._angles.append(angle)
             self._points.append(points)
-    append_2theta_deg = append
+#    append_2theta_deg = append
 
     def append_2theta_deg(self, points, angle=None):
         """
