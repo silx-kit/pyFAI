@@ -6,7 +6,7 @@ sys.path.append(op.join(op.dirname(op.dirname(op.abspath(__file__))), "test"))
 import utilstest
 pyFAI = utilstest.UtilsTest.pyFAI
 
-ds_list = ["Pilatus1M.poni", "halfccd.poni","Frelon2k.poni","Pilatus6M.poni","Fairchild.poni"]
+ds_list = ["Pilatus1M.poni", "halfccd.poni", "Frelon2k.poni", "Pilatus6M.poni", "Fairchild.poni"]
 datasets = {"Fairchild.poni":utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
             "halfccd.poni":utilstest.UtilsTest.getimage("1882/halfccd.edf"),
             "Frelon2k.poni":utilstest.UtilsTest.getimage("1881/Frelon2k.edf"),
@@ -42,7 +42,7 @@ class Bench(object):
     def bench_cpu1d(self, n=10):
         print("Working on processor: %s" % self.get_cpu())
         for param in ds_list:
-            fn=datasets[param]
+            fn = datasets[param]
             ai = pyFAI.load(param)
             data = fabio.open(fn).data
             N = min(data.shape)
@@ -67,7 +67,7 @@ out=ai.xrpd(data,N)""" % (param, fn)
     def bench_cpu2d(self, n=10):
         print("Working on processor: %s" % self.get_cpu())
         for param in ds_list:
-            fn=datasets[param]
+            fn = datasets[param]
             ai = pyFAI.load(param)
             data = fabio.open(fn).data
             N = (500, 360)
@@ -91,7 +91,7 @@ out=ai.xrpd2(data,500,360)""" % (param, fn)
     def bench_gpu1d(self, n=10, devicetype="gpu", useFp64=True, platformid=None, deviceid=None):
         print("Working on %s, in " % devicetype + ("64 bits mode" if useFp64 else"32 bits mode") + "(%s.%s)" % (platformid, deviceid))
         for param in ds_list:
-            fn=datasets[param]
+            fn = datasets[param]
             ai = pyFAI.load(param)
             data = fabio.open(fn).data
             N = min(data.shape)
@@ -99,15 +99,11 @@ out=ai.xrpd2(data,500,360)""" % (param, fn)
 
             try:
                 t0 = time.time()
-#                print "bench", devicetype, useFp64, platformid, deviceid
                 res = ai.xrpd_OpenCL(data, N, devicetype=devicetype, useFp64=useFp64, platformid=platformid, deviceid=deviceid)
                 t1 = time.time()
             except Exception as error:
                 print("Failed to find an OpenCL GPU (useFp64:%s) %s" % (useFp64, error))
                 continue
-#            print(" device: %s.%s" % ai._ocl.get_contexed_Ids())
-#            print(ai._ocl.get_platform_info())
-#            print(ai._ocl.get_device_info())
 
             self.print_init(t1 - t0)
             ref = ai.xrpd(data, N)
@@ -137,9 +133,5 @@ if __name__ == "__main__":
     b.bench_cpu2d(n)
     b.bench_gpu1d(n, "gpu", True)
     b.bench_gpu1d(n, "gpu", False)
-    b.bench_gpu1d(n, "cpu", True, 2, 0)
-    b.bench_gpu1d(n, "cpu", False, 2, 0)
-#    b.bench_gpu1d(n, "all", True, 1, 0)
-#    b.bench_gpu1d(n, "all", False, 1, 0)
-#    b.bench_gpu1d(n, "all", True, 2, 0)
-#    b.bench_gpu1d(n, "all", False, 2, 0)
+    b.bench_gpu1d(n, "cpu", True)
+    b.bench_gpu1d(n, "cpu", False
