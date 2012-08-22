@@ -574,10 +574,10 @@ class Geometry(object):
         """
         out = self.detector.getPyFAI()
         out["dist"] = self._dist
-        out["poni1"] = self._poni1,
-        out["poni2"] = self._poni2,
-        out["rot1"] = self._rot1,
-        out["rot2"] = self._rot2,
+        out["poni1"] = self._poni1
+        out["poni2"] = self._poni2
+        out["rot1"] = self._rot1
+        out["rot2"] = self._rot2
         out["rot3"] = self._rot3
         return out
 
@@ -665,6 +665,7 @@ class Geometry(object):
             rot3 = 0
         else:
             rot3 = numpy.arccos(min(1.0, max(-1.0, (cosTilt * cosTpr * sinTpr - cosTpr * sinTpr) / numpy.sqrt(1 - sinTpr * sinTpr * sinTilt * sinTilt)))) # + or -
+            rot3 = numpy.pi / 2 - rot3
         self._rot1 = rot1
         self._rot2 = rot2
         self._rot3 = rot3
