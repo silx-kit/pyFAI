@@ -95,7 +95,7 @@ class Detector(object):
             elif kw == "splineFile":
                 self.set_splineFile(kwarg[kw])
 
-    def calc_catesian_positions(self, d1=None, d2=None):
+    def calc_cartesian_positions(self, d1=None, d2=None):
         """
         Calculate the position of each pixel center in cartesian coordinate 
         and in meter of a couple of coordinates. 

@@ -104,10 +104,6 @@ out=ai.xrpd2(data,500,360)""" % (param, fn)
             except Exception as error:
                 print("Failed to find an OpenCL GPU (useFp64:%s) %s" % (useFp64, error))
                 continue
-<<<<<<< HEAD
-
-=======
->>>>>>> origin
             self.print_init(t1 - t0)
             ref = ai.xrpd(data, N)
             R = utilstest.Rwp(res, ref)
@@ -136,14 +132,6 @@ if __name__ == "__main__":
     b.bench_cpu2d(n)
     b.bench_gpu1d(n, "gpu", True)
     b.bench_gpu1d(n, "gpu", False)
-<<<<<<< HEAD
     b.bench_gpu1d(n, "cpu", True)
-    b.bench_gpu1d(n, "cpu", False
-=======
-    b.bench_gpu1d(n, "all", True)
-    b.bench_gpu1d(n, "all", False)
-#    b.bench_gpu1d(n, "all", True, 1, 0)
-#    b.bench_gpu1d(n, "all", False, 1, 0)
-#    b.bench_gpu1d(n, "all", True, 2, 0)
-#    b.bench_gpu1d(n, "all", False, 2, 0)
->>>>>>> origin
+    b.bench_gpu1d(n, "cpu", False)
+

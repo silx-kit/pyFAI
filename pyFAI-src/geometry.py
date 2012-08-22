@@ -168,8 +168,8 @@ class Geometry(object):
         lstTxt = [self.detector.__repr__()]
         lstTxt.append("SampleDetDist= %.6em\tPONI= %.6e, %.6em\trot1=%.6f  rot2= %.6f  rot3= %.6f rad" % tuple(self.param))
         f2d = self.getFit2D()
-        lstTxt.append("DirectBeamDist= %.3fmm\tCenter: x=%.3f, y=%.3f pix\tTilt=%.3f deg  TiltPlanRot= %.3f deg" %
-                       (f2d["DirectBeamDist"], f2d["BeamCenterX"], f2d["BeamCenterY"], f2d["Tilt"], f2d["TiltPlanRot"]))
+        lstTxt.append("DirectBeamDist= %.3fmm\tCenter: x=%.3f, y=%.3f pix\tTilt=%.3f deg  tiltPlanRotation= %.3f deg" %
+                       (f2d["directDist"], f2d["centerX"], f2d["centerY"], f2d["tilt"], f2d["tiltPlanRotation"]))
         return os.linesep.join(lstTxt)
 
 
@@ -192,7 +192,7 @@ class Geometry(object):
         if  poni2 is None:
             poni2 = self.poni2
 
-        p1, p2 = self.detector.calc_catesian_positions(d1, d2)
+        p1, p2 = self.detector.calc_cartesian_positions(d1, d2)
         return p1 - poni1, p2 - poni2
 
 
@@ -606,7 +606,7 @@ class Geometry(object):
         sinTilt = sqrt(1 - cosTilt * cosTilt)
         cosTpr = max(-1, (min(1, -cos(self._rot2) * sin(self._rot1) / sinTilt)))
         sinTpr = sin(self._rot2) / sinTilt
-        direct = 1.0e3 * self._dist / cosTilt
+        directDist = 1.0e3 * self._dist / cosTilt
         tilt = degrees(arccos(cosTilt))
         if sinTpr < 0:
             tpr = -degrees(arccos(cosTpr))
@@ -619,15 +619,15 @@ class Geometry(object):
         else:
             centerY = (self._poni1 + self._dist * sinTilt / cosTilt * sinTpr) / self.pixel1
         out = self.detector.getFit2D()
-        out["DirectBeamDist"] = direct
-        out["BeamCenterX"] = centerX
-        out["BeamCenterY"] = centerY
-        out["Tilt"] = tilt
-        out["TiltPlanRot"] = tpr
+        out["directDist"] = directDist
+        out["centerX"] = centerX
+        out["centerY"] = centerY
+        out["tilt"] = tilt
+        out["tiltPlanRotation"] = tpr
         return out
 
 
-    def setFit2D(self, direct, centerX, centerY, tilt=0., tiltPlanRotation=0., pixelX=None, pixelY=None, splineFile=None):
+    def setFit2D(self, directDist, centerX, centerY, tilt=0., tiltPlanRotation=0., pixelX=None, pixelY=None, splineFile=None):
         """
         Set the Fit2D-like parameter set: For geometry description see  HPR 1996 (14) pp-240
         @param direct: direct distance from sample to detector along the incident beam (in millimeter as in fit2d)
@@ -653,9 +653,9 @@ class Geometry(object):
                 self.detector.pixel2 = pixelX * 1.0e-6
         else:
             self.detector.set_splineFile(splineFile)
-        self._dist = direct * cosTilt * 1.0e-3
-        self._poni1 = centerY * self.pixel1 - direct * sinTilt * sinTpr * 1.0e-3
-        self._poni2 = centerX * self.pixel2 - direct * sinTilt * cosTpr * 1.0e-3
+        self._dist = directDist * cosTilt * 1.0e-3
+        self._poni1 = centerY * self.pixel1 - directDist * sinTilt * sinTpr * 1.0e-3
+        self._poni2 = centerX * self.pixel2 - directDist * sinTilt * cosTpr * 1.0e-3
         rot2 = numpy.arcsin(sinTilt * sinTpr) # or pi-#
         rot1 = numpy.arccos(min(1.0, max(-1.0, (cosTilt / numpy.sqrt(1 - sinTpr * sinTpr * sinTilt * sinTilt))))) # + or -
         if cosTpr * sinTilt > 0:
