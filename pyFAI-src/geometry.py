@@ -642,10 +642,13 @@ class Geometry(object):
         @param centerX, centerY: pixel position of the beam center
         @param splineFile: name of the file containing the spline
         """
-        cosTilt = cos(radians(tilt))
-        sinTilt = sin(radians(tilt))
-        cosTpr = cos(radians(tiltPlanRotation))
-        sinTpr = sin(radians(tiltPlanRotation))
+        try:
+            cosTilt = cos(radians(tilt))
+            sinTilt = sin(radians(tilt))
+            cosTpr = cos(radians(tiltPlanRotation))
+            sinTpr = sin(radians(tiltPlanRotation))
+        except AttributeError as error:
+            logger.error("Got strange results with tilt=%s and tiltPlanRotation=%s: %s" % (tilt, tiltPlanRotation, error))
         if splineFile is None:
             if pixelX is not None:
                 self.detector.pixel1 = pixelY * 1.0e-6
