@@ -36,6 +36,10 @@ import numpy
 from numpy import   radians, degrees, arccos, arctan2, sin, cos, sqrt
 import detectors
 from utils import timeit
+try:
+    import _geometry
+except:
+    _geometry = None
 logger = logging.getLogger("pyFAI.geometry")
 
 
@@ -196,33 +200,39 @@ class Geometry(object):
         return p1 - poni1, p2 - poni2
 
 
-    def tth(self, d1, d2, param=None, path="tan"):
+    def tth(self, d1, d2, param=None, path="cython"):
         """
         Calculates the 2theta value for the center of a given pixel (or set of pixels)
         @param d1: position(s) in pixel in first dimension (c order)
         @type d1: scalar or array of scalar
         @param d2: position(s) in pixel in second dimension (c order)
         @type d2: scalar or array of scalar
+        @param path: can be "cos", "tan" or "cython" 
         @return 2theta in radians
         @rtype: floar or array of floats.
         """
         if param == None:
             param = self.param
-        L = param[0]
-        cosRot1 = cos(param[3])
-        cosRot2 = cos(param[4])
-        cosRot3 = cos(param[5])
-        sinRot1 = sin(param[3])
-        sinRot2 = sin(param[4])
-        sinRot3 = sin(param[5])
         p1, p2 = self._calcCartesianPositions(d1, d2, param[1], param[2])
-        t1 = p1 * cosRot2 * cosRot3 + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
-        t2 = p1 * cosRot2 * sinRot3 + p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
-        t3 = (p1 * sinRot2 - p2 * cosRot2 * sinRot1 + L * cosRot1 * cosRot2)
-        if path == "cos":
-            tmp = arccos(t3 / sqrt(t1 ** 2 + t2 ** 2 + t3 ** 2))
+
+        if path == "cython" and _geometry:
+            tmp = _geometry.calc_tth(L=param[0], rot1=param[3], rot2=param[4], rot3=param[5], pos1=p1 , pos2=p2)
+            tmp.shape = p1.shape
         else:
-            tmp = arctan2(sqrt(t1 ** 2 + t2 ** 2), t3)
+            L = param[0]
+            cosRot1 = cos(param[3])
+            cosRot2 = cos(param[4])
+            cosRot3 = cos(param[5])
+            sinRot1 = sin(param[3])
+            sinRot2 = sin(param[4])
+            sinRot3 = sin(param[5])
+            t1 = p1 * cosRot2 * cosRot3 + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
+            t2 = p1 * cosRot2 * sinRot3 + p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
+            t3 = (p1 * sinRot2 - p2 * cosRot2 * sinRot1 + L * cosRot1 * cosRot2)
+            if path == "cos":
+                tmp = arccos(t3 / sqrt(t1 ** 2 + t2 ** 2 + t3 ** 2))
+            else:
+                tmp = arctan2(sqrt(t1 ** 2 + t2 ** 2), t3)
         return tmp
 
 

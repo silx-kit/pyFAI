@@ -47,10 +47,10 @@ ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.pyx", "ocl_base.cpp", 
 
 src = {}
 if build_ext:
-    for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear"]:
+    for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear", "_geometry"]:
         src[ext] = os.path.join("src", ext + ".pyx")
 else:
-    for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear"]:
+    for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear", "_geometry"]:
         src[ext] = os.path.join("src", ext + ".c")
 
 installDir = os.path.join(get_python_lib(), "pyFAI")
@@ -95,6 +95,12 @@ ocl_azim_dict = dict(name="ocl_azim",
                     language="c++",
                     libraries=["stdc++", "OpenCL"]
                     )
+_geometry_dic = dict(name="_geometry",
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=[src['_geometry']],
+                    extra_compile_args=['-fopenmp'],
+#                    extra_compile_args=['-g'],
+                    extra_link_args=['-fopenmp'])
 
 if sys.platform == "win32":
     data_files = [(installDir, [os.path.join("dll", "pthreadGC2.dll")])]
@@ -141,7 +147,8 @@ setup(name='pyFAI',
                    Extension(**split_dic),
                    Extension(**splitBBox_dic),
                    Extension(**bilinear_dic),
-                   Extension(**ocl_azim_dict)
+                   Extension(**ocl_azim_dict),
+                   Extension(**_geometry_dic)
                    ],
       packages=["pyFAI"],
       package_dir={"pyFAI": "pyFAI-src" },

@@ -6,7 +6,7 @@ FIXME : make some tests that the functions do what is expected
 """
 
 
-import unittest, numpy, os, sys
+import unittest, numpy, os, sys, time
 from utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
@@ -39,8 +39,13 @@ class TestGeometry(ParameterisedTestCase):
     def testGeometryFunctions(self):
         func, statargs, varargs, kwds, expectedFail = self.param
         g = geometry.Geometry(**kwds)
+
+        t0 = time.time()
         oldret = getattr(g, func)(*statargs, path=varargs[0])
+        t1 = time.time()
         newret = getattr(g, func)(*statargs, path=varargs[1])
+        t2 = time.time()
+        logger.debug("TIMINGS\t meth: %s t=%.3fs\t meth: %s t=%.3fs" % (varargs[0], t1 - t0, varargs[1], t2 - t1))
         maxDelta = abs(oldret - newret).max()
         msg = "geo=%s%s max delta=%.3f" % (g, os.linesep, maxDelta)
         if expectedFail:
@@ -49,21 +54,39 @@ class TestGeometry(ParameterisedTestCase):
             self.assertAlmostEquals(maxDelta, 0, 3, msg)
         logger.info(msg)
 
+size = 1024
+d1, d2 = numpy.mgrid[-size:size:32, -size:size:32]
+
 TESTCASES = [
- ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'dist':1, 'rot1':0, 'rot2':0, 'rot3':0}, False),
- ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'rot1':-1, 'rot2':1, 'rot3':1}, False),
- ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'rot1':-.2, 'rot2':1, 'rot3':-.1}, False),
- ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'rot1':-1, 'rot2':-.2, 'rot3':1}, False),
- ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'rot1':1, 'rot2':5, 'rot3':.4}, False),
- ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'rot1':-1.2, 'rot2':1, 'rot3':1}, False),
- ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'dist':1e10, 'rot1':-2, 'rot2':2, 'rot3':1}, False),
- ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'dist':1, 'rot1':3, 'rot2':0, 'rot3':0}, False),
- ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'rot1':-1, 'rot2':1, 'rot3':3}, False),
- ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'rot1':-.2, 'rot2':1, 'rot3':-.1}, False),
- ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'rot1':-3, 'rot2':-.2, 'rot3':1}, False),
- ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'rot1':1, 'rot2':5, 'rot3':.4}, False),
- ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'rot1':-1.2, 'rot2':1.6, 'rot3':1}, False),
- ("tth", (numpy.arange(1000), numpy.arange(1000)), ("cos", "tan"), {'dist':1e10, 'rot1':0, 'rot2':0, 'rot3':0}, False),
+ ("tth", (d1, d2), ("cos", "tan"), {'dist':1, 'rot1':0, 'rot2':0, 'rot3':0}, False),
+ ("tth", (d1, d2), ("cos", "tan"), {'rot1':-1, 'rot2':1, 'rot3':1}, False),
+ ("tth", (d1, d2), ("cos", "tan"), {'rot1':-.2, 'rot2':1, 'rot3':-.1}, False),
+ ("tth", (d1, d2), ("cos", "tan"), {'rot1':-1, 'rot2':-.2, 'rot3':1}, False),
+ ("tth", (d1, d2), ("cos", "tan"), {'rot1':1, 'rot2':5, 'rot3':.4}, False),
+ ("tth", (d1, d2), ("cos", "tan"), {'rot1':-1.2, 'rot2':1, 'rot3':1}, False),
+ ("tth", (d1, d2), ("cos", "tan"), {'dist':1e10, 'rot1':-2, 'rot2':2, 'rot3':1}, False),
+ ("tth", (d1, d2), ("cos", "tan"), {'dist':1, 'rot1':3, 'rot2':0, 'rot3':0}, False),
+ ("tth", (d1, d2), ("cos", "tan"), {'rot1':-1, 'rot2':1, 'rot3':3}, False),
+ ("tth", (d1, d2), ("cos", "tan"), {'rot1':-.2, 'rot2':1, 'rot3':-.1}, False),
+ ("tth", (d1, d2), ("cos", "tan"), {'rot1':-3, 'rot2':-.2, 'rot3':1}, False),
+ ("tth", (d1, d2), ("cos", "tan"), {'rot1':1, 'rot2':5, 'rot3':.4}, False),
+ ("tth", (d1, d2), ("cos", "tan"), {'rot1':-1.2, 'rot2':1.6, 'rot3':1}, False),
+ ("tth", (d1, d2), ("cos", "tan"), {'dist':1e10, 'rot1':0, 'rot2':0, 'rot3':0}, False),
+ ("tth", (d1, d2), ("tan", "cython"), {'dist':1, 'rot1':0, 'rot2':0, 'rot3':0}, False),
+ ("tth", (d1, d2), ("tan", "cython"), {'rot1':-1, 'rot2':1, 'rot3':1}, False),
+ ("tth", (d1, d2), ("tan", "cython"), {'rot1':-.2, 'rot2':1, 'rot3':-.1}, False),
+ ("tth", (d1, d2), ("tan", "cython"), {'rot1':-1, 'rot2':-.2, 'rot3':1}, False),
+ ("tth", (d1, d2), ("tan", "cython"), {'rot1':1, 'rot2':5, 'rot3':.4}, False),
+ ("tth", (d1, d2), ("tan", "cython"), {'rot1':-1.2, 'rot2':1, 'rot3':1}, False),
+ ("tth", (d1, d2), ("tan", "cython"), {'dist':1e10, 'rot1':-2, 'rot2':2, 'rot3':1}, False),
+ ("tth", (d1, d2), ("tan", "cython"), {'dist':1, 'rot1':3, 'rot2':0, 'rot3':0}, False),
+ ("tth", (d1, d2), ("tan", "cython"), {'rot1':-1, 'rot2':1, 'rot3':3}, False),
+ ("tth", (d1, d2), ("tan", "cython"), {'rot1':-.2, 'rot2':1, 'rot3':-.1}, False),
+ ("tth", (d1, d2), ("tan", "cython"), {'rot1':-3, 'rot2':-.2, 'rot3':1}, False),
+ ("tth", (d1, d2), ("tan", "cython"), {'rot1':1, 'rot2':5, 'rot3':.4}, False),
+ ("tth", (d1, d2), ("tan", "cython"), {'rot1':-1.2, 'rot2':1.6, 'rot3':1}, False),
+ ("tth", (d1, d2), ("tan", "cython"), {'dist':1e10, 'rot1':0, 'rot2':0, 'rot3':0}, False),
+
  ]
 
 
