@@ -86,23 +86,48 @@ class Refinment2D(object):
         dImg = self.reconstruct(tth, dI)
         return (dtthX * dImg).sum()
 
-    def diff_Fit2D(self, dx=0.1):
+    def diff_tth_tilt(self, dx=0.1):
+        f = self.ai.getFit2D()
+        fp = f.copy()
+        fm = f.copy()
+        fm["tilt"] -= dx / 2.0
+        fp["tilt"] += dx / 2.0
+        ap = AzimuthalIntegrator()
+        am = AzimuthalIntegrator()
+        ap.setFit2D(**fp)
+        am.setFit2D(**fm)
+        dtthX = (ap.twoThetaArray(self.shape) - am.twoThetaArray(self.shape)) / dx
+        tth, I = self.ai.xrpd(self.img, max(self.shape))
+        from PyMca import SGModule
+        dI = SGModule.getSavitzkyGolay(I, npoints=5, degree=2, order=1) / (tth[1] - tth[0])
+        dImg = self.reconstruct(tth, dI)
+        return (dtthX * dImg).sum()
+
+
+    def diff_Fit2D(self, axis="all", dx=0.1):
         tth, I = self.ai.xrpd(self.img, max(self.shape))
         dI = SGModule.getSavitzkyGolay(I, npoints=5, degree=2, order=1) / (tth[1] - tth[0])
         dImg = self.reconstruct(tth, dI)
         f = self.ai.getFit2D()
         tth2d_ref = self.ai.twoThetaArray(self.shape)
+
+        keys = ["centerX", "centerY", "tilt", "tiltPlanRotation"]
+        if axis != "all":
+            keys = [i for i in keys if i == axis]
         grad = {}
-        for key in ["centerX", "centerY", "tilt", "tiltPlanRotation"]:
+        for key in keys:
             fp = f.copy()
             fp[key] += dx
             ap = AzimuthalIntegrator()
             ap.setFit2D(**fp)
             dtth = (ap.twoThetaArray(self.shape) - self.ai.twoThetaArray(self.shape)) / dx
             grad[key] = (dtth * dImg).sum()
-        return grad
+        if axis == "all":
+            return grad
+        else:
+            return grad[axis]
 
-    def scanX(self, width=1.0, points=10):
+    def scan_centerX(self, width=1.0, points=10):
         f = self.ai.getFit2D()
         out = []
         for x in numpy.linspace(f["centerX"] - width / 2.0, f["centerX"] + width / 2.0, points):
@@ -117,4 +142,34 @@ class Refinment2D(object):
             out.append(res)
         return numpy.linspace(f["centerX"] - width / 2.0, f["centerX"] + width / 2.0, points), out
 
+    def scan_tilt(self, width=1.0, points=10):
+        f = self.ai.getFit2D()
+        out = []
+        for x in numpy.linspace(f["tilt"] - width / 2.0, f["tilt"] + width / 2.0, points):
+            ax = AzimuthalIntegrator()
+            fx = f.copy()
+            fx["tilt"] = x
+            ax.setFit2D(**fx)
+#            print ax
+            ref = Refinment2D(self.img, ax)
+            res = ref.diff_tth_tilt()
+            print "x= %.3f mean= %e" % (x, res)
+            out.append(res)
+        return numpy.linspace(f["tilt"] - width / 2.0, f["tilt"] + width / 2.0, points), out
+
+    def scan_Fit2D(self, width=1.0, points=10, axis="tilt", dx=0.1):
+        logger.info("Scanning along axis %s" % axis)
+        f = self.ai.getFit2D()
+        out = []
+        meas_pts = numpy.linspace(f[axis] - width / 2.0, f[axis] + width / 2.0, points)
+        for x in meas_pts:
+            ax = AzimuthalIntegrator()
+            fx = f.copy()
+            fx[axis] = x
+            ax.setFit2D(**fx)
+            ref = Refinment2D(self.img, ax)
+            res = ref.diff_Fit2D(axis=axis, dx=dx)
+            print "x= %.3f mean= %e" % (x, res)
+            out.append(res)
+        return meas_pts, out
 
