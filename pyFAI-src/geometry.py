@@ -236,7 +236,7 @@ class Geometry(object):
         return tmp
 
 
-    def qFunction(self, d1, d2, param=None):
+    def qFunction(self, d1, d2, param=None, path="cython"):
         """
         Calculates the q value for the center of a given pixel (or set of pixels) in nm-1
 
@@ -249,8 +249,16 @@ class Geometry(object):
         @return q in in nm^(-1)
         @rtype: float or array of floats.
         """
-        return   4e-9 * numpy.pi / self.wavelength * numpy.sin(self.tth(d1=d1, d2=d2, param=param))
+        if not self.wavelength:
+            raise RuntimeError("Scattering vector q cannot be calculated without knowing wavelength !!!")
 
+        if _geometry and path == "cython":
+            p1, p2 = self._calcCartesianPositions(d1, d2, self._poni1, self.poni2)
+            out = _geometry.calc_qi(L=self._dist, rot1=self._rot1, rot2=self._rot2, rot3=self._rot3, pos1=p1 , pos2=p2, wavelength=self.wavelength)
+            out.shape = p1.shape
+        else:
+            out = 4e-9 * numpy.pi / self.wavelength * numpy.sin(self.tth(d1=d1, d2=d2, param=param))
+        return out
 
     def qArray(self, shape):
         """
