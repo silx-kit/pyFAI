@@ -294,7 +294,7 @@ class Geometry(object):
         return self._ttha
 
 
-    def chi(self, d1, d2):
+    def chi(self, d1, d2, path="cython"):
         """
         Calculate the chi (azimuthal angle) for the centre of a pixel at coordinate d1,d2
         which in the lab ref has coordinate:
@@ -307,20 +307,26 @@ class Geometry(object):
         @type d1: float or array of them
         @param d2: pixel coordinate along the 2nd dimention (C convention)
         @type d2: float or array of them
+        @param path: can be "tan" (i.e via numpy) or "cython"
         @return: chi, the azimuthal angle in rad
         """
-        cosRot1 = cos(self._rot1)
-        cosRot2 = cos(self._rot2)
-        cosRot3 = cos(self._rot3)
-        sinRot1 = sin(self._rot1)
-        sinRot2 = sin(self._rot2)
-        sinRot3 = sin(self._rot3)
-        L = self._dist
-        p1, p2 = self._calcCartesianPositions(d1, d2, self.poni1, self.poni2)
-        num = p1 * cosRot2 * cosRot3 + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
-        den = p1 * cosRot2 * sinRot3 - L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3) + p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3)
-        return numpy.arctan2(num, den)
-#        return numpy.arctan2(-den, num)
+        p1, p2 = self._calcCartesianPositions(d1, d2, self._poni1, self.poni2)
+
+        if path == "cython" and _geometry:
+            tmp = _geometry.calc_chi(L=self._dist, rot1=self._rot1, rot2=self._rot2, rot3=self._rot3, pos1=p1 , pos2=p2)
+            tmp.shape = p1.shape
+        else:
+            cosRot1 = cos(self._rot1)
+            cosRot2 = cos(self._rot2)
+            cosRot3 = cos(self._rot3)
+            sinRot1 = sin(self._rot1)
+            sinRot2 = sin(self._rot2)
+            sinRot3 = sin(self._rot3)
+            L = self._dist
+            num = p1 * cosRot2 * cosRot3 + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
+            den = p1 * cosRot2 * sinRot3 - L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3) + p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3)
+            tmp = numpy.arctan2(num, den)
+        return tmp
 
 
     def chi_corner(self, d1, d2):
