@@ -42,8 +42,10 @@ pyFAI-src/detectors.py
 pyFAI-src/geometry.py
 pyFAI-src/geometryRefinement.py
 pyFAI-src/peakPicker.py
+pyFAI-src/refinment2D.py
 pyFAI-src/spline.py
 pyFAI-src/utils.py
+scripts/diff_tomo.py
 scripts/drawMask_pymca
 scripts/integrate_exp.py
 scripts/pyFAI-calib
@@ -51,6 +53,8 @@ scripts/pyFAI-saxs
 scripts/pyFAI-waxs
 scripts/refine_wavelength.py
 scripts/saxs_integrate_exp.py
+src/_geometry.c
+src/_geometry.pyx
 src/bilinear.c
 src/bilinear.pyx
 src/cqueue.pxd
@@ -76,6 +80,7 @@ test/bug_ocl_cpu.py
 test/example.sp
 test/moke.poni
 test/testAzimuthalIntegrator.py
+test/testExport.py
 test/testGeometry.py
 test/testGeometryRefinement.py
 test/testHistogram.py
@@ -91,3 +96,5 @@ test/testimages/LaB6_0020.poni
 test/testimages/Pilatus1M.poni
 test/testimages/Pilatus6M.poni
 test/testimages/halfccd.poni
+test/testimages/refinment.py
+test/testimages/refinment2D.py
