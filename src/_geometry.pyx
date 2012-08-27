@@ -55,7 +55,7 @@ cdef double q(double p1, double p2, double L, double sinRot1, double cosRot1, do
     @param sinRot1,sinRot2,sinRot3: sine of the angles
     @param cosRot1,cosRot2,cosRot3: cosine of the angles
     """  
-    return 4e-9 * M_PI / wavelength * sin(tth(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)) 
+    return 4.0e-9 * M_PI / wavelength * sin(tth(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)/2.0) 
 
 
 @cython.cdivision(True)

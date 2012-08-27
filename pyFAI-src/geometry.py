@@ -240,7 +240,7 @@ class Geometry(object):
         """
         Calculates the q value for the center of a given pixel (or set of pixels) in nm-1
 
-        q = 4pi/lambda sin( theta )
+        q = 4pi/lambda sin( 2theta / 2 )
 
         @param d1: position(s) in pixel in first dimension (c order)
         @type d1: scalar or array of scalar
@@ -254,10 +254,10 @@ class Geometry(object):
 
         if _geometry and path == "cython":
             p1, p2 = self._calcCartesianPositions(d1, d2, self._poni1, self.poni2)
-            out = _geometry.calc_qi(L=self._dist, rot1=self._rot1, rot2=self._rot2, rot3=self._rot3, pos1=p1 , pos2=p2, wavelength=self.wavelength)
+            out = _geometry.calc_q(L=self._dist, rot1=self._rot1, rot2=self._rot2, rot3=self._rot3, pos1=p1 , pos2=p2, wavelength=self.wavelength)
             out.shape = p1.shape
         else:
-            out = 4e-9 * numpy.pi / self.wavelength * numpy.sin(self.tth(d1=d1, d2=d2, param=param))
+            out = 4e-9 * numpy.pi / self.wavelength * numpy.sin(self.tth(d1=d1, d2=d2, param=param) / 2)
         return out
 
     def qArray(self, shape):
@@ -596,13 +596,14 @@ class Geometry(object):
         """
         return the parameter set from the PyFAI geometry as a dictionary
         """
-        out = self.detector.getPyFAI()
-        out["dist"] = self._dist
-        out["poni1"] = self._poni1
-        out["poni2"] = self._poni2
-        out["rot1"] = self._rot1
-        out["rot2"] = self._rot2
-        out["rot3"] = self._rot3
+        with self._sem:
+            out = self.detector.getPyFAI()
+            out["dist"] = self._dist
+            out["poni1"] = self._poni1
+            out["poni2"] = self._poni2
+            out["rot1"] = self._rot1
+            out["rot2"] = self._rot2
+            out["rot3"] = self._rot3
         return out
 
 
@@ -610,44 +611,46 @@ class Geometry(object):
         """
         set the geometry from a pyFAI-like dict
         """
-        for key in ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "pixel1", "pixel2", "splineFile"]:
-            if key in kwargs:
-                setattr(self, key, kwargs[key])
-        self.param = [self._dist, self._poni1, self._poni2, self._rot1, self._rot2, self._rot3]
-        self.chiDiscAtPi = True #position of the discontinuity of chi in radians, pi by default
-        self.reset()
-        self._wavelength = None
-        self._oversampling = None
-        if self.splineFile:
-            self.detector.set_splineFile(self.splineFile)
+        with self._sem:
+            for key in ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "pixel1", "pixel2", "splineFile"]:
+                if key in kwargs:
+                    setattr(self, key, kwargs[key])
+            self.param = [self._dist, self._poni1, self._poni2, self._rot1, self._rot2, self._rot3]
+            self.chiDiscAtPi = True #position of the discontinuity of chi in radians, pi by default
+            self.reset()
+            self._wavelength = None
+            self._oversampling = None
+            if self.splineFile:
+                self.detector.set_splineFile(self.splineFile)
 
 
     def getFit2D(self):
         """
         return a dict with parameters compatible with fit2D geometry
         """
-        cosTilt = cos(self._rot1) * cos(self._rot2)
-        sinTilt = sqrt(1 - cosTilt * cosTilt)
-        cosTpr = max(-1, (min(1, -cos(self._rot2) * sin(self._rot1) / sinTilt)))
-        sinTpr = sin(self._rot2) / sinTilt
-        directDist = 1.0e3 * self._dist / cosTilt
-        tilt = degrees(arccos(cosTilt))
-        if sinTpr < 0:
-            tpr = -degrees(arccos(cosTpr))
-        else:
-            tpr = degrees(arccos(cosTpr))
+        with self._sem:
+            cosTilt = cos(self._rot1) * cos(self._rot2)
+            sinTilt = sqrt(1 - cosTilt * cosTilt)
+            cosTpr = max(-1, (min(1, -cos(self._rot2) * sin(self._rot1) / sinTilt)))
+            sinTpr = sin(self._rot2) / sinTilt
+            directDist = 1.0e3 * self._dist / cosTilt
+            tilt = degrees(arccos(cosTilt))
+            if sinTpr < 0:
+                tpr = -degrees(arccos(cosTpr))
+            else:
+                tpr = degrees(arccos(cosTpr))
 
-        centerX = (self._poni2 + self._dist * sinTilt / cosTilt * cosTpr) / self.pixel2
-        if abs(tilt) < 1e-5:
-            centerY = (self._poni1) / self.pixel1
-        else:
-            centerY = (self._poni1 + self._dist * sinTilt / cosTilt * sinTpr) / self.pixel1
-        out = self.detector.getFit2D()
-        out["directDist"] = directDist
-        out["centerX"] = centerX
-        out["centerY"] = centerY
-        out["tilt"] = tilt
-        out["tiltPlanRotation"] = tpr
+            centerX = (self._poni2 + self._dist * sinTilt / cosTilt * cosTpr) / self.pixel2
+            if abs(tilt) < 1e-5:
+                centerY = (self._poni1) / self.pixel1
+            else:
+                centerY = (self._poni1 + self._dist * sinTilt / cosTilt * sinTpr) / self.pixel1
+            out = self.detector.getFit2D()
+            out["directDist"] = directDist
+            out["centerX"] = centerX
+            out["centerY"] = centerY
+            out["tilt"] = tilt
+            out["tiltPlanRotation"] = tpr
         return out
 
 
@@ -666,37 +669,38 @@ class Geometry(object):
         @param centerX, centerY: pixel position of the beam center
         @param splineFile: name of the file containing the spline
         """
-        try:
-            cosTilt = cos(radians(tilt))
-            sinTilt = sin(radians(tilt))
-            cosTpr = cos(radians(tiltPlanRotation))
-            sinTpr = sin(radians(tiltPlanRotation))
-        except AttributeError as error:
-            logger.error("Got strange results with tilt=%s and tiltPlanRotation=%s: %s" % (tilt, tiltPlanRotation, error))
-        if splineFile is None:
-            if pixelX is not None:
-                self.detector.pixel1 = pixelY * 1.0e-6
-            if pixelY is not None:
-                self.detector.pixel2 = pixelX * 1.0e-6
-        else:
-            self.detector.set_splineFile(splineFile)
-        self._dist = directDist * cosTilt * 1.0e-3
-        self._poni1 = centerY * self.pixel1 - directDist * sinTilt * sinTpr * 1.0e-3
-        self._poni2 = centerX * self.pixel2 - directDist * sinTilt * cosTpr * 1.0e-3
-        rot2 = numpy.arcsin(sinTilt * sinTpr) # or pi-#
-        rot1 = numpy.arccos(min(1.0, max(-1.0, (cosTilt / numpy.sqrt(1 - sinTpr * sinTpr * sinTilt * sinTilt))))) # + or -
-        if cosTpr * sinTilt > 0:
-            rot1 = -rot1
-        assert abs(cosTilt - cos(rot1) * cos(rot2)) < 1e-6
-        if tilt == 0:
-            rot3 = 0
-        else:
-            rot3 = numpy.arccos(min(1.0, max(-1.0, (cosTilt * cosTpr * sinTpr - cosTpr * sinTpr) / numpy.sqrt(1 - sinTpr * sinTpr * sinTilt * sinTilt)))) # + or -
-            rot3 = numpy.pi / 2 - rot3
-        self._rot1 = rot1
-        self._rot2 = rot2
-        self._rot3 = rot3
-        self.reset()
+        with self._sem:
+            try:
+                cosTilt = cos(radians(tilt))
+                sinTilt = sin(radians(tilt))
+                cosTpr = cos(radians(tiltPlanRotation))
+                sinTpr = sin(radians(tiltPlanRotation))
+            except AttributeError as error:
+                logger.error("Got strange results with tilt=%s and tiltPlanRotation=%s: %s" % (tilt, tiltPlanRotation, error))
+            if splineFile is None:
+                if pixelX is not None:
+                    self.detector.pixel1 = pixelY * 1.0e-6
+                if pixelY is not None:
+                    self.detector.pixel2 = pixelX * 1.0e-6
+            else:
+                self.detector.set_splineFile(splineFile)
+            self._dist = directDist * cosTilt * 1.0e-3
+            self._poni1 = centerY * self.pixel1 - directDist * sinTilt * sinTpr * 1.0e-3
+            self._poni2 = centerX * self.pixel2 - directDist * sinTilt * cosTpr * 1.0e-3
+            rot2 = numpy.arcsin(sinTilt * sinTpr) # or pi-#
+            rot1 = numpy.arccos(min(1.0, max(-1.0, (cosTilt / numpy.sqrt(1 - sinTpr * sinTpr * sinTilt * sinTilt))))) # + or -
+            if cosTpr * sinTilt > 0:
+                rot1 = -rot1
+            assert abs(cosTilt - cos(rot1) * cos(rot2)) < 1e-6
+            if tilt == 0:
+                rot3 = 0
+            else:
+                rot3 = numpy.arccos(min(1.0, max(-1.0, (cosTilt * cosTpr * sinTpr - cosTpr * sinTpr) / numpy.sqrt(1 - sinTpr * sinTpr * sinTilt * sinTilt)))) # + or -
+                rot3 = numpy.pi / 2 - rot3
+            self._rot1 = rot1
+            self._rot2 = rot2
+            self._rot3 = rot3
+            self.reset()
 
 
     def setChiDiscAtZero(self):
