@@ -172,26 +172,30 @@ class Calibration(object):
 
     def get_pixelSize(self, ans):
         """convert a comma separated sting into pixel size"""
-        sp = ans.split(", ")
+        sp = ans.split(",")
         if len(sp) >= 2:
             try:
-                self.pixelSize = [float(i) for i in sp[:2]]
+                pixelSizeXY = [float(i) * 1e-6 for i in sp[:2]]
             except Exception:
-                logger.error("error in reading pixel size")
-        elif len(px) == 1:
+                logger.error("error in reading pixel size_2")
+                return
+        elif len(sp) == 1:
             px = sp[0]
             try:
-                self.pixelSize = [float(px), float(px)]
+                pixelSizeXY = [float(px) * 1e-6, float(px) * 1e-6]
             except Exception:
-                logger.error("error in reading pixel size")
+                logger.error("error in reading pixel size_1")
+                return
         else:
-            logger.error("error in reading pixel size")
+            logger.error("error in reading pixel size_0")
+            return
+        self.pixelSize = pixelSizeXY[::-1]
 
     def read_pixelsSize(self):
         """Read the pixel size from prompt if not available"""
         if (self.pixelSize is None) and (self.splineFile is None):
-            pixelSize = [1.5e-5, 1.5e-5]
-            ans = raw_input("Please enter the pixel size (in meter, C order, i.e. %.2e %.2e) or a spline file: " % tuple(pixelSize)).strip()
+            pixelSize = [15, 15]
+            ans = raw_input("Please enter the pixel size (in micron, comma separated X, Y , i.e. %.2e,%.2e) or a spline file: " % tuple(pixelSize)).strip()
             if os.path.isfile(ans):
                 self.splineFile = ans
             else:
@@ -228,7 +232,7 @@ class Calibration(object):
         if self.splineFile:
             self.geoRef = GeometryRefinement(self.data, dist=0.1, splineFile=self.splineFile)
         else:
-            self.geoRef = GeometryRefinement(self.data, dist=0.1, pixel1=self.pixelSize[0], pixel2=pixelSize[1])
+            self.geoRef = GeometryRefinement(self.data, dist=0.1, pixel1=self.pixelSize[0], pixel2=self.pixelSize[1])
         paramfile = self.basename + ".poni"
         if os.path.isfile(paramfile):
             self.geoRef.load(paramfile)
