@@ -176,6 +176,13 @@ class HistoBBox1d(object):
                             max_idx[i] += 1
         return max_idx, lut_idx, lut_coef
 
+    def integrate(self, data, dummy=None, delta_dummy=None, dark=None, flat=None):
+        cdata = numpy.ascontiguousarray(data.ravel(), dtype=numpy.float32)
+
+    def _integrate(self):
+        for i in range(self.bins):
+            pass
+
 def histoBBox1d(weights ,
                 pos0,
                 delta_pos0,
