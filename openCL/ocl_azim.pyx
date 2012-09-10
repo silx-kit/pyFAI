@@ -139,6 +139,7 @@ cdef class OpenCL(object):
                             return platformid, deviceid
         return None
 
+ocl = OpenCL()
 
 cdef class Integrator1d:
     """
@@ -393,15 +394,16 @@ cdef class Integrator1d:
         if (platformid is not None) and (deviceid is not None):
             self._platformid = < int > int(platformid)
             self._deviceid = < int > int(deviceid)
-            forceIDs = 1
         else:
-            forceIDs = 0
+            if useFp64:
+                ids = ocl.select_device(type=devicetype, extensions=["cl_khr_int64_base_atomics"])
+            else:
+                ids = ocl.select_device(type=devicetype)
+            self._platformid = < int > ids[0]
+            self._deviceid = < int > ids[1]
 
         with nogil:
-            if forceIDs:
-                rc = self.cpp_integrator.init(< char *> self._devicetype, < int > self._platformid, < int > self._deviceid, < cpp_bool > self._useFp64)
-            else:
-                rc = self.cpp_integrator.init(< char *> self._devicetype, < cpp_bool > self._useFp64)
+            rc = self.cpp_integrator.init(< char *> self._devicetype, < int > self._platformid, < int > self._deviceid, < cpp_bool > self._useFp64)
         return rc
 
     def show_devices(self, to_log=True):

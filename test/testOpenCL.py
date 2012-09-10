@@ -41,24 +41,16 @@ import fabio
 from utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
-from pyFAI.ocl_azim import Integrator1d
+ocl = None
+try:
+    from pyFAI.ocl_azim import Integrator1d
+except ImportError as error:
+    logger.warning("OpenCL module (pyFAI.ocl_azim) is not present, skip tests. %s." % error)
+    ocl = None
+else:
+    ocl = pyFAI.ocl_azim.OpenCL()
 
 class test_mask(unittest.TestCase):
-#    @classmethod
-#    def find_device(cls):
-#        fd, tmpfile = tempfile.mkstemp(suffix=".log", prefix="OpenCL-")
-#        os.close(fd)
-#        inte = Integrator1d(tmpfile)
-#        for platform in range(10):
-#            for device in range(10):
-#                if not inte.init("all", platformid=platform, deviceid=device, useFp64=True):
-#                    ids = inte.get_contexed_Ids()
-#                    if ("cl_khr_int64_base_atomics" in inte.get_device_info()["extensions"]) or\
-#                       ("NVIDIA CUDA" in inte.get_platform_info()["name"]):
-#                        logger.info("Selected platform: %s device: %s" % (inte.get_platform_info()["name"],
-#                                                                        inte.get_device_info()["name"]))
-#                        return ids
-#        return None
 
     def setUp(self):
         self.datasets = [{"img":UtilsTest.getimage("1883/Pilatus1M.edf"), "poni":UtilsTest.getimage("1893/Pilatus1M.poni"), "spline": None},
@@ -72,8 +64,9 @@ class test_mask(unittest.TestCase):
                 data = open(ds["poni"], "r").read()
                 spline = os.path.basename(ds["spline"])
                 open(ds["poni"], "w").write(data.replace(" " + spline, " " + ds["spline"]))
+
     def test_OpenCL(self):
-        ocl = pyFAI.azimuthalIntegrator.ocl
+        ocl = pyFAI.ocl_azim.OpenCL()
         ids = ocl.select_device(extensions=["cl_khr_int64_base_atomics"])
         if ids is None:
             logger.error("No suitable OpenCL device found")
@@ -93,9 +86,13 @@ class test_mask(unittest.TestCase):
             logger.info("For image %15s;\tspeed up is %.3fx;\trate is %.3f Hz" % (os.path.basename(ds["img"]), ((t1 - t0) / (t2 - t1)), 1. / (t2 - t1)))
             r = Rwp(ref, ocl)
             self.assertTrue(r < 6, "Rwp=%.3f for OpenCL processing of %s" % (r, ds))
+
 def test_suite_all_OpenCL():
     testSuite = unittest.TestSuite()
-    testSuite.addTest(test_mask("test_OpenCL"))
+    if ocl:
+        testSuite.addTest(test_mask("test_OpenCL"))
+    else:
+        logger.warning("OpenCL module (pyFAI.ocl_azim) is not present, skip tests")
     return testSuite
 
 if __name__ == '__main__':

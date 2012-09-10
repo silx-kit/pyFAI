@@ -31,26 +31,26 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/07/2012"
+__date__ = "05/09/2012"
 __status__ = "stable"
 
 import os, sys, glob, shutil
 from distutils.core import setup, Extension
 from numpy.distutils.misc_util import get_numpy_include_dirs
 from distutils.sysconfig import get_python_lib
-try:
-    from Cython.Distutils import build_ext
-except ImportError:
-    build_ext = None
+#try:
+#    from Cython.Distutils import build_ext
+#except ImportError:
+build_ext = None
 
 ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.pyx", "ocl_base.cpp", "ocl_tools/ocl_tools.cc", "ocl_tools/ocl_tools_extended.cc", "ocl_tools/cLogger/cLogger.c", "ocl_xrpd1d_fullsplit.cpp")]
 
 src = {}
 if build_ext:
-    for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear", "_geometry"]:
+    for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear", '_geometry']:
         src[ext] = os.path.join("src", ext + ".pyx")
 else:
-    for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear", "_geometry"]:
+    for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear", '_geometry']:
         src[ext] = os.path.join("src", ext + ".c")
 
 installDir = os.path.join(get_python_lib(), "pyFAI")
@@ -147,8 +147,8 @@ setup(name='pyFAI',
                    Extension(**split_dic),
                    Extension(**splitBBox_dic),
                    Extension(**bilinear_dic),
-                   Extension(**ocl_azim_dict),
                    Extension(**_geometry_dic)
+#                   Extension(**ocl_azim_dict)
                    ],
       packages=["pyFAI"],
       package_dir={"pyFAI": "pyFAI-src" },

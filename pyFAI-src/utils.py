@@ -15,7 +15,7 @@ if sys.platform != "win32":
 
 def timeit(func):
     def wrapper(*arg, **kw):
-        '''This is the docstring of timeit: 
+        '''This is the docstring of timeit:
         a decorator that logs the execution time'''
         t1 = time.time()
         res = func(*arg, **kw)
@@ -28,19 +28,18 @@ def timeit(func):
 try:
     import fftw3
 except (ImportError, WindowsError) as e:
-    logging.error("Exception %s: FFTw3 not available. Falling back on Scipy" % e)
+    logging.warn("Exception %s: FFTw3 not available. Falling back on Scipy" % e)
     from scipy.ndimage.filters import gaussian_filter
 else:
-
     def gaussian_filter(input, sigma, mode="reflect", cval=0.0):
         """
         2-dimensional Gaussian filter implemented with FFTw
 
         @param input:    input array to filter
         @type input: array-like
-        @param sigma: standard deviation for Gaussian kernel. 
+        @param sigma: standard deviation for Gaussian kernel.
             The standard deviations of the Gaussian filter are given for each axis as a sequence,
-            or as a single number, in which case it is equal for all axes. 
+            or as a single number, in which case it is equal for all axes.
         @type sigma: scalar or sequence of scalars
         @param mode: {'reflect','constant','nearest','mirror', 'wrap'}, optional
             The ``mode`` parameter determines how the array borders are
@@ -61,7 +60,7 @@ else:
             else:
                 k0 = k1 = int(ceil(float(sigma)))
 
-            sum_init = input.astype("float32").sum()
+            sum_init = input.astype(numpy.float32).sum()
             fftOut = numpy.zeros((s0, s1), dtype=complex)
             fftIn = numpy.zeros((s0, s1), dtype=complex)
             fft = fftw3.Plan(fftIn, fftOut, direction='forward')
@@ -82,7 +81,7 @@ else:
 
             fftOut *= g2fft
             ifft()
-            out = fftIn.real.astype("float32")
+            out = fftIn.real.astype(numpy.float32)
             sum_out = out.sum()
             res = out * sum_init / sum_out
             if mode == "wrap":
@@ -100,7 +99,7 @@ else:
 def expand(input, sigma, mode="constant", cval=0.0):
 
     """Expand array a with its reflection on boundaries
-    
+
     @param a: 2D array
     @param sigma: float or 2-tuple of floats
     @param mode:"constant","nearest" or "reflect"
@@ -145,9 +144,9 @@ def expand(input, sigma, mode="constant", cval=0.0):
 
 def relabel(label, data, blured, max_size=None):
     """
-    Relabel limits the number of region in the label array. 
+    Relabel limits the number of region in the label array.
     They are ranked relatively to their max(I0)-max(blur(I0)
-    
+
     @param label: a label array coming out of scipy.ndimage.measurement.label
     @param data: an array containing the raw data
     @param blured: an array containing the blured data
@@ -166,27 +165,50 @@ def relabel(label, data, blured, max_size=None):
     return f(label)
 
 
-def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=None):
+def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=None, darks=None, flats=None):
     """
     Takes a list of filenames and create an average frame discarding all saturated pixels.
-    
+
     @param listImages: list of string representing the filenames
     @param output: name of the optional output file
     @param threshold: what is the upper limit? all pixel > max*(1-threshold) are discareded.
     @param minimum: minimum valid value or True
-    @param maximum: maximum valid value 
+    @param maximum: maximum valid value
+    @param darks: list of dark current images for subtraction
+    @param flats: list of flat field images for division
     """
     ld = len(listImages)
     sumImg = None
+    dark = None
+    flat = None
+
     for fn in listImages:
         logger.info("Reading %s" % fn)
         ds = fabio.open(fn).data
         logger.debug("Intensity range for %s is %s --> %s", fn, ds.min(), ds.max())
         shape = ds.shape
         if sumImg is None:
-            sumImg = numpy.zeros((shape[0], shape[1]), dtype="float64")
-        sumImg += removeSaturatedPixel(ds.astype("float32"), threshold, minimum, maximum)
-    datared = (sumImg / float(ld)).astype("float32")
+            sumImg = numpy.zeros((shape[0], shape[1]), dtype=numpy.float64)
+        if dark is None:
+            dark = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
+            if darks:
+                for f in darks:
+                    dark += fabio.open(f).data
+                dark /= max(1, len(darks))
+        if flat is None:
+            print flats
+            if flats:
+                flat = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
+                for f in flats:
+                    flat += fabio.open(f).data
+                flat /= max(1, len(flats))
+                flat -= dark
+                flat[flats < 1] = 1.0
+            else:
+                flat = numpy.ones((shape[0], shape[1]), dtype=numpy.float32)
+
+        sumImg += (removeSaturatedPixel(ds.astype(numpy.float32), threshold, minimum, maximum) - dark) / flat
+    datared = (sumImg / float(ld)).astype(numpy.float32)
     if output is None:
         prefix = ""
         for ch in zip(*listImages):
@@ -209,10 +231,10 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
 
 def boundingBox(img):
     """
-    Tries to guess the bounding box around a valid massif  
-    
+    Tries to guess the bounding box around a valid massif
+
     @param img: 2D array like
-    @return: 4-typle (d0_min, d1_min, d0_max, d1_max) 
+    @return: 4-typle (d0_min, d1_min, d0_max, d1_max)
     """
     img = img.astype(numpy.int)
     img0 = (img.sum(axis=1) > 0).astype(numpy.int)
@@ -235,8 +257,8 @@ def removeSaturatedPixel(ds, threshold=0.1, minimum=None, maximum=None):
     @param ds: a dataset as  ndarray
 
     @param threshold: what is the upper limit? all pixel > max*(1-threshold) are discareded.
-    @param minimum: minumum valid value (or True for auto-guess) 
-    @param maximum: maximum valid value 
+    @param minimum: minumum valid value (or True for auto-guess)
+    @param maximum: maximum valid value
     @return: another dataset
     """
     shape = ds.shape

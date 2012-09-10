@@ -31,7 +31,7 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "12/04/2012"
 __status__ = "beta"
 
-import os, logging
+import os, logging, threading
 logger = logging.getLogger("pyFAI.detectors")
 import numpy
 from spline import Spline
@@ -48,7 +48,7 @@ class Detector(object):
         self._splineFile = None
         self.spline = None
         self._splineCache = {} #key=(dx,xpoints,ypoints) value: ndarray
-
+        self._sem = threading.Semaphore()
         if splineFile:
             self.set_splineFile(splineFile)
 
@@ -95,7 +95,7 @@ class Detector(object):
             elif kw == "splineFile":
                 self.set_splineFile(kwarg[kw])
 
-    def calc_catesian_positions(self, d1=None, d2=None):
+    def calc_cartesian_positions(self, d1=None, d2=None):
         """
         Calculate the position of each pixel center in cartesian coordinate 
         and in meter of a couple of coordinates. 
@@ -133,11 +133,40 @@ class Detector(object):
         p2 = (self.pixel2 * (dX + 0.5 + d2))
         return p1, p2
 
+    def get_mask(self):
+        """
+        Should return a generic mask for the detector
+        """
+        if self.mask is None:
+            raise NotImplementedError("detector.getmask is not implemented for detector %s" % self.__class__.__name)
+        else:
+            return self.mask
 
 class Pilatus(Detector):
-    "Pilatus detector"
+    "Pilatus detector: generic description"
+    MODULE_SIZE = (195, 487)
+    MODULE_GAP = (17, 7)
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         Detector.__init__(self, pixel1, pixel2)
+    def get_mask(self):
+        """
+        Returns a generic mask for Pilatus detecors...
+        """
+        if self.mask is None:
+            with self._sem:
+                if self.mask is None:
+                    if self.max_shape[0] is None or\
+                        self.max_shape[1] is None:
+                        raise NotImplementedError("Generic Pilatus detector does not know the max size ...")
+                    self.mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
+                    #workinng in dim0 = Y
+                    for i in range(self.MODULE_SIZE[0], self.max_shape[0], self.MODULE_SIZE[0] + self.MODULE_GAP[0]):
+                        self.mask[i: i + self.MODULE_GAP[0], :] = 1
+                    #workinng in dim1 = X
+                    for i in range(self.MODULE_SIZE[1], self.max_shape[1], self.MODULE_SIZE[1] + self.MODULE_GAP[1]):
+                        self.mask[:, i: i + self.MODULE_GAP[1]] = 1
+        return self.mask
+
 class Pilatus1M(Pilatus):
     "Pilatus 1M detector"
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
