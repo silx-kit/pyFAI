@@ -28,10 +28,7 @@
 #import cython
 #cimport numpy
 import numpy
-#
-#cdef extern from "math.h":
-#    float floor(float)nogil
-#    float fabs(float)nogil
+
 from math import  floor
 #@cython.cdivision(True)
 def getBinNr(x0, pos0_min, delta):
@@ -43,6 +40,148 @@ def getBinNr(x0, pos0_min, delta):
     """
     return (x0 - pos0_min) / delta
 
+class HistoBBox1d(object):
+    def __init__(self,
+                 pos0,
+                 delta_pos0,
+                 pos1=None,
+                 delta_pos1=None,
+                 bins=100,
+                 pos0Range=None,
+                 pos1Range=None,
+                 mask=None,
+                 allow_pos0_neg=False
+                 ):
+        self.size = pos0.size
+        assert delta_pos0.size == self.size
+        self.bins = bins
+        self.lut_size = 0
+        self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=numpy.float32)
+        self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=numpy.float32)
+        self.pos0_max = pos0.max()
+        self.pos0_min = pos0.min()
+        if pos0Range is not None and len(pos0Range) > 1:
+            self.pos0_min = min(pos0Range)
+            pos0_maxin = max(pos0Range)
+        else:
+            pos0_maxin = self.pos0_max
+        if self.pos0_min < 0 and not allow_pos0_neg:
+            self.pos0_min = 0
+        self.pos0_max = pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps)
+
+        if pos1Range is not None and len(pos1Range) > 1:
+            assert pos1.size == self.size
+            assert delta_pos1.size == self.size
+            self.check_pos1 = 1
+            self.cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float32)
+            self.dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(), dtype=numpy.float32)
+            self.pos1_min = min(pos1Range)
+            pos1_maxin = max(pos1Range)
+            self.pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
+        else:
+            self.check_pos1 = 0
+        self.delta = (self.pos0_max - self.pos0_min) / ((bins))
+
+        self.lut_size = self.calc_size_lut()
+
+        self.lut_max_idx, self.lut_idx, self.lut_coef = self.populate_lut()
+
+    def calc_size_lut(self):
+        'calculate the max number of elements in the LUT'
+        outMax = numpy.zeros(self.bins, dtype=numpy.int32)
+        for idx in range(self.size):
+                if (self.check_mask) and (self.cmask[idx]):
+                    continue
+
+                min0 = self.cpos0[idx] - self.dpos0[idx]
+                max0 = self.cpos0[idx] - self.dpos0[idx]
+
+                if self.check_pos1 and (((self.cpos1[idx] + self.dpos1[idx]) < self.pos1_min) or ((self.cpos1[idx] - self.dpos1[idx]) > self.pos1_max)):
+                        continue
+
+                fbin0_min = getBinNr(min0, self.pos0_min, self.delta)
+                fbin0_max = getBinNr(max0, self.pos0_min, self.delta)
+                bin0_min = int(floor(fbin0_min))
+                bin0_max = int(floor(fbin0_max))
+
+                if (bin0_max < 0) or (bin0_min >= self.bins):
+                    continue
+                if bin0_max >= self.bins:
+                    bin0_max = self.bins - 1
+                if  bin0_min < 0:
+                    bin0_min = 0
+
+                if bin0_min == bin0_max:
+                    #All pixel is within a single bin
+                    outMax[bin0_min] += 1
+
+                else: #we have pixel spliting.
+                    for i in range(bin0_min, bin0_max + 1):
+                        outMax[i] += 1
+        return outMax.max()
+
+    def populate_lut(self):
+        max_idx = numpy.zeros(self.size, dtype=numpy.uint32)
+        lut_idx = numpy.zeros((self.size, self.lut_size), dtype=numpy.uint32)
+        lut_coef = numpy.zeros((self.size, self.lut_size), dtype=numpy.float32)
+        for idx in range(self.size):
+                if (self.check_mask) and (self.cmask[idx]):
+                    continue
+
+                min0 = self.cpos0[idx] - self.dpos0[idx]
+                max0 = self.cpos0[idx] + self.dpos0[idx]
+
+                if self.check_pos1 and (((self.cpos1[idx] + self.dpos1[idx]) < self.pos1_min) or ((self.cpos1[idx] - self.dpos1[idx]) > self.pos1_max)):
+                        continue
+
+                fbin0_min = getBinNr(min0, self.pos0_min, self.delta)
+                fbin0_max = getBinNr(max0, self.pos0_min, self.delta)
+                bin0_min = int(floor(fbin0_min))
+                bin0_max = int(floor(fbin0_max))
+
+                if (bin0_max < 0) or (bin0_min >= self.bins):
+                    continue
+                if bin0_max >= self.bins:
+                    bin0_max = self.bins - 1
+                if  bin0_min < 0:
+                    bin0_min = 0
+
+                if bin0_min == bin0_max:
+                    #All pixel is within a single bin
+                    k = max_idx[bin0_min]
+                    lut_idx[k] = idx
+                    lut_coef[k] = 1.0
+                    max_idx[bin0_min] += 1
+                else: #we have pixel spliting.
+                    deltaA = 1.0 / (fbin0_max - fbin0_min)
+
+                    deltaL = (bin0_min + 1) - fbin0_min
+                    deltaR = fbin0_max - (bin0_max)
+
+                    k = max_idx[bin0_min]
+                    lut_idx[k] = idx
+                    lut_coef[k] = (deltaA * deltaL)
+                    max_idx[bin0_min] += 1
+
+                    k = max_idx[bin0_max]
+                    lut_idx[k] = idx
+                    lut_coef[k] = (deltaA * deltaR)
+                    max_idx[bin0_max] += 1
+
+                    if bin0_min + 1 < bin0_max:
+                        for i in range(bin0_min + 1, bin0_max):
+                            k = max_idx[i]
+                            lut_idx[k] = idx
+                            lut_coef[k] = (deltaA)
+                            max_idx[i] += 1
+        return max_idx, lut_idx, lut_coef
+
+    def integrate(self, data, dummy=None, delta_dummy=None, dark=None, flat=None):
+        cdata = numpy.ascontiguousarray(data.ravel(), dtype=numpy.float32)
+
+    def _integrate(self):
+        for i in range(self.bins):
+            pass
 
 def histoBBox1d(weights ,
                 pos0,
