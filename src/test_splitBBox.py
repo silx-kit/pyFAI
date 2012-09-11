@@ -37,3 +37,17 @@ t1 = time.time()
 psbb_time = t1 - t0
 print("Parallel Split Bounding Box: %.3fs" % ref_time)
 print abs(ra - a).max(), abs(rb - b).max(), abs(rc - c).max(), abs(rd - d).max()
+
+import splitBBoxLUT
+t0 = time.time()
+integ = splitBBoxLUT.HistoBBox1d(tth, dtth, bins=2048)
+t1 = time.time()
+a, b, c, d = integ.integrate(data)
+t2 = time.time()
+print("LUT creation: %.3fs; integration %.3f" % (t1 - t0, t2 - t1))
+print abs(ra - a).max(), abs(rb - b).max(), abs(rc - c).max(), abs(rd - d).max()
+from pylab import *
+plot(a, b)
+plot(ra, rb)
+show()
+raw_input("Enter")
