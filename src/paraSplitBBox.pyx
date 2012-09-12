@@ -98,8 +98,11 @@ def histoBBox1d(numpy.ndarray weights not None,
     dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=numpy.float32)
 
 
-    cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(bins, dtype=numpy.float64)
-    cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype=numpy.float64)
+#    cdef numpy.ndarray[numpy.npy_float128, ndim = 1] outData = numpy.zeros(bins, dtype=numpy.float128)
+#    cdef numpy.ndarray[numpy.npy_float128, ndim = 1] outCount = numpy.zeros(bins, dtype=numpy.float128)
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
+
     cdef numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(bins, dtype=numpy.float32)
     cdef numpy.ndarray[numpy.float32_t, ndim = 1] outPos = numpy.zeros(bins, dtype=numpy.float32)
     cdef numpy.ndarray[numpy.int8_t, ndim = 1] cmask
@@ -217,7 +220,7 @@ def histoBBox1d(numpy.ndarray weights not None,
 
         for i in prange(bins):
                 if outCount[i] > epsilon:
-                    outMerge[i] += < float > (outData[i] / outCount[i])
+                    outMerge[i] += (outData[i] / outCount[i])
                 else:
                     outMerge[i] += cdummy
 
