@@ -222,8 +222,9 @@ setup(name='pyFAI',
 #      data_files=data_files,
       test_suite="test",
       cmdclass={'build_ext': build_ext_pyFAI},
-      data_files=[(installDir, [os.path.join("openCL", i) for i in 
-          ("ocl_azim_kernel_2.cl", "ocl_azim_kernel2d_2.cl")])]
+# 
+      data_files=[('openCL', [os.path.join('openCL',o) for o in [
+      "ocl_azim_kernel_2.cl", "ocl_azim_kernel2d_2.cl"]])]
       )
 
 ################################################################################
@@ -250,12 +251,14 @@ for mod in sys.modules.copy():
         sys.modules.pop(mod)
 try:
     import pyFAI
+    print pyFAI.__file__
 except ImportError as E:
     print("Unable to import pyFAI: %s" % E)
 else:
     print("PyFAI is installed in %s" % pyFAI.__file__)
     try:
         import pyFAI.histogram
+        print  pyFAI.histogram.__file__
     except ImportError as E:
         print("PyFAI.histogram failed to import. It is likely there is an OpenMP error: %s" % E)
     else:
