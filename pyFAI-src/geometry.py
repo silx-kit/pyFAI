@@ -631,8 +631,13 @@ class Geometry(object):
         with self._sem:
             cosTilt = cos(self._rot1) * cos(self._rot2)
             sinTilt = sqrt(1 - cosTilt * cosTilt)
-            cosTpr = max(-1, (min(1, -cos(self._rot2) * sin(self._rot1) / sinTilt)))
-            sinTpr = sin(self._rot2) / sinTilt
+            # This is tilt plane rotation
+            if sinTilt != 0:
+                cosTpr = max(-1, (min(1, -cos(self._rot2) * sin(self._rot1) / sinTilt)))
+                sinTpr = sin(self._rot2) / sinTilt
+            else: # undefined, does not seem to matter as not tilted
+                cosTpr = 1.0
+                sinTpr = 0.0
             directDist = 1.0e3 * self._dist / cosTilt
             tilt = degrees(arccos(cosTilt))
             if sinTpr < 0:

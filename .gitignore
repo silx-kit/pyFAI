@@ -1,5 +1,6 @@
 *.py[co]
 
+
 # Packages
 *.egg
 *.egg-info
@@ -28,4 +29,8 @@ pip-log.txt
 
 #Shared libraries
 *.so
+
+# gvim crap
+*~
+*.swp
 

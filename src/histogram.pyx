@@ -55,7 +55,7 @@ cdef extern from "stdlib.h":
 cdef extern from "math.h":
     double floor(double)nogil
     double  fabs(double)nogil
-    int     isnan(double)
+    int     npy_isnan(double)
 
 # "ctypedef" assigns a corresponding compile-time type to DTYPE_t. For
 # every type in the numpy module there's a corresponding compile-time
@@ -135,7 +135,7 @@ def histogram(numpy.ndarray pos not None, \
     elif isinstance(pixelSize_in_Pos, numpy.ndarray):
         pass #TODO
 
-    if isnan(dbin) or isnan(inv_dbin2):
+    if npy_isnan(dbin) or npy_isnan(inv_dbin2):
         dbin = 0.0
         inv_dbin2 = 0.0
 
