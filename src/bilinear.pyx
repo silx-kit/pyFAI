@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 #
-#    Project: Azimuthal integration 
+#    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
 #
 #    File: "$Id$"
@@ -30,54 +30,41 @@ __copyright__ = "2011, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import cython
-cimport numpy
 import numpy
-ctypedef numpy.float32_t DTYPE_float32_t
+cimport numpy
 
-cdef extern from "math.h":
-    float floor(float) nogil
-    float ceil(float) nogil
-cdef extern from "stdlib.h":
-    void free(void * ptr)nogil
-    void * calloc(size_t nmemb, size_t size)nogil
-    void * malloc(size_t size)nogil
-    void * memcpy(void * dst, void * src, long n)
-cdef extern from "numpy/arrayobject.h":
-    ctypedef int intp
-    ctypedef extern class numpy.ndarray [object PyArrayObject]:
-        cdef char * data
-        cdef int nd
-        cdef intp * dimensions
-        cdef intp * strides
-        cdef int flags
+from libc.math cimport floor,ceil
+#from libc.stdlib cimport  calloc,malloc,memcpy
 
-@cython.boundscheck(False)
+
 cdef class bilinear:
     """Bilinear interpolator for finding max"""
 
-    cdef float * data
-    cdef float max, min
-    cdef long d0_max, d1_max, r
+    cdef float[:] data
+    cdef float maxi, mini
+    cdef size_t d0_max, d1_max, r
+#
+#    def __dealloc__(self):
+#        free(self.data)
 
-    def __dealloc__(self):
-        free(self.data)
-
-    def __init__(self, numpy.ndarray data not None):
+    def __cinit__(self, numpy.ndarray data not None):
         assert data.ndim == 2
         self.d0_max = data.shape[0] - 1
         self.d1_max = data.shape[1] - 1
         self.r = data.shape[1]
-        self.max = data.max()
-        self.min = data.min()
-        self.data = < float *> malloc(data.size * sizeof(float))
-        cdef numpy.ndarray[DTYPE_float32_t, ndim = 2] data2 = numpy.ascontiguousarray(data.astype("float32"))
-        memcpy(self.data, data2.data, data.size * sizeof(float))
+        self.maxi = data.max()
+        self.mini = data.min()
+        #self.data = < float *> malloc(data.size * sizeof(float))
+        #cdef numpy.ndarray[numpy.float32_t, ndim = 2] data2 = numpy.ascontiguousarray(data, dtype=numpy.float32)
+        #memcpy(self.data, data2.data, data.size * sizeof(float))
+        self.data = numpy.ascontiguousarray(data.ravel(), dtype=numpy.float32)
 
-
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def f_cy(self, x):
         """
         Function f((y,x)) where f is a continuous function (y,x) are pixel coordinates
-        @param x: 2-tuple of float 
+        @param x: 2-tuple of float
         @return: Interpolated signal from the image (negative for minimizer)
 
         """
@@ -94,13 +81,13 @@ cdef class bilinear:
         j0 = < int > y0
         j1 = < int > y1
         if d0 < 0:
-            res = self.min + d0
+            res = self.mini + d0
         elif d1 < 0:
-            res = self.min + d1
+            res = self.mini + d1
         elif d0 > self.d0_max:
-            res = self.min - d0 + self.d0_max
+            res = self.mini - d0 + self.d0_max
         elif d1 > self.d1_max:
-            res = self.min - d1 + self.d1_max
+            res = self.mini - d1 + self.d1_max
         elif (i0 == i1) and (j0 == j1):
             res = self.data[i0 * self.r + j0]
         elif i0 == i1:
