@@ -36,10 +36,10 @@ cdef double tth(double p1, double p2, double L, double sinRot1, double cosRot1, 
     """
     calculate 2 theta for 1 pixel
     @param p1:distances in meter along dim1 from PONI
-    @param p2: distances in meter along dim2 from PONI 
+    @param p2: distances in meter along dim2 from PONI
     @param sinRot1,sinRot2,sinRot3: sine of the angles
     @param cosRot1,cosRot2,cosRot3: cosine of the angles
-    """  
+    """
     cdef double t1=0, t2=0, t3=0
     t1 = p1 * cosRot2 * cosRot3 + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
     t2 = p1 * cosRot2 * sinRot3 + p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
@@ -51,39 +51,39 @@ cdef double q(double p1, double p2, double L, double sinRot1, double cosRot1, do
     """
     calculate the scattering vector q for 1 pixel
     @param p1:distances in meter along dim1 from PONI
-    @param p2: distances in meter along dim2 from PONI 
+    @param p2: distances in meter along dim2 from PONI
     @param sinRot1,sinRot2,sinRot3: sine of the angles
     @param cosRot1,cosRot2,cosRot3: cosine of the angles
-    """  
-    return 4.0e-9 * M_PI / wavelength * sin(tth(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)/2.0) 
+    """
+    return 4.0e-9 * M_PI / wavelength * sin(tth(p1, p2, L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)/2.0)
 
 
 @cython.cdivision(True)
-cdef double chi(double p1, double p2, double L, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:  
+cdef double chi(double p1, double p2, double L, double sinRot1, double cosRot1, double sinRot2, double cosRot2, double sinRot3, double cosRot3) nogil:
     """
     calculate chi for 1 pixel
     @param p1:distances in meter along dim1 from PONI
-    @param p2: distances in meter along dim2 from PONI 
+    @param p2: distances in meter along dim2 from PONI
     @param sinRot1,sinRot2,sinRot3: sine of the angles
     @param cosRot1,cosRot2,cosRot3: cosine of the angles
-    """  
+    """
     cdef double num=0, den=0
     num = p1 * cosRot2 * cosRot3 + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
     den = p1 * cosRot2 * sinRot3 - L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3) + p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3)
-    return  atan2(num, den) 
+    return  atan2(num, den)
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def calc_tth(double L, double rot1, double rot2, double rot3, 
+def calc_tth(double L, double rot1, double rot2, double rot3,
              numpy.ndarray pos1 not None, numpy.ndarray pos2 not None):
     """
     Calculate the 2theta array (radial angle) in parallel
-    
+
     @param L: distance sample - PONI
     @param rot1: angle1
     @param rot2: angle2
     @param rot3: angle3
-    @param pos1: numpy array with distances in meter along dim1 from PONI (Y) 
+    @param pos1: numpy array with distances in meter along dim1 from PONI (Y)
     @param pos2: numpy array with distances in meter along dim2 from PONI (X)
     """
     cdef double sinRot1 = sin(rot1)
@@ -92,20 +92,18 @@ def calc_tth(double L, double rot1, double rot2, double rot3,
     cdef double cosRot2 = cos(rot2)
     cdef double sinRot3 = sin(rot3)
     cdef double cosRot3 = cos(rot3)
-    cdef long  size = pos1.size
+    cdef size_t  size = pos1.size, i=0
     assert pos2.size == size
-    cdef numpy.ndarray[numpy.float64_t, ndim = 1] c1 = numpy.ascontiguousarray(pos1.ravel(),dtype=numpy.float64)
-    cdef numpy.ndarray[numpy.float64_t, ndim = 1] c2 = numpy.ascontiguousarray(pos2.ravel(),dtype=numpy.float64)
+    cdef double[:] c1 = numpy.ascontiguousarray(pos1.ravel(),dtype=numpy.float64)
+    cdef double[:] c2 = numpy.ascontiguousarray(pos2.ravel(),dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] out = numpy.empty(size, dtype=numpy.float64)
-    cdef long i=0
-    with nogil:
-        for i in prange(size):
-            out[i] = tth(c1[i], c2[i], L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+    for i in prange(size, nogil=True, schedule="static"):
+        out[i] = tth(c1[i], c2[i], L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
     return out
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def calc_chi(double L, double rot1, double rot2, double rot3, 
+def calc_chi(double L, double rot1, double rot2, double rot3,
              numpy.ndarray pos1 not None, numpy.ndarray pos2 not None):
     """
     Calculate the chi array (azimuthal angles) in parallel
@@ -115,12 +113,12 @@ def calc_chi(double L, double rot1, double rot2, double rot3,
     X3 = -(L*cos(rot1)*cos(rot2)) + p2*cos(rot2)*sin(rot1) - p1*sin(rot2)
     tan(Chi) =  X2 / X1
 
-    
+
     @param L: distance sample - PONI
     @param rot1: angle1
     @param rot2: angle2
     @param rot3: angle3
-    @param pos1: numpy array with distances in meter along dim1 from PONI (Y) 
+    @param pos1: numpy array with distances in meter along dim1 from PONI (Y)
     @param pos2: numpy array with distances in meter along dim2 from PONI (X)
     """
     cdef double sinRot1 = sin(rot1)
@@ -129,20 +127,18 @@ def calc_chi(double L, double rot1, double rot2, double rot3,
     cdef double cosRot2 = cos(rot2)
     cdef double sinRot3 = sin(rot3)
     cdef double cosRot3 = cos(rot3)
-    cdef long  size = pos1.size
+    cdef size_t  size = pos1.size, i=0
     assert pos2.size == size
-    cdef numpy.ndarray[numpy.float64_t, ndim = 1] c1 = numpy.ascontiguousarray(pos1.ravel(),dtype=numpy.float64)
-    cdef numpy.ndarray[numpy.float64_t, ndim = 1] c2 = numpy.ascontiguousarray(pos2.ravel(),dtype=numpy.float64)
+    cdef double[:] c1 = numpy.ascontiguousarray(pos1.ravel(),dtype=numpy.float64)
+    cdef double[:] c2 = numpy.ascontiguousarray(pos2.ravel(),dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] out = numpy.empty(size, dtype=numpy.float64)
-    cdef long i=0
-    with nogil:
-        for i in prange(size):
-            out[i] = chi(c1[i], c2[i], L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
-    return out    
+    for i in prange(size, nogil=True, schedule="static"):
+        out[i] = chi(c1[i], c2[i], L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+    return out
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def calc_q(double L, double rot1, double rot2, double rot3, 
+def calc_q(double L, double rot1, double rot2, double rot3,
              numpy.ndarray pos1 not None, numpy.ndarray pos2 not None, double wavelength):
     """
     Calculate the q (scattering vector) array in parallel
@@ -152,12 +148,12 @@ def calc_q(double L, double rot1, double rot2, double rot3,
     X3 = -(L*cos(rot1)*cos(rot2)) + p2*cos(rot2)*sin(rot1) - p1*sin(rot2)
     tan(Chi) =  X2 / X1
 
-    
+
     @param L: distance sample - PONI
     @param rot1: angle1
     @param rot2: angle2
     @param rot3: angle3
-    @param pos1: numpy array with distances in meter along dim1 from PONI (Y) 
+    @param pos1: numpy array with distances in meter along dim1 from PONI (Y)
     @param pos2: numpy array with distances in meter along dim2 from PONI (X)
     @param wavelength: in meter to get q in nm-1
     """
@@ -167,13 +163,11 @@ def calc_q(double L, double rot1, double rot2, double rot3,
     cdef double cosRot2 = cos(rot2)
     cdef double sinRot3 = sin(rot3)
     cdef double cosRot3 = cos(rot3)
-    cdef long  size = pos1.size
+    cdef size_t  size = pos1.size, i=0
     assert pos2.size == size
-    cdef numpy.ndarray[numpy.float64_t, ndim = 1] c1 = numpy.ascontiguousarray(pos1.ravel(),dtype=numpy.float64)
-    cdef numpy.ndarray[numpy.float64_t, ndim = 1] c2 = numpy.ascontiguousarray(pos2.ravel(),dtype=numpy.float64)
+    cdef double[:] c1 = numpy.ascontiguousarray(pos1.ravel(),dtype=numpy.float64)
+    cdef double[:] c2 = numpy.ascontiguousarray(pos2.ravel(),dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] out = numpy.empty(size, dtype=numpy.float64)
-    cdef long i=0
-    with nogil:
-        for i in prange(size):
-            out[i] = q(c1[i], c2[i], L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3, wavelength)
-    return out    
+    for i in prange(size, nogil=True, schedule="static"):
+        out[i] = q(c1[i], c2[i], L, sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3, wavelength)
+    return out
