@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 #
-#    Project: Azimuthal integration 
+#    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
 #
 #    File: "$Id$"
@@ -24,44 +24,18 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-
+__author__ = "Jerome Kieffer"
+__date__ = "20120916"
 
 import cython
 from cython.parallel cimport prange
-cimport numpy
 import numpy
-cdef extern from "omp.h":
-    ctypedef struct omp_lock_t:
-        pass
+cimport numpy
 
-    extern void omp_set_num_threads(int) nogil
-    extern int omp_get_num_threads() nogil
-    extern int omp_get_max_threads() nogil
-    extern int omp_get_thread_num() nogil
-    extern int omp_get_num_procs() nogil
+from libc.stdlib cimport free, calloc,malloc
+from libc.math cimport floor,fabs
+from openmp cimport omp_set_num_threads, omp_get_max_threads, omp_get_thread_num
 
-    extern int omp_in_parallel() nogil
-    extern void omp_init_lock(omp_lock_t *) nogil
-    extern void omp_destroy_lock(omp_lock_t *) nogil
-    extern void omp_set_lock(omp_lock_t *) nogil
-    extern void omp_unset_lock(omp_lock_t *) nogil
-    extern int omp_test_lock(omp_lock_t *) nogil
-
-
-cdef extern from "stdlib.h":
-    void free(void * ptr)nogil
-    void * calloc(size_t nmemb, size_t size)nogil
-    void * malloc(size_t size)nogil
-cdef extern from "math.h":
-    double floor(double)nogil
-    double  fabs(double)nogil
-    int     npy_isnan(double)
-
-# "ctypedef" assigns a corresponding compile-time type to DTYPE_t. For
-# every type in the numpy module there's a corresponding compile-time
-# type with a _t-suffix.
-ctypedef numpy.int64_t DTYPE_int64_t
-ctypedef numpy.float64_t DTYPE_float64_t
 
 @cython.cdivision(True)
 @cython.boundscheck(False)
@@ -75,27 +49,26 @@ def histogram(numpy.ndarray pos not None, \
               double dummy=0.0):
     """
     Calculates histogram of pos weighted by weights
-    
+
     @param pos: 2Theta array
     @param weights: array with intensities
     @param bins: number of output bins
     @param pixelSize_in_Pos: size of a pixels in 2theta
-    @param nthread: maximum number of thread to use. By default: maximum available. 
+    @param nthread: maximum number of thread to use. By default: maximum available.
         One can also limit this with OMP_NUM_THREADS environment variable
-        
+
     @return 2theta, I, weighted histogram, raw histogram
     """
 
     assert pos.size == weights.size
     assert  bins > 1
     cdef long  size = pos.size
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 1] cpos = pos.astype("float64").ravel()
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 1] cdata = weights.astype("float64").ravel()
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 1] outData = numpy.zeros(bins, dtype="float64")
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype="float64")
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 1] outMerge = numpy.zeros(bins, dtype="float64")
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 1] outPos = numpy.zeros(bins, dtype="float64")
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 1] temp = numpy.zeros(size - 1, dtype="float64")
+    cdef double[:] cpos = numpy.ascontiguousarray(pos.ravel(),dtype=numpy.float64)
+    cdef double[:] cdata = numpy.ascontiguousarray(weights.ravel(),dtype=numpy.float64)
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(bins, dtype="float64")
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype="float64")
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] outMerge = numpy.zeros(bins, dtype="float64")
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] outPos = numpy.zeros(bins, dtype="float64")
     cdef double bin_edge_min = pos.min()
     cdef double bin_edge_max = pos.max() * (1 + numpy.finfo(numpy.double).eps)
     if bin_range is not None:
@@ -135,7 +108,7 @@ def histogram(numpy.ndarray pos not None, \
     elif isinstance(pixelSize_in_Pos, numpy.ndarray):
         pass #TODO
 
-    if npy_isnan(dbin) or npy_isnan(inv_dbin2):
+    if numpy.isnan(dbin) or numpy.isnan(inv_dbin2):
         dbin = 0.0
         inv_dbin2 = 0.0
 
@@ -205,10 +178,10 @@ def histogram2d(numpy.ndarray pos0 not None,
     @param pos1: Chi array
     @param weights: array with intensities
     @param bins: number of output bins int or 2-tuple of int
-    @param nthread: maximum number of thread to use. By default: maximum available. 
+    @param nthread: maximum number of thread to use. By default: maximum available.
     One can also limit this with OMP_NUM_THREADS environment variable
 
-    
+
     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
     assert pos0.size == pos1.size
@@ -225,14 +198,14 @@ def histogram2d(numpy.ndarray pos0 not None,
     if bin1 <= 0:
         bin1 = 1
     cdef int csplit = split
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 1] cpos0 = pos0.astype("float64").flatten()
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 1] cpos1 = pos1.astype("float64").flatten()
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 1] data = weights.astype("float64").flatten()
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 2] outData = numpy.zeros((bin0, bin1), dtype="float64")
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 2] outCount = numpy.zeros((bin0, bin1), dtype="float64")
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 2] outMerge = numpy.zeros((bin0, bin1), dtype="float64")
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 1] edges0 = numpy.zeros(bin0, dtype="float64")
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 1] edges1 = numpy.zeros(bin1, dtype="float64")
+    cdef double[:] cpos0 = numpy.ascontiguousarray(pos0.ravel(),dtype=numpy.float64)
+    cdef double[:] cpos1 = numpy.ascontiguousarray(pos1.ravel(),dtype=numpy.float64)
+    cdef double[:] data = numpy.ascontiguousarray(weights.ravel(),dtype=numpy.float64)
+    cdef numpy.ndarray[numpy.float64_t, ndim = 2] outData = numpy.zeros((bin0, bin1), dtype="float64")
+    cdef numpy.ndarray[numpy.float64_t, ndim = 2] outCount = numpy.zeros((bin0, bin1), dtype="float64")
+    cdef numpy.ndarray[numpy.float64_t, ndim = 2] outMerge = numpy.zeros((bin0, bin1), dtype="float64")
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] edges0 = numpy.zeros(bin0, dtype="float64")
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] edges1 = numpy.zeros(bin1, dtype="float64")
     cdef double min0 = pos0.min()
     cdef double max0 = pos0.max()
     cdef double min1 = pos1.min()
