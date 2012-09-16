@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__data__ = "2011-10-17"
+__data__ = "2012-09-16"
 import os, imp, sys, subprocess, threading
 import distutils.util
 import logging
@@ -37,6 +37,8 @@ import urllib2
 import bz2
 import gzip
 import numpy
+import shutil
+
 logger = logging.getLogger("pyFAI.utilstest")
 
 class UtilsTest(object):
@@ -68,9 +70,7 @@ class UtilsTest(object):
     opencl = os.path.join(os.path.dirname(test_home), "openCL")
     for clf in os.listdir(opencl):
         if clf.endswith(".cl") and clf not in os.listdir(os.path.join(pyFAI_home, "pyFAI")):
-            print "I wanted to link",os.path.join(opencl, clf), os.path.join(pyFAI_home, "pyFAI", clf)
-            import shutil
-            shutil.copy(os.path.join(opencl, clf), os.path.join(pyFAI_home, "pyFAI", clf))
+            copy(os.path.join(opencl, clf), os.path.join(pyFAI_home, "pyFAI", clf))
     pyFAI = imp.load_module(*((name,) + imp.find_module(name, [pyFAI_home])))
     sys.modules[name] = pyFAI
     logger.info("pyFAI loaded from %s" % pyFAI.__file__)
@@ -225,3 +225,10 @@ def getLogger(filename=__file__):
     if force_build:
         UtilsTest.forceBuild()
     return logger
+
+def copy(infile, outfile):
+    "link or copy file accoding to the OS"
+    if "link" in dir(os):
+        os.link(infile,outfile)
+    else:
+        shutil.copy(infile,outfile)
