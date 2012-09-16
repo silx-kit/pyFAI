@@ -41,6 +41,13 @@ import shutil
 
 logger = logging.getLogger("pyFAI.utilstest")
 
+def copy(infile, outfile):
+    "link or copy file accoding to the OS"
+    if "link" in dir(os):
+        os.link(infile,outfile)
+    else:
+        shutil.copy(infile,outfile)
+
 class UtilsTest(object):
     """
     Static class providing useful stuff for preparing tests.
@@ -226,9 +233,3 @@ def getLogger(filename=__file__):
         UtilsTest.forceBuild()
     return logger
 
-def copy(infile, outfile):
-    "link or copy file accoding to the OS"
-    if "link" in dir(os):
-        os.link(infile,outfile)
-    else:
-        shutil.copy(infile,outfile)
