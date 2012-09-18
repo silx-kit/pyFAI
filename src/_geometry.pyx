@@ -92,7 +92,7 @@ def calc_tth(double L, double rot1, double rot2, double rot3,
     cdef double cosRot2 = cos(rot2)
     cdef double sinRot3 = sin(rot3)
     cdef double cosRot3 = cos(rot3)
-    cdef Py_ssize_t  size = pos1.size, i=0
+    cdef ssize_t  size = pos1.size, i=0
     # square array?
     assert pos2.size == size
     cdef double[:] c1 = numpy.ascontiguousarray(pos1.ravel(),dtype=numpy.float64)
@@ -128,7 +128,7 @@ def calc_chi(double L, double rot1, double rot2, double rot3,
     cdef double cosRot2 = cos(rot2)
     cdef double sinRot3 = sin(rot3)
     cdef double cosRot3 = cos(rot3)
-    cdef Py_ssize_t  size = pos1.size, i=0
+    cdef ssize_t  size = pos1.size, i=0
     assert pos2.size == size
     cdef double[:] c1 = numpy.ascontiguousarray(pos1.ravel(),dtype=numpy.float64)
     cdef double[:] c2 = numpy.ascontiguousarray(pos2.ravel(),dtype=numpy.float64)
@@ -164,7 +164,7 @@ def calc_q(double L, double rot1, double rot2, double rot3,
     cdef double cosRot2 = cos(rot2)
     cdef double sinRot3 = sin(rot3)
     cdef double cosRot3 = cos(rot3)
-    cdef Py_ssize_t  size = pos1.size, i=0
+    cdef ssize_t  size = pos1.size, i=0
     assert pos2.size == size
     cdef double[:] c1 = numpy.ascontiguousarray(pos1.ravel(),dtype=numpy.float64)
     cdef double[:] c2 = numpy.ascontiguousarray(pos2.ravel(),dtype=numpy.float64)
