@@ -41,8 +41,10 @@ from numpy.distutils.misc_util import get_numpy_include_dirs
 from distutils.sysconfig import get_python_lib
 try:
     from Cython.Distutils import build_ext
+    CYTHON=True
 except ImportError:
     from distutils.command.build_ext import build_ext
+    CYTHON=False
 
 
 # These should go to a setup.cfg or similar file?
@@ -100,17 +102,18 @@ class build_ext_pyFAI( build_ext ):
             #print e.extra_link_args
         build_ext.build_extensions(self)
 
-
-ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.pyx", "ocl_base.cpp", 
+src = {}
+if CYTHON:
+    ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.pyx", "ocl_base.cpp", 
     "ocl_tools/ocl_tools.cc", "ocl_tools/ocl_tools_extended.cc", 
     "ocl_tools/cLogger/cLogger.c", "ocl_xrpd1d_fullsplit.cpp")]
-
-src = {}
-if build_ext:
     for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear", 
             "_geometry"]:
         src[ext] = os.path.join("src", ext + ".pyx")
 else:
+    ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.cpp", "ocl_base.cpp", 
+    "ocl_tools/ocl_tools.cc", "ocl_tools/ocl_tools_extended.cc", 
+    "ocl_tools/cLogger/cLogger.c", "ocl_xrpd1d_fullsplit.cpp")]
     for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear", 
             "_geometry"]:
         src[ext] = os.path.join("src", ext + ".c")
