@@ -35,34 +35,39 @@ __date__ = "03/07/2012"
 __status__ = "stable"
 
 
-import os, sys, glob, shutil
+import os, sys, glob, shutil, ConfigParser
 from distutils.core import setup, Extension
 from numpy.distutils.misc_util import get_numpy_include_dirs
 from distutils.sysconfig import get_python_lib
 try:
     from Cython.Distutils import build_ext
-    CYTHON=True
+    CYTHON = True
 except ImportError:
     from distutils.command.build_ext import build_ext
-    CYTHON=False
+    CYTHON = False
 
 
-# These should go to a setup.cfg or similar file?
-if sys.platform=='win32':
-    OCLINC=r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v3.2\include"
-    OCLLIBDIR=r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v3.2\lib\x64"
-else:
-    OCLINC = None
-    OCLLIBDIR = None
-
-
+## These should go to a setup.cfg or similar file?
+#if sys.platform == 'win32':
+#    OCLINC = r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v3.2\include"
+#    OCLLIBDIR = r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v3.2\lib\x64"
+#else:
+OCLINC = []
+OCLLIBDIR = []
+configparser = ConfigParser.ConfigParser()
+configparser.read([os.path.join(os.path.dirname(os.path.abspath(__file__)), "setup.cfg")])
+for item in configparser.items("OpenCL"):
+    if item[0] == "include-dirs":
+        OCLINC += item[1].split(os.pathsep)
+    elif item[0] == "library-dirs":
+        OCLLIBDIR += item[1].split(os.pathsep)
 
 # We subclass the build_ext class in order to handle compiler flags
 # for openmp and opencl etc in a cross platform way
 translator = {
         # Compiler
             # name, compileflag, linkflag
-        'msvc' : { 
+        'msvc' : {
             'openmp' : ('/openmp', ' '),
             'debug'  : ('/Zi', ' '),
             'OpenCL' : 'OpenCL',
@@ -81,20 +86,20 @@ translator = {
             }
         }
 
-class build_ext_pyFAI( build_ext ):
+class build_ext_pyFAI(build_ext):
     def build_extensions(self):
-        if translator.has_key( self.compiler.compiler_type ):
+        if translator.has_key(self.compiler.compiler_type):
             trans = translator[self.compiler.compiler_type]
         else:
             trans = translator['default']
 
         for e in self.extensions:
-            e.extra_compile_args = [ trans[a][0] if trans.has_key(a) else a 
+            e.extra_compile_args = [ trans[a][0] if trans.has_key(a) else a
                     for a in e.extra_compile_args]
-            e.extra_link_args = [ trans[a][1] if trans.has_key(a) else a 
+            e.extra_link_args = [ trans[a][1] if trans.has_key(a) else a
                     for a in e.extra_link_args]
-            e.libraries = filter(None, [ trans[a] if trans.has_key(a) else None 
-                    for a in e.libraries] )
+            e.libraries = filter(None, [ trans[a] if trans.has_key(a) else None
+                    for a in e.libraries])
 
             # If you are confused look here:
             # print e, e.libraries
@@ -104,30 +109,28 @@ class build_ext_pyFAI( build_ext ):
 
 src = {}
 if CYTHON:
-    ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.pyx", "ocl_base.cpp", 
-    "ocl_tools/ocl_tools.cc", "ocl_tools/ocl_tools_extended.cc", 
+    ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.pyx", "ocl_base.cpp",
+    "ocl_tools/ocl_tools.cc", "ocl_tools/ocl_tools_extended.cc",
     "ocl_tools/cLogger/cLogger.c", "ocl_xrpd1d_fullsplit.cpp")]
-    for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear", 
+    for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear",
             "_geometry"]:
         src[ext] = os.path.join("src", ext + ".pyx")
 else:
-    ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.cpp", "ocl_base.cpp", 
-    "ocl_tools/ocl_tools.cc", "ocl_tools/ocl_tools_extended.cc", 
+    ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.cpp", "ocl_base.cpp",
+    "ocl_tools/ocl_tools.cc", "ocl_tools/ocl_tools_extended.cc",
     "ocl_tools/cLogger/cLogger.c", "ocl_xrpd1d_fullsplit.cpp")]
-    for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear", 
+    for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear",
             "_geometry"]:
         src[ext] = os.path.join("src", ext + ".c")
 
 installDir = os.path.join(get_python_lib(), "pyFAI")
 
-openCL = []
+openCL = OCLINC
 j = ""
 for i in "openCL/ocl_tools/cLogger".split("/"):
     j = os.path.join(j, i)
-    openCL.append(j)
+    openCL.insert(0, j)
 
-if OCLINC is not None:
-    openCL.append(OCLINC)
 
 
 
@@ -162,11 +165,10 @@ bilinear_dic = dict(name="bilinear",
 ocl_azim_dict = dict(name="ocl_azim",
                     sources=ocl_azim,
                     include_dirs=openCL + get_numpy_include_dirs(),
+                    library_dirs=OCLLIBDIR,
                     language="c++",
                     libraries=[ "stdc++", "OpenCL"] # "stdc++"
                     )
-if OCLLIBDIR is not None:
-    ocl_azim_dict['library_dirs'] = [OCLLIBDIR,]
 
 _geometry_dic = dict(name="_geometry",
                     include_dirs=get_numpy_include_dirs(),
@@ -200,7 +202,7 @@ else:
 
 
 version = [eval(l.split("=")[1]) for l in open(os.path.join(os.path.dirname(
-    os.path.abspath(__file__)), "pyFAI-src", "__init__.py")) 
+    os.path.abspath(__file__)), "pyFAI-src", "__init__.py"))
     if l.strip().startswith("version")][0]
 
 setup(name='pyFAI',
@@ -225,8 +227,8 @@ setup(name='pyFAI',
 #      data_files=data_files,
       test_suite="test",
       cmdclass={'build_ext': build_ext_pyFAI},
-# 
-      data_files=[('openCL', [os.path.join('openCL',o) for o in [
+#
+      data_files=[('openCL', [os.path.join('openCL', o) for o in [
       "ocl_azim_kernel_2.cl", "ocl_azim_kernel2d_2.cl"]])]
       )
 
@@ -236,8 +238,8 @@ setup(name='pyFAI',
 try:
     import fabio
 except ImportError:
-    print("""pyFAI needs fabIO for all image reading and writing. 
-This python module can be found on: 
+    print("""pyFAI needs fabIO for all image reading and writing.
+This python module can be found on:
 http://sourceforge.net/projects/fable/files/fabio/0.0.7/""")
 
 
