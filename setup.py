@@ -211,7 +211,7 @@ version = [eval(l.split("=")[1]) for l in open(os.path.join(os.path.dirname(
 
 setup(name='pyFAI',
       version=version,
-      author="Jérôme Kieffer (python), Peter Boesecke (geometry), Manuel Sanchez del Rio (algorithm), Vicente Armando Sole (algorithm) and Dimitris Karkoulis (GPU ) """,
+      author="Jérôme Kieffer (python), Peter Boesecke (geometry), Manuel Sanchez del Rio (algorithm), Vicente Armando Sole (algorithm), Dimitris Karkoulis (GPU) and Jon Wright (adaptations) """,
       author_email="jerome.kieffer@esrf.fr",
       description='Python implementation of fast azimuthal integration',
       url="http://forge.epn-campus.eu/azimuthal",
