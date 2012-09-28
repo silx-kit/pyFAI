@@ -23,7 +23,7 @@ def countThem(numpy.ndarray label not None, \
         * max of blured in that zone:    blured[label == index].max()
         * data-blured where data is max.
     """
-    cdef unsigned int[:] clabel = numpy.ascontiguousarray(label.ravel(), dtype=numpy.uint)
+    cdef numpy.uint32_t[:] clabel = numpy.ascontiguousarray(label.ravel(), dtype=numpy.uint32)
     cdef float[:] cdata = numpy.ascontiguousarray(data.ravel(), dtype=numpy.float32)
     cdef float[:] cblured = numpy.ascontiguousarray(blured.ravel(), dtype=numpy.float32)
     cdef size_t maxLabel = label.max()
