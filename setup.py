@@ -40,18 +40,18 @@ from distutils.core import setup, Extension
 from numpy.distutils.misc_util import get_numpy_include_dirs
 from distutils.sysconfig import get_python_lib
 
-CYTHON = False
 try:
     from Cython.Distutils import build_ext
     CYTHON = True
-
+except:
+    CYTHON = False
 if CYTHON:
     try:
         import Cython.Compiler.Version
     except ImportError:
         CYTHON = False
     else:
-        if Cython.Compiler.Version.version<"0.17":
+        if Cython.Compiler.Version.version < "0.17":
             CYTHON = False
 if not CYTHON:
     from distutils.command.build_ext import build_ext
@@ -211,7 +211,7 @@ version = [eval(l.split("=")[1]) for l in open(os.path.join(os.path.dirname(
 
 setup(name='pyFAI',
       version=version,
-      author="Jérôme Kieffer (python), Peter Boesecke (geometry), Manuel Sanchez del Rio (algorithm), Vicente Armando Sole (algorithm) and Dimitris Karkoulis (GPU ) """,
+      author="Jérôme Kieffer (python), Peter Boesecke (geometry), Manuel Sanchez del Rio (algorithm), Vicente Armando Sole (algorithm), Dimitris Karkoulis (GPU) and Jon Wright (adaptations) """,
       author_email="jerome.kieffer@esrf.fr",
       description='Python implementation of fast azimuthal integration',
       url="http://forge.epn-campus.eu/azimuthal",
