@@ -2,11 +2,17 @@
 import numpy
 cimport numpy
 
+cdef float processPoint(float[:,:] data,char[:,:] mask,size_t p0,size_t p1,size_t d0,size_t d1) nogil:
+    cdef size_t dist=0
+    cdef float sum,count
+
+    return sum/count
+
 def reconstruct(numpy ndarray data not None, numpy ndarray mask=None,int dummy=None, int delta_dummy=None):
     assert self.data.ndim==2
     cdef size_t d0=data.shape[0]
     cdef size_t d1=data.shape[1]
-    cdef cdata[:,:] = numpy.ascontiguousarray(data, dtype=numpy.float32)
+    cdef float[:,:] cdata = numpy.ascontiguousarray(data, dtype=numpy.float32)
     if mask is not None:
         mask = numpy.ascontiguousarray(mask, dtype=numpy.int8)
     else:
@@ -17,6 +23,7 @@ def reconstruct(numpy ndarray data not None, numpy ndarray mask=None,int dummy=N
         else:
             self.mask+=(abs(self.data-dummy)<delta_dummy)
         mask = mask.astype(numpy.int8)
+    cdef char[:,:] cmask = mask
     assert d0==mask.shape[0]
     assert d1==mask.shape[1]
 
@@ -28,10 +35,10 @@ def reconstruct(numpy ndarray data not None, numpy ndarray mask=None,int dummy=N
     cdef numpy.int8t cmask = mask
 
     cdef size_t p0,p1,i,l
-    cdef float sum,count
+#    cdef float sum,count
     for i in  masked:
         p0 = i//d1
         p1=i%d1
-        out[p0,p1] += processPoint(data,mask,p0,p1,d0,d1)
+        out[p0,p1] += processPoint(cdata,cmask,p0,p1,d0,d1)
     return out
 
