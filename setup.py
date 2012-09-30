@@ -60,11 +60,12 @@ OCLINC = []
 OCLLIBDIR = []
 configparser = ConfigParser.ConfigParser()
 configparser.read([os.path.join(os.path.dirname(os.path.abspath(__file__)), "setup.cfg")])
-for item in configparser.items("OpenCL"):
-    if item[0] == "include-dirs":
-        OCLINC += item[1].split(os.pathsep)
-    elif item[0] == "library-dirs":
-        OCLLIBDIR += item[1].split(os.pathsep)
+if "OpenCL" in configparser.sections():
+    for item in configparser.items("OpenCL"):
+        if item[0] == "include-dirs":
+            OCLINC += item[1].split(os.pathsep)
+        elif item[0] == "library-dirs":
+            OCLLIBDIR += item[1].split(os.pathsep)
 
 # We subclass the build_ext class in order to handle compiler flags
 # for openmp and opencl etc in a cross platform way
