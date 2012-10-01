@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 #
-#    Project: Azimuthal integration 
-#             https://forge.epn-campus.eu/projects/azimuthal 
+#    Project: Azimuthal integration
+#             https://forge.epn-campus.eu/projects/azimuthal
 #
 #    File: "$Id$"
 #
@@ -42,6 +42,7 @@ import pylab
 import fabio
 from utils                  import relabel, gaussian_filter, binning, unBinning
 from bilinear               import bilinear
+from reconstruct            import reconstruct
 logger = logging.getLogger("pyFAI.peakPicker")
 if os.name != "nt":
     WindowsError = RuntimeError
@@ -51,9 +52,10 @@ TARGET_SIZE = 1024
 # PeakPicker
 ################################################################################
 class PeakPicker(object):
-    def __init__(self, strFilename):
+    def __init__(self, strFilename, reconst=False):
         """
         @param: input image filename
+        @param reconst: shall negative values be reconstucted (wipe out problems with pilatus gaps)
         """
         self.strFilename = strFilename
         self.data = fabio.open(strFilename).data.astype("float32")
@@ -66,7 +68,10 @@ class PeakPicker(object):
         self.ax = None
         self.ct = None
         self.msp = None
-        self.massif = Massif(self.data)
+        if reconstruct and (reconst is not False):
+            self.massif = Massif(reconstruct(self.data, self.data < 0))
+        else:
+            self.massif = Massif(self.data)
         self._sem = threading.Semaphore()
         self._semGui = threading.Semaphore()
         self.defaultNbPoints = 100
@@ -105,7 +110,7 @@ class PeakPicker(object):
         def annontate(x, x0=None, idx=None):
             """
             Call back method to annotate the figure while calculation are going on ...
-            @param x: coordinates 
+            @param x: coordinates
             @param x0: coordinates of the starting point
             """
             if x0 is None:
@@ -235,7 +240,7 @@ class PeakPicker(object):
 ################################################################################
 class ControlPoints(object):
     """
-    This class contains a set of control points with (optionaly) their diffrection 2Theta angle  
+    This class contains a set of control points with (optionaly) their diffrection 2Theta angle
     """
     def __init__(self, filename=None):
         if filename is not None:
@@ -259,14 +264,14 @@ class ControlPoints(object):
 
     def check(self):
         """
-        check internal consistency of the class 
+        check internal consistency of the class
         """
         if len(self._angles) != len(self._points):
             logger.error("in ControlPoints: length of the two arrays are not consistent!!! angle: %i points: %s ",
                            len(self._angles), len(self._points))
     def reset(self):
         """
-        remove all stored values and resets them to default 
+        remove all stored values and resets them to default
         """
         with self._sem:
             self._wavelength = None
@@ -276,7 +281,7 @@ class ControlPoints(object):
     def append(self, points, angle=None):
         """
         @param point: list of points
-        @param angle: 2-theta angle in radians 
+        @param angle: 2-theta angle in radians
         """
         with self._sem:
             self._angles.append(angle)
@@ -286,7 +291,7 @@ class ControlPoints(object):
     def append_2theta_deg(self, points, angle=None):
         """
         @param point: list of points
-        @param angle: 2-theta angle in degrees 
+        @param angle: 2-theta angle in degrees
         """
         with self._sem:
             self._angles.append(pi * angle / 180.)
@@ -332,7 +337,7 @@ class ControlPoints(object):
 
     def load(self, filename):
         """
-        load all control points from a file 
+        load all control points from a file
         """
         if not os.path.isfile(filename):
             logger.error("ControlPoint.load: No such file %s", filename)
@@ -441,7 +446,7 @@ class Massif(object):
     """
     def __init__(self, data=None):
         """
-        
+
         """
         if isinstance(data, (str, unicode)) and os.path.isfile(data):
             self.data = fabio.open(data).data.astype("float32")
@@ -468,7 +473,7 @@ class Massif(object):
 
     def nearest_peak(self, x):
         """
-        @returns the coordinates of the nearest peak       
+        @returns the coordinates of the nearest peak
         """
         x = numpy.array(x, dtype="float32")
         out = fmin(self._bilin.f_cy, x, disp=0).round().astype(numpy.int)
@@ -492,12 +497,12 @@ class Massif(object):
 
     def find_peaks(self, x, nmax=200, annotate=None, massif_contour=None, stdout=sys.stdout):
         """
-        All in one function that finds a maximum from the given seed (x) 
-        then calculates the region extension and extract position of the neighboring peaks.  
+        All in one function that finds a maximum from the given seed (x)
+        then calculates the region extension and extract position of the neighboring peaks.
         @param x: seed for the calculation, input coordinates
         @param nmax: maximum number of peak per region
-        @param annotate: call back method taking number of points + coordinate as input. 
-        @param massif_contour: callback to show the contour of a massif with the given index. 
+        @param annotate: call back method taking number of points + coordinate as input.
+        @param massif_contour: callback to show the contour of a massif with the given index.
         @param stdout: this is the file where output is written by default.
         @return: list of peaks
         """
@@ -565,7 +570,7 @@ class Massif(object):
             self.initValleySize()
         return self._valley_size
     def setValleySize(self, size):
-        self._valley_size = size
+        self._valley_size = float(size)
         t = threading.Thread(target=self.getLabeledMassif)
         t.start()
     def delValleySize(self):
@@ -575,7 +580,7 @@ class Massif(object):
 
     def getBinnedData(self):
         """
-        @return binned data 
+        @return binned data
         """
         if self._binned_data is None:
             with self._sem_binning:

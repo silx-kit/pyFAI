@@ -112,20 +112,21 @@ class build_ext_pyFAI(build_ext):
             #print e.extra_link_args
         build_ext.build_extensions(self)
 
+cython_modules = ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear",
+            "_geometry", "reconstruct"]
+
 src = {}
 if CYTHON:
     ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.pyx", "ocl_base.cpp",
     "ocl_tools/ocl_tools.cc", "ocl_tools/ocl_tools_extended.cc",
     "ocl_tools/cLogger/cLogger.c", "ocl_xrpd1d_fullsplit.cpp")]
-    for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear",
-            "_geometry"]:
+    for ext in cython_modules:
         src[ext] = os.path.join("src", ext + ".pyx")
 else:
     ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.cpp", "ocl_base.cpp",
     "ocl_tools/ocl_tools.cc", "ocl_tools/ocl_tools_extended.cc",
     "ocl_tools/cLogger/cLogger.c", "ocl_xrpd1d_fullsplit.cpp")]
-    for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear",
-            "_geometry"]:
+    for ext in cython_modules:
         src[ext] = os.path.join("src", ext + ".c")
 
 installDir = os.path.join(get_python_lib(), "pyFAI")
@@ -182,6 +183,14 @@ _geometry_dic = dict(name="_geometry",
 #                    extra_compile_args=['-g'],
                     extra_link_args=['openmp'])
 
+reconstruct_dic = dict(name="reconstruct",
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=[src['reconstruct']],
+                    extra_compile_args=['openmp'],
+#                    extra_compile_args=['-g'],
+                    extra_link_args=['openmp'])
+
+
 if sys.platform == "win32":
     # This seems to be from mingw32/gomp?
     data_files = [(installDir, [os.path.join("dll", "pthreadGC2.dll")])]
@@ -225,7 +234,8 @@ setup(name='pyFAI',
                    Extension(**splitBBox_dic),
                    Extension(**bilinear_dic),
                    Extension(**ocl_azim_dict),
-                   Extension(**_geometry_dic)
+                   Extension(**_geometry_dic),
+                   Extension(**reconstruct_dic),
                    ],
       packages=["pyFAI"],
       package_dir={"pyFAI": "pyFAI-src" },
