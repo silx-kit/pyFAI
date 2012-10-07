@@ -4,6 +4,7 @@ README.md
 TODO.txt
 build-deb.sh
 build-msi.bat
+setup.cfg
 setup.py
 stdeb.cfg
 benchmark/Fairchild.poni
@@ -21,7 +22,6 @@ openCL/ocl_azim_kernel_2.cl
 openCL/ocl_base.cpp
 openCL/ocl_base.hpp
 openCL/ocl_tools_extended.pxd
-openCL/ocl_xrpd1d.cpp
 openCL/ocl_xrpd1d.hpp
 openCL/ocl_xrpd1d.pxd
 openCL/ocl_xrpd1d_fullsplit.cpp
@@ -62,6 +62,9 @@ src/fastrebin.pyx
 src/histogram.c
 src/histogram.pyx
 src/histogram_seriel.c
+src/paraSplitBBox.c
+src/paraSplitBBox.pyx
+src/reconstruct.pyx
 src/relabel.c
 src/relabel.pyx
 src/slist.c
@@ -69,13 +72,14 @@ src/slist.h
 src/slist.pxd
 src/splitBBox.c
 src/splitBBox.pyx
+src/splitBBoxLUT.c
+src/splitBBoxLUT.pyx
 src/splitPixel.c
 src/splitPixel.pyx
 src/xutils.c
 src/xutils.pyx
 test/__init__.py
 test/bug-1280.py
-test/bug-ocl-cpu.py
 test/bug_ocl_cpu.py
 test/example.sp
 test/moke.poni
@@ -92,9 +96,7 @@ test/utilstest.py
 test/testimages/Fairchild.poni
 test/testimages/Frelon2k.poni
 test/testimages/LaB6.poni
-test/testimages/LaB6_0020.poni
 test/testimages/Pilatus1M.poni
 test/testimages/Pilatus6M.poni
 test/testimages/halfccd.poni
-test/testimages/refinment.py
-test/testimages/refinment2D.py
+test/testimages/slow_splitBBox.py
