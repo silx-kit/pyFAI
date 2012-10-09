@@ -1,28 +1,28 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 # -*- coding: utf8 -*-
-#
+# 
 #    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
-#
+# 
 #    File: "$Id$"
-#
+# 
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
-#
+# 
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
-#
+# 
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
 #    (at your option) any later version.
-#
+# 
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
-#
+# 
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+# 
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
@@ -144,7 +144,7 @@ class Geometry(object):
         self._rot2 = rot2
         self._rot3 = rot3
         self.param = [self._dist, self._poni1, self._poni2, self._rot1, self._rot2, self._rot3]
-        self.chiDiscAtPi = True #position of the discontinuity of chi in radians, pi by default
+        self.chiDiscAtPi = True  # position of the discontinuity of chi in radians, pi by default
         self._ttha = None
         self._dttha = None
         self._dssa = None
@@ -371,9 +371,9 @@ class Geometry(object):
         """
         Generate a 3D array of the given shape with (i,j) (azimuthal angle) for all elements.
         """
-################################################################################
+# ###############################################################################
 # TODO : add the center to the 4 corners when splitpixel algo is ready
-################################################################################
+# ###############################################################################
 #        tth_center = self.twoThetaArray(shape)
 #        chi_center = self.chiArray(shape)
         if self._corner4Da is None:
@@ -399,9 +399,9 @@ class Geometry(object):
         """
         Generate a 3D array of the given shape with (i,j) (azimuthal angle) for all elements.
         """
-################################################################################
+# ###############################################################################
 # TODO : add the center to the 4 corners when splitpixel algo is ready
-################################################################################
+# ###############################################################################
 #        q_center = self.qArray(shape)
 #        chi_center = self.chiArray(shape)
         if self._corner4Dqa is None:
@@ -486,10 +486,10 @@ class Geometry(object):
         p2 = (0.5 + d2) * self.pixel2 - self._poni2
         ds = 1.0
 
-        ########################################################################
+        # #######################################################################
         # Nota: the solid angle correction should be done in flat field correction
         # Here is dual-correction
-        ########################################################################
+        # #######################################################################
 
         if self.spline and self._correct_solid_angle_for_spline:
             max1 = d1.max() + 1
@@ -565,7 +565,7 @@ class Geometry(object):
             key = words[0].strip().lower()
             try:
                 value = words[1].strip()
-            except Exception as error:#IGNORE:W0703:
+            except Exception as error:  # IGNORE:W0703:
                 logger.error("Error %s with line: %s" % (error, line))
             if key == "pixelsize1":
                 self.detector.pixel1 = float(value)
@@ -616,7 +616,7 @@ class Geometry(object):
                 if key in kwargs:
                     setattr(self, key, kwargs[key])
             self.param = [self._dist, self._poni1, self._poni2, self._rot1, self._rot2, self._rot3]
-            self.chiDiscAtPi = True #position of the discontinuity of chi in radians, pi by default
+            self.chiDiscAtPi = True  # position of the discontinuity of chi in radians, pi by default
             self.reset()
             self._wavelength = None
             self._oversampling = None
@@ -635,7 +635,7 @@ class Geometry(object):
             if sinTilt != 0:
                 cosTpr = max(-1, (min(1, -cos(self._rot2) * sin(self._rot1) / sinTilt)))
                 sinTpr = sin(self._rot2) / sinTilt
-            else: # undefined, does not seem to matter as not tilted
+            else:  # undefined, does not seem to matter as not tilted
                 cosTpr = 1.0
                 sinTpr = 0.0
             directDist = 1.0e3 * self._dist / cosTilt
@@ -692,15 +692,15 @@ class Geometry(object):
             self._dist = directDist * cosTilt * 1.0e-3
             self._poni1 = centerY * self.pixel1 - directDist * sinTilt * sinTpr * 1.0e-3
             self._poni2 = centerX * self.pixel2 - directDist * sinTilt * cosTpr * 1.0e-3
-            rot2 = numpy.arcsin(sinTilt * sinTpr) # or pi-#
-            rot1 = numpy.arccos(min(1.0, max(-1.0, (cosTilt / numpy.sqrt(1 - sinTpr * sinTpr * sinTilt * sinTilt))))) # + or -
+            rot2 = numpy.arcsin(sinTilt * sinTpr)  # or pi-#
+            rot1 = numpy.arccos(min(1.0, max(-1.0, (cosTilt / numpy.sqrt(1 - sinTpr * sinTpr * sinTilt * sinTilt)))))  # + or -
             if cosTpr * sinTilt > 0:
                 rot1 = -rot1
             assert abs(cosTilt - cos(rot1) * cos(rot2)) < 1e-6
             if tilt == 0:
                 rot3 = 0
             else:
-                rot3 = numpy.arccos(min(1.0, max(-1.0, (cosTilt * cosTpr * sinTpr - cosTpr * sinTpr) / numpy.sqrt(1 - sinTpr * sinTpr * sinTilt * sinTilt)))) # + or -
+                rot3 = numpy.arccos(min(1.0, max(-1.0, (cosTilt * cosTpr * sinTpr - cosTpr * sinTpr) / numpy.sqrt(1 - sinTpr * sinTpr * sinTilt * sinTilt))))  # + or -
                 rot3 = numpy.pi / 2 - rot3
             self._rot1 = rot1
             self._rot2 = rot2
@@ -774,9 +774,9 @@ class Geometry(object):
         self._corner4Da = None
         self._corner4Dqa = None
 
-################################################################################
+# ###############################################################################
 # Accessors and public properties of the class
-################################################################################
+# ###############################################################################
 
     def set_dist(self, value):
         if isinstance(value, float):
@@ -791,6 +791,8 @@ class Geometry(object):
     def set_poni1(self, value):
         if isinstance(value, float):
             self._poni1 = value
+        elif "__len__" in dir(value):  # tuple or list
+            self._poni1 = float(value[0])
         else:
             self._poni1 = float(value)
         self.reset()
@@ -800,6 +802,8 @@ class Geometry(object):
     def set_poni2(self, value):
         if isinstance(value, float):
             self._poni2 = value
+        elif "__len__" in dir(value):  # tuple or list
+            self._poni2 = float(value[0])
         else:
             self._poni2 = float(value)
         self.reset()
@@ -809,6 +813,8 @@ class Geometry(object):
     def set_rot1(self, value):
         if isinstance(value, float):
             self._rot1 = value
+        elif "__len__" in dir(value):  # tuple or list
+            self._rot1 = float(value[0])
         else:
             self._rot1 = float(value)
         self.reset()
@@ -818,6 +824,8 @@ class Geometry(object):
     def set_rot2(self, value):
         if isinstance(value, float):
             self._rot2 = value
+        elif "__len__" in dir(value):  # tuple or list
+            self._rot2 = float(value[0])
         else:
             self._rot2 = float(value)
         self.reset()
@@ -827,6 +835,8 @@ class Geometry(object):
     def set_rot3(self, value):
         if isinstance(value, float):
             self._rot3 = value
+        elif "__len__" in dir(value):  # tuple or list
+            self._rot3 = float(value[0])
         else:
             self._rot3 = float(value)
         self.reset()
@@ -836,6 +846,8 @@ class Geometry(object):
     def set_wavelength(self, value):
         if isinstance(value, float):
             self._wavelength = value
+        elif "__len__" in dir(value):  # tuple or list
+            self._wavelength = float(value[0])
         else:
             self._wavelength = float(value)
         self._qa = None

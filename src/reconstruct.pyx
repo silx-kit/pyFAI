@@ -55,10 +55,12 @@ cdef float processPoint(float[:,:] data,bint[:,:] mask,size_t p0,size_t p1,size_
             found=1
     return sum/count
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def reconstruct(numpy.ndarray data not None, numpy.ndarray mask=None, dummy=None,  delta_dummy=None):
     assert data.ndim==2
-    cdef size_t d0=data.shape[0]
-    cdef size_t d1=data.shape[1]
+    cdef ssize_t d0=data.shape[0]
+    cdef ssize_t d1=data.shape[1]
     data=numpy.ascontiguousarray(data, dtype=numpy.float32)
     cdef float[:,:] cdata =data
     if mask is not None:
@@ -77,7 +79,7 @@ def reconstruct(numpy.ndarray data not None, numpy.ndarray mask=None, dummy=None
     out+=data
     out[mask.astype(bool)]=0
 
-    cdef size_t p0,p1,i,l
+    cdef ssize_t p0,p1,i,l
     for p0 in prange(d0,nogil=True, schedule="guided"):
         for p1 in range(d1):
             if cmask[p0,p1]:

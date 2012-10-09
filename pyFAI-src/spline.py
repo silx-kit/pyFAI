@@ -1,25 +1,25 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 # -*- coding: UTF8 -*-
-###########################################################################
-# Written 2009-12-22 by Jérôme Kieffer 
+# ##########################################################################
+# Written 2009-12-22 by Jérôme Kieffer
 # Copyright (C) 2009 European Synchrotron Radiation Facility
 #                       Grenoble, France
-#
+# 
 #    Principal authors: Jérôme Kieffer  (jerome.kieffer@esrf.fr)
-#
+# 
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
 #    (at your option) any later version.
-#
+# 
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
-#
+# 
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-########################################################################################
+# #######################################################################################
 
 """ This is piece of software aims to manipulate spline files for 
 geometric corrections of the 2D detectors  using cubic-spline"""
@@ -51,8 +51,8 @@ class Spline:
 
     def __init__(self, filename=None):
         """this is the constructor of the Spline class, for"""
-        self.splineOrder = 3  #This is the default, so cubic splines
-        self.lenStrFloat = 14 # by default one float is 14 char in ascii
+        self.splineOrder = 3  # This is the default, so cubic splines
+        self.lenStrFloat = 14  # by default one float is 14 char in ascii
         self.xmin = None
         self.ymin = None
         self.xmax = None
@@ -299,7 +299,7 @@ class Spline:
         """
         try:
             from fabio.edfimage import edfimage
-            #from EdfFile import EdfFile as EDF
+            # from EdfFile import EdfFile as EDF
         except ImportError:
             print "You will need the Fabio library available from the Fable sourceforge"
             return
@@ -371,13 +371,13 @@ class Spline:
         print("center=%s, tilt=%s, tiltPlanRot=%s, distanceSampleDetector=%sm, pixelSize=%sµm" % (center, tiltAngle, tiltPlanRot, distanceSampleDetector, self.pixelSize))
         if timing:
             startTime = time.time()
-        distance = 1.0e6 * distanceSampleDetector #from meters to microns
+        distance = 1.0e6 * distanceSampleDetector  # from meters to microns
         cosb = numpy.cos(numpy.radians(tiltPlanRot))
         sinb = numpy.sin(numpy.radians(tiltPlanRot))
         cosf = numpy.cos(numpy.radians(tiltAngle))
         sinf = numpy.sin(numpy.radians(tiltAngle))
 
-        x = lambda i, j: j - center[0] - 0.5 #x and y are tilted in C/Fortran representation
+        x = lambda i, j: j - center[0] - 0.5  # x and y are tilted in C/Fortran representation
         y = lambda i, j: i - center[1] - 0.5
 
         iPos = numpy.fromfunction(x, (int(self.ymax - self.ymin + 1), int(self.xmax - self.xmin + 1)))
@@ -395,7 +395,7 @@ class Spline:
         tiltedSpline.grid = self.grid
         tiltedSpline.xDispArray = tiltArrayX
         tiltedSpline.yDispArray = tiltArrayY
-        #tiltedSpline.array2spline(smoothing=1e-6, timing=True)
+        # tiltedSpline.array2spline(smoothing=1e-6, timing=True)
         if timing:
             print("Time for the generation of the distorted spline: %.3f sec" % (time.time() - startTime))
         return tiltedSpline
@@ -409,11 +409,11 @@ class Spline:
 #            self.pixelSize = pixelSize
 #    def getPixelSize(self):
 #        """
-#        @return: the size of the pixel from a 
+#        @return: the size of the pixel from a
 #        @rtype: 2-tuple of floats expressed in microns.
 #        """
 #        return self.pixelSize
-#    
+# 
 
     def setPixelSize(self, pixelSize):
         """
@@ -431,6 +431,21 @@ class Spline:
         @rtype: 2-tuple of floats expressed in meter.
         """
         return (self.pixelSize[0] * 1.0e-6, self.pixelSize[1] * 1.0e-6)
+
+    def bin(self, binning=None):
+        if "__len__"  in dir(binning):
+            binX, binY = float(binning[0]), float(binning[1])
+        else:
+            binX = binY = float(binning)
+        self.xSplineKnotsX = [i / binX for i in self.xSplineKnotsX]
+        self.xSplineKnotsY = [i / binY for i in self.xSplineKnotsY]
+        self.ySplineKnotsX = [i / binX for i in self.ySplineKnotsX]
+        self.ySplineKnotsY = [i / binY for i in self.ySplineKnotsY]
+        self.pixelSize = (binX * self.pixelSize[0], binY * self.pixelSize[1])
+        self.xmax = self.xmax / binX
+        self.ymax = self.ymax / binY
+        self.xSplineCoeff = [i / binX for i in self.xSplineCoeff]
+        self.ySplineCoeff = [i / binY for i in self.ySplineCoeff]
 
 
 #    def horizontalFlip(self):
@@ -452,28 +467,28 @@ class Spline:
 #        other.ySplineKnotsY = self.ySplineKnotsY[:]
 #        other.ySplineCoeff = self.ySplineCoeff[:]
 #        return other
-#
-#def xDispHorFlip(array):
+# 
+# def xDispHorFlip(array):
 #    """make an horizontal flip of the given X displacement array"""
 #    return - numpy.fliplr(array)
-#def yDispHorFlip(array):
+# def yDispHorFlip(array):
 #    """make an horizontal flip of the given Y displacement array"""
 #    return numpy.fliplr(array)
-#def xDispVerFlip(array):
+# def xDispVerFlip(array):
 #    """make a vertical flip of the given X displacement array"""
 #    return numpy.flipud(array)
-#def yDispVerFlip(array):
+# def yDispVerFlip(array):
 #    """make a vertical flip of the given Y displacement array"""
 #    return - numpy.flipud(array)
 
 
 if __name__ == '__main__':
 #    """this is the main program if somebody wants to use this as a library"""
-#
-#
-#
-#
-##    spline.write("test")
+# 
+# 
+# 
+# 
+# #    spline.write("test")
 #    new = Spline()
 #    new.pixelSize = spline.pixelSize
 #    new.grid = spline.grid
@@ -483,11 +498,11 @@ if __name__ == '__main__':
 #    print "matrix flipped", new
 #    flipped = spline.horizontalFlip()
 #    print "Spline flipped", flipped
-#
-#
+# 
+# 
 #    print "---" * 50
-#
-#
+# 
+# 
 #    print new.comparison(flipped, verbose=True)
 
 #    new.write("new.spline")
@@ -496,7 +511,7 @@ if __name__ == '__main__':
 #    new.spline2array(timing=True)
 #    print new.comparison(spline, verbose=True)
     # Size of the image in pixels:
-##########################################################    
+# #########################################################
 #    spline = Spline()
 #    spline.zeros(0, 0, 2000, 2000)
 #    spline.spline2array()
@@ -504,9 +519,9 @@ if __name__ == '__main__':
 #    spline.grid = 1
 
     CENTER = (1000, 1000)
-    TILT = 10 #deg
-    ROTATION_TILT = 0 #deg
-    DISTANCE = 100 #mm
+    TILT = 10  # deg
+    ROTATION_TILT = 0  # deg
+    DISTANCE = 100  # mm
     SPLINE_FILE = "example.spline"
     for keyword in sys.argv[1:]:
         if os.path.isfile(keyword):
@@ -526,7 +541,7 @@ if __name__ == '__main__':
     print ("Original Spline: %s" % spline)
     spline.spline2array(timing=True)
     tilted = spline.tilt(CENTER, TILT, ROTATION_TILT, DISTANCE, timing=True)
-    #tilted.write("tilted-t%i-p%i-d%i.spline" % (TILT, ROTATION_TILT, DISTANCE))
+    # tilted.write("tilted-t%i-p%i-d%i.spline" % (TILT, ROTATION_TILT, DISTANCE))
     tilted.writeEDF("%s-tilted-t%i-p%i-d%i" % (os.path.splitext(SPLINE_FILE)[0], TILT, ROTATION_TILT, DISTANCE))
 #    for i in range(0, 14, 2):
 #        tilted.array2spline(smoothing=(10.0 ** (-i)), timing=True)
