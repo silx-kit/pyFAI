@@ -1,28 +1,28 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 # -*- coding: utf8 -*-
-#
-#    Project: Azimuthal integration 
+# 
+#    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
-#
+# 
 #    File: "$Id$"
-#
+# 
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
-#
+# 
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
-#
+# 
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
 #    (at your option) any later version.
-#
+# 
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
-#
+# 
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+# 
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
@@ -43,11 +43,11 @@ class Detector(object):
         self.pixel1 = pixel1
         self.pixel2 = pixel2
         self.max_shape = (None, None)
-        self.binning = (1, 1)
+        self._binning = (1, 1)
         self.mask = None
         self._splineFile = None
         self.spline = None
-        self._splineCache = {} #key=(dx,xpoints,ypoints) value: ndarray
+        self._splineCache = {}  # key=(dx,xpoints,ypoints) value: ndarray
         self._sem = threading.Semaphore()
         if splineFile:
             self.set_splineFile(splineFile)
@@ -61,13 +61,32 @@ class Detector(object):
         if splineFile is not None:
             self._splineFile = os.path.abspath(splineFile)
             self.spline = Spline(self._splineFile)
-            #NOTA : X is axis 1 and Y is Axis 0 
+            # NOTA : X is axis 1 and Y is Axis 0
             self.pixel2, self.pixel1 = self.spline.getPixelSize()
             self._splineCache = {}
         else:
             self._splineFile = None
             self.spline = None
     splineFile = property(get_splineFile, set_splineFile)
+    def get_binning(self):
+        return self._binning
+    def set_binning(self, bin_size=(1, 1)):
+        if "__len__" in bin_size and len(bin_size) >= 2:
+            bin_size = (float(bin_size[0]), float(bin_size[1]))
+        else:
+            b = float(bin_size)
+            bin_size = (b, b)
+        if bin_size != self._binning:
+            ratioX = bin_size[1] / self._binning[1]
+            ratioY = bin_size[0] / self._binning[0]
+            if self.spline is not None:
+                self.spline.bin((ratioX, ratioY))
+            else:
+                self.pixel1 *= ratioY
+                self.pixel2 *= ratioX
+            self._binning = bin_size
+    binning = property(get_binning, set_binning)
+
 
     def getPyFAI(self):
         return {"pixel1":self.pixel1,
@@ -159,10 +178,10 @@ class Pilatus(Detector):
                         self.max_shape[1] is None:
                         raise NotImplementedError("Generic Pilatus detector does not know the max size ...")
                     self.mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
-                    #workinng in dim0 = Y
+                    # workinng in dim0 = Y
                     for i in range(self.MODULE_SIZE[0], self.max_shape[0], self.MODULE_SIZE[0] + self.MODULE_GAP[0]):
                         self.mask[i: i + self.MODULE_GAP[0], :] = 1
-                    #workinng in dim1 = X
+                    # workinng in dim1 = X
                     for i in range(self.MODULE_SIZE[1], self.max_shape[1], self.MODULE_SIZE[1] + self.MODULE_GAP[1]):
                         self.mask[:, i: i + self.MODULE_GAP[1]] = 1
         return self.mask
