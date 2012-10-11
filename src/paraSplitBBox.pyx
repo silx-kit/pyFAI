@@ -100,8 +100,8 @@ def histoBBox1d(numpy.ndarray weights not None,
 
 #    cdef numpy.ndarray[numpy.npy_float128, ndim = 1] outData = numpy.zeros(bins, dtype=numpy.float128)
 #    cdef numpy.ndarray[numpy.npy_float128, ndim = 1] outCount = numpy.zeros(bins, dtype=numpy.float128)
-    cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
-    cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(bins, dtype=numpy.float64)
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype=numpy.float64)
 
     cdef numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(bins, dtype=numpy.float32)
     cdef numpy.ndarray[numpy.float32_t, ndim = 1] outPos = numpy.zeros(bins, dtype=numpy.float32)
