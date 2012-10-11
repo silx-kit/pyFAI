@@ -29,7 +29,6 @@ import cython
 from cython.parallel import prange
 import numpy
 cimport numpy
-import time
 from libc.math cimport fabs
 
 @cython.cdivision(True)
@@ -56,10 +55,7 @@ class HistoBBox1d(object):
                  ):
 
         cdef float delta,pos0_min, min0
-        cdef double t0,t1,t2,t3
-        cdef int i
         
-        t0 = time.time()
         self.size = pos0.size
         assert delta_pos0.size == self.size
         self.bins = bins
@@ -84,8 +80,8 @@ class HistoBBox1d(object):
             assert pos1.size == self.size
             assert delta_pos1.size == self.size
             self.check_pos1 = 1
-            self.cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float32)
-            self.dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(), dtype=numpy.float32)
+            self.cpos1_min = numpy.ascontiguousarray((pos1-delta_pos1).ravel(), dtype=numpy.float32)
+            self.cpos1_max = numpy.ascontiguousarray((pos1+delta_pos1).ravel(), dtype=numpy.float32)
             self.pos1_min = min(pos1Range)
             pos1_maxin = max(pos1Range)
             self.pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
@@ -101,44 +97,52 @@ class HistoBBox1d(object):
 
         delta = (< float > self.pos0_max - pos0_min) / (bins)
         self.delta = delta
-        t1 = time.time()
-        print t1 - t0
-        self.lut_size, self.outMax = self.calc_size_lut()
-        t2 = time.time()
-        print "LUT size:", self.lut_size, t2 - t1
-
-        self.lut_max_idx, self.lut_idx, self.lut_coef = self.populate_lut()
-        t3=time.time()
-        print "LUT generation %.3fs" % (t3 - t2)
-        print self.lut_max_idx
-        self.outPos = numpy.zeros(self.bins, dtype=numpy.float32)
-        for i in range(bins):
-            self.outPos[i] = pos0_min + (< float > 0.5 + < float > i) * delta
-
+        self.lut_max_idx, self.lut_idx, self.lut_coef = self.calc_lut()
+        self.outPos = numpy.linspace(self.pos0_min+0.5*delta,self.pos0_max-0.5*delta, self.bins)
+#        sefl.outPos = numpy.zeros(self.bins, dtype=numpy.float32)
+#        for i in range(bins):
+#            self.outPos[i] = pos0_min + (< float > 0.5 + < float > i) * delta
+            
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def calc_size_lut(self):
+    def calc_lut(self):
         'calculate the max number of elements in the LUT'
-        cdef ssize_t idx
-        cdef float delta, pos0_min, min0, max0, fbin0_min, fbin0_max
-        cdef int bin0_min, bin0_max, bins        
+        cdef float delta=self.delta, pos0_min=self.pos0_min, min0, max0, fbin0_min, fbin0_max, deltaL, deltaR, deltaA
+        cdef int bin0_min, bin0_max, bins = self.bins, lut_size, i
+        cdef numpy.uint_t k,idx #same as numpy.uint   
+        cdef bint check_mask, check_pos1     
         cdef numpy.ndarray[numpy.int_t, ndim = 1] outMax = numpy.zeros(self.bins, dtype=numpy.int)
-        pos0_min = self.pos0_min
-        delta = self.delta
-        bins = self.bins
-        cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos0_sup = self.cpos0_sup
-        cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos0_inf = self.cpos0_inf
+        cdef float[:] cpos0_sup = self.cpos0_sup
+        cdef float[:] cpos0_inf = self.cpos0_inf
+        cdef float[:] cpos1_min, cpos1_max
+        cdef numpy.ndarray[numpy.uint_t, ndim = 1] max_idx = numpy.zeros(bins, dtype=numpy.uint) 
+        cdef numpy.ndarray[numpy.uint_t, ndim = 2] lut_idx 
+        cdef numpy.ndarray[numpy.float32_t, ndim = 2] lut_coef 
+        cdef numpy.int8_t[:] cmask 
+        
+        if self.check_mask:
+            cmask = self.cmask
+            check_mask = 1
+        else:
+            check_mask = 0
 
+        if self.check_pos1:
+            check_pos1 = 1
+            cpos1_min = self.cpos1_min
+            cpos1_max = self.cpos1_max
+        else:
+            check_pos1 = 0
+#NOGIL
         for idx in range(self.size):
-#                if (self.check_mask) and (self.cmask[idx]):
-#                    continue
+                if (check_mask) and (cmask[idx]):
+                    continue
 
                 min0 = cpos0_inf[idx]
                 max0 = cpos0_sup[idx]
 
-#                if self.check_pos1 and (((self.cpos1[idx] + self.dpos1[idx]) < self.pos1_min) or ((self.cpos1[idx] - self.dpos1[idx]) > self.pos1_max)):
-#                        continue
+                if check_pos1 and ((self.cpos1_max[idx] < self.pos1_min) or (self.cpos1_min[idx] > self.pos1_max)):
+                    continue
 
                 fbin0_min = getBinNr(min0, pos0_min, delta)
                 fbin0_max = getBinNr(max0, pos0_min, delta)
@@ -159,32 +163,23 @@ class HistoBBox1d(object):
                 else: #we have pixel spliting.
                     for i in range(bin0_min, bin0_max + 1):
                         outMax[i] += 1
-        return outMax.max(), outMax
 
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    def populate_lut(self):
-        cdef float min0, max0, pos0_min, delta, fbin0_min, fbin0_max, deltaL, deltaR, deltaA
-        cdef int k, i, idx,bin0_min, bin0_max, bins, 
-        cdef numpy.ndarray[numpy.uint_t, ndim = 1] max_idx = numpy.zeros(self.bins, dtype=numpy.uint)
-        cdef numpy.ndarray[numpy.uint_t, ndim = 2] lut_idx = numpy.zeros((self.bins, self.lut_size), dtype=numpy.uint)
-        cdef numpy.ndarray[numpy.float32_t, ndim = 2] lut_coef = numpy.zeros((self.bins, self.lut_size), dtype=numpy.float32)
-        cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos0_sup = self.cpos0_sup
-        cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos0_inf = self.cpos0_inf
-        pos0_min = self.pos0_min
-        delta = self.delta
-        cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos0 = self.cpos0
-        bins = self.bins
+        lut_size = outMax.max()
+        self.lut_size = lut_size
+
+        lut_idx = -numpy.ones((bins, lut_size), dtype=numpy.uint)
+        lut_coef = -numpy.ones((self.bins, self.lut_size), dtype=numpy.float32)
+        
+        #NOGIL
         for idx in range(self.size):
-#                if (self.check_mask) and (self.cmask[idx]):
-#                    continue
+                if (self.check_mask) and (self.cmask[idx]):
+                    continue
 
                 min0 = self.cpos0_inf[idx]
                 max0 = self.cpos0_sup[idx]
 
-#                if self.check_pos1 and (((self.cpos1[idx] + self.dpos1[idx]) < self.pos1_min) or ((self.cpos1[idx] - self.dpos1[idx]) > self.pos1_max)):
-#                        continue
+                if self.check_pos1 and ((self.cpos1_max[idx] < self.pos1_min) or (self.cpos1_min[idx] > self.pos1_max)):
+                        continue
 
                 fbin0_min = getBinNr(min0, pos0_min, delta)
                 fbin0_max = getBinNr(max0, pos0_min, delta)
@@ -204,7 +199,7 @@ class HistoBBox1d(object):
                     lut_idx[bin0_min, k] = idx
                     lut_coef[bin0_min, k] = 1.0
                     max_idx[bin0_min] = k + 1
-                else: #we have pixel spliting.
+                else: #we have pixel splitting.
                     deltaA = 1.0 / (fbin0_max - fbin0_min)
 
                     deltaL = (bin0_min + 1) - fbin0_min
