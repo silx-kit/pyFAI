@@ -446,6 +446,8 @@ class Spline:
         self.ymax = self.ymax / binY
         self.xSplineCoeff = [i / binX for i in self.xSplineCoeff]
         self.ySplineCoeff = [i / binY for i in self.ySplineCoeff]
+        self.xDispArray = None
+        self.yDispArray = None
 
 
 #    def horizontalFlip(self):
