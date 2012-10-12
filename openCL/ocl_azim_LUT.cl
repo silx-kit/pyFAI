@@ -102,31 +102,22 @@ lut_integrate(	const 	__global 	float 	*weights,
 			if((idx <= 0) && (coef <= 0.0))
 			  break;
 			data = weight[idx];
-			if(do_dummy)
+			if( (!do_dummy) || (delta_dummy && (fabs(data-dummy) > delta_dummy))|| (data!=dummy) )
 			{
-				if(delta_dummy)
-				{
-					if (fabs(data-dummy)<=delta_dummy)
-						continue;            	
-				}
-				else
-				{
-					if(data==dummy)
-						continue;
-				}
-			}
-		  if(do_dark)
-			  data -= dark[idx];
-		  if do_flat:
-			  data /= flat[idx];
+				if(do_dark)
+					data -= dark[idx];
+				if do_flat:
+					data /= flat[idx];
 			  
-		  sum_data +=  coef * data;
-		  sum_count += coef;
-		}
-	  outData[i] = sum_data
-	  outCount[i] = sum_count
-	  if (sum_count > epsilon)
-		  outMerge[i] = sum_data / sum_count
-
+				sum_data +=  coef * data;
+				sum_count += coef;
+				
+			}//test dummy
+		}//for j
+		outData[i] = sum_data;
+		outCount[i] = sum_count;
+		if (sum_count > epsilon)
+		  outMerge[i] = sum_data / sum_count;
   }//if bins
-}
+}//end kernel
+
