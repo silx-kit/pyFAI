@@ -40,9 +40,11 @@
 #endif
 
 #ifdef ENABLE_FP64
-  #pragma OPENCL EXTENSION cl_khr_fp64 : enable
+//	#pragma OPENCL EXTENSION cl_khr_fp64 : enable
+	typedef double bigfloat_t;
 #else
-  #pragma OPENCL EXTENSION cl_khr_fp64 : disable
+//	#pragma OPENCL EXTENSION cl_khr_fp64 : disable
+	typedef float bigfloat_t;
 #endif
 
 #define GROUP_SIZE BLOCK_SIZE
@@ -56,43 +58,46 @@
  * Values of 0 in the mask are processed and values of 1 ignored as per PyFAI
  *
  * @param weights     Float pointer to global memory storing the input image.
- * @param do_dummy    bint: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
- * @param binarray    UINTType Pointer to global memory with the uweights array.
- * @param tth_min_max Float pointer to global memory of size 2 (vector) storing the min and max values
- *                     for 2th +- d2th.
- * @param intensity   Float pointer to global memory where the input image resides.
- * @param histogram   UINTType Pointer to global memory with the uhistogram array.
- * @param span_range  Float pointer to global memory with the max values of spans per group.
- * @param mask        Int pointer to global memory with the mask to be used.
- * @param tth_range   Float pointer to global memory of size 2 (vector) storing the min and max for integration.
- *                     If tth range is not specified the this array points to tth_min_max.
+ * @param bins        Unsigned int: number of output bins wanted (and pre-calculated)
+ * @param lut_size    Unsigned int: dimension of the look-up table
+ * @param lut_idx     Unsigned integers pointer to an array of with the index of input pixels
+ * @param lut_coef    Float pointer to an array of coefficients for each input pixel
+ * @param do_dummy    Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
+ * @param dummy       Float: value for bad pixels
+ * @param delta_dummy Float: precision for bad pixel value
+ * @param do_dark     Bool/int: shall dark-current correction be applied ?
+ * @param dark        Float pointer to global memory storing the dark image.
+ * @param do_flat     Bool/int: shall flat-field correction be applied ? (could contain polarization corrections)
+ * @param flat        Float pointer to global memory storing the flat image.
+ * @param outData     Float pointer to the output 1D array with the weighted histogram
+ * @param outCount    Float pointer to the output 1D array with the unweighted histogram
+ * @param outMerged   Float pointer to the output 1D array with the diffractogram
+
  */
 __kernel void
 lut_integrate(	const 	__global 	float 	*weights,
-				const 	__global 	uint 	bins,
-				const 	__global 	uint 	lut_size,
+									uint 	bins,
+									uint 	lut_size,
 				const 	__global 	uint 	*lut_idx,
 				const 	__global 	float 	*lut_coef,
-				const 				int   	do_dummy,
-				const 				float 	dummy,
-				const 				float 	delta_dummy,
-				const 				int 	do_dark, 
+									int   	do_dummy,
+									float 	dummy,
+									float 	delta_dummy,
+									int 	do_dark,
 				const 	__global 	float 	*dark,
-				const 		 		int		do_flat,
+									int		do_flat,
 				const 	__global 	float 	*flat,
-						__global 	double	*outData,
-						__global 	double	*outCount,
-						__global 	double	*outMerge
+						__global 	float	*outData,
+						__global 	float	*outCount,
+						__global 	float	*outMerge
 		        )
-{  
-	
-	uint k, j, i= get_global_id(0);
-	int idx
-	double sum_data = 0.0;
-	double sum_count = 0.0;
-	const double epsilon = 1e-10
-	float coef, data
-	if(gid < bins)
+{
+	uint idx, k, j, i= get_global_id(0);
+	bigfloat_t sum_data = 0.0;
+	bigfloat_t sum_count = 0.0;
+	const bigfloat_t epsilon = 1e-10;
+	float coef, data;
+	if(i < bins)
 	{
 		for (j=0;j<lut_size;j++)
 		{
@@ -101,23 +106,23 @@ lut_integrate(	const 	__global 	float 	*weights,
 			coef = lut_coef[k];
 			if((idx <= 0) && (coef <= 0.0))
 			  break;
-			data = weight[idx];
+			data = weights[idx];
 			if( (!do_dummy) || (delta_dummy && (fabs(data-dummy) > delta_dummy))|| (data!=dummy) )
 			{
 				if(do_dark)
 					data -= dark[idx];
-				if do_flat:
+				if(do_flat)
 					data /= flat[idx];
-			  
+
 				sum_data +=  coef * data;
 				sum_count += coef;
-				
-			}//test dummy
-		}//for j
-		outData[i] = sum_data;
-		outCount[i] = sum_count;
+
+			};//test dummy
+		};//for j
+		outData[i] = (float) sum_data;
+		outCount[i] = (float) sum_count;
 		if (sum_count > epsilon)
-		  outMerge[i] = sum_data / sum_count;
-  }//if bins
-}//end kernel
+		  outMerge[i] = (float) sum_data / sum_count;
+  };//if bins
+};//end kernel
 
