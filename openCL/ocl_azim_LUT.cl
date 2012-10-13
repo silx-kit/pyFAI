@@ -75,24 +75,24 @@
 
  */
 __kernel void
-lut_integrate(	const 	__global 	float 	*weights,
-									uint 	bins,
-									uint 	lut_size,
-				const 	__global 	uint 	*lut_idx,
-				const 	__global 	float 	*lut_coef,
-									int   	do_dummy,
-									float 	dummy,
-									float 	delta_dummy,
-									int 	do_dark,
-				const 	__global 	float 	*dark,
-									int		do_flat,
+lut_integrate(	const 	__global float 	*weights,
+								 uint 	bins,
+								 uint 	lut_size,
+				const 	__global uint 	*lut_idx,
+				const 	__global float 	*lut_coef,
+								 int   	do_dummy,
+								 float 	dummy,
+								 float 	delta_dummy,
+								 int 	do_dark,
+				const 	__global float 	*dark,
+								 int		do_flat,
 				const 	__global 	float 	*flat,
 						__global 	float	*outData,
 						__global 	float	*outCount,
 						__global 	float	*outMerge
 		        )
 {
-	uint idx, k, j, i= get_global_id(0);
+	int idx, k, j, i= get_global_id(0);
 	bigfloat_t sum_data = 0.0;
 	bigfloat_t sum_count = 0.0;
 	const bigfloat_t epsilon = 1e-10;

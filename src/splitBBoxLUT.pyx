@@ -55,7 +55,7 @@ class HistoBBox1d(object):
                  ):
 
         cdef float delta,pos0_min, min0
-        
+
         self.size = pos0.size
         assert delta_pos0.size == self.size
         self.bins = bins
@@ -102,7 +102,7 @@ class HistoBBox1d(object):
 #        sefl.outPos = numpy.zeros(self.bins, dtype=numpy.float32)
 #        for i in range(bins):
 #            self.outPos[i] = pos0_min + (< float > 0.5 + < float > i) * delta
-            
+
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -110,17 +110,17 @@ class HistoBBox1d(object):
         'calculate the max number of elements in the LUT'
         cdef float delta=self.delta, pos0_min=self.pos0_min, min0, max0, fbin0_min, fbin0_max, deltaL, deltaR, deltaA
         cdef int bin0_min, bin0_max, bins = self.bins, lut_size, i
-        cdef numpy.uint_t k,idx #same as numpy.uint   
-        cdef bint check_mask, check_pos1     
+        cdef numpy.uint32_t k,idx #same as numpy.uint32
+        cdef bint check_mask, check_pos1
         cdef numpy.ndarray[numpy.int_t, ndim = 1] outMax = numpy.zeros(self.bins, dtype=numpy.int)
         cdef float[:] cpos0_sup = self.cpos0_sup
         cdef float[:] cpos0_inf = self.cpos0_inf
         cdef float[:] cpos1_min, cpos1_max
-        cdef numpy.ndarray[numpy.uint_t, ndim = 1] max_idx = numpy.zeros(bins, dtype=numpy.uint) 
-        cdef numpy.ndarray[numpy.uint_t, ndim = 2] lut_idx 
-        cdef numpy.ndarray[numpy.float32_t, ndim = 2] lut_coef 
-        cdef numpy.int8_t[:] cmask 
-        
+        cdef numpy.ndarray[numpy.uint32_t, ndim = 1] max_idx = numpy.zeros(bins, dtype=numpy.uint32)
+        cdef numpy.ndarray[numpy.uint32_t, ndim = 2] lut_idx
+        cdef numpy.ndarray[numpy.float32_t, ndim = 2] lut_coef
+        cdef numpy.int8_t[:] cmask
+
         if self.check_mask:
             cmask = self.cmask
             check_mask = 1
@@ -167,9 +167,9 @@ class HistoBBox1d(object):
         lut_size = outMax.max()
         self.lut_size = lut_size
 
-        lut_idx = -numpy.ones((bins, lut_size), dtype=numpy.uint)
-        lut_coef = -numpy.ones((self.bins, self.lut_size), dtype=numpy.float32)
-        
+        lut_idx = numpy.zeros((bins, lut_size), dtype=numpy.uint32)
+        lut_coef = numpy.zeros((self.bins, self.lut_size), dtype=numpy.float32)
+
         #NOGIL
         for idx in range(self.size):
                 if (self.check_mask) and (self.cmask[idx]):
@@ -221,6 +221,8 @@ class HistoBBox1d(object):
                             lut_idx[i, k] = idx
                             lut_coef[i, k] = (deltaA)
                             max_idx[i] = k + 1
+#        for i in prange(bins, nogil=True):
+#            lut_coef[i,max_idx[i]+1]=-1.0
         return max_idx, lut_idx, lut_coef
 
 
@@ -228,16 +230,16 @@ class HistoBBox1d(object):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def integrate(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None):
-        cdef int i,j, idx, bins,lut_size 
+        cdef int i,j, idx, bins,lut_size
         cdef double data, coef, sum_data, sum_count, epsilon, cdummy, cddummy
         cdef bint check_dummy=False, do_dark=False, do_flat=False
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
-        cdef numpy.ndarray[numpy.uint_t, ndim = 1]    lut_max_idx = self.lut_max_idx
-        cdef numpy.ndarray[numpy.uint_t, ndim = 2]    lut_idx = self.lut_idx
-        cdef numpy.ndarray[numpy.float32_t, ndim = 2] lut_coef = self.lut_coef
+#        cdef numpy.ndarray[numpy.uint32_t, ndim = 1]    lut_max_idx = self.lut_max_idx
+        cdef numpy.uint32_t[:,:] lut_idx = self.lut_idx
+        cdef float[:,:] lut_coef = self.lut_coef
         cdef float[:] cflat, cdark
         epsilon = 1e-10
         bins = self.bins
@@ -250,15 +252,15 @@ class HistoBBox1d(object):
                 cddummy = 0
             else:
                 cddummy = <double> float(delta_dummy)
-        
+
         if flat is not None:
             do_flat = 1
             assert flat.size == self.size
-            cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)    
+            cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)
         if dark is not None:
             do_dark = 1
             assert dark.size == self.size
-            cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)    
+            cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
 
         for i in prange(bins, nogil=True, schedule="guided"):
             sum_data = 0.0
@@ -266,7 +268,7 @@ class HistoBBox1d(object):
             for j in range(lut_size):
                 idx = lut_idx[i, j]
                 coef = lut_coef[i, j]
-                if idx < 0 and coef <= 0.0:
+                if idx <= 0 and coef <= 0.0:
                     break
                 data = cdata[idx]
                 if check_dummy:
@@ -280,7 +282,7 @@ class HistoBBox1d(object):
                     data = data - cdark[idx]
                 if do_flat:
                     data = data / cflat[idx]
-                    
+
                 sum_data = sum_data + coef * data
                 sum_count = sum_count + coef
             outData[i] += sum_data
