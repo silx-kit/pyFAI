@@ -214,6 +214,8 @@ else:
     script_files = glob.glob("scripts/*")
 
 
+data_files += [(installDir, [os.path.join('openCL', o) for o in [
+      "ocl_azim_kernel_2.cl", "ocl_azim_kernel2d_2.cl", "ocl_azim_LUT.cl"]])]
 
 version = [eval(l.split("=")[1]) for l in open(os.path.join(os.path.dirname(
     os.path.abspath(__file__)), "pyFAI-src", "__init__.py"))
@@ -239,12 +241,9 @@ setup(name='pyFAI',
                    ],
       packages=["pyFAI"],
       package_dir={"pyFAI": "pyFAI-src" },
-#      data_files=data_files,
       test_suite="test",
       cmdclass={'build_ext': build_ext_pyFAI},
-#
-      data_files=[('openCL', [os.path.join('openCL', o) for o in [
-      "ocl_azim_kernel_2.cl", "ocl_azim_kernel2d_2.cl"]])]
+      data_files=data_files
       )
 
 ################################################################################
