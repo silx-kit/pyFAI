@@ -28,9 +28,25 @@ import splitBBox
 t0 = time.time()
 ra, rb, rc, rd = splitBBox.histoBBox1d(data, tth, dtth, bins=bins)
 t1 = time.time()
-ref_time = t1 - t0
+ref_time = 1000 * (t1 - t0)
 print("ref time: %.3fs" % ref_time)
 
+
+try:
+    from pyFAI import ocl_azim
+    integr_OCL = ocl_azim.Integrator1d()
+    integr_OCL.init()
+    integr_OCL.getConfiguration(tth.size, bins)
+    integr_OCL.configure()
+    integr_OCL.loadTth(tth, dtth, max(0, (tth - dtth).min()) , (tth + dtth).max())
+    t0o = time.time()
+    a, b, c = integr_OCL.execute(data)
+    t1o = time.time()
+    print("OpenCL(fw) time: %.3fms" % (1000 * (t1o - t0o)))
+except:
+    print("Original implementation of OpenCL pyFAI failed")
+else:
+    print(abs(ra - a).max(), abs(rd - b).max())
 #import paraSplitBBox
 #t0 = time.time()
 #a, b, c, d = paraSplitBBox.histoBBox1d(data, tth, dtth, bins=2048)
@@ -48,12 +64,14 @@ integ = splitBBoxLUT.HistoBBox1d(tth, dtth, bins=bins)
 t1 = time.time()
 a, b, c, d = integ.integrate(data)
 t2 = time.time()
-print("LUT creation: %.3fs; integration %.3f" % (t1 - t0, t2 - t1))
+ct = 1000 * (t1 - t0)
+integ_time = 1000 * (t2 - t1)
+print("LUT creation: %.3fms; integration %.3fms" % (ct, integ_time))
 print abs(ra - a).max(), abs(rb - b).max(), abs(rc - c).max(), abs(rd - d).max()
 t1 = time.time()
 a, b, c, d = integ.integrate(data)
 t2 = time.time()
-print "speed-up:", ref_time / (t2 - t1)
+print "LUT speed-up:", ref_time / (integ_time)
 import pylab
 #plot(ee)
 pylab.plot(a, b, label="LUT")
@@ -93,11 +111,11 @@ program.lut_integrate(q, (bins,), (64,), *args)
 b = numpy.empty(bins, dtype=numpy.float32)
 c = numpy.empty(bins, dtype=numpy.float32)
 d = numpy.empty(bins, dtype=numpy.float32)
-pyopencl.enqueue_read_buffer(q, outData_buf, c).wait()
-pyopencl.enqueue_read_buffer(q, outCount_buf, d).wait()
-pyopencl.enqueue_read_buffer(q, outMerge_buf, b).wait()
+pyopencl.enqueue_copy(q, c, outData_buf)
+pyopencl.enqueue_copy(q, d, outCount_buf)
+pyopencl.enqueue_copy(q, b, outMerge_buf)
 t5 = time.time()
-print "OpenCL speed-up: %s setup:%s exec %s" % (ref_time / (t5 - t3), t4 - t3, t5 - t4)
+print "OpenCL speed-up: %s setup:%s exec %s" % (0.001 * ref_time / (t5 - t3), 1000 * (t4 - t3), 1000 * (t5 - t4))
 print abs(ra - a).max(), abs(rb - b).max(), abs(rc - c).max(), abs(rd - d).max()
 for i in range(10):
     j = 2 ** i
