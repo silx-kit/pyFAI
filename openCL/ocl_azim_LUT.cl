@@ -49,6 +49,11 @@
 
 #define GROUP_SIZE BLOCK_SIZE
 
+struct lut_point_t
+{
+		uint idx;
+	    float coef;
+};
 
 /**
  * \brief Performs 1d azimuthal integration with full pixel splitting based on a LUT
@@ -76,16 +81,16 @@
  */
 __kernel void
 lut_integrate(	const 	__global float 	*weights,
-								 uint 	bins,
-								 uint 	lut_size,
+				const			 uint 	bins,
+				const			 uint 	lut_size,
 				const 	__global uint 	*lut_idx,
 				const 	__global float 	*lut_coef,
-								 int   	do_dummy,
-								 float 	dummy,
-								 float 	delta_dummy,
-								 int 	do_dark,
+				const			 int   	do_dummy,
+				const			 float 	dummy,
+				const			 float 	delta_dummy,
+				const			 int 	do_dark,
 				const 	__global float 	*dark,
-								 int		do_flat,
+				const			 int		do_flat,
 				const 	__global 	float 	*flat,
 						__global 	float	*outData,
 						__global 	float	*outCount,
@@ -126,3 +131,53 @@ lut_integrate(	const 	__global float 	*weights,
   };//if bins
 };//end kernel
 
+__kernel void
+lut_integrate_single(	const 	__global 	float 		*weights,
+						const			 	uint 		bins,
+						const			 	uint 		lut_size,
+						const 	__global struct lut_point_t *lut,
+						const			 	int   		do_dummy,
+						const			 	float 		dummy,
+						const			 	float 		delta_dummy,
+						const			 	int 		do_dark,
+						const 	__global 	float 		*dark,
+						const			 	int			do_flat,
+						const 	__global 	float 		*flat,
+						__global 	float		*outData,
+						__global 	float		*outCount,
+						__global 	float		*outMerge
+		        )
+{
+	int idx, k, j, i= get_global_id(0);
+	bigfloat_t sum_data = 0.0;
+	bigfloat_t sum_count = 0.0;
+	const bigfloat_t epsilon = 1e-10;
+	float coef, data;
+	if(i < bins)
+	{
+		for (j=0;j<lut_size;j++)
+		{
+			k = i*lut_size+j;
+			idx = lut[k].idx;
+			coef = lut[k].coef;
+			if((idx <= 0) && (coef <= 0.0))
+			  break;
+			data = weights[idx];
+			if( (!do_dummy) || (delta_dummy && (fabs(data-dummy) > delta_dummy))|| (data!=dummy) )
+			{
+				if(do_dark)
+					data -= dark[idx];
+				if(do_flat)
+					data /= flat[idx];
+
+				sum_data +=  coef * data;
+				sum_count += coef;
+
+			};//test dummy
+		};//for j
+		outData[i] = (float) sum_data;
+		outCount[i] = (float) sum_count;
+		if (sum_count > epsilon)
+		  outMerge[i] = (float) sum_data / sum_count;
+  };//if bins
+};//end kernel

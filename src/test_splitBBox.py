@@ -85,8 +85,9 @@ q = pyopencl.CommandQueue(ctx)
 program = pyopencl.Program(ctx, open("../openCL/ocl_azim_LUT.cl").read()).build()
 t3 = time.time()
 weights_buf = pyopencl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=data)
-lut_idx_buf = pyopencl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=integ.lut_idx.astype(numpy.uint32))
-lut_coef_buf = pyopencl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=integ.lut_coef)
+#lut_idx_buf = pyopencl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=integ.lut_idx.astype(numpy.uint32))
+#lut_coef_buf = pyopencl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=integ.lut_coef)
+lut_buf = pyopencl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=integ.lut)
 None_buf = pyopencl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=numpy.zeros(1, dtype=numpy.float32))
 outData_buf = pyopencl.Buffer(ctx, mf.WRITE_ONLY, numpy.dtype("float32").itemsize * bins)
 outCount_buf = pyopencl.Buffer(ctx, mf.WRITE_ONLY, numpy.dtype("float32").itemsize * bins)
@@ -94,8 +95,9 @@ outMerge_buf = pyopencl.Buffer(ctx, mf.WRITE_ONLY, numpy.dtype("float32").itemsi
 args = (weights_buf,
                        numpy.uint32(2048),
                        numpy.uint32(integ.lut_size),
-                       lut_idx_buf,
-                       lut_coef_buf,
+#                       lut_idx_buf,
+#                       lut_coef_buf,
+                       lut_buf,
                        numpy.int32(0),
                        numpy.float32(0),
                        numpy.float32(0),
@@ -107,25 +109,28 @@ args = (weights_buf,
                        outCount_buf,
                        outMerge_buf)
 t4 = time.time()
-program.lut_integrate(q, (bins,), (64,), *args)
+print len(args)
+program.lut_integrate_single(q, (bins,), (16,), *args)
 b = numpy.empty(bins, dtype=numpy.float32)
 c = numpy.empty(bins, dtype=numpy.float32)
 d = numpy.empty(bins, dtype=numpy.float32)
 pyopencl.enqueue_copy(q, c, outData_buf)
 pyopencl.enqueue_copy(q, d, outCount_buf)
-pyopencl.enqueue_copy(q, b, outMerge_buf)
+pyopencl.enqueue_copy(q, b, outMerge_buf).wait()
 t5 = time.time()
-print "OpenCL speed-up: %s setup:%s exec %s" % (0.001 * ref_time / (t5 - t3), 1000 * (t4 - t3), 1000 * (t5 - t4))
+pylab.plot(a, b, label="OpenCL")
+
+print "OpenCL speed-up: %s setup: %.2fms \texec: %.2fms" % (0.001 * ref_time / (t5 - t3), 1000 * (t4 - t3), 1000 * (t5 - t4))
 print abs(ra - a).max(), abs(rb - b).max(), abs(rc - c).max(), abs(rd - d).max()
 for i in range(10):
     j = 2 ** i
     st = time.time()
-    program.lut_integrate(q, (bins,), (j,), *args)
-    pyopencl.enqueue_read_buffer(q, outMerge_buf, b).wait()
+    program.lut_integrate_single(q, (bins,), (j,), * args)
+    pyopencl.enqueue_copy(q, b, outMerge_buf).wait()
     print("Size: %s \ttime: %.2fms" % (j, 1000 * (time.time() - st)))
 
 #plot(ee)
-pylab.plot(a, b, label="OpenCL")
+#pylab.plot(a, b, label="OpenCL")
 pylab.legend()
 pylab.show()
 raw_input("Enter")
