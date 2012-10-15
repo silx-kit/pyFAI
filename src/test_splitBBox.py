@@ -20,9 +20,9 @@ edf = os.path.join(root, "LaB6_0020.edf")
 img = fabio.open(edf)
 ai = pyFAI.load(poni)
 ai.xrpd(img.data, bins)
-tth = ai._ttha.ravel().astype("float32")
-dtth = ai._dttha.ravel().astype("float32")
-data = img.data.ravel().astype("float32")
+tth = ai._ttha.ravel().astype(numpy.float32)
+dtth = ai._dttha.ravel().astype(numpy.float32)
+data = img.data.ravel().astype(numpy.float32)
 
 import splitBBox
 t0 = time.time()
@@ -80,19 +80,31 @@ pylab.plot(ra, rb, label="Original")
 import pyopencl
 
 mf = pyopencl.mem_flags
+ct = pyopencl.channel_type
+co = pyopencl.channel_order
 ctx = pyopencl.create_some_context()
 q = pyopencl.CommandQueue(ctx)
 program = pyopencl.Program(ctx, open("../openCL/ocl_azim_LUT.cl").read()).build()
 t3 = time.time()
 weights_buf = pyopencl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=data)
+#weights_img = pyopencl.image_from_array(ctx, ary=img.data.astype(numpy.float32), mode="r", norm_int=False, num_channels=1)
+#print co.INTENSITY, ct.FLOAT,
+#imf = pyopencl.ImageFormat(numpy.uint32(co.INTENSITY), numpy.uint32(ct.FLOAT))
+#weights_img = pyopencl.Image(ctx, flags=mf.READ_ONLY | mf.COPY_HOST_PTR,
+#                             format=imf,
+#                             hostbuf=data,
+#                             pitches=(img.data.shape[-1],))
+#image_from_array(ctx, ary=img.data.astype(numpy.float32), mode="r", norm_int=False, num_channels=1)
+
 #lut_idx_buf = pyopencl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=integ.lut_idx.astype(numpy.uint32))
 #lut_coef_buf = pyopencl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=integ.lut_coef)
 lut_buf = pyopencl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=integ.lut)
 None_buf = pyopencl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=numpy.zeros(1, dtype=numpy.float32))
-outData_buf = pyopencl.Buffer(ctx, mf.WRITE_ONLY, numpy.dtype("float32").itemsize * bins)
-outCount_buf = pyopencl.Buffer(ctx, mf.WRITE_ONLY, numpy.dtype("float32").itemsize * bins)
-outMerge_buf = pyopencl.Buffer(ctx, mf.WRITE_ONLY, numpy.dtype("float32").itemsize * bins)
-args = (weights_buf,
+outData_buf = pyopencl.Buffer(ctx, mf.WRITE_ONLY, numpy.dtype(numpy.float32).itemsize * bins)
+outCount_buf = pyopencl.Buffer(ctx, mf.WRITE_ONLY, numpy.dtype(numpy.float32).itemsize * bins)
+outMerge_buf = pyopencl.Buffer(ctx, mf.WRITE_ONLY, numpy.dtype(numpy.float32).itemsize * bins)
+args = (#weights_img, numpy.uint32(img.dim1), numpy.uint32(img.dim0),
+        weights_buf,
                        numpy.uint32(2048),
                        numpy.uint32(integ.lut_size),
 #                       lut_idx_buf,
