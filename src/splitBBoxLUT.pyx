@@ -54,7 +54,7 @@ class HistoBBox1d(object):
                  allow_pos0_neg=False
                  ):
 
-        cdef float delta,pos0_min, min0
+        cdef double delta, pos0_min, min0
 
         self.size = pos0.size
         assert delta_pos0.size == self.size
@@ -95,20 +95,18 @@ class HistoBBox1d(object):
         else:
             self.check_mask = 0
 
-        delta = (< float > self.pos0_max - pos0_min) / (bins)
+        delta = (self.pos0_max - pos0_min) / (bins)
         self.delta = delta
         self.lut_max_idx, self.lut_idx, self.lut_coef = self.calc_lut()
         self.outPos = numpy.linspace(self.pos0_min+0.5*delta,self.pos0_max-0.5*delta, self.bins)
-#        sefl.outPos = numpy.zeros(self.bins, dtype=numpy.float32)
-#        for i in range(bins):
-#            self.outPos[i] = pos0_min + (< float > 0.5 + < float > i) * delta
+
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def calc_lut(self):
         'calculate the max number of elements in the LUT'
-        cdef float delta=self.delta, pos0_min=self.pos0_min, min0, max0, fbin0_min, fbin0_max, deltaL, deltaR, deltaA
+        cdef double delta=self.delta, pos0_min=self.pos0_min, min0, max0, fbin0_min, fbin0_max, deltaL, deltaR, deltaA
         cdef int bin0_min, bin0_max, bins = self.bins, lut_size, i
         cdef numpy.uint32_t k,idx #same as numpy.uint32
         cdef bint check_mask, check_pos1
