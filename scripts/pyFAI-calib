@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 #
-#    Project: Azimuthal integration 
+#    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
 #
 #    File: "$Id$"
@@ -31,16 +31,16 @@ A tool for determining the geometry of a detector using a reference sample.
 
 usage:
   python2.6 pyFAI-calib [-g=100] [-nd] [-d] [-pix=172e-6,172e-6] inputFile.edf
-  
--g= size of the gap (in pixels) between two consecutive rings, by default size/20 
-Increase the value if the arc is not complete
-Decrease the value if arcs are mixed together.  
 
--nd : to avoid diagonal expansion of the various massifs. (default)  
+-g= size of the gap (in pixels) between two consecutive rings, by default size/20
+Increase the value if the arc is not complete
+Decrease the value if arcs are mixed together.
+
+-nd : to avoid diagonal expansion of the various massifs. (default)
 -d  : to allow diagonal expansion of the various massifs.
 --spline=/path/to/file.spline
 -min for automatic removal of background (or -min=100 if you know the value)
- 
+
 """
 
 __author__ = "Jerome Kieffer"
@@ -78,7 +78,7 @@ except ImportError:
 
 class Calibration(object):
     """
-    class doing the calibration of frames 
+    class doing the calibration of frames
     """
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None, splineFile=None, gaussianWidth=None):
         """
@@ -97,6 +97,7 @@ class Calibration(object):
         self.data = None
         self.basename = None
         self.geoRef = None
+        self.reconstruct = False
 
     def __repr__(self):
         lst = ["Calibration object:",
@@ -130,6 +131,8 @@ class Calibration(object):
                       help="list of dark images to average and subtract", default=None)
         parser.add_option("-f", "--flat", dest="flat",
                       help="list of flat images to average and divide", default=None)
+        parser.add_option("-r", "--reconstruct", dest="reconstruct",
+                      help="Reconstruct image where data<0 (for pilatus)", action="store_true", default=False)
         parser.add_option("-s", "--spline", dest="spline",
                       help="spline file describing the detector distortion", default=None)
         parser.add_option("-p", "--pixel", dest="pixel",
@@ -138,7 +141,7 @@ class Calibration(object):
                       help="file with datapoints saved", default=None)
         (options, args) = parser.parse_args()
 
-        #Analyse aruments and options 
+        #Analyse aruments and options
         if options.debug:
             logger.setLevel(logging.DEBUG)
         self.outfile = options.outfile
@@ -158,6 +161,7 @@ class Calibration(object):
         if options.flat:
             print options.flat, type(options.flat)
             self.flatFiles = [f for f in options.flat.split(",") if os.path.isfile(f)]
+        self.reconstruct = options.reconstruct
         self.dataFiles = [f for f in args if os.path.isfile(f)]
 
         self.pointfile = options.npt
@@ -206,10 +210,13 @@ class Calibration(object):
         """
         do dark, flat correction thresholding, ...
         """
-        self.outfile = averageImages(self.dataFiles, self.outfile, minimum=self.cutBackground,
+        if len(self.dataFiles) > 1 or self.cutBackground or self.darkFiles or self.flatFiles:
+            self.outfile = averageImages(self.dataFiles, self.outfile, minimum=self.cutBackground,
                                       darks=self.darkFiles, flats=self.flatFiles)
+        else:
+            self.outfile = self.dataFiles[0]
         self.basename = os.path.splitext(self.outfile)[0]
-        self.peakPicker = PeakPicker(self.outfile)
+        self.peakPicker = PeakPicker(self.outfile, reconst=self.reconstruct)
         if self.gaussianWidth is not None:
             self.peakPicker.massif.setValleySize(self.gaussianWidth)
         else:
@@ -321,7 +328,7 @@ class Calibration(object):
         xrpd2.imshow(numpy.log(img - img.min() + 1e-3), origin="lower")
         fig4.show()
 
-#This is for debugin wtih rconsole 
+#This is for debugin wtih rconsole
 c = None
 if __name__ == "__main__":
     c = Calibration()

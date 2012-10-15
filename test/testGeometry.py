@@ -10,6 +10,7 @@ import unittest, numpy, os, sys, time
 from utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
+import pyFAI.geometry
 geometry = pyFAI.geometry
 
 class ParameterisedTestCase(unittest.TestCase):

@@ -3,6 +3,7 @@ recursive-include src  *.c *.h *.pyx *.pxd
 recursive-include test *.py *.sp *.poni
 recursive-include benchmark *.py *.spline *.poni
 include stdeb.cfg
+include setup.cfg
 include MANIFEST.in
 include build-deb.sh
 include build-msi.bat
