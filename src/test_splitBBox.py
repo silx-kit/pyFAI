@@ -29,7 +29,7 @@ t0 = time.time()
 ra, rb, rc, rd = splitBBox.histoBBox1d(data, tth, dtth, bins=bins)
 t1 = time.time()
 ref_time = 1000 * (t1 - t0)
-print("ref time: %.3fs" % ref_time)
+print("ref time: %.2fms" % ref_time)
 
 
 try:
