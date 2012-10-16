@@ -263,7 +263,7 @@ lut_integrate_image(	__read_only image2d_t 			weights,
 			coef = lut[k].coef;
 			if((idx == 0) && (coef <= 0.0))
 			  break;
-			data = read_imagef(weights, sampler, (int2)(idx/dimX , idx%dimX)).s0;
+			data = read_imagef(weights, sampler, (int2)(idx%dimY , idx/dimY)).s0;
 			//data = weights[idx];
 			if( (!do_dummy) || (delta_dummy && (fabs(data-dummy) > delta_dummy))|| (data!=dummy) )
 			{
