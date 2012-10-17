@@ -1025,16 +1025,16 @@ class AzimuthalIntegrator(Geometry):
             headerLst.append("Center: x=%.3f, y=%.3f pix" % (f2d["centerX"], f2d["centerY"]))
             headerLst.append("Tilt: %.3f deg  TiltPlanRot: %.3f deg" % (f2d["tilt"], f2d["tiltPlanRotation"]))
             headerLst.append("")
-            if self.wavelength is not None:
+            if self._wavelength is not None:
                 headerLst.append("Wavelength: %s" % self.wavelength)
             if self.maskfile is not None:
                 headerLst.append("Mask File: %s" % self.maskfile)
-            if self.darkcurrent is not None:
-                headerLst.append("DarkCurrent File: %s" % self.darkcurrent)
-            if self.flatfield is not None:
-                headerLst.append("Flatfield File: %s" % self.flatfield)
-            if self.background is not None:
-                headerLst.append("Background File: %s" % self.background)
+#            if self.darkcurrent is not None:
+#                headerLst.append("DarkCurrent File: %s" % self.darkcurrent)
+#            if self.flatfield is not None:
+#                headerLst.append("Flatfield File: %s" % self.flatfield)
+#            if self.background is not None:
+#                headerLst.append("Background File: %s" % self.background)
             self.header = os.linesep.join([hdr + " " + i for i in headerLst])
         return self.header
 
