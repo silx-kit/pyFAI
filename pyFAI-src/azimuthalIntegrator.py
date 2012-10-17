@@ -48,6 +48,12 @@ except ImportError as error:#IGNORE:W0703
 else:
     ocl = ocl_azim.OpenCL()
 
+try:
+    import splitBBoxLUT
+except ImportError as error:#IGNORE:W0703
+    logger.warning("Unable to import pyFAI.splitBBoxLUT for Look-up table based azimuthal integration")
+    splitBBoxLUT = None
+
 
 
 
@@ -87,7 +93,19 @@ class AzimuthalIntegrator(Geometry):
         self._darkcurrents = {}
 
         self._ocl_integrator = None
+        self._lut_integrator = None
         self._ocl_sem = threading.Semaphore()
+        self._lut_sem = threading.Semaphore()
+
+    def reset(self):
+        """
+        Reset azimuthal integrator in addition to other arrays.
+        """
+        Geometry.reset(self)
+        with self._ocl_sem:
+            self._ocl_integrator = None
+        with self._lut_sem:
+            self._lut_integrator = None
 
     def makeMask(self, data, mask=None, dummy=None, delta_dummy=None, invertMask=None):
         """
@@ -458,6 +476,107 @@ class AzimuthalIntegrator(Geometry):
                 elif (mask is None) and param["mask"]:
                     self._ocl_integrator.unsetMask()
             tthAxis, I, a, = self._ocl_integrator.execute(data)
+        tthAxis = numpy.degrees(tthAxis)
+        if filename:
+            open(filename, "w").writelines(["%s\t%s%s" % (t, i, os.linesep) for t, i in zip(tthAxis, I)])
+        return tthAxis, I
+
+    def xrpd_LUT(self, data, nbPt, filename=None, correctSolidAngle=True,
+                       tthRange=None, mask=None, dummy=None, delta_dummy=None,
+                       safe=True):
+
+        """
+        Calculate the powder diffraction pattern from a set of data, an image. Cython implementation using a Look-Up Table.
+        @param data: 2D array from the CCD camera
+        @type data: ndarray
+        @param nbPt: number of points in the output pattern
+        @type nbPt: integer
+        @param filename: file to save data in ascii format 2 column
+        @type filename: string
+        @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
+        @type correctSolidAngle: boolean
+        @param tthRange: The lower and upper range of the 2theta. If not provided, range is simply (data.min(), data.max()).
+                        Values outside the range are ignored.
+        @type tthRange: (float, float), optional
+        @param chiRange: The lower and upper range of the chi angle. If not provided, range is simply (data.min(), data.max()).
+                        Values outside the range are ignored.
+        @type chiRange: (float, float), optional, disabled for now
+        @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
+        @param  dummy: value for dead/masked pixels
+        @param delta_dummy: precision for dummy value
+        LUT specific parameters:
+        @param safe: set to false if you think your GPU is already set-up correctly (2theta, mask, solid angle...)
+
+        @return: (2theta, I) in degrees
+        @rtype: 2-tuple of 1D arrays
+        """
+        if not splitBBoxLUT:
+            logger.error("Look-up table implementation not available: falling back on old method !")
+            return self.xrpd_splitBBox(data=data,
+                                       nbPt=nbPt,
+                                       filename=filename,
+                                       correctSolidAngle=correctSolidAngle,
+                                       tthRange=tthRange,
+                                       mask=mask,
+                                       dummy=dummy,
+                                       delta_dummy=delta_dummy)
+        shape = data.shape
+
+        if self._lut_integrator is None:
+            with self._lut_sem:
+                if self._lut_integrator is None:
+                    size = data.size
+                    fd, tmpfile = tempfile.mkstemp(".log", "pyfai-opencl-")
+                    os.close(fd)
+                    integr = ocl_azim.Integrator1d(tmpfile)
+                    if (platformid is not None) and (deviceid is not None):
+                        rc = integr.init(devicetype=devicetype,
+                                    platformid=platformid,
+                                    deviceid=deviceid,
+                                    useFp64=useFp64)
+                    else:
+                       rc = integr.init(devicetype=devicetype,
+                                        useFp64=useFp64)
+                    if rc != 0:
+                        raise RuntimeError('Failed to initialize OpenCL deviceType %s (%s,%s) 64bits: %s' % (devicetype, platformid, deviceid, useFp64))
+
+                    if 0 != integr.getConfiguration(size, nbPt):
+                        raise RuntimeError('Failed to configure 1D integrator with Ndata=%s and Nbins=%s' % (size, nbPt))
+
+                    if 0 != integr.configure():
+                        raise RuntimeError('Failed to compile kernel')
+                    pos0 = self.twoThetaArray(shape)
+                    delta_pos0 = self.delta2Theta(shape)
+                    if tthRange is not None and len(tthRange) > 1:
+                        pos0_min = numpy.deg2rad(min(tthRange))
+                        pos0_maxin = numpy.deg2rad(max(tthRange))
+                    else:
+                        pos0_min = pos0.min()
+                        pos0_maxin = pos0.max()
+                    if pos0_min < 0.0:
+                        pos0_min = 0.0
+                    pos0_max = pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps)
+                    if 0 != integr.loadTth(pos0, delta_pos0, pos0_min, pos0_max):
+                        raise RuntimeError("Failed to upload 2th arrays")
+                    self._lut_integrator = integr
+        with self._lut_sem:
+            if safe:
+                param = self._lut_integrator.get_status()
+                if (dummy is None) and param["dummy"]:
+                    self._lut_integrator.unsetDummyValue()
+                elif (dummy is not None) and not param["dummy"]:
+                    if delta_dummy is None:
+                        delta_dummy = 1e-6
+                    self._lut_integrator.setDummyValue(dummy, delta_dummy)
+                if correctSolidAngle and not param["solid_angle"]:
+                    self._lut_integrator.setSolidAngle(self.solidAngleArray(shape))
+                elif (not correctSolidAngle) and param["solid_angle"]:
+                    self._lut_integrator.unsetSolidAngle()
+                if (mask is not None) and not param["mask"]:
+                    self._lut_integrator.setMask(mask)
+                elif (mask is None) and param["mask"]:
+                    self._lut_integrator.unsetMask()
+            tthAxis, I, a, = self._lut_integrator.execute(data)
         tthAxis = numpy.degrees(tthAxis)
         if filename:
             open(filename, "w").writelines(["%s\t%s%s" % (t, i, os.linesep) for t, i in zip(tthAxis, I)])
@@ -937,7 +1056,7 @@ class AzimuthalIntegrator(Geometry):
         """
         if self.header is None:
             headerLst = ["== pyFAI calibration =="]
-            headerLst.append("SplineFile: %s" % self.spline)
+            headerLst.append("SplineFile: %s" % self.splineFile)
             headerLst.append("PixelSize: %.3e, %.3e m" % (self.pixel1, self.pixel2))
             headerLst.append("PONI: %.3e, %.3e m" % (self.poni1, self.poni2))
             headerLst.append("Distance Sample to Detector: %s m" % self.dist)
