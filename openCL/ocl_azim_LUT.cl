@@ -131,29 +131,7 @@ lut_integrate(	const 	__global float 	*weights,
   };//if bins
 };//end kernel
 
-/**
- * \brief Performs 1d azimuthal integration with full pixel splitting based on a LUT
- *
- * An image instensity value is spread across the bins according to the positions stored in the LUT.
- * The lut_index contains the positions of the pixel in the input array
- * Values of 0 in the mask are processed and values of 1 ignored as per PyFAI
- *
- * @param weights     Float pointer to global memory storing the input image.
- * @param bins        Unsigned int: number of output bins wanted (and pre-calculated)
- * @param lut_size    Unsigned int: dimension of the look-up table
- * @param lut         Pointer to a struct of [("idx",uint32),("coef": float)] where idx is the 1d-index of input pixels and coef is the weight of that pixel
- * @param do_dummy    Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
- * @param dummy       Float: value for bad pixels
- * @param delta_dummy Float: precision for bad pixel value
- * @param do_dark     Bool/int: shall dark-current correction be applied ?
- * @param dark        Float pointer to global memory storing the dark image.
- * @param do_flat     Bool/int: shall flat-field correction be applied ? (could contain polarization corrections)
- * @param flat        Float pointer to global memory storing the flat image.
- * @param outData     Float pointer to the output 1D array with the weighted histogram
- * @param outCount    Float pointer to the output 1D array with the unweighted histogram
- * @param outMerged   Float pointer to the output 1D array with the diffractogram
-
- */
+/********************************************************************************/
 __kernel void
 lut_integrate_single(	const 	__global 	float 		*weights,
 						const			 	uint 		bins,
@@ -205,30 +183,7 @@ lut_integrate_single(	const 	__global 	float 		*weights,
   };//if bins
 };//end kernel
 
-
-/**
- * \brief Performs 1d azimuthal integration with full pixel splitting based on a LUT
- *
- * An image instensity value is spread across the bins according to the positions stored in the LUT.
- * The lut_index contains the positions of the pixel in the input array
- * Values of 0 in the mask are processed and values of 1 ignored as per PyFAI
- *
- * @param weights     Float pointer to global memory storing the input image.
- * @param bins        Unsigned int: number of output bins wanted (and pre-calculated)
- * @param lut_size    Unsigned int: dimension of the look-up table
- * @param lut         Pointer to a struct of [("idx",uint32),("coef": float)] where idx is the 1d-index of input pixels and coef is the weight of that pixel
- * @param do_dummy    Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
- * @param dummy       Float: value for bad pixels
- * @param delta_dummy Float: precision for bad pixel value
- * @param do_dark     Bool/int: shall dark-current correction be applied ?
- * @param dark        Float pointer to global memory storing the dark image.
- * @param do_flat     Bool/int: shall flat-field correction be applied ? (could contain polarization corrections)
- * @param flat        Float pointer to global memory storing the flat image.
- * @param outData     Float pointer to the output 1D array with the weighted histogram
- * @param outCount    Float pointer to the output 1D array with the unweighted histogram
- * @param outMerged   Float pointer to the output 1D array with the diffractogram
-
- */
+/********************************************************************************/
 __kernel void
 lut_integrate_image(	__read_only image2d_t 			weights,
 						const 				uint		dimX,
@@ -259,6 +214,122 @@ lut_integrate_image(	__read_only image2d_t 			weights,
 		for (j=0;j<lut_size;j++)
 		{
 			k = i*lut_size+j;
+			idx = lut[k].idx;
+			coef = lut[k].coef;
+			if((idx == 0) && (coef <= 0.0))
+			  break;
+			data = read_imagef(weights, sampler, (int2)(idx%dimY , idx/dimY)).s0;
+			//data = weights[idx];
+			if( (!do_dummy) || (delta_dummy && (fabs(data-dummy) > delta_dummy))|| (data!=dummy) )
+			{
+				if(do_dark)
+					data -= dark[idx];
+				if(do_flat)
+					data /= flat[idx];
+
+				sum_data +=  coef * data;
+				sum_count += coef;
+
+			};//test dummy
+		};//for j
+		outData[i] = (float) sum_data;
+		outCount[i] = (float) sum_count;
+		if (sum_count > epsilon)
+		  outMerge[i] = (float) sum_data / sum_count;
+  };//if bins
+};//end kernel
+
+/********************************************************************************/
+__kernel void
+lut_integrate_LUTtexture(	__read_only image2d_t 	weights,
+				const 			uint	dimX,
+				const 			uint	dimY,
+				const			uint 	bins,
+				const			uint 	lut_size,
+				__read_only image2d_t 	lut_idx,
+				__read_only image2d_t 	lut_coef,
+				const			 int   	do_dummy,
+				const			 float 	dummy,
+				const			 float 	delta_dummy,
+				const			 int 	do_dark,
+				const 	__global float 	*dark,
+				const			 int		do_flat,
+				const 	__global 	float 	*flat,
+						__global 	float	*outData,
+						__global 	float	*outCount,
+						__global 	float	*outMerge
+		        )
+{
+	int idx, k, j, i= get_global_id(0);
+	bigfloat_t sum_data = 0.0;
+	bigfloat_t sum_count = 0.0;
+	const bigfloat_t epsilon = 1e-10;
+	const sampler_t sampler =  CLK_NORMALIZED_COORDS_FALSE;
+	float coef, data;
+	if(i < bins)
+	{
+		for (j=0;j<lut_size;j++)
+		{
+			k = i*lut_size+j;
+//			idx = lut_idx[k];
+			idx = read_imageui(lut_idx, sampler, (int2)(i,j)).s0;
+//			coef = lut_coef[k];
+			coef = read_imagef(lut_coef, sampler, (int2)(i,j)).s0;
+			if((idx <= 0) && (coef <= 0.0))
+			  break;
+//			data = weights[idx];
+			data = read_imagef(weights, sampler, (int2)(idx%dimY , idx/dimY)).s0;
+			if( (!do_dummy) || (delta_dummy && (fabs(data-dummy) > delta_dummy))|| (data!=dummy) )
+			{
+				if(do_dark)
+					data -= dark[idx];
+				if(do_flat)
+					data /= flat[idx];
+
+				sum_data +=  coef * data;
+				sum_count += coef;
+
+			};//test dummy
+		};//for j
+		outData[i] = (float) sum_data;
+		outCount[i] = (float) sum_count;
+		if (sum_count > epsilon)
+		  outMerge[i] = (float) sum_data / sum_count;
+  };//if bins
+};//end kernel
+
+/*******************************************************************************
+ * Transpose LUT*/
+__kernel void
+lut_integrate_image_lutT(	__read_only image2d_t 			weights,
+						const 				uint		dimX,
+						const 				uint		dimY,
+						const			 	uint 		bins,
+						const			 	uint 		lut_size,
+						const 	__global struct lut_point_t *lut,
+						const			 	int   		do_dummy,
+						const			 	float 		dummy,
+						const			 	float 		delta_dummy,
+						const			 	int 		do_dark,
+						const 	__global 	float 		*dark,
+						const			 	int			do_flat,
+						const 	__global 	float 		*flat,
+						__global 			float		*outData,
+						__global 			float		*outCount,
+						__global 			float		*outMerge
+		        )
+{
+	uint idx, k, j, i= get_global_id(0);
+	bigfloat_t sum_data = 0.0;
+	bigfloat_t sum_count = 0.0;
+	const bigfloat_t epsilon = 1e-10;
+	float coef, data;
+	const sampler_t sampler =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE | CLK_FILTER_NEAREST;
+	if(i < bins)
+	{
+		for (j=0;j<lut_size;j++)
+		{
+			k = j*bins+i;
 			idx = lut[k].idx;
 			coef = lut[k].coef;
 			if((idx == 0) && (coef <= 0.0))

@@ -112,7 +112,7 @@ class build_ext_pyFAI(build_ext):
             #print e.extra_link_args
         build_ext.build_extensions(self)
 
-cython_modules = ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear",
+cython_modules = ["histogram", "splitPixel", "splitBBox", "splitBBoxLUT", "relabel", "bilinear",
             "_geometry", "reconstruct"]
 
 src = {}
@@ -160,6 +160,13 @@ splitBBox_dic = dict(name="splitBBox",
 #                    extra_compile_args=['-g'],
 #                    extra_link_args=['-fopenmp'])
                     )
+splitBBoxLUT_dic = dict(name="splitBBoxLUT",
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=[src['splitBBoxLUT']],
+#                    extra_compile_args=['-g'],
+                    extra_link_args=['-fopenmp']
+                    )
+
 relabel_dic = dict(name="relabel",
                         include_dirs=get_numpy_include_dirs(),
                         sources=[src['relabel']])
@@ -234,6 +241,7 @@ setup(name='pyFAI',
                    Extension(**relabel_dic),
                    Extension(**split_dic),
                    Extension(**splitBBox_dic),
+                   Extension(**splitBBoxLUT_dic),
                    Extension(**bilinear_dic),
                    Extension(**ocl_azim_dict),
                    Extension(**_geometry_dic),

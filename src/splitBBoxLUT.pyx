@@ -26,6 +26,7 @@
 
 #
 import cython
+import hashlib
 from cython.parallel import prange
 import numpy
 cimport numpy
@@ -70,6 +71,8 @@ class HistoBBox1d(object):
         self.pos0_max = (self.cpos0_sup).max()
         pos0_min = (self.cpos0_inf).min()
         self.pos0_min = pos0_min
+        self.pos0Range = pos0Range
+        self.pos1Range = pos1Range
         if pos0Range is not None and len(pos0Range) > 1:
             self.pos0_min = min(pos0Range)
             pos0_maxin = max(pos0Range)
@@ -90,14 +93,17 @@ class HistoBBox1d(object):
             self.pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
         else:
             self.check_pos1 = 0
+            self.cpos1_min = None
+            self.pos1_max = None
 
         if  mask is not None:
             assert mask.size == self.size
             self.check_mask = 1
             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
+            self.mask_checksum = hashlib.md5(mask).hexdigest()
         else:
             self.check_mask = 0
-
+            self.mask_checksum=None
         delta = (self.pos0_max - pos0_min) / (bins)
         self.delta = delta
         self.lut_max_idx, self.lut_idx, self.lut_coef = self.calc_lut()
