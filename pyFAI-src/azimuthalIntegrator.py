@@ -1023,7 +1023,7 @@ class AzimuthalIntegrator(Geometry):
             f2d = self.getFit2D()
             headerLst.append("Distance Sample-beamCenter: %.3f mm" % f2d["directDist"])
             headerLst.append("Center: x=%.3f, y=%.3f pix" % (f2d["centerX"], f2d["centerY"]))
-            headerLst.append("Tilt: %.3f deg  TiltPlanRot: %.3f deg" % (f2d["tilt"], f2d["tiltPlanRot"]))
+            headerLst.append("Tilt: %.3f deg  TiltPlanRot: %.3f deg" % (f2d["tilt"], f2d["tiltPlanRotation"]))
             headerLst.append("")
             if self.wavelength is not None:
                 headerLst.append("Wavelength: %s" % self.wavelength)
