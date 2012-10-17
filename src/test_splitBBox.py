@@ -7,6 +7,7 @@ spline = os.path.join(root, "halfccd.spline")
 poni = os.path.join(root, "LaB6.poni")
 bins = 2048
 res = []
+list_size = [2 ** i for i in range(10)]
 with open(poni, "r") as f:
     for l in f:
         if l.startswith("SplineFile"):
@@ -87,7 +88,7 @@ q = pyopencl.CommandQueue(ctx)
 program = pyopencl.Program(ctx, open("../openCL/ocl_azim_LUT.cl").read()).build()
 t3 = time.time()
 weights_buf = pyopencl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=data)
-#weights_img = pyopencl.image_from_array(ctx, ary=img.data.astype(numpy.float32), mode="r", norm_int=False, num_channels=1)
+weights_img = pyopencl.image_from_array(ctx, ary=img.data.astype(numpy.float32), mode="r", norm_int=False, num_channels=1)
 #lut_idx_tex = pyopencl.image_from_array(ctx, ary=integ.lut_idx, mode="r", norm_int=False, num_channels=1)
 #lut_coef_tex = pyopencl.image_from_array(ctx, ary=integ.lut_coef, mode="r", norm_int=False, num_channels=1)
 lut_idx_buf = pyopencl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=integ.lut_idx.astype(numpy.uint32))
@@ -130,8 +131,7 @@ pylab.plot(a, b, label="OpenCL_orig")
 
 print "OpenCL speed-up: %s setup: %.2fms \texec: %.2fms" % (0.001 * ref_time / (t5 - t3), 1000 * (t4 - t3), 1000 * (t5 - t4))
 print abs(ra - a).max(), abs(rb - b).max(), abs(rc - c).max(), abs(rd - d).max()
-for i in range(10):
-    j = 2 ** i
+for j in list_size:
     st = time.time()
     program.lut_integrate(q, (bins,), (j,), * args_orig)
     pyopencl.enqueue_copy(q, b, outMerge_buf).wait()
@@ -168,53 +168,51 @@ pylab.plot(a, b, label="OpenCL_single")
 
 print "OpenCL speed-up: %s setup: %.2fms \texec: %.2fms" % (0.001 * ref_time / (t5 - t3), 1000 * (t4 - t3), 1000 * (t5 - t4))
 print abs(ra - a).max(), abs(rb - b).max(), abs(rc - c).max(), abs(rd - d).max()
-for i in range(10):
-    j = 2 ** i
+for j in list_size:
     st = time.time()
     program.lut_integrate_single(q, (bins,), (j,), * args_single)
     pyopencl.enqueue_copy(q, b, outMerge_buf).wait()
     print("Size: %s \ttime: %.2fms" % (j, 1000 * (time.time() - st)))
 
 
-#print ("Merged LUT + image in Texture implementation")
-#args_image = (weights_img, numpy.uint32(img.dim2), numpy.uint32(img.dim1),
-##                       weights_buf,
-#                       numpy.uint32(2048),
-#                       numpy.uint32(integ.lut_size),
-#                       #lut_idx_buf,
-#                       #lut_coef_buf,
-#                       lut_buf,
-#                       numpy.int32(0),
-#                       numpy.float32(0),
-#                       numpy.float32(0),
-#                       numpy.int32(0),
-#                       None_buf,
-#                       numpy.int32(0),
-#                       None_buf,
-#                       outData_buf,
-#                       outCount_buf,
-#                       outMerge_buf)
-#t4 = time.time()
-#program.lut_integrate_image(q, (bins,), (16,), *args_image)
-#b = numpy.empty(bins, dtype=numpy.float32)
-#c = numpy.empty(bins, dtype=numpy.float32)
-#d = numpy.empty(bins, dtype=numpy.float32)
-#pyopencl.enqueue_copy(q, c, outData_buf).wait()
-#pyopencl.enqueue_copy(q, d, outCount_buf).wait()
-#pyopencl.enqueue_copy(q, b, outMerge_buf).wait()
-#t5 = time.time()
-#pylab.plot(a, b, label="OpenCL_image")
-#
-#print "OpenCL speed-up: %s setup: %.2fms \texec: %.2fms" % (0.001 * ref_time / (t5 - t3), 1000 * (t4 - t3), 1000 * (t5 - t4))
-#print abs(ra - a).max(), abs(rb - b).max(), abs(rc - c).max(), abs(rd - d).max()
-#for i in range(10):
-#    j = 2 ** i
-#    st = time.time()
-#    program.lut_integrate_image(q, (bins,), (j,), * args_image)
-#    pyopencl.enqueue_copy(q, b, outMerge_buf).wait()
-#    print("Size: %s \ttime: %.2fms" % (j, 1000 * (time.time() - st)))
-#
-#
+print ("Merged LUT + image in Texture implementation")
+args_image = (weights_img, numpy.uint32(img.dim2), numpy.uint32(img.dim1),
+#                       weights_buf,
+                       numpy.uint32(2048),
+                       numpy.uint32(integ.lut_size),
+                       #lut_idx_buf,
+                       #lut_coef_buf,
+                       lut_buf,
+                       numpy.int32(0),
+                       numpy.float32(0),
+                       numpy.float32(0),
+                       numpy.int32(0),
+                       None_buf,
+                       numpy.int32(0),
+                       None_buf,
+                       outData_buf,
+                       outCount_buf,
+                       outMerge_buf)
+t4 = time.time()
+program.lut_integrate_image(q, (bins,), (16,), *args_image)
+b = numpy.empty(bins, dtype=numpy.float32)
+c = numpy.empty(bins, dtype=numpy.float32)
+d = numpy.empty(bins, dtype=numpy.float32)
+pyopencl.enqueue_copy(q, c, outData_buf).wait()
+pyopencl.enqueue_copy(q, d, outCount_buf).wait()
+pyopencl.enqueue_copy(q, b, outMerge_buf).wait()
+t5 = time.time()
+pylab.plot(a, b, label="OpenCL_image")
+
+print "OpenCL speed-up: %s setup: %.2fms \texec: %.2fms" % (0.001 * ref_time / (t5 - t3), 1000 * (t4 - t3), 1000 * (t5 - t4))
+print abs(ra - a).max(), abs(rb - b).max(), abs(rc - c).max(), abs(rd - d).max()
+for j in list_size:
+    st = time.time()
+    program.lut_integrate_image(q, (bins,), (j,), * args_image)
+    pyopencl.enqueue_copy(q, b, outMerge_buf).wait()
+    print("Size: %s \ttime: %.2fms" % (j, 1000 * (time.time() - st)))
+
+
 #print ("Separated LUT + image in Texture implementation")
 #args_texture = (weights_img, numpy.uint32(img.dim2), numpy.uint32(img.dim1),
 ##                       weights_buf,
@@ -246,51 +244,48 @@ for i in range(10):
 #
 #print "OpenCL speed-up: %s setup: %.2fms \texec: %.2fms" % (0.001 * ref_time / (t5 - t3), 1000 * (t4 - t3), 1000 * (t5 - t4))
 #print abs(ra - a).max(), abs(rb - b).max(), abs(rc - c).max(), abs(rd - d).max()
-#for i in range(10):
-#    j = 2 ** i
+#for j in list_size:
 #    st = time.time()
 #    program.lut_integrate_LUTtexture(q, (bins,), (j,), * args_texture)
 #    pyopencl.enqueue_copy(q, b, outMerge_buf).wait()
 #    print("Size: %s \ttime: %.2fms" % (j, 1000 * (time.time() - st)))
 #
-#
-#print ("Merged LUT_Transposed + image in Texture implementation")
-#args_imageT = (weights_img, numpy.uint32(img.dim2), numpy.uint32(img.dim1),
-##                       weights_buf,
-#                       numpy.uint32(2048),
-#                       numpy.uint32(integ.lut_size),
-#                       #lut_idx_buf,
-#                       #lut_coef_buf,
-#                       lut_bufT,
-#                       numpy.int32(0),
-#                       numpy.float32(0),
-#                       numpy.float32(0),
-#                       numpy.int32(0),
-#                       None_buf,
-#                       numpy.int32(0),
-#                       None_buf,
-#                       outData_buf,
-#                       outCount_buf,
-#                       outMerge_buf)
-##b = numpy.zeros_like(b)
-#t4 = time.time()
-#program.lut_integrate_image_lutT(q, (bins,), (16,), *args_imageT)
-#b = numpy.empty(bins, dtype=numpy.float32)
-#c = numpy.empty(bins, dtype=numpy.float32)
-#d = numpy.empty(bins, dtype=numpy.float32)
-#pyopencl.enqueue_copy(q, c, outData_buf)
-#pyopencl.enqueue_copy(q, d, outCount_buf)
-#pyopencl.enqueue_copy(q, b, outMerge_buf).wait()
-#t5 = time.time()
-#pylab.plot(a, b, label="OpenCL_imageT")
-#print "OpenCL speed-up: %s setup: %.2fms \texec: %.2fms" % (0.001 * ref_time / (t5 - t3), 1000 * (t4 - t3), 1000 * (t5 - t4))
-#print abs(ra - a).max(), abs(rb - b).max(), abs(rc - c).max(), abs(rd - d).max()
-#for i in range(10):
-#    j = 2 ** i
-#    st = time.time()
-#    program.lut_integrate_image_lutT(q, (bins,), (j,), * args_imageT)
-#    pyopencl.enqueue_copy(q, b, outMerge_buf).wait()
-#    print("Size: %s \ttime: %.2fms" % (j, 1000 * (time.time() - st)))
+
+print ("Merged LUT_Transposed + image in Texture implementation")
+args_imageT = (weights_img, numpy.uint32(img.dim2), numpy.uint32(img.dim1),
+#                       weights_buf,
+                       numpy.uint32(2048),
+                       numpy.uint32(integ.lut_size),
+                       #lut_idx_buf,
+                       #lut_coef_buf,
+                       lut_bufT,
+                       numpy.int32(0),
+                       numpy.float32(0),
+                       numpy.float32(0),
+                       numpy.int32(0),
+                       None_buf,
+                       numpy.int32(0),
+                       None_buf,
+                       outData_buf,
+                       outCount_buf,
+                       outMerge_buf)
+t4 = time.time()
+program.lut_integrate_image_lutT(q, (bins,), (16,), *args_imageT)
+b = numpy.empty(bins, dtype=numpy.float32)
+c = numpy.empty(bins, dtype=numpy.float32)
+d = numpy.empty(bins, dtype=numpy.float32)
+pyopencl.enqueue_copy(q, c, outData_buf)
+pyopencl.enqueue_copy(q, d, outCount_buf)
+pyopencl.enqueue_copy(q, b, outMerge_buf).wait()
+t5 = time.time()
+pylab.plot(a, b, label="OpenCL_imageT")
+print "OpenCL speed-up: %s setup: %.2fms \texec: %.2fms" % (0.001 * ref_time / (t5 - t3), 1000 * (t4 - t3), 1000 * (t5 - t4))
+print abs(ra - a).max(), abs(rb - b).max(), abs(rc - c).max(), abs(rd - d).max()
+for j in list_size:
+    st = time.time()
+    program.lut_integrate_image_lutT(q, (bins,), (j,), * args_imageT)
+    pyopencl.enqueue_copy(q, b, outMerge_buf).wait()
+    print("Size: %s \ttime: %.2fms" % (j, 1000 * (time.time() - st)))
 
 
 #plot(ee)
