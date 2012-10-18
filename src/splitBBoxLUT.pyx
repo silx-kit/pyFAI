@@ -44,22 +44,24 @@ cdef float getBinNr( float x0, float pos0_min, float delta):
     param delta: bin width
     """
     return (x0 - pos0_min) / delta
-
+ 
 class HistoBBox1d(object):
+    @cython.boundscheck(False)
     def __init__(self,
                  pos0,
                  delta_pos0,
                  pos1=None,
                  delta_pos1=None,
-                 bins=100,
+                 int bins=100,
                  pos0Range=None,
                  pos1Range=None,
                  mask=None,
                  allow_pos0_neg=False
                  ):
 
-        cdef double delta, pos0_min, min0
-
+        cdef float delta, pos0_min, min0
+        cdef int i
+        cdef numpy.ndarray[numpy.float32_t, ndim = 1] outPos = numpy.empty(bins,dtype=numpy.float32)
         self.size = pos0.size
         assert delta_pos0.size == self.size
         self.bins = bins
@@ -107,7 +109,13 @@ class HistoBBox1d(object):
         delta = (self.pos0_max - pos0_min) / (bins)
         self.delta = delta
         self.lut_max_idx, self.lut_idx, self.lut_coef = self.calc_lut()
-        self.outPos = numpy.linspace(self.pos0_min+0.5*delta,self.pos0_max-0.5*delta, self.bins)
+        ########################################################################
+        # Linspace has been discareded becaus it does calculation in double precision and all others are done in single
+        #self.outPos = numpy.linspace(self.pos0_min+0.5*delta,self.pos0_max-0.5*delta, self.bins)
+        ########################################################################
+        for i in prange(bins,nogil=True, schedule="static"):
+            outPos[i] = pos0_min + (<float>0.5 +< float > i) * delta
+        self.outPos = outPos
         self.lut = numpy.recarray(shape=self.lut_coef.shape,dtype=[("idx",numpy.uint32),("coef",numpy.float32)])
         self.lut.coef = self.lut_coef
         self.lut.idx = self.lut_idx
