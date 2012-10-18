@@ -31,7 +31,7 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "02/07/2012"
 __status__ = "beta"
 
-import os, logging, tempfile, threading
+import os, logging, tempfile, threading, hashlib
 import numpy
 from numpy import degrees
 from geometry import Geometry
@@ -47,6 +47,12 @@ except ImportError as error:#IGNORE:W0703
     ocl = None
 else:
     ocl = ocl_azim.OpenCL()
+
+try:
+    import splitBBoxLUT
+except ImportError as error:#IGNORE:W0703
+    logger.warning("Unable to import pyFAI.splitBBoxLUT for Look-up table based azimuthal integration")
+    splitBBoxLUT = None
 
 
 
@@ -87,7 +93,19 @@ class AzimuthalIntegrator(Geometry):
         self._darkcurrents = {}
 
         self._ocl_integrator = None
+        self._lut_integrator = None
         self._ocl_sem = threading.Semaphore()
+        self._lut_sem = threading.Semaphore()
+
+    def reset(self):
+        """
+        Reset azimuthal integrator in addition to other arrays.
+        """
+        Geometry.reset(self)
+        with self._ocl_sem:
+            self._ocl_integrator = None
+        with self._lut_sem:
+            self._lut_integrator = None
 
     def makeMask(self, data, mask=None, dummy=None, delta_dummy=None, invertMask=None):
         """
@@ -173,11 +191,8 @@ class AzimuthalIntegrator(Geometry):
         tthAxis = degrees(b[1:].astype("float32") + b[:-1].astype("float32")) / 2.0
         I = val / self._nbPixCache[nbPt]
         if filename:
-            try:
-                with open(filename, "w") as openedfile:
-                    openedfile.writelines(["%s\t%s%s" % (t, i, os.linesep) for t, i in zip(tthAxis, I)])
-            except IOError:
-                logger.error("IOError: unable to write to file %s" % filename)
+            self.save1D(filename, tthAxis, I, None, "2th_deg")
+
         return tthAxis, I
 
 
@@ -226,7 +241,7 @@ class AzimuthalIntegrator(Geometry):
                                                    dummy=dummy)
         tthAxis = numpy.degrees(tthAxis)
         if filename:
-            open(filename, "w").writelines(["%s\t%s%s" % (t, i, os.linesep) for t, i in zip(tthAxis, I)])
+            self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
 
 #    @timeit
@@ -301,7 +316,7 @@ class AzimuthalIntegrator(Geometry):
                                                  flat=flat)
         tthAxis = numpy.degrees(tthAxis)
         if filename:
-            open(filename, "w").writelines(["%s\t%s%s" % (t, i, os.linesep) for t, i in zip(tthAxis, I)])
+            self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
 
 
@@ -352,7 +367,7 @@ class AzimuthalIntegrator(Geometry):
                                                   dummy=dummy)
         tthAxis = numpy.degrees(tthAxis)
         if filename:
-            open(filename, "w").writelines(["%s\t%s%s" % (t, i, os.linesep) for t, i in zip(tthAxis, I)])
+            self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
     #Default implementation:
     xrpd = xrpd_splitBBox
@@ -460,7 +475,101 @@ class AzimuthalIntegrator(Geometry):
             tthAxis, I, a, = self._ocl_integrator.execute(data)
         tthAxis = numpy.degrees(tthAxis)
         if filename:
-            open(filename, "w").writelines(["%s\t%s%s" % (t, i, os.linesep) for t, i in zip(tthAxis, I)])
+            self.save1D(filename, tthAxis, I, None, "2th_deg")
+        return tthAxis, I
+
+    def xrpd_LUT(self, data, nbPt, filename=None, correctSolidAngle=True,
+                       tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None,
+                       safe=True):
+
+        """
+        Calculate the powder diffraction pattern from a set of data, an image. Cython implementation using a Look-Up Table.
+        @param data: 2D array from the CCD camera
+        @type data: ndarray
+        @param nbPt: number of points in the output pattern
+        @type nbPt: integer
+        @param filename: file to save data in ascii format 2 column
+        @type filename: string
+        @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
+        @type correctSolidAngle: boolean
+        @param tthRange: The lower and upper range of the 2theta. If not provided, range is simply (data.min(), data.max()).
+                        Values outside the range are ignored.
+        @type tthRange: (float, float), optional
+        @param chiRange: The lower and upper range of the chi angle. If not provided, range is simply (data.min(), data.max()).
+                        Values outside the range are ignored.
+        @type chiRange: (float, float), optional, disabled for now
+        @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
+        @param  dummy: value for dead/masked pixels
+        @param delta_dummy: precision for dummy value
+        LUT specific parameters:
+        @param safe: set to false if you think your GPU is already set-up correctly (2theta, mask, solid angle...)
+
+        @return: (2theta, I) in degrees
+        @rtype: 2-tuple of 1D arrays
+        """
+        def setup_integrator(shape, mask, tthRange, chiRange):
+            tth = self.twoThetaArray(shape)
+            dtth = self.delta2Theta(shape)
+            if chiRange is None:
+                chi = None
+                dchi = None
+            else:
+                chi = self.chiArray(shape)
+                dchi = self.deltaChi(shape)
+            if tthRange is not None and len(tthRange) > 1:
+                pos0_min = numpy.deg2rad(min(tthRange))
+                pos0_maxin = numpy.deg2rad(max(tthRange))
+                pos0Range = (pos0_min, pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps))
+            else:
+                pos0Range = None
+            if chiRange is not None and len(chiRange) > 1:
+                pos1_min = numpy.deg2rad(min(chiRange))
+                pos1_maxin = numpy.deg2rad(max(chiRange))
+                pos1Range = (pos1_min, pos1_maxin * (1.0 + numpy.finfo(numpy.float32).eps))
+            else:
+                pos1Range = None
+            assert mask.shape == shape
+            self._lut_integrator = splitBBoxLUT.HistoBBox1d(tth, dtth, chi, dchi,
+                                                            bins=nbPt,
+                                                            pos0Range=pos0Range,
+                                                            pos1Range=pos1Range,
+                                                            mask=mask,
+                                                            allow_pos0_neg=False)
+
+        shape = data.shape
+        if not splitBBoxLUT:
+            logger.error("Look-up table implementation not available: falling back on old method !")
+            return self.xrpd_splitBBox(data=data,
+                                       nbPt=nbPt,
+                                       filename=filename,
+                                       correctSolidAngle=correctSolidAngle,
+                                       tthRange=tthRange,
+                                       mask=mask,
+                                       dummy=dummy,
+                                       delta_dummy=delta_dummy)
+        with self._lut_sem:
+            if self._lut_integrator is None:
+                setup_integrator(shape, mask, tthRange, chiRange)
+                safe = False
+            if safe:
+                if (mask is not None) and self._lut_integrator.check_mask:
+                    setup_integrator(shape, mask, tthRange, chiRange)
+                elif (mask is None) and (not self._lut_integrator.check_mask):
+                    setup_integrator(shape, mask, tthRange, chiRange)
+                elif (mask is not None) and (self._lut_integrator.mask_checksum != hashlib.md5(mask).hexdigest()):
+                    setup_integrator(shape, mask, tthRange, chiRange)
+                if (tthRange is None) and (self._lut_integrator.pos0Range is not None):
+                    setup_integrator(shape, mask, tthRange, chiRange)
+                elif self._lut_integrator.pos0Range != (numpy.deg2rad(min(tthRange)), numpy.deg2rad(max(tthRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                     setup_integrator(shape, mask, tthRange, chiRange)
+                if (chiRange is None) and (self._lut_integrator.pos1Range is not None):
+                    setup_integrator(shape, mask, tthRange, chiRange)
+                elif self._lut_integrator.pos1Range != (numpy.deg2rad(min(chiRange)), numpy.deg2rad(max(chiRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                     setup_integrator(shape, mask, tthRange, chiRange)
+            a, b, I = self._lut_integrator.execute(data)
+            tthAxis = numpy.degrees(self._lut_integrator.outPos)
+        if filename:
+            self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
 
 
@@ -511,6 +620,9 @@ class AzimuthalIntegrator(Geometry):
 #        ,
 #                                                  range=[chiRange, tthRange])
         I = val / self._nbPixCache[bins]
+        if filename:
+            self.save2D(filename, I, bins2Th, binsChi)
+
         return I, bins2Th, binsChi
 
     def xrpd2_histogram(self, data, nbPt2Th, nbPtChi=360, filename=None, correctSolidAngle=True,
@@ -697,31 +809,6 @@ class AzimuthalIntegrator(Geometry):
     xrpd2 = xrpd2_splitBBox
 
 
-
-
-    def save2D(self, filename, I, dim1, dim2, dim1_unit="2th"):
-        header = {"dist":str(self._dist),
-                  "poni1": str(self._poni1),
-                  "poni2": str(self._poni2),
-                  "rot1": str(self._rot1),
-                  "rot2": str(self._rot2),
-                  "rot3": str(self._rot3),
-                  "chi_min":str(dim2.min()),
-                  "chi_max":str(dim2.max()),
-                  dim1_unit + "_min":str(dim1.min()),
-                  dim1_unit + "_max":str(dim1.max()),
-                  "pixelX": str(self.pixel2), #this is not a bug ... most people expect dim1 to be X
-                  "pixelY": str(self.pixel1), #this is not a bug ... most people expect dim2 to be Y
-                }
-        if self.splineFile:
-            header["spline"] = str(self.splineFile)
-        f2d = self.getFit2D()
-        for key in f2d:
-            header["key"] = f2d[key]
-        try:
-            fabio.edfimage.edfimage(data=I.astype("float32"), header=header).write(filename)
-        except IOError:
-            logger.error("IOError while writing %s" % filename)
 
 
 
@@ -918,17 +1005,7 @@ class AzimuthalIntegrator(Geometry):
             I = val / count
 
         if filename:
-            with open(filename, "w") as f:
-                f.write(self.makeHeaders())
-                f.write("# --> %s%s" % (filename, os.linesep))
-                if variance is None:
-                    f.write("#%14s %14s %s" % ("q_nm^-1 ", "I ", os.linesep))
-                    for t, i in zip(qAxis, I):
-                        f.write("%14.6e  %14.6e %s" % (t, i, os.linesep))
-                else:
-                    f.write("#%14s  %14s  %14s%s" % ("q_nm^-1 ", "I ", "sigma ", os.linesep))
-                    for t, i, s in zip(qAxis, I, sigma):
-                        f.write("%14.6e  %14.6e  %14.6e %s" % (t, i, s, os.linesep))
+            self.save1D(filename, qAxis, I, sigma, "q_nm^-1")
         return qAxis, I, sigma
 
     def makeHeaders(self, hdr="#"):
@@ -937,27 +1014,63 @@ class AzimuthalIntegrator(Geometry):
         """
         if self.header is None:
             headerLst = ["== pyFAI calibration =="]
-            headerLst.append("SplineFile: %s" % self.spline)
+            headerLst.append("SplineFile: %s" % self.splineFile)
             headerLst.append("PixelSize: %.3e, %.3e m" % (self.pixel1, self.pixel2))
             headerLst.append("PONI: %.3e, %.3e m" % (self.poni1, self.poni2))
             headerLst.append("Distance Sample to Detector: %s m" % self.dist)
             headerLst.append("Rotations: %.6f %.6f %.6f rad" % (self.rot1, self.rot2, self.rot3))
             headerLst += ["", "== Fit2d calibration =="]
             f2d = self.getFit2D()
-            headerLst.append("Distance Sample-beamCenter: %.3f mm" % f2d["DirectBeamDist"])
-            headerLst.append("Center: x=%.3f, y=%.3f pix" % (f2d["BeamCenterX"], f2d["BeamCenterY"]))
-            headerLst.append("Tilt: %.3f deg  TiltPlanRot: %.3f deg" % (f2d["Tilt"], f2d["TiltPlanRot"]))
+            headerLst.append("Distance Sample-beamCenter: %.3f mm" % f2d["directDist"])
+            headerLst.append("Center: x=%.3f, y=%.3f pix" % (f2d["centerX"], f2d["centerY"]))
+            headerLst.append("Tilt: %.3f deg  TiltPlanRot: %.3f deg" % (f2d["tilt"], f2d["tiltPlanRotation"]))
             headerLst.append("")
-            if self.wavelength is not None:
+            if self._wavelength is not None:
                 headerLst.append("Wavelength: %s" % self.wavelength)
             if self.maskfile is not None:
                 headerLst.append("Mask File: %s" % self.maskfile)
-            if self.darkcurrent is not None:
-                headerLst.append("DarkCurrent File: %s" % self.darkcurrent)
-            if self.flatfield is not None:
-                headerLst.append("Flatfield File: %s" % self.flatfield)
-            if self.background is not None:
-                headerLst.append("Background File: %s" % self.background)
+#            if self.darkcurrent is not None:
+#                headerLst.append("DarkCurrent File: %s" % self.darkcurrent)
+#            if self.flatfield is not None:
+#                headerLst.append("Flatfield File: %s" % self.flatfield)
+#            if self.background is not None:
+#                headerLst.append("Background File: %s" % self.background)
             self.header = os.linesep.join([hdr + " " + i for i in headerLst])
         return self.header
 
+    def save1D(self, filename, dim1, I, error=None, dim1_unit="2th_deg"):
+        if filename:
+            with open(filename, "w") as f:
+                f.write(self.makeHeaders())
+                f.write("%s# --> %s%s" % (os.linesep, filename, os.linesep))
+                if error is None:
+                    f.write("#%14s %14s %s" % (dim1_unit, "I ", os.linesep))
+                    f.write(os.linesep.join(["%14.6e  %14.6e %s" % (t, i, os.linesep) for t, i in zip(dim1, I)]))
+                else:
+                    f.write("#%14s  %14s  %14s%s" % (dim1_unit, "I ", "sigma ", os.linesep))
+                    f.write(os.linesep.join(["%14.6e  %14.6e %14.6e %s" % (t, i, s, os.linesep) for t, i, s in zip(dim1, I, error)]))
+                f.write(os.linesep)
+
+    def save2D(self, filename, I, dim1, dim2, dim1_unit="2th"):
+        header = {"dist":str(self._dist),
+                  "poni1": str(self._poni1),
+                  "poni2": str(self._poni2),
+                  "rot1": str(self._rot1),
+                  "rot2": str(self._rot2),
+                  "rot3": str(self._rot3),
+                  "chi_min":str(dim2.min()),
+                  "chi_max":str(dim2.max()),
+                  dim1_unit + "_min":str(dim1.min()),
+                  dim1_unit + "_max":str(dim1.max()),
+                  "pixelX": str(self.pixel2), #this is not a bug ... most people expect dim1 to be X
+                  "pixelY": str(self.pixel1), #this is not a bug ... most people expect dim2 to be Y
+                }
+        if self.splineFile:
+            header["spline"] = str(self.splineFile)
+        f2d = self.getFit2D()
+        for key in f2d:
+            header["key"] = f2d[key]
+        try:
+            fabio.edfimage.edfimage(data=I.astype("float32"), header=header).write(filename)
+        except IOError:
+            logger.error("IOError while writing %s" % filename)
