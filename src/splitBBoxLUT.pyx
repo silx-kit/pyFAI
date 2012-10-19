@@ -36,7 +36,7 @@ cdef struct lut_point:
     numpy.float32_t coef
 
 @cython.cdivision(True)
-cdef float getBinNr( float x0, float pos0_min, float delta):
+cdef float getBinNr( float x0, float pos0_min, float delta) nogil: 
     """
     calculate the bin number for any point
     param x0: current position
@@ -60,7 +60,7 @@ class HistoBBox1d(object):
                  ):
 
         cdef float delta, pos0_min, min0
-        cdef int i
+        cdef int i, size
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] outPos = numpy.empty(bins,dtype=numpy.float32)
         self.size = pos0.size
         assert delta_pos0.size == self.size
@@ -125,8 +125,8 @@ class HistoBBox1d(object):
     @cython.wraparound(False)
     def calc_lut(self):
         'calculate the max number of elements in the LUT'
-        cdef double delta=self.delta, pos0_min=self.pos0_min, min0, max0, fbin0_min, fbin0_max, deltaL, deltaR, deltaA
-        cdef int bin0_min, bin0_max, bins = self.bins, lut_size, i
+        cdef float delta=self.delta, pos0_min=self.pos0_min, pos1_min, pos1_max, min0, max0, fbin0_min, fbin0_max, deltaL, deltaR, deltaA
+        cdef int bin0_min, bin0_max, bins = self.bins, lut_size, i, size
         cdef numpy.uint32_t k,idx #same as numpy.uint32
         cdef bint check_mask, check_pos1
         cdef numpy.ndarray[numpy.int_t, ndim = 1] outMax = numpy.zeros(self.bins, dtype=numpy.int)
@@ -137,7 +137,7 @@ class HistoBBox1d(object):
         cdef numpy.ndarray[numpy.uint32_t, ndim = 2] lut_idx
         cdef numpy.ndarray[numpy.float32_t, ndim = 2] lut_coef
         cdef numpy.int8_t[:] cmask
-
+        size = self.size
         if self.check_mask:
             cmask = self.cmask
             check_mask = 1
@@ -148,17 +148,20 @@ class HistoBBox1d(object):
             check_pos1 = 1
             cpos1_min = self.cpos1_min
             cpos1_max = self.cpos1_max
+            pos1_max = self.pos1_max
+            pos1_min = self.pos1_min
         else:
             check_pos1 = 0
-#NOGIL
-        for idx in range(self.size):
+#NOGIL    
+        with nogil:
+            for idx in range(size):
                 if (check_mask) and (cmask[idx]):
                     continue
 
                 min0 = cpos0_inf[idx]
                 max0 = cpos0_sup[idx]
 
-                if check_pos1 and ((self.cpos1_max[idx] < self.pos1_min) or (self.cpos1_min[idx] > self.pos1_max)):
+                if check_pos1 and ((cpos1_max[idx] < pos1_min) or (cpos1_min[idx] > pos1_max)):
                     continue
 
                 fbin0_min = getBinNr(min0, pos0_min, delta)
@@ -188,14 +191,15 @@ class HistoBBox1d(object):
         lut_coef = numpy.zeros((self.bins, self.lut_size), dtype=numpy.float32)
 
         #NOGIL
-        for idx in range(self.size):
-                if (self.check_mask) and (self.cmask[idx]):
+        with nogil:
+            for idx in range(size):
+                if (check_mask) and (cmask[idx]):
                     continue
 
-                min0 = self.cpos0_inf[idx]
-                max0 = self.cpos0_sup[idx]
+                min0 = cpos0_inf[idx]
+                max0 = cpos0_sup[idx]
 
-                if self.check_pos1 and ((self.cpos1_max[idx] < self.pos1_min) or (self.cpos1_min[idx] > self.pos1_max)):
+                if check_pos1 and ((cpos1_max[idx] < pos1_min) or (cpos1_min[idx] > pos1_max)):
                         continue
 
                 fbin0_min = getBinNr(min0, pos0_min, delta)
@@ -238,54 +242,75 @@ class HistoBBox1d(object):
                             lut_idx[i, k] = idx
                             lut_coef[i, k] = (deltaA)
                             max_idx[i] = k + 1
-#        for i in prange(bins, nogil=True):
-#            lut_coef[i,max_idx[i]+1]=-1.0
         return max_idx, lut_idx, lut_coef
 
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def integrate(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None):
-        cdef int i,j, idx, bins,lut_size
-        cdef double data, coef, sum_data, sum_count, epsilon, cdummy, cddummy
-        cdef bint check_dummy=False, do_dark=False, do_flat=False
-        cdef numpy.ndarray[numpy.float32_t, ndim = 1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
+    def integrate(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None):
+        cdef int i, j, idx, bins, lut_size, size 
+        cdef double sum_data, sum_count, epsilon
+        cdef float data, coef, cdummy, cddummy
+        cdef bint check_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False  
         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
-#        cdef numpy.ndarray[numpy.uint32_t, ndim = 1]    lut_max_idx = self.lut_max_idx
-#        cdef numpy.uint32_t[:,:] lut_idx = self.lut_idx
-#        cdef float[:,:] lut_coef = self.lut_coef
         cdef lut_point[:,:] lut = self.lut
-        cdef float[:] cflat, cdark
+        cdef float[:] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
+        size = self.size
+        assert size == weights.size
         epsilon = 1e-10
         bins = self.bins
         lut_size = self.lut_size
 
         if dummy is not None:
             do_dummy = 1
-            cdummy = <double> float(dummy)
+            cdummy =  float(dummy)
             if delta_dummy is None:
-                cddummy = 0
+                cddummy = 0.0
             else:
-                cddummy = <double> float(delta_dummy)
+                cddummy = float(delta_dummy)
 
         if flat is not None:
-            do_flat = 1
-            assert flat.size == self.size
+            do_flat = True
+            assert flat.size == size
             cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)
         if dark is not None:
-            do_dark = 1
-            assert dark.size == self.size
+            do_dark = True
+            assert dark.size == size
             cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
-
-        for i in prange(bins, nogil=True, schedule="dynamic"):
+        if solidAngle is not None:
+            do_solidAngle = True
+            assert solidAngle.size == size
+            csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float32)
+        if polarization is not None:
+            do_polatization = True
+            assert polarization.size == size
+            cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
+        
+        if do_dark or do_flat or do_polarization or do_solidAngle:
+            tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
+            cdata = numpy.zeros(size,dtype=numpy.float32)
+            for i in prange(size, nogil=True, schedule="static"):
+                data = tdata[i]
+                #Nota: -= and /= operatore are seen as reduction in cython parallel.
+                if do_dark: 
+                    data = data - cdark[i]
+                if do_flat:
+                    data = data / cflat[i]
+                if do_polarization:
+                    data = data / cpolarization[i]
+                if do_solidAngle:
+                    data = data / csolidAngle[i]
+                cdata[i]+=data
+        else:
+            cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
+        
+        for i in prange(bins, nogil=True, schedule="guided"):
             sum_data = 0.0
             sum_count = 0.0
             for j in range(lut_size):
-#                idx = lut_idx[i, j]
-#                coef = lut_coef[i, j]
                 idx = lut[i, j].idx
                 coef = lut[i, j].coef
                 if idx <= 0 and coef <= 0.0:
@@ -298,10 +323,6 @@ class HistoBBox1d(object):
                     else:
                         if data==cdummy:
                             continue
-                if do_dark:
-                    data = data - cdark[idx]
-                if do_flat:
-                    data = data / cflat[idx]
 
                 sum_data = sum_data + coef * data
                 sum_count = sum_count + coef
