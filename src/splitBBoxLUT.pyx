@@ -44,7 +44,7 @@ cdef float getBinNr( float x0, float pos0_min, float delta):
     param delta: bin width
     """
     return (x0 - pos0_min) / delta
- 
+
 class HistoBBox1d(object):
     @cython.boundscheck(False)
     def __init__(self,
@@ -280,7 +280,7 @@ class HistoBBox1d(object):
             assert dark.size == self.size
             cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
 
-        for i in prange(bins, nogil=True, schedule="guided"):
+        for i in prange(bins, nogil=True, schedule="dynamic"):
             sum_data = 0.0
             sum_count = 0.0
             for j in range(lut_size):

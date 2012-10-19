@@ -59,25 +59,25 @@ struct lut_point_t
  * \brief Performs Normalization of input image
  *
  * Intensities of images are corrected by:
- *  - dark (read-out) noise subtraction  
+ *  - dark (read-out) noise subtraction
  *  - Solid angle correction (division)
  *  - polarization correction (division)
  *  - flat fiels correction (division)
  * Corrections are made in place.
- *  
+ *
  * @param image	          Float pointer to global memory storing the input image.
  * @param do_dark         Bool/int: shall dark-current correction be applied ?
  * @param dark            Float pointer to global memory storing the dark image.
- * @param do_flat         Bool/int: shall flat-field correction be applied ? 
+ * @param do_flat         Bool/int: shall flat-field correction be applied ?
  * @param flat            Float pointer to global memory storing the flat image.
- * @param do_solidangle   Bool/int: shall flat-field correction be applied ? 
+ * @param do_solidangle   Bool/int: shall flat-field correction be applied ?
  * @param solidangle      Float pointer to global memory storing the solid angle of each pixel.
- * @param do_polarization Bool/int: shall flat-field correction be applied ? 
+ * @param do_polarization Bool/int: shall flat-field correction be applied ?
  * @param polarization    Float pointer to global memory storing the polarization of each pixel.
- * 
+ *
 **/
 __kernel void
-corrections( 			__global float 	*image,
+corrections( 		__global float 	*image,
 			const			 uint 	size,
 			const			 int 	do_dark,
 			const 	__global float 	*dark,
@@ -101,7 +101,7 @@ corrections( 			__global float 	*image,
 		if(do_solidangle)
 			data/=solidangle[i];
 		if(do_polarization)
-			data/=polarization[i];		           
+			data/=polarization[i];
 	};//if bins
 };//end kernel
 
@@ -145,12 +145,12 @@ lut_integrate_orig(	const 	__global float 	*weights,
 		        )
 {
 	int idx, k, j, i= get_global_id(0);
-	float sum_data = 0.0;
-	float sum_count = 0.0;
-	float cd = 0.0;
-	float cc = 0.0;
+	float sum_data =0.0f;
+	float sum_count =0.0f;
+	float cd =0.0f;
+	float cc =0.0f;
 	float t, y;
-	const float epsilon = 1e-10;
+	const float epsilon = 1e-10f;
 	float coef, data;
 	if(i < bins)
 	{
@@ -171,7 +171,7 @@ lut_integrate_orig(	const 	__global float 	*weights,
 				y = coef - cc;
 				t = sum_count + y;
 				cc = (t - sum_count) - y;
-				sum_count = t;	
+				sum_count = t;
 //				sum_data +=  coef * data;
 //				sum_count += coef;
 
@@ -202,11 +202,11 @@ lut_integrate_single(	const 	__global 	float 		*weights,
 {
 	int idx, k, j, i= get_global_id(0);
 	float sum_data = 0.0;
-	float sum_count = 0.0;
-	float cd = 0.0;
-	float cc = 0.0;
+	float sum_count = 0.0f;
+	float cd = 0.0f;
+	float cc = 0.0f;
 	float t, y;
-	const float epsilon = 1e-10;
+	const float epsilon = 1e-10f;
 	float coef, data;
 	if(i < bins)
 	{
@@ -227,7 +227,7 @@ lut_integrate_single(	const 	__global 	float 		*weights,
 				y = coef - cc;
 				t = sum_count + y;
 				cc = (t - sum_count) - y;
-				sum_count = t;	
+				sum_count = t;
 //				sum_data +=  coef * data;
 //				sum_count += coef;
 
@@ -265,7 +265,7 @@ lut_integrate_lutT(	const 	__global 	float 		*weights,
 	float cd = 0.0f;
 	float cc = 0.0f;
 	float t, y;
-	const float epsilon = 1e-10;
+	const float epsilon = 1e-10f;
 	float coef, data;
 //	const sampler_t sampler =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE | CLK_FILTER_NEAREST;
 	if(i < bins)
@@ -288,7 +288,7 @@ lut_integrate_lutT(	const 	__global 	float 		*weights,
 				y = coef - cc;
 				t = sum_count + y;
 				cc = (t - sum_count) - y;
-				sum_count = t;	
+				sum_count = t;
 //				sum_data +=  coef * data;
 //				sum_count += coef;
 
@@ -301,6 +301,6 @@ lut_integrate_lutT(	const 	__global 	float 		*weights,
 			outMerge[i] = (float) (sum_data / sum_count);
 		else
 			outMerge[i] = 0.0f;
-		
+
   };//if bins
 };//end kernel

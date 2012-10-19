@@ -582,7 +582,7 @@ class AzimuthalIntegrator(Geometry):
 
     def xrpd_LUT_OCL(self, data, nbPt, filename=None, correctSolidAngle=True,
                        tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None,
-                       safe=True, devicetype="all"):
+                       safe=True, devicetype="all", platformid=None, deviceid=None):
 
         """
         Calculate the powder diffraction pattern from a set of data, an image. Cython implementation using a Look-Up Table.
@@ -607,11 +607,10 @@ class AzimuthalIntegrator(Geometry):
         @param safe: set to false if you think your GPU is already set-up correctly (2theta, mask, solid angle...)
         OpenCL specific parameters:
         @param  devicetype: can be "all", "cpu" or "gpu"
-        
+
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
         """
-
         shape = data.shape
         if not (splitBBoxLUT and ocl_azim_lut):
             logger.error("Look-up table implementation not available: falling back on old method !")
@@ -645,7 +644,7 @@ class AzimuthalIntegrator(Geometry):
             tthAxis = self._lut_integrator.outPos
             with self._ocl_lut_sem:
                 if self._ocl_lut_integr is None:
-                    self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut, devicetype)
+                    self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut, devicetype, platformid=platformid, deviceid=deviceid)
                 I = self._ocl_lut_integr.integrate(data)
         tthAxis = numpy.degrees(tthAxis)
         if filename:
