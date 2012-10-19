@@ -78,7 +78,7 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
             print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
         self.print_sep()
 
-    def bench_cpu1d_ocl_lut(self, n=10, devicetype="gpu"):
+    def bench_cpu1d_ocl_lut(self, n=10, devicetype="all", platformid=None, deviceid=None):
         print("Working on device: %s" % devicetype)
         for param in ds_list:
             ref = self.get_ref(param)
@@ -88,7 +88,7 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
             N = min(data.shape)
             print("1D integration of %s %.1f Mpixel -> %i bins" % (fn, data.size / 1e6, N))
             t0 = time.time()
-            res = ai.xrpd_LUT_OCL(data, N, platformid=2, deviceid=0)
+            res = ai.xrpd_LUT_OCL(data, N, devicetype=devicetype, platformid=platformid, deviceid=deviceid)
             t1 = time.time()
             self.print_init(t1 - t0)
             setup = """
@@ -96,7 +96,7 @@ import pyFAI,fabio
 ai=pyFAI.load("%s")
 data = fabio.open("%s").data
 N=min(data.shape)
-out=ai.xrpd_LUT_OCL(data,N,devicetype="%s",platformid=2,deviceid=0)""" % (param, fn, devicetype)
+out=ai.xrpd_LUT_OCL(data,N,devicetype="%s",platformid=%s,deviceid=%s)""" % (param, fn, devicetype, platformid, deviceid)
             t = timeit.Timer("ai.xrpd_LUT_OCL(data,N,safe=False)", setup)
             tmin = min([i / n for i in t.repeat(repeat=3, number=n)])
             self.print_exec(tmin)
@@ -169,11 +169,11 @@ if __name__ == "__main__":
         n = 1
     print("Averaging over %i repetitions (best of 3)." % n)
     b = Bench()
-#    b.bench_cpu1d(n)
-#    b.bench_cpu1d_ocl_lut(n, "GPU")
-    b.bench_cpu1d_ocl_lut(n, "CPU")
+    b.bench_cpu1d(n)
+    b.bench_cpu1d_ocl_lut(n, "GPU")
+#    b.bench_cpu1d_ocl_lut(n, "CPU", 2, 0)
 #    b.bench_cpu1d_ocl_lut(n)
-#    b.bench_cpu2d(n)
+    b.bench_cpu2d(n)
     b.bench_gpu1d(n, "gpu", True)
     b.bench_gpu1d(n, "gpu", False)
     b.bench_gpu1d(n, "cpu", True)

@@ -30,6 +30,7 @@ __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import os
+import threading
 import numpy
 import pyopencl
 from ocl_azim import OpenCL
@@ -42,6 +43,7 @@ class OCL_LUT_Integrator(object):
         """
         @param lut: array of uint32-float32 with shape (nbins, lut_size) with indexes and
         """
+        self._sem = threading.Semaphore()
         self._lut = lut
         self.ws = 16
         self.bins, self.lut_size = lut.shape
@@ -61,26 +63,103 @@ class OCL_LUT_Integrator(object):
             self._lut_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=lut)
         else:
             self._lut_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=lut.T.copy())
+        self.outData_buffer = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, numpy.dtype(numpy.float32).itemsize * self.bins)
+        self.outCount_buffer = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, numpy.dtype(numpy.float32).itemsize * self.bins)
+        self.outMerge_buffer = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, numpy.dtype(numpy.float32).itemsize * self.bins)
+        self.data_buffer = None
+        self.dark_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=1)
+        self.flat_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=1)
+        self.solidAngle_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=1)
+        self.polarization_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=1)
 
-    def get_nr_threads(self):
+    def get_nr_threads(self, size=None, ws=None):
         """calculate the number of threads, multiple of workgroup-size and greater than bins"""
-        r = self.bins % self.ws
+        if size is None:
+            size = self.bins
+        if ws is None:
+            ws = self.ws
+        r = size % ws
         if r == 0:
-            return self.bins
+            return size
         else:
-            return self.ws * (1 + self.bins // self.ws)
+            return ws * (1 + size // ws)
 
-    def integrate(self, data):
-        data_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=data)
-        outData_buf = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, numpy.dtype(numpy.float32).itemsize * self.bins)
-        outCount_buf = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, numpy.dtype(numpy.float32).itemsize * self.bins)
-        outMerge_buf = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, numpy.dtype(numpy.float32).itemsize * self.bins)
-        args = (data_buffer, numpy.uint32(self.bins), numpy.uint32(self.lut_size), self._lut_buffer,
-               numpy.int32(0), numpy.float32(0), numpy.float32(0), outData_buf, outCount_buf, outMerge_buf)
-        if self.device_type == "CPU":
-            self._program.lut_integrate_single(self._queue, (self.get_nr_threads(),), (self.ws,), *args)
-        else:
-            self._program.lut_integrate_lutT(self._queue, (self.get_nr_threads(),), (self.ws,), *args)
-        output = numpy.empty(self.bins, dtype=numpy.float32)
-        pyopencl.enqueue_copy(self._queue, output, outMerge_buf).wait()
+    def integrate(self, data, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None):
+        data = numpy.ascontiguousarray(data, dtype=numpy.float32)
+        with self._sem:
+            if self.data_buffer is None:
+                self.data_buffer = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size=data.nbytes)
+            elif self.data_buffer.size != data.nbytes:
+                self.data_buffer.release()
+                self.data_buffer = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size=data.nbytes)
+            pyopencl.enqueue_copy(self._queue, self.data_buffer, data)
+
+            if dark is not None:
+                dark = numpy.ascontiguousarray(dark, dtype=numpy.float32)
+                do_dark = 1
+                if self.dark_buffer.size != dark.nbytes:
+                    self.dark_buffer.release()
+                    self.dark_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=dark)
+                else:
+                    pyopencl.enqueue_copy(self._queue, self.dark_buffer, dark)
+            else:
+                do_dark = 0
+            if flat is not None:
+                flat = numpy.ascontiguousarray(flat, dtype=numpy.float32)
+                do_flat = 1
+                if self.flat_buffer.size != flat.nbytes:
+                    self.flat_buffer.release()
+                    self.flat_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=flat)
+                else:
+                    pyopencl.enqueue_copy(self._queue, self.flat_buffer, flat)
+            else:
+                do_flat = 0
+
+            if solidAngle is not None:
+                solidAngle = numpy.ascontiguousarray(solidAngle, dtype=numpy.float32)
+                do_solidAngle = 1
+                if self.solidAngle_buffer.size != solidAngle.nbytes:
+                    self.solidAngle_buffer.release()
+                    self.solidAngle_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=solidAngle)
+                else:
+                    pyopencl.enqueue_copy(self._queue, self.solidAngle_buffer, solidAngle)
+            else:
+                do_solidAngle = 0
+
+            if polarization is not None:
+                polarization = numpy.ascontiguousarray(polarization, dtype=numpy.float32)
+                do_polarization = 1
+                if self.polarization_buffer.size != polarization.nbytes:
+                    self.polarization_buffer.release()
+                    self.polarization_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=polarization)
+                else:
+                    pyopencl.enqueue_copy(self._queue, self.polarization_buffer, polarization)
+            else:
+                do_polarization = 0
+            if do_polarization + do_solidAngle + do_flat + do_dark > 0:
+                args_cor = (self.data_buffer,numpy.uint32(data.size),
+                            numpy.int32(do_dark), self.dark_buffer,
+                            numpy.int32(do_flat), self.flat_buffer,
+                            numpy.int32(do_solidAngle), self.solidAngle_buffer,
+                            numpy.int32(do_polarization), self.polarization_buffer)
+                pyopencl.enqueue_barrier(self._queue).wait()
+                self._program.corrections(self._queue, (self.get_nr_threads(data.size, 512),), (512,), *args_cor)
+
+            if dummy is not None:
+                do_dummy = 1
+            else:
+                do_dummy = 0
+                dummy = 0
+                delta_dummy = 0
+
+
+            args = (self.data_buffer, numpy.uint32(self.bins), numpy.uint32(self.lut_size), self._lut_buffer,
+                   numpy.int32(do_dummy), numpy.float32(dummy), numpy.float32(delta_dummy), self.outData_buffer, self.outCount_buffer, self.outMerge_buffer)
+            if self.device_type == "CPU":
+                self._program.lut_integrate_single(self._queue, (self.get_nr_threads(),), (self.ws,), *args)
+            else:
+                self._program.lut_integrate_lutT(self._queue, (self.get_nr_threads(),), (self.ws,), *args)
+            output = numpy.zeros(self.bins, dtype=numpy.float32)
+            pyopencl.enqueue_barrier(self._queue).wait()
+            pyopencl.enqueue_copy(self._queue, output, self.outMerge_buffer).wait()
         return output

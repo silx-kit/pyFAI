@@ -89,6 +89,7 @@ class AzimuthalIntegrator(Geometry):
         self.background = None  #just a placeholder
         self.flatfield = None   #just a placeholder
         self.darkcurrent = None   #just a placeholder
+
         self.header = None
 
         self._backgrounds = {}  #dict for caching
@@ -568,13 +569,17 @@ class AzimuthalIntegrator(Geometry):
                     self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
                 if (tthRange is None) and (self._lut_integrator.pos0Range is not None):
                     self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
-                elif self._lut_integrator.pos0Range != (numpy.deg2rad(min(tthRange)), numpy.deg2rad(max(tthRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                elif (tthRange is not None) and self._lut_integrator.pos0Range != (numpy.deg2rad(min(tthRange)), numpy.deg2rad(max(tthRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
                      self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
                 if (chiRange is None) and (self._lut_integrator.pos1Range is not None):
                     self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
-                elif self._lut_integrator.pos1Range != (numpy.deg2rad(min(chiRange)), numpy.deg2rad(max(chiRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                elif (chiRange is not None) and self._lut_integrator.pos1Range != (numpy.deg2rad(min(chiRange)), numpy.deg2rad(max(chiRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
                      self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
-            tthAxis, I, a, b = self._lut_integrator.integrate(data)
+            if correctSolidAngle:
+                solid_angle_array = self.solidAngleArray(shape)
+            else:
+                solid_angle_array = None
+            tthAxis, I, a, b = self._lut_integrator.integrate(data, solidAngle=solid_angle_array)
         tthAxis = numpy.degrees(tthAxis)
         if filename:
             self.save1D(filename, tthAxis, I, None, "2th_deg")
@@ -622,6 +627,12 @@ class AzimuthalIntegrator(Geometry):
                                        mask=mask,
                                        dummy=dummy,
                                        delta_dummy=delta_dummy)
+        if correctSolidAngle:
+            solid_angle_array = self.solidAngleArray(shape)
+        else:
+            solid_angle_array = None
+            tthAxis, I, a, b = self._lut_integrator.integrate(data,)
+
         with self._lut_sem:
             if self._lut_integrator is None:
                 self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
@@ -645,7 +656,7 @@ class AzimuthalIntegrator(Geometry):
             with self._ocl_lut_sem:
                 if self._ocl_lut_integr is None:
                     self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut, devicetype, platformid=platformid, deviceid=deviceid)
-                I = self._ocl_lut_integr.integrate(data)
+                I = self._ocl_lut_integr.integrate(data, solidAngle=solid_angle_array)
         tthAxis = numpy.degrees(tthAxis)
         if filename:
             self.save1D(filename, tthAxis, I, None, "2th_deg")

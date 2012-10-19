@@ -93,7 +93,7 @@ corrections( 		__global float 	*image,
 	uint i= get_global_id(0);
 	if(i < size)
 	{
-		data =  image[i];
+		data = image[i];
 		if(do_dark)
 			data-=dark[i];
 		if(do_flat)
@@ -102,6 +102,7 @@ corrections( 		__global float 	*image,
 			data/=solidangle[i];
 		if(do_polarization)
 			data/=polarization[i];
+		image[i] = data;
 	};//if bins
 };//end kernel
 
@@ -145,10 +146,10 @@ lut_integrate_orig(	const 	__global float 	*weights,
 		        )
 {
 	int idx, k, j, i= get_global_id(0);
-	float sum_data =0.0f;
-	float sum_count =0.0f;
-	float cd =0.0f;
-	float cc =0.0f;
+	float sum_data = 0.0f;
+	float sum_count = 0.0f;
+	float cd = 0.0f;
+	float cc = 0.0f;
 	float t, y;
 	const float epsilon = 1e-10f;
 	float coef, data;
@@ -159,7 +160,7 @@ lut_integrate_orig(	const 	__global float 	*weights,
 			k = i*lut_size+j;
 			idx = lut_idx[k];
 			coef = lut_coef[k];
-			if((idx <= 0) && (coef <= 0.0))
+			if((idx <= 0) && (coef <= 0.0f))
 			  break;
 			data = weights[idx];
 			if( (!do_dummy) || (delta_dummy && (fabs(data-dummy) > delta_dummy))|| (data!=dummy) )
@@ -201,7 +202,7 @@ lut_integrate_single(	const 	__global 	float 		*weights,
 		        )
 {
 	int idx, k, j, i= get_global_id(0);
-	float sum_data = 0.0;
+	float sum_data = 0.0f;
 	float sum_count = 0.0f;
 	float cd = 0.0f;
 	float cc = 0.0f;
@@ -215,7 +216,7 @@ lut_integrate_single(	const 	__global 	float 		*weights,
 			k = i*lut_size+j;
 			idx = lut[k].idx;
 			coef = lut[k].coef;
-			if((idx <= 0) && (coef <= 0.0))
+			if((idx <= 0) && (coef <= 0.0f))
 			  break;
 			data = weights[idx];
 			if( (!do_dummy) || (delta_dummy && (fabs(data-dummy) > delta_dummy))|| (data!=dummy) )
@@ -234,10 +235,10 @@ lut_integrate_single(	const 	__global 	float 		*weights,
 
 			};//test dummy
 		};//for j
-		outData[i] = (float) sum_data;
-		outCount[i] = (float) sum_count;
+		outData[i] = sum_data;
+		outCount[i] = sum_count;
 		if (sum_count > epsilon)
-			outMerge[i] = (float) sum_data / sum_count;
+			outMerge[i] =  sum_data / sum_count;
 		else
 			outMerge[i] = 0.0f;
   };//if bins
@@ -275,7 +276,7 @@ lut_integrate_lutT(	const 	__global 	float 		*weights,
 			k = j*bins+i;
 			idx = lut[k].idx;
 			coef = lut[k].coef;
-			if((idx == 0) && (coef <= 0.0))
+			if((idx == 0) && (coef <= 0.0f))
 			  break;
 //			data = read_imagef(weights, sampler, (int2)(idx%dimY , idx/dimY)).s0;
 			data = weights[idx];
@@ -295,10 +296,10 @@ lut_integrate_lutT(	const 	__global 	float 		*weights,
 
 			};//test dummy
 		};//for j
-		outData[i] = (float) sum_data;
-		outCount[i] = (float) sum_count;
+		outData[i] =  sum_data;
+		outCount[i] = sum_count;
 		if (sum_count > epsilon)
-			outMerge[i] = (float) (sum_data / sum_count);
+			outMerge[i] = (sum_data / sum_count);
 		else
 			outMerge[i] = 0.0f;
 
