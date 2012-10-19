@@ -158,6 +158,8 @@ class Geometry(object):
         self._oversampling = None
         self._correct_solid_angle_for_spline = True
         self._sem = threading.Semaphore()
+        self._polarization_factor = 0
+        self._polarization = None
 
         if detector:
             self.detector = detector
@@ -758,6 +760,22 @@ class Geometry(object):
                 new[i::self._oversampling, j::self._oversampling] = myarray
         return new
 
+    def polarization(self, shape, factor=0.98):
+        """
+        Calculate the polarization correction accoding to the polarization factor:
+        @param factor: (Ih-Iv)/(Ih+Iv): varies between 0 (no polarization) and 1 (where division by 0 could occure)
+        @return 2D array with polarization correction array (intensity/polarisation)  
+        """
+        if factor == 0:
+            return numpy.ones(shape, dtype=numpy.float32)
+        with self._sem:
+            if self._polarization and (factor == self._polarization_factor) and (shape == self._polarization.shape):
+                return self._polarization
+            else:
+                cos2_tth = numpy.cos(self.twoThetaArray(shape)) ** 2
+                self._polarization = (1 + cos2_tth - factor * numpy.cos(2 * self.chiArray(shape) * (1 - cos2_tth)) + outer(ones_like(chi), cos2_tth)) / 2.0
+                self._polarization_factor = factor
+                return self._polarization
 
     def reset(self):
         """
@@ -773,6 +791,9 @@ class Geometry(object):
         self._dqa = None
         self._corner4Da = None
         self._corner4Dqa = None
+        self._polarization = None
+        self._polarization_factor = 0
+
 
 # ###############################################################################
 # Accessors and public properties of the class
