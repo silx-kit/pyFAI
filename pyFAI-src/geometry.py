@@ -269,7 +269,7 @@ class Geometry(object):
         if self._qa is None:
             with self._sem:
                 if self._qa is None:
-                    self._qa = numpy.fromfunction(self.qFunction, shape, dtype="float32")
+                    self._qa = numpy.fromfunction(self.qFunction, shape, dtype=numpy.float32)
         return self._qa
 
 
@@ -300,7 +300,7 @@ class Geometry(object):
         if self._ttha is None:
             with self._sem:
                 if self._ttha is None:
-                    self._ttha = numpy.fromfunction(self.tth, shape, dtype="float32")
+                    self._ttha = numpy.fromfunction(self.tth, shape, dtype=numpy.float32)
         return self._ttha
 
 
@@ -363,9 +363,9 @@ class Geometry(object):
         """
         if self._chia is None:
             if self.chiDiscAtPi:
-                self._chia = numpy.fromfunction(self.chi, shape, dtype="float32")
+                self._chia = numpy.fromfunction(self.chi, shape, dtype=numpy.float32)
             else:
-                self._chia = numpy.fromfunction(self.chi, shape, dtype="float32") % (2 * numpy.pi)
+                self._chia = numpy.fromfunction(self.chi, shape, dtype=numpy.float32) % (2 * numpy.pi)
         return self._chia
 
 
@@ -381,9 +381,9 @@ class Geometry(object):
         if self._corner4Da is None:
             with self._sem:
                 if self._corner4Da is None:
-                    self._corner4Da = numpy.zeros((shape[0], shape[1], 4, 2), dtype="float32")
-                    chi = numpy.fromfunction(self.chi_corner, (shape[0] + 1, shape[1] + 1), dtype="float32")
-                    tth = numpy.fromfunction(self.tth_corner, (shape[0] + 1, shape[1] + 1), dtype="float32")
+                    self._corner4Da = numpy.zeros((shape[0], shape[1], 4, 2), dtype=numpy.float32)
+                    chi = numpy.fromfunction(self.chi_corner, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
+                    tth = numpy.fromfunction(self.tth_corner, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
                     self._corner4Da[:, :, 0, 0] = tth[:-1, :-1]
                     self._corner4Da[:, :, 0, 1] = chi[:-1, :-1]
                     self._corner4Da[:, :, 1, 0] = tth[1:, :-1]
@@ -409,9 +409,9 @@ class Geometry(object):
         if self._corner4Dqa is None:
             with self._sem:
                 if self._corner4Dqa is None:
-                    self._corner4Dqa = numpy.zeros((shape[0], shape[1], 4, 2), dtype="float32")
-                    chi = numpy.fromfunction(self.chi_corner, (shape[0] + 1, shape[1] + 1), dtype="float32")
-                    tth = numpy.fromfunction(self.qCornerFunct(shape[0] + 1, shape[1] + 1), dtype="float32")
+                    self._corner4Dqa = numpy.zeros((shape[0], shape[1], 4, 2), dtype=numpy.float32)
+                    chi = numpy.fromfunction(self.chi_corner, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
+                    tth = numpy.fromfunction(self.qCornerFunct(shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
                     self._corner4Dqa[:, :, 0, 0] = tth[:-1, :-1]
                     self._corner4Dqa[:, :, 0, 1] = chi[:-1, :-1]
                     self._corner4Dqa[:, :, 1, 0] = tth[1:, :-1]
@@ -433,8 +433,8 @@ class Geometry(object):
         if self._dttha is None:
             with self._sem:
                 if self._dttha is None:
-                    tth_corner = numpy.fromfunction(self.tth_corner, (shape[0] + 1, shape[1] + 1), dtype="float32")
-                    delta = numpy.zeros([shape[0], shape[1], 4], dtype="float32")
+                    tth_corner = numpy.fromfunction(self.tth_corner, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
+                    delta = numpy.zeros([shape[0], shape[1], 4], dtype=numpy.float32)
                     delta[:, :, 0] = abs(tth_corner[:-1, :-1] - tth_center)
                     delta[:, :, 1] = abs(tth_corner[1:, :-1] - tth_center)
                     delta[:, :, 2] = abs(tth_corner[1:, 1:] - tth_center)
@@ -452,8 +452,8 @@ class Geometry(object):
             with self._sem:
                 if self._dchia is None:
                     twoPi = (2 * numpy.pi)
-                    chi_corner = numpy.fromfunction(self.chi_corner, (shape[0] + 1, shape[1] + 1), dtype="float32")
-                    delta = numpy.zeros([shape[0], shape[1], 4], dtype="float32")
+                    chi_corner = numpy.fromfunction(self.chi_corner, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
+                    delta = numpy.zeros([shape[0], shape[1], 4], dtype=numpy.float32)
                     delta[:, :, 0] = numpy.minimum(((chi_corner[:-1, :-1] - chi_center) % twoPi), ((chi_center - chi_corner[:-1, :-1]) % twoPi))
                     delta[:, :, 1] = numpy.minimum(((chi_corner[1: , :-1] - chi_center) % twoPi), ((chi_center - chi_corner[1: , :-1]) % twoPi))
                     delta[:, :, 2] = numpy.minimum(((chi_corner[1: , 1: ] - chi_center) % twoPi), ((chi_center - chi_corner[1: , 1: ]) % twoPi))
@@ -470,8 +470,8 @@ class Geometry(object):
         if self._dqa is None:
             with self._sem:
                 if self._dqa is None:
-                    q_corner = numpy.fromfunction(self.qCornerFunct, (shape[0] + 1, shape[1] + 1), dtype="float32")
-                    delta = numpy.zeros([shape[0], shape[1], 4], dtype="float32")
+                    q_corner = numpy.fromfunction(self.qCornerFunct, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
+                    delta = numpy.zeros([shape[0], shape[1], 4], dtype=numpy.float32)
                     delta[:, :, 0] = abs(q_corner[:-1, :-1] - q_center)
                     delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
                     delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
@@ -511,7 +511,7 @@ class Geometry(object):
         Generate an array of the given shape with the solid angle of the current element two-theta(i,j) for all elements.
         """
         if self._dssa is None:
-            self._dssa = numpy.fromfunction(self.diffSolidAngle, shape, dtype="float32")
+            self._dssa = numpy.fromfunction(self.diffSolidAngle, shape, dtype=numpy.float32)
         return self._dssa
 
 
