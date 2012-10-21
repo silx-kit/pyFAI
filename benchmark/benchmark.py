@@ -7,6 +7,8 @@ import utilstest
 pyFAI = utilstest.UtilsTest.pyFAI
 
 ds_list = ["Pilatus1M.poni", "halfccd.poni", "Frelon2k.poni", "Pilatus6M.poni", "Fairchild.poni"]
+#ds_list = ["Pilatus6M.poni"]
+
 datasets = {"Fairchild.poni":utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
             "halfccd.poni":utilstest.UtilsTest.getimage("1882/halfccd.edf"),
             "Frelon2k.poni":utilstest.UtilsTest.getimage("1881/Frelon2k.edf"),
@@ -88,9 +90,14 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
             N = min(data.shape)
             print("1D integration of %s %.1f Mpixel -> %i bins" % (fn, data.size / 1e6, N))
             t0 = time.time()
-            res = ai.xrpd_LUT_OCL(data, N, devicetype=devicetype, platformid=platformid, deviceid=deviceid)
+            try:
+                res = ai.xrpd_LUT_OCL(data, N, devicetype=devicetype, platformid=platformid, deviceid=deviceid)
+            except MemoryError:
+                print("Not enough memory")
+                return
             t1 = time.time()
             self.print_init(t1 - t0)
+            del ai
             setup = """
 import pyFAI,fabio
 ai=pyFAI.load("%s")
@@ -171,8 +178,8 @@ if __name__ == "__main__":
     b = Bench()
     b.bench_cpu1d(n)
     b.bench_cpu1d_ocl_lut(n, "GPU")
-#    b.bench_cpu1d_ocl_lut(n, "CPU", 2, 0)
-#    b.bench_cpu1d_ocl_lut(n)
+    b.bench_cpu1d_ocl_lut(n, "CPU", 2, 0)
+    b.bench_cpu1d_ocl_lut(n)
     b.bench_cpu2d(n)
     b.bench_gpu1d(n, "gpu", True)
     b.bench_gpu1d(n, "gpu", False)
