@@ -5,4 +5,6 @@
      correct the orientation of the azimuthal angle chi
      rename scripts in pyFAI-calib, pyFAI-saxs and pyFAI-waxs 
 0.5: include OpenCL version of azimuthal integration
-0.6: OpenCL flavour works well on GPU in double precision with device selection  
+0.6: OpenCL flavour works well on GPU in double precision with device selection (07/2012)
+0.7: Implementation of look-up table based integration and OpenCL version of it; binning if input images (10/2012)
+0.8: LUT implementation in 1D (fully tested) 

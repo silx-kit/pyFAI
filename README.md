@@ -39,7 +39,7 @@ sudo python setup.py install
 As pyFAI makes use of OpenCL to have some calculation done on the graphic card, it is
 likely you will have to setup the position of those libraries by editing the setup.cfg file
 
-If you are using MS Windows you also download a binary version packaged as executable
+If you are using MS Windows you can also download a binary version packaged as executable
 installation files (Chose the one corresponding to your python version).
 
 
