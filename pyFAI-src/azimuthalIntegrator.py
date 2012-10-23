@@ -646,7 +646,7 @@ class AzimuthalIntegrator(Geometry):
             reset = None
             if self._lut_integrator is None:
                 reset = "init"
-            elif safe:
+            if (not reset) and safe:
                 if (mask is not None) and (not self._lut_integrator.check_mask):
                     reset = "Mask1"
                 elif (mask is None) and (self._lut_integrator.check_mask):
@@ -655,19 +655,19 @@ class AzimuthalIntegrator(Geometry):
                     reset = "Mask-changed"
                 if (tthRange is None) and (self._lut_integrator.pos0Range is not None):
                     reset = "tthrange1"
-                elif self._lut_integrator.pos0Range != (numpy.deg2rad(min(tthRange)), numpy.deg2rad(max(tthRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                elif (tthRange is not None) and self._lut_integrator.pos0Range != (numpy.deg2rad(min(tthRange)), numpy.deg2rad(max(tthRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
                     reset = "tthrange2"
                 if (chiRange is None) and (self._lut_integrator.pos1Range is not None):
                     reset = "chirange1"
-                elif self._lut_integrator.pos1Range != (numpy.deg2rad(min(chiRange)), numpy.deg2rad(max(chiRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                elif (chiRange is not None) and self._lut_integrator.pos1Range != (numpy.deg2rad(min(chiRange)), numpy.deg2rad(max(chiRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
                     reset = "chirange2"
             if reset:
                 logger.debug("xrpd_LUT_OCL: Resetting integrator because of %s" % reset)
                 self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
             tthAxis = self._lut_integrator.outPos
             with self._ocl_lut_sem:
-                if self._ocl_lut_integr is None:
-                    self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut, devicetype, platformid=platformid, deviceid=deviceid)
+                if (self._ocl_lut_integr is None) or (self._ocl_lut_integr.lut_checksum != self._lut_integrator.lut_checksum):
+                    self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut, devicetype, platformid=platformid, deviceid=deviceid, checksum=self._lut_integrator.lut_checksum)
                 I = self._ocl_lut_integr.integrate(data, solidAngle=solid_angle_array)
         tthAxis = numpy.degrees(tthAxis)
         if filename:

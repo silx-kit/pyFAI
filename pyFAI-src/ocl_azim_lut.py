@@ -31,6 +31,7 @@ __contact__ = "jerome.kieffer@esrf.fr"
 
 import os
 import threading
+import hashlib
 import numpy
 import pyopencl
 from ocl_azim import OpenCL
@@ -39,12 +40,17 @@ ocl = OpenCL()
 mf = pyopencl.mem_flags
 
 class OCL_LUT_Integrator(object):
-    def __init__(self, lut, devicetype="all", platformid=None, deviceid=None):
+    def __init__(self, lut, devicetype="all", platformid=None, deviceid=None, checksum=None):
         """
-        @param lut: array of uint32-float32 with shape (nbins, lut_size) with indexes and
+        @param lut: array of uint32 - float32 with shape (nbins, lut_size) with indexes and coefficients
+        @param checksum: pre - calculated checksum to prevent re - calculating it :)
         """
         self._sem = threading.Semaphore()
         self._lut = lut
+        if checksum:
+            self.lut_checksum = checksum
+        else:
+            self.lut_checksum = hashlib.md5(self._lut).hexdigest()
         self.ws = 16
         self.bins, self.lut_size = lut.shape
         if (platformid is None) and (deviceid is None):

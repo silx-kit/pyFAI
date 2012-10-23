@@ -119,6 +119,7 @@ class HistoBBox1d(object):
         self.lut = numpy.recarray(shape=lut_coef.shape,dtype=[("idx",numpy.uint32),("coef",numpy.float32)])
         self.lut.coef = lut_coef
         self.lut.idx = lut_idx
+        self.lut_checksum = hashlib.md5(self.lut).hexdigest()
 
     @cython.cdivision(True)
     @cython.boundscheck(False)

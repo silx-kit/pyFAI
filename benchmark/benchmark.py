@@ -27,7 +27,9 @@ class Bench(object):
     ENDC = '\033[0m'
     reference_1d = {}
     LIMIT = 8
-
+    repeat = 3
+    nbr = 10
+    results = {}
     def get_cpu(self):
         return [i.split(": ", 1)[1] for i in open("/proc/cpuinfo") if i.startswith("model name")][0].strip()
 
@@ -56,15 +58,16 @@ class Bench(object):
 
 
 
-    def bench_cpu1d(self, n=10):
+    def bench_cpu1d(self):
         print("Working on processor: %s" % self.get_cpu())
+        results = {}
         for param in ds_list:
             ref = self.get_ref(param)
             fn = datasets[param]
             ai = pyFAI.load(param)
             data = fabio.open(fn).data
             N = min(data.shape)
-            print("1D integration of %s %.1f Mpixel -> %i bins" % (fn, data.size / 1e6, N))
+            print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), data.size / 1e6, N))
             t0 = time.time()
             res = ai.xrpd_LUT(data, N)
             del ai
@@ -77,21 +80,25 @@ data = fabio.open("%s").data
 N=min(data.shape)
 out=ai.xrpd_LUT(data,N)""" % (param, fn)
             t = timeit.Timer("ai.xrpd_LUT(data,N,safe=False)", setup)
-            tmin = min([i / n for i in t.repeat(repeat=3, number=n)])
+            tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
             self.print_exec(tmin)
             R = utilstest.Rwp(res, ref)
             print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
+            if R < self.LIMIT:
+                results[data.size / 1e6] = tmin
         self.print_sep()
+        self.results["LUT_Cython_OpenMP"] = results
 
-    def bench_cpu1d_ocl_lut(self, n=10, devicetype="all", platformid=None, deviceid=None):
+    def bench_cpu1d_ocl_lut(self, devicetype="all", platformid=None, deviceid=None):
         print("Working on device: %s" % devicetype)
+        results = {}
         for param in ds_list:
             ref = self.get_ref(param)
             fn = datasets[param]
             ai = pyFAI.load(param)
             data = fabio.open(fn).data
             N = min(data.shape)
-            print("1D integration of %s %.1f Mpixel -> %i bins" % (fn, data.size / 1e6, N))
+            print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), data.size / 1e6, N))
             t0 = time.time()
             try:
                 res = ai.xrpd_LUT_OCL(data, N, devicetype=devicetype, platformid=platformid, deviceid=deviceid)
@@ -108,21 +115,24 @@ data = fabio.open("%s").data
 N=min(data.shape)
 out=ai.xrpd_LUT_OCL(data,N,devicetype="%s",platformid=%s,deviceid=%s)""" % (param, fn, devicetype, platformid, deviceid)
             t = timeit.Timer("ai.xrpd_LUT_OCL(data,N,safe=False)", setup)
-            tmin = min([i / n for i in t.repeat(repeat=3, number=n)])
+            tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
             self.print_exec(tmin)
             R = utilstest.Rwp(res, ref)
             print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
+            if R < self.LIMIT:
+                results[data.size / 1e6] = tmin
         self.print_sep()
+        self.results["LUT_OpenCL_%s" % devicetype] = results
 
-
-    def bench_cpu2d(self, n=10):
+    def bench_cpu2d(self):
         print("Working on processor: %s" % self.get_cpu())
+        results = {}
         for param in ds_list:
             fn = datasets[param]
             ai = pyFAI.load(param)
             data = fabio.open(fn).data
             N = (500, 360)
-            print("2D integration of %s %.1f Mpixel -> %s bins" % (fn, data.size / 1e6, N))
+            print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), data.size / 1e6, N))
             t0 = time.time()
             _ = ai.xrpd2(data, N[0], N[1])
             t1 = time.time()
@@ -134,20 +144,24 @@ ai=pyFAI.load("%s")
 data = fabio.open("%s").data
 out=ai.xrpd2(data,500,360)""" % (param, fn)
             t = timeit.Timer("ai.xrpd2(data,500,360)", setup)
-            tmin = min([i / n for i in t.repeat(repeat=3, number=n)])
+            tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
             self.print_exec(tmin)
             print("")
+            if R < self.LIMIT:
+                results[data.size / 1e6] = tmin
         self.print_sep()
+        self.results["LUT_OpenCL_%s" % devicetype] = results
 
 
-    def bench_gpu1d(self, n=10, devicetype="gpu", useFp64=True, platformid=None, deviceid=None):
+    def bench_gpu1d(self, devicetype="gpu", useFp64=True, platformid=None, deviceid=None):
         print("Working on %s, in " % devicetype + ("64 bits mode" if useFp64 else"32 bits mode") + "(%s.%s)" % (platformid, deviceid))
+        results = {}
         for param in ds_list:
             fn = datasets[param]
             ai = pyFAI.load(param)
             data = fabio.open(fn).data
             N = min(data.shape)
-            print("1D integration of %s %.1f Mpixel -> %i bins (%s)" % (fn, data.size / 1e6, N, ("64 bits mode" if useFp64 else"32 bits mode")))
+            print("1D integration of %s %.1f Mpixel -> %i bins (%s)" % (op.basename(fn), data.size / 1e6, N, ("64 bits mode" if useFp64 else"32 bits mode")))
 
             try:
                 t0 = time.time()
@@ -168,11 +182,13 @@ data = fabio.open("%s").data
 N=min(data.shape)
 out=ai.xrpd_OpenCL(data,N, devicetype="%s", useFp64=%s, platformid=%s, deviceid=%s)""" % (param, fn, devicetype, useFp64, platformid, deviceid)
             t = timeit.Timer("ai.xrpd_OpenCL(data,N,safe=False)", setup)
-            tmin = min([i / n for i in t.repeat(repeat=5, number=n)])
+            tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
             self.print_exec(tmin)
             print("")
+            if R < self.LIMIT:
+                results[data.size / 1e6] = tmi
         self.print_sep()
-
+        selt.results["Foward_OpenCL_%s_%s_bits" % (devicetype + ("64" if useFp64 else"32"))] = results
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1].isdigit():
         n = int(sys.argv[1])
@@ -180,13 +196,14 @@ if __name__ == "__main__":
         n = 1
     print("Averaging over %i repetitions (best of 3)." % n)
     b = Bench()
-    b.bench_cpu1d(n)
-    b.bench_cpu1d_ocl_lut(n, "GPU")
-    b.bench_cpu1d_ocl_lut(n, "CPU", 2, 0)
-    b.bench_cpu1d_ocl_lut(n)
-    b.bench_cpu2d(n)
-    b.bench_gpu1d(n, "gpu", True)
-    b.bench_gpu1d(n, "gpu", False)
-    b.bench_gpu1d(n, "cpu", True)
-    b.bench_gpu1d(n, "cpu", False)
+    b.nbr = n
+    b.bench_cpu1d()
+    b.bench_cpu1d_ocl_lut("GPU")
+    b.bench_cpu1d_ocl_lut("CPU", 2, 0)
+    b.bench_cpu1d_ocl_lut()
+    b.bench_cpu2d()
+    b.bench_gpu1d("gpu", True)
+    b.bench_gpu1d("gpu", False)
+    b.bench_gpu1d("cpu", True)
+    b.bench_gpu1d("cpu", False)
 
