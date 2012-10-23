@@ -559,7 +559,6 @@ class AzimuthalIntegrator(Geometry):
         with self._lut_sem:
             reset = None
             if self._lut_integrator is None:
-                self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
                 reset = "init"
             elif safe:
                 if (mask is not None) and (not self._lut_integrator.check_mask):
@@ -578,12 +577,18 @@ class AzimuthalIntegrator(Geometry):
                     reset = "chiRange2"
             if reset:
                 logger.debug("xrpd_LUT: Resetting integrator because %s" % reset)
-                self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
+                try:
+                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
+                except MemoryError: #LUT method is hungry...
+                    return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
             if correctSolidAngle:
                 solid_angle_array = self.solidAngleArray(shape)
             else:
                 solid_angle_array = None
-            tthAxis, I, a, b = self._lut_integrator.integrate(data, solidAngle=solid_angle_array)
+            try:
+                tthAxis, I, a, b = self._lut_integrator.integrate(data, solidAngle=solid_angle_array)
+            except MemoryError: #LUT method is hungry...
+                    return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
         tthAxis = numpy.degrees(tthAxis)
         if filename:
             self.save1D(filename, tthAxis, I, None, "2th_deg")
