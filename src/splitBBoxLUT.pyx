@@ -108,7 +108,7 @@ class HistoBBox1d(object):
             self.mask_checksum=None
         delta = (self.pos0_max - pos0_min) / (bins)
         self.delta = delta
-        self.lut_max_idx, self.lut_idx, self.lut_coef = self.calc_lut()
+        self.lut_max_idx, lut_idx, lut_coef = self.calc_lut()
         ########################################################################
         # Linspace has been discareded becaus it does calculation in double precision and all others are done in single
         #self.outPos = numpy.linspace(self.pos0_min+0.5*delta,self.pos0_max-0.5*delta, self.bins)
@@ -116,9 +116,9 @@ class HistoBBox1d(object):
         for i in prange(bins,nogil=True, schedule="static"):
             outPos[i] = pos0_min + (<float>0.5 +< float > i) * delta
         self.outPos = outPos
-        self.lut = numpy.recarray(shape=self.lut_coef.shape,dtype=[("idx",numpy.uint32),("coef",numpy.float32)])
-        self.lut.coef = self.lut_coef
-        self.lut.idx = self.lut_idx
+        self.lut = numpy.recarray(shape=lut_coef.shape,dtype=[("idx",numpy.uint32),("coef",numpy.float32)])
+        self.lut.coef = lut_coef
+        self.lut.idx = lut_idx
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
