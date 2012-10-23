@@ -35,11 +35,11 @@ class Bench(object):
 
 
     def print_init(self, t):
-        print(" * Initialization time: %.1f ms" % (1000.*t))
+        print(" * Initialization time: %.1f ms" % (1000.0 * t))
 
 
     def print_exec(self, t):
-        print(" * Execution time rep : %.1f ms" % (t * 1000))
+        print(" * Execution time rep : %.1f ms" % (1000.0 * t))
 
 
     def print_sep(self):
@@ -70,9 +70,9 @@ class Bench(object):
             print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), data.size / 1e6, N))
             t0 = time.time()
             res = ai.xrpd_LUT(data, N)
-            del ai
             t1 = time.time()
             self.print_init(t1 - t0)
+            del ai
             setup = """
 import pyFAI,fabio
 ai=pyFAI.load("%s")
@@ -85,7 +85,7 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
             R = utilstest.Rwp(res, ref)
             print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
             if R < self.LIMIT:
-                results[data.size / 1e6] = tmin
+                results[data.size / 1e6] = tmin * 1000.0
         self.print_sep()
         self.results["LUT_Cython_OpenMP"] = results
 
@@ -120,7 +120,7 @@ out=ai.xrpd_LUT_OCL(data,N,devicetype="%s",platformid=%s,deviceid=%s)""" % (para
             R = utilstest.Rwp(res, ref)
             print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
             if R < self.LIMIT:
-                results[data.size / 1e6] = tmin
+                results[data.size / 1e6] = tmin * 1000.0
         self.print_sep()
         self.results["LUT_OpenCL_%s" % devicetype] = results
 
@@ -147,8 +147,8 @@ out=ai.xrpd2(data,500,360)""" % (param, fn)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
             self.print_exec(tmin)
             print("")
-            if R < self.LIMIT:
-                results[data.size / 1e6] = tmin
+            if 1:#R < self.LIMIT:
+                results[data.size / 1e6] = tmin * 1000.0
         self.print_sep()
         self.results["LUT_OpenCL_%s" % devicetype] = results
 
@@ -186,7 +186,7 @@ out=ai.xrpd_OpenCL(data,N, devicetype="%s", useFp64=%s, platformid=%s, deviceid=
             self.print_exec(tmin)
             print("")
             if R < self.LIMIT:
-                results[data.size / 1e6] = tmi
+                results[data.size / 1e6] = tmin * 1000.0
         self.print_sep()
         selt.results["Foward_OpenCL_%s_%s_bits" % (devicetype + ("64" if useFp64 else"32"))] = results
 if __name__ == "__main__":
@@ -206,4 +206,11 @@ if __name__ == "__main__":
     b.bench_gpu1d("gpu", False)
     b.bench_gpu1d("cpu", True)
     b.bench_gpu1d("cpu", False)
+    meth = list(b.results.keys())
+    size = list(b.results[meth[0]].keys())
+    size.sort()
+    print "Size/Meth\t" + "\t".join(meth)
+    for i in size:
+        print "%15.2f\t" % i + "\t".join(str(b.results[j].get(i, None)) for j in meth)
+
 
