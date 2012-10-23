@@ -6,6 +6,7 @@ TODO list:
 * recalibration tool (planned for v.1.0) using a poni file and a d-spacing file and an image
 * migrate forward version of histogramming on GPU to PyOpenCL (planned for v1.0)
 * implement LUT on 2D caking as well + OpenCL version    
-* use a fast checksum to store the signature of buffers/array which are on the GPU.
+* use a fast checksum to store the signature of buffers/array which are on the GPU (instead of md5 currently).
 * prepare 2 packages one without OpenCL and one with GPU enabled
 * add mask on calibration/recalibration tools
+* port spline calculation to opencl
