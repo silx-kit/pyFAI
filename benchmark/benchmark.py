@@ -6,14 +6,15 @@ sys.path.append(op.join(op.dirname(op.dirname(op.abspath(__file__))), "test"))
 import utilstest
 pyFAI = utilstest.UtilsTest.pyFAI
 
-ds_list = ["Pilatus1M.poni", "halfccd.poni", "Frelon2k.poni", "Pilatus6M.poni", "Fairchild.poni"]
-#ds_list = ["Pilatus6M.poni"]
 
+ds_list = ["Pilatus1M.poni", "halfccd.poni", "Frelon2k.poni", "Pilatus6M.poni", "Mar3450.poni", "Fairchild.poni"]
+#ds_list = ["Pilatus6M.poni"]
 datasets = {"Fairchild.poni":utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
             "halfccd.poni":utilstest.UtilsTest.getimage("1882/halfccd.edf"),
             "Frelon2k.poni":utilstest.UtilsTest.getimage("1881/Frelon2k.edf"),
             "Pilatus6M.poni":utilstest.UtilsTest.getimage("1884/Pilatus6M.cbf"),
             "Pilatus1M.poni":utilstest.UtilsTest.getimage("1883/Pilatus1M.edf"),
+            "Mar3450.poni":utilstest.UtilsTest.getimage("2201/LaB6_260210.mar3450")
       }
 
 print pyFAI
@@ -50,6 +51,7 @@ class Bench(object):
             N = min(data.shape)
             res = ai.xrpd(data, N)
             self.reference_1d[param] = res
+            ai = None
         return self.reference_1d[param]
 
 
@@ -65,6 +67,7 @@ class Bench(object):
             print("1D integration of %s %.1f Mpixel -> %i bins" % (fn, data.size / 1e6, N))
             t0 = time.time()
             res = ai.xrpd_LUT(data, N)
+            del ai
             t1 = time.time()
             self.print_init(t1 - t0)
             setup = """
@@ -124,6 +127,7 @@ out=ai.xrpd_LUT_OCL(data,N,devicetype="%s",platformid=%s,deviceid=%s)""" % (para
             _ = ai.xrpd2(data, N[0], N[1])
             t1 = time.time()
             self.print_init(t1 - t0)
+            del ai
             setup = """
 import pyFAI,fabio
 ai=pyFAI.load("%s")
@@ -156,7 +160,7 @@ out=ai.xrpd2(data,500,360)""" % (param, fn)
             ref = ai.xrpd(data, N)
             R = utilstest.Rwp(res, ref)
             print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
-            ai = None
+            del ai
             setup = """
 import pyFAI,fabio
 ai=pyFAI.load("%s")
