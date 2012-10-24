@@ -185,6 +185,9 @@ class PeakPicker(object):
 
 
     def contour(self, data):
+        """
+        @param data:
+        """
         if self.fig is None:
             logging.warning("No diffraction image available => not showing the contour")
         else:
@@ -207,6 +210,10 @@ class PeakPicker(object):
             self.fig.show()
 
     def massif_contour(self, data):
+        """
+        @param data:
+        """
+
         if self.fig is None:
             logging.error("No diffraction image available => not showing the contour")
         else:

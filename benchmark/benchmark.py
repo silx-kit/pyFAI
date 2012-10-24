@@ -209,8 +209,9 @@ if __name__ == "__main__":
     meth = list(b.results.keys())
     size = list(b.results[meth[0]].keys())
     size.sort()
+    print("Summary: execution time in milliseconds")
     print "Size/Meth\t" + "\t".join(meth)
     for i in size:
-        print "%15.2f\t" % i + "\t".join(str(b.results[j].get(i, None)) for j in meth)
+        print "%7.2f\t\t" % i + "\t\t".join("%.2f" % (b.results[j].get(i, 0)) for j in meth)
 
 

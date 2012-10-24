@@ -54,7 +54,7 @@ from scipy.optimize import fmin, leastsq, fmin_slsqp, anneal
 from scipy.interpolate import interp2d
 import pyFAI
 from pyFAI.geometryRefinement import GeometryRefinement
-from pyFAI.peakPicker import PeakPicker
+from pyFAI.peakPicker import PeakPicker, Massif
 from pyFAI.utils import averageImages
 from  matplotlib.path import Path
 import matplotlib.path as mpath
@@ -87,10 +87,14 @@ class Recalibration(object):
         self.cutBackground = None
         self.outfile = "merged.edf"
         self.peakPicker = None
+        self.img = None
+        self.ai = None
         self.data = None
         self.basename = None
         self.geoRef = None
         self.reconstruct = False
+        self.control_points = None
+        self.spacing_file = None
 
     def __repr__(self):
         lst = ["Calibration object:",
@@ -109,8 +113,8 @@ class Recalibration(object):
         """
         from optparse import OptionParser
         parser = OptionParser()
-#        parser.add_option("-o", "--out", dest="outfile",
-#                          help="Filename where processed image is saved", metavar="FILE", default="merged.edf")
+        parser.add_option("-o", "--out", dest="outfile",
+                          help="Filename where processed image is saved", metavar="FILE", default="merged.edf")
         parser.add_option("-v", "--verbose",
                           action="store_true", dest="verbose", default=False,
                           help="switch to debug mode")
@@ -146,6 +150,8 @@ class Recalibration(object):
                       help="energy of the X-Ray beam in keV (hc=%skeV.A)" % hc, default=None)
         parser.add_option("-w", "--wavelength", dest="wavelength",
                       help="wavelength of the X-Ray beam in Angstrom", default=None)
+        parser.add_option("-l", "--distance", dest="distance",
+                      help="sample-detector distance in millimeter", default=None)
 
         (options, args) = parser.parse_args()
 
@@ -162,6 +168,13 @@ class Recalibration(object):
         self.dataFiles = [f for f in args if os.path.isfile(f)]
 
         self.pointfile = options.npt
+        self.spacing_file = options.spacing
+        self.ai = pyFAI.load(options.poni)
+        if options.wavelength:
+            self.ai.wavelength = 1e-10 * float(options.wavelength)
+        if options.distance:
+            self.ai.distance = 1e-3 * float(options.distance)
+
 
 
     def preprocess(self):
@@ -171,18 +184,46 @@ class Recalibration(object):
         if len(self.dataFiles) > 1 or self.cutBackground or self.darkFiles or self.flatFiles:
             self.outfile = averageImages(self.dataFiles, self.outfile, minimum=self.cutBackground,
                                       darks=self.darkFiles, flats=self.flatFiles)
+
         else:
             self.outfile = self.dataFiles[0]
+        self.peakPicker = PeakPicker(self.outfile)
         self.basename = os.path.splitext(self.outfile)[0]
-        self.peakPicker = PeakPicker(self.outfile, reconst=self.reconstruct)
-        if self.gaussianWidth is not None:
-            self.peakPicker.massif.setValleySize(self.gaussianWidth)
-        else:
-            self.peakPicker.massif.initValleySize()
-
+        self.peakPicker.gui()
     def extract_cpt(self):
         d = numpy.loadtxt(self.spacing_file)
-        tth = 2.0 * numpy.arcsin(ai.wavelength / (2.0 * d))
+        tth = 2.0 * numpy.arcsin(self.ai.wavelength / (2.0e-10 * d))
+        tth.sort()
+        tth = tth[numpy.where(numpy.isnan(tth) - 1)]
+        dtth = numpy.zeros_like(tth)
+        dtth[:-1] = tth[1:] - tth[:-1]
+        dtth[-1] = dtth[-2]
+        ttha = self.ai.twoThetaArray(self.img.data.shape)
+        self.control_points = {}
+        for i in range(tth.size):
+            mask = abs(ttha - tth[i]) <= dtth[i] / 4.0
+            all_points = numpy.where(mask)
+            size = all_points[0].size
+            keep = int(numpy.ceil(numpy.sqrt(size)))
+            allpt = numpy.zeros((size, 2), dtype=numpy.int)
+            allpt[:, 0] = all_points[0]
+            allpt[:, 1] = all_points[1]
+            res = []
+            cnt = 0
+            logger.info("Extracting datapoint for ring %s (2theta = %.2f deg)" % (i, numpy.degrees(tth[i])))
+            while True:
+                idx = numpy.random.randint(0, size)
+                out = self.peakPicker.massif.nearest_peak(allpt[idx])
+                if mask[out[0], out[1]]:
+                    if out not in res:
+                        res.append(out)
+                        cnt = 0
+                if len(res) >= keep or cnt > 2 * keep:
+                    break
+                else:
+                    cnt += 1
+            self.peakPicker.control_points.append(res, tth[i])
+        self.peakPicker.control_points.save(self.basename + ".npt")
 
 
     def refine(self):
@@ -285,11 +326,13 @@ class Recalibration(object):
 #This is for debugin wtih rconsole
 c = None
 if __name__ == "__main__":
-    c = Calibration()
+    c = Recalibration()
     c.parse()
-    c.read_pixelsSize()
     c.preprocess()
-    c.gui_peakPicker()
-    c.refine()
-    c.postProcess()
-    raw_input("Press enter to quit")
+    c.extract_cpt()
+    for i in c.control_points:
+        print i, len(c.control_points[i]), c.control_points[i]
+#    c.gui_peakPicker()
+#    c.refine()
+#    c.postProcess()
+#    raw_input("Press enter to quit")
