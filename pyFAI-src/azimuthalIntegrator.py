@@ -54,6 +54,11 @@ except ImportError as error:#IGNORE:W0703
     logger.warning("Unable to import pyFAI.splitBBoxLUT for Look-up table based azimuthal integration")
     splitBBoxLUT = None
 
+try:
+    import ocl_azim_lut
+except ImportError as error:#IGNORE:W0703
+    logger.warning("Unable to import pyFAI.ocl_azim_lut for Look-up table based azimuthal integration on GPU")
+    ocl_azim_lut = None
 
 
 
@@ -65,8 +70,6 @@ class AzimuthalIntegrator(Geometry):
     All geometry calculation are done in the Geometry class
 
     """
-#    _ocl = None
-
     def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0, pixel1=1, pixel2=1, splineFile=None):
         """
         @param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
@@ -86,6 +89,7 @@ class AzimuthalIntegrator(Geometry):
         self.background = None  #just a placeholder
         self.flatfield = None   #just a placeholder
         self.darkcurrent = None   #just a placeholder
+
         self.header = None
 
         self._backgrounds = {}  #dict for caching
@@ -93,9 +97,11 @@ class AzimuthalIntegrator(Geometry):
         self._darkcurrents = {}
 
         self._ocl_integrator = None
+        self._ocl_lut_integr = None
         self._lut_integrator = None
         self._ocl_sem = threading.Semaphore()
         self._lut_sem = threading.Semaphore()
+        self._ocl_lut_sem = threading.Semaphore()
 
     def reset(self):
         """
@@ -478,6 +484,37 @@ class AzimuthalIntegrator(Geometry):
             self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
 
+    def setup_LUT(self, shape, nbPt, mask=None, tthRange=None, chiRange=None):
+        tth = self.twoThetaArray(shape)
+        dtth = self.delta2Theta(shape)
+        if chiRange is None:
+            chi = None
+            dchi = None
+        else:
+            chi = self.chiArray(shape)
+            dchi = self.deltaChi(shape)
+        if tthRange is not None and len(tthRange) > 1:
+            pos0_min = numpy.deg2rad(min(tthRange))
+            pos0_maxin = numpy.deg2rad(max(tthRange))
+            pos0Range = (pos0_min, pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps))
+        else:
+            pos0Range = None
+        if chiRange is not None and len(chiRange) > 1:
+            pos1_min = numpy.deg2rad(min(chiRange))
+            pos1_maxin = numpy.deg2rad(max(chiRange))
+            pos1Range = (pos1_min, pos1_maxin * (1.0 + numpy.finfo(numpy.float32).eps))
+        else:
+            pos1Range = None
+        if mask is not None:
+            assert mask.shape == shape
+        return splitBBoxLUT.HistoBBox1d(tth, dtth, chi, dchi,
+                                                        bins=nbPt,
+                                                        pos0Range=pos0Range,
+                                                        pos1Range=pos1Range,
+                                                        mask=mask,
+                                                        allow_pos0_neg=False)
+
+
     def xrpd_LUT(self, data, nbPt, filename=None, correctSolidAngle=True,
                        tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None,
                        safe=True):
@@ -507,34 +544,6 @@ class AzimuthalIntegrator(Geometry):
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
         """
-        def setup_integrator(shape, mask, tthRange, chiRange):
-            tth = self.twoThetaArray(shape)
-            dtth = self.delta2Theta(shape)
-            if chiRange is None:
-                chi = None
-                dchi = None
-            else:
-                chi = self.chiArray(shape)
-                dchi = self.deltaChi(shape)
-            if tthRange is not None and len(tthRange) > 1:
-                pos0_min = numpy.deg2rad(min(tthRange))
-                pos0_maxin = numpy.deg2rad(max(tthRange))
-                pos0Range = (pos0_min, pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps))
-            else:
-                pos0Range = None
-            if chiRange is not None and len(chiRange) > 1:
-                pos1_min = numpy.deg2rad(min(chiRange))
-                pos1_maxin = numpy.deg2rad(max(chiRange))
-                pos1Range = (pos1_min, pos1_maxin * (1.0 + numpy.finfo(numpy.float32).eps))
-            else:
-                pos1Range = None
-            assert mask.shape == shape
-            self._lut_integrator = splitBBoxLUT.HistoBBox1d(tth, dtth, chi, dchi,
-                                                            bins=nbPt,
-                                                            pos0Range=pos0Range,
-                                                            pos1Range=pos1Range,
-                                                            mask=mask,
-                                                            allow_pos0_neg=False)
 
         shape = data.shape
         if not splitBBoxLUT:
@@ -548,26 +557,126 @@ class AzimuthalIntegrator(Geometry):
                                        dummy=dummy,
                                        delta_dummy=delta_dummy)
         with self._lut_sem:
+            reset = None
             if self._lut_integrator is None:
-                setup_integrator(shape, mask, tthRange, chiRange)
-                safe = False
-            if safe:
-                if (mask is not None) and self._lut_integrator.check_mask:
-                    setup_integrator(shape, mask, tthRange, chiRange)
-                elif (mask is None) and (not self._lut_integrator.check_mask):
-                    setup_integrator(shape, mask, tthRange, chiRange)
+                reset = "init"
+            elif safe:
+                if (mask is not None) and (not self._lut_integrator.check_mask):
+                    reset = "Mask1"
+                elif (mask is None) and (self._lut_integrator.check_mask):
+                    reset = "Mask2"
                 elif (mask is not None) and (self._lut_integrator.mask_checksum != hashlib.md5(mask).hexdigest()):
-                    setup_integrator(shape, mask, tthRange, chiRange)
+                    reset = "Mask changed"
                 if (tthRange is None) and (self._lut_integrator.pos0Range is not None):
-                    setup_integrator(shape, mask, tthRange, chiRange)
-                elif self._lut_integrator.pos0Range != (numpy.deg2rad(min(tthRange)), numpy.deg2rad(max(tthRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
-                     setup_integrator(shape, mask, tthRange, chiRange)
+                    reset = "tthRange1"
+                elif (tthRange is not None) and self._lut_integrator.pos0Range != (numpy.deg2rad(min(tthRange)), numpy.deg2rad(max(tthRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                    reset = "tthRange2"
                 if (chiRange is None) and (self._lut_integrator.pos1Range is not None):
-                    setup_integrator(shape, mask, tthRange, chiRange)
-                elif self._lut_integrator.pos1Range != (numpy.deg2rad(min(chiRange)), numpy.deg2rad(max(chiRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
-                     setup_integrator(shape, mask, tthRange, chiRange)
-            a, b, I = self._lut_integrator.execute(data)
-            tthAxis = numpy.degrees(self._lut_integrator.outPos)
+                    reset = "chiRange1"
+                elif (chiRange is not None) and self._lut_integrator.pos1Range != (numpy.deg2rad(min(chiRange)), numpy.deg2rad(max(chiRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                    reset = "chiRange2"
+            if reset:
+                logger.debug("xrpd_LUT: Resetting integrator because %s" % reset)
+                try:
+                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
+                except MemoryError: #LUT method is hungry...
+                    logger.warning("MemoryError: falling back on forward implementation")
+                    return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
+            if correctSolidAngle:
+                solid_angle_array = self.solidAngleArray(shape)
+            else:
+                solid_angle_array = None
+            try:
+                tthAxis, I, a, b = self._lut_integrator.integrate(data, solidAngle=solid_angle_array)
+            except MemoryError: #LUT method is hungry...
+                    logger.warning("MemoryError: falling back on forward implementation")
+                    return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
+        tthAxis = numpy.degrees(tthAxis)
+        if filename:
+            self.save1D(filename, tthAxis, I, None, "2th_deg")
+        return tthAxis, I
+
+    def xrpd_LUT_OCL(self, data, nbPt, filename=None, correctSolidAngle=True,
+                       tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None,
+                       safe=True, devicetype="all", platformid=None, deviceid=None):
+
+        """
+        Calculate the powder diffraction pattern from a set of data, an image. Cython implementation using a Look-Up Table.
+        @param data: 2D array from the CCD camera
+        @type data: ndarray
+        @param nbPt: number of points in the output pattern
+        @type nbPt: integer
+        @param filename: file to save data in ascii format 2 column
+        @type filename: string
+        @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
+        @type correctSolidAngle: boolean
+        @param tthRange: The lower and upper range of the 2theta. If not provided, range is simply (data.min(), data.max()).
+                        Values outside the range are ignored.
+        @type tthRange: (float, float), optional
+        @param chiRange: The lower and upper range of the chi angle. If not provided, range is simply (data.min(), data.max()).
+                        Values outside the range are ignored.
+        @type chiRange: (float, float), optional, disabled for now
+        @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
+        @param  dummy: value for dead/masked pixels
+        @param delta_dummy: precision for dummy value
+        LUT specific parameters:
+        @param safe: set to false if you think your GPU is already set-up correctly (2theta, mask, solid angle...)
+        OpenCL specific parameters:
+        @param  devicetype: can be "all", "cpu" or "gpu"
+
+        @return: (2theta, I) in degrees
+        @rtype: 2-tuple of 1D arrays
+        """
+        shape = data.shape
+        if not (splitBBoxLUT and ocl_azim_lut):
+            logger.error("Look-up table implementation not available: falling back on old method !")
+            return self.xrpd_splitBBox(data=data,
+                                       nbPt=nbPt,
+                                       filename=filename,
+                                       correctSolidAngle=correctSolidAngle,
+                                       tthRange=tthRange,
+                                       mask=mask,
+                                       dummy=dummy,
+                                       delta_dummy=delta_dummy)
+        if correctSolidAngle:
+            solid_angle_array = self.solidAngleArray(shape)
+        else:
+            solid_angle_array = None
+            tthAxis, I, a, b = self._lut_integrator.integrate(data,)
+
+        with self._lut_sem:
+            reset = None
+            if self._lut_integrator is None:
+                reset = "init"
+            if (not reset) and safe:
+                if (mask is not None) and (not self._lut_integrator.check_mask):
+                    reset = "Mask1"
+                elif (mask is None) and (self._lut_integrator.check_mask):
+                    reset = "Mask2"
+                elif (mask is not None) and (self._lut_integrator.mask_checksum != hashlib.md5(mask).hexdigest()):
+                    reset = "Mask-changed"
+                if (tthRange is None) and (self._lut_integrator.pos0Range is not None):
+                    reset = "tthrange1"
+                elif (tthRange is not None) and self._lut_integrator.pos0Range != (numpy.deg2rad(min(tthRange)), numpy.deg2rad(max(tthRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                    reset = "tthrange2"
+                if (chiRange is None) and (self._lut_integrator.pos1Range is not None):
+                    reset = "chirange1"
+                elif (chiRange is not None) and self._lut_integrator.pos1Range != (numpy.deg2rad(min(chiRange)), numpy.deg2rad(max(chiRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                    reset = "chirange2"
+            if reset:
+                logger.debug("xrpd_LUT_OCL: Resetting integrator because of %s" % reset)
+                try:
+                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
+                except MemoryError: #LUT method is hungry...
+                    logger.warning("MemoryError: falling back on forward implementation")
+                    return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
+
+            tthAxis = self._lut_integrator.outPos
+            with self._ocl_lut_sem:
+                if (self._ocl_lut_integr is None) or (self._ocl_lut_integr.lut_checksum != self._lut_integrator.lut_checksum):
+                    self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut, devicetype, platformid=platformid, deviceid=deviceid, checksum=self._lut_integrator.lut_checksum)
+                I = self._ocl_lut_integr.integrate(data, solidAngle=solid_angle_array)
+        tthAxis = numpy.degrees(tthAxis)
         if filename:
             self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I

@@ -17,11 +17,13 @@ benchmark/halfccd.poni
 benchmark/halfccd.spline
 openCL/ocl_azim.cpp
 openCL/ocl_azim.pyx
+openCL/ocl_azim_LUT.cl
 openCL/ocl_azim_kernel2d_2.cl
 openCL/ocl_azim_kernel_2.cl
 openCL/ocl_base.cpp
 openCL/ocl_base.hpp
 openCL/ocl_tools_extended.pxd
+openCL/ocl_xrpd1d.cpp
 openCL/ocl_xrpd1d.hpp
 openCL/ocl_xrpd1d.pxd
 openCL/ocl_xrpd1d_fullsplit.cpp
@@ -45,6 +47,7 @@ pyFAI-src/peakPicker.py
 pyFAI-src/refinment2D.py
 pyFAI-src/spline.py
 pyFAI-src/utils.py
+pyFAI-src/ocl_azim_lut.py
 scripts/diff_tomo.py
 scripts/drawMask_pymca
 scripts/integrate_exp.py
@@ -64,6 +67,7 @@ src/histogram.pyx
 src/histogram_seriel.c
 src/paraSplitBBox.c
 src/paraSplitBBox.pyx
+src/reconstruct.c
 src/reconstruct.pyx
 src/relabel.c
 src/relabel.pyx
@@ -80,6 +84,7 @@ src/xutils.c
 src/xutils.pyx
 test/__init__.py
 test/bug-1280.py
+test/bug-ocl-cpu.py
 test/bug_ocl_cpu.py
 test/example.sp
 test/moke.poni
@@ -96,7 +101,11 @@ test/utilstest.py
 test/testimages/Fairchild.poni
 test/testimages/Frelon2k.poni
 test/testimages/LaB6.poni
+test/testimages/LaB6_0020.poni
 test/testimages/Pilatus1M.poni
 test/testimages/Pilatus6M.poni
 test/testimages/halfccd.poni
+test/testimages/merged.poni
+test/testimages/refinment.py
+test/testimages/refinment2D.py
 test/testimages/slow_splitBBox.py

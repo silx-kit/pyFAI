@@ -56,6 +56,58 @@ struct lut_point_t
 };
 
 /**
+ * \brief Performs Normalization of input image
+ *
+ * Intensities of images are corrected by:
+ *  - dark (read-out) noise subtraction
+ *  - Solid angle correction (division)
+ *  - polarization correction (division)
+ *  - flat fiels correction (division)
+ * Corrections are made in place.
+ *
+ * @param image	          Float pointer to global memory storing the input image.
+ * @param do_dark         Bool/int: shall dark-current correction be applied ?
+ * @param dark            Float pointer to global memory storing the dark image.
+ * @param do_flat         Bool/int: shall flat-field correction be applied ?
+ * @param flat            Float pointer to global memory storing the flat image.
+ * @param do_solidangle   Bool/int: shall flat-field correction be applied ?
+ * @param solidangle      Float pointer to global memory storing the solid angle of each pixel.
+ * @param do_polarization Bool/int: shall flat-field correction be applied ?
+ * @param polarization    Float pointer to global memory storing the polarization of each pixel.
+ *
+**/
+__kernel void
+corrections( 		__global float 	*image,
+			const			 uint 	size,
+			const			 int 	do_dark,
+			const 	__global float 	*dark,
+			const			 int	do_flat,
+			const 	__global float 	*flat,
+			const			 int	do_solidangle,
+			const 	__global float 	*solidangle,
+			const			 int	do_polarization,
+			const 	__global float 	*polarization
+)
+{
+	float data;
+	uint i= get_global_id(0);
+	if(i < size)
+	{
+		data = image[i];
+		if(do_dark)
+			data-=dark[i];
+		if(do_flat)
+			data/=flat[i];
+		if(do_solidangle)
+			data/=solidangle[i];
+		if(do_polarization)
+			data/=polarization[i];
+		image[i] = data;
+	};//if bins
+};//end kernel
+
+
+/**
  * \brief Performs 1d azimuthal integration with full pixel splitting based on a LUT
  *
  * An image instensity value is spread across the bins according to the positions stored in the LUT.
@@ -80,27 +132,26 @@ struct lut_point_t
 
  */
 __kernel void
-lut_integrate(	const 	__global float 	*weights,
-				const			 uint 	bins,
-				const			 uint 	lut_size,
-				const 	__global uint 	*lut_idx,
-				const 	__global float 	*lut_coef,
-				const			 int   	do_dummy,
-				const			 float 	dummy,
-				const			 float 	delta_dummy,
-				const			 int 	do_dark,
-				const 	__global float 	*dark,
-				const			 int		do_flat,
-				const 	__global 	float 	*flat,
+lut_integrate_orig(	const 	__global float 	*weights,
+				const			 	uint 	bins,
+				const			 	uint 	lut_size,
+				const 	__global 	uint 	*lut_idx,
+				const 	__global 	float 	*lut_coef,
+				const			 	int   	do_dummy,
+				const			 	float 	dummy,
+				const			 	float 	delta_dummy,
 						__global 	float	*outData,
 						__global 	float	*outCount,
 						__global 	float	*outMerge
 		        )
 {
 	int idx, k, j, i= get_global_id(0);
-	bigfloat_t sum_data = 0.0;
-	bigfloat_t sum_count = 0.0;
-	const bigfloat_t epsilon = 1e-10;
+	float sum_data = 0.0f;
+	float sum_count = 0.0f;
+	float cd = 0.0f;
+	float cc = 0.0f;
+	float t, y;
+	const float epsilon = 1e-10f;
 	float coef, data;
 	if(i < bins)
 	{
@@ -109,25 +160,30 @@ lut_integrate(	const 	__global float 	*weights,
 			k = i*lut_size+j;
 			idx = lut_idx[k];
 			coef = lut_coef[k];
-			if((idx <= 0) && (coef <= 0.0))
+			if((idx <= 0) && (coef <= 0.0f))
 			  break;
 			data = weights[idx];
 			if( (!do_dummy) || (delta_dummy && (fabs(data-dummy) > delta_dummy))|| (data!=dummy) )
 			{
-				if(do_dark)
-					data -= dark[idx];
-				if(do_flat)
-					data /= flat[idx];
-
-				sum_data +=  coef * data;
-				sum_count += coef;
+				y = coef*data - cd;
+				t = sum_data + y;
+				cd = (t - sum_data) - y;
+				sum_data = t;
+				y = coef - cc;
+				t = sum_count + y;
+				cc = (t - sum_count) - y;
+				sum_count = t;
+//				sum_data +=  coef * data;
+//				sum_count += coef;
 
 			};//test dummy
 		};//for j
 		outData[i] = (float) sum_data;
 		outCount[i] = (float) sum_count;
 		if (sum_count > epsilon)
-		  outMerge[i] = (float) sum_data / sum_count;
+			outMerge[i] = (float) sum_data / sum_count;
+		else
+			outMerge[i] = 0.0f;
   };//if bins
 };//end kernel
 
@@ -140,19 +196,18 @@ lut_integrate_single(	const 	__global 	float 		*weights,
 						const			 	int   		do_dummy,
 						const			 	float 		dummy,
 						const			 	float 		delta_dummy,
-						const			 	int 		do_dark,
-						const 	__global 	float 		*dark,
-						const			 	int			do_flat,
-						const 	__global 	float 		*flat,
 						__global 	float		*outData,
 						__global 	float		*outCount,
 						__global 	float		*outMerge
 		        )
 {
 	int idx, k, j, i= get_global_id(0);
-	bigfloat_t sum_data = 0.0;
-	bigfloat_t sum_count = 0.0;
-	const bigfloat_t epsilon = 1e-10;
+	float sum_data = 0.0f;
+	float sum_count = 0.0f;
+	float cd = 0.0f;
+	float cc = 0.0f;
+	float t, y;
+	const float epsilon = 1e-10f;
 	float coef, data;
 	if(i < bins)
 	{
@@ -161,170 +216,59 @@ lut_integrate_single(	const 	__global 	float 		*weights,
 			k = i*lut_size+j;
 			idx = lut[k].idx;
 			coef = lut[k].coef;
-			if((idx <= 0) && (coef <= 0.0))
+			if((idx <= 0) && (coef <= 0.0f))
 			  break;
 			data = weights[idx];
 			if( (!do_dummy) || (delta_dummy && (fabs(data-dummy) > delta_dummy))|| (data!=dummy) )
 			{
-				if(do_dark)
-					data -= dark[idx];
-				if(do_flat)
-					data /= flat[idx];
+				y = coef*data - cd;
+				t = sum_data + y;
+				cd = (t - sum_data) - y;
+				sum_data = t;
+				y = coef - cc;
+				t = sum_count + y;
+				cc = (t - sum_count) - y;
+				sum_count = t;
+//				sum_data +=  coef * data;
+//				sum_count += coef;
 
-				sum_data +=  coef * data;
-				sum_count += coef;
-
-			};//test dummy
-		};//for j
-		outData[i] = (float) sum_data;
-		outCount[i] = (float) sum_count;
-		if (sum_count > epsilon)
-		  outMerge[i] = (float) sum_data / sum_count;
-  };//if bins
-};//end kernel
-
-/********************************************************************************/
-__kernel void
-lut_integrate_image(	__read_only image2d_t 			weights,
-						const 				uint		dimX,
-						const 				uint		dimY,
-						const			 	uint 		bins,
-						const			 	uint 		lut_size,
-						const 	__global struct lut_point_t *lut,
-						const			 	int   		do_dummy,
-						const			 	float 		dummy,
-						const			 	float 		delta_dummy,
-						const			 	int 		do_dark,
-						const 	__global 	float 		*dark,
-						const			 	int			do_flat,
-						const 	__global 	float 		*flat,
-						__global 			float		*outData,
-						__global 			float		*outCount,
-						__global 			float		*outMerge
-		        )
-{
-	uint idx, k, j, i= get_global_id(0);
-	bigfloat_t sum_data = 0.0;
-	bigfloat_t sum_count = 0.0;
-	const bigfloat_t epsilon = 1e-10;
-	float coef, data;
-	const sampler_t sampler =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE | CLK_FILTER_NEAREST;
-	if(i < bins)
-	{
-		for (j=0;j<lut_size;j++)
-		{
-			k = i*lut_size+j;
-			idx = lut[k].idx;
-			coef = lut[k].coef;
-			if((idx == 0) && (coef <= 0.0))
-			  break;
-			data = read_imagef(weights, sampler, (int2)(idx%dimY , idx/dimY)).s0;
-			//data = weights[idx];
-			if( (!do_dummy) || (delta_dummy && (fabs(data-dummy) > delta_dummy))|| (data!=dummy) )
-			{
-				if(do_dark)
-					data -= dark[idx];
-				if(do_flat)
-					data /= flat[idx];
-
-				sum_data +=  coef * data;
-				sum_count += coef;
 
 			};//test dummy
 		};//for j
-		outData[i] = (float) sum_data;
-		outCount[i] = (float) sum_count;
+		outData[i] = sum_data;
+		outCount[i] = sum_count;
 		if (sum_count > epsilon)
-		  outMerge[i] = (float) sum_data / sum_count;
+			outMerge[i] =  sum_data / sum_count;
+		else
+			outMerge[i] = 0.0f;
   };//if bins
 };//end kernel
 
-/********************************************************************************/
-__kernel void
-lut_integrate_LUTtexture(	__read_only image2d_t 	weights,
-				const 			uint	dimX,
-				const 			uint	dimY,
-				const			uint 	bins,
-				const			uint 	lut_size,
-				__read_only image2d_t 	lut_idx,
-				__read_only image2d_t 	lut_coef,
-				const			 int   	do_dummy,
-				const			 float 	dummy,
-				const			 float 	delta_dummy,
-				const			 int 	do_dark,
-				const 	__global float 	*dark,
-				const			 int		do_flat,
-				const 	__global 	float 	*flat,
-						__global 	float	*outData,
-						__global 	float	*outCount,
-						__global 	float	*outMerge
-		        )
-{
-	int idx, k, j, i= get_global_id(0);
-	bigfloat_t sum_data = 0.0;
-	bigfloat_t sum_count = 0.0;
-	const bigfloat_t epsilon = 1e-10;
-	const sampler_t sampler =  CLK_NORMALIZED_COORDS_FALSE;
-	float coef, data;
-	if(i < bins)
-	{
-		for (j=0;j<lut_size;j++)
-		{
-			k = i*lut_size+j;
-//			idx = lut_idx[k];
-			idx = read_imageui(lut_idx, sampler, (int2)(i,j)).s0;
-//			coef = lut_coef[k];
-			coef = read_imagef(lut_coef, sampler, (int2)(i,j)).s0;
-			if((idx <= 0) && (coef <= 0.0))
-			  break;
-//			data = weights[idx];
-			data = read_imagef(weights, sampler, (int2)(idx%dimY , idx/dimY)).s0;
-			if( (!do_dummy) || (delta_dummy && (fabs(data-dummy) > delta_dummy))|| (data!=dummy) )
-			{
-				if(do_dark)
-					data -= dark[idx];
-				if(do_flat)
-					data /= flat[idx];
-
-				sum_data +=  coef * data;
-				sum_count += coef;
-
-			};//test dummy
-		};//for j
-		outData[i] = (float) sum_data;
-		outCount[i] = (float) sum_count;
-		if (sum_count > epsilon)
-		  outMerge[i] = (float) sum_data / sum_count;
-  };//if bins
-};//end kernel
 
 /*******************************************************************************
  * Transpose LUT*/
 __kernel void
-lut_integrate_image_lutT(	__read_only image2d_t 			weights,
-						const 				uint		dimX,
-						const 				uint		dimY,
+lut_integrate_lutT(	const 	__global 	float 		*weights,
 						const			 	uint 		bins,
 						const			 	uint 		lut_size,
 						const 	__global struct lut_point_t *lut,
 						const			 	int   		do_dummy,
 						const			 	float 		dummy,
 						const			 	float 		delta_dummy,
-						const			 	int 		do_dark,
-						const 	__global 	float 		*dark,
-						const			 	int			do_flat,
-						const 	__global 	float 		*flat,
 						__global 			float		*outData,
 						__global 			float		*outCount,
 						__global 			float		*outMerge
 		        )
 {
 	uint idx, k, j, i= get_global_id(0);
-	bigfloat_t sum_data = 0.0;
-	bigfloat_t sum_count = 0.0;
-	const bigfloat_t epsilon = 1e-10;
+	float sum_data = 0.0f;
+	float sum_count = 0.0f;
+	float cd = 0.0f;
+	float cc = 0.0f;
+	float t, y;
+	const float epsilon = 1e-10f;
 	float coef, data;
-	const sampler_t sampler =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE | CLK_FILTER_NEAREST;
+//	const sampler_t sampler =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE | CLK_FILTER_NEAREST;
 	if(i < bins)
 	{
 		for (j=0;j<lut_size;j++)
@@ -332,25 +276,32 @@ lut_integrate_image_lutT(	__read_only image2d_t 			weights,
 			k = j*bins+i;
 			idx = lut[k].idx;
 			coef = lut[k].coef;
-			if((idx == 0) && (coef <= 0.0))
+			if((idx == 0) && (coef <= 0.0f))
 			  break;
-			data = read_imagef(weights, sampler, (int2)(idx%dimY , idx/dimY)).s0;
-			//data = weights[idx];
+//			data = read_imagef(weights, sampler, (int2)(idx%dimY , idx/dimY)).s0;
+			data = weights[idx];
 			if( (!do_dummy) || (delta_dummy && (fabs(data-dummy) > delta_dummy))|| (data!=dummy) )
 			{
-				if(do_dark)
-					data -= dark[idx];
-				if(do_flat)
-					data /= flat[idx];
+				y = coef*data - cd;
+				t = sum_data + y;
+				cd = (t - sum_data) - y;
+				sum_data = t;
+				y = coef - cc;
+				t = sum_count + y;
+				cc = (t - sum_count) - y;
+				sum_count = t;
+//				sum_data +=  coef * data;
+//				sum_count += coef;
 
-				sum_data +=  coef * data;
-				sum_count += coef;
 
 			};//test dummy
 		};//for j
-		outData[i] = (float) sum_data;
-		outCount[i] = (float) sum_count;
+		outData[i] =  sum_data;
+		outCount[i] = sum_count;
 		if (sum_count > epsilon)
-		  outMerge[i] = (float) sum_data / sum_count;
+			outMerge[i] = (sum_data / sum_count);
+		else
+			outMerge[i] = 0.0f;
+
   };//if bins
 };//end kernel

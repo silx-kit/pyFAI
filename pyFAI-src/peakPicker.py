@@ -95,6 +95,9 @@ class PeakPicker(object):
         load a filename and plot data on the screen (if GUI)
         """
         self.points.load(filename)
+        self.display_points()
+
+    def display_points(self):
         if self.ax is not None:
             for idx, points in enumerate(self.points._points):
                 if len(points) > 0:
@@ -185,6 +188,9 @@ class PeakPicker(object):
 
 
     def contour(self, data):
+        """
+        @param data:
+        """
         if self.fig is None:
             logging.warning("No diffraction image available => not showing the contour")
         else:
@@ -207,6 +213,10 @@ class PeakPicker(object):
             self.fig.show()
 
     def massif_contour(self, data):
+        """
+        @param data:
+        """
+
         if self.fig is None:
             logging.error("No diffraction image available => not showing the contour")
         else:

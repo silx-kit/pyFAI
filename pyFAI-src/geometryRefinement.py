@@ -50,6 +50,12 @@ ROCA = "/opt/saxs/roca"
 ################################################################################
 class GeometryRefinement(AzimuthalIntegrator):
     def __init__(self, data, dist=1, poni1=None, poni2=None, rot1=0, rot2=0, rot3=0, pixel1=1, pixel2=1, splineFile=None):
+        """
+        @param data: ndarray float64 shape = n, 3
+            col0: pos in dim0 (in pixels)
+            col1: pos in dim1 (in pixels)
+            col2: associated tth value (in rad)
+        """
         self.data = numpy.array(data, dtype="float64")
         if (poni1 is None) and (poni2 is None):
             AzimuthalIntegrator.__init__(self, dist, 0, 0, rot1, rot2, rot3, pixel1, pixel2, splineFile)
