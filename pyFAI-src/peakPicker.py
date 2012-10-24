@@ -95,6 +95,9 @@ class PeakPicker(object):
         load a filename and plot data on the screen (if GUI)
         """
         self.points.load(filename)
+        self.display_points()
+
+    def display_points(self):
         if self.ax is not None:
             for idx, points in enumerate(self.points._points):
                 if len(points) > 0:

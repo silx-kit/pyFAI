@@ -60,7 +60,7 @@ from  matplotlib.path import Path
 import matplotlib.path as mpath
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-
+matplotlib.interactive(True)
 hc = 12.398
 
 try:
@@ -93,7 +93,6 @@ class Recalibration(object):
         self.basename = None
         self.geoRef = None
         self.reconstruct = False
-        self.control_points = None
         self.spacing_file = None
 
     def __repr__(self):
@@ -190,6 +189,8 @@ class Recalibration(object):
         self.peakPicker = PeakPicker(self.outfile)
         self.basename = os.path.splitext(self.outfile)[0]
         self.peakPicker.gui()
+        self.peakPicker.fig.canvas.draw()
+
     def extract_cpt(self):
         d = numpy.loadtxt(self.spacing_file)
         tth = 2.0 * numpy.arcsin(self.ai.wavelength / (2.0e-10 * d))
@@ -198,10 +199,11 @@ class Recalibration(object):
         dtth = numpy.zeros_like(tth)
         dtth[:-1] = tth[1:] - tth[:-1]
         dtth[-1] = dtth[-2]
-        ttha = self.ai.twoThetaArray(self.img.data.shape)
-        self.control_points = {}
+        ttha = self.ai.twoThetaArray(self.peakPicker.data.shape)
         for i in range(tth.size):
             mask = abs(ttha - tth[i]) <= dtth[i] / 4.0
+            self.peakPicker.massif_contour(mask)
+            self.peakPicker.fig.canvas.draw()
             all_points = numpy.where(mask)
             size = all_points[0].size
             keep = int(numpy.ceil(numpy.sqrt(size)))
@@ -222,7 +224,8 @@ class Recalibration(object):
                     break
                 else:
                     cnt += 1
-            self.peakPicker.control_points.append(res, tth[i])
+            self.peakPicker.points.append(res, tth[i])
+            self.peakPicker.display_points()
         self.peakPicker.control_points.save(self.basename + ".npt")
 
 
@@ -330,8 +333,7 @@ if __name__ == "__main__":
     c.parse()
     c.preprocess()
     c.extract_cpt()
-    for i in c.control_points:
-        print i, len(c.control_points[i]), c.control_points[i]
+    print c.peakPicker.points
 #    c.gui_peakPicker()
 #    c.refine()
 #    c.postProcess()
