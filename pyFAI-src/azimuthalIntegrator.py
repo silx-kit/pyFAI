@@ -580,6 +580,7 @@ class AzimuthalIntegrator(Geometry):
                 try:
                     self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
                 except MemoryError: #LUT method is hungry...
+                    logger.warning("MemoryError: falling back on forward implementation")
                     return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
             if correctSolidAngle:
                 solid_angle_array = self.solidAngleArray(shape)
@@ -588,6 +589,7 @@ class AzimuthalIntegrator(Geometry):
             try:
                 tthAxis, I, a, b = self._lut_integrator.integrate(data, solidAngle=solid_angle_array)
             except MemoryError: #LUT method is hungry...
+                    logger.warning("MemoryError: falling back on forward implementation")
                     return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
         tthAxis = numpy.degrees(tthAxis)
         if filename:
@@ -663,7 +665,12 @@ class AzimuthalIntegrator(Geometry):
                     reset = "chirange2"
             if reset:
                 logger.debug("xrpd_LUT_OCL: Resetting integrator because of %s" % reset)
-                self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
+                try:
+                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
+                except MemoryError: #LUT method is hungry...
+                    logger.warning("MemoryError: falling back on forward implementation")
+                    return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
+
             tthAxis = self._lut_integrator.outPos
             with self._ocl_lut_sem:
                 if (self._ocl_lut_integr is None) or (self._ocl_lut_integr.lut_checksum != self._lut_integrator.lut_checksum):
