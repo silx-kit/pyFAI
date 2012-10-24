@@ -150,7 +150,7 @@ out=ai.xrpd2(data,500,360)""" % (param, fn)
             if 1:#R < self.LIMIT:
                 results[data.size / 1e6] = tmin * 1000.0
         self.print_sep()
-        self.results["LUT_OpenCL_%s" % devicetype] = results
+        self.results["Foward_2D_CPU" ] = results
 
 
     def bench_gpu1d(self, devicetype="gpu", useFp64=True, platformid=None, deviceid=None):
@@ -188,7 +188,7 @@ out=ai.xrpd_OpenCL(data,N, devicetype="%s", useFp64=%s, platformid=%s, deviceid=
             if R < self.LIMIT:
                 results[data.size / 1e6] = tmin * 1000.0
         self.print_sep()
-        selt.results["Foward_OpenCL_%s_%s_bits" % (devicetype + ("64" if useFp64 else"32"))] = results
+        self.results["Foward_OpenCL_%s_%s_bits" % (devicetype , ("64" if useFp64 else"32"))] = results
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1].isdigit():
         n = int(sys.argv[1])
