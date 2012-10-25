@@ -74,6 +74,10 @@ struct lut_point_t
  * @param solidangle      Float pointer to global memory storing the solid angle of each pixel.
  * @param do_polarization Bool/int: shall flat-field correction be applied ?
  * @param polarization    Float pointer to global memory storing the polarization of each pixel.
+ * @param do_dummy    	  Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
+ * @param dummy       	  Float: value for bad pixels
+ * @param delta_dummy 	  Float: precision for bad pixel value
+ * 
  *
 **/
 __kernel void
@@ -87,6 +91,10 @@ corrections( 		__global float 	*image,
 			const 	__global float 	*solidangle,
 			const			 int	do_polarization,
 			const 	__global float 	*polarization
+			const		 	 int   	do_dummy,
+			const			 float 	dummy,
+			const		 	 float 	delta_dummy,
+
 )
 {
 	float data;
@@ -94,16 +102,19 @@ corrections( 		__global float 	*image,
 	if(i < size)
 	{
 		data = image[i];
-		if(do_dark)
-			data-=dark[i];
-		if(do_flat)
-			data/=flat[i];
-		if(do_solidangle)
-			data/=solidangle[i];
-		if(do_polarization)
-			data/=polarization[i];
-		image[i] = data;
-	};//if bins
+		if( (!do_dummy) || (delta_dummy && (fabs(data-dummy) > delta_dummy))|| (!delta_dummy && (data!=dummy)))
+		{
+			if(do_dark)
+				data-=dark[i];
+			if(do_flat)
+				data/=flat[i];
+			if(do_solidangle)
+				data/=solidangle[i];
+			if(do_polarization)
+				data/=polarization[i];
+			image[i] = data;
+		}//end if do_dummy
+	};//end if bins
 };//end kernel
 
 
@@ -163,8 +174,12 @@ lut_integrate_orig(	const 	__global float 	*weights,
 			if((idx <= 0) && (coef <= 0.0f))
 			  break;
 			data = weights[idx];
-			if( (!do_dummy) || (delta_dummy && (fabs(data-dummy) > delta_dummy))|| (data!=dummy) )
+			if( (!do_dummy) || (delta_dummy && (fabs(data-dummy) > delta_dummy))|| (!delta_dummy && (data!=dummy)))
 			{
+				//sum_data +=  coef * data;
+				//sum_count += coef;
+				//	Kahan summation allows single precision arithmetics with error compensation
+				//	http://en.wikipedia.org/wiki/Kahan_summation_algorithm
 				y = coef*data - cd;
 				t = sum_data + y;
 				cd = (t - sum_data) - y;
@@ -173,10 +188,8 @@ lut_integrate_orig(	const 	__global float 	*weights,
 				t = sum_count + y;
 				cc = (t - sum_count) - y;
 				sum_count = t;
-//				sum_data +=  coef * data;
-//				sum_count += coef;
 
-			};//test dummy
+			};//test if dummy
 		};//for j
 		outData[i] = (float) sum_data;
 		outCount[i] = (float) sum_count;
@@ -219,8 +232,13 @@ lut_integrate_single(	const 	__global 	float 		*weights,
 			if((idx <= 0) && (coef <= 0.0f))
 			  break;
 			data = weights[idx];
-			if( (!do_dummy) || (delta_dummy && (fabs(data-dummy) > delta_dummy))|| (data!=dummy) )
+			if( (!do_dummy) || (delta_dummy && (fabs(data-dummy) > delta_dummy))|| (!delta_dummy && (data!=dummy)))
 			{
+				//sum_data +=  coef * data;
+				//sum_count += coef;
+				//Kahan summation allows single precision arithmetics with error compensation
+				//http://en.wikipedia.org/wiki/Kahan_summation_algorithm
+
 				y = coef*data - cd;
 				t = sum_data + y;
 				cd = (t - sum_data) - y;
@@ -229,11 +247,7 @@ lut_integrate_single(	const 	__global 	float 		*weights,
 				t = sum_count + y;
 				cc = (t - sum_count) - y;
 				sum_count = t;
-//				sum_data +=  coef * data;
-//				sum_count += coef;
-
-
-			};//test dummy
+			};//end if dummy
 		};//for j
 		outData[i] = sum_data;
 		outCount[i] = sum_count;

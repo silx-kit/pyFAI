@@ -72,6 +72,7 @@ class Bench(object):
             res = ai.xrpd_LUT(data, N)
             t1 = time.time()
             self.print_init(t1 - t0)
+            print "lut.shape=", ai._lut_integrator.lut.shape, "lut.nbytes (MB)", ai._lut_integrator.size * 8 / 1e6
             del ai
             setup = """
 import pyFAI,fabio

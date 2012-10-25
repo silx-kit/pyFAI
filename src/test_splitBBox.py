@@ -91,8 +91,8 @@ weights_buf = pyopencl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=data
 #weights_img = pyopencl.image_from_array(ctx, ary=img.data.astype(numpy.float32), mode="r", norm_int=False, num_channels=1)
 #lut_idx_tex = pyopencl.image_from_array(ctx, ary=integ.lut_idx, mode="r", norm_int=False, num_channels=1)
 #lut_coef_tex = pyopencl.image_from_array(ctx, ary=integ.lut_coef, mode="r", norm_int=False, num_channels=1)
-lut_idx_buf = pyopencl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=integ.lut_idx.astype(numpy.uint32))
-lut_coef_buf = pyopencl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=integ.lut_coef)
+#lut_idx_buf = pyopencl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=integ.lut_idx.astype(numpy.uint32))
+#lut_coef_buf = pyopencl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=integ.lut_coef)
 lut_buf = pyopencl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=integ.lut)
 lut_bufT = pyopencl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=integ.lut.T.copy())
 None_buf = pyopencl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=numpy.zeros(1, dtype=numpy.float32))
@@ -100,38 +100,38 @@ outData_buf = pyopencl.Buffer(ctx, mf.WRITE_ONLY, numpy.dtype(numpy.float32).ite
 outCount_buf = pyopencl.Buffer(ctx, mf.WRITE_ONLY, numpy.dtype(numpy.float32).itemsize * bins)
 outMerge_buf = pyopencl.Buffer(ctx, mf.WRITE_ONLY, numpy.dtype(numpy.float32).itemsize * bins)
 
-print ("Original implementation")
-args_orig = (#weights_img, numpy.uint32(img.dim1), numpy.uint32(img.dim0),
-        weights_buf,
-                       numpy.uint32(2048),
-                       numpy.uint32(integ.lut_size),
-                       lut_idx_buf,
-                       lut_coef_buf,
-#                       lut_buf,
-                       numpy.int32(0),
-                       numpy.float32(0),
-                       numpy.float32(0),
-                       outData_buf,
-                       outCount_buf,
-                       outMerge_buf)
-t4 = time.time()
-program.lut_integrate_orig(q, (bins,), (16,), *args_orig)
-b = numpy.empty(bins, dtype=numpy.float32)
-c = numpy.empty(bins, dtype=numpy.float32)
-d = numpy.empty(bins, dtype=numpy.float32)
-pyopencl.enqueue_copy(q, c, outData_buf).wait()
-pyopencl.enqueue_copy(q, d, outCount_buf).wait()
-pyopencl.enqueue_copy(q, b, outMerge_buf).wait()
-t5 = time.time()
-pylab.plot(a, b, label="OpenCL_orig")
-
-print "OpenCL speed-up: %s setup: %.2fms \texec: %.2fms" % (0.001 * ref_time / (t5 - t3), 1000 * (t4 - t3), 1000 * (t5 - t4))
-print abs(ra - a).max(), abs(rb - b).max(), abs(rc - c).max(), abs(rd - d).max()
-for j in list_size:
-    st = time.time()
-    program.lut_integrate_orig(q, (bins,), (j,), * args_orig)
-    pyopencl.enqueue_copy(q, b, outMerge_buf).wait()
-    print("Size: %s \ttime: %.2fms" % (j, 1000 * (time.time() - st)))
+#print ("Original implementation")
+#args_orig = (#weights_img, numpy.uint32(img.dim1), numpy.uint32(img.dim0),
+#        weights_buf,
+#                       numpy.uint32(2048),
+#                       numpy.uint32(integ.lut_size),
+#                       lut_idx_buf,
+#                       lut_coef_buf,
+##                       lut_buf,
+#                       numpy.int32(0),
+#                       numpy.float32(0),
+#                       numpy.float32(0),
+#                       outData_buf,
+#                       outCount_buf,
+#                       outMerge_buf)
+#t4 = time.time()
+#program.lut_integrate_orig(q, (bins,), (16,), *args_orig)
+#b = numpy.empty(bins, dtype=numpy.float32)
+#c = numpy.empty(bins, dtype=numpy.float32)
+#d = numpy.empty(bins, dtype=numpy.float32)
+#pyopencl.enqueue_copy(q, c, outData_buf).wait()
+#pyopencl.enqueue_copy(q, d, outCount_buf).wait()
+#pyopencl.enqueue_copy(q, b, outMerge_buf).wait()
+#t5 = time.time()
+#pylab.plot(a, b, label="OpenCL_orig")
+#
+#print "OpenCL speed-up: %s setup: %.2fms \texec: %.2fms" % (0.001 * ref_time / (t5 - t3), 1000 * (t4 - t3), 1000 * (t5 - t4))
+#print abs(ra - a).max(), abs(rb - b).max(), abs(rc - c).max(), abs(rd - d).max()
+#for j in list_size:
+#    st = time.time()
+#    program.lut_integrate_orig(q, (bins,), (j,), * args_orig)
+#    pyopencl.enqueue_copy(q, b, outMerge_buf).wait()
+#    print("Size: %s \ttime: %.2fms" % (j, 1000 * (time.time() - st)))
 
 print ("Merged LUT implementation")
 args_single = (#weights_img, numpy.uint32(img.dim1), numpy.uint32(img.dim0),

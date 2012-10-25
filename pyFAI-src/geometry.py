@@ -773,7 +773,7 @@ class Geometry(object):
                 return self._polarization
             else:
                 cos2_tth = numpy.cos(self.twoThetaArray(shape)) ** 2
-                self._polarization = (1 + cos2_tth - factor * numpy.cos(2 * self.chiArray(shape) * (1 - cos2_tth)) + outer(ones_like(chi), cos2_tth)) / 2.0
+                self._polarization = (1 + cos2_tth - factor * numpy.cos(2 * self.chiArray(shape)) * (1 - cos2_tth)) / 2.0
                 self._polarization_factor = factor
                 return self._polarization
 
@@ -793,6 +793,31 @@ class Geometry(object):
         self._corner4Dqa = None
         self._polarization = None
         self._polarization_factor = 0
+
+
+    def calcfrom1d(self, tth, I, shape=None, mask=None, dim1_unit="2th_deg"):
+        """
+        Computes a 2D image from a 1D integrated profile
+        
+        @param tth: 1D array with 2theta in degrees
+        @param I: scattering intensity
+        @return 2D image reconstructed
+        """
+        if dim1_unit == "2th_deg":
+            if shape is None:
+                ttha = self._ttha
+                shape = self._ttha.shape
+            else:
+                ttha = integrator.twoThetaArray(shape)
+        else:
+#            TODO
+            raise RuntimeError("Not (yet) Implemented")
+        calcimage = numpy.interp(ttha.ravel(), numpy.radians(tth), I)
+        calcimage.shape = shape
+        calcimage *= self.solidAngleArray(shape)
+        if mask is not None:
+            calcimage[mask] = 0
+        return calcimage
 
 
 # ###############################################################################
