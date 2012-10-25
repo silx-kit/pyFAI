@@ -111,6 +111,15 @@ class OCL_LUT_Integrator(object):
         data = numpy.ascontiguousarray(data, dtype=numpy.float32)
         with self._sem:
             try:
+                if dummy is not None:
+                    do_dummy = 1
+                    if delta_dummy == None:
+                        delta_dummy = 0
+                else:
+                    do_dummy = 0
+                    dummy = 0
+                    delta_dummy = 0
+
                 if self.data_buffer is None:
                     self.data_buffer = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size=data.nbytes)
                 elif self.data_buffer.size != data.nbytes:
@@ -126,6 +135,7 @@ class OCL_LUT_Integrator(object):
                         self.dark_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=dark)
                     else:
                         pyopencl.enqueue_copy(self._queue, self.dark_buffer, dark)
+                    dark = None
                 else:
                     do_dark = 0
                 if flat is not None:
@@ -136,6 +146,7 @@ class OCL_LUT_Integrator(object):
                         self.flat_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=flat)
                     else:
                         pyopencl.enqueue_copy(self._queue, self.flat_buffer, flat)
+                    flat = None
                 else:
                     do_flat = 0
 
@@ -147,6 +158,7 @@ class OCL_LUT_Integrator(object):
                         self.solidAngle_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=solidAngle)
                     else:
                         pyopencl.enqueue_copy(self._queue, self.solidAngle_buffer, solidAngle)
+                    solidAngle = None
                 else:
                     do_solidAngle = 0
 
@@ -165,17 +177,10 @@ class OCL_LUT_Integrator(object):
                                 numpy.int32(do_dark), self.dark_buffer,
                                 numpy.int32(do_flat), self.flat_buffer,
                                 numpy.int32(do_solidAngle), self.solidAngle_buffer,
-                                numpy.int32(do_polarization), self.polarization_buffer)
+                                numpy.int32(do_polarization), self.polarization_buffer,
+                                numpy.int32(do_dummy), numpy.float32(dummy), numpy.float32(delta_dummy))
                     pyopencl.enqueue_barrier(self._queue).wait()
                     self._program.corrections(self._queue, (self.get_nr_threads(data.size, 512),), (512,), *args_cor)
-
-                if dummy is not None:
-                    do_dummy = 1
-                else:
-                    do_dummy = 0
-                    dummy = 0
-                    delta_dummy = 0
-
 
                 args = (self.data_buffer, numpy.uint32(self.bins), numpy.uint32(self.lut_size), self._lut_buffer,
                        numpy.int32(do_dummy), numpy.float32(dummy), numpy.float32(delta_dummy), self.outData_buffer, self.outCount_buffer, self.outMerge_buffer)

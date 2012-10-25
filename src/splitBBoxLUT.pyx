@@ -298,16 +298,17 @@ class HistoBBox1d(object):
             cdata = numpy.zeros(size,dtype=numpy.float32)
             for i in prange(size, nogil=True, schedule="static"):
                 data = tdata[i]
-                #Nota: -= and /= operatore are seen as reduction in cython parallel.
-                if do_dark:
-                    data = data - cdark[i]
-                if do_flat:
-                    data = data / cflat[i]
-                if do_polarization:
-                    data = data / cpolarization[i]
-                if do_solidAngle:
-                    data = data / csolidAngle[i]
-                cdata[i]+=data
+                if not(do_dummy) or (cddummy and (fabs(data-cdummy) > cddummy)) or (not(cddummy) and (data!=cdummy)):
+                    #Nota: -= and /= operatore are seen as reduction in cython parallel.
+                    if do_dark:
+                        data = data - cdark[i]
+                    if do_flat:
+                        data = data / cflat[i]
+                    if do_polarization:
+                        data = data / cpolarization[i]
+                    if do_solidAngle:
+                        data = data / csolidAngle[i]
+                    cdata[i]+=data
         else:
             cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
 
