@@ -26,6 +26,7 @@
 
 #
 import cython
+import os
 import hashlib
 from cython.parallel import prange
 from libc.string cimport memset
@@ -123,7 +124,7 @@ class HistoBBox1d(object):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def calc_lut(self):
-        'calculate the max number of elements in the LUT'
+        'calculate the max number of elements in the LUT and populate it'
         cdef float delta=self.delta, pos0_min=self.pos0_min, pos1_min, pos1_max, min0, max0, fbin0_min, fbin0_max, deltaL, deltaR, deltaA
         cdef int bin0_min, bin0_max, bins = self.bins, lut_size, i, size
         cdef numpy.uint32_t k,idx #same as numpy.uint32
@@ -184,8 +185,14 @@ class HistoBBox1d(object):
 
         lut_size = outMax.max()
         self.lut_size = lut_size
+        
+        lut_nbytes = bins*lut_size*sizeof(lut_point)
+        if os.name == "posix":
+            memsize =  os.sysconf("SC_PAGE_SIZE")*os.sysconf("SC_PHYS_PAGES")
+            if memsize <  lut_nbytes:
+                raise MemoryError("Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %s"%(bins,lut_size,lut_nbytes,memsize)) 
         lut = numpy.recarray(shape=(bins, lut_size),dtype=[("idx",numpy.uint32),("coef",numpy.float32)])
-        memset(&lut[0,0],0,bins*lut_size*sizeof(lut_point))
+        memset(&lut[0,0], 0, bins*lut_size*sizeof(lut_point))
         #NOGIL
         with nogil:
             for idx in range(size):
