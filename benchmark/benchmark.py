@@ -30,6 +30,7 @@ class Bench(object):
     repeat = 3
     nbr = 10
     results = {}
+    meth = []
     def get_cpu(self):
         return [i.split(": ", 1)[1] for i in open("/proc/cpuinfo") if i.startswith("model name")][0].strip()
 
@@ -88,6 +89,7 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
             if R < self.LIMIT:
                 results[data.size / 1e6] = tmin * 1000.0
         self.print_sep()
+        self.meth.append("LUT_Cython_OpenMP")
         self.results["LUT_Cython_OpenMP"] = results
 
     def bench_cpu1d_ocl_lut(self, devicetype="all", platformid=None, deviceid=None):
@@ -123,6 +125,7 @@ out=ai.xrpd_LUT_OCL(data,N,devicetype="%s",platformid=%s,deviceid=%s)""" % (para
             if R < self.LIMIT:
                 results[data.size / 1e6] = tmin * 1000.0
         self.print_sep()
+        self.meth.append("LUT_OpenCL_%s" % devicetype)
         self.results["LUT_OpenCL_%s" % devicetype] = results
 
     def bench_cpu2d(self):
@@ -151,6 +154,7 @@ out=ai.xrpd2(data,500,360)""" % (param, fn)
             if 1:#R < self.LIMIT:
                 results[data.size / 1e6] = tmin * 1000.0
         self.print_sep()
+        self.meth.append("Foward_2D_CPU")
         self.results["Foward_2D_CPU" ] = results
 
 
@@ -189,6 +193,7 @@ out=ai.xrpd_OpenCL(data,N, devicetype="%s", useFp64=%s, platformid=%s, deviceid=
             if R < self.LIMIT:
                 results[data.size / 1e6] = tmin * 1000.0
         self.print_sep()
+        self.meth.append("Foward_OpenCL_%s_%s_bits" % (devicetype , ("64" if useFp64 else"32")))
         self.results["Foward_OpenCL_%s_%s_bits" % (devicetype , ("64" if useFp64 else"32"))] = results
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1].isdigit():
@@ -202,17 +207,20 @@ if __name__ == "__main__":
     b.bench_cpu1d_ocl_lut("GPU")
     b.bench_cpu1d_ocl_lut("CPU", 2, 0)
     b.bench_cpu1d_ocl_lut()
-    b.bench_cpu2d()
     b.bench_gpu1d("gpu", True)
     b.bench_gpu1d("gpu", False)
     b.bench_gpu1d("cpu", True)
     b.bench_gpu1d("cpu", False)
-    meth = list(b.results.keys())
-    size = list(b.results[meth[0]].keys())
+    b.bench_cpu2d()
+    size = list(b.results[b.meth[0]].keys())
+    for i in b.meth:
+        s = list(b.results[i].keys())
+        if len(s) > len(size):
+            size = s
     size.sort()
     print("Summary: execution time in milliseconds")
-    print "Size/Meth\t" + "\t".join(meth)
+    print "Size/Meth\t" + "\t".join(b.meth)
     for i in size:
-        print "%7.2f\t\t" % i + "\t\t".join("%.2f" % (b.results[j].get(i, 0)) for j in meth)
+        print "%7.2f\t\t" % i + "\t\t".join("%.2f" % (b.results[j].get(i, 0)) for j in b.meth)
 
 
