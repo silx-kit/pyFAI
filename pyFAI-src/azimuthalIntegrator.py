@@ -31,7 +31,7 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "02/07/2012"
 __status__ = "beta"
 
-import os, logging, tempfile, threading, hashlib
+import os, logging, tempfile, threading, hashlib, gc
 import numpy
 from numpy import degrees
 from geometry import Geometry
@@ -581,6 +581,8 @@ class AzimuthalIntegrator(Geometry):
                     self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
                 except MemoryError: #LUT method is hungry...
                     logger.warning("MemoryError: falling back on forward implementation")
+                    self._ocl_lut_integr = None
+                    gc.collect()
                     return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
             if correctSolidAngle:
                 solid_angle_array = self.solidAngleArray(shape)
@@ -590,6 +592,8 @@ class AzimuthalIntegrator(Geometry):
                 tthAxis, I, a, b = self._lut_integrator.integrate(data, solidAngle=solid_angle_array)
             except MemoryError: #LUT method is hungry...
                     logger.warning("MemoryError: falling back on forward implementation")
+                    self._ocl_lut_integr = None
+                    gc.collect()
                     return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
         tthAxis = numpy.degrees(tthAxis)
         if filename:
@@ -669,6 +673,8 @@ class AzimuthalIntegrator(Geometry):
                     self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
                 except MemoryError: #LUT method is hungry...
                     logger.warning("MemoryError: falling back on forward implementation")
+                    self._ocl_lut_integr = None
+                    gc.collect()
                     return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
 
             tthAxis = self._lut_integrator.outPos
