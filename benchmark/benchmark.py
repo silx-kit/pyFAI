@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import fabio, sys, time, timeit
+import fabio, sys, time, timeit, os
 import os.path as op
 
 sys.path.append(op.join(op.dirname(op.dirname(op.abspath(__file__))), "test"))
@@ -34,6 +34,9 @@ class Bench(object):
     def get_cpu(self):
         return [i.split(": ", 1)[1] for i in open("/proc/cpuinfo") if i.startswith("model name")][0].strip()
 
+    def get_gpu(self, deviceid=0):
+        import pyopencl
+        return pyopencl.get_platforms()[0].get_devices()[0].name
 
     def print_init(self, t):
         print(" * Initialization time: %.1f ms" % (1000.0 * t))
@@ -107,7 +110,7 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
                 res = ai.xrpd_LUT_OCL(data, N, devicetype=devicetype, platformid=platformid, deviceid=deviceid)
             except MemoryError:
                 print("Not enough memory")
-                return
+                break
             t1 = time.time()
             self.print_init(t1 - t0)
             del ai
@@ -205,8 +208,8 @@ if __name__ == "__main__":
     b.nbr = n
     b.bench_cpu1d()
     b.bench_cpu1d_ocl_lut("GPU")
-    b.bench_cpu1d_ocl_lut("CPU", 2, 0)
-    b.bench_cpu1d_ocl_lut()
+    b.bench_cpu1d_ocl_lut("CPU")
+#    b.bench_cpu1d_ocl_lut()
     b.bench_gpu1d("gpu", True)
     b.bench_gpu1d("gpu", False)
     b.bench_gpu1d("cpu", True)
@@ -218,9 +221,29 @@ if __name__ == "__main__":
         if len(s) > len(size):
             size = s
     size.sort()
+    import json
+    json.dump(b.results, open("benchmark.json", "w"))
     print("Summary: execution time in milliseconds")
     print "Size/Meth\t" + "\t".join(b.meth)
     for i in size:
         print "%7.2f\t\t" % i + "\t\t".join("%.2f" % (b.results[j].get(i, 0)) for j in b.meth)
-
-
+    if "DISPLAY" in os.environ:
+        from matplotlib import pylab
+        for k in b.meth:
+            dp = b.results[k]
+            s = []
+            p = []
+            for i in size:
+                if i in dp:
+                    s.append(i)
+                    p.append(1000.0 / dp[i])
+            pylab.plot(s, p, label=k)
+        pylab.xlabel("Image size in Mega-Pixels")
+        pylab.ylabel("Frames processed per second")
+        t = [1, 2, 5, 10, 20, 50, 100, 200]
+        pylab.yscale("log")
+        pylab.yticks(t, t)
+        pylab.legend()
+        pylab.title(b.get_cpu() + " / " + b.get_gpu())
+        pylab.savefig("benchmark.png")
+        pylab.show()
