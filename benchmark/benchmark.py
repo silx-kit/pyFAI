@@ -207,13 +207,13 @@ if __name__ == "__main__":
     b = Bench()
     b.nbr = n
     b.bench_cpu1d()
-    b.bench_cpu1d_ocl_lut("GPU")
-    b.bench_cpu1d_ocl_lut("CPU")
-#    b.bench_cpu1d_ocl_lut()
-    b.bench_gpu1d("gpu", True)
-    b.bench_gpu1d("gpu", False)
+#    b.bench_cpu1d_ocl_lut("GPU")
+#    b.bench_cpu1d_ocl_lut("CPU")
+    b.bench_cpu1d_ocl_lut()
+#    b.bench_gpu1d("gpu", True)
+#    b.bench_gpu1d("gpu", False)
     b.bench_gpu1d("cpu", True)
-    b.bench_gpu1d("cpu", False)
+#    b.bench_gpu1d("cpu", False)
     b.bench_cpu2d()
     size = list(b.results[b.meth[0]].keys())
     for i in b.meth:
@@ -241,7 +241,7 @@ if __name__ == "__main__":
         pylab.xlabel("Image size in Mega-Pixels")
         pylab.ylabel("Frames processed per second")
         t = [1, 2, 5, 10, 20, 50, 100, 200]
-        pylab.yscale("log")
+        pylab.yscale("log", basey=2)
         pylab.yticks(t, t)
         pylab.legend()
         pylab.title(b.get_cpu() + " / " + b.get_gpu())
