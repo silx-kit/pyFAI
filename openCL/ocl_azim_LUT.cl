@@ -90,7 +90,7 @@ corrections( 		__global float 	*image,
 			const			 int	do_solidangle,
 			const 	__global float 	*solidangle,
 			const			 int	do_polarization,
-			const 	__global float 	*polarization
+			const 	__global float 	*polarization,
 			const		 	 int   	do_dummy,
 			const			 float 	dummy,
 			const		 	 float 	delta_dummy,
