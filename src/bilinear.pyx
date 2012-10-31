@@ -105,8 +105,9 @@ cdef class bilinear:
         """
         cdef int d0 = x[0]
         cdef int d1 = x[1]
-        cdef int i0, i1, d0m, d0p, d1m, d1p, n0, n1
-        cdef float tmp, value, current_value = self.data[d0,d1]
+        cdef int i0, i1, d0m, d0p, d1m, d1p, n0, n1, cnt=0
+        cdef float tmp, value, current_value
+        value = current_value = self.data[d0,d1]
         with nogil:
             if d0==0:
                 d0m=0
@@ -130,6 +131,9 @@ cdef class bilinear:
                     if tmp>current_value:
                         value = tmp
             while value>current_value:
+                current_value=value
+                n0,n1 = d0,d1
+                cnt+=1
                 if d0==0:
                     d0m=0
                 else:
@@ -153,5 +157,5 @@ cdef class bilinear:
                             n0,n1=i0,i1
                             value = tmp
                 d0,d1=n0,n1
-                current_value=value
+#        print "Exit after %i loops"%cnt
         return (d0,d1)

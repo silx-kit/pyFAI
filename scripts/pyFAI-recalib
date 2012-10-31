@@ -55,7 +55,7 @@ from scipy.interpolate import interp2d
 import pyFAI
 from pyFAI.geometryRefinement import GeometryRefinement
 from pyFAI.peakPicker import PeakPicker, Massif
-from pyFAI.utils import averageImages
+from pyFAI.utils import averageImages, timeit
 from  matplotlib.path import Path
 import matplotlib.path as mpath
 import matplotlib.patches as mpatches
@@ -213,24 +213,21 @@ class Recalibration(object):
                 mean = self.peakPicker.data[mask].mean(dtype=numpy.float64)
                 std = self.peakPicker.data[mask].std(dtype=numpy.float64)
                 mask2 = (self.peakPicker.data > mean + std)
-                size2 = mask2.sum(dtype=int)
+                all_points = numpy.vstack(numpy.where(mask2)).T
+                numpy.random.shuffle(all_points)
+                size2 = all_points.shape[0]
                 keep = int(numpy.ceil(numpy.sqrt(size2)))
-                all_points = numpy.where(mask2)
-                allpt = numpy.zeros((size2, 2), dtype=numpy.int)
-                allpt[:, 0] = all_points[0]
-                allpt[:, 1] = all_points[1]
                 res = []
                 cnt = 0
                 logger.info("Extracting datapoint for ring %s (2theta = %.2f deg); searching for %i pts out of %i with I>%.1f" % (i, numpy.degrees(tth[i]), keep, size2, mean + std,))
-
-                while True:
-                    idx = numpy.random.randint(0, size2)
-                    out = self.peakPicker.massif.nearest_peak(allpt[idx])
-                    p0, p1 = out
-                    if mask[p0, p1]:
-                        if (out not in res) and (self.peakPicker.data[p0, p1] > mean):
-                            res.append(out)
-                            cnt = 0
+                for idx in all_points:
+                    out = self.peakPicker.massif.nearest_peak(idx)
+                    if out is not None:
+                        p0, p1 = out
+                        if mask[p0, p1]:
+                            if (out not in res) and (self.peakPicker.data[p0, p1] > mean + std):
+                                res.append(out)
+                                cnt = 0
                     if len(res) >= keep or cnt > keep:
                         print len(res), cnt
                         break
