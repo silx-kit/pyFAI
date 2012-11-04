@@ -26,8 +26,10 @@
 
 #
 import cython
+import os
 import hashlib
 from cython.parallel import prange
+from libc.string cimport memset
 import numpy
 cimport numpy
 from libc.math cimport fabs
@@ -36,7 +38,7 @@ cdef struct lut_point:
     numpy.float32_t coef
 
 @cython.cdivision(True)
-cdef float getBinNr( float x0, float pos0_min, float delta) nogil: 
+cdef float getBinNr( float x0, float pos0_min, float delta) nogil:
     """
     calculate the bin number for any point
     param x0: current position
@@ -108,7 +110,7 @@ class HistoBBox1d(object):
             self.mask_checksum=None
         delta = (self.pos0_max - pos0_min) / (bins)
         self.delta = delta
-        self.lut_max_idx, self.lut_idx, self.lut_coef = self.calc_lut()
+        self.lut_max_idx = self.calc_lut()
         ########################################################################
         # Linspace has been discareded becaus it does calculation in double precision and all others are done in single
         #self.outPos = numpy.linspace(self.pos0_min+0.5*delta,self.pos0_max-0.5*delta, self.bins)
@@ -116,15 +118,13 @@ class HistoBBox1d(object):
         for i in prange(bins,nogil=True, schedule="static"):
             outPos[i] = pos0_min + (<float>0.5 +< float > i) * delta
         self.outPos = outPos
-        self.lut = numpy.recarray(shape=self.lut_coef.shape,dtype=[("idx",numpy.uint32),("coef",numpy.float32)])
-        self.lut.coef = self.lut_coef
-        self.lut.idx = self.lut_idx
+        self.lut_checksum = hashlib.md5(self.lut).hexdigest()
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def calc_lut(self):
-        'calculate the max number of elements in the LUT'
+        'calculate the max number of elements in the LUT and populate it'
         cdef float delta=self.delta, pos0_min=self.pos0_min, pos1_min, pos1_max, min0, max0, fbin0_min, fbin0_max, deltaL, deltaR, deltaA
         cdef int bin0_min, bin0_max, bins = self.bins, lut_size, i, size
         cdef numpy.uint32_t k,idx #same as numpy.uint32
@@ -134,8 +134,7 @@ class HistoBBox1d(object):
         cdef float[:] cpos0_inf = self.cpos0_inf
         cdef float[:] cpos1_min, cpos1_max
         cdef numpy.ndarray[numpy.uint32_t, ndim = 1] max_idx = numpy.zeros(bins, dtype=numpy.uint32)
-        cdef numpy.ndarray[numpy.uint32_t, ndim = 2] lut_idx
-        cdef numpy.ndarray[numpy.float32_t, ndim = 2] lut_coef
+        cdef numpy.ndarray[lut_point, ndim = 2] lut
         cdef numpy.int8_t[:] cmask
         size = self.size
         if self.check_mask:
@@ -152,7 +151,7 @@ class HistoBBox1d(object):
             pos1_min = self.pos1_min
         else:
             check_pos1 = 0
-#NOGIL    
+#NOGIL
         with nogil:
             for idx in range(size):
                 if (check_mask) and (cmask[idx]):
@@ -186,10 +185,14 @@ class HistoBBox1d(object):
 
         lut_size = outMax.max()
         self.lut_size = lut_size
-
-        lut_idx = numpy.zeros((bins, lut_size), dtype=numpy.uint32)
-        lut_coef = numpy.zeros((self.bins, self.lut_size), dtype=numpy.float32)
-
+        
+        lut_nbytes = bins*lut_size*sizeof(lut_point)
+        if os.name == "posix":
+            memsize =  os.sysconf("SC_PAGE_SIZE")*os.sysconf("SC_PHYS_PAGES")
+            if memsize <  lut_nbytes:
+                raise MemoryError("Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %s"%(bins,lut_size,lut_nbytes,memsize)) 
+        lut = numpy.recarray(shape=(bins, lut_size),dtype=[("idx",numpy.uint32),("coef",numpy.float32)])
+        memset(&lut[0,0], 0, bins*lut_size*sizeof(lut_point))
         #NOGIL
         with nogil:
             for idx in range(size):
@@ -217,8 +220,8 @@ class HistoBBox1d(object):
                 if bin0_min == bin0_max:
                     #All pixel is within a single bin
                     k = max_idx[bin0_min]
-                    lut_idx[bin0_min, k] = idx
-                    lut_coef[bin0_min, k] = 1.0
+                    lut[bin0_min, k].idx = idx
+                    lut[bin0_min, k].coef = 1.0
                     max_idx[bin0_min] = k + 1
                 else: #we have pixel splitting.
                     deltaA = 1.0 / (fbin0_max - fbin0_min)
@@ -227,32 +230,33 @@ class HistoBBox1d(object):
                     deltaR = fbin0_max - (bin0_max)
 
                     k = max_idx[bin0_min]
-                    lut_idx[bin0_min, k] = idx
-                    lut_coef[bin0_min, k] = (deltaA * deltaL)
+                    lut[bin0_min, k].idx = idx
+                    lut[bin0_min, k].coef = (deltaA * deltaL)
                     max_idx[bin0_min] = k + 1
 
                     k = max_idx[bin0_max]
-                    lut_idx[bin0_max, k] = idx
-                    lut_coef[bin0_max, k] = (deltaA * deltaR)
+                    lut[bin0_max, k].idx = idx
+                    lut[bin0_max, k].coef = (deltaA * deltaR)
                     max_idx[bin0_max] = k + 1
 
                     if bin0_min + 1 < bin0_max:
                         for i in range(bin0_min + 1, bin0_max):
                             k = max_idx[i]
-                            lut_idx[i, k] = idx
-                            lut_coef[i, k] = (deltaA)
+                            lut[i, k].idx = idx
+                            lut[i, k].coef = (deltaA)
                             max_idx[i] = k + 1
-        return max_idx, lut_idx, lut_coef
+        self.lut = lut
+        return max_idx
 
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def integrate(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None):
-        cdef int i, j, idx, bins, lut_size, size 
+        cdef int i, j, idx, bins, lut_size, size
         cdef double sum_data, sum_count, epsilon
         cdef float data, coef, cdummy, cddummy
-        cdef bint check_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False  
+        cdef bint check_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
@@ -288,25 +292,26 @@ class HistoBBox1d(object):
             do_polatization = True
             assert polarization.size == size
             cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
-        
+
         if do_dark or do_flat or do_polarization or do_solidAngle:
             tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
             cdata = numpy.zeros(size,dtype=numpy.float32)
             for i in prange(size, nogil=True, schedule="static"):
                 data = tdata[i]
-                #Nota: -= and /= operatore are seen as reduction in cython parallel.
-                if do_dark: 
-                    data = data - cdark[i]
-                if do_flat:
-                    data = data / cflat[i]
-                if do_polarization:
-                    data = data / cpolarization[i]
-                if do_solidAngle:
-                    data = data / csolidAngle[i]
-                cdata[i]+=data
+                if not(do_dummy) or (cddummy and (fabs(data-cdummy) > cddummy)) or (not(cddummy) and (data!=cdummy)):
+                    #Nota: -= and /= operatore are seen as reduction in cython parallel.
+                    if do_dark:
+                        data = data - cdark[i]
+                    if do_flat:
+                        data = data / cflat[i]
+                    if do_polarization:
+                        data = data / cpolarization[i]
+                    if do_solidAngle:
+                        data = data / csolidAngle[i]
+                    cdata[i]+=data
         else:
             cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-        
+
         for i in prange(bins, nogil=True, schedule="guided"):
             sum_data = 0.0
             sum_count = 0.0

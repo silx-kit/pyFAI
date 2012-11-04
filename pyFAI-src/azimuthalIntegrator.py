@@ -31,7 +31,7 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "02/07/2012"
 __status__ = "beta"
 
-import os, logging, tempfile, threading, hashlib
+import os, logging, tempfile, threading, hashlib, gc
 import numpy
 from numpy import degrees
 from geometry import Geometry
@@ -557,29 +557,44 @@ class AzimuthalIntegrator(Geometry):
                                        dummy=dummy,
                                        delta_dummy=delta_dummy)
         with self._lut_sem:
+            reset = None
             if self._lut_integrator is None:
-                self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
-                safe = False
-            if safe:
-                if (mask is not None) and self._lut_integrator.check_mask:
-                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
-                elif (mask is None) and (not self._lut_integrator.check_mask):
-                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
+                reset = "init"
+            elif safe:
+                if (mask is not None) and (not self._lut_integrator.check_mask):
+                    reset = "Mask1"
+                elif (mask is None) and (self._lut_integrator.check_mask):
+                    reset = "Mask2"
                 elif (mask is not None) and (self._lut_integrator.mask_checksum != hashlib.md5(mask).hexdigest()):
-                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
+                    reset = "Mask changed"
                 if (tthRange is None) and (self._lut_integrator.pos0Range is not None):
-                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
+                    reset = "tthRange1"
                 elif (tthRange is not None) and self._lut_integrator.pos0Range != (numpy.deg2rad(min(tthRange)), numpy.deg2rad(max(tthRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
-                     self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
+                    reset = "tthRange2"
                 if (chiRange is None) and (self._lut_integrator.pos1Range is not None):
-                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
+                    reset = "chiRange1"
                 elif (chiRange is not None) and self._lut_integrator.pos1Range != (numpy.deg2rad(min(chiRange)), numpy.deg2rad(max(chiRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
-                     self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
+                    reset = "chiRange2"
+            if reset:
+                logger.debug("xrpd_LUT: Resetting integrator because %s" % reset)
+                try:
+                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
+                except MemoryError: #LUT method is hungry...
+                    logger.warning("MemoryError: falling back on forward implementation")
+                    self._ocl_lut_integr = None
+                    gc.collect()
+                    return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
             if correctSolidAngle:
                 solid_angle_array = self.solidAngleArray(shape)
             else:
                 solid_angle_array = None
-            tthAxis, I, a, b = self._lut_integrator.integrate(data, solidAngle=solid_angle_array)
+            try:
+                tthAxis, I, a, b = self._lut_integrator.integrate(data, solidAngle=solid_angle_array)
+            except MemoryError: #LUT method is hungry...
+                    logger.warning("MemoryError: falling back on forward implementation")
+                    self._ocl_lut_integr = None
+                    gc.collect()
+                    return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
         tthAxis = numpy.degrees(tthAxis)
         if filename:
             self.save1D(filename, tthAxis, I, None, "2th_deg")
@@ -634,28 +649,38 @@ class AzimuthalIntegrator(Geometry):
             tthAxis, I, a, b = self._lut_integrator.integrate(data,)
 
         with self._lut_sem:
+            reset = None
             if self._lut_integrator is None:
-                self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
-                safe = False
-            if safe:
-                if (mask is not None) and self._lut_integrator.check_mask:
-                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
-                elif (mask is None) and (not self._lut_integrator.check_mask):
-                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
+                reset = "init"
+            if (not reset) and safe:
+                if (mask is not None) and (not self._lut_integrator.check_mask):
+                    reset = "Mask1"
+                elif (mask is None) and (self._lut_integrator.check_mask):
+                    reset = "Mask2"
                 elif (mask is not None) and (self._lut_integrator.mask_checksum != hashlib.md5(mask).hexdigest()):
-                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
+                    reset = "Mask-changed"
                 if (tthRange is None) and (self._lut_integrator.pos0Range is not None):
-                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
-                elif self._lut_integrator.pos0Range != (numpy.deg2rad(min(tthRange)), numpy.deg2rad(max(tthRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
-                     self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
+                    reset = "tthrange1"
+                elif (tthRange is not None) and self._lut_integrator.pos0Range != (numpy.deg2rad(min(tthRange)), numpy.deg2rad(max(tthRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                    reset = "tthrange2"
                 if (chiRange is None) and (self._lut_integrator.pos1Range is not None):
+                    reset = "chirange1"
+                elif (chiRange is not None) and self._lut_integrator.pos1Range != (numpy.deg2rad(min(chiRange)), numpy.deg2rad(max(chiRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                    reset = "chirange2"
+            if reset:
+                logger.debug("xrpd_LUT_OCL: Resetting integrator because of %s" % reset)
+                try:
                     self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
-                elif self._lut_integrator.pos1Range != (numpy.deg2rad(min(chiRange)), numpy.deg2rad(max(chiRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
-                     self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
+                except MemoryError: #LUT method is hungry...
+                    logger.warning("MemoryError: falling back on forward implementation")
+                    self._ocl_lut_integr = None
+                    gc.collect()
+                    return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
+
             tthAxis = self._lut_integrator.outPos
             with self._ocl_lut_sem:
-                if self._ocl_lut_integr is None:
-                    self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut, devicetype, platformid=platformid, deviceid=deviceid)
+                if (self._ocl_lut_integr is None) or (self._ocl_lut_integr.lut_checksum != self._lut_integrator.lut_checksum):
+                    self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut, devicetype, platformid=platformid, deviceid=deviceid, checksum=self._lut_integrator.lut_checksum)
                 I = self._ocl_lut_integr.integrate(data, solidAngle=solid_angle_array)
         tthAxis = numpy.degrees(tthAxis)
         if filename:

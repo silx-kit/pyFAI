@@ -54,13 +54,13 @@ from scipy.optimize import fmin, leastsq, fmin_slsqp, anneal
 from scipy.interpolate import interp2d
 import pyFAI
 from pyFAI.geometryRefinement import GeometryRefinement
-from pyFAI.peakPicker import PeakPicker
-from pyFAI.utils import averageImages
+from pyFAI.peakPicker import PeakPicker, Massif
+from pyFAI.utils import averageImages, timeit
 from  matplotlib.path import Path
 import matplotlib.path as mpath
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-
+matplotlib.interactive(True)
 hc = 12.398
 
 try:
@@ -73,32 +73,32 @@ class Recalibration(object):
     """
     class doing the re-calibration of frames
     """
-    def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None, splineFile=None, gaussianWidth=None):
+    def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, splineFile=None, gaussianWidth=None):
         """
         """
         self.dataFiles = dataFiles or []
         self.darkFiles = darkFiles or []
         self.flatFiles = flatFiles or []
         self.pointfile = None
-        self.pixelSize = pixelSize
         self.gaussianWidth = gaussianWidth
         self.labelPattern = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
         self.splineFile = splineFile
         self.cutBackground = None
         self.outfile = "merged.edf"
         self.peakPicker = None
+        self.img = None
+        self.ai = None
         self.data = None
         self.basename = None
         self.geoRef = None
         self.reconstruct = False
+        self.spacing_file = None
 
     def __repr__(self):
         lst = ["Calibration object:",
              "data= " + ", ".join(self.dataFiles),
              "dark= " + ", ".join(self.darkFiles),
              "flat= " + ", ".join(self.flatFiles)]
-        if self.pixelSize:
-            lst.append("pixels= " + ", ".join(self.pixelSize))
         lst += ["spline= %s" % self.splineFile,
              "gaussian= %s" % self.gaussianWidth]
         return os.linesep.join(lst)
@@ -109,8 +109,8 @@ class Recalibration(object):
         """
         from optparse import OptionParser
         parser = OptionParser()
-#        parser.add_option("-o", "--out", dest="outfile",
-#                          help="Filename where processed image is saved", metavar="FILE", default="merged.edf")
+        parser.add_option("-o", "--out", dest="outfile",
+                          help="Filename where processed image is saved", metavar="FILE", default="merged.edf")
         parser.add_option("-v", "--verbose",
                           action="store_true", dest="verbose", default=False,
                           help="switch to debug mode")
@@ -146,6 +146,8 @@ class Recalibration(object):
                       help="energy of the X-Ray beam in keV (hc=%skeV.A)" % hc, default=None)
         parser.add_option("-w", "--wavelength", dest="wavelength",
                       help="wavelength of the X-Ray beam in Angstrom", default=None)
+        parser.add_option("-l", "--distance", dest="distance",
+                      help="sample-detector distance in millimeter", default=None)
 
         (options, args) = parser.parse_args()
 
@@ -162,6 +164,15 @@ class Recalibration(object):
         self.dataFiles = [f for f in args if os.path.isfile(f)]
 
         self.pointfile = options.npt
+        self.spacing_file = options.spacing
+        self.ai = pyFAI.load(options.poni)
+        if options.wavelength:
+            self.ai.wavelength = 1e-10 * float(options.wavelength)
+        if options.distance:
+#            print "setting distance to %s" % options.distance
+            self.ai.dist = 1e-3 * float(options.distance)
+#            print 1e-3 * float(options.distance), self.ai.distance
+        print self.ai
 
 
     def preprocess(self):
@@ -171,19 +182,62 @@ class Recalibration(object):
         if len(self.dataFiles) > 1 or self.cutBackground or self.darkFiles or self.flatFiles:
             self.outfile = averageImages(self.dataFiles, self.outfile, minimum=self.cutBackground,
                                       darks=self.darkFiles, flats=self.flatFiles)
+
         else:
             self.outfile = self.dataFiles[0]
+        self.peakPicker = PeakPicker(self.outfile)
         self.basename = os.path.splitext(self.outfile)[0]
-        self.peakPicker = PeakPicker(self.outfile, reconst=self.reconstruct)
-        if self.gaussianWidth is not None:
-            self.peakPicker.massif.setValleySize(self.gaussianWidth)
-        else:
-            self.peakPicker.massif.initValleySize()
+        self.peakPicker.gui(log=True)
+        self.peakPicker.fig.canvas.draw()
 
     def extract_cpt(self):
         d = numpy.loadtxt(self.spacing_file)
-        tth = 2.0 * numpy.arcsin(ai.wavelength / (2.0 * d))
+        tth = 2.0 * numpy.arcsin(self.ai.wavelength / (2.0e-10 * d))
+        tth.sort()
+        tth = tth[numpy.where(numpy.isnan(tth) - 1)]
+        dtth = numpy.zeros((tth.size, 2))
+        delta = tth[1:] - tth[:-1]
+        dtth[:-1, 0] = delta
+        dtth[-1, 0] = delta[-1]
+        dtth[1:, 1] = delta
+        dtth[0, 1] = delta[0]
+        dtth = dtth.min(axis= -1)
+        ttha = self.ai.twoThetaArray(self.peakPicker.data.shape)
+        for i in range(tth.size):
+            mask = abs(ttha - tth[i]) <= dtth[i] / 4.0
+            size = mask.sum(dtype=int)
+            if size > 0:
+                self.peakPicker.massif_contour(mask)
+                self.peakPicker.fig.canvas.draw()
 
+                mean = self.peakPicker.data[mask].mean(dtype=numpy.float64)
+                std = self.peakPicker.data[mask].std(dtype=numpy.float64)
+                mask2 = (self.peakPicker.data > mean + std)
+                all_points = numpy.vstack(numpy.where(mask2)).T
+                numpy.random.shuffle(all_points)
+                size2 = all_points.shape[0]
+                keep = int(numpy.ceil(numpy.sqrt(size2)))
+                res = []
+                cnt = 0
+                logger.info("Extracting datapoint for ring %s (2theta = %.2f deg); searching for %i pts out of %i with I>%.1f" % (i, numpy.degrees(tth[i]), keep, size2, mean + std,))
+                for idx in all_points:
+                    out = self.peakPicker.massif.nearest_peak(idx)
+                    if out is not None:
+                        p0, p1 = out
+                        if mask[p0, p1]:
+                            if (out not in res) and (self.peakPicker.data[p0, p1] > mean + std):
+                                res.append(out)
+                                cnt = 0
+                    if len(res) >= keep or cnt > keep:
+                        print len(res), cnt
+                        break
+                    else:
+                        cnt += 1
+                self.peakPicker.points.append(res, tth[i])
+                self.peakPicker.display_points()
+                self.peakPicker.fig.canvas.draw()
+        self.peakPicker.points.save(self.basename + ".npt")
+        self.data = self.peakPicker.points.getList()
 
     def refine(self):
         if os.name == "nt" and self.peakPicker is not None:
@@ -191,12 +245,13 @@ class Recalibration(object):
             self.peakPicker.closeGUI()
         print self.splineFile
         if self.splineFile:
-            self.geoRef = GeometryRefinement(self.data, dist=0.1, splineFile=self.splineFile)
+            self.geoRef = GeometryRefinement(self.data, dist=self.ai.dist, poni1=self.ai.poni1, poni2=self.ai.poni2,
+                                             rot1=self.ai.rot1, rot2=self.ai.rot2, rot3=self.ai.rot3,
+                                             splineFile=self.splineFile)
         else:
-            self.geoRef = GeometryRefinement(self.data, dist=0.1, pixel1=self.pixelSize[0], pixel2=self.pixelSize[1])
-        paramfile = self.basename + ".poni"
-        if os.path.isfile(paramfile):
-            self.geoRef.load(paramfile)
+            self.geoRef = GeometryRefinement(self.data, dist=self.ai.dist, poni1=self.ai.poni1, poni2=self.ai.poni2,
+                                             rot1=self.ai.rot1, rot2=self.ai.rot2, rot3=self.ai.rot3,
+                                             pixel1=self.ai.pixel1, pixel2=self.ai.pixel2)
         print self.geoRef
         previous = sys.maxint
         finished = False
@@ -285,11 +340,12 @@ class Recalibration(object):
 #This is for debugin wtih rconsole
 c = None
 if __name__ == "__main__":
-    c = Calibration()
+    c = Recalibration()
     c.parse()
-    c.read_pixelsSize()
     c.preprocess()
-    c.gui_peakPicker()
+    c.extract_cpt()
+#    print c.peakPicker.points
+#    c.gui_peakPicker()
     c.refine()
     c.postProcess()
     raw_input("Press enter to quit")
