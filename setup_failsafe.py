@@ -45,12 +45,14 @@ build_ext = None
 
 ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.pyx", "ocl_base.cpp", "ocl_tools/ocl_tools.cc", "ocl_tools/ocl_tools_extended.cc", "ocl_tools/cLogger/cLogger.c", "ocl_xrpd1d_fullsplit.cpp")]
 
+cython_modules = ["histogram", "splitPixel", "splitBBox", "splitBBoxLUT", "relabel", "bilinear",
+            "_geometry", "reconstruct"]
 src = {}
 if build_ext:
-    for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear", '_geometry']:
+    for ext in cython_modules:
         src[ext] = os.path.join("src", ext + ".pyx")
 else:
-    for ext in ["histogram", "splitPixel", "splitBBox", "relabel", "bilinear", '_geometry']:
+    for ext in cython_modules:
         src[ext] = os.path.join("src", ext + ".c")
 
 installDir = os.path.join(get_python_lib(), "pyFAI")
@@ -102,6 +104,13 @@ _geometry_dic = dict(name="_geometry",
 #                    extra_compile_args=['-g'],
                     extra_link_args=['-fopenmp'])
 
+reconstruct_dic = dict(name="reconstruct",
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=[src['reconstruct']],
+                    extra_compile_args=['-fopenmp'],
+#                    extra_compile_args=['-g'],
+                    extra_link_args=['-fopenmp'])
+
 if sys.platform == "win32":
     data_files = [(installDir, [os.path.join("dll", "pthreadGC2.dll")])]
 ##    Remove OpenMP for windows
@@ -147,8 +156,8 @@ setup(name='pyFAI',
                    Extension(**split_dic),
                    Extension(**splitBBox_dic),
                    Extension(**bilinear_dic),
-                   Extension(**_geometry_dic)
-#                   Extension(**ocl_azim_dict)
+                   Extension(**_geometry_dic),
+                   Extension(**reconstruct_dic),
                    ],
       packages=["pyFAI"],
       package_dir={"pyFAI": "pyFAI-src" },
