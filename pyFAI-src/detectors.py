@@ -244,13 +244,13 @@ class Xpad_flat(Detector):
                         raise NotImplementedError("Generic Xpad detector does not know the max size ...")
                     self.mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
                     # workinng in dim0 = Y                   
-                    for i in range(self.MODULE_SIZE[0], self.max_shape[0], self.MODULE_SIZE[0]):
-                        self.mask[i - self.MODULE_SIZE[0], :] = 1
-                        self.mask[i - 1, :] = 1
+                    for i in range(0, self.max_shape[0], self.MODULE_SIZE[0]):
+                        self.mask[i, :] = 1
+                        self.mask[i + self.MODULE_SIZE[0] - 1, :] = 1
                     # workinng in dim1 = X
-                    for i in range(self.MODULE_SIZE[1], self.max_shape[1], self.MODULE_SIZE[1]):
-                        self.mask[:, i - self.MODULE_SIZE[1]] = 1
-                        self.mask[:, i - 1] = 1
+                    for i in range(0, self.max_shape[1], self.MODULE_SIZE[1]):
+                        self.mask[:, i ] = 1
+                        self.mask[:, i + self.MODULE_SIZE[1] - 1] = 1
         return self.mask
 
     def calc_cartesian_positions(self, d1=None, d2=None):

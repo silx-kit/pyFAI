@@ -52,7 +52,7 @@ TARGET_SIZE = 1024
 # PeakPicker
 ################################################################################
 class PeakPicker(object):
-    def __init__(self, strFilename, reconst=False):
+    def __init__(self, strFilename, reconst=False, mask=None):
         """
         @param: input image filename
         @param reconst: shall negative values be reconstucted (wipe out problems with pilatus gaps)
@@ -69,7 +69,9 @@ class PeakPicker(object):
         self.ct = None
         self.msp = None
         if reconstruct and (reconst is not False):
-            self.massif = Massif(reconstruct(self.data, self.data < 0))
+            if mask is None:
+                mask = self.data < 0
+            self.massif = Massif(reconstruct(self.data, mask))
         else:
             self.massif = Massif(self.data)
         self._sem = threading.Semaphore()

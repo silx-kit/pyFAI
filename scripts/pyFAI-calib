@@ -107,6 +107,7 @@ class Calibration(object):
         self.basename = None
         self.geoRef = None
         self.reconstruct = False
+        self.mask = None
         self.max_iter = 1000
 
     def __repr__(self):
@@ -147,6 +148,8 @@ class Calibration(object):
                       help="size of the pixel in micron", default=None)
         parser.add_option("-e", "--detector", dest="detector_name",
                       help="Detector name (instead of pixel size+spline)", default=None)
+        parser.add_option("-m", "--mask", dest="mask",
+                      help="file containing the mask (for image reconstruction)", default=None)
         parser.add_option("-n", "--npt", dest="npt",
                       help="file with datapoints saved", default=None)
         (options, args) = parser.parse_args()
@@ -172,6 +175,8 @@ class Calibration(object):
             print options.flat, type(options.flat)
             self.flatFiles = [f for f in options.flat.split(",") if os.path.isfile(f)]
         self.reconstruct = options.reconstruct
+        if options.mask and os.path.isfile(options.mask):
+            self.mask = fabio.open(options.mask).data
         self.dataFiles = [f for f in args if os.path.isfile(f)]
 
         self.pointfile = options.npt
@@ -181,7 +186,7 @@ class Calibration(object):
             if os.path.isfile(options.spline):
                 self.detector.splineFile = os.path.abspath(options.spline)
             else:
-                logger.error("Un known spline file %s" % (options.spline))
+                logger.error("Unknown spline file %s" % (options.spline))
         if options.pixel is not None:
             self.get_pixelSize(options.pixel)
 
@@ -228,7 +233,7 @@ class Calibration(object):
         else:
             self.outfile = self.dataFiles[0]
         self.basename = os.path.splitext(self.outfile)[0]
-        self.peakPicker = PeakPicker(self.outfile, reconst=self.reconstruct)
+        self.peakPicker = PeakPicker(self.outfile, reconst=self.reconstruct, mask=self.mask)
         if self.gaussianWidth is not None:
             self.peakPicker.massif.setValleySize(self.gaussianWidth)
         else:
@@ -324,9 +329,9 @@ class Calibration(object):
         fig4 = pylab.plt.figure()
         xrpd2 = fig4.add_subplot(111)
         t3 = time.time()
-        a, b = self.geoRef.xrpd(self.peakPicker.data, 1024, self.basename + ".xy")
+        a, b = self.geoRef.xrpd(self.peakPicker.data, 1024, self.basename + ".xy", mask=self.mask)
         t4 = time.time()
-        img = self.geoRef.xrpd2(self.peakPicker.data, 400, 360, self.basename + ".azim")[0]
+        img = self.geoRef.xrpd2(self.peakPicker.data, 400, 360, self.basename + ".azim", mask=self.mask)[0]
         t5 = time.time()
         print ("Timings:\n two theta array generation %.3fs\n diff Solid Angle  %.3fs\n\
      chi array generation %.3fs\n\
