@@ -107,6 +107,7 @@ class Calibration(object):
         self.basename = None
         self.geoRef = None
         self.reconstruct = False
+        self.max_iter = 1000
 
     def __repr__(self):
         lst = ["Calibration object:",
@@ -255,10 +256,12 @@ class Calibration(object):
         finished = False
         fig2 = None
         while not finished:
-            while previous > self.geoRef.chi2():
+            count = 0
+            while (previous > self.geoRef.chi2()) and (count < self.max_iter):
                 previous = self.geoRef.chi2()
                 self.geoRef.refine2(1000000)
                 print(self.geoRef)
+                count += 1
             print(self.geoRef)
             self.geoRef.save(self.basename + ".poni")
             self.geoRef.del_ttha()
