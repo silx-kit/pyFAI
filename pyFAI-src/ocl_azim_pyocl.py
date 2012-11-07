@@ -56,6 +56,7 @@ class Integrator1d(object):
         self._useFp64 = False
         self._devicetype = "gpu"
         self.filename = filename
+        self.lock = threading.Semaphore()
         #Those are pointer to memory on the GPU (or None if uninitialized
         self._cl_mem = {"tth":None,
                         "image":None,
@@ -81,6 +82,7 @@ class Integrator1d(object):
                             "dummyval_correction":None}
         self._ctx = None
         self._queue = None
+        self.do_solidangle = None
 
     def __dealloc__(self):
         self.tth_out = None
@@ -168,16 +170,16 @@ class Integrator1d(object):
 
 
     def loadTth(self, tth, dtth , tth_min=None, tth_max=None):
-        """Load the 2th arrays along with the min and max value.
+        """
+        Load the 2th arrays along with the min and max value.
+
         loadTth maybe be recalled at any time of the execution in order to update
         the 2th arrays.
 
         loadTth is required and must be called at least once after a configure()
         """
-        tthc = numpy.ascontiguousarray(tth.ravel(), dtype=numpy.float32)
-        dtthc = numpy.ascontiguousarray(dtth.ravel(), dtype=numpy.float32)
 
-        self._tth_max = (tthc + dtthc).max() * (1.0 + numpy.finfo(numpy.float32).eps)
+        self._tth_max = (tth + dtth).max() * (1.0 + numpy.finfo(numpy.float32).eps)
         self._tth_min = max(0.0, (tthc - dtthc).min())
         if tth_min is None:
             tth_min = self._tth_min
@@ -185,49 +187,53 @@ class Integrator1d(object):
         if tth_max is None:
             tth_max = self._tth_max
         self._calc_tth_out(tth_min, tth_max)
-        with nogil:
-            rc = self.cpp_integrator.loadTth(< float *> tthc.data, < float *> dtthc.data, < float > self.tth_min, < float > self.tth_max)
-        return rc
+        #TODO: setup buffer, upload tth and dtth
 
-    def setSolidAngle(self, numpy.ndarray solidAngle not None):
-        """ Enables SolidAngle correction and uploads the suitable array to the OpenCL device.
-         By default the program will assume no solidangle correction unless setSolidAngle() is called.
-         From then on, all integrations will be corrected via the SolidAngle array.
+    def setSolidAngle(self, solidAngle):
+        """
+        Enables SolidAngle correction and uploads the suitable array to the OpenCL device.
 
-         If the SolidAngle array needs to be changes, one may just call setSolidAngle() again
-         with that array
-         @param solidAngle: numpy array representing the solid angle of the given pixel
-         @return: integer
-         """
-        cdef numpy.ndarray[numpy.float32_t, ndim = 1]  cSolidAngle
-        cSolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float32)
+        By default the program will assume no solidangle correction unless setSolidAngle() is called.
+        From then on, all integrations will be corrected via the SolidAngle array.
 
-        return self.cpp_integrator.setSolidAngle(< float *> cSolidAngle.data)
+        If the SolidAngle array needs to be changes, one may just call setSolidAngle() again
+        with that array
+
+        @param solidAngle: numpy array representing the solid angle of the given pixel
+        """
+        cSolidANgle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float32)
+        with self.lock:
+            self.do_solidangle = True
+            if self._cl_mem["solidangle"] is not None:
+               self._cl_mem["solidangle"].release()
+            self._cl_mem["solidangle"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=cSolidANgle)
 
     def unsetSolidAngle(self):
         """
         Instructs the program to not perform solidangle correction from now on.
-        SolidAngle correction may be turned back on at any point
-        @return: integer
-        """
-        return self.cpp_integrator.unsetSolidAngle()
 
-    def setMask(self, numpy.ndarray mask not None):
+        SolidAngle correction may be turned back on at any point
+        """
+        with self.lock:
+            self.do_solidangle = False
+            if self._cl_mem["solidangle"] is not None:
+               self._cl_mem["solidangle"].release()
+               self._cl_mem["solidangle"] = None
+
+    def setMask(self, mask):
         """
         Enables the use of a Mask during integration. The Mask can be updated by
         recalling setMask at any point.
 
-        The Mask must be a PyFAI Mask. Pixels with 0 are masked out.
+        The Mask must be a PyFAI Mask. Pixels with 0 are masked out. TODO: check and invert!
         @param mask: numpy.ndarray of integer.
-        @return integer
         """
-        cdef numpy.ndarray[numpy.int_t, ndim = 1]  cMask
-        if mask.dtype == numpy.int:
-            cMask = numpy.ascontiguousarray(mask.ravel())
-        else:
-            cMask = numpy.ascontiguousarray(mask.astype(numpy.int).ravel())
-
-        return self.cpp_integrator.setMask(< int *> cMask.data)
+        cMask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int32)
+        with self.lock:
+            self.do_mask = True
+            if self._cl_mem["mask"] is not None:
+               self._cl_mem["mask"].release()
+            self._cl_mem["mask"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=cMask)
 
     def unsetMask(self):
         """
