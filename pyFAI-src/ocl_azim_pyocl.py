@@ -24,7 +24,7 @@
 #
 
 """
-Attempt to implements ocl_azim using pyopencl 
+Attempt to implements ocl_azim using pyopencl
 """
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
@@ -32,12 +32,13 @@ __date__ = "07/11/2012"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-import os
+import os, logging
 import threading
 import hashlib
 import numpy
 from opencl import ocl, pyopencl
 mf = pyopencl.mem_flags
+logger = logging.getLogger("pyFAI.ocl_azim_pyocl")
 
 class Integrator1d(object):
     """
@@ -55,15 +56,56 @@ class Integrator1d(object):
         self._useFp64 = False
         self._devicetype = "gpu"
         self.filename = filename
+        #Those are pointer to memory on the GPU (or None if uninitialized
+        self._cl_mem = {"tth":None,
+                        "image":None,
+                        "solidangle":None,
+                        "histogram":None,
+                        "uhistogram":None,
+                        "uweights":None,
+                        "span_ranges":None,
+                        "tth_min_max":None,
+                        "tth_delta":None,
+                        "mask":None,
+                        "dummyval":None,
+                        "dummyval_delta":None,
+                        "dark":None
+                        }
+        self._cl_kernels = {"integrate":None,
+                            "uimemset2":None,
+                            "imemset":None,
+                            "ui2f2":None,
+                            "get_spans":None,
+                            "group_spans":None,
+                            "solidangle_correction":None,
+                            "dummyval_correction":None}
+        self._ctx = None
+        self._queue = None
 
     def __dealloc__(self):
-        del self.ctth_out
-        del self.cpp_integrator
+        self.tth_out = None
+        self._free_buffers()
+        self._queue.finish()
+        self._queue = None
+        self._ctx = None
 
     def __repr__(self):
         return os.linesep.join(["Cython wrapper for ocl_xrpd1d.ocl_xrpd1D_fullsplit C++ class. Logging in %s" % self.filename,
                                 "device: %s, platform %s device %s 64bits:%s image size: %s histogram size: %s" % (self._devicetype, self._platformid, self._deviceid, self._useFp64, self._nData, self._nBins),
                                 ",\t ".join(["%s: %s" % (k, v) for k, v in self.get_status().items()])])
+
+    def _free_buffers(self):
+        """
+        free all memory allocated on the device
+        """
+        for buffer_name in self._cl_mem:
+            if self._cl_mem[buffer] is not None:
+                try:
+                    self._cl_mem[buffer].release()
+                    self._cl_mem[buffer] = None
+                except LogicError:
+                    logger.error("Error while freeing buffer %s" % buffer_name)
+
 
     def _calc_tth_out(self, lower, upper):
         """
@@ -104,21 +146,34 @@ class Integrator1d(object):
                 kernel = os.path.join(os.path.dirname(os.path.abspath(__file__)), kernel_name)
         else:
             kernel = str(kernel)
-        cdef char * ckernel = < char *> kernel
-        cdef int rc
-        with nogil:
-                rc = self.cpp_integrator.configure(ckernel)
-        return rc
 
-    def loadTth(self, numpy.ndarray tth not None, numpy.ndarray dtth not None, tth_min=None, tth_max=None):
+        try:
+            self._ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
+            self._queue = pyopencl.CommandQueue(self._ctx)
+            self._program = pyopencl.Program(self._ctx, open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "ocl_azim_LUT.cl")).read()).build()
+            if self.device_type == "CPU":
+                self._lut_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=lut)
+            else:
+                self._lut_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=lut.T.copy())
+            self.outData_buffer = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, numpy.dtype(numpy.float32).itemsize * self.bins)
+            self.outCount_buffer = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, numpy.dtype(numpy.float32).itemsize * self.bins)
+            self.outMerge_buffer = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, numpy.dtype(numpy.float32).itemsize * self.bins)
+            self.dark_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=1)
+            self.flat_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=1)
+            self.solidAngle_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=1)
+            self.polarization_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=1)
+        except pyopencl.MemoryError as error:
+            raise MemoryError(error)
+
+
+
+    def loadTth(self, tth, dtth , tth_min=None, tth_max=None):
         """Load the 2th arrays along with the min and max value.
         loadTth maybe be recalled at any time of the execution in order to update
         the 2th arrays.
 
         loadTth is required and must be called at least once after a configure()
         """
-        cdef int rc
-        cdef numpy.ndarray[numpy.float32_t, ndim = 1]  tthc, dtthc
         tthc = numpy.ascontiguousarray(tth.ravel(), dtype=numpy.float32)
         dtthc = numpy.ascontiguousarray(dtth.ravel(), dtype=numpy.float32)
 
@@ -219,10 +274,10 @@ class Integrator1d(object):
         """Take an image, integrate and return the histogram and weights
         set / unset and loadTth methods have a direct impact on the execute() method.
         All the rest of the methods will require at least a new configuration via configure()
-        
+
         @param image: image to be processed as a numpy array
         @return: tth_out, histogram, bins
-        
+
         TODO: to improve performances, the image should be casted to float32 in an optimal way:
         currently using numpy machinery but would be better if done in OpenCL
         """
