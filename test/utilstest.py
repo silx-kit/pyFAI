@@ -132,8 +132,12 @@ class UtilsTest(object):
         if not os.path.isfile(fullimagename):
             logger.info("Trying to download image %s, timeout set to %ss"
                           % (imagename, cls.timeout))
+            dictProxies = {}
             if "http_proxy" in os.environ:
-                dictProxies = {'http': os.environ["http_proxy"]}
+                dictProxies['http'] = os.environ["http_proxy"]
+            if "https_proxy" in os.environ:
+                dictProxies['https'] = os.environ["https_proxy"]
+            if dictProxies:
                 proxy_handler = urllib2.ProxyHandler(dictProxies)
                 opener = urllib2.build_opener(proxy_handler).open
             else:
