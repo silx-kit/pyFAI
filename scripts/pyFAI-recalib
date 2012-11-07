@@ -25,12 +25,9 @@
 #
 
 """
-pyFAI-rcalib
+pyFAI - recalib
 
 A tool for refining the geometry of a detector using a reference sample and a previously known calibration file.
-
-usage:
-  python2.6 pyFAI-recalib --poni=input.poni -dspacing=ref.d inputFile.edf
 
 
 """
@@ -39,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/10/2012"
+__date__ = "06/11/2012"
 __satus__ = "development"
 
 import os, sys, gc, threading, time, logging
@@ -146,8 +143,18 @@ class Recalibration(object):
                       help="energy of the X-Ray beam in keV (hc=%skeV.A)" % hc, default=None)
         parser.add_option("-w", "--wavelength", dest="wavelength",
                       help="wavelength of the X-Ray beam in Angstrom", default=None)
-        parser.add_option("-l", "--distance", dest="distance",
+        parser.add_option("-l", "--distance", dest="distance",type="float",
                       help="sample-detector distance in millimeter", default=None)
+        parser.add_option("--poni1", dest="poni1", type="float",
+                      help = "poni1 coordinate in meter", default = None)
+        parser.add_option("--poni2", dest="poni2", type="float",
+                      help="poni2 coordinate in meter", default=None)
+        parser.add_option("--rot1", dest="rot1", type="float",
+                      help="rot1 in radians", default=None)
+        parser.add_option("--rot2", dest="rot2", type="float",
+                      help="rot2 in radians", default=None)
+        parser.add_option("--rot3", dest="rot3", type="float",
+                      help="rot3 in radians", default=None)
 
         (options, args) = parser.parse_args()
 
@@ -167,11 +174,22 @@ class Recalibration(object):
         self.spacing_file = options.spacing
         self.ai = pyFAI.load(options.poni)
         if options.wavelength:
-            self.ai.wavelength = 1e-10 * float(options.wavelength)
+            self.ai.wavelength = 1e-10 * options.wavelength
+        elif options.energy:
+            self.ai.wavelength = 1e-10 * hc / options.energy
         if options.distance:
-#            print "setting distance to %s" % options.distance
-            self.ai.dist = 1e-3 * float(options.distance)
-#            print 1e-3 * float(options.distance), self.ai.distance
+            self.ai.dist = 1e-3 * options.distance
+        if options.poni1 is not None:
+            self.ai.poni1 = options.poni1
+        if options.poni2 is not None:
+            self.ai.poni2 = options.poni2
+        if options.rot1 is not None:
+            self.ai.rot1 = options.rot1
+        if options.rot2 is not None:
+            self.ai.rot2 = options.rot2
+        if options.rot3 is not None:
+            self.ai.rot3 = options.rot3
+
         print self.ai
 
 
