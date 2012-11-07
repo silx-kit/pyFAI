@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
@@ -33,10 +33,8 @@ import os
 import threading
 import hashlib
 import numpy
-import pyopencl
-from ocl_azim import OpenCL
+from opencl import ocl, pyopencl
 from splitBBoxLUT import HistoBBox1d
-ocl = OpenCL()
 mf = pyopencl.mem_flags
 
 class OCL_LUT_Integrator(object):

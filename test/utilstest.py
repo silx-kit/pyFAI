@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# coding: utf8
+# coding: utf-8
 #
 #    Project: pyFAI tests class utilities
 #             http://forge.epn-campus.eu/projects/azimuthal
