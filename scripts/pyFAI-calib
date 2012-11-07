@@ -61,6 +61,7 @@ import pylab
 from scipy.optimize import fmin, leastsq, fmin_slsqp, anneal
 from scipy.interpolate import interp2d
 import pyFAI
+from pyFAI.detectors import detector_factory, Detector
 from pyFAI.geometryRefinement import GeometryRefinement
 from pyFAI.peakPicker import PeakPicker
 from pyFAI.utils import averageImages
@@ -80,17 +81,25 @@ class Calibration(object):
     """
     class doing the calibration of frames
     """
-    def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None, splineFile=None, gaussianWidth=None):
+    def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None, splineFile=None, detector=None, gaussianWidth=None):
         """
         """
         self.dataFiles = dataFiles or []
         self.darkFiles = darkFiles or []
         self.flatFiles = flatFiles or []
         self.pointfile = None
-        self.pixelSize = pixelSize
         self.gaussianWidth = gaussianWidth
         self.labelPattern = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
-        self.splineFile = splineFile
+        if not detector:
+            self.detector = Detector()
+        if splineFile and os.path.isfile(splineFile):
+            self.detector.splineFile = os.path.abspath(splineFile)
+        if pixelSize:
+            if __len__ in pixelSize and len(pixelSize) >= 2:
+                self.detector.pixel1 = float(pixelSize[0])
+                self.detector.pixel2 = float(pixelSize[1])
+            else:
+                self.detector.pixel1 = self.detector.pixel2 = float(pixelSize)
         self.cutBackground = None
         self.outfile = "merged.edf"
         self.peakPicker = None
@@ -104,10 +113,8 @@ class Calibration(object):
              "data= " + ", ".join(self.dataFiles),
              "dark= " + ", ".join(self.darkFiles),
              "flat= " + ", ".join(self.flatFiles)]
-        if self.pixelSize:
-            lst.append("pixels= " + ", ".join(self.pixelSize))
-        lst += ["spline= %s" % self.splineFile,
-             "gaussian= %s" % self.gaussianWidth]
+        lst.append(self.detector.__repr__())
+        lst.append("gaussian= %s" % self.gaussianWidth)
         return os.linesep.join(lst)
 
     def parse(self):
@@ -137,6 +144,8 @@ class Calibration(object):
                       help="spline file describing the detector distortion", default=None)
         parser.add_option("-p", "--pixel", dest="pixel",
                       help="size of the pixel in micron", default=None)
+        parser.add_option("-e", "--detector", dest="detector_name",
+                      help="Detector name (instead of pixel size+spline)", default=None)
         parser.add_option("-n", "--npt", dest="npt",
                       help="file with datapoints saved", default=None)
         (options, args) = parser.parse_args()
@@ -165,12 +174,13 @@ class Calibration(object):
         self.dataFiles = [f for f in args if os.path.isfile(f)]
 
         self.pointfile = options.npt
+        if options.detector_name:
+            self.detector = detector_factory(options.detector_name)
         if options.spline:
             if os.path.isfile(options.spline):
-                self.splineFile = os.path.abspath(options.spline)
+                self.detector.splineFile = os.path.abspath(options.spline)
             else:
                 logger.error("Un known spline file %s" % (options.spline))
-                self.splineFile = None
         if options.pixel is not None:
             self.get_pixelSize(options.pixel)
 
@@ -193,15 +203,16 @@ class Calibration(object):
         else:
             logger.error("error in reading pixel size_0")
             return
-        self.pixelSize = pixelSizeXY[::-1]
+        self.detector.pixel1 = pixelSizeXY[1]
+        self.detector.pixel2 = pixelSizeXY[0]
 
     def read_pixelsSize(self):
         """Read the pixel size from prompt if not available"""
-        if (self.pixelSize is None) and (self.splineFile is None):
+        if (self.detector.pixel1 is None) and (self.detector.splineFile is None):
             pixelSize = [15, 15]
             ans = raw_input("Please enter the pixel size (in micron, comma separated X, Y , i.e. %.2e,%.2e) or a spline file: " % tuple(pixelSize)).strip()
             if os.path.isfile(ans):
-                self.splineFile = ans
+                self.detector.splineFile = ans
             else:
                 self.get_pixelSize(ans)
 
@@ -235,11 +246,7 @@ class Calibration(object):
         if os.name == "nt" and self.peakPicker is not None:
             logging.info("We are under windows, matplotlib is not able to display too many images without crashing, this is why the window showing the diffraction image is closed")
             self.peakPicker.closeGUI()
-        print self.splineFile
-        if self.splineFile:
-            self.geoRef = GeometryRefinement(self.data, dist=0.1, splineFile=self.splineFile)
-        else:
-            self.geoRef = GeometryRefinement(self.data, dist=0.1, pixel1=self.pixelSize[0], pixel2=self.pixelSize[1])
+        self.geoRef = GeometryRefinement(self.data, dist=0.1, detector=self.detector)
         paramfile = self.basename + ".poni"
         if os.path.isfile(paramfile):
             self.geoRef.load(paramfile)

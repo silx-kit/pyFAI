@@ -49,18 +49,18 @@ ROCA = "/opt/saxs/roca"
 # GeometryRefinement
 ################################################################################
 class GeometryRefinement(AzimuthalIntegrator):
-    def __init__(self, data, dist=1, poni1=None, poni2=None, rot1=0, rot2=0, rot3=0, pixel1=1, pixel2=1, splineFile=None):
+    def __init__(self, data, dist=1, poni1=None, poni2=None, rot1=0, rot2=0, rot3=0, pixel1=None, pixel2=None, splineFile=None, detector=None):
         """
         @param data: ndarray float64 shape = n, 3
             col0: pos in dim0 (in pixels)
             col1: pos in dim1 (in pixels)
             col2: associated tth value (in rad)
+
+        @param detector: name of the detector or Detector instance.
         """
         self.data = numpy.array(data, dtype="float64")
-        if (poni1 is None) and (poni2 is None):
-            AzimuthalIntegrator.__init__(self, dist, 0, 0, rot1, rot2, rot3, pixel1, pixel2, splineFile)
-        else:
-            AzimuthalIntegrator.__init__(self, dist, poni1, poni2 , rot1, rot2, rot3, pixel1, pixel2, splineFile)
+        AzimuthalIntegrator.__init__(self, dist, 0, 0, rot1, rot2, rot3, pixel1, pixel2, splineFile, detector)
+
         if (poni1 is None) and (poni2 is None):
             tth = self.data[:, 2]
             asrt = tth.argsort()
@@ -72,10 +72,10 @@ class GeometryRefinement(AzimuthalIntegrator):
             self.poni2 = center[1] * self.pixel2
         self._dist_min = 0
         self._dist_max = 10
-        self._poni1_min = -10000 * pixel1
-        self._poni1_max = 15000 * pixel1
-        self._poni2_min = -10000 * pixel2
-        self._poni2_max = 15000 * pixel2
+        self._poni1_min = -10000 * self.pixel1
+        self._poni1_max = 15000 * self.pixel1
+        self._poni2_min = -10000 * self.pixel2
+        self._poni2_max = 15000 * self.pixel2
         self._rot1_min = -pi
         self._rot1_max = pi
         self._rot2_min = -pi

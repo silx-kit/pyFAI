@@ -31,10 +31,11 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "12/04/2012"
 __status__ = "beta"
 
-import os, logging, threading
+import os, logging, threading, sys
 logger = logging.getLogger("pyFAI.detectors")
 import numpy
 from spline import Spline
+
 
 class Detector(object):
     "Generic class representing a 2D detector"
@@ -89,7 +90,8 @@ class Detector(object):
 
 
     def getPyFAI(self):
-        return {"pixel1":self.pixel1,
+        return {"detector":self.name,
+                "pixel1":self.pixel1,
                 "pixel2":self.pixel2,
                 "splineFile":self._splineFile}
 
@@ -99,6 +101,8 @@ class Detector(object):
                 "splineFile":self._splineFile}
 
     def setPyFAI(self, **kwarg):
+        if "detector" in kwarg:
+            self = detector_factory(kwarg["detector"])
         for kw in kwarg:
             if kw in ["pixel1", "pixel2"]:
                 setattr(self, kw, kwarg[kw])
@@ -167,9 +171,13 @@ class Pilatus(Detector):
     MODULE_GAP = (17, 7)
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         Detector.__init__(self, pixel1, pixel2)
+
+    def __repr__(self):
+        return "Detector %s\t PixelSize= %.3e, %.3e m" % (self.name, self.pixel1, self.pixel2)
+
     def get_mask(self):
         """
-        Returns a generic mask for Pilatus detecors...
+        Returns a generic mask for Pilatus detectors...
         """
         if self.mask is None:
             with self._sem:
@@ -212,3 +220,91 @@ class FReLoN(Detector):
     def __init__(self, splineFile):
         Detector.__init__(self, splineFile)
         self.max_shape = (self.spline.ymax - self.spline.ymin, self.spline.xmax - self.splinex.xmin)
+
+class Xpad_flat(Detector):
+    "Xpad detector: generic description for image with "
+    MODULE_SIZE = (120, 80)
+    MODULE_GAP = (3 + 3.57 * 1000 / 130, 3)#in pixels
+    def __init__(self, pixel1=130e-6, pixel2=130e-6):
+        Detector.__init__(self, pixel1, pixel2)
+        self.max_shape = (960, 560)
+    def __repr__(self):
+        return "Detector %s\t PixelSize= %.3e, %.3e m" % (self.name, self.pixel1, self.pixel2)
+
+    def get_mask(self):
+        """
+        Returns a generic mask for Xpad detectors...
+        discards the first line and raw form all modules: those are 2.5x bigger and often mis - behaving
+        """
+        if self.mask is None:
+            with self._sem:
+                if self.mask is None:
+                    if self.max_shape[0] is None or\
+                        self.max_shape[1] is None:
+                        raise NotImplementedError("Generic Xpad detector does not know the max size ...")
+                    self.mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
+                    # workinng in dim0 = Y                   
+                    for i in range(self.MODULE_SIZE[0], self.max_shape[0], self.MODULE_SIZE[0]):
+                        self.mask[i - self.MODULE_SIZE[0], :] = 1
+                        self.mask[i - 1, :] = 1
+                    # workinng in dim1 = X
+                    for i in range(self.MODULE_SIZE[1], self.max_shape[1], self.MODULE_SIZE[1]):
+                        self.mask[:, i - self.MODULE_SIZE[1]] = 1
+                        self.mask[:, i - 1] = 1
+        return self.mask
+
+    def calc_cartesian_positions(self, d1=None, d2=None):
+        """
+        Calculate the position of each pixel center in cartesian coordinate 
+        and in meter of a couple of coordinates. 
+        The half pixel offset is taken into account here !!!
+        
+        @param d1: ndarray of dimension 1 or 2 containing the Y pixel positions
+        @param d2: ndarray of dimension 1or 2 containing the X pixel positions
+
+        @return: 2-arrays of same shape as d1 & d2 with the position in meter
+
+        d1 and d2 must have the same shape, returned array will have the same shape.
+        """
+        if (d1 is None):
+            c1 = numpy.arange(self.max_shape[0])
+            for i in range(self.max_shape[0] // self.MODULE_SIZE[0]):
+                c1[i * self.MODULE_SIZE[0], (i + 1) * self.MODULE_SIZE[0]] += i * self.MODULE_GAP[0]
+        else:
+            c1 = d1 + (d1.astype(numpy.int64) // self.MODULE_SIZE[0]) * self.MODULE_GAP[0]
+        if (d2 is None):
+            c2 = numpy.arange(self.max_shape[1])
+            for i in range(self.max_shape[1] // self.MODULE_SIZE[1]):
+                c2[i * self.MODULE_SIZE[1], (i + 1) * self.MODULE_SIZE[1]] += i * self.MODULE_GAP[1]
+        else:
+            c2 = d2 + (d2.astype(numpy.int64) // self.MODULE_SIZE[1]) * self.MODULE_GAP[1]
+
+        p1 = self.pixel1 * (0.5 + c1)
+        p2 = self.pixel2 * (0.5 + c2)
+        return p1, p2
+
+ALL_DETECTORS = {# I prefer not allowing the instantiation of generic detectors
+                 #"detector": Detector,
+                 #"pilatus":Pilatus,
+                 "pilatus1m":Pilatus1M,
+                 "pilatus2m":Pilatus2M,
+                 "pilatus6m":Pilatus6M,
+                 "condor":Fairchild,
+                 "fairchild":Fairchild,
+                 "frelon":FReLoN,
+                 "xpad":Xpad_flat,
+                 "xpad_flat":Xpad_flat,
+                 }
+
+
+def detector_factory(name):
+    """
+    A kind of factory...
+    @param name: name of a detector
+    @return: an instance of the right detector
+    """
+    name = name.lower()
+    if name in ALL_DETECTORS:
+        return ALL_DETECTORS[name]()
+    else:
+        raise RuntimeError("Detector %s is unknown !" % (name))

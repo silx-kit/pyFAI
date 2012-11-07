@@ -31,7 +31,7 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "09/06/2012"
 __status__ = "beta"
 
-import os, threading, logging
+import os, threading, logging, types
 import numpy
 from numpy import   radians, degrees, arccos, arctan2, sin, cos, sqrt
 import detectors
@@ -125,7 +125,7 @@ class Geometry(object):
                             d2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3)))
     """
 
-    def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0, pixel1=1, pixel2=1, splineFile=None, detector=None):
+    def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0, pixel1=None, pixel2=None, splineFile=None, detector=None):
         """
         @param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
         @param poni1: coordinate of the point of normal incidence along the detector's first dimension, in meter
@@ -162,11 +162,17 @@ class Geometry(object):
         self._polarization = None
 
         if detector:
-            self.detector = detector
-        elif splineFile:
-            self.detector = detectors.Detector(splineFile=os.path.abspath(splineFile))
+            if type(detector) in types.StringTypes:
+                self.detector = detectors.detector_factory(detector)
+            else:
+                self.detector = detector
         else:
-            self.detector = detectors.Detector(pixel1=pixel1, pixel2=pixel2)
+            self.detector = detectors.Detector()
+        if splineFile:
+            self.detector.splineFile = os.path.abspath(splineFile)
+        elif pixel1 and pixel2:
+            self.detector.pixel1 = pixel1
+            self.detector.pixel2 = pixel2
 
 
     def __repr__(self):

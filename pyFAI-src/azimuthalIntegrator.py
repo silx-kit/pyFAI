@@ -70,7 +70,7 @@ class AzimuthalIntegrator(Geometry):
     All geometry calculation are done in the Geometry class
 
     """
-    def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0, pixel1=1, pixel2=1, splineFile=None):
+    def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0, pixel1=None, pixel2=None, splineFile=None, detector=None):
         """
         @param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
         @param poni1: coordinate of the point of normal incidence along the detector's first dimension, in meter
@@ -81,8 +81,9 @@ class AzimuthalIntegrator(Geometry):
         @param pixel1: pixel size of the fist dimension of the detector,  in meter
         @param pixel2: pixel size of the second dimension of the detector,  in meter
         @param splineFile: file containing the geometric distortion of the detector. Overrides the pixel size.
+        @param detector: name of the detector or Detector instance.
         """
-        Geometry.__init__(self, dist, poni1, poni2, rot1, rot2, rot3, pixel1, pixel2, splineFile)
+        Geometry.__init__(self, dist, poni1, poni2, rot1, rot2, rot3, pixel1, pixel2, splineFile, detector)
         self._nbPixCache = {} #key=shape, value: array
 
         self.maskfile = None    #just a placeholder
