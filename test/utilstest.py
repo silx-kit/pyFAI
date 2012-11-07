@@ -110,10 +110,12 @@ class UtilsTest(object):
             Function called after a timeout in the download part ...
             just raise an Exception.
             """
-            raise RuntimeError("""Could not automatically download test images!
-If you are behind a firewall, please set the environment variable http_proxy.
-Otherwise please try to download the images manually from
-""" + cls.url_base)
+            raise RuntimeError("Could not automatically \
+                download test images %s!\n \ If you are behind a firewall, \
+                please set both environment variable http_proxy and https_proxy.\
+                This even works under windows !\n \
+                Otherwise please try to download the images manually from \n \
+                %s/%s" % (cls.url_base, imagename))
 
 
     @classmethod
@@ -159,9 +161,10 @@ Otherwise please try to download the images manually from
             if not os.path.isfile(fullimagename):
                 raise RuntimeError("Could not automatically \
                 download test images %s!\n \ If you are behind a firewall, \
-                please set the environment variable http_proxy.\n \
+                please set both environment variable http_proxy and https_proxy.\
+                This even works under windows ! \n \
                 Otherwise please try to download the images manually from \n \
-                %s" % (cls.url_base, imagename))
+ % s /% s" % (cls.url_base, imagename))
 
         return fullimagename
 
