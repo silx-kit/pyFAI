@@ -43,7 +43,7 @@ from distutils.sysconfig import get_python_lib
 try:
     from Cython.Distutils import build_ext
     CYTHON = True
-except:
+except ImportError:
     CYTHON = False
 if CYTHON:
     try:
@@ -59,7 +59,8 @@ if not CYTHON:
 OCLINC = []
 OCLLIBDIR = []
 configparser = ConfigParser.ConfigParser()
-configparser.read([os.path.join(os.path.dirname(os.path.abspath(__file__)), "setup.cfg")])
+configparser.read([os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                "setup.cfg")])
 if "OpenCL" in configparser.sections():
     for item in configparser.items("OpenCL"):
         if item[0] == "include-dirs":
@@ -93,18 +94,18 @@ translator = {
 
 class build_ext_pyFAI(build_ext):
     def build_extensions(self):
-        if translator.has_key(self.compiler.compiler_type):
+        if self.compiler.compiler_type in translator:
             trans = translator[self.compiler.compiler_type]
         else:
             trans = translator['default']
 
         for e in self.extensions:
-            e.extra_compile_args = [ trans[a][0] if trans.has_key(a) else a
-                    for a in e.extra_compile_args]
-            e.extra_link_args = [ trans[a][1] if trans.has_key(a) else a
-                    for a in e.extra_link_args]
-            e.libraries = filter(None, [ trans[a] if trans.has_key(a) else None
-                    for a in e.libraries])
+            e.extra_compile_args = [ trans[a][0] if a in trans else a
+                                    for a in e.extra_compile_args]
+            e.extra_link_args = [ trans[a][1] if a in trans else a
+                                 for a in e.extra_link_args]
+            e.libraries = filter(None, [ trans[a] if a in trans else None
+                                        for a in e.libraries])
 
             # If you are confused look here:
             # print e, e.libraries
@@ -112,20 +113,19 @@ class build_ext_pyFAI(build_ext):
             #print e.extra_link_args
         build_ext.build_extensions(self)
 
-cython_modules = ["histogram", "splitPixel", "splitBBox", "splitBBoxLUT", "relabel", "bilinear",
-            "_geometry", "reconstruct"]
+cython_modules = ["histogram", "splitPixel", "splitBBox", "splitBBoxLUT",
+                  "relabel", "bilinear", "_geometry", "reconstruct"]
 
 src = {}
-if CYTHON:
-    ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.pyx", "ocl_base.cpp",
+ocl_src = [os.path.join(*(pp.split("/"))) for pp in ("ocl_base.cpp",
     "ocl_tools/ocl_tools.cc", "ocl_tools/ocl_tools_extended.cc",
     "ocl_tools/cLogger/cLogger.c", "ocl_xrpd1d_fullsplit.cpp")]
+if CYTHON:
+    ocl_azim = [os.path.join("openCL", i) for i in ["ocl_azim.pyx"] + ocl_src]
     for ext in cython_modules:
         src[ext] = os.path.join("src", ext + ".pyx")
 else:
-    ocl_azim = [os.path.join("openCL", i) for i in ("ocl_azim.cpp", "ocl_base.cpp",
-    "ocl_tools/ocl_tools.cc", "ocl_tools/ocl_tools_extended.cc",
-    "ocl_tools/cLogger/cLogger.c", "ocl_xrpd1d_fullsplit.cpp")]
+    ocl_azim = [os.path.join("openCL", i) for i in ["ocl_azim.cpp"] + ocl_src]
     for ext in cython_modules:
         src[ext] = os.path.join("src", ext + ".c")
 
@@ -141,65 +141,65 @@ for i in "openCL/ocl_tools/cLogger".split("/"):
 
 
 hist_dic = dict(name="histogram",
-                    include_dirs=get_numpy_include_dirs(),
-                    sources=[src['histogram']],
-                    extra_compile_args=['openmp'],
-                    extra_link_args=['openmp'],
-                    )
+                include_dirs = get_numpy_include_dirs(),
+                sources = [src['histogram']],
+                extra_compile_args = ['openmp'],
+                extra_link_args = ['openmp'],
+                )
 
 split_dic = dict(name="splitPixel",
-                    include_dirs=get_numpy_include_dirs(),
-                    sources=[src['splitPixel']],
-#                    extra_compile_args=['-fopenmp'],
-#                    extra_link_args=['-fopenmp'],
-                    )
+                 include_dirs = get_numpy_include_dirs(),
+                 sources = [src['splitPixel']],
+#                extra_compile_args=['-fopenmp'],
+#                extra_link_args=['-fopenmp'],
+                 )
 
 splitBBox_dic = dict(name="splitBBox",
-                    include_dirs=get_numpy_include_dirs(),
-                    sources=[src['splitBBox']],
+                     include_dirs = get_numpy_include_dirs(),
+                     sources = [src['splitBBox']],
 #                    extra_compile_args=['-g'],
 #                    extra_link_args=['-fopenmp'])
-                    )
+                     )
 splitBBoxLUT_dic = dict(name="splitBBoxLUT",
-                    include_dirs=get_numpy_include_dirs(),
-                    sources=[src['splitBBoxLUT']],
-#                    extra_compile_args=['-g'],
-                    extra_link_args=['-fopenmp']
-                    )
+                        include_dirs = get_numpy_include_dirs(),
+                        sources = [src['splitBBoxLUT']],
+#                       extra_compile_args=['-g'],
+                        extra_link_args = ['-fopenmp']
+                        )
 
 relabel_dic = dict(name="relabel",
-                        include_dirs=get_numpy_include_dirs(),
-                        sources=[src['relabel']])
+                   include_dirs = get_numpy_include_dirs(),
+                   sources = [src['relabel']])
 
 bilinear_dic = dict(name="bilinear",
-                        include_dirs=get_numpy_include_dirs(),
-                        sources=[src['bilinear']])
+                    include_dirs = get_numpy_include_dirs(),
+                    sources = [src['bilinear']])
 
 ocl_azim_dict = dict(name="ocl_azim",
-                    sources=ocl_azim,
-                    include_dirs=openCL + get_numpy_include_dirs(),
-                    library_dirs=OCLLIBDIR,
-                    language="c++",
-                    libraries=[ "stdc++", "OpenCL"] # "stdc++"
-                    )
+                     sources = ocl_azim,
+                     include_dirs = openCL + get_numpy_include_dirs(),
+                     library_dirs = OCLLIBDIR,
+                     language = "c++",
+                     libraries = [ "stdc++", "OpenCL"] # "stdc++"
+                     )
 
 _geometry_dic = dict(name="_geometry",
-                    include_dirs=get_numpy_include_dirs(),
-                    sources=[src['_geometry']],
-                    extra_compile_args=['openmp'],
+                     include_dirs = get_numpy_include_dirs(),
+                     sources = [src['_geometry']],
+                     extra_compile_args = ['openmp'],
 #                    extra_compile_args=['-g'],
-                    extra_link_args=['openmp'])
+                     extra_link_args = ['openmp'])
 
 reconstruct_dic = dict(name="reconstruct",
-                    include_dirs=get_numpy_include_dirs(),
-                    sources=[src['reconstruct']],
-                    extra_compile_args=['openmp'],
-#                    extra_compile_args=['-g'],
-                    extra_link_args=['openmp'])
+                       include_dirs = get_numpy_include_dirs(),
+                       sources = [src['reconstruct']],
+                       extra_compile_args = ['openmp'],
+#                      extra_compile_args=['-g'],
+                       extra_link_args = ['openmp'])
 
 
 if sys.platform == "win32":
-    # This seems to be from mingw32/gomp?
+    # This is for mingw32/gomp?
     data_files = [(installDir, [os.path.join("dll", "pthreadGC2.dll")])]
     root = os.path.dirname(os.path.abspath(__file__))
     tocopy_files = []
@@ -262,7 +262,7 @@ try:
 except ImportError:
     print("""pyFAI needs fabIO for all image reading and writing.
 This python module can be found on:
-http://sourceforge.net/projects/fable/files/fabio/0.0.7/""")
+http: // sourceforge.net / projects / fable / files / fabio / 0.1.0 / """)
 
 
 ################################################################################
