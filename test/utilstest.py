@@ -104,17 +104,18 @@ class UtilsTest(object):
 
 
     @classmethod
-    def timeoutDuringDownload(cls):
+    def timeoutDuringDownload(cls, imagename=None):
             """
             Function called after a timeout in the download part ...
             just raise an Exception.
             """
-            imagename = "2252/testimages.tar.bz2"
+            if imagename is None:
+                imagename = "2252/testimages.tar.bz2 unzip it "
             raise RuntimeError("Could not automatically \
-                download test images %s!\n \ If you are behind a firewall, \
+                download test images!\n \ If you are behind a firewall, \
                 please set both environment variable http_proxy and https_proxy.\
                 This even works under windows ! \n \
-                Otherwise please try to download the images manually from \n %s/%s\nand unzip it in test / testimages." % (cls.url_base, cls.url_base, imagename))
+                Otherwise please try to download the images manually from \n %s/%s and put it in in test/testimages." % (cls.url_base, imagename))
 
 
 
@@ -135,6 +136,7 @@ class UtilsTest(object):
             dictProxies = {}
             if "http_proxy" in os.environ:
                 dictProxies['http'] = os.environ["http_proxy"]
+                dictProxies['https'] = os.environ["http_proxy"]
             if "https_proxy" in os.environ:
                 dictProxies['https'] = os.environ["https_proxy"]
             if dictProxies:
@@ -144,7 +146,7 @@ class UtilsTest(object):
                 opener = urllib2.urlopen
 
 #           Nota: since python2.6 there is a timeout in the urllib2
-            timer = threading.Timer(cls.timeout + 1, cls.timeoutDuringDownload)
+            timer = threading.Timer(cls.timeout + 1, cls.timeoutDuringDownload, args=[imagename])
             timer.start()
             logger.info("wget %s/%s" % (cls.url_base, imagename))
             if sys.version > (2, 6):
@@ -167,7 +169,7 @@ class UtilsTest(object):
                 download test images %s!\n \ If you are behind a firewall, \
                 please set both environment variable http_proxy and https_proxy.\
                 This even works under windows ! \n \
-                Otherwise please try to download the images manually from \n%s/%s" % (cls.url_base, cls.url_base, imagename))
+                Otherwise please try to download the images manually from \n%s/%s" % (imagename, cls.url_base, imagename))
 
         return fullimagename
 
