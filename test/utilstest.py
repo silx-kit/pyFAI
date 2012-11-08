@@ -6,7 +6,7 @@
 #
 #    File: "$Id:$"
 #
-#    Copyright (C) 2010 European Synchrotron Radiation Facility
+#    Copyright (C) 2010-2012 European Synchrotron Radiation Facility
 #                       Grenoble, France
 #
 #    Principal authors: Jérôme KIEFFER (jerome.kieffer@esrf.fr)
@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__data__ = "2012-09-16"
+__data__ = "2012-11-08"
 import os, imp, sys, subprocess, threading
 import distutils.util
 import logging
@@ -42,18 +42,19 @@ import shutil
 logger = logging.getLogger("pyFAI.utilstest")
 
 def copy(infile, outfile):
-    "link or copy file accoding to the OS"
+    "link or copy file according to the OS"
     if "link" in dir(os):
-        os.link(infile,outfile)
+        os.link(infile, outfile)
     else:
-        shutil.copy(infile,outfile)
+        shutil.copy(infile, outfile)
 
 class UtilsTest(object):
     """
     Static class providing useful stuff for preparing tests.
     """
     timeout = 60        #timeout in seconds for downloading images
-    url_base = "http://forge.epn-campus.eu/attachments/download"
+#    url_base = "http://forge.epn-campus.eu/attachments/download"
+    url_base = "https://forge.epn-campus.eu/attachments/download"
     test_home = os.path.dirname(__file__)
     name = "pyFAI"
     image_home = os.path.join(test_home, "testimages")
@@ -102,20 +103,19 @@ class UtilsTest(object):
         logger.info("pyFAI loaded from %s" % pyFAI.__file__)
 
 
-
-
     @classmethod
     def timeoutDuringDownload(cls):
             """
             Function called after a timeout in the download part ...
             just raise an Exception.
             """
+            imagename = "2252/testimages.tar.bz2"
             raise RuntimeError("Could not automatically \
                 download test images %s!\n \ If you are behind a firewall, \
                 please set both environment variable http_proxy and https_proxy.\
-                This even works under windows !\n \
-                Otherwise please try to download the images manually from \n \
-                %s/%s" % (cls.url_base, imagename))
+                This even works under windows ! \n \
+                Otherwise please try to download the images manually from \n %s/%s\nand unzip it in test / testimages." % (cls.url_base, cls.url_base, imagename))
+
 
 
     @classmethod
@@ -167,8 +167,7 @@ class UtilsTest(object):
                 download test images %s!\n \ If you are behind a firewall, \
                 please set both environment variable http_proxy and https_proxy.\
                 This even works under windows ! \n \
-                Otherwise please try to download the images manually from \n \
- % s /% s" % (cls.url_base, imagename))
+                Otherwise please try to download the images manually from \n%s/%s" % (cls.url_base, cls.url_base, imagename))
 
         return fullimagename
 
