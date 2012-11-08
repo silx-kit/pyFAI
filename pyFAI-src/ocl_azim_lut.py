@@ -35,7 +35,10 @@ import hashlib
 import numpy
 from opencl import ocl, pyopencl
 from splitBBoxLUT import HistoBBox1d
-mf = pyopencl.mem_flags
+if pyopencl:
+    mf = pyopencl.mem_flags
+else:
+    raise ImportError("pyopencl is not installed")
 
 class OCL_LUT_Integrator(object):
     def __init__(self, lut, devicetype="all", platformid=None, deviceid=None, checksum=None):

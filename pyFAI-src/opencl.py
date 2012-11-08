@@ -90,21 +90,11 @@ class OpenCL(object):
                 extensions = device.extensions
                 if (pypl.vendor == "NVIDIA Corporation") and ('cl_khr_fp64' in extensions):
                                 extensions += ' cl_khr_int64_base_atomics cl_khr_int64_extended_atomics'
-                if device.type == 4:
-                    devtype = "GPU"
-                elif device.type == 2:
-                    devtype = "CPU"
-                elif device.type == 8:
-                    devtype = "ACC"
-                else:
-                    devtype = "DEF"
-
+                devtype = pyopencl.device_type.to_string(device.type)
                 pydev = Device(device.name, devtype, device.version, device.driver_version, extensions, device.global_mem_size)
                 pypl.add_device(pydev)
-
             platforms.append(pypl)
         del platform, device, pypl, devtype, extensions, pydev
-
 
 
     def __repr__(self):
@@ -133,6 +123,38 @@ class OpenCL(object):
                         if found:
                             return platformid, deviceid
         return None
+
+    def create_context(self, devicetype="ALL", useFp64=False, platformid=None, deviceid=None):
+        """ 
+        Choose a device and initiate a context. 
+        
+        Devicetypes can be GPU,gpu,CPU,cpu,DEF,ACC,ALL.
+        Suggested are GPU,CPU. 
+        For each setting to work there must be such an OpenCL device and properly installed.
+        E.g.: If Nvidia driver is installed, GPU will succeed but CPU will fail. The AMD SDK kit is required for CPU via OpenCL.
+        @param devicetype: string in ["cpu","gpu", "all", "acc"]
+        @param useFp64: boolean specifying if double precision will be used
+        @param platformid: integer
+        @param devid: integer
+        @return: OpenCL context on the selected device
+        """
+        if (platformid is not None) and (deviceid is not None):
+            platformid = int(platformid)
+            deviceid = int(deviceid)
+        else:
+            if useFp64:
+                ids = ocl.select_device(type=devicetype, extensions=["cl_khr_int64_base_atomics"])
+            else:
+                ids = ocl.select_device(type=devicetype)
+            if ids:
+                platformid = ids[0]
+                deviceid = ids[1]
+        if (platformid is not None) and  (deviceid is not None):
+            ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
+        else:
+            logger.warn("Last chance to get an OpenCL device ... probably not the one requested")
+            ctx = pyopencl.create_some_context(interactive=False)
+        return ctx
 
 if pyopencl:
     ocl = OpenCL()
