@@ -141,61 +141,61 @@ for i in "openCL/ocl_tools/cLogger".split("/"):
 
 
 hist_dic = dict(name="histogram",
-                include_dirs = get_numpy_include_dirs(),
-                sources = [src['histogram']],
-                extra_compile_args = ['openmp'],
-                extra_link_args = ['openmp'],
+                include_dirs=get_numpy_include_dirs(),
+                sources=[src['histogram']],
+                extra_compile_args=['openmp'],
+                extra_link_args=['openmp'],
                 )
 
 split_dic = dict(name="splitPixel",
-                 include_dirs = get_numpy_include_dirs(),
-                 sources = [src['splitPixel']],
+                 include_dirs=get_numpy_include_dirs(),
+                 sources=[src['splitPixel']],
 #                extra_compile_args=['-fopenmp'],
 #                extra_link_args=['-fopenmp'],
                  )
 
 splitBBox_dic = dict(name="splitBBox",
-                     include_dirs = get_numpy_include_dirs(),
-                     sources = [src['splitBBox']],
+                     include_dirs=get_numpy_include_dirs(),
+                     sources=[src['splitBBox']],
 #                    extra_compile_args=['-g'],
 #                    extra_link_args=['-fopenmp'])
                      )
 splitBBoxLUT_dic = dict(name="splitBBoxLUT",
-                        include_dirs = get_numpy_include_dirs(),
-                        sources = [src['splitBBoxLUT']],
+                        include_dirs=get_numpy_include_dirs(),
+                        sources=[src['splitBBoxLUT']],
 #                       extra_compile_args=['-g'],
-                        extra_link_args = ['-fopenmp']
+                        extra_link_args=['-fopenmp']
                         )
 
 relabel_dic = dict(name="relabel",
-                   include_dirs = get_numpy_include_dirs(),
-                   sources = [src['relabel']])
+                   include_dirs=get_numpy_include_dirs(),
+                   sources=[src['relabel']])
 
 bilinear_dic = dict(name="bilinear",
-                    include_dirs = get_numpy_include_dirs(),
-                    sources = [src['bilinear']])
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=[src['bilinear']])
 
 ocl_azim_dict = dict(name="ocl_azim",
-                     sources = ocl_azim,
-                     include_dirs = openCL + get_numpy_include_dirs(),
-                     library_dirs = OCLLIBDIR,
-                     language = "c++",
-                     libraries = [ "stdc++", "OpenCL"] # "stdc++"
+                     sources=ocl_azim,
+                     include_dirs=openCL + get_numpy_include_dirs(),
+                     library_dirs=OCLLIBDIR,
+                     language="c++",
+                     libraries=[ "stdc++", "OpenCL"] # "stdc++"
                      )
 
 _geometry_dic = dict(name="_geometry",
-                     include_dirs = get_numpy_include_dirs(),
-                     sources = [src['_geometry']],
-                     extra_compile_args = ['openmp'],
+                     include_dirs=get_numpy_include_dirs(),
+                     sources=[src['_geometry']],
+                     extra_compile_args=['openmp'],
 #                    extra_compile_args=['-g'],
-                     extra_link_args = ['openmp'])
+                     extra_link_args=['openmp'])
 
 reconstruct_dic = dict(name="reconstruct",
-                       include_dirs = get_numpy_include_dirs(),
-                       sources = [src['reconstruct']],
-                       extra_compile_args = ['openmp'],
+                       include_dirs=get_numpy_include_dirs(),
+                       sources=[src['reconstruct']],
+                       extra_compile_args=['openmp'],
 #                      extra_compile_args=['-g'],
-                       extra_link_args = ['openmp'])
+                       extra_link_args=['openmp'])
 
 
 if sys.platform == "win32":
@@ -230,7 +230,7 @@ version = [eval(l.split("=")[1]) for l in open(os.path.join(os.path.dirname(
 
 setup(name='pyFAI',
       version=version,
-      author="Jérôme Kieffer (python), Peter Boesecke (geometry), Manuel Sanchez del Rio (algorithm), Vicente Armando Sole (algorithm), Dimitris Karkoulis (GPU) and Jon Wright (adaptations) """,
+      author="Jérôme Kieffer (python), Peter Boesecke (geometry), Manuel Sanchez del Rio (algorithm), Vicente Armando Sole (algorithm), Dimitris Karkoulis (GPU) and Jon Wright (adaptations) ",
       author_email="jerome.kieffer@esrf.fr",
       description='Python implementation of fast azimuthal integration',
       url="http://forge.epn-campus.eu/azimuthal",
