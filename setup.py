@@ -40,6 +40,9 @@ from distutils.core import setup, Extension
 from numpy.distutils.misc_util import get_numpy_include_dirs
 from distutils.sysconfig import get_python_lib
 
+################################################################################
+# Check for Cython
+################################################################################
 try:
     from Cython.Distutils import build_ext
     CYTHON = True
@@ -53,20 +56,161 @@ if CYTHON:
     else:
         if Cython.Compiler.Version.version < "0.17":
             CYTHON = False
-if not CYTHON:
+
+if CYTHON:
+    cython_c_ext = ".pyx"
+else:
+    cython_c_ext = ".c"
     from distutils.command.build_ext import build_ext
 
-OCLINC = []
-OCLLIBDIR = []
-configparser = ConfigParser.ConfigParser()
-configparser.read([os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                "setup.cfg")])
-if "OpenCL" in configparser.sections():
-    for item in configparser.items("OpenCL"):
-        if item[0] == "include-dirs":
-            OCLINC += item[1].split(os.pathsep)
-        elif item[0] == "library-dirs":
-            OCLLIBDIR += item[1].split(os.pathsep)
+################################################################################
+# check for OpenCL 
+################################################################################
+
+# temporary until pyopencl is used
+if "--without-opencl" in sys.argv:
+    OPENCL = None
+    sys.argv.remove('--without-opencl')
+else:
+    print("WARNING Compiling also the OpenCL extensions, \
+        add the --without-opencl option to skip this compilation")
+    OPENCL = True
+if OPENCL:
+    OCLINC = []
+    OCLLIBDIR = []
+    configparser = ConfigParser.ConfigParser()
+    configparser.read([os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                    "setup.cfg")])
+    if "OpenCL" in configparser.sections():
+        for item in configparser.items("OpenCL"):
+            if item[0] == "include-dirs":
+                OCLINC += item[1].split(os.pathsep)
+            elif item[0] == "library-dirs":
+                OCLLIBDIR += item[1].split(os.pathsep)
+
+
+
+################################################################################
+# pyFAI extensions 
+################################################################################
+cython_modules = ["histogram", "splitPixel", "splitBBox", "splitBBoxLUT",
+                  "relabel", "bilinear", "_geometry", "reconstruct"]
+src = {}
+for ext in cython_modules:
+    src[ext] = os.path.join("src", ext + cython_c_ext)
+
+_geometry_dic = dict(name="_geometry",
+                     include_dirs=get_numpy_include_dirs(),
+                     sources=[src['_geometry']],
+                     extra_compile_args=['openmp'],
+#                    extra_compile_args=['-g'],
+                     extra_link_args=['openmp'])
+
+reconstruct_dic = dict(name="reconstruct",
+                       include_dirs=get_numpy_include_dirs(),
+                       sources=[src['reconstruct']],
+                       extra_compile_args=['openmp'],
+#                      extra_compile_args=['-g'],
+                       extra_link_args=['openmp'])
+
+histogram_dic = dict(name="histogram",
+                include_dirs=get_numpy_include_dirs(),
+                sources=[src['histogram']],
+                extra_compile_args=['openmp'],
+                extra_link_args=['openmp'],
+                )
+
+splitPixel_dic = dict(name="splitPixel",
+                 include_dirs=get_numpy_include_dirs(),
+                 sources=[src['splitPixel']],
+#                extra_compile_args=['-fopenmp'],
+#                extra_link_args=['-fopenmp'],
+                 )
+
+splitBBox_dic = dict(name="splitBBox",
+                     include_dirs=get_numpy_include_dirs(),
+                     sources=[src['splitBBox']],
+#                    extra_compile_args=['-g'],
+#                    extra_link_args=['-fopenmp'])
+                     )
+splitBBoxLUT_dic = dict(name="splitBBoxLUT",
+                        include_dirs=get_numpy_include_dirs(),
+                        sources=[src['splitBBoxLUT']],
+#                       extra_compile_args=['-g'],
+                        extra_link_args=['-fopenmp']
+                        )
+
+relabel_dic = dict(name="relabel",
+                   include_dirs=get_numpy_include_dirs(),
+                   sources=[src['relabel']])
+
+bilinear_dic = dict(name="bilinear",
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=[src['bilinear']])
+
+ext_modules = [histogram_dic, splitPixel_dic, splitBBox_dic, splitBBoxLUT_dic, relabel_dic,
+               _geometry_dic, reconstruct_dic]
+
+
+if OPENCL:
+    ocl_src = [os.path.join(*(pp.split("/"))) for pp in ("ocl_base.cpp",
+        "ocl_tools/ocl_tools.cc", "ocl_tools/ocl_tools_extended.cc",
+        "ocl_tools/cLogger/cLogger.c", "ocl_xrpd1d_fullsplit.cpp")]
+    if CYTHON:
+        ocl_src.append("ocl_azim.pyx")
+    else:
+        ocl_src.append("ocl_azim.cpp")
+    ocl_azim = [os.path.join("openCL", i) for i in  ocl_src]
+    openCL = OCLINC
+    j = ""
+    for i in "openCL/ocl_tools/cLogger".split("/"):
+        j = os.path.join(j, i)
+        openCL.insert(0, j)
+    ocl_azim_dict = dict(name="ocl_azim",
+                     sources=ocl_azim,
+                     include_dirs=openCL + get_numpy_include_dirs(),
+                     library_dirs=OCLLIBDIR,
+                     language="c++",
+                     libraries=[ "stdc++", "OpenCL"] # "stdc++"
+                     )
+    ext_modules.append(ocl_azim_dict)
+
+################################################################################
+# scripts and data installation 
+################################################################################
+
+installDir = os.path.join(get_python_lib(), "pyFAI")
+
+if sys.platform == "win32":
+    # This is for mingw32/gomp?
+    data_files = [(installDir, [os.path.join("dll", "pthreadGC2.dll")])]
+    root = os.path.dirname(os.path.abspath(__file__))
+    tocopy_files = []
+    script_files = []
+    for i in os.listdir(os.path.join(root, "scripts")):
+        if os.path.isfile(os.path.join(root, "scripts", i)):
+            if i.endswith(".py"):
+                script_files.append(os.path.join("scripts", i))
+            else:
+                tocopy_files.append(os.path.join("scripts", i))
+    for i in tocopy_files:
+        filein = os.path.join(root, i)
+        if (filein + ".py") not in script_files:
+            shutil.copyfile(filein, filein + ".py")
+            script_files.append(filein + ".py")
+
+else:
+    data_files = []
+    script_files = glob.glob("scripts/*")
+
+
+data_files += [(installDir, [os.path.join('openCL', o) for o in [
+      "ocl_azim_kernel_2.cl", "ocl_azim_kernel2d_2.cl", "ocl_azim_LUT.cl"]])]
+
+version = [eval(l.split("=")[1]) for l in open(os.path.join(os.path.dirname(
+    os.path.abspath(__file__)), "pyFAI-src", "__init__.py"))
+    if l.strip().startswith("version")][0]
+
 
 # We subclass the build_ext class in order to handle compiler flags
 # for openmp and opencl etc in a cross platform way
@@ -113,120 +257,7 @@ class build_ext_pyFAI(build_ext):
             #print e.extra_link_args
         build_ext.build_extensions(self)
 
-cython_modules = ["histogram", "splitPixel", "splitBBox", "splitBBoxLUT",
-                  "relabel", "bilinear", "_geometry", "reconstruct"]
 
-src = {}
-ocl_src = [os.path.join(*(pp.split("/"))) for pp in ("ocl_base.cpp",
-    "ocl_tools/ocl_tools.cc", "ocl_tools/ocl_tools_extended.cc",
-    "ocl_tools/cLogger/cLogger.c", "ocl_xrpd1d_fullsplit.cpp")]
-if CYTHON:
-    ocl_azim = [os.path.join("openCL", i) for i in ["ocl_azim.pyx"] + ocl_src]
-    for ext in cython_modules:
-        src[ext] = os.path.join("src", ext + ".pyx")
-else:
-    ocl_azim = [os.path.join("openCL", i) for i in ["ocl_azim.cpp"] + ocl_src]
-    for ext in cython_modules:
-        src[ext] = os.path.join("src", ext + ".c")
-
-installDir = os.path.join(get_python_lib(), "pyFAI")
-
-openCL = OCLINC
-j = ""
-for i in "openCL/ocl_tools/cLogger".split("/"):
-    j = os.path.join(j, i)
-    openCL.insert(0, j)
-
-
-
-
-hist_dic = dict(name="histogram",
-                include_dirs=get_numpy_include_dirs(),
-                sources=[src['histogram']],
-                extra_compile_args=['openmp'],
-                extra_link_args=['openmp'],
-                )
-
-split_dic = dict(name="splitPixel",
-                 include_dirs=get_numpy_include_dirs(),
-                 sources=[src['splitPixel']],
-#                extra_compile_args=['-fopenmp'],
-#                extra_link_args=['-fopenmp'],
-                 )
-
-splitBBox_dic = dict(name="splitBBox",
-                     include_dirs=get_numpy_include_dirs(),
-                     sources=[src['splitBBox']],
-#                    extra_compile_args=['-g'],
-#                    extra_link_args=['-fopenmp'])
-                     )
-splitBBoxLUT_dic = dict(name="splitBBoxLUT",
-                        include_dirs=get_numpy_include_dirs(),
-                        sources=[src['splitBBoxLUT']],
-#                       extra_compile_args=['-g'],
-                        extra_link_args=['-fopenmp']
-                        )
-
-relabel_dic = dict(name="relabel",
-                   include_dirs=get_numpy_include_dirs(),
-                   sources=[src['relabel']])
-
-bilinear_dic = dict(name="bilinear",
-                    include_dirs=get_numpy_include_dirs(),
-                    sources=[src['bilinear']])
-
-ocl_azim_dict = dict(name="ocl_azim",
-                     sources=ocl_azim,
-                     include_dirs=openCL + get_numpy_include_dirs(),
-                     library_dirs=OCLLIBDIR,
-                     language="c++",
-                     libraries=[ "stdc++", "OpenCL"] # "stdc++"
-                     )
-
-_geometry_dic = dict(name="_geometry",
-                     include_dirs=get_numpy_include_dirs(),
-                     sources=[src['_geometry']],
-                     extra_compile_args=['openmp'],
-#                    extra_compile_args=['-g'],
-                     extra_link_args=['openmp'])
-
-reconstruct_dic = dict(name="reconstruct",
-                       include_dirs=get_numpy_include_dirs(),
-                       sources=[src['reconstruct']],
-                       extra_compile_args=['openmp'],
-#                      extra_compile_args=['-g'],
-                       extra_link_args=['openmp'])
-
-
-if sys.platform == "win32":
-    # This is for mingw32/gomp?
-    data_files = [(installDir, [os.path.join("dll", "pthreadGC2.dll")])]
-    root = os.path.dirname(os.path.abspath(__file__))
-    tocopy_files = []
-    script_files = []
-    for i in os.listdir(os.path.join(root, "scripts")):
-        if os.path.isfile(os.path.join(root, "scripts", i)):
-            if i.endswith(".py"):
-                script_files.append(os.path.join("scripts", i))
-            else:
-                tocopy_files.append(os.path.join("scripts", i))
-    for i in tocopy_files:
-        filein = os.path.join(root, i)
-        if (filein + ".py") not in script_files:
-            shutil.copyfile(filein, filein + ".py")
-            script_files.append(filein + ".py")
-
-else:
-    data_files = []
-    script_files = glob.glob("scripts/*")
-
-
-data_files += [(installDir, [os.path.join('openCL', o) for o in [
-      "ocl_azim_kernel_2.cl", "ocl_azim_kernel2d_2.cl", "ocl_azim_LUT.cl"]])]
-
-version = [eval(l.split("=")[1]) for l in open(os.path.join(os.path.dirname(
-    os.path.abspath(__file__)), "pyFAI-src", "__init__.py"))
-    if l.strip().startswith("version")][0]
 
 setup(name='pyFAI',
       version=version,
@@ -237,16 +268,7 @@ setup(name='pyFAI',
       download_url="http://forge.epn-campus.eu/projects/azimuthal/files",
       ext_package="pyFAI",
       scripts=script_files,
-      ext_modules=[Extension(**hist_dic) ,
-                   Extension(**relabel_dic),
-                   Extension(**split_dic),
-                   Extension(**splitBBox_dic),
-                   Extension(**splitBBoxLUT_dic),
-                   Extension(**bilinear_dic),
-                   Extension(**ocl_azim_dict),
-                   Extension(**_geometry_dic),
-                   Extension(**reconstruct_dic),
-                   ],
+      ext_modules=[Extension(**dico) for dico in ext_modules],
       packages=["pyFAI"],
       package_dir={"pyFAI": "pyFAI-src" },
       test_suite="test",
@@ -255,7 +277,7 @@ setup(name='pyFAI',
       )
 
 ################################################################################
-# Chech for Fabio to be present of the system
+# Check for Fabio to be present of the system
 ################################################################################
 try:
     import fabio
