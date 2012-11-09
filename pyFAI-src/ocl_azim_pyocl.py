@@ -116,9 +116,8 @@ class Integrator1d(object):
         self._ctx = None
 
     def __repr__(self):
-        return os.linesep.join(["Cython wrapper for ocl_xrpd1d.ocl_xrpd1D_fullsplit C++ class. Logging in %s" % self.filename,
-                                "device: %s, platform %s device %s 64bits:%s image size: %s histogram size: %s" % (self._devicetype, self._platformid, self._deviceid, self._useFp64, self._nData, self._nBins),
-                                ",\t ".join(["%s: %s" % (k, v) for k, v in self.get_status().items()])])
+        return os.linesep.join(["PyOpenCL implementation of ocl_xrpd1d.ocl_xrpd1D_fullsplit C++ class. Logging in %s" % self.filename,
+                                "device: %s, platform %s device %s 64bits:%s image size: %s histogram size: %s" % (self.devicetype, self.platformid, self.deviceid, self.useFp64, self.nData, self.nBins)])
 
     def log(self, **kwarg):
         """
@@ -160,13 +159,13 @@ class Integrator1d(object):
         size_of_long = numpy.dtype(numpy.int64).itemsize
 
         ualloc = (self.nData * size_of_float) * 7
-        ualloc = (self.nBbins * size_of_float) * 2
+        ualloc = (self.nBins * size_of_float) * 2
         if self.useFp64:
-            ualloc += (self.Nbins * numpy.dtype(numpy.int64).itemsize) * 2
+            ualloc += (self.nBins * size_of_long) * 2
         else:
-            ualloc += (self.Nbins * numpy.dtype(numpy.int32).itemsize) * 2
+            ualloc += (self.nBins * size_of_int) * 2
         ualloc += 6 * size_of_float
-        memory = ocl.platforms[self.platformid][self.deviceid].memory
+        memory = ocl.platforms[self.platformid].devices[self.deviceid].memory
         if ualloc >= memory:
             raise RuntimeError("Fatal error in allocate_CL_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))
         #now actually allocate:
@@ -200,10 +199,10 @@ class Integrator1d(object):
         free all memory allocated on the device
         """
         for buffer_name in self._cl_mem:
-            if self._cl_mem[buffer] is not None:
+            if self._cl_mem[buffer_name] is not None:
                 try:
-                    self._cl_mem[buffer].release()
-                    self._cl_mem[buffer] = None
+                    self._cl_mem[buffer_name].release()
+                    self._cl_mem[buffer_name] = None
                 except LogicError:
                     logger.error("Error while freeing buffer %s" % buffer_name)
 
@@ -221,25 +220,25 @@ class Integrator1d(object):
         """
         kernel_name = "ocl_azim_kernel_2.cl"
         if kernel_file is None:
-            if os.path.isfile(kernel_file):
-                kernel_file = kernel_name
+            if os.path.isfile(kernel_name):
+                kernel_file = os.path.abspath(kernel_name)
             else:
                 kernel_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), kernel_name)
         else:
             kernel_file = str(kernel_file)
         kernel_src = open(kernel_file).read()
 
+        compile_options = " -D BLOCK_SIZE=%i -D BINS=%i  -D NN=%i " % (self.BLOCK_SIZE, self.nBins, self.nData)
         if self.useFp64:
-            options = " -D BINS=%i  -D NN=%i -D ENABLE_FP64" % (self.nBins, self.nData)
-        else:
-            options = " -D BINS=%i  -D NN=%i " % (self.nBins, self.nData)
+            compile_options += " -D ENABLE_FP64"
 
         try:
-            self._program = pyopencl.Program(self._ctx, source).build(options=options)
+            self._cl_program = pyopencl.Program(self._ctx, kernel_src).build(options=compile_options)
         except pyopencl.MemoryError as error:
             raise MemoryError(error)
 
-    def _set_kernel_arguments():
+
+    def _set_kernel_arguments(self):
         """Tie arguments of OpenCL kernel-functions to the actual kernels
         
         set_kernel_arguments() is a private method, called by configure(). 
@@ -249,10 +248,11 @@ class Integrator1d(object):
         is reset to tth_min_max.
         """
         self._cl_kernel_args["create_histo_binarray"] = [self._cl_mem[i] for i in ("tth", "tth_delta", "uweights", "tth_min_max", "image", "uhistogram", "span_ranges", "mask", "tth_min_max")]
-        self._cl_kernel_args["get_spans"] = [self._cl_mem[i] for i in ["tth", "dtth", "tth_min_max", "span_ranges"]]
+        self._cl_kernel_args["get_spans"] = [self._cl_mem[i] for i in ["tth", "tth_delta", "tth_min_max", "span_ranges"]]
         self._cl_kernel_args["solidangle_correction"] = [self._cl_mem["image"], self._cl_mem["solidangle"]]
         self._cl_kernel_args["dummyval_correction"] = [self._cl_mem["image"], self._cl_mem["dummyval"], self._cl_mem["dummyval_delta"]]
         self._cl_kernel_args["uimemset2"] = [self._cl_mem["uweights"], self._cl_mem["uhistogram"]]
+        self._cl_kernel_args["imemset"] = [self._cl_mem["mask"], ]
 
     def _calc_tth_out(self, lower, upper):
         """
@@ -276,8 +276,8 @@ class Integrator1d(object):
             self.useFp64 = bool(useFp64)
         self.nBins = Nbins
         self.nData = Nimage
-        self.wdim_data = (numpy.ceil(float(Nimage) / self.BLOCK_SIZE) * self.BLOCK_SIZE , 1, 1)
-        self.wdim_bins = (numpy.ceil(float(Nbins) / self.BLOCK_SIZE) * self.BLOCK_SIZE , 1, 1)
+        self.wdim_data = (int(numpy.ceil(float(Nimage) / self.BLOCK_SIZE) * self.BLOCK_SIZE) , 1, 1)
+        self.wdim_bins = (int(numpy.ceil(float(Nbins) / self.BLOCK_SIZE) * self.BLOCK_SIZE) , 1, 1)
 
 
     def configure(self, kernel=None):
@@ -303,10 +303,11 @@ class Integrator1d(object):
         with self.lock:
             self._allocate_buffers()
             self._compile_kernels(kernel)
+            self._set_kernel_arguments()
             #We need to initialise the Mask to 0
-            ememset = self._cl_program.imemset(self._queue, wdim, tdim, self._cl_mem["mask"])
+            imemset = self._cl_program.imemset(self._queue, self.wdim_data, self.tdim, self._cl_mem["mask"])
         if self.logfile:
-            sef.log(memset_mask=ememset)
+            sef.log(memset_mask=imemset)
 
     def loadTth(self, tth, dtth , tth_min=None, tth_max=None):
         """
@@ -333,9 +334,9 @@ class Integrator1d(object):
 
             if tth_max is None:
                 tth_max = self._tth_max
-            copy_tth = pyopencl.enqueue_copy(sels._queue, self._cl_mem["tth"], ctth)
-            copy_dtth = pyopencl.enqueue_copy(sels._queue, self._cl_mem["tth_delta"], cdtth)
-            pyopencl.enqueue_copy(sels._queue, self._cl_mem["tth_min_max"],
+            copy_tth = pyopencl.enqueue_copy(self._queue, self._cl_mem["tth"], ctth)
+            copy_dtth = pyopencl.enqueue_copy(self._queue, self._cl_mem["tth_delta"], cdtth)
+            pyopencl.enqueue_copy(self._queue, self._cl_mem["tth_min_max"],
                                   numpy.array((self._tth_min, self._tth_max), dtype=numpy.float32))
             get_spans = self._cl_program.get_spans(self._queue, self.wdim_data, self.tdim, self._cl_kernel_args["get_spans"])
 #            Group 2th span ranges group_spans(__global float *span_range)
@@ -362,7 +363,7 @@ class Integrator1d(object):
         cSolidANgle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float32)
         with self.lock:
             self.do_solidangle = True
-            copy_solidangle = pyopencl.enqueue_copy(sels._queue, self._cl_mem["solidangle"], cSolidANgle)
+            copy_solidangle = pyopencl.enqueue_copy(self._queue, self._cl_mem["solidangle"], cSolidANgle)
         if self.logfile:
             self.log(copy_solidangle=copy_solidangle)
 
@@ -535,8 +536,8 @@ class Integrator1d(object):
         @param devid: integer
         """
         if self._ctx is None:
-            self._ctx = self.ocl.create_context(devicetype, useFp64, platformid, deviceid)
-            device = self._ctx.device[0]
+            self._ctx = ocl.create_context(devicetype, useFp64, platformid, deviceid)
+            device = self._ctx.devices[0]
             self.devicetype = pyopencl.device_type.to_string(device.type)
             self.useFp64 = "fp64" in device.extensions
             self.platformid = pyopencl.get_platforms().index(device.platform)
@@ -561,14 +562,12 @@ class Integrator1d(object):
         """
 
         with self.lock:
-            self._queue.finish()
-            self._queue = None
-            self.nBins = -1
-            self.nData = -1
-            self.platformid = -1
-            self.deviceid = -1
-            self.useFp64 = False
-            self.devicetype = "gpu"
+#            self.nBins = -1
+#            self.nData = -1
+#            self.platformid = -1
+#            self.deviceid = -1
+#            self.useFp64 = False
+#            self.devicetype = "gpu"
             self._free_buffers()
             self._free_kernels()
             if  not preserve_context:
