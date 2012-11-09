@@ -23,6 +23,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+import pyopencl
 
 """
 C++ less implementation of Dimitris' code based on PyOpenCL 
@@ -55,6 +56,10 @@ class Integrator1d(object):
         @param filename: file in which profiling information are saved
         """
         self.BLOCK_SIZE = 128
+        self.tdim = (self.BLOCK_SIZE, 1, 1)
+        self.wdim_bins = None
+        self.wdim_data = None
+        self._tth_min = self._tth_max = self.tth_min = self.tth_max = None
         self.nBins = -1
         self.nData = -1
         self.platformid = -1
@@ -84,14 +89,15 @@ class Integrator1d(object):
                         "dummyval":None,
                         "dummyval_delta":None,
                         }
-#        self._cl_kernels = {"integrate":None,
-#                            "uimemset2":None,
-#                            "imemset":None,
-#                            "ui2f2":None,
-#                            "get_spans":None,
-#                            "group_spans":None,
-#                            "solidangle_correction":None,
-#                            "dummyval_correction":None}
+        self._cl_kernel_args = {"uimemset2":[],
+                              "create_histo_binarray":[],
+                              "imemset":[],
+                              "ui2f2":[],
+                              "get_spans":[],
+                              "group_spans":[],
+                              "solidangle_correction":[],
+                              "dummyval_correction":[],
+                              }
         self._cl_program = None
         self._ctx = None
         self._queue = None
@@ -205,9 +211,48 @@ class Integrator1d(object):
         """
         free all kernels
         """
-#        for kernel in self._cl_kernels:
-#            self._cl_kernels[kernel] = None
+        for kernel in  self._cl_kernel_args:
+            self._cl_kernel_args[kernel] = []
         self._cl_program = None
+
+    def _compile_kernels(self, kernel_file=None):
+        """
+        
+        """
+        kernel_name = "ocl_azim_kernel_2.cl"
+        if kernel_file is None:
+            if os.path.isfile(kernel_file):
+                kernel_file = kernel_name
+            else:
+                kernel_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), kernel_name)
+        else:
+            kernel_file = str(kernel_file)
+        kernel_src = open(kernel_file).read()
+
+        if self.useFp64:
+            options = " -D BINS=%i  -D NN=%i -D ENABLE_FP64" % (self.nBins, self.nData)
+        else:
+            options = " -D BINS=%i  -D NN=%i " % (self.nBins, self.nData)
+
+        try:
+            self._program = pyopencl.Program(self._ctx, source).build(options=options)
+        except pyopencl.MemoryError as error:
+            raise MemoryError(error)
+
+    def _set_kernel_arguments():
+        """Tie arguments of OpenCL kernel-functions to the actual kernels
+        
+        set_kernel_arguments() is a private method, called by configure(). 
+        It uses the dictionary _cl_kernel_args.
+        Note that by default, since TthRange is disabled, the integration kernels have tth_min_max tied to the tthRange argument slot.
+        When setRange is called it replaces that argument with tthRange low and upper bounds. When unsetRange is called, the argument slot
+        is reset to tth_min_max.
+        """
+        self._cl_kernel_args["create_histo_binarray"] = [self._cl_mem[i] for i in ("tth", "tth_delta", "uweights", "tth_min_max", "image", "uhistogram", "span_ranges", "mask", "tth_min_max")]
+        self._cl_kernel_args["get_spans"] = [self._cl_mem[i] for i in ["tth", "dtth", "tth_min_max", "span_ranges"]]
+        self._cl_kernel_args["solidangle_correction"] = [self._cl_mem["image"], self._cl_mem["solidangle"]]
+        self._cl_kernel_args["dummyval_correction"] = [self._cl_mem["image"], self._cl_mem["dummyval"], self._cl_mem["dummyval_delta"]]
+        self._cl_kernel_args["uimemset2"] = [self._cl_mem["uweights"], self._cl_mem["uhistogram"]]
 
     def _calc_tth_out(self, lower, upper):
         """
@@ -231,6 +276,8 @@ class Integrator1d(object):
             self.useFp64 = bool(useFp64)
         self.nBins = Nbins
         self.nData = Nimage
+        self.wdim_data = (numpy.ceil(float(Nimage) / self.BLOCK_SIZE) * self.BLOCK_SIZE , 1, 1)
+        self.wdim_bins = (numpy.ceil(float(Nbins) / self.BLOCK_SIZE) * self.BLOCK_SIZE , 1, 1)
 
 
     def configure(self, kernel=None):
@@ -251,27 +298,15 @@ class Integrator1d(object):
         if not self._ctx:
             raise RuntimeError("You may not call config() at this point. There is no Active context. (Hint: run init())")
 
-        kernel_name = "ocl_azim_kernel_2.cl"
-        if kernel is None:
-            if os.path.isfile(kernel_name):
-                kernel = kernel_name
-            else:
-                kernel = os.path.join(os.path.dirname(os.path.abspath(__file__)), kernel_name)
-        else:
-            kernel = str(kernel)
-        source = open(kernel).read()
         #If configure is recalled, force cleanup of OpenCL resources to avoid accidental leaks
         self.clean(True)
         with self.lock:
             self._allocate_buffers()
-
-        try:
-            self._program = pyopencl.Program(self._ctx, source).build()
-        except pyopencl.MemoryError as error:
-            raise MemoryError(error)
-        #We need to initialise the Mask to 0
-
-
+            self._compile_kernels(kernel)
+            #We need to initialise the Mask to 0
+            ememset = self._cl_program.imemset(self._queue, wdim, tdim, self._cl_mem["mask"])
+        if self.logfile:
+            sef.log(memset_mask=ememset)
 
     def loadTth(self, tth, dtth , tth_min=None, tth_max=None):
         """
@@ -300,10 +335,14 @@ class Integrator1d(object):
                 tth_max = self._tth_max
             copy_tth = pyopencl.enqueue_copy(sels._queue, self._cl_mem["tth"], ctth)
             copy_dtth = pyopencl.enqueue_copy(sels._queue, self._cl_mem["tth_delta"], cdtth)
+            pyopencl.enqueue_copy(sels._queue, self._cl_mem["tth_min_max"],
+                                  numpy.array((self._tth_min, self._tth_max), dtype=numpy.float32))
+            get_spans = self._cl_program.get_spans(self._queue, self.wdim_data, self.tdim, self._cl_kernel_args["get_spans"])
+#            Group 2th span ranges group_spans(__global float *span_range)
+            group_spans = self._cl_program.group_spans(self._queue, wdim, tdim, self._cl_mem["span_ranges"])
             self._calc_tth_out(tth_min, tth_max)
-        if self.log:
-            copy_tth.wait()
-            copy_dtth.wait()
+        if self.logfile:
+            self.log(copy_2th=copy_tth, copy_delta2th=copy_dtth, get_spans=get_spans, group_spans=group_spans)
 
     def setSolidAngle(self, solidAngle):
         """
@@ -317,12 +356,15 @@ class Integrator1d(object):
 
         @param solidAngle: numpy array representing the solid angle of the given pixel
         """
+        if not self._ctx:
+            raise RuntimeError("You may not call Integrator1d.setSolidAngle() at this point. \
+                            There is no Active context. (Hint: run init())")
         cSolidANgle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float32)
         with self.lock:
             self.do_solidangle = True
-            if self._cl_mem["solidangle"] is not None:
-               self._cl_mem["solidangle"].release()
-            self._cl_mem["solidangle"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=cSolidANgle)
+            copy_solidangle = pyopencl.enqueue_copy(sels._queue, self._cl_mem["solidangle"], cSolidANgle)
+        if self.logfile:
+            self.log(copy_solidangle=copy_solidangle)
 
     def unsetSolidAngle(self):
         """
@@ -332,9 +374,6 @@ class Integrator1d(object):
         """
         with self.lock:
             self.do_solidangle = False
-            if self._cl_mem["solidangle"] is not None:
-               self._cl_mem["solidangle"].release()
-               self._cl_mem["solidangle"] = None
 
     def setMask(self, mask):
         """
@@ -344,12 +383,16 @@ class Integrator1d(object):
         The Mask must be a PyFAI Mask. Pixels with 0 are masked out. TODO: check and invert!
         @param mask: numpy.ndarray of integer.
         """
+        if not self._ctx:
+            raise RuntimeError("You may not call Integrator1d.setDummyValue(dummy,delta_dummy) at this point. \
+                            There is no Active context. (Hint: run init())")
         cMask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int32)
         with self.lock:
             self.do_mask = True
-            if self._cl_mem["mask"] is not None:
-               self._cl_mem["mask"].release()
-            self._cl_mem["mask"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=cMask)
+            copy_mask = pyopencl.enqueue_copy(self._queue, self._cl_mem["mask"], cMask)
+        if self.logfile:
+            self.log(copy_mask=copy_mask)
+
 
     def unsetMask(self):
         """
@@ -358,9 +401,6 @@ class Integrator1d(object):
         """
         with self.lock:
             self.do_mask = False
-            if self._cl_mem["mask"] is not None:
-               self._cl_mem["mask"].release()
-               self._cl_mem["mask"] = None
 
     def setDummyValue(self, dummy, delta_dummy):
         """
@@ -372,20 +412,14 @@ class Integrator1d(object):
         @param delta_dummy: precision for dummy values
         """
         if not self._ctx:
-            logger.error("You may not call Integrator1d.setDummyValue(dummy,delta_dummy) at this point. \
+            raise RuntimeError("You may not call Integrator1d.setDummyValue(dummy,delta_dummy) at this point. \
                             There is no Active context. (Hint: run init())")
             return
         else:
             with self.lock:
                 self.do_dummy = True
-                if self._cl_mem["dummyval"]:
-                    self._cl_mem["dummyval"].release()
-                self._cl_mem["dummyval"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY | mf.COPY_HOST_PTR,
-                                                      hostbuf=numpy.array(dummy, dtype=numpy.float32))
-                if self._cl_mem["dummyval_delta"]:
-                    self._cl_mem["dummyval_delta"].release()
-                self._cl_mem["dummyval_delta"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY | mf.COPY_HOST_PTR,
-                                                      hostbuf=numpy.array(delta_dummy, dtype=numpy.float32))
+                pyopencl.enqueue_copy(self._queue, self._cl_mem["dummyval"], numpy.array((dummy,), dtype=numpy.float32))
+                pyopencl.enqueue_copy(self._queue, self._cl_mem["dummyval_delta"], numpy.array((delta_dummy,), dtype=numpy.float32))
 
     def unsetDummyValue(self):
         """Disable a dummy value.
@@ -393,13 +427,6 @@ class Integrator1d(object):
         """
         with self.lock:
             self.do_dummy = False
-            if self._cl_mem["dummyval"]:
-                self._cl_mem["dummyval"].release()
-                self._cl_mem["dummyval"] = None
-            if self._cl_mem["dummyval_delta"]:
-                self._cl_mem["dummyval_delta"].release()
-                self._cl_mem["dummyval_delta"] = None
-
 
     def setRange(self, lowerBound, upperBound):
         """
@@ -417,15 +444,20 @@ class Integrator1d(object):
         @param upperBound: A float value for the upper bound of the integration range
         """
         if self._ctx is None:
-            logger.error("You may not call setRange() at this point. There is no Active context. (Hint: run init())")
+            raise RuntimeError("You may not call setRange() at this point. There is no Active context. (Hint: run init())")
+        if not (self.nData > 1 and self._cl_mem["tth_range"]):
+            raise RuntimeError("You may not call setRange() at this point, the required buffers are not allocated (Hint: run config())")
 
-        tthrmm = numpy.array([lowerBound, upperBound], dtype=numpy.float32)
         with self.lock:
             self.useTthRange = True
-            self._calc_tth_out(lowerBound, upperBound)
-            if self._cl_mem["tth_min_max"]:
-                self._cl_mem["tth_min_max"].release()
-            self._cl_mem["tth_min_max"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=tthrmm)
+            copy_2thrange = pyopencl.enqueue_copy(self._queue, self._cl_mem["tth_range"],
+                                  numpy.array((lowerBound, upperBound), dtype=numpy.float32))
+        self._cl_kernel_args[""]
+#          CR( clSetKernelArg(oclconfig->oclkernels[CLKERN_INTEGRATE],8,sizeof(cl_mem),&oclconfig->oclmemref[CLMEM_TTH_RANGE]) ); //TTH range user values
+#  CR( clSetKernelArg(oclconfig->oclkernels[CLKERN_GET_SPANS],2,sizeof(cl_mem),&oclconfig->oclmemref[CLMEM_TTH_RANGE]) ); //TTH range user values
+
+        if self.logfile:
+            self.log(copy_2thrange=copy_2thrange)
 
     def unsetRange(self):
         """
@@ -439,9 +471,6 @@ class Integrator1d(object):
             if self.useTthRange:
                 self._calc_tth_out(self._tth_min, self._tth_max)
             self.useTthRange = False
-            if self._cl_mem["tth_min_max"]:
-                self._cl_mem["tth_min_max"].release()
-                self._cl_mem["tth_min_max"] = None
 
     def execute(self, image):
         """
@@ -468,18 +497,32 @@ class Integrator1d(object):
             raise RuntimeError("You may not call execute() at this point. There is no Active context. (Hint: run init())")
         if not self.self._cl_mem["histogram"]:
             raise RuntimeError("You may not call execute() at this point, kernels are not configured (Hint: run configure())")
-        if not self._cl_mem["tth"]:
+        if not self._tth_max:
             raise RuntimeError("You may not call execute() at this point. There is no 2th array loaded. (Hint: run loadTth())")
 
-        cimage = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
+        with self.lock:
+            copy_img = pyopencl.enqueue_copy(self._ctx, self._cl_mem["image"], numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32))
+            memset = self._cl_program.uimemset2(self._queue, self.wdim_bins, self.tdim, self._cl_kernel_args["uimemset2"])
 
+            if self.do_dummy:
+                dummy = self._cl_program.dummyval_correction(self._queue, self.wdim_data, self.tdim, *args)
 
-        histogram = numpy.empty(self._nBins, dtype=numpy.float32)
-        bins = numpy.empty(self._nBins, dtype=numpy.float32)
-        tth_out = self.tth_out.copy()
-        pyopencl.enqueue_copy(self._queue, histogram, self._cl_mem["histogram"])
-        pyopencl.enqueue_copy(self._queue, bins, self._cl_mem["?"])
-        pyopencl.enqueue_barrier(self._queue).wait()
+            if self.do_solidangle:
+                sa = self._cl_program.solidangle_correction(self._queue, self.wdim_data, self.tdim, self._cl_kernel_args["solidangle_correction"])
+
+            integrate = self._cl_program.create_histo_binarray(self._queue, self.wdim_data, self.tdim, self._cl_kernel_args["create_histo_binarray"])
+            if self.logfile:
+                self.log(copy_in=copy_img, memset2=memset)
+                if self.do_dummy: self.log(dummy_corr=dummy)
+                if self.do_solidangle: self.log(solid_angle=sa)
+                self.log(integrate=integrate,)
+#        histogram = numpy.empty(self._nBins, dtype=numpy.float32)
+#        bins = numpy.empty(self._nBins, dtype=numpy.float32)
+#        tth_out = self.tth_out.copy()
+#        pyopencl.enqueue_copy(self._queue, histogram, self._cl_mem["histogram"])
+#        pyopencl.enqueue_copy(self._queue, bins, self._cl_mem["?"])
+#        pyopencl.enqueue_barrier(self._queue).wait()
+
         return tth_out, histogram, bins
 
     def init(self, devicetype="GPU", useFp64=True, platformid=None, deviceid=None):
