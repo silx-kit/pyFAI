@@ -1,28 +1,28 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
+# 
 #    Project: Fast Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
-#
+# 
 #    File: "$Id$"
-#
+# 
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
-#
+# 
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
-#
+# 
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
 #    (at your option) any later version.
-#
+# 
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
-#
+# 
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+# 
 """
 Setup script for python Fast Azimuthal Integration
 """
@@ -40,9 +40,9 @@ from distutils.core import setup, Extension
 from numpy.distutils.misc_util import get_numpy_include_dirs
 from distutils.sysconfig import get_python_lib
 
-################################################################################
+# ###############################################################################
 # Check for Cython
-################################################################################
+# ###############################################################################
 try:
     from Cython.Distutils import build_ext
     CYTHON = True
@@ -63,9 +63,9 @@ else:
     cython_c_ext = ".c"
     from distutils.command.build_ext import build_ext
 
-################################################################################
-# check for OpenCL 
-################################################################################
+# ###############################################################################
+# check for OpenCL
+# ###############################################################################
 
 # temporary until pyopencl is used
 if "--without-opencl" in sys.argv:
@@ -90,9 +90,9 @@ if OPENCL:
 
 
 
-################################################################################
-# pyFAI extensions 
-################################################################################
+# ###############################################################################
+# pyFAI extensions
+# ###############################################################################
 cython_modules = ["histogram", "splitPixel", "splitBBox", "splitBBoxLUT",
                   "relabel", "bilinear", "_geometry", "reconstruct"]
 src = {}
@@ -149,7 +149,7 @@ bilinear_dic = dict(name="bilinear",
                     sources=[src['bilinear']])
 
 ext_modules = [histogram_dic, splitPixel_dic, splitBBox_dic, splitBBoxLUT_dic, relabel_dic,
-               _geometry_dic, reconstruct_dic]
+               _geometry_dic, reconstruct_dic, bilinear_dic]
 
 
 if OPENCL:
@@ -171,13 +171,13 @@ if OPENCL:
                      include_dirs=openCL + get_numpy_include_dirs(),
                      library_dirs=OCLLIBDIR,
                      language="c++",
-                     libraries=[ "stdc++", "OpenCL"] # "stdc++"
+                     libraries=[ "stdc++", "OpenCL"]  # "stdc++"
                      )
     ext_modules.append(ocl_azim_dict)
 
-################################################################################
-# scripts and data installation 
-################################################################################
+# ###############################################################################
+# scripts and data installation
+# ###############################################################################
 
 installDir = os.path.join(get_python_lib(), "pyFAI")
 
@@ -253,8 +253,8 @@ class build_ext_pyFAI(build_ext):
 
             # If you are confused look here:
             # print e, e.libraries
-            #print e.extra_compile_args
-            #print e.extra_link_args
+            # print e.extra_compile_args
+            # print e.extra_link_args
         build_ext.build_extensions(self)
 
 
@@ -276,9 +276,9 @@ setup(name='pyFAI',
       data_files=data_files
       )
 
-################################################################################
+# ###############################################################################
 # Check for Fabio to be present of the system
-################################################################################
+# ###############################################################################
 try:
     import fabio
 except ImportError:
@@ -287,9 +287,9 @@ This python module can be found on:
 http: // sourceforge.net / projects / fable / files / fabio / 0.1.0 / """)
 
 
-################################################################################
+# ###############################################################################
 # check if OpenMP modules, freshly installed can import
-################################################################################
+# ###############################################################################
 pyFAI = None
 sys.path.insert(0, installDir)
 for loc in ["", ".", os.getcwd()]:
