@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: Azimuthal integration 
+#    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
 #
 #    File: "$Id$"
@@ -70,6 +70,9 @@ class GeometryRefinement(AzimuthalIntegrator):
             center = smallRing.sum(axis=0) / len(smallRing)
             self.poni1 = center[0] * self.pixel1
             self.poni2 = center[1] * self.pixel2
+        else:
+            self.poni1 = poni1
+            self.poni2 = poni2
         self._dist_min = 0
         self._dist_max = 10
         self._poni1_min = -10000 * self.pixel1

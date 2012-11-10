@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: Azimuthal integration 
+#    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
 #
 #    File: "$Id$"
@@ -166,7 +166,7 @@ class test_geometryRefinement(unittest.TestCase):
         [402, 606, 0.3490658503988659],
         [437, 555, 0.3490658503988659],
         [513, 467, 0.3490658503988659]]
-        r2 = GeometryRefinement(data, dist=0.1, poni1=0.00, poni2=0.00, splineFile=splineFine)
+        r2 = GeometryRefinement(data, dist=0.1, splineFile=splineFine)
         r2.rot1_max = 0
         r2.rot1_min = -0
         r2.rot2_max = 0
@@ -174,15 +174,11 @@ class test_geometryRefinement(unittest.TestCase):
         r2.rot3_max = 0.1
         r2.rot3_min = -0.1
         r2.refine2(10000000)
-#        r2.rot1_max = 1
-#        r2.rot1_min = -1
-#        r2.rot2_max = 1
-#        r2.rot2_min = -1
-#        r2.rot3_max = 1
-#        r2.rot3_min = -1
-#        r2.refine2(10000000)
         ref2 = numpy.array([0.1, 4.917310e-02, 4.722438e-02, 0 , 0.  , 0.00000])
-        assert abs(numpy.array(r2.param) - ref2).max() < 1e-3
+        for i, key in enumerate(("dist", "poni1", "poni2", "rot1", "rot2", "rot3")):
+            self.assertAlmostEqual(ref2[i], r2.__getattribute__(key), 3,
+                                   "%s is %s, I expected %s%s%s" % (key, r2.__getattribute__(key) , ref2[i], os.linesep, r2))
+#        assert abs(numpy.array(r2.param) - ref2).max() < 1e-3
 
 def test_suite_all_GeometryRefinement():
     testSuite = unittest.TestSuite()
