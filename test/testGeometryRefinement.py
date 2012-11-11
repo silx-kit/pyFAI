@@ -35,13 +35,12 @@ __date__ = "06/07/2011"
 import unittest
 import os
 import numpy
-import logging
 import sys
+#Nota: UtilsTest is a static class with initialization at import.
 from utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI.geometryRefinement import GeometryRefinement
-from pyFAI.geometry import Geometry
 class test_geometryRefinement(unittest.TestCase):
     """ tests geometric refinements with or without spline"""
 
