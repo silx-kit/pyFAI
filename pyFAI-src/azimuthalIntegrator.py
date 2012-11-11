@@ -40,13 +40,15 @@ from utils import timeit
 logger = logging.getLogger("pyFAI.azimuthalIntegrator")
 
 try:
-    import ocl_azim  #IGNORE:F0401
+#    import ocl_azim  #IGNORE:F0401
+    import opencl
+    import ocl_azim_pyocl as ocl_azim
 except ImportError as error:#IGNORE:W0703
     logger.warning("Unable to import pyFAI.ocl_azim")
     ocl_azim = None
     ocl = None
 else:
-    ocl = ocl_azim.OpenCL()
+    ocl = opencl.OpenCL()
 
 try:
     import splitBBoxLUT
@@ -440,13 +442,13 @@ class AzimuthalIntegrator(Geometry):
                     else:
                        rc = integr.init(devicetype=devicetype,
                                         useFp64=useFp64)
-                    if rc != 0:
+                    if rc:
                         raise RuntimeError('Failed to initialize OpenCL deviceType %s (%s,%s) 64bits: %s' % (devicetype, platformid, deviceid, useFp64))
 
-                    if 0 != integr.getConfiguration(size, nbPt):
+                    if integr.getConfiguration(size, nbPt):
                         raise RuntimeError('Failed to configure 1D integrator with Ndata=%s and Nbins=%s' % (size, nbPt))
 
-                    if 0 != integr.configure():
+                    if integr.configure():
                         raise RuntimeError('Failed to compile kernel')
                     pos0 = self.twoThetaArray(shape)
                     delta_pos0 = self.delta2Theta(shape)
@@ -459,7 +461,7 @@ class AzimuthalIntegrator(Geometry):
                     if pos0_min < 0.0:
                         pos0_min = 0.0
                     pos0_max = pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps)
-                    if 0 != integr.loadTth(pos0, delta_pos0, pos0_min, pos0_max):
+                    if integr.loadTth(pos0, delta_pos0, pos0_min, pos0_max):
                         raise RuntimeError("Failed to upload 2th arrays")
                     self._ocl_integrator = integr
         with self._ocl_sem:

@@ -71,7 +71,7 @@ class Integrator1d(object):
         if "write" in dir(filename):
             self.logfile = filename
         elif filename:
-            self.logfile = open(self.filename, a)
+            self.logfile = open(self.filename, "a")
         else:
             self.logfile = None
         self.lock = threading.Semaphore()
@@ -108,6 +108,7 @@ class Integrator1d(object):
         self.do_solidangle = None
         self.do_dummy = None
         self.do_mask = None
+        self.do_dark = None
         self.useTthRange = None
 
     def __dealloc__(self):
@@ -574,3 +575,16 @@ class Integrator1d(object):
             if  not preserve_context:
                 self._queue = None
                 self._ctx = None
+
+    def get_status(self):
+        "return a dictionnary with the status of the integrator: for compatibilty with former implementation"
+        out = {'dummy': bool(self.do_dummy),
+               'mask': bool(self.do_mask),
+               'dark': bool(self.do_dark),
+               "solid_angle":bool(self.do_solidangle),
+               "pos1": False,
+               'pos0':(self._tth_max is not None),
+               'compiled':(self._cl_program is not None),
+               'size':self.nData,
+               'context':(self._ctx is not None)}
+        return out
