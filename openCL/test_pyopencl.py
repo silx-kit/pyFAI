@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import os, sys
 import numpy as np
 import ocl_azim
 from matplotlib import pylab
@@ -32,9 +33,12 @@ a.setMask(mask)
 t0 = time.time()
 xrpd, count, weight = a.execute(data)
 print "opencl", (time.time() - t0) * 1e3, "ms"
+pylab.plot(xrpd)
+pylab.plot(count)
+pylab.plot(weight)
 
 import pyFAI.ocl_azim_pyocl
-b = pyFAI.ocl_azim_pyocl.Integrator1d()
+b = pyFAI.ocl_azim_pyocl.Integrator1d(sys.stdout)
 b.init("gpu", False)
 b.getConfiguration(N, Nbins)
 b.configure()
@@ -42,7 +46,7 @@ b.loadTth(tth, dtth, tth_min, tth_max)
 b.setSolidAngle(solid)
 b.setMask(mask)
 t0 = time.time()
-xrpd, count, weight = a.execute(data)
+xrpd, count, weight = b.execute(data)
 print "pyopencl", (time.time() - t0) * 1e3
 
 #optionally

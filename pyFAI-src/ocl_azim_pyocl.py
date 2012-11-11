@@ -26,7 +26,7 @@
 import pyopencl
 
 """
-C++ less implementation of Dimitris' code based on PyOpenCL 
+C++ less implementation of Dimitris' code based on PyOpenCL
 """
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
@@ -67,7 +67,10 @@ class Integrator1d(object):
         self.useFp64 = False
         self.devicetype = "gpu"
         self.filename = filename
-        if filename:
+        self.tth_out = None
+        if "write" in dir(filename):
+            self.logfile = filename
+        elif filename:
             self.logfile = open(self.filename, a)
         else:
             self.logfile = None
@@ -97,6 +100,7 @@ class Integrator1d(object):
                               "group_spans":[],
                               "solidangle_correction":[],
                               "dummyval_correction":[],
+
                               }
         self._cl_program = None
         self._ctx = None
@@ -127,15 +131,14 @@ class Integrator1d(object):
             for key, event in kwarg.items():
 #                if  event is an event
                 event.wait()
-                self.logfile.write(" %s: %.3ms\t" % (key, event,
-                           (1e-6 * (event.profile.end - event.profile.start))))
+                self.logfile.write(" %s: %.3fms\t" % (key, (1e-6 * (event.profile.END - event.profile.START))))
             self.logfile.write(os.linesep)
-            self.log.flush()
+            self.logfile.flush()
 
     def _allocate_buffers(self):
         """
         Allocate OpenCL buffers required for a specific configuration
-        
+
         allocate_CL_buffers() is a private method and is called by configure().
         Given the size of the image and the number of the bins, all the required OpenCL buffers
         are allocated.
@@ -144,7 +147,7 @@ class Integrator1d(object):
         to check the real available memory.
         In the case allocate_CL_buffers fails while allocating buffers, it will automatically deallocate
         the buffers that did not fail and leave the flag hasBuffers to 0.
-        
+
         Note that an OpenCL context also requires some memory, as well as Event and other OpenCL functionalities which cannot and
         are not taken into account here.
         The memory required by a context varies depending on the device. Typical for GTX580 is 65Mb but for a 9300m is ~15Mb
@@ -216,7 +219,7 @@ class Integrator1d(object):
 
     def _compile_kernels(self, kernel_file=None):
         """
-        
+
         """
         kernel_name = "ocl_azim_kernel_2.cl"
         if kernel_file is None:
@@ -240,8 +243,8 @@ class Integrator1d(object):
 
     def _set_kernel_arguments(self):
         """Tie arguments of OpenCL kernel-functions to the actual kernels
-        
-        set_kernel_arguments() is a private method, called by configure(). 
+
+        set_kernel_arguments() is a private method, called by configure().
         It uses the dictionary _cl_kernel_args.
         Note that by default, since TthRange is disabled, the integration kernels have tth_min_max tied to the tthRange argument slot.
         When setRange is called it replaces that argument with tthRange low and upper bounds. When unsetRange is called, the argument slot
@@ -253,14 +256,14 @@ class Integrator1d(object):
         self._cl_kernel_args["dummyval_correction"] = [self._cl_mem["image"], self._cl_mem["dummyval"], self._cl_mem["dummyval_delta"]]
         self._cl_kernel_args["uimemset2"] = [self._cl_mem["uweights"], self._cl_mem["uhistogram"]]
         self._cl_kernel_args["imemset"] = [self._cl_mem["mask"], ]
-
+        self._cl_kernel_args["ui2f2"] = [self._cl_mem[i] for i in ("uweights", "uhistogram", "weights", "histogram")]
     def _calc_tth_out(self, lower, upper):
         """
         Calculate the bin-center position in 2theta
         """
         self.tth_min = numpy.float32(lower)
         self.tth_max = numpy.float32(upper)
-        delta = (upper - lower) / numpy.float32(self._nBins)
+        delta = (upper - lower) / numpy.float32(self.nBins)
         self.tth_out = numpy.arange(lower, upper, delta, dtype=numpy.float32)
 
 
@@ -287,9 +290,9 @@ class Integrator1d(object):
         called at least once. Since the compiled OpenCL kernels carry some information on the integration
         parameters, a change to any of the parameters of getConfiguration() requires a subsequent call to
         configure() for them to take effect.
-        
+
         If a configuration exists and configure() is called, the configuration is cleaned up first to avoid
-        OpenCL memory leaks        
+        OpenCL memory leaks
 
         @param kernel_path: is the path to the actual kernel
         """
@@ -307,7 +310,7 @@ class Integrator1d(object):
             #We need to initialise the Mask to 0
             imemset = self._cl_program.imemset(self._queue, self.wdim_data, self.tdim, self._cl_mem["mask"])
         if self.logfile:
-            sef.log(memset_mask=imemset)
+            self.log(memset_mask=imemset)
 
     def loadTth(self, tth, dtth , tth_min=None, tth_max=None):
         """
@@ -338,9 +341,9 @@ class Integrator1d(object):
             copy_dtth = pyopencl.enqueue_copy(self._queue, self._cl_mem["tth_delta"], cdtth)
             pyopencl.enqueue_copy(self._queue, self._cl_mem["tth_min_max"],
                                   numpy.array((self._tth_min, self._tth_max), dtype=numpy.float32))
-            get_spans = self._cl_program.get_spans(self._queue, self.wdim_data, self.tdim, self._cl_kernel_args["get_spans"])
+            get_spans = self._cl_program.get_spans(self._queue, self.wdim_data, self.tdim, *self._cl_kernel_args["get_spans"])
 #            Group 2th span ranges group_spans(__global float *span_range)
-            group_spans = self._cl_program.group_spans(self._queue, wdim, tdim, self._cl_mem["span_ranges"])
+            group_spans = self._cl_program.group_spans(self._queue, self.wdim_data, self.tdim, self._cl_mem["span_ranges"])
             self._calc_tth_out(tth_min, tth_max)
         if self.logfile:
             self.log(copy_2th=copy_tth, copy_delta2th=copy_dtth, get_spans=get_spans, group_spans=group_spans)
@@ -453,7 +456,8 @@ class Integrator1d(object):
             self.useTthRange = True
             copy_2thrange = pyopencl.enqueue_copy(self._queue, self._cl_mem["tth_range"],
                                   numpy.array((lowerBound, upperBound), dtype=numpy.float32))
-        self._cl_kernel_args[""]
+            self._cl_kernel_args["create_histo_binarray"][8] = self._cl_mem["tth_range"]
+            self._cl_kernel_args["get_spans"][2] = self._cl_mem["tth_range"]
 #          CR( clSetKernelArg(oclconfig->oclkernels[CLKERN_INTEGRATE],8,sizeof(cl_mem),&oclconfig->oclmemref[CLMEM_TTH_RANGE]) ); //TTH range user values
 #  CR( clSetKernelArg(oclconfig->oclkernels[CLKERN_GET_SPANS],2,sizeof(cl_mem),&oclconfig->oclmemref[CLMEM_TTH_RANGE]) ); //TTH range user values
 
@@ -463,7 +467,7 @@ class Integrator1d(object):
     def unsetRange(self):
         """
         Disable the use of a user-defined 2th range and revert to tth_min,tth_max range
- 
+
         unsetRange instructs the program to revert to its default integration range. If the method is called when
         no user-defined range had been previously specified, no action will be performed
         """
@@ -472,6 +476,8 @@ class Integrator1d(object):
             if self.useTthRange:
                 self._calc_tth_out(self._tth_min, self._tth_max)
             self.useTthRange = False
+            self._cl_kernel_args["create_histo_binarray"][8] = self._cl_mem["tth_min_max"]
+            self._cl_kernel_args["get_spans"][2] = self._cl_mem["tth_min_max"]
 
     def execute(self, image):
         """
@@ -493,30 +499,32 @@ class Integrator1d(object):
         TODO: to improve performances, the image should be casted to float32 in an optimal way:
         currently using numpy machinery but would be better if done in OpenCL
         """
-        assert image.size == self._nData
+        assert image.size == self.nData
         if not self._ctx:
             raise RuntimeError("You may not call execute() at this point. There is no Active context. (Hint: run init())")
-        if not self.self._cl_mem["histogram"]:
+        if not self._cl_mem["histogram"]:
             raise RuntimeError("You may not call execute() at this point, kernels are not configured (Hint: run configure())")
         if not self._tth_max:
             raise RuntimeError("You may not call execute() at this point. There is no 2th array loaded. (Hint: run loadTth())")
 
         with self.lock:
-            copy_img = pyopencl.enqueue_copy(self._ctx, self._cl_mem["image"], numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32))
-            memset = self._cl_program.uimemset2(self._queue, self.wdim_bins, self.tdim, self._cl_kernel_args["uimemset2"])
+            copy_img = pyopencl.enqueue_copy(self._queue, self._cl_mem["image"], numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32))
+            memset = self._cl_program.uimemset2(self._queue, self.wdim_bins, self.tdim, *self._cl_kernel_args["uimemset2"])
 
             if self.do_dummy:
                 dummy = self._cl_program.dummyval_correction(self._queue, self.wdim_data, self.tdim, *args)
 
             if self.do_solidangle:
-                sa = self._cl_program.solidangle_correction(self._queue, self.wdim_data, self.tdim, self._cl_kernel_args["solidangle_correction"])
+                sa = self._cl_program.solidangle_correction(self._queue, self.wdim_data, self.tdim, *self._cl_kernel_args["solidangle_correction"])
 
-            integrate = self._cl_program.create_histo_binarray(self._queue, self.wdim_data, self.tdim, self._cl_kernel_args["create_histo_binarray"])
+            integrate = self._cl_program.create_histo_binarray(self._queue, self.wdim_data, self.tdim, *self._cl_kernel_args["create_histo_binarray"])
+            #convert to float
+            convert = self._cl_program.ui2f2(self._queue, self.wdim_data, self.tdim, *self._cl_kernel_args["ui2f2"])
             if self.logfile:
                 self.log(copy_in=copy_img, memset2=memset)
                 if self.do_dummy: self.log(dummy_corr=dummy)
                 if self.do_solidangle: self.log(solid_angle=sa)
-                self.log(integrate=integrate,)
+                self.log(integrate=integrate, convert_uint2float=convert)
 #        histogram = numpy.empty(self._nBins, dtype=numpy.float32)
 #        bins = numpy.empty(self._nBins, dtype=numpy.float32)
 #        tth_out = self.tth_out.copy()
@@ -524,7 +532,44 @@ class Integrator1d(object):
 #        pyopencl.enqueue_copy(self._queue, bins, self._cl_mem["?"])
 #        pyopencl.enqueue_barrier(self._queue).wait()
 
-        return tth_out, histogram, bins
+        return self.tth_out.copy(), histogram, bins
+# //Convert to float
+#  CR(
+#  clEnqueueNDRangeKernel(oclconfig->oclcmdqueue,oclconfig->oclkernels[CLKERN_UI2F2],
+#                          CL_TRUE,0,wdim_reduceh,tdim_reduceh,0,0,&oclconfig->t_s[3]) );
+#
+#  //Copy the results back
+#  CR(
+#    clEnqueueReadBuffer(oclconfig->oclcmdqueue,oclconfig->oclmemref[CLMEM_WEIGHTS],
+#                         CL_TRUE,0,sgs->Nbins*sizeof(cl_float),(void*)bins,0,0,&oclconfig->t_s[4]) );//bins
+#  CR(
+#    clEnqueueReadBuffer(oclconfig->oclcmdqueue,oclconfig->oclmemref[CLMEM_HISTOGRAM],
+#                         CL_TRUE,0,sgs->Nbins*sizeof(cl_float),(void*)histogram,0,0,&oclconfig->t_s[5]) );
+#
+#  cLog_debug(&hLog,"--Waiting for the command queue to finish\n");
+#  CR(clFinish(oclconfig->oclcmdqueue));
+#
+#  //Get execution time from first memory copy to last memory copy.
+#
+#  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0], "CopyIn     ",oclconfig->hLog);
+#  execTime_ms   += ocl_get_profT(&oclconfig->t_s[1], &oclconfig->t_s[1], "MemSet     ",oclconfig->hLog);
+#
+#  if(useDummyVal)
+#    execTime_ms += ocl_get_profT(&oclconfig->t_s[6], &oclconfig->t_s[6], "DummyVal   ",oclconfig->hLog);
+#  if(useSolidAngle)
+#    execTime_ms += ocl_get_profT(&oclconfig->t_s[7], &oclconfig->t_s[7], "SolidAngle ",oclconfig->hLog);
+#
+#  execTime_ms   += ocl_get_profT(&oclconfig->t_s[2], &oclconfig->t_s[2], "Integration",oclconfig->hLog);
+#  execTime_ms   += ocl_get_profT(&oclconfig->t_s[3], &oclconfig->t_s[3], "Convert    ",oclconfig->hLog);
+#
+#  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[4], &oclconfig->t_s[5], "CopyOut    ",oclconfig->hLog);
+#
+#  execCount++;
+#
+#  //This is very important. OpenCL Events are inherently retained. If not explicitly released after their use they cause memory leaks
+#  for(int ievent=0;ievent<6;ievent++)clReleaseEvent(oclconfig->t_s[ievent]);
+#  if(useDummyVal)   clReleaseEvent(oclconfig->t_s[6]);
+#  if(useSolidAngle) clReleaseEvent(oclconfig->t_s[7]);
 
     def init(self, devicetype="GPU", useFp64=True, platformid=None, deviceid=None):
         """Initial configuration: Choose a device and initiate a context. Devicetypes can be GPU,gpu,CPU,cpu,DEF,ACC,ALL.
@@ -553,21 +598,15 @@ class Integrator1d(object):
     def clean(self, preserve_context=False):
         """
         Free OpenCL related resources allocated by the library.
- 
+
         clean() is used to reinitiate the library back in a vanilla state.
         It may be asked to preserve the context created by init or completely clean up OpenCL.
         Guard/Status flags that are set will be reset.
-        
+
         @param preserve_context Flag that preserves the context (True) or destroys all OpenCL resources (False)
         """
 
         with self.lock:
-#            self.nBins = -1
-#            self.nData = -1
-#            self.platformid = -1
-#            self.deviceid = -1
-#            self.useFp64 = False
-#            self.devicetype = "gpu"
             self._free_buffers()
             self._free_kernels()
             if  not preserve_context:
