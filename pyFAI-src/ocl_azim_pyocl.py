@@ -520,56 +520,18 @@ class Integrator1d(object):
             integrate = self._cl_program.create_histo_binarray(self._queue, self.wdim_data, self.tdim, *self._cl_kernel_args["create_histo_binarray"])
             #convert to float
             convert = self._cl_program.ui2f2(self._queue, self.wdim_data, self.tdim, *self._cl_kernel_args["ui2f2"])
+            histogram = numpy.empty(self.nBins, dtype=numpy.float32)
+            bins = numpy.empty(self.nBins, dtype=numpy.float32)
+            copy_hist = pyopencl.enqueue_copy(self._queue, histogram, self._cl_mem["histogram"])
+            copy_bins = pyopencl.enqueue_copy(self._queue, bins, self._cl_mem["weights"])
+
             if self.logfile:
                 self.log(copy_in=copy_img, memset2=memset)
                 if self.do_dummy: self.log(dummy_corr=dummy)
                 if self.do_solidangle: self.log(solid_angle=sa)
-                self.log(integrate=integrate, convert_uint2float=convert)
-#        histogram = numpy.empty(self._nBins, dtype=numpy.float32)
-#        bins = numpy.empty(self._nBins, dtype=numpy.float32)
-#        tth_out = self.tth_out.copy()
-#        pyopencl.enqueue_copy(self._queue, histogram, self._cl_mem["histogram"])
-#        pyopencl.enqueue_copy(self._queue, bins, self._cl_mem["?"])
-#        pyopencl.enqueue_barrier(self._queue).wait()
-
+                self.log(integrate=integrate, convert_uint2float=convert, copy_hist=copy_hist, copy_bins=copy_bins)
+            pyopencl.enqueue_barrier(self._queue).wait()
         return self.tth_out.copy(), histogram, bins
-# //Convert to float
-#  CR(
-#  clEnqueueNDRangeKernel(oclconfig->oclcmdqueue,oclconfig->oclkernels[CLKERN_UI2F2],
-#                          CL_TRUE,0,wdim_reduceh,tdim_reduceh,0,0,&oclconfig->t_s[3]) );
-#
-#  //Copy the results back
-#  CR(
-#    clEnqueueReadBuffer(oclconfig->oclcmdqueue,oclconfig->oclmemref[CLMEM_WEIGHTS],
-#                         CL_TRUE,0,sgs->Nbins*sizeof(cl_float),(void*)bins,0,0,&oclconfig->t_s[4]) );//bins
-#  CR(
-#    clEnqueueReadBuffer(oclconfig->oclcmdqueue,oclconfig->oclmemref[CLMEM_HISTOGRAM],
-#                         CL_TRUE,0,sgs->Nbins*sizeof(cl_float),(void*)histogram,0,0,&oclconfig->t_s[5]) );
-#
-#  cLog_debug(&hLog,"--Waiting for the command queue to finish\n");
-#  CR(clFinish(oclconfig->oclcmdqueue));
-#
-#  //Get execution time from first memory copy to last memory copy.
-#
-#  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[0], &oclconfig->t_s[0], "CopyIn     ",oclconfig->hLog);
-#  execTime_ms   += ocl_get_profT(&oclconfig->t_s[1], &oclconfig->t_s[1], "MemSet     ",oclconfig->hLog);
-#
-#  if(useDummyVal)
-#    execTime_ms += ocl_get_profT(&oclconfig->t_s[6], &oclconfig->t_s[6], "DummyVal   ",oclconfig->hLog);
-#  if(useSolidAngle)
-#    execTime_ms += ocl_get_profT(&oclconfig->t_s[7], &oclconfig->t_s[7], "SolidAngle ",oclconfig->hLog);
-#
-#  execTime_ms   += ocl_get_profT(&oclconfig->t_s[2], &oclconfig->t_s[2], "Integration",oclconfig->hLog);
-#  execTime_ms   += ocl_get_profT(&oclconfig->t_s[3], &oclconfig->t_s[3], "Convert    ",oclconfig->hLog);
-#
-#  memCpyTime_ms += ocl_get_profT(&oclconfig->t_s[4], &oclconfig->t_s[5], "CopyOut    ",oclconfig->hLog);
-#
-#  execCount++;
-#
-#  //This is very important. OpenCL Events are inherently retained. If not explicitly released after their use they cause memory leaks
-#  for(int ievent=0;ievent<6;ievent++)clReleaseEvent(oclconfig->t_s[ievent]);
-#  if(useDummyVal)   clReleaseEvent(oclconfig->t_s[6]);
-#  if(useSolidAngle) clReleaseEvent(oclconfig->t_s[7]);
 
     def init(self, devicetype="GPU", useFp64=True, platformid=None, deviceid=None):
         """Initial configuration: Choose a device and initiate a context. Devicetypes can be GPU,gpu,CPU,cpu,DEF,ACC,ALL.
