@@ -61,18 +61,11 @@ class GeometryRefinement(AzimuthalIntegrator):
         self.data = numpy.array(data, dtype="float64")
         AzimuthalIntegrator.__init__(self, dist, 0, 0, rot1, rot2, rot3, pixel1, pixel2, splineFile, detector)
 
-        if (poni1 is None) and (poni2 is None):
-            tth = self.data[:, 2]
-            asrt = tth.argsort()
-            tth = tth[asrt]
-            srtdata = self.data[asrt]
-            smallRing = srtdata[tth < (tth.min() + 1e-6)]
-            center = smallRing.sum(axis=0) / len(smallRing)
-            self.poni1 = center[0] * self.pixel1
-            self.poni2 = center[1] * self.pixel2
+        if (poni1 is None) or (poni2 is None):
+            self.guess_poni()
         else:
-            self.poni1 = poni1
-            self.poni2 = poni2
+            self.poni1 = float(poni1)
+            self.poni2 = float(poni2)
         self._dist_min = 0
         self._dist_max = 10
         self._poni1_min = -10000 * self.pixel1
@@ -85,6 +78,22 @@ class GeometryRefinement(AzimuthalIntegrator):
         self._rot2_max = pi
         self._rot3_min = -pi
         self._rot3_max = pi
+
+    def guess_poni(self):
+        """
+        Poni can be guessed by the centroid of the ring with lowest 2Theta
+        """
+        tth = self.data[:, 2]
+        asrt = tth.argsort()
+        tth = tth[asrt]
+        srtdata = self.data[asrt]
+        smallRing = srtdata[tth < (tth.min() + 1e-6)]
+        smallRing1 = smallRing[:, 0]
+        smallRing2 = smallRing[:, 1]
+        smallRing_in_m = self.detector.calc_cartesian_positions(smallRing1, smallRing2)
+        l = len(smallRing)
+        self.poni1 = smallRing_in_m[0].sum() / l
+        self.poni2 = smallRing_in_m[1].sum() / l
 
     def residu1(self, param, d1, d2, tthRef):
         return self.tth(d1, d2, param) - tthRef
