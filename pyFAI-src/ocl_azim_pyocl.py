@@ -264,8 +264,9 @@ class Integrator1d(object):
         """
         self.tth_min = numpy.float32(lower)
         self.tth_max = numpy.float32(upper)
-        delta = (upper - lower) / numpy.float32(self.nBins)
-        self.tth_out = numpy.arange(lower, upper, delta, dtype=numpy.float32)
+        delta = (upper - lower) / (self.nBins)
+        self.tth_out = numpy.linspace(lower + 0.5 * delta, upper - 0.5 * delta, self.nBins)
+        #        self.tth_out = numpy.arange(numpy.float32(lower + 0.5 * delta), numpy.float32(upper + 0.5 * delta), numpy.float32(delta), dtype=numpy.float32)
 
 
     def getConfiguration(self, Nimage, Nbins, useFp64=None):

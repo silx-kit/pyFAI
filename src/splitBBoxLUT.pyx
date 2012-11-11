@@ -63,7 +63,7 @@ class HistoBBox1d(object):
 
         cdef float delta, pos0_min, min0
         cdef int i, size
-        cdef numpy.ndarray[numpy.float32_t, ndim = 1] outPos = numpy.empty(bins,dtype=numpy.float32)
+#        cdef numpy.ndarray[numpy.float32_t, ndim = 1] outPos = numpy.empty(bins,dtype=numpy.float32)
         self.size = pos0.size
         assert delta_pos0.size == self.size
         self.bins = bins
@@ -113,11 +113,11 @@ class HistoBBox1d(object):
         self.lut_max_idx = self.calc_lut()
         ########################################################################
         # Linspace has been discareded becaus it does calculation in double precision and all others are done in single
-        #self.outPos = numpy.linspace(self.pos0_min+0.5*delta,self.pos0_max-0.5*delta, self.bins)
+        self.outPos = numpy.linspace(self.pos0_min+0.5*delta,self.pos0_max-0.5*delta, self.bins)
         ########################################################################
-        for i in prange(bins,nogil=True, schedule="static"):
-            outPos[i] = pos0_min + (<float>0.5 +< float > i) * delta
-        self.outPos = outPos
+#        for i in prange(bins,nogil=True, schedule="static"):
+#            outPos[i] = pos0_min + (<float>0.5 +< float > i) * delta
+#        self.outPos = outPos
         self.lut_checksum = hashlib.md5(self.lut).hexdigest()
 
     @cython.cdivision(True)
@@ -185,12 +185,12 @@ class HistoBBox1d(object):
 
         lut_size = outMax.max()
         self.lut_size = lut_size
-        
+
         lut_nbytes = bins*lut_size*sizeof(lut_point)
         if os.name == "posix":
             memsize =  os.sysconf("SC_PAGE_SIZE")*os.sysconf("SC_PHYS_PAGES")
             if memsize <  lut_nbytes:
-                raise MemoryError("Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %s"%(bins,lut_size,lut_nbytes,memsize)) 
+                raise MemoryError("Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %s"%(bins,lut_size,lut_nbytes,memsize))
         lut = numpy.recarray(shape=(bins, lut_size),dtype=[("idx",numpy.uint32),("coef",numpy.float32)])
         memset(&lut[0,0], 0, bins*lut_size*sizeof(lut_point))
         #NOGIL
@@ -335,7 +335,7 @@ class HistoBBox1d(object):
             outCount[i] += sum_count
             if sum_count > epsilon:
                 outMerge[i] += sum_data / sum_count
-        return  self.outPos, outMerge, outData, outCount
+        return  self.outPos.copy(), outMerge, outData, outCount
 
 
 def histoBBox1d(weights ,
@@ -396,7 +396,7 @@ def histoBBox1d(weights ,
     outCount = numpy.zeros(bins, dtype=numpy.float64)
     outMax = numpy.zeros(bins, dtype=numpy.int64)
     outMerge = numpy.zeros(bins, dtype=numpy.float32)
-    outPos = numpy.zeros(bins, dtype=numpy.float32)
+#    outPos = numpy.zeros(bins, dtype=numpy.float32)
 
     if  mask is not None:
         assert mask.size == size
@@ -457,9 +457,9 @@ def histoBBox1d(weights ,
 
     delta = (pos0_max - pos0_min) / ((bins))
 
-    for i in range(bins):
-                outPos[i] = pos0_min + (0.5 + i) * delta
-
+#    for i in range(bins):
+#                outPos[i] = pos0_min + (0.5 + i) * delta
+    outPos = numpy.linspace(pos0_min+0.5*delta,pos0_max-0.5*delta, bins)
     for idx in range(size):
             if (check_mask) and (cmask[idx]):
                 continue

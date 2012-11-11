@@ -292,7 +292,7 @@ create_histo_binarray(const __global float    *tth,
 
   uint gid;
   UINTType convert0, convert1;
-  float tth_min, tth_max;
+//  float tth_min, tth_max;
   float tth_rmin, tth_rmax;
   float fbin0_min, fbin0_max;
   int    bin0_min, bin0_max;
@@ -308,8 +308,8 @@ create_histo_binarray(const __global float    *tth,
   gid=get_global_id(0);
 
   //Load tth min and max from slow global to fast register cache
-  tth_min = tth_min_max[0];
-  tth_max = tth_min_max[1];
+//  tth_min = tth_min_max[0];
+//  tth_max = tth_min_max[1];
   tth_rmin= tth_range[0];
   tth_rmax= tth_range[1];
 

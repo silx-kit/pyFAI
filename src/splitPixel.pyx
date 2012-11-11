@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 #
-#    Project: Azimuthal integration 
+#    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
 #
 #    File: "$Id$"
@@ -53,7 +53,7 @@ cdef double areaTriangle(double a0,
     A(a0,a1)
     B(b0,b1)
     C(c0,c1)
-    @return: area, i.e. 1/2 * (B-A)^(C-A) 
+    @return: area, i.e. 1/2 * (B-A)^(C-A)
     """
     return 0.5 * abs(((b0 - a0) * (c1 - a1)) - ((b1 - a1) * (c0 - a0)))
 
@@ -72,14 +72,14 @@ cdef double areaQuad(double a0,
     B(b0,b1)
     C(c0,c1)
     D(d0,d1)
-    @return: area, i.e. 1/2 * (AC ^ BD) 
+    @return: area, i.e. 1/2 * (AC ^ BD)
     """
     return 0.5 * abs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
 
 @cython.cdivision(True)
 cdef double  getBinNr(double x0, double pos0_min, double dpos) nogil:
     """
-    calculate the bin number for any point 
+    calculate the bin number for any point
     param x0: current position
     param pos0_min: position minimum
     param dpos: bin width
@@ -119,16 +119,16 @@ def fullSplit1D(numpy.ndarray pos not None,
               ):
     """
     Calculates histogram of pos weighted by weights
-    
+
     Splitting is done on the pixel's bounding box like fit2D
-    
-    
+
+
     @param pos: 3D array with pos0; Corner A,B,C,D; tth or chi
     @param weights: array with intensities
     @param bins: number of output bins
     @param pos0Range: minimum and maximum  of the 2th range
     @param pos1Range: minimum and maximum  of the chi range
-    @param dummy: value for bins without pixels 
+    @param dummy: value for bins without pixels
     @return 2theta, I, weighted histogram, unweighted histogram
     """
 
@@ -167,10 +167,10 @@ def fullSplit1D(numpy.ndarray pos not None,
     cdef long   bin0_max, bin0_min
     cdef double aeraPixel, a0, b0, c0, d0
     cdef double epsilon = 1e-10
-
+    outPos = numpy.linspace(pos0_min+0.5*dpos, pos0_max-0.5*dpos, bins)
     with nogil:
-        for i in range(bins):
-                outPos[i] = pos0_min + (0.5 +< double > i) * dpos
+#        for i in range(bins):
+#                outPos[i] = pos0_min + (0.5 +< double > i) * dpos
 
         for idx in range(size):
             data = < double > cdata[idx]
@@ -234,16 +234,16 @@ def fullSplit2D(numpy.ndarray pos not None,
                 double dummy=0.0):
     """
     Calculate 2D histogram of pos weighted by weights
-    
+
     Splitting is done on the pixel's bounding box like fit2D
-    
-    
+
+
     @param pos: 3D array with pos0; Corner A,B,C,D; tth or chi
     @param weights: array with intensities
     @param bins: number of output bins int or 2-tuple of int
     @param pos0Range: minimum and maximum  of the 2th range
     @param pos1Range: minimum and maximum  of the chi range
-    @param dummy: value for bins without pixels 
+    @param dummy: value for bins without pixels
     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
     cdef long  bins0, bins1, i, j, idx

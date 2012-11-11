@@ -97,7 +97,7 @@ def histoBBox1d(numpy.ndarray weights not None,
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(bins, dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(bins, dtype=numpy.float32)
-    cdef numpy.ndarray[numpy.float32_t, ndim = 1] outPos = numpy.zeros(bins, dtype=numpy.float32)
+#    cdef numpy.ndarray[numpy.float32_t, ndim = 1] outPos = numpy.zeros(bins, dtype=numpy.float32)
     cdef numpy.ndarray[numpy.int8_t, ndim = 1] cmask
 
     if  mask is not None:
@@ -159,10 +159,10 @@ def histoBBox1d(numpy.ndarray weights not None,
         pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
 
     cdef float delta = (pos0_max - pos0_min) / (< float > (bins))
-
+    outPos = numpy.linspace(pos0_min+0.5*delta,pos0_max-0.5*delta, bins)
     with nogil:
-        for i in range(bins):
-                outPos[i] = pos0_min + (0.5 +< float > i) * delta
+#        for i in range(bins):
+#                outPos[i] = pos0_min + (0.5 +< float > i) * delta
 
         for idx in range(size):
             if (check_mask) and (cmask[idx]):

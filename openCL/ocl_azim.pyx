@@ -347,10 +347,10 @@ cdef class Integrator1d:
         """Take an image, integrate and return the histogram and weights
         set / unset and loadTth methods have a direct impact on the execute() method.
         All the rest of the methods will require at least a new configuration via configure()
-        
+
         @param image: image to be processed as a numpy array
         @return: tth_out, histogram, bins
-        
+
         TODO: to improve performances, the image should be casted to float32 in an optimal way:
         currently using numpy machinery but would be better if done in OpenCL
         """

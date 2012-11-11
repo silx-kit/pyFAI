@@ -60,9 +60,38 @@ class Bench(object):
             ai = None
         return self.reference_1d[param]
 
-
-
     def bench_cpu1d(self):
+        print("Working on processor: %s" % self.get_cpu())
+        results = {}
+        for param in ds_list:
+            ref = self.get_ref(param)
+            fn = datasets[param]
+            ai = pyFAI.load(param)
+            data = fabio.open(fn).data
+            N = min(data.shape)
+            print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), data.size / 1e6, N))
+            t0 = time.time()
+            res = ai.xrpd(data, N)
+            t1 = time.time()
+            self.print_init(t1 - t0)
+            setup = """
+import pyFAI,fabio
+ai=pyFAI.load("%s")
+data = fabio.open("%s").data
+N=min(data.shape)
+out=ai.xrpd(data,N)""" % (param, fn)
+            t = timeit.Timer("ai.xrpd(data,N)", setup)
+            tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
+            self.print_exec(tmin)
+#            R = utilstest.Rwp(res, ref)
+#            print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
+#            if R < self.LIMIT:
+            results[data.size / 1e6] = tmin * 1000.0
+        self.print_sep()
+        self.meth.append("Cython_OpenMP")
+        self.results["Cython_OpenMP"] = results
+
+    def bench_cpu1d_lut(self):
         print("Working on processor: %s" % self.get_cpu())
         results = {}
         for param in ds_list:
@@ -207,9 +236,10 @@ if __name__ == "__main__":
     b = Bench()
     b.nbr = n
     b.bench_cpu1d()
-#    b.bench_cpu1d_ocl_lut("GPU")
-#    b.bench_cpu1d_ocl_lut("CPU")
-    b.bench_cpu1d_ocl_lut()
+    b.bench_cpu1d_lut()
+    b.bench_cpu1d_ocl_lut("GPU")
+    b.bench_cpu1d_ocl_lut("CPU")
+#    b.bench_cpu1d_ocl_lut()
 #    b.bench_gpu1d("gpu", True)
 #    b.bench_gpu1d("gpu", False)
     b.bench_gpu1d("cpu", True)
