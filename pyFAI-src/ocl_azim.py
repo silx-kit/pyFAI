@@ -27,6 +27,15 @@ import pyopencl
 
 """
 C++ less implementation of Dimitris' code based on PyOpenCL
+
+TODO and trick from dimitris still missing:
+  * dark-current subtraction is still missing
+  * In fact you might want to consider doing the conversion on the GPU when
+    possible. Think about it, you have a uint16 to float which for large arrays
+    was slow.. You load on the graphic card a uint16 (2x transfer speed) and
+    you convert to float inside so it should be blazing fast.
+
+
 """
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
@@ -281,8 +290,8 @@ class Integrator1d(object):
             self.useFp64 = bool(useFp64)
         self.nBins = Nbins
         self.nData = Nimage
-        self.wdim_data = (int(numpy.ceil(float(Nimage) / self.BLOCK_SIZE) * self.BLOCK_SIZE) , 1, 1)
-        self.wdim_bins = (int(numpy.ceil(float(Nbins) / self.BLOCK_SIZE) * self.BLOCK_SIZE) , 1, 1)
+        self.wdim_data = (Nimage + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1), 1, 1#(int(numpy.ceil(float(Nimage) / self.BLOCK_SIZE) * self.BLOCK_SIZE) , 1, 1)
+        self.wdim_bins = (Nbins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1), 1, 1#(int(numpy.ceil(float(Nbins) / self.BLOCK_SIZE) * self.BLOCK_SIZE) , 1, 1)
 
 
     def configure(self, kernel=None):
