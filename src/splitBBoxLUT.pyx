@@ -111,13 +111,7 @@ class HistoBBox1d(object):
         delta = (self.pos0_max - pos0_min) / (bins)
         self.delta = delta
         self.lut_max_idx = self.calc_lut()
-        ########################################################################
-        # Linspace has been discareded becaus it does calculation in double precision and all others are done in single
         self.outPos = numpy.linspace(self.pos0_min+0.5*delta,self.pos0_max-0.5*delta, self.bins)
-        ########################################################################
-#        for i in prange(bins,nogil=True, schedule="static"):
-#            outPos[i] = pos0_min + (<float>0.5 +< float > i) * delta
-#        self.outPos = outPos
         self.lut_checksum = hashlib.md5(self.lut).hexdigest()
 
     @cython.cdivision(True)
@@ -256,7 +250,7 @@ class HistoBBox1d(object):
         cdef int i, j, idx, bins, lut_size, size
         cdef double sum_data, sum_count, epsilon
         cdef float data, coef, cdummy, cddummy
-        cdef bint check_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
+        cdef bint do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
@@ -296,10 +290,25 @@ class HistoBBox1d(object):
         if do_dark or do_flat or do_polarization or do_solidAngle:
             tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
             cdata = numpy.zeros(size,dtype=numpy.float32)
-            for i in prange(size, nogil=True, schedule="static"):
-                data = tdata[i]
-                if not(do_dummy) or (cddummy and (fabs(data-cdummy) > cddummy)) or (not(cddummy) and (data!=cdummy)):
-                    #Nota: -= and /= operatore are seen as reduction in cython parallel.
+            if do_dummy:
+                for i in prange(size, nogil=True, schedule="static"):
+                    data = tdata[i]
+                    if (cddummy and (fabs(data-cdummy) > cddummy)) or (not(cddummy) and (data!=cdummy)):
+                        #Nota: -= and /= operatore are seen as reduction in cython parallel.
+                        if do_dark:
+                            data = data - cdark[i]
+                        if do_flat:
+                            data = data / cflat[i]
+                        if do_polarization:
+                            data = data / cpolarization[i]
+                        if do_solidAngle:
+                            data = data / csolidAngle[i]
+                        cdata[i]+=data
+                    else: #set all dummy_like values to cdummy. simplifies further processing
+                        cdata[i]+=cdummy
+            else:
+                for i in prange(size, nogil=True, schedule="static"):
+                    data = tdata[i]
                     if do_dark:
                         data = data - cdark[i]
                     if do_flat:
@@ -321,13 +330,8 @@ class HistoBBox1d(object):
                 if idx <= 0 and coef <= 0.0:
                     break
                 data = cdata[idx]
-                if check_dummy:
-                    if cddummy:
-                        if fabs(data-cdummy)<=cddummy:
-                            continue
-                    else:
-                        if data==cdummy:
-                            continue
+                if do_dummy and data==cdummy:
+                    continue
 
                 sum_data = sum_data + coef * data
                 sum_count = sum_count + coef
@@ -383,7 +387,7 @@ def histoBBox1d(weights ,
 
     check_pos1 = 0
     check_mask = 0
-    check_dummy = 0
+    do_dummy = 0
     do_dark = 0
     do_flat = 0
 
@@ -404,7 +408,7 @@ def histoBBox1d(weights ,
         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
 
     if (dummy is not None) and delta_dummy is not None:
-        check_dummy = 1
+        do_dummy = 1
         cdummy = float(dummy)
         ddummy = float(delta_dummy)
     elif (dummy is not None):
@@ -465,7 +469,7 @@ def histoBBox1d(weights ,
                 continue
 
             data = cdata[idx]
-            if check_dummy and (fabs(data - cdummy) <= ddummy):
+            if do_dummy and (fabs(data - cdummy) <= ddummy):
                 continue
 
             min0 = cpos0_lower[idx]
