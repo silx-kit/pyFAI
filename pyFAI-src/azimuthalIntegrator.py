@@ -40,9 +40,8 @@ from utils import timeit
 logger = logging.getLogger("pyFAI.azimuthalIntegrator")
 
 try:
-#    import ocl_azim  #IGNORE:F0401
+    import ocl_azim  #IGNORE:F0401
     import opencl
-    import ocl_azim_pyocl as ocl_azim
 except ImportError as error:#IGNORE:W0703
     logger.warning("Unable to import pyFAI.ocl_azim")
     ocl_azim = None

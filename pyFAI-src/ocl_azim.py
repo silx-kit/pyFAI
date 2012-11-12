@@ -38,7 +38,7 @@ import os, logging
 import threading
 import hashlib
 import numpy
-from opencl import ocl, pyopencl
+from opencl import ocl, pyopencl, OpenCL
 if pyopencl:
     mf = pyopencl.mem_flags
 else:

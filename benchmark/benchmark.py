@@ -8,7 +8,7 @@ pyFAI = utilstest.UtilsTest.pyFAI
 
 
 ds_list = ["Pilatus1M.poni", "halfccd.poni", "Frelon2k.poni", "Pilatus6M.poni", "Mar3450.poni", "Fairchild.poni"]
-#ds_list = ["Pilatus6M.poni"]
+#ds_list = ["halfccd.poni"]
 datasets = {"Fairchild.poni":utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
             "halfccd.poni":utilstest.UtilsTest.getimage("1882/halfccd.edf"),
             "Frelon2k.poni":utilstest.UtilsTest.getimage("1881/Frelon2k.edf"),

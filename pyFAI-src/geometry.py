@@ -490,8 +490,9 @@ class Geometry(object):
         """
         calulate the solid angle of the current pixels
         """
-        p1 = (0.5 + d1) * self.pixel1 - self._poni1
-        p2 = (0.5 + d2) * self.pixel2 - self._poni2
+        p1, p2 = self._calcCartesianPositions(d1, d2)
+#        p1 = (0.5 + d1) * self.pixel1 - self._poni1
+#        p2 = (0.5 + d2) * self.pixel2 - self._poni2
         ds = 1.0
 
         # #######################################################################

@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/07/2012"
+__date__ = "12/11/2012"
 __status__ = "stable"
 
 
@@ -66,27 +66,27 @@ else:
 # ###############################################################################
 # check for OpenCL
 # ###############################################################################
-
-# temporary until pyopencl is used
-if "--without-opencl" in sys.argv:
-    OPENCL = None
-    sys.argv.remove('--without-opencl')
-else:
-    print("WARNING Compiling also the OpenCL extensions, \
-        add the --without-opencl option to skip this compilation")
-    OPENCL = True
-if OPENCL:
-    OCLINC = []
-    OCLLIBDIR = []
-    configparser = ConfigParser.ConfigParser()
-    configparser.read([os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                    "setup.cfg")])
-    if "OpenCL" in configparser.sections():
-        for item in configparser.items("OpenCL"):
-            if item[0] == "include-dirs":
-                OCLINC += item[1].split(os.pathsep)
-            elif item[0] == "library-dirs":
-                OCLLIBDIR += item[1].split(os.pathsep)
+#
+## temporary until pyopencl is used
+#if "--without-opencl" in sys.argv:
+#    OPENCL = None
+#    sys.argv.remove('--without-opencl')
+#else:
+#    print("WARNING Compiling also the OpenCL extensions, \
+#        add the --without-opencl option to skip this compilation")
+#    OPENCL = True
+#if OPENCL:
+#    OCLINC = []
+#    OCLLIBDIR = []
+#    configparser = ConfigParser.ConfigParser()
+#    configparser.read([os.path.join(os.path.dirname(os.path.abspath(__file__)),
+#                                    "setup.cfg")])
+#    if "OpenCL" in configparser.sections():
+#        for item in configparser.items("OpenCL"):
+#            if item[0] == "include-dirs":
+#                OCLINC += item[1].split(os.pathsep)
+#            elif item[0] == "library-dirs":
+#                OCLLIBDIR += item[1].split(os.pathsep)
 
 
 
@@ -152,28 +152,28 @@ ext_modules = [histogram_dic, splitPixel_dic, splitBBox_dic, splitBBoxLUT_dic, r
                _geometry_dic, reconstruct_dic, bilinear_dic]
 
 
-if OPENCL:
-    ocl_src = [os.path.join(*(pp.split("/"))) for pp in ("ocl_base.cpp",
-        "ocl_tools/ocl_tools.cc", "ocl_tools/ocl_tools_extended.cc",
-        "ocl_tools/cLogger/cLogger.c", "ocl_xrpd1d_fullsplit.cpp")]
-    if CYTHON:
-        ocl_src.append("ocl_azim.pyx")
-    else:
-        ocl_src.append("ocl_azim.cpp")
-    ocl_azim = [os.path.join("openCL", i) for i in  ocl_src]
-    openCL = OCLINC
-    j = ""
-    for i in "openCL/ocl_tools/cLogger".split("/"):
-        j = os.path.join(j, i)
-        openCL.insert(0, j)
-    ocl_azim_dict = dict(name="ocl_azim",
-                     sources=ocl_azim,
-                     include_dirs=openCL + get_numpy_include_dirs(),
-                     library_dirs=OCLLIBDIR,
-                     language="c++",
-                     libraries=[ "stdc++", "OpenCL"]  # "stdc++"
-                     )
-    ext_modules.append(ocl_azim_dict)
+#if OPENCL:
+#    ocl_src = [os.path.join(*(pp.split("/"))) for pp in ("ocl_base.cpp",
+#        "ocl_tools/ocl_tools.cc", "ocl_tools/ocl_tools_extended.cc",
+#        "ocl_tools/cLogger/cLogger.c", "ocl_xrpd1d_fullsplit.cpp")]
+#    if CYTHON:
+#        ocl_src.append("ocl_azim.pyx")
+#    else:
+#        ocl_src.append("ocl_azim.cpp")
+#    ocl_azim = [os.path.join("openCL", i) for i in  ocl_src]
+#    openCL = OCLINC
+#    j = ""
+#    for i in "openCL/ocl_tools/cLogger".split("/"):
+#        j = os.path.join(j, i)
+#        openCL.insert(0, j)
+#    ocl_azim_dict = dict(name="ocl_azim",
+#                     sources=ocl_azim,
+#                     include_dirs=openCL + get_numpy_include_dirs(),
+#                     library_dirs=OCLLIBDIR,
+#                     language="c++",
+#                     libraries=[ "stdc++", "OpenCL"]  # "stdc++"
+#                     )
+#    ext_modules.append(ocl_azim_dict)
 
 # ###############################################################################
 # scripts and data installation
@@ -284,7 +284,15 @@ try:
 except ImportError:
     print("""pyFAI needs fabIO for all image reading and writing.
 This python module can be found on:
-http: // sourceforge.net / projects / fable / files / fabio / 0.1.0 / """)
+http://sourceforge.net/projects/fable/files/fabio""")
+
+try:
+    import pyopencl
+except ImportError:
+    print("""pyFAI can use pyopencl to run on parallel accelerators like GPU; this is an optional dependency.
+This python module can be found on:
+http://pypi.python.org/pypi/pyopencl
+""")
 
 
 # ###############################################################################
