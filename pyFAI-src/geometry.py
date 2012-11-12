@@ -1,28 +1,28 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-# 
+#
 #    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
-# 
+#
 #    File: "$Id$"
-# 
+#
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
-# 
+#
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
-# 
+#
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
 #    (at your option) any later version.
-# 
+#
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
-# 
+#
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# 
+#
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
@@ -215,7 +215,7 @@ class Geometry(object):
         @type d1: scalar or array of scalar
         @param d2: position(s) in pixel in second dimension (c order)
         @type d2: scalar or array of scalar
-        @param path: can be "cos", "tan" or "cython" 
+        @param path: can be "cos", "tan" or "cython"
         @return 2theta in radians
         @rtype: floar or array of floats.
         """
@@ -531,6 +531,8 @@ class Geometry(object):
         try:
             with open(filename, "a") as f:
                 f.write("# Nota: C-Order, 1 refers to the Y axis, 2 to the X axis %s" % os.linesep)
+                if self.detector.name != "Detector":
+                    f.write("Detector: %s%s" % (self.detector.name, os.linesep))
                 f.write("PixelSize1: %s%s" % (self.pixel1, os.linesep))
                 f.write("PixelSize2: %s%s" % (self.pixel2, os.linesep))
                 f.write("Distance: %s%s" % (self._dist, os.linesep))
@@ -566,6 +568,7 @@ class Geometry(object):
         @param filename: name of the file to load
         @type filename: string
         """
+        data = {}
         for line in open(filename):
             if line.startswith("#") or (":" not in line):
                 continue
@@ -576,27 +579,30 @@ class Geometry(object):
                 value = words[1].strip()
             except Exception as error:  # IGNORE:W0703:
                 logger.error("Error %s with line: %s" % (error, line))
-            if key == "pixelsize1":
-                self.detector.pixel1 = float(value)
-            elif key == "pixelsize2":
-                self.detector.pixel2 = float(value)
-            elif key == "distance":
-                self._dist = float(value)
-            elif key == "poni1":
-                self._poni1 = float(value)
-            elif key == "poni2":
-                self._poni2 = float(value)
-            elif key == "rot1":
-                self._rot1 = float(value)
-            elif key == "rot2":
-                self._rot2 = float(value)
-            elif key == "rot3":
-                self._rot3 = float(value)
-            elif key == "wavelength":
-                self.wavelength = float(value)
-            elif key == "splinefile":
-                if value.lower() != "none":
-                    self.detector.set_splineFile(value)
+            data[key] = value
+        if "detector" in data:
+            self.detector = detectors.detector_factory(data["detector"])
+        if  "pixelsize1" in data:
+            self.detector.pixel1 = float(data["pixelsize1"])
+        if  "pixelsize2" in data:
+            self.detector.pixel2 = float(data["pixelsize2"])
+        if  "distance" in data:
+            self._dist = float(data["distance"])
+        if  "poni1" in data:
+            self._poni1 = float(data["poni1"])
+        if  "poni2" in data:
+            self._poni2 = float(data["poni2"])
+        if  "rot1" in data:
+            self._rot1 = float(data["rot1"])
+        if  "rot2" in data:
+            self._rot2 = float(data["rot2"])
+        if  "rot3" in data:
+            self._rot3 = float(data["rot3"])
+        if  "wavelength" in data:
+            self._wavelength = float(data["wavelength"])
+        if  "splinefile" in data:
+            if value.lower() != "none":
+                self.detector.set_splineFile(data["splinefile"])
         self.reset()
     read = load
 
@@ -771,7 +777,7 @@ class Geometry(object):
         """
         Calculate the polarization correction accoding to the polarization factor:
         @param factor: (Ih-Iv)/(Ih+Iv): varies between 0 (no polarization) and 1 (where division by 0 could occure)
-        @return 2D array with polarization correction array (intensity/polarisation)  
+        @return 2D array with polarization correction array (intensity/polarisation)
         """
         if factor == 0:
             return numpy.ones(shape, dtype=numpy.float32)
@@ -805,7 +811,7 @@ class Geometry(object):
     def calcfrom1d(self, tth, I, shape=None, mask=None, dim1_unit="2th_deg"):
         """
         Computes a 2D image from a 1D integrated profile
-        
+
         @param tth: 1D array with 2theta in degrees
         @param I: scattering intensity
         @return 2D image reconstructed
