@@ -86,7 +86,7 @@ def histoBBox1d(numpy.ndarray weights not None,
     cdef ssize_t   bin0_max, bin0_min, bin = 0
     cdef float data, deltaR, deltaL, deltaA,p1, epsilon = 1e-10, cdummy = 0, ddummy = 0
     cdef float pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0, min0=0, max0=0, fbin0_min=0, fbin0_max=0
-    cdef bint check_pos1 = 0, check_mask = 0, check_dummy = 0, do_dark = 0, do_flat=0
+    cdef bint check_pos1=False, check_mask=False, check_dummy=False, do_dark=False, do_flat=False
 
     cdef numpy.ndarray[numpy.float32_t, ndim = 1] cdata = numpy.ascontiguousarray(weights.ravel(),dtype=numpy.float32)
     cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos0, dpos0, cpos1, dpos1,cpos0_lower, cpos0_upper, cdark, cflat
@@ -97,31 +97,30 @@ def histoBBox1d(numpy.ndarray weights not None,
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(bins, dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(bins, dtype=numpy.float32)
-#    cdef numpy.ndarray[numpy.float32_t, ndim = 1] outPos = numpy.zeros(bins, dtype=numpy.float32)
     cdef numpy.ndarray[numpy.int8_t, ndim = 1] cmask
 
     if  mask is not None:
         assert mask.size == size
-        check_mask = 1
+        check_mask = True
         cmask = numpy.ascontiguousarray(mask.ravel(),dtype=numpy.int8)
 
     if (dummy is not None) and delta_dummy is not None:
-        check_dummy = 1
+        check_dummy = True
         cdummy =  float(dummy)
         ddummy =  float(delta_dummy)
     elif (dummy is not None):
         cdummy = float(dummy)
     else:
-        cdummy=0.0
+        cdummy = 0.0
 
     if dark is not None:
         assert dark.size == size
-        do_dark=1
+        do_dark = True
         cdark = numpy.ascontiguousarray(dark.ravel(),dtype=numpy.float32)
 
     if flat is not None:
         assert flat.size == size
-        do_flat=1
+        do_flat = True
         cflat = numpy.ascontiguousarray(flat.ravel(),dtype=numpy.float32)
 
 
@@ -159,10 +158,8 @@ def histoBBox1d(numpy.ndarray weights not None,
         pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
 
     cdef float delta = (pos0_max - pos0_min) / (< float > (bins))
-    outPos = numpy.linspace(pos0_min+0.5*delta,pos0_max-0.5*delta, bins)
+    outPos = numpy.linspace(pos0_min+0.5*delta, pos0_maxin-0.5*delta, bins)
     with nogil:
-#        for i in range(bins):
-#                outPos[i] = pos0_min + (0.5 +< float > i) * delta
 
         for idx in range(size):
             if (check_mask) and (cmask[idx]):
@@ -287,23 +284,21 @@ def histoBBox2d(numpy.ndarray weights not None,
     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outData = numpy.zeros((bins0, bins1), dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outCount = numpy.zeros((bins0, bins1), dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float32_t, ndim = 2] outMerge = numpy.zeros((bins0, bins1), dtype=numpy.float32)
-    cdef numpy.ndarray[numpy.float32_t, ndim = 1] edges0 = numpy.zeros(bins0, dtype=numpy.float32)
-    cdef numpy.ndarray[numpy.float32_t, ndim = 1] edges1 = numpy.zeros(bins1, dtype=numpy.float32)
 
     cdef float min0, max0, min1, max1, deltaR, deltaL, deltaU, deltaD, deltaA, tmp, delta0, delta1
     cdef float pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin
     cdef float fbin0_min, fbin0_max, fbin1_min, fbin1_max, data, epsilon = 1e-10, cdummy, ddummy
     cdef ssize_t  bin0_max, bin0_min, bin1_max, bin1_min
-    cdef bint check_mask = 0, check_dummy = 0
+    cdef bint check_mask = False, check_dummy = False
     cdef numpy.ndarray[numpy.int8_t, ndim = 1] cmask
 
     if  mask is not None:
         assert mask.size == size
-        check_mask = 1
+        check_mask = True
         cmask = numpy.ascontiguousarray(mask.ravel(),dtype=numpy.int8)
 
     if (dummy is not None) and delta_dummy is not None:
-        check_dummy = 1
+        check_dummy = True
         cdummy =  float(dummy)
         ddummy =  float(delta_dummy)
     elif (dummy is not None):
@@ -346,13 +341,9 @@ def histoBBox2d(numpy.ndarray weights not None,
 
     delta0 = (pos0_max - pos0_min) / (< float > (bins0))
     delta1 = (pos1_max - pos1_min) / (< float > (bins1))
-
+    edges0 = numpy.linspace(pos0_min+0.5*delta0, pos0_maxin-0.5*delta0, bins0)
+    edges1 = numpy.linspace(pos1_min+0.5*delta1, pos1_maxin-0.5*delta1, bins1)
     with nogil:
-        for i in range(bins0):
-                edges0[i] = pos0_min + (0.5 + i) * delta0
-        for i in range(bins1):
-                edges1[i] = pos1_min + (0.5 + i) * delta1
-
         for idx in range(size):
             if (check_mask) and cmask[idx]:
                 continue
