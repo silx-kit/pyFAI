@@ -177,7 +177,7 @@ class Calibration(object):
         self.reconstruct = options.reconstruct
         if options.mask and os.path.isfile(options.mask):
             self.mask = fabio.open(options.mask).data
-        self.dataFiles = [f for f in args if os.path.isfile(f)]
+
 
         self.pointfile = options.npt
         if options.detector_name:
@@ -189,6 +189,9 @@ class Calibration(object):
                 logger.error("Unknown spline file %s" % (options.spline))
         if options.pixel is not None:
             self.get_pixelSize(options.pixel)
+        self.dataFiles = [f for f in args if os.path.isfile(f)]
+        if not self.dataFiles:
+            raise RuntimeError("Please provide some calibration images ... if you want to analyze them. Try also the --help option to see all options!")
 
     def get_pixelSize(self, ans):
         """convert a comma separated sting into pixel size"""

@@ -169,8 +169,6 @@ class Recalibration(object):
         if options.flat:
             print options.flat, type(options.flat)
             self.flatFiles = [f for f in options.flat.split(",") if os.path.isfile(f)]
-        self.dataFiles = [f for f in args if os.path.isfile(f)]
-
         self.pointfile = options.npt
         self.spacing_file = options.spacing
         self.ai = pyFAI.load(options.poni)
@@ -190,9 +188,11 @@ class Recalibration(object):
             self.ai.rot2 = options.rot2
         if options.rot3 is not None:
             self.ai.rot3 = options.rot3
-
         if options.mask is not None:
             self.mask = fabio.open(options.mask).data
+        self.dataFiles = [f for f in args if os.path.isfile(f)]
+        if not self.dataFiles:
+            raise RuntimeError("Please provide some calibration images ... if you want to analyze them. Try also the --help option to see all options!")
 
         print self.ai
 
