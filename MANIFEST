@@ -1,6 +1,6 @@
 CHANGELOG.txt
 MANIFEST.in
-README.md
+README.txt
 TODO.txt
 build-deb.sh
 build-msi.bat
@@ -25,8 +25,8 @@ pyFAI-src/azimuthalIntegrator.py
 pyFAI-src/detectors.py
 pyFAI-src/geometry.py
 pyFAI-src/geometryRefinement.py
-pyFAI-src/ocl_azim_lut.py
 pyFAI-src/ocl_azim.py
+pyFAI-src/ocl_azim_lut.py
 pyFAI-src/opencl.py
 pyFAI-src/peakPicker.py
 pyFAI-src/refinment2D.py
@@ -93,6 +93,7 @@ test/testimages/Pilatus1M.poni
 test/testimages/Pilatus6M.poni
 test/testimages/halfccd.poni
 test/testimages/merged.poni
+test/testimages/profile_lut.py
 test/testimages/refinment.py
 test/testimages/refinment2D.py
 test/testimages/slow_splitBBox.py
