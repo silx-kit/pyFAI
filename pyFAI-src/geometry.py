@@ -601,7 +601,7 @@ class Geometry(object):
         if  "wavelength" in data:
             self._wavelength = float(data["wavelength"])
         if  "splinefile" in data:
-            if value.lower() != "none":
+            if data["splinefile"].lower() != "none":
                 self.detector.set_splineFile(data["splinefile"])
         self.reset()
     read = load
