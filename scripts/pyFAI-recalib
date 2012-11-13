@@ -139,14 +139,14 @@ class Recalibration(object):
                       help="file containing the diffraction parameter (poni-file)", default=None)
         parser.add_option("-n", "--npt", dest="npt", metavar="FILE",
                       help="file with datapoints saved", default=None)
-        parser.add_option("-e", "--energy", dest="energy",
+        parser.add_option("-e", "--energy", dest="energy", type="float",
                       help="energy of the X-Ray beam in keV (hc=%skeV.A)" % hc, default=None)
-        parser.add_option("-w", "--wavelength", dest="wavelength",
+        parser.add_option("-w", "--wavelength", dest="wavelength", type="float",
                       help="wavelength of the X-Ray beam in Angstrom", default=None)
-        parser.add_option("-l", "--distance", dest="distance",type="float",
+        parser.add_option("-l", "--distance", dest="distance", type="float",
                       help="sample-detector distance in millimeter", default=None)
         parser.add_option("--poni1", dest="poni1", type="float",
-                      help = "poni1 coordinate in meter", default = None)
+                      help="poni1 coordinate in meter", default=None)
         parser.add_option("--poni2", dest="poni2", type="float",
                       help="poni2 coordinate in meter", default=None)
         parser.add_option("--rot1", dest="rot1", type="float",
