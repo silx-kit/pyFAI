@@ -59,6 +59,10 @@ class PeakPicker(object):
         """
         self.strFilename = strFilename
         self.data = fabio.open(strFilename).data.astype("float32")
+        if mask is not None:
+            view = self.data.ravel()
+            flat_mask = mask.ravel()
+            view[numpy.where(flat_mask)] = 0
         self.shape = self.data.shape
         self.points = ControlPoints()
         self.lstPoints = []
@@ -86,9 +90,9 @@ class PeakPicker(object):
             self.fig = pylab.plt.figure()
         self.ax = self.fig.add_subplot(111);
         if log:
-            self.ax.imshow(numpy.log(1.0 + self.data - self.data.min()), origin="lower")
+            self.ax.imshow(numpy.log(1.0 + self.data - self.data.min()), origin="lower", interpolation="nearest")
         else:
-            self.ax.imshow(self.data, origin="lower")
+            self.ax.imshow(self.data, origin="lower", interpolation="nearest")
         self.fig.show()
         self.fig.canvas.mpl_connect('button_press_event', self.onclick)
 
@@ -235,7 +239,7 @@ class PeakPicker(object):
                 if len(self.msp.images) > 1:
                     self.msp.images.pop()
             try:
-                self.msp.imshow(mask, cmap="gray", origin="lower")
+                self.msp.imshow(mask, cmap="gray", origin="lower", interpolation="nearest")
             except MemoryError:
                 logging.error("Sorry but your computer does NOT have enough memory to display the massif plot")
             #self.fig.show()
