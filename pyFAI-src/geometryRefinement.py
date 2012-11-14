@@ -95,6 +95,48 @@ class GeometryRefinement(AzimuthalIntegrator):
         self.poni1 = smallRing_in_m[0].sum() / l
         self.poni2 = smallRing_in_m[1].sum() / l
 
+    def set_tolerance(self, value=10):
+        """
+        
+        @param value: Tolerance as a percentage
+         
+        """
+        low = 1.0 - value / 100.
+        hi = 1.0 + value / 100.
+        self.dist_min = low * self.dist
+        self.dist_max = hi * self.dist
+        if abs(self.poni1) > (value / 100.) ** 2:
+            self.poni1_min = min(low * self.poni1, hi * self.poni1)
+            self.poni1_max = max(low * self.poni1, hi * self.poni1)
+        else:
+            self.poni1_min = -(value / 100.) ** 2
+            self.poni1_max = (value / 100.) ** 2
+        if abs(self.poni2) > (value / 100.) ** 2:
+            self.poni2_min = min(low * self.poni2, hi * self.poni2)
+            self.poni2_max = max(low * self.poni2, hi * self.poni2)
+        else:
+            self.poni2_min = -(value / 100.) ** 2
+            self.poni2_max = (value / 100.) ** 2
+        if abs(self.rot1) > (value / 100.) ** 2:
+            self.rot1_min = min(low * self.rot1, hi * self.rot1)
+            self.rot1_max = max(low * self.rot1, hi * self.rot1)
+        else:
+            self.rot1_min = -(value / 100.) ** 2
+            self.rot1_max = (value / 100.) ** 2
+        if abs(self.rot2) > (value / 100.) ** 2:
+            self.rot2_min = min(low * self.rot2, hi * self.rot2)
+            self.rot2_max = max(low * self.rot2, hi * self.rot2)
+        else:
+            self.rot2_min = -(value / 100.) ** 2
+            self.rot2_max = (value / 100.) ** 2
+        if abs(self.rot3) > (value / 100.) ** 2:
+            self.rot3_min = min(low * self.rot3, hi * self.rot3)
+            self.rot3_max = max(low * self.rot3, hi * self.rot3)
+        else:
+            self.rot3_min = -(value / 100.) ** 2
+            self.rot3_max = (value / 100.) ** 2
+
+
     def residu1(self, param, d1, d2, tthRef):
         return self.tth(d1, d2, param) - tthRef
 
