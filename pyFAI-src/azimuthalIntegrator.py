@@ -930,7 +930,7 @@ class AzimuthalIntegrator(Geometry):
 
 
     def saxs(self, data, nbPt, filename=None, correctSolidAngle=True, variance=None,
-             qRange=None, chiRange=None, mask=None, dummy=None,
+             error_model=None, qRange=None, chiRange=None, mask=None, dummy=None,
              delta_dummy=None, method="bbox"):
         """
         Calculate the azimuthal integrated Saxs curve
@@ -945,8 +945,10 @@ class AzimuthalIntegrator(Geometry):
         @type filename: string
         @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
         @type correctSolidAngle: boolean
-        @param variance: array containing the variance of the data
+        @param variance: array containing the variance of the data, if you know it
         @type variance: ndarray
+        @param error_model: When the variance is unknown, an error model can be given: "poisson" (variance = I), "azimuthal" (variance = (I-<I>)^2)  
+        @type error_model: string
         @param qRange: The lower and upper range of the sctter vector q. If not provided, range is simply (data.min(), data.max()).
                         Values outside the range are ignored.
         @type qRange: (float, float), optional
@@ -961,12 +963,16 @@ class AzimuthalIntegrator(Geometry):
         @rtype: 3-tuple of ndarrays
         """
         method = method.lower()
-        if variance is not None:
-            assert variance.shape == data.shape
         mask = self.makeMask(data, mask)
         shape = data.shape
         data = data.astype("float32")
         q = self.qArray(shape)
+        if variance is not None:
+            assert variance.shape == data.shape
+        elif error_model:
+            error_model = error_model.lower()
+            if error_model == "poisson":
+                variance = data
         if chiRange is not None:
             chiRange = tuple([numpy.deg2rad(i) for i in chiRange])
             chi = self.chiArray(shape)
@@ -1018,6 +1024,8 @@ class AzimuthalIntegrator(Geometry):
                                                         pos1Range=chiRange,
                                                         dummy=dummy,
                                                         delta_dummy=delta_dummy)
+                if error_model == "azimuthal":
+                    variance = (data - self.calcfrom1d(qAxis, I, dim1_unit="q_nm^-1")[mask]) ** 2
                 if variance is not None:
                     qa, var1d, a, b = splitPixel.fullSplit1D(pos=pos,
                                                             weights=variance,
@@ -1058,6 +1066,8 @@ class AzimuthalIntegrator(Geometry):
                                                       pos0Range=qRange,
                                                       pos1Range=chiRange,
                                                       dummy=dummy)
+                if error_model == "azimuthal":
+                    variance = (data - self.calcfrom1d(qAxis, I, dim1_unit="q_nm^-1")[mask]) ** 2
                 if variance is not None:
                     qa, var1d, a, b = splitBBox.histoBBox1d(weights=variance,
                                                       pos0=q,
@@ -1097,6 +1107,8 @@ class AzimuthalIntegrator(Geometry):
                                                    bins=nbPt,
                                                    pixelSize_in_Pos=1,
                                                    dummy=dummy)
+                if error_model == "azimuthal":
+                    variance = (data - self.calcfrom1d(qAxis, I, dim1_unit="q_nm^-1", correctSolidAngle=False)[mask]) ** 2
                 if variance is not None:
                     qa, var1d, a, b = histogram.histogram(pos=q,
                                                    weights=variance,
@@ -1113,7 +1125,8 @@ class AzimuthalIntegrator(Geometry):
             ref, b = numpy.histogram(q, nbPt)
             count = numpy.maximum(1, ref)
             val, b = numpy.histogram(q, nbPt, weights=data)
-
+            if error_model == "azimuthal":
+                    variance = (data - self.calcfrom1d(qAxis, I, dim1_unit="q_nm^-1", correctSolidAngle=False)[mask]) ** 2
             if variance is not None:
                 variance = variance[mask]
                 var1d, b = numpy.histogram(q, nbPt, weights=variance)

@@ -808,7 +808,7 @@ class Geometry(object):
         self._polarization_factor = 0
 
 
-    def calcfrom1d(self, tth, I, shape=None, mask=None, dim1_unit="2th_deg"):
+    def calcfrom1d(self, tth, I, shape=None, mask=None, dim1_unit="2th_deg", correctSolidAngle=True):
         """
         Computes a 2D image from a 1D integrated profile
 
@@ -817,18 +817,27 @@ class Geometry(object):
         @return 2D image reconstructed
         """
         if dim1_unit == "2th_deg":
+            tth = numpy.radians(tth)
             if shape is None:
                 ttha = self._ttha
                 shape = self._ttha.shape
             else:
-                ttha = integrator.twoThetaArray(shape)
+                ttha = self.twoThetaArray(shape)
+        elif dim1_unit == "q_nm^-1":
+            if shape is None:
+                ttha = self._qa
+                shape = ttha.shape
+            else:
+                ttha = self.qArray(shape)
         else:
 #            TODO
-            raise RuntimeError("Not (yet) Implemented")
-        calcimage = numpy.interp(ttha.ravel(), numpy.radians(tth), I)
+            raise RuntimeError("in pyFAI.Geometry.calcfrom1d: Not (yet?) Implemented")
+        calcimage = numpy.interp(ttha.ravel(), tth, I)
         calcimage.shape = shape
-        calcimage *= self.solidAngleArray(shape)
+        if correctSolidAngle:
+            calcimage *= self.solidAngleArray(shape)
         if mask is not None:
+            assert mask.shape == tuple(shape)
             calcimage[mask] = 0
         return calcimage
 
