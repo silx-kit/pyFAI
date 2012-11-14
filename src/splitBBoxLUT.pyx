@@ -61,9 +61,7 @@ class HistoBBox1d(object):
                  allow_pos0_neg=False
                  ):
 
-        cdef float delta, pos0_min, min0
         cdef int i, size
-#        cdef numpy.ndarray[numpy.float32_t, ndim = 1] outPos = numpy.empty(bins,dtype=numpy.float32)
         self.size = pos0.size
         assert delta_pos0.size == self.size
         self.bins = bins
@@ -72,46 +70,43 @@ class HistoBBox1d(object):
         self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=numpy.float32)
         self.cpos0_sup = self.cpos0 + self.dpos0
         self.cpos0_inf = self.cpos0 - self.dpos0
-        self.pos0_max = (self.cpos0_sup).max()
-        pos0_min = (self.cpos0_inf).min()
-        self.pos0_min = pos0_min
         self.pos0Range = pos0Range
         self.pos1Range = pos1Range
         if pos0Range is not None and len(pos0Range) > 1:
             self.pos0_min = min(pos0Range)
             pos0_maxin = max(pos0Range)
-        else:
-            pos0_maxin = self.pos0_max
-        if self.pos0_min < 0:# and not allow_pos0_neg:
-            self.pos0_min = pos0_min = 0
+        else:            
+            self.pos0_min = (self.cpos0_inf).min()
+            pos0_maxin = (self.cpos0_sup).max()
+        if (not allow_pos0_neg) and self.pos0_min < 0:
+            self.pos0_min = 0
         self.pos0_max = pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps)
 
         if pos1Range is not None and len(pos1Range) > 1:
             assert pos1.size == self.size
             assert delta_pos1.size == self.size
-            self.check_pos1 = 1
+            self.check_pos1 = True
             self.cpos1_min = numpy.ascontiguousarray((pos1-delta_pos1).ravel(), dtype=numpy.float32)
             self.cpos1_max = numpy.ascontiguousarray((pos1+delta_pos1).ravel(), dtype=numpy.float32)
             self.pos1_min = min(pos1Range)
             pos1_maxin = max(pos1Range)
             self.pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
         else:
-            self.check_pos1 = 0
+            self.check_pos1 = False
             self.cpos1_min = None
             self.pos1_max = None
 
         if  mask is not None:
             assert mask.size == self.size
-            self.check_mask = 1
+            self.check_mask = True
             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
             self.mask_checksum = hashlib.md5(mask).hexdigest()
         else:
-            self.check_mask = 0
+            self.check_mask = False
             self.mask_checksum=None
-        delta = (self.pos0_max - pos0_min) / (bins)
-        self.delta = delta
+        self.delta = (self.pos0_max - self.pos0_min) / bins
         self.lut_max_idx = self.calc_lut()
-        self.outPos = numpy.linspace(self.pos0_min+0.5*delta,self.pos0_max-0.5*delta, self.bins)
+        self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, pos0_maxin-0.5*self.delta, self.bins)
         self.lut_checksum = hashlib.md5(self.lut).hexdigest()
 
     @cython.cdivision(True)
@@ -133,18 +128,18 @@ class HistoBBox1d(object):
         size = self.size
         if self.check_mask:
             cmask = self.cmask
-            check_mask = 1
+            check_mask = True
         else:
-            check_mask = 0
+            check_mask = False
 
         if self.check_pos1:
-            check_pos1 = 1
+            check_pos1 = True
             cpos1_min = self.cpos1_min
             cpos1_max = self.cpos1_max
             pos1_max = self.pos1_max
             pos1_min = self.pos1_min
         else:
-            check_pos1 = 0
+            check_pos1 = False
 #NOGIL
         with nogil:
             for idx in range(size):
