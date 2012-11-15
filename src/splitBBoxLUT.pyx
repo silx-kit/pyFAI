@@ -175,10 +175,11 @@ class HistoBBox1d(object):
         self.lut_size = lut_size
 
         lut_nbytes = bins*lut_size*sizeof(lut_point)
-        if os.name == "posix":
+        if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
             memsize =  os.sysconf("SC_PAGE_SIZE")*os.sysconf("SC_PHYS_PAGES")
             if memsize <  lut_nbytes:
                 raise MemoryError("Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %s"%(bins,lut_size,lut_nbytes,memsize))
+        #else hope we have enough memory
         lut = numpy.recarray(shape=(bins, lut_size),dtype=[("idx",numpy.uint32),("coef",numpy.float32)])
         memset(&lut[0,0], 0, bins*lut_size*sizeof(lut_point))
         #NOGIL
