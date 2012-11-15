@@ -28,53 +28,41 @@
 import cython
 cimport numpy
 import numpy
+from libc.math cimport fabs, floor, ceil
 
-cdef extern from "math.h":
-    double floor(double)nogil
-    double  fabs(double)nogil
-
-
-cdef extern from "stdlib.h":
-    void free(void * ptr)nogil
-    void * calloc(size_t nmemb, size_t size)nogil
-    void * malloc(size_t size)nogil
-
-ctypedef numpy.int64_t DTYPE_int64_t
-ctypedef numpy.float64_t DTYPE_float64_t
-
-cdef double areaTriangle(double a0,
-                         double a1,
-                         double b0,
-                         double b1,
-                         double c0,
-                         double c1):
-    """
-    Calculate the area of the ABC triangle with corners:
-    A(a0,a1)
-    B(b0,b1)
-    C(c0,c1)
-    @return: area, i.e. 1/2 * (B-A)^(C-A)
-    """
-    return 0.5 * abs(((b0 - a0) * (c1 - a1)) - ((b1 - a1) * (c0 - a0)))
-
-cdef double areaQuad(double a0,
-                     double a1,
-                     double b0,
-                     double b1,
-                     double c0,
-                     double c1,
-                     double d0,
-                     double d1
-                     ):
-    """
-    Calculate the area of the ABCD quadrilataire  with corners:
-    A(a0,a1)
-    B(b0,b1)
-    C(c0,c1)
-    D(d0,d1)
-    @return: area, i.e. 1/2 * (AC ^ BD)
-    """
-    return 0.5 * abs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
+#cdef double areaTriangle(double a0,
+#                         double a1,
+#                         double b0,
+#                         double b1,
+#                         double c0,
+#                         double c1):
+#    """
+#    Calculate the area of the ABC triangle with corners:
+#    A(a0,a1)
+#    B(b0,b1)
+#    C(c0,c1)
+#    @return: area, i.e. 1/2 * (B-A)^(C-A)
+#    """
+#    return 0.5 * abs(((b0 - a0) * (c1 - a1)) - ((b1 - a1) * (c0 - a0)))
+#
+#cdef double areaQuad(double a0,
+#                     double a1,
+#                     double b0,
+#                     double b1,
+#                     double c0,
+#                     double c1,
+#                     double d0,
+#                     double d1
+#                     ):
+#    """
+#    Calculate the area of the ABCD quadrilataire  with corners:
+#    A(a0,a1)
+#    B(b0,b1)
+#    C(c0,c1)
+#    D(d0,d1)
+#    @return: area, i.e. 1/2 * (AC ^ BD)
+#    """
+#    return 0.5 * abs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
 
 @cython.cdivision(True)
 cdef double  getBinNr(double x0, double pos0_min, double dpos) nogil:
@@ -111,16 +99,23 @@ cdef double max4f(double a, double b, double c, double d) nogil:
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def fullSplit1D(numpy.ndarray pos not None,
-              numpy.ndarray weights not None,
-              long bins=100,
-              pos0Range=None,
-              pos1Range=None,
-              double dummy=0.0
+                numpy.ndarray weights not None,
+                size_t bins=100,
+                pos0Range=None,
+                pos1Range=None,
+                dummy=None,
+                delta_dummy=None,
+                mask=None,
+                dark=None,
+                flat=None,
+                solidangle=None,
+                polarization=None
               ):
     """
     Calculates histogram of pos weighted by weights
 
-    Splitting is done on the pixel's bounding box like fit2D
+    Splitting is done on the pixel's bounding box like fit2D.
+    No compromise for speed has been made here.
 
 
     @param pos: 3D array with pos0; Corner A,B,C,D; tth or chi
@@ -129,62 +124,138 @@ def fullSplit1D(numpy.ndarray pos not None,
     @param pos0Range: minimum and maximum  of the 2th range
     @param pos1Range: minimum and maximum  of the chi range
     @param dummy: value for bins without pixels
+    @param delta_dummy: precision of dummy value
+    @param mask: array (of int8) with masked pixels with 1 (0=not masked)
+    @param dark: array (of float32) with dark noise to be subtracted (or None)
+    @param flat: array (of float32) with flat image
+    @param polarization: array (of float32) with polarization correction
+    @param solidangle: array (of float32) with flat image
     @return 2theta, I, weighted histogram, unweighted histogram
     """
-
-    assert pos.shape[0] == weights.size
+    cdef ssize_t  size = weights.size
+    assert pos.shape[0] == size
     assert pos.shape[1] == 4
     assert pos.shape[2] == 2
     assert pos.ndim == 3
     assert  bins > 1
-    cdef long  size = weights.size
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 3] cpos = pos.astype("float64")
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 1] cdata = weights.astype("float64").ravel()
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 1] outData = numpy.zeros(bins, dtype="float64")
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype="float64")
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 1] outMerge = numpy.zeros(bins, dtype="float64")
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 1] outPos = numpy.zeros(bins, dtype="float64")
+    
+    cdef numpy.ndarray[numpy.float64_t, ndim = 3] cpos = numpy.ascontiguousarray(pos,dtype=numpy.float64)
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(bins, dtype=numpy.float64)
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype=numpy.float64)
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] outMerge = numpy.zeros(bins, dtype=numpy.float64)
+    cdef numpy.int8_t[:] mask
+    cdef numpy.float[:] cflat, cdark, cpolarization, csolidangle
+    cdef double cdummy, cddummy, data
     cdef double min0, max0, deltaR, deltaL, deltaA
     cdef double pos0_min, pos0_max, pos0_maxin, pos1_min, pos1_max, pos1_maxin
+    cdef bint check_pos1=False, do_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False 
+    cdef ssize_t i, idx
+    cdef double fbin0_min, fbin0_max#, fbin1_min, fbin1_max
+    cdef long bin, bin0_max, bin0_min
+    cdef double aeraPixel, dpos, a0, b0, c0, d0, max0, min0, a1, b1, c1, d1, max1, min1,
+    cdef double epsilon
+    
     if pos0Range is not None and len(pos0Range) > 1:
         pos0_min = min(pos0Range)
         pos0_maxin = max(pos0Range)
     else:
         pos0_min = pos[:, :, 0].min()
         pos0_maxin = pos[:, :, 0].max()
-    pos0_max = pos0_maxin * (1 + numpy.finfo(numpy.double).eps)
+    pos0_max = pos0_maxin * (1 + numpy.finfo(numpy.float32).eps)
     if pos1Range is not None and len(pos1Range) > 1:
         pos1_min = min(pos1Range)
         pos1_maxin = max(pos1Range)
+        do_pos1 = True
     else:
         pos1_min = pos[:, :, 1].min()
-        pos1_max = pos[:, :, 1].max()
-    pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.double).eps)
-    cdef double dpos = (pos0_max - pos0_min) / (< double > (bins))
-    cdef long   bin = 0
-    cdef long   i, idx
-    cdef double fbin0_min, fbin0_max#, fbin1_min, fbin1_max
-    cdef long   bin0_max, bin0_min
-    cdef double aeraPixel, a0, b0, c0, d0
-    cdef double epsilon = 1e-10
-    outPos = numpy.linspace(pos0_min+0.5*dpos, pos0_max-0.5*dpos, bins)
+        pos1_maxin = pos[:, :, 1].max()
+    pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
+    dpos = (pos0_max - pos0_min) / (< double > (bins))
+    bin = 0
+    epsilon = 1e-10
+    
+    outPos = numpy.linspace(pos0_min+0.5*dpos, pos0_maxin-0.5*dpos, bins)
+    
+    if (dummy is not None) and (delta_dummy is not None):
+        check_dummy = True
+        cdummy =  float(dummy)
+        ddummy =  float(delta_dummy)
+    elif (dummy is not None):
+        check_dummy = True
+        cdummy = float(dummy)
+        ddummy = 0.0
+    else:
+        check_dummy = False
+        cdummy = 0.0
+        ddummy = 0.0
+        
+    if mask is not None:
+        do_mask = True
+        assert mask.size == size
+        cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
+    if dark is not None:
+        do_dark = True
+        assert dark.size == size
+        cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
+    if flat is not None:
+        do_flat = True
+        assert flat.size == size
+        cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)
+    if polarization is not None:
+        do_polarization = True
+        assert polarization.size == size
+        cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
+    if solidangle is not None:
+        do_solidangle = True
+        assert solidangle.size == size
+        csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float32)    
+    
     with nogil:
-#        for i in range(bins):
-#                outPos[i] = pos0_min + (0.5 +< double > i) * dpos
-
         for idx in range(size):
-            data = < double > cdata[idx]
+
+            if (check_mask) and (cmask[idx]):
+                continue
+
+            data = cdata[idx]
+            if check_dummy and ( (cddummy==0.0 and data==cdummy) or (cddummy!=0.0 and fabs(data-cdummy)<=cddummy)):
+                continue
+          
             a0 = < double > cpos[idx, 0, 0]
+            a1 = < double > cpos[idx, 0, 1]
             b0 = < double > cpos[idx, 1, 0]
+            b1 = < double > cpos[idx, 1, 1]
             c0 = < double > cpos[idx, 2, 0]
+            c1 = < double > cpos[idx, 2, 1]
             d0 = < double > cpos[idx, 3, 0]
+            d1 = < double > cpos[idx, 3, 1]
             min0 = min4f(a0, b0, c0, d0)
             max0 = max4f(a0, b0, c0, d0)
+            if (max0<pos0_min) or (min0 > pos0_maxin):
+                continue
+            if check_pos1:
+                min1 = min4f(a1, b1, c1, d1)
+                max1 = max4f(a1, b1, c1, d1)
+                if (max1<pos1_min) or (min1 > pos1_maxin):
+                    continue
+            if min0<pos0_min:
+                min0=pos0_min
+            if max0>pos1_maxin:
+                max0=pos0_maxin
+
+            if do_dark:
+                data-=cdark[idx]
+            if do_flat:
+                data/=cflat[idx]
+            if do_polarization:
+                data/=cpolarization[idx]
+            if do_solidangle:
+                data/=csolidangle[idx]
 
             fbin0_min = getBinNr(min0, pos0_min, dpos)
             fbin0_max = getBinNr(max0, pos0_min, dpos)
-            bin0_min = < long > floor(fbin0_min)
-            bin0_max = < long > floor(fbin0_max)
+            bin0_min = < ssize_t > floor(fbin0_min)
+            bin0_max = < ssize_t > floor(fbin0_max)
 
             if bin0_min == bin0_max:
                 #All pixel is within a single bin
@@ -214,7 +285,7 @@ def fullSplit1D(numpy.ndarray pos not None,
                 if outCount[i] > epsilon:
                     outMerge[i] = outData[i] / outCount[i]
                 else:
-                    outMerge[i] = dummy
+                    outMerge[i] = cdummy
 
     return  outPos, outMerge, outData, outCount
 
@@ -262,13 +333,13 @@ def fullSplit2D(numpy.ndarray pos not None,
         bins1 = 1
 
 
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 3] cpos = pos.astype("float64")
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 1] cdata = weights.astype("float64").ravel()
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 2] outData = numpy.zeros((bins0, bins1), dtype="float64")
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 2] outCount = numpy.zeros((bins0, bins1), dtype="float64")
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 2] outMerge = numpy.zeros((bins0, bins1), dtype="float64")
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 1] edges0 = numpy.zeros(bins0, dtype="float64")
-    cdef numpy.ndarray[DTYPE_float64_t, ndim = 1] edges1 = numpy.zeros(bins1, dtype="float64")
+    cdef numpy.ndarray[numpy.float64_t, ndim = 3] cpos = pos.astype(numpy.float64)
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] cdata = weights.astype(numpy.float64).ravel()
+    cdef numpy.ndarray[numpy.float64_t, ndim = 2] outData = numpy.zeros((bins0, bins1), dtype=numpy.float64)
+    cdef numpy.ndarray[numpy.float64_t, ndim = 2] outCount = numpy.zeros((bins0, bins1), dtype=numpy.float64)
+    cdef numpy.ndarray[numpy.float64_t, ndim = 2] outMerge = numpy.zeros((bins0, bins1), dtype=numpy.float64)
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] edges0 = numpy.zeros(bins0, dtype=numpy.float64)
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] edges1 = numpy.zeros(bins1, dtype=numpy.float64)
 
     cdef double min0, max0, min1, max1, deltaR, deltaL, deltaU, deltaD, deltaA
     cdef double pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin

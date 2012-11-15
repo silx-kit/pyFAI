@@ -1,10 +1,11 @@
 #!/usr/bin/python
-import fabio, sys, time, timeit, os
+import fabio, sys, time, timeit, os, platform, subprocess, re
 import os.path as op
 
 sys.path.append(op.join(op.dirname(op.dirname(op.abspath(__file__))), "test"))
 import utilstest
 pyFAI = utilstest.UtilsTest.pyFAI
+ocl = pyFAI.opencl.ocl
 
 
 ds_list = ["Pilatus1M.poni", "halfccd.poni", "Frelon2k.poni", "Pilatus6M.poni", "Mar3450.poni", "Fairchild.poni"]
@@ -31,12 +32,23 @@ class Bench(object):
     nbr = 10
     results = {}
     meth = []
-    def get_cpu(self):
-        return [i.split(": ", 1)[1] for i in open("/proc/cpuinfo") if i.startswith("model name")][0].strip()
+    _cpu = None
 
-    def get_gpu(self, deviceid=0):
-        import pyopencl
-        return pyopencl.get_platforms()[0].get_devices()[0].name
+    def get_cpu(self):
+        if self._cpu is None:
+            if os.name == "nt":
+                self._cpu = platform.processor()
+            elif os.path.exists("/proc/cpuinfo"):
+                self._cpu = [i.split(": ", 1)[1] for i in open("/proc/cpuinfo") if i.startswith("model name")][0].strip()
+            elif os.path.exists("/usr/sbin/sysctl"):
+                proc = subprocess.Popen(["sysctl", "-n", "machdep.cpu.brand_string"], stdout=subprocess.PIPE)
+                proc.wait()
+                self._cpu = proc.read().strip()
+        return self._cpu
+
+    def get_gpu(self, devicetype="gpu", useFp64=True, platformid=None, deviceid=None):
+        ctx = ocl.create_context(devicetype, useFp64, platformid, deviceid)
+        return ctx.devices[0].name
 
     def print_init(self, t):
         print(" * Initialization time: %.1f ms" % (1000.0 * t))
