@@ -28,7 +28,7 @@
 import cython
 cimport numpy
 import numpy
-from libc.math cimport fabs, floor, ceil
+from libc.math cimport fabs
 
 #cdef double areaTriangle(double a0,
 #                         double a1,
@@ -126,10 +126,10 @@ def fullSplit1D(numpy.ndarray pos not None,
     @param dummy: value for bins without pixels
     @param delta_dummy: precision of dummy value
     @param mask: array (of int8) with masked pixels with 1 (0=not masked)
-    @param dark: array (of float32) with dark noise to be subtracted (or None)
-    @param flat: array (of float32) with flat image
-    @param polarization: array (of float32) with polarization correction
-    @param solidangle: array (of float32) with flat image
+    @param dark: array (of float64) with dark noise to be subtracted (or None)
+    @param flat: array (of float64) with flat image
+    @param polarization: array (of float64) with polarization correction
+    @param solidangle: array (of float64) with flat image
     @return 2theta, I, weighted histogram, unweighted histogram
     """
     cdef ssize_t  size = weights.size
@@ -138,24 +138,24 @@ def fullSplit1D(numpy.ndarray pos not None,
     assert pos.shape[2] == 2
     assert pos.ndim == 3
     assert  bins > 1
-    
+
     cdef numpy.ndarray[numpy.float64_t, ndim = 3] cpos = numpy.ascontiguousarray(pos,dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(bins, dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outMerge = numpy.zeros(bins, dtype=numpy.float64)
-    cdef numpy.int8_t[:] mask
-    cdef numpy.float[:] cflat, cdark, cpolarization, csolidangle
+    cdef numpy.int8_t[:] cmask
+    cdef double[:] cflat, cdark, cpolarization, csolidangle
     cdef double cdummy, cddummy, data
-    cdef double min0, max0, deltaR, deltaL, deltaA
+    cdef double deltaR, deltaL, deltaA
     cdef double pos0_min, pos0_max, pos0_maxin, pos1_min, pos1_max, pos1_maxin
-    cdef bint check_pos1=False, do_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False 
+    cdef bint check_pos1=False, check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
     cdef ssize_t i, idx
     cdef double fbin0_min, fbin0_max#, fbin1_min, fbin1_max
     cdef long bin, bin0_max, bin0_min
     cdef double aeraPixel, dpos, a0, b0, c0, d0, max0, min0, a1, b1, c1, d1, max1, min1,
     cdef double epsilon
-    
+
     if pos0Range is not None and len(pos0Range) > 1:
         pos0_min = min(pos0Range)
         pos0_maxin = max(pos0Range)
@@ -174,43 +174,43 @@ def fullSplit1D(numpy.ndarray pos not None,
     dpos = (pos0_max - pos0_min) / (< double > (bins))
     bin = 0
     epsilon = 1e-10
-    
+
     outPos = numpy.linspace(pos0_min+0.5*dpos, pos0_maxin-0.5*dpos, bins)
-    
+
     if (dummy is not None) and (delta_dummy is not None):
         check_dummy = True
         cdummy =  float(dummy)
-        ddummy =  float(delta_dummy)
+        cddummy =  float(delta_dummy)
     elif (dummy is not None):
         check_dummy = True
         cdummy = float(dummy)
-        ddummy = 0.0
+        cddummy = 0.0
     else:
         check_dummy = False
         cdummy = 0.0
-        ddummy = 0.0
-        
+        cddummy = 0.0
+
     if mask is not None:
-        do_mask = True
+        check_mask = True
         assert mask.size == size
         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
     if dark is not None:
         do_dark = True
         assert dark.size == size
-        cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
+        cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
     if flat is not None:
         do_flat = True
         assert flat.size == size
-        cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)
+        cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)
     if polarization is not None:
         do_polarization = True
         assert polarization.size == size
-        cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
+        cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)
     if solidangle is not None:
         do_solidangle = True
         assert solidangle.size == size
-        csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float32)    
-    
+        csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)
+
     with nogil:
         for idx in range(size):
 
@@ -220,7 +220,7 @@ def fullSplit1D(numpy.ndarray pos not None,
             data = cdata[idx]
             if check_dummy and ( (cddummy==0.0 and data==cdummy) or (cddummy!=0.0 and fabs(data-cdummy)<=cddummy)):
                 continue
-          
+
             a0 = < double > cpos[idx, 0, 0]
             a1 = < double > cpos[idx, 0, 1]
             b0 = < double > cpos[idx, 1, 0]
@@ -244,18 +244,18 @@ def fullSplit1D(numpy.ndarray pos not None,
                 max0=pos0_maxin
 
             if do_dark:
-                data-=cdark[idx]
+                data -= cdark[idx]
             if do_flat:
-                data/=cflat[idx]
+                data /= cflat[idx]
             if do_polarization:
-                data/=cpolarization[idx]
+                data /= cpolarization[idx]
             if do_solidangle:
-                data/=csolidangle[idx]
+                data /= csolidangle[idx]
 
             fbin0_min = getBinNr(min0, pos0_min, dpos)
             fbin0_max = getBinNr(max0, pos0_min, dpos)
-            bin0_min = < ssize_t > floor(fbin0_min)
-            bin0_max = < ssize_t > floor(fbin0_max)
+            bin0_min = < ssize_t > fbin0_min
+            bin0_max = < ssize_t > fbin0_max
 
             if bin0_min == bin0_max:
                 #All pixel is within a single bin
@@ -281,11 +281,12 @@ def fullSplit1D(numpy.ndarray pos not None,
                         outCount[i] += deltaA
                         outData[i] += data * deltaA
 
+
         for i in range(bins):
-                if outCount[i] > epsilon:
-                    outMerge[i] = outData[i] / outCount[i]
-                else:
-                    outMerge[i] = cdummy
+            if outCount[i] > epsilon:
+                outMerge[i] = outData[i] / outCount[i]
+            else:
+                outMerge[i] = cdummy
 
     return  outPos, outMerge, outData, outCount
 
@@ -302,7 +303,13 @@ def fullSplit2D(numpy.ndarray pos not None,
                 bins not None,
                 pos0Range=None,
                 pos1Range=None,
-                double dummy=0.0):
+                dummy=None,
+                delta_dummy=None,
+                mask=None,
+                dark=None,
+                flat=None,
+                solidangle=None,
+                polarization=None):
     """
     Calculate 2D histogram of pos weighted by weights
 
@@ -315,10 +322,17 @@ def fullSplit2D(numpy.ndarray pos not None,
     @param pos0Range: minimum and maximum  of the 2th range
     @param pos1Range: minimum and maximum  of the chi range
     @param dummy: value for bins without pixels
+    @param delta_dummy: precision of dummy value
+    @param mask: array (of int8) with masked pixels with 1 (0=not masked)
+    @param dark: array (of float64) with dark noise to be subtracted (or None)
+    @param flat: array (of float64) with flat image
+    @param polarization: array (of float64) with polarization correction
+    @param solidangle: array (of float64) with flat image
     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
-    cdef long  bins0, bins1, i, j, idx
-    cdef long  size = weights.size
+
+    cdef ssize_t size = weights.size
+    cdef ssize_t  bins0, bins1, i, j, idx
     assert pos.shape[0] == weights.size
     assert pos.shape[1] == 4 # 4 corners
     assert pos.shape[2] == 2 # tth and chi
@@ -340,6 +354,10 @@ def fullSplit2D(numpy.ndarray pos not None,
     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outMerge = numpy.zeros((bins0, bins1), dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] edges0 = numpy.zeros(bins0, dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] edges1 = numpy.zeros(bins1, dtype=numpy.float64)
+    cdef bint check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
+    cdef numpy.int8_t[:] cmask
+    cdef double[:] cflat, cdark, cpolarization, csolidangle
+    cdef double cdummy, cddummy, data
 
     cdef double min0, max0, min1, max1, deltaR, deltaL, deltaU, deltaD, deltaA
     cdef double pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin
@@ -355,7 +373,7 @@ def fullSplit2D(numpy.ndarray pos not None,
     else:
         pos0_min = pos[:, :, 0].min()
         pos0_maxin = pos[:, :, 0].max()
-    pos0_max = pos0_maxin * (1 + numpy.finfo(numpy.double).eps)
+    pos0_max = pos0_maxin * (1 + numpy.finfo(numpy.float32).eps)
 
     if pos1Range is not None and len(pos1Range) > 1:
         pos1_min = min(pos1Range)
@@ -363,55 +381,74 @@ def fullSplit2D(numpy.ndarray pos not None,
     else:
         pos1_min = pos[:, :, 1].min()
         pos1_maxin = pos[:, :, 1].max()
-    pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.double).eps)
+    pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
 
     cdef double dpos0 = (pos0_max - pos0_min) / (< double > (bins0))
     cdef double dpos1 = (pos1_max - pos1_min) / (< double > (bins1))
+    edges0 = numpy.linspace(pos0_min+0.5*dpos0, pos0_maxin-0.5*dpos0, bins0)
+    edges1 = numpy.linspace(pos1_min+0.5*dpos1, pos0_maxin-0.5*dpos1, bins1)
+
+    if (dummy is not None) and (delta_dummy is not None):
+        check_dummy = True
+        cdummy =  float(dummy)
+        cddummy =  float(delta_dummy)
+    elif (dummy is not None):
+        check_dummy = True
+        cdummy = float(dummy)
+        cddummy = 0.0
+    else:
+        check_dummy = False
+        cdummy = 0.0
+        cddummy = 0.0
+
+    if mask is not None:
+        check_mask = True
+        assert mask.size == size
+        cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
+    if dark is not None:
+        do_dark = True
+        assert dark.size == size
+        cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
+    if flat is not None:
+        do_flat = True
+        assert flat.size == size
+        cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)
+    if polarization is not None:
+        do_polarization = True
+        assert polarization.size == size
+        cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)
+    if solidangle is not None:
+        do_solidangle = True
+        assert solidangle.size == size
+        csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)
 
     with nogil:
-        for i in range(bins0):
-                edges0[i] = pos0_min + (0.5 +< double > i) * dpos0
-        for i in range(bins1):
-                edges1[i] = pos1_min + (0.5 +< double > i) * dpos1
-
         for idx in range(size):
-            data = < double > cdata[idx]
-            a0 = < double > cpos[idx, 0, 0]
-            a1 = < double > cpos[idx, 0, 1]
-            b0 = < double > cpos[idx, 1, 0]
-            b1 = < double > cpos[idx, 1, 1]
-            c0 = < double > cpos[idx, 2, 0]
-            c1 = < double > cpos[idx, 2, 1]
-            d0 = < double > cpos[idx, 3, 0]
-            d1 = < double > cpos[idx, 3, 1]
+
+
+            if (check_mask) and (cmask[idx]):
+                continue
+
+            data = cdata[idx]
+            if check_dummy and ( (cddummy==0.0 and data==cdummy) or (cddummy!=0.0 and fabs(data-cdummy)<=cddummy)):
+                continue
+
+            a0 =  cpos[idx, 0, 0]
+            a1 =  cpos[idx, 0, 1]
+            b0 =  cpos[idx, 1, 0]
+            b1 =  cpos[idx, 1, 1]
+            c0 =  cpos[idx, 2, 0]
+            c1 =  cpos[idx, 2, 1]
+            d0 =  cpos[idx, 3, 0]
+            d1 =  cpos[idx, 3, 1]
 
             min0 = min4f(a0, b0, c0, d0)
             max0 = max4f(a0, b0, c0, d0)
             min1 = min4f(a1, b1, c1, d1)
             max1 = max4f(a1, b1, c1, d1)
-#            splitOnePixel2D(min0, max0, min1, max1,
-#                      data,
-#                      pos0_min, pos1_min,
-#                      dpos0, dpos1,
-#                      outCount,
-#                      outData)
 
-            if max0 < pos0_min:
-                with gil:
-                    print("max0 (%s) < self.pos0_min %s" % (max0 , pos0_min))
-                continue
-            if max1 < pos1_min:
-                with gil:
-                    print("max1 (%s) < pos1_min %s" % (max0 , pos0_min))
-                continue
-            if min0 > pos0_maxin:
-                with gil:
-                    print("min0 (%s) > pos0_maxin %s" % (max0 , pos0_maxin))
-                continue
-            if min1 > pos1_maxin:
-                with gil:
-                    print("min1 (%s) > pos1_maxin %s" % (max0 , pos1_maxin))
-                continue
+            if (max0<pos0_min) or (min0 > pos0_maxin) or (max1<pos1_min) or (min1 > pos1_maxin):
+                    continue
 
             if min0 < pos0_min:
                 data = data * (pos0_min - min0) / (max0 - min0)
@@ -428,8 +465,6 @@ def fullSplit2D(numpy.ndarray pos not None,
 
 ##                treat data for pixel on chi discontinuity
             if ((max1 - min1) / dpos1) > (bins1 / 2.0):
-#                with gil:
-#                    print("max1: %s; min1: %s; dpos1: %s" % (max1 , min1, dpos1))
                 if pos1_maxin - max1 > min1 - pos1_min:
                     min1 = max1
                     max1 = pos1_maxin
@@ -442,10 +477,10 @@ def fullSplit2D(numpy.ndarray pos not None,
             fbin1_min = getBinNr(min1, pos1_min, dpos1)
             fbin1_max = getBinNr(max1, pos1_min, dpos1)
 
-            bin0_min = < long > floor(fbin0_min)
-            bin0_max = < long > floor(fbin0_max)
-            bin1_min = < long > floor(fbin1_min)
-            bin1_max = < long > floor(fbin1_max)
+            bin0_min = < ssize_t > fbin0_min
+            bin0_max = < ssize_t > fbin0_max
+            bin1_min = < ssize_t > fbin1_min
+            bin1_max = < ssize_t > fbin1_max
 
 
             if bin0_min == bin0_max:
@@ -527,6 +562,6 @@ def fullSplit2D(numpy.ndarray pos not None,
                 if outCount[i, j] > epsilon:
                     outMerge[i, j] = outData[i, j] / outCount[i, j]
                 else:
-                    outMerge[i, j] = dummy
+                    outMerge[i, j] = cdummy
     return outMerge.T, edges0, edges1, outData.T, outCount.T
 

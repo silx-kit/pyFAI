@@ -87,16 +87,19 @@ class AzimuthalIntegrator(Geometry):
         Geometry.__init__(self, dist, poni1, poni2, rot1, rot2, rot3, pixel1, pixel2, splineFile, detector)
         self._nbPixCache = {} #key=shape, value: array
 
-        self.maskfile = None    #just a placeholder
+        try:
+            self.mask = self.detector.get_mask()
+        except NotImplementedError:
+            self.mask = None
         self.background = None  #just a placeholder
         self.flatfield = None   #just a placeholder
         self.darkcurrent = None   #just a placeholder
 
         self.header = None
 
-        self._backgrounds = {}  #dict for caching
-        self._flatfields = {}
-        self._darkcurrents = {}
+#        self._backgrounds = {}  #dict for caching
+#        self._flatfields = {}
+#        self._darkcurrents = {}
 
         self._ocl_integrator = None
         self._ocl_lut_integr = None
@@ -947,7 +950,7 @@ class AzimuthalIntegrator(Geometry):
         @type correctSolidAngle: boolean
         @param variance: array containing the variance of the data, if you know it
         @type variance: ndarray
-        @param error_model: When the variance is unknown, an error model can be given: "poisson" (variance = I), "azimuthal" (variance = (I-<I>)^2)  
+        @param error_model: When the variance is unknown, an error model can be given: "poisson" (variance = I), "azimuthal" (variance = (I-<I>)^2)
         @type error_model: string
         @param qRange: The lower and upper range of the sctter vector q. If not provided, range is simply (data.min(), data.max()).
                         Values outside the range are ignored.
@@ -955,15 +958,18 @@ class AzimuthalIntegrator(Geometry):
         @param chiRange: The lower and upper range of the chi angle. If not provided, range is simply (data.min(), data.max()).
                         Values outside the range are ignored.
         @type chiRange: (float, float), optional
-        @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
+        @param mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
         @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
         @param method: can be "numpy", "cython", "BBox" or "splitpixel"
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
         @rtype: 3-tuple of ndarrays
         """
+
+        #TODO: this is probably broken, fix it !!!
         method = method.lower()
-        mask = self.makeMask(data, mask)
+        if mask is None:
+            mask = self.mask
         shape = data.shape
         data = data.astype("float32")
         q = self.qArray(shape)
@@ -978,30 +984,11 @@ class AzimuthalIntegrator(Geometry):
             chi = self.chiArray(shape)
         else:
             chi = None
-        if self.darkcurrent is not None:
-            if os.path.isfile(self.darkcurrent):
-                dcf = os.path.abspath(self.darkcurrent)
-                if dcf not  in self._darkcurrents:
-                    self._darkcurrents[dcf] = fabio.open(dcf).data.astype("float32")
-                data -= self._darkcurrents[dcf]
-                mask = mask * (data >= 0) #invalidate data < dark current
-        if self.flatfield is not None:
-            if os.path.isfile(self.flatfield):
-                fff = os.path.abspath(self.flatfield)
-                if fff not  in self._flatfields:
-                    self._flatfields[fff] = fabio.open(fff).data.astype("float32")
-                data /= self._flatfields[fff]
-                mask = mask * (self._flatfields[fff] > 0) #invalidate flatfield <=0
-        if self.background is not None:
-            if os.path.isfile(self.background):
-                bgf = os.path.abspath(self.background)
-                if bgf not  in self._backgrounds:
-                    self._backgrounds[bgf] = fabio.open(bgf).data.astype("float32")
-                data -= self._backgrounds[bgf]
-                mask = mask * (data >= 0) #invalidate data < background
 
         if correctSolidAngle:
-            data = (data / self.solidAngleArray(shape))
+            solidangle = self.solidAngleArray(shape)
+        else:
+            solidangle = None
         I = None
         sigma = None
         if method.lower() == "splitpixel":
@@ -1013,27 +1000,32 @@ class AzimuthalIntegrator(Geometry):
                 method = "bbox"
             else:
                 pos = self.cornerQArray(shape)
-                data = data[mask]
-                pos = pos[mask]
-                if variance is not None:
-                    variance = variance[mask]
                 qAxis, I, a, b = splitPixel.fullSplit1D(pos=pos,
                                                         weights=data,
                                                         bins=nbPt,
                                                         pos0Range=qRange,
                                                         pos1Range=chiRange,
                                                         dummy=dummy,
-                                                        delta_dummy=delta_dummy)
+                                                        delta_dummy=delta_dummy,
+                                                        mask=mask,
+                                                        dark=self.darkcurrent,
+                                                        flat=self.flatfield,
+                                                        solidangle=solidangle,
+                                                        )
                 if error_model == "azimuthal":
-                    variance = (data - self.calcfrom1d(qAxis, I, dim1_unit="q_nm^-1")[mask]) ** 2
+                    variance = (data - self.calcfrom1d(qAxis, I, dim1_unit="q_nm^-1")) ** 2
                 if variance is not None:
                     qa, var1d, a, b = splitPixel.fullSplit1D(pos=pos,
-                                                            weights=variance,
-                                                            bins=nbPt,
-                                                            pos0Range=qRange,
-                                                            pos1Range=chiRange,
-                                                            dummy=dummy,
-                                                            delta_dummy=delta_dummy)
+                                                             weights=variance,
+                                                             bins=nbPt,
+                                                             pos0Range=qRange,
+                                                             pos1Range=chiRange,
+                                                             dummy=dummy,
+                                                             delta_dummy=delta_dummy,
+                                                             mask=mask,
+                                                             dark=self.darkcurrent,
+                                                             flat=self.flatfield,
+                                                             solidangle=solidangle,)
                     sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
 
         if method.lower() == "bbox":
@@ -1044,19 +1036,14 @@ class AzimuthalIntegrator(Geometry):
                 logger.error("Import error %s , falling back on Cython histogram !" % error)
                 method = "cython"
             else:
-                mask = self.makeMask(data, mask, dummy, delta_dummy)
-                dq = self.deltaQ(shape)[mask]
-                q = q[mask]
+#                mask = self.makeMask(data, mask, dummy, delta_dummy)
+                dq = self.deltaQ(shape)
+                q = q
                 if chi is not None:
-                    chi = chi[mask]
-                    dchi = self.deltaChi(shape)[mask]
+                    chi = chi
+                    dchi = self.deltaChi(shape)
                 else:
                     dchi = None
-                if variance is not None:
-                    variance = variance[mask]
-                data = data[mask]
-                if dummy is None:
-                    dummy = 0
                 qAxis, I, a, b = splitBBox.histoBBox1d(weights=data,
                                                       pos0=q,
                                                       delta_pos0=dq,
@@ -1065,7 +1052,12 @@ class AzimuthalIntegrator(Geometry):
                                                       bins=nbPt,
                                                       pos0Range=qRange,
                                                       pos1Range=chiRange,
-                                                      dummy=dummy)
+                                                      dummy=dummy,
+                                                      delta_dummy=delta_dummy,
+                                                      mask=None,
+                                                      dark=None,
+                                                      flat=None
+                                                      )
                 if error_model == "azimuthal":
                     variance = (data - self.calcfrom1d(qAxis, I, dim1_unit="q_nm^-1")[mask]) ** 2
                 if variance is not None:
