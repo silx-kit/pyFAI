@@ -58,8 +58,7 @@ class HistoBBox1d(object):
                  pos0Range=None,
                  pos1Range=None,
                  mask=None,
-                 allow_pos0_neg=False
-                 ):
+                 allow_pos0_neg=False):
 
         cdef int i, size
         self.size = pos0.size
