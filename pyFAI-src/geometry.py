@@ -379,11 +379,6 @@ class Geometry(object):
         """
         Generate a 3D array of the given shape with (i,j) (azimuthal angle) for all elements.
         """
-# ###############################################################################
-# TODO : add the center to the 4 corners when splitpixel algo is ready
-# ###############################################################################
-#        tth_center = self.twoThetaArray(shape)
-#        chi_center = self.chiArray(shape)
         if self._corner4Da is None:
             with self._sem:
                 if self._corner4Da is None:
@@ -398,8 +393,6 @@ class Geometry(object):
                     self._corner4Da[:, :, 2, 1] = chi[1:, 1:]
                     self._corner4Da[:, :, 3, 0] = tth[:-1, 1:]
                     self._corner4Da[:, :, 3, 1] = chi[:-1, 1:]
-#                    self._corner4Da[:, :, 4, 0] = tth_center
-#                    self._corner4Da[:, :, 4, 1] = chi_center
         return self._corner4Da
 
 
@@ -407,17 +400,12 @@ class Geometry(object):
         """
         Generate a 3D array of the given shape with (i,j) (azimuthal angle) for all elements.
         """
-# ###############################################################################
-# TODO : add the center to the 4 corners when splitpixel algo is ready
-# ###############################################################################
-#        q_center = self.qArray(shape)
-#        chi_center = self.chiArray(shape)
         if self._corner4Dqa is None:
             with self._sem:
                 if self._corner4Dqa is None:
                     self._corner4Dqa = numpy.zeros((shape[0], shape[1], 4, 2), dtype=numpy.float32)
                     chi = numpy.fromfunction(self.chi_corner, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
-                    tth = numpy.fromfunction(self.qCornerFunct(shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
+                    tth = numpy.fromfunction(self.qCornerFunct, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
                     self._corner4Dqa[:, :, 0, 0] = tth[:-1, :-1]
                     self._corner4Dqa[:, :, 0, 1] = chi[:-1, :-1]
                     self._corner4Dqa[:, :, 1, 0] = tth[1:, :-1]
@@ -426,8 +414,6 @@ class Geometry(object):
                     self._corner4Dqa[:, :, 2, 1] = chi[1:, 1:]
                     self._corner4Dqa[:, :, 3, 0] = tth[:-1, 1:]
                     self._corner4Dqa[:, :, 3, 1] = chi[:-1, 1:]
-#                    self._corner4Dqa[:, :, 4, 0] = q_center
-#                    self._corner4Dqa[:, :, 4, 1] = chi_center
         return self._corner4Dqa
 
 

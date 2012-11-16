@@ -24,6 +24,14 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""
+This class defines azimuthal integrators (ai here-after).
+main methods are:
+
+tth,I = ai.xrpd(data,nbPt)
+q,I,sigma = ai.saxs(data,nbPt)
+
+"""
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
@@ -87,18 +95,14 @@ class AzimuthalIntegrator(Geometry):
         Geometry.__init__(self, dist, poni1, poni2, rot1, rot2, rot3, pixel1, pixel2, splineFile, detector)
         self._nbPixCache = {} #key=shape, value: array
 
-        self.mask = self.detector.mask
-        self._maskfile = None
+        #
+        #mask and maskfile are properties pointing to self.detector
 
-        self.background = None  #just a placeholder
         self.flatfield = None   #just a placeholder
         self.darkcurrent = None   #just a placeholder
 
         self.header = None
 
-#        self._backgrounds = {}  #dict for caching
-#        self._flatfields = {}
-#        self._darkcurrents = {}
 
         self._ocl_integrator = None
         self._ocl_lut_integr = None
@@ -156,7 +160,7 @@ class AzimuthalIntegrator(Geometry):
                 numpy.logical_or(mask, (abs(data - dummy) <= delta_dummy), mask)
         if mode != "normal":
             numpy.logical_not(mask, mask)
-
+        return mask
 
 
     def xrpd_numpy(self, data, nbPt, filename=None, correctSolidAngle=True,
@@ -514,7 +518,7 @@ class AzimuthalIntegrator(Geometry):
                                     deviceid=deviceid,
                                     useFp64=useFp64)
                     else:
-                       rc = integr.init(devicetype=devicetype,
+                        rc = integr.init(devicetype=devicetype,
                                         useFp64=useFp64)
                     if rc:
                         raise RuntimeError('Failed to initialize OpenCL deviceType %s (%s,%s) 64bits: %s' % (devicetype, platformid, deviceid, useFp64))
@@ -668,10 +672,10 @@ class AzimuthalIntegrator(Geometry):
             try:
                 tthAxis, I, a, b = self._lut_integrator.integrate(data, solidAngle=solid_angle_array)
             except MemoryError: #LUT method is hungry...
-                    logger.warning("MemoryError: falling back on forward implementation")
-                    self._ocl_lut_integr = None
-                    gc.collect()
-                    return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
+                logger.warning("MemoryError: falling back on forward implementation")
+                self._ocl_lut_integr = None
+                gc.collect()
+                return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
         tthAxis = numpy.degrees(tthAxis)
         if filename:
             self.save1D(filename, tthAxis, I, None, "2th_deg")
@@ -1058,8 +1062,6 @@ class AzimuthalIntegrator(Geometry):
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
         @rtype: 3-tuple of ndarrays
         """
-
-        #TODO: this is probably broken, fix it !!!
         method = method.lower()
         if mask is None:
             mask = self.mask
@@ -1085,7 +1087,7 @@ class AzimuthalIntegrator(Geometry):
         if polarization_factor != 0:
             polarization = self.polarization(shape, polarization_factor)
         else:
-            solidangle = None
+            polarization = None
         if dark is None:
             dark = self.darkcurrent
         if flat is None:
@@ -1093,7 +1095,7 @@ class AzimuthalIntegrator(Geometry):
 
         I = None
         sigma = None
-        if method.lower() == "splitpixel":
+        if "splitpix" in method:
             logger.debug("saxs uses SplitPixel implementation")
             try:
                 import splitPixel#IGNORE:F0401
@@ -1111,7 +1113,7 @@ class AzimuthalIntegrator(Geometry):
                                                         delta_dummy=delta_dummy,
                                                         mask=mask,
                                                         dark=dark,
-                                                        flat=flatf,
+                                                        flat=flat,
                                                         solidangle=solidangle,
                                                         polarization=polarization
                                                         )
@@ -1126,13 +1128,10 @@ class AzimuthalIntegrator(Geometry):
                                                              dummy=dummy,
                                                              delta_dummy=delta_dummy,
                                                              mask=mask,
-                                                             dark=dark,
-                                                             flat=flatf,
-                                                             solidangle=solidangle,
-                                                             polarization=polarization)
+                                                             )
                     sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
 
-        if method.lower() == "bbox":
+        if (I is None) and ("bbox" in method):
             logger.debug("saxs uses BBox implementation")
             try:
                 import splitBBox#IGNORE:F0401
@@ -1158,7 +1157,7 @@ class AzimuthalIntegrator(Geometry):
                                                       delta_dummy=delta_dummy,
                                                       mask=mask,
                                                       dark=dark,
-                                                      flat=flatf,
+                                                      flat=flat,
                                                       solidangle=solidangle,
                                                       polarization=polarization)
                 if error_model == "azimuthal":
@@ -1178,7 +1177,7 @@ class AzimuthalIntegrator(Geometry):
                                                       )
                     sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
 
-        if (I is None) and (method == "cython"):
+        if (I is None) and ("cython" in method):
             logger.debug("saxs uses cython implementation")
             try:
                 import histogram#IGNORE:F0401
@@ -1242,7 +1241,7 @@ class AzimuthalIntegrator(Geometry):
             count = numpy.maximum(1, ref)
             val, b = numpy.histogram(q, nbPt, weights=data)
             if error_model == "azimuthal":
-                    variance = (data - self.calcfrom1d(qAxis, I, dim1_unit="q_nm^-1", correctSolidAngle=False)[mask]) ** 2
+                variance = (data - self.calcfrom1d(qAxis, I, dim1_unit="q_nm^-1", correctSolidAngle=False)[mask]) ** 2
             if variance is not None:
                 var1d, b = numpy.histogram(q, nbPt, weights=variance)
                 sigma = numpy.sqrt(var1d) / count
@@ -1274,12 +1273,6 @@ class AzimuthalIntegrator(Geometry):
                 headerLst.append("Wavelength: %s" % self.wavelength)
             if self._maskfile is not None:
                 headerLst.append("Mask File: %s" % self._maskfile)
-#            if self.darkcurrent is not None:
-#                headerLst.append("DarkCurrent File: %s" % self.darkcurrent)
-#            if self.flatfield is not None:
-#                headerLst.append("Flatfield File: %s" % self.flatfield)
-#            if self.background is not None:
-#                headerLst.append("Background File: %s" % self.background)
             self.header = os.linesep.join([hdr + " " + i for i in headerLst])
         return self.header
 
@@ -1320,10 +1313,16 @@ class AzimuthalIntegrator(Geometry):
         except IOError:
             logger.error("IOError while writing %s" % filename)
 
+################################################################################
+# Some properties
+################################################################################
     def set_maskfile(self, maskfile):
-        with self.sem:
-            self.mask = numpy.ascontiguousarray(fabio.open(maskfile).data, dtype=numpy.int8)
-            self._maskfile = maskfile
+        self.detector.set_maskfile(maskfile)
     def get_maskfile(self):
-        return self._maskfile
+        return self.detector.get_maskfile()
     maskfile = property(get_maskfile, set_maskfile)
+    def set_mask(self, mask):
+        self.detector.set_mask(mask)
+    def get_mask(self):
+        return self.detector.get_mask()
+    mask = property(get_mask, set_mask)

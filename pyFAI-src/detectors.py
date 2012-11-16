@@ -45,7 +45,8 @@ class Detector(object):
         self.pixel2 = pixel2
         self.max_shape = (None, None)
         self._binning = (1, 1)
-        self._mask = None
+        self._mask = False
+        self._maskfile = None
         self._splineFile = None
         self.spline = None
         self._splineCache = {}  # key=(dx,xpoints,ypoints) value: ndarray
@@ -160,15 +161,30 @@ class Detector(object):
         """
         Detectors with gaps should overwrite this method with something actually calculating the mask!
         """
+#        logger.debug("Detector.calc_mask is not implemented for generic detectors")
         return None
 
     def get_mask(self):
-        if self._mask is None:
-            self._mask = self.calc_mask()
+        if self._mask is False:
+            with self._sem:
+                if self._mask is False:
+                    self._mask = self.calc_mask() #gets None in worse cases
         return self._mask
     def set_mask(self, mask):
         self._mask = mask
     mask = property(get_mask, set_mask)
+    def set_maskfile(self, maskfile):
+        try:
+            import fabio
+        except:
+            ImportError("Please install fabio to load images")
+        with self._sem:
+            self._mask = numpy.ascontiguousarray(fabio.open(maskfile).data, dtype=numpy.int8)
+            self._maskfile = maskfile
+    def get_maskfile(self):
+        return self._maskfile
+    maskfile = property(get_maskfile, set_maskfile)
+
 
 class Pilatus(Detector):
     "Pilatus detector: generic description"
@@ -184,17 +200,16 @@ class Pilatus(Detector):
         """
         Returns a generic mask for Pilatus detectors...
         """
-        with self._sem:
-            if self.max_shape[0] is None or\
-                self.max_shape[1] is None:
-                raise NotImplementedError("Generic Pilatus detector does not know the max size ...")
-            mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
-            # workinng in dim0 = Y
-            for i in range(self.MODULE_SIZE[0], self.max_shape[0], self.MODULE_SIZE[0] + self.MODULE_GAP[0]):
-                mask[i: i + self.MODULE_GAP[0], :] = 1
-            # workinng in dim1 = X
-            for i in range(self.MODULE_SIZE[1], self.max_shape[1], self.MODULE_SIZE[1] + self.MODULE_GAP[1]):
-                mask[:, i: i + self.MODULE_GAP[1]] = 1
+        if self.max_shape[0] is None or\
+            self.max_shape[1] is None:
+            raise NotImplementedError("Generic Pilatus detector does not know the max size ...")
+        mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
+        # workinng in dim0 = Y
+        for i in range(self.MODULE_SIZE[0], self.max_shape[0], self.MODULE_SIZE[0] + self.MODULE_GAP[0]):
+            mask[i: i + self.MODULE_GAP[0], :] = 1
+        # workinng in dim1 = X
+        for i in range(self.MODULE_SIZE[1], self.max_shape[1], self.MODULE_SIZE[1] + self.MODULE_GAP[1]):
+            mask[:, i: i + self.MODULE_GAP[1]] = 1
         return mask
 
 class Pilatus1M(Pilatus):
