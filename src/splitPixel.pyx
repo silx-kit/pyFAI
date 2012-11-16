@@ -133,6 +133,8 @@ def fullSplit1D(numpy.ndarray pos not None,
     @return 2theta, I, weighted histogram, unweighted histogram
     """
     cdef ssize_t  size = weights.size
+    if pos.ndim>3: #create a view
+        pos = pos.reshape((-1,4,2))
     assert pos.shape[0] == size
     assert pos.shape[1] == 4
     assert pos.shape[2] == 2
@@ -325,15 +327,18 @@ def fullSplit2D(numpy.ndarray pos not None,
     @param delta_dummy: precision of dummy value
     @param mask: array (of int8) with masked pixels with 1 (0=not masked)
     @param dark: array (of float64) with dark noise to be subtracted (or None)
-    @param flat: array (of float64) with flat image
+    @param flat: array (of float64) with flat-field image
     @param polarization: array (of float64) with polarization correction
-    @param solidangle: array (of float64) with flat image
+    @param solidangle: array (of float64)with solid angle corrections
     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
 
     cdef ssize_t size = weights.size
     cdef ssize_t  bins0, bins1, i, j, idx
-    assert pos.shape[0] == weights.size
+    if pos.ndim>3: #create a view
+        pos = pos.reshape((-1,4,2))
+
+    assert pos.shape[0] == size
     assert pos.shape[1] == 4 # 4 corners
     assert pos.shape[2] == 2 # tth and chi
     assert pos.ndim == 3

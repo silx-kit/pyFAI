@@ -87,10 +87,9 @@ class AzimuthalIntegrator(Geometry):
         Geometry.__init__(self, dist, poni1, poni2, rot1, rot2, rot3, pixel1, pixel2, splineFile, detector)
         self._nbPixCache = {} #key=shape, value: array
 
-        try:
-            self.mask = self.detector.get_mask()
-        except NotImplementedError:
-            self.mask = None
+        self.mask = self.detector.mask
+        self._maskfile = None
+
         self.background = None  #just a placeholder
         self.flatfield = None   #just a placeholder
         self.darkcurrent = None   #just a placeholder
@@ -118,50 +117,51 @@ class AzimuthalIntegrator(Geometry):
         with self._lut_sem:
             self._lut_integrator = None
 
-    def makeMask(self, data, mask=None, dummy=None, delta_dummy=None, invertMask=None):
+    def makeMask(self, data, mask=None, dummy=None, delta_dummy=None, mode="normal"):
         """
-        Combines a mask
+        Combines various masks...
 
-        For the mask: 1 for good pixels, 0 for bas pixels
-        @param data: input array of
-        @param mask: input mask
+        Normal mode: False for valid pixels, True for bad pixels
+        Numpy mode: True for valid pixels, false for others
+         
+        @param data: input array of data
+        @param mask: input mask (if none, self.mask is used)
         @param dummy: value of dead pixels
         @param delta_dumy: precision of dummy pixels
-        @param invertMask: to force inversion of the input mask
+        @param mode: can be "normal" or "numpy"
+        @return: array of boolean  
         """
         shape = data.shape
-        if (mask is None) and (self.maskfile is not None) and os.path.isfile(self.maskfile):
-            mask = fabio.open(self.maskfile).data
-        if (mask is None) and (self.maskfile is None):
-            mask = numpy.ones(shape, dtype=bool)
+        if mask is None:
+            mask = self.mask
+        if mask is None :
+            mask = numpy.zeros(shape, dtype=bool)
+        elif mask.min() < 0 and mask.max() == 0: # 0 is valid, <0 is invalid
+            mask = (mask < 0)
         else:
-            mask_min = mask.min()
-            mask_max = mask.max()
-            if  mask_min < 0 and mask_max == 0:
-                mask = (mask.clip(-1, 0) + 1).astype(bool)
-            else:
-                mask = mask.astype(bool)
-            if mask.sum(dtype=int) > mask.size:
-                logger.debug("Mask likely to be inverted as more than half pixel are masked !!!")
-                mask = (1 - mask).astype(bool)
+            mask = mask.astype(bool)
+        if mask.sum(dtype=int) > mask.size // 2:
+            logger.debug("Mask likely to be inverted as more than half pixel are masked !!!")
+            numpy.logical_not(mask, mask)
         if (mask.shape != shape):
             try:
                 mask = mask[:shape[0], :shape[1]]
             except Exception as error:#IGNORE:W0703
                 logger.error("Mask provided has wrong shape: expected: %s, got %s, error: %s" % (shape, mask.shape, error))
-                mask = numpy.ones(shape, dtype=bool)
-        if invertMask:
-            mask = (1 - mask)
+                mask = numpy.zeros(shape, dtype=bool)
         if dummy is not None:
             if delta_dummy is None:
-                mask *= (data != dummy)
+                numpy.logical_or(mask, (data == dummy), mask)
             else:
-                mask *= abs(data - dummy) > delta_dummy
-        return mask.astype(bool)
+                numpy.logical_or(mask, (abs(data - dummy) <= delta_dummy), mask)
+        if mode != "normal":
+            numpy.logical_not(mask, mask)
 
 
 
-    def xrpd_numpy(self, data, nbPt, filename=None, correctSolidAngle=True, tthRange=None, mask=None, dummy=None, delta_dummy=None):
+    def xrpd_numpy(self, data, nbPt, filename=None, correctSolidAngle=True,
+                   tthRange=None, mask=None, dummy=None, delta_dummy=None,
+                   polarization_factor=0, dark=None, flat=None):
         """
         Calculate the powder diffraction pattern from a set of data, an image. Numpy implementation
 
@@ -171,29 +171,42 @@ class AzimuthalIntegrator(Geometry):
         @type nbPt: integer
         @param filename: file to save data in
         @type filename: string
-        @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
+        @param correctSolidAngle: if True, the data are divided by the solid angle of each pixel
         @type correctSolidAngle: boolean
         @param tthRange: The lower and upper range of 2theta. If not provided, range is simply (data.min(), data.max()).
                         Values outside the range are ignored.
         @type tthRange: (float, float), optional
-        @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
+        @param mask: array (same size as image) with 0 for masked pixels, and 1 for valid pixels
         @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
+        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction 
+        @param dark: dark noise image
+        @param flat: flat field image
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
         """
-        mask = self.makeMask(data, mask, dummy, delta_dummy)
+        mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
         tth = self.twoThetaArray(data.shape)[mask]
-
-        if nbPt not in self._nbPixCache:
-            ref, b = numpy.histogram(tth, nbPt)
-            self._nbPixCache[nbPt] = numpy.maximum(1, ref)
+        data = numpy.ascontiguousarray(data, dtype=numpy.float32)
+        if dark is not None:
+            data -= dark
+        if self.darkcurrent is not None:
+            data -= self.darkcurrent
+        if flat is not None:
+            data /= flat
+        elif self.flatfield is not None:
+            data /= self.flatfield
+        if correctSolidAngle:
+            data /= self.solidAngleArray(data.shape)
+        if polarization_factor:
+            data /= self.polarization(data.shape, factor=polarization_factor)
+        data = data[mask]
         if tthRange is not None:
             tthRange = tuple([numpy.deg2rad(i) for i in tthRange])
-        if correctSolidAngle:
-            data = (data / self.solidAngleArray(data.shape))[mask].astype("float64")
-        else:
-            data = data[mask].astype("float64")
+
+        if nbPt not in self._nbPixCache:
+            ref, b = numpy.histogram(tth, nbPt, range=tthRange)
+            self._nbPixCache[nbPt] = numpy.maximum(1, ref)
 
         val, b = numpy.histogram(tth,
                                  bins=nbPt,
@@ -203,67 +216,84 @@ class AzimuthalIntegrator(Geometry):
         I = val / self._nbPixCache[nbPt]
         if filename:
             self.save1D(filename, tthAxis, I, None, "2th_deg")
-
         return tthAxis, I
 
 
 
-    def xrpd_cython(self, data, nbPt, filename=None, correctSolidAngle=True, tthRange=None, mask=None, dummy=None, delta_dummy=None, pixelSize=None):
+    def xrpd_cython(self, data, nbPt, filename=None, correctSolidAngle=True, tthRange=None, mask=None, dummy=None, delta_dummy=None,
+                    polarization_factor=0, dark=None, flat=None, pixelSize=None):
         """
-        Calculate the powder diffraction pattern from a set of data, an image. Cython implementation
+        Calculate the powder diffraction pattern from a set of data, an image. 
+        
+        Old cython implementation, you should not use it.
+        
         @param data: 2D array from the CCD camera
         @type data: ndarray
         @param nbPt: number of points in the output pattern
         @type nbPt: integer
         @param filename: file to save data in
         @type filename: string
-        @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
+        @param correctSolidAngle: if True, the data are divided by the solid angle of each pixel
         @type correctSolidAngle: boolean
         @param tthRange: The lower and upper range of the 2theta. If not provided, range is simply (data.min(), data.max()).
                         Values outside the range are ignored.
         @type tthRange: (float, float), optional
-        @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
+        @param mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
         @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
+        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction
+        @param dark: dark noise image
+        @param flat: flat field image
+        @param pixelSize: extension of pixels in 2theta (and radians) ... for pixel splittinh 
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
         """
-
         try:
             import histogram #IGNORE:F0401
         except ImportError as error:#IGNORE:W0703
             logger.error("Import error (%s), falling back on old method !" % error)
-            return self.xrpd_numpy(data, nbPt, filename, correctSolidAngle, tthRange)
-        mask = self.makeMask(data, mask, dummy, delta_dummy)
+            return self.xrpd_numpy(data, nbPt, filename, correctSolidAngle, tthRange, mask, dummy, delta_dummy, polarization_factor)
+
+        mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
         tth = self.twoThetaArray(data.shape)[mask]
+        data = numpy.ascontiguousarray(data, dtype=numpy.float32)
+        if dark is not None:
+            data -= dark
+        if self.darkcurrent is not None:
+            data -= self.darkcurrent
+        if flat is not None:
+            data /= flat
+        elif self.flatfield is not None:
+            data /= self.flatfield
+        if correctSolidAngle:
+            data /= self.solidAngleArray(data.shape)
+        if polarization_factor != 0:
+            data /= self.polarization(data.shape, factor=polarization_factor)
+        data = data[mask]
         if tthRange is not None:
             tthRange = tuple([numpy.deg2rad(i) for i in tthRange])
-        if correctSolidAngle:
-            data = (data / self.solidAngleArray(data.shape))[mask]
-        else:
-            data = data[mask]
         if dummy is None:
             dummy = 0.0
         tthAxis, I, a, b = histogram.histogram(pos=tth,
-                                                   weights=data,
-                                                   bins=nbPt,
-                                                   bin_range=tthRange,
-                                                   pixelSize_in_Pos=pixelSize,
-                                                   dummy=dummy)
+                                               weights=data,
+                                               bins=nbPt,
+                                               bin_range=tthRange,
+                                               pixelSize_in_Pos=pixelSize,
+                                               dummy=dummy)
         tthAxis = numpy.degrees(tthAxis)
         if filename:
             self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
 
-#    @timeit
+
     def xrpd_splitBBox(self, data, nbPt, filename=None, correctSolidAngle=True,
                        tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None,
-                       dark=None, flat=None):
+                       polarization_factor=0, dark=None, flat=None):
         """
         Calculate the powder diffraction pattern from a set of data, an image. Cython implementation
 
-        TODO: add in the cython part a dark and a flat images to be corrected on the fly.
-        Flat should be combined with solid-angle
+        Add in the cython part a dark and a flat images to be corrected on the fly.
+        This is the default and prefered method.
 
         @param data: 2D array from the CCD camera
         @type data: ndarray
@@ -282,6 +312,7 @@ class AzimuthalIntegrator(Geometry):
         @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
         @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
+        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction 
         @param dark: dark noise image
         @param flat: flat field image
         @return: (2theta, I) in degrees
@@ -290,8 +321,18 @@ class AzimuthalIntegrator(Geometry):
         try:
             import splitBBox  #IGNORE:F0401
         except ImportError as error:#IGNORE:W0703
-            logger.error("Import error (%s), falling back on old method !" % error)
-            return self.xrpd_numpy(data, nbPt, filename, correctSolidAngle, tthRange)
+            logger.error("Import error (%s), falling back on numpy histogram !" % error)
+            return self.xrpd_numpy(data=data,
+                                   nbPt=nbPt,
+                                   filename=filename,
+                                   correctSolidAngle=correctSolidAngle,
+                                   tthRange=tthRange,
+                                   mask=mask,
+                                   dummy=dummy,
+                                   delta_dummy=delta_dummy,
+                                   polarization_factor=polarization_factor,
+                                   dark=dark,
+                                   flat=flat)
         shape = data.shape
         if chiRange is not None:
             chi = self.chiArray(shape)
@@ -305,13 +346,21 @@ class AzimuthalIntegrator(Geometry):
             tthRange = tuple([numpy.deg2rad(i) for i in tthRange[:2]])
         if chiRange is not None:
             chiRange = tuple([numpy.deg2rad(i) for i in chiRange[:2]])
-        if correctSolidAngle: #outPos, outMerge, outData, outCount
-            if flat is None:
-                flat = self.solidAngleArray(data.shape)
-            else:
-                flat *= self.solidAngleArray(data.shape)
+        if flat is None:
+            flat = self.flatfield
+        if dark is None:
+            dark = self.darkcurrent
+        if correctSolidAngle:
+            solidangle = self.solidAngleArray(data.shape)
         else:
-            data = data
+            solidangle = None
+        if polarization_factor == 0:
+            polarization = None
+        else:
+            polarization = self.polarization(data.shape)
+        if mask is None:
+            mask = self.mask
+        #outPos, outMerge, outData, outCount    
         tthAxis, I, a, b = splitBBox.histoBBox1d(weights=data,
                                                  pos0=tth,
                                                  delta_pos0=dtth,
@@ -324,7 +373,10 @@ class AzimuthalIntegrator(Geometry):
                                                  delta_dummy=delta_dummy,
                                                  mask=mask,
                                                  dark=dark,
-                                                 flat=flat)
+                                                 flat=flat,
+                                                 solidangle=solidangle,
+                                                 polarization=polarization,
+                                                 )
         tthAxis = numpy.degrees(tthAxis)
         if filename:
             self.save1D(filename, tthAxis, I, None, "2th_deg")
@@ -332,7 +384,8 @@ class AzimuthalIntegrator(Geometry):
 
 
     def xrpd_splitPixel(self, data, nbPt, filename=None, correctSolidAngle=True,
-                        tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None):
+                        tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None,
+                        polarization_factor=0, dark=None, flat=None):
         """
         Calculate the powder diffraction pattern from a set of data, an image.
 
@@ -347,6 +400,9 @@ class AzimuthalIntegrator(Geometry):
         @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
         @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
+        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction 
+        @param dark: dark noise image
+        @param flat: flat field image
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
 
@@ -354,28 +410,45 @@ class AzimuthalIntegrator(Geometry):
         try:
             import splitPixel#IGNORE:F0401
         except ImportError as error:
-            logger.error("Import error %s , falling back on simple histogram !" % error)
-            return self.xrpd_cython(data, nbPt, filename, correctSolidAngle, tthRange, mask, dummy, delta_dummy)
-        mask = self.makeMask(data, mask, dummy, delta_dummy)
-        pos = self.cornerArray(data.shape)[mask]
+            logger.error("Import error %s , falling back on numpy histogram !" % error)
+            return self.xrpd_numpy(data=data,
+                                   nbPt=nbPt,
+                                   filename=filename,
+                                   correctSolidAngle=correctSolidAngle,
+                                   tthRange=tthRange,
+                                   mask=mask,
+                                   dummy=dummy,
+                                   delta_dummy=delta_dummy,
+                                   polarization_factor=polarization_factor,
+                                   dark=dark,
+                                   flat=flat)
+        pos = self.cornerArray(data.shape)
+
         if correctSolidAngle:
-            data = (data / self.solidAngleArray(data.shape))[mask]
+            solidangle = self.solidAngleArray(data.shape)
         else:
-            data = data [mask]
-        if dummy is None:
-            dummy = 0.0
+            solidangle = None
+        if polarization_factor != 0:
+            polarization = self.polarizarion(data.shape, polarization_factor)
+        else:
+            polarization = None
         if tthRange is not None:
             tthRange = tuple([numpy.deg2rad(i) for i in tthRange])
         if chiRange is not None:
             chiRange = tuple([numpy.deg2rad(i) for i in chiRange])
-
-
         tthAxis, I, a, b = splitPixel.fullSplit1D(pos=pos,
                                                   weights=data,
                                                   bins=nbPt,
                                                   pos0Range=tthRange,
                                                   pos1Range=chiRange,
-                                                  dummy=dummy)
+                                                  dummy=dummy,
+                                                  delta_dummy=delta_dummy,
+                                                  mask=mask,
+                                                  dark=dark,
+                                                  flat=flat,
+                                                  solidangle=solidangle,
+                                                  polarization=polarization,
+                                                  )
         tthAxis = numpy.degrees(tthAxis)
         if filename:
             self.save1D(filename, tthAxis, I, None, "2th_deg")
@@ -383,7 +456,6 @@ class AzimuthalIntegrator(Geometry):
     #Default implementation:
     xrpd = xrpd_splitBBox
 
-#    @timeit
     def xrpd_OpenCL(self, data, nbPt, filename=None, correctSolidAngle=True,
                        tthRange=None, mask=None, dummy=None, delta_dummy=None,
                         devicetype="gpu", useFp64=True, platformid=None, deviceid=None, safe=True):
@@ -867,7 +939,8 @@ class AzimuthalIntegrator(Geometry):
         return I, bins2Th, binsChi
 
     def xrpd2_splitPixel(self, data, nbPt2Th, nbPtChi=360, filename=None, correctSolidAngle=True,
-                         tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None):
+                         tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None,
+                         polarization_factor=0, dark=None, flat=None):
         """
         Calculate the 2D powder diffraction pattern (2Theta,Chi) from a set of data, an image
 
@@ -892,6 +965,9 @@ class AzimuthalIntegrator(Geometry):
         @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
         @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
+        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction 
+        @param dark: dark noise image
+        @param flat: flat field image
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
         @rtype: 3-tuple of ndarrays
         """
@@ -901,26 +977,38 @@ class AzimuthalIntegrator(Geometry):
             logger.error("Import error %s , falling back on SplitBBox !" % error)
             return self.xrpd2_splitBBox(data=data, nbPt2Th=nbPt2Th, nbPtChi=nbPtChi,
                                         filename=filename, correctSolidAngle=correctSolidAngle,
-                                        tthRange=tthRange, chiRange=chiRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
-        mask = self.makeMask(data, mask, dummy, delta_dummy)
-        pos = self.cornerArray(data.shape)[mask]
+                                        tthRange=tthRange, chiRange=chiRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy,
+                                        polarization_factor=0, dark=None, flat=None
+                                        )
+        pos = self.cornerArray(data.shape)
+
+        if correctSolidAngle:
+            solidangle = self.solidAngleArray(data.shape)
+        else:
+            solidangle = None
+        if polarization_factor != 0:
+            polarization = self.polarization(data.shape, polarization_factor)
+        else:
+            polarization = None
+
         if tthRange is not None:
             tthRange = tuple([numpy.deg2rad(i) for i in tthRange])
         if chiRange is not None:
             chiRange = tuple([numpy.deg2rad(i) for i in chiRange])
 
-        if correctSolidAngle:
-            data = (data / self.solidAngleArray(data.shape))[mask]
-        else:
-            data = data[mask]
-        if dummy is None:
-            dummy = 0
+
         I, bins2Th, binsChi, a, b = splitPixel.fullSplit2D(pos=pos,
                                                            weights=data,
                                                            bins=(nbPt2Th, nbPtChi),
                                                            pos0Range=tthRange,
                                                            pos1Range=chiRange,
-                                                           dummy=dummy)
+                                                           dummy=dummy,
+                                                           delta_dummy=delta_dummy,
+                                                           mask=mask,
+                                                           dark=dark,
+                                                           flat=flat,
+                                                           solidangle=solidangle,
+                                                           polarization=polarization,)
         bins2Th = numpy.degrees(bins2Th)
         binsChi = numpy.degrees(binsChi)
         if filename:
@@ -933,8 +1021,10 @@ class AzimuthalIntegrator(Geometry):
 
 
     def saxs(self, data, nbPt, filename=None, correctSolidAngle=True, variance=None,
-             error_model=None, qRange=None, chiRange=None, mask=None, dummy=None,
-             delta_dummy=None, method="bbox"):
+             error_model=None, qRange=None, chiRange=None,
+             mask=None, dummy=None, delta_dummy=None,
+             polarization_factor=0, dark=None, flat=None,
+             method="bbox"):
         """
         Calculate the azimuthal integrated Saxs curve
 
@@ -961,6 +1051,9 @@ class AzimuthalIntegrator(Geometry):
         @param mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
         @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
+        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction 
+        @param dark: dark noise image
+        @param flat: flat field image
         @param method: can be "numpy", "cython", "BBox" or "splitpixel"
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
         @rtype: 3-tuple of ndarrays
@@ -974,7 +1067,7 @@ class AzimuthalIntegrator(Geometry):
         data = data.astype("float32")
         q = self.qArray(shape)
         if variance is not None:
-            assert variance.shape == data.shape
+            assert variance.size == data.size
         elif error_model:
             error_model = error_model.lower()
             if error_model == "poisson":
@@ -989,6 +1082,15 @@ class AzimuthalIntegrator(Geometry):
             solidangle = self.solidAngleArray(shape)
         else:
             solidangle = None
+        if polarization_factor != 0:
+            polarization = self.polarization(shape, polarization_factor)
+        else:
+            solidangle = None
+        if dark is None:
+            dark = self.darkcurrent
+        if flat is None:
+            flat = self.flatfield
+
         I = None
         sigma = None
         if method.lower() == "splitpixel":
@@ -1008,9 +1110,10 @@ class AzimuthalIntegrator(Geometry):
                                                         dummy=dummy,
                                                         delta_dummy=delta_dummy,
                                                         mask=mask,
-                                                        dark=self.darkcurrent,
-                                                        flat=self.flatfield,
+                                                        dark=dark,
+                                                        flat=flatf,
                                                         solidangle=solidangle,
+                                                        polarization=polarization
                                                         )
                 if error_model == "azimuthal":
                     variance = (data - self.calcfrom1d(qAxis, I, dim1_unit="q_nm^-1")) ** 2
@@ -1023,9 +1126,10 @@ class AzimuthalIntegrator(Geometry):
                                                              dummy=dummy,
                                                              delta_dummy=delta_dummy,
                                                              mask=mask,
-                                                             dark=self.darkcurrent,
-                                                             flat=self.flatfield,
-                                                             solidangle=solidangle,)
+                                                             dark=dark,
+                                                             flat=flatf,
+                                                             solidangle=solidangle,
+                                                             polarization=polarization)
                     sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
 
         if method.lower() == "bbox":
@@ -1036,9 +1140,7 @@ class AzimuthalIntegrator(Geometry):
                 logger.error("Import error %s , falling back on Cython histogram !" % error)
                 method = "cython"
             else:
-#                mask = self.makeMask(data, mask, dummy, delta_dummy)
                 dq = self.deltaQ(shape)
-                q = q
                 if chi is not None:
                     chi = chi
                     dchi = self.deltaChi(shape)
@@ -1054,12 +1156,13 @@ class AzimuthalIntegrator(Geometry):
                                                       pos1Range=chiRange,
                                                       dummy=dummy,
                                                       delta_dummy=delta_dummy,
-                                                      mask=None,
-                                                      dark=None,
-                                                      flat=None
-                                                      )
+                                                      mask=mask,
+                                                      dark=dark,
+                                                      flat=flatf,
+                                                      solidangle=solidangle,
+                                                      polarization=polarization)
                 if error_model == "azimuthal":
-                    variance = (data - self.calcfrom1d(qAxis, I, dim1_unit="q_nm^-1")[mask]) ** 2
+                    variance = (data - self.calcfrom1d(qAxis, I, dim1_unit="q_nm^-1")) ** 2
                 if variance is not None:
                     qa, var1d, a, b = splitBBox.histoBBox1d(weights=variance,
                                                       pos0=q,
@@ -1069,7 +1172,10 @@ class AzimuthalIntegrator(Geometry):
                                                       bins=nbPt,
                                                       pos0Range=qRange,
                                                       pos1Range=chiRange,
-                                                      dummy=dummy)
+                                                      dummy=dummy,
+                                                      delta_dummy=delta_dummy,
+                                                      mask=mask,
+                                                      )
                     sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
 
         if (I is None) and (method == "cython"):
@@ -1080,7 +1186,7 @@ class AzimuthalIntegrator(Geometry):
                 logger.error("Import error %s , falling back on Numpy histogram !", error)
                 method = "numpy"
             else:
-                mask = self.makeMask(data, mask, dummy, delta_dummy)
+                mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
                 if qRange is not None:
                     qMin, qMax = qRange
                     mask *= (q >= qMin) * (q <= qMax)
@@ -1091,13 +1197,21 @@ class AzimuthalIntegrator(Geometry):
                 q = q[mask]
                 if variance is not None:
                     variance = variance[mask]
+                if dark is not None:
+                    data -= dark
+                if flat is not None:
+                    data /= flat
+                if polarization is not None:
+                    data /= polarization
+                if solidangle is not None:
+                    data /= solidangle
                 data = data[mask]
                 if dummy is None:
                     dummy = 0
                 qAxis, I, a, b = histogram.histogram(pos=q,
                                                    weights=data,
                                                    bins=nbPt,
-                                                   pixelSize_in_Pos=1,
+                                                   pixelSize_in_Pos=0,
                                                    dummy=dummy)
                 if error_model == "azimuthal":
                     variance = (data - self.calcfrom1d(qAxis, I, dim1_unit="q_nm^-1", correctSolidAngle=False)[mask]) ** 2
@@ -1111,16 +1225,25 @@ class AzimuthalIntegrator(Geometry):
 
         if (I is None) :
             logger.debug("saxs uses Numpy implementation")
-            mask = self.makeMask(data, mask, dummy, delta_dummy)
+            mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
+            if dark is not None:
+                data -= dark
+            if flat is not None:
+                data /= flat
+            if polarization is not None:
+                data /= polarization
+            if solidangle is not None:
+                data /= solidangle
             data = data[mask]
             q = q[mask]
+            if variance is not None:
+                variance = variance[mask]
             ref, b = numpy.histogram(q, nbPt)
             count = numpy.maximum(1, ref)
             val, b = numpy.histogram(q, nbPt, weights=data)
             if error_model == "azimuthal":
                     variance = (data - self.calcfrom1d(qAxis, I, dim1_unit="q_nm^-1", correctSolidAngle=False)[mask]) ** 2
             if variance is not None:
-                variance = variance[mask]
                 var1d, b = numpy.histogram(q, nbPt, weights=variance)
                 sigma = numpy.sqrt(var1d) / count
             qAxis = (b[1:] + b[:-1]) / 2.0
@@ -1149,8 +1272,8 @@ class AzimuthalIntegrator(Geometry):
             headerLst.append("")
             if self._wavelength is not None:
                 headerLst.append("Wavelength: %s" % self.wavelength)
-            if self.maskfile is not None:
-                headerLst.append("Mask File: %s" % self.maskfile)
+            if self._maskfile is not None:
+                headerLst.append("Mask File: %s" % self._maskfile)
 #            if self.darkcurrent is not None:
 #                headerLst.append("DarkCurrent File: %s" % self.darkcurrent)
 #            if self.flatfield is not None:
@@ -1196,3 +1319,11 @@ class AzimuthalIntegrator(Geometry):
             fabio.edfimage.edfimage(data=I.astype("float32"), header=header).write(filename)
         except IOError:
             logger.error("IOError while writing %s" % filename)
+
+    def set_maskfile(self, maskfile):
+        with self.sem:
+            self.mask = numpy.ascontiguousarray(fabio.open(maskfile).data, dtype=numpy.int8)
+            self._maskfile = maskfile
+    def get_maskfile(self):
+        return self._maskfile
+    maskfile = property(get_maskfile, set_maskfile)

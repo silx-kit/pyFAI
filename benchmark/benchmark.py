@@ -43,7 +43,7 @@ class Bench(object):
             elif os.path.exists("/usr/sbin/sysctl"):
                 proc = subprocess.Popen(["sysctl", "-n", "machdep.cpu.brand_string"], stdout=subprocess.PIPE)
                 proc.wait()
-                self._cpu = proc.read().strip()
+                self._cpu = proc.stdout.read().strip()
         return self._cpu
 
     def get_gpu(self, devicetype="gpu", useFp64=True, platformid=None, deviceid=None):

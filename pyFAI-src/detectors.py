@@ -45,7 +45,7 @@ class Detector(object):
         self.pixel2 = pixel2
         self.max_shape = (None, None)
         self._binning = (1, 1)
-        self.mask = None
+        self._mask = None
         self._splineFile = None
         self.spline = None
         self._splineCache = {}  # key=(dx,xpoints,ypoints) value: ndarray
@@ -156,14 +156,19 @@ class Detector(object):
         p2 = (self.pixel2 * (dX + 0.5 + d2))
         return p1, p2
 
+    def calc_mask(self):
+        """
+        Detectors with gaps should overwrite this method with something actually calculating the mask!
+        """
+        return None
+
     def get_mask(self):
-        """
-        Should return a generic mask for the detector
-        """
-        if self.mask is None:
-            raise NotImplementedError("detector.getmask is not implemented for detector %s" % self.__class__.__name)
-        else:
-            return self.mask
+        if self._mask is None:
+            self._mask = self.calc_mask()
+        return self._mask
+    def set_mask(self, mask):
+        self._mask = mask
+    mask = property(get_mask, set_mask)
 
 class Pilatus(Detector):
     "Pilatus detector: generic description"
@@ -175,24 +180,22 @@ class Pilatus(Detector):
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % (self.name, self.pixel1, self.pixel2)
 
-    def get_mask(self):
+    def calc_mask(self):
         """
         Returns a generic mask for Pilatus detectors...
         """
-        if self.mask is None:
-            with self._sem:
-                if self.mask is None:
-                    if self.max_shape[0] is None or\
-                        self.max_shape[1] is None:
-                        raise NotImplementedError("Generic Pilatus detector does not know the max size ...")
-                    self.mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
-                    # workinng in dim0 = Y
-                    for i in range(self.MODULE_SIZE[0], self.max_shape[0], self.MODULE_SIZE[0] + self.MODULE_GAP[0]):
-                        self.mask[i: i + self.MODULE_GAP[0], :] = 1
-                    # workinng in dim1 = X
-                    for i in range(self.MODULE_SIZE[1], self.max_shape[1], self.MODULE_SIZE[1] + self.MODULE_GAP[1]):
-                        self.mask[:, i: i + self.MODULE_GAP[1]] = 1
-        return self.mask
+        with self._sem:
+            if self.max_shape[0] is None or\
+                self.max_shape[1] is None:
+                raise NotImplementedError("Generic Pilatus detector does not know the max size ...")
+            mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
+            # workinng in dim0 = Y
+            for i in range(self.MODULE_SIZE[0], self.max_shape[0], self.MODULE_SIZE[0] + self.MODULE_GAP[0]):
+                mask[i: i + self.MODULE_GAP[0], :] = 1
+            # workinng in dim1 = X
+            for i in range(self.MODULE_SIZE[1], self.max_shape[1], self.MODULE_SIZE[1] + self.MODULE_GAP[1]):
+                mask[:, i: i + self.MODULE_GAP[1]] = 1
+        return mask
 
 class Pilatus1M(Pilatus):
     "Pilatus 1M detector"
@@ -231,27 +234,25 @@ class Xpad_flat(Detector):
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % (self.name, self.pixel1, self.pixel2)
 
-    def get_mask(self):
+    def calc_mask(self):
         """
         Returns a generic mask for Xpad detectors...
         discards the first line and raw form all modules: those are 2.5x bigger and often mis - behaving
         """
-        if self.mask is None:
-            with self._sem:
-                if self.mask is None:
-                    if self.max_shape[0] is None or\
-                        self.max_shape[1] is None:
-                        raise NotImplementedError("Generic Xpad detector does not know the max size ...")
-                    self.mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
-                    # workinng in dim0 = Y                   
-                    for i in range(0, self.max_shape[0], self.MODULE_SIZE[0]):
-                        self.mask[i, :] = 1
-                        self.mask[i + self.MODULE_SIZE[0] - 1, :] = 1
-                    # workinng in dim1 = X
-                    for i in range(0, self.max_shape[1], self.MODULE_SIZE[1]):
-                        self.mask[:, i ] = 1
-                        self.mask[:, i + self.MODULE_SIZE[1] - 1] = 1
-        return self.mask
+        with self._sem:
+            if self.max_shape[0] is None or\
+                self.max_shape[1] is None:
+                raise NotImplementedError("Generic Xpad detector does not know the max size ...")
+            mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
+            # workinng in dim0 = Y                   
+            for i in range(0, self.max_shape[0], self.MODULE_SIZE[0]):
+                mask[i, :] = 1
+                mask[i + self.MODULE_SIZE[0] - 1, :] = 1
+            # workinng in dim1 = X
+            for i in range(0, self.max_shape[1], self.MODULE_SIZE[1]):
+                mask[:, i ] = 1
+                mask[:, i + self.MODULE_SIZE[1] - 1] = 1
+        return mask
 
     def calc_cartesian_positions(self, d1=None, d2=None):
         """
