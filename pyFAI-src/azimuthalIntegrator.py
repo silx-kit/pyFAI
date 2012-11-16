@@ -1271,8 +1271,8 @@ class AzimuthalIntegrator(Geometry):
             headerLst.append("")
             if self._wavelength is not None:
                 headerLst.append("Wavelength: %s" % self.wavelength)
-            if self._maskfile is not None:
-                headerLst.append("Mask File: %s" % self._maskfile)
+            if self.maskfile is not None:
+                headerLst.append("Mask File: %s" % self.maskfile)
             self.header = os.linesep.join([hdr + " " + i for i in headerLst])
         return self.header
 
