@@ -1,15 +1,15 @@
 #!/usr/bin/python
-import fabio, sys, time, timeit, os, platform, subprocess, re
+import fabio, sys, time, timeit, os, platform, subprocess, gc
 import os.path as op
 
 sys.path.append(op.join(op.dirname(op.dirname(op.abspath(__file__))), "test"))
 import utilstest
 pyFAI = utilstest.UtilsTest.pyFAI
 ocl = pyFAI.opencl.ocl
-
+from matplotlib import pyplot as plt
 
 ds_list = ["Pilatus1M.poni", "halfccd.poni", "Frelon2k.poni", "Pilatus6M.poni", "Mar3450.poni", "Fairchild.poni"]
-#ds_list = ["halfccd.poni"]
+#ds_list = ["Pilatus1M.poni", "halfccd.poni"]
 datasets = {"Fairchild.poni":utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
             "halfccd.poni":utilstest.UtilsTest.getimage("1882/halfccd.edf"),
             "Frelon2k.poni":utilstest.UtilsTest.getimage("1881/Frelon2k.edf"),
@@ -26,13 +26,16 @@ class Bench(object):
     WARNING = '\033[93m'
     FAIL = '\033[91m'
     ENDC = '\033[0m'
-    reference_1d = {}
-    LIMIT = 8
-    repeat = 3
-    nbr = 10
-    results = {}
-    meth = []
-    _cpu = None
+    def __init__(self, nbr=10):
+        self.reference_1d = {}
+        self.LIMIT = 8
+        self.repeat = 3
+        self.nbr = nbr
+        self.results = {}
+        self.meth = []
+        self._cpu = None
+        self.fig = None
+        self.ax = None
 
     def get_cpu(self):
         if self._cpu is None:
@@ -99,9 +102,12 @@ out=ai.xrpd(data,N)""" % (param, fn)
 #            print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
 #            if R < self.LIMIT:
             results[data.size / 1e6] = tmin * 1000.0
+        gc.collect()
         self.print_sep()
-        self.meth.append("Cython_OpenMP")
-        self.results["Cython_OpenMP"] = results
+        label = "Forward_cython"
+        self.meth.append(label)
+        self.results[label] = results
+        self.new_curve(results, label)
 
     def bench_cpu1d_lut(self):
         print("Working on processor: %s" % self.get_cpu())
@@ -133,8 +139,11 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
             if R < self.LIMIT:
                 results[data.size / 1e6] = tmin * 1000.0
         self.print_sep()
-        self.meth.append("LUT_Cython_OpenMP")
-        self.results["LUT_Cython_OpenMP"] = results
+        label = "LUT_Cython_OpenMP"
+        self.meth.append(label)
+        self.results[label] = results
+        self.new_curve(results, label)
+        gc.collect()
 
     def bench_cpu1d_ocl_lut(self, devicetype="all", platformid=None, deviceid=None):
         print("Working on device: %s" % devicetype)
@@ -163,14 +172,19 @@ N=min(data.shape)
 out=ai.xrpd_LUT_OCL(data,N,devicetype="%s",platformid=%s,deviceid=%s)""" % (param, fn, devicetype, platformid, deviceid)
             t = timeit.Timer("ai.xrpd_LUT_OCL(data,N,safe=False)", setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
+            t = None
             self.print_exec(tmin)
             R = utilstest.Rwp(res, ref)
             print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
             if R < self.LIMIT:
                 results[data.size / 1e6] = tmin * 1000.0
+            gc.collect()
+        label = "LUT_OpenCL_%s" % devicetype
         self.print_sep()
-        self.meth.append("LUT_OpenCL_%s" % devicetype)
-        self.results["LUT_OpenCL_%s" % devicetype] = results
+        self.meth.append(label)
+        self.results[label] = results
+        self.new_curve(results, label)
+
 
     def bench_cpu2d(self):
         print("Working on processor: %s" % self.get_cpu())
@@ -193,13 +207,18 @@ data = fabio.open("%s").data
 out=ai.xrpd2(data,500,360)""" % (param, fn)
             t = timeit.Timer("ai.xrpd2(data,500,360)", setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
+            t = None
+
             self.print_exec(tmin)
             print("")
             if 1:#R < self.LIMIT:
                 results[data.size / 1e6] = tmin * 1000.0
+            gc.collect()
         self.print_sep()
-        self.meth.append("Foward_2D_CPU")
-        self.results["Foward_2D_CPU" ] = results
+        label = "Foward_2D_CPU"
+        self.meth.append(label)
+        self.results[label] = results
+        self.new_curve(results, label)
 
 
     def bench_gpu1d(self, devicetype="gpu", useFp64=True, platformid=None, deviceid=None):
@@ -232,21 +251,92 @@ N=min(data.shape)
 out=ai.xrpd_OpenCL(data,N, devicetype="%s", useFp64=%s, platformid=%s, deviceid=%s)""" % (param, fn, devicetype, useFp64, platformid, deviceid)
             t = timeit.Timer("ai.xrpd_OpenCL(data,N,safe=False)", setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
+            t = None
+            gc.collect()
             self.print_exec(tmin)
             print("")
             if R < self.LIMIT:
                 results[data.size / 1e6] = tmin * 1000.0
         self.print_sep()
-        self.meth.append("Foward_OpenCL_%s_%s_bits" % (devicetype , ("64" if useFp64 else"32")))
-        self.results["Foward_OpenCL_%s_%s_bits" % (devicetype , ("64" if useFp64 else"32"))] = results
+        label = "Foward_OpenCL_%s_%s_bits" % (devicetype , ("64" if useFp64 else"32"))
+        self.meth.append(label)
+        self.results[label] = results
+        self.new_curve(results, label)
+
+    def save(self, filename="benchmark.json"):
+        import json
+        json.dump(self.results, open(filename, "w"))
+
+    def print_res(self):
+
+        print("Summary: execution time in milliseconds")
+        print "Size/Meth\t" + "\t".join(b.meth)
+        for i in self.size:
+            print "%7.2f\t\t" % i + "\t\t".join("%.2f" % (b.results[j].get(i, 0)) for j in b.meth)
+
+    def init_curve(self):
+        if self.fig:
+            print("Already initialized")
+            return
+        if "DISPLAY" in os.environ:
+            plt.ion()
+            self.fig = plt.figure()
+            self.ax = self.fig.add_subplot(1, 1, 1)
+            self.ax.set_xlabel("Image size in Mega-Pixels")
+            self.ax.set_ylabel("Frames processed per second")
+            self.ax.set_yscale("log", basey=2)
+            t = [1, 2, 5, 10, 20, 50, 100, 200]
+            self.ax.set_yticks([float(i) for i in t])
+            self.ax.set_yticklabels([str(i)for i in t])
+            self.ax.set_title(self.get_cpu() + " / " + self.get_gpu())
+            plt.show()
+
+    def new_curve(self, results, label):
+        if not self.fig:
+            return
+        s = []
+        p = []
+        for i in self.size:
+            if i in results:
+                s.append(i)
+                p.append(1000.0 / results[i])
+        self.ax.plot(s, p, label=label)
+
+        self.ax.legend()
+        if self.fig.canvas:
+            self.fig.canvas.draw()
+
+    def display_all(self):
+        if not self.fig:
+            return
+        for k in self.meth:
+            self.new_curve(self.results[k], k)
+        self.ax.legend()
+        self.fig.savefig("benchmark.png")
+        self.fig.show()
+#        plt.ion()
+
+    def get_size(self):
+        if len(self.meth) == 0:
+            return []
+        size = list(self.results[self.meth[0]].keys())
+        for i in self.meth[1:]:
+            s = list(self.results[i].keys())
+            if len(s) > len(size):
+                size = s
+        size.sort()
+        return size
+    size = property(get_size)
+
+
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1].isdigit():
         n = int(sys.argv[1])
     else:
-        n = 1
+        n = 10
     print("Averaging over %i repetitions (best of 3)." % n)
-    b = Bench()
-    b.nbr = n
+    b = Bench(n)
+    b.init_curve()
     b.bench_cpu1d()
     b.bench_cpu1d_lut()
     b.bench_cpu1d_ocl_lut("GPU")
@@ -257,35 +347,7 @@ if __name__ == "__main__":
     b.bench_gpu1d("cpu", True)
 #    b.bench_gpu1d("cpu", False)
     b.bench_cpu2d()
-    size = list(b.results[b.meth[0]].keys())
-    for i in b.meth:
-        s = list(b.results[i].keys())
-        if len(s) > len(size):
-            size = s
-    size.sort()
-    import json
-    json.dump(b.results, open("benchmark.json", "w"))
-    print("Summary: execution time in milliseconds")
-    print "Size/Meth\t" + "\t".join(b.meth)
-    for i in size:
-        print "%7.2f\t\t" % i + "\t\t".join("%.2f" % (b.results[j].get(i, 0)) for j in b.meth)
-    if "DISPLAY" in os.environ:
-        from matplotlib import pylab
-        for k in b.meth:
-            dp = b.results[k]
-            s = []
-            p = []
-            for i in size:
-                if i in dp:
-                    s.append(i)
-                    p.append(1000.0 / dp[i])
-            pylab.plot(s, p, label=k)
-        pylab.xlabel("Image size in Mega-Pixels")
-        pylab.ylabel("Frames processed per second")
-        t = [1, 2, 5, 10, 20, 50, 100, 200]
-        pylab.yscale("log", basey=2)
-        pylab.yticks(t, t)
-        pylab.legend()
-        pylab.title(b.get_cpu() + " / " + b.get_gpu())
-        pylab.savefig("benchmark.png")
-        pylab.show()
+    b.save()
+    b.print_res()
+#    b.display_all()
+    raw_input("Enter to quit")
