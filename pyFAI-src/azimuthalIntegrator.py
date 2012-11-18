@@ -1117,9 +1117,6 @@ class AzimuthalIntegrator(Geometry):
                                                         solidangle=solidangle,
                                                         polarization=polarization
                                                         )
-                if qAxis[-1] > 3.14:
-                    #No way to catch this bug !!!2012-11-17
-                    logger.warning("Your maximum q>pi: it is likely that your integration is wrong above this value. Please use another method (i.e. bbox)")
                 if error_model == "azimuthal":
                     variance = (data - self.calcfrom1d(qAxis, I, dim1_unit="q_nm^-1")) ** 2
                 if variance is not None:

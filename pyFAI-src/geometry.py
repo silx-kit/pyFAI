@@ -265,7 +265,7 @@ class Geometry(object):
             out = _geometry.calc_q(L=self._dist, rot1=self._rot1, rot2=self._rot2, rot3=self._rot3, pos1=p1 , pos2=p2, wavelength=self.wavelength)
             out.shape = p1.shape
         else:
-            out = 4e-9 * numpy.pi / self.wavelength * numpy.sin(self.tth(d1=d1, d2=d2, param=param) / 2)
+            out = 4.0e-9 * numpy.pi / self.wavelength * numpy.sin(self.tth(d1=d1, d2=d2, param=param) / 2.0)
         return out
 
     def qArray(self, shape):
@@ -404,15 +404,15 @@ class Geometry(object):
             with self._sem:
                 if self._corner4Dqa is None:
                     self._corner4Dqa = numpy.zeros((shape[0], shape[1], 4, 2), dtype=numpy.float32)
+                    qar = numpy.fromfunction(self.qCornerFunct, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
                     chi = numpy.fromfunction(self.chi_corner, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
-                    tth = numpy.fromfunction(self.qCornerFunct, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
-                    self._corner4Dqa[:, :, 0, 0] = tth[:-1, :-1]
+                    self._corner4Dqa[:, :, 0, 0] = qar[:-1, :-1]
                     self._corner4Dqa[:, :, 0, 1] = chi[:-1, :-1]
-                    self._corner4Dqa[:, :, 1, 0] = tth[1:, :-1]
+                    self._corner4Dqa[:, :, 1, 0] = qar[1:, :-1]
                     self._corner4Dqa[:, :, 1, 1] = chi[1:, :-1]
-                    self._corner4Dqa[:, :, 2, 0] = tth[1:, 1:]
+                    self._corner4Dqa[:, :, 2, 0] = qar[1:, 1:]
                     self._corner4Dqa[:, :, 2, 1] = chi[1:, 1:]
-                    self._corner4Dqa[:, :, 3, 0] = tth[:-1, 1:]
+                    self._corner4Dqa[:, :, 3, 0] = qar[:-1, 1:]
                     self._corner4Dqa[:, :, 3, 1] = chi[:-1, 1:]
         return self._corner4Dqa
 
