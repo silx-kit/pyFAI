@@ -100,7 +100,7 @@ cdef double max4f(double a, double b, double c, double d) nogil:
 @cython.wraparound(False)
 def fullSplit1D(numpy.ndarray pos not None,
                 numpy.ndarray weights not None,
-                size_t bins=100,
+                ssize_t bins=100,
                 pos0Range=None,
                 pos1Range=None,
                 dummy=None,
@@ -154,7 +154,7 @@ def fullSplit1D(numpy.ndarray pos not None,
     cdef bint check_pos1=False, check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
     cdef ssize_t i, idx
     cdef double fbin0_min, fbin0_max#, fbin1_min, fbin1_max
-    cdef long bin, bin0_max, bin0_min
+    cdef ssize_t bin, bin0_max, bin0_min
     cdef double aeraPixel, dpos, a0, b0, c0, d0, max0, min0, a1, b1, c1, d1, max1, min1,
     cdef double epsilon
 
@@ -269,14 +269,16 @@ def fullSplit1D(numpy.ndarray pos not None,
                 aeraPixel = fbin0_max - fbin0_min
                 deltaA = 1.0 / aeraPixel
 
-                deltaL = < double > (bin0_min + 1) - fbin0_min
-                deltaR = fbin0_max - (< double > bin0_max)
+                deltaL = <double>(bin0_min) + 1.0 - fbin0_min
+                deltaR = fbin0_max - <double>(bin0_max)
 
-                outCount[bin0_min] += deltaA * deltaL
-                outData[bin0_min] += data * deltaA * deltaL
+                tmp = deltaA * deltaL
+                outCount[bin0_min] += tmp
+                outData[bin0_min] += data * tmp
 
-                outCount[bin0_max] += deltaA * deltaR
-                outData[bin0_max] += data * deltaA * deltaR
+                tmp = deltaA * deltaR
+                outCount[bin0_max] += tmp
+                outData[bin0_max] += data * tmp
 
                 if bin0_min + 1 != bin0_max:
                     for i in range(bin0_min + 1, bin0_max):
@@ -345,7 +347,7 @@ def fullSplit2D(numpy.ndarray pos not None,
     try:
         bins0, bins1 = tuple(bins)
     except:
-        bins0 = bins1 = < long > bins
+        bins0 = bins1 = < ssize_t > bins
     if bins0 <= 0:
         bins0 = 1
     if bins1 <= 0:
@@ -368,7 +370,7 @@ def fullSplit2D(numpy.ndarray pos not None,
     cdef double pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin
 
     cdef double fbin0_min, fbin0_max, fbin1_min, fbin1_max
-    cdef long   bin0_max, bin0_min, bin1_max, bin1_min
+    cdef ssize_t   bin0_max, bin0_min, bin1_max, bin1_min
     cdef double aeraPixel, a0, a1, b0, b1, c0, c1, d0, d1
     cdef double epsilon = 1e-10
 
@@ -529,9 +531,9 @@ def fullSplit2D(numpy.ndarray pos not None,
                 else:
                     #spread on n pix in dim0 and m pixel in dim1:
                     aeraPixel = (fbin0_max - fbin0_min) * (fbin1_max - fbin1_min)
-                    deltaL = (< double > (bin0_min + 1)) - fbin0_min
+                    deltaL = (< double > (bin0_min + 1.0)) - fbin0_min
                     deltaR = fbin0_max - (< double > bin0_max)
-                    deltaD = (< double > (bin1_min + 1)) - fbin1_min
+                    deltaD = (< double > (bin1_min + 1.0)) - fbin1_min
                     deltaU = fbin1_max - (< double > bin1_max)
                     deltaA = 1.0 / aeraPixel
 

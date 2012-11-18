@@ -906,6 +906,7 @@ class Geometry(object):
             self._wavelength = float(value)
         self._qa = None
         self._dqa = None
+        self._corner4Dqa = None
     def get_wavelength(self):
         if self._wavelength is None:
             raise RuntimeWarning("Using wavelength without having defined it previously ... excpect to fail !")

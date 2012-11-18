@@ -127,13 +127,13 @@ class AzimuthalIntegrator(Geometry):
 
         Normal mode: False for valid pixels, True for bad pixels
         Numpy mode: True for valid pixels, false for others
-         
+
         @param data: input array of data
         @param mask: input mask (if none, self.mask is used)
         @param dummy: value of dead pixels
         @param delta_dumy: precision of dummy pixels
         @param mode: can be "normal" or "numpy"
-        @return: array of boolean  
+        @return: array of boolean
         """
         shape = data.shape
         if mask is None:
@@ -183,7 +183,7 @@ class AzimuthalIntegrator(Geometry):
         @param mask: array (same size as image) with 0 for masked pixels, and 1 for valid pixels
         @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
-        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction 
+        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction
         @param dark: dark noise image
         @param flat: flat field image
         @return: (2theta, I) in degrees
@@ -227,10 +227,10 @@ class AzimuthalIntegrator(Geometry):
     def xrpd_cython(self, data, nbPt, filename=None, correctSolidAngle=True, tthRange=None, mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=0, dark=None, flat=None, pixelSize=None):
         """
-        Calculate the powder diffraction pattern from a set of data, an image. 
-        
+        Calculate the powder diffraction pattern from a set of data, an image.
+
         Old cython implementation, you should not use it.
-        
+
         @param data: 2D array from the CCD camera
         @type data: ndarray
         @param nbPt: number of points in the output pattern
@@ -248,7 +248,7 @@ class AzimuthalIntegrator(Geometry):
         @param polarization_factor: polarization factor between -1 and +1. 0 for no correction
         @param dark: dark noise image
         @param flat: flat field image
-        @param pixelSize: extension of pixels in 2theta (and radians) ... for pixel splittinh 
+        @param pixelSize: extension of pixels in 2theta (and radians) ... for pixel splittinh
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
         """
@@ -316,7 +316,7 @@ class AzimuthalIntegrator(Geometry):
         @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
         @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
-        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction 
+        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction
         @param dark: dark noise image
         @param flat: flat field image
         @return: (2theta, I) in degrees
@@ -364,7 +364,7 @@ class AzimuthalIntegrator(Geometry):
             polarization = self.polarization(data.shape)
         if mask is None:
             mask = self.mask
-        #outPos, outMerge, outData, outCount    
+        #outPos, outMerge, outData, outCount
         tthAxis, I, a, b = splitBBox.histoBBox1d(weights=data,
                                                  pos0=tth,
                                                  delta_pos0=dtth,
@@ -404,7 +404,7 @@ class AzimuthalIntegrator(Geometry):
         @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
         @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
-        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction 
+        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction
         @param dark: dark noise image
         @param flat: flat field image
         @return: (2theta, I) in degrees
@@ -969,7 +969,7 @@ class AzimuthalIntegrator(Geometry):
         @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
         @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
-        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction 
+        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction
         @param dark: dark noise image
         @param flat: flat field image
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
@@ -1055,7 +1055,7 @@ class AzimuthalIntegrator(Geometry):
         @param mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
         @param  dummy: value for dead/masked pixels
         @param delta_dummy: precision for dummy value
-        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction 
+        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction
         @param dark: dark noise image
         @param flat: flat field image
         @param method: can be "numpy", "cython", "BBox" or "splitpixel"
@@ -1117,6 +1117,9 @@ class AzimuthalIntegrator(Geometry):
                                                         solidangle=solidangle,
                                                         polarization=polarization
                                                         )
+                if qAxis[-1] > 3.14:
+                    #No way to catch this bug !!!2012-11-17
+                    logger.warning("Your maximum q>pi: it is likely that your integration is wrong above this value. Please use another method (i.e. bbox)")
                 if error_model == "azimuthal":
                     variance = (data - self.calcfrom1d(qAxis, I, dim1_unit="q_nm^-1")) ** 2
                 if variance is not None:
