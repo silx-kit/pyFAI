@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import fabio, sys, time, timeit, os, platform, subprocess, gc
+import fabio, sys, time, timeit, os, platform, subprocess, re
 import os.path as op
 
 sys.path.append(op.join(op.dirname(op.dirname(op.abspath(__file__))), "test"))
@@ -70,7 +70,6 @@ class Bench(object):
             res = ai.xrpd(data, N)
             self.reference_1d[param] = res
             ai = None
-            gc.collect()
         return self.reference_1d[param]
 
     def bench_cpu1d(self):
@@ -95,8 +94,6 @@ N=min(data.shape)
 out=ai.xrpd(data,N)""" % (param, fn)
             t = timeit.Timer("ai.xrpd(data,N)", setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
-            t = None
-            gc.collect()
             self.print_exec(tmin)
 #            R = utilstest.Rwp(res, ref)
 #            print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
@@ -130,8 +127,6 @@ N=min(data.shape)
 out=ai.xrpd_LUT(data,N)""" % (param, fn)
             t = timeit.Timer("ai.xrpd_LUT(data,N,safe=False)", setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
-            t = None
-            gc.collect()
             self.print_exec(tmin)
             R = utilstest.Rwp(res, ref)
             print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
@@ -168,8 +163,6 @@ N=min(data.shape)
 out=ai.xrpd_LUT_OCL(data,N,devicetype="%s",platformid=%s,deviceid=%s)""" % (param, fn, devicetype, platformid, deviceid)
             t = timeit.Timer("ai.xrpd_LUT_OCL(data,N,safe=False)", setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
-            t = None
-            gc.collect()
             self.print_exec(tmin)
             R = utilstest.Rwp(res, ref)
             print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
@@ -200,8 +193,6 @@ data = fabio.open("%s").data
 out=ai.xrpd2(data,500,360)""" % (param, fn)
             t = timeit.Timer("ai.xrpd2(data,500,360)", setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
-            t = None
-            gc.collect()
             self.print_exec(tmin)
             print("")
             if 1:#R < self.LIMIT:
@@ -241,8 +232,6 @@ N=min(data.shape)
 out=ai.xrpd_OpenCL(data,N, devicetype="%s", useFp64=%s, platformid=%s, deviceid=%s)""" % (param, fn, devicetype, useFp64, platformid, deviceid)
             t = timeit.Timer("ai.xrpd_OpenCL(data,N,safe=False)", setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
-            t = None
-            gc.collect()
             self.print_exec(tmin)
             print("")
             if R < self.LIMIT:
@@ -250,8 +239,6 @@ out=ai.xrpd_OpenCL(data,N, devicetype="%s", useFp64=%s, platformid=%s, deviceid=
         self.print_sep()
         self.meth.append("Foward_OpenCL_%s_%s_bits" % (devicetype , ("64" if useFp64 else"32")))
         self.results["Foward_OpenCL_%s_%s_bits" % (devicetype , ("64" if useFp64 else"32"))] = results
-
-
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1].isdigit():
         n = int(sys.argv[1])
@@ -260,14 +247,14 @@ if __name__ == "__main__":
     print("Averaging over %i repetitions (best of 3)." % n)
     b = Bench()
     b.nbr = n
-#    b.bench_cpu1d()
-#    b.bench_cpu1d_lut()
-#    b.bench_cpu1d_ocl_lut("GPU")
-#    b.bench_cpu1d_ocl_lut("CPU")
+    b.bench_cpu1d()
+    b.bench_cpu1d_lut()
+    b.bench_cpu1d_ocl_lut("GPU")
+    b.bench_cpu1d_ocl_lut("CPU")
 #    b.bench_cpu1d_ocl_lut()
 #    b.bench_gpu1d("gpu", True)
 #    b.bench_gpu1d("gpu", False)
-#    b.bench_gpu1d("cpu", True)
+    b.bench_gpu1d("cpu", True)
 #    b.bench_gpu1d("cpu", False)
     b.bench_cpu2d()
     size = list(b.results[b.meth[0]].keys())

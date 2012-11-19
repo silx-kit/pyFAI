@@ -101,7 +101,7 @@ corrections( 		__global float 	*image,
 	if(i < size)
 	{
 		data = image[i];
-		if( (!do_dummy) || (delta_dummy && (fabs(data-dummy) > delta_dummy))|| (!delta_dummy && (data!=dummy)))
+		if( (!do_dummy) || ((delta_dummy!=0) && (fabs(data-dummy) > delta_dummy))|| ((delta_dummy==0) && (data!=dummy)))
 		{
 			if(do_dark)
 				data-=dark[i];

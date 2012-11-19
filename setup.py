@@ -63,31 +63,19 @@ else:
     cython_c_ext = ".c"
     from distutils.command.build_ext import build_ext
 
-# ###############################################################################
-# check for OpenCL
-# ###############################################################################
-#
-## temporary until pyopencl is used
-#if "--without-opencl" in sys.argv:
-#    OPENCL = None
-#    sys.argv.remove('--without-opencl')
-#else:
-#    print("WARNING Compiling also the OpenCL extensions, \
-#        add the --without-opencl option to skip this compilation")
-#    OPENCL = True
-#if OPENCL:
-#    OCLINC = []
-#    OCLLIBDIR = []
-#    configparser = ConfigParser.ConfigParser()
-#    configparser.read([os.path.join(os.path.dirname(os.path.abspath(__file__)),
-#                                    "setup.cfg")])
-#    if "OpenCL" in configparser.sections():
-#        for item in configparser.items("OpenCL"):
-#            if item[0] == "include-dirs":
-#                OCLINC += item[1].split(os.pathsep)
-#            elif item[0] == "library-dirs":
-#                OCLLIBDIR += item[1].split(os.pathsep)
 
+def rewriteManifest(with_testimages=False):
+    """
+    Rewrite the "Manifest" file ... if needed
+
+    @param with_testimages: include
+    """
+    manifest = [i.strip() for i in open("Manifest")]
+    changed = False
+#    testimages = ["test/
+
+#    for i in
+    #TODO... complete
 
 
 # ###############################################################################

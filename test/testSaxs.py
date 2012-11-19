@@ -53,6 +53,7 @@ class TestSaxs(unittest.TestCase):
         self.data = fabio.open(self.img).data
         self.ai = pyFAI.AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0, detector=pyFAI.detectors.Pilatus1M())
         self.ai.wavelength = 1e-10
+#        self.ai.mask=None
 
     def tearDown(self):
         pass
