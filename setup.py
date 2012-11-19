@@ -70,13 +70,34 @@ def rewriteManifest(with_testimages=False):
 
     @param with_testimages: include
     """
-    manifest = [i.strip() for i in open("Manifest")]
+    base = os.path.dirname(os.path.abspath(__file__))
+    manifest_file = os.path.join(base, "MANIFEST")
+    if not os.path.isfile(manifest_file):
+        print("MANIFEST file is missing !!!")
+        return
+    manifest = [i.strip() for i in open(manifest_file)]
     changed = False
-#    testimages = ["test/
 
-#    for i in
-    #TODO... complete
+    if with_testimages:
+        testimages = ["test/testimages/" + i for i in os.listdir(os.path.join(base, "test", "testimages"))]
+        for image in testimages:
+            if image not in manifest:
+                manifest.append(image)
+                changed = True
+    else:
+        for line in manifest[:]:
+            if line.startswith("test/testimages"):
+                changed = True
+                manifest.remove(line)
+    if changed:
+        with open(manifest_file, "w") as f:
+            f.write(os.linesep.join(manifest))
 
+if ("sdist" in sys.argv) and ("--with-testimages" in sys.argv):
+    sys.argv.remove("--with-testimages")
+    rewriteManifest(with_testimages=True)
+else:
+    rewriteManifest(with_testimages=False)
 
 # ###############################################################################
 # pyFAI extensions
