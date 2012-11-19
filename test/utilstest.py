@@ -130,7 +130,7 @@ class UtilsTest(object):
         """
         baseimage = os.path.basename(imagename)
         logger.info("UtilsTest.getimage('%s')" % baseimage)
-        fullimagename = os.path.join(cls.image_home, baseimage)
+        fullimagename = os.path.abspath(os.path.join(cls.image_home, baseimage))
         if not os.path.isfile(fullimagename):
             logger.info("Trying to download image %s, timeout set to %ss"
                           % (imagename, cls.timeout))
