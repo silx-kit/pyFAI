@@ -148,15 +148,16 @@ def fullSplit1D(numpy.ndarray pos not None,
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outMerge = numpy.zeros(bins, dtype=numpy.float64)
     cdef numpy.int8_t[:] cmask
     cdef double[:] cflat, cdark, cpolarization, csolidangle
-    cdef double cdummy, cddummy, data
-    cdef double deltaR, deltaL, deltaA
-    cdef double pos0_min, pos0_max, pos0_maxin, pos1_min, pos1_max, pos1_maxin
+
+    cdef double cdummy=0, cddummy=0, data=0
+    cdef double deltaR=0, deltaL=0, deltaA=0
+    cdef double pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0
+    cdef double aeraPixel=0, dpos=0, fbin0_min=0, fbin0_max=0#, fbin1_min, fbin1_max 
+    cdef double a0=0, b0=0, c0=0, d0=0, max0=0, min0=0, a1=0, b1=0, c1=0, d1=0, max1=0, min1=0
+    cdef double epsilon=1e-10
+
     cdef bint check_pos1=False, check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
-    cdef size_t i, idx
-    cdef double fbin0_min, fbin0_max#, fbin1_min, fbin1_max
-    cdef size_t bin, bin0_max, bin0_min
-    cdef double aeraPixel, dpos, a0, b0, c0, d0, max0, min0, a1, b1, c1, d1, max1, min1,
-    cdef double epsilon
+    cdef size_t i=0, idx=0, bin=0, bin0_max=0, bin0_min=0
 
     if pos0Range is not None and len(pos0Range) > 1:
         pos0_min = min(pos0Range)
@@ -174,8 +175,7 @@ def fullSplit1D(numpy.ndarray pos not None,
         pos1_maxin = pos[:, :, 1].max()
     pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
     dpos = (pos0_max - pos0_min) / (< double > (bins))
-    bin = 0
-    epsilon = 1e-10
+
 
     outPos = numpy.linspace(pos0_min+0.5*dpos, pos0_maxin-0.5*dpos, bins)
 
@@ -335,8 +335,7 @@ def fullSplit2D(numpy.ndarray pos not None,
     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
 
-    cdef size_t size = weights.size
-    cdef size_t  bins0, bins1, i, j, idx
+    cdef size_t  bins0=0, bins1=0, size = weights.size
     if pos.ndim>3: #create a view
         pos = pos.reshape((-1,4,2))
 
@@ -353,7 +352,6 @@ def fullSplit2D(numpy.ndarray pos not None,
     if bins1 <= 0:
         bins1 = 1
 
-
     cdef numpy.ndarray[numpy.float64_t, ndim = 3] cpos = pos.astype(numpy.float64)
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] cdata = weights.astype(numpy.float64).ravel()
     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outData = numpy.zeros((bins0, bins1), dtype=numpy.float64)
@@ -361,18 +359,19 @@ def fullSplit2D(numpy.ndarray pos not None,
     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outMerge = numpy.zeros((bins0, bins1), dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] edges0 = numpy.zeros(bins0, dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] edges1 = numpy.zeros(bins1, dtype=numpy.float64)
-    cdef bint check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
     cdef numpy.int8_t[:] cmask
     cdef double[:] cflat, cdark, cpolarization, csolidangle
-    cdef double cdummy, cddummy, data
 
-    cdef double min0, max0, min1, max1, deltaR, deltaL, deltaU, deltaD, deltaA
-    cdef double pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin
+    cdef bint check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
 
-    cdef double fbin0_min, fbin0_max, fbin1_min, fbin1_max
-    cdef size_t   bin0_max, bin0_min, bin1_max, bin1_min
-    cdef double aeraPixel, a0, a1, b0, b1, c0, c1, d0, d1
+    cdef double cdummy=0, cddummy=0, data=0
+    cdef double min0=0, max0=0, min1=0, max1=0, deltaR=0, deltaL=0, deltaU=0, deltaD=0, deltaA=0
+    cdef double pos0_min=0, pos0_max=0, pos1_min=0, pos1_max=0, pos0_maxin=0, pos1_maxin=0
+    cdef double aeraPixel=0, fbin0_min=0, fbin0_max=0, fbin1_min=0, fbin1_max=0
+    cdef double a0=0, a1=0, b0=0, b1=0, c0=0, c1=0, d0=0, d1=0
     cdef double epsilon = 1e-10
+
+    cdef size_t bin0_max=0, bin0_min=0, bin1_max=0, bin1_min=0, i=0, j=0, idx=0
 
     if pos0Range is not None and len(pos0Range) == 2:
         pos0_min = min(pos0Range)
@@ -431,7 +430,6 @@ def fullSplit2D(numpy.ndarray pos not None,
 
     with nogil:
         for idx in range(size):
-
 
             if (check_mask) and (cmask[idx]):
                 continue
