@@ -100,7 +100,7 @@ cdef double max4f(double a, double b, double c, double d) nogil:
 @cython.wraparound(False)
 def fullSplit1D(numpy.ndarray pos not None,
                 numpy.ndarray weights not None,
-                ssize_t bins=100,
+                size_t bins=100,
                 pos0Range=None,
                 pos1Range=None,
                 dummy=None,
@@ -132,7 +132,7 @@ def fullSplit1D(numpy.ndarray pos not None,
     @param solidangle: array (of float64) with flat image
     @return 2theta, I, weighted histogram, unweighted histogram
     """
-    cdef ssize_t  size = weights.size
+    cdef size_t  size = weights.size
     if pos.ndim>3: #create a view
         pos = pos.reshape((-1,4,2))
     assert pos.shape[0] == size
@@ -152,9 +152,9 @@ def fullSplit1D(numpy.ndarray pos not None,
     cdef double deltaR, deltaL, deltaA
     cdef double pos0_min, pos0_max, pos0_maxin, pos1_min, pos1_max, pos1_maxin
     cdef bint check_pos1=False, check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
-    cdef ssize_t i, idx
+    cdef size_t i, idx
     cdef double fbin0_min, fbin0_max#, fbin1_min, fbin1_max
-    cdef ssize_t bin, bin0_max, bin0_min
+    cdef size_t bin, bin0_max, bin0_min
     cdef double aeraPixel, dpos, a0, b0, c0, d0, max0, min0, a1, b1, c1, d1, max1, min1,
     cdef double epsilon
 
@@ -242,7 +242,7 @@ def fullSplit1D(numpy.ndarray pos not None,
                     continue
             if min0<pos0_min:
                 min0=pos0_min
-            if max0>pos1_maxin:
+            if max0>pos0_maxin:
                 max0=pos0_maxin
 
             if do_dark:
@@ -256,8 +256,8 @@ def fullSplit1D(numpy.ndarray pos not None,
 
             fbin0_min = getBinNr(min0, pos0_min, dpos)
             fbin0_max = getBinNr(max0, pos0_min, dpos)
-            bin0_min = < ssize_t > fbin0_min
-            bin0_max = < ssize_t > fbin0_max
+            bin0_min = < size_t > fbin0_min
+            bin0_max = < size_t > fbin0_max
 
             if bin0_min == bin0_max:
                 #All pixel is within a single bin
@@ -335,8 +335,8 @@ def fullSplit2D(numpy.ndarray pos not None,
     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
 
-    cdef ssize_t size = weights.size
-    cdef ssize_t  bins0, bins1, i, j, idx
+    cdef size_t size = weights.size
+    cdef size_t  bins0, bins1, i, j, idx
     if pos.ndim>3: #create a view
         pos = pos.reshape((-1,4,2))
 
@@ -347,7 +347,7 @@ def fullSplit2D(numpy.ndarray pos not None,
     try:
         bins0, bins1 = tuple(bins)
     except:
-        bins0 = bins1 = < ssize_t > bins
+        bins0 = bins1 = < size_t > bins
     if bins0 <= 0:
         bins0 = 1
     if bins1 <= 0:
@@ -370,7 +370,7 @@ def fullSplit2D(numpy.ndarray pos not None,
     cdef double pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin
 
     cdef double fbin0_min, fbin0_max, fbin1_min, fbin1_max
-    cdef ssize_t   bin0_max, bin0_min, bin1_max, bin1_min
+    cdef size_t   bin0_max, bin0_min, bin1_max, bin1_min
     cdef double aeraPixel, a0, a1, b0, b1, c0, c1, d0, d1
     cdef double epsilon = 1e-10
 
@@ -484,10 +484,10 @@ def fullSplit2D(numpy.ndarray pos not None,
             fbin1_min = getBinNr(min1, pos1_min, dpos1)
             fbin1_max = getBinNr(max1, pos1_min, dpos1)
 
-            bin0_min = < ssize_t > fbin0_min
-            bin0_max = < ssize_t > fbin0_max
-            bin1_min = < ssize_t > fbin1_min
-            bin1_max = < ssize_t > fbin1_max
+            bin0_min = < size_t > fbin0_min
+            bin0_max = < size_t > fbin0_max
+            bin1_min = < size_t > fbin1_min
+            bin1_max = < size_t > fbin1_max
 
 
             if bin0_min == bin0_max:
