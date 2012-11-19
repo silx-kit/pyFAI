@@ -171,7 +171,7 @@ class Integrator1d(object):
         size_of_long = numpy.dtype(numpy.int64).itemsize
 
         ualloc = (self.nData * size_of_float) * 7
-        ualloc = (self.nBins * size_of_float) * 2
+        ualloc += (self.nBins * size_of_float) * 2
         if self.useFp64:
             ualloc += (self.nBins * size_of_long) * 2
         else:

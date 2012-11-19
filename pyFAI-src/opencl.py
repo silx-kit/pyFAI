@@ -106,12 +106,14 @@ class OpenCL(object):
 
     def select_device(self, type="ALL", memory=None, extensions=[]):
         """
+        Select a device based on few parameters (at the end, keep the one with most memory)
+        
         @param type: "gpu" or "cpu" or "all" ....
         @param memory: minimum amount of memory (int)
         @param extensions: list of extensions to be present
-
         """
         type = type.upper()
+        best = None
         for platformid, platform in enumerate(self.platforms):
             for deviceid, device in enumerate(platform.devices):
                 if (type in ["ALL", "DEF"]) or (device.type == type):
@@ -121,8 +123,12 @@ class OpenCL(object):
                             if ext not in device.extensions:
                                 found = False
                         if found:
-                            return platformid, deviceid
-        return None
+                            if not best:
+                                best = platformid, deviceid, device.memory
+                            elif best[2] < device.memory:
+                                best = platformid, deviceid, device.memory
+        if best:
+            return  best[0], best[1]
 
     def create_context(self, devicetype="ALL", useFp64=False, platformid=None, deviceid=None):
         """ 
