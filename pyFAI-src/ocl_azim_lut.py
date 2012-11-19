@@ -39,6 +39,10 @@ if pyopencl:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
+try:
+    from fastcrc import crc32
+except:
+    from zlib import crc32
 
 class OCL_LUT_Integrator(object):
     def __init__(self, lut, image_size, devicetype="all", platformid=None, deviceid=None, checksum=None):
@@ -51,16 +55,13 @@ class OCL_LUT_Integrator(object):
         self._lut = lut
         self.bins, self.lut_size = lut.shape
         self.size = image_size
-        if checksum:
-            self.lut_checksum = checksum
-        else:
-            self.lut_checksum = hashlib.md5(self._lut).hexdigest()
+        if not checksum:
+            checksum = crc32(self._lut)
+        self.on_device = {"lut":checksum, "dark":None, "flat":None, "polarization":None, "solidangle":None}
         self.workgroup_size = self.BLOCK_SIZE, 1, 1
-#        self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1), 1, 1#(int(numpy.ceil(float(Nimage) / self.BLOCK_SIZE) * self.BLOCK_SIZE) , 1, 1)
-        self.wdim_bins = (self.bins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1), 1, 1#(int(numpy.ceil(float(Nbins) / self.BLOCK_SIZE) * self.BLOCK_SIZE) , 1, 1)
+        self.wdim = (self.bins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1), 1, 1#(int(numpy.ceil(float(Nbins) / self.BLOCK_SIZE) * self.BLOCK_SIZE) , 1, 1)
         self._cl_kernel_args = {}
         self._cl_mem = {}
-
 
         if (platformid is None) and (deviceid is None):
             platformid, deviceid = ocl.select_device(devicetype)
@@ -80,6 +81,11 @@ class OCL_LUT_Integrator(object):
             self._set_kernel_arguments()
         except pyopencl.MemoryError as error:
             raise MemoryError(error)
+        print self.device_type
+        if self.device_type == "CPU":
+            pyopencl.enqueue_copy(self._queue, self._cl_mem["lut"], lut)
+        else:
+            pyopencl.enqueue_copy(self._queue, self._cl_mem["lut"], lut.T.copy())
 
     def __del__(self):
         """
@@ -110,15 +116,12 @@ class OCL_LUT_Integrator(object):
         ualloc = (self.size * size_of_float) * 5
         ualloc += (self.bins * self.lut_size * (size_of_float + size_of_int))
         ualloc += (self.bins * size_of_float) * 3
-        memory = ocl.platforms[self.platformid].devices[self.deviceid].memory
+        memory = self.device.memory
         if ualloc >= memory:
             raise MemoryError("Fatal error in _allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))
         #now actually allocate:
         try:
-            if self.device_type == "CPU":
-                self._cl_mem["lut"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, hostbuf=lut)
-            else:
-                self._cl_mem["lut"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, hostbuf=lut.T.copy())
+            self._cl_mem["lut"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, (size_of_float + size_of_int) * self.bins * self.lut_size)
             self._cl_mem["outData"] = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, size_of_float * self.bins)
             self._cl_mem["outCount"] = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, size_of_float * self.bins)
             self._cl_mem["outMerge"] = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, size_of_float * self.bins)
@@ -148,7 +151,7 @@ class OCL_LUT_Integrator(object):
     def _compile_kernels(self, kernel_file=None):
         """
         Call the OpenCL compiler
-        @param kernel_file: path tothe 
+        @param kernel_file: path tothe
         """
         kernel_name = "ocl_azim_LUT.cl"
         if kernel_file is None:
@@ -161,10 +164,10 @@ class OCL_LUT_Integrator(object):
         kernel_src = open(kernel_file).read()
 
         compile_options = " -D BLOCK_SIZE=%i -D NBINS=%i  -D NIMAGE=%i -D NLUT=%i -D ON_%s " % \
-                (self.BLOCK_SIZE, self.nBins, self.size, self.lut_size, self.device_type.upper())
-
+                (self.BLOCK_SIZE, self.bins, self.size, self.lut_size, self.device_type.upper())
+        print(compile_options)
         try:
-            self._cl_program = pyopencl.Program(self._ctx, kernel_src).build(options=compile_options)
+            self._program = pyopencl.Program(self._ctx, kernel_src).build(options=compile_options)
         except pyopencl.MemoryError as error:
             raise MemoryError(error)
 
@@ -174,7 +177,7 @@ class OCL_LUT_Integrator(object):
         """
         for kernel in self._cl_kernel_args:
             self._cl_kernel_args[kernel] = []
-        self._cl_program = None
+        self._program = None
 
     def _set_kernel_arguments(self):
         """Tie arguments of OpenCL kernel-functions to the actual kernels
@@ -213,64 +216,41 @@ class OCL_LUT_Integrator(object):
                 self._cl_kernel_args["lut_integrate"][3] = dummy
 
                 if dark is not None:
-                    do_dark = 1
-                    pyopencl.enqueue_copy(self._queue, self.dark_buffer, numpy.ascontiguousarray(dark, dtype=numpy.float32))
-                    dark = None
+                    do_dark = numpy.int32(1)
+                    pyopencl.enqueue_copy(self._queue, self._cl_mem["dark"], numpy.ascontiguousarray(dark, dtype=numpy.float32))
+                    self.on_device["dark"] = crc32(dark)
                 else:
-                    do_dark = 0
+                    do_dark = numpy.int32(0)
+                self._cl_kernel_args["corrections"][1] = do_dark
                 if flat is not None:
-                    flat = numpy.ascontiguousarray(flat, dtype=numpy.float32)
-                    do_flat = 1
-                    if self.flat_buffer.size != flat.nbytes:
-                        self.flat_buffer.release()
-                        self.flat_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=flat)
-                    else:
-                        pyopencl.enqueue_copy(self._queue, self.flat_buffer, flat)
-                    flat = None
+                    do_flat = numpy.int32(1)
+                    pyopencl.enqueue_copy(self._queue, self._cl_mem["flat"], numpy.ascontiguousarray(flat, dtype=numpy.float32))
+                    self.on_device["flat"] = crc32(flat)
                 else:
-                    do_flat = 0
+                    do_flat = numpy.int32(0)
+                self._cl_kernel_args["corrections"][3] = do_flat
 
                 if solidAngle is not None:
-                    solidAngle = numpy.ascontiguousarray(solidAngle, dtype=numpy.float32)
-                    do_solidAngle = 1
-                    if self.solidAngle_buffer.size != solidAngle.nbytes:
-                        self.solidAngle_buffer.release()
-                        self.solidAngle_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=solidAngle)
-                    else:
-                        pyopencl.enqueue_copy(self._queue, self.solidAngle_buffer, solidAngle)
-                    solidAngle = None
+                    do_solidAngle = numpy.int32(1)
+                    pyopencl.enqueue_copy(self._queue, self._cl_mem["solidangle"], numpy.ascontiguousarray(solidAngle, dtype=numpy.float32))
+                    self.on_device["solidangle"] = crc32(solidAngle)
                 else:
-                    do_solidAngle = 0
+                    do_solidAngle = numpy.int32(0)
+                self._cl_kernel_args["corrections"][5] = do_solidAngle
 
                 if polarization is not None:
-                    polarization = numpy.ascontiguousarray(polarization, dtype=numpy.float32)
-                    do_polarization = 1
-                    if self.polarization_buffer.size != polarization.nbytes:
-                        self.polarization_buffer.release()
-                        self.polarization_buffer = pyopencl.Buffer(self._ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=polarization)
-                    else:
-                        pyopencl.enqueue_copy(self._queue, self.polarization_buffer, polarization)
+                    do_polarization = numpy.int32(1)
+                    pyopencl.enqueue_copy(self._queue, self._cl_mem["polarization"], numpy.ascontiguousarray(polarization, dtype=numpy.float32))
+                    self.on_device["polarization"] = crc32(polarization)
                 else:
-                    do_polarization = 0
-                if do_polarization + do_solidAngle + do_flat + do_dark > 0:
-                    args_cor = (self.data_buffer, numpy.uint32(data.size),
-                                numpy.int32(do_dark), self.dark_buffer,
-                                numpy.int32(do_flat), self.flat_buffer,
-                                numpy.int32(do_solidAngle), self.solidAngle_buffer,
-                                numpy.int32(do_polarization), self.polarization_buffer,
-                                numpy.int32(do_dummy), numpy.float32(dummy), numpy.float32(delta_dummy))
-                    pyopencl.enqueue_barrier(self._queue).wait()
-                    self._program.corrections(self._queue, ((self.size + 512 - 1) & ~(512 - 1), 1, 1), (512, 1, 1), self._cl_kernel_args["corrections"])
+                    do_polarization = numpy.int32(0)
+                self._cl_kernel_args["corrections"][7] = do_solidAngle
 
-                args = (self.data_buffer, numpy.uint32(self.bins), numpy.uint32(self.lut_size), self._lut_buffer,
-                       numpy.int32(do_dummy), numpy.float32(dummy), numpy.float32(delta_dummy), self.outData_buffer, self.outCount_buffer, self.outMerge_buffer)
-                if self.device_type == "CPU":
-                    self._program.lut_integrate_single(self._queue, (self.get_nr_threads(),), self.workgroup_size, *args)
-                else:
-                    self._program.lut_integrate_lutT(self._queue, (self.get_nr_threads(),), self.workgroup_size, *args)
+                if do_dummy + do_polarization + do_solidAngle + do_flat + do_dark > 0:
+                    self._program.corrections(self._queue, ((self.size + 512 - 1) & ~(512 - 1), 1, 1), (512, 1, 1), *self._cl_kernel_args["corrections"])
+                self._program.lut_integrate(self._queue, self.wdim, self.workgroup_size, *self._cl_kernel_args["lut_integrate"])
                 output = numpy.zeros(self.bins, dtype=numpy.float32)
-                pyopencl.enqueue_barrier(self._queue).wait()
-                pyopencl.enqueue_copy(self._queue, output, self.outMerge_buffer).wait()
+                pyopencl.enqueue_copy(self._queue, output, self._cl_mem["outMerge"]).wait()
             except pyopencl.MemoryError as error:
                 raise MemoryError(error)
         return output

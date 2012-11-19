@@ -39,6 +39,13 @@
   #define printf(...)
 #endif
 
+#ifdef ON_GPU
+    __constant int GPU=1;
+#else
+	__constant int GPU=0;
+#endif
+
+
 #ifdef ENABLE_FP64
 //	#pragma OPENCL EXTENSION cl_khr_fp64 : enable
 	typedef double bigfloat_t;
@@ -63,7 +70,7 @@ struct lut_point_t
  *  - Solid angle correction (division)
  *  - polarization correction (division)
  *  - flat fiels correction (division)
- * Corrections are made in place unless the pixel is dummy. 
+ * Corrections are made in place unless the pixel is dummy.
  * Dummy pixels are left untouched so that they remain dummy
  *
  * @param image	          Float pointer to global memory storing the input image.
@@ -78,7 +85,7 @@ struct lut_point_t
  * @param do_dummy    	  Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
  * @param dummy       	  Float: value for bad pixels
  * @param delta_dummy 	  Float: precision for bad pixel value
- * 
+ *
 **/
 __kernel void
 corrections( 		__global float 	*image,
@@ -114,7 +121,6 @@ corrections( 		__global float 	*image,
 		}else{
 			image[i] = dummy;
 		}//end if do_dummy
-		}
 	};//end if NIMAGE
 };//end kernel
 
@@ -124,15 +130,15 @@ corrections( 		__global float 	*image,
  * \brief Performs 1d azimuthal integration with full pixel splitting based on a LUT
  *
  * An image instensity value is spread across the bins according to the positions stored in the LUT.
- * The lut is an 2D-array of index (contains the positions of the pixel in the input array) 
+ * The lut is an 2D-array of index (contains the positions of the pixel in the input array)
  * and coeficients (fraction of pixel going to the bin)
  * Values of 0 in the mask are processed and values of 1 ignored as per PyFAI
  *
- * This implementation is especially efficient on CPU where each core reads adjacents memory. 
+ * This implementation is especially efficient on CPU where each core reads adjacents memory.
  * the use of local pointer can help on the CPU.
  *
  * @param weights     Float pointer to global memory storing the input image.
- * @param lut         Pointer to an 2D-array of (unsigned integers,float) containing the index of input pixels and the fraction of pixel going to the bin 
+ * @param lut         Pointer to an 2D-array of (unsigned integers,float) containing the index of input pixels and the fraction of pixel going to the bin
  * @param do_dummy    Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
  * @param dummy       Float: value for bad pixels
  * @param delta_dummy Float: precision for bad pixel value
@@ -143,13 +149,13 @@ corrections( 		__global float 	*image,
  * @param outData     Float pointer to the output 1D array with the weighted histogram
  * @param outCount    Float pointer to the output 1D array with the unweighted histogram
  * @param outMerged   Float pointer to the output 1D array with the diffractogram
- * 
+ *
  */
 __kernel void
-lut_integrate(	const 	__global 	float 		*weights,
-						const 	__global	struct lut_point_t *lut,
-						const			 	int   		do_dummy,
-						const			 	float 		dummy,
+lut_integrate(	const 	__global	float	*weights,
+				const 	__global	struct lut_point_t *lut,
+				const				int   		do_dummy,
+				const			 	float 		dummy,
 								__global 	float		*outData,
 								__global 	float		*outCount,
 								__global 	float		*outMerge
@@ -167,7 +173,7 @@ lut_integrate(	const 	__global 	float 		*weights,
 	{
 		for (j=0;j<NLUT;j++)
 		{
-			if (ON_GPU)
+			if (GPU)
 				//On GPU best performances are obtained  when threads are reading adjacent memory
 				k = i*NLUT+j;
 			else

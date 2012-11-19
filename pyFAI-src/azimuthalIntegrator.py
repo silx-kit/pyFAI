@@ -69,6 +69,10 @@ except ImportError as error:#IGNORE:W0703
     logger.warning("Unable to import pyFAI.ocl_azim_lut for Look-up table based azimuthal integration on GPU")
     ocl_azim_lut = None
 
+try:
+    from fastcrc import crc32
+except:
+    from zlib import crc32
 
 
 class AzimuthalIntegrator(Geometry):
@@ -760,7 +764,7 @@ class AzimuthalIntegrator(Geometry):
 
             tthAxis = self._lut_integrator.outPos
             with self._ocl_lut_sem:
-                if (self._ocl_lut_integr is None) or (self._ocl_lut_integr.lut_checksum != self._lut_integrator.lut_checksum):
+                if (self._ocl_lut_integr is None) or (self._ocl_lut_integr.on_device["lut"] != self._lut_integrator.lut_checksum):
                     self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut, self._lut_integrator.size, devicetype, platformid=platformid, deviceid=deviceid, checksum=self._lut_integrator.lut_checksum)
                 I = self._ocl_lut_integr.integrate(data, solidAngle=solid_angle_array)
         tthAxis = numpy.degrees(tthAxis)
