@@ -27,7 +27,6 @@
 #
 import cython
 import os
-import hashlib
 from cython.parallel import prange
 from libc.string cimport memset
 import numpy
@@ -36,6 +35,10 @@ from libc.math cimport fabs
 cdef struct lut_point:
     numpy.uint32_t idx
     numpy.float32_t coef
+try:
+    from fastcrc import crc32
+except:
+    from zlib import crc32
 
 @cython.cdivision(True)
 cdef float getBinNr( float x0, float pos0_min, float delta) nogil:
@@ -74,7 +77,7 @@ class HistoBBox1d(object):
         if pos0Range is not None and len(pos0Range) > 1:
             self.pos0_min = min(pos0Range)
             pos0_maxin = max(pos0Range)
-        else:            
+        else:
             self.pos0_min = (self.cpos0_inf).min()
             pos0_maxin = (self.cpos0_sup).max()
         if (not allow_pos0_neg) and self.pos0_min < 0:
@@ -99,14 +102,14 @@ class HistoBBox1d(object):
             assert mask.size == self.size
             self.check_mask = True
             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
-            self.mask_checksum = hashlib.md5(mask).hexdigest()
+            self.mask_checksum = crc32(mask)
         else:
             self.check_mask = False
             self.mask_checksum=None
         self.delta = (self.pos0_max - self.pos0_min) / bins
         self.lut_max_idx = self.calc_lut()
         self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, pos0_maxin-0.5*self.delta, self.bins)
-        self.lut_checksum = hashlib.md5(self.lut).hexdigest()
+        self.lut_checksum = crc32(self.lut)
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
