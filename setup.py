@@ -103,7 +103,7 @@ else:
 # pyFAI extensions
 # ###############################################################################
 cython_modules = ["histogram", "splitPixel", "splitBBox", "splitBBoxLUT",
-                  "relabel", "bilinear", "_geometry", "reconstruct"]
+                  "relabel", "bilinear", "_geometry", "reconstruct", "fastcrc"]
 src = {}
 for ext in cython_modules:
     src[ext] = os.path.join("src", ext + cython_c_ext)
@@ -158,8 +158,15 @@ bilinear_dic = dict(name="bilinear",
                     include_dirs=get_numpy_include_dirs(),
                     sources=[src['bilinear']])
 
+fastcrc_dic = dict(name="fastcrc",
+                        include_dirs=get_numpy_include_dirs(),
+                        sources=[src['fastcrc'] , os.path.join("src", "crc32.c")],
+                        extra_compile_args=['-msse4.2'],
+                        )
+
+
 ext_modules = [histogram_dic, splitPixel_dic, splitBBox_dic, splitBBoxLUT_dic, relabel_dic,
-               _geometry_dic, reconstruct_dic, bilinear_dic]
+               _geometry_dic, reconstruct_dic, bilinear_dic, fastcrc_dic]
 
 
 #if OPENCL:
