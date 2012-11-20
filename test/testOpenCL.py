@@ -29,15 +29,16 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/06/2012"
+__date__ = "20/11/2012"
 
 
 import unittest
 import os
 import time
 import sys
-import tempfile
 import fabio
+from utilstest import UtilsTest, Rwp, getLogger
+logger = getLogger(__file__)
 try:
     import pyopencl
 except ImportError as error:
@@ -45,8 +46,6 @@ except ImportError as error:
     skip = True
 else:
     skip = False
-from utilstest import UtilsTest, Rwp, getLogger
-logger = getLogger(__file__)
 
 pyFAI = sys.modules["pyFAI"]
 ocl = pyFAI.opencl.ocl
