@@ -245,28 +245,25 @@ class HistoBBox1d(object):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def integrate(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None):
-        cdef int i, j, idx, bins, lut_size, size
-        cdef double sum_data, sum_count, epsilon
-        cdef float data, coef, cdummy, cddummy
+        cdef ssize_t i=0, j=0, idx=0, bins=self.bins, lut_size=self.lut_size, size=self.size
+        cdef double sum_data=0, sum_count=0, epsilon=1e-10
+        cdef float data=0, coef=0, cdummy=0, cddummy=0
         cdef bint do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
         cdef lut_point[:,:] lut = self.lut
         cdef float[:] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-        size = self.size
+
         assert size == weights.size
-        epsilon = 1e-10
-        bins = self.bins
-        lut_size = self.lut_size
 
         if dummy is not None:
-            do_dummy = 1
-            cdummy =  float(dummy)
+            do_dummy = True
+            cdummy =  <float>float(dummy)
             if delta_dummy is None:
-                cddummy = 0.0
+                cddummy = <float>0.0
             else:
-                cddummy = float(delta_dummy)
+                cddummy = <float>float(delta_dummy)
 
         if flat is not None:
             do_flat = True
@@ -281,17 +278,17 @@ class HistoBBox1d(object):
             assert solidAngle.size == size
             csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float32)
         if polarization is not None:
-            do_polatization = True
+            do_polarization = True
             assert polarization.size == size
             cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
 
-        if do_dark or do_flat or do_polarization or do_solidAngle:
+        if (do_dark + do_flat + do_polarization + do_solidAngle):
             tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
             cdata = numpy.zeros(size,dtype=numpy.float32)
             if do_dummy:
                 for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
-                    if (cddummy and (fabs(data-cdummy) > cddummy)) or (not(cddummy) and (data!=cdummy)):
+                    if ((cddummy!=0) and (fabs(data-cdummy) > cddummy)) or ((cddummy==0) and (data!=cdummy)):
                         #Nota: -= and /= operatore are seen as reduction in cython parallel.
                         if do_dark:
                             data = data - cdark[i]
@@ -317,7 +314,17 @@ class HistoBBox1d(object):
                         data = data / csolidAngle[i]
                     cdata[i]+=data
         else:
-            cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
+            if do_dummy:
+                tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
+                cdata = numpy.zeros(size,dtype=numpy.float32)
+                for i in prange(size, nogil=True, schedule="static"):
+                    data = tdata[i]
+                    if ((cddummy!=0) and (fabs(data-cdummy) > cddummy)) or ((cddummy==0) and (data!=cdummy)):
+                        cdata[i]+=data
+                    else:
+                        cdata[i]+=cdummy
+            else:
+                cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
 
         for i in prange(bins, nogil=True, schedule="guided"):
             sum_data = 0.0

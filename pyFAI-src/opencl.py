@@ -36,9 +36,11 @@ logger = logging.getLogger("pyFAI.opencl")
 
 try:
     import pyopencl
+#    from pyFAI.opencl import ocl
 except ImportError:
     logger.error("Unable to import pyOpenCl. Please install it from: http://pypi.python.org/pypi/pyopencl")
     pyopencl = None
+
 
 
 class Device(object):

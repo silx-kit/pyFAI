@@ -81,7 +81,6 @@ class OCL_LUT_Integrator(object):
             self._set_kernel_arguments()
         except pyopencl.MemoryError as error:
             raise MemoryError(error)
-        print self.device_type
         if self.device_type == "CPU":
             pyopencl.enqueue_copy(self._queue, self._cl_mem["lut"], lut)
         else:
@@ -163,9 +162,8 @@ class OCL_LUT_Integrator(object):
             kernel_file = str(kernel_file)
         kernel_src = open(kernel_file).read()
 
-        compile_options = " -D BLOCK_SIZE=%i -D NBINS=%i  -D NIMAGE=%i -D NLUT=%i -D ON_%s " % \
-                (self.BLOCK_SIZE, self.bins, self.size, self.lut_size, self.device_type.upper())
-        print(compile_options)
+        compile_options = " -D BLOCK_SIZE=%i -D NBINS=%i  -D NIMAGE=%i -D NLUT=%i -D ON_CPU=%i " % \
+                (self.BLOCK_SIZE, self.bins, self.size, self.lut_size, int(self.device_type == "CPU"))
         try:
             self._program = pyopencl.Program(self._ctx, kernel_src).build(options=compile_options)
         except pyopencl.MemoryError as error:
@@ -189,68 +187,69 @@ class OCL_LUT_Integrator(object):
         is reset to tth_min_max.
         """
         self._cl_kernel_args["corrections"] = [self._cl_mem["image"], numpy.int32(0), self._cl_mem["dark"], numpy.int32(0), self._cl_mem["flat"], \
-                                             numpy.int32(0), self._cl_mem["polarization"], numpy.int32(0), self._cl_mem["solidangle"], \
+                                             numpy.int32(0), self._cl_mem["solidangle"], numpy.int32(0), self._cl_mem["polarization"], \
                                              numpy.int32(0), numpy.float32(0), numpy.float32(0)]
         self._cl_kernel_args["lut_integrate"] = [self._cl_mem["image"], self._cl_mem["lut"], numpy.int32(0), numpy.float32(0), \
                                                 self._cl_mem["outData"], self._cl_mem["outCount"], self._cl_mem["outMerge"]]
+        self._cl_kernel_args["memset_out"] = [self._cl_mem[i] for i in ["outData", "outCount", "outMerge"]]
 
     def integrate(self, data, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None):
         with self._sem:
-            try:
-                pyopencl.enqueue_copy(self._queue, self._cl_mem["image"], numpy.ascontiguousarray(data, dtype=numpy.float32))
-                if dummy is not None:
-                    do_dummy = numpy.int32(1)
-                    dummy = numpy.float32(dummy)
-                    if delta_dummy == None:
-                        delta_dummy = numpy.float32(0)
-                    else:
-                        delta_dummy = numpy.float32(delta_dummy)
-                else:
-                    do_dummy = numpy.int32(0)
-                    dummy = numpy.float32(0)
+            copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image"], numpy.ascontiguousarray(data, dtype=numpy.float32))
+            memset = self._program.memset_out(self._queue, self.wdim, self.workgroup_size, *self._cl_kernel_args["memset_out"])
+            if dummy is not None:
+                do_dummy = numpy.int32(1)
+                dummy = numpy.float32(dummy)
+                if delta_dummy == None:
                     delta_dummy = numpy.float32(0)
-                self._cl_kernel_args["corrections"][9] = do_dummy
-                self._cl_kernel_args["corrections"][10] = dummy
-                self._cl_kernel_args["corrections"][11] = delta_dummy
-                self._cl_kernel_args["lut_integrate"][2] = do_dummy
-                self._cl_kernel_args["lut_integrate"][3] = dummy
-
-                if dark is not None:
-                    do_dark = numpy.int32(1)
-                    pyopencl.enqueue_copy(self._queue, self._cl_mem["dark"], numpy.ascontiguousarray(dark, dtype=numpy.float32))
-                    self.on_device["dark"] = crc32(dark)
                 else:
-                    do_dark = numpy.int32(0)
-                self._cl_kernel_args["corrections"][1] = do_dark
-                if flat is not None:
-                    do_flat = numpy.int32(1)
-                    pyopencl.enqueue_copy(self._queue, self._cl_mem["flat"], numpy.ascontiguousarray(flat, dtype=numpy.float32))
-                    self.on_device["flat"] = crc32(flat)
-                else:
-                    do_flat = numpy.int32(0)
-                self._cl_kernel_args["corrections"][3] = do_flat
+                    delta_dummy = numpy.float32(abs(delta_dummy))
+            else:
+                do_dummy = numpy.int32(0)
+                dummy = numpy.float32(0)
+                delta_dummy = numpy.float32(0)
+            self._cl_kernel_args["corrections"][9] = do_dummy
+            self._cl_kernel_args["corrections"][10] = dummy
+            self._cl_kernel_args["corrections"][11] = delta_dummy
+            self._cl_kernel_args["lut_integrate"][2] = do_dummy
+            self._cl_kernel_args["lut_integrate"][3] = dummy
 
-                if solidAngle is not None:
-                    do_solidAngle = numpy.int32(1)
-                    pyopencl.enqueue_copy(self._queue, self._cl_mem["solidangle"], numpy.ascontiguousarray(solidAngle, dtype=numpy.float32))
-                    self.on_device["solidangle"] = crc32(solidAngle)
-                else:
-                    do_solidAngle = numpy.int32(0)
-                self._cl_kernel_args["corrections"][5] = do_solidAngle
+            if dark is not None:
+                do_dark = numpy.int32(1)
+                pyopencl.enqueue_copy(self._queue, self._cl_mem["dark"], numpy.ascontiguousarray(dark, dtype=numpy.float32))
+                self.on_device["dark"] = crc32(dark)
+            else:
+                do_dark = numpy.int32(0)
+            self._cl_kernel_args["corrections"][1] = do_dark
+            if flat is not None:
+                do_flat = numpy.int32(1)
+                pyopencl.enqueue_copy(self._queue, self._cl_mem["flat"], numpy.ascontiguousarray(flat, dtype=numpy.float32))
+                self.on_device["flat"] = crc32(flat)
+            else:
+                do_flat = numpy.int32(0)
+            self._cl_kernel_args["corrections"][3] = do_flat
 
-                if polarization is not None:
-                    do_polarization = numpy.int32(1)
-                    pyopencl.enqueue_copy(self._queue, self._cl_mem["polarization"], numpy.ascontiguousarray(polarization, dtype=numpy.float32))
-                    self.on_device["polarization"] = crc32(polarization)
-                else:
-                    do_polarization = numpy.int32(0)
-                self._cl_kernel_args["corrections"][7] = do_solidAngle
+            if solidAngle is not None:
+                do_solidAngle = numpy.int32(1)
+                pyopencl.enqueue_copy(self._queue, self._cl_mem["solidangle"], numpy.ascontiguousarray(solidAngle, dtype=numpy.float32))
+                self.on_device["solidangle"] = crc32(solidAngle)
+            else:
+                do_solidAngle = numpy.int32(0)
+            self._cl_kernel_args["corrections"][5] = do_solidAngle
 
-                if do_dummy + do_polarization + do_solidAngle + do_flat + do_dark > 0:
-                    self._program.corrections(self._queue, ((self.size + 512 - 1) & ~(512 - 1), 1, 1), (512, 1, 1), *self._cl_kernel_args["corrections"])
-                self._program.lut_integrate(self._queue, self.wdim, self.workgroup_size, *self._cl_kernel_args["lut_integrate"])
-                output = numpy.zeros(self.bins, dtype=numpy.float32)
-                pyopencl.enqueue_copy(self._queue, output, self._cl_mem["outMerge"]).wait()
-            except pyopencl.MemoryError as error:
-                raise MemoryError(error)
+            if polarization is not None:
+                do_polarization = numpy.int32(1)
+                pyopencl.enqueue_copy(self._queue, self._cl_mem["polarization"], numpy.ascontiguousarray(polarization, dtype=numpy.float32))
+                self.on_device["polarization"] = crc32(polarization)
+            else:
+                do_polarization = numpy.int32(0)
+            self._cl_kernel_args["corrections"][7] = do_polarization
+            copy_image.wait()
+            if do_dummy + do_polarization + do_solidAngle + do_flat + do_dark > 0:
+                self._program.corrections(self._queue, ((self.size + 512 - 1) & ~(512 - 1), 1, 1), (512, 1, 1), *self._cl_kernel_args["corrections"]).wait()
+            memset.wait()
+            integrate = self._program.lut_integrate(self._queue, self.wdim, self.workgroup_size, *self._cl_kernel_args["lut_integrate"])
+            output = numpy.zeros(self.bins, dtype=numpy.float32)
+            integrate.wait()
+            pyopencl.enqueue_copy(self._queue, output, self._cl_mem["outMerge"]).wait()
         return output

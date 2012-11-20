@@ -39,12 +39,6 @@
   #define printf(...)
 #endif
 
-#ifdef ON_GPU
-    __constant int GPU=1;
-#else
-	__constant int GPU=0;
-#endif
-
 
 #ifdef ENABLE_FP64
 //	#pragma OPENCL EXTENSION cl_khr_fp64 : enable
@@ -56,6 +50,31 @@
 
 #define GROUP_SIZE BLOCK_SIZE
 
+/**
+ * \brief Sets the values of 3 float output arrays to zero.
+ *
+ * Gridsize = size of arrays + padding.
+ *
+ * @param array0: float Pointer to global memory with the outMerge array
+ * @param array1: float Pointer to global memory with the outCount array
+ * @param array2: float Pointer to global memory with the outData array
+ */
+__kernel void
+memset_out(__global float *array0,
+		   __global float *array1,
+		   __global float *array2
+)
+{
+  uint i = get_global_id(0);
+  //Global memory guard for padding
+  if(i < NBINS)
+  {
+	array0[i]=0.0f;
+	array1[i]=0.0f;
+	array2[i]=0.0f;
+  }
+}
+	
 struct lut_point_t
 {
 		uint idx;
@@ -173,12 +192,16 @@ lut_integrate(	const 	__global	float	*weights,
 	{
 		for (j=0;j<NLUT;j++)
 		{
-			if (GPU)
-				//On GPU best performances are obtained  when threads are reading adjacent memory
-				k = i*NLUT+j;
-			else
+			if (ON_CPU){
 				//On CPU best performances are obtained  when each single thread reads adjacent memory
+				k = i*NLUT+j;
+				
+			}
+			else{
+				//On GPU best performances are obtained  when threads are reading adjacent memory
 				k = j*NBINS+i;
+			}
+				
 			idx = lut[k].idx;
 			coef = lut[k].coef;
 			if((idx <= 0) && (coef <= 0.0f))
