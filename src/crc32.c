@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include <smmintrin.h>
+//#include <smmintrin.h>
 #include <cpuid.h>
 
 int is_initialized=0;
@@ -32,21 +32,29 @@ uint32_t slowcrc(char *str, uint32_t len) {
 }
 
 uint32_t fastcrc(const char *str, uint32_t len) {
-	uint64_t q=len/sizeof(uint64_t),
-		     r=len%sizeof(uint64_t),
-		     *p=(uint64_t*)str,
-		     crc64=0;
-	uint32_t crc=0;
+	uint32_t q=len/sizeof(uint32_t),
+		     r=len%sizeof(uint32_t),
+		     *p=(uint32_t*)str,
+		     crc=0;
 
 	while (q--) {
-		crc64 = _mm_crc32_u64(crc64,*p);
+//		crc = _mm_crc32_u32(crc,*p);
+		__asm__ __volatile__(
+				".byte 0xf2, 0xf, 0x38, 0xf1, 0xf1;"
+				:"=S"(crc)
+				:"0"(crc), "c"(*p)
+				);
 		p++;
 	}
 
 	str=(char*)p;
-	crc=crc64;
 	while (r--) {
-		crc = _mm_crc32_u8(crc,*str);
+//		crc = _mm_crc32_u8(crc,*str);
+		__asm__ __volatile__(
+				".byte 0xf2, 0xf, 0x38, 0xf0, 0xf1"
+				:"=S"(crc)
+				:"0"(crc), "c"(*str)
+		);
 		str++;
 	}
 

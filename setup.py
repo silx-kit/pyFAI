@@ -161,7 +161,7 @@ bilinear_dic = dict(name="bilinear",
 fastcrc_dic = dict(name="fastcrc",
                         include_dirs=get_numpy_include_dirs(),
                         sources=[src['fastcrc'] , os.path.join("src", "crc32.c")],
-                        extra_compile_args=['-msse4.2'],
+#                        extra_compile_args=['-msse4.2'],
                         )
 
 
@@ -169,7 +169,7 @@ ext_modules = [histogram_dic, splitPixel_dic, splitBBox_dic, splitBBoxLUT_dic, r
                _geometry_dic, reconstruct_dic, bilinear_dic, fastcrc_dic]
 
 
-#if OPENCL:
+# if OPENCL:
 #    ocl_src = [os.path.join(*(pp.split("/"))) for pp in ("ocl_base.cpp",
 #        "ocl_tools/ocl_tools.cc", "ocl_tools/ocl_tools_extended.cc",
 #        "ocl_tools/cLogger/cLogger.c", "ocl_xrpd1d_fullsplit.cpp")]
