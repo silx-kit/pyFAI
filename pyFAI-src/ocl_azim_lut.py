@@ -193,7 +193,8 @@ class OCL_LUT_Integrator(object):
                                                 self._cl_mem["outData"], self._cl_mem["outCount"], self._cl_mem["outMerge"]]
         self._cl_kernel_args["memset_out"] = [self._cl_mem[i] for i in ["outData", "outCount", "outMerge"]]
 
-    def integrate(self, data, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None):
+    def integrate(self, data, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None,
+                            dark_checksum=None, flat_checksum=None, solidAngle_checksum=None, polarization_checksum=None):
         with self._sem:
             copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image"], numpy.ascontiguousarray(data, dtype=numpy.float32))
             memset = self._program.memset_out(self._queue, self.wdim, self.workgroup_size, *self._cl_kernel_args["memset_out"])
@@ -216,31 +217,43 @@ class OCL_LUT_Integrator(object):
 
             if dark is not None:
                 do_dark = numpy.int32(1)
-                pyopencl.enqueue_copy(self._queue, self._cl_mem["dark"], numpy.ascontiguousarray(dark, dtype=numpy.float32))
-                self.on_device["dark"] = crc32(dark)
+                if not dark_checksum:
+                    dark_checksum = crc32(dark)
+                if dark_checksum != self.on_device["dark"]:
+                    pyopencl.enqueue_copy(self._queue, self._cl_mem["dark"], numpy.ascontiguousarray(dark, dtype=numpy.float32))
+                    self.on_device["dark"] = dark_checksum
             else:
                 do_dark = numpy.int32(0)
             self._cl_kernel_args["corrections"][1] = do_dark
             if flat is not None:
                 do_flat = numpy.int32(1)
-                pyopencl.enqueue_copy(self._queue, self._cl_mem["flat"], numpy.ascontiguousarray(flat, dtype=numpy.float32))
-                self.on_device["flat"] = crc32(flat)
+                if not flat_checksum:
+                    flat_checksum = crc32(flat)
+                if self.on_device["flat"] != flat_checksum:
+                    pyopencl.enqueue_copy(self._queue, self._cl_mem["flat"], numpy.ascontiguousarray(flat, dtype=numpy.float32))
+                    self.on_device["flat"] = flat_checksum
             else:
                 do_flat = numpy.int32(0)
             self._cl_kernel_args["corrections"][3] = do_flat
 
             if solidAngle is not None:
                 do_solidAngle = numpy.int32(1)
-                pyopencl.enqueue_copy(self._queue, self._cl_mem["solidangle"], numpy.ascontiguousarray(solidAngle, dtype=numpy.float32))
-                self.on_device["solidangle"] = crc32(solidAngle)
+                if not solidAngle_checksum:
+                    solidAngle_checksum = crc32(solidAngle)
+                if solidAngle_checksum != self.on_device["solidangle"]:
+                    pyopencl.enqueue_copy(self._queue, self._cl_mem["solidangle"], numpy.ascontiguousarray(solidAngle, dtype=numpy.float32))
+                self.on_device["solidangle"] = solidAngle_checksum
             else:
                 do_solidAngle = numpy.int32(0)
             self._cl_kernel_args["corrections"][5] = do_solidAngle
 
             if polarization is not None:
                 do_polarization = numpy.int32(1)
-                pyopencl.enqueue_copy(self._queue, self._cl_mem["polarization"], numpy.ascontiguousarray(polarization, dtype=numpy.float32))
-                self.on_device["polarization"] = crc32(polarization)
+                if not polarization_checksum:
+                    polarization_checksum = crc32(polarization)
+                if polarization_checksum != self.on_device["polarization"]:
+                    pyopencl.enqueue_copy(self._queue, self._cl_mem["polarization"], numpy.ascontiguousarray(polarization, dtype=numpy.float32))
+                    self.on_device["polarization"] = polarization_checksum
             else:
                 do_polarization = numpy.int32(0)
             self._cl_kernel_args["corrections"][7] = do_polarization
@@ -249,7 +262,11 @@ class OCL_LUT_Integrator(object):
                 self._program.corrections(self._queue, ((self.size + 512 - 1) & ~(512 - 1), 1, 1), (512, 1, 1), *self._cl_kernel_args["corrections"]).wait()
             memset.wait()
             integrate = self._program.lut_integrate(self._queue, self.wdim, self.workgroup_size, *self._cl_kernel_args["lut_integrate"])
-            output = numpy.zeros(self.bins, dtype=numpy.float32)
+            outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
+            outData = numpy.zeros(self.bins, dtype=numpy.float32)
+            outCount = numpy.zeros(self.bins, dtype=numpy.float32)
             integrate.wait()
-            pyopencl.enqueue_copy(self._queue, output, self._cl_mem["outMerge"]).wait()
-        return output
+            pyopencl.enqueue_copy(self._queue, outMerge, self._cl_mem["outMerge"]).wait()
+            pyopencl.enqueue_copy(self._queue, outData, self._cl_mem["outData"]).wait()
+            pyopencl.enqueue_copy(self._queue, outCount, self._cl_mem["outCount"]).wait()
+        return outMerge, outMerge, outCount

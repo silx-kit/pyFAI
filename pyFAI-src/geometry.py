@@ -41,6 +41,10 @@ try:
 except:
     _geometry = None
 logger = logging.getLogger("pyFAI.geometry")
+try:
+    from fastcrc import crc32
+except:
+    from zlib import crc32
 
 
 
@@ -148,6 +152,7 @@ class Geometry(object):
         self._ttha = None
         self._dttha = None
         self._dssa = None
+        self._dssa_crc = None #checksum associated with _dssa
         self._chia = None
         self._dchia = None
         self._qa = None
@@ -160,6 +165,7 @@ class Geometry(object):
         self._sem = threading.Semaphore()
         self._polarization_factor = 0
         self._polarization = None
+        self._polarization_crc = None #checksum associated with _polarization
 
         if detector:
             if type(detector) in types.StringTypes:
@@ -504,7 +510,10 @@ class Geometry(object):
         Generate an array of the given shape with the solid angle of the current element two-theta(i,j) for all elements.
         """
         if self._dssa is None:
+#            with self._sem:
+#                if self._dssa is None:
             self._dssa = numpy.fromfunction(self.diffSolidAngle, shape, dtype=numpy.float32)
+            self._dssa_crc = crc32(self._dssa)
         return self._dssa
 
 
@@ -774,6 +783,7 @@ class Geometry(object):
                 cos2_tth = numpy.cos(self.twoThetaArray(shape)) ** 2
                 self._polarization = (1 + cos2_tth - factor * numpy.cos(2 * self.chiArray(shape)) * (1 - cos2_tth)) / 2.0
                 self._polarization_factor = factor
+                self._polarization_crc = crc32(self._polarization)
                 return self._polarization
 
     def reset(self):

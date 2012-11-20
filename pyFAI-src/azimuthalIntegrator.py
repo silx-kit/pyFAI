@@ -102,8 +102,10 @@ class AzimuthalIntegrator(Geometry):
         #
         #mask and maskfile are properties pointing to self.detector
 
-        self.flatfield = None   #just a placeholder
-        self.darkcurrent = None   #just a placeholder
+        self._flatfield = None   #just a placeholder
+        self._darkcurrent = None   #just a placeholder
+        self._flatfield_crc = None   #just a placeholder
+        self._darkcurrent_crc = None   #just a placeholder
 
         self.header = None
 
@@ -729,9 +731,11 @@ class AzimuthalIntegrator(Geometry):
                                        delta_dummy=delta_dummy)
         if correctSolidAngle:
             solid_angle_array = self.solidAngleArray(shape)
+            solid_angle_crc = self._dssa_crc
         else:
             solid_angle_array = None
-            tthAxis, I, a, b = self._lut_integrator.integrate(data,)
+            solid_angle_crc = None
+#            tthAxis, I, a, b = self._lut_integrator.integrate(data,)
 
         with self._lut_sem:
             reset = None
@@ -742,7 +746,7 @@ class AzimuthalIntegrator(Geometry):
                     reset = "Mask1"
                 elif (mask is None) and (self._lut_integrator.check_mask):
                     reset = "Mask2"
-                elif (mask is not None) and (self._lut_integrator.mask_checksum != hashlib.md5(mask).hexdigest()):
+                elif (mask is not None) and (self._lut_integrator.mask_checksum != crc32(mask)):
                     reset = "Mask-changed"
                 if (tthRange is None) and (self._lut_integrator.pos0Range is not None):
                     reset = "tthrange1"
@@ -762,12 +766,12 @@ class AzimuthalIntegrator(Geometry):
                     gc.collect()
                     return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
 
-            tthAxis = self._lut_integrator.outPos
+            tthAxis = self._lut_integrator.outPos_degrees
             with self._ocl_lut_sem:
                 if (self._ocl_lut_integr is None) or (self._ocl_lut_integr.on_device["lut"] != self._lut_integrator.lut_checksum):
                     self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut, self._lut_integrator.size, devicetype, platformid=platformid, deviceid=deviceid, checksum=self._lut_integrator.lut_checksum)
-                I = self._ocl_lut_integr.integrate(data, solidAngle=solid_angle_array)
-        tthAxis = numpy.degrees(tthAxis)
+                I, J, K = self._ocl_lut_integr.integrate(data, solidAngle=solid_angle_array, solidAngle_checksum=solid_angle_crc, dummy=dummy, delta_dummy=delta_dummy)
+#        tthAxis = numpy.degrees(tthAxis)
         if filename:
             self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
@@ -1330,3 +1334,16 @@ class AzimuthalIntegrator(Geometry):
     def get_mask(self):
         return self.detector.get_mask()
     mask = property(get_mask, set_mask)
+    def set_darkcurrent(self, dark):
+        self._darkcurrent = dark
+        self._darkcurrent_crc = crc32(dark)
+    def get_darkcurrent(self):
+        return self._darkcurrent
+    darkcurrent = property(get_darkcurrent, set_darkcurrent)
+    def set_flatfield(self, flat):
+        self._flatfield = flat
+        self._flatfield_crc = crc32(flat)
+    def get_flatfield(self):
+        return self._flatfield
+    flatfield = property(get_flatfield, set_flatfield)
+
