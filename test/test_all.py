@@ -34,6 +34,7 @@ __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __data__ = "2012-11-20"
 
+import sys
 import unittest
 
 from utilstest import UtilsTest, getLogger
