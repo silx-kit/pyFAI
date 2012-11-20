@@ -32,7 +32,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__data__ = "2011-07-06"
+__data__ = "2012-11-20"
 
 import unittest
 
@@ -66,5 +66,6 @@ if __name__ == '__main__':
 
     mysuite = test_suite_all()
     runner = unittest.TextTestRunner()
-    runner.run(mysuite)
+    if not runner.run(mysuite).wasSuccessful():
+        sys.exit(1)
 

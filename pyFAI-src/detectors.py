@@ -35,6 +35,11 @@ import os, logging, threading, sys
 logger = logging.getLogger("pyFAI.detectors")
 import numpy
 from spline import Spline
+try:
+    from fastcrc import crc32
+except:
+    from zlib import crc32
+
 
 
 class Detector(object):
@@ -46,6 +51,7 @@ class Detector(object):
         self.max_shape = (None, None)
         self._binning = (1, 1)
         self._mask = False
+        self._mask_crc = None
         self._maskfile = None
         self._splineFile = None
         self.spline = None
@@ -169,9 +175,13 @@ class Detector(object):
             with self._sem:
                 if self._mask is False:
                     self._mask = self.calc_mask() #gets None in worse cases
+                    if self._mask is not None:
+                        self._mask_crc = crc32(self._mask)
         return self._mask
     def set_mask(self, mask):
-        self._mask = mask
+        with self._sem:
+            self._mask = mask
+            self._mask_crc = crc32(mask)
     mask = property(get_mask, set_mask)
     def set_maskfile(self, maskfile):
         try:
@@ -180,6 +190,7 @@ class Detector(object):
             ImportError("Please install fabio to load images")
         with self._sem:
             self._mask = numpy.ascontiguousarray(fabio.open(maskfile).data, dtype=numpy.int8)
+            self._mask_crc = crc32(self._mask)
             self._maskfile = maskfile
     def get_maskfile(self):
         return self._maskfile

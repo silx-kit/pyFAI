@@ -61,6 +61,7 @@ class HistoBBox1d(object):
                  pos0Range=None,
                  pos1Range=None,
                  mask=None,
+                 mask_checksum=None,
                  allow_pos0_neg=False):
 
         cdef int i, size
@@ -102,10 +103,13 @@ class HistoBBox1d(object):
             assert mask.size == self.size
             self.check_mask = True
             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
-            self.mask_checksum = crc32(mask)
+            if mask_checksum:
+                self.mask_checksum = mask_checksum
+            else:
+                self.mask_checksum = crc32(mask)
         else:
             self.check_mask = False
-            self.mask_checksum=None
+            self.mask_checksum = None
         self.delta = (self.pos0_max - self.pos0_min) / bins
         self.lut_max_idx = self.calc_lut()
         self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, pos0_maxin-0.5*self.delta, self.bins)

@@ -571,7 +571,7 @@ class AzimuthalIntegrator(Geometry):
             self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
 
-    def setup_LUT(self, shape, nbPt, mask=None, tthRange=None, chiRange=None):
+    def setup_LUT(self, shape, nbPt, mask=None, tthRange=None, chiRange=None, mask_checksum=None):
         tth = self.twoThetaArray(shape)
         dtth = self.delta2Theta(shape)
         if chiRange is None:
@@ -592,13 +592,17 @@ class AzimuthalIntegrator(Geometry):
             pos1Range = (pos1_min, pos1_maxin * (1.0 + numpy.finfo(numpy.float32).eps))
         else:
             pos1Range = None
-        if mask is not None:
+        if mask is None:
+            mask_checksum = None
+        else:
             assert mask.shape == shape
+
         return splitBBoxLUT.HistoBBox1d(tth, dtth, chi, dchi,
                                                         bins=nbPt,
                                                         pos0Range=pos0Range,
                                                         pos1Range=pos1Range,
                                                         mask=mask,
+                                                        mask_checksum=mask_checksum,
                                                         allow_pos0_neg=False)
 
 
@@ -633,6 +637,7 @@ class AzimuthalIntegrator(Geometry):
         """
 
         shape = data.shape
+        mask_crc = None
         if not splitBBoxLUT:
             logger.error("Look-up table implementation not available: falling back on old method !")
             return self.xrpd_splitBBox(data=data,
@@ -643,16 +648,29 @@ class AzimuthalIntegrator(Geometry):
                                        mask=mask,
                                        dummy=dummy,
                                        delta_dummy=delta_dummy)
+
         with self._lut_sem:
             reset = None
             if self._lut_integrator is None:
                 reset = "init"
+                if mask is None:
+                    mask = self.detector.mask
+                    mask_crc = self.detector._mask_crc
+                else:
+                    mask_crc = crc32(mask)
+
             elif safe:
+                if mask is None:
+                    mask = self.detector.mask
+                    mask_crc = self.detector._mask_crc
+                else:
+                    mask_crc = crc32(mask)
+
                 if (mask is not None) and (not self._lut_integrator.check_mask):
                     reset = "Mask1"
                 elif (mask is None) and (self._lut_integrator.check_mask):
                     reset = "Mask2"
-                elif (mask is not None) and (self._lut_integrator.mask_checksum != hashlib.md5(mask).hexdigest()):
+                elif (mask is not None) and (self._lut_integrator.mask_checksum != mask_crc):
                     reset = "Mask changed"
                 if (tthRange is None) and (self._lut_integrator.pos0Range is not None):
                     reset = "tthRange1"
@@ -665,7 +683,7 @@ class AzimuthalIntegrator(Geometry):
             if reset:
                 logger.debug("xrpd_LUT: Resetting integrator because %s" % reset)
                 try:
-                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
+                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange, mask_checksum=mask_crc)
                 except MemoryError: #LUT method is hungry...
                     logger.warning("MemoryError: falling back on forward implementation")
                     self._ocl_lut_integr = None
@@ -735,18 +753,28 @@ class AzimuthalIntegrator(Geometry):
         else:
             solid_angle_array = None
             solid_angle_crc = None
-#            tthAxis, I, a, b = self._lut_integrator.integrate(data,)
-
+        mask_crc = None
         with self._lut_sem:
             reset = None
             if self._lut_integrator is None:
                 reset = "init"
+                if mask is None:
+                    mask = self.detector.mask
+                    mask_crc = self.detector._mask_crc
+                else:
+                    mask_crc = crc32(mask)
             if (not reset) and safe:
+                if mask is None:
+                    mask = self.detector.mask
+                    mask_crc = self.detector._mask_crc
+                else:
+                    mask_crc = crc32(mask)
+
                 if (mask is not None) and (not self._lut_integrator.check_mask):
                     reset = "Mask1"
                 elif (mask is None) and (self._lut_integrator.check_mask):
                     reset = "Mask2"
-                elif (mask is not None) and (self._lut_integrator.mask_checksum != crc32(mask)):
+                elif (mask is not None) and (self._lut_integrator.mask_checksum != mask_crc):
                     reset = "Mask-changed"
                 if (tthRange is None) and (self._lut_integrator.pos0Range is not None):
                     reset = "tthrange1"
@@ -759,7 +787,7 @@ class AzimuthalIntegrator(Geometry):
             if reset:
                 logger.debug("xrpd_LUT_OCL: Resetting integrator because of %s" % reset)
                 try:
-                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange)
+                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange, mask_checksum=mask_crc)
                 except MemoryError: #LUT method is hungry...
                     logger.warning("MemoryError: falling back on forward implementation")
                     self._ocl_lut_integr = None
