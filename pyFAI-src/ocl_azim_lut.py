@@ -164,8 +164,8 @@ class OCL_LUT_Integrator(object):
             kernel_file = str(kernel_file)
         kernel_src = open(kernel_file).read()
 
-        compile_options = " -D BLOCK_SIZE=%i -D NBINS=%i  -D NIMAGE=%i -D NLUT=%i -D ON_CPU=%i " % \
-                (self.BLOCK_SIZE, self.bins, self.size, self.lut_size, int(self.device_type == "CPU"))
+        compile_options = "-D NBINS=%i  -D NIMAGE=%i -D NLUT=%i -D ON_CPU=%i" % \
+                (self.bins, self.size, self.lut_size, int(self.device_type == "CPU"))
         logger.info("Compiling file %s with options %s"%(kernel_file,compile_options))
         try:
             self._program = pyopencl.Program(self._ctx, kernel_src).build(options=compile_options)

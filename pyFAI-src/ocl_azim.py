@@ -64,7 +64,8 @@ class Integrator1d(object):
         @param filename: file in which profiling information are saved
         """
         self.BLOCK_SIZE = 128
-        self.tdim = (self.BLOCK_SIZE, 1, 1)
+        self.GROUP_SIZE = 512
+        self.tdim = (self.BLOCK_SIZE,)
         self.wdim_bins = None
         self.wdim_data = None
         self._tth_min = self._tth_max = self.tth_min = self.tth_max = None
@@ -240,7 +241,7 @@ class Integrator1d(object):
             kernel_file = str(kernel_file)
         kernel_src = open(kernel_file).read()
 
-        compile_options = " -D BLOCK_SIZE=%i -D BINS=%i  -D NN=%i " % (self.BLOCK_SIZE, self.nBins, self.nData)
+        compile_options = "-D BLOCK_SIZE=%i  -D BINS=%i -D NN=%i" % (self.BLOCK_SIZE, self.nBins, self.nData)
         if self.useFp64:
             compile_options += " -D ENABLE_FP64"
 
@@ -289,8 +290,8 @@ class Integrator1d(object):
             self.useFp64 = bool(useFp64)
         self.nBins = Nbins
         self.nData = Nimage
-        self.wdim_data = (Nimage + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1), 1, 1#(int(numpy.ceil(float(Nimage) / self.BLOCK_SIZE) * self.BLOCK_SIZE) , 1, 1)
-        self.wdim_bins = (Nbins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1), 1, 1#(int(numpy.ceil(float(Nbins) / self.BLOCK_SIZE) * self.BLOCK_SIZE) , 1, 1)
+        self.wdim_data = (Nimage + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),#(int(numpy.ceil(float(Nimage) / self.BLOCK_SIZE) * self.BLOCK_SIZE) , 1, 1)
+        self.wdim_bins = (Nbins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),#(int(numpy.ceil(float(Nbins) / self.BLOCK_SIZE) * self.BLOCK_SIZE) , 1, 1)
 
 
     def configure(self, kernel=None):
