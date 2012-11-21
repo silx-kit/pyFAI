@@ -5,9 +5,9 @@
 #ifndef CPUIDEMU
 
 #if defined(__APPLE__) && defined(__i386__)
-void cpuid(int op, int *eax, int *ebx, int *ecx, int *edx);
+void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx);
 #else
-static inline void cpuid(int op, int *eax, int *ebx, int *ecx, int *edx){
+static inline void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx){
   __asm__ __volatile__
     ("cpuid": "=a" (*eax), "=b" (*ebx), "=c" (*ecx), "=d" (*edx) : "a" (op) : "cc");
 
@@ -17,32 +17,32 @@ static inline void cpuid(int op, int *eax, int *ebx, int *ecx, int *edx){
 #else
 
 typedef struct {
-  unsigned int id, a, b, c, d;
+  uint32_t id, a, b, c, d;
 } idlist_t;
 
 typedef struct {
   char *vendor;
   char *name;
-  int start, stop;
+  uint32_t start, stop;
 } vendor_t;
 
 extern idlist_t idlist[];
 extern vendor_t vendor[];
 
-static int cv = VENDOR;
+static uint32_t cv = VENDOR;
 
-void cpuid(unsigned int op, unsigned int *eax, unsigned int *ebx, unsigned int *ecx, unsigned int *edx){
+void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx){
 
-  static int current = 0;
+  static uint32_t current = 0;
 
-  int start = vendor[cv].start;
-  int stop  = vendor[cv].stop;
-  int count = stop - start;
+  uint32_t start = vendor[cv].start;
+  uint32_t stop  = vendor[cv].stop;
+  uint32_t count = stop - start;
 
   if ((current < start) || (current > stop)) current = start;
 
   while ((count > 0) && (idlist[current].id != op)) {
-    
+
     current ++;
     if (current > stop) current = start;
     count --;
