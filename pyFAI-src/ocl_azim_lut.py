@@ -29,7 +29,7 @@ __date__ = "18/10/2012"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
-import os, gc
+import os, gc, logging
 import threading
 import hashlib
 import numpy
@@ -43,6 +43,7 @@ try:
     from fastcrc import crc32
 except:
     from zlib import crc32
+logger = logging.getLogger("ocl_azim_lut")
 
 class OCL_LUT_Integrator(object):
     def __init__(self, lut, image_size, devicetype="all", platformid=None, deviceid=None, checksum=None):
@@ -116,6 +117,7 @@ class OCL_LUT_Integrator(object):
         ualloc += (self.bins * self.lut_size * (size_of_float + size_of_int))
         ualloc += (self.bins * size_of_float) * 3
         memory = self.device.memory
+        logger.info("%.3fMB are needed on device which has %.3fMB"%(ualloc/1.0e6,memory/1.0e6))
         if ualloc >= memory:
             raise MemoryError("Fatal error in _allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))
         #now actually allocate:
@@ -164,6 +166,7 @@ class OCL_LUT_Integrator(object):
 
         compile_options = " -D BLOCK_SIZE=%i -D NBINS=%i  -D NIMAGE=%i -D NLUT=%i -D ON_CPU=%i " % \
                 (self.BLOCK_SIZE, self.bins, self.size, self.lut_size, int(self.device_type == "CPU"))
+        logger.info("Compiling file %s with options %s"%(kernel_file,compile_options))
         try:
             self._program = pyopencl.Program(self._ctx, kernel_src).build(options=compile_options)
         except pyopencl.MemoryError as error:

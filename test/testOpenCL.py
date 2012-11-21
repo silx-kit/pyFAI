@@ -91,7 +91,7 @@ class test_mask(unittest.TestCase):
     def test_OpenCL_LUT(self):
         logger.info("Testing LUT-based algorithm (backward-integration)")
         for devtype in ("GPU", "CPU"):
-            ids = ocl.select_device(devtype)
+            ids = ocl.select_device(devtype, best=True )
             if ids is None:
                 logger.error("No suitable %s OpenCL device found" % devtype)
                 continue

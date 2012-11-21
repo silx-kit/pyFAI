@@ -106,7 +106,7 @@ class OpenCL(object):
         return os.linesep.join(out)
 
 
-    def select_device(self, type="ALL", memory=None, extensions=[]):
+    def select_device(self, type="ALL", memory=None, extensions=[], best=True):
         """
         Select a device based on few parameters (at the end, keep the one with most memory)
         
@@ -115,7 +115,7 @@ class OpenCL(object):
         @param extensions: list of extensions to be present
         """
         type = type.upper()
-        best = None
+        best_found = None
         for platformid, platform in enumerate(self.platforms):
             for deviceid, device in enumerate(platform.devices):
                 if (type in ["ALL", "DEF"]) or (device.type == type):
@@ -126,11 +126,14 @@ class OpenCL(object):
                                 found = False
                         if found:
                             if not best:
-                                best = platformid, deviceid, device.memory
-                            elif best[2] < device.memory:
-                                best = platformid, deviceid, device.memory
-        if best:
-            return  best[0], best[1]
+                                return platformid, deviceid
+                            else:
+                                if not best_found:
+                                    best_found = platformid, deviceid, device.memory
+                                elif best_found[2] < device.memory:
+                                    best_found = platformid, deviceid, device.memory
+        if best_found:
+            return  best_found[0], best_found[1]
 
     def create_context(self, devicetype="ALL", useFp64=False, platformid=None, deviceid=None):
         """ 
