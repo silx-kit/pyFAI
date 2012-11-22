@@ -64,7 +64,6 @@ class Integrator1d(object):
         @param filename: file in which profiling information are saved
         """
         self.BLOCK_SIZE = 128
-        self.GROUP_SIZE = 512
         self.tdim = (self.BLOCK_SIZE,)
         self.wdim_bins = None
         self.wdim_data = None
@@ -290,8 +289,8 @@ class Integrator1d(object):
             self.useFp64 = bool(useFp64)
         self.nBins = Nbins
         self.nData = Nimage
-        self.wdim_data = (Nimage + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),#(int(numpy.ceil(float(Nimage) / self.BLOCK_SIZE) * self.BLOCK_SIZE) , 1, 1)
-        self.wdim_bins = (Nbins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),#(int(numpy.ceil(float(Nbins) / self.BLOCK_SIZE) * self.BLOCK_SIZE) , 1, 1)
+        self.wdim_data = (Nimage + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
+        self.wdim_bins = (Nbins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
 
 
     def configure(self, kernel=None):
@@ -352,8 +351,10 @@ class Integrator1d(object):
             copy_dtth = pyopencl.enqueue_copy(self._queue, self._cl_mem["tth_delta"], cdtth)
             pyopencl.enqueue_copy(self._queue, self._cl_mem["tth_min_max"],
                                   numpy.array((self._tth_min, self._tth_max), dtype=numpy.float32))
+            logger.debug("kernel get_spans sizes: \t%s %s", self.wdim_data, self.tdim)
             get_spans = self._cl_program.get_spans(self._queue, self.wdim_data, self.tdim, *self._cl_kernel_args["get_spans"])
 #            Group 2th span ranges group_spans(__global float *span_range)
+            logger.debug("kernel group_spans sizes: \t%s %s", self.wdim_data, self.tdim)
             group_spans = self._cl_program.group_spans(self._queue, self.wdim_data, self.tdim, self._cl_mem["span_ranges"])
             self._calc_tth_out(tth_min, tth_max)
         if self.logfile:
@@ -520,14 +521,16 @@ class Integrator1d(object):
 
         with self.lock:
             copy_img = pyopencl.enqueue_copy(self._queue, self._cl_mem["image"], numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32))
+            logger.debug("kernel uimemset2 sizes: \t%s %s", self.wdim_bins, self.tdim)
             memset = self._cl_program.uimemset2(self._queue, self.wdim_bins, self.tdim, *self._cl_kernel_args["uimemset2"])
 
             if self.do_dummy:
+                logger.debug("kernel dummyval_correction sizes: \t%s %s", self.wdim_data, self.tdim)
                 dummy = self._cl_program.dummyval_correction(self._queue, self.wdim_data, self.tdim, *args)
 
             if self.do_solidangle:
                 sa = self._cl_program.solidangle_correction(self._queue, self.wdim_data, self.tdim, *self._cl_kernel_args["solidangle_correction"])
-
+            logger.debug("kernel create_histo_binarray sizes: \t%s %s", self.wdim_data, self.tdim)
             integrate = self._cl_program.create_histo_binarray(self._queue, self.wdim_data, self.tdim, *self._cl_kernel_args["create_histo_binarray"])
             #convert to float
             convert = self._cl_program.ui2f2(self._queue, self.wdim_data, self.tdim, *self._cl_kernel_args["ui2f2"])
@@ -545,9 +548,11 @@ class Integrator1d(object):
         return self.tth_out.copy(), histogram, bins
 
     def init(self, devicetype="GPU", useFp64=True, platformid=None, deviceid=None):
-        """Initial configuration: Choose a device and initiate a context. Devicetypes can be GPU,gpu,CPU,cpu,DEF,ACC,ALL.
-        Suggested are GPU,CPU. For each setting to work there must be such an OpenCL device and properly installed.
-        E.g.: If Nvidia driver is installed, GPU will succeed but CPU will fail. The AMD SDK kit is required for CPU via OpenCL.
+        """Initial configuration: Choose a device and initiate a context. 
+        Devicetypes can be GPU,gpu,CPU,cpu,DEF,ACC,ALL. Suggested are GPU,CPU. 
+        For each setting to work there must be such an OpenCL device and properly installed.
+        E.g.: If Nvidia driver is installed, GPU will succeed but CPU will fail. 
+        The AMD SDK kit (AMD APP) is required for CPU via OpenCL.
         @param devicetype: string in ["cpu","gpu", "all", "acc"]
         @param useFp64: boolean specifying if double precision will be used
         @param platformid: integer
@@ -556,7 +561,16 @@ class Integrator1d(object):
         if self._ctx is None:
             self._ctx = ocl.create_context(devicetype, useFp64, platformid, deviceid)
             device = self._ctx.devices[0]
+
             self.devicetype = pyopencl.device_type.to_string(device.type)
+            if (self.devicetype == "CPU") and (device.platform.vendor == "Apple"):
+                logger.warning("This is a workaround for Apple's OpenCL on CPU: enforce BLOCK_SIZE=1")
+                self.BLOCK_SIZE = 1
+                if self.nBins:
+                    self.wdim_bins = (self.nBins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
+                if self.nData:
+                    self.wdim_data = (self.nData + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
+
             self.useFp64 = "fp64" in device.extensions
             self.platformid = pyopencl.get_platforms().index(device.platform)
             self.deviceid = pyopencl.get_platforms()[self.platformid].get_devices().index(device)

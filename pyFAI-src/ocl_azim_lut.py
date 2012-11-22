@@ -43,7 +43,7 @@ try:
     from fastcrc import crc32
 except:
     from zlib import crc32
-logger = logging.getLogger("ocl_azim_lut")
+logger = logging.getLogger("pyFAI.ocl_azim_lut")
 
 class OCL_LUT_Integrator(object):
     def __init__(self, lut, image_size, devicetype="all", platformid=None, deviceid=None, checksum=None):
@@ -59,8 +59,6 @@ class OCL_LUT_Integrator(object):
         if not checksum:
             checksum = crc32(self._lut)
         self.on_device = {"lut":checksum, "dark":None, "flat":None, "polarization":None, "solidangle":None}
-        self.workgroup_size = self.BLOCK_SIZE, 1, 1
-        self.wdim = (self.bins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1), 1, 1#(int(numpy.ceil(float(Nbins) / self.BLOCK_SIZE) * self.BLOCK_SIZE) , 1, 1)
         self._cl_kernel_args = {}
         self._cl_mem = {}
 
@@ -73,7 +71,11 @@ class OCL_LUT_Integrator(object):
         self.platform = ocl.platforms[platformid]
         self.device = self.platform.devices[deviceid]
         self.device_type = self.device.type
-        self.data_buffer = None
+        if (self.device_type == "CPU") and (self.platform.vendor == "Apple"):
+            logger.warning("This is a workaround for Apple's OpenCL on CPU: enforce BLOCK_SIZE=1")
+            self.BLOCK_SIZE = 1
+        self.workgroup_size = self.BLOCK_SIZE,
+        self.wdim = (self.bins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
         try:
             self._ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
             self._queue = pyopencl.CommandQueue(self._ctx)
@@ -117,7 +119,7 @@ class OCL_LUT_Integrator(object):
         ualloc += (self.bins * self.lut_size * (size_of_float + size_of_int))
         ualloc += (self.bins * size_of_float) * 3
         memory = self.device.memory
-        logger.info("%.3fMB are needed on device which has %.3fMB"%(ualloc/1.0e6,memory/1.0e6))
+        logger.info("%.3fMB are needed on device which has %.3fMB" % (ualloc / 1.0e6, memory / 1.0e6))
         if ualloc >= memory:
             raise MemoryError("Fatal error in _allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))
         #now actually allocate:
@@ -166,7 +168,7 @@ class OCL_LUT_Integrator(object):
 
         compile_options = "-D NBINS=%i  -D NIMAGE=%i -D NLUT=%i -D ON_CPU=%i" % \
                 (self.bins, self.size, self.lut_size, int(self.device_type == "CPU"))
-        logger.info("Compiling file %s with options %s"%(kernel_file,compile_options))
+        logger.info("Compiling file %s with options %s" % (kernel_file, compile_options))
         try:
             self._program = pyopencl.Program(self._ctx, kernel_src).build(options=compile_options)
         except pyopencl.MemoryError as error:
