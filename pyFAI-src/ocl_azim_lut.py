@@ -75,7 +75,8 @@ class OCL_LUT_Integrator(object):
             logger.warning("This is a workaround for Apple's OpenCL on CPU: enforce BLOCK_SIZE=1")
             self.BLOCK_SIZE = 1
         self.workgroup_size = self.BLOCK_SIZE,
-        self.wdim = (self.bins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
+        self.wdim_bins = (self.bins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
+        self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
         try:
             self._ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
             self._queue = pyopencl.CommandQueue(self._ctx)
@@ -202,7 +203,7 @@ class OCL_LUT_Integrator(object):
                             dark_checksum=None, flat_checksum=None, solidAngle_checksum=None, polarization_checksum=None):
         with self._sem:
             copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image"], numpy.ascontiguousarray(data, dtype=numpy.float32))
-            memset = self._program.memset_out(self._queue, self.wdim, self.workgroup_size, *self._cl_kernel_args["memset_out"])
+            memset = self._program.memset_out(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["memset_out"])
             if dummy is not None:
                 do_dummy = numpy.int32(1)
                 dummy = numpy.float32(dummy)
@@ -264,9 +265,9 @@ class OCL_LUT_Integrator(object):
             self._cl_kernel_args["corrections"][7] = do_polarization
             copy_image.wait()
             if do_dummy + do_polarization + do_solidAngle + do_flat + do_dark > 0:
-                self._program.corrections(self._queue, ((self.size + 512 - 1) & ~(512 - 1), 1, 1), (512, 1, 1), *self._cl_kernel_args["corrections"]).wait()
+                self._program.corrections(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["corrections"]).wait()
             memset.wait()
-            integrate = self._program.lut_integrate(self._queue, self.wdim, self.workgroup_size, *self._cl_kernel_args["lut_integrate"])
+            integrate = self._program.lut_integrate(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["lut_integrate"])
             outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
             outData = numpy.zeros(self.bins, dtype=numpy.float32)
             outCount = numpy.zeros(self.bins, dtype=numpy.float32)
