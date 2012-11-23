@@ -86,17 +86,3 @@ test/testSaxs.py
 test/test_all.py
 test/test_ocl_lut.py
 test/utilstest.py
-test/testimages/Fairchild.poni
-test/testimages/Frelon2k.poni
-test/testimages/LaB6.poni
-test/testimages/LaB6_0020.poni
-test/testimages/LaB6_260210.poni
-test/testimages/Mar3450.poni
-test/testimages/Pilatus1M.poni
-test/testimages/Pilatus6M.poni
-test/testimages/halfccd.poni
-test/testimages/merged.poni
-test/testimages/profile_lut.py
-test/testimages/refinment.py
-test/testimages/refinment2D.py
-test/testimages/slow_splitBBox.py

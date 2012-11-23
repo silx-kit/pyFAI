@@ -768,12 +768,16 @@ class Geometry(object):
                 new[i::self._oversampling, j::self._oversampling] = myarray
         return new
 
-    def polarization(self, shape, factor=0.98):
+    def polarization(self, shape=None, factor=0.98):
         """
         Calculate the polarization correction accoding to the polarization factor:
         @param factor: (Ih-Iv)/(Ih+Iv): varies between 0 (no polarization) and 1 (where division by 0 could occure)
         @return 2D array with polarization correction array (intensity/polarisation)
         """
+        if shape is None:
+            if self._ttha is None:
+                raise RuntimeError("You should provide a shape if the geometry is not yet initiallized")
+            shape = self._ttha.shape
         if factor == 0:
             return numpy.ones(shape, dtype=numpy.float32)
         with self._sem:
