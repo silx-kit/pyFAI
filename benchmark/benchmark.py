@@ -49,7 +49,7 @@ class Bench(object):
                 self._cpu = proc.stdout.read().strip()
         return self._cpu
 
-    def get_gpu(self, devicetype="gpu", useFp64=True, platformid=None, deviceid=None):
+    def get_gpu(self, devicetype="gpu", useFp64=False, platformid=None, deviceid=None):
         if ocl is None:
             return "NoGPU"
         ctx = ocl.create_context(devicetype, useFp64, platformid, deviceid)
@@ -151,6 +151,9 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
 
     def bench_cpu1d_ocl_lut(self, devicetype="all", platformid=None, deviceid=None):
         print("Working on device: %s" % devicetype)
+        if (ocl is None) or not ocl.select_device(devicetype):
+            print("No pyopencl or no such device: skipping benchmark")
+            return
         results = {}
         for param in ds_list:
             ref = self.get_ref(param)
@@ -229,6 +232,9 @@ out=ai.xrpd2(data,500,360)""" % (param, fn)
 
     def bench_gpu1d(self, devicetype="gpu", useFp64=True, platformid=None, deviceid=None):
         print("Working on %s, in " % devicetype + ("64 bits mode" if useFp64 else"32 bits mode") + "(%s.%s)" % (platformid, deviceid))
+        if ocl is None or not ocl.select_device(devicetype):
+            print("No pyopencl or no such device: skipping benchmark")
+            return
         results = {}
         for param in ds_list:
             fn = datasets[param]
