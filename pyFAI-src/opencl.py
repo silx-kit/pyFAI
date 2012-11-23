@@ -47,7 +47,7 @@ class Device(object):
     """
     Simple class that contains the structure of an OpenCL device
     """
-    def __init__(self, name=None, type=None, version=None, driver_version=None, extensions=None, memory=None, available=None, cores=None):
+    def __init__(self, name=None, type=None, version=None, driver_version=None, extensions="", memory=None, available=None, cores=None):
         self.name = name
         self.type = type
         self.version = version
