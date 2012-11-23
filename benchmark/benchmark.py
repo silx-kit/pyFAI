@@ -92,6 +92,7 @@ class Bench(object):
             t1 = time.time()
             self.print_init(t1 - t0)
             setup = """
+#gc.enable()
 import pyFAI,fabio
 ai=pyFAI.load(r"%s")
 data = fabio.open(r"%s").data
@@ -128,6 +129,7 @@ out=ai.xrpd(data,N)""" % (param, fn)
             print "lut.shape=", ai._lut_integrator.lut.shape, "lut.nbytes (MB)", ai._lut_integrator.size * 8 / 1e6
             del ai
             setup = """
+#gc.enable()
 import pyFAI,fabio
 ai=pyFAI.load(r"%s")
 data = fabio.open(r"%s").data
@@ -167,6 +169,7 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
             self.print_init(t1 - t0)
             del ai
             setup = """
+#gc.enable()
 import pyFAI,fabio
 ai=pyFAI.load(r"%s")
 data = fabio.open(r"%s").data
@@ -203,6 +206,7 @@ out=ai.xrpd_LUT_OCL(data,N,devicetype=r"%s",platformid=%s,deviceid=%s)""" % (par
             self.print_init(t1 - t0)
             del ai
             setup = """
+#gc.enable()
 import pyFAI,fabio
 ai=pyFAI.load(r"%s")
 data = fabio.open(r"%s").data
@@ -246,6 +250,7 @@ out=ai.xrpd2(data,500,360)""" % (param, fn)
             print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
             del ai
             setup = """
+#gc.enable()
 import pyFAI,fabio
 ai=pyFAI.load(r"%s")
 data = fabio.open(r"%s").data
@@ -345,7 +350,6 @@ if __name__ == "__main__":
     b.bench_cpu1d_lut()
     b.bench_cpu1d_ocl_lut("GPU")
     b.bench_cpu1d_ocl_lut("CPU")
-#    b.bench_cpu1d_ocl_lut()
     b.bench_gpu1d("gpu", True)
 #    b.bench_gpu1d("gpu", False)
     b.bench_gpu1d("cpu", True)
