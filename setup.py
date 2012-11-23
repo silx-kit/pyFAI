@@ -35,7 +35,7 @@ __date__ = "12/11/2012"
 __status__ = "stable"
 
 
-import os, sys, glob, shutil, ConfigParser
+import os, sys, glob, shutil, ConfigParser, platform
 from distutils.core import setup, Extension
 from numpy.distutils.misc_util import get_numpy_include_dirs
 from distutils.sysconfig import get_python_lib
@@ -169,28 +169,9 @@ ext_modules = [histogram_dic, splitPixel_dic, splitBBox_dic, splitBBoxLUT_dic, r
                _geometry_dic, reconstruct_dic, bilinear_dic, fastcrc_dic]
 
 
-# if OPENCL:
-#    ocl_src = [os.path.join(*(pp.split("/"))) for pp in ("ocl_base.cpp",
-#        "ocl_tools/ocl_tools.cc", "ocl_tools/ocl_tools_extended.cc",
-#        "ocl_tools/cLogger/cLogger.c", "ocl_xrpd1d_fullsplit.cpp")]
-#    if CYTHON:
-#        ocl_src.append("ocl_azim.pyx")
-#    else:
-#        ocl_src.append("ocl_azim.cpp")
-#    ocl_azim = [os.path.join("openCL", i) for i in  ocl_src]
-#    openCL = OCLINC
-#    j = ""
-#    for i in "openCL/ocl_tools/cLogger".split("/"):
-#        j = os.path.join(j, i)
-#        openCL.insert(0, j)
-#    ocl_azim_dict = dict(name="ocl_azim",
-#                     sources=ocl_azim,
-#                     include_dirs=openCL + get_numpy_include_dirs(),
-#                     library_dirs=OCLLIBDIR,
-#                     language="c++",
-#                     libraries=[ "stdc++", "OpenCL"]  # "stdc++"
-#                     )
-#    ext_modules.append(ocl_azim_dict)
+if (os.name != "posix") or ("x86" not in platform.machine):
+    ext_modules.remove(fastcrc_dic)
+
 
 # ###############################################################################
 # scripts and data installation
