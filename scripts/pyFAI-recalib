@@ -25,12 +25,9 @@
 #
 
 """
-pyFAI-rcalib
+pyFAI - recalib
 
 A tool for refining the geometry of a detector using a reference sample and a previously known calibration file.
-
-usage:
-  python2.6 pyFAI-recalib --poni=input.poni -dspacing=ref.d inputFile.edf
 
 
 """
@@ -39,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/10/2012"
+__date__ = "06/11/2012"
 __satus__ = "development"
 
 import os, sys, gc, threading, time, logging
@@ -55,7 +52,7 @@ from scipy.interpolate import interp2d
 import pyFAI
 from pyFAI.geometryRefinement import GeometryRefinement
 from pyFAI.peakPicker import PeakPicker, Massif
-from pyFAI.utils import averageImages
+from pyFAI.utils import averageImages, timeit
 from  matplotlib.path import Path
 import matplotlib.path as mpath
 import matplotlib.patches as mpatches
@@ -93,6 +90,7 @@ class Recalibration(object):
         self.geoRef = None
         self.reconstruct = False
         self.spacing_file = None
+        self.mask = None
 
     def __repr__(self):
         lst = ["Calibration object:",
@@ -142,12 +140,22 @@ class Recalibration(object):
                       help="file containing the diffraction parameter (poni-file)", default=None)
         parser.add_option("-n", "--npt", dest="npt", metavar="FILE",
                       help="file with datapoints saved", default=None)
-        parser.add_option("-e", "--energy", dest="energy",
+        parser.add_option("-e", "--energy", dest="energy", type="float",
                       help="energy of the X-Ray beam in keV (hc=%skeV.A)" % hc, default=None)
-        parser.add_option("-w", "--wavelength", dest="wavelength",
+        parser.add_option("-w", "--wavelength", dest="wavelength", type="float",
                       help="wavelength of the X-Ray beam in Angstrom", default=None)
-        parser.add_option("-l", "--distance", dest="distance",
+        parser.add_option("-l", "--distance", dest="distance", type="float",
                       help="sample-detector distance in millimeter", default=None)
+        parser.add_option("--poni1", dest="poni1", type="float",
+                      help="poni1 coordinate in meter", default=None)
+        parser.add_option("--poni2", dest="poni2", type="float",
+                      help="poni2 coordinate in meter", default=None)
+        parser.add_option("--rot1", dest="rot1", type="float",
+                      help="rot1 in radians", default=None)
+        parser.add_option("--rot2", dest="rot2", type="float",
+                      help="rot2 in radians", default=None)
+        parser.add_option("--rot3", dest="rot3", type="float",
+                      help="rot3 in radians", default=None)
 
         (options, args) = parser.parse_args()
 
@@ -161,17 +169,31 @@ class Recalibration(object):
         if options.flat:
             print options.flat, type(options.flat)
             self.flatFiles = [f for f in options.flat.split(",") if os.path.isfile(f)]
-        self.dataFiles = [f for f in args if os.path.isfile(f)]
-
         self.pointfile = options.npt
         self.spacing_file = options.spacing
         self.ai = pyFAI.load(options.poni)
         if options.wavelength:
-            self.ai.wavelength = 1e-10 * float(options.wavelength)
+            self.ai.wavelength = 1e-10 * options.wavelength
+        elif options.energy:
+            self.ai.wavelength = 1e-10 * hc / options.energy
         if options.distance:
-#            print "setting distance to %s" % options.distance
-            self.ai.dist = 1e-3 * float(options.distance)
-#            print 1e-3 * float(options.distance), self.ai.distance
+            self.ai.dist = 1e-3 * options.distance
+        if options.poni1 is not None:
+            self.ai.poni1 = options.poni1
+        if options.poni2 is not None:
+            self.ai.poni2 = options.poni2
+        if options.rot1 is not None:
+            self.ai.rot1 = options.rot1
+        if options.rot2 is not None:
+            self.ai.rot2 = options.rot2
+        if options.rot3 is not None:
+            self.ai.rot3 = options.rot3
+        if options.mask is not None:
+            self.mask = fabio.open(options.mask).data
+        self.dataFiles = [f for f in args if os.path.isfile(f)]
+        if not self.dataFiles:
+            raise RuntimeError("Please provide some calibration images ... if you want to analyze them. Try also the --help option to see all options!")
+
         print self.ai
 
 
@@ -185,7 +207,7 @@ class Recalibration(object):
 
         else:
             self.outfile = self.dataFiles[0]
-        self.peakPicker = PeakPicker(self.outfile)
+        self.peakPicker = PeakPicker(self.outfile, mask=self.mask)
         self.basename = os.path.splitext(self.outfile)[0]
         self.peakPicker.gui(log=True)
         self.peakPicker.fig.canvas.draw()
@@ -204,38 +226,46 @@ class Recalibration(object):
         dtth = dtth.min(axis= -1)
         ttha = self.ai.twoThetaArray(self.peakPicker.data.shape)
         for i in range(tth.size):
-            mask = abs(ttha - tth[i]) <= dtth[i] / 4.0
+            mask = abs(ttha - tth[i]) <= (dtth[i] / 4.0)
+            if self.mask is not None:
+                mask = mask & (1 - self.mask)
             size = mask.sum(dtype=int)
             if size > 0:
                 self.peakPicker.massif_contour(mask)
                 self.peakPicker.fig.canvas.draw()
-
-                mean = self.peakPicker.data[mask].mean(dtype=numpy.float64)
-                std = self.peakPicker.data[mask].std(dtype=numpy.float64)
-                mask2 = (self.peakPicker.data > mean + std)
-                size2 = mask2.sum(dtype=int)
+                sub_data = self.peakPicker.data.ravel()[numpy.where(mask.ravel())]
+                mean = sub_data.mean(dtype=numpy.float64)
+                std = sub_data.std(dtype=numpy.float64)
+                mask2 = (self.peakPicker.data > (mean + std)) & mask
+                all_points = numpy.vstack(numpy.where(mask2)).T
+                size2 = all_points.shape[0]
+                if size2 < 1000:
+                    mask2 = (self.peakPicker.data > mean) & mask
+                    all_points = numpy.vstack(numpy.where(mask2)).T
+                    size2 = all_points.shape[0]
+                    upper_limit = mean
+                else:
+                    upper_limit = mean + std
                 keep = int(numpy.ceil(numpy.sqrt(size2)))
-                all_points = numpy.where(mask2)
-                allpt = numpy.zeros((size2, 2), dtype=numpy.int)
-                allpt[:, 0] = all_points[0]
-                allpt[:, 1] = all_points[1]
                 res = []
                 cnt = 0
-                logger.info("Extracting datapoint for ring %s (2theta = %.2f deg); searching for %i pts out of %i with I>%.1f" % (i, numpy.degrees(tth[i]), keep, size2, mean + std,))
-
-                while True:
-                    idx = numpy.random.randint(0, size2)
-                    out = self.peakPicker.massif.nearest_peak(allpt[idx])
-                    p0, p1 = out
-                    if mask[p0, p1]:
-                        if (out not in res) and (self.peakPicker.data[p0, p1] > mean):
-                            res.append(out)
-                            cnt = 0
+                logger.info("Extracting datapoint for ring %s (2theta = %.2f deg); searching for %i pts out of %i with I>%.1f" % (i, numpy.degrees(tth[i]), keep, size2, upper_limit))
+                numpy.random.shuffle(all_points)
+                for idx in all_points:
+                    out = self.peakPicker.massif.nearest_peak(idx)
+                    print idx, "->", out
+                    if out is not None:
+                        p0, p1 = out
+                        if mask[p0, p1]:
+                            if (out not in res) and (self.peakPicker.data[p0, p1] > upper_limit):
+                                res.append(out)
+                                cnt = 0
                     if len(res) >= keep or cnt > keep:
                         print len(res), cnt
                         break
                     else:
                         cnt += 1
+
                 self.peakPicker.points.append(res, tth[i])
                 self.peakPicker.display_points()
                 self.peakPicker.fig.canvas.draw()
@@ -246,15 +276,10 @@ class Recalibration(object):
         if os.name == "nt" and self.peakPicker is not None:
             logging.info("We are under windows, matplotlib is not able to display too many images without crashing, this is why the window showing the diffraction image is closed")
             self.peakPicker.closeGUI()
-        print self.splineFile
-        if self.splineFile:
-            self.geoRef = GeometryRefinement(self.data, dist=self.ai.dist, poni1=self.ai.poni1, poni2=self.ai.poni2,
+        self.geoRef = GeometryRefinement(self.data, dist=self.ai.dist, poni1=self.ai.poni1, poni2=self.ai.poni2,
                                              rot1=self.ai.rot1, rot2=self.ai.rot2, rot3=self.ai.rot3,
-                                             splineFile=self.splineFile)
-        else:
-            self.geoRef = GeometryRefinement(self.data, dist=self.ai.dist, poni1=self.ai.poni1, poni2=self.ai.poni2,
-                                             rot1=self.ai.rot1, rot2=self.ai.rot2, rot3=self.ai.rot3,
-                                             pixel1=self.ai.pixel1, pixel2=self.ai.pixel2)
+                                             detector=self.ai.detector)
+        self.geoRef.set_tolerance(10)
         print self.geoRef
         previous = sys.maxint
         finished = False
@@ -326,9 +351,9 @@ class Recalibration(object):
         fig4 = pylab.plt.figure()
         xrpd2 = fig4.add_subplot(111)
         t3 = time.time()
-        a, b = self.geoRef.xrpd(self.peakPicker.data, 1024, self.basename + ".xy")
+        a, b = self.geoRef.xrpd(self.peakPicker.data, 1024, self.basename + ".xy", mask=self.mask)
         t4 = time.time()
-        img = self.geoRef.xrpd2(self.peakPicker.data, 400, 360, self.basename + ".azim")[0]
+        img = self.geoRef.xrpd2(self.peakPicker.data, 400, 360, self.basename + ".azim", mask=self.mask)[0]
         t5 = time.time()
         print ("Timings:\n two theta array generation %.3fs\n diff Solid Angle  %.3fs\n\
      chi array generation %.3fs\n\

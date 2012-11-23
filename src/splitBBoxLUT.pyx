@@ -27,7 +27,6 @@
 #
 import cython
 import os
-import hashlib
 from cython.parallel import prange
 from libc.string cimport memset
 import numpy
@@ -36,6 +35,10 @@ from libc.math cimport fabs
 cdef struct lut_point:
     numpy.uint32_t idx
     numpy.float32_t coef
+try:
+    from fastcrc import crc32
+except:
+    from zlib import crc32
 
 @cython.cdivision(True)
 cdef float getBinNr( float x0, float pos0_min, float delta) nogil:
@@ -58,12 +61,10 @@ class HistoBBox1d(object):
                  pos0Range=None,
                  pos1Range=None,
                  mask=None,
-                 allow_pos0_neg=False
-                 ):
+                 mask_checksum=None,
+                 allow_pos0_neg=False):
 
-        cdef float delta, pos0_min, min0
         cdef int i, size
-        cdef numpy.ndarray[numpy.float32_t, ndim = 1] outPos = numpy.empty(bins,dtype=numpy.float32)
         self.size = pos0.size
         assert delta_pos0.size == self.size
         self.bins = bins
@@ -72,53 +73,48 @@ class HistoBBox1d(object):
         self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=numpy.float32)
         self.cpos0_sup = self.cpos0 + self.dpos0
         self.cpos0_inf = self.cpos0 - self.dpos0
-        self.pos0_max = (self.cpos0_sup).max()
-        pos0_min = (self.cpos0_inf).min()
-        self.pos0_min = pos0_min
         self.pos0Range = pos0Range
         self.pos1Range = pos1Range
         if pos0Range is not None and len(pos0Range) > 1:
             self.pos0_min = min(pos0Range)
             pos0_maxin = max(pos0Range)
         else:
-            pos0_maxin = self.pos0_max
-        if self.pos0_min < 0:# and not allow_pos0_neg:
-            self.pos0_min = pos0_min = 0
+            self.pos0_min = (self.cpos0_inf).min()
+            pos0_maxin = (self.cpos0_sup).max()
+        if (not allow_pos0_neg) and self.pos0_min < 0:
+            self.pos0_min = 0
         self.pos0_max = pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps)
 
         if pos1Range is not None and len(pos1Range) > 1:
             assert pos1.size == self.size
             assert delta_pos1.size == self.size
-            self.check_pos1 = 1
+            self.check_pos1 = True
             self.cpos1_min = numpy.ascontiguousarray((pos1-delta_pos1).ravel(), dtype=numpy.float32)
             self.cpos1_max = numpy.ascontiguousarray((pos1+delta_pos1).ravel(), dtype=numpy.float32)
             self.pos1_min = min(pos1Range)
             pos1_maxin = max(pos1Range)
             self.pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
         else:
-            self.check_pos1 = 0
+            self.check_pos1 = False
             self.cpos1_min = None
             self.pos1_max = None
 
         if  mask is not None:
             assert mask.size == self.size
-            self.check_mask = 1
+            self.check_mask = True
             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
-            self.mask_checksum = hashlib.md5(mask).hexdigest()
+            if mask_checksum:
+                self.mask_checksum = mask_checksum
+            else:
+                self.mask_checksum = crc32(mask)
         else:
-            self.check_mask = 0
-            self.mask_checksum=None
-        delta = (self.pos0_max - pos0_min) / (bins)
-        self.delta = delta
+            self.check_mask = False
+            self.mask_checksum = None
+        self.delta = (self.pos0_max - self.pos0_min) / bins
         self.lut_max_idx = self.calc_lut()
-        ########################################################################
-        # Linspace has been discareded becaus it does calculation in double precision and all others are done in single
-        #self.outPos = numpy.linspace(self.pos0_min+0.5*delta,self.pos0_max-0.5*delta, self.bins)
-        ########################################################################
-        for i in prange(bins,nogil=True, schedule="static"):
-            outPos[i] = pos0_min + (<float>0.5 +< float > i) * delta
-        self.outPos = outPos
-        self.lut_checksum = hashlib.md5(self.lut).hexdigest()
+        self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, pos0_maxin-0.5*self.delta, self.bins)
+        self.outPos_degrees = numpy.degrees(self.outPos)
+        self.lut_checksum = crc32(self.lut)
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
@@ -139,18 +135,18 @@ class HistoBBox1d(object):
         size = self.size
         if self.check_mask:
             cmask = self.cmask
-            check_mask = 1
+            check_mask = True
         else:
-            check_mask = 0
+            check_mask = False
 
         if self.check_pos1:
-            check_pos1 = 1
+            check_pos1 = True
             cpos1_min = self.cpos1_min
             cpos1_max = self.cpos1_max
             pos1_max = self.pos1_max
             pos1_min = self.pos1_min
         else:
-            check_pos1 = 0
+            check_pos1 = False
 #NOGIL
         with nogil:
             for idx in range(size):
@@ -185,12 +181,13 @@ class HistoBBox1d(object):
 
         lut_size = outMax.max()
         self.lut_size = lut_size
-        
+
         lut_nbytes = bins*lut_size*sizeof(lut_point)
-        if os.name == "posix":
+        if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
             memsize =  os.sysconf("SC_PAGE_SIZE")*os.sysconf("SC_PHYS_PAGES")
             if memsize <  lut_nbytes:
-                raise MemoryError("Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %s"%(bins,lut_size,lut_nbytes,memsize)) 
+                raise MemoryError("Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %s"%(bins,lut_size,lut_nbytes,memsize))
+        #else hope we have enough memory
         lut = numpy.recarray(shape=(bins, lut_size),dtype=[("idx",numpy.uint32),("coef",numpy.float32)])
         memset(&lut[0,0], 0, bins*lut_size*sizeof(lut_point))
         #NOGIL
@@ -253,28 +250,25 @@ class HistoBBox1d(object):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def integrate(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None):
-        cdef int i, j, idx, bins, lut_size, size
-        cdef double sum_data, sum_count, epsilon
-        cdef float data, coef, cdummy, cddummy
-        cdef bint check_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
+        cdef ssize_t i=0, j=0, idx=0, bins=self.bins, lut_size=self.lut_size, size=self.size
+        cdef double sum_data=0, sum_count=0, epsilon=1e-10
+        cdef float data=0, coef=0, cdummy=0, cddummy=0
+        cdef bint do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
         cdef lut_point[:,:] lut = self.lut
         cdef float[:] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-        size = self.size
+
         assert size == weights.size
-        epsilon = 1e-10
-        bins = self.bins
-        lut_size = self.lut_size
 
         if dummy is not None:
-            do_dummy = 1
-            cdummy =  float(dummy)
+            do_dummy = True
+            cdummy =  <float>float(dummy)
             if delta_dummy is None:
-                cddummy = 0.0
+                cddummy = <float>0.0
             else:
-                cddummy = float(delta_dummy)
+                cddummy = <float>float(delta_dummy)
 
         if flat is not None:
             do_flat = True
@@ -289,17 +283,32 @@ class HistoBBox1d(object):
             assert solidAngle.size == size
             csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float32)
         if polarization is not None:
-            do_polatization = True
+            do_polarization = True
             assert polarization.size == size
             cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
 
-        if do_dark or do_flat or do_polarization or do_solidAngle:
+        if (do_dark + do_flat + do_polarization + do_solidAngle):
             tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
             cdata = numpy.zeros(size,dtype=numpy.float32)
-            for i in prange(size, nogil=True, schedule="static"):
-                data = tdata[i]
-                if not(do_dummy) or (cddummy and (fabs(data-cdummy) > cddummy)) or (not(cddummy) and (data!=cdummy)):
-                    #Nota: -= and /= operatore are seen as reduction in cython parallel.
+            if do_dummy:
+                for i in prange(size, nogil=True, schedule="static"):
+                    data = tdata[i]
+                    if ((cddummy!=0) and (fabs(data-cdummy) > cddummy)) or ((cddummy==0) and (data!=cdummy)):
+                        #Nota: -= and /= operatore are seen as reduction in cython parallel.
+                        if do_dark:
+                            data = data - cdark[i]
+                        if do_flat:
+                            data = data / cflat[i]
+                        if do_polarization:
+                            data = data / cpolarization[i]
+                        if do_solidAngle:
+                            data = data / csolidAngle[i]
+                        cdata[i]+=data
+                    else: #set all dummy_like values to cdummy. simplifies further processing
+                        cdata[i]+=cdummy
+            else:
+                for i in prange(size, nogil=True, schedule="static"):
+                    data = tdata[i]
                     if do_dark:
                         data = data - cdark[i]
                     if do_flat:
@@ -310,7 +319,17 @@ class HistoBBox1d(object):
                         data = data / csolidAngle[i]
                     cdata[i]+=data
         else:
-            cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
+            if do_dummy:
+                tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
+                cdata = numpy.zeros(size,dtype=numpy.float32)
+                for i in prange(size, nogil=True, schedule="static"):
+                    data = tdata[i]
+                    if ((cddummy!=0) and (fabs(data-cdummy) > cddummy)) or ((cddummy==0) and (data!=cdummy)):
+                        cdata[i]+=data
+                    else:
+                        cdata[i]+=cdummy
+            else:
+                cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
 
         for i in prange(bins, nogil=True, schedule="guided"):
             sum_data = 0.0
@@ -321,13 +340,8 @@ class HistoBBox1d(object):
                 if idx <= 0 and coef <= 0.0:
                     break
                 data = cdata[idx]
-                if check_dummy:
-                    if cddummy:
-                        if fabs(data-cdummy)<=cddummy:
-                            continue
-                    else:
-                        if data==cdummy:
-                            continue
+                if do_dummy and data==cdummy:
+                    continue
 
                 sum_data = sum_data + coef * data
                 sum_count = sum_count + coef
@@ -335,7 +349,7 @@ class HistoBBox1d(object):
             outCount[i] += sum_count
             if sum_count > epsilon:
                 outMerge[i] += sum_data / sum_count
-        return  self.outPos, outMerge, outData, outCount
+        return  self.outPos.copy(), outMerge, outData, outCount
 
 
 def histoBBox1d(weights ,
@@ -383,7 +397,7 @@ def histoBBox1d(weights ,
 
     check_pos1 = 0
     check_mask = 0
-    check_dummy = 0
+    do_dummy = 0
     do_dark = 0
     do_flat = 0
 
@@ -396,7 +410,7 @@ def histoBBox1d(weights ,
     outCount = numpy.zeros(bins, dtype=numpy.float64)
     outMax = numpy.zeros(bins, dtype=numpy.int64)
     outMerge = numpy.zeros(bins, dtype=numpy.float32)
-    outPos = numpy.zeros(bins, dtype=numpy.float32)
+#    outPos = numpy.zeros(bins, dtype=numpy.float32)
 
     if  mask is not None:
         assert mask.size == size
@@ -404,7 +418,7 @@ def histoBBox1d(weights ,
         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
 
     if (dummy is not None) and delta_dummy is not None:
-        check_dummy = 1
+        do_dummy = 1
         cdummy = float(dummy)
         ddummy = float(delta_dummy)
     elif (dummy is not None):
@@ -457,15 +471,15 @@ def histoBBox1d(weights ,
 
     delta = (pos0_max - pos0_min) / ((bins))
 
-    for i in range(bins):
-                outPos[i] = pos0_min + (0.5 + i) * delta
-
+#    for i in range(bins):
+#                outPos[i] = pos0_min + (0.5 + i) * delta
+    outPos = numpy.linspace(pos0_min+0.5*delta,pos0_max-0.5*delta, bins)
     for idx in range(size):
             if (check_mask) and (cmask[idx]):
                 continue
 
             data = cdata[idx]
-            if check_dummy and (fabs(data - cdummy) <= ddummy):
+            if do_dummy and (fabs(data - cdummy) <= ddummy):
                 continue
 
             min0 = cpos0_lower[idx]

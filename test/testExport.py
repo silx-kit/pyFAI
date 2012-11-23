@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
@@ -106,4 +106,6 @@ if __name__ == '__main__':
 
     mysuite = test_suite_all_Export()
     runner = unittest.TextTestRunner()
-    runner.run(mysuite)
+    if not runner.run(mysuite).wasSuccessful():
+        sys.exit(1)
+

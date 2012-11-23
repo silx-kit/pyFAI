@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 #
-#    Project: Azimuthal integration 
+#    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
 #
 #    File: "$Id$"
@@ -49,39 +49,93 @@ ROCA = "/opt/saxs/roca"
 # GeometryRefinement
 ################################################################################
 class GeometryRefinement(AzimuthalIntegrator):
-    def __init__(self, data, dist=1, poni1=None, poni2=None, rot1=0, rot2=0, rot3=0, pixel1=1, pixel2=1, splineFile=None):
+    def __init__(self, data, dist=1, poni1=None, poni2=None, rot1=0, rot2=0, rot3=0, pixel1=None, pixel2=None, splineFile=None, detector=None):
         """
         @param data: ndarray float64 shape = n, 3
             col0: pos in dim0 (in pixels)
             col1: pos in dim1 (in pixels)
             col2: associated tth value (in rad)
+
+        @param detector: name of the detector or Detector instance.
         """
         self.data = numpy.array(data, dtype="float64")
-        if (poni1 is None) and (poni2 is None):
-            AzimuthalIntegrator.__init__(self, dist, 0, 0, rot1, rot2, rot3, pixel1, pixel2, splineFile)
+        AzimuthalIntegrator.__init__(self, dist, 0, 0, rot1, rot2, rot3, pixel1, pixel2, splineFile, detector)
+
+        if (poni1 is None) or (poni2 is None):
+            self.guess_poni()
         else:
-            AzimuthalIntegrator.__init__(self, dist, poni1, poni2 , rot1, rot2, rot3, pixel1, pixel2, splineFile)
-        if (poni1 is None) and (poni2 is None):
-            tth = self.data[:, 2]
-            asrt = tth.argsort()
-            tth = tth[asrt]
-            srtdata = self.data[asrt]
-            smallRing = srtdata[tth < (tth.min() + 1e-6)]
-            center = smallRing.sum(axis=0) / len(smallRing)
-            self.poni1 = center[0] * self.pixel1
-            self.poni2 = center[1] * self.pixel2
+            self.poni1 = float(poni1)
+            self.poni2 = float(poni2)
         self._dist_min = 0
         self._dist_max = 10
-        self._poni1_min = -10000 * pixel1
-        self._poni1_max = 15000 * pixel1
-        self._poni2_min = -10000 * pixel2
-        self._poni2_max = 15000 * pixel2
+        self._poni1_min = -10000 * self.pixel1
+        self._poni1_max = 15000 * self.pixel1
+        self._poni2_min = -10000 * self.pixel2
+        self._poni2_max = 15000 * self.pixel2
         self._rot1_min = -pi
         self._rot1_max = pi
         self._rot2_min = -pi
         self._rot2_max = pi
         self._rot3_min = -pi
         self._rot3_max = pi
+
+    def guess_poni(self):
+        """
+        Poni can be guessed by the centroid of the ring with lowest 2Theta
+        """
+        tth = self.data[:, 2]
+        asrt = tth.argsort()
+        tth = tth[asrt]
+        srtdata = self.data[asrt]
+        smallRing = srtdata[tth < (tth.min() + 1e-6)]
+        smallRing1 = smallRing[:, 0]
+        smallRing2 = smallRing[:, 1]
+        smallRing_in_m = self.detector.calc_cartesian_positions(smallRing1, smallRing2)
+        l = len(smallRing)
+        self.poni1 = smallRing_in_m[0].sum() / l
+        self.poni2 = smallRing_in_m[1].sum() / l
+
+    def set_tolerance(self, value=10):
+        """
+        
+        @param value: Tolerance as a percentage
+         
+        """
+        low = 1.0 - value / 100.
+        hi = 1.0 + value / 100.
+        self.dist_min = low * self.dist
+        self.dist_max = hi * self.dist
+        if abs(self.poni1) > (value / 100.) ** 2:
+            self.poni1_min = min(low * self.poni1, hi * self.poni1)
+            self.poni1_max = max(low * self.poni1, hi * self.poni1)
+        else:
+            self.poni1_min = -(value / 100.) ** 2
+            self.poni1_max = (value / 100.) ** 2
+        if abs(self.poni2) > (value / 100.) ** 2:
+            self.poni2_min = min(low * self.poni2, hi * self.poni2)
+            self.poni2_max = max(low * self.poni2, hi * self.poni2)
+        else:
+            self.poni2_min = -(value / 100.) ** 2
+            self.poni2_max = (value / 100.) ** 2
+        if abs(self.rot1) > (value / 100.) ** 2:
+            self.rot1_min = min(low * self.rot1, hi * self.rot1)
+            self.rot1_max = max(low * self.rot1, hi * self.rot1)
+        else:
+            self.rot1_min = -(value / 100.) ** 2
+            self.rot1_max = (value / 100.) ** 2
+        if abs(self.rot2) > (value / 100.) ** 2:
+            self.rot2_min = min(low * self.rot2, hi * self.rot2)
+            self.rot2_max = max(low * self.rot2, hi * self.rot2)
+        else:
+            self.rot2_min = -(value / 100.) ** 2
+            self.rot2_max = (value / 100.) ** 2
+        if abs(self.rot3) > (value / 100.) ** 2:
+            self.rot3_min = min(low * self.rot3, hi * self.rot3)
+            self.rot3_max = max(low * self.rot3, hi * self.rot3)
+        else:
+            self.rot3_min = -(value / 100.) ** 2
+            self.rot3_max = (value / 100.) ** 2
+
 
     def residu1(self, param, d1, d2, tthRef):
         return self.tth(d1, d2, param) - tthRef

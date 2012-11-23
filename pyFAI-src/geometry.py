@@ -1,28 +1,28 @@
 # !/usr/bin/env python
-# -*- coding: utf8 -*-
-# 
+# -*- coding: utf-8 -*-
+#
 #    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
-# 
+#
 #    File: "$Id$"
-# 
+#
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
-# 
+#
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
-# 
+#
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
 #    (at your option) any later version.
-# 
+#
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
-# 
+#
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# 
+#
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
@@ -31,7 +31,7 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "09/06/2012"
 __status__ = "beta"
 
-import os, threading, logging
+import os, threading, logging, types
 import numpy
 from numpy import   radians, degrees, arccos, arctan2, sin, cos, sqrt
 import detectors
@@ -41,6 +41,10 @@ try:
 except:
     _geometry = None
 logger = logging.getLogger("pyFAI.geometry")
+try:
+    from fastcrc import crc32
+except:
+    from zlib import crc32
 
 
 
@@ -125,7 +129,7 @@ class Geometry(object):
                             d2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3)))
     """
 
-    def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0, pixel1=1, pixel2=1, splineFile=None, detector=None):
+    def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0, pixel1=None, pixel2=None, splineFile=None, detector=None):
         """
         @param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
         @param poni1: coordinate of the point of normal incidence along the detector's first dimension, in meter
@@ -148,6 +152,7 @@ class Geometry(object):
         self._ttha = None
         self._dttha = None
         self._dssa = None
+        self._dssa_crc = None #checksum associated with _dssa
         self._chia = None
         self._dchia = None
         self._qa = None
@@ -160,13 +165,20 @@ class Geometry(object):
         self._sem = threading.Semaphore()
         self._polarization_factor = 0
         self._polarization = None
+        self._polarization_crc = None #checksum associated with _polarization
 
         if detector:
-            self.detector = detector
-        elif splineFile:
-            self.detector = detectors.Detector(splineFile=os.path.abspath(splineFile))
+            if type(detector) in types.StringTypes:
+                self.detector = detectors.detector_factory(detector)
+            else:
+                self.detector = detector
         else:
-            self.detector = detectors.Detector(pixel1=pixel1, pixel2=pixel2)
+            self.detector = detectors.Detector()
+        if splineFile:
+            self.detector.splineFile = os.path.abspath(splineFile)
+        elif pixel1 and pixel2:
+            self.detector.pixel1 = pixel1
+            self.detector.pixel2 = pixel2
 
 
     def __repr__(self):
@@ -209,7 +221,7 @@ class Geometry(object):
         @type d1: scalar or array of scalar
         @param d2: position(s) in pixel in second dimension (c order)
         @type d2: scalar or array of scalar
-        @param path: can be "cos", "tan" or "cython" 
+        @param path: can be "cos", "tan" or "cython"
         @return 2theta in radians
         @rtype: floar or array of floats.
         """
@@ -259,7 +271,7 @@ class Geometry(object):
             out = _geometry.calc_q(L=self._dist, rot1=self._rot1, rot2=self._rot2, rot3=self._rot3, pos1=p1 , pos2=p2, wavelength=self.wavelength)
             out.shape = p1.shape
         else:
-            out = 4e-9 * numpy.pi / self.wavelength * numpy.sin(self.tth(d1=d1, d2=d2, param=param) / 2)
+            out = 4.0e-9 * numpy.pi / self.wavelength * numpy.sin(self.tth(d1=d1, d2=d2, param=param) / 2.0)
         return out
 
     def qArray(self, shape):
@@ -373,11 +385,6 @@ class Geometry(object):
         """
         Generate a 3D array of the given shape with (i,j) (azimuthal angle) for all elements.
         """
-# ###############################################################################
-# TODO : add the center to the 4 corners when splitpixel algo is ready
-# ###############################################################################
-#        tth_center = self.twoThetaArray(shape)
-#        chi_center = self.chiArray(shape)
         if self._corner4Da is None:
             with self._sem:
                 if self._corner4Da is None:
@@ -392,8 +399,6 @@ class Geometry(object):
                     self._corner4Da[:, :, 2, 1] = chi[1:, 1:]
                     self._corner4Da[:, :, 3, 0] = tth[:-1, 1:]
                     self._corner4Da[:, :, 3, 1] = chi[:-1, 1:]
-#                    self._corner4Da[:, :, 4, 0] = tth_center
-#                    self._corner4Da[:, :, 4, 1] = chi_center
         return self._corner4Da
 
 
@@ -401,27 +406,20 @@ class Geometry(object):
         """
         Generate a 3D array of the given shape with (i,j) (azimuthal angle) for all elements.
         """
-# ###############################################################################
-# TODO : add the center to the 4 corners when splitpixel algo is ready
-# ###############################################################################
-#        q_center = self.qArray(shape)
-#        chi_center = self.chiArray(shape)
         if self._corner4Dqa is None:
             with self._sem:
                 if self._corner4Dqa is None:
                     self._corner4Dqa = numpy.zeros((shape[0], shape[1], 4, 2), dtype=numpy.float32)
+                    qar = numpy.fromfunction(self.qCornerFunct, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
                     chi = numpy.fromfunction(self.chi_corner, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
-                    tth = numpy.fromfunction(self.qCornerFunct(shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
-                    self._corner4Dqa[:, :, 0, 0] = tth[:-1, :-1]
+                    self._corner4Dqa[:, :, 0, 0] = qar[:-1, :-1]
                     self._corner4Dqa[:, :, 0, 1] = chi[:-1, :-1]
-                    self._corner4Dqa[:, :, 1, 0] = tth[1:, :-1]
+                    self._corner4Dqa[:, :, 1, 0] = qar[1:, :-1]
                     self._corner4Dqa[:, :, 1, 1] = chi[1:, :-1]
-                    self._corner4Dqa[:, :, 2, 0] = tth[1:, 1:]
+                    self._corner4Dqa[:, :, 2, 0] = qar[1:, 1:]
                     self._corner4Dqa[:, :, 2, 1] = chi[1:, 1:]
-                    self._corner4Dqa[:, :, 3, 0] = tth[:-1, 1:]
+                    self._corner4Dqa[:, :, 3, 0] = qar[:-1, 1:]
                     self._corner4Dqa[:, :, 3, 1] = chi[:-1, 1:]
-#                    self._corner4Dqa[:, :, 4, 0] = q_center
-#                    self._corner4Dqa[:, :, 4, 1] = chi_center
         return self._corner4Dqa
 
 
@@ -484,8 +482,9 @@ class Geometry(object):
         """
         calulate the solid angle of the current pixels
         """
-        p1 = (0.5 + d1) * self.pixel1 - self._poni1
-        p2 = (0.5 + d2) * self.pixel2 - self._poni2
+        p1, p2 = self._calcCartesianPositions(d1, d2)
+#        p1 = (0.5 + d1) * self.pixel1 - self._poni1
+#        p2 = (0.5 + d2) * self.pixel2 - self._poni2
         ds = 1.0
 
         # #######################################################################
@@ -511,7 +510,10 @@ class Geometry(object):
         Generate an array of the given shape with the solid angle of the current element two-theta(i,j) for all elements.
         """
         if self._dssa is None:
+#            with self._sem:
+#                if self._dssa is None:
             self._dssa = numpy.fromfunction(self.diffSolidAngle, shape, dtype=numpy.float32)
+            self._dssa_crc = crc32(self._dssa)
         return self._dssa
 
 
@@ -524,6 +526,8 @@ class Geometry(object):
         try:
             with open(filename, "a") as f:
                 f.write("# Nota: C-Order, 1 refers to the Y axis, 2 to the X axis %s" % os.linesep)
+                if self.detector.name != "Detector":
+                    f.write("Detector: %s%s" % (self.detector.name, os.linesep))
                 f.write("PixelSize1: %s%s" % (self.pixel1, os.linesep))
                 f.write("PixelSize2: %s%s" % (self.pixel2, os.linesep))
                 f.write("Distance: %s%s" % (self._dist, os.linesep))
@@ -559,6 +563,7 @@ class Geometry(object):
         @param filename: name of the file to load
         @type filename: string
         """
+        data = {}
         for line in open(filename):
             if line.startswith("#") or (":" not in line):
                 continue
@@ -569,27 +574,30 @@ class Geometry(object):
                 value = words[1].strip()
             except Exception as error:  # IGNORE:W0703:
                 logger.error("Error %s with line: %s" % (error, line))
-            if key == "pixelsize1":
-                self.detector.pixel1 = float(value)
-            elif key == "pixelsize2":
-                self.detector.pixel2 = float(value)
-            elif key == "distance":
-                self._dist = float(value)
-            elif key == "poni1":
-                self._poni1 = float(value)
-            elif key == "poni2":
-                self._poni2 = float(value)
-            elif key == "rot1":
-                self._rot1 = float(value)
-            elif key == "rot2":
-                self._rot2 = float(value)
-            elif key == "rot3":
-                self._rot3 = float(value)
-            elif key == "wavelength":
-                self.wavelength = float(value)
-            elif key == "splinefile":
-                if value.lower() != "none":
-                    self.detector.set_splineFile(value)
+            data[key] = value
+        if "detector" in data:
+            self.detector = detectors.detector_factory(data["detector"])
+        if  "pixelsize1" in data:
+            self.detector.pixel1 = float(data["pixelsize1"])
+        if  "pixelsize2" in data:
+            self.detector.pixel2 = float(data["pixelsize2"])
+        if  "distance" in data:
+            self._dist = float(data["distance"])
+        if  "poni1" in data:
+            self._poni1 = float(data["poni1"])
+        if  "poni2" in data:
+            self._poni2 = float(data["poni2"])
+        if  "rot1" in data:
+            self._rot1 = float(data["rot1"])
+        if  "rot2" in data:
+            self._rot2 = float(data["rot2"])
+        if  "rot3" in data:
+            self._rot3 = float(data["rot3"])
+        if  "wavelength" in data:
+            self._wavelength = float(data["wavelength"])
+        if  "splinefile" in data:
+            if data["splinefile"].lower() != "none":
+                self.detector.set_splineFile(data["splinefile"])
         self.reset()
     read = load
 
@@ -760,12 +768,16 @@ class Geometry(object):
                 new[i::self._oversampling, j::self._oversampling] = myarray
         return new
 
-    def polarization(self, shape, factor=0.98):
+    def polarization(self, shape=None, factor=0.98):
         """
         Calculate the polarization correction accoding to the polarization factor:
         @param factor: (Ih-Iv)/(Ih+Iv): varies between 0 (no polarization) and 1 (where division by 0 could occure)
-        @return 2D array with polarization correction array (intensity/polarisation)  
+        @return 2D array with polarization correction array (intensity/polarisation)
         """
+        if shape is None:
+            if self._ttha is None:
+                raise RuntimeError("You should provide a shape if the geometry is not yet initiallized")
+            shape = self._ttha.shape
         if factor == 0:
             return numpy.ones(shape, dtype=numpy.float32)
         with self._sem:
@@ -775,6 +787,7 @@ class Geometry(object):
                 cos2_tth = numpy.cos(self.twoThetaArray(shape)) ** 2
                 self._polarization = (1 + cos2_tth - factor * numpy.cos(2 * self.chiArray(shape)) * (1 - cos2_tth)) / 2.0
                 self._polarization_factor = factor
+                self._polarization_crc = crc32(self._polarization)
                 return self._polarization
 
     def reset(self):
@@ -795,27 +808,36 @@ class Geometry(object):
         self._polarization_factor = 0
 
 
-    def calcfrom1d(self, tth, I, shape=None, mask=None, dim1_unit="2th_deg"):
+    def calcfrom1d(self, tth, I, shape=None, mask=None, dim1_unit="2th_deg", correctSolidAngle=True):
         """
         Computes a 2D image from a 1D integrated profile
-        
+
         @param tth: 1D array with 2theta in degrees
         @param I: scattering intensity
         @return 2D image reconstructed
         """
         if dim1_unit == "2th_deg":
+            tth = numpy.radians(tth)
             if shape is None:
                 ttha = self._ttha
                 shape = self._ttha.shape
             else:
-                ttha = integrator.twoThetaArray(shape)
+                ttha = self.twoThetaArray(shape)
+        elif dim1_unit == "q_nm^-1":
+            if shape is None:
+                ttha = self._qa
+                shape = ttha.shape
+            else:
+                ttha = self.qArray(shape)
         else:
 #            TODO
-            raise RuntimeError("Not (yet) Implemented")
-        calcimage = numpy.interp(ttha.ravel(), numpy.radians(tth), I)
+            raise RuntimeError("in pyFAI.Geometry.calcfrom1d: Not (yet?) Implemented")
+        calcimage = numpy.interp(ttha.ravel(), tth, I)
         calcimage.shape = shape
-        calcimage *= self.solidAngleArray(shape)
+        if correctSolidAngle:
+            calcimage *= self.solidAngleArray(shape)
         if mask is not None:
+            assert mask.shape == tuple(shape)
             calcimage[mask] = 0
         return calcimage
 
@@ -898,6 +920,7 @@ class Geometry(object):
             self._wavelength = float(value)
         self._qa = None
         self._dqa = None
+        self._corner4Dqa = None
     def get_wavelength(self):
         if self._wavelength is None:
             raise RuntimeWarning("Using wavelength without having defined it previously ... excpect to fail !")

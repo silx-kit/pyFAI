@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# coding: utf8
+# coding: utf-8
 #
 #    Project: pyFAI tests class utilities
 #             http://forge.epn-campus.eu/projects/azimuthal
@@ -32,8 +32,9 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__data__ = "2011-07-06"
+__data__ = "2012-11-20"
 
+import sys
 import unittest
 
 from utilstest import UtilsTest, getLogger
@@ -47,6 +48,7 @@ from testGeometry             import test_suite_all_Geometry
 from testMask                 import test_suite_all_Mask
 from testOpenCL               import test_suite_all_OpenCL
 from testExport               import test_suite_all_Export
+from testSaxs                 import test_suite_all_Saxs
 
 def test_suite_all():
     testSuite = unittest.TestSuite()
@@ -58,11 +60,13 @@ def test_suite_all():
     testSuite.addTest(test_suite_all_Mask())
     testSuite.addTest(test_suite_all_OpenCL())
     testSuite.addTest(test_suite_all_Export())
+    testSuite.addTest(test_suite_all_Saxs())
     return testSuite
 
 if __name__ == '__main__':
 
     mysuite = test_suite_all()
     runner = unittest.TextTestRunner()
-    runner.run(mysuite)
+    if not runner.run(mysuite).wasSuccessful():
+        sys.exit(1)
 

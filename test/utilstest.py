@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# coding: utf8
+# coding: utf-8
 #
 #    Project: pyFAI tests class utilities
 #             http://forge.epn-campus.eu/projects/azimuthal
 #
 #    File: "$Id:$"
 #
-#    Copyright (C) 2010 European Synchrotron Radiation Facility
+#    Copyright (C) 2010-2012 European Synchrotron Radiation Facility
 #                       Grenoble, France
 #
 #    Principal authors: Jérôme KIEFFER (jerome.kieffer@esrf.fr)
@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__data__ = "2012-09-16"
+__data__ = "2012-11-08"
 import os, imp, sys, subprocess, threading
 import distutils.util
 import logging
@@ -42,11 +42,11 @@ import shutil
 logger = logging.getLogger("pyFAI.utilstest")
 
 def copy(infile, outfile):
-    "link or copy file accoding to the OS"
+    "link or copy file according to the OS"
     if "link" in dir(os):
-        os.link(infile,outfile)
+        os.link(infile, outfile)
     else:
-        shutil.copy(infile,outfile)
+        shutil.copy(infile, outfile)
 
 class UtilsTest(object):
     """
@@ -54,6 +54,8 @@ class UtilsTest(object):
     """
     timeout = 60        #timeout in seconds for downloading images
     url_base = "http://forge.epn-campus.eu/attachments/download"
+    #Nota https crashes with error 501 under windows.
+#    url_base = "https://forge.epn-campus.eu/attachments/download"
     test_home = os.path.dirname(__file__)
     name = "pyFAI"
     image_home = os.path.join(test_home, "testimages")
@@ -102,18 +104,20 @@ class UtilsTest(object):
         logger.info("pyFAI loaded from %s" % pyFAI.__file__)
 
 
-
-
     @classmethod
-    def timeoutDuringDownload(cls):
+    def timeoutDuringDownload(cls, imagename=None):
             """
             Function called after a timeout in the download part ...
             just raise an Exception.
             """
-            raise RuntimeError("""Could not automatically download test images!
-If you are behind a firewall, please set the environment variable http_proxy.
-Otherwise please try to download the images manually from
-""" + cls.url_base)
+            if imagename is None:
+                imagename = "2252/testimages.tar.bz2 unzip it "
+            raise RuntimeError("Could not automatically \
+                download test images!\n \ If you are behind a firewall, \
+                please set both environment variable http_proxy and https_proxy.\
+                This even works under windows ! \n \
+                Otherwise please try to download the images manually from \n %s/%s and put it in in test/testimages." % (cls.url_base, imagename))
+
 
 
     @classmethod
@@ -126,19 +130,24 @@ Otherwise please try to download the images manually from
         """
         baseimage = os.path.basename(imagename)
         logger.info("UtilsTest.getimage('%s')" % baseimage)
-        fullimagename = os.path.join(cls.image_home, baseimage)
+        fullimagename = os.path.abspath(os.path.join(cls.image_home, baseimage))
         if not os.path.isfile(fullimagename):
             logger.info("Trying to download image %s, timeout set to %ss"
                           % (imagename, cls.timeout))
+            dictProxies = {}
             if "http_proxy" in os.environ:
-                dictProxies = {'http': os.environ["http_proxy"]}
+                dictProxies['http'] = os.environ["http_proxy"]
+                dictProxies['https'] = os.environ["http_proxy"]
+            if "https_proxy" in os.environ:
+                dictProxies['https'] = os.environ["https_proxy"]
+            if dictProxies:
                 proxy_handler = urllib2.ProxyHandler(dictProxies)
                 opener = urllib2.build_opener(proxy_handler).open
             else:
                 opener = urllib2.urlopen
 
 #           Nota: since python2.6 there is a timeout in the urllib2
-            timer = threading.Timer(cls.timeout + 1, cls.timeoutDuringDownload)
+            timer = threading.Timer(cls.timeout + 1, cls.timeoutDuringDownload, args=[imagename])
             timer.start()
             logger.info("wget %s/%s" % (cls.url_base, imagename))
             if sys.version > (2, 6):
@@ -159,9 +168,9 @@ Otherwise please try to download the images manually from
             if not os.path.isfile(fullimagename):
                 raise RuntimeError("Could not automatically \
                 download test images %s!\n \ If you are behind a firewall, \
-                please set the environment variable http_proxy.\n \
-                Otherwise please try to download the images manually from \n \
-                %s" % (cls.url_base, imagename))
+                please set both environment variable http_proxy and https_proxy.\
+                This even works under windows ! \n \
+                Otherwise please try to download the images manually from \n%s/%s" % (imagename, cls.url_base, imagename))
 
         return fullimagename
 

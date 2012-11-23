@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
@@ -88,7 +88,7 @@ class HistoBBox1d(object):
 
     def calc_size_lut(self):
         'calculate the max number of elements in the LUT'
-        outMax = numpy.zeros(self.bins, dtype=numpy.int32)
+        outMax = numpy.zeros(self.bins, dtype=numpy.uint32)
         for idx in range(self.size):
                 if (self.check_mask) and (self.cmask[idx]):
                     continue

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
@@ -52,13 +52,17 @@ TARGET_SIZE = 1024
 # PeakPicker
 ################################################################################
 class PeakPicker(object):
-    def __init__(self, strFilename, reconst=False):
+    def __init__(self, strFilename, reconst=False, mask=None):
         """
         @param: input image filename
         @param reconst: shall negative values be reconstucted (wipe out problems with pilatus gaps)
         """
         self.strFilename = strFilename
         self.data = fabio.open(strFilename).data.astype("float32")
+        if mask is not None:
+            view = self.data.ravel()
+            flat_mask = mask.ravel()
+            view[numpy.where(flat_mask)] = 0
         self.shape = self.data.shape
         self.points = ControlPoints()
         self.lstPoints = []
@@ -69,7 +73,9 @@ class PeakPicker(object):
         self.ct = None
         self.msp = None
         if reconstruct and (reconst is not False):
-            self.massif = Massif(reconstruct(self.data, self.data < 0))
+            if mask is None:
+                mask = self.data < 0
+            self.massif = Massif(reconstruct(self.data, mask))
         else:
             self.massif = Massif(self.data)
         self._sem = threading.Semaphore()
@@ -84,9 +90,9 @@ class PeakPicker(object):
             self.fig = pylab.plt.figure()
         self.ax = self.fig.add_subplot(111);
         if log:
-            self.ax.imshow(numpy.log(1.0 + self.data - self.data.min()), origin="lower")
+            self.ax.imshow(numpy.log(1.0 + self.data - self.data.min()), origin="lower", interpolation="nearest")
         else:
-            self.ax.imshow(self.data, origin="lower")
+            self.ax.imshow(self.data, origin="lower", interpolation="nearest")
         self.fig.show()
         self.fig.canvas.mpl_connect('button_press_event', self.onclick)
 
@@ -233,7 +239,7 @@ class PeakPicker(object):
                 if len(self.msp.images) > 1:
                     self.msp.images.pop()
             try:
-                self.msp.imshow(mask, cmap="gray", origin="lower")
+                self.msp.imshow(mask, cmap="gray", origin="lower", interpolation="nearest")
             except MemoryError:
                 logging.error("Sorry but your computer does NOT have enough memory to display the massif plot")
             #self.fig.show()
@@ -485,14 +491,19 @@ class Massif(object):
         """
         @returns the coordinates of the nearest peak
         """
-        x = numpy.array(x, dtype="float32")
-        out = fmin(self._bilin.f_cy, x, disp=0).round().astype(numpy.int)
-        if isinstance(out, numpy.ndarray):
-            res = [int(i) for idx, i in enumerate(out) if 0 <= i < self.data.shape[idx] ]
+#        x = numpy.array(x, dtype="float32")
+#        out = fmin(self._bilin.f_cy, x, disp=0).round().astype(numpy.int)
+        out = self._bilin.local_maxi(x)
+        if isinstance(out, tuple):
+            res = out
+        elif isinstance(out, numpy.ndarray):
+            res = tuple(out)
         else:
-            print out
             res = [int(i) for idx, i in enumerate(out) if 0 <= i < self.data.shape[idx] ]
-        if len(res) == 2:
+        if (len(res) != 2) or not((0 <= out[0] < self.data.shape[0]) and (0 <= res[1] < self.data.shape[1])):
+            logger.error("in nearest_peak %s -> %s" % (x, out))
+            return
+        else:
             return res
 
 
@@ -537,31 +548,25 @@ class Massif(object):
                     logger.error("Error in annotate %i: %i %i. %s" , len(listpeaks), xinit[0], xinit[1], error)
 
         listpeaks.append(xinit)
-        idx = numpy.arange(region.size)
-        idx.shape = region.shape
-        regionIdx = idx[region]
-        numpy.random.shuffle(regionIdx)
-        nmax = min(nmax, int(ceil(sqrt(region.sum()))))
+        mean = self.data[region].mean(dtype=numpy.float64)
+        region2 = region * (self.data > mean)
+        idx = numpy.vstack(numpy.where(region2)).T
+        numpy.random.shuffle(idx)
+        nmax = min(nmax, int(ceil(sqrt(idx.shape[0]))))
         if massif_contour is not None:
             try:
                 massif_contour(region)
             except (WindowsError, MemoryError) as error:
                 logger.error("Error in plotting region: %s", error)
         nbFailure = 0
-        dim1 = region.shape[1]
-        for idx in  regionIdx:
-            x0 = idx // dim1
-            x1 = idx % dim1
-            if not region[x0, x1]:
-                logger.warning("Input point (%s,%s) not in region !!!! " % (x0, x1))
-            xopt = self.nearest_peak([x0, x1])
+        for j in idx:
+            xopt = self.nearest_peak(j)
             if xopt is None:
                 nbFailure += 1
                 continue
-            if (region[xopt[0], xopt[1]]) and not (xopt in listpeaks):
-                stdout.write("[ %4i, %4i ] --> [ %4i, %4i ] after %3i iterations %s" % (x0, x1, xopt[0], xopt[1], nbFailure, os.linesep))
+            if (region2[xopt[0], xopt[1]]) and not (xopt in listpeaks):
+                stdout.write("[ %4i, %4i ] --> [ %4i, %4i ] after %3i iterations %s" % (tuple(j) + tuple(xopt) + (nbFailure, os.linesep)))
                 listpeaks.append(xopt)
-
                 nbFailure = 0
             else:
                 nbFailure += 1

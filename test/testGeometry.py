@@ -39,6 +39,8 @@ class TestGeometry(ParameterisedTestCase):
 
     def testGeometryFunctions(self):
         func, statargs, varargs, kwds, expectedFail = self.param
+        kwds["pixel1"] = 1
+        kwds["pixel2"] = 1
         g = geometry.Geometry(**kwds)
 
         t0 = time.time()
