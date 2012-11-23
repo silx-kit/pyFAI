@@ -50,6 +50,8 @@ class Bench(object):
         return self._cpu
 
     def get_gpu(self, devicetype="gpu", useFp64=True, platformid=None, deviceid=None):
+        if ocl is None:
+            return "NoGPU"
         ctx = ocl.create_context(devicetype, useFp64, platformid, deviceid)
         return ctx.devices[0].name
 
@@ -91,8 +93,8 @@ class Bench(object):
             self.print_init(t1 - t0)
             setup = """
 import pyFAI,fabio
-ai=pyFAI.load("%s")
-data = fabio.open("%s").data
+ai=pyFAI.load(r"%s")
+data = fabio.open(r"%s").data
 N=min(data.shape)
 out=ai.xrpd(data,N)""" % (param, fn)
             t = timeit.Timer("ai.xrpd(data,N)", setup)
@@ -127,8 +129,8 @@ out=ai.xrpd(data,N)""" % (param, fn)
             del ai
             setup = """
 import pyFAI,fabio
-ai=pyFAI.load("%s")
-data = fabio.open("%s").data
+ai=pyFAI.load(r"%s")
+data = fabio.open(r"%s").data
 N=min(data.shape)
 out=ai.xrpd_LUT(data,N)""" % (param, fn)
             t = timeit.Timer("ai.xrpd_LUT(data,N,safe=False)", setup)
@@ -166,10 +168,10 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
             del ai
             setup = """
 import pyFAI,fabio
-ai=pyFAI.load("%s")
-data = fabio.open("%s").data
+ai=pyFAI.load(r"%s")
+data = fabio.open(r"%s").data
 N=min(data.shape)
-out=ai.xrpd_LUT_OCL(data,N,devicetype="%s",platformid=%s,deviceid=%s)""" % (param, fn, devicetype, platformid, deviceid)
+out=ai.xrpd_LUT_OCL(data,N,devicetype=r"%s",platformid=%s,deviceid=%s)""" % (param, fn, devicetype, platformid, deviceid)
             t = timeit.Timer("ai.xrpd_LUT_OCL(data,N,safe=False)", setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
             t = None
@@ -202,8 +204,8 @@ out=ai.xrpd_LUT_OCL(data,N,devicetype="%s",platformid=%s,deviceid=%s)""" % (para
             del ai
             setup = """
 import pyFAI,fabio
-ai=pyFAI.load("%s")
-data = fabio.open("%s").data
+ai=pyFAI.load(r"%s")
+data = fabio.open(r"%s").data
 out=ai.xrpd2(data,500,360)""" % (param, fn)
             t = timeit.Timer("ai.xrpd2(data,500,360)", setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
@@ -245,10 +247,10 @@ out=ai.xrpd2(data,500,360)""" % (param, fn)
             del ai
             setup = """
 import pyFAI,fabio
-ai=pyFAI.load("%s")
-data = fabio.open("%s").data
+ai=pyFAI.load(r"%s")
+data = fabio.open(r"%s").data
 N=min(data.shape)
-out=ai.xrpd_OpenCL(data,N, devicetype="%s", useFp64=%s, platformid=%s, deviceid=%s)""" % (param, fn, devicetype, useFp64, platformid, deviceid)
+out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid=%s)""" % (param, fn, devicetype, useFp64, platformid, deviceid)
             t = timeit.Timer("ai.xrpd_OpenCL(data,N,safe=False)", setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
             t = None
@@ -289,7 +291,9 @@ out=ai.xrpd_OpenCL(data,N, devicetype="%s", useFp64=%s, platformid=%s, deviceid=
             self.ax.set_yticks([float(i) for i in t])
             self.ax.set_yticklabels([str(i)for i in t])
             self.ax.set_title(self.get_cpu() + " / " + self.get_gpu())
-            plt.show()
+            if self.fig.canvas:
+                self.fig.canvas.draw()
+#            plt.show()
 
     def new_curve(self, results, label):
         if not self.fig:
@@ -342,7 +346,7 @@ if __name__ == "__main__":
     b.bench_cpu1d_ocl_lut("GPU")
     b.bench_cpu1d_ocl_lut("CPU")
 #    b.bench_cpu1d_ocl_lut()
-#    b.bench_gpu1d("gpu", True)
+    b.bench_gpu1d("gpu", True)
 #    b.bench_gpu1d("gpu", False)
     b.bench_gpu1d("cpu", True)
 #    b.bench_gpu1d("cpu", False)
@@ -350,4 +354,5 @@ if __name__ == "__main__":
     b.save()
     b.print_res()
 #    b.display_all()
+    plt.show()
     raw_input("Enter to quit")
