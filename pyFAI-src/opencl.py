@@ -47,13 +47,15 @@ class Device(object):
     """
     Simple class that contains the structure of an OpenCL device
     """
-    def __init__(self, name=None, type=None, version=None, driver_version=None, extensions=None, memory=None):
+    def __init__(self, name=None, type=None, version=None, driver_version=None, extensions=None, memory=None, available=None, cores=None):
         self.name = name
         self.type = type
         self.version = version
         self.driver_version = driver_version
         self.extensions = extensions.split()
         self.memory = memory
+        self.available = available
+        self.cores = cores
 
     def __repr__(self):
         return "%s" % self.name
@@ -93,7 +95,8 @@ class OpenCL(object):
                 if (pypl.vendor == "NVIDIA Corporation") and ('cl_khr_fp64' in extensions):
                                 extensions += ' cl_khr_int64_base_atomics cl_khr_int64_extended_atomics'
                 devtype = pyopencl.device_type.to_string(device.type)
-                pydev = Device(device.name, devtype, device.version, device.driver_version, extensions, device.global_mem_size)
+                pydev = Device(device.name, devtype, device.version, device.driver_version, extensions,
+                               device.global_mem_size, bool(device.available), device.max_compute_units)
                 pypl.add_device(pydev)
             platforms.append(pypl)
         del platform, device, pypl, devtype, extensions, pydev
@@ -113,6 +116,7 @@ class OpenCL(object):
         @param type: "gpu" or "cpu" or "all" ....
         @param memory: minimum amount of memory (int)
         @param extensions: list of extensions to be present
+        @param best: shall we look for the 
         """
         type = type.upper()
         best_found = None
@@ -129,9 +133,9 @@ class OpenCL(object):
                                 return platformid, deviceid
                             else:
                                 if not best_found:
-                                    best_found = platformid, deviceid, device.memory
-                                elif best_found[2] < device.memory:
-                                    best_found = platformid, deviceid, device.memory
+                                    best_found = platformid, deviceid, device.cores
+                                elif best_found[2] < device.cores:
+                                    best_found = platformid, deviceid, device.cores
         if best_found:
             return  best_found[0], best_found[1]
 
