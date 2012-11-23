@@ -169,7 +169,7 @@ ext_modules = [histogram_dic, splitPixel_dic, splitBBox_dic, splitBBoxLUT_dic, r
                _geometry_dic, reconstruct_dic, bilinear_dic, fastcrc_dic]
 
 
-if (os.name != "posix") or ("x86" not in platform.machine):
+if (os.name != "posix") or ("x86" not in platform.machine()):
     ext_modules.remove(fastcrc_dic)
 
 
