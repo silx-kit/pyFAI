@@ -1,10 +1,25 @@
-0.1: Geometry is OK (05/2011)
-0.2: Azimuthal integration using cython histogramming is working (07/2011)
-0.3: Azimuthal integration splits pixels like fit2d (11/2011)
-0.4: global clean up of the code regarding options from command line and better design
-     correct the orientation of the azimuthal angle chi
-     rename scripts in pyFAI-calib, pyFAI-saxs and pyFAI-waxs 
-0.5: include OpenCL version of azimuthal integration
-0.6: OpenCL flavour works well on GPU in double precision with device selection (07/2012)
-0.7: Implementation of look-up table based integration and OpenCL version of it; binning if input images (10/2012)
-0.8: LUT implementation in 1D (fully tested) 
+0.1: 	Geometry is OK (05/2011)
+0.2: 	Azimuthal integration using cython histogramming is working (07/2011)
+0.3: 	Azimuthal integration splits pixels like fit2d (11/2011)
+0.4: 	Global clean up of the code regarding options from command line and better design
+     	correct the orientation of the azimuthal angle chi
+     	rename scripts in pyFAI-calib, pyFAI-saxs and pyFAI-waxs
+0.5: 	include OpenCL version of azimuthal integration
+0.6: 	OpenCL flavour works well on GPU in double precision with device selection (07/2012)
+0.7: 	Implementation of look-up table based integration and OpenCL version of it
+0.8:	Detector object is member of the geometry
+		Binning of the detector, propagation to the spline if needed(10/2012)
+		Detector object know about their masks. Automatic mask for Pilatus detectors
+ 		LUT implementation in 1D (fully tested) both with OpenMP and with OpenCL
+		Switch from C++/Cython OpenCL framework to PyOpenCL
+		Port opencl code to both Windows 32/64 bits and MacOSX
+		Add polarization corrections
+		Use fast-CRC checksum on x86 using SSE4 (when available) to track array change on GPU buffers
+		Support for flat 7*8 modules Xpad detectors.
+		Better benchmark with live graphics
+		Fat source distribution (python setup.py sdist --with-test-images) for debian
+		Enhanced tests, especially for Saxs and OpenCL
+		Recalibration tool for refining automatically parameters
+		Enhancement of peak picking (much faster, recoded in pure Cython)
+		Easy calibration for pixel detector (reconstruction of inter-module space)
+
