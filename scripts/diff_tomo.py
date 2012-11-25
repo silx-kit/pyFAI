@@ -15,7 +15,7 @@ class DiffTomo(object):
     def __init__(self, nTrans=1, nRot=1, nDiff=1000):
         """
         Contructor of the class
-        
+
         @param nTrans: number of translations
         @param nRot: number of translations
         @param nDiff: number of points in diffraction pattern
@@ -32,6 +32,7 @@ class DiffTomo(object):
         self.I0 = None
         self.hdf5 = None
         self.hdf5path = "DiffTomo/NXdata/sinogram"
+        self.group = None
         self.dataset = None
         self.inputfiles = []
         self.timing = []
@@ -71,7 +72,7 @@ class DiffTomo(object):
 
         (options, args) = parser.parse_args()
 
-        #Analyse aruments and options 
+        # Analyse aruments and options
         if options.verbose:
             logger.setLevel(logging.DEBUG)
         self.hdf5 = options.outfile
@@ -121,16 +122,17 @@ class DiffTomo(object):
 
     def makeHDF5(self, rewrite=True):
         """
-        Create the HDF5 structure if needed ... 
+        Create the HDF5 structure if needed ...
         """
         if os.path.exists(self.hdf5) and rewrite:
             os.unlink(self.hdf5)
         h = h5py.File(self.hdf5)
-        g = h.require_group(posixpath.dirname(self.hdf5path))
-        if posixpath.basename(self.hdf5path) in g:
-            self.dataset = g[posixpath.basename(self.hdf5path)]
+        self.group = h.require_group(posixpath.dirname(self.hdf5path))
+
+        if posixpath.basename(self.hdf5path) in self.group:
+            self.dataset = self.group[posixpath.basename(self.hdf5path)]
         else:
-            self.dataset = g.create_dataset(name=posixpath.basename(self.hdf5path),
+            self.dataset = self.group.create_dataset(name=posixpath.basename(self.hdf5path),
                                shape=(self.nRot, self.nTrans, self.nDiff),
                                dtype="float32",
                                chunks=(1, self.nTrans, self.nDiff),
@@ -140,14 +142,18 @@ class DiffTomo(object):
             self.ai = pyFAI.load(self.poni)
         else:
             logger.error("Unable to setup Azimuthal integrator: no poni file provided")
-
+            raise RuntimeError("You must provide poni a file")
+        if self.dark:
+            self.ai.darkcurrent = self.dark
+        if self.flat:
+            self.ai.flatfield = self.flat
+        if self.mask:
+            self.ai.detector.mask = self.mask.astype("int8")
 
     def show_stats(self):
         try:
-           import numpy as np
-           import matplotlib.mlab as mlab
-           import matplotlib.pyplot as plt
-        except:
+            import matplotlib.pyplot as plt
+        except ImportError:
             logger.error("Unable to start matplotlib for display")
             return
 
@@ -179,13 +185,10 @@ class DiffTomo(object):
         elif pos["index"] < 0 or pos["rot"] < 0 or pos["trans"] < 0:
             return
         data = fabio.open(filename).data.astype(numpy.float32)
-        if self.dark is not None:
-            data -= self.dark
-        if self.flat is not None:
-            data /= self.flat
-        tth, I = self.ai.xrpd_OpenCL(data, self.nDiff, mask=self.mask)
+        tth, I = self.ai.xrpd_LUT(data, self.nDiff, safe=False)
         self.dataset[pos["rot"], pos["trans"], :] = I
-
+        if "2theta" not in self.group:
+            self.group["2theta"] = tth
         t -= time.time()
         print("Processing %30s took %6.1fms" % (os.path.basename(filename), -1000 * t))
         self.timing.append(-t)
