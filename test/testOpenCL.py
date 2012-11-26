@@ -62,8 +62,16 @@ class test_mask(unittest.TestCase):
         for ds in self.datasets:
             if ds["spline"] is not None:
                 data = open(ds["poni"], "r").read()
-                spline = os.path.basename(ds["spline"])
-                open(ds["poni"], "w").write(data.replace(" " + spline, " " + ds["spline"]))
+#                spline = os.path.basename(ds["spline"])
+                with open(ds["poni"]) as f:
+                    data = []
+                    for line in f:
+                        if line.startswith("SplineFile:"):
+                            data.append("SplineFile: " + ds["spline"])
+                        else:
+                            data.append(line.strip())
+                with open(ds["poni"], "w") as f:
+                    f.write(os.linesep.join(data))
 
     def test_OpenCL(self):
         logger.info("Testing histogram-based algorithm (forward-integration)")
@@ -91,7 +99,7 @@ class test_mask(unittest.TestCase):
     def test_OpenCL_LUT(self):
         logger.info("Testing LUT-based algorithm (backward-integration)")
         for devtype in ("GPU", "CPU"):
-            ids = ocl.select_device(devtype, best=True )
+            ids = ocl.select_device(devtype, best=True)
             if ids is None:
                 logger.error("No suitable %s OpenCL device found" % devtype)
                 continue
