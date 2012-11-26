@@ -349,6 +349,8 @@ class HistoBBox1d(object):
             outCount[i] += sum_count
             if sum_count > epsilon:
                 outMerge[i] += sum_data / sum_count
+            else:
+                outMerge[i] += cdummy
         return  self.outPos.copy(), outMerge, outData, outCount
 
 

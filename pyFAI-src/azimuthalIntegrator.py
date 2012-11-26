@@ -48,9 +48,9 @@ from utils import timeit
 logger = logging.getLogger("pyFAI.azimuthalIntegrator")
 
 try:
-    import ocl_azim  #IGNORE:F0401
+    import ocl_azim  # IGNORE:F0401
     import opencl
-except ImportError as error:#IGNORE:W0703
+except ImportError as error:  # IGNORE:W0703
     logger.warning("Unable to import pyFAI.ocl_azim")
     ocl_azim = None
     ocl = None
@@ -59,13 +59,13 @@ else:
 
 try:
     import splitBBoxLUT
-except ImportError as error:#IGNORE:W0703
+except ImportError as error:  # IGNORE:W0703
     logger.warning("Unable to import pyFAI.splitBBoxLUT for Look-up table based azimuthal integration")
     splitBBoxLUT = None
 
 try:
     import ocl_azim_lut
-except ImportError as error:#IGNORE:W0703
+except ImportError as error:  # IGNORE:W0703
     logger.warning("Unable to import pyFAI.ocl_azim_lut for Look-up table based azimuthal integration on GPU")
     ocl_azim_lut = None
 
@@ -97,15 +97,15 @@ class AzimuthalIntegrator(Geometry):
         @param detector: name of the detector or Detector instance.
         """
         Geometry.__init__(self, dist, poni1, poni2, rot1, rot2, rot3, pixel1, pixel2, splineFile, detector)
-        self._nbPixCache = {} #key=shape, value: array
+        self._nbPixCache = {}  # key=shape, value: array
 
         #
-        #mask and maskfile are properties pointing to self.detector
+        # mask and maskfile are properties pointing to self.detector
 
-        self._flatfield = None   #just a placeholder
-        self._darkcurrent = None   #just a placeholder
-        self._flatfield_crc = None   #just a placeholder
-        self._darkcurrent_crc = None   #just a placeholder
+        self._flatfield = None  # just a placeholder
+        self._darkcurrent = None  # just a placeholder
+        self._flatfield_crc = None  # just a placeholder
+        self._darkcurrent_crc = None  # just a placeholder
 
         self.header = None
 
@@ -146,7 +146,7 @@ class AzimuthalIntegrator(Geometry):
             mask = self.mask
         if mask is None :
             mask = numpy.zeros(shape, dtype=bool)
-        elif mask.min() < 0 and mask.max() == 0: # 0 is valid, <0 is invalid
+        elif mask.min() < 0 and mask.max() == 0:  # 0 is valid, <0 is invalid
             mask = (mask < 0)
         else:
             mask = mask.astype(bool)
@@ -156,7 +156,7 @@ class AzimuthalIntegrator(Geometry):
         if (mask.shape != shape):
             try:
                 mask = mask[:shape[0], :shape[1]]
-            except Exception as error:#IGNORE:W0703
+            except Exception as error:  # IGNORE:W0703
                 logger.error("Mask provided has wrong shape: expected: %s, got %s, error: %s" % (shape, mask.shape, error))
                 mask = numpy.zeros(shape, dtype=bool)
         if dummy is not None:
@@ -259,8 +259,8 @@ class AzimuthalIntegrator(Geometry):
         @rtype: 2-tuple of 1D arrays
         """
         try:
-            import histogram #IGNORE:F0401
-        except ImportError as error:#IGNORE:W0703
+            import histogram  # IGNORE:F0401
+        except ImportError as error:  # IGNORE:W0703
             logger.error("Import error (%s), falling back on old method !" % error)
             return self.xrpd_numpy(data, nbPt, filename, correctSolidAngle, tthRange, mask, dummy, delta_dummy, polarization_factor)
 
@@ -329,8 +329,8 @@ class AzimuthalIntegrator(Geometry):
         @rtype: 2-tuple of 1D arrays
         """
         try:
-            import splitBBox  #IGNORE:F0401
-        except ImportError as error:#IGNORE:W0703
+            import splitBBox  # IGNORE:F0401
+        except ImportError as error:  # IGNORE:W0703
             logger.error("Import error (%s), falling back on numpy histogram !" % error)
             return self.xrpd_numpy(data=data,
                                    nbPt=nbPt,
@@ -370,7 +370,7 @@ class AzimuthalIntegrator(Geometry):
             polarization = self.polarization(data.shape)
         if mask is None:
             mask = self.mask
-        #outPos, outMerge, outData, outCount
+        # outPos, outMerge, outData, outCount
         tthAxis, I, a, b = splitBBox.histoBBox1d(weights=data,
                                                  pos0=tth,
                                                  delta_pos0=dtth,
@@ -418,7 +418,7 @@ class AzimuthalIntegrator(Geometry):
 
         """
         try:
-            import splitPixel#IGNORE:F0401
+            import splitPixel  # IGNORE:F0401
         except ImportError as error:
             logger.error("Import error %s , falling back on numpy histogram !" % error)
             return self.xrpd_numpy(data=data,
@@ -463,7 +463,7 @@ class AzimuthalIntegrator(Geometry):
         if filename:
             self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
-    #Default implementation:
+    # Default implementation:
     xrpd = xrpd_splitBBox
 
     def xrpd_OpenCL(self, data, nbPt, filename=None, correctSolidAngle=True,
@@ -684,7 +684,7 @@ class AzimuthalIntegrator(Geometry):
                 logger.debug("xrpd_LUT: Resetting integrator because %s" % reset)
                 try:
                     self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange, mask_checksum=mask_crc)
-                except MemoryError: #LUT method is hungry...
+                except MemoryError:  # LUT method is hungry...
                     logger.warning("MemoryError: falling back on forward implementation")
                     self._ocl_lut_integr = None
                     gc.collect()
@@ -694,13 +694,13 @@ class AzimuthalIntegrator(Geometry):
             else:
                 solid_angle_array = None
             try:
-                tthAxis, I, a, b = self._lut_integrator.integrate(data, solidAngle=solid_angle_array)
-            except MemoryError: #LUT method is hungry...
+                tthAxis, I, a, b = self._lut_integrator.integrate(data, solidAngle=solid_angle_array, dummy=dummy, delta_dummy=delta_dummy)
+            except MemoryError:  # LUT method is hungry...
                 logger.warning("MemoryError: falling back on forward implementation")
                 self._ocl_lut_integr = None
                 gc.collect()
                 return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
-        tthAxis = numpy.degrees(tthAxis)
+        tthAxis = self._lut_integrator.outPos_degrees
         if filename:
             self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
@@ -788,7 +788,7 @@ class AzimuthalIntegrator(Geometry):
                 logger.debug("xrpd_LUT_OCL: Resetting integrator because of %s" % reset)
                 try:
                     self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange, mask_checksum=mask_crc)
-                except MemoryError: #LUT method is hungry...
+                except MemoryError:  # LUT method is hungry...
                     logger.warning("MemoryError: falling back on forward implementation")
                     self._ocl_lut_integr = None
                     gc.collect()
@@ -799,7 +799,6 @@ class AzimuthalIntegrator(Geometry):
                 if (self._ocl_lut_integr is None) or (self._ocl_lut_integr.on_device["lut"] != self._lut_integrator.lut_checksum):
                     self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut, self._lut_integrator.size, devicetype, platformid=platformid, deviceid=deviceid, checksum=self._lut_integrator.lut_checksum)
                 I, J, K = self._ocl_lut_integr.integrate(data, solidAngle=solid_angle_array, solidAngle_checksum=solid_angle_crc, dummy=dummy, delta_dummy=delta_dummy)
-#        tthAxis = numpy.degrees(tthAxis)
         if filename:
             self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
@@ -880,7 +879,7 @@ class AzimuthalIntegrator(Geometry):
         """
 
         try:
-            import histogram#IGNORE:F0401
+            import histogram  # IGNORE:F0401
         except ImportError as error:
             logger.error("Import error %s , falling back on numpy histogram !" % error)
             return self.xrpd2_numpy(data=data, nbPt2Th=nbPt2Th, nbPtChi=nbPtChi,
@@ -940,25 +939,25 @@ class AzimuthalIntegrator(Geometry):
         @rtype: 3-tuple of ndarrays
         """
         try:
-            import splitBBox#IGNORE:F0401
+            import splitBBox  # IGNORE:F0401
         except ImportError as error:
             logger.error("Import error %s , falling back on simple histogram !" % error)
             return self.xrpd2_histogram(data=data, nbPt2Th=nbPt2Th, nbPtChi=nbPtChi,
                                         filename=filename, correctSolidAngle=correctSolidAngle,
                                         tthRange=tthRange, chiRange=chiRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
 #        mask = self.makeMask(data, mask, dummy, delta_dummy)
-        tth = self.twoThetaArray(data.shape)#[mask]
-        chi = self.chiArray(data.shape)#[mask]
-        dtth = self.delta2Theta(data.shape)#[mask]
-        dchi = self.deltaChi(data.shape)#[mask]
+        tth = self.twoThetaArray(data.shape)  # [mask]
+        chi = self.chiArray(data.shape)  # [mask]
+        dtth = self.delta2Theta(data.shape)  # [mask]
+        dchi = self.deltaChi(data.shape)  # [mask]
         if tthRange is not None:
             tthRange = tuple([numpy.deg2rad(i) for i in tthRange])
         if chiRange is not None:
             chiRange = tuple([numpy.deg2rad(i) for i in chiRange])
         if correctSolidAngle:
-            data = (data / self.solidAngleArray(data.shape))#[mask]
+            data = (data / self.solidAngleArray(data.shape))  # [mask]
         else:
-            data = data#[mask]
+            data = data  # [mask]
 #        if dummy is None:
 #            dummy = 0.0
         I, bins2Th, binsChi, a, b = splitBBox.histoBBox2d(weights=data,
@@ -1012,7 +1011,7 @@ class AzimuthalIntegrator(Geometry):
         @rtype: 3-tuple of ndarrays
         """
         try:
-            import splitPixel#IGNORE:F0401
+            import splitPixel  # IGNORE:F0401
         except ImportError as error:
             logger.error("Import error %s , falling back on SplitBBox !" % error)
             return self.xrpd2_splitBBox(data=data, nbPt2Th=nbPt2Th, nbPtChi=nbPtChi,
@@ -1134,7 +1133,7 @@ class AzimuthalIntegrator(Geometry):
         if "splitpix" in method:
             logger.debug("saxs uses SplitPixel implementation")
             try:
-                import splitPixel#IGNORE:F0401
+                import splitPixel  # IGNORE:F0401
             except ImportError as error:
                 logger.error("Import error %s , falling back on splitbbox histogram !" % error)
                 method = "bbox"
@@ -1170,7 +1169,7 @@ class AzimuthalIntegrator(Geometry):
         if (I is None) and ("bbox" in method):
             logger.debug("saxs uses BBox implementation")
             try:
-                import splitBBox#IGNORE:F0401
+                import splitBBox  # IGNORE:F0401
             except ImportError as error:
                 logger.error("Import error %s , falling back on Cython histogram !" % error)
                 method = "cython"
@@ -1216,7 +1215,7 @@ class AzimuthalIntegrator(Geometry):
         if (I is None) and ("cython" in method):
             logger.debug("saxs uses cython implementation")
             try:
-                import histogram#IGNORE:F0401
+                import histogram  # IGNORE:F0401
             except ImportError as error:
                 logger.error("Import error %s , falling back on Numpy histogram !", error)
                 method = "numpy"
@@ -1336,8 +1335,8 @@ class AzimuthalIntegrator(Geometry):
                   "chi_max":str(dim2.max()),
                   dim1_unit + "_min":str(dim1.min()),
                   dim1_unit + "_max":str(dim1.max()),
-                  "pixelX": str(self.pixel2), #this is not a bug ... most people expect dim1 to be X
-                  "pixelY": str(self.pixel1), #this is not a bug ... most people expect dim2 to be Y
+                  "pixelX": str(self.pixel2),  # this is not a bug ... most people expect dim1 to be X
+                  "pixelY": str(self.pixel1),  # this is not a bug ... most people expect dim2 to be Y
                 }
         if self.splineFile:
             header["spline"] = str(self.splineFile)

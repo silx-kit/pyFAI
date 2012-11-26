@@ -74,7 +74,7 @@ memset_out(__global float *array0,
 	array2[i]=0.0f;
   }
 }
-	
+
 struct lut_point_t
 {
 		uint idx;
@@ -195,13 +195,13 @@ lut_integrate(	const 	__global	float	*weights,
 			if (ON_CPU){
 				//On CPU best performances are obtained  when each single thread reads adjacent memory
 				k = i*NLUT+j;
-				
+
 			}
 			else{
 				//On GPU best performances are obtained  when threads are reading adjacent memory
 				k = j*NBINS+i;
 			}
-				
+
 			idx = lut[k].idx;
 			coef = lut[k].coef;
 			if((idx <= 0) && (coef <= 0.0f))
@@ -228,6 +228,6 @@ lut_integrate(	const 	__global	float	*weights,
 		if (sum_count > epsilon)
 			outMerge[i] =  sum_data / sum_count;
 		else
-			outMerge[i] = 0.0f;
+			outMerge[i] = dummy;
   };//if NBINS
 };//end kernel
