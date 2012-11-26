@@ -36,6 +36,7 @@ class DiffTomo(object):
         self.dataset = None
         self.inputfiles = []
         self.timing = []
+        self.use_gpu = False
 
     def __repr__(self):
         return "Diffraction Tomography with r=%s t: %s, d:%s" % (self.nRot, self.nTrans, self.nDiff)
@@ -69,7 +70,8 @@ class DiffTomo(object):
                       help="file containing the diffraction parameter (poni-file)", default=None)
         parser.add_option("-O", "--offset", dest="offset",
                       help="do not process the first files", default=None)
-
+        parser.add_option("-g", "--gpu", dest="gpu", action="store_true",
+                    help="process using OpenCL on GPU ", default=False)
         (options, args) = parser.parse_args()
 
         # Analyse aruments and options
@@ -92,7 +94,7 @@ class DiffTomo(object):
                     for i in flatFiles[1:]:
                         self.flat += fabio.open(i).data
                     self.flat /= len(flatFiles)
-
+        self.use_gpu = options.gpu
         self.inputfiles = []
         for f in args:
             if os.path.isfile(f) and f.endswith(options.extension):
@@ -100,6 +102,8 @@ class DiffTomo(object):
             elif os.path.isdir(f):
                 self.inputfiles += [os.path.join(f, g) for g in os.listdir(f) if g.endswith(options.extention)]
         self.inputfiles.sort()
+        if not self.inputfiles:
+            raise RuntimeError("No input files to process")
         if options.poni:
             if os.path.isfile(options.poni):
                 self.poni = options.poni
@@ -143,11 +147,11 @@ class DiffTomo(object):
         else:
             logger.error("Unable to setup Azimuthal integrator: no poni file provided")
             raise RuntimeError("You must provide poni a file")
-        if self.dark:
+        if self.dark is not None:
             self.ai.darkcurrent = self.dark
-        if self.flat:
+        if self.flat is not None:
             self.ai.flatfield = self.flat
-        if self.mask:
+        if self.mask is not None:
             self.ai.detector.mask = self.mask.astype("int8")
 
     def show_stats(self):
@@ -185,7 +189,10 @@ class DiffTomo(object):
         elif pos["index"] < 0 or pos["rot"] < 0 or pos["trans"] < 0:
             return
         data = fabio.open(filename).data.astype(numpy.float32)
-        tth, I = self.ai.xrpd_LUT(data, self.nDiff, safe=False)
+        if self.use_gpu:
+            tth, I = self.ai.xrpd_LUT_OCL(data, self.nDiff, safe=False, devicetype="gpu")
+        else:
+            tth, I = self.ai.xrpd_LUT(data, self.nDiff, safe=False)
         self.dataset[pos["rot"], pos["trans"], :] = I
         if "2theta" not in self.group:
             self.group["2theta"] = tth
