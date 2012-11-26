@@ -1,6 +1,5 @@
 recursive-include openCL *.cl
 recursive-include src  *.c *.h *.pyx *.pxd
-recursive-include test *.py *.sp *.poni
 recursive-include benchmark *.py *.spline *.poni
 include stdeb.cfg
 include setup.cfg
@@ -10,3 +9,21 @@ include build-msi.bat
 include README.txt
 include CHANGELOG.txt
 include TODO.txt
+
+#recursive-include test *.py *.sp *.poni
+# not recursive as testimages could come with ...
+include test/__init__.py
+include test/example.sp
+include test/moke.poni
+include test/testAzimuthalIntegrator.py
+include test/testExport.py
+include test/testGeometry.py
+include test/testGeometryRefinement.py
+include test/testHistogram.py
+include test/testMask.py
+include test/testOpenCL.py
+include test/testPeakPicking.py
+include test/testSaxs.py
+include test/test_all.py
+include test/test_ocl_lut.py
+include test/utilstest.py

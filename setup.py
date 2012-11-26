@@ -71,7 +71,7 @@ def rewriteManifest(with_testimages=False):
     @param with_testimages: include
     """
     base = os.path.dirname(os.path.abspath(__file__))
-    manifest_file = os.path.join(base, "MANIFEST")
+    manifest_file = os.path.join(base, "MANIFEST.in")
     if not os.path.isfile(manifest_file):
         print("MANIFEST file is missing !!!")
         return
@@ -82,16 +82,18 @@ def rewriteManifest(with_testimages=False):
         testimages = ["test/testimages/" + i for i in os.listdir(os.path.join(base, "test", "testimages"))]
         for image in testimages:
             if image not in manifest:
-                manifest.append(image)
+                manifest.append("include " + image)
                 changed = True
     else:
         for line in manifest[:]:
-            if line.startswith("test/testimages"):
+            if line.startswith("include test/testimages"):
                 changed = True
                 manifest.remove(line)
     if changed:
         with open(manifest_file, "w") as f:
             f.write(os.linesep.join(manifest))
+        # remove MANIFEST: will be re generated !
+        os.unlink(manifest_file[:-3])
 
 if ("sdist" in sys.argv) and ("--with-testimages" in sys.argv):
     sys.argv.remove("--with-testimages")
