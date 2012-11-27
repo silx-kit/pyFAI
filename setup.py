@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/11/2012"
+__date__ = "27/11/2012"
 __status__ = "stable"
 
 
@@ -236,6 +236,8 @@ translator = {
             }
         }
 
+cmdclass = {}
+
 class build_ext_pyFAI(build_ext):
     def build_extensions(self):
         if self.compiler.compiler_type in translator:
@@ -257,7 +259,36 @@ class build_ext_pyFAI(build_ext):
             # print e.extra_link_args
         build_ext.build_extensions(self)
 
+cmdclass['build_ext'] = build_ext_pyFAI
 
+#######################
+# build_doc commandes #
+#######################
+
+try:
+    import sphinx
+    import sphinx.util.console
+    sphinx.util.console.color_terminal = lambda: False
+    from sphinx.setup_command import BuildDoc
+except ImportError:
+    sphinx = None
+
+if sphinx:
+    class build_doc(BuildDoc):
+
+        def run(self):
+            # make sure the python path is pointing to the newly built
+            # code so that the documentation is built on this and not a
+            # previously installed version
+
+            build = self.get_finalized_command('build')
+            sys.path.insert(0, os.path.abspath(build.build_lib))
+            # we need to reload PyMca from the build directory and not
+            # the one from the source directory which does not contain
+            # the extensions
+            BuildDoc.run(self)
+            sys.path.pop(0)
+    cmdclass['build_doc'] = build_doc
 
 setup(name='pyFAI',
       version=version,
@@ -272,7 +303,7 @@ setup(name='pyFAI',
       packages=["pyFAI"],
       package_dir={"pyFAI": "pyFAI-src" },
       test_suite="test",
-      cmdclass={'build_ext': build_ext_pyFAI},
+      cmdclass=cmdclass,
       data_files=data_files
       )
 
