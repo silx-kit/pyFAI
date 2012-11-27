@@ -271,7 +271,7 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
             if R < self.LIMIT:
                 results[data.size / 1e6] = tmin * 1000.0
         self.print_sep()
-        label = "Foward_OpenCL_%s_%s_bits" % (devicetype , ("64" if useFp64 else"32"))
+        label = "Forward_OpenCL_%s_%s_bits" % (devicetype , ("64" if useFp64 else"32"))
         self.meth.append(label)
         self.results[label] = results
         self.new_curve(results, label)
