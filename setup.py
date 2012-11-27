@@ -95,11 +95,12 @@ def rewriteManifest(with_testimages=False):
         # remove MANIFEST: will be re generated !
         os.unlink(manifest_file[:-3])
 
-if ("sdist" in sys.argv) and ("--with-testimages" in sys.argv):
-    sys.argv.remove("--with-testimages")
-    rewriteManifest(with_testimages=True)
-else:
-    rewriteManifest(with_testimages=False)
+if ("sdist" in sys.argv):
+    if ("--with-testimages" in sys.argv):
+        sys.argv.remove("--with-testimages")
+        rewriteManifest(with_testimages=True)
+    else:
+        rewriteManifest(with_testimages=False)
 
 # ###############################################################################
 # pyFAI extensions
