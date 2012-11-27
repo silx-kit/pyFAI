@@ -107,27 +107,13 @@ class Recalibration(object):
         """
         from optparse import OptionParser
         parser = OptionParser()
+        parser.add_option("-V", "--version", dest="version", action="store_true",
+                          help="print version of the program and quit", metavar="FILE", default=False)
         parser.add_option("-o", "--out", dest="outfile",
                           help="Filename where processed image is saved", metavar="FILE", default="merged.edf")
         parser.add_option("-v", "--verbose",
                           action="store_true", dest="verbose", default=False,
                           help="switch to debug mode")
-#        parser.add_option("-g", "--gaussian", dest="gaussian",
-#                      help="Size of the gaussian kernel", default=None)
-#        parser.add_option("-c", "--square", dest="square", action="store_true",
-#                      help="Use square kernel shape for neighbour search instead of diamond shape", default=False)
-#        parser.add_option("-b", "--background", dest="background",
-#                      help="Automatic background subtraction", default=None)
-#        parser.add_option("-a", "--dark", dest="dark",
-#                      help="list of dark images to average and subtract", default=None)
-#        parser.add_option("-f", "--flat", dest="flat",
-#                      help="list of flat images to average and divide", default=None)
-#        parser.add_option("-r", "--reconstruct", dest="reconstruct",
-#                      help="Reconstruct image where data<0 (for pilatus)", action="store_true", default=False)
-#        parser.add_option("-s", "--spline", dest="spline",
-#                      help="spline file describing the detector distortion", default=None)
-#        parser.add_option("-p", "--pixel", dest="pixel",
-#                      help="size of the pixel in micron", default=None)
         parser.add_option("-s", "--spacing", dest="spacing", metavar="FILE",
                       help="file containing d-spacing of the reference sample", default=None)
         parser.add_option("-d", "--dark", dest="dark", metavar="FILE",
@@ -160,6 +146,9 @@ class Recalibration(object):
         (options, args) = parser.parse_args()
 
         #Analyse aruments and options
+        if options.version:
+            print("pyFAI-recalib version %s" % pyFAI.version)
+            sys.exit(0)
         if options.verbose:
             logger.setLevel(logging.DEBUG)
         self.outfile = options.outfile
