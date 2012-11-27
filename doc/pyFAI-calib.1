@@ -21,29 +21,32 @@ print version of the program and quit
 \fB\-o\fR FILE, \fB\-\-out\fR=\fIFILE\fR
 Filename where processed image is saved
 .TP
-\fB\-d\fR, \fB\-\-debug\fR
-switch to debug mode
+\fB\-v\fR, \fB\-\-verbose\fR
+switch to debug/verbose mode
 .TP
 \fB\-g\fR GAUSSIAN, \fB\-\-gaussian\fR=\fIGAUSSIAN\fR
-Size of the gaussian kernel
-Size of the gap (in pixels) between two consecutive rings, by default 100.
-Increase the value if the arc is not complete or decrease the value if arcs are mixed together.
+Size of the gaussian kernel. Size of the gap (in
+pixels) between two consecutive rings, by default 100
+Increase the value if the arc is not complete;
+decrease the value if arcs are mixed together.
 .TP
 \fB\-c\fR, \fB\-\-square\fR
 Use square kernel shape for neighbour search instead
 of diamond shape
 .TP
 \fB\-b\fR BACKGROUND, \fB\-\-background\fR=\fIBACKGROUND\fR
-Automatic background subtraction
+Automatic background subtraction if no value are
+provided
 .TP
-\fB\-a\fR DARK, \fB\-\-dark\fR=\fIDARK\fR
+\fB\-d\fR DARK, \fB\-\-dark\fR=\fIDARK\fR
 list of dark images to average and subtract
 .TP
 \fB\-f\fR FLAT, \fB\-\-flat\fR=\fIFLAT\fR
 list of flat images to average and divide
 .TP
 \fB\-r\fR, \fB\-\-reconstruct\fR
-Reconstruct image where data are masked or <0  (for Pilatus detectors or detectors with modules)
+Reconstruct image where data are masked or <0  (for
+Pilatus detectors or detectors with modules).
 .TP
 \fB\-s\fR SPLINE, \fB\-\-spline\fR=\fISPLINE\fR
 spline file describing the detector distortion
@@ -51,7 +54,7 @@ spline file describing the detector distortion
 \fB\-p\fR PIXEL, \fB\-\-pixel\fR=\fIPIXEL\fR
 size of the pixel in micron
 .TP
-\fB\-e\fR DETECTOR_NAME, \fB\-\-detector\fR=\fIDETECTOR_NAME\fR
+\fB\-D\fR DETECTOR_NAME, \fB\-\-detector\fR=\fIDETECTOR_NAME\fR
 Detector name (instead of pixel size+spline)
 .TP
 \fB\-m\fR MASK, \fB\-\-mask\fR=\fIMASK\fR
