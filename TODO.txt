@@ -3,10 +3,14 @@ TODO list:
 * include Raster Orientation of images (in pyFAI? in fabio?)
 * binning at the Azimuthal Integrator level ?
 * have geometries as pluggable classes (!!!) --> Version 2
-* recalibration tool (planned for v.1.0) using a poni file and a d-spacing file and an image
-* migrate forward version of histogramming on GPU to PyOpenCL (planned for v1.0)
 * implement LUT on 2D caking as well + OpenCL version    
-* use a fast checksum to store the signature of buffers/array which are on the GPU (instead of md5 currently).
-* prepare 2 packages one without OpenCL and one with GPU enabled
-* add mask on calibration/recalibration tools
-* port spline calculation to opencl
+* add mask on calibration/recalibration tools (Done v0.8)
+* port spline calculation to opencl 
+* move the uint16 -> float32 or int32 -> float32 to GPU when possible
+* in LUT-OpenCL; iterate only up to max_lut_in_workgroup
+
+Done list
+* migrate forward version of histogramming on GPU to PyOpenCL (Done in v0.8.0)
+* recalibration tool (Done in v.0.8.0) using a poni file and a d-spacing file and an image
+* prepare 2 packages one without OpenCL and one with GPU enabled (no more needed with pyopencl)
+* use a fast checksum to store the signature of buffers/array which are on the GPU (Done v0.8.0).
