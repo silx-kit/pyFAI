@@ -33,12 +33,11 @@ __date__ = "28/06/2012"
 
 
 import unittest
-import os
 import numpy
-import logging, time
+import logging
 import sys
 import fabio
-from utilstest import UtilsTest, Rwp, getLogger
+from utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 
@@ -60,7 +59,7 @@ class test_mask(unittest.TestCase):
     def test_mask_splitBBox(self):
         """
         The masked image has a masked ring around 1.5deg with value -10
-        without mask the pixels should be at -10 ; with mask they are at 0 
+        without mask the pixels should be at -10 ; with mask they are at 0
         """
         x1 = self.ai.xrpd_splitBBox(self.data, 1000)
         x2 = self.ai.xrpd_splitBBox(self.data, 1000, mask=self.mask)
@@ -77,14 +76,67 @@ class test_mask(unittest.TestCase):
 
         self.assertAlmostEqual(res1, -10., 2, msg="Without mask the bad pixels are actually at -10 (got %.4f)" % res1)
         self.assertAlmostEqual(res2, 0., 4, msg="With mask the bad pixels are actually at 0 (got %.4f)" % res2)
-        self.assertAlmostEqual(res3, -20., 4, msg="With mask the dummy pixels are actually at 0 (got % .4f)" % res3)
+        self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
 
+
+    def test_mask_LUT(self):
+        """
+        The masked image has a masked ring around 1.5deg with value -10
+        without mask the pixels should be at -10 ; with mask they are at 0
+        """
+        x1 = self.ai.xrpd_LUT(self.data, 1000)
+#        print self.ai._lut_integrator.lut_checksum
+        x2 = self.ai.xrpd_LUT(self.data, 1000, mask=self.mask)
+#        print self.ai._lut_integrator.lut_checksum
+        x3 = self.ai.xrpd_LUT(self.data, 1000, mask=numpy.zeros(shape=self.mask.shape, dtype="uint8"), dummy= -20.0, delta_dummy=19.5)
+#        print self.ai._lut_integrator.lut_checksum
+        res1 = numpy.interp(1.5, *x1)
+        res2 = numpy.interp(1.5, *x2)
+        res3 = numpy.interp(1.5, *x3)
+        if logger.getEffectiveLevel() == logging.DEBUG:
+            pylab.plot(*x1, label="nomask")
+            pylab.plot(*x2, label="mask")
+            pylab.plot(*x3, label="dummy")
+            pylab.legend()
+            pylab.show()
+            raw_input()
+
+        self.assertAlmostEqual(res1, -10., 2, msg="Without mask the bad pixels are actually at -10 (got %.4f)" % res1)
+        self.assertAlmostEqual(res2, 0., 4, msg="With mask the bad pixels are actually at 0 (got %.4f)" % res2)
+        self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
+
+    def test_mask_LUT_OCL(self):
+        """
+        The masked image has a masked ring around 1.5deg with value -10
+        without mask the pixels should be at -10 ; with mask they are at 0
+        """
+        x1 = self.ai.xrpd_LUT_OCL(self.data, 1000)
+#        print self.ai._lut_integrator.lut_checksum
+        x2 = self.ai.xrpd_LUT_OCL(self.data, 1000, mask=self.mask)
+#        print self.ai._lut_integrator.lut_checksum
+        x3 = self.ai.xrpd_LUT_OCL(self.data, 1000, dummy= -20.0, delta_dummy=19.5)
+#        print self.ai._lut_integrator.lut_checksum
+        res1 = numpy.interp(1.5, *x1)
+        res2 = numpy.interp(1.5, *x2)
+        res3 = numpy.interp(1.5, *x3)
+        if logger.getEffectiveLevel() == logging.DEBUG:
+            pylab.plot(*x1, label="nomask")
+            pylab.plot(*x2, label="mask")
+            pylab.plot(*x3, label="dummy")
+            pylab.legend()
+            pylab.show()
+            raw_input()
+
+        self.assertAlmostEqual(res1, -10., 2, msg="Without mask the bad pixels are actually at -10 (got %.4f)" % res1)
+        self.assertAlmostEqual(res2, 0., 4, msg="With mask the bad pixels are actually at 0 (got %.4f)" % res2)
+        self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
 
 
 def test_suite_all_Mask():
     testSuite = unittest.TestSuite()
     testSuite.addTest(test_mask("test_mask_splitBBox"))
-#    testSuite.addTest(test_mask("test_mask_OpenCL"))
+    testSuite.addTest(test_mask("test_mask_LUT"))
+    testSuite.addTest(test_mask("test_mask_LUT_OCL"))
 #    testSuite.addTest(test_mask("test_mask_splitBBox"))
 #    testSuite.addTest(test_mask("test_mask_splitBBox"))
 #    testSuite.addTest(test_mask("test_mask_splitBBox"))

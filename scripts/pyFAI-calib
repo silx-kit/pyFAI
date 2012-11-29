@@ -32,15 +32,6 @@ A tool for determining the geometry of a detector using a reference sample.
 usage:
   python2.6 pyFAI-calib [-g=100] [-nd] [-d] [-pix=172e-6,172e-6] inputFile.edf
 
--g= size of the gap (in pixels) between two consecutive rings, by default size/20
-Increase the value if the arc is not complete
-Decrease the value if arcs are mixed together.
-
--nd : to avoid diagonal expansion of the various massifs. (default)
--d  : to allow diagonal expansion of the various massifs.
---spline=/path/to/file.spline
--min for automatic removal of background (or -min=100 if you know the value)
-
 """
 
 __author__ = "Jerome Kieffer"
@@ -125,28 +116,33 @@ class Calibration(object):
         """
         from optparse import OptionParser
         parser = OptionParser()
+        parser.add_option("-V", "--version", dest="version", action="store_true",
+                          help="print version of the program and quit", metavar="FILE", default=False)
         parser.add_option("-o", "--out", dest="outfile",
                           help="Filename where processed image is saved", metavar="FILE", default="merged.edf")
-        parser.add_option("-d", "--debug",
+        parser.add_option("-v", "--verbose",
                           action="store_true", dest="debug", default=False,
-                          help="switch to debug mode")
-        parser.add_option("-g", "--gaussian", dest="gaussian",
-                      help="Size of the gaussian kernel", default=None)
+                          help="switch to debug/verbose mode")
+        parser.add_option("-g", "--gaussian", dest="gaussian", help="""Size of the gaussian kernel.
+Size of the gap (in pixels) between two consecutive rings, by default 100
+Increase the value if the arc is not complete;
+decrease the value if arcs are mixed together.""", default=None)
         parser.add_option("-c", "--square", dest="square", action="store_true",
-                      help="Use square kernel shape for neighbour search instead of diamond shape", default=False)
+                      help="Use square kernel shape for neighbor search instead of diamond shape", default=False)
         parser.add_option("-b", "--background", dest="background",
-                      help="Automatic background subtraction", default=None)
-        parser.add_option("-a", "--dark", dest="dark",
+                      help="Automatic background subtraction if no value are provided", default=None)
+        parser.add_option("-d", "--dark", dest="dark",
                       help="list of dark images to average and subtract", default=None)
         parser.add_option("-f", "--flat", dest="flat",
                       help="list of flat images to average and divide", default=None)
         parser.add_option("-r", "--reconstruct", dest="reconstruct",
-                      help="Reconstruct image where data<0 (for pilatus)", action="store_true", default=False)
+                      help="Reconstruct image where data are masked or <0  (for Pilatus detectors or detectors with modules)",
+                      action="store_true", default=False)
         parser.add_option("-s", "--spline", dest="spline",
                       help="spline file describing the detector distortion", default=None)
         parser.add_option("-p", "--pixel", dest="pixel",
                       help="size of the pixel in micron", default=None)
-        parser.add_option("-e", "--detector", dest="detector_name",
+        parser.add_option("-D", "--detector", dest="detector_name",
                       help="Detector name (instead of pixel size+spline)", default=None)
         parser.add_option("-m", "--mask", dest="mask",
                       help="file containing the mask (for image reconstruction)", default=None)
@@ -154,7 +150,10 @@ class Calibration(object):
                       help="file with datapoints saved", default=None)
         (options, args) = parser.parse_args()
 
-        #Analyse aruments and options
+        # Analyse aruments and options
+        if options.version:
+            print("pyFAI-calib version %s" % pyFAI.version)
+            sys.exit(0)
         if options.debug:
             logger.setLevel(logging.DEBUG)
         self.outfile = options.outfile
@@ -294,7 +293,7 @@ class Calibration(object):
                 else:
                     sp.images.pop()
                 sp.imshow(dsa, origin="lower")
-                #self.fig.canvas.draw()
+                # self.fig.canvas.draw()
                 fig2.show()
 
             change = raw_input("Modify parameters ?\t ").strip()
@@ -346,7 +345,7 @@ class Calibration(object):
         xrpd2.imshow(numpy.log(img - img.min() + 1e-3), origin="lower")
         fig4.show()
 
-#This is for debugin wtih rconsole
+# This is for debugin wtih rconsole
 c = None
 if __name__ == "__main__":
     c = Calibration()
