@@ -59,8 +59,7 @@ def histoBBox1d(numpy.ndarray weights not None,
                 dark=None,
                 flat=None,
                 solidangle=None,
-                polarization=None,
-                allow_pos0_neg=False):
+                polarization=None):
 
     """
     Calculates histogram of pos0 (tth) weighted by weights
@@ -161,8 +160,7 @@ def histoBBox1d(numpy.ndarray weights not None,
         pos0_maxin = max(pos0Range)
     else:
         pos0_maxin = pos0_max
-    if (not allow_pos0_neg) and (pos0_min<0): 
-        pos0_min=0
+    if pos0_min<0: pos0_min=0
     pos0_max = pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps)
 
     if pos1Range is not None and len(pos1Range) > 1:
