@@ -28,8 +28,8 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/04/2012"
-__status__ = "beta"
+__date__ = "29/11/2012"
+__status__ = "stable"
 
 import os, logging, threading, sys
 logger = logging.getLogger("pyFAI.detectors")
@@ -61,6 +61,8 @@ class Detector(object):
             self.set_splineFile(splineFile)
 
     def __repr__(self):
+        if (self.pixel1 is None) and (self.pixel2 is None):
+            return "Undefined detector"
         return "Detector %s\t Spline= %s\t PixelSize= %.3e, %.3e m" % (self.name, self.splineFile, self.pixel1, self.pixel2)
 
     def get_splineFile(self):
