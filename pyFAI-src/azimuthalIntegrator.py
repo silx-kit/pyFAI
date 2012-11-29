@@ -1116,8 +1116,6 @@ class AzimuthalIntegrator(Geometry):
             dq = self.delta2Theta(shape)
             unit = "2th_deg"
 
-        print unit, q.min(), q.max()
-
         if variance is not None:
             assert variance.size == data.size
         elif error_model:
@@ -1210,7 +1208,6 @@ class AzimuthalIntegrator(Geometry):
                                                       flat=flat,
                                                       solidangle=solidangle,
                                                       polarization=polarization)
-                print q.max(), qAxis[-1]
                 if error_model == "azimuthal":
                     variance = (data - self.calcfrom1d(qAxis, I, dim1_unit=unit)) ** 2
                 if variance is not None:
@@ -1303,7 +1300,6 @@ class AzimuthalIntegrator(Geometry):
 #            qAxis *= 180.0 / numpy.pi
         if filename:
             self.save1D(filename, qAxis, I, sigma, unit)
-        print "qAxis", qAxis[-1]
         if sigma is not None:
             return qAxis, I, sigma
         else:
@@ -1316,7 +1312,7 @@ class AzimuthalIntegrator(Geometry):
              method="bbox", unit="q_nm^-1"):
         """
         Calculate the azimuthal integrated Saxs curve in q in nm^-1.
-        
+
         Wrapper for integrate1d emulating behavour of old saxs method
 
         @param data: 2D array from the CCD camera
@@ -1363,7 +1359,6 @@ class AzimuthalIntegrator(Geometry):
                           method=method,
                           unit=unit)
         if len(out) == 2:
-            print "out0", out[0][-1]
             return out[0], out[1], None
         else:
             return out
@@ -1416,8 +1411,8 @@ class AzimuthalIntegrator(Geometry):
                   "chi_max":str(dim2.max()),
                   dim1_unit + "_min":str(dim1.min()),
                   dim1_unit + "_max":str(dim1.max()),
-                  "pixelX": str(self.pixel2), # this is not a bug ... most people expect dim1 to be X
-                  "pixelY": str(self.pixel1), # this is not a bug ... most people expect dim2 to be Y
+                  "pixelX": str(self.pixel2),  # this is not a bug ... most people expect dim1 to be X
+                  "pixelY": str(self.pixel1),  # this is not a bug ... most people expect dim2 to be Y
                 }
         if self.splineFile:
             header["spline"] = str(self.splineFile)

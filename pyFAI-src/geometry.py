@@ -333,7 +333,7 @@ class Geometry(object):
         """
         return self.qFunction(d1 - 0.5, d2 - 0.5)
 
-    def qCornerFunct(self, d1, d2):
+    def rCornerFunct(self, d1, d2):
         """
         calculate the radius array for any pixel corner (in mm)
         """
