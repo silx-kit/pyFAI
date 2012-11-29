@@ -152,7 +152,7 @@ class Geometry(object):
         self._ttha = None
         self._dttha = None
         self._dssa = None
-        self._dssa_crc = None #checksum associated with _dssa
+        self._dssa_crc = None  # checksum associated with _dssa
         self._chia = None
         self._dchia = None
         self._qa = None
@@ -168,7 +168,7 @@ class Geometry(object):
         self._sem = threading.Semaphore()
         self._polarization_factor = 0
         self._polarization = None
-        self._polarization_crc = None #checksum associated with _polarization
+        self._polarization_crc = None  # checksum associated with _polarization
 
         if detector:
             if type(detector) in types.StringTypes:
@@ -291,12 +291,12 @@ class Geometry(object):
         @rtype: float or array of floats.
         """
         cosTilt = cos(self._rot1) * cos(self._rot2)
-        directDist = 1.0e3 * self._dist / cosTilt #in mm
+        directDist = 1.0e3 * self._dist / cosTilt  # in mm
 
         if _geometry and path == "cython":
             p1, p2 = self._calcCartesianPositions(d1, d2, self._poni1, self.poni2)
-            #out = _geometry.calc_q(L=self._dist, rot1=self._rot1, rot2=self._rot2, rot3=self._rot3, pos1=p1 , pos2=p2, wavelength=self.wavelength)
-            #To be implemented 
+            # out = _geometry.calc_q(L=self._dist, rot1=self._rot1, rot2=self._rot2, rot3=self._rot3, pos1=p1 , pos2=p2, wavelength=self.wavelength)
+            # To be implemented
             out.shape = p1.shape
         else:
             out = directDist * numpy.tan(self.tth(d1=d1, d2=d2, param=param))
@@ -316,7 +316,7 @@ class Geometry(object):
     def rArray(self, shape):
         """
         Generate an array of the given shape with r(i,j) for all elements; r in mm.
-        
+
         @param shape: expected shape
         @return: 2d array of the given shape with radius in mm from beam stop.
         """
@@ -432,7 +432,7 @@ class Geometry(object):
     def cornerArray(self, shape):
         """
         Generate a 3D array of the given shape with (i,j) (radial angle 2th, azimuthal angle chi ) for all elements.
-        
+
         @param shape: expected shape
         @return: 3d array with shape=(*shape,2) the two elements are (radial angle 2th, azimuthal angle chi)
         """
@@ -514,7 +514,7 @@ class Geometry(object):
     def deltaChi(self, shape):
         """
         Generate a 3D array of the given shape with (i,j) with the max distance between the center and any corner in chi-angle (rad)
-        
+
         @param shape: The shape of the detector array: 2-tuple of integer
         @retrun: array 2D containing the max delta angle between a pixel center and any corner in chi-angle (rad)
         """
@@ -536,10 +536,10 @@ class Geometry(object):
     def deltaQ(self, shape):
         """
         Generate a 2D array of the given shape with (i,j) with the max distance between the center and any corner in q_vector unit (nm^-1)
-        
+
         @param shape: The shape of the detector array: 2-tuple of integer
-        @retrun: array 2D containing the max delta Q between a pixel center and any corner in q_vector unit (nm^-1)     
-        
+        @retrun: array 2D containing the max delta Q between a pixel center and any corner in q_vector unit (nm^-1)
+
         """
         q_center = self.qArray(shape)
         if self._dqa is None:
@@ -554,12 +554,33 @@ class Geometry(object):
                     self._dqa = delta.max(axis=2)
         return self._dqa
 
+    def deltaR(self, shape):
+        """
+        Generate a 2D array of the given shape with (i,j) with the max distance between the center and any corner in radius unit (mm)
+
+        @param shape: The shape of the detector array: 2-tuple of integer
+        @retrun: array 2D containing the max delta Q between a pixel center and any corner in q_vector unit (nm^-1)
+
+        """
+        q_center = self.rArray(shape)
+        if self._dra is None:
+            with self._sem:
+                if self._dra is None:
+                    q_corner = numpy.fromfunction(self.rCornerFunct, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
+                    delta = numpy.zeros([shape[0], shape[1], 4], dtype=numpy.float32)
+                    delta[:, :, 0] = abs(q_corner[:-1, :-1] - q_center)
+                    delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
+                    delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
+                    delta[:, :, 3] = abs(q_corner[:-1, 1:] - q_center)
+                    self._dra = delta.max(axis=2)
+        return self._dra
+
 
     def diffSolidAngle(self, d1, d2):
         """
         Calulate the solid angle of the current pixels
-        
-        @param d1: 1d or 2d set 
+
+        @param d1: 1d or 2d set
         @param d2:
         """
         p1, p2 = self._calcCartesianPositions(d1, d2)
@@ -628,7 +649,7 @@ class Geometry(object):
     def sload(cls, filename):
         """
         A static method combining the constructor and the loader from a file
-        
+
         @param filename: name of the file to load
         @type filename: string
         @return: instance of Gerometry of AzimuthalIntegrator set-up with the parameter from the file.
@@ -641,7 +662,7 @@ class Geometry(object):
     def load(self, filename):
         """
         Load the refined parameters from a file.
-        
+
         @param filename: name of the file to load
         @type filename: string
         """
@@ -686,8 +707,8 @@ class Geometry(object):
 
     def getPyFAI(self):
         """
-        Export geometry setup with the geometry of PyFAI 
-        
+        Export geometry setup with the geometry of PyFAI
+
         @return: dict with the parameter-set of the PyFAI geometry
         """
         with self._sem:
@@ -720,8 +741,8 @@ class Geometry(object):
 
     def getFit2D(self):
         """
-        Export geometry setup with the geometry of Fit2D 
-        
+        Export geometry setup with the geometry of Fit2D
+
         @return: dict with parameters compatible with fit2D geometry
         """
         with self._sem:
