@@ -38,6 +38,7 @@ __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "02/07/2012"
 __status__ = "beta"
+__docformat__ = 'restructuredtext'
 
 import os, logging, tempfile, threading, hashlib, gc
 import numpy
@@ -611,29 +612,74 @@ class AzimuthalIntegrator(Geometry):
                        safe=True):
 
         """
-        Calculate the powder diffraction pattern from a set of data, an image. Cython implementation using a Look-Up Table.
+        Calculate the powder diffraction pattern from an image.
+
+        Cython implementation using a Look-Up Table.
+
         @param data: 2D array from the CCD camera
         @type data: ndarray
         @param nbPt: number of points in the output pattern
         @type nbPt: integer
         @param filename: file to save data in ascii format 2 column
         @type filename: string
-        @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
+        @param correctSolidAngle: solid angle correction
         @type correctSolidAngle: boolean
-        @param tthRange: The lower and upper range of the 2theta. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored.
+        @param tthRange: The lower and upper range of the 2theta
         @type tthRange: (float, float), optional
-        @param chiRange: The lower and upper range of the chi angle. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored.
+        @param chiRange: The lower and upper range of the chi angle.
         @type chiRange: (float, float), optional, disabled for now
-        @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
-        @param  dummy: value for dead/masked pixels
+        @param mask: array with 0 for masked pixels, and 1 for valid pixels
+        @type mask: ndarray
+        @param dummy: value for dead/masked pixels
+        @type dummy: float
         @param delta_dummy: precision for dummy value
+        @type delta_dummy: float
+
         LUT specific parameters:
-        @param safe: set to false if you think your GPU is already set-up correctly (2theta, mask, solid angle...)
+
+        @param safe: set to false your GPU is already set-up correctly.
+
+        @type safe: boolean
 
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
+
+        This method compute the powder diffraction pattern, from a
+        given *data* image. The number of point of this spectrum is
+        given by the *nbPt* parameter. If you give a *filename*, the
+        powder diffraction is also saved as a two column text file.
+
+        It is possible to correct or not the powder diffraction
+        pattern using the *correctSolidAngle* parameter. The weight of
+        a pixel is ponderate by its solid angle.
+
+        The 2theta range of the powder diffraction pattern can be set
+        using the *tthRange* parameter. If not given the maximum
+        available range is used. Indeed pixel outside this range are
+        ignored.
+
+        Each pixel of the *data* image as also a chi coordinate. So it
+        is possible to restrain the chi range of the pixels to
+        consider in the powder diffraction pattern. you just need to
+        set the range with the *chiRange* parameter. like the
+        *tthRange* parameter, value outside this range are ignored.
+
+        sometimes you need to mask a few pixels (beamstop, hot pixels,
+        ...), to ignore a few of them you just need to provide a
+        *mask* array with a value of 0 for this pixel. To take a pixel
+        into account you just need to set a value of 1 in the mask
+        array. Indeed the shape of the mask array must be idential to
+        the data shape.
+
+        you can associate a *dummy* value to thoses masked pixels.
+        (Jerome can you provide more explanation)
+
+        Jerome Idem for the *delta_dummy* parameter.
+
+        The *safe* parameter is specific to the LUT implementation,
+        you can set it to false if you think your GPU is already
+        set-up correctly (2theta, mask, solid angle...). (Jerome can
+        you explain what is a correct set-up)
         """
 
         shape = data.shape
