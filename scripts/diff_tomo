@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
@@ -28,10 +28,6 @@
 diff_tomo
 
 A tool for fast processing of diffraction tomography
-
-usage:
-  python2.6 diff_tomo -o difftomo.h5 -t 101 -r 181 -c 100 -p conf.poni raw/*.edf
-
 """
 
 __author__ = "Jerome Kieffer"
@@ -88,14 +84,14 @@ class DiffTomo(object):
         parse options from command line
         """
         from optparse import OptionParser
-        parser = OptionParser()
+        usage = "usage: %prog [options] file1.edf file2.edf ..."
+        version = "%prog " + pyFAI.version
+        parser = OptionParser(usage=usage, version=version)
         parser.add_option("-o", "--out", dest="outfile",
                           help="HDF5 File where processed sinogram is is saved", metavar="FILE", default="diff_tomo.h5")
         parser.add_option("-v", "--verbose",
                           action="store_true", dest="verbose", default=False,
                           help="switch to verbose/debug mode")
-        parser.add_option("-V", "--version", dest="version", action="store_true",
-                          help="print version of the program and exit", metavar="FILE", default=False)
         parser.add_option("-e", "--extension", dest="extension",
                       help="process all files with this extension", default="edf")
         parser.add_option("-t", "--nTrans", dest="nTrans",
@@ -119,9 +115,9 @@ class DiffTomo(object):
         (options, args) = parser.parse_args()
 
         # Analyse aruments and options
-        if options.version:
-            print("diff_tomo is part of pyFAI version %s" % pyFAI.version)
-            sys.exit(0)
+        if len(args) != 1:
+            parser.error("incorrect number of arguments")
+
         if options.verbose:
             logger.setLevel(logging.DEBUG)
         self.hdf5 = options.outfile
