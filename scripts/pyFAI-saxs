@@ -46,7 +46,7 @@ def main():
     usage = "usage: %prog [options] file1.edf file2.edf ..."
     version = "%prog " + pyFAI.version
     parser = OptionParser(usage=usage, version=version)
-    parser.add_option("-p", dest="filename",
+    parser.add_option("-p", dest="ponifile",
                       type='string', default=None,
                       help="PyFAI parameter file (.poni)")
     parser.add_option("-w", "--wavelength", dest="wavelength",
@@ -77,9 +77,9 @@ def main():
 
     processFile = [param for param in args if os.path.isfile(param)]
 
-    if options.filename and processFile:
+    if options.ponifile and processFile:
         integrator = pyFAI.AzimuthalIntegrator()
-        integrator.load(options.filename)
+        integrator.load(options.ponifile)
         if options.wavelength:
             integrator.wavelength = options.wavelength
         print integrator

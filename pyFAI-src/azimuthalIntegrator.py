@@ -614,7 +614,7 @@ class AzimuthalIntegrator(Geometry):
         """
         Calculate the powder diffraction pattern from an image.
 
-        Cython implementation using a Look-Up Table.
+        Parallel Cython implementation using a Look-Up Table (OpenMP).
 
         @param data: 2D array from the CCD camera
         @type data: ndarray
@@ -628,24 +628,24 @@ class AzimuthalIntegrator(Geometry):
         @type tthRange: (float, float), optional
         @param chiRange: The lower and upper range of the chi angle.
         @type chiRange: (float, float), optional, disabled for now
-        @param mask: array with 0 for masked pixels, and 1 for valid pixels
+        @param mask: array with 1 for masked pixels, and 0 for valid pixels
         @type mask: ndarray
-        @param dummy: value for dead/masked pixels
+        @param dummy: value for dead/masked pixels (dynamic mask)
         @type dummy: float
         @param delta_dummy: precision for dummy value
         @type delta_dummy: float
 
         LUT specific parameters:
 
-        @param safe: set to false your GPU is already set-up correctly.
-
+        @param safe: set to false your believe the integrator is already set-up correctly:
+            no change in the mask, or in the 2th/chi range
         @type safe: boolean
 
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
 
         This method compute the powder diffraction pattern, from a
-        given *data* image. The number of point of this spectrum is
+        given *data* image. The number of point of the pattern is
         given by the *nbPt* parameter. If you give a *filename*, the
         powder diffraction is also saved as a two column text file.
 
@@ -664,22 +664,26 @@ class AzimuthalIntegrator(Geometry):
         set the range with the *chiRange* parameter. like the
         *tthRange* parameter, value outside this range are ignored.
 
-        sometimes you need to mask a few pixels (beamstop, hot pixels,
+        Sometimes one needs to mask a few pixels (beamstop, hot pixels,
         ...), to ignore a few of them you just need to provide a
-        *mask* array with a value of 0 for this pixel. To take a pixel
-        into account you just need to set a value of 1 in the mask
-        array. Indeed the shape of the mask array must be idential to
-        the data shape.
+        *mask* array with a value of 1 for those pixels. To take a pixel
+        into account you just need to set a value of 0 in the mask
+        array. Indeed the shape of the mask array should be idential to
+        the data shape (size of the array _must_ be the same).
 
-        you can associate a *dummy* value to thoses masked pixels.
-        (Jerome can you provide more explanation)
-
-        Jerome Idem for the *delta_dummy* parameter.
-
+        Dynamic masking (i.e recalculated for each image) can be achieved 
+        by setting masked pixels to an impossible value (-1) and calling this
+        value the "dummy value". Dynamic masking is computed at integration 
+        whereas static masking is done at LUT-generation, hence faster.
+        
+        Some Pilatus detectors are setting non existing pixel to -1 and dead
+        pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so that any value 
+        between -3.5 and -0.5 are considered as bad. 
+        
         The *safe* parameter is specific to the LUT implementation,
-        you can set it to false if you think your GPU is already
-        set-up correctly (2theta, mask, solid angle...). (Jerome can
-        you explain what is a correct set-up)
+        you can set it to false if you think the LUT calculated is already
+        the correct one (setup, mask, 2theta/chi range).
+        
         """
 
         shape = data.shape
@@ -1457,8 +1461,8 @@ class AzimuthalIntegrator(Geometry):
                   "chi_max":str(dim2.max()),
                   dim1_unit + "_min":str(dim1.min()),
                   dim1_unit + "_max":str(dim1.max()),
-                  "pixelX": str(self.pixel2),  # this is not a bug ... most people expect dim1 to be X
-                  "pixelY": str(self.pixel1),  # this is not a bug ... most people expect dim2 to be Y
+                  "pixelX": str(self.pixel2), # this is not a bug ... most people expect dim1 to be X
+                  "pixelY": str(self.pixel1), # this is not a bug ... most people expect dim2 to be Y
                 }
         if self.splineFile:
             header["spline"] = str(self.splineFile)
