@@ -64,10 +64,8 @@ class TestSaxs(unittest.TestCase):
 
     def testNumpy(self):
         qref, Iref, s = self.ai.saxs(self.data, 1000)
-        print qref[-1]
 
         q, I, s = self.ai.saxs(self.data, 1000, error_model="poisson", method="numpy")
-        print q[-1]
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
         self.assertTrue(q[-1] < 8, "q[-1] < 8, got %s" % q[-1])
         self.assertTrue(s.min() >= 0, "s.min() >= 0 got %s" % (s.min()))

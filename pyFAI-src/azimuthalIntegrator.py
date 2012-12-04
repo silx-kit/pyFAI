@@ -1230,7 +1230,7 @@ class AzimuthalIntegrator(Geometry):
                     sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
 
         if (I is None) and ("bbox" in method):
-            logger.warning("saxs uses BBox implementation")
+            logger.debug("saxs uses BBox implementation")
             try:
                 import splitBBox  # IGNORE:F0401
             except ImportError as error:
@@ -1321,7 +1321,7 @@ class AzimuthalIntegrator(Geometry):
                     sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
 
         if (I is None) :
-            logger.warning("saxs uses Numpy implementation")
+            logger.debug("saxs uses Numpy implementation")
             data = numpy.ascontiguousarray(data, dtype=numpy.float32)
             mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
             if dark is not None:
