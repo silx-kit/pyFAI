@@ -85,6 +85,8 @@ def main():
         print integrator
         mask = None
         if integrator.maskfile:
+            if options.mask:  # override with the command line mask
+                integrator.maskfile = options.mask
             fabiomask = fabio.open(integrator.maskfile)
             if isinstance(fabiomask, fabio.fit2dmaskimage.fit2dmaskimage):
                 mask = 1 - fabiomask.data
