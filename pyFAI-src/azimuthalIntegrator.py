@@ -1270,6 +1270,7 @@ class AzimuthalIntegrator(Geometry):
                         reset = "azimuth_range not defined and LUT had azimuth_range defined"
                     elif (azimuth_range is not None) and self._lut_integrator.pos1Range != (min(azimuth_range), max(azimuth_range) * (1.0 + numpy.finfo(numpy.float32).eps)):
                         reset = "azimuth_range requested and LUT's azimuth_range don't match"
+                error = False
                 if reset:
                     logger.warning("AI.integrate1d: Resetting integrator because of %s" % reset)
                     try:
@@ -1290,12 +1291,12 @@ class AzimuthalIntegrator(Geometry):
                                 deviceid = int(method[c + 1])
                                 devicetype = "all"
                             elif "gpu" in method:
-                                platformid = int(method[c - 1])
-                                deviceid = int(method[c + 1])
+                                platformid = None
+                                deviceid = None
                                 devicetype = "gpu"
                             elif "cpu" in method:
-                                platformid = int(method[c - 1])
-                                deviceid = int(method[c + 1])
+                                platformid = None
+                                deviceid = None
                                 devicetype = "cpu"
                             else:
                                 platformid = None
@@ -1305,7 +1306,7 @@ class AzimuthalIntegrator(Geometry):
                                 self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut, self._lut_integrator.size,
                                                                                        devicetype=devicetype, platformid=platformid, deviceid=deviceid,
                                                                                        checksum=self._lut_integrator.lut_checksum)
-                            I, J, K = self._ocl_lut_integr.integrate(data, solidAngle=solid_angle_array, solidAngle_checksum=solid_angle_crc, dummy=dummy, delta_dummy=delta_dummy)
+                            I, J, K = self._ocl_lut_integr.integrate(data, solidAngle=solidangle, solidAngle_checksum=self._dssa_crc, dummy=dummy, delta_dummy=delta_dummy)
                             qAxis = self._lut_integrator.outPos #this will be copied later
                             if error_model == "azimuthal":
                                 variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
@@ -1313,7 +1314,7 @@ class AzimuthalIntegrator(Geometry):
                                 var1d, a, b = self._ocl_lut_integr.integrate(variance, solidAngle=None, dummy=dummy, delta_dummy=delta_dummy)
                                 sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
                     else:
-                        qAxis, I, a, b = self._lut_integrator.integrate(data, solidAngle=solid_angle_array, solidAngle_checksum=solid_angle_crc, dummy=dummy, delta_dummy=delta_dummy)
+                        qAxis, I, a, b = self._lut_integrator.integrate(data, solidAngle=solidangle, dummy=dummy, delta_dummy=delta_dummy)
 
                         if error_model == "azimuthal":
                             variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
@@ -1345,7 +1346,7 @@ class AzimuthalIntegrator(Geometry):
                                                         polarization=polarization
                                                         )
                 if error_model == "azimuthal":
-                    variance = (data - self.calcfrom1d(qAxis, I, dim1_unit=unit)) ** 2
+                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
                 if variance is not None:
                     qa, var1d, a, b = splitPixel.fullSplit1D(pos=pos,
                                                              weights=variance,
@@ -1388,7 +1389,7 @@ class AzimuthalIntegrator(Geometry):
                                                       solidangle=solidangle,
                                                       polarization=polarization)
                 if error_model == "azimuthal":
-                    variance = (data - self.calcfrom1d(qAxis, I, dim1_unit=unit)) ** 2
+                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
                 if variance is not None:
                     qa, var1d, a, b = splitBBox.histoBBox1d(weights=variance,
                                                       pos0=q,
@@ -1440,7 +1441,7 @@ class AzimuthalIntegrator(Geometry):
                                                    pixelSize_in_Pos=0,
                                                    dummy=dummy)
                 if error_model == "azimuthal":
-                    variance = (data - self.calcfrom1d(qAxis, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
+                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
                 if variance is not None:
                     qa, var1d, a, b = histogram.histogram(pos=q,
                                                    weights=variance,
@@ -1470,13 +1471,13 @@ class AzimuthalIntegrator(Geometry):
             count = numpy.maximum(1, ref)
             val, b = numpy.histogram(q, nbPt, weights=data)
             if error_model == "azimuthal":
-                variance = (data - self.calcfrom1d(qAxis, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
+                variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
             if variance is not None:
                 var1d, b = numpy.histogram(q, nbPt, weights=variance)
                 sigma = numpy.sqrt(var1d) / count
             I = val / count
         if pos0_scale :
-            qAxis *= pos0_scale
+            qAxis = qAxis * pos0_scale
         if filename:
             self.save1D(filename, qAxis, I, sigma, unit)
         if sigma is not None:
