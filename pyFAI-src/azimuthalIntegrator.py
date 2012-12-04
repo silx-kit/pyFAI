@@ -572,24 +572,24 @@ class AzimuthalIntegrator(Geometry):
             self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
 
-    def setup_LUT(self, shape, nbPt, mask=None, tthRange=None, chiRange=None, mask_checksum=None):
+    def setup_LUT(self, shape, nbPt, mask=None, pos0_range=None, pos1_range=None, mask_checksum=None):
         tth = self.twoThetaArray(shape)
         dtth = self.delta2Theta(shape)
-        if chiRange is None:
+        if pos1_range is None:
             chi = None
             dchi = None
         else:
             chi = self.chiArray(shape)
             dchi = self.deltaChi(shape)
-        if tthRange is not None and len(tthRange) > 1:
-            pos0_min = numpy.deg2rad(min(tthRange))
-            pos0_maxin = numpy.deg2rad(max(tthRange))
+        if pos0_range is not None and len(pos0_range) > 1:
+            pos0_min = min(pos0_range)
+            pos0_maxin = max(pos0_range)
             pos0Range = (pos0_min, pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps))
         else:
             pos0Range = None
-        if chiRange is not None and len(chiRange) > 1:
-            pos1_min = numpy.deg2rad(min(chiRange))
-            pos1_maxin = numpy.deg2rad(max(chiRange))
+        if pos1_range is not None and len(pos1_range) > 1:
+            pos1_min = min(pos1_range)
+            pos1_maxin = max(pos1_range)
             pos1Range = (pos1_min, pos1_maxin * (1.0 + numpy.finfo(numpy.float32).eps))
         else:
             pos1Range = None
@@ -703,6 +703,15 @@ class AzimuthalIntegrator(Geometry):
             reset = None
             if self._lut_integrator is None:
                 reset = "init"
+                if tthRange is None:
+                    pos0_range = None
+                else:
+                    pos0_range = [numpy.deg2rad(i) for i in  tthRange]
+                if chiRange is None:
+                    pos1_range = None
+                else:
+                    pos1_range = [numpy.deg2rad(i) for i in  chiRange]
+
                 if mask is None:
                     mask = self.detector.mask
                     mask_crc = self.detector._mask_crc
@@ -710,6 +719,15 @@ class AzimuthalIntegrator(Geometry):
                     mask_crc = crc32(mask)
 
             elif safe:
+                if tthRange is None:
+                    pos0_range = None
+                else:
+                    pos0_range = [numpy.deg2rad(i) for i in  tthRange]
+                if chiRange is None:
+                    pos1_range = None
+                else:
+                    pos1_range = [numpy.deg2rad(i) for i in  chiRange]
+
                 if mask is None:
                     mask = self.detector.mask
                     mask_crc = self.detector._mask_crc
@@ -717,23 +735,23 @@ class AzimuthalIntegrator(Geometry):
                     mask_crc = crc32(mask)
 
                 if (mask is not None) and (not self._lut_integrator.check_mask):
-                    reset = "Mask1"
+                    reset = "mask but LUT was without mask"
                 elif (mask is None) and (self._lut_integrator.check_mask):
-                    reset = "Mask2"
+                    reset = "no mask but LUT has mask"
                 elif (mask is not None) and (self._lut_integrator.mask_checksum != mask_crc):
-                    reset = "Mask changed"
-                if (tthRange is None) and (self._lut_integrator.pos0Range is not None):
-                    reset = "tthRange1"
-                elif (tthRange is not None) and self._lut_integrator.pos0Range != (numpy.deg2rad(min(tthRange)), numpy.deg2rad(max(tthRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
-                    reset = "tthRange2"
-                if (chiRange is None) and (self._lut_integrator.pos1Range is not None):
-                    reset = "chiRange1"
-                elif (chiRange is not None) and self._lut_integrator.pos1Range != (numpy.deg2rad(min(chiRange)), numpy.deg2rad(max(chiRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
-                    reset = "chiRange2"
+                    reset = "mask changed"
+                if (pos0_range is None) and (self._lut_integrator.pos0Range is not None):
+                    reset = "radial_range was defined in LUT"
+                elif (pos0_range is not None) and self._lut_integrator.pos0Range != (min(pos0_range), max(pos0_range) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                    reset = "radial_range is defined but not the same as in LUT"
+                if (pos1_range is None) and (self._lut_integrator.pos1Range is not None):
+                    reset = "azimuth_range not defined and LUT had azimuth_range defined"
+                elif (pos1_range is not None) and self._lut_integrator.pos1Range != (min(pos1_range), max(pos1_range) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                    reset = "azimuth_range requested and LUT's azimuth_range don't match"
             if reset:
                 logger.debug("xrpd_LUT: Resetting integrator because %s" % reset)
                 try:
-                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange, mask_checksum=mask_crc)
+                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, pos0_range, pos1_range, mask_checksum=mask_crc)
                 except MemoryError:  # LUT method is hungry...
                     logger.warning("MemoryError: falling back on forward implementation")
                     self._ocl_lut_integr = None
@@ -808,12 +826,30 @@ class AzimuthalIntegrator(Geometry):
             reset = None
             if self._lut_integrator is None:
                 reset = "init"
+                if tthRange is None:
+                    pos0_range = None
+                else:
+                    pos0_range = [numpy.deg2rad(i) for i in  tthRange]
+                if chiRange is None:
+                    pos1_range = None
+                else:
+                    pos1_range = [numpy.deg2rad(i) for i in  chiRange]
+
                 if mask is None:
                     mask = self.detector.mask
                     mask_crc = self.detector._mask_crc
                 else:
                     mask_crc = crc32(mask)
             if (not reset) and safe:
+                if tthRange is None:
+                    pos0_range = None
+                else:
+                    pos0_range = [numpy.deg2rad(i) for i in  tthRange]
+                if chiRange is None:
+                    pos1_range = None
+                else:
+                    pos1_range = [numpy.deg2rad(i) for i in  chiRange]
+
                 if mask is None:
                     mask = self.detector.mask
                     mask_crc = self.detector._mask_crc
@@ -821,19 +857,20 @@ class AzimuthalIntegrator(Geometry):
                     mask_crc = crc32(mask)
 
                 if (mask is not None) and (not self._lut_integrator.check_mask):
-                    reset = "Mask1"
+                    reset = "mask but LUT was without mask"
                 elif (mask is None) and (self._lut_integrator.check_mask):
-                    reset = "Mask2"
+                    reset = "no mask but LUT has mask"
                 elif (mask is not None) and (self._lut_integrator.mask_checksum != mask_crc):
-                    reset = "Mask-changed"
-                if (tthRange is None) and (self._lut_integrator.pos0Range is not None):
-                    reset = "tthrange1"
-                elif (tthRange is not None) and self._lut_integrator.pos0Range != (numpy.deg2rad(min(tthRange)), numpy.deg2rad(max(tthRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
-                    reset = "tthrange2"
-                if (chiRange is None) and (self._lut_integrator.pos1Range is not None):
-                    reset = "chirange1"
-                elif (chiRange is not None) and self._lut_integrator.pos1Range != (numpy.deg2rad(min(chiRange)), numpy.deg2rad(max(chiRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
-                    reset = "chirange2"
+                    reset = "mask changed"
+                if (pos0_range is None) and (self._lut_integrator.pos0Range is not None):
+                    reset = "radial_range was defined in LUT"
+                elif (pos0_range is not None) and self._lut_integrator.pos0Range != (min(pos0_range), max(pos0_range) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                    reset = "radial_range is defined but not the same as in LUT"
+                if (pos1_range is None) and (self._lut_integrator.pos1Range is not None):
+                    reset = "azimuth_range not defined and LUT had azimuth_range defined"
+                elif (pos1_range is not None) and self._lut_integrator.pos1Range != (min(pos1_range), max(pos1_range) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                    reset = "azimuth_range requested and LUT's azimuth_range don't match"
+
             if reset:
                 logger.debug("xrpd_LUT_OCL: Resetting integrator because of %s" % reset)
                 try:
@@ -1110,28 +1147,30 @@ class AzimuthalIntegrator(Geometry):
              error_model=None, radial_range=None, azimuth_range=None,
              mask=None, dummy=None, delta_dummy=None,
              polarization_factor=0, dark=None, flat=None,
-             method="bbox", unit="q_nm^-1"):
+             method="lut", unit="q_nm^-1", safe=True):
         """
         Calculate the azimuthal integrated Saxs curve in q(nm^-1) by default
 
         Multi algorithm implementation (tries to be bullet proof)
 
-        @param data: 2D array from the CCD camera
+        @param data: 2D array from the Detector/CCD camera
         @type data: ndarray
         @param nbPt: number of points in the output pattern
         @type nbPt: integer
-        @param filename: file to save data to
+        @param filename: output filename in 2/3 column ascii format
         @type filename: string
-        @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
+        @param correctSolidAngle: correct for solid angle of each pixel if True
         @type correctSolidAngle: boolean
-        @param variance: array containing the variance of the data, if you know it
+        @param variance: array containing the variance of the data. If not available, no error propagation is done
         @type variance: ndarray
         @param error_model: When the variance is unknown, an error model can be given: "poisson" (variance = I), "azimuthal" (variance = (I-<I>)^2)
         @type error_model: string
-        @param radial_range: The lower and upper range of the sctter vector q. If not provided, range is simply (data.min(), data.max()).
+        @param radial_range: The lower and upper range of the radial unit. 
+                        If not provided, range is simply (data.min(), data.max()).
                         Values outside the range are ignored.
         @type radial_range: (float, float), optional
-        @param azimuth_range: The lower and upper range of the chi angle in degree. If not provided, range is simply (data.min(), data.max()).
+        @param azimuth_range: The lower and upper range of the azimuthal angle in degree. 
+                        If not provided, range is simply (data.min(), data.max()).
                         Values outside the range are ignored.
         @type azimuth_range: (float, float), optional
         @param mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
@@ -1140,32 +1179,37 @@ class AzimuthalIntegrator(Geometry):
         @param polarization_factor: polarization factor between -1 and +1. 0 for no correction
         @param dark: dark noise image
         @param flat: flat field image
-        @param method: can be "numpy", "cython", "BBox" or "splitpixel"
-        @param unit: can be "q_nm^-1", "2th_deg" or "r_mm"
+        @param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "lut_ocl" if you want to go on GPU, ....
+        @param unit: can be "q_nm^-1", "2th_deg" or "r_mm" for now
+        @param safe: Do some extra checks to ensure LUT is still valid. False is faster.
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
         @rtype: 3-tuple of ndarrays
         """
         method = method.lower()
+        pos0_scale = 1.0 #nota we need anyway t
         if mask is None:
             mask = self.mask
         shape = data.shape
         if unit == "q_nm^-1":
             q = self.qArray(shape)
             dq = self.deltaQ(shape)
+            pos0_scale = 1.0
         elif unit == "2th_deg":
             q = self.twoThetaArray(shape)
             dq = self.delta2Theta(shape)
             if radial_range:
                 radial_range = tuple([numpy.deg2rad(i) for i in radial_range])
+            pos0_scale = 180.0 / numpy.pi
         elif unit == "r_mm":
             q = self.qArray(shape)
             dq = self.deltaR(shape)
+            pos0_scale = 1.0
         else:
             logger.warning("Unknown unit %s, defaulting to 2theta (deg)" % unit)
             q = self.twoThetaArray(shape)
             dq = self.delta2Theta(shape)
             unit = "2th_deg"
-
+            pos0_scale = 1.0
         if variance is not None:
             assert variance.size == data.size
         elif error_model:
@@ -1193,7 +1237,92 @@ class AzimuthalIntegrator(Geometry):
 
         I = None
         sigma = None
-        if "splitpix" in method:
+
+        if (I is None) and ("lut" in method):
+            mask_crc = None
+            with self._lut_sem:
+                reset = None
+                if self._lut_integrator is None:
+                    reset = "init"
+                    if mask is None:
+                        mask = self.detector.mask
+                        mask_crc = self.detector._mask_crc
+                    else:
+                        mask_crc = crc32(mask)
+                if (not reset) :
+                    if mask is None:
+                        mask = self.detector.mask
+                        mask_crc = self.detector._mask_crc
+                    else:
+                        mask_crc = crc32(mask)
+
+                    if (mask is not None) and (not self._lut_integrator.check_mask):
+                        reset = "mask but LUT was without mask"
+                    elif (mask is None) and (self._lut_integrator.check_mask):
+                        reset = "no mask but LUT has mask"
+                    elif (mask is not None) and (self._lut_integrator.mask_checksum != mask_crc):
+                        reset = "mask changed"
+                    if (radial_range is None) and (self._lut_integrator.pos0Range is not None):
+                        reset = "radial_range was defined in LUT"
+                    elif (radial_range is not None) and self._lut_integrator.pos0Range != (min(radial_range), max(radial_range) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                        reset = "radial_range is defined but not the same as in LUT"
+                    if (azimuth_range is None) and (self._lut_integrator.pos1Range is not None):
+                        reset = "azimuth_range not defined and LUT had azimuth_range defined"
+                    elif (azimuth_range is not None) and self._lut_integrator.pos1Range != (min(azimuth_range), max(azimuth_range) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                        reset = "azimuth_range requested and LUT's azimuth_range don't match"
+                if reset:
+                    logger.warning("AI.integrate1d: Resetting integrator because of %s" % reset)
+                    try:
+                        self._lut_integrator = self.setup_LUT(shape, nbPt, mask, radial_range, azimuth_range, mask_checksum=mask_crc)
+                        error = False
+                    except MemoryError:  # LUT method is hungry...
+                        logger.warning("MemoryError: falling back on forward implementation")
+                        self._ocl_lut_integr = None
+                        gc.collect()
+                        method = "splitbbox"
+                        error = True
+                if not error:
+                    if  "ocl" in method:
+                        with self._ocl_lut_sem:
+                            if "," in method:
+                                c = method.index(",")
+                                platformid = int(method[c - 1])
+                                deviceid = int(method[c + 1])
+                                devicetype = "all"
+                            elif "gpu" in method:
+                                platformid = int(method[c - 1])
+                                deviceid = int(method[c + 1])
+                                devicetype = "gpu"
+                            elif "cpu" in method:
+                                platformid = int(method[c - 1])
+                                deviceid = int(method[c + 1])
+                                devicetype = "cpu"
+                            else:
+                                platformid = None
+                                deviceid = None
+                                devicetype = "all"
+                            if (self._ocl_lut_integr is None) or (self._ocl_lut_integr.on_device["lut"] != self._lut_integrator.lut_checksum):
+                                self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut, self._lut_integrator.size,
+                                                                                       devicetype=devicetype, platformid=platformid, deviceid=deviceid,
+                                                                                       checksum=self._lut_integrator.lut_checksum)
+                            I, J, K = self._ocl_lut_integr.integrate(data, solidAngle=solid_angle_array, solidAngle_checksum=solid_angle_crc, dummy=dummy, delta_dummy=delta_dummy)
+                            qAxis = self._lut_integrator.outPos #this will be copied later
+                            if error_model == "azimuthal":
+                                variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
+                            if variance is not None:
+                                var1d, a, b = self._ocl_lut_integr.integrate(variance, solidAngle=None, dummy=dummy, delta_dummy=delta_dummy)
+                                sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
+                    else:
+                        qAxis, I, a, b = self._lut_integrator.integrate(data, solidAngle=solid_angle_array, solidAngle_checksum=solid_angle_crc, dummy=dummy, delta_dummy=delta_dummy)
+
+                        if error_model == "azimuthal":
+                            variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
+                        if variance is not None:
+                            qAxis, I, a, b = self._lut_integrator.integrate(variance, solidAngle=None, dummy=dummy, delta_dummy=delta_dummy)
+                            sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
+
+
+        if (I is None) and ("splitpix" in method):
             logger.debug("saxs uses SplitPixel implementation")
             try:
                 import splitPixel  # IGNORE:F0401
@@ -1346,8 +1475,8 @@ class AzimuthalIntegrator(Geometry):
                 var1d, b = numpy.histogram(q, nbPt, weights=variance)
                 sigma = numpy.sqrt(var1d) / count
             I = val / count
-#        if unit == "2th_deg":
-#            qAxis *= 180.0 / numpy.pi
+        if pos0_scale :
+            qAxis *= pos0_scale
         if filename:
             self.save1D(filename, qAxis, I, sigma, unit)
         if sigma is not None:

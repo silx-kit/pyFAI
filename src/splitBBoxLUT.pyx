@@ -351,7 +351,7 @@ class HistoBBox1d(object):
                 outMerge[i] += sum_data / sum_count
             else:
                 outMerge[i] += cdummy
-        return  self.outPos.copy(), outMerge, outData, outCount
+        return  self.outPos, outMerge, outData, outCount
 
 
 def histoBBox1d(weights ,
