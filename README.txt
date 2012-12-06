@@ -14,13 +14,13 @@ tarball. Download either one and unpack it.
 Developement is done on Github: https://github.com/kif/pyFAI
 
 e.g.
-tar xvzf pyFAI-0.7.0.tar.gz
+tar xvzf pyFAI-0.8.0.tar.gz
 or
-unzip pyFAI-0.7.0.zip
+unzip pyFAI-0.8.0.zip
 
-all files are unpacked into the directory pyFAI-0.7.0. To install these do
+all files are unpacked into the directory pyFAI-0.8.0. To install these do
 
-cd pyFAI-0.7.0
+cd pyFAI-0.8.0
 
 and install pyFAI with
 
@@ -36,8 +36,8 @@ git clone https://github.com/kif/pyFAI.git
 cd pyFAI
 sudo python setup.py install
 
-As pyFAI makes use of OpenCL to have some calculation done on the graphic card, it is
-likely you will have to setup the position of those libraries by editing the setup.cfg file
+If you want pyFAI to make use of your graphic card, please install pyopencl from:
+http://mathema.tician.de/software/pyopencl
 
 If you are using MS Windows you can also download a binary version packaged as executable
 installation files (Chose the one corresponding to your python version).
@@ -46,7 +46,7 @@ installation files (Chose the one corresponding to your python version).
 Dependencies
 ============
 
-Python 2.6 or 2.7. Compatiblity with python 3 is unchecked.
+Python 2.6 or 2.7. Compatibility with python 3 is unchecked.
 For full functionality of pyFAI the following modules need to be installed.
 
     * numpy 		- 	http://www.numpy.org
@@ -74,4 +74,18 @@ using apt-get these can be installed as:
 sudo apt-get install python-numpy python-scipy python-matplotlib  python-dev
 wget http://sourceforge.net/projects/fable/files/fabio/0.0.7/squeeze/python-fabio_0.0.7-1_amd64.deb/download
 sudo dpkg -i python-fabio_0.0.7-1_amd64.deb
+
+
+Contributors
+============
+ * Jérôme Kieffer 
+ * Dimitris Karkoulis
+ * Jon Wright
+ * Frédéric-Emmanuel Picca
+
+Indirect contributors (ideas, ...):
+-----------------------------------
+ * Peter Boesecke
+ * Manuel Sánchez del Río
+ * Vicente Armando Solé
 
