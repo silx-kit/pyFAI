@@ -572,9 +572,23 @@ class AzimuthalIntegrator(Geometry):
             self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
 
-    def setup_LUT(self, shape, nbPt, mask=None, pos0_range=None, pos1_range=None, mask_checksum=None):
-        tth = self.twoThetaArray(shape)
-        dtth = self.delta2Theta(shape)
+    def setup_LUT(self, shape, nbPt, mask=None, pos0_range=None, pos1_range=None, mask_checksum=None, tth=None, dtth=None):
+        """
+        This method is called when a look-up table needs to be set-up.
+        
+        @param shape: shape of the data
+        @param nbPt: number of points in the the output pattern
+        @param mask: array with masked pixel (1=masked)
+        @param pos0_range: range in radial dimension
+        @param pos1_range: range in azimuthal dimension
+        @param mask_checksum: checksum of the mask buffer (prevent re-calculating it)
+        @param tth: array with radial dimension, 2theta array is calculated if None
+        @param dtth: array with pixel size in radial dimension, delta2theta array is calculated if None
+        """
+        if tth is None:
+            tth = self.twoThetaArray(shape)
+        if dtth is None:
+            dtth = self.delta2Theta(shape)
         if pos1_range is None:
             chi = None
             dchi = None
@@ -1193,23 +1207,31 @@ class AzimuthalIntegrator(Geometry):
         if unit == "q_nm^-1":
             q = self.qArray(shape)
             dq = self.deltaQ(shape)
+            pos = self.cornerQArray(shape)
+            pos0_scale = 1.0
+        elif unit == "2th_rad":
+            q = self.twoThetaArray(shape)
+            dq = self.delta2Theta(shape)
+            pos = self.cornerArray(shape)
             pos0_scale = 1.0
         elif unit == "2th_deg":
             q = self.twoThetaArray(shape)
             dq = self.delta2Theta(shape)
+            pos = self.cornerQArray(shape)
             if radial_range:
                 radial_range = tuple([numpy.deg2rad(i) for i in radial_range])
             pos0_scale = 180.0 / numpy.pi
         elif unit == "r_mm":
             q = self.qArray(shape)
             dq = self.deltaR(shape)
+            pos = self.cornerRArray(shape)
             pos0_scale = 1.0
         else:
             logger.warning("Unknown unit %s, defaulting to 2theta (deg)" % unit)
             q = self.twoThetaArray(shape)
             dq = self.delta2Theta(shape)
             unit = "2th_deg"
-            pos0_scale = 1.0
+            pos0_scale = 180.0 / numpy.pi
         if variance is not None:
             assert variance.size == data.size
         elif error_model:
@@ -1331,7 +1353,8 @@ class AzimuthalIntegrator(Geometry):
                 logger.error("Import error %s , falling back on splitbbox histogram !" % error)
                 method = "bbox"
             else:
-                pos = self.cornerQArray(shape)
+
+
                 qAxis, I, a, b = splitPixel.fullSplit1D(pos=pos,
                                                         weights=data,
                                                         bins=nbPt,
@@ -1367,7 +1390,6 @@ class AzimuthalIntegrator(Geometry):
                 logger.error("Import error %s , falling back on Cython histogram !" % error)
                 method = "cython"
             else:
-#                dq = self.deltaQ(shape)
                 if chi is not None:
                     chi = chi
                     dchi = self.deltaChi(shape)
