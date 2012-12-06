@@ -188,8 +188,9 @@ class Geometry(object):
         self.param = [self._dist, self._poni1, self._poni2, self._rot1, self._rot2, self._rot3]
         lstTxt = [self.detector.__repr__()]
         lstTxt.append("SampleDetDist= %.6em\tPONI= %.6e, %.6em\trot1=%.6f  rot2= %.6f  rot3= %.6f rad" % tuple(self.param))
-        f2d = self.getFit2D()
-        lstTxt.append("DirectBeamDist= %.3fmm\tCenter: x=%.3f, y=%.3f pix\tTilt=%.3f deg  tiltPlanRotation= %.3f deg" %
+        if self.detector.pixel1:
+            f2d = self.getFit2D()
+            lstTxt.append("DirectBeamDist= %.3fmm\tCenter: x=%.3f, y=%.3f pix\tTilt=%.3f deg  tiltPlanRotation= %.3f deg" %
                        (f2d["directDist"], f2d["centerX"], f2d["centerY"], f2d["tilt"], f2d["tiltPlanRotation"]))
         return os.linesep.join(lstTxt)
 
