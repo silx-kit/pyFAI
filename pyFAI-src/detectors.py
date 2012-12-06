@@ -1,28 +1,28 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-# 
+#
 #    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
-# 
+#
 #    File: "$Id$"
-# 
+#
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
-# 
+#
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
-# 
+#
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
 #    (at your option) any later version.
-# 
+#
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
-# 
+#
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# 
+#
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
@@ -81,7 +81,14 @@ class Detector(object):
     def get_binning(self):
         return self._binning
     def set_binning(self, bin_size=(1, 1)):
-        if "__len__" in bin_size and len(bin_size) >= 2:
+        """
+        Set the "binning" of the detector,
+
+        @param bin_size: binning as integer or tuple of integers.
+        @type bin_size: (int, int)
+
+        """
+        if "__len__" in dir(bin_size) and len(bin_size) >= 2:
             bin_size = (float(bin_size[0]), float(bin_size[1]))
         else:
             b = float(bin_size)
@@ -91,6 +98,8 @@ class Detector(object):
             ratioY = bin_size[0] / self._binning[0]
             if self.spline is not None:
                 self.spline.bin((ratioX, ratioY))
+                self.pixel2, self.pixel1 = self.spline.getPixelSize()
+                self._splineCache = {}
             else:
                 self.pixel1 *= ratioY
                 self.pixel2 *= ratioX
@@ -129,10 +138,10 @@ class Detector(object):
 
     def calc_cartesian_positions(self, d1=None, d2=None):
         """
-        Calculate the position of each pixel center in cartesian coordinate 
-        and in meter of a couple of coordinates. 
+        Calculate the position of each pixel center in cartesian coordinate
+        and in meter of a couple of coordinates.
         The half pixel offset is taken into account here !!!
-        
+
         @param d1: ndarray of dimension 1 or 2 containing the Y pixel positions
         @param d2: ndarray of dimension 1or 2 containing the X pixel positions
 
@@ -176,7 +185,7 @@ class Detector(object):
         if self._mask is False:
             with self._sem:
                 if self._mask is False:
-                    self._mask = self.calc_mask() #gets None in worse cases
+                    self._mask = self.calc_mask()  # gets None in worse cases
                     if self._mask is not None:
                         self._mask_crc = crc32(self._mask)
         return self._mask
@@ -255,7 +264,7 @@ class FReLoN(Detector):
 class Xpad_flat(Detector):
     "Xpad detector: generic description for image with "
     MODULE_SIZE = (120, 80)
-    MODULE_GAP = (3 + 3.57 * 1000 / 130, 3)#in pixels
+    MODULE_GAP = (3 + 3.57 * 1000 / 130, 3)  # in pixels
     def __init__(self, pixel1=130e-6, pixel2=130e-6):
         Detector.__init__(self, pixel1, pixel2)
         self.max_shape = (960, 560)
@@ -272,7 +281,7 @@ class Xpad_flat(Detector):
                 self.max_shape[1] is None:
                 raise NotImplementedError("Generic Xpad detector does not know the max size ...")
             mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
-            # workinng in dim0 = Y                   
+            # workinng in dim0 = Y
             for i in range(0, self.max_shape[0], self.MODULE_SIZE[0]):
                 mask[i, :] = 1
                 mask[i + self.MODULE_SIZE[0] - 1, :] = 1
@@ -284,10 +293,10 @@ class Xpad_flat(Detector):
 
     def calc_cartesian_positions(self, d1=None, d2=None):
         """
-        Calculate the position of each pixel center in cartesian coordinate 
-        and in meter of a couple of coordinates. 
+        Calculate the position of each pixel center in cartesian coordinate
+        and in meter of a couple of coordinates.
         The half pixel offset is taken into account here !!!
-        
+
         @param d1: ndarray of dimension 1 or 2 containing the Y pixel positions
         @param d2: ndarray of dimension 1or 2 containing the X pixel positions
 
@@ -312,9 +321,9 @@ class Xpad_flat(Detector):
         p2 = self.pixel2 * (0.5 + c2)
         return p1, p2
 
-ALL_DETECTORS = {# I prefer not allowing the instantiation of generic detectors
-                 #"detector": Detector,
-                 #"pilatus":Pilatus,
+ALL_DETECTORS = {  # I prefer not allowing the instantiation of generic detectors
+                 # "detector": Detector,
+                 # "pilatus":Pilatus,
                  "pilatus1m":Pilatus1M,
                  "pilatus2m":Pilatus2M,
                  "pilatus6m":Pilatus6M,
