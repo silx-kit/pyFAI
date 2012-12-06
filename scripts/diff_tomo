@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
@@ -8,7 +8,8 @@
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
-#    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
+#    Authors: Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
+#             Picca Frédéric-Emmanuel <picca@synchrotron-soleil.fr>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -28,10 +29,6 @@
 diff_tomo
 
 A tool for fast processing of diffraction tomography
-
-usage:
-  python2.6 diff_tomo -o difftomo.h5 -t 101 -r 181 -c 100 -p conf.poni raw/*.edf
-
 """
 
 __author__ = "Jerome Kieffer"
@@ -41,13 +38,15 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "27/11/2012"
 __satus__ = "development"
 
-import logging, time, sys, os, posixpath
+import logging
+import time
+import os
+import posixpath
 import numpy
 import fabio
 import h5py
 import pyFAI
 logger = logging.getLogger("diff_tomo")
-
 
 
 class DiffTomo(object):
@@ -81,47 +80,54 @@ class DiffTomo(object):
         self.use_gpu = False
 
     def __repr__(self):
-        return "Diffraction Tomography with r=%s t: %s, d:%s" % (self.nRot, self.nTrans, self.nDiff)
+        return "Diffraction Tomography with r=%s t: %s, d:%s" %\
+            (self.nRot, self.nTrans, self.nDiff)
 
     def parse(self):
         """
         parse options from command line
         """
         from optparse import OptionParser
-        parser = OptionParser()
+        usage = "usage: %prog [options] file1.edf file2.edf ..."
+        version = "%prog " + pyFAI.version
+        parser = OptionParser(usage=usage, version=version)
         parser.add_option("-o", "--out", dest="outfile",
-                          help="HDF5 File where processed sinogram is is saved", metavar="FILE", default="diff_tomo.h5")
+                          help="HDF5 File where processed sinogram was saved",
+                          metavar="FILE", default="diff_tomo.h5")
         parser.add_option("-v", "--verbose",
                           action="store_true", dest="verbose", default=False,
                           help="switch to verbose/debug mode")
-        parser.add_option("-V", "--version", dest="version", action="store_true",
-                          help="print version of the program and exit", metavar="FILE", default=False)
         parser.add_option("-e", "--extension", dest="extension",
-                      help="process all files with this extension", default="edf")
+                          help="process all files with this extension",
+                          default="edf")
         parser.add_option("-t", "--nTrans", dest="nTrans",
-                      help="number of points in translation", default=None)
+                          help="number of points in translation", default=None)
         parser.add_option("-r", "--nRot", dest="nRot",
-                      help="number of points in rotation", default=None)
+                          help="number of points in rotation", default=None)
         parser.add_option("-c", "--nDiff", dest="nDiff",
-                      help="number of points in diffraction powder pattern", default=None)
+                          help="number of points in diffraction powder pattern",
+                          default=None)
         parser.add_option("-d", "--dark", dest="dark", metavar="FILE",
-                      help="list of dark images to average and subtract", default=None)
+                          help="list of dark images to average and subtract",
+                          default=None)
         parser.add_option("-f", "--flat", dest="flat", metavar="FILE",
-                      help="list of flat images to average and divide", default=None)
+                          help="list of flat images to average and divide",
+                          default=None)
         parser.add_option("-m", "--mask", dest="mask", metavar="FILE",
-                      help="file containing the mask", default=None)
+                          help="file containing the mask", default=None)
         parser.add_option("-p", "--poni", dest="poni", metavar="FILE",
-                      help="file containing the diffraction parameter (poni-file)", default=None)
+                          help="file containing the diffraction parameter (poni-file)",
+                          default=None)
         parser.add_option("-O", "--offset", dest="offset",
-                      help="do not process the first files", default=None)
+                          help="do not process the first files", default=None)
         parser.add_option("-g", "--gpu", dest="gpu", action="store_true",
-                    help="process using OpenCL on GPU ", default=False)
+                          help="process using OpenCL on GPU ", default=False)
         (options, args) = parser.parse_args()
 
         # Analyse aruments and options
-        if options.version:
-            print("diff_tomo is part of pyFAI version %s" % pyFAI.version)
-            sys.exit(0)
+        if len(args) != 1:
+            parser.error("incorrect number of arguments")
+
         if options.verbose:
             logger.setLevel(logging.DEBUG)
         self.hdf5 = options.outfile
@@ -183,16 +189,19 @@ class DiffTomo(object):
         if posixpath.basename(self.hdf5path) in self.group:
             self.dataset = self.group[posixpath.basename(self.hdf5path)]
         else:
-            self.dataset = self.group.create_dataset(name=posixpath.basename(self.hdf5path),
-                               shape=(self.nRot, self.nTrans, self.nDiff),
-                               dtype="float32",
-                               chunks=(1, self.nTrans, self.nDiff),
-                               maxshape=(None, None, self.nDiff))
+            self.dataset = self.group.create_dataset(
+                name=posixpath.basename(self.hdf5path),
+                shape=(self.nRot, self.nTrans, self.nDiff),
+                dtype="float32",
+                chunks=(1, self.nTrans, self.nDiff),
+                maxshape=(None, None, self.nDiff))
+
     def setup_ai(self):
         if self.poni:
             self.ai = pyFAI.load(self.poni)
         else:
-            logger.error("Unable to setup Azimuthal integrator: no poni file provided")
+            logger.error(("Unable to setup Azimuthal integrator:"
+                          " no poni file provided"))
             raise RuntimeError("You must provide poni a file")
         if self.dark is not None:
             self.ai.darkcurrent = self.dark
@@ -208,7 +217,7 @@ class DiffTomo(object):
             logger.error("Unable to start matplotlib for display")
             return
 
-        n, bins, patches = plt.hist(self.timing, 500, facecolor='green', alpha=0.75)
+        plt.hist(self.timing, 500, facecolor='green', alpha=0.75)
         plt.xlabel('Execution time in sec')
         plt.title("Execution time")
         plt.grid(True)
@@ -216,10 +225,11 @@ class DiffTomo(object):
 
     def get_pos(self, filename):
         """
-        Calculate the position in the sinogram of the file according to it's number
+        Calculate the position in the sinogram of the file according
+        to it's number
         """
         n = int(filename.split(".")[0].split("_")[-1]) - (self.offset or 0)
-        return {"index":n, "rot":n // self.nTrans, "trans": n % self.nTrans}
+        return {"index": n, "rot": n // self.nTrans, "trans": n % self.nTrans}
 
     def process_one_file(self, filename):
         """
@@ -231,20 +241,22 @@ class DiffTomo(object):
         t = time.time()
         pos = self.get_pos(filename)
         shape = self.dataset.shape
-        if  pos["rot"] + 1 > shape[0]:
+        if pos["rot"] + 1 > shape[0]:
             self.dataset.resize((pos["rot"] + 1, shape[1], shape[2]))
         elif pos["index"] < 0 or pos["rot"] < 0 or pos["trans"] < 0:
             return
         data = fabio.open(filename).data.astype(numpy.float32)
         if self.use_gpu:
-            tth, I = self.ai.xrpd_LUT_OCL(data, self.nDiff, safe=False, devicetype="gpu")
+            tth, I = self.ai.xrpd_LUT_OCL(data, self.nDiff, safe=False,
+                                          devicetype="gpu")
         else:
             tth, I = self.ai.xrpd_LUT(data, self.nDiff, safe=False)
         self.dataset[pos["rot"], pos["trans"], :] = I
         if "2theta" not in self.group:
             self.group["2theta"] = tth
         t -= time.time()
-        print("Processing %30s took %6.1fms" % (os.path.basename(filename), -1000 * t))
+        print("Processing %30s took %6.1fms" %
+              (os.path.basename(filename), -1000 * t))
         self.timing.append(-t)
 
     def process(self):
@@ -255,7 +267,9 @@ class DiffTomo(object):
             self.process_one_file(f)
         tot = time.time() - t0
         cnt = len(self.timing)
-        print("Execution time for %i frames: %.3fs; Average execution time: %.1fms" % (cnt, tot, 1000.*tot / cnt))
+        print(("Execution time for %i frames: %.3fs;"
+               " Average execution time: %.1fms") %
+              (cnt, tot, 1000. * tot / cnt))
 
 
 if __name__ == "__main__":
@@ -264,4 +278,3 @@ if __name__ == "__main__":
     dt.makeHDF5()
     dt.process()
     dt.show_stats()
-

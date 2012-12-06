@@ -152,20 +152,23 @@ class Geometry(object):
         self._ttha = None
         self._dttha = None
         self._dssa = None
-        self._dssa_crc = None #checksum associated with _dssa
+        self._dssa_crc = None  # checksum associated with _dssa
         self._chia = None
         self._dchia = None
         self._qa = None
         self._dqa = None
+        self._ra = None
+        self._dra = None
         self._corner4Da = None
         self._corner4Dqa = None
+        self._corner4Dra = None
         self._wavelength = None
         self._oversampling = None
         self._correct_solid_angle_for_spline = True
         self._sem = threading.Semaphore()
         self._polarization_factor = 0
         self._polarization = None
-        self._polarization_crc = None #checksum associated with _polarization
+        self._polarization_crc = None  # checksum associated with _polarization
 
         if detector:
             if type(detector) in types.StringTypes:
@@ -274,6 +277,32 @@ class Geometry(object):
             out = 4.0e-9 * numpy.pi / self.wavelength * numpy.sin(self.tth(d1=d1, d2=d2, param=param) / 2.0)
         return out
 
+    def rFunction(self, d1, d2, param=None, path="numpy"):
+        """
+        Calculates the radius value for the center of a given pixel (or set of pixels) in mm
+
+        r = direct_distance  * tan( 2theta )
+
+        @param d1: position(s) in pixel in first dimension (c order)
+        @type d1: scalar or array of scalar
+        @param d2: position(s) in pixel in second dimension (c order)
+        @type d2: scalar or array of scalar
+        @return r in in mm
+        @rtype: float or array of floats.
+        """
+        cosTilt = cos(self._rot1) * cos(self._rot2)
+        directDist = 1.0e3 * self._dist / cosTilt  # in mm
+
+        if _geometry and path == "cython":
+            p1, p2 = self._calcCartesianPositions(d1, d2, self._poni1, self.poni2)
+            # out = _geometry.calc_q(L=self._dist, rot1=self._rot1, rot2=self._rot2, rot3=self._rot3, pos1=p1 , pos2=p2, wavelength=self.wavelength)
+            # To be implemented
+            out.shape = p1.shape
+        else:
+            out = directDist * numpy.tan(self.tth(d1=d1, d2=d2, param=param))
+        return out
+
+
     def qArray(self, shape):
         """
         Generate an array of the given shape with q(i,j) for all elements.
@@ -284,12 +313,31 @@ class Geometry(object):
                     self._qa = numpy.fromfunction(self.qFunction, shape, dtype=numpy.float32)
         return self._qa
 
+    def rArray(self, shape):
+        """
+        Generate an array of the given shape with r(i,j) for all elements; r in mm.
+
+        @param shape: expected shape
+        @return: 2d array of the given shape with radius in mm from beam stop.
+        """
+        if self._ra is None:
+            with self._sem:
+                if self._ra is None:
+                    self._ra = numpy.fromfunction(self.rFunction, shape, dtype=numpy.float32)
+        return self._ra
+
 
     def qCornerFunct(self, d1, d2):
         """
-        calculate the q_vector for any pixel corner
+        calculate the q_vector for any pixel corner (in nm^-1)
         """
         return self.qFunction(d1 - 0.5, d2 - 0.5)
+
+    def rCornerFunct(self, d1, d2):
+        """
+        calculate the radius array for any pixel corner (in mm)
+        """
+        return self.rFunction(d1 - 0.5, d2 - 0.5)
 
 
     def tth_corner(self, d1, d2):
@@ -383,7 +431,10 @@ class Geometry(object):
 
     def cornerArray(self, shape):
         """
-        Generate a 3D array of the given shape with (i,j) (azimuthal angle) for all elements.
+        Generate a 3D array of the given shape with (i,j) (radial angle 2th, azimuthal angle chi ) for all elements.
+
+        @param shape: expected shape
+        @return: 3d array with shape=(*shape,2) the two elements are (radial angle 2th, azimuthal angle chi)
         """
         if self._corner4Da is None:
             with self._sem:
@@ -422,6 +473,25 @@ class Geometry(object):
                     self._corner4Dqa[:, :, 3, 1] = chi[:-1, 1:]
         return self._corner4Dqa
 
+    def cornerRArray(self, shape):
+        """
+        Generate a 3D array of the given shape with (i,j) (azimuthal angle) for all elements.
+        """
+        if self._corner4Dra is None:
+            with self._sem:
+                if self._corner4Dra is None:
+                    self._corner4Dra = numpy.zeros((shape[0], shape[1], 4, 2), dtype=numpy.float32)
+                    rar = numpy.fromfunction(self.rCornerFunct, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
+                    chi = numpy.fromfunction(self.chi_corner, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
+                    self._corner4Dra[:, :, 0, 0] = rar[:-1, :-1]
+                    self._corner4Dra[:, :, 0, 1] = chi[:-1, :-1]
+                    self._corner4Dra[:, :, 1, 0] = rar[1:, :-1]
+                    self._corner4Dra[:, :, 1, 1] = chi[1:, :-1]
+                    self._corner4Dra[:, :, 2, 0] = rar[1:, 1:]
+                    self._corner4Dra[:, :, 2, 1] = chi[1:, 1:]
+                    self._corner4Dra[:, :, 3, 0] = rar[:-1, 1:]
+                    self._corner4Dra[:, :, 3, 1] = chi[:-1, 1:]
+        return self._corner4Dra
 
     def delta2Theta(self, shape):
         """
@@ -443,7 +513,10 @@ class Geometry(object):
 
     def deltaChi(self, shape):
         """
-        Generate a 3D array of the given shape with (i,j) with the max distance between the center and any corner in chi-angle
+        Generate a 3D array of the given shape with (i,j) with the max distance between the center and any corner in chi-angle (rad)
+
+        @param shape: The shape of the detector array: 2-tuple of integer
+        @retrun: array 2D containing the max delta angle between a pixel center and any corner in chi-angle (rad)
         """
         chi_center = self.chiArray(shape)
         if self._dchia is None:
@@ -462,7 +535,11 @@ class Geometry(object):
 
     def deltaQ(self, shape):
         """
-        Generate a 3D array of the given shape with (i,j) with the max distance between the center and any corner in q_vector
+        Generate a 2D array of the given shape with (i,j) with the max distance between the center and any corner in q_vector unit (nm^-1)
+
+        @param shape: The shape of the detector array: 2-tuple of integer
+        @retrun: array 2D containing the max delta Q between a pixel center and any corner in q_vector unit (nm^-1)
+
         """
         q_center = self.qArray(shape)
         if self._dqa is None:
@@ -477,10 +554,34 @@ class Geometry(object):
                     self._dqa = delta.max(axis=2)
         return self._dqa
 
+    def deltaR(self, shape):
+        """
+        Generate a 2D array of the given shape with (i,j) with the max distance between the center and any corner in radius unit (mm)
+
+        @param shape: The shape of the detector array: 2-tuple of integer
+        @retrun: array 2D containing the max delta Q between a pixel center and any corner in q_vector unit (nm^-1)
+
+        """
+        q_center = self.rArray(shape)
+        if self._dra is None:
+            with self._sem:
+                if self._dra is None:
+                    q_corner = numpy.fromfunction(self.rCornerFunct, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
+                    delta = numpy.zeros([shape[0], shape[1], 4], dtype=numpy.float32)
+                    delta[:, :, 0] = abs(q_corner[:-1, :-1] - q_center)
+                    delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
+                    delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
+                    delta[:, :, 3] = abs(q_corner[:-1, 1:] - q_center)
+                    self._dra = delta.max(axis=2)
+        return self._dra
+
 
     def diffSolidAngle(self, d1, d2):
         """
-        calulate the solid angle of the current pixels
+        Calulate the solid angle of the current pixels
+
+        @param d1: 1d or 2d set
+        @param d2:
         """
         p1, p2 = self._calcCartesianPositions(d1, d2)
 #        p1 = (0.5 + d1) * self.pixel1 - self._poni1
@@ -547,7 +648,8 @@ class Geometry(object):
     @classmethod
     def sload(cls, filename):
         """
-        A static method combining the constructor and the loader from a
+        A static method combining the constructor and the loader from a file
+
         @param filename: name of the file to load
         @type filename: string
         @return: instance of Gerometry of AzimuthalIntegrator set-up with the parameter from the file.
@@ -560,6 +662,7 @@ class Geometry(object):
     def load(self, filename):
         """
         Load the refined parameters from a file.
+
         @param filename: name of the file to load
         @type filename: string
         """
@@ -604,7 +707,9 @@ class Geometry(object):
 
     def getPyFAI(self):
         """
-        return the parameter set from the PyFAI geometry as a dictionary
+        Export geometry setup with the geometry of PyFAI
+
+        @return: dict with the parameter-set of the PyFAI geometry
         """
         with self._sem:
             out = self.detector.getPyFAI()
@@ -636,7 +741,9 @@ class Geometry(object):
 
     def getFit2D(self):
         """
-        return a dict with parameters compatible with fit2D geometry
+        Export geometry setup with the geometry of Fit2D
+
+        @return: dict with parameters compatible with fit2D geometry
         """
         with self._sem:
             cosTilt = cos(self._rot1) * cos(self._rot2)
@@ -728,6 +835,7 @@ class Geometry(object):
         self._chia = None
         self._corner4Da = None
         self._corner4Dqa = None
+        self._corner4Dra = None
 
     def setChiDiscAtPi(self):
         """
@@ -739,7 +847,7 @@ class Geometry(object):
         self._chia = None
         self._corner4Da = None
         self._corner4Dqa = None
-
+        self._corner4Dra = None
 
     def setOversampling(self, iOversampling):
         """
@@ -802,10 +910,14 @@ class Geometry(object):
         self._dchia = None
         self._qa = None
         self._dqa = None
+        self._ra = None
+        self._dra = None
         self._corner4Da = None
         self._corner4Dqa = None
+        self._corner4Dra = None
         self._polarization = None
         self._polarization_factor = 0
+
 
 
     def calcfrom1d(self, tth, I, shape=None, mask=None, dim1_unit="2th_deg", correctSolidAngle=True):

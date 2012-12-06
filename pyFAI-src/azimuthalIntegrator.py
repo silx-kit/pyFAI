@@ -38,6 +38,7 @@ __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "02/07/2012"
 __status__ = "beta"
+__docformat__ = 'restructuredtext'
 
 import os, logging, tempfile, threading, hashlib, gc
 import numpy
@@ -571,24 +572,38 @@ class AzimuthalIntegrator(Geometry):
             self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
 
-    def setup_LUT(self, shape, nbPt, mask=None, tthRange=None, chiRange=None, mask_checksum=None):
-        tth = self.twoThetaArray(shape)
-        dtth = self.delta2Theta(shape)
-        if chiRange is None:
+    def setup_LUT(self, shape, nbPt, mask=None, pos0_range=None, pos1_range=None, mask_checksum=None, tth=None, dtth=None):
+        """
+        This method is called when a look-up table needs to be set-up.
+        
+        @param shape: shape of the data
+        @param nbPt: number of points in the the output pattern
+        @param mask: array with masked pixel (1=masked)
+        @param pos0_range: range in radial dimension
+        @param pos1_range: range in azimuthal dimension
+        @param mask_checksum: checksum of the mask buffer (prevent re-calculating it)
+        @param tth: array with radial dimension, 2theta array is calculated if None
+        @param dtth: array with pixel size in radial dimension, delta2theta array is calculated if None
+        """
+        if tth is None:
+            tth = self.twoThetaArray(shape)
+        if dtth is None:
+            dtth = self.delta2Theta(shape)
+        if pos1_range is None:
             chi = None
             dchi = None
         else:
             chi = self.chiArray(shape)
             dchi = self.deltaChi(shape)
-        if tthRange is not None and len(tthRange) > 1:
-            pos0_min = numpy.deg2rad(min(tthRange))
-            pos0_maxin = numpy.deg2rad(max(tthRange))
+        if pos0_range is not None and len(pos0_range) > 1:
+            pos0_min = min(pos0_range)
+            pos0_maxin = max(pos0_range)
             pos0Range = (pos0_min, pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps))
         else:
             pos0Range = None
-        if chiRange is not None and len(chiRange) > 1:
-            pos1_min = numpy.deg2rad(min(chiRange))
-            pos1_maxin = numpy.deg2rad(max(chiRange))
+        if pos1_range is not None and len(pos1_range) > 1:
+            pos1_min = min(pos1_range)
+            pos1_maxin = max(pos1_range)
             pos1Range = (pos1_min, pos1_maxin * (1.0 + numpy.finfo(numpy.float32).eps))
         else:
             pos1Range = None
@@ -611,29 +626,78 @@ class AzimuthalIntegrator(Geometry):
                        safe=True):
 
         """
-        Calculate the powder diffraction pattern from a set of data, an image. Cython implementation using a Look-Up Table.
+        Calculate the powder diffraction pattern from an image.
+
+        Parallel Cython implementation using a Look-Up Table (OpenMP).
+
         @param data: 2D array from the CCD camera
         @type data: ndarray
         @param nbPt: number of points in the output pattern
         @type nbPt: integer
         @param filename: file to save data in ascii format 2 column
         @type filename: string
-        @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
+        @param correctSolidAngle: solid angle correction
         @type correctSolidAngle: boolean
-        @param tthRange: The lower and upper range of the 2theta. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored.
+        @param tthRange: The lower and upper range of the 2theta
         @type tthRange: (float, float), optional
-        @param chiRange: The lower and upper range of the chi angle. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored.
+        @param chiRange: The lower and upper range of the chi angle.
         @type chiRange: (float, float), optional, disabled for now
-        @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
-        @param  dummy: value for dead/masked pixels
+        @param mask: array with 1 for masked pixels, and 0 for valid pixels
+        @type mask: ndarray
+        @param dummy: value for dead/masked pixels (dynamic mask)
+        @type dummy: float
         @param delta_dummy: precision for dummy value
+        @type delta_dummy: float
+
         LUT specific parameters:
-        @param safe: set to false if you think your GPU is already set-up correctly (2theta, mask, solid angle...)
+
+        @param safe: set to false your believe the integrator is already set-up correctly:
+            no change in the mask, or in the 2th/chi range
+        @type safe: boolean
 
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
+
+        This method compute the powder diffraction pattern, from a
+        given *data* image. The number of point of the pattern is
+        given by the *nbPt* parameter. If you give a *filename*, the
+        powder diffraction is also saved as a two column text file.
+
+        It is possible to correct or not the powder diffraction
+        pattern using the *correctSolidAngle* parameter. The weight of
+        a pixel is ponderate by its solid angle.
+
+        The 2theta range of the powder diffraction pattern can be set
+        using the *tthRange* parameter. If not given the maximum
+        available range is used. Indeed pixel outside this range are
+        ignored.
+
+        Each pixel of the *data* image as also a chi coordinate. So it
+        is possible to restrain the chi range of the pixels to
+        consider in the powder diffraction pattern. you just need to
+        set the range with the *chiRange* parameter. like the
+        *tthRange* parameter, value outside this range are ignored.
+
+        Sometimes one needs to mask a few pixels (beamstop, hot pixels,
+        ...), to ignore a few of them you just need to provide a
+        *mask* array with a value of 1 for those pixels. To take a pixel
+        into account you just need to set a value of 0 in the mask
+        array. Indeed the shape of the mask array should be idential to
+        the data shape (size of the array _must_ be the same).
+
+        Dynamic masking (i.e recalculated for each image) can be achieved 
+        by setting masked pixels to an impossible value (-1) and calling this
+        value the "dummy value". Dynamic masking is computed at integration 
+        whereas static masking is done at LUT-generation, hence faster.
+        
+        Some Pilatus detectors are setting non existing pixel to -1 and dead
+        pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so that any value 
+        between -3.5 and -0.5 are considered as bad. 
+        
+        The *safe* parameter is specific to the LUT implementation,
+        you can set it to false if you think the LUT calculated is already
+        the correct one (setup, mask, 2theta/chi range).
+        
         """
 
         shape = data.shape
@@ -653,6 +717,15 @@ class AzimuthalIntegrator(Geometry):
             reset = None
             if self._lut_integrator is None:
                 reset = "init"
+                if tthRange is None:
+                    pos0_range = None
+                else:
+                    pos0_range = [numpy.deg2rad(i) for i in  tthRange]
+                if chiRange is None:
+                    pos1_range = None
+                else:
+                    pos1_range = [numpy.deg2rad(i) for i in  chiRange]
+
                 if mask is None:
                     mask = self.detector.mask
                     mask_crc = self.detector._mask_crc
@@ -660,6 +733,15 @@ class AzimuthalIntegrator(Geometry):
                     mask_crc = crc32(mask)
 
             elif safe:
+                if tthRange is None:
+                    pos0_range = None
+                else:
+                    pos0_range = [numpy.deg2rad(i) for i in  tthRange]
+                if chiRange is None:
+                    pos1_range = None
+                else:
+                    pos1_range = [numpy.deg2rad(i) for i in  chiRange]
+
                 if mask is None:
                     mask = self.detector.mask
                     mask_crc = self.detector._mask_crc
@@ -667,23 +749,23 @@ class AzimuthalIntegrator(Geometry):
                     mask_crc = crc32(mask)
 
                 if (mask is not None) and (not self._lut_integrator.check_mask):
-                    reset = "Mask1"
+                    reset = "mask but LUT was without mask"
                 elif (mask is None) and (self._lut_integrator.check_mask):
-                    reset = "Mask2"
+                    reset = "no mask but LUT has mask"
                 elif (mask is not None) and (self._lut_integrator.mask_checksum != mask_crc):
-                    reset = "Mask changed"
-                if (tthRange is None) and (self._lut_integrator.pos0Range is not None):
-                    reset = "tthRange1"
-                elif (tthRange is not None) and self._lut_integrator.pos0Range != (numpy.deg2rad(min(tthRange)), numpy.deg2rad(max(tthRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
-                    reset = "tthRange2"
-                if (chiRange is None) and (self._lut_integrator.pos1Range is not None):
-                    reset = "chiRange1"
-                elif (chiRange is not None) and self._lut_integrator.pos1Range != (numpy.deg2rad(min(chiRange)), numpy.deg2rad(max(chiRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
-                    reset = "chiRange2"
+                    reset = "mask changed"
+                if (pos0_range is None) and (self._lut_integrator.pos0Range is not None):
+                    reset = "radial_range was defined in LUT"
+                elif (pos0_range is not None) and self._lut_integrator.pos0Range != (min(pos0_range), max(pos0_range) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                    reset = "radial_range is defined but not the same as in LUT"
+                if (pos1_range is None) and (self._lut_integrator.pos1Range is not None):
+                    reset = "azimuth_range not defined and LUT had azimuth_range defined"
+                elif (pos1_range is not None) and self._lut_integrator.pos1Range != (min(pos1_range), max(pos1_range) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                    reset = "azimuth_range requested and LUT's azimuth_range don't match"
             if reset:
                 logger.debug("xrpd_LUT: Resetting integrator because %s" % reset)
                 try:
-                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange, mask_checksum=mask_crc)
+                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, pos0_range, pos1_range, mask_checksum=mask_crc)
                 except MemoryError:  # LUT method is hungry...
                     logger.warning("MemoryError: falling back on forward implementation")
                     self._ocl_lut_integr = None
@@ -758,12 +840,30 @@ class AzimuthalIntegrator(Geometry):
             reset = None
             if self._lut_integrator is None:
                 reset = "init"
+                if tthRange is None:
+                    pos0_range = None
+                else:
+                    pos0_range = [numpy.deg2rad(i) for i in  tthRange]
+                if chiRange is None:
+                    pos1_range = None
+                else:
+                    pos1_range = [numpy.deg2rad(i) for i in  chiRange]
+
                 if mask is None:
                     mask = self.detector.mask
                     mask_crc = self.detector._mask_crc
                 else:
                     mask_crc = crc32(mask)
             if (not reset) and safe:
+                if tthRange is None:
+                    pos0_range = None
+                else:
+                    pos0_range = [numpy.deg2rad(i) for i in  tthRange]
+                if chiRange is None:
+                    pos1_range = None
+                else:
+                    pos1_range = [numpy.deg2rad(i) for i in  chiRange]
+
                 if mask is None:
                     mask = self.detector.mask
                     mask_crc = self.detector._mask_crc
@@ -771,19 +871,20 @@ class AzimuthalIntegrator(Geometry):
                     mask_crc = crc32(mask)
 
                 if (mask is not None) and (not self._lut_integrator.check_mask):
-                    reset = "Mask1"
+                    reset = "mask but LUT was without mask"
                 elif (mask is None) and (self._lut_integrator.check_mask):
-                    reset = "Mask2"
+                    reset = "no mask but LUT has mask"
                 elif (mask is not None) and (self._lut_integrator.mask_checksum != mask_crc):
-                    reset = "Mask-changed"
-                if (tthRange is None) and (self._lut_integrator.pos0Range is not None):
-                    reset = "tthrange1"
-                elif (tthRange is not None) and self._lut_integrator.pos0Range != (numpy.deg2rad(min(tthRange)), numpy.deg2rad(max(tthRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
-                    reset = "tthrange2"
-                if (chiRange is None) and (self._lut_integrator.pos1Range is not None):
-                    reset = "chirange1"
-                elif (chiRange is not None) and self._lut_integrator.pos1Range != (numpy.deg2rad(min(chiRange)), numpy.deg2rad(max(chiRange)) * (1.0 + numpy.finfo(numpy.float32).eps)):
-                    reset = "chirange2"
+                    reset = "mask changed"
+                if (pos0_range is None) and (self._lut_integrator.pos0Range is not None):
+                    reset = "radial_range was defined in LUT"
+                elif (pos0_range is not None) and self._lut_integrator.pos0Range != (min(pos0_range), max(pos0_range) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                    reset = "radial_range is defined but not the same as in LUT"
+                if (pos1_range is None) and (self._lut_integrator.pos1Range is not None):
+                    reset = "azimuth_range not defined and LUT had azimuth_range defined"
+                elif (pos1_range is not None) and self._lut_integrator.pos1Range != (min(pos1_range), max(pos1_range) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                    reset = "azimuth_range requested and LUT's azimuth_range don't match"
+
             if reset:
                 logger.debug("xrpd_LUT_OCL: Resetting integrator because of %s" % reset)
                 try:
@@ -1056,18 +1157,365 @@ class AzimuthalIntegrator(Geometry):
     xrpd2 = xrpd2_splitBBox
 
 
+    def integrate1d(self, data, nbPt, filename=None, correctSolidAngle=True, variance=None,
+             error_model=None, radial_range=None, azimuth_range=None,
+             mask=None, dummy=None, delta_dummy=None,
+             polarization_factor=0, dark=None, flat=None,
+             method="lut", unit="q_nm^-1", safe=True):
+        """
+        Calculate the azimuthal integrated Saxs curve in q(nm^-1) by default
+
+        Multi algorithm implementation (tries to be bullet proof)
+
+        @param data: 2D array from the Detector/CCD camera
+        @type data: ndarray
+        @param nbPt: number of points in the output pattern
+        @type nbPt: integer
+        @param filename: output filename in 2/3 column ascii format
+        @type filename: string
+        @param correctSolidAngle: correct for solid angle of each pixel if True
+        @type correctSolidAngle: boolean
+        @param variance: array containing the variance of the data. If not available, no error propagation is done
+        @type variance: ndarray
+        @param error_model: When the variance is unknown, an error model can be given: "poisson" (variance = I), "azimuthal" (variance = (I-<I>)^2)
+        @type error_model: string
+        @param radial_range: The lower and upper range of the radial unit. 
+                        If not provided, range is simply (data.min(), data.max()).
+                        Values outside the range are ignored.
+        @type radial_range: (float, float), optional
+        @param azimuth_range: The lower and upper range of the azimuthal angle in degree. 
+                        If not provided, range is simply (data.min(), data.max()).
+                        Values outside the range are ignored.
+        @type azimuth_range: (float, float), optional
+        @param mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
+        @param  dummy: value for dead/masked pixels
+        @param delta_dummy: precision for dummy value
+        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction
+        @param dark: dark noise image
+        @param flat: flat field image
+        @param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "lut_ocl" if you want to go on GPU, ....
+        @param unit: can be "q_nm^-1", "2th_deg" or "r_mm" for now
+        @param safe: Do some extra checks to ensure LUT is still valid. False is faster.
+        @return: azimuthaly regrouped data, 2theta pos. and chi pos.
+        @rtype: 3-tuple of ndarrays
+        """
+        method = method.lower()
+        pos0_scale = 1.0 #nota we need anyway t
+        if mask is None:
+            mask = self.mask
+        shape = data.shape
+        if unit == "q_nm^-1":
+            q = self.qArray(shape)
+            dq = self.deltaQ(shape)
+            pos = self.cornerQArray(shape)
+            pos0_scale = 1.0
+        elif unit == "2th_rad":
+            q = self.twoThetaArray(shape)
+            dq = self.delta2Theta(shape)
+            pos = self.cornerArray(shape)
+            pos0_scale = 1.0
+        elif unit == "2th_deg":
+            q = self.twoThetaArray(shape)
+            dq = self.delta2Theta(shape)
+            pos = self.cornerQArray(shape)
+            if radial_range:
+                radial_range = tuple([numpy.deg2rad(i) for i in radial_range])
+            pos0_scale = 180.0 / numpy.pi
+        elif unit == "r_mm":
+            q = self.qArray(shape)
+            dq = self.deltaR(shape)
+            pos = self.cornerRArray(shape)
+            pos0_scale = 1.0
+        else:
+            logger.warning("Unknown unit %s, defaulting to 2theta (deg)" % unit)
+            q = self.twoThetaArray(shape)
+            dq = self.delta2Theta(shape)
+            unit = "2th_deg"
+            pos0_scale = 180.0 / numpy.pi
+        if variance is not None:
+            assert variance.size == data.size
+        elif error_model:
+            error_model = error_model.lower()
+            if error_model == "poisson":
+                variance = numpy.ascontiguousarray(data, numpy.float32)
+        if azimuth_range is not None:
+            azimuth_range = tuple([numpy.deg2rad(i) for i in azimuth_range])
+            chi = self.chiArray(shape)
+        else:
+            chi = None
+
+        if correctSolidAngle:
+            solidangle = self.solidAngleArray(shape)
+        else:
+            solidangle = None
+        if polarization_factor != 0:
+            polarization = self.polarization(shape, polarization_factor)
+        else:
+            polarization = None
+        if dark is None:
+            dark = self.darkcurrent
+        if flat is None:
+            flat = self.flatfield
+
+        I = None
+        sigma = None
+
+        if (I is None) and ("lut" in method):
+            mask_crc = None
+            with self._lut_sem:
+                reset = None
+                if self._lut_integrator is None:
+                    reset = "init"
+                    if mask is None:
+                        mask = self.detector.mask
+                        mask_crc = self.detector._mask_crc
+                    else:
+                        mask_crc = crc32(mask)
+                if (not reset) :
+                    if mask is None:
+                        mask = self.detector.mask
+                        mask_crc = self.detector._mask_crc
+                    else:
+                        mask_crc = crc32(mask)
+
+                    if (mask is not None) and (not self._lut_integrator.check_mask):
+                        reset = "mask but LUT was without mask"
+                    elif (mask is None) and (self._lut_integrator.check_mask):
+                        reset = "no mask but LUT has mask"
+                    elif (mask is not None) and (self._lut_integrator.mask_checksum != mask_crc):
+                        reset = "mask changed"
+                    if (radial_range is None) and (self._lut_integrator.pos0Range is not None):
+                        reset = "radial_range was defined in LUT"
+                    elif (radial_range is not None) and self._lut_integrator.pos0Range != (min(radial_range), max(radial_range) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                        reset = "radial_range is defined but not the same as in LUT"
+                    if (azimuth_range is None) and (self._lut_integrator.pos1Range is not None):
+                        reset = "azimuth_range not defined and LUT had azimuth_range defined"
+                    elif (azimuth_range is not None) and self._lut_integrator.pos1Range != (min(azimuth_range), max(azimuth_range) * (1.0 + numpy.finfo(numpy.float32).eps)):
+                        reset = "azimuth_range requested and LUT's azimuth_range don't match"
+                error = False
+                if reset:
+                    logger.warning("AI.integrate1d: Resetting integrator because of %s" % reset)
+                    try:
+                        self._lut_integrator = self.setup_LUT(shape, nbPt, mask, radial_range, azimuth_range, mask_checksum=mask_crc)
+                        error = False
+                    except MemoryError:  # LUT method is hungry...
+                        logger.warning("MemoryError: falling back on forward implementation")
+                        self._ocl_lut_integr = None
+                        gc.collect()
+                        method = "splitbbox"
+                        error = True
+                if not error:
+                    if  "ocl" in method:
+                        with self._ocl_lut_sem:
+                            if "," in method:
+                                c = method.index(",")
+                                platformid = int(method[c - 1])
+                                deviceid = int(method[c + 1])
+                                devicetype = "all"
+                            elif "gpu" in method:
+                                platformid = None
+                                deviceid = None
+                                devicetype = "gpu"
+                            elif "cpu" in method:
+                                platformid = None
+                                deviceid = None
+                                devicetype = "cpu"
+                            else:
+                                platformid = None
+                                deviceid = None
+                                devicetype = "all"
+                            if (self._ocl_lut_integr is None) or (self._ocl_lut_integr.on_device["lut"] != self._lut_integrator.lut_checksum):
+                                self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut, self._lut_integrator.size,
+                                                                                       devicetype=devicetype, platformid=platformid, deviceid=deviceid,
+                                                                                       checksum=self._lut_integrator.lut_checksum)
+                            I, J, K = self._ocl_lut_integr.integrate(data, solidAngle=solidangle, solidAngle_checksum=self._dssa_crc, dummy=dummy, delta_dummy=delta_dummy)
+                            qAxis = self._lut_integrator.outPos #this will be copied later
+                            if error_model == "azimuthal":
+                                variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
+                            if variance is not None:
+                                var1d, a, b = self._ocl_lut_integr.integrate(variance, solidAngle=None, dummy=dummy, delta_dummy=delta_dummy)
+                                sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
+                    else:
+                        qAxis, I, a, b = self._lut_integrator.integrate(data, solidAngle=solidangle, dummy=dummy, delta_dummy=delta_dummy)
+
+                        if error_model == "azimuthal":
+                            variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
+                        if variance is not None:
+                            qAxis, I, a, b = self._lut_integrator.integrate(variance, solidAngle=None, dummy=dummy, delta_dummy=delta_dummy)
+                            sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
 
 
+        if (I is None) and ("splitpix" in method):
+            logger.debug("saxs uses SplitPixel implementation")
+            try:
+                import splitPixel  # IGNORE:F0401
+            except ImportError as error:
+                logger.error("Import error %s , falling back on splitbbox histogram !" % error)
+                method = "bbox"
+            else:
+
+
+                qAxis, I, a, b = splitPixel.fullSplit1D(pos=pos,
+                                                        weights=data,
+                                                        bins=nbPt,
+                                                        pos0Range=radial_range,
+                                                        pos1Range=azimuth_range,
+                                                        dummy=dummy,
+                                                        delta_dummy=delta_dummy,
+                                                        mask=mask,
+                                                        dark=dark,
+                                                        flat=flat,
+                                                        solidangle=solidangle,
+                                                        polarization=polarization
+                                                        )
+                if error_model == "azimuthal":
+                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
+                if variance is not None:
+                    qa, var1d, a, b = splitPixel.fullSplit1D(pos=pos,
+                                                             weights=variance,
+                                                             bins=nbPt,
+                                                             pos0Range=radial_range,
+                                                             pos1Range=azimuth_range,
+                                                             dummy=dummy,
+                                                             delta_dummy=delta_dummy,
+                                                             mask=mask,
+                                                             )
+                    sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
+
+        if (I is None) and ("bbox" in method):
+            logger.debug("saxs uses BBox implementation")
+            try:
+                import splitBBox  # IGNORE:F0401
+            except ImportError as error:
+                logger.error("Import error %s , falling back on Cython histogram !" % error)
+                method = "cython"
+            else:
+                if chi is not None:
+                    chi = chi
+                    dchi = self.deltaChi(shape)
+                else:
+                    dchi = None
+                qAxis, I, a, b = splitBBox.histoBBox1d(weights=data,
+                                                      pos0=q,
+                                                      delta_pos0=dq,
+                                                      pos1=chi,
+                                                      delta_pos1=dchi,
+                                                      bins=nbPt,
+                                                      pos0Range=radial_range,
+                                                      pos1Range=azimuth_range,
+                                                      dummy=dummy,
+                                                      delta_dummy=delta_dummy,
+                                                      mask=mask,
+                                                      dark=dark,
+                                                      flat=flat,
+                                                      solidangle=solidangle,
+                                                      polarization=polarization)
+                if error_model == "azimuthal":
+                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
+                if variance is not None:
+                    qa, var1d, a, b = splitBBox.histoBBox1d(weights=variance,
+                                                      pos0=q,
+                                                      delta_pos0=dq,
+                                                      pos1=chi,
+                                                      delta_pos1=dchi,
+                                                      bins=nbPt,
+                                                      pos0Range=radial_range,
+                                                      pos1Range=azimuth_range,
+                                                      dummy=dummy,
+                                                      delta_dummy=delta_dummy,
+                                                      mask=mask,
+                                                      )
+                    sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
+
+        if (I is None) and ("cython" in method):
+            logger.debug("saxs uses cython implementation")
+            try:
+                import histogram  # IGNORE:F0401
+            except ImportError as error:
+                logger.error("Import error %s , falling back on Numpy histogram !", error)
+                method = "numpy"
+            else:
+                mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
+                if radial_range is not None:
+                    qMin, qMax = radial_range
+                    mask *= (q >= qMin) * (q <= qMax)
+                if azimuth_range is not None:
+                    chiMin, chiMax = azimuth_range
+                    chi = self.chiArray(shape)
+                    mask *= (chi >= chiMin) * (chi <= chiMax)
+                q = q[mask]
+                if variance is not None:
+                    variance = variance[mask]
+                if dark is not None:
+                    data -= dark
+                if flat is not None:
+                    data /= flat
+                if polarization is not None:
+                    data /= polarization
+                if solidangle is not None:
+                    data /= solidangle
+                data = data[mask]
+                if dummy is None:
+                    dummy = 0
+                qAxis, I, a, b = histogram.histogram(pos=q,
+                                                   weights=data,
+                                                   bins=nbPt,
+                                                   pixelSize_in_Pos=0,
+                                                   dummy=dummy)
+                if error_model == "azimuthal":
+                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
+                if variance is not None:
+                    qa, var1d, a, b = histogram.histogram(pos=q,
+                                                   weights=variance,
+                                                   bins=nbPt,
+                                                   pixelSize_in_Pos=1,
+                                                   dummy=dummy)
+                    sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
+
+        if (I is None) :
+            logger.debug("saxs uses Numpy implementation")
+            data = numpy.ascontiguousarray(data, dtype=numpy.float32)
+            mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
+            if dark is not None:
+                data -= dark
+            if flat is not None:
+                data /= flat
+            if polarization is not None:
+                data /= polarization
+            if solidangle is not None:
+                data /= solidangle
+            data = data[mask]
+            q = q[mask]
+            if variance is not None:
+                variance = variance[mask]
+            ref, b = numpy.histogram(q, nbPt)
+            qAxis = (b[1:] + b[:-1]) / 2.0
+            count = numpy.maximum(1, ref)
+            val, b = numpy.histogram(q, nbPt, weights=data)
+            if error_model == "azimuthal":
+                variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
+            if variance is not None:
+                var1d, b = numpy.histogram(q, nbPt, weights=variance)
+                sigma = numpy.sqrt(var1d) / count
+            I = val / count
+        if pos0_scale :
+            qAxis = qAxis * pos0_scale
+        if filename:
+            self.save1D(filename, qAxis, I, sigma, unit)
+        if sigma is not None:
+            return qAxis, I, sigma
+        else:
+            return qAxis, I
 
     def saxs(self, data, nbPt, filename=None, correctSolidAngle=True, variance=None,
              error_model=None, qRange=None, chiRange=None,
              mask=None, dummy=None, delta_dummy=None,
              polarization_factor=0, dark=None, flat=None,
-             method="bbox"):
+             method="bbox", unit="q_nm^-1"):
         """
-        Calculate the azimuthal integrated Saxs curve
+        Calculate the azimuthal integrated Saxs curve in q in nm^-1.
 
-        Multi algorithm implementation (tries to be bullet proof)
+        Wrapper for integrate1d emulating behavour of old saxs method
 
         @param data: 2D array from the CCD camera
         @type data: ndarray
@@ -1097,195 +1545,25 @@ class AzimuthalIntegrator(Geometry):
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
         @rtype: 3-tuple of ndarrays
         """
-        method = method.lower()
-        if mask is None:
-            mask = self.mask
-        shape = data.shape
-        data = data.astype("float32")
-        q = self.qArray(shape)
-        if variance is not None:
-            assert variance.size == data.size
-        elif error_model:
-            error_model = error_model.lower()
-            if error_model == "poisson":
-                variance = data
-        if chiRange is not None:
-            chiRange = tuple([numpy.deg2rad(i) for i in chiRange])
-            chi = self.chiArray(shape)
+        out = self.integrate1d(data, nbPt,
+                          filename=filename,
+                          correctSolidAngle=correctSolidAngle,
+                          variance=variance,
+                          error_model=error_model,
+                          radial_range=qRange,
+                          azimuth_range=chiRange,
+                          mask=mask,
+                          dummy=dummy,
+                          delta_dummy=delta_dummy,
+                          polarization_factor=polarization_factor,
+                          dark=dark,
+                          flat=flat,
+                          method=method,
+                          unit=unit)
+        if len(out) == 2:
+            return out[0], out[1], None
         else:
-            chi = None
-
-        if correctSolidAngle:
-            solidangle = self.solidAngleArray(shape)
-        else:
-            solidangle = None
-        if polarization_factor != 0:
-            polarization = self.polarization(shape, polarization_factor)
-        else:
-            polarization = None
-        if dark is None:
-            dark = self.darkcurrent
-        if flat is None:
-            flat = self.flatfield
-
-        I = None
-        sigma = None
-        if "splitpix" in method:
-            logger.debug("saxs uses SplitPixel implementation")
-            try:
-                import splitPixel  # IGNORE:F0401
-            except ImportError as error:
-                logger.error("Import error %s , falling back on splitbbox histogram !" % error)
-                method = "bbox"
-            else:
-                pos = self.cornerQArray(shape)
-                qAxis, I, a, b = splitPixel.fullSplit1D(pos=pos,
-                                                        weights=data,
-                                                        bins=nbPt,
-                                                        pos0Range=qRange,
-                                                        pos1Range=chiRange,
-                                                        dummy=dummy,
-                                                        delta_dummy=delta_dummy,
-                                                        mask=mask,
-                                                        dark=dark,
-                                                        flat=flat,
-                                                        solidangle=solidangle,
-                                                        polarization=polarization
-                                                        )
-                if error_model == "azimuthal":
-                    variance = (data - self.calcfrom1d(qAxis, I, dim1_unit="q_nm^-1")) ** 2
-                if variance is not None:
-                    qa, var1d, a, b = splitPixel.fullSplit1D(pos=pos,
-                                                             weights=variance,
-                                                             bins=nbPt,
-                                                             pos0Range=qRange,
-                                                             pos1Range=chiRange,
-                                                             dummy=dummy,
-                                                             delta_dummy=delta_dummy,
-                                                             mask=mask,
-                                                             )
-                    sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
-
-        if (I is None) and ("bbox" in method):
-            logger.debug("saxs uses BBox implementation")
-            try:
-                import splitBBox  # IGNORE:F0401
-            except ImportError as error:
-                logger.error("Import error %s , falling back on Cython histogram !" % error)
-                method = "cython"
-            else:
-                dq = self.deltaQ(shape)
-                if chi is not None:
-                    chi = chi
-                    dchi = self.deltaChi(shape)
-                else:
-                    dchi = None
-                qAxis, I, a, b = splitBBox.histoBBox1d(weights=data,
-                                                      pos0=q,
-                                                      delta_pos0=dq,
-                                                      pos1=chi,
-                                                      delta_pos1=dchi,
-                                                      bins=nbPt,
-                                                      pos0Range=qRange,
-                                                      pos1Range=chiRange,
-                                                      dummy=dummy,
-                                                      delta_dummy=delta_dummy,
-                                                      mask=mask,
-                                                      dark=dark,
-                                                      flat=flat,
-                                                      solidangle=solidangle,
-                                                      polarization=polarization)
-                if error_model == "azimuthal":
-                    variance = (data - self.calcfrom1d(qAxis, I, dim1_unit="q_nm^-1")) ** 2
-                if variance is not None:
-                    qa, var1d, a, b = splitBBox.histoBBox1d(weights=variance,
-                                                      pos0=q,
-                                                      delta_pos0=dq,
-                                                      pos1=chi,
-                                                      delta_pos1=dchi,
-                                                      bins=nbPt,
-                                                      pos0Range=qRange,
-                                                      pos1Range=chiRange,
-                                                      dummy=dummy,
-                                                      delta_dummy=delta_dummy,
-                                                      mask=mask,
-                                                      )
-                    sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
-
-        if (I is None) and ("cython" in method):
-            logger.debug("saxs uses cython implementation")
-            try:
-                import histogram  # IGNORE:F0401
-            except ImportError as error:
-                logger.error("Import error %s , falling back on Numpy histogram !", error)
-                method = "numpy"
-            else:
-                mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
-                if qRange is not None:
-                    qMin, qMax = qRange
-                    mask *= (q >= qMin) * (q <= qMax)
-                if chiRange is not None:
-                    chiMin, chiMax = chiRange
-                    chi = self.chiArray(shape)
-                    mask *= (chi >= chiMin) * (chi <= chiMax)
-                q = q[mask]
-                if variance is not None:
-                    variance = variance[mask]
-                if dark is not None:
-                    data -= dark
-                if flat is not None:
-                    data /= flat
-                if polarization is not None:
-                    data /= polarization
-                if solidangle is not None:
-                    data /= solidangle
-                data = data[mask]
-                if dummy is None:
-                    dummy = 0
-                qAxis, I, a, b = histogram.histogram(pos=q,
-                                                   weights=data,
-                                                   bins=nbPt,
-                                                   pixelSize_in_Pos=0,
-                                                   dummy=dummy)
-                if error_model == "azimuthal":
-                    variance = (data - self.calcfrom1d(qAxis, I, dim1_unit="q_nm^-1", correctSolidAngle=False)[mask]) ** 2
-                if variance is not None:
-                    qa, var1d, a, b = histogram.histogram(pos=q,
-                                                   weights=variance,
-                                                   bins=nbPt,
-                                                   pixelSize_in_Pos=1,
-                                                   dummy=dummy)
-                    sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
-
-        if (I is None) :
-            logger.debug("saxs uses Numpy implementation")
-            mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
-            if dark is not None:
-                data -= dark
-            if flat is not None:
-                data /= flat
-            if polarization is not None:
-                data /= polarization
-            if solidangle is not None:
-                data /= solidangle
-            data = data[mask]
-            q = q[mask]
-            if variance is not None:
-                variance = variance[mask]
-            ref, b = numpy.histogram(q, nbPt)
-            count = numpy.maximum(1, ref)
-            val, b = numpy.histogram(q, nbPt, weights=data)
-            if error_model == "azimuthal":
-                variance = (data - self.calcfrom1d(qAxis, I, dim1_unit="q_nm^-1", correctSolidAngle=False)[mask]) ** 2
-            if variance is not None:
-                var1d, b = numpy.histogram(q, nbPt, weights=variance)
-                sigma = numpy.sqrt(var1d) / count
-            qAxis = (b[1:] + b[:-1]) / 2.0
-            I = val / count
-
-        if filename:
-            self.save1D(filename, qAxis, I, sigma, "q_nm^-1")
-        return qAxis, I, sigma
+            return out
 
     def makeHeaders(self, hdr="#"):
         """
@@ -1335,8 +1613,8 @@ class AzimuthalIntegrator(Geometry):
                   "chi_max":str(dim2.max()),
                   dim1_unit + "_min":str(dim1.min()),
                   dim1_unit + "_max":str(dim1.max()),
-                  "pixelX": str(self.pixel2),  # this is not a bug ... most people expect dim1 to be X
-                  "pixelY": str(self.pixel1),  # this is not a bug ... most people expect dim2 to be Y
+                  "pixelX": str(self.pixel2), # this is not a bug ... most people expect dim1 to be X
+                  "pixelY": str(self.pixel1), # this is not a bug ... most people expect dim2 to be Y
                 }
         if self.splineFile:
             header["spline"] = str(self.splineFile)
