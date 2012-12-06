@@ -575,7 +575,7 @@ class AzimuthalIntegrator(Geometry):
     def setup_LUT(self, shape, nbPt, mask=None, pos0_range=None, pos1_range=None, mask_checksum=None, tth=None, dtth=None):
         """
         This method is called when a look-up table needs to be set-up.
-        
+
         @param shape: shape of the data
         @param nbPt: number of points in the the output pattern
         @param mask: array with masked pixel (1=masked)
@@ -685,19 +685,19 @@ class AzimuthalIntegrator(Geometry):
         array. Indeed the shape of the mask array should be idential to
         the data shape (size of the array _must_ be the same).
 
-        Dynamic masking (i.e recalculated for each image) can be achieved 
+        Dynamic masking (i.e recalculated for each image) can be achieved
         by setting masked pixels to an impossible value (-1) and calling this
-        value the "dummy value". Dynamic masking is computed at integration 
+        value the "dummy value". Dynamic masking is computed at integration
         whereas static masking is done at LUT-generation, hence faster.
-        
+
         Some Pilatus detectors are setting non existing pixel to -1 and dead
-        pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so that any value 
-        between -3.5 and -0.5 are considered as bad. 
-        
+        pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so that any value
+        between -3.5 and -0.5 are considered as bad.
+
         The *safe* parameter is specific to the LUT implementation,
         you can set it to false if you think the LUT calculated is already
         the correct one (setup, mask, 2theta/chi range).
-        
+
         """
 
         shape = data.shape
@@ -1179,11 +1179,11 @@ class AzimuthalIntegrator(Geometry):
         @type variance: ndarray
         @param error_model: When the variance is unknown, an error model can be given: "poisson" (variance = I), "azimuthal" (variance = (I-<I>)^2)
         @type error_model: string
-        @param radial_range: The lower and upper range of the radial unit. 
+        @param radial_range: The lower and upper range of the radial unit.
                         If not provided, range is simply (data.min(), data.max()).
                         Values outside the range are ignored.
         @type radial_range: (float, float), optional
-        @param azimuth_range: The lower and upper range of the azimuthal angle in degree. 
+        @param azimuth_range: The lower and upper range of the azimuthal angle in degree.
                         If not provided, range is simply (data.min(), data.max()).
                         Values outside the range are ignored.
         @type azimuth_range: (float, float), optional
@@ -1200,37 +1200,47 @@ class AzimuthalIntegrator(Geometry):
         @rtype: 3-tuple of ndarrays
         """
         method = method.lower()
-        pos0_scale = 1.0 #nota we need anyway t
+        pos0_scale = 1.0  # nota we need anyway t
         if mask is None:
             mask = self.mask
         shape = data.shape
         if unit == "q_nm^-1":
             q = self.qArray(shape)
-            dq = self.deltaQ(shape)
             pos = self.cornerQArray(shape)
+            dq = self.deltaQ(shape)
             pos0_scale = 1.0
+        if unit == "q_A^-1":
+            q = self.qArray(shape)
+            pos = self.cornerQArray(shape)
+            dq = self.deltaQ(shape)
+            if radial_range:
+                radial_range = tuple([i / 10.0 for i in radial_range])
+            pos0_scale = 10.0
         elif unit == "2th_rad":
             q = self.twoThetaArray(shape)
-            dq = self.delta2Theta(shape)
             pos = self.cornerArray(shape)
+            dq = self.delta2Theta(shape)
             pos0_scale = 1.0
         elif unit == "2th_deg":
             q = self.twoThetaArray(shape)
+            pos = self.cornerArray(shape)
             dq = self.delta2Theta(shape)
-            pos = self.cornerQArray(shape)
             if radial_range:
-                radial_range = tuple([numpy.deg2rad(i) for i in radial_range])
+                radial_range = tuple([numpy.pi * i / 180.0 for i in radial_range])
             pos0_scale = 180.0 / numpy.pi
         elif unit == "r_mm":
-            q = self.qArray(shape)
-            dq = self.deltaR(shape)
+            q = self.rArray(shape)
             pos = self.cornerRArray(shape)
+            dq = self.deltaR(shape)
             pos0_scale = 1.0
         else:
             logger.warning("Unknown unit %s, defaulting to 2theta (deg)" % unit)
             q = self.twoThetaArray(shape)
+            pos = self.cornerArray(shape)
             dq = self.delta2Theta(shape)
             unit = "2th_deg"
+            if radial_range:
+                radial_range = tuple([numpy.deg2rad(i) for i in radial_range])
             pos0_scale = 180.0 / numpy.pi
         if variance is not None:
             assert variance.size == data.size
@@ -1329,7 +1339,7 @@ class AzimuthalIntegrator(Geometry):
                                                                                        devicetype=devicetype, platformid=platformid, deviceid=deviceid,
                                                                                        checksum=self._lut_integrator.lut_checksum)
                             I, J, K = self._ocl_lut_integr.integrate(data, solidAngle=solidangle, solidAngle_checksum=self._dssa_crc, dummy=dummy, delta_dummy=delta_dummy)
-                            qAxis = self._lut_integrator.outPos #this will be copied later
+                            qAxis = self._lut_integrator.outPos  # this will be copied later
                             if error_model == "azimuthal":
                                 variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
                             if variance is not None:
@@ -1613,8 +1623,8 @@ class AzimuthalIntegrator(Geometry):
                   "chi_max":str(dim2.max()),
                   dim1_unit + "_min":str(dim1.min()),
                   dim1_unit + "_max":str(dim1.max()),
-                  "pixelX": str(self.pixel2), # this is not a bug ... most people expect dim1 to be X
-                  "pixelY": str(self.pixel1), # this is not a bug ... most people expect dim2 to be Y
+                  "pixelX": str(self.pixel2),  # this is not a bug ... most people expect dim1 to be X
+                  "pixelY": str(self.pixel1),  # this is not a bug ... most people expect dim2 to be Y
                 }
         if self.splineFile:
             header["spline"] = str(self.splineFile)

@@ -497,17 +497,23 @@ class Geometry(object):
     def delta2Theta(self, shape):
         """
         Generate a 3D array of the given shape with (i,j) with the max distance between the center and any corner in 2 theta
+        @param shape: The shape of the detector array: 2-tuple of integer
+        @retrun: 2D-array containing the max delta angle between a pixel center and any corner in 2theta-angle (rad)
         """
         tth_center = self.twoThetaArray(shape)
         if self._dttha is None:
             with self._sem:
                 if self._dttha is None:
-                    tth_corner = numpy.fromfunction(self.tth_corner, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
                     delta = numpy.zeros([shape[0], shape[1], 4], dtype=numpy.float32)
-                    delta[:, :, 0] = abs(tth_corner[:-1, :-1] - tth_center)
-                    delta[:, :, 1] = abs(tth_corner[1:, :-1] - tth_center)
-                    delta[:, :, 2] = abs(tth_corner[1:, 1:] - tth_center)
-                    delta[:, :, 3] = abs(tth_corner[:-1, 1:] - tth_center)
+                    if self._corner4Da is not None and self._corner4Da.shape[:2] == tuple(shape):
+                        for i in range(4):
+                            delta[:, :, i] = abs(self._corner4Da[:, :, i, 0] - tth_center)
+                    else:
+                        tth_corner = numpy.fromfunction(self.tth_corner, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
+                        delta[:, :, 0] = abs(tth_corner[:-1, :-1] - tth_center)
+                        delta[:, :, 1] = abs(tth_corner[1:, :-1] - tth_center)
+                        delta[:, :, 2] = abs(tth_corner[1:, 1:] - tth_center)
+                        delta[:, :, 3] = abs(tth_corner[:-1, 1:] - tth_center)
                     self._dttha = delta.max(axis=2)
         return self._dttha
 
@@ -517,20 +523,30 @@ class Geometry(object):
         Generate a 3D array of the given shape with (i,j) with the max distance between the center and any corner in chi-angle (rad)
 
         @param shape: The shape of the detector array: 2-tuple of integer
-        @retrun: array 2D containing the max delta angle between a pixel center and any corner in chi-angle (rad)
+        @retrun: 2D-array  containing the max delta angle between a pixel center and any corner in chi-angle (rad)
         """
         chi_center = self.chiArray(shape)
         if self._dchia is None:
             with self._sem:
                 if self._dchia is None:
                     twoPi = (2 * numpy.pi)
-                    chi_corner = numpy.fromfunction(self.chi_corner, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
                     delta = numpy.zeros([shape[0], shape[1], 4], dtype=numpy.float32)
-                    delta[:, :, 0] = numpy.minimum(((chi_corner[:-1, :-1] - chi_center) % twoPi), ((chi_center - chi_corner[:-1, :-1]) % twoPi))
-                    delta[:, :, 1] = numpy.minimum(((chi_corner[1: , :-1] - chi_center) % twoPi), ((chi_center - chi_corner[1: , :-1]) % twoPi))
-                    delta[:, :, 2] = numpy.minimum(((chi_corner[1: , 1: ] - chi_center) % twoPi), ((chi_center - chi_corner[1: , 1: ]) % twoPi))
-                    delta[:, :, 3] = numpy.minimum(((chi_corner[:-1, 1: ] - chi_center) % twoPi), ((chi_center - chi_corner[:-1, 1: ]) % twoPi))
-                    self._dchia = delta.max(axis=2)
+                    if self._corner4Da is not None and self._corner4Da.shape[:2] == tuple(shape):
+                        for i in range(4):
+                            delta[:, :, i] = numpy.minimum(((self._corner4Da[:, :, i, 1] - chi_center) % twoPi), ((chi_center - self._corner4Da[:, :, i, 1]) % twoPi))
+                    if self._corner4Dqa is not None and self._corner4Dqa.shape[:2] == tuple(shape):
+                        for i in range(4):
+                            delta[:, :, i] = numpy.minimum(((self._corner4Dqa[:, :, i, 1] - chi_center) % twoPi), ((chi_center - self._corner4Dqa[:, :, i, 1]) % twoPi))
+                    if self._corner4Dra is not None and self._corner4Dra.shape[:2] == tuple(shape):
+                        for i in range(4):
+                            delta[:, :, i] = numpy.minimum(((self._corner4Dra[:, :, i, 1] - chi_center) % twoPi), ((chi_center - self._corner4Dra[:, :, i, 1]) % twoPi))
+                    else:
+                        chi_corner = numpy.fromfunction(self.chi_corner, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
+                        delta[:, :, 0] = numpy.minimum(((chi_corner[:-1, :-1] - chi_center) % twoPi), ((chi_center - chi_corner[:-1, :-1]) % twoPi))
+                        delta[:, :, 1] = numpy.minimum(((chi_corner[1: , :-1] - chi_center) % twoPi), ((chi_center - chi_corner[1: , :-1]) % twoPi))
+                        delta[:, :, 2] = numpy.minimum(((chi_corner[1: , 1: ] - chi_center) % twoPi), ((chi_center - chi_corner[1: , 1: ]) % twoPi))
+                        delta[:, :, 3] = numpy.minimum(((chi_corner[:-1, 1: ] - chi_center) % twoPi), ((chi_center - chi_corner[:-1, 1: ]) % twoPi))
+                    self._dchia = delta.max(axis= -1)
         return self._dchia
 
 
@@ -546,13 +562,17 @@ class Geometry(object):
         if self._dqa is None:
             with self._sem:
                 if self._dqa is None:
-                    q_corner = numpy.fromfunction(self.qCornerFunct, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
                     delta = numpy.zeros([shape[0], shape[1], 4], dtype=numpy.float32)
-                    delta[:, :, 0] = abs(q_corner[:-1, :-1] - q_center)
-                    delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
-                    delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
-                    delta[:, :, 3] = abs(q_corner[:-1, 1:] - q_center)
-                    self._dqa = delta.max(axis=2)
+                    if self._corner4Dqa is not None and self._corner4Dqa.shape[:2] == tuple(shape):
+                        for i in range(4):
+                            delta[:, :, i] = abs(self._corner4Dqa[:, :, i, 0] - q_center)
+                    else:
+                        q_corner = numpy.fromfunction(self.qCornerFunct, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
+                        delta[:, :, 0] = abs(q_corner[:-1, :-1] - q_center)
+                        delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
+                        delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
+                        delta[:, :, 3] = abs(q_corner[:-1, 1:] - q_center)
+                    self._dqa = delta.max(axis= -1)
         return self._dqa
 
     def deltaR(self, shape):
@@ -567,13 +587,17 @@ class Geometry(object):
         if self._dra is None:
             with self._sem:
                 if self._dra is None:
-                    q_corner = numpy.fromfunction(self.rCornerFunct, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
                     delta = numpy.zeros([shape[0], shape[1], 4], dtype=numpy.float32)
-                    delta[:, :, 0] = abs(q_corner[:-1, :-1] - q_center)
-                    delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
-                    delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
-                    delta[:, :, 3] = abs(q_corner[:-1, 1:] - q_center)
-                    self._dra = delta.max(axis=2)
+                    if self._corner4Dra is not None and self._corner4Dra.shape[:2] == tuple(shape):
+                        for i in range(4):
+                            delta[:, :, i] = abs(self._corner4Dra[:, :, i, 0] - q_center)
+                    else:
+                        q_corner = numpy.fromfunction(self.rCornerFunct, (shape[0] + 1, shape[1] + 1), dtype=numpy.float32)
+                        delta[:, :, 0] = abs(q_corner[:-1, :-1] - q_center)
+                        delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
+                        delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
+                        delta[:, :, 3] = abs(q_corner[:-1, 1:] - q_center)
+                    self._dra = delta.max(axis= -1)
         return self._dra
 
 
