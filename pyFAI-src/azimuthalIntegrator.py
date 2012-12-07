@@ -1306,7 +1306,7 @@ class AzimuthalIntegrator(Geometry):
                 if reset:
                     logger.warning("AI.integrate1d: Resetting integrator because of %s" % reset)
                     try:
-                        self._lut_integrator = self.setup_LUT(shape, nbPt, mask, radial_range, azimuth_range, mask_checksum=mask_crc)
+                        self._lut_integrator = self.setup_LUT(shape, nbPt, mask, radial_range, azimuth_range, mask_checksum=mask_crc, tth=q, dtth=dq)
                         error = False
                     except MemoryError:  # LUT method is hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
@@ -1623,8 +1623,8 @@ class AzimuthalIntegrator(Geometry):
                   "chi_max":str(dim2.max()),
                   dim1_unit + "_min":str(dim1.min()),
                   dim1_unit + "_max":str(dim1.max()),
-                  "pixelX": str(self.pixel2),  # this is not a bug ... most people expect dim1 to be X
-                  "pixelY": str(self.pixel1),  # this is not a bug ... most people expect dim2 to be Y
+                  "pixelX": str(self.pixel2), # this is not a bug ... most people expect dim1 to be X
+                  "pixelY": str(self.pixel1), # this is not a bug ... most people expect dim2 to be Y
                 }
         if self.splineFile:
             header["spline"] = str(self.splineFile)
