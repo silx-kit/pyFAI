@@ -1209,7 +1209,7 @@ class AzimuthalIntegrator(Geometry):
             pos = self.cornerQArray(shape)
             dq = self.deltaQ(shape)
             pos0_scale = 1.0
-        if unit == "q_A^-1":
+        elif unit == "q_A^-1":
             q = self.qArray(shape)
             pos = self.cornerQArray(shape)
             dq = self.deltaQ(shape)
@@ -1623,8 +1623,8 @@ class AzimuthalIntegrator(Geometry):
                   "chi_max":str(dim2.max()),
                   dim1_unit + "_min":str(dim1.min()),
                   dim1_unit + "_max":str(dim1.max()),
-                  "pixelX": str(self.pixel2), # this is not a bug ... most people expect dim1 to be X
-                  "pixelY": str(self.pixel1), # this is not a bug ... most people expect dim2 to be Y
+                  "pixelX": str(self.pixel2),  # this is not a bug ... most people expect dim1 to be X
+                  "pixelY": str(self.pixel1),  # this is not a bug ... most people expect dim2 to be Y
                 }
         if self.splineFile:
             header["spline"] = str(self.splineFile)
