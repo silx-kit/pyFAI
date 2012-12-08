@@ -572,7 +572,7 @@ class AzimuthalIntegrator(Geometry):
             self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
 
-    def setup_LUT(self, shape, nbPt, mask=None, pos0_range=None, pos1_range=None, mask_checksum=None, tth=None, dtth=None):
+    def setup_LUT(self, shape, nbPt, mask=None, pos0_range=None, pos1_range=None, mask_checksum=None, unit="2th_deg"):
         """
         This method is called when a look-up table needs to be set-up.
 
@@ -582,19 +582,16 @@ class AzimuthalIntegrator(Geometry):
         @param pos0_range: range in radial dimension
         @param pos1_range: range in azimuthal dimension
         @param mask_checksum: checksum of the mask buffer (prevent re-calculating it)
-        @param tth: array with radial dimension, 2theta array is calculated if None
-        @param dtth: array with pixel size in radial dimension, delta2theta array is calculated if None
+        @param unit: can be "2th_deg", ....
         """
-        if tth is None:
-            tth = self.twoThetaArray(shape)
-        if dtth is None:
-            dtth = self.delta2Theta(shape)
+        pos0 = self.array_from_unit(shape, "center", unit)
+        dpos0 = self.array_from_unit(shape, "delta", unit)
         if pos1_range is None:
-            chi = None
-            dchi = None
+            pos1 = None
+            dpos1 = None
         else:
-            chi = self.chiArray(shape)
-            dchi = self.deltaChi(shape)
+            pos1 = self.chiArray(shape)
+            dpos1 = self.deltaChi(shape)
         if pos0_range is not None and len(pos0_range) > 1:
             pos0_min = min(pos0_range)
             pos0_maxin = max(pos0_range)
@@ -612,13 +609,14 @@ class AzimuthalIntegrator(Geometry):
         else:
             assert mask.shape == shape
 
-        return splitBBoxLUT.HistoBBox1d(tth, dtth, chi, dchi,
+        return splitBBoxLUT.HistoBBox1d(pos0, dpos0, pos1, dpos1,
                                                         bins=nbPt,
                                                         pos0Range=pos0Range,
                                                         pos1Range=pos1Range,
                                                         mask=mask,
                                                         mask_checksum=mask_checksum,
-                                                        allow_pos0_neg=False)
+                                                        allow_pos0_neg=False,
+                                                        unit=unit)
 
 
     def xrpd_LUT(self, data, nbPt, filename=None, correctSolidAngle=True,
@@ -782,7 +780,7 @@ class AzimuthalIntegrator(Geometry):
                 self._ocl_lut_integr = None
                 gc.collect()
                 return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
-        tthAxis = self._lut_integrator.outPos_degrees
+        tthAxis = 180 * self._lut_integrator.outPos / numpy.pi
         if filename:
             self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
@@ -895,7 +893,7 @@ class AzimuthalIntegrator(Geometry):
                     gc.collect()
                     return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
 
-            tthAxis = self._lut_integrator.outPos_degrees
+            tthAxis = 180 * self._lut_integrator.outPos / numpy.pi
             with self._ocl_lut_sem:
                 if (self._ocl_lut_integr is None) or (self._ocl_lut_integr.on_device["lut"] != self._lut_integrator.lut_checksum):
                     self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut, self._lut_integrator.size, devicetype, platformid=platformid, deviceid=deviceid, checksum=self._lut_integrator.lut_checksum)
@@ -1156,6 +1154,48 @@ class AzimuthalIntegrator(Geometry):
         return I, bins2Th, binsChi
     xrpd2 = xrpd2_splitBBox
 
+    def array_from_unit(self, shape, typ="center", unit="2th_deg"):
+        """
+        Generate an array of position in different dimentions (R, Q, 2Theta)
+
+        @param shape: shape of the expected array
+        @param typ: "center", "corner" or "delta"
+        @param unit: can be "q", "2th" or "r" for now
+
+        """
+        if not typ in ("center", "corner", "delta"):
+            logger.warning("Unknown type of array %s, defaulting to 'center'" % typ)
+            typ = "center"
+        if unit.startswith("q"):
+            if typ == "center":
+                out = self.qArray(shape)
+            elif typ == "corner":
+                out = self.cornerQArray(shape)
+            else:  # delta
+                out = self.deltaQ(shape)
+        elif unit.startswith("2th"):
+            if typ == "center":
+                out = self.twoThetaArray(shape)
+            elif typ == "corner":
+                out = self.cornerArray(shape)
+            else:  # delta
+                out = self.delta2Theta(shape)
+        elif unit == "r_mm":
+            if typ == "center":
+                out = self.rArray(shape)
+            elif typ == "corner":
+                out = self.cornerRArray(shape)
+            else:  # delta
+                out = self.deltaR(shape)
+        else:
+            logger.warning("Unknown unit %s, defaulting to 2theta" % unit)
+            if typ == "center":
+                out = self.twoThetaArray(shape)
+            elif typ == "corner":
+                out = self.cornerArray(shape)
+            else:  # delta
+                out = self.delta2Theta(shape)
+        return out
 
     def integrate1d(self, data, nbPt, filename=None, correctSolidAngle=True, variance=None,
              error_model=None, radial_range=None, azimuth_range=None,
@@ -1205,39 +1245,39 @@ class AzimuthalIntegrator(Geometry):
             mask = self.mask
         shape = data.shape
         if unit == "q_nm^-1":
-            q = self.qArray(shape)
-            pos = self.cornerQArray(shape)
-            dq = self.deltaQ(shape)
+#            q = self.qArray(shape)
+#            pos = self.cornerQArray(shape)
+#            dq = self.deltaQ(shape)
             pos0_scale = 1.0
         elif unit == "q_A^-1":
-            q = self.qArray(shape)
-            pos = self.cornerQArray(shape)
-            dq = self.deltaQ(shape)
+#            q = self.qArray(shape)
+#            pos = self.cornerQArray(shape)
+#            dq = self.deltaQ(shape)
             if radial_range:
                 radial_range = tuple([i / 10.0 for i in radial_range])
             pos0_scale = 10.0
         elif unit == "2th_rad":
-            q = self.twoThetaArray(shape)
-            pos = self.cornerArray(shape)
-            dq = self.delta2Theta(shape)
+#            q = self.twoThetaArray(shape)
+#            pos = self.cornerArray(shape)
+#            dq = self.delta2Theta(shape)
             pos0_scale = 1.0
         elif unit == "2th_deg":
-            q = self.twoThetaArray(shape)
-            pos = self.cornerArray(shape)
-            dq = self.delta2Theta(shape)
+#            q = self.twoThetaArray(shape)
+#            pos = self.cornerArray(shape)
+#            dq = self.delta2Theta(shape)
             if radial_range:
                 radial_range = tuple([numpy.pi * i / 180.0 for i in radial_range])
             pos0_scale = 180.0 / numpy.pi
         elif unit == "r_mm":
-            q = self.rArray(shape)
-            pos = self.cornerRArray(shape)
-            dq = self.deltaR(shape)
-            pos0_scale = 1.0
+#            q = self.rArray(shape)
+#            pos = self.cornerRArray(shape)
+#            dq = self.deltaR(shape)
+            pos0_scale = 0.001  # convert m->mm
         else:
             logger.warning("Unknown unit %s, defaulting to 2theta (deg)" % unit)
-            q = self.twoThetaArray(shape)
-            pos = self.cornerArray(shape)
-            dq = self.delta2Theta(shape)
+#            q = self.twoThetaArray(shape)
+#            pos = self.cornerArray(shape)
+#            dq = self.delta2Theta(shape)
             unit = "2th_deg"
             if radial_range:
                 radial_range = tuple([numpy.deg2rad(i) for i in radial_range])
@@ -1287,7 +1327,8 @@ class AzimuthalIntegrator(Geometry):
                         mask_crc = self.detector._mask_crc
                     else:
                         mask_crc = crc32(mask)
-
+                    if self._lut_integrator.unit != unit:
+                        reset = "unit changed"
                     if (mask is not None) and (not self._lut_integrator.check_mask):
                         reset = "mask but LUT was without mask"
                     elif (mask is None) and (self._lut_integrator.check_mask):
@@ -1306,7 +1347,7 @@ class AzimuthalIntegrator(Geometry):
                 if reset:
                     logger.warning("AI.integrate1d: Resetting integrator because of %s" % reset)
                     try:
-                        self._lut_integrator = self.setup_LUT(shape, nbPt, mask, radial_range, azimuth_range, mask_checksum=mask_crc, tth=q, dtth=dq)
+                        self._lut_integrator = self.setup_LUT(shape, nbPt, mask, radial_range, azimuth_range, mask_checksum=mask_crc, unit=unit)
                         error = False
                     except MemoryError:  # LUT method is hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
@@ -1363,8 +1404,7 @@ class AzimuthalIntegrator(Geometry):
                 logger.error("Import error %s , falling back on splitbbox histogram !" % error)
                 method = "bbox"
             else:
-
-
+                pos = self.array_from_unit(shape, "corner", unit)
                 qAxis, I, a, b = splitPixel.fullSplit1D(pos=pos,
                                                         weights=data,
                                                         bins=nbPt,
@@ -1405,9 +1445,11 @@ class AzimuthalIntegrator(Geometry):
                     dchi = self.deltaChi(shape)
                 else:
                     dchi = None
+                pos0 = self.array_from_unit(shape, "center", unit)
+                dpos0 = self.array_from_unit(shape, "delta", unit)
                 qAxis, I, a, b = splitBBox.histoBBox1d(weights=data,
-                                                      pos0=q,
-                                                      delta_pos0=dq,
+                                                      pos0=pos0,
+                                                      delta_pos0=dpos0,
                                                       pos1=chi,
                                                       delta_pos1=dchi,
                                                       bins=nbPt,
@@ -1424,8 +1466,8 @@ class AzimuthalIntegrator(Geometry):
                     variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
                 if variance is not None:
                     qa, var1d, a, b = splitBBox.histoBBox1d(weights=variance,
-                                                      pos0=q,
-                                                      delta_pos0=dq,
+                                                      pos0=pos0,
+                                                      delta_pos0=dpos0,
                                                       pos1=chi,
                                                       delta_pos1=dchi,
                                                       bins=nbPt,
@@ -1495,17 +1537,17 @@ class AzimuthalIntegrator(Geometry):
             if solidangle is not None:
                 data /= solidangle
             data = data[mask]
-            q = q[mask]
+            pos0 = self.array_from_unit(shape, "center", unit)[mask]
             if variance is not None:
                 variance = variance[mask]
-            ref, b = numpy.histogram(q, nbPt)
+            ref, b = numpy.histogram(pos0, nbPt)
             qAxis = (b[1:] + b[:-1]) / 2.0
             count = numpy.maximum(1, ref)
-            val, b = numpy.histogram(q, nbPt, weights=data)
+            val, b = numpy.histogram(pos0, nbPt, weights=data)
             if error_model == "azimuthal":
                 variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
             if variance is not None:
-                var1d, b = numpy.histogram(q, nbPt, weights=variance)
+                var1d, b = numpy.histogram(pos0, nbPt, weights=variance)
                 sigma = numpy.sqrt(var1d) / count
             I = val / count
         if pos0_scale :

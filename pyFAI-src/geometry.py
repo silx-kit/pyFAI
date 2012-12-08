@@ -292,7 +292,7 @@ class Geometry(object):
         @rtype: float or array of floats.
         """
         cosTilt = cos(self._rot1) * cos(self._rot2)
-        directDist = 1.0e3 * self._dist / cosTilt  # in mm
+        directDist = self._dist / cosTilt  # in m
 
         if _geometry and path == "cython":
             p1, p2 = self._calcCartesianPositions(d1, d2, self._poni1, self.poni2)

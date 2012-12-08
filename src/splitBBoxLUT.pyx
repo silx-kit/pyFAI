@@ -62,7 +62,8 @@ class HistoBBox1d(object):
                  pos1Range=None,
                  mask=None,
                  mask_checksum=None,
-                 allow_pos0_neg=False):
+                 allow_pos0_neg=False,
+                 unit="undefined"):
 
         cdef int i, size
         self.size = pos0.size
@@ -113,8 +114,8 @@ class HistoBBox1d(object):
         self.delta = (self.pos0_max - self.pos0_min) / bins
         self.lut_max_idx = self.calc_lut()
         self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, pos0_maxin-0.5*self.delta, self.bins)
-        self.outPos_degrees = numpy.degrees(self.outPos)
         self.lut_checksum = crc32(self.lut)
+        self.unit=unit
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
