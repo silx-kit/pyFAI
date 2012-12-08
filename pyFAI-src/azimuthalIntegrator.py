@@ -472,33 +472,99 @@ class AzimuthalIntegrator(Geometry):
                         devicetype="gpu", useFp64=True, platformid=None, deviceid=None, safe=True):
 
         """
-        Calculate the powder diffraction pattern from a set of data, an image. Cython implementation
+        Calculate the powder diffraction pattern from a set of data,
+        an image.
+
+        Cython implementation (OpenCL)
+
         @param data: 2D array from the CCD camera
         @type data: ndarray
         @param nbPt: number of points in the output pattern
         @type nbPt: integer
         @param filename: file to save data in ascii format 2 column
-        @type filename: string
-        @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
+        @type filename: str
+        @param correctSolidAngle: solid angle correction
         @type correctSolidAngle: boolean
-        @param tthRange: The lower and upper range of the 2theta. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored.
+        @param tthRange: The lower and upper range of the 2theta
         @type tthRange: (float, float), optional
-        @param chiRange: The lower and upper range of the chi angle. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored.
-        @type chiRange: (float, float), optional, disabled for now
-        @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
-        @param  dummy: value for dead/masked pixels
+        @param mask: array with 1 for masked pixels, and 0 for valid pixels
+        @type mask: ndarray
+        @param dummy: value for dead/masked pixels (dynamic mask)
+        @type dummy: float
         @param delta_dummy: precision for dummy value
+        @type delta_dummy: float
+
         OpenCL specific parameters:
-        @param devicetype: "cpu" or "gpu" or "all"  or "def"
+
+        @param devicetype: possible values "cpu", "gpu", "all" or "def"
+        @type devicetype: str
         @param useFp64: shall histogram be done in double precision (adviced)
+        @type useFp64: bool
         @param platformid: platform number
+        @type platformid: int
         @param deviceid: device number
-        @param safe: set to false if you think your GPU is already set-up correctly (2theta, mask, solid angle...)
+        @type deviceid: int
+        @param safe: set to False if your GPU is already set-up correctly
+        @type safe: bool
 
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
+
+        This method compute the powder diffraction pattern, from a
+        given *data* image. The number of point of the pattern is
+        given by the *nbPt* parameter. If you give a *filename*, the
+        powder diffraction is also saved as a two column text file.
+        The powder diffraction is computed internally using an
+        histogram which by default use float32. you can switch to
+        float64 with the *useFp64* parameter.
+
+        It is possible to correct or not the powder diffraction
+        pattern using the *correctSolidAngle* parameter. The weight of
+        a pixel is ponderate by its solid angle.
+
+        The 2theta range of the powder diffraction pattern can be set
+        using the *tthRange* parameter. If not given the maximum
+        available range is used. Indeed pixel outside this range are
+        ignored.
+
+        Each pixel of the *data* image has also a chi coordinate. So
+        it is possible to restrain the chi range of the pixels to
+        consider in the powder diffraction pattern. you just need to
+        set the range with the *chiRange* parameter. like the
+        *tthRange* parameter, value outside this range are ignored.
+
+        Sometimes one needs to mask a few pixels (beamstop, hot
+        pixels, ...), to ignore a few of them you just need to provide
+        a *mask* array with a value of 1 for those pixels. To take a
+        pixel into account you just need to set a value of 0 in the
+        mask array. Indeed the shape of the mask array should be
+        idential to the data shape (size of the array _must_ be the
+        same).
+
+        Dynamic masking (i.e recalculated for each image) can be
+        achieved by setting masked pixels to an impossible value (-1)
+        and calling this value the "dummy value". Dynamic masking is
+        computed at integration whereas static masking is done at
+        LUT-generation, hence faster. (Jerome est-ce vrai aussi pour
+        cet algo ???)
+
+        Some Pilatus detectors are setting non existing pixel to -1
+        and dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so
+        that any value between -3.5 and -0.5 are considered as bad.
+
+        *devicetype*, *platformid* and *deviceid*, parameters are
+        specific to the OpenCL implementation. If you set *devicetype*
+        to 'all', 'cpu', 'gpu', 'def' you can force the device used to
+        perform the computation. with the *platformid* and *deviceid*
+        (Jerome can you complete this ???)
+
+        The *safe* parameter is specific to the LUT implementation,
+        you can set it to false if you think the LUT calculated is
+        already the correct one (setup, mask, 2theta/chi range).
+        (Jerome il me semble que ce safe n'est pas lié a LUT mais au
+        fait que du GPU peut etre utlisé, si j'ai raison les
+        descriptions des paramêtres dans les methodes avec LUT ne sont
+        pas bonne ???)
         """
         if not ocl_azim:
             logger.error("OpenCL implementation not available falling back on old method !")
@@ -633,7 +699,7 @@ class AzimuthalIntegrator(Geometry):
         @param nbPt: number of points in the output pattern
         @type nbPt: integer
         @param filename: file to save data in ascii format 2 column
-        @type filename: string
+        @type filename: str
         @param correctSolidAngle: solid angle correction
         @type correctSolidAngle: boolean
         @param tthRange: The lower and upper range of the 2theta
@@ -649,9 +715,8 @@ class AzimuthalIntegrator(Geometry):
 
         LUT specific parameters:
 
-        @param safe: set to false your believe the integrator is already set-up correctly:
-            no change in the mask, or in the 2th/chi range
-        @type safe: boolean
+        @param safe: set to False if your GPU is already set-up correctly
+        @type safe: bool
 
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
@@ -676,26 +741,27 @@ class AzimuthalIntegrator(Geometry):
         set the range with the *chiRange* parameter. like the
         *tthRange* parameter, value outside this range are ignored.
 
-        Sometimes one needs to mask a few pixels (beamstop, hot pixels,
-        ...), to ignore a few of them you just need to provide a
-        *mask* array with a value of 1 for those pixels. To take a pixel
-        into account you just need to set a value of 0 in the mask
-        array. Indeed the shape of the mask array should be idential to
-        the data shape (size of the array _must_ be the same).
+        Sometimes one needs to mask a few pixels (beamstop, hot
+        pixels, ...), to ignore a few of them you just need to provide
+        a *mask* array with a value of 1 for those pixels. To take a
+        pixel into account you just need to set a value of 0 in the
+        mask array. Indeed the shape of the mask array should be
+        idential to the data shape (size of the array _must_ be the
+        same).
 
-        Dynamic masking (i.e recalculated for each image) can be achieved
-        by setting masked pixels to an impossible value (-1) and calling this
-        value the "dummy value". Dynamic masking is computed at integration
-        whereas static masking is done at LUT-generation, hence faster.
+        Dynamic masking (i.e recalculated for each image) can be
+        achieved by setting masked pixels to an impossible value (-1)
+        and calling this value the "dummy value". Dynamic masking is
+        computed at integration whereas static masking is done at
+        LUT-generation, hence faster.
 
-        Some Pilatus detectors are setting non existing pixel to -1 and dead
-        pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so that any value
-        between -3.5 and -0.5 are considered as bad.
+        Some Pilatus detectors are setting non existing pixel to -1
+        and dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so
+        that any value between -3.5 and -0.5 are considered as bad.
 
         The *safe* parameter is specific to the LUT implementation,
-        you can set it to false if you think the LUT calculated is already
-        the correct one (setup, mask, 2theta/chi range).
-
+        you can set it to false if you think the LUT calculated is
+        already the correct one (setup, mask, 2theta/chi range).
         """
 
         shape = data.shape
@@ -790,31 +856,94 @@ class AzimuthalIntegrator(Geometry):
                        safe=True, devicetype="all", platformid=None, deviceid=None):
 
         """
-        Calculate the powder diffraction pattern from a set of data, an image. Cython implementation using a Look-Up Table.
+        Calculate the powder diffraction pattern from a set of data,
+        an image.
+
+        Cython implementation using a Look-Up Table (OpenCL).
+
         @param data: 2D array from the CCD camera
         @type data: ndarray
         @param nbPt: number of points in the output pattern
         @type nbPt: integer
         @param filename: file to save data in ascii format 2 column
-        @type filename: string
-        @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
+        @type filename: str
+        @param correctSolidAngle: solid angle correction
         @type correctSolidAngle: boolean
-        @param tthRange: The lower and upper range of the 2theta. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored.
-        @type tthRange: (float, float), optional
-        @param chiRange: The lower and upper range of the chi angle. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored.
-        @type chiRange: (float, float), optional, disabled for now
-        @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
-        @param  dummy: value for dead/masked pixels
+        @param tthRange: The lower and upper range of 2theta
+        @type tthRange: (float, float)
+        @param chiRange: The lower and upper range of the chi angle.
+        @type chiRange: (float, float), disabled for now
+        @param mask: array with 1 for masked pixels, and 0 for valid pixels
+        @type mask: ndarray
+        @param dummy: value for dead/masked pixels (dynamic mask)
+        @type dummy: float
         @param delta_dummy: precision for dummy value
+        @type delta_dummy: float
+
         LUT specific parameters:
-        @param safe: set to false if you think your GPU is already set-up correctly (2theta, mask, solid angle...)
+
+        @param safe: set to False if your GPU is already set-up correctly
+        @type safe: bool
+
         OpenCL specific parameters:
-        @param  devicetype: can be "all", "cpu" or "gpu"
+
+        @param devicetype: can be "all", "cpu" or "gpu" ??? "def"
+        @type devicetype: str
+        @param platformid: platform number
+        @type platformid: int
+        @param deviceid: device number
+        @type deviceid: int
 
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
+
+        This method compute the powder diffraction pattern, from a
+        given *data* image. The number of point of the pattern is
+        given by the *nbPt* parameter. If you give a *filename*, the
+        powder diffraction is also saved as a two column text file.
+
+        It is possible to correct or not the powder diffraction
+        pattern using the *correctSolidAngle* parameter. The weight of
+        a pixel is ponderate by its solid angle.
+
+        The 2theta range of the powder diffraction pattern can be set
+        using the *tthRange* parameter. If not given the maximum
+        available range is used. Indeed pixel outside this range are
+        ignored.
+
+        Each pixel of the *data* image has also a chi coordinate. So
+        it is possible to restrain the chi range of the pixels to
+        consider in the powder diffraction pattern. you just need to
+        set the range with the *chiRange* parameter. like the
+        *tthRange* parameter, value outside this range are ignored.
+
+        Sometimes one needs to mask a few pixels (beamstop, hot
+        pixels, ...), to ignore a few of them you just need to provide
+        a *mask* array with a value of 1 for those pixels. To take a
+        pixel into account you just need to set a value of 0 in the
+        mask array. Indeed the shape of the mask array should be
+        idential to the data shape (size of the array _must_ be the
+        same).
+
+        Dynamic masking (i.e recalculated for each image) can be
+        achieved by setting masked pixels to an impossible value (-1)
+        and calling this value the "dummy value". Dynamic masking is
+        computed at integration whereas static masking is done at
+        LUT-generation, hence faster.
+
+        Some Pilatus detectors are setting non existing pixel to -1
+        and dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so
+        that any value between -3.5 and -0.5 are considered as bad.
+
+        The *safe* parameter is specific to the LUT implementation,
+        you can set it to false if you think the LUT calculated is
+        already the correct one (setup, mask, 2theta/chi range).
+
+        *devicetype*, *platformid* and *deviceid*, parameters are
+        specific to the OpenCL implementation. If you set *devicetype*
+        to 'all', 'cpu', or 'gpu' you can force the device used to
+        perform the computation. with the *platformid* and *deviceid*
+        (Jerome can you complete this ???)
         """
         shape = data.shape
         if not (splitBBoxLUT and ocl_azim_lut):
