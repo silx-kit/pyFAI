@@ -31,15 +31,15 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "23/08/2012"
 __status__ = "beta"
 
-import os, threading, logging
+import logging
 import numpy
 
+logger = logging.getLogger("pyFAI.refinment2D")
 
 #from utils import timeit
-logger = logging.getLogger("pyFAI.refinment2D")
-from pyFAI.geometry import Geometry
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 from PyMca import SGModule
+
 
 class Refinment2D(object):
     """
@@ -63,11 +63,11 @@ class Refinment2D(object):
     def reconstruct(self, tth, I):
         """
         Reconstruct a perfect image according to 2th / I given in input
-          
+
         @param tth: 2 theta array
         @param I: intensity array
         """
-        return numpy.interp(self.ai.twoThetaArray(self.shape), tth , I)
+        return numpy.interp(self.ai.twoThetaArray(self.shape), tth, I)
 
     def diff_tth_X(self, dx=0.1):
         f = self.ai.getFit2D()
@@ -79,10 +79,11 @@ class Refinment2D(object):
         am = AzimuthalIntegrator()
         ap.setFit2D(**fp)
         am.setFit2D(**fm)
-        dtthX = (ap.twoThetaArray(self.shape) - am.twoThetaArray(self.shape)) / dx
+        dtthX = (ap.twoThetaArray(self.shape) - am.twoThetaArray(self.shape))\
+            / dx
         tth, I = self.ai.xrpd(self.img, max(self.shape))
-        from PyMca import SGModule
-        dI = SGModule.getSavitzkyGolay(I, npoints=5, degree=2, order=1) / (tth[1] - tth[0])
+        dI = SGModule.getSavitzkyGolay(I, npoints=5, degree=2, order=1)\
+            / (tth[1] - tth[0])
         dImg = self.reconstruct(tth, dI)
         return (dtthX * dImg).sum()
 
@@ -96,20 +97,21 @@ class Refinment2D(object):
         am = AzimuthalIntegrator()
         ap.setFit2D(**fp)
         am.setFit2D(**fm)
-        dtthX = (ap.twoThetaArray(self.shape) - am.twoThetaArray(self.shape)) / dx
+        dtthX = (ap.twoThetaArray(self.shape) - am.twoThetaArray(self.shape))\
+            / dx
         tth, I = self.ai.xrpd(self.img, max(self.shape))
-        from PyMca import SGModule
-        dI = SGModule.getSavitzkyGolay(I, npoints=5, degree=2, order=1) / (tth[1] - tth[0])
+        dI = SGModule.getSavitzkyGolay(I, npoints=5, degree=2, order=1)\
+            / (tth[1] - tth[0])
         dImg = self.reconstruct(tth, dI)
         return (dtthX * dImg).sum()
 
-
     def diff_Fit2D(self, axis="all", dx=0.1):
         tth, I = self.ai.xrpd(self.img, max(self.shape))
-        dI = SGModule.getSavitzkyGolay(I, npoints=5, degree=2, order=1) / (tth[1] - tth[0])
+        dI = SGModule.getSavitzkyGolay(I, npoints=5, degree=2, order=1)\
+            / (tth[1] - tth[0])
         dImg = self.reconstruct(tth, dI)
         f = self.ai.getFit2D()
-        tth2d_ref = self.ai.twoThetaArray(self.shape)
+        tth2d_ref = self.ai.twoThetaArray(self.shape)  # useless variable ???
 
         keys = ["centerX", "centerY", "tilt", "tiltPlanRotation"]
         if axis != "all":
@@ -120,7 +122,8 @@ class Refinment2D(object):
             fp[key] += dx
             ap = AzimuthalIntegrator()
             ap.setFit2D(**fp)
-            dtth = (ap.twoThetaArray(self.shape) - self.ai.twoThetaArray(self.shape)) / dx
+            dtth = (ap.twoThetaArray(self.shape)
+                    - self.ai.twoThetaArray(self.shape)) / dx
             grad[key] = (dtth * dImg).sum()
         if axis == "all":
             return grad
@@ -130,7 +133,9 @@ class Refinment2D(object):
     def scan_centerX(self, width=1.0, points=10):
         f = self.ai.getFit2D()
         out = []
-        for x in numpy.linspace(f["centerX"] - width / 2.0, f["centerX"] + width / 2.0, points):
+        for x in numpy.linspace(f["centerX"] - width / 2.0,
+                                f["centerX"] + width / 2.0,
+                                points):
             ax = AzimuthalIntegrator()
             fx = f.copy()
             fx["centerX"] = x
@@ -140,12 +145,16 @@ class Refinment2D(object):
             res = ref.diff_tth_X()
             print "x= %.3f mean= %e" % (x, res)
             out.append(res)
-        return numpy.linspace(f["centerX"] - width / 2.0, f["centerX"] + width / 2.0, points), out
+        return numpy.linspace(f["centerX"] - width / 2.0,
+                              f["centerX"] + width / 2.0,
+                              points), out
 
     def scan_tilt(self, width=1.0, points=10):
         f = self.ai.getFit2D()
         out = []
-        for x in numpy.linspace(f["tilt"] - width / 2.0, f["tilt"] + width / 2.0, points):
+        for x in numpy.linspace(f["tilt"] - width / 2.0,
+                                f["tilt"] + width / 2.0,
+                                points):
             ax = AzimuthalIntegrator()
             fx = f.copy()
             fx["tilt"] = x
@@ -155,13 +164,17 @@ class Refinment2D(object):
             res = ref.diff_tth_tilt()
             print "x= %.3f mean= %e" % (x, res)
             out.append(res)
-        return numpy.linspace(f["tilt"] - width / 2.0, f["tilt"] + width / 2.0, points), out
+        return numpy.linspace(f["tilt"] - width / 2.0,
+                              f["tilt"] + width / 2.0,
+                              points), out
 
     def scan_Fit2D(self, width=1.0, points=10, axis="tilt", dx=0.1):
         logger.info("Scanning along axis %s" % axis)
         f = self.ai.getFit2D()
         out = []
-        meas_pts = numpy.linspace(f[axis] - width / 2.0, f[axis] + width / 2.0, points)
+        meas_pts = numpy.linspace(f[axis] - width / 2.0,
+                                  f[axis] + width / 2.0,
+                                  points)
         for x in meas_pts:
             ax = AzimuthalIntegrator()
             fx = f.copy()
@@ -172,4 +185,3 @@ class Refinment2D(object):
             print "x= %.3f mean= %e" % (x, res)
             out.append(res)
         return meas_pts, out
-
