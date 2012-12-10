@@ -78,24 +78,33 @@ except:
 
 class AzimuthalIntegrator(Geometry):
     """
-    This class is an azimuthal integrator based on P. Boesecke's geometry and
-    histogram algorithm by Manolo S. del Rio and V.A Sole
+    This class is an azimuthal integrator based on P. Boesecke's
+    geometry and histogram algorithm by Manolo S. del Rio and V.A Sole
 
     All geometry calculation are done in the Geometry class
-
     """
     def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0, pixel1=None, pixel2=None, splineFile=None, detector=None):
         """
         @param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
+        @type dist: float
         @param poni1: coordinate of the point of normal incidence along the detector's first dimension, in meter
+        @type poni1: ???
         @param poni2: coordinate of the point of normal incidence along the detector's second dimension, in meter
+        @type poni2: ???
         @param rot1: first rotation from sample ref to detector's ref, in radians
+        @type rot1: float
         @param rot2: second rotation from sample ref to detector's ref, in radians
+        @type rot2: float
         @param rot3: third rotation from sample ref to detector's ref, in radians
+        @type rot3: float
         @param pixel1: pixel size of the fist dimension of the detector,  in meter
+        @type pixel1: float
         @param pixel2: pixel size of the second dimension of the detector,  in meter
+        @type pixel2: float
         @param splineFile: file containing the geometric distortion of the detector. Overrides the pixel size.
+        @type splineFile: str
         @param detector: name of the detector or Detector instance.
+        @type detector: str or pyFAI.Detector
         """
         Geometry.__init__(self, dist, poni1, poni2, rot1, rot2, rot3, pixel1, pixel2, splineFile, detector)
         self._nbPixCache = {}  # key=shape, value: array
@@ -136,11 +145,18 @@ class AzimuthalIntegrator(Geometry):
         Numpy mode: True for valid pixels, false for others
 
         @param data: input array of data
+        @type data: ndarray
         @param mask: input mask (if none, self.mask is used)
+        @type mask: ndarray
         @param dummy: value of dead pixels
+        @type dummy: float
         @param delta_dumy: precision of dummy pixels
+        @type delta_dummy: float
         @param mode: can be "normal" or "numpy"
-        @return: array of boolean
+        @type mode: str
+
+        @return: the new mask
+        @rtype: ndarray of bool
         """
         shape = data.shape
         if mask is None:
@@ -174,27 +190,76 @@ class AzimuthalIntegrator(Geometry):
                    tthRange=None, mask=None, dummy=None, delta_dummy=None,
                    polarization_factor=0, dark=None, flat=None):
         """
-        Calculate the powder diffraction pattern from a set of data, an image. Numpy implementation
+        Calculate the powder diffraction pattern from a set of data,
+        an image.
+
+        Numpy implementation
 
         @param data: 2D array from the CCD camera
         @type data: ndarray
         @param nbPt: number of points in the output pattern
         @type nbPt: integer
-        @param filename: file to save data in
-        @type filename: string
-        @param correctSolidAngle: if True, the data are divided by the solid angle of each pixel
-        @type correctSolidAngle: boolean
-        @param tthRange: The lower and upper range of 2theta. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored.
+        @param filename: file to save data in ascii format 2 column
+        @type filename: str
+        @param correctSolidAngle: solid angle correction
+        @type correctSolidAngle: bool
+        @param tthRange: The lower and upper range of the 2theta
         @type tthRange: (float, float), optional
-        @param mask: array (same size as image) with 0 for masked pixels, and 1 for valid pixels
-        @param  dummy: value for dead/masked pixels
+        @param mask: array with 1 for masked pixels, and 0 for valid pixels
+        @type mask: ndarray
+        @param dummy: value for dead/masked pixels (dynamic mask)
+        @type dummy: float
         @param delta_dummy: precision for dummy value
-        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction
+        @type delta_dummy: float
+        @param polarization_factor: polarization factor correction
+        @type polarization_factor: float
         @param dark: dark noise image
+        @type dark: ndarray
         @param flat: flat field image
+        @type flat: ndarray
+
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
+
+        This method compute the powder diffraction pattern, from a
+        given *data* image. The number of point of the pattern is
+        given by the *nbPt* parameter. If you give a *filename*, the
+        powder diffraction is also saved as a two column text file.
+
+        It is possible to correct or not the powder diffraction
+        pattern using the *correctSolidAngle* parameter. The weight of
+        a pixel is ponderate by its solid angle.
+
+        The 2theta range of the powder diffraction pattern can be set
+        using the *tthRange* parameter. If not given the maximum
+        available range is used. Indeed pixel outside this range are
+        ignored.
+
+        Sometimes one needs to mask a few pixels (beamstop, hot
+        pixels, ...), to ignore a few of them you just need to provide
+        a *mask* array with a value of 1 for those pixels. To take a
+        pixel into account you just need to set a value of 0 in the
+        mask array. Indeed the shape of the mask array should be
+        idential to the data shape (size of the array _must_ be the
+        same).
+
+        Dynamic masking (i.e recalculated for each image) can be
+        achieved by setting masked pixels to an impossible value (-1)
+        and calling this value the "dummy value". Dynamic masking is
+        computed at integration whereas static masking is done at
+        LUT-generation, hence faster. (Jerome est-ce vrai aussi pour
+        cet algo ???)
+
+        Some Pilatus detectors are setting non existing pixel to -1
+        and dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so
+        that any value between -3.5 and -0.5 are considered as bad.
+
+        the polarisation correction can be taken into account with the
+        *polarization_factor* parameter. Set it between [-1, 1], to
+        correct your data. If set to 0 there is no correction at all.
+
+        The *dark* and the *flat* can be provided to correct the data
+        before computing the radial integration.
         """
         mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
         tth = self.twoThetaArray(data.shape)[mask]
@@ -236,28 +301,9 @@ class AzimuthalIntegrator(Geometry):
         """
         Calculate the powder diffraction pattern from a set of data, an image.
 
-        Old cython implementation, you should not use it.
+        Deprecated cython implementation, use xrpd_splitBBox insteed
 
-        @param data: 2D array from the CCD camera
-        @type data: ndarray
-        @param nbPt: number of points in the output pattern
-        @type nbPt: integer
-        @param filename: file to save data in
-        @type filename: string
-        @param correctSolidAngle: if True, the data are divided by the solid angle of each pixel
-        @type correctSolidAngle: boolean
-        @param tthRange: The lower and upper range of the 2theta. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored.
-        @type tthRange: (float, float), optional
-        @param mask: array (same size as image) with 1 for masked pixels, and 0 for valid pixels
-        @param  dummy: value for dead/masked pixels
-        @param delta_dummy: precision for dummy value
-        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction
-        @param dark: dark noise image
-        @param flat: flat field image
-        @param pixelSize: extension of pixels in 2theta (and radians) ... for pixel splittinh
-        @return: (2theta, I) in degrees
-        @rtype: 2-tuple of 1D arrays
+        ??? maybe use a decorator to mark this method as deprecated.
         """
         try:
             import histogram  # IGNORE:F0401
@@ -301,33 +347,83 @@ class AzimuthalIntegrator(Geometry):
                        tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None,
                        polarization_factor=0, dark=None, flat=None):
         """
-        Calculate the powder diffraction pattern from a set of data, an image. Cython implementation
+        Calculate the powder diffraction pattern from a set of data,
+        an image.
 
-        Add in the cython part a dark and a flat images to be corrected on the fly.
-        This is the default and prefered method.
+        Cython implementation
 
         @param data: 2D array from the CCD camera
         @type data: ndarray
         @param nbPt: number of points in the output pattern
         @type nbPt: integer
         @param filename: file to save data in ascii format 2 column
-        @type filename: string
-        @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
+        @type filename: str
+        @param correctSolidAngle: solid angle correction
         @type correctSolidAngle: boolean
-        @param tthRange: The lower and upper range of the 2theta. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored.
+        @param tthRange: The lower and upper range of the 2theta
         @type tthRange: (float, float), optional
-        @param chiRange: The lower and upper range of the chi angle. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored.
-        @type chiRange: (float, float), optional
-        @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
-        @param  dummy: value for dead/masked pixels
+        @param chiRange: The lower and upper range of the chi angle.
+        @type chiRange: (float, float), optional, disabled for now
+        @param mask: array with 1 for masked pixels, and 0 for valid pixels
+        @type mask: ndarray
+        @param dummy: value for dead/masked pixels (dynamic mask)
+        @type dummy: float
         @param delta_dummy: precision for dummy value
-        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction
+        @type delta_dummy: float
+        @param polarization_factor: polarization factor correction
+        @type polarization_factor: float
         @param dark: dark noise image
+        @type dark: ndarray
         @param flat: flat field image
+        @type flat: ndarray
+
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
+
+        This method compute the powder diffraction pattern, from a
+        given *data* image. The number of point of the pattern is
+        given by the *nbPt* parameter. If you give a *filename*, the
+        powder diffraction is also saved as a two column text file.
+
+        It is possible to correct or not the powder diffraction
+        pattern using the *correctSolidAngle* parameter. The weight of
+        a pixel is ponderate by its solid angle.
+
+        The 2theta range of the powder diffraction pattern can be set
+        using the *tthRange* parameter. If not given the maximum
+        available range is used. Indeed pixel outside this range are
+        ignored.
+
+        Each pixel of the *data* image as also a chi coordinate. So it
+        is possible to restrain the chi range of the pixels to
+        consider in the powder diffraction pattern. you just need to
+        set the range with the *chiRange* parameter. like the
+        *tthRange* parameter, value outside this range are ignored.
+
+        Sometimes one needs to mask a few pixels (beamstop, hot
+        pixels, ...), to ignore a few of them you just need to provide
+        a *mask* array with a value of 1 for those pixels. To take a
+        pixel into account you just need to set a value of 0 in the
+        mask array. Indeed the shape of the mask array should be
+        idential to the data shape (size of the array _must_ be the
+        same).
+
+        Dynamic masking (i.e recalculated for each image) can be
+        achieved by setting masked pixels to an impossible value (-1)
+        and calling this value the "dummy value". Dynamic masking is
+        computed at integration whereas static masking is done at
+        LUT-generation, hence faster.
+
+        Some Pilatus detectors are setting non existing pixel to -1
+        and dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so
+        that any value between -3.5 and -0.5 are considered as bad.
+
+        the polarisation correction can be taken into account with the
+        *polarization_factor* parameter. Set it between [-1, 1], to
+        correct your data. If set to 0 there is no correction at all.
+
+        The *dark* and the *flat* can be provided to correct the data
+        before computing the radial integration.
         """
         try:
             import splitBBox  # IGNORE:F0401
@@ -401,22 +497,78 @@ class AzimuthalIntegrator(Geometry):
         Calculate the powder diffraction pattern from a set of data, an image.
 
         Cython implementation
-
         @param data: 2D array from the CCD camera
         @type data: ndarray
         @param nbPt: number of points in the output pattern
         @type nbPt: integer
-        @param filename: file to save data in
-        @type filename: string
-        @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
-        @param  dummy: value for dead/masked pixels
+        @param filename: file to save data in ascii format 2 column
+        @type filename: str
+        @param correctSolidAngle: solid angle correction
+        @type correctSolidAngle: boolean
+        @param tthRange: The lower and upper range of the 2theta
+        @type tthRange: (float, float), optional
+        @param chiRange: The lower and upper range of the chi angle.
+        @type chiRange: (float, float), optional, disabled for now
+        @param mask: array with 1 for masked pixels, and 0 for valid pixels
+        @type mask: ndarray
+        @param dummy: value for dead/masked pixels (dynamic mask)
+        @type dummy: float
         @param delta_dummy: precision for dummy value
-        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction
+        @type delta_dummy: float
+        @param polarization_factor: polarization factor correction
+        @type polarization_factor: float
         @param dark: dark noise image
+        @type dark: ndarray
         @param flat: flat field image
+        @type flat: ndarray
+
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
 
+        This method compute the powder diffraction pattern, from a
+        given *data* image. The number of point of the pattern is
+        given by the *nbPt* parameter. If you give a *filename*, the
+        powder diffraction is also saved as a two column text file.
+
+        It is possible to correct or not the powder diffraction
+        pattern using the *correctSolidAngle* parameter. The weight of
+        a pixel is ponderate by its solid angle.
+
+        The 2theta range of the powder diffraction pattern can be set
+        using the *tthRange* parameter. If not given the maximum
+        available range is used. Indeed pixel outside this range are
+        ignored.
+
+        Each pixel of the *data* image as also a chi coordinate. So it
+        is possible to restrain the chi range of the pixels to
+        consider in the powder diffraction pattern. you just need to
+        set the range with the *chiRange* parameter. like the
+        *tthRange* parameter, value outside this range are ignored.
+
+        Sometimes one needs to mask a few pixels (beamstop, hot
+        pixels, ...), to ignore a few of them you just need to provide
+        a *mask* array with a value of 1 for those pixels. To take a
+        pixel into account you just need to set a value of 0 in the
+        mask array. Indeed the shape of the mask array should be
+        idential to the data shape (size of the array _must_ be the
+        same).
+
+        Dynamic masking (i.e recalculated for each image) can be
+        achieved by setting masked pixels to an impossible value (-1)
+        and calling this value the "dummy value". Dynamic masking is
+        computed at integration whereas static masking is done at
+        LUT-generation, hence faster.
+
+        Some Pilatus detectors are setting non existing pixel to -1
+        and dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so
+        that any value between -3.5 and -0.5 are considered as bad.
+
+        the polarisation correction can be taken into account with the
+        *polarization_factor* parameter. Set it between [-1, 1], to
+        correct your data. If set to 0 there is no correction at all.
+
+        The *dark* and the *flat* can be provided to correct the data
+        before computing the radial integration.
         """
         try:
             import splitPixel  # IGNORE:F0401
@@ -642,14 +794,22 @@ class AzimuthalIntegrator(Geometry):
         This method is called when a look-up table needs to be set-up.
 
         @param shape: shape of the data
+        @type shape: (int,int)
         @param nbPt: number of points in the the output pattern
+        @type nbPt: int
         @param mask: array with masked pixel (1=masked)
+        @type mask: ndarray
         @param pos0_range: range in radial dimension
+        @type pos0_range: (float, float)
         @param pos1_range: range in azimuthal dimension
+        @type pos1_range: (float, float)
         @param mask_checksum: checksum of the mask buffer (prevent re-calculating it)
+        @type mask_checksum: int (or anything else ...)
         @param unit: This is just an information to propagate the LUT object for further checkings
+        @type unit: str
         """
-        unit = str(unit).split("_")[0]
+        if "_" in unit:
+            unit = str(unit).split("_")[0]
         pos0 = self.array_from_unit(shape, "center", unit)
         dpos0 = self.array_from_unit(shape, "delta", unit)
         if pos1_range is None:
@@ -1039,21 +1199,32 @@ class AzimuthalIntegrator(Geometry):
     def xrpd2_numpy(self, data, nbPt2Th, nbPtChi=360, filename=None, correctSolidAngle=True,
                          tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None):
         """
-        Calculate the 2D powder diffraction pattern (2Theta,Chi) from a set of data, an image
+        Calculate the 2D powder diffraction pattern (2Theta, Chi) from
+        a set of data, an image
 
         Pure numpy implementation (VERY SLOW !!!)
 
         @param data: 2D array from the CCD camera
         @type data: ndarray
-        @param nbPt2Th: number of points in the output pattern in the Radial (horizontal) axis (2 theta)
-        @type nbPt: integer
-        @param nbPtChi: number of points in the output pattern along the Azimuthal (vertical) axis (chi)
-        @type nbPtChi: integer
+        @param nbPt2Th: number of bin of the Radial (horizontal) axis (2Theta)
+        @type nbPt: int
+        @param nbPtChi: number of bin of the Azimuthal (vertical) axis (chi)
+        @type nbPtChi: int
         @param filename: file to save data in
-        @type filename: string
-        @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
-        @param  dummy: value for dead/masked pixels
+        @type filename: str
+        @param correctSolidAngle: solid angle correction
+        @type correctSolidAngle: boolean
+        @param tthRange: The lower and upper range of 2theta
+        @type tthRange: (float, float)
+        @param chiRange: The lower and upper range of the chi angle.
+        @type chiRange: (float, float), disabled for now
+        @param mask: array with 1 for masked pixels, and 0 for valid pixels
+        @type mask: ndarray
+        @param dummy: value for dead/masked pixels (dynamic mask)
+        @type dummy: float
         @param delta_dummy: precision for dummy value
+        @type delta_dummy: float
+
         @return: azimuthaly regrouped data, 2theta pos and chipos
         @rtype: 3-tuple of ndarrays
         """
@@ -1091,21 +1262,32 @@ class AzimuthalIntegrator(Geometry):
     def xrpd2_histogram(self, data, nbPt2Th, nbPtChi=360, filename=None, correctSolidAngle=True,
                               tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None):
         """
-        Calculate the 2D powder diffraction pattern (2Theta,Chi) from a set of data, an image
+        Calculate the 2D powder diffraction pattern (2Theta,Chi) from
+        a set of data, an image
 
         Cython implementation: fast but incaccurate
 
         @param data: 2D array from the CCD camera
         @type data: ndarray
-        @param nbPt2Th: number of points in the output pattern in the Radial (horizontal) axis (2 theta)
-        @type nbPt: integer
-        @param nbPtChi: number of points in the output pattern along the Azimuthal (vertical) axis (chi)
-        @type nbPtChi: integer
+        @param nbPt2Th: number of bin of the Radial (horizontal) axis (2Theta)
+        @type nbPt: int
+        @param nbPtChi: number of bin of the Azimuthal (vertical) axis (chi)
+        @type nbPtChi: int
         @param filename: file to save data in
-        @type filename: string
-        @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
-        @param  dummy: value for dead/masked pixels
+        @type filename: str
+        @param correctSolidAngle: solid angle correction
+        @type correctSolidAngle: boolean
+        @param tthRange: The lower and upper range of 2theta
+        @type tthRange: (float, float)
+        @param chiRange: The lower and upper range of the chi angle.
+        @type chiRange: (float, float), disabled for now
+        @param mask: array with 1 for masked pixels, and 0 for valid pixels
+        @type mask: ndarray
+        @param dummy: value for dead/masked pixels (dynamic mask)
+        @type dummy: float
         @param delta_dummy: precision for dummy value
+        @type delta_dummy: float
+
         @return: azimuthaly regrouped data, 2theta pos and chipos
         @rtype: 3-tuple of ndarrays
         """
@@ -1144,29 +1326,32 @@ class AzimuthalIntegrator(Geometry):
     def xrpd2_splitBBox(self, data, nbPt2Th, nbPtChi=360, filename=None, correctSolidAngle=True,
                          tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None):
         """
-        Calculate the 2D powder diffraction pattern (2Theta,Chi) from a set of data, an image
+        Calculate the 2D powder diffraction pattern (2Theta,Chi) from
+        a set of data, an image
 
         Split pixels according to their coordinate and a bounding box
 
         @param data: 2D array from the CCD camera
         @type data: ndarray
-        @param nbPt2Th: number of points in the output pattern in the Radial (horizontal) axis (2 theta)
-        @type nbPt: integer
-        @param nbPtChi: number of points in the output pattern along the Azimuthal (vertical) axis (chi)
-        @type nbPtChi: integer
+        @param nbPt2Th: number of bin of the Radial (horizontal) axis (2Theta)
+        @type nbPt: int
+        @param nbPtChi: number of bin of the Azimuthal (vertical) axis (chi)
+        @type nbPtChi: int
         @param filename: file to save data in
-        @type filename: string
-        @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
+        @type filename: str
+        @param correctSolidAngle: solid angle correction
         @type correctSolidAngle: boolean
-        @param tthRange: The lower and upper range of the 2theta. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored.
-        @type tthRange: (float, float), optional
-        @param chiRange: The lower and upper range of the azimuthal angle. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored.
-        @type chiRange: (float, float), optional
-        @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
-        @param  dummy: value for dead/masked pixels
+        @param tthRange: The lower and upper range of 2theta
+        @type tthRange: (float, float)
+        @param chiRange: The lower and upper range of the chi angle.
+        @type chiRange: (float, float), disabled for now
+        @param mask: array with 1 for masked pixels, and 0 for valid pixels
+        @type mask: ndarray
+        @param dummy: value for dead/masked pixels (dynamic mask)
+        @type dummy: float
         @param delta_dummy: precision for dummy value
+        @type delta_dummy: float
+
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
         @rtype: 3-tuple of ndarrays
         """
@@ -1213,32 +1398,38 @@ class AzimuthalIntegrator(Geometry):
                          tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None,
                          polarization_factor=0, dark=None, flat=None):
         """
-        Calculate the 2D powder diffraction pattern (2Theta,Chi) from a set of data, an image
+        Calculate the 2D powder diffraction pattern (2Theta,Chi) from
+        a set of data, an image
 
         Split pixels according to their corner positions
 
         @param data: 2D array from the CCD camera
         @type data: ndarray
-        @param nbPt2Th: number of points in the output pattern in the Radial (horizontal) axis (2 theta)
-        @type nbPt: integer
-        @param nbPtChi: number of points in the output pattern along the Azimuthal (vertical) axis (chi)
-        @type nbPtChi: integer
+        @param nbPt2Th: number of bin of the Radial (horizontal) axis (2Theta)
+        @type nbPt: int
+        @param nbPtChi: number of bin of the Azimuthal (vertical) axis (chi)
+        @type nbPtChi: int
         @param filename: file to save data in
-        @type filename: string
-        @param correctSolidAngle: if True, the data are devided by the solid angle of each pixel
+        @type filename: str
+        @param correctSolidAngle: solid angle correction
         @type correctSolidAngle: boolean
-        @param tthRange: The lower and upper range of the 2theta. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored.
-        @type tthRange: (float, float), optional
-        @param chiRange: The lower and upper range of the azimuthal angle. If not provided, range is simply (data.min(), data.max()).
-                        Values outside the range are ignored.
-        @type chiRange: (float, float), optional
-        @param mask: array (same siza as image) with 0 for masked pixels, and 1 for valid pixels
-        @param  dummy: value for dead/masked pixels
+        @param tthRange: The lower and upper range of 2theta
+        @type tthRange: (float, float)
+        @param chiRange: The lower and upper range of the chi angle.
+        @type chiRange: (float, float), disabled for now
+        @param mask: array with 1 for masked pixels, and 0 for valid pixels
+        @type mask: ndarray
+        @param dummy: value for dead/masked pixels (dynamic mask)
+        @type dummy: float
         @param delta_dummy: precision for dummy value
-        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction
+        @type delta_dummy: float
+        @param polarization_factor: polarization factor correction
+        @type polarization_factor: float
         @param dark: dark noise image
+        @type dark: ndarray
         @param flat: flat field image
+        @type flat: ndarray
+
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
         @rtype: 3-tuple of ndarrays
         """
@@ -1289,14 +1480,21 @@ class AzimuthalIntegrator(Geometry):
 
     def array_from_unit(self, shape, typ="center", unit="2th_deg"):
         """
-        Generate an array of position in different dimentions (R, Q, 2Theta)
+        Generate an array of position in different dimentions (R, Q,
+        2Theta)
 
         @param shape: shape of the expected array
+        @type shape: ndarray.shape
         @param typ: "center", "corner" or "delta"
+        @type typ: str
         @param unit: can be "q", "2th" or "r" for now
+        @type unit: str
 
+        @return: R, Q or 2Theta depending of the parameters ???
+        @rtype: ndarray ???
         """
-        unit = str(unit).split("_")[0].lower()
+        if "_" in unit:
+            unit = str(unit).split("_")[0].lower()
         if not typ in ("center", "corner", "delta"):
             logger.warning("Unknown type of array %s, defaulting to 'center'" % typ)
             typ = "center"
