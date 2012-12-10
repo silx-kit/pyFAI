@@ -455,6 +455,16 @@ def fullSplit2D(numpy.ndarray pos not None,
             if (max0<pos0_min) or (min0 > pos0_maxin) or (max1<pos1_min) or (min1 > pos1_maxin):
                     continue
 
+            if do_dark:
+                data -= cdark[idx]
+            if do_flat:
+                data /= cflat[idx]
+            if do_polarization:
+                data /= cpolarization[idx]
+            if do_solidangle:
+                data /= csolidangle[idx]
+
+
             if min0 < pos0_min:
                 data = data * (pos0_min - min0) / (max0 - min0)
                 min0 = pos0_min

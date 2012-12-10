@@ -259,7 +259,11 @@ def histoBBox2d(numpy.ndarray weights not None,
                 pos1Range=None,
                 dummy=None,
                 delta_dummy=None,
-                mask=None):
+                mask=None,
+                dark=None,
+                flat=None,
+                solidangle=None,
+                polarization=None):
     """
     Calculate 2D histogram of pos0(tth),pos1(chi) weighted by weights
 
@@ -277,6 +281,11 @@ def histoBBox2d(numpy.ndarray weights not None,
     @param dummy: value for bins without pixels & value of "no good" pixels
     @param delta_dummy: precision of dummy value
     @param mask: array (of int8) with masked pixels with 1 (0=not masked)
+    @param dark: array (of float32) with dark noise to be subtracted (or None)
+    @param flat: array (of float32) with flat-field image 
+    @param polarization: array (of float32) with polarization corrections
+    @param solidangle: array (of float32) with solid angle corrections
+
     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
 
@@ -309,9 +318,10 @@ def histoBBox2d(numpy.ndarray weights not None,
     cdef float pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin
     cdef float fbin0_min, fbin0_max, fbin1_min, fbin1_max, data, epsilon = 1e-10, cdummy, ddummy
     cdef ssize_t  bin0_max, bin0_min, bin1_max, bin1_min
-    cdef bint check_mask = False, check_dummy = False
-    cdef numpy.ndarray[numpy.int8_t, ndim = 1] cmask
-
+    cdef bint check_mask=False, check_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
+    cdef numpy.int8_t[:] cmask
+    cdef float[:] cflat, cdark, cpolarization, csolidangle
+    
     if  mask is not None:
         assert mask.size == size
         check_mask = True
@@ -325,6 +335,23 @@ def histoBBox2d(numpy.ndarray weights not None,
         cdummy = float(dummy)
     else:
         cdummy=0.0
+
+    if dark is not None:
+        assert dark.size == size
+        do_dark = True
+        cdark = numpy.ascontiguousarray(dark.ravel(),dtype=numpy.float32)
+    if flat is not None:
+        assert flat.size == size
+        do_flat = True
+        cflat = numpy.ascontiguousarray(flat.ravel(),dtype=numpy.float32)
+    if polarization is not None:
+        do_polarization = True
+        assert polarization.size == size
+        cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
+    if solidangle is not None:
+        do_solidangle = True
+        assert solidangle.size == size
+        csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float32)
 
 
     pos0_min=cpos0[0]
@@ -372,7 +399,15 @@ def histoBBox2d(numpy.ndarray weights not None,
             if (check_dummy) and (fabs(data-cdummy)<=ddummy):
                 continue
 
-            data = cdata[idx]
+            if do_dark:
+                data -= cdark[idx]
+            if do_flat:
+                data /= cflat[idx]
+            if do_polarization:
+                data /= cpolarization[idx]
+            if do_solidangle:
+                data /= csolidangle[idx]
+
             min0 = cpos0_lower[idx]
             max0 = cpos0_upper[idx]
             min1 = cpos1[idx] - dpos1[idx]
