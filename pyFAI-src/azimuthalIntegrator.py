@@ -494,9 +494,11 @@ class AzimuthalIntegrator(Geometry):
                         tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None,
                         polarization_factor=0, dark=None, flat=None):
         """
-        Calculate the powder diffraction pattern from a set of data, an image.
+        Calculate the powder diffraction pattern from a set of data,
+        an image.
 
-        Cython implementation
+        Cython implementation (single threaded)
+
         @param data: 2D array from the CCD camera
         @type data: ndarray
         @param nbPt: number of points in the output pattern
