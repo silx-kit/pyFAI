@@ -31,19 +31,23 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "29/11/2012"
 __status__ = "stable"
 
-import os, logging, threading, sys
-logger = logging.getLogger("pyFAI.detectors")
+import os
+import logging
+import threading
 import numpy
-from spline import Spline
-try:
-    from fastcrc import crc32
-except:
-    from zlib import crc32
 
+logger = logging.getLogger("pyFAI.detectors")
+
+from pyFAI.spline import Spline
+try:
+    from pyFAI.fastcrc import crc32
+except ImportError:
+    from zlib import crc32
 
 
 class Detector(object):
     "Generic class representing a 2D detector"
+
     def __init__(self, pixel1=None, pixel2=None, splineFile=None):
         self.name = self.__class__.__name__
         self.pixel1 = pixel1
@@ -63,7 +67,8 @@ class Detector(object):
     def __repr__(self):
         if (self.pixel1 is None) and (self.pixel2 is None):
             return "Undefined detector"
-        return "Detector %s\t Spline= %s\t PixelSize= %.3e, %.3e m" % (self.name, self.splineFile, self.pixel1, self.pixel2)
+        return "Detector %s\t Spline= %s\t PixelSize= %.3e, %.3e m" % \
+            (self.name, self.splineFile, self.pixel1, self.pixel2)
 
     def get_splineFile(self):
         return self._splineFile
@@ -86,7 +91,6 @@ class Detector(object):
 
         @param bin_size: binning as integer or tuple of integers.
         @type bin_size: (int, int)
-
         """
         if "__len__" in dir(bin_size) and len(bin_size) >= 2:
             bin_size = (float(bin_size[0]), float(bin_size[1]))
@@ -108,15 +112,15 @@ class Detector(object):
 
 
     def getPyFAI(self):
-        return {"detector":self.name,
-                "pixel1":self.pixel1,
-                "pixel2":self.pixel2,
-                "splineFile":self._splineFile}
+        return {"detector": self.name,
+                "pixel1": self.pixel1,
+                "pixel2": self.pixel2,
+                "splineFile": self._splineFile}
 
     def getFit2D(self):
-        return {"pixelX":self.pixel2 * 1e6,
-                "pixelY":self.pixel1 * 1e6,
-                "splineFile":self._splineFile}
+        return {"pixelX": self.pixel2 * 1e6,
+                "pixelY": self.pixel1 * 1e6,
+                "splineFile": self._splineFile}
 
     def setPyFAI(self, **kwarg):
         if "detector" in kwarg:
@@ -127,7 +131,7 @@ class Detector(object):
             elif kw == "splineFile":
                 self.set_splineFile(kwarg[kw])
 
-    def setFit2D(self):
+    def setFit2D(self, **kwarg):
         for kw, val in kwarg.items():
             if kw == "pixelX":
                 self.pixel2 = val * 1e-6
@@ -147,7 +151,8 @@ class Detector(object):
 
         @return: 2-arrays of same shape as d1 & d2 with the position in meter
 
-        d1 and d2 must have the same shape, returned array will have the same shape.
+        d1 and d2 must have the same shape, returned array will have
+        the same shape.
         """
         if (d1 is None):
             d1 = numpy.arange(self.max_shape[0])
@@ -162,9 +167,15 @@ class Detector(object):
                 keyX = ("dX", tuple(d1), tuple(d2))
                 keyY = ("dY", tuple(d1), tuple(d2))
                 if keyX not in self._splineCache:
-                    self._splineCache[keyX] = numpy.array([self.spline.splineFuncX(i2, i1) for i1, i2 in zip(d1 + 0.5, d2 + 0.5)], dtype="float64")
+                    self._splineCache[keyX] = \
+                        numpy.array([self.spline.splineFuncX(i2, i1)
+                                     for i1, i2 in zip(d1 + 0.5, d2 + 0.5)],
+                                    dtype="float64")
                 if keyY not in self._splineCache:
-                    self._splineCache[keyY] = numpy.array([self.spline.splineFuncY(i2, i1) for i1, i2 in zip(d1 + 0.5, d2 + 0.5)], dtype="float64")
+                    self._splineCache[keyY] = \
+                        numpy.array([self.spline.splineFuncY(i2, i1)
+                                     for i1, i2 in zip(d1 + 0.5, d2 + 0.5)],
+                                    dtype="float64")
                 dX = self._splineCache[keyX]
                 dY = self._splineCache[keyY]
             else:
@@ -176,7 +187,8 @@ class Detector(object):
 
     def calc_mask(self):
         """
-        Detectors with gaps should overwrite this method with something actually calculating the mask!
+        Detectors with gaps should overwrite this method with
+        something actually calculating the mask!
         """
 #        logger.debug("Detector.calc_mask is not implemented for generic detectors")
         return None
@@ -200,7 +212,8 @@ class Detector(object):
         except:
             ImportError("Please install fabio to load images")
         with self._sem:
-            self._mask = numpy.ascontiguousarray(fabio.open(maskfile).data, dtype=numpy.int8)
+            self._mask = numpy.ascontiguousarray(fabio.open(maskfile).data,
+                                                 dtype=numpy.int8)
             self._mask_crc = crc32(self._mask)
             self._maskfile = maskfile
     def get_maskfile(self):
@@ -209,77 +222,106 @@ class Detector(object):
 
 
 class Pilatus(Detector):
-    "Pilatus detector: generic description"
+    """
+    Pilatus detector: generic description containing mask algorithm
+    
+    Sub-classed by Pilatus1M, Pilatus2M and Pilatus6M
+    """
     MODULE_SIZE = (195, 487)
     MODULE_GAP = (17, 7)
+
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         Detector.__init__(self, pixel1, pixel2)
 
     def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % (self.name, self.pixel1, self.pixel2)
+        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
+                (self.name, self.pixel1, self.pixel2)
 
     def calc_mask(self):
         """
         Returns a generic mask for Pilatus detectors...
         """
-        if self.max_shape[0] is None or\
-            self.max_shape[1] is None:
-            raise NotImplementedError("Generic Pilatus detector does not know the max size ...")
+        if (self.max_shape[0] or self.max_shape[1]) is None:
+            raise NotImplementedError("Generic Pilatus detector does not know"
+                                      "the max size ...")
         mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
         # workinng in dim0 = Y
-        for i in range(self.MODULE_SIZE[0], self.max_shape[0], self.MODULE_SIZE[0] + self.MODULE_GAP[0]):
+        for i in range(self.MODULE_SIZE[0], self.max_shape[0],
+                       self.MODULE_SIZE[0] + self.MODULE_GAP[0]):
             mask[i: i + self.MODULE_GAP[0], :] = 1
         # workinng in dim1 = X
-        for i in range(self.MODULE_SIZE[1], self.max_shape[1], self.MODULE_SIZE[1] + self.MODULE_GAP[1]):
+        for i in range(self.MODULE_SIZE[1], self.max_shape[1],
+                       self.MODULE_SIZE[1] + self.MODULE_GAP[1]):
             mask[:, i: i + self.MODULE_GAP[1]] = 1
         return mask
 
 class Pilatus1M(Pilatus):
-    "Pilatus 1M detector"
+    """
+    Pilatus 1M detector
+    """
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         Pilatus.__init__(self, pixel1, pixel2)
         self.max_shape = (1043, 981)
+
 class Pilatus2M(Pilatus):
-    "Pilatus 2M detector"
+    """
+    Pilatus 2M detector
+    """
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         Pilatus.__init__(self, pixel1, pixel2)
         self.max_shape = (1475, 1679)
+
 class Pilatus6M(Pilatus):
-    "Pilatus 6M detector"
+    """
+    Pilatus 6M detector
+    """
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         Pilatus.__init__(self, pixel1, pixel2)
         self.max_shape = (2527, 2463)
+
 class Fairchild(Detector):
-    "Fairchild Condor 486:90 detector"
+    """
+    Fairchild Condor 486:90 detector
+    """
     def __init__(self, pixel1=15e-6, pixel2=15e-6):
         Detector.__init__(self, pixel1, pixel2)
         self.name = "Fairchild Condor 486:90"
         self.max_shape = (4096, 4096)
+
 class FReLoN(Detector):
-    "FReLoN detector (spline mandatory to correct for geometric distortion)"
+    """
+    FReLoN detector: 
+    The spline is mandatory to correct for geometric distortion of the taper
+    """
     def __init__(self, splineFile):
         Detector.__init__(self, splineFile)
-        self.max_shape = (self.spline.ymax - self.spline.ymin, self.spline.xmax - self.splinex.xmin)
+        self.max_shape = (self.spline.ymax - self.spline.ymin,
+                          self.spline.xmax - self.splinex.xmin)
 
 class Xpad_flat(Detector):
-    "Xpad detector: generic description for image with "
+    """
+    Xpad detector: generic description for 
+    ImXPad detector with 8x7modules
+    """
     MODULE_SIZE = (120, 80)
     MODULE_GAP = (3 + 3.57 * 1000 / 130, 3)  # in pixels
     def __init__(self, pixel1=130e-6, pixel2=130e-6):
         Detector.__init__(self, pixel1, pixel2)
         self.max_shape = (960, 560)
     def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % (self.name, self.pixel1, self.pixel2)
+        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
+                (self.name, self.pixel1, self.pixel2)
 
     def calc_mask(self):
         """
         Returns a generic mask for Xpad detectors...
-        discards the first line and raw form all modules: those are 2.5x bigger and often mis - behaving
+        discards the first line and raw form all modules: 
+        those are 2.5x bigger and often mis - behaving
         """
         with self._sem:
-            if self.max_shape[0] is None or\
-                self.max_shape[1] is None:
-                raise NotImplementedError("Generic Xpad detector does not know the max size ...")
+            if (self.max_shape[0] or self.max_shape[1]) is None:
+                raise NotImplementedError("Generic Xpad detector does not"
+                                          " know the max size ...")
             mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
             # workinng in dim0 = Y
             for i in range(0, self.max_shape[0], self.MODULE_SIZE[0]):
@@ -302,37 +344,39 @@ class Xpad_flat(Detector):
 
         @return: 2-arrays of same shape as d1 & d2 with the position in meter
 
-        d1 and d2 must have the same shape, returned array will have the same shape.
+        d1 and d2 must have the same shape, returned array will have
+        the same shape.
         """
         if (d1 is None):
             c1 = numpy.arange(self.max_shape[0])
             for i in range(self.max_shape[0] // self.MODULE_SIZE[0]):
-                c1[i * self.MODULE_SIZE[0], (i + 1) * self.MODULE_SIZE[0]] += i * self.MODULE_GAP[0]
+                c1[i * self.MODULE_SIZE[0],
+                   (i + 1) * self.MODULE_SIZE[0]] += i * self.MODULE_GAP[0]
         else:
-            c1 = d1 + (d1.astype(numpy.int64) // self.MODULE_SIZE[0]) * self.MODULE_GAP[0]
+            c1 = d1 + (d1.astype(numpy.int64) // self.MODULE_SIZE[0])\
+                * self.MODULE_GAP[0]
         if (d2 is None):
             c2 = numpy.arange(self.max_shape[1])
             for i in range(self.max_shape[1] // self.MODULE_SIZE[1]):
-                c2[i * self.MODULE_SIZE[1], (i + 1) * self.MODULE_SIZE[1]] += i * self.MODULE_GAP[1]
+                c2[i * self.MODULE_SIZE[1],
+                   (i + 1) * self.MODULE_SIZE[1]] += i * self.MODULE_GAP[1]
         else:
-            c2 = d2 + (d2.astype(numpy.int64) // self.MODULE_SIZE[1]) * self.MODULE_GAP[1]
+            c2 = d2 + (d2.astype(numpy.int64) // self.MODULE_SIZE[1])\
+                * self.MODULE_GAP[1]
 
         p1 = self.pixel1 * (0.5 + c1)
         p2 = self.pixel2 * (0.5 + c2)
         return p1, p2
 
-ALL_DETECTORS = {  # I prefer not allowing the instantiation of generic detectors
-                 # "detector": Detector,
-                 # "pilatus":Pilatus,
-                 "pilatus1m":Pilatus1M,
-                 "pilatus2m":Pilatus2M,
-                 "pilatus6m":Pilatus6M,
-                 "condor":Fairchild,
-                 "fairchild":Fairchild,
-                 "frelon":FReLoN,
-                 "xpad":Xpad_flat,
-                 "xpad_flat":Xpad_flat,
-                 }
+# I prefer not allowing the instantiation of generic detectors
+ALL_DETECTORS = {"pilatus1m": Pilatus1M,
+                 "pilatus2m": Pilatus2M,
+                 "pilatus6m": Pilatus6M,
+                 "condor": Fairchild,
+                 "fairchild": Fairchild,
+                 "frelon": FReLoN,
+                 "xpad": Xpad_flat,
+                 "xpad_flat": Xpad_flat}
 
 
 def detector_factory(name):
