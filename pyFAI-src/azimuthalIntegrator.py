@@ -475,7 +475,9 @@ class AzimuthalIntegrator(Geometry):
         Calculate the powder diffraction pattern from a set of data,
         an image.
 
-        Cython implementation (OpenCL)
+        This is (now) a pure pyopencl implementation so it just needs pyopencl 
+        which requires a clean OpenCL installation. This implementation is not slower
+        than the previous Cython and is less problematic for compilation/installation. 
 
         @param data: 2D array from the CCD camera
         @type data: ndarray
@@ -498,7 +500,7 @@ class AzimuthalIntegrator(Geometry):
 
         @param devicetype: possible values "cpu", "gpu", "all" or "def"
         @type devicetype: str
-        @param useFp64: shall histogram be done in double precision (adviced)
+        @param useFp64: shall histogram be done in double precision (strongly adviced)
         @type useFp64: bool
         @param platformid: platform number
         @type platformid: int
@@ -507,7 +509,7 @@ class AzimuthalIntegrator(Geometry):
         @param safe: set to False if your GPU is already set-up correctly
         @type safe: bool
 
-        @return: (2theta, I) in degrees
+        @return: (2theta, I) angle being in degrees
         @rtype: 2-tuple of 1D arrays
 
         This method compute the powder diffraction pattern, from a
@@ -515,8 +517,12 @@ class AzimuthalIntegrator(Geometry):
         given by the *nbPt* parameter. If you give a *filename*, the
         powder diffraction is also saved as a two column text file.
         The powder diffraction is computed internally using an
-        histogram which by default use float32. you can switch to
-        float64 with the *useFp64* parameter.
+        histogram which by default use should be done in 64bits.
+        One can switch to 32 bits with the *useFp64* parameter set to
+        False. In 32bit mode; do not expect better than 1% error and one 
+        can even observe overflows ! 32 bits is only left for testing 
+        hardware capabilities and should NEVER be used in any real 
+        experiment analysis. 
 
         It is possible to correct or not the powder diffraction
         pattern using the *correctSolidAngle* parameter. The weight of
@@ -529,8 +535,8 @@ class AzimuthalIntegrator(Geometry):
 
         Each pixel of the *data* image has also a chi coordinate. So
         it is possible to restrain the chi range of the pixels to
-        consider in the powder diffraction pattern. you just need to
-        set the range with the *chiRange* parameter. like the
+        consider in the powder diffraction pattern. You just need to
+        set the range with the *chiRange* parameter; like the
         *tthRange* parameter, value outside this range are ignored.
 
         Sometimes one needs to mask a few pixels (beamstop, hot
@@ -541,13 +547,8 @@ class AzimuthalIntegrator(Geometry):
         idential to the data shape (size of the array _must_ be the
         same).
 
-        Dynamic masking (i.e recalculated for each image) can be
-        achieved by setting masked pixels to an impossible value (-1)
-        and calling this value the "dummy value". Dynamic masking is
-        computed at integration whereas static masking is done at
-        LUT-generation, hence faster. (Jerome est-ce vrai aussi pour
-        cet algo ???)
-
+        Bad pixels can also be masked by setting them to an impossible 
+        value (-1) and calling this value the "dummy value".
         Some Pilatus detectors are setting non existing pixel to -1
         and dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so
         that any value between -3.5 and -0.5 are considered as bad.
@@ -555,16 +556,14 @@ class AzimuthalIntegrator(Geometry):
         *devicetype*, *platformid* and *deviceid*, parameters are
         specific to the OpenCL implementation. If you set *devicetype*
         to 'all', 'cpu', 'gpu', 'def' you can force the device used to
-        perform the computation. with the *platformid* and *deviceid*
-        (Jerome can you complete this ???)
+        perform the computation; the program will select the device accordinly.  
+        By setting *platformid* and *deviceid*, you can directly address a 
+        specific device (which is computer specific).
 
-        The *safe* parameter is specific to the LUT implementation,
-        you can set it to false if you think the LUT calculated is
-        already the correct one (setup, mask, 2theta/chi range).
-        (Jerome il me semble que ce safe n'est pas lié a LUT mais au
-        fait que du GPU peut etre utlisé, si j'ai raison les
-        descriptions des paramêtres dans les methodes avec LUT ne sont
-        pas bonne ???)
+        The *safe* parameter is specific to the integrator object, located on the 
+        OpenCL device. You can set it to False if you think the integrator is
+        already setup correcty (device, geometric arrays, mask, 2theta/chi range).
+        Unless many tests will be done at each integration.
         """
         if not ocl_azim:
             logger.error("OpenCL implementation not available falling back on old method !")
@@ -638,7 +637,7 @@ class AzimuthalIntegrator(Geometry):
             self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
 
-    def setup_LUT(self, shape, nbPt, mask=None, pos0_range=None, pos1_range=None, mask_checksum=None, unit="2th_deg"):
+    def setup_LUT(self, shape, nbPt, mask=None, pos0_range=None, pos1_range=None, mask_checksum=None, unit="2th"):
         """
         This method is called when a look-up table needs to be set-up.
 
@@ -648,8 +647,9 @@ class AzimuthalIntegrator(Geometry):
         @param pos0_range: range in radial dimension
         @param pos1_range: range in azimuthal dimension
         @param mask_checksum: checksum of the mask buffer (prevent re-calculating it)
-        @param unit: can be "2th_deg", ....
+        @param unit: This is just an information to propagate the LUT object for further checkings
         """
+        unit = str(unit).split("_")[0]
         pos0 = self.array_from_unit(shape, "center", unit)
         dpos0 = self.array_from_unit(shape, "delta", unit)
         if pos1_range is None:
@@ -674,7 +674,7 @@ class AzimuthalIntegrator(Geometry):
             mask_checksum = None
         else:
             assert mask.shape == shape
-
+        unit = str(unit).split("_")[0]
         return splitBBoxLUT.HistoBBox1d(pos0, dpos0, pos1, dpos1,
                                                         bins=nbPt,
                                                         pos0Range=pos0Range,
@@ -702,10 +702,10 @@ class AzimuthalIntegrator(Geometry):
         @type filename: str
         @param correctSolidAngle: solid angle correction
         @type correctSolidAngle: boolean
-        @param tthRange: The lower and upper range of the 2theta
+        @param tthRange: The lower and upper range of the 2theta angle
         @type tthRange: (float, float), optional
         @param chiRange: The lower and upper range of the chi angle.
-        @type chiRange: (float, float), optional, disabled for now
+        @type chiRange: (float, float), optional
         @param mask: array with 1 for masked pixels, and 0 for valid pixels
         @type mask: ndarray
         @param dummy: value for dead/masked pixels (dynamic mask)
@@ -715,10 +715,11 @@ class AzimuthalIntegrator(Geometry):
 
         LUT specific parameters:
 
-        @param safe: set to False if your GPU is already set-up correctly
+        @param safe: set to False if your LUT is already set-up correctly 
+        (mask, ranges, ...). 
         @type safe: bool
 
-        @return: (2theta, I) in degrees
+        @return: (2theta, I) with 2theta angle in degrees
         @rtype: 2-tuple of 1D arrays
 
         This method compute the powder diffraction pattern, from a
@@ -737,8 +738,8 @@ class AzimuthalIntegrator(Geometry):
 
         Each pixel of the *data* image as also a chi coordinate. So it
         is possible to restrain the chi range of the pixels to
-        consider in the powder diffraction pattern. you just need to
-        set the range with the *chiRange* parameter. like the
+        consider in the powder diffraction pattern by setting the 
+        range with the *chiRange* parameter. Like the
         *tthRange* parameter, value outside this range are ignored.
 
         Sometimes one needs to mask a few pixels (beamstop, hot
@@ -859,7 +860,8 @@ class AzimuthalIntegrator(Geometry):
         Calculate the powder diffraction pattern from a set of data,
         an image.
 
-        Cython implementation using a Look-Up Table (OpenCL).
+        PyOpenCL implementation using a Look-Up Table (OpenCL).
+        The look-up table is a Cython module. 
 
         @param data: 2D array from the CCD camera
         @type data: ndarray
@@ -871,8 +873,8 @@ class AzimuthalIntegrator(Geometry):
         @type correctSolidAngle: boolean
         @param tthRange: The lower and upper range of 2theta
         @type tthRange: (float, float)
-        @param chiRange: The lower and upper range of the chi angle.
-        @type chiRange: (float, float), disabled for now
+        @param chiRange: The lower and upper range of the chi angle in degrees.
+        @type chiRange: (float, float)
         @param mask: array with 1 for masked pixels, and 0 for valid pixels
         @type mask: ndarray
         @param dummy: value for dead/masked pixels (dynamic mask)
@@ -882,7 +884,7 @@ class AzimuthalIntegrator(Geometry):
 
         LUT specific parameters:
 
-        @param safe: set to False if your GPU is already set-up correctly
+        @param safe: set to False if your LUT & GPU is already set-up correctly
         @type safe: bool
 
         OpenCL specific parameters:
@@ -913,9 +915,9 @@ class AzimuthalIntegrator(Geometry):
 
         Each pixel of the *data* image has also a chi coordinate. So
         it is possible to restrain the chi range of the pixels to
-        consider in the powder diffraction pattern. you just need to
-        set the range with the *chiRange* parameter. like the
-        *tthRange* parameter, value outside this range are ignored.
+        consider in the powder diffraction pattern by setting the 
+        *chiRange* parameter. Like the *tthRange* parameter, 
+        value outside this range are ignored.
 
         Sometimes one needs to mask a few pixels (beamstop, hot
         pixels, ...), to ignore a few of them you just need to provide
@@ -935,15 +937,17 @@ class AzimuthalIntegrator(Geometry):
         and dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so
         that any value between -3.5 and -0.5 are considered as bad.
 
-        The *safe* parameter is specific to the LUT implementation,
+        The *safe* parameter is specific to the OpenCL/LUT implementation,
         you can set it to false if you think the LUT calculated is
-        already the correct one (setup, mask, 2theta/chi range).
+        already the correct one (setup, mask, 2theta/chi range) and
+        the device set-up is the expected one.
 
         *devicetype*, *platformid* and *deviceid*, parameters are
         specific to the OpenCL implementation. If you set *devicetype*
         to 'all', 'cpu', or 'gpu' you can force the device used to
-        perform the computation. with the *platformid* and *deviceid*
-        (Jerome can you complete this ???)
+        perform the computation. 
+        By providing the *platformid* and *deviceid* you can chose a specific
+        device (computer specific).
         """
         shape = data.shape
         if not (splitBBoxLUT and ocl_azim_lut):
@@ -1292,24 +1296,25 @@ class AzimuthalIntegrator(Geometry):
         @param unit: can be "q", "2th" or "r" for now
 
         """
+        unit = str(unit).split("_")[0].lower()
         if not typ in ("center", "corner", "delta"):
             logger.warning("Unknown type of array %s, defaulting to 'center'" % typ)
             typ = "center"
-        if unit.startswith("q"):
+        if unit == "q":
             if typ == "center":
                 out = self.qArray(shape)
             elif typ == "corner":
                 out = self.cornerQArray(shape)
             else:  # delta
                 out = self.deltaQ(shape)
-        elif unit.startswith("2th"):
+        elif unit == "2th":
             if typ == "center":
                 out = self.twoThetaArray(shape)
             elif typ == "corner":
                 out = self.cornerArray(shape)
             else:  # delta
                 out = self.delta2Theta(shape)
-        elif unit == "r_mm":
+        elif unit == "r":
             if typ == "center":
                 out = self.rArray(shape)
             elif typ == "corner":
@@ -1374,39 +1379,21 @@ class AzimuthalIntegrator(Geometry):
             mask = self.mask
         shape = data.shape
         if unit == "q_nm^-1":
-#            q = self.qArray(shape)
-#            pos = self.cornerQArray(shape)
-#            dq = self.deltaQ(shape)
             pos0_scale = 1.0
         elif unit == "q_A^-1":
-#            q = self.qArray(shape)
-#            pos = self.cornerQArray(shape)
-#            dq = self.deltaQ(shape)
             if radial_range:
                 radial_range = tuple([i / 10.0 for i in radial_range])
             pos0_scale = 10.0
         elif unit == "2th_rad":
-#            q = self.twoThetaArray(shape)
-#            pos = self.cornerArray(shape)
-#            dq = self.delta2Theta(shape)
             pos0_scale = 1.0
         elif unit == "2th_deg":
-#            q = self.twoThetaArray(shape)
-#            pos = self.cornerArray(shape)
-#            dq = self.delta2Theta(shape)
             if radial_range:
                 radial_range = tuple([numpy.pi * i / 180.0 for i in radial_range])
             pos0_scale = 180.0 / numpy.pi
         elif unit == "r_mm":
-#            q = self.rArray(shape)
-#            pos = self.cornerRArray(shape)
-#            dq = self.deltaR(shape)
             pos0_scale = 0.001  # convert m->mm
         else:
             logger.warning("Unknown unit %s, defaulting to 2theta (deg)" % unit)
-#            q = self.twoThetaArray(shape)
-#            pos = self.cornerArray(shape)
-#            dq = self.delta2Theta(shape)
             unit = "2th_deg"
             if radial_range:
                 radial_range = tuple([numpy.deg2rad(i) for i in radial_range])
@@ -1456,7 +1443,7 @@ class AzimuthalIntegrator(Geometry):
                         mask_crc = self.detector._mask_crc
                     else:
                         mask_crc = crc32(mask)
-                    if self._lut_integrator.unit != unit:
+                    if self._lut_integrator.unit != unit.split("_")[0]:
                         reset = "unit changed"
                     if (mask is not None) and (not self._lut_integrator.check_mask):
                         reset = "mask but LUT was without mask"
@@ -1794,8 +1781,8 @@ class AzimuthalIntegrator(Geometry):
                   "chi_max":str(dim2.max()),
                   dim1_unit + "_min":str(dim1.min()),
                   dim1_unit + "_max":str(dim1.max()),
-                  "pixelX": str(self.pixel2),  # this is not a bug ... most people expect dim1 to be X
-                  "pixelY": str(self.pixel1),  # this is not a bug ... most people expect dim2 to be Y
+                  "pixelX": str(self.pixel2), # this is not a bug ... most people expect dim1 to be X
+                  "pixelY": str(self.pixel1), # this is not a bug ... most people expect dim2 to be Y
                 }
         if self.splineFile:
             header["spline"] = str(self.splineFile)
