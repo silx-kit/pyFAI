@@ -88,9 +88,9 @@ class AzimuthalIntegrator(Geometry):
         @param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
         @type dist: float
         @param poni1: coordinate of the point of normal incidence along the detector's first dimension, in meter
-        @type poni1: ???
+        @type poni1: float
         @param poni2: coordinate of the point of normal incidence along the detector's second dimension, in meter
-        @type poni2: ???
+        @type poni2: float
         @param rot1: first rotation from sample ref to detector's ref, in radians
         @type rot1: float
         @param rot2: second rotation from sample ref to detector's ref, in radians
@@ -193,7 +193,10 @@ class AzimuthalIntegrator(Geometry):
         Calculate the powder diffraction pattern from a set of data,
         an image.
 
-        Numpy implementation
+        Numpy implementation: slow and without pixels splitting.
+        This method should not be used in production, it remains
+        to explain how other more sophisticated algorithms works.
+        Use xrpd_splitBBox instead 
 
         @param data: 2D array from the CCD camera
         @type data: ndarray
@@ -243,13 +246,8 @@ class AzimuthalIntegrator(Geometry):
         idential to the data shape (size of the array _must_ be the
         same).
 
-        Dynamic masking (i.e recalculated for each image) can be
-        achieved by setting masked pixels to an impossible value (-1)
-        and calling this value the "dummy value". Dynamic masking is
-        computed at integration whereas static masking is done at
-        LUT-generation, hence faster. (Jerome est-ce vrai aussi pour
-        cet algo ???)
-
+        Bad pixels can be masked out by setting them to an impossible value 
+        (-1) and calling this value the "dummy value". 
         Some Pilatus detectors are setting non existing pixel to -1
         and dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so
         that any value between -3.5 and -0.5 are considered as bad.
@@ -301,9 +299,11 @@ class AzimuthalIntegrator(Geometry):
         """
         Calculate the powder diffraction pattern from a set of data, an image.
 
-        Deprecated cython implementation, use xrpd_splitBBox insteed
-
-        ??? maybe use a decorator to mark this method as deprecated.
+        Cython multithreaded implementation: fast but still lacks pixels 
+        splitting as numpy implementation.
+        This method should not be used in production, it remains
+        to explain why histograms are hard to implement in parallel.
+        Use xrpd_splitBBox instead
         """
         try:
             import histogram  # IGNORE:F0401
@@ -1049,7 +1049,7 @@ class AzimuthalIntegrator(Geometry):
 
         OpenCL specific parameters:
 
-        @param devicetype: can be "all", "cpu" or "gpu" ??? "def"
+        @param devicetype: can be "all", "cpu", "gpu", "acc" or "def"
         @type devicetype: str
         @param platformid: platform number
         @type platformid: int
@@ -1478,7 +1478,7 @@ class AzimuthalIntegrator(Geometry):
         return I, bins2Th, binsChi
     xrpd2 = xrpd2_splitBBox
 
-    def array_from_unit(self, shape, typ="center", unit="2th_deg"):
+    def array_from_unit(self, shape, typ="center", unit="2th"):
         """
         Generate an array of position in different dimentions (R, Q,
         2Theta)
@@ -1490,8 +1490,8 @@ class AzimuthalIntegrator(Geometry):
         @param unit: can be "q", "2th" or "r" for now
         @type unit: str
 
-        @return: R, Q or 2Theta depending of the parameters ???
-        @rtype: ndarray ???
+        @return: R, Q or 2Theta array depending on unit
+        @rtype: ndarray 
         """
         if "_" in unit:
             unit = str(unit).split("_")[0].lower()
