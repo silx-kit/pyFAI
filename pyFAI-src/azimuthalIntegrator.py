@@ -214,7 +214,7 @@ class AzimuthalIntegrator(Geometry):
         Numpy implementation: slow and without pixels splitting.
         This method should not be used in production, it remains
         to explain how other more sophisticated algorithms works.
-        Use xrpd_splitBBox instead 
+        Use xrpd_splitBBox instead
 
         @param data: 2D array from the CCD camera
         @type data: ndarray
@@ -264,8 +264,8 @@ class AzimuthalIntegrator(Geometry):
         idential to the data shape (size of the array _must_ be the
         same).
 
-        Bad pixels can be masked out by setting them to an impossible value 
-        (-1) and calling this value the "dummy value". 
+        Bad pixels can be masked out by setting them to an impossible value
+        (-1) and calling this value the "dummy value".
         Some Pilatus detectors are setting non existing pixel to -1
         and dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so
         that any value between -3.5 and -0.5 are considered as bad.
@@ -317,7 +317,7 @@ class AzimuthalIntegrator(Geometry):
         """
         Calculate the powder diffraction pattern from a set of data, an image.
 
-        Cython multithreaded implementation: fast but still lacks pixels 
+        Cython multithreaded implementation: fast but still lacks pixels
         splitting as numpy implementation.
         This method should not be used in production, it remains
         to explain why histograms are hard to implement in parallel.
@@ -649,9 +649,9 @@ class AzimuthalIntegrator(Geometry):
         Calculate the powder diffraction pattern from a set of data,
         an image.
 
-        This is (now) a pure pyopencl implementation so it just needs pyopencl 
+        This is (now) a pure pyopencl implementation so it just needs pyopencl
         which requires a clean OpenCL installation. This implementation is not slower
-        than the previous Cython and is less problematic for compilation/installation. 
+        than the previous Cython and is less problematic for compilation/installation.
 
         @param data: 2D array from the CCD camera
         @type data: ndarray
@@ -693,10 +693,10 @@ class AzimuthalIntegrator(Geometry):
         The powder diffraction is computed internally using an
         histogram which by default use should be done in 64bits.
         One can switch to 32 bits with the *useFp64* parameter set to
-        False. In 32bit mode; do not expect better than 1% error and one 
-        can even observe overflows ! 32 bits is only left for testing 
-        hardware capabilities and should NEVER be used in any real 
-        experiment analysis. 
+        False. In 32bit mode; do not expect better than 1% error and one
+        can even observe overflows ! 32 bits is only left for testing
+        hardware capabilities and should NEVER be used in any real
+        experiment analysis.
 
         It is possible to correct or not the powder diffraction
         pattern using the *correctSolidAngle* parameter. The weight of
@@ -721,7 +721,7 @@ class AzimuthalIntegrator(Geometry):
         idential to the data shape (size of the array _must_ be the
         same).
 
-        Bad pixels can also be masked by setting them to an impossible 
+        Bad pixels can also be masked by setting them to an impossible
         value (-1) and calling this value the "dummy value".
         Some Pilatus detectors are setting non existing pixel to -1
         and dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so
@@ -730,11 +730,11 @@ class AzimuthalIntegrator(Geometry):
         *devicetype*, *platformid* and *deviceid*, parameters are
         specific to the OpenCL implementation. If you set *devicetype*
         to 'all', 'cpu', 'gpu', 'def' you can force the device used to
-        perform the computation; the program will select the device accordinly.  
-        By setting *platformid* and *deviceid*, you can directly address a 
+        perform the computation; the program will select the device accordinly.
+        By setting *platformid* and *deviceid*, you can directly address a
         specific device (which is computer specific).
 
-        The *safe* parameter is specific to the integrator object, located on the 
+        The *safe* parameter is specific to the integrator object, located on the
         OpenCL device. You can set it to False if you think the integrator is
         already setup correcty (device, geometric arrays, mask, 2theta/chi range).
         Unless many tests will be done at each integration.
@@ -897,8 +897,8 @@ class AzimuthalIntegrator(Geometry):
 
         LUT specific parameters:
 
-        @param safe: set to False if your LUT is already set-up correctly 
-        (mask, ranges, ...). 
+        @param safe: set to False if your LUT is already set-up correctly
+        (mask, ranges, ...).
         @type safe: bool
 
         @return: (2theta, I) with 2theta angle in degrees
@@ -920,7 +920,7 @@ class AzimuthalIntegrator(Geometry):
 
         Each pixel of the *data* image as also a chi coordinate. So it
         is possible to restrain the chi range of the pixels to
-        consider in the powder diffraction pattern by setting the 
+        consider in the powder diffraction pattern by setting the
         range with the *chiRange* parameter. Like the
         *tthRange* parameter, value outside this range are ignored.
 
@@ -1043,7 +1043,7 @@ class AzimuthalIntegrator(Geometry):
         an image.
 
         PyOpenCL implementation using a Look-Up Table (OpenCL).
-        The look-up table is a Cython module. 
+        The look-up table is a Cython module.
 
         @param data: 2D array from the CCD camera
         @type data: ndarray
@@ -1097,8 +1097,8 @@ class AzimuthalIntegrator(Geometry):
 
         Each pixel of the *data* image has also a chi coordinate. So
         it is possible to restrain the chi range of the pixels to
-        consider in the powder diffraction pattern by setting the 
-        *chiRange* parameter. Like the *tthRange* parameter, 
+        consider in the powder diffraction pattern by setting the
+        *chiRange* parameter. Like the *tthRange* parameter,
         value outside this range are ignored.
 
         Sometimes one needs to mask a few pixels (beamstop, hot
@@ -1127,7 +1127,7 @@ class AzimuthalIntegrator(Geometry):
         *devicetype*, *platformid* and *deviceid*, parameters are
         specific to the OpenCL implementation. If you set *devicetype*
         to 'all', 'cpu', or 'gpu' you can force the device used to
-        perform the computation. 
+        perform the computation.
         By providing the *platformid* and *deviceid* you can chose a specific
         device (computer specific).
         """
@@ -1546,7 +1546,7 @@ class AzimuthalIntegrator(Geometry):
         @type unit: str
 
         @return: R, Q or 2Theta array depending on unit
-        @rtype: ndarray 
+        @rtype: ndarray
         """
         if "_" in unit:
             unit = str(unit).split("_")[0].lower()
@@ -1949,7 +1949,7 @@ class AzimuthalIntegrator(Geometry):
         @type nbPt_rad: integer
         @param nbPt_azim: number of points in the azimuthal direction
         @type nbPt_azim: integer
-        @param filename: output image (as edf format) 
+        @param filename: output image (as edf format)
         @type filename: string
         @param correctSolidAngle: correct for solid angle of each pixel if True
         @type correctSolidAngle: boolean
@@ -1977,7 +1977,7 @@ class AzimuthalIntegrator(Geometry):
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
         @rtype: 3-tuple of ndarrays (2d, 1d, 1d)
         """
-        bins = (nbPt_azim, nbPt_rad)
+#        bins = (nbPt_azim, nbPt_rad)
         method = method.lower()
         pos0_scale = 1.0  # nota we need anyway t
         if mask is None:
@@ -2126,7 +2126,7 @@ class AzimuthalIntegrator(Geometry):
                 pos = self.array_from_unit(shape, "corner", unit)
                 I, bins_rad, bins_azim, a, b = splitPixel.fullSplit2D(pos=pos,
                                                            weights=data,
-                                                           bins=bins,
+                                                           bins=(nbPt_rad, nbPt_azim),
                                                            pos0Range=radial_range,
                                                            pos1Range=azimuth_range,
                                                            dummy=dummy,
@@ -2165,7 +2165,7 @@ class AzimuthalIntegrator(Geometry):
                                                       delta_pos0=dpos0,
                                                       pos1=chi,
                                                       delta_pos1=dchi,
-                                                      bins=bins,
+                                                      bins=(nbPt_rad, nbPt_azim),
                                                       pos0Range=radial_range,
                                                       pos1Range=azimuth_range,
                                                       dummy=dummy,
@@ -2222,11 +2222,11 @@ class AzimuthalIntegrator(Geometry):
                 pos1 = pos1[mask]
                 if dummy is None:
                     dummy = 0
-                I, bins_rad, bins_azim, a, b = histogram.histogram2d(pos0=pos0,
-                                                       pos1=pos1,
+                I, bins_rad, bins_azim, a, b = histogram.histogram2d(pos0=pos1,
+                                                       pos1=pos0,
                                                        weights=data,
-                                                       bins=bins,
-                                                       pixelSize_in_Pos=0,
+                                                       bins=(nbPt_azim, nbPt_rad),
+                                                       split=False,
                                                        dummy=dummy)
 #                if error_model == "azimuthal":
 #                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
@@ -2261,18 +2261,18 @@ class AzimuthalIntegrator(Geometry):
             pos1 = self.chiArray(shape)[mask]
 #            if variance is not None:
 #                variance = variance[mask]
-            ref, b, c = numpy.histogram2d(pos0, pos1, (nbPt_rad, nbPt_azim))
+            ref, b, c = numpy.histogram2d(pos1, pos0, (nbPt_azim, nbPt_rad))
             bins_azim = (b[1:] + b[:-1]) / 2.0
             bins_rad = (c[1:] + c[:-1]) / 2.0
             count = numpy.maximum(1, ref)
-            val, b, c = numpy.histogram2d(pos0, pos1, (nbPt_rad, nbPt_azim), weights=data)
+            val, b, c = numpy.histogram2d(pos1, pos0, (nbPt_azim, nbPt_rad), weights=data)
 #            if error_model == "azimuthal":
 #                variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
 #            if variance is not None:
 #                var1d, b = numpy.histogram(pos0, nbPt, weights=variance)
 #                sigma = numpy.sqrt(var1d) / count
             I = val / count
-        #I know I make copies ....
+        # I know I make copies ....
         if pos0_scale :
             bins_rad = bins_rad * pos0_scale
         bins_azim = bins_azim * 180 / numpy.pi
@@ -2390,8 +2390,8 @@ class AzimuthalIntegrator(Geometry):
                   "chi_max":str(dim2.max()),
                   dim1_unit + "_min":str(dim1.min()),
                   dim1_unit + "_max":str(dim1.max()),
-                  "pixelX": str(self.pixel2), # this is not a bug ... most people expect dim1 to be X
-                  "pixelY": str(self.pixel1), # this is not a bug ... most people expect dim2 to be Y
+                  "pixelX": str(self.pixel2),  # this is not a bug ... most people expect dim1 to be X
+                  "pixelY": str(self.pixel1),  # this is not a bug ... most people expect dim2 to be Y
                 }
         if self.splineFile:
             header["spline"] = str(self.splineFile)
