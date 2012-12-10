@@ -2225,7 +2225,7 @@ class AzimuthalIntegrator(Geometry):
                 I, bins_rad, bins_azim, a, b = histogram.histogram2d(pos0=pos0,
                                                        pos1=pos1,
                                                        weights=data,
-                                                       bins=(nbPt_rad, nbPt_azim),
+                                                       bins=bins,
                                                        pixelSize_in_Pos=0,
                                                        dummy=dummy)
 #                if error_model == "azimuthal":
