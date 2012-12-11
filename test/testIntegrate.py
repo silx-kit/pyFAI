@@ -95,12 +95,86 @@ class TestIntegrate1D(unittest.TestCase):
                     logger.info(mesg)
                 self.assertTrue(R <= self.Rmax, mesg)
 
+class TestIntegrate2D(unittest.TestCase):
+    npt = 500
+    img = UtilsTest.getimage("1883/Pilatus1M.edf")
+    data = fabio.open(img).data
+    ai = pyFAI.AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0, detector=pyFAI.detectors.Pilatus1M())
+    ai.wavelength = 1e-10
+    Rmax = 15
+
+
+    def testQ(self):
+        res = {}
+        for m in ("numpy", "cython", "BBox" , "splitpixel"):#, "lut", "lut_ocl"):
+            res[m] = self.ai.integrate2d(self.data, self.npt, method=m)
+        mask = (res["numpy"][0] != 0)
+        self.assertTrue(mask.sum() > 36 * self.npt, "10%% of the pixels are valid at least")
+        for a in res:
+            for b in res:
+                delta_pos_rad = abs(res[a][1] - res[b][1]).max()
+                delta_pos_azim = abs(res[a][2] - res[b][2]).max()
+                R = abs((res[a][0][mask] - res[b][0][mask]) / numpy.maximum(1, res[a][0][mask])).mean() * 100
+                mesg = "testQ 2D: %s vs %s measured delta rad=%s azim=%s R=%s<%s" % (a, b, delta_pos_rad, delta_pos_azim, R, self.Rmax)
+                if R > self.Rmax:
+                    logger.error(mesg)
+                else:
+                    logger.info(mesg)
+                self.assertTrue(delta_pos_rad <= 0.01, mesg)
+                self.assertTrue(delta_pos_azim <= 0.2, mesg)
+                self.assertTrue(R <= self.Rmax, mesg)
+
+    def testR(self):
+        res = {}
+        for m in ("numpy", "cython", "BBox" , "splitpixel"):#, "lut", "lut_ocl"):
+            res[m] = self.ai.integrate2d(self.data, self.npt, method=m, unit="r_mm")#, radial_range=(20, 150))
+        mask = (res["numpy"][0] != 0)
+        self.assertTrue(mask.sum() > 36 * self.npt, "10%% of the pixels are valid at least")
+        for a in res:
+            for b in res:
+                delta_pos_rad = abs(res[a][1] - res[b][1]).max()
+                delta_pos_azim = abs(res[a][2] - res[b][2]).max()
+                R = abs((res[a][0][mask] - res[b][0][mask]) / numpy.maximum(1, res[a][0][mask])).mean() * 100
+                mesg = "testR 2D: %s vs %s measured delta rad=%s azim=%s R=%s<%s" % (a, b, delta_pos_rad, delta_pos_azim, R, self.Rmax)
+                if R > self.Rmax:
+                    logger.error(mesg)
+                else:
+                    logger.info(mesg)
+                self.assertTrue(delta_pos_rad <= 0.01, mesg)
+                self.assertTrue(delta_pos_azim <= 0.2, mesg)
+                self.assertTrue(R <= self.Rmax, mesg)
+    def test2th(self):
+        res = {}
+        for m in ("numpy", "cython", "BBox" , "splitpixel"):#, "lut", "lut_ocl"):
+            res[m] = self.ai.integrate2d(self.data, self.npt, method=m, unit="2th_deg")#, radial_range=(0.5, 5.5))
+        mask = (res["numpy"][0] != 0)
+        self.assertTrue(mask.sum() > 36 * self.npt, "10%% of the pixels are valid at least")
+        for a in res:
+            for b in res:
+                if a == b:
+                    continue
+                delta_pos_rad = abs(res[a][1] - res[b][1]).max()
+                delta_pos_azim = abs(res[a][2] - res[b][2]).max()
+                R = abs((res[a][0][mask] - res[b][0][mask]) / numpy.maximum(1, res[a][0][mask])).mean() * 100
+                mesg = "test2th 2D: %s vs %s measured delta rad=%s azim=%s R=%s<%s" % (a, b, delta_pos_rad, delta_pos_azim, R, self.Rmax)
+                if R > self.Rmax:
+                    logger.error(mesg)
+                else:
+                    logger.info(mesg)
+                self.assertTrue(delta_pos_rad <= 0.01, mesg)
+                self.assertTrue(delta_pos_azim <= 0.2, mesg)
+                self.assertTrue(R <= self.Rmax, mesg)
+
 
 def test_suite_all_Integrate1d():
     testSuite = unittest.TestSuite()
     testSuite.addTest(TestIntegrate1D("testQ"))
     testSuite.addTest(TestIntegrate1D("testR"))
     testSuite.addTest(TestIntegrate1D("test2th"))
+    testSuite.addTest(TestIntegrate2D("testQ"))
+    testSuite.addTest(TestIntegrate2D("testR"))
+    testSuite.addTest(TestIntegrate2D("test2th"))
+
     return testSuite
 
 if __name__ == '__main__':

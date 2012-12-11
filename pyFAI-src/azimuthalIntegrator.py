@@ -2271,7 +2271,7 @@ class AzimuthalIntegrator(Geometry):
             else:
                 logger.debug("integrate2d uses SplitPixel implementation")
                 pos = self.array_from_unit(shape, "corner", unit)
-                I, bins_rad, bins_azim, a, b = splitPixel.fullSplit2D(pos=pos,
+                I, bins_rad, bins_azim, _, _ = splitPixel.fullSplit2D(pos=pos,
                                                            weights=data,
                                                            bins=(nbPt_rad, nbPt_azim),
                                                            pos0Range=radial_range,
@@ -2369,7 +2369,7 @@ class AzimuthalIntegrator(Geometry):
                 pos1 = pos1[mask]
                 if dummy is None:
                     dummy = 0
-                I, bins_rad, bins_azim, a, b = histogram.histogram2d(pos0=pos1,
+                I, bins_azim, bins_rad, _, _ = histogram.histogram2d(pos0=pos1,
                                                        pos1=pos0,
                                                        weights=data,
                                                        bins=(nbPt_azim, nbPt_rad),
