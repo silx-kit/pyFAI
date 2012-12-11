@@ -1,5 +1,5 @@
 # !/usr/bin/env python
-# -*- coding: UTF8 -*-
+# -*- coding: utf-8 -*-
 # ##########################################################################
 # Written 2009-12-22 by Jérôme Kieffer
 # Copyright (C) 2009 European Synchrotron Radiation Facility
