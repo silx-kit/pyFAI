@@ -418,7 +418,3 @@ class GeometryRefinement(AzimuthalIntegrator):
     def get_rot3_max(self):
         return self._rot3_max
     rot3_max = property(get_rot3_max, set_rot3_max)
-
-
-
-

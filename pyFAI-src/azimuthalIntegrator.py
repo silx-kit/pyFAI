@@ -2575,4 +2575,3 @@ class AzimuthalIntegrator(Geometry):
     def get_flatfield(self):
         return self._flatfield
     flatfield = property(get_flatfield, set_flatfield)
-
