@@ -39,7 +39,7 @@ try:
     from fastcrc import crc32
 except:
     from zlib import crc32
-
+EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 @cython.cdivision(True)
 cdef float getBinNr( float x0, float pos0_min, float delta) nogil:
     """
@@ -84,7 +84,7 @@ class HistoBBox1d(object):
             pos0_maxin = (self.cpos0_sup).max()
         if (not allow_pos0_neg) and self.pos0_min < 0:
             self.pos0_min = 0
-        self.pos0_max = pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps)
+        self.pos0_max = pos0_maxin * EPS32
 
         if pos1Range is not None and len(pos1Range) > 1:
             assert pos1.size == self.size
@@ -94,7 +94,7 @@ class HistoBBox1d(object):
             self.cpos1_max = numpy.ascontiguousarray((pos1+delta_pos1).ravel(), dtype=numpy.float32)
             self.pos1_min = min(pos1Range)
             pos1_maxin = max(pos1Range)
-            self.pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
+            self.pos1_max = pos1_maxin * EPS32
         else:
             self.check_pos1 = False
             self.cpos1_min = None
@@ -355,6 +355,417 @@ class HistoBBox1d(object):
         return  self.outPos, outMerge, outData, outCount
 
 
+
+################################################################################
+# Bidimensionnal regrouping 
+################################################################################
+
+class HistoBBox2d(object):
+    @cython.boundscheck(False)
+    def __init__(self,
+                 pos0,
+                 delta_pos0,
+                 pos1,
+                 delta_pos1,
+                 bins=(100,36),
+                 pos0Range=None,
+                 pos1Range=None,
+                 mask=None,
+                 mask_checksum=None,
+                 allow_pos0_neg=False,
+                 unit="undefined"):
+
+        cdef ssize_t i, size, bin0, bin1
+        self.size = pos0.size
+        assert delta_pos0.size == self.size
+        assert pos1.size == self.size
+        assert delta_pos1.size == self.size
+
+        try:
+            bins0, bins1 = tuple(bins)
+        except:
+            bins0 = bins1 = bins
+        if bins0 <= 0:
+            bins0 = 1
+        if bins1 <= 0:
+            bins1 = 1
+        self.bins = (int(bins0),int(bins1))
+        self.lut_size = 0
+        self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=numpy.float32)
+        self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=numpy.float32)
+        self.cpos0_sup = self.cpos0 + self.dpos0
+        self.cpos0_inf = self.cpos0 - self.dpos0
+        self.pos0Range = pos0Range
+        self.pos1Range = pos1Range
+        if pos0Range is not None and len(pos0Range) > 1:
+            self.pos0_min = min(pos0Range)
+            pos0_maxin = max(pos0Range)
+        else:
+            self.pos0_min = (self.cpos0_inf).min()
+            pos0_maxin = (self.cpos0_sup).max()
+        if (not allow_pos0_neg) and self.pos0_min < 0:
+            self.pos0_min = 0
+        self.pos0_max = pos0_maxin * EPS32
+
+
+        self.cpos1_min = numpy.ascontiguousarray((pos1-delta_pos1).ravel(), dtype=numpy.float32)
+        self.cpos1_max = numpy.ascontiguousarray((pos1+delta_pos1).ravel(), dtype=numpy.float32)
+        self.pos1_min = min(pos1Range)
+        pos1_maxin = max(pos1Range)
+        self.pos1_max = pos1_maxin * EPS32
+
+        if pos1Range is not None and len(pos1Range) > 1:
+            self.check_pos1 = True
+        else:
+            self.check_pos1 = False
+
+        if  mask is not None:
+            assert mask.size == self.size
+            self.check_mask = True
+            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
+            if mask_checksum:
+                self.mask_checksum = mask_checksum
+            else:
+                self.mask_checksum = crc32(mask)
+        else:
+            self.check_mask = False
+            self.mask_checksum = None
+        self.delta = (self.pos0_max - self.pos0_min) / bins
+        self.lut_max_idx = self.calc_lut()
+        self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, pos0_maxin-0.5*self.delta, self.bins)
+        self.lut_checksum = crc32(self.lut)
+        self.unit=unit
+    
+    @cython.boundscheck(False)
+    def calc_lut(self):
+        'calculate the max number of elements in the LUT and populate it'
+        cdef float delta0=self.delta0, pos0_min=self.pos0_min, min0, max0 
+        cdef float delta1=self.delta1, pos1_min=self.pos1_min, min1, max1 
+        cdef int bin0_min, bin0_max, bins0 = self.bins[0], 
+        cdef int bin1_min, bin1_max, bins1 = self.bins[1], 
+        cdef numpy.uint32_t k, idx, lut_size, i, j, size=self.size
+        cdef bint check_mask
+        cdef numpy.ndarray[numpy.uint32_t, ndim = 2] outMax = numpy.zeros((bins0,bins1), dtype=numpy.uint32)
+        cdef float[:] cpos0_sup = self.cpos0_sup
+        cdef float[:] cpos0_inf = self.cpos0_inf
+        cdef float[:] cpos1_inf = self.cpos0_inf
+        cdef float[:] cpos1_sup = self.cpos0_sup
+        cdef numpy.ndarray[numpy.uint32_t, ndim = 2] max_idx = numpy.zeros((bins0,bins1), dtype=numpy.uint32)
+        cdef numpy.ndarray[lut_point, ndim = 2] lut
+        cdef numpy.int8_t[:] cmask
+        if self.check_mask:
+            cmask = self.cmask
+            check_mask = True
+        else:
+            check_mask = False
+
+        cpos1_min = self.cpos1_min
+        cpos1_max = self.cpos1_max
+        pos1_max = self.pos1_max
+        pos1_min = self.pos1_min
+#NOGIL
+        with nogil:
+            for idx in range(size):
+                if (check_mask) and (cmask[idx]):
+                    continue
+
+                min0 = cpos0_inf[idx]
+                max0 = cpos0_sup[idx]
+                min1 = cpos1_inf[idx]
+                max1 = cpos1_sup[idx]
+
+                fbin0_min = < int > getBinNr(min0, pos0_min, delta0)
+                fbin0_max = < int > getBinNr(max0, pos0_min, delta0)
+
+                bin1_min = < int > getBinNr(min1, pos1_min, delta1)
+                bin1_max = < int > getBinNr(max1, pos1_min, delta1)
+
+                if (bin0_max < 0) or (bin0_min >= bins0) or (bin1_max < 0) or (bin1_min >= bins1):
+                    continue
+
+                if bin0_max >= bins0 :
+                    bin0_max = bins0 - 1
+                if  bin0_min < 0:
+                    bin0_min = 0
+                if bin1_max >= bins1 :
+                    bin1_max = bins1 - 1
+                if  bin1_min < 0:
+                    bin1_min = 0
+
+                for i in range(bin0_min, bin0_max+1):
+                    for j in range(bin1_min , bin1_max+1):
+                        outMax[i, j] +=  1
+
+        lut_size = outMax.max()
+        self.lut_size = lut_size
+        
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def histoBBox2d(numpy.ndarray weights not None,
+                numpy.ndarray pos0 not None,
+                numpy.ndarray delta_pos0 not None,
+                numpy.ndarray pos1 not None,
+                numpy.ndarray delta_pos1 not None,
+                bins=(100, 36),
+                pos0Range=None,
+                pos1Range=None,
+                dummy=None,
+                delta_dummy=None,
+                mask=None,
+                dark=None,
+                flat=None,
+                solidangle=None,
+                polarization=None):
+    """
+    Calculate 2D histogram of pos0(tth),pos1(chi) weighted by weights
+
+    Splitting is done on the pixel's bounding box like fit2D
+
+
+    @param weights: array with intensities
+    @param pos0: 1D array with pos0: tth or q_vect
+    @param delta_pos0: 1D array with delta pos0: max center-corner distance
+    @param pos1: 1D array with pos1: chi
+    @param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
+    @param bins: number of output bins (tth=100, chi=36 by default)
+    @param pos0Range: minimum and maximum  of the 2th range
+    @param pos1Range: minimum and maximum  of the chi range
+    @param dummy: value for bins without pixels & value of "no good" pixels
+    @param delta_dummy: precision of dummy value
+    @param mask: array (of int8) with masked pixels with 1 (0=not masked)
+    @param dark: array (of float32) with dark noise to be subtracted (or None)
+    @param flat: array (of float32) with flat-field image 
+    @param polarization: array (of float32) with polarization corrections
+    @param solidangle: array (of float32) with solid angle corrections
+
+    @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
+    """
+
+    cdef ssize_t bins0, bins1, i, j, idx
+    cdef size_t size = weights.size
+    assert pos0.size == size
+    assert pos1.size == size
+    assert delta_pos0.size == size
+    assert delta_pos1.size == size
+    try:
+        bins0, bins1 = tuple(bins)
+    except:
+        bins0 = bins1 = bins
+    if bins0 <= 0:
+        bins0 = 1
+    if bins1 <= 0:
+        bins1 = 1
+    cdef numpy.ndarray[numpy.float32_t, ndim = 1] cdata = numpy.ascontiguousarray(weights.ravel(),dtype=numpy.float32)
+    cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos0 = numpy.ascontiguousarray(pos0.ravel(),dtype=numpy.float32)
+    cdef numpy.ndarray[numpy.float32_t, ndim = 1] dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(),dtype=numpy.float32)
+    cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos1 = numpy.ascontiguousarray(pos1.ravel(),dtype=numpy.float32)
+    cdef numpy.ndarray[numpy.float32_t, ndim = 1] dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(),dtype=numpy.float32)
+    cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos0_upper = numpy.empty(size,dtype=numpy.float32)
+    cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos0_lower = numpy.empty(size,dtype=numpy.float32)
+    cdef numpy.ndarray[numpy.float64_t, ndim = 2] outData = numpy.zeros((bins0, bins1), dtype=numpy.float64)
+    cdef numpy.ndarray[numpy.float64_t, ndim = 2] outCount = numpy.zeros((bins0, bins1), dtype=numpy.float64)
+    cdef numpy.ndarray[numpy.float32_t, ndim = 2] outMerge = numpy.zeros((bins0, bins1), dtype=numpy.float32)
+
+    cdef float min0, max0, min1, max1, deltaR, deltaL, deltaU, deltaD, deltaA, tmp, delta0, delta1
+    cdef float pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin
+    cdef float fbin0_min, fbin0_max, fbin1_min, fbin1_max, data, epsilon = 1e-10, cdummy, ddummy
+    cdef ssize_t  bin0_max, bin0_min, bin1_max, bin1_min
+    cdef bint check_mask=False, check_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
+    cdef numpy.int8_t[:] cmask
+    cdef float[:] cflat, cdark, cpolarization, csolidangle
+    
+    if  mask is not None:
+        assert mask.size == size
+        check_mask = True
+        cmask = numpy.ascontiguousarray(mask.ravel(),dtype=numpy.int8)
+
+    if (dummy is not None) and delta_dummy is not None:
+        check_dummy = True
+        cdummy =  float(dummy)
+        ddummy =  float(delta_dummy)
+    elif (dummy is not None):
+        cdummy = float(dummy)
+    else:
+        cdummy=0.0
+
+    if dark is not None:
+        assert dark.size == size
+        do_dark = True
+        cdark = numpy.ascontiguousarray(dark.ravel(),dtype=numpy.float32)
+    if flat is not None:
+        assert flat.size == size
+        do_flat = True
+        cflat = numpy.ascontiguousarray(flat.ravel(),dtype=numpy.float32)
+    if polarization is not None:
+        do_polarization = True
+        assert polarization.size == size
+        cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
+    if solidangle is not None:
+        do_solidangle = True
+        assert solidangle.size == size
+        csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float32)
+
+
+    pos0_min=cpos0[0]
+    pos0_max=cpos0[0]
+
+    with nogil:
+        for idx in range(size):
+            min0 = cpos0[idx] - dpos0[idx]
+            max0 = cpos0[idx] + dpos0[idx]
+            cpos0_upper[idx]=max0
+            cpos0_lower[idx]=min0
+            if max0>pos0_max:
+                pos0_max=max0
+            if min0<pos0_min:
+                pos0_min=min0
+
+    if (pos0Range is not None) and (len(pos0Range) == 2):
+        pos0_min = min(pos0Range)
+        pos0_maxin = max(pos0Range)
+    else:
+#        pos0_min = pos0_min
+        pos0_maxin = pos0_max
+    if pos0_min<0:
+        pos0_min=0
+    pos0_max = pos0_maxin * EPS32
+
+    if (pos1Range is not None) and (len(pos1Range) == 2):
+        pos1_min = min(pos1Range)
+        pos1_maxin = max(pos1Range)
+    else:
+        pos1_min = cpos1.min()
+        pos1_maxin = cpos1.max()
+    pos1_max = pos1_maxin * EPS32
+
+    delta0 = (pos0_max - pos0_min) / (< float > (bins0))
+    delta1 = (pos1_max - pos1_min) / (< float > (bins1))
+    edges0 = numpy.linspace(pos0_min+0.5*delta0, pos0_maxin-0.5*delta0, bins0)
+    edges1 = numpy.linspace(pos1_min+0.5*delta1, pos1_maxin-0.5*delta1, bins1)
+    with nogil:
+        for idx in range(size):
+            if (check_mask) and cmask[idx]:
+                continue
+
+            data = cdata[idx]
+            if (check_dummy) and (fabs(data-cdummy)<=ddummy):
+                continue
+
+            if do_dark:
+                data -= cdark[idx]
+            if do_flat:
+                data /= cflat[idx]
+            if do_polarization:
+                data /= cpolarization[idx]
+            if do_solidangle:
+                data /= csolidangle[idx]
+
+            min0 = cpos0_lower[idx]
+            max0 = cpos0_upper[idx]
+            min1 = cpos1[idx] - dpos1[idx]
+            max1 = cpos1[idx] + dpos1[idx]
+
+            if (max0 < pos0_min) or (max1 < pos1_min) or (min0 > pos0_maxin) or (min1 > pos1_maxin) :
+                continue
+
+            if min0 < pos0_min:
+                min0 = pos0_min
+            if min1 < pos1_min:
+                min1 = pos1_min
+            if max0 > pos0_maxin:
+                max0 = pos0_maxin
+            if max1 > pos1_maxin:
+                max1 = pos1_maxin
+
+
+            fbin0_min = getBinNr(min0, pos0_min, delta0)
+            fbin0_max = getBinNr(max0, pos0_min, delta0)
+            fbin1_min = getBinNr(min1, pos1_min, delta1)
+            fbin1_max = getBinNr(max1, pos1_min, delta1)
+
+            bin0_min = <ssize_t> fbin0_min
+            bin0_max = <ssize_t> fbin0_max
+            bin1_min = <ssize_t> fbin1_min
+            bin1_max = <ssize_t> fbin1_max
+
+
+            if bin0_min == bin0_max:
+                if bin1_min == bin1_max:
+                    #All pixel is within a single bin
+                    outCount[bin0_min, bin1_min] += 1.0
+                    outData[bin0_min, bin1_min] += data
+                else:
+                    #spread on more than 2 bins
+                    deltaD = (< float > (bin1_min + 1)) - fbin1_min
+                    deltaU = fbin1_max - ( bin1_max)
+                    deltaA = 1.0 / (fbin1_max - fbin1_min)
+
+                    outCount[bin0_min, bin1_min] +=  deltaA * deltaD
+                    outData[bin0_min, bin1_min] += data * deltaA * deltaD
+
+                    outCount[bin0_min, bin1_max] +=  deltaA * deltaU
+                    outData[bin0_min, bin1_max] += data * deltaA * deltaU
+                    for j in range(bin1_min + 1, bin1_max):
+                        outCount[bin0_min, j] +=  deltaA
+                        outData[bin0_min, j] += data * deltaA
+
+            else: #spread on more than 2 bins in dim 0
+                if bin1_min == bin1_max:
+                    #All pixel fall on 1 bins in dim 1
+                    deltaA = 1.0 / (fbin0_max - fbin0_min)
+                    deltaL = (< float > (bin0_min + 1)) - fbin0_min
+                    outCount[bin0_min, bin1_min] +=  deltaA * deltaL
+                    outData[bin0_min, bin1_min] +=  data * deltaA * deltaL
+                    deltaR = fbin0_max - (< float > bin0_max)
+                    outCount[bin0_max, bin1_min] +=  deltaA * deltaR
+                    outData[bin0_max, bin1_min] +=  data * deltaA * deltaR
+                    for i in range(bin0_min + 1, bin0_max):
+                            outCount[i, bin1_min] +=  deltaA
+                            outData[i, bin1_min] +=  data * deltaA
+                else:
+                    #spread on n pix in dim0 and m pixel in dim1:
+                    deltaL = (< float > (bin0_min + 1)) - fbin0_min
+                    deltaR = fbin0_max - (< float > bin0_max)
+                    deltaD = (< float > (bin1_min + 1)) - fbin1_min
+                    deltaU = fbin1_max - (< float > bin1_max)
+                    deltaA = 1.0 / ((fbin0_max - fbin0_min) * (fbin1_max - fbin1_min))
+
+                    outCount[bin0_min, bin1_min] +=  deltaA * deltaL * deltaD
+                    outData[bin0_min, bin1_min] +=  data * deltaA * deltaL * deltaD
+
+                    outCount[bin0_min, bin1_max] +=  deltaA * deltaL * deltaU
+                    outData[bin0_min, bin1_max] +=  data * deltaA * deltaL * deltaU
+
+                    outCount[bin0_max, bin1_min] +=  deltaA * deltaR * deltaD
+                    outData[bin0_max, bin1_min] +=  data * deltaA * deltaR * deltaD
+
+                    outCount[bin0_max, bin1_max] +=  deltaA * deltaR * deltaU
+                    outData[bin0_max, bin1_max] +=  data * deltaA * deltaR * deltaU
+                    for i in range(bin0_min + 1, bin0_max):
+                            outCount[i, bin1_min] +=  deltaA * deltaD
+                            outData[i, bin1_min] +=  data * deltaA * deltaD
+                            for j in range(bin1_min + 1, bin1_max):
+                                outCount[i, j] +=  deltaA
+                                outData[i, j] +=  data * deltaA
+                            outCount[i, bin1_max] +=  deltaA * deltaU
+                            outData[i, bin1_max] +=  data * deltaA * deltaU
+                    for j in range(bin1_min + 1, bin1_max):
+                            outCount[bin0_min, j] +=  deltaA * deltaL
+                            outData[bin0_min, j] +=  data * deltaA * deltaL
+
+                            outCount[bin0_max, j] +=  deltaA * deltaR
+                            outData[bin0_max, j] +=  data * deltaA * deltaR
+
+        for i in range(bins0):
+            for j in range(bins1):
+                if outCount[i, j] > epsilon:
+                    outMerge[i, j] = <float> (outData[i, j] / outCount[i, j])
+                else:
+                    outMerge[i, j] = cdummy
+    return outMerge.T, edges0, edges1, outData.T, outCount.T
+
+
 def histoBBox1d(weights ,
                 pos0,
                 delta_pos0,
@@ -460,7 +871,7 @@ def histoBBox1d(weights ,
     else:
         pos0_maxin = pos0_max
     if pos0_min < 0: pos0_min = 0
-    pos0_max = pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps)
+    pos0_max = pos0_maxin * EPS32
 
     if pos1Range is not None and len(pos1Range) > 1:
         assert pos1.size == size
@@ -470,7 +881,7 @@ def histoBBox1d(weights ,
         dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(), dtype=numpy.float32)
         pos1_min = min(pos1Range)
         pos1_maxin = max(pos1Range)
-        pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
+        pos1_max = pos1_maxin * EPS32
 
     delta = (pos0_max - pos0_min) / ((bins))
 
