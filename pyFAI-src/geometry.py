@@ -277,10 +277,12 @@ class Geometry(object):
         p1, p2 = self._calcCartesianPositions(d1, d2, param[1], param[2])
 
         if path == "cython" and _geometry:
-            tmp = _geometry.calc_tth(
-                L=param[0],
-                rot1=param[3], rot2=param[4], rot3=param[5],
-                pos1=p1, pos2=p2)
+            tmp = _geometry.calc_tth(L=param[0],
+                                     rot1=param[3],
+                                     rot2=param[4],
+                                     rot3=param[5],
+                                     pos1=p1,
+                                     pos2=p2)
             tmp.shape = p1.shape
         else:
             L = param[0]
@@ -325,10 +327,13 @@ class Geometry(object):
         if _geometry and path == "cython":
             p1, p2 = self._calcCartesianPositions(d1, d2,
                                                   self._poni1, self.poni2)
-            out = _geometry.calc_q(
-                L=self._dist,
-                rot1=self._rot1, rot2=self._rot2, rot3=self._rot3,
-                pos1=p1, pos2=p2, wavelength=self.wavelength)
+            out = _geometry.calc_q(L=self._dist,
+                                   rot1=self._rot1,
+                                   rot2=self._rot2,
+                                   rot3=self._rot3,
+                                   pos1=p1,
+                                   pos2=p2,
+                                   wavelength=self.wavelength)
             out.shape = p1.shape
         else:
             out = 4.0e-9 * numpy.pi / self.wavelength * \
@@ -354,12 +359,14 @@ class Geometry(object):
         directDist = self._dist / cosTilt  # in m
 
         if _geometry and path == "cython":
-            p1, p2 = self._calcCartesianPositions(d1, d2,
-                                                  self._poni1, self.poni2)
-            # out = _geometry.calc_q(L=self._dist, rot1=self._rot1, rot2=self._rot2, rot3=self._rot3, pos1=p1 , pos2=p2, wavelength=self.wavelength)
-            # To be implemented
-            #out.shape = p1.shape  # ??? using out before assignment
-            raise NotImplementedError("rFunction has not parallel implementation (yet) !")
+            p1, p2 = self._calcCartesianPositions(d1, d2, self._poni1, self.poni2)
+            out = _geometry.calc_r(L=self._dist,
+                                   rot1=self._rot1,
+                                   rot2=self._rot2,
+                                   rot3=self._rot3,
+                                   pos1=p1,
+                                   pos2=p2)
+            out.shape = p1.shape
         else:
             out = directDist * numpy.tan(self.tth(d1=d1, d2=d2, param=param))
         return out

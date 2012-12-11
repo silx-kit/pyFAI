@@ -42,7 +42,7 @@ class TestGeometry(ParameterisedTestCase):
         kwds["pixel1"] = 1
         kwds["pixel2"] = 1
         g = geometry.Geometry(**kwds)
-
+        g.wavelength = 1e-10
         t0 = time.time()
         oldret = getattr(g, func)(*statargs, path=varargs[0])
         t1 = time.time()
@@ -89,6 +89,37 @@ TESTCASES = [
  ("tth", (d1, d2), ("tan", "cython"), {'rot1':1, 'rot2':5, 'rot3':.4}, False),
  ("tth", (d1, d2), ("tan", "cython"), {'rot1':-1.2, 'rot2':1.6, 'rot3':1}, False),
  ("tth", (d1, d2), ("tan", "cython"), {'dist':1e10, 'rot1':0, 'rot2':0, 'rot3':0}, False),
+
+ ("qFunction", (d1, d2), ("cython", "tan"), {'dist':1, 'rot1':0, 'rot2':0, 'rot3':0}, False),
+ ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-1, 'rot2':1, 'rot3':1}, False),
+ ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-.2, 'rot2':1, 'rot3':-.1}, False),
+ ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-1, 'rot2':-.2, 'rot3':1}, False),
+ ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':1, 'rot2':5, 'rot3':.4}, False),
+ ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-1.2, 'rot2':1, 'rot3':1}, False),
+ ("qFunction", (d1, d2), ("cython", "tan"), {'dist':1e10, 'rot1':-2, 'rot2':2, 'rot3':1}, False),
+ ("qFunction", (d1, d2), ("cython", "tan"), {'dist':1, 'rot1':3, 'rot2':0, 'rot3':0}, False),
+ ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-1, 'rot2':1, 'rot3':3}, False),
+ ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-.2, 'rot2':1, 'rot3':-.1}, False),
+ ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-3, 'rot2':-.2, 'rot3':1}, False),
+ ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':1, 'rot2':5, 'rot3':.4}, False),
+ ("qFunction", (d1, d2), ("cython", "tan"), {'rot1':-1.2, 'rot2':1.6, 'rot3':1}, False),
+ ("qFunction", (d1, d2), ("cython", "tan"), {'dist':1e10, 'rot1':0, 'rot2':0, 'rot3':0}, False),
+
+ ("rFunction", (d1, d2), ("cython", "numpy"), {'dist':1, 'rot1':0, 'rot2':0, 'rot3':0}, False),
+ ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-1, 'rot2':1, 'rot3':1}, False),
+ ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-.2, 'rot2':1, 'rot3':-.1}, False),
+ ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-1, 'rot2':-.2, 'rot3':1}, False),
+ ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':1, 'rot2':5, 'rot3':.4}, False),
+ ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-1.2, 'rot2':1, 'rot3':1}, False),
+ ("rFunction", (d1, d2), ("cython", "numpy"), {'dist':1e10, 'rot1':-2, 'rot2':2, 'rot3':1}, False),
+ ("rFunction", (d1, d2), ("cython", "numpy"), {'dist':1, 'rot1':3, 'rot2':0, 'rot3':0}, False),
+ ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-1, 'rot2':1, 'rot3':3}, False),
+ ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-.2, 'rot2':1, 'rot3':-.1}, False),
+ ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-3, 'rot2':-.2, 'rot3':1}, False),
+ ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':1, 'rot2':5, 'rot3':.4}, False),
+ ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-1.2, 'rot2':1.6, 'rot3':1}, False),
+ ("rFunction", (d1, d2), ("cython", "numpy"), {'dist':1e10, 'rot1':0, 'rot2':0, 'rot3':0}, False),
+
 
  ]
 
