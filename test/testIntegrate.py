@@ -101,7 +101,7 @@ class TestIntegrate2D(unittest.TestCase):
     data = fabio.open(img).data
     ai = pyFAI.AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0, detector=pyFAI.detectors.Pilatus1M())
     ai.wavelength = 1e-10
-    Rmax = 15
+    Rmax = 20
 
 
     def testQ(self):

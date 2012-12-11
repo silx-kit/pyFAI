@@ -63,13 +63,16 @@ class Geometry(object):
 
     - Detector fast dimension (dim2) is supposed to be horizontal
       (dimension X of the image)
+
     - Detector slow dimension (dim1) is supposed to be vertical, upwards
       (dimension Y of the image)
+
     - The third dimension is chose such as the referential is
       orthonormal, so dim3 is along incoming X-ray beam
 
+
     Demonstration of the equation done using Mathematica.
-    =====================================================
+    -----------------------------------------------------
 
     Axis 1 is along first dimension of detector (when not tilted),
     this is the slow dimension of the image array in C or Y
@@ -103,31 +106,31 @@ class Geometry(object):
     PForm[R.x3] = [cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3),-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3), cos(rot1)*cos(rot2)]
 
     * Coordinates of the Point of Normal Incidence:
-
-     PONI = R.{0,0,L}
-     PForm[PONI] = [L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3)),
+    
+      PONI = R.{0,0,L}
+      PForm[PONI] = [L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3)),
                    L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)),L*cos(rot1)*cos(rot2)]
 
     * Any pixel on detector plan at coordinate (d1, d2) in
       meters. Detector is at z=L
 
-     P={d1,d2,L}
-     PForm[R.P] =  [t1, t2, t3] =
-                = [d1*cos(rot2)*cos(rot3) + d2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) + L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3)),
+      P={d1,d2,L}
+      PForm[R.P] =  [t1, t2, t3] =
+                 = [d1*cos(rot2)*cos(rot3) + d2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) + L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3)),
                    d1*cos(rot2)*sin(rot3)  + d2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3)) + L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)),
                    d2*cos(rot2)*sin(rot1) - d1*sin(rot2) + L*cos(rot1)*cos(rot2)]
 
     * Distance sample (origin) to detector point (d1,d2)
 
-     FForm[Norm[R.P]] = sqrt(pow(Abs(L*cos(rot1)*cos(rot2) + d2*cos(rot2)*sin(rot1) - d1*sin(rot2)),2) +
+      FForm[Norm[R.P]] = sqrt(pow(Abs(L*cos(rot1)*cos(rot2) + d2*cos(rot2)*sin(rot1) - d1*sin(rot2)),2) +
                         pow(Abs(d1*cos(rot2)*cos(rot3) + d2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) +
                         L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3))),2) +
                         pow(Abs(d1*cos(rot2)*sin(rot3) + L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)) +
                         d2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3))),2))
 
-    * cos(2theta) is defined as (R.P component along x3) over the distance from origin to data point|R.P|
-     tth = ArcCos [-(R.P).x3/Norm[R.P]]
-     FForm[tth] = Arccos((-(L*cos(rot1)*cos(rot2)) - d2*cos(rot2)*sin(rot1) + d1*sin(rot2))/
+    *  cos(2theta) is defined as (R.P component along x3) over the distance from origin to data point|R.P|
+       tth = ArcCos [-(R.P).x3/Norm[R.P]]
+       FForm[tth] = Arccos((-(L*cos(rot1)*cos(rot2)) - d2*cos(rot2)*sin(rot1) + d1*sin(rot2))/
                         sqrt(pow(Abs(L*cos(rot1)*cos(rot2) + d2*cos(rot2)*sin(rot1) - d1*sin(rot2)),2) +
                           pow(Abs(d1*cos(rot2)*cos(rot3) + d2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) +
                          L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3))),2) +
@@ -136,7 +139,7 @@ class Geometry(object):
 
     * tan(2theta) is defined as sqrt(t1**2 + t2**2) / t3
 
-     tth = ArcTan2 [sqrt(t1**2 + t2**2) , t3 ]
+    tth = ArcTan2 [sqrt(t1**2 + t2**2) , t3 ]
 
     Getting 2theta from it's tangeant seems both more precise (around
     beam stop very far from sample) and faster by about 25% Currently
@@ -258,6 +261,7 @@ class Geometry(object):
         @param path: can be "cos", "tan" or "cython"
         @return: 2theta in radians
         @rtype: floar or array of floats.
+
         """
         if param is None:
             param = self.param
@@ -303,6 +307,7 @@ class Geometry(object):
         @type d2: scalar or array of scalar
         @return q in in nm^(-1)
         @rtype: float or array of floats.
+        
         """
         if not self.wavelength:
             raise RuntimeError(("Scattering vector q cannot be calculated"
@@ -334,6 +339,7 @@ class Geometry(object):
         @type d2: scalar or array of scalar
         @return r in in mm
         @rtype: float or array of floats.
+        
         """
         cosTilt = cos(self._rot1) * cos(self._rot2)
         directDist = self._dist / cosTilt  # in m
@@ -399,6 +405,7 @@ class Geometry(object):
         @type d2: scalar or array of scalar
         @return 2theta in radians
         @rtype: floar or array of floats.
+        
         """
         return self.tth(d1 - 0.5, d2 - 0.5)
 
