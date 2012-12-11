@@ -32,22 +32,27 @@ tth,I = ai.xrpd(data,nbPt)
 q,I,sigma = ai.saxs(data,nbPt)
 
 """
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/07/2012"
+__date__ = "11/12/2012"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 
-import os, logging, tempfile, threading, hashlib, gc
+import os
+import logging
+import tempfile
+import threading
+import gc
 import numpy
-from numpy import degrees
-from geometry import Geometry
-import fabio
-from utils import timeit
-logger = logging.getLogger("pyFAI.azimuthalIntegrator")
 
+from numpy import rad2deg, deg2rad, pi
+EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
+from .geometry import Geometry
+import fabio
+logger = logging.getLogger("pyFAI.azimuthalIntegrator")
+error = None
 try:
     from . import ocl_azim  # IGNORE:F0401
     from . import opencl
@@ -61,13 +66,15 @@ else:
 try:
     from . import splitBBoxLUT
 except ImportError as error:  # IGNORE:W0703
-    logger.error("Unable to import pyFAI.splitBBoxLUT for Look-up table based azimuthal integration")
+    logger.error("Unable to import pyFAI.splitBBoxLUT for"
+                 " Look-up table based azimuthal integration")
     splitBBoxLUT = None
 
 try:
     from . import ocl_azim_lut
 except ImportError as error:  # IGNORE:W0703
-    logger.error("Unable to import pyFAI.ocl_azim_lut for Look-up table based azimuthal integration on GPU")
+    logger.error("Unable to import pyFAI.ocl_azim_lut for"
+                 " Look-up table based azimuthal integration on GPU")
     ocl_azim_lut = None
 
 try:
@@ -78,21 +85,24 @@ except ImportError:
 try:
     from . import splitPixel  # IGNORE:F0401
 except ImportError as error:
-    logger.error("Unable to import pyFAI.splitPixel full pixel splitting: %s" % error)
+    logger.error("Unable to import pyFAI.splitPixel"
+                  " full pixel splitting: %s" % error)
     splitPixel = None
 
 try:
     from . import splitBBox  # IGNORE:F0401
 except ImportError as error:
-    logger.error("Unable to import pyFAI.splitBBox Bounding Box pixel splitting: %s" % error)
+    logger.error("Unable to import pyFAI.splitBBox"
+                 " Bounding Box pixel splitting: %s" % error)
     splitBBox = None
 
 try:
     from . import histogram  # IGNORE:F0401
 except ImportError as error:
-    logger.error("Unable to import pyFAI.histogram Cython OpenMP histogram implementation: %s" % error)
+    logger.error("Unable to import pyFAI.histogram"
+                 " Cython OpenMP histogram implementation: %s" % error)
     histogram = None
-
+del error
 
 class AzimuthalIntegrator(Geometry):
     """
@@ -101,7 +111,10 @@ class AzimuthalIntegrator(Geometry):
 
     All geometry calculation are done in the Geometry class
     """
-    def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0, pixel1=None, pixel2=None, splineFile=None, detector=None):
+    def __init__(self, dist=1, poni1=0, poni2=0,
+                 rot1=0, rot2=0, rot3=0,
+                 pixel1=None, pixel2=None,
+                 splineFile=None, detector=None):
         """
         @param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
         @type dist: float
@@ -124,7 +137,9 @@ class AzimuthalIntegrator(Geometry):
         @param detector: name of the detector or Detector instance.
         @type detector: str or pyFAI.Detector
         """
-        Geometry.__init__(self, dist, poni1, poni2, rot1, rot2, rot3, pixel1, pixel2, splineFile, detector)
+        Geometry.__init__(self, dist, poni1, poni2,
+                          rot1, rot2, rot3,
+                          pixel1, pixel2, splineFile, detector)
         self._nbPixCache = {}  # key=shape, value: array
 
         #
@@ -136,7 +151,6 @@ class AzimuthalIntegrator(Geometry):
         self._darkcurrent_crc = None  # just a placeholder
 
         self.header = None
-
 
         self._ocl_integrator = None
         self._ocl_lut_integr = None
@@ -155,7 +169,8 @@ class AzimuthalIntegrator(Geometry):
         with self._lut_sem:
             self._lut_integrator = None
 
-    def makeMask(self, data, mask=None, dummy=None, delta_dummy=None, mode="normal"):
+    def makeMask(self, data, mask=None,
+                 dummy=None, delta_dummy=None, mode="normal"):
         """
         Combines various masks...
 
@@ -179,30 +194,34 @@ class AzimuthalIntegrator(Geometry):
         shape = data.shape
         if mask is None:
             mask = self.mask
-        if mask is None :
+        if mask is None:
             mask = numpy.zeros(shape, dtype=bool)
         elif mask.min() < 0 and mask.max() == 0:  # 0 is valid, <0 is invalid
             mask = (mask < 0)
         else:
             mask = mask.astype(bool)
         if mask.sum(dtype=int) > mask.size // 2:
-            logger.debug("Mask likely to be inverted as more than half pixel are masked !!!")
+            logger.debug("Mask likely to be inverted as more"
+                         " than half pixel are masked !!!")
             numpy.logical_not(mask, mask)
         if (mask.shape != shape):
             try:
                 mask = mask[:shape[0], :shape[1]]
             except Exception as error:  # IGNORE:W0703
-                logger.error("Mask provided has wrong shape: expected: %s, got %s, error: %s" % (shape, mask.shape, error))
+                logger.error("Mask provided has wrong shape:"
+                             " expected: %s, got %s, error: %s" %
+                             (shape, mask.shape, error))
                 mask = numpy.zeros(shape, dtype=bool)
         if dummy is not None:
             if delta_dummy is None:
                 numpy.logical_or(mask, (data == dummy), mask)
             else:
-                numpy.logical_or(mask, (abs(data - dummy) <= delta_dummy), mask)
+                numpy.logical_or(mask,
+                                 abs(data - dummy) <= delta_dummy,
+                                 mask)
         if mode != "normal":
             numpy.logical_not(mask, mask)
         return mask
-
 
     def xrpd_numpy(self, data, nbPt, filename=None, correctSolidAngle=True,
                    tthRange=None, mask=None, dummy=None, delta_dummy=None,
@@ -304,27 +323,29 @@ class AzimuthalIntegrator(Geometry):
                                  bins=nbPt,
                                  weights=data,
                                  range=tthRange)
-        tthAxis = degrees(b[1:].astype("float32") + b[:-1].astype("float32")) / 2.0
+        tthAxis = 90.0 * (b[1:] + b[:-1]) / pi
         I = val / self._nbPixCache[nbPt]
         if filename:
             self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
 
-
-
-    def xrpd_cython(self, data, nbPt, filename=None, correctSolidAngle=True, tthRange=None, mask=None, dummy=None, delta_dummy=None,
-                    polarization_factor=0, dark=None, flat=None, pixelSize=None):
+    def xrpd_cython(self, data, nbPt, filename=None, correctSolidAngle=True,
+                    tthRange=None, mask=None, dummy=None, delta_dummy=None,
+                    polarization_factor=0, dark=None, flat=None,
+                    pixelSize=None):
         """
-        Calculate the powder diffraction pattern from a set of data, an image.
+        Calculate the powder diffraction pattern from a set of data,
+        an image.
 
-        Cython multithreaded implementation: fast but still lacks pixels
-        splitting as numpy implementation.
-        This method should not be used in production, it remains
-        to explain why histograms are hard to implement in parallel.
-        Use xrpd_splitBBox instead
+        Cython multithreaded implementation: fast but still lacks
+        pixels splitting as numpy implementation. This method should
+        not be used in production, it remains to explain why
+        histograms are hard to implement in parallel. Use
+        xrpd_splitBBox instead
         """
         if histogram is None:
-            logger.warning("pyFAI.histogram is not available, falling back on old numpy method !")
+            logger.warning("pyFAI.histogram is not available,"
+                           " falling back on old numpy method !")
             return self.xrpd_numpy(data=data,
                                    nbPt=nbPt,
                                    filename=filename,
@@ -355,20 +376,20 @@ class AzimuthalIntegrator(Geometry):
             tthRange = tuple([numpy.deg2rad(i) for i in tthRange])
         if dummy is None:
             dummy = 0.0
-        tthAxis, I, a, b = histogram.histogram(pos=tth,
+        tthAxis, I, _, _ = histogram.histogram(pos=tth,
                                                weights=data,
                                                bins=nbPt,
                                                bin_range=tthRange,
                                                pixelSize_in_Pos=pixelSize,
                                                dummy=dummy)
-        tthAxis = numpy.degrees(tthAxis)
+        tthAxis = rad2deg(tthAxis)
         if filename:
             self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
 
-
     def xrpd_splitBBox(self, data, nbPt, filename=None, correctSolidAngle=True,
-                       tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None,
+                       tthRange=None, chiRange=None, mask=None,
+                       dummy=None, delta_dummy=None,
                        polarization_factor=0, dark=None, flat=None):
         """
         Calculate the powder diffraction pattern from a set of data,
@@ -450,7 +471,8 @@ class AzimuthalIntegrator(Geometry):
         before computing the radial integration.
         """
         if splitBBox is None:
-            logger.warning("Unable to use splitBBox, falling back on numpy histogram !")
+            logger.warning("Unable to use splitBBox,"
+                           " falling back on numpy histogram !")
             return self.xrpd_numpy(data=data,
                                    nbPt=nbPt,
                                    filename=filename,
@@ -490,7 +512,7 @@ class AzimuthalIntegrator(Geometry):
         if mask is None:
             mask = self.mask
         # outPos, outMerge, outData, outCount
-        tthAxis, I, a, b = splitBBox.histoBBox1d(weights=data,
+        tthAxis, I, _, _ = splitBBox.histoBBox1d(weights=data,
                                                  pos0=tth,
                                                  delta_pos0=dtth,
                                                  pos1=chi,
@@ -506,14 +528,15 @@ class AzimuthalIntegrator(Geometry):
                                                  solidangle=solidangle,
                                                  polarization=polarization,
                                                  )
-        tthAxis = numpy.degrees(tthAxis)
+        tthAxis = rad2deg(tthAxis)
         if filename:
             self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
 
-
-    def xrpd_splitPixel(self, data, nbPt, filename=None, correctSolidAngle=True,
-                        tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None,
+    def xrpd_splitPixel(self, data, nbPt,
+                        filename=None, correctSolidAngle=True,
+                        tthRange=None, chiRange=None, mask=None,
+                        dummy=None, delta_dummy=None,
                         polarization_factor=0, dark=None, flat=None):
         """
         Calculate the powder diffraction pattern from a set of data,
@@ -595,7 +618,8 @@ class AzimuthalIntegrator(Geometry):
         before computing the radial integration.
         """
         if splitPixel is None:
-            logger.warning("splitPixel is not available, falling back on numpy histogram !" % error)
+            logger.warning("splitPixel is not available,"
+                           " falling back on numpy histogram !" % error)
             return self.xrpd_numpy(data=data,
                                    nbPt=nbPt,
                                    filename=filename,
@@ -614,14 +638,14 @@ class AzimuthalIntegrator(Geometry):
         else:
             solidangle = None
         if polarization_factor != 0:
-            polarization = self.polarizarion(data.shape, polarization_factor)
+            polarization = self.polarizarion(data.shape, polarization_factor)  # AzimutalIntegrator has no polarization member ???
         else:
             polarization = None
         if tthRange is not None:
             tthRange = tuple([numpy.deg2rad(i) for i in tthRange])
         if chiRange is not None:
             chiRange = tuple([numpy.deg2rad(i) for i in chiRange])
-        tthAxis, I, a, b = splitPixel.fullSplit1D(pos=pos,
+        tthAxis, I, _, _ = splitPixel.fullSplit1D(pos=pos,
                                                   weights=data,
                                                   bins=nbPt,
                                                   pos0Range=tthRange,
@@ -634,7 +658,7 @@ class AzimuthalIntegrator(Geometry):
                                                   solidangle=solidangle,
                                                   polarization=polarization,
                                                   )
-        tthAxis = numpy.degrees(tthAxis)
+        tthAxis = rad2deg(tthAxis)
         if filename:
             self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
@@ -642,16 +666,17 @@ class AzimuthalIntegrator(Geometry):
     xrpd = xrpd_splitBBox
 
     def xrpd_OpenCL(self, data, nbPt, filename=None, correctSolidAngle=True,
-                       tthRange=None, mask=None, dummy=None, delta_dummy=None,
-                        devicetype="gpu", useFp64=True, platformid=None, deviceid=None, safe=True):
-
+                    tthRange=None, mask=None, dummy=None, delta_dummy=None,
+                    devicetype="gpu", useFp64=True,
+                    platformid=None, deviceid=None, safe=True):
         """
         Calculate the powder diffraction pattern from a set of data,
         an image.
 
-        This is (now) a pure pyopencl implementation so it just needs pyopencl
-        which requires a clean OpenCL installation. This implementation is not slower
-        than the previous Cython and is less problematic for compilation/installation.
+        This is (now) a pure pyopencl implementation so it just needs
+        pyopencl which requires a clean OpenCL installation. This
+        implementation is not slower than the previous Cython and is
+        less problematic for compilation/installation.
 
         @param data: 2D array from the CCD camera
         @type data: ndarray
@@ -691,12 +716,12 @@ class AzimuthalIntegrator(Geometry):
         given by the *nbPt* parameter. If you give a *filename*, the
         powder diffraction is also saved as a two column text file.
         The powder diffraction is computed internally using an
-        histogram which by default use should be done in 64bits.
-        One can switch to 32 bits with the *useFp64* parameter set to
-        False. In 32bit mode; do not expect better than 1% error and one
-        can even observe overflows ! 32 bits is only left for testing
-        hardware capabilities and should NEVER be used in any real
-        experiment analysis.
+        histogram which by default use should be done in 64bits. One
+        can switch to 32 bits with the *useFp64* parameter set to
+        False. In 32bit mode; do not expect better than 1% error and
+        one can even observe overflows ! 32 bits is only left for
+        testing hardware capabilities and should NEVER be used in any
+        real experiment analysis.
 
         It is possible to correct or not the powder diffraction
         pattern using the *correctSolidAngle* parameter. The weight of
@@ -722,25 +747,28 @@ class AzimuthalIntegrator(Geometry):
         same).
 
         Bad pixels can also be masked by setting them to an impossible
-        value (-1) and calling this value the "dummy value".
-        Some Pilatus detectors are setting non existing pixel to -1
-        and dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so
-        that any value between -3.5 and -0.5 are considered as bad.
+        value (-1) and calling this value the "dummy value".  Some
+        Pilatus detectors are setting non existing pixel to -1 and
+        dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so that
+        any value between -3.5 and -0.5 are considered as bad.
 
         *devicetype*, *platformid* and *deviceid*, parameters are
         specific to the OpenCL implementation. If you set *devicetype*
         to 'all', 'cpu', 'gpu', 'def' you can force the device used to
-        perform the computation; the program will select the device accordinly.
-        By setting *platformid* and *deviceid*, you can directly address a
-        specific device (which is computer specific).
+        perform the computation; the program will select the device
+        accordinly. By setting *platformid* and *deviceid*, you can
+        directly address a specific device (which is computer
+        specific).
 
-        The *safe* parameter is specific to the integrator object, located on the
-        OpenCL device. You can set it to False if you think the integrator is
-        already setup correcty (device, geometric arrays, mask, 2theta/chi range).
-        Unless many tests will be done at each integration.
+        The *safe* parameter is specific to the integrator object,
+        located on the OpenCL device. You can set it to False if you
+        think the integrator is already setup correcty (device,
+        geometric arrays, mask, 2theta/chi range). Unless many tests
+        will be done at each integration.
         """
         if not ocl_azim:
-            logger.warning("OpenCL implementation not available falling back on old method !")
+            logger.warning("OpenCL implementation not available"
+                           " falling back on old method !")
             return self.xrpd_splitBBox(data=data,
                                        nbPt=nbPt,
                                        filename=filename,
@@ -760,17 +788,22 @@ class AzimuthalIntegrator(Geometry):
                     integr = ocl_azim.Integrator1d(tmpfile)
                     if (platformid is not None) and (deviceid is not None):
                         rc = integr.init(devicetype=devicetype,
-                                    platformid=platformid,
-                                    deviceid=deviceid,
-                                    useFp64=useFp64)
+                                         platformid=platformid,
+                                         deviceid=deviceid,
+                                         useFp64=useFp64)
                     else:
                         rc = integr.init(devicetype=devicetype,
-                                        useFp64=useFp64)
+                                         useFp64=useFp64)
                     if rc:
-                        raise RuntimeError('Failed to initialize OpenCL deviceType %s (%s,%s) 64bits: %s' % (devicetype, platformid, deviceid, useFp64))
+                        raise RuntimeError("Failed to initialize OpenCL"
+                                           " deviceType %s (%s,%s) 64bits: %s"
+                                           % (devicetype, platformid,
+                                              deviceid, useFp64))
 
                     if integr.getConfiguration(size, nbPt):
-                        raise RuntimeError('Failed to configure 1D integrator with Ndata=%s and Nbins=%s' % (size, nbPt))
+                        raise RuntimeError("Failed to configure 1D integrator"
+                                           " with Ndata=%s and Nbins=%s"
+                                           % (size, nbPt))
 
                     if integr.configure():
                         raise RuntimeError('Failed to compile kernel')
@@ -784,7 +817,7 @@ class AzimuthalIntegrator(Geometry):
                         pos0_maxin = pos0.max()
                     if pos0_min < 0.0:
                         pos0_min = 0.0
-                    pos0_max = pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps)
+                    pos0_max = pos0_maxin * EPS32
                     if integr.loadTth(pos0, delta_pos0, pos0_min, pos0_max):
                         raise RuntimeError("Failed to upload 2th arrays")
                     self._ocl_integrator = integr
@@ -798,20 +831,23 @@ class AzimuthalIntegrator(Geometry):
                         delta_dummy = 1e-6
                     self._ocl_integrator.setDummyValue(dummy, delta_dummy)
                 if correctSolidAngle and not param["solid_angle"]:
-                    self._ocl_integrator.setSolidAngle(self.solidAngleArray(shape))
+                    self._ocl_integrator.setSolidAngle(
+                        self.solidAngleArray(shape))
                 elif (not correctSolidAngle) and param["solid_angle"]:
                     self._ocl_integrator.unsetSolidAngle()
                 if (mask is not None) and not param["mask"]:
                     self._ocl_integrator.setMask(mask)
                 elif (mask is None) and param["mask"]:
                     self._ocl_integrator.unsetMask()
-            tthAxis, I, a, = self._ocl_integrator.execute(data)
-        tthAxis = numpy.degrees(tthAxis)
+            tthAxis, I, _, = self._ocl_integrator.execute(data)
+        tthAxis = rad2deg(tthAxis)
         if filename:
             self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
 
-    def setup_LUT(self, shape, nbPt, mask=None, pos0_range=None, pos1_range=None, mask_checksum=None, unit="2th"):
+    def setup_LUT(self, shape, nbPt, mask=None,
+                  pos0_range=None, pos1_range=None, mask_checksum=None,
+                  unit="2th"):
         """
         This method is called when a look-up table needs to be set-up.
 
@@ -843,13 +879,13 @@ class AzimuthalIntegrator(Geometry):
         if pos0_range is not None and len(pos0_range) > 1:
             pos0_min = min(pos0_range)
             pos0_maxin = max(pos0_range)
-            pos0Range = (pos0_min, pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps))
+            pos0Range = (pos0_min, pos0_maxin * EPS32)
         else:
             pos0Range = None
         if pos1_range is not None and len(pos1_range) > 1:
             pos1_min = min(pos1_range)
             pos1_maxin = max(pos1_range)
-            pos1Range = (pos1_min, pos1_maxin * (1.0 + numpy.finfo(numpy.float32).eps))
+            pos1Range = (pos1_min, pos1_maxin * EPS32)
         else:
             pos1Range = None
         if mask is None:
@@ -858,19 +894,18 @@ class AzimuthalIntegrator(Geometry):
             assert mask.shape == shape
         unit = str(unit).split("_")[0]
         return splitBBoxLUT.HistoBBox1d(pos0, dpos0, pos1, dpos1,
-                                                        bins=nbPt,
-                                                        pos0Range=pos0Range,
-                                                        pos1Range=pos1Range,
-                                                        mask=mask,
-                                                        mask_checksum=mask_checksum,
-                                                        allow_pos0_neg=False,
-                                                        unit=unit)
-
+                                        bins=nbPt,
+                                        pos0Range=pos0Range,
+                                        pos1Range=pos1Range,
+                                        mask=mask,
+                                        mask_checksum=mask_checksum,
+                                        allow_pos0_neg=False,
+                                        unit=unit)
 
     def xrpd_LUT(self, data, nbPt, filename=None, correctSolidAngle=True,
-                       tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None,
-                       safe=True):
-
+                 tthRange=None, chiRange=None, mask=None,
+                 dummy=None, delta_dummy=None,
+                 safe=True):
         """
         Calculate the powder diffraction pattern from an image.
 
@@ -897,8 +932,7 @@ class AzimuthalIntegrator(Geometry):
 
         LUT specific parameters:
 
-        @param safe: set to False if your LUT is already set-up correctly
-        (mask, ranges, ...).
+        @param safe: set to False if your LUT is already set-up correctly (mask, ranges, ...). 
         @type safe: bool
 
         @return: (2theta, I) with 2theta angle in degrees
@@ -921,8 +955,8 @@ class AzimuthalIntegrator(Geometry):
         Each pixel of the *data* image as also a chi coordinate. So it
         is possible to restrain the chi range of the pixels to
         consider in the powder diffraction pattern by setting the
-        range with the *chiRange* parameter. Like the
-        *tthRange* parameter, value outside this range are ignored.
+        range with the *chiRange* parameter. Like the *tthRange*
+        parameter, value outside this range are ignored.
 
         Sometimes one needs to mask a few pixels (beamstop, hot
         pixels, ...), to ignore a few of them you just need to provide
@@ -950,7 +984,8 @@ class AzimuthalIntegrator(Geometry):
         shape = data.shape
         mask_crc = None
         if not splitBBoxLUT:
-            logger.warning("Look-up table implementation not available: falling back on old method !")
+            logger.warning("Look-up table implementation not available:"
+                           " falling back on old method !")
             return self.xrpd_splitBBox(data=data,
                                        nbPt=nbPt,
                                        filename=filename,
@@ -967,14 +1002,15 @@ class AzimuthalIntegrator(Geometry):
                 if tthRange is None:
                     pos0_range = None
                 else:
-                    pos0_range = [numpy.deg2rad(i) for i in  tthRange]
+                    pos0_range = [numpy.deg2rad(i) for i in tthRange]
                 if chiRange is None:
                     pos1_range = None
                 else:
-                    pos1_range = [numpy.deg2rad(i) for i in  chiRange]
+                    pos1_range = [numpy.deg2rad(i) for i in chiRange]
 
                 if mask is None:
                     mask = self.detector.mask
+                    # access to private member! no, not provate, internal; moreover just a read access on it  !!!
                     mask_crc = self.detector._mask_crc
                 else:
                     mask_crc = crc32(mask)
@@ -983,11 +1019,11 @@ class AzimuthalIntegrator(Geometry):
                 if tthRange is None:
                     pos0_range = None
                 else:
-                    pos0_range = [numpy.deg2rad(i) for i in  tthRange]
+                    pos0_range = [numpy.deg2rad(i) for i in tthRange]
                 if chiRange is None:
                     pos1_range = None
                 else:
-                    pos1_range = [numpy.deg2rad(i) for i in  chiRange]
+                    pos1_range = [numpy.deg2rad(i) for i in chiRange]
 
                 if mask is None:
                     mask = self.detector.mask
@@ -995,55 +1031,85 @@ class AzimuthalIntegrator(Geometry):
                 else:
                     mask_crc = crc32(mask)
 
-                if (mask is not None) and (not self._lut_integrator.check_mask):
+                if (mask is not None) and \
+                        (not self._lut_integrator.check_mask):
                     reset = "mask but LUT was without mask"
                 elif (mask is None) and (self._lut_integrator.check_mask):
                     reset = "no mask but LUT has mask"
-                elif (mask is not None) and (self._lut_integrator.mask_checksum != mask_crc):
+                elif (mask is not None) and \
+                        (self._lut_integrator.mask_checksum != mask_crc):
                     reset = "mask changed"
-                if (pos0_range is None) and (self._lut_integrator.pos0Range is not None):
+                if (pos0_range is None) and \
+                        (self._lut_integrator.pos0Range is not None):
                     reset = "radial_range was defined in LUT"
-                elif (pos0_range is not None) and self._lut_integrator.pos0Range != (min(pos0_range), max(pos0_range) * (1.0 + numpy.finfo(numpy.float32).eps)):
-                    reset = "radial_range is defined but not the same as in LUT"
-                if (pos1_range is None) and (self._lut_integrator.pos1Range is not None):
-                    reset = "azimuth_range not defined and LUT had azimuth_range defined"
-                elif (pos1_range is not None) and self._lut_integrator.pos1Range != (min(pos1_range), max(pos1_range) * (1.0 + numpy.finfo(numpy.float32).eps)):
-                    reset = "azimuth_range requested and LUT's azimuth_range don't match"
+                elif (pos0_range is not None) and \
+                    (self._lut_integrator.pos0Range !=
+                            (min(pos0_range), max(pos0_range) * EPS32)):
+                    reset = ("radial_range is defined"
+                             " but not the same as in LUT")
+                if (pos1_range is None) and\
+                        (self._lut_integrator.pos1Range is not None):
+                    reset = ("azimuth_range not defined"
+                             " and LUT had azimuth_range defined")
+                elif (pos1_range is not None) and \
+                        (self._lut_integrator.pos1Range !=
+                        (min(pos1_range), max(pos1_range) * EPS32)):
+                    reset = ("azimuth_range requested and"
+                             " LUT's azimuth_range don't match")
             if reset:
-                logger.debug("xrpd_LUT: Resetting integrator because %s" % reset)
+                logger.debug("xrpd_LUT: Resetting integrator because %s" %
+                             reset)
                 try:
-                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, pos0_range, pos1_range, mask_checksum=mask_crc)
+                    self._lut_integrator = \
+                        self.setup_LUT(shape, nbPt, mask,
+                                       pos0_range, pos1_range,
+                                       mask_checksum=mask_crc)
                 except MemoryError:  # LUT method is hungry...
-                    logger.warning("MemoryError: falling back on forward implementation")
+                    logger.warning("MemoryError:"
+                                   " falling back on forward implementation")
                     self._ocl_lut_integr = None
                     gc.collect()
-                    return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
+                    return self.xrpd_splitBBox(
+                        data=data, nbPt=nbPt, filename=filename,
+                        correctSolidAngle=correctSolidAngle,
+                        tthRange=tthRange, mask=mask,
+                        dummy=dummy, delta_dummy=delta_dummy)
             if correctSolidAngle:
                 solid_angle_array = self.solidAngleArray(shape)
             else:
                 solid_angle_array = None
             try:
-                tthAxis, I, a, b = self._lut_integrator.integrate(data, solidAngle=solid_angle_array, dummy=dummy, delta_dummy=delta_dummy)
+                tthAxis, I, _, _ = self._lut_integrator.integrate(
+                    data,
+                    solidAngle=solid_angle_array,
+                    dummy=dummy, delta_dummy=delta_dummy)
             except MemoryError:  # LUT method is hungry...
-                logger.warning("MemoryError: falling back on forward implementation")
+                logger.warning("MemoryError:"
+                               " falling back on forward implementation")
                 self._ocl_lut_integr = None
                 gc.collect()
-                return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
-        tthAxis = 180 * self._lut_integrator.outPos / numpy.pi
+                return self.xrpd_splitBBox(
+                    data=data, nbPt=nbPt, filename=filename,
+                    correctSolidAngle=correctSolidAngle,
+                    tthRange=tthRange, mask=mask,
+                    dummy=dummy, delta_dummy=delta_dummy)
+        tthAxis = 180.0 * self._lut_integrator.outPos / pi
         if filename:
             self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
 
     def xrpd_LUT_OCL(self, data, nbPt, filename=None, correctSolidAngle=True,
-                       tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None,
-                       safe=True, devicetype="all", platformid=None, deviceid=None):
+                     tthRange=None, chiRange=None, mask=None,
+                     dummy=None, delta_dummy=None,
+                     safe=True, devicetype="all",
+                     platformid=None, deviceid=None):
 
         """
         Calculate the powder diffraction pattern from a set of data,
         an image.
 
-        PyOpenCL implementation using a Look-Up Table (OpenCL).
-        The look-up table is a Cython module.
+        PyOpenCL implementation using a Look-Up Table (OpenCL). The
+        look-up table is a Cython module.
 
         @param data: 2D array from the CCD camera
         @type data: ndarray
@@ -1098,8 +1164,8 @@ class AzimuthalIntegrator(Geometry):
         Each pixel of the *data* image has also a chi coordinate. So
         it is possible to restrain the chi range of the pixels to
         consider in the powder diffraction pattern by setting the
-        *chiRange* parameter. Like the *tthRange* parameter,
-        value outside this range are ignored.
+        *chiRange* parameter. Like the *tthRange* parameter, value
+        outside this range are ignored.
 
         Sometimes one needs to mask a few pixels (beamstop, hot
         pixels, ...), to ignore a few of them you just need to provide
@@ -1119,21 +1185,22 @@ class AzimuthalIntegrator(Geometry):
         and dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so
         that any value between -3.5 and -0.5 are considered as bad.
 
-        The *safe* parameter is specific to the OpenCL/LUT implementation,
-        you can set it to false if you think the LUT calculated is
-        already the correct one (setup, mask, 2theta/chi range) and
-        the device set-up is the expected one.
+        The *safe* parameter is specific to the OpenCL/LUT
+        implementation, you can set it to false if you think the LUT
+        calculated is already the correct one (setup, mask, 2theta/chi
+        range) and the device set-up is the expected one.
 
         *devicetype*, *platformid* and *deviceid*, parameters are
         specific to the OpenCL implementation. If you set *devicetype*
         to 'all', 'cpu', or 'gpu' you can force the device used to
-        perform the computation.
-        By providing the *platformid* and *deviceid* you can chose a specific
-        device (computer specific).
+        perform the computation. By providing the *platformid* and
+        *deviceid* you can chose a specific device (computer
+        specific).
         """
         shape = data.shape
         if not (splitBBoxLUT and ocl_azim_lut):
-            logger.warning("Look-up table implementation not available: falling back on old method !")
+            logger.warning("Look-up table implementation not available:"
+                           " falling back on old method !")
             return self.xrpd_splitBBox(data=data,
                                        nbPt=nbPt,
                                        filename=filename,
@@ -1156,11 +1223,11 @@ class AzimuthalIntegrator(Geometry):
                 if tthRange is None:
                     pos0_range = None
                 else:
-                    pos0_range = [numpy.deg2rad(i) for i in  tthRange]
+                    pos0_range = [numpy.deg2rad(i) for i in tthRange]
                 if chiRange is None:
                     pos1_range = None
                 else:
-                    pos1_range = [numpy.deg2rad(i) for i in  chiRange]
+                    pos1_range = [numpy.deg2rad(i) for i in chiRange]
 
                 if mask is None:
                     mask = self.detector.mask
@@ -1171,11 +1238,11 @@ class AzimuthalIntegrator(Geometry):
                 if tthRange is None:
                     pos0_range = None
                 else:
-                    pos0_range = [numpy.deg2rad(i) for i in  tthRange]
+                    pos0_range = [numpy.deg2rad(i) for i in tthRange]
                 if chiRange is None:
                     pos1_range = None
                 else:
-                    pos1_range = [numpy.deg2rad(i) for i in  chiRange]
+                    pos1_range = [numpy.deg2rad(i) for i in chiRange]
 
                 if mask is None:
                     mask = self.detector.mask
@@ -1183,43 +1250,72 @@ class AzimuthalIntegrator(Geometry):
                 else:
                     mask_crc = crc32(mask)
 
-                if (mask is not None) and (not self._lut_integrator.check_mask):
+                if (mask is not None) and\
+                        (not self._lut_integrator.check_mask):
                     reset = "mask but LUT was without mask"
                 elif (mask is None) and (self._lut_integrator.check_mask):
                     reset = "no mask but LUT has mask"
-                elif (mask is not None) and (self._lut_integrator.mask_checksum != mask_crc):
+                elif (mask is not None) and\
+                        (self._lut_integrator.mask_checksum != mask_crc):
                     reset = "mask changed"
-                if (pos0_range is None) and (self._lut_integrator.pos0Range is not None):
+                if (pos0_range is None) and\
+                        (self._lut_integrator.pos0Range is not None):
                     reset = "radial_range was defined in LUT"
-                elif (pos0_range is not None) and self._lut_integrator.pos0Range != (min(pos0_range), max(pos0_range) * (1.0 + numpy.finfo(numpy.float32).eps)):
-                    reset = "radial_range is defined but not the same as in LUT"
-                if (pos1_range is None) and (self._lut_integrator.pos1Range is not None):
-                    reset = "azimuth_range not defined and LUT had azimuth_range defined"
-                elif (pos1_range is not None) and self._lut_integrator.pos1Range != (min(pos1_range), max(pos1_range) * (1.0 + numpy.finfo(numpy.float32).eps)):
-                    reset = "azimuth_range requested and LUT's azimuth_range don't match"
+                elif (pos0_range is not None) and\
+                        (self._lut_integrator.pos0Range !=
+                            (min(pos0_range), max(pos0_range) * EPS32)):
+                    reset = ("radial_range is defined"
+                             " but not the same as in LUT")
+                if (pos1_range is None) and\
+                        (self._lut_integrator.pos1Range is not None):
+                    reset = ("azimuth_range not defined and"
+                             " LUT had azimuth_range defined")
+                elif (pos1_range is not None) and\
+                        (self._lut_integrator.pos1Range !=
+                        (min(pos1_range), max(pos1_range) * EPS32)):
+                    reset = ("azimuth_range requested and"
+                             " LUT's azimuth_range don't match")
 
             if reset:
-                logger.debug("xrpd_LUT_OCL: Resetting integrator because of %s" % reset)
+                logger.debug("xrpd_LUT_OCL:"
+                             " Resetting integrator because of %s" % reset)
                 try:
-                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask, tthRange, chiRange, mask_checksum=mask_crc)
+                    self._lut_integrator = \
+                        self.setup_LUT(shape, nbPt, mask,
+                                       tthRange, chiRange,
+                                       mask_checksum=mask_crc)
                 except MemoryError:  # LUT method is hungry...
-                    logger.warning("MemoryError: falling back on forward implementation")
+                    logger.warning("MemoryError:"
+                                   " falling back on forward implementation")
                     self._ocl_lut_integr = None
                     gc.collect()
-                    return self.xrpd_splitBBox(data=data, nbPt=nbPt, filename=filename, correctSolidAngle=correctSolidAngle, tthRange=tthRange, mask=mask, dummy=dummy, delta_dummy=delta_dummy)
+                    return self.xrpd_splitBBox(
+                        data=data, nbPt=nbPt, filename=filename,
+                        correctSolidAngle=correctSolidAngle,
+                        tthRange=tthRange, mask=mask,
+                        dummy=dummy, delta_dummy=delta_dummy)
 
-            tthAxis = 180 * self._lut_integrator.outPos / numpy.pi
+            tthAxis = 180.0 * self._lut_integrator.outPos / pi
             with self._ocl_lut_sem:
-                if (self._ocl_lut_integr is None) or (self._ocl_lut_integr.on_device["lut"] != self._lut_integrator.lut_checksum):
-                    self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut, self._lut_integrator.size, devicetype, platformid=platformid, deviceid=deviceid, checksum=self._lut_integrator.lut_checksum)
-                I, J, K = self._ocl_lut_integr.integrate(data, solidAngle=solid_angle_array, solidAngle_checksum=solid_angle_crc, dummy=dummy, delta_dummy=delta_dummy)
+                if (self._ocl_lut_integr is None) or \
+                        (self._ocl_lut_integr.on_device["lut"] != self._lut_integrator.lut_checksum):
+                    self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(
+                        self._lut_integrator.lut,
+                        self._lut_integrator.size,
+                        devicetype, platformid=platformid, deviceid=deviceid,
+                        checksum=self._lut_integrator.lut_checksum)
+                I, _, _ = self._ocl_lut_integr.integrate(
+                    data, solidAngle=solid_angle_array,
+                    solidAngle_checksum=solid_angle_crc,
+                    dummy=dummy, delta_dummy=delta_dummy)
         if filename:
             self.save1D(filename, tthAxis, I, None, "2th_deg")
         return tthAxis, I
 
-
-    def xrpd2_numpy(self, data, nbPt2Th, nbPtChi=360, filename=None, correctSolidAngle=True,
-                         tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None):
+    def xrpd2_numpy(self, data, nbPt2Th, nbPtChi=360,
+                    filename=None, correctSolidAngle=True,
+                    tthRange=None, chiRange=None,
+                    mask=None, dummy=None, delta_dummy=None):
         """
         Calculate the 2D powder diffraction pattern (2Theta, Chi) from
         a set of data, an image
@@ -1255,7 +1351,8 @@ class AzimuthalIntegrator(Geometry):
         chi = self.chiArray(data.shape)[mask]
         bins = (nbPtChi, nbPt2Th)
         if bins not in self._nbPixCache:
-            ref, binsChi, bins2Th = numpy.histogram2d(chi, tth, bins=list(bins))
+            ref, binsChi, bins2Th = numpy.histogram2d(chi, tth,
+                                                      bins=list(bins))
             self._nbPixCache[bins] = numpy.maximum(1.0, ref)
         if correctSolidAngle:
             data = (data / self.solidAngleArray(data.shape))[mask].astype("float64")
@@ -1268,7 +1365,8 @@ class AzimuthalIntegrator(Geometry):
         if chiRange is not None:
             chiRange = tuple([numpy.deg2rad(i) for i in chiRange])
         else:
-            chiRange = tuple([numpy.deg2rad(chi.min()), numpy.deg2rad(chi.max())])
+            chiRange = tuple([numpy.deg2rad(chi.min()),
+                              numpy.deg2rad(chi.max())])
 
         val, binsChi, bins2Th = numpy.histogram2d(chi, tth,
                                                   bins=list(bins),
@@ -1281,8 +1379,10 @@ class AzimuthalIntegrator(Geometry):
 
         return I, bins2Th, binsChi
 
-    def xrpd2_histogram(self, data, nbPt2Th, nbPtChi=360, filename=None, correctSolidAngle=True,
-                              tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None):
+    def xrpd2_histogram(self, data, nbPt2Th, nbPtChi=360,
+                        filename=None, correctSolidAngle=True,
+                        tthRange=None, chiRange=None, mask=None,
+                        dummy=None, delta_dummy=None):
         """
         Calculate the 2D powder diffraction pattern (2Theta,Chi) from
         a set of data, an image
@@ -1314,8 +1414,9 @@ class AzimuthalIntegrator(Geometry):
         @rtype: 3-tuple of ndarrays
         """
 
-        if  histogram  is None:
-            logger.warning("pyFAI.histogram is not available, falling back on numpy")
+        if histogram is None:
+            logger.warning("pyFAI.histogram is not available,"
+                           " falling back on numpy")
             return self.xrpd2_numpy(data=data,
                                     nbPt2Th=nbPt2Th,
                                     nbPtChi=nbPtChi,
@@ -1336,23 +1437,23 @@ class AzimuthalIntegrator(Geometry):
             data = data[mask]
         if dummy is None:
             dummy = 0.0
-        I, binsChi, bins2Th, val, count = histogram.histogram2d(pos0=chi,
-                                                                pos1=tth,
-                                                                bins=(nbPtChi, nbPt2Th),
-                                                                weights=data,
-                                                                split=1,
-                                                                dummy=dummy)
-        bins2Th = numpy.degrees(bins2Th)
-        binsChi = numpy.degrees(binsChi)
+            I, binsChi, bins2Th, _, _ = \
+                histogram.histogram2d(pos0=chi, pos1=tth,
+                                      bins=(nbPtChi, nbPt2Th),
+                                      weights=data,
+                                      split=1,
+                                      dummy=dummy)
+        bins2Th = rad2deg(bins2Th)
+        binsChi = rad2deg(binsChi)
         if filename:
             self.save2D(filename, I, bins2Th, binsChi)
         return I, bins2Th, binsChi
 
-
-
-    def xrpd2_splitBBox(self, data, nbPt2Th, nbPtChi=360, filename=None, correctSolidAngle=True,
-                         tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None,
-                         polarization_factor=0, dark=None, flat=None):
+    def xrpd2_splitBBox(self, data, nbPt2Th, nbPtChi=360,
+                        filename=None, correctSolidAngle=True,
+                        tthRange=None, chiRange=None, mask=None,
+                        dummy=None, delta_dummy=None,
+                        polarization_factor=0, dark=None, flat=None):
         """
         Calculate the 2D powder diffraction pattern (2Theta,Chi) from
         a set of data, an image
@@ -1386,12 +1487,12 @@ class AzimuthalIntegrator(Geometry):
         @param flat: flat field image
         @type flat: ndarray
 
-
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
         @rtype: 3-tuple of ndarrays
         """
         if splitBBox is None:
-            logger.warning("Unable to use splitBBox, falling back on numpy histogram !")
+            logger.warning("Unable to use splitBBox,"
+                           " falling back on numpy histogram !")
             return self.xrpd2_histogram(data=data,
                                         nbPt2Th=nbPt2Th,
                                         nbPtChi=nbPtChi,
@@ -1422,29 +1523,32 @@ class AzimuthalIntegrator(Geometry):
             polarization = self.polarization(data.shape, polarization_factor)
         else:
             polarization = None
-        I, bins2Th, binsChi, a, b = splitBBox.histoBBox2d(weights=data,
-                                                          pos0=tth,
-                                                          delta_pos0=dtth,
-                                                          pos1=chi,
-                                                          delta_pos1=dchi,
-                                                          bins=(nbPt2Th, nbPtChi),
-                                                          pos0Range=tthRange,
-                                                          pos1Range=chiRange,
-                                                          dummy=dummy,
-                                                          delta_dummy=delta_dummy,
-                                                          mask=mask,
-                                                          dark=dark,
-                                                          flat=flat,
-                                                          solidangle=solidangle,
-                                                          polarization=polarization)
-        bins2Th = numpy.degrees(bins2Th)
-        binsChi = numpy.degrees(binsChi)
+        I, bins2Th, binsChi, _, _ = \
+            splitBBox.histoBBox2d(weights=data,
+                                  pos0=tth,
+                                  delta_pos0=dtth,
+                                  pos1=chi,
+                                  delta_pos1=dchi,
+                                  bins=(nbPt2Th, nbPtChi),
+                                  pos0Range=tthRange,
+                                  pos1Range=chiRange,
+                                  dummy=dummy,
+                                  delta_dummy=delta_dummy,
+                                  mask=mask,
+                                  dark=dark,
+                                  flat=flat,
+                                  solidangle=solidangle,
+                                  polarization=polarization)
+        bins2Th = rad2deg(bins2Th)
+        binsChi = rad2deg(binsChi)
         if filename:
             self.save2D(filename, I, bins2Th, binsChi)
         return I, bins2Th, binsChi
 
-    def xrpd2_splitPixel(self, data, nbPt2Th, nbPtChi=360, filename=None, correctSolidAngle=True,
-                         tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None,
+    def xrpd2_splitPixel(self, data, nbPt2Th, nbPtChi=360,
+                         filename=None, correctSolidAngle=True,
+                         tthRange=None, chiRange=None, mask=None,
+                         dummy=None, delta_dummy=None,
                          polarization_factor=0, dark=None, flat=None):
         """
         Calculate the 2D powder diffraction pattern (2Theta,Chi) from
@@ -1483,20 +1587,22 @@ class AzimuthalIntegrator(Geometry):
         @rtype: 3-tuple of ndarrays
         """
         if splitPixel is None:
-            logger.warning("splitPixel is not available, falling back on SplitBBox !")
-            return self.xrpd2_splitBBox(data=data,
-                                        nbPt2Th=nbPt2Th,
-                                        nbPtChi=nbPtChi,
-                                        filename=filename,
-                                        correctSolidAngle=correctSolidAngle,
-                                        tthRange=tthRange,
-                                        chiRange=chiRange,
-                                        mask=mask,
-                                        dummy=dummy,
-                                        delta_dummy=delta_dummy,
-                                        polarization_factor=polarization_factor,
-                                        dark=dark,
-                                        flat=flat)
+            logger.warning("splitPixel is not available,"
+                           " falling back on SplitBBox !")
+            return self.xrpd2_splitBBox(
+                data=data,
+                nbPt2Th=nbPt2Th,
+                nbPtChi=nbPtChi,
+                filename=filename,
+                correctSolidAngle=correctSolidAngle,
+                tthRange=tthRange,
+                chiRange=chiRange,
+                mask=mask,
+                dummy=dummy,
+                delta_dummy=delta_dummy,
+                polarization_factor=polarization_factor,
+                dark=dark,
+                flat=flat)
 
         pos = self.cornerArray(data.shape)
         if correctSolidAngle:
@@ -1513,21 +1619,21 @@ class AzimuthalIntegrator(Geometry):
         if chiRange is not None:
             chiRange = tuple([numpy.deg2rad(i) for i in chiRange])
 
-
-        I, bins2Th, binsChi, a, b = splitPixel.fullSplit2D(pos=pos,
-                                                           weights=data,
-                                                           bins=(nbPt2Th, nbPtChi),
-                                                           pos0Range=tthRange,
-                                                           pos1Range=chiRange,
-                                                           dummy=dummy,
-                                                           delta_dummy=delta_dummy,
-                                                           mask=mask,
-                                                           dark=dark,
-                                                           flat=flat,
-                                                           solidangle=solidangle,
-                                                           polarization=polarization,)
-        bins2Th = numpy.degrees(bins2Th)
-        binsChi = numpy.degrees(binsChi)
+        I, bins2Th, binsChi, _, _ = \
+            splitPixel.fullSplit2D(pos=pos,
+                                   weights=data,
+                                   bins=(nbPt2Th, nbPtChi),
+                                   pos0Range=tthRange,
+                                   pos1Range=chiRange,
+                                   dummy=dummy,
+                                   delta_dummy=delta_dummy,
+                                   mask=mask,
+                                   dark=dark,
+                                   flat=flat,
+                                   solidangle=solidangle,
+                                   polarization=polarization,)
+        bins2Th = rad2deg(bins2Th)
+        binsChi = rad2deg(binsChi)
         if filename:
             self.save2D(filename, I, bins2Th, binsChi)
         return I, bins2Th, binsChi
@@ -1551,7 +1657,8 @@ class AzimuthalIntegrator(Geometry):
         if "_" in unit:
             unit = str(unit).split("_")[0].lower()
         if not typ in ("center", "corner", "delta"):
-            logger.warning("Unknown type of array %s, defaulting to 'center'" % typ)
+            logger.warning("Unknown type of array %s,"
+                           " defaulting to 'center'" % typ)
             typ = "center"
         if unit == "q":
             if typ == "center":
@@ -1584,11 +1691,13 @@ class AzimuthalIntegrator(Geometry):
                 out = self.delta2Theta(shape)
         return out
 
-    def integrate1d(self, data, nbPt, filename=None, correctSolidAngle=True, variance=None,
-             error_model=None, radial_range=None, azimuth_range=None,
-             mask=None, dummy=None, delta_dummy=None,
-             polarization_factor=0, dark=None, flat=None,
-             method="lut", unit="q_nm^-1", safe=True):
+    def integrate1d(self, data, nbPt, filename=None,
+                    correctSolidAngle=True,
+                    variance=None, error_model=None,
+                    radial_range=None, azimuth_range=None,
+                    mask=None, dummy=None, delta_dummy=None,
+                    polarization_factor=0, dark=None, flat=None,
+                    method="lut", unit="q_nm^-1", safe=True):
         """
         Calculate the azimuthal integrated Saxs curve in q(nm^-1) by default
 
@@ -1627,7 +1736,7 @@ class AzimuthalIntegrator(Geometry):
         @rtype: 3-tuple of ndarrays
         """
         method = method.lower()
-        pos0_scale = 1.0  # nota we need anyway t
+        pos0_scale = 1.0  # nota we need anyway to make a copy !
         if mask is None:
             mask = self.mask
         shape = data.shape
@@ -1635,24 +1744,26 @@ class AzimuthalIntegrator(Geometry):
             pos0_scale = 1.0
         elif unit == "q_A^-1":
             if radial_range:
-                radial_range = tuple([i / 10.0 for i in radial_range])
+                radial_range = tuple([ 0.1 * i for i in radial_range])
             pos0_scale = 10.0
         elif unit == "2th_rad":
             pos0_scale = 1.0
         elif unit == "2th_deg":
             if radial_range:
-                radial_range = tuple([numpy.pi * i / 180.0 for i in radial_range])
-            pos0_scale = 180.0 / numpy.pi
+                radial_range = \
+                    tuple([deg2rad(i) for i in radial_range])
+            pos0_scale = 180.0 / pi
         elif unit == "r_mm":
             if radial_range:
-                radial_range = tuple([i / 1000.0 for i in radial_range])
-            pos0_scale = 1000  # convert m->mm
+                radial_range = tuple([ 0.001 * i for i in radial_range])
+            pos0_scale = 1000.0  # convert m->mm
         else:
-            logger.warning("Unknown unit %s, defaulting to 2theta (deg)" % unit)
+            logger.warning("Unknown unit %s,"
+                           " defaulting to 2theta (deg)" % unit)
             unit = "2th_deg"
             if radial_range:
                 radial_range = tuple([numpy.deg2rad(i) for i in radial_range])
-            pos0_scale = 180.0 / numpy.pi
+            pos0_scale = 180.0 / pi
         if variance is not None:
             assert variance.size == data.size
         elif error_model:
@@ -1692,7 +1803,7 @@ class AzimuthalIntegrator(Geometry):
                         mask_crc = self.detector._mask_crc
                     else:
                         mask_crc = crc32(mask)
-                if (not reset) :
+                if (not reset):
                     if mask is None:
                         mask = self.detector.mask
                         mask_crc = self.detector._mask_crc
@@ -1700,34 +1811,50 @@ class AzimuthalIntegrator(Geometry):
                         mask_crc = crc32(mask)
                     if self._lut_integrator.unit != unit.split("_")[0]:
                         reset = "unit changed"
-                    if (mask is not None) and (not self._lut_integrator.check_mask):
+                    if (mask is not None) and\
+                            (not self._lut_integrator.check_mask):
                         reset = "mask but LUT was without mask"
                     elif (mask is None) and (self._lut_integrator.check_mask):
                         reset = "no mask but LUT has mask"
-                    elif (mask is not None) and (self._lut_integrator.mask_checksum != mask_crc):
+                    elif (mask is not None) and\
+                            (self._lut_integrator.mask_checksum != mask_crc):
                         reset = "mask changed"
-                    if (radial_range is None) and (self._lut_integrator.pos0Range is not None):
+                    if (radial_range is None) and\
+                            (self._lut_integrator.pos0Range is not None):
                         reset = "radial_range was defined in LUT"
-                    elif (radial_range is not None) and self._lut_integrator.pos0Range != (min(radial_range), max(radial_range) * (1.0 + numpy.finfo(numpy.float32).eps)):
-                        reset = "radial_range is defined but not the same as in LUT"
-                    if (azimuth_range is None) and (self._lut_integrator.pos1Range is not None):
-                        reset = "azimuth_range not defined and LUT had azimuth_range defined"
-                    elif (azimuth_range is not None) and self._lut_integrator.pos1Range != (min(azimuth_range), max(azimuth_range) * (1.0 + numpy.finfo(numpy.float32).eps)):
-                        reset = "azimuth_range requested and LUT's azimuth_range don't match"
+                    elif (radial_range is not None) and\
+                            (self._lut_integrator.pos0Range !=
+                             (min(radial_range), max(radial_range) * EPS32)):
+                        reset = ("radial_range is defined"
+                                 " but not the same as in LUT")
+                    if (azimuth_range is None) and\
+                            (self._lut_integrator.pos1Range is not None):
+                        reset = ("azimuth_range not defined and"
+                                 " LUT had azimuth_range defined")
+                    elif (azimuth_range is not None) and\
+                            (self._lut_integrator.pos1Range !=
+                                (min(azimuth_range), max(azimuth_range) * EPS32)):
+                        reset = ("azimuth_range requested and"
+                                 " LUT's azimuth_range don't match")
                 error = False
                 if reset:
-                    logger.warning("AI.integrate1d: Resetting integrator because of %s" % reset)
+                    logger.warning("AI.integrate1d:"
+                                   " Resetting integrator because of %s" % reset)
                     try:
-                        self._lut_integrator = self.setup_LUT(shape, nbPt, mask, radial_range, azimuth_range, mask_checksum=mask_crc, unit=unit)
+                        self._lut_integrator = \
+                            self.setup_LUT(shape, nbPt, mask,
+                                           radial_range, azimuth_range,
+                                           mask_checksum=mask_crc, unit=unit)
                         error = False
                     except MemoryError:  # LUT method is hungry...
-                        logger.warning("MemoryError: falling back on forward implementation")
+                        logger.warning("MemoryError:"
+                                       " falling back on forward implementation")
                         self._ocl_lut_integr = None
                         gc.collect()
                         method = "splitbbox"
                         error = True
                 if not error:
-                    if  "ocl" in method:
+                    if "ocl" in method:
                         with self._ocl_lut_sem:
                             if "," in method:
                                 c = method.index(",")
@@ -1746,30 +1873,50 @@ class AzimuthalIntegrator(Geometry):
                                 platformid = None
                                 deviceid = None
                                 devicetype = "all"
-                            if (self._ocl_lut_integr is None) or (self._ocl_lut_integr.on_device["lut"] != self._lut_integrator.lut_checksum):
-                                self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut, self._lut_integrator.size,
-                                                                                       devicetype=devicetype, platformid=platformid, deviceid=deviceid,
-                                                                                       checksum=self._lut_integrator.lut_checksum)
-                            I, J, K = self._ocl_lut_integr.integrate(data, solidAngle=solidangle, solidAngle_checksum=self._dssa_crc, dummy=dummy, delta_dummy=delta_dummy)
+                            if (self._ocl_lut_integr is None) or\
+                                    (self._ocl_lut_integr.on_device["lut"] != self._lut_integrator.lut_checksum):
+                                self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(
+                                    self._lut_integrator.lut,
+                                    self._lut_integrator.size,
+                                    devicetype=devicetype,
+                                    platformid=platformid,
+                                    deviceid=deviceid,
+                                    checksum=self._lut_integrator.lut_checksum)
+                            I, J, _ = self._ocl_lut_integr.integrate(
+                                data, solidAngle=solidangle,
+                                solidAngle_checksum=self._dssa_crc,
+                                dummy=dummy, delta_dummy=delta_dummy)
                             qAxis = self._lut_integrator.outPos  # this will be copied later
                             if error_model == "azimuthal":
                                 variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
                             if variance is not None:
-                                var1d, a, b = self._ocl_lut_integr.integrate(variance, solidAngle=None, dummy=dummy, delta_dummy=delta_dummy)
+                                var1d, a, b = \
+                                    self._ocl_lut_integr.integrate(variance,
+                                                                   solidAngle=None,
+                                                                   dummy=dummy,
+                                                                   delta_dummy=delta_dummy)
                                 sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
                     else:
-                        qAxis, I, a, b = self._lut_integrator.integrate(data, solidAngle=solidangle, dummy=dummy, delta_dummy=delta_dummy)
+                        qAxis, I, a, b = \
+                            self._lut_integrator.integrate(data,
+                                                           solidAngle=solidangle,
+                                                           dummy=dummy,
+                                                           delta_dummy=delta_dummy)
 
                         if error_model == "azimuthal":
                             variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
                         if variance is not None:
-                            qAxis, I, a, b = self._lut_integrator.integrate(variance, solidAngle=None, dummy=dummy, delta_dummy=delta_dummy)
+                            qAxis, I, a, b = \
+                                self._lut_integrator.integrate(variance,
+                                                               solidAngle=None,
+                                                               dummy=dummy,
+                                                               delta_dummy=delta_dummy)
                             sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
-
 
         if (I is None) and ("splitpix" in method):
             if splitPixel is None:
-                logger.warning("SplitPixel is not available, falling back on splitbbox histogram !")
+                logger.warning("SplitPixel is not available,"
+                               " falling back on splitbbox histogram !")
                 method = "bbox"
             else:
                 logger.debug("integrate1d uses SplitPixel implementation")
@@ -1977,7 +2124,6 @@ class AzimuthalIntegrator(Geometry):
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
         @rtype: 3-tuple of ndarrays (2d, 1d, 1d)
         """
-#        bins = (nbPt_azim, nbPt_rad)
         method = method.lower()
         pos0_scale = 1.0  # nota we need anyway t
         if mask is None:
@@ -1993,8 +2139,8 @@ class AzimuthalIntegrator(Geometry):
             pos0_scale = 1.0
         elif unit == "2th_deg":
             if radial_range:
-                radial_range = tuple([numpy.pi * i / 180.0 for i in radial_range])
-            pos0_scale = 180.0 / numpy.pi
+                radial_range = tuple([pi * i / 180.0 for i in radial_range])
+            pos0_scale = 180.0 / pi
         elif unit == "r_mm":
             pos0_scale = 0.001  # convert m->mm
         else:
@@ -2002,7 +2148,7 @@ class AzimuthalIntegrator(Geometry):
             unit = "2th_deg"
             if radial_range:
                 radial_range = tuple([numpy.deg2rad(i) for i in radial_range])
-            pos0_scale = 180.0 / numpy.pi
+            pos0_scale = 180.0 / pi
         if variance is not None:
             assert variance.size == data.size
         elif error_model:
@@ -2058,11 +2204,11 @@ class AzimuthalIntegrator(Geometry):
 #                        reset = "mask changed"
 #                    if (radial_range is None) and (self._lut_integrator.pos0Range is not None):
 #                        reset = "radial_range was defined in LUT"
-#                    elif (radial_range is not None) and self._lut_integrator.pos0Range != (min(radial_range), max(radial_range) * (1.0 + numpy.finfo(numpy.float32).eps)):
+#                    elif (radial_range is not None) and self._lut_integrator.pos0Range != (min(radial_range), max(radial_range) * EPS32):
 #                        reset = "radial_range is defined but not the same as in LUT"
 #                    if (azimuth_range is None) and (self._lut_integrator.pos1Range is not None):
 #                        reset = "azimuth_range not defined and LUT had azimuth_range defined"
-#                    elif (azimuth_range is not None) and self._lut_integrator.pos1Range != (min(azimuth_range), max(azimuth_range) * (1.0 + numpy.finfo(numpy.float32).eps)):
+#                    elif (azimuth_range is not None) and self._lut_integrator.pos1Range != (min(azimuth_range), max(azimuth_range) * EPS32):
 #                        reset = "azimuth_range requested and LUT's azimuth_range don't match"
 #                error = False
 #                if reset:
@@ -2275,7 +2421,7 @@ class AzimuthalIntegrator(Geometry):
         # I know I make copies ....
         if pos0_scale :
             bins_rad = bins_rad * pos0_scale
-        bins_azim = bins_azim * 180 / numpy.pi
+        bins_azim = bins_azim * 180.0 / pi
         if filename:
             self.save2D(filename, bins_rad, I, sigma, unit)
         if sigma is not None:
@@ -2390,8 +2536,8 @@ class AzimuthalIntegrator(Geometry):
                   "chi_max":str(dim2.max()),
                   dim1_unit + "_min":str(dim1.min()),
                   dim1_unit + "_max":str(dim1.max()),
-                  "pixelX": str(self.pixel2),  # this is not a bug ... most people expect dim1 to be X
-                  "pixelY": str(self.pixel1),  # this is not a bug ... most people expect dim2 to be Y
+                  "pixelX": str(self.pixel2), # this is not a bug ... most people expect dim1 to be X
+                  "pixelY": str(self.pixel1), # this is not a bug ... most people expect dim2 to be Y
                 }
         if self.splineFile:
             header["spline"] = str(self.splineFile)
