@@ -296,7 +296,7 @@ class FReLoN(Detector):
     def __init__(self, splineFile):
         Detector.__init__(self, splineFile)
         self.max_shape = (self.spline.ymax - self.spline.ymin,
-                          self.spline.xmax - self.splinex.xmin)
+                          self.spline.xmax - self.spline.xmin)
 
 class Xpad_flat(Detector):
     """

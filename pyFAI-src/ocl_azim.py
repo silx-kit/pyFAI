@@ -36,7 +36,7 @@ TODO and trick from dimitris still missing:
 
 
 """
-__author__ = "Jerome Kieffer"
+__author__ = "Jérôme Kieffer"
 __license__ = "GPLv3"
 __date__ = "07/11/2012"
 __copyright__ = "2012, ESRF, Grenoble"
@@ -204,54 +204,54 @@ class Integrator1d(object):
         try:
             self._cl_mem["tth"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY,
                                                   size_of_float * self.nData)
-            self._cl_mem["tth_delta"] =\
+            self._cl_mem["tth_delta"] = \
                 pyopencl.Buffer(self._ctx, mf.READ_ONLY,
                                 size_of_float * self.nData)
-            self._cl_mem["mask"] =\
+            self._cl_mem["mask"] = \
                 pyopencl.Buffer(self._ctx, mf.READ_ONLY,
                                 size_of_int * self.nData)
-            self._cl_mem["image"] =\
+            self._cl_mem["image"] = \
                 pyopencl.Buffer(self._ctx, mf.READ_ONLY,
                                 size_of_float * self.nData)
-            self._cl_mem["solidangle"] =\
+            self._cl_mem["solidangle"] = \
                 pyopencl.Buffer(self._ctx, mf.READ_ONLY,
                                 size_of_float * self.nData)
-            self._cl_mem["dark"] =\
+            self._cl_mem["dark"] = \
                 pyopencl.Buffer(self._ctx, mf.READ_ONLY,
                                 size_of_float * self.nData)
-            self._cl_mem["histogram"] =\
+            self._cl_mem["histogram"] = \
                 pyopencl.Buffer(self._ctx, mf.READ_WRITE,
                                 size_of_float * self.nBins)
-            self._cl_mem["weights"] =\
+            self._cl_mem["weights"] = \
                 pyopencl.Buffer(self._ctx, mf.READ_WRITE,
                                 size_of_float * self.nBins)
             if self.useFp64:
-                self._cl_mem["uhistogram"] =\
+                self._cl_mem["uhistogram"] = \
                     pyopencl.Buffer(self._ctx, mf.READ_WRITE,
                                     size_of_long * self.nBins)
-                self._cl_mem["uweights"] =\
+                self._cl_mem["uweights"] = \
                     pyopencl.Buffer(self._ctx, mf.READ_WRITE,
                                     size_of_long * self.nBins)
             else:
-                self._cl_mem["uhistogram"] =\
+                self._cl_mem["uhistogram"] = \
                     pyopencl.Buffer(self._ctx, mf.READ_WRITE,
                                     size_of_int * self.nBins)
-                self._cl_mem["uweights"] =\
+                self._cl_mem["uweights"] = \
                     pyopencl.Buffer(self._ctx, mf.READ_WRITE,
                                     size_of_int * self.nBins)
-            self._cl_mem["span_ranges"] =\
+            self._cl_mem["span_ranges"] = \
                 pyopencl.Buffer(self._ctx, mf.READ_WRITE,
                                 size_of_float * self.nData)
-            self._cl_mem["tth_min_max"] =\
+            self._cl_mem["tth_min_max"] = \
                 pyopencl.Buffer(self._ctx, mf.READ_ONLY,
                                 size_of_float * 2)
-            self._cl_mem["tth_range"] =\
+            self._cl_mem["tth_range"] = \
                 pyopencl.Buffer(self._ctx, mf.READ_ONLY,
                                 size_of_float * 2)
-            self._cl_mem["dummyval"] =\
+            self._cl_mem["dummyval"] = \
                 pyopencl.Buffer(self._ctx, mf.READ_ONLY,
                                 size_of_float * 1)
-            self._cl_mem["dummyval_delta"] =\
+            self._cl_mem["dummyval_delta"] = \
                 pyopencl.Buffer(self._ctx, mf.READ_ONLY,
                                 size_of_float * 1)
         except pyopencl.MemoryError as error:
@@ -287,14 +287,14 @@ class Integrator1d(object):
             if os.path.isfile(kernel_name):
                 kernel_file = os.path.abspath(kernel_name)
             else:
-                kernel_file =\
+                kernel_file = \
                     os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                  kernel_name)
         else:
             kernel_file = str(kernel_file)
         kernel_src = open(kernel_file).read()
 
-        compile_options = "-D BLOCK_SIZE=%i  -D BINS=%i -D NN=%i" %\
+        compile_options = "-D BLOCK_SIZE=%i  -D BINS=%i -D NN=%i" % \
             (self.BLOCK_SIZE, self.nBins, self.nData)
         if self.useFp64:
             compile_options += " -D ENABLE_FP64"
@@ -319,22 +319,22 @@ class Integrator1d(object):
         tthRange low and upper bounds. When unsetRange is called, the
         argument slot is reset to tth_min_max.
         """
-        self._cl_kernel_args["create_histo_binarray"] =\
+        self._cl_kernel_args["create_histo_binarray"] = \
             [self._cl_mem[i] for i in ("tth", "tth_delta", "uweights",
                                        "tth_min_max", "image", "uhistogram",
                                        "span_ranges", "mask", "tth_min_max")]
-        self._cl_kernel_args["get_spans"] =\
+        self._cl_kernel_args["get_spans"] = \
             [self._cl_mem[i] for i in ["tth", "tth_delta",
                                        "tth_min_max", "span_ranges"]]
-        self._cl_kernel_args["solidangle_correction"] =\
+        self._cl_kernel_args["solidangle_correction"] = \
             [self._cl_mem["image"], self._cl_mem["solidangle"]]
-        self._cl_kernel_args["dummyval_correction"] =\
+        self._cl_kernel_args["dummyval_correction"] = \
             [self._cl_mem["image"], self._cl_mem["dummyval"],
              self._cl_mem["dummyval_delta"]]
-        self._cl_kernel_args["uimemset2"] =\
+        self._cl_kernel_args["uimemset2"] = \
             [self._cl_mem["uweights"], self._cl_mem["uhistogram"]]
         self._cl_kernel_args["imemset"] = [self._cl_mem["mask"], ]
-        self._cl_kernel_args["ui2f2"] =\
+        self._cl_kernel_args["ui2f2"] = \
             [self._cl_mem[i] for i in ("uweights", "uhistogram",
                                        "weights", "histogram")]
 
@@ -364,10 +364,10 @@ class Integrator1d(object):
             self.useFp64 = bool(useFp64)
         self.nBins = Nbins
         self.nData = Nimage
-        self.wdim_data = (Nimage + self.BLOCK_SIZE - 1) &\
-            ~(self.BLOCK_SIZE - 1),
-        self.wdim_bins = (Nbins + self.BLOCK_SIZE - 1) &\
-            ~(self.BLOCK_SIZE - 1),
+        self.wdim_data = (Nimage + self.BLOCK_SIZE - 1) & \
+            ~ (self.BLOCK_SIZE - 1),
+        self.wdim_bins = (Nbins + self.BLOCK_SIZE - 1) & \
+            ~ (self.BLOCK_SIZE - 1),
 
     def configure(self, kernel=None):
         """
@@ -429,7 +429,7 @@ class Integrator1d(object):
         ctth = numpy.ascontiguousarray(tth.ravel(), dtype=numpy.float32)
         cdtth = numpy.ascontiguousarray(dtth.ravel(), dtype=numpy.float32)
         with self.lock:
-            self._tth_max = (ctth + cdtth).max() *\
+            self._tth_max = (ctth + cdtth).max() * \
                 (1.0 + numpy.finfo(numpy.float32).eps)
             self._tth_min = max(0.0, (ctth - cdtth).min())
             if tth_min is None:
@@ -599,11 +599,11 @@ class Integrator1d(object):
 
         with self.lock:
             self.useTthRange = True
-            copy_2thrange =\
+            copy_2thrange = \
                 pyopencl.enqueue_copy(self._queue, self._cl_mem["tth_range"],
                                       numpy.array((lowerBound, upperBound),
                                                   dtype=numpy.float32))
-            self._cl_kernel_args["create_histo_binarray"][8] =\
+            self._cl_kernel_args["create_histo_binarray"][8] = \
                 self._cl_mem["tth_range"]
             self._cl_kernel_args["get_spans"][2] = self._cl_mem["tth_range"]
 
@@ -625,7 +625,7 @@ class Integrator1d(object):
             if self.useTthRange:
                 self._calc_tth_out(self._tth_min, self._tth_max)
             self.useTthRange = False
-            self._cl_kernel_args["create_histo_binarray"][8] =\
+            self._cl_kernel_args["create_histo_binarray"][8] = \
                 self._cl_mem["tth_min_max"]
             self._cl_kernel_args["get_spans"][2] = self._cl_mem["tth_min_max"]
 
@@ -675,7 +675,7 @@ class Integrator1d(object):
                                         dtype=numpy.float32))
             logger.debug("kernel uimemset2 sizes: \t%s %s",
                          self.wdim_bins, self.tdim)
-            memset =\
+            memset = \
                 self._cl_program.uimemset2(self._queue, self.wdim_bins,
                                            self.tdim,
                                            *self._cl_kernel_args["uimemset2"])
@@ -684,8 +684,8 @@ class Integrator1d(object):
                 logger.debug("kernel dummyval_correction sizes: \t%s %s",
                              self.wdim_data, self.tdim)
                 dummy = self._cl_program.dummyval_correction(
-                    self._queue, self.wdim_data,
-                    self.tdim, *args) # args unknown ???
+                    self._queue, self.wdim_data, self.tdim,
+                    self._cl_kernel_args["dummyval_correction"])
 
             if self.do_solidangle:
                 sa = self._cl_program.solidangle_correction(
@@ -717,7 +717,7 @@ class Integrator1d(object):
                          copy_hist=copy_hist, copy_bins=copy_bins)
             pyopencl.enqueue_barrier(self._queue).wait()
 
-        return self.tth_out.copy(), histogram, bins
+        return self.tth_out, histogram, bins
 
     def init(self, devicetype="GPU", useFp64=True,
              platformid=None, deviceid=None):
@@ -746,11 +746,11 @@ class Integrator1d(object):
                                " on CPU: enforce BLOCK_SIZE=1")
                 self.BLOCK_SIZE = 1
                 if self.nBins:
-                    self.wdim_bins = (self.nBins + self.BLOCK_SIZE - 1) &\
-                        ~(self.BLOCK_SIZE - 1),
+                    self.wdim_bins = (self.nBins + self.BLOCK_SIZE - 1) & \
+                        ~ (self.BLOCK_SIZE - 1),
                 if self.nData:
-                    self.wdim_data = (self.nData + self.BLOCK_SIZE - 1) &\
-                        ~(self.BLOCK_SIZE - 1),
+                    self.wdim_data = (self.nData + self.BLOCK_SIZE - 1) & \
+                        ~ (self.BLOCK_SIZE - 1),
 
             self.useFp64 = "fp64" in device.extensions
             platforms = pyopencl.get_platforms()

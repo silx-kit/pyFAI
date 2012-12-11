@@ -277,11 +277,11 @@ class Geometry(object):
             sinRot1 = sin(param[3])
             sinRot2 = sin(param[4])
             sinRot3 = sin(param[5])
-            t1 = p1 * cosRot2 * cosRot3 +\
-                p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) -\
+            t1 = p1 * cosRot2 * cosRot3 + \
+                p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - \
                 L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
-            t2 = p1 * cosRot2 * sinRot3 +\
-                p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) -\
+            t2 = p1 * cosRot2 * sinRot3 + \
+                p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - \
                 L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
             t3 = p1 * sinRot2 - p2 * cosRot2 * sinRot1 + L * cosRot1 * cosRot2
             if path == "cos":
@@ -317,7 +317,7 @@ class Geometry(object):
                 pos1=p1, pos2=p2, wavelength=self.wavelength)
             out.shape = p1.shape
         else:
-            out = 4.0e-9 * numpy.pi / self.wavelength *\
+            out = 4.0e-9 * numpy.pi / self.wavelength * \
                 numpy.sin(self.tth(d1=d1, d2=d2, param=param) / 2.0)
         return out
 
@@ -343,7 +343,8 @@ class Geometry(object):
                                                   self._poni1, self.poni2)
             # out = _geometry.calc_q(L=self._dist, rot1=self._rot1, rot2=self._rot2, rot3=self._rot3, pos1=p1 , pos2=p2, wavelength=self.wavelength)
             # To be implemented
-            out.shape = p1.shape  # ??? using out before assignment
+            #out.shape = p1.shape  # ??? using out before assignment
+            raise NotImplementedError("rFunction has not parallel implementation (yet) !")
         else:
             out = directDist * numpy.tan(self.tth(d1=d1, d2=d2, param=param))
         return out
@@ -623,39 +624,39 @@ class Geometry(object):
                     if self._corner4Da is not None\
                             and self._corner4Da.shape[:2] == tuple(shape):
                         for i in range(4):
-                            delta[:, :, i] =\
+                            delta[:, :, i] = \
                                 numpy.minimum(((self._corner4Da[:, :, i, 1] - chi_center) % twoPi),
                                               ((chi_center - self._corner4Da[:, :, i, 1]) % twoPi))
                     if self._corner4Dqa is not None\
                             and self._corner4Dqa.shape[:2] == tuple(shape):
                         for i in range(4):
-                            delta[:, :, i] =\
+                            delta[:, :, i] = \
                                 numpy.minimum(((self._corner4Dqa[:, :, i, 1] - chi_center) % twoPi),
                                               ((chi_center - self._corner4Dqa[:, :, i, 1]) % twoPi))
                     if self._corner4Dra is not None\
                             and self._corner4Dra.shape[:2] == tuple(shape):
                         for i in range(4):
-                            delta[:, :, i] =\
+                            delta[:, :, i] = \
                                 numpy.minimum(((self._corner4Dra[:, :, i, 1] - chi_center) % twoPi),
                                               ((chi_center - self._corner4Dra[:, :, i, 1]) % twoPi))
                     else:
-                        chi_corner =\
+                        chi_corner = \
                             numpy.fromfunction(self.chi_corner,
                                                (shape[0] + 1, shape[1] + 1),
                                                dtype=numpy.float32)
-                        delta[:, :, 0] =\
+                        delta[:, :, 0] = \
                             numpy.minimum(((chi_corner[:-1, :-1] - chi_center) % twoPi),
                                           ((chi_center - chi_corner[:-1, :-1]) % twoPi))
-                        delta[:, :, 1] =\
+                        delta[:, :, 1] = \
                             numpy.minimum(((chi_corner[1: , :-1] - chi_center) % twoPi),
                                           ((chi_center - chi_corner[1: , :-1]) % twoPi))
-                        delta[:, :, 2] =\
+                        delta[:, :, 2] = \
                             numpy.minimum(((chi_corner[1: , 1: ] - chi_center) % twoPi),
                                           ((chi_center - chi_corner[1: , 1: ]) % twoPi))
-                        delta[:, :, 3] =\
+                        delta[:, :, 3] = \
                             numpy.minimum(((chi_corner[:-1, 1: ] - chi_center) % twoPi),
                                           ((chi_center - chi_corner[:-1, 1: ]) % twoPi))
-                    self._dchia = delta.max(axis=-1)
+                    self._dchia = delta.max(axis= -1)
         return self._dchia
 
     def deltaQ(self, shape):
@@ -677,10 +678,10 @@ class Geometry(object):
                     if self._corner4Dqa is not None\
                             and self._corner4Dqa.shape[:2] == tuple(shape):
                         for i in range(4):
-                            delta[:, :, i] =\
+                            delta[:, :, i] = \
                                 abs(self._corner4Dqa[:, :, i, 0] - q_center)
                     else:
-                        q_corner =\
+                        q_corner = \
                             numpy.fromfunction(self.qCornerFunct,
                                                (shape[0] + 1, shape[1] + 1),
                                                dtype=numpy.float32)
@@ -688,7 +689,7 @@ class Geometry(object):
                         delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
                         delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
                         delta[:, :, 3] = abs(q_corner[:-1, 1:] - q_center)
-                    self._dqa = delta.max(axis=-1)
+                    self._dqa = delta.max(axis= -1)
         return self._dqa
 
     def deltaR(self, shape):
@@ -708,10 +709,10 @@ class Geometry(object):
                     if self._corner4Dra is not None\
                             and self._corner4Dra.shape[:2] == tuple(shape):
                         for i in range(4):
-                            delta[:, :, i] =\
+                            delta[:, :, i] = \
                                 abs(self._corner4Dra[:, :, i, 0] - q_center)
                     else:
-                        q_corner =\
+                        q_corner = \
                             numpy.fromfunction(self.rCornerFunct,
                                                (shape[0] + 1, shape[1] + 1),
                                                dtype=numpy.float32)
@@ -719,7 +720,7 @@ class Geometry(object):
                         delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
                         delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
                         delta[:, :, 3] = abs(q_corner[:-1, 1:] - q_center)
-                    self._dra = delta.max(axis=-1)
+                    self._dra = delta.max(axis= -1)
         return self._dra
 
     def diffSolidAngle(self, d1, d2):

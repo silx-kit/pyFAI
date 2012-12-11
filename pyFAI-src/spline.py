@@ -367,7 +367,7 @@ class Spline:
             if self.filename is None:
                 self.zeros()
             else:
-                self.read()
+                self.read(self.filename)
         print("center=%s, tilt=%s, tiltPlanRot=%s, distanceSampleDetector=%sm, pixelSize=%sµm" % (center, tiltAngle, tiltPlanRot, distanceSampleDetector, self.pixelSize))
         if timing:
             startTime = time.time()

@@ -78,7 +78,7 @@ except ImportError as error:  # IGNORE:W0703
     ocl_azim_lut = None
 
 try:
-    from fastcrc import crc32
+    from .fastcrc import crc32
 except ImportError:
     from zlib import crc32
 
@@ -638,7 +638,7 @@ class AzimuthalIntegrator(Geometry):
         else:
             solidangle = None
         if polarization_factor != 0:
-            polarization = self.polarizarion(data.shape, polarization_factor)  # AzimutalIntegrator has no polarization member ???
+            polarization = self.polarization(data.shape, polarization_factor)  # AzimutalIntegrator has no polarization member ???
         else:
             polarization = None
         if tthRange is not None:
@@ -1882,10 +1882,11 @@ class AzimuthalIntegrator(Geometry):
                                     platformid=platformid,
                                     deviceid=deviceid,
                                     checksum=self._lut_integrator.lut_checksum)
-                            I, J, _ = self._ocl_lut_integr.integrate(
-                                data, solidAngle=solidangle,
-                                solidAngle_checksum=self._dssa_crc,
-                                dummy=dummy, delta_dummy=delta_dummy)
+                            I, J, _ = self._ocl_lut_integr.integrate(data,
+                                                                     solidAngle=solidangle,
+                                                                     solidAngle_checksum=self._dssa_crc,
+                                                                     dummy=dummy,
+                                                                     delta_dummy=delta_dummy)
                             qAxis = self._lut_integrator.outPos  # this will be copied later
                             if error_model == "azimuthal":
                                 variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2

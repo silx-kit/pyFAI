@@ -147,7 +147,7 @@ class OCL_LUT_Integrator(object):
                 try:
                     self._cl_mem[buffer_name].release()
                     self._cl_mem[buffer_name] = None
-                except LogicError:
+                except pyopencl.LogicError:
                     logger.error("Error while freeing buffer %s" % buffer_name)
 
 
@@ -275,4 +275,4 @@ class OCL_LUT_Integrator(object):
             pyopencl.enqueue_copy(self._queue, outMerge, self._cl_mem["outMerge"]).wait()
             pyopencl.enqueue_copy(self._queue, outData, self._cl_mem["outData"]).wait()
             pyopencl.enqueue_copy(self._queue, outCount, self._cl_mem["outCount"]).wait()
-        return outMerge, outMerge, outCount
+        return outMerge, outData, outCount
