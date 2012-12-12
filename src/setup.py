@@ -85,16 +85,16 @@ splitBBox_dic = dict(name="splitBBox",
                     include_dirs=get_numpy_include_dirs(),
                     sources=[src['splitBBox']],)
 
-paraSplitBBox_dic = dict(name="paraSplitBBox",
-                    include_dirs=get_numpy_include_dirs(),
-                    sources=[src['paraSplitBBox']],
-                    extra_compile_args=[openmp],
-                    extra_link_args=[openmp])
+#paraSplitBBox_dic = dict(name="paraSplitBBox",
+#                    include_dirs=get_numpy_include_dirs(),
+#                    sources=[src['paraSplitBBox']],
+#                    extra_compile_args=[openmp],
+#                    extra_link_args=[openmp])
 splitBBoxLUT_dic = dict(name="splitBBoxLUT",
                     include_dirs=get_numpy_include_dirs(),
                     sources=[src['splitBBoxLUT']],
-                    #extra_compile_args=[openmp],
-                    #extra_link_args=[openmp]
+                    extra_compile_args=[openmp],
+                    extra_link_args=[openmp]
                     )
 
 
@@ -104,7 +104,7 @@ setup(name='histogram',
       author_email="jerome.kieffer@esrf.eu",
       description='test for azim int',
       ext_modules=[Extension(**splitBBox_dic),
-                   Extension(**paraSplitBBox_dic),
+#                   Extension(**paraSplitBBox_dic),
                    Extension(**splitBBoxLUT_dic),
                    ],
       cmdclass={'build_ext': build_ext},
