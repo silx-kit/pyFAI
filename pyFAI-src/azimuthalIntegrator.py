@@ -23,15 +23,6 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-
-"""
-This class defines azimuthal integrators (ai here-after).
-main methods are:
-
-tth,I = ai.xrpd(data,nbPt)
-q,I,sigma = ai.saxs(data,nbPt)
-
-"""
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
@@ -111,7 +102,13 @@ class AzimuthalIntegrator(Geometry):
     geometry and histogram algorithm by Manolo S. del Rio and V.A Sole
 
     All geometry calculation are done in the Geometry class
+
+    main methods are:
+
+        >>> tth, I = ai.xrpd(data, nbPt)
+        >>> q, I, sigma = ai.saxs(data, nbPt)
     """
+
     def __init__(self, dist=1, poni1=0, poni2=0,
                  rot1=0, rot2=0, rot3=0,
                  pixel1=None, pixel2=None,
@@ -173,10 +170,7 @@ class AzimuthalIntegrator(Geometry):
     def makeMask(self, data, mask=None,
                  dummy=None, delta_dummy=None, mode="normal"):
         """
-        Combines various masks...
-
-        Normal mode: False for valid pixels, True for bad pixels
-        Numpy mode: True for valid pixels, false for others
+        Combines various masks into another one.
 
         @param data: input array of data
         @type data: ndarray
@@ -191,6 +185,25 @@ class AzimuthalIntegrator(Geometry):
 
         @return: the new mask
         @rtype: ndarray of bool
+
+        This method combine two masks (*data* and *mask*) to generate
+        a new one with the 'or' binary operation. if *data* is an
+        array of float, you can adjuste the level, with the *dummy*
+        parameter and the *delta_dummy*, when you considere the *data*
+        values as masked.
+
+        This method can work in two different *mode*:
+
+            * "normal": False for valid pixels, True for bad pixels
+            * "numpy": True for valid pixels, false for others
+
+        ??? Jerome, il semblerait que cette methode n'utilise pas
+        data, si dummy n'est pas fourni, du coup les parametres
+        optionnels ne le son pas tellement, a moins qu'il faille aussi
+        mettre data en optionel pour rendre tout cela plus logique.
+
+        ??? cette method inverse systématiquement le mask, s'il y a
+        plus de pixels masqués que l'inverse. Est-ce normal ?
         """
         shape = data.shape
         if mask is None:
@@ -620,7 +633,7 @@ class AzimuthalIntegrator(Geometry):
         """
         if splitPixel is None:
             logger.warning("splitPixel is not available,"
-                           " falling back on numpy histogram !" % error)
+                           " falling back on numpy histogram !" % error)  # error is unknown ???
             return self.xrpd_numpy(data=data,
                                    nbPt=nbPt,
                                    filename=filename,
@@ -639,7 +652,7 @@ class AzimuthalIntegrator(Geometry):
         else:
             solidangle = None
         if polarization_factor != 0:
-            polarization = self.polarization(data.shape, polarization_factor)  # AzimutalIntegrator has no polarization member ???
+            polarization = self.polarization(data.shape, polarization_factor)
         else:
             polarization = None
         if tthRange is not None:
@@ -1842,7 +1855,7 @@ class AzimuthalIntegrator(Geometry):
                                  " LUT had azimuth_range defined")
                     elif (azimuth_range is not None) and\
                             (self._lut_integrator.pos1Range !=
-                                (min(azimuth_range), max(azimuth_range) * EPS32)):
+                             (min(azimuth_range), max(azimuth_range) * EPS32)):
                         reset = ("azimuth_range requested and"
                                  " LUT's azimuth_range don't match")
                 error = False
