@@ -487,8 +487,6 @@ class HistoBBox2d(object):
         else:
             check_mask = False
         
-        print  bins0,pos0_min,delta0,os.linesep
-        print  bins1,pos1_min,delta1,os.linesep
 #NOGIL
         with nogil:
             for idx in range(size):
