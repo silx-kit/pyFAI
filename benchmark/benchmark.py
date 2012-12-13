@@ -29,7 +29,7 @@ class Bench(object):
     def __init__(self, nbr=10):
         self.reference_1d = {}
         self.LIMIT = 8
-        self.repeat = 3
+        self.repeat = 1
         self.nbr = nbr
         self.results = {}
         self.meth = []
@@ -74,7 +74,7 @@ class Bench(object):
             N = min(data.shape)
             res = ai.xrpd(data, N)
             self.reference_1d[param] = res
-            ai = None
+            del ai, data
         return self.reference_1d[param]
 
     def bench_cpu1d(self):
@@ -85,6 +85,7 @@ class Bench(object):
             fn = datasets[param]
             ai = pyFAI.load(param)
             data = fabio.open(fn).data
+            size = data.size
             N = min(data.shape)
             print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), data.size / 1e6, N))
             t0 = time.time()
@@ -104,7 +105,7 @@ out=ai.xrpd(data,N)""" % (param, fn)
 #            R = utilstest.Rwp(res, ref)
 #            print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
 #            if R < self.LIMIT:
-            results[data.size / 1e6] = tmin * 1000.0
+            results[size / 1e6] = tmin * 1000.0
         gc.collect()
         self.print_sep()
         label = "Forward_cython"
@@ -120,6 +121,7 @@ out=ai.xrpd(data,N)""" % (param, fn)
             fn = datasets[param]
             ai = pyFAI.load(param)
             data = fabio.open(fn).data
+            size = data.size
             N = min(data.shape)
             print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), data.size / 1e6, N))
             t0 = time.time()
@@ -127,7 +129,7 @@ out=ai.xrpd(data,N)""" % (param, fn)
             t1 = time.time()
             self.print_init(t1 - t0)
             print "lut.shape=", ai._lut_integrator.lut.shape, "lut.nbytes (MB)", ai._lut_integrator.size * 8 / 1e6
-            del ai
+            del ai, data
             setup = """
 #gc.enable()
 import pyFAI,fabio
@@ -160,6 +162,7 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
             fn = datasets[param]
             ai = pyFAI.load(param)
             data = fabio.open(fn).data
+            size = data.size
             N = min(data.shape)
             print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), data.size / 1e6, N))
             t0 = time.time()
@@ -170,7 +173,7 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
                 break
             t1 = time.time()
             self.print_init(t1 - t0)
-            del ai
+            del ai, data
             setup = """
 #gc.enable()
 import pyFAI,fabio
@@ -180,7 +183,7 @@ N=min(data.shape)
 out=ai.xrpd_LUT_OCL(data,N,devicetype=r"%s",platformid=%s,deviceid=%s)""" % (param, fn, devicetype, platformid, deviceid)
             t = timeit.Timer("ai.xrpd_LUT_OCL(data,N,safe=False)", setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
-            t = None
+            del t
             self.print_exec(tmin)
             R = utilstest.Rwp(res, ref)
             print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
@@ -201,22 +204,23 @@ out=ai.xrpd_LUT_OCL(data,N,devicetype=r"%s",platformid=%s,deviceid=%s)""" % (par
             fn = datasets[param]
             ai = pyFAI.load(param)
             data = fabio.open(fn).data
+            size = data.size
             N = (500, 360)
             print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), data.size / 1e6, N))
             t0 = time.time()
             _ = ai.xrpd2(data, N[0], N[1])
             t1 = time.time()
             self.print_init(t1 - t0)
-            del ai
+            del ai, data
             setup = """
 #gc.enable()
 import pyFAI,fabio
 ai=pyFAI.load(r"%s")
 data = fabio.open(r"%s").data
-out=ai.xrpd2(data,500,360)""" % (param, fn)
-            t = timeit.Timer("ai.xrpd2(data,500,360)", setup)
+out=ai.xrpd2(data,%s,%s)""" % (param, fn, N[0], N[1])
+            t = timeit.Timer("ai.xrpd2(data,%s,%s)" % N, setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
-            t = None
+            del t
 
             self.print_exec(tmin)
             print("")
@@ -225,6 +229,85 @@ out=ai.xrpd2(data,500,360)""" % (param, fn)
             gc.collect()
         self.print_sep()
         label = "Foward_2D_CPU"
+        self.meth.append(label)
+        self.results[label] = results
+        self.new_curve(results, label)
+
+    def bench_cpu2d_lut(self):
+        print("Working on processor: %s" % self.get_cpu())
+        results = {}
+        for param in ds_list:
+            fn = datasets[param]
+            ai = pyFAI.load(param)
+            data = fabio.open(fn).data
+            size = data.size
+            N = (500, 360)
+            print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), data.size / 1e6, N))
+            t0 = time.time()
+            _ = ai.integrate2d(data, N[0], N[1], unit="2th_deg", method="lut")
+            t1 = time.time()
+            self.print_init(t1 - t0)
+            print("Size of the LUT: %.3fMByte" % (ai._lut_integrator.lut.nbytes / 1e6))
+            del ai, data
+
+            setup = """
+#gc.enable()
+import pyFAI,fabio
+ai=pyFAI.load(r"%s")
+data = fabio.open(r"%s").data
+out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut")""" % (param, fn, N[0], N[1])
+            t = timeit.Timer("out=ai.integrate2d(data,%s,%s,unit='2th_deg', method='lut')" % N, setup)
+            tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
+            del t
+
+            self.print_exec(tmin)
+            print("")
+            if 1:#R < self.LIMIT:
+                results[size / 1e6] = tmin * 1000.0
+            gc.collect()
+        self.print_sep()
+        label = "LUT_2D_CPU"
+        self.meth.append(label)
+        self.results[label] = results
+        self.new_curve(results, label)
+
+    def bench_cpu2d_lut_ocl(self, devicetype="gpu", platformid=None, deviceid=None):
+        print("Working on device: %s" % self.get_gpu())
+        if (ocl is None) or not ocl.select_device(devicetype):
+            print("No pyopencl or no such device: skipping benchmark")
+            return
+        results = {}
+        for param in ds_list:
+            fn = datasets[param]
+            ai = pyFAI.load(param)
+            data = fabio.open(fn).data
+            size = data.size
+            N = (500, 360)
+            print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), data.size / 1e6, N))
+            t0 = time.time()
+            _ = ai.integrate2d(data, N[0], N[1], unit="2th_deg", method="lut_ocl")
+            t1 = time.time()
+            self.print_init(t1 - t0)
+            print("Size of the LUT: %.3fMByte" % (ai._lut_integrator.lut.nbytes / 1e6))
+            del ai, data
+
+            setup = """
+#gc.enable()
+import pyFAI,fabio
+ai=pyFAI.load(r"%s")
+data = fabio.open(r"%s").data
+out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut_ocl")""" % (param, fn, N[0], N[1])
+            t = timeit.Timer("out=ai.integrate2d(data,%s,%s,unit='2th_deg', method='lut')" % N, setup)
+            tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
+            del t
+
+            self.print_exec(tmin)
+            print("")
+            if 1:#R < self.LIMIT:
+                results[size / 1e6] = tmin * 1000.0
+            gc.collect()
+        self.print_sep()
+        label = "LUT_2D_CPU"
         self.meth.append(label)
         self.results[label] = results
         self.new_curve(results, label)
@@ -240,6 +323,7 @@ out=ai.xrpd2(data,500,360)""" % (param, fn)
             fn = datasets[param]
             ai = pyFAI.load(param)
             data = fabio.open(fn).data
+            size = data.size
             N = min(data.shape)
             print("1D integration of %s %.1f Mpixel -> %i bins (%s)" % (op.basename(fn), data.size / 1e6, N, ("64 bits mode" if useFp64 else"32 bits mode")))
 
@@ -254,7 +338,7 @@ out=ai.xrpd2(data,500,360)""" % (param, fn)
             ref = ai.xrpd(data, N)
             R = utilstest.Rwp(res, ref)
             print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
-            del ai
+            del ai, data
             setup = """
 #gc.enable()
 import pyFAI,fabio
@@ -264,12 +348,12 @@ N=min(data.shape)
 out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid=%s)""" % (param, fn, devicetype, useFp64, platformid, deviceid)
             t = timeit.Timer("ai.xrpd_OpenCL(data,N,safe=False)", setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
-            t = None
+            del t
             gc.collect()
             self.print_exec(tmin)
             print("")
             if R < self.LIMIT:
-                results[data.size / 1e6] = tmin * 1000.0
+                results[size / 1e6] = tmin * 1000.0
         self.print_sep()
         label = "Forward_OpenCL_%s_%s_bits" % (devicetype , ("64" if useFp64 else"32"))
         self.meth.append(label)
@@ -352,15 +436,20 @@ if __name__ == "__main__":
     print("Averaging over %i repetitions (best of 3)." % n)
     b = Bench(n)
     b.init_curve()
-    b.bench_cpu1d()
-    b.bench_cpu1d_lut()
-    b.bench_cpu1d_ocl_lut("GPU")
-    b.bench_cpu1d_ocl_lut("CPU")
-    b.bench_gpu1d("gpu", True)
+#    b.bench_cpu1d()
+#    b.bench_cpu1d_lut()
+#    b.bench_cpu1d_ocl_lut("GPU")
+#    b.bench_cpu1d_ocl_lut("CPU")
+#    b.bench_gpu1d("gpu", True)
 #    b.bench_gpu1d("gpu", False)
-    b.bench_gpu1d("cpu", True)
+ #   b.bench_gpu1d("cpu", True)
 #    b.bench_gpu1d("cpu", False)
     b.bench_cpu2d()
+    b.bench_cpu2d_lut()
+    b.bench_cpu2d_lut_ocl()
+
+#    b.bench_cpu2d_lut()
+#    b.bench_cpu2d_lut_ocl()
     b.save()
     b.print_res()
 #    b.display_all()
