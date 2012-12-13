@@ -87,7 +87,7 @@ class Bench(object):
             data = fabio.open(fn).data
             size = data.size
             N = min(data.shape)
-            print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), data.size / 1e6, N))
+            print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), size / 1e6, N))
             t0 = time.time()
             res = ai.xrpd(data, N)
             t1 = time.time()
@@ -123,7 +123,7 @@ out=ai.xrpd(data,N)""" % (param, fn)
             data = fabio.open(fn).data
             size = data.size
             N = min(data.shape)
-            print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), data.size / 1e6, N))
+            print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), size / 1e6, N))
             t0 = time.time()
             res = ai.xrpd_LUT(data, N)
             t1 = time.time()
@@ -143,7 +143,7 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
             R = utilstest.Rwp(res, ref)
             print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
             if R < self.LIMIT:
-                results[data.size / 1e6] = tmin * 1000.0
+                results[size / 1e6] = tmin * 1000.0
         self.print_sep()
         label = "LUT_Cython_OpenMP"
         self.meth.append(label)
@@ -164,7 +164,7 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
             data = fabio.open(fn).data
             size = data.size
             N = min(data.shape)
-            print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), data.size / 1e6, N))
+            print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), size / 1e6, N))
             t0 = time.time()
             try:
                 res = ai.xrpd_LUT_OCL(data, N, devicetype=devicetype, platformid=platformid, deviceid=deviceid)
@@ -188,7 +188,7 @@ out=ai.xrpd_LUT_OCL(data,N,devicetype=r"%s",platformid=%s,deviceid=%s)""" % (par
             R = utilstest.Rwp(res, ref)
             print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
             if R < self.LIMIT:
-                results[data.size / 1e6] = tmin * 1000.0
+                results[size / 1e6] = tmin * 1000.0
             gc.collect()
         label = "LUT_OpenCL_%s" % devicetype
         self.print_sep()
@@ -206,7 +206,7 @@ out=ai.xrpd_LUT_OCL(data,N,devicetype=r"%s",platformid=%s,deviceid=%s)""" % (par
             data = fabio.open(fn).data
             size = data.size
             N = (500, 360)
-            print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), data.size / 1e6, N))
+            print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), size / 1e6, N))
             t0 = time.time()
             _ = ai.xrpd2(data, N[0], N[1])
             t1 = time.time()
@@ -225,7 +225,7 @@ out=ai.xrpd2(data,%s,%s)""" % (param, fn, N[0], N[1])
             self.print_exec(tmin)
             print("")
             if 1:#R < self.LIMIT:
-                results[data.size / 1e6] = tmin * 1000.0
+                results[size / 1e6] = tmin * 1000.0
             gc.collect()
         self.print_sep()
         label = "Foward_2D_CPU"
@@ -242,7 +242,7 @@ out=ai.xrpd2(data,%s,%s)""" % (param, fn, N[0], N[1])
             data = fabio.open(fn).data
             size = data.size
             N = (500, 360)
-            print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), data.size / 1e6, N))
+            print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), size / 1e6, N))
             t0 = time.time()
             _ = ai.integrate2d(data, N[0], N[1], unit="2th_deg", method="lut")
             t1 = time.time()
@@ -283,7 +283,7 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut")""" % (param, fn, N[0
             data = fabio.open(fn).data
             size = data.size
             N = (500, 360)
-            print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), data.size / 1e6, N))
+            print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), size / 1e6, N))
             t0 = time.time()
             _ = ai.integrate2d(data, N[0], N[1], unit="2th_deg", method="lut_ocl")
             t1 = time.time()
@@ -325,7 +325,7 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut_ocl")""" % (param, fn,
             data = fabio.open(fn).data
             size = data.size
             N = min(data.shape)
-            print("1D integration of %s %.1f Mpixel -> %i bins (%s)" % (op.basename(fn), data.size / 1e6, N, ("64 bits mode" if useFp64 else"32 bits mode")))
+            print("1D integration of %s %.1f Mpixel -> %i bins (%s)" % (op.basename(fn), size / 1e6, N, ("64 bits mode" if useFp64 else"32 bits mode")))
 
             try:
                 t0 = time.time()
