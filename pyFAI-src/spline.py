@@ -1,27 +1,27 @@
 # !/usr/bin/env python
-# -*- coding: UTF8 -*-
+# -*- coding: utf-8 -*-
 # ##########################################################################
 # Written 2009-12-22 by Jérôme Kieffer
 # Copyright (C) 2009 European Synchrotron Radiation Facility
 #                       Grenoble, France
-# 
+#
 #    Principal authors: Jérôme Kieffer  (jerome.kieffer@esrf.fr)
-# 
+#
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
 #    (at your option) any later version.
-# 
+#
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
-# 
+#
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # #######################################################################################
 
-""" This is piece of software aims to manipulate spline files for 
+""" This is piece of software aims to manipulate spline files for
 geometric corrections of the 2D detectors  using cubic-spline"""
 
 __author__ = "Jérôme Kieffer"
@@ -38,8 +38,8 @@ import scipy.interpolate.fitpack
 
 
 class Spline:
-    """This class is a python representation of the spline file 
-    Those file represent cubic splines for 2D detector distortions and makes heavy use of 
+    """This class is a python representation of the spline file
+    Those file represent cubic splines for 2D detector distortions and makes heavy use of
     fitpack (dierckx in netlib) --- A Python-C wrapper to FITPACK (by P. Dierckx).
     FITPACK is a collection of FORTRAN programs for curve and surface fitting with splines and tensor product splines.
     See
@@ -226,7 +226,7 @@ class Spline:
                         ((intermediateTime - startTime), (time.time() - intermediateTime))
 
     def splineFuncX(self, x, y):
-        """ calculates the displacement matrix using fitpack for the X direction 
+        """ calculates the displacement matrix using fitpack for the X direction
         @param x: numpy array repesenting the points in the x direction
         @param y: numpy array repesenting the points in the y direction
         @return: displacement matrix for the X direction
@@ -245,7 +245,7 @@ class Spline:
         return xDispArray
 
     def splineFuncY(self, x, y):
-        """ calculates the displacement matrix using fitpack for the Y direction 
+        """ calculates the displacement matrix using fitpack for the Y direction
         @param x: numpy array repesenting the points in the x direction
         @param y: numpy array repesenting the points in the y direction
         @return: displacement matrix for the Y direction
@@ -295,7 +295,7 @@ class Spline:
 
     def writeEDF(self, basename):
         """save the distortion matrices into a couple of files called basename-x.edf and  basename-y.edf
-        
+
         """
         try:
             from fabio.edfimage import edfimage
@@ -351,12 +351,12 @@ class Spline:
 
     def tilt(self, center=(0.0, 0.0), tiltAngle=0.0, tiltPlanRot=0.0, distanceSampleDetector=1.0, timing=False):
         """The tilt method apply a virtual tilt on the detector, the point of tilt is given by the center
-        
+
         @param center: position of the point of tilt, this point will not be moved.
         @type center: 2tuple of floats
         @param tiltAngle: the value of the tilt in degrees
         @type tiltAngle: float in the range [-90:+90] degrees
-        @param tiltPlanRot: the rotation of the tilt plan with the Ox axis (0 deg for y axis invariant, 90 deg for x axis invariant)  
+        @param tiltPlanRot: the rotation of the tilt plan with the Ox axis (0 deg for y axis invariant, 90 deg for x axis invariant)
         @type tiltPlanRot: Float in the range [-180:180]
         @type distanceSampleDetector: float
         @param distanceSampleDetector: the distance from sample to detector in meter (along the beam, so distance from sample to center)
@@ -367,7 +367,7 @@ class Spline:
             if self.filename is None:
                 self.zeros()
             else:
-                self.read()
+                self.read(self.filename)
         print("center=%s, tilt=%s, tiltPlanRot=%s, distanceSampleDetector=%sm, pixelSize=%sµm" % (center, tiltAngle, tiltPlanRot, distanceSampleDetector, self.pixelSize))
         if timing:
             startTime = time.time()
@@ -413,13 +413,13 @@ class Spline:
 #        @rtype: 2-tuple of floats expressed in microns.
 #        """
 #        return self.pixelSize
-# 
+#
 
     def setPixelSize(self, pixelSize):
         """
         sets the size of the pixel from a 2-tuple of floats expressed in meters.
         @param: pixel size in meter
-        @type pixelSize: 2-tuple of float 
+        @type pixelSize: 2-tuple of float
         """
         if len(pixelSize) == 2 :
             self.pixelSize = (pixelSize[0] * 1.0e6, pixelSize[1] * 1.0e6)
@@ -469,7 +469,7 @@ class Spline:
 #        other.ySplineKnotsY = self.ySplineKnotsY[:]
 #        other.ySplineCoeff = self.ySplineCoeff[:]
 #        return other
-# 
+#
 # def xDispHorFlip(array):
 #    """make an horizontal flip of the given X displacement array"""
 #    return - numpy.fliplr(array)
@@ -486,10 +486,10 @@ class Spline:
 
 if __name__ == '__main__':
 #    """this is the main program if somebody wants to use this as a library"""
-# 
-# 
-# 
-# 
+#
+#
+#
+#
 # #    spline.write("test")
 #    new = Spline()
 #    new.pixelSize = spline.pixelSize
@@ -500,11 +500,11 @@ if __name__ == '__main__':
 #    print "matrix flipped", new
 #    flipped = spline.horizontalFlip()
 #    print "Spline flipped", flipped
-# 
-# 
+#
+#
 #    print "---" * 50
-# 
-# 
+#
+#
 #    print new.comparison(flipped, verbose=True)
 
 #    new.write("new.spline")

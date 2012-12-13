@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
@@ -392,8 +392,8 @@ def fullSplit2D(numpy.ndarray pos not None,
     cdef double dpos0 = (pos0_max - pos0_min) / (< double > (bins0))
     cdef double dpos1 = (pos1_max - pos1_min) / (< double > (bins1))
     edges0 = numpy.linspace(pos0_min+0.5*dpos0, pos0_maxin-0.5*dpos0, bins0)
-    edges1 = numpy.linspace(pos1_min+0.5*dpos1, pos0_maxin-0.5*dpos1, bins1)
-
+    edges1 = numpy.linspace(pos1_min+0.5*dpos1, pos1_maxin-0.5*dpos1, bins1)
+    
     if (dummy is not None) and (delta_dummy is not None):
         check_dummy = True
         cdummy =  float(dummy)
@@ -454,6 +454,16 @@ def fullSplit2D(numpy.ndarray pos not None,
 
             if (max0<pos0_min) or (min0 > pos0_maxin) or (max1<pos1_min) or (min1 > pos1_maxin):
                     continue
+
+            if do_dark:
+                data -= cdark[idx]
+            if do_flat:
+                data /= cflat[idx]
+            if do_polarization:
+                data /= cpolarization[idx]
+            if do_solidangle:
+                data /= csolidangle[idx]
+
 
             if min0 < pos0_min:
                 data = data * (pos0_min - min0) / (max0 - min0)

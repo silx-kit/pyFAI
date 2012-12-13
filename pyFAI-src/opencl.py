@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
@@ -112,11 +112,11 @@ class OpenCL(object):
     def select_device(self, type="ALL", memory=None, extensions=[], best=True):
         """
         Select a device based on few parameters (at the end, keep the one with most memory)
-        
+
         @param type: "gpu" or "cpu" or "all" ....
         @param memory: minimum amount of memory (int)
         @param extensions: list of extensions to be present
-        @param best: shall we look for the 
+        @param best: shall we look for the
         """
         type = type.upper()
         best_found = None
@@ -140,11 +140,11 @@ class OpenCL(object):
             return  best_found[0], best_found[1]
 
     def create_context(self, devicetype="ALL", useFp64=False, platformid=None, deviceid=None):
-        """ 
-        Choose a device and initiate a context. 
-        
+        """
+        Choose a device and initiate a context.
+
         Devicetypes can be GPU,gpu,CPU,cpu,DEF,ACC,ALL.
-        Suggested are GPU,CPU. 
+        Suggested are GPU,CPU.
         For each setting to work there must be such an OpenCL device and properly installed.
         E.g.: If Nvidia driver is installed, GPU will succeed but CPU will fail. The AMD SDK kit is required for CPU via OpenCL.
         @param devicetype: string in ["cpu","gpu", "all", "acc"]

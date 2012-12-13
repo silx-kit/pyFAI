@@ -49,6 +49,7 @@ from testMask                 import test_suite_all_Mask
 from testOpenCL               import test_suite_all_OpenCL
 from testExport               import test_suite_all_Export
 from testSaxs                 import test_suite_all_Saxs
+from testIntegrate            import test_suite_all_Integrate1d
 
 def test_suite_all():
     testSuite = unittest.TestSuite()
@@ -61,6 +62,7 @@ def test_suite_all():
     testSuite.addTest(test_suite_all_OpenCL())
     testSuite.addTest(test_suite_all_Export())
     testSuite.addTest(test_suite_all_Saxs())
+    testSuite.addTest(test_suite_all_Integrate1d())
     return testSuite
 
 if __name__ == '__main__':

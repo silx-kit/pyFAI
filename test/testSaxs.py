@@ -46,26 +46,19 @@ if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 
 class TestSaxs(unittest.TestCase):
-
-
-    def setUp(self):
-        self.img = UtilsTest.getimage("1883/Pilatus1M.edf")
-        self.data = fabio.open(self.img).data
-        self.ai = pyFAI.AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0, detector=pyFAI.detectors.Pilatus1M())
-        self.ai.wavelength = 1e-10
-#        self.ai.mask=None
-
-    def tearDown(self):
-        pass
-
+    img = UtilsTest.getimage("1883/Pilatus1M.edf")
+    data = fabio.open(img).data
+    ai = pyFAI.AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0, detector=pyFAI.detectors.Pilatus1M())
+    ai.wavelength = 1e-10
+    npt = 1000
     def testMask(self):
         ss = self.ai.mask.sum()
         self.assertTrue(ss == 73533, "masked pixel = %s expected 73533" % ss)
 
     def testNumpy(self):
-        qref, Iref, s = self.ai.saxs(self.data, 1000)
+        qref, Iref, s = self.ai.saxs(self.data, self.npt)
 
-        q, I, s = self.ai.saxs(self.data, 1000, error_model="poisson", method="numpy")
+        q, I, s = self.ai.saxs(self.data, self.npt, error_model="poisson", method="numpy")
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
         self.assertTrue(q[-1] < 8, "q[-1] < 8, got %s" % q[-1])
         self.assertTrue(s.min() >= 0, "s.min() >= 0 got %s" % (s.min()))
@@ -80,8 +73,8 @@ class TestSaxs(unittest.TestCase):
         self.assertTrue(R < 20, "Numpy: Measure R=%s<2" % R)
 
     def testCython(self):
-        qref, Iref, s = self.ai.saxs(self.data, 1000)
-        q, I, s = self.ai.saxs(self.data, 1000, error_model="poisson", method="cython")
+        qref, Iref, s = self.ai.saxs(self.data, self.npt)
+        q, I, s = self.ai.saxs(self.data, self.npt, error_model="poisson", method="cython")
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
         self.assertTrue(q[-1] < 8, "q[-1] < 8, got %s" % q[-1])
         self.assertTrue(s.min() >= 0, "s.min() >= 0 got %s" % (s.min()))
@@ -96,8 +89,8 @@ class TestSaxs(unittest.TestCase):
         self.assertTrue(R < 20, "Cython: Measure R=%s<2" % R)
 
     def testSplitBBox(self):
-        qref, Iref, s = self.ai.saxs(self.data, 1000)
-        q, I, s = self.ai.saxs(self.data, 1000, error_model="poisson", method="splitbbox")
+        qref, Iref, s = self.ai.saxs(self.data, self.npt)
+        q, I, s = self.ai.saxs(self.data, self.npt, error_model="poisson", method="splitbbox")
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
         self.assertTrue(q[-1] < 8, "q[-1] < 8, got %s" % q[-1])
         self.assertTrue(s.min() >= 0, "s.min() >= 0 got %s" % (s.min()))
@@ -112,8 +105,8 @@ class TestSaxs(unittest.TestCase):
         self.assertEqual(R < 20, True, "SplitBBox: Measure R=%s<20" % R)
 
     def testSplitPixel(self):
-        qref, Iref, s = self.ai.saxs(self.data, 1000)
-        q, I, s = self.ai.saxs(self.data, 1000, error_model="poisson", method="splitpixel")
+        qref, Iref, s = self.ai.saxs(self.data, self.npt)
+        q, I, s = self.ai.saxs(self.data, self.npt, error_model="poisson", method="splitpixel")
         self.assertTrue(q[0] > 0, "q[0]>0 %s" % q[0])
         self.assertTrue(q[-1] < 8, "q[-1] < 8, got %s" % q[-1])
         self.assertTrue(s.min() >= 0, "s.min() >= 0 got %s" % (s.min()))
@@ -132,8 +125,8 @@ def test_suite_all_Saxs():
     testSuite.addTest(TestSaxs("testMask"))
     testSuite.addTest(TestSaxs("testNumpy"))
 #    testSuite.addTest(TestSaxs("testCython"))
-#    testSuite.addTest(TestSaxs("testSplitBBox"))
-#    testSuite.addTest(TestSaxs("testSplitPixel"))
+    testSuite.addTest(TestSaxs("testSplitBBox"))
+    testSuite.addTest(TestSaxs("testSplitPixel"))
 #    testSuite.addTest(TestSaxs("test_mask_splitBBox"))
 #    testSuite.addTest(TestSaxs("test_mask_splitBBox"))
 #    testSuite.addTest(TestSaxs("test_mask_splitBBox"))

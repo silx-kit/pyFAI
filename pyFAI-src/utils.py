@@ -359,5 +359,3 @@ def unBinning(binnedArray, binsize):
         for j in xrange(binsize[1]):
             out[i::binsize[0], j::binsize[1]] += binnedArray
     return out
-
-
