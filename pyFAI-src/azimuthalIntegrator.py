@@ -1875,7 +1875,7 @@ class AzimuthalIntegrator(Geometry):
                                  " LUT's azimuth_range don't match")
                 error = False
                 if reset:
-                    logger.warning("AI.integrate1d: Resetting integrator"
+                    logger.info("AI.integrate1d: Resetting integrator"
                                    " because of %s" % reset)
                     try:
                         self._lut_integrator = \
@@ -2260,7 +2260,7 @@ class AzimuthalIntegrator(Geometry):
                         reset = "azimuth_range requested and LUT's azimuth_range don't match"
                 error = False
                 if reset:
-                    logger.warning("AI.integrate1d: Resetting integrator because of %s" % reset)
+                    logger.info("AI.integrate1d: Resetting integrator because of %s" % reset)
                     try:
                         self._lut_integrator = self.setup_LUT(shape, nbPt, mask, radial_range, azimuth_range, mask_checksum=mask_crc, unit=unit)
                         error = False
@@ -2302,6 +2302,8 @@ class AzimuthalIntegrator(Geometry):
                                                                      solidAngle_checksum=self._dssa_crc,
                                                                      dummy=dummy,
                                                                      delta_dummy=delta_dummy)
+                            I.shape = nbPt
+                            I = I.T
                             bins_rad = self._lut_integrator.outPos0  # this will be copied later
                             bins_azim = self._lut_integrator.outPos1
 #                            if error_model == "azimuthal":
