@@ -186,26 +186,23 @@ class AzimuthalIntegrator(Geometry):
         @return: the new mask
         @rtype: ndarray of bool
 
-        This method combine two masks (*data* and *mask*) to generate
-        a new one with the 'or' binary operation. if *data* is an
-        array of float, you can adjuste the level, with the *dummy*
-        parameter and the *delta_dummy*, when you considere the *data*
-        values as masked.
+        This method combine two masks (dynamic mask from *data & dummy*
+        and *mask*) to generate a new one with the 'or' binary operation.
+        One can adjuste the level, with the *dummy* and the *delta_dummy* parameter,
+        when you considere the *data* values needs to be masked out.
 
         This method can work in two different *mode*:
 
             * "normal": False for valid pixels, True for bad pixels
             * "numpy": True for valid pixels, false for others
 
-        ??? Jerome, il semblerait que cette methode n'utilise pas
-        data, si dummy n'est pas fourni, du coup les parametres
-        optionnels ne le son pas tellement, a moins qu'il faille aussi
-        mettre data en optionel pour rendre tout cela plus logique.
 
-        ??? cette method inverse systématiquement le mask, s'il y a
-        plus de pixels masqués que l'inverse. Est-ce normal ?
+        This method tries to accomodate various types of masks
+        (like valid=0 & masked=-1, ...) and guesses if an input
+        mask needs to be inverted.
         """
         shape = data.shape
+        #       ^^^^   this is why data is mandatory !
         if mask is None:
             mask = self.mask
         if mask is None:
@@ -633,7 +630,7 @@ class AzimuthalIntegrator(Geometry):
         """
         if splitPixel is None:
             logger.warning("splitPixel is not available,"
-                           " falling back on numpy histogram !" % error)  # error is unknown ???
+                           " falling back on numpy histogram !")
             return self.xrpd_numpy(data=data,
                                    nbPt=nbPt,
                                    filename=filename,
@@ -946,7 +943,7 @@ class AzimuthalIntegrator(Geometry):
 
         LUT specific parameters:
 
-        @param safe: set to False if your LUT is already set-up correctly (mask, ranges, ...). 
+        @param safe: set to False if your LUT is already set-up correctly (mask, ranges, ...).
         @type safe: bool
 
         @return: (2theta, I) with 2theta angle in degrees
@@ -2593,8 +2590,8 @@ class AzimuthalIntegrator(Geometry):
                   "chi_max": str(dim2.max()),
                   dim1_unit + "_min": str(dim1.min()),
                   dim1_unit + "_max": str(dim1.max()),
-                  "pixelX": str(self.pixel2), # this is not a bug ... most people expect dim1 to be X
-                  "pixelY": str(self.pixel1), # this is not a bug ... most people expect dim2 to be Y
+                  "pixelX": str(self.pixel2),  # this is not a bug ... most people expect dim1 to be X
+                  "pixelY": str(self.pixel1),  # this is not a bug ... most people expect dim2 to be Y
                   }
         if self.splineFile:
             header["spline"] = str(self.splineFile)
