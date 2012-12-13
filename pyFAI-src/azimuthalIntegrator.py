@@ -1873,7 +1873,7 @@ class AzimuthalIntegrator(Geometry):
                         method = "splitbbox"
                         error = True
                 if not error:
-                    if "ocl" in method:
+                    if ("ocl" in method) and (ocl_azim_lut is not None):
                         with self._ocl_lut_sem:
                             if "," in method:
                                 c = method.index(",")
@@ -1894,13 +1894,12 @@ class AzimuthalIntegrator(Geometry):
                                 devicetype = "all"
                             if (self._ocl_lut_integr is None) or\
                                     (self._ocl_lut_integr.on_device["lut"] != self._lut_integrator.lut_checksum):
-                                self._ocl_lut_integr = \
-                                    ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut,
-                                                                    self._lut_integrator.size,
-                                                                    devicetype=devicetype,
-                                                                    platformid=platformid,
-                                                                    deviceid=deviceid,
-                                                                    checksum=self._lut_integrator.lut_checksum)
+                                self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut,
+                                                                                       self._lut_integrator.size,
+                                                                                       devicetype=devicetype,
+                                                                                       platformid=platformid,
+                                                                                       deviceid=deviceid,
+                                                                                       checksum=self._lut_integrator.lut_checksum)
                             I, _, _ = self._ocl_lut_integr.integrate(data,
                                                                      solidAngle=solidangle,
                                                                      solidAngle_checksum=self._dssa_crc,
@@ -2590,8 +2589,8 @@ class AzimuthalIntegrator(Geometry):
                   "chi_max": str(dim2.max()),
                   dim1_unit + "_min": str(dim1.min()),
                   dim1_unit + "_max": str(dim1.max()),
-                  "pixelX": str(self.pixel2),  # this is not a bug ... most people expect dim1 to be X
-                  "pixelY": str(self.pixel1),  # this is not a bug ... most people expect dim2 to be Y
+                  "pixelX": str(self.pixel2), # this is not a bug ... most people expect dim1 to be X
+                  "pixelY": str(self.pixel1), # this is not a bug ... most people expect dim2 to be Y
                   }
         if self.splineFile:
             header["spline"] = str(self.splineFile)
