@@ -186,20 +186,20 @@ class AzimuthalIntegrator(Geometry):
         @return: the new mask
         @rtype: ndarray of bool
 
-        This method combine two masks (dynamic mask from *data & dummy*
-        and *mask*) to generate a new one with the 'or' binary operation.
-        One can adjuste the level, with the *dummy* and the *delta_dummy* parameter,
-        when you considere the *data* values needs to be masked out.
+        This method combine two masks (dynamic mask from *data &
+        dummy* and *mask*) to generate a new one with the 'or' binary
+        operation.  One can adjuste the level, with the *dummy* and
+        the *delta_dummy* parameter, when you considere the *data*
+        values needs to be masked out.
 
         This method can work in two different *mode*:
 
             * "normal": False for valid pixels, True for bad pixels
             * "numpy": True for valid pixels, false for others
 
-
-        This method tries to accomodate various types of masks
-        (like valid=0 & masked=-1, ...) and guesses if an input
-        mask needs to be inverted.
+        This method tries to accomodate various types of masks (like
+        valid=0 & masked=-1, ...) and guesses if an input mask needs
+        to be inverted.
         """
         shape = data.shape
         #       ^^^^   this is why data is mandatory !
@@ -860,12 +860,10 @@ class AzimuthalIntegrator(Geometry):
                   pos0_range=None, pos1_range=None, mask_checksum=None,
                   unit="2th"):
         """
-        This method is called when a look-up table needs to be set-up.
-        The nbPt parameter can be either a integer for a 1D integration
-        or a 2-tuple of integer in case of a 
+        Prepare a look-up-table
 
         @param shape: shape of the dataset
-        @type shape: (int,int)
+        @type shape: (int, int)
         @param nbPt: number of points in the the output pattern
         @type nbPt: int or (int, int)
         @param mask: array with masked pixel (1=masked)
@@ -874,10 +872,31 @@ class AzimuthalIntegrator(Geometry):
         @type pos0_range: (float, float)
         @param pos1_range: range in azimuthal dimension
         @type pos1_range: (float, float)
-        @param mask_checksum: checksum of the mask buffer (prevent re-calculating it)
+        @param mask_checksum: checksum of the mask buffer
         @type mask_checksum: int (or anything else ...)
-        @param unit: This is just an information to propagate the LUT object for further checkings
+        @param unit: use to propagate the LUT object for further checkings
         @type unit: str
+
+        This method is called when a look-up table needs to be set-up.
+        The *shape* of the LUT, correspond to the shape of the
+        original datatset. It is possible to customize the number of
+        point of the output histogram with the *nbPt* parameter which
+        can be either an integer for an 1D integration or a 2-tuple of
+        integer in case of a 2D integration.
+
+        It is possible to prepare the LUT with a predefine
+        *mask*. This operation can speedup the computation of the
+        integrations. Instead of applying the patch on the dataset, it
+        is taken into account during the histogram computation. If
+        provided the *mask_checksum* prevent the re-calculation of the
+        mask if its checksum did not change during the process.
+
+        It is also possible to restrain the range of the 1D or 2D
+        pattern with the *pos1_range* and *pos2_range*.
+
+        the *unit* parameter is just used to propagate the LUT object
+        for further checkings. (Jerome tu pourrais expliquer un petit
+        peu plus) ???
         """
         if "__len__" in dir(nbPt) and len(nbPt) == 2:
             int2d = True
