@@ -21,8 +21,12 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # #######################################################################################
 
-""" This is piece of software aims to manipulate spline files for
-geometric corrections of the 2D detectors  using cubic-spline"""
+""" 
+This is piece of software aims at manipulating spline files 
+describing for geometric corrections of the 2D detectors using cubic-spline.
+
+Mainly used at ESRF with FReLoN CCD camera.
+"""
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
@@ -38,11 +42,12 @@ import Image
 import fabio
 import scipy.optimize
 import scipy.interpolate
-import scipy.interpolate.fitpack
+from scipy.interpolate import fitpack
 
 
 class Spline:
-    """This class is a python representation of the spline file
+    """
+    This class is a python representation of the spline file
 
     Those file represent cubic splines for 2D detector distortions and
     makes heavy use of fitpack (dierckx in netlib) --- A Python-C
@@ -54,7 +59,12 @@ class Spline:
     """
 
     def __init__(self, filename=None):
-        """this is the constructor of the Spline class, for"""
+        """
+        This is the constructor of the Spline class.
+        
+        @param filename: name of the ascii file containing the spline
+        @type filename: str
+        """
         self.splineOrder = 3  # This is the default, so cubic splines
         self.lenStrFloat = 14  # by default one float is 14 char in ascii
         self.xmin = None
@@ -76,25 +86,24 @@ class Spline:
             self.read(filename)
 
     def __repr__(self):
-        txt = "Array size: x= %s - %s\ty= %s - %s" % \
-            (self.xmin, self.xmax, self.ymin, self.ymax)
-        txt += "\nPixel size = %s microns, Grid spacing = %s" % \
-            (self.pixelSize, self.grid)
-        txt += ("\nX-Displacement spline %i X_knots, %i Y_knots and %i coef: "
-                "should be (X_knot-1-X_order)*(Y_knot-1-Y_order)") \
-                % (len(self.xSplineKnotsX),
-                   len(self.xSplineKnotsY),
-                   len(self.xSplineCoeff))
-        txt += ("\nY-Displacement spline %i X_knots, %i Y_knots and %i coef: "
-                "should be (X_knot-1-X_order)*(Y_knot-1-Y_order)") \
-                % (len(self.ySplineKnotsX),
-                   len(self.ySplineKnotsY),
-                   len(self.ySplineCoeff))
-        return txt
+        ltxt = ["Array size: x= %s - %s\ty= %s - %s" % \
+            (self.xmin, self.xmax, self.ymin, self.ymax)]
+        ltxt.append("Pixel size = %s microns, Grid spacing = %s" % \
+            (self.pixelSize, self.grid))
+        ltxt.append("X-Displacement spline %i X_knots, %i Y_knots and %i coef: \
+                should be (X_knot-1-X_order)*(Y_knot-1-Y_order)" % (len(self.xSplineKnotsX),
+                                                                  len(self.xSplineKnotsY),
+                                                                  len(self.xSplineCoeff)))
+        ltxt.append("Y-Displacement spline %i X_knots, %i Y_knots and %i coef: "
+                "should be (X_knot-1-X_order)*(Y_knot-1-Y_order)" % (len(self.ySplineKnotsX),
+                                                                     len(self.ySplineKnotsY),
+                                                                     len(self.ySplineCoeff)))
+        return os.lineSep.join(ltxt)
 
     def zeros(self, xmin=0.0, ymin=0.0, xmax=2048.0, ymax=2048.0,
               pixSize=None):
-        """defines a spline file with no ( zero ) displacement.
+        """
+        Defines a spline file with no ( zero ) displacement.
 
         @param xmin: minimum coordinate in x, usually zero
         @type xmin: float
@@ -120,11 +129,11 @@ class Spline:
 
     def zeros_like(self, other):
         """
-        defines a spline file with no ( zero ) displacement with the
+        Defines a spline file with no ( zero ) displacement with the
         same shape as the other one given.
 
-        @param other: another Spline
-        @type other: Spline
+        @param other: another Spline instance
+        @type other: Spline instance
         """
         self.zeros(self, other.xmin, other.ymin, other.xmax, other.ymax)
 
@@ -138,7 +147,7 @@ class Spline:
         if not os.path.isfile(filename):
             raise IOError("File does not exist %s" % filename)
         self.filename = filename
-        stringSpline = [i.rstrip() for i in open(filename).readlines()]
+        stringSpline = [i.rstrip() for i in open(filename)]
         indexLine = 0
         for oneLine in stringSpline:
             stripedLine = oneLine.strip().upper()
@@ -189,7 +198,7 @@ class Spline:
         Compares the current spline distortion with a reference
 
         @param ref: another spline file
-        @type ref: ???
+        @type ref: Spline instance
         @param verbose: print or not pylab plots
         @type verbose: bool
 
@@ -229,13 +238,13 @@ class Spline:
 
     def spline2array(self, timing=False):
         """
-        calculates the displacement matrix using fitpack
+        Calculates the displacement matrix using fitpack
         bisplev(x, y, tck, dx = 0, dy = 0)
 
         @param timing: profile the calculation or not
         @type timing: bool
 
-        @return: rank-2 array of spline function values
+        @return: Nothing !
         @rtype: float or ndarray
 
         Evaluate a bivariate B-spline and its derivatives. Return a
@@ -248,7 +257,7 @@ class Spline:
             x_1d_array = numpy.arange(self.xmin, self.xmax + 1)
             y_1d_array = numpy.arange(self.ymin, self.ymax + 1)
             startTime = time.time()
-            self.xDispArray = scipy.interpolate.fitpack.bisplev(
+            self.xDispArray = fitpack.bisplev(
                 x_1d_array, y_1d_array, [self.xSplineKnotsX,
                                          self.xSplineKnotsY,
                                          self.xSplineCoeff,
@@ -256,7 +265,7 @@ class Spline:
                                          self.splineOrder],
                 dx=0, dy=0).transpose()
             intermediateTime = time.time()
-            self.yDispArray = scipy.interpolate.fitpack.bisplev(
+            self.yDispArray = fitpack.bisplev(
                 x_1d_array, y_1d_array, [self.ySplineKnotsX,
                                          self.ySplineKnotsY,
                                          self.ySplineCoeff,
@@ -271,12 +280,12 @@ class Spline:
 
     def splineFuncX(self, x, y):
         """
-        calculates the displacement matrix using fitpack for the X
-        direction
+        Calculates the displacement matrix using fitpack for the X
+        direction on the given grid.
 
-        @param x: points in the x direction
+        @param x: points of the grid in the x direction
         @type x: ndarray
-        @param y: points in the y direction
+        @param y: points of the grid  in the y direction
         @type y: ndarray
 
         @return: displacement matrix for the X direction
@@ -290,7 +299,7 @@ class Spline:
                 x = x[:, 0]
                 y = y[0]
 
-        xDispArray = scipy.interpolate.fitpack.bisplev(
+        xDispArray = fitpack.bisplev(
             x, y, [self.xSplineKnotsX,
                    self.xSplineKnotsY,
                    self.xSplineCoeff,
@@ -321,7 +330,7 @@ class Spline:
                 x = x[:, 0]
                 y = y[0]
 
-        yDispArray = scipy.interpolate.fitpack.bisplev(
+        yDispArray = fitpack.bisplev(
             x, y, [self.ySplineKnotsX,
                    self.ySplineKnotsY,
                    self.ySplineCoeff,
@@ -333,11 +342,11 @@ class Spline:
 
     def array2spline(self, smoothing=1000, timing=False):
         """
-        calculates the spline coefficents from the displacements
-        matrix using fitpack
+        Calculates the spline coefficients from the displacements
+        matrix using fitpack.
 
-        @param smoothing: ???
-        @type smoothing: ???
+        @param smoothing: the greater the smoothing, the fewer the number of knots remaining
+        @type smoothing: float
         @param timing: print the profiling of the calculation
         @type timing: bool
         """
@@ -417,38 +426,70 @@ class Spline:
         @type filename: str
         """
 
-        txt = "SPATIAL DISTORTION SPLINE INTERPOLATION COEFFICIENTS\n\n  VALID REGION\n%14.7E%14.7E%14.7E%14.7E\n\n" % (self.xmin, self.ymin, self.xmax, self.ymax)
-        txt += "  GRID SPACING, X-PIXEL SIZE, Y-PIXEL SIZE\n%14.7E%14.7E%14.7E\n\n" % (self.grid, self.pixelSize[0], self.pixelSize[1])
-        txt += "  X-DISTORTION\n%6i%6i" % (len(self.xSplineKnotsX),
-                                           len(self.xSplineKnotsY))
-        for i in range(len(self.xSplineKnotsX)):
+        lst = ["SPATIAL DISTORTION SPLINE INTERPOLATION COEFFICIENTS",
+               "",
+               "  VALID REGION",
+               "%14.7E%14.7E%14.7E%14.7E" % (self.xmin, self.ymin, self.xmax, self.ymax),
+               "",
+               "  GRID SPACING, X-PIXEL SIZE, Y-PIXEL SIZE",
+               "%14.7E%14.7E%14.7E" % (self.grid, self.pixelSize[0], self.pixelSize[1]),
+               ""
+               "  X-DISTORTION",
+               "%6i%6i" % (len(self.xSplineKnotsX), len(self.xSplineKnotsY))]
+        txt = ""
+        for i, f in enumerate(self.xSplineKnotsX):
             if i % 5 == 0:
-                txt += "\n"
-            txt += "%14.7E" % self.xSplineKnotsX[i]
-        for i in range(len(self.xSplineKnotsY)):
+                lst.append(txt)
+                txt = ""
+            txt += "%14.7E" % f
+        if txt:
+            lst.append(txt)
+            txt = ""
+        for i, f in enumerate(self.xSplineKnotsY):
             if i % 5 == 0:
-                txt += "\n"
-            txt += "%14.7E" % self.xSplineKnotsY[i]
-        for i in range(len(self.xSplineCoeff)):
+                lst.append(txt)
+                txt = ""
+            txt += "%14.7E" % f
+        if txt:
+            lst.append(txt)
+            txt = ""
+        for i, f in enumerate(self.xSplineCoeff):
             if i % 5 == 0:
-                txt += "\n"
+                lst.append(txt)
+                txt = ""
             txt += "%14.7E" % self.xSplineCoeff[i]
-        txt += "\n\n  Y-DISTORTION\n%6i%6i" % (len(self.ySplineKnotsX),
-                                               len(self.ySplineKnotsY))
-        for i in range(len(self.ySplineKnotsX)):
+        if txt:
+            lst.append(txt)
+            txt = ""
+        lst.append("")
+        lst.append("  Y-DISTORTION\n%6i%6i" % (len(self.ySplineKnotsX),
+                                               len(self.ySplineKnotsY)))
+        for i, f in enumerate(self.ySplineKnotsX):
             if i % 5 == 0:
-                txt += "\n"
-            txt += "%14.7E" % self.ySplineKnotsX[i]
-        for i in range(len(self.ySplineKnotsY)):
+                lst.append(txt)
+                txt = ""
+            txt += "%14.7E" % f
+        if txt:
+            lst.append(txt)
+            txt = ""
+        for i, f in enumerate(self.ySplineKnotsY):
             if i % 5 == 0:
-                txt += "\n"
-            txt += "%14.7E" % self.ySplineKnotsY[i]
-        for i in range(len(self.ySplineCoeff)):
+                lst.append(txt);txt = ""
+            txt += "%14.7E" % f
+        if txt:
+            lst.append(txt)
+            txt = ""
+        for i, f in enumerate(self.ySplineCoeff):
             if i % 5 == 0:
-                txt += "\n"
-            txt += "%14.7E" % self.ySplineCoeff[i]
-        txt += "\n"
-        open(filename, "w").write(txt)
+                lst.append(txt)
+                txt = ""
+            txt += "%14.7E" % f
+        if txt:
+            lst.append(txt)
+            txt = ""
+        lst.append("")
+        with open(filename, "w") as f:
+            f.write(os.linesep.join(lst))
 
     def tilt(self, center=(0.0, 0.0), tiltAngle=0.0, tiltPlanRot=0.0,
              distanceSampleDetector=1.0, timing=False):
@@ -523,12 +564,21 @@ class Spline:
 
     def getPixelSize(self):
         """
+        
         @return: the size of the pixel from a 2D detector
         @rtype: 2-tuple of floats expressed in meter.
+        
         """
         return (self.pixelSize[0] * 1.0e-6, self.pixelSize[1] * 1.0e-6)
 
     def bin(self, binning=None):
+        """
+        Performs the binning of a spline (same camera with different binning)
+        
+        @param binning: binning factor as integer or 2-tuple of integers
+        @type: int or (int, int) 
+        
+        """
         if "__len__" in dir(binning):
             binX, binY = float(binning[0]), float(binning[1])
         else:
