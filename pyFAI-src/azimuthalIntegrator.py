@@ -878,26 +878,31 @@ class AzimuthalIntegrator(Geometry):
         @type unit: str
 
         This method is called when a look-up table needs to be set-up.
-        The *shape* of the LUT, correspond to the shape of the
+        The *shape* parameter, correspond to the shape of the
         original datatset. It is possible to customize the number of
         point of the output histogram with the *nbPt* parameter which
         can be either an integer for an 1D integration or a 2-tuple of
         integer in case of a 2D integration.
-
+        The LUT will have a different shape: (nbPt, lut_max_size), 
+        the later parameter being calculated during the
+        instanciation of the splitBBoxLUT class.
+        
         It is possible to prepare the LUT with a predefine
-        *mask*. This operation can speedup the computation of the
+        *mask*. This operation can speedup the computation of the later
         integrations. Instead of applying the patch on the dataset, it
         is taken into account during the histogram computation. If
         provided the *mask_checksum* prevent the re-calculation of the
-        mask if its checksum did not change during the process.
+        mask. When the mask changes, its checksum is used to reset (or not)
+        the LUT (which is a very time consuming operation !) 
 
         It is also possible to restrain the range of the 1D or 2D
         pattern with the *pos1_range* and *pos2_range*.
 
-        the *unit* parameter is just used to propagate the LUT object
-        for further checkings. (Jerome tu pourrais expliquer un petit
-        peu plus) ???
+        The *unit* parameter is just propagated to the LUT integrator
+        for further checkings: The aim is to prevent an integration 
+        to be performed in 2th-space when the LUT was setup in q space. 
         """
+
         if "__len__" in dir(nbPt) and len(nbPt) == 2:
             int2d = True
         else:
