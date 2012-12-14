@@ -38,11 +38,11 @@ import time
 import sys
 import numpy
 import scipy
-import Image
-import fabio
+import logging
 import scipy.optimize
 import scipy.interpolate
 from scipy.interpolate import fitpack
+logger = logging.getLogger("pyFAI.spline")
 
 
 class Spline:
@@ -86,19 +86,19 @@ class Spline:
             self.read(filename)
 
     def __repr__(self):
-        ltxt = ["Array size: x= %s - %s\ty= %s - %s" % \
+        lst = ["Array size: x= %s - %s\ty= %s - %s" % \
             (self.xmin, self.xmax, self.ymin, self.ymax)]
-        ltxt.append("Pixel size = %s microns, Grid spacing = %s" % \
+        lst.append("Pixel size = %s microns, Grid spacing = %s" % \
             (self.pixelSize, self.grid))
-        ltxt.append("X-Displacement spline %i X_knots, %i Y_knots and %i coef: \
+        lst.append("X-Displacement spline %i X_knots, %i Y_knots and %i coef: \
                 should be (X_knot-1-X_order)*(Y_knot-1-Y_order)" % (len(self.xSplineKnotsX),
                                                                   len(self.xSplineKnotsY),
                                                                   len(self.xSplineCoeff)))
-        ltxt.append("Y-Displacement spline %i X_knots, %i Y_knots and %i coef: "
+        lst.append("Y-Displacement spline %i X_knots, %i Y_knots and %i coef: "
                 "should be (X_knot-1-X_order)*(Y_knot-1-Y_order)" % (len(self.ySplineKnotsX),
                                                                      len(self.ySplineKnotsY),
                                                                      len(self.ySplineCoeff)))
-        return os.lineSep.join(ltxt)
+        return os.linesep.join(lst)
 
     def zeros(self, xmin=0.0, ymin=0.0, xmax=2048.0, ymax=2048.0,
               pixSize=None):
@@ -221,11 +221,11 @@ class Spline:
         curvY = scipy.interpolate.interp1d(histYdr, histY[0] - histY[0].max() / 2.0)
         fFWHM_X = scipy.optimize.bisect(curvX , histXmax, histXdr[-1]) - scipy.optimize.bisect(curvX , histXdr[0], histXmax)
         fFWHM_Y = scipy.optimize.bisect(curvY , histYmax, histYdr[-1]) - scipy.optimize.bisect(curvY , histYdr[0], histYmax)
-        print ("Analysis of the difference between two splines")
-        print ("Maximum error in X= %.3f pixels,\t in Y= %.3f pixels." % (maxErrX, maxErrY))
-        print ("Maximum of histogram in X= %.3f pixels,\t in Y= %.3f pixels." % (histXmax, histYmax))
-        print ("Mean of histogram in X= %.3f pixels,\t in Y= %.3f pixels." % (deltax.mean(), deltay.mean()))
-        print ("FWHM in X= %.3f pixels,\t in Y= %.3f pixels." % (fFWHM_X, fFWHM_Y))
+        logger.info("Analysis of the difference between two splines")
+        logger.info("Maximum error in X= %.3f pixels,\t in Y= %.3f pixels." % (maxErrX, maxErrY))
+        logger.info("Maximum of histogram in X= %.3f pixels,\t in Y= %.3f pixels." % (histXmax, histYmax))
+        logger.info("Mean of histogram in X= %.3f pixels,\t in Y= %.3f pixels." % (deltax.mean(), deltay.mean()))
+        logger.info("FWHM in X= %.3f pixels,\t in Y= %.3f pixels." % (fFWHM_X, fFWHM_Y))
 
         if verbose:
             import pylab
@@ -273,7 +273,7 @@ class Spline:
                                          self.splineOrder],
                 dx=0, dy=0).transpose()
             if timing:
-                print("Timing for: X-Displacement spline evaluation: %.3f sec,"
+                logger.info("Timing for: X-Displacement spline evaluation: %.3f sec,"
                       " Y-Displacement Spline evaluation:  %.3f sec." %
                       ((intermediateTime - startTime),
                        (time.time() - intermediateTime)))
@@ -374,20 +374,20 @@ class Spline:
             s=smoothing)
 
         if timing:
-            print("X-Displ evaluation= %.3f sec, Y-Displ evaluation=  %.3f sec."
+            logger.info("X-Displ evaluation= %.3f sec, Y-Displ evaluation=  %.3f sec."
                   % (intermediateTime - startTime, time.time() - intermediateTime))
 
-        print(len(xRectBivariateSpline.get_coeffs()),
+        logger.info(len(xRectBivariateSpline.get_coeffs()),
               "x-coefs", xRectBivariateSpline.get_coeffs())
-        print(len(yRectBivariateSpline.get_coeffs()),
+        logger.info(len(yRectBivariateSpline.get_coeffs()),
               "y-coefs", yRectBivariateSpline.get_coeffs())
-        print(len(xRectBivariateSpline.get_knots()[0]),
+        logger.info(len(xRectBivariateSpline.get_knots()[0]),
               len(xRectBivariateSpline.get_knots()[1]),
               "x-knots", xRectBivariateSpline.get_knots())
-        print(len(yRectBivariateSpline.get_knots()[0]),
+        logger.info(len(yRectBivariateSpline.get_knots()[0]),
               len(yRectBivariateSpline.get_knots()[1]),
               "y-knots", yRectBivariateSpline.get_knots())
-        print("Residual x,y", xRectBivariateSpline.get_residual(),
+        logger.info("Residual x,y", xRectBivariateSpline.get_residual(),
               yRectBivariateSpline.get_residual())
         self.xSplineKnotsX = xRectBivariateSpline.get_knots()[0]
         self.xSplineKnotsY = xRectBivariateSpline.get_knots()[1]
@@ -407,7 +407,7 @@ class Spline:
         try:
             from fabio.edfimage import edfimage
         except ImportError:
-            print("You will need the Fabio library available"
+            logger.error("You will need the Fabio library available"
                   " from the Fable sourceforge")
             return
         self.spline2array()
@@ -437,23 +437,23 @@ class Spline:
                "  X-DISTORTION",
                "%6i%6i" % (len(self.xSplineKnotsX), len(self.xSplineKnotsY))]
         txt = ""
-        for i, f in enumerate(self.xSplineKnotsX):
+        for i, val in enumerate(self.xSplineKnotsX):
             if i % 5 == 0:
                 lst.append(txt)
                 txt = ""
-            txt += "%14.7E" % f
+            txt += "%14.7E" % val
         if txt:
             lst.append(txt)
             txt = ""
-        for i, f in enumerate(self.xSplineKnotsY):
+        for i, val in enumerate(self.xSplineKnotsY):
             if i % 5 == 0:
                 lst.append(txt)
                 txt = ""
-            txt += "%14.7E" % f
+            txt += "%14.7E" % val
         if txt:
             lst.append(txt)
             txt = ""
-        for i, f in enumerate(self.xSplineCoeff):
+        for i, val in enumerate(self.xSplineCoeff):
             if i % 5 == 0:
                 lst.append(txt)
                 txt = ""
@@ -464,32 +464,33 @@ class Spline:
         lst.append("")
         lst.append("  Y-DISTORTION\n%6i%6i" % (len(self.ySplineKnotsX),
                                                len(self.ySplineKnotsY)))
-        for i, f in enumerate(self.ySplineKnotsX):
+        for i, val in enumerate(self.ySplineKnotsX):
             if i % 5 == 0:
                 lst.append(txt)
                 txt = ""
-            txt += "%14.7E" % f
+            txt += "%14.7E" % val
         if txt:
             lst.append(txt)
             txt = ""
-        for i, f in enumerate(self.ySplineKnotsY):
-            if i % 5 == 0:
-                lst.append(txt);txt = ""
-            txt += "%14.7E" % f
-        if txt:
-            lst.append(txt)
-            txt = ""
-        for i, f in enumerate(self.ySplineCoeff):
+        for i, val in enumerate(self.ySplineKnotsY):
             if i % 5 == 0:
                 lst.append(txt)
                 txt = ""
-            txt += "%14.7E" % f
+            txt += "%14.7E" % val
+        if txt:
+            lst.append(txt)
+            txt = ""
+        for i, val in enumerate(self.ySplineCoeff):
+            if i % 5 == 0:
+                lst.append(txt)
+                txt = ""
+            txt += "%14.7E" % val
         if txt:
             lst.append(txt)
             txt = ""
         lst.append("")
-        with open(filename, "w") as f:
-            f.write(os.linesep.join(lst))
+        with open(filename, "w") as fil:
+            fil.write(os.linesep.join(lst))
 
     def tilt(self, center=(0.0, 0.0), tiltAngle=0.0, tiltPlanRot=0.0,
              distanceSampleDetector=1.0, timing=False):
@@ -514,7 +515,7 @@ class Spline:
                 self.zeros()
             else:
                 self.read(self.filename)
-        print("center=%s, tilt=%s, tiltPlanRot=%s, distanceSampleDetector=%sm, pixelSize=%sµm" % (center, tiltAngle, tiltPlanRot, distanceSampleDetector, self.pixelSize))
+        logger.info("center=%s, tilt=%s, tiltPlanRot=%s, distanceSampleDetector=%sm, pixelSize=%sµm" % (center, tiltAngle, tiltPlanRot, distanceSampleDetector, self.pixelSize))
         if timing:
             startTime = time.time()
         distance = 1.0e6 * distanceSampleDetector  # from meters to microns
@@ -548,12 +549,12 @@ class Spline:
         tiltedSpline.yDispArray = tiltArrayY
         # tiltedSpline.array2spline(smoothing=1e-6, timing=True)
         if timing:
-            print("Time for the generation of the distorted spline: %.3f sec" % (time.time() - startTime))
+            logger.info("Time for the generation of the distorted spline: %.3f sec" % (time.time() - startTime))
         return tiltedSpline
 
     def setPixelSize(self, pixelSize):
         """
-        sets the size of the pixel from a 2-tuple of floats expressed
+        Sets the size of the pixel from a 2-tuple of floats expressed
         in meters.
 
         @param: pixel size in meter
@@ -564,6 +565,8 @@ class Spline:
 
     def getPixelSize(self):
         """
+        Return the size of the pixel from as a 2-tuple of floats expressed
+        in meters.
         
         @return: the size of the pixel from a 2D detector
         @rtype: 2-tuple of floats expressed in meter.
@@ -597,31 +600,34 @@ class Spline:
 
 
 def main():
-    CENTER = (1000, 1000)
-    TILT = 10  # deg
-    ROTATION_TILT = 0  # deg
-    DISTANCE = 100  # mm
-    SPLINE_FILE = "example.spline"
+    """
+    Some tests ....
+    """
+    center = (1000, 1000)
+    tilt = 10  # deg
+    rotation_tilt = 0  # deg
+    distance = 100  # mm
+    spline_file = "example.spline"
     for keyword in sys.argv[1:]:
         if os.path.isfile(keyword):
-            SPLINE_FILE = keyword
+            spline_file = keyword
         elif keyword.lower().find("center=") in [0, 1, 2]:
-            CENTER = map(float, keyword.split("=")[1].split("x"))
+            center = map(float, keyword.split("=")[1].split("x"))
         elif keyword.lower().find("dist=") in [0, 1, 2]:
-            DISTANCE = float(keyword.split("=")[1])
+            distance = float(keyword.split("=")[1])
         elif keyword.lower().find("tilt=") in [0, 1, 2]:
-            TILT = float(keyword.split("=")[1])
+            tilt = float(keyword.split("=")[1])
         elif keyword.lower().find("rot=") in [0, 1, 2]:
-            ROTATION_TILT = float(keyword.split("=")[1])
+            rotation_tilt = float(keyword.split("=")[1])
 
     spline = Spline()
-    spline.read(SPLINE_FILE)
-    print ("Original Spline: %s" % spline)
+    spline.read(spline_file)
+    logger.info("Original Spline: %s" % spline)
     spline.spline2array(timing=True)
-    tilted = spline.tilt(CENTER, TILT, ROTATION_TILT, DISTANCE, timing=True)
+    tilted = spline.tilt(center, tilt, rotation_tilt, distance, timing=True)
     tilted.writeEDF("%s-tilted-t%i-p%i-d%i" %
-                    (os.path.splitext(SPLINE_FILE)[0],
-                     TILT, ROTATION_TILT, DISTANCE))
+                    (os.path.splitext(spline_file)[0],
+                     tilt, rotation_tilt, distance))
 
 if __name__ == '__main__':
     main()
