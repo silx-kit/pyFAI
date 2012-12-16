@@ -1397,6 +1397,44 @@ class AzimuthalIntegrator(Geometry):
 
         @return: azimuthaly regrouped data, 2theta pos and chipos
         @rtype: 3-tuple of ndarrays
+
+        This method convert the *data* image from the pixel
+        coordinates to the 2theta, chi coordinates. This is simular to
+        a rectangular to polar conversion. The number of point of the
+        new image is given by *nbPt2Th* and *nbPtChi*. If you give a
+        *filename*, the new image is also saved as an edf file.
+
+        It is possible to correct the 2theta/chi pattern using the
+        *correctSolidAngle* parameter. The weight of a pixel is
+        ponderate by its solid angle.
+
+        The 2theta and range of the new image can be set using the
+        *tthRange* parameter. If not given the maximum available range
+        is used. Indeed pixel outside this range are ignored.
+
+        Each pixel of the *data* image has also a chi coordinate. So
+        it is possible to restrain the chi range of the pixels to
+        consider in new image. you just need to set the range with the
+        *chiRange* parameter. like the *tthRange* parameter, value
+        outside this range are ignored.
+
+        Sometimes one needs to mask a few pixels (beamstop, hot
+        pixels, ...), to ignore a few of them you just need to provide
+        a *mask* array with a value of 1 for those pixels. To take a
+        pixel into account you just need to set a value of 0 in the
+        mask array. Indeed the shape of the mask array should be
+        idential to the data shape (size of the array _must_ be the
+        same).
+
+        Dynamic masking (i.e recalculated for each image) can be
+        achieved by setting masked pixels to an impossible value (-1)
+        and calling this value the "dummy value". Dynamic masking is
+        computed at integration whereas static masking is done at
+        LUT-generation, hence faster.
+
+        Some Pilatus detectors are setting non existing pixel to -1
+        and dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so
+        that any value between -3.5 and -0.5 are considered as bad.
         """
         mask = self.makeMask(data, mask, dummy, delta_dummy)
         tth = self.twoThetaArray(data.shape)[mask]
