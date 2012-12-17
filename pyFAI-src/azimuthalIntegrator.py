@@ -1412,9 +1412,9 @@ class AzimuthalIntegrator(Geometry):
         *tthRange* parameter. If not given the maximum available range
         is used. Indeed pixel outside this range are ignored.
 
-        Each pixel of the *data* image has also a chi coordinate. So
-        it is possible to restrain the chi range of the pixels to
-        consider in new image. you just need to set the range with the
+        Each pixel of the *data* image has a 2theta and a chi coordinate.
+        So it is possible to restrain on any of those ranges ; you just 
+        need to set the range with the  *tthRange* or thee 
         *chiRange* parameter. like the *tthRange* parameter, value
         outside this range are ignored.
 
@@ -1426,12 +1426,8 @@ class AzimuthalIntegrator(Geometry):
         idential to the data shape (size of the array _must_ be the
         same).
 
-        Dynamic masking (i.e recalculated for each image) can be
-        achieved by setting masked pixels to an impossible value (-1)
-        and calling this value the "dummy value". Dynamic masking is
-        computed at integration whereas static masking is done at
-        LUT-generation, hence faster.
-
+        Masking can also be achieved by setting masked pixels to an 
+        impossible value (-1) and calling this value the "dummy value".
         Some Pilatus detectors are setting non existing pixel to -1
         and dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so
         that any value between -3.5 and -0.5 are considered as bad.
