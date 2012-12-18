@@ -40,6 +40,9 @@ try:
 except:
     from zlib import crc32
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
+
+from pyFAI.unit import UnitEnum
+
 @cython.cdivision(True)
 cdef float getBinNr( float x0, float pos0_min, float delta) nogil:
     """
@@ -63,7 +66,7 @@ class HistoBBox1d(object):
                  mask=None,
                  mask_checksum=None,
                  allow_pos0_neg=False,
-                 unit="undefined"):
+                 unit=UnitEnum.UNDEFINED):
 
         cdef int i, size
         self.size = pos0.size
@@ -397,7 +400,7 @@ class HistoBBox2d(object):
                  mask=None,
                  mask_checksum=None,
                  allow_pos0_neg=False,
-                 unit="undefined"):
+                 unit=UnitEnum.UNDEFINED):
 
         cdef ssize_t i, size, bin0, bin1
         self.size = pos0.size
