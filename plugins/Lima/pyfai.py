@@ -7,6 +7,7 @@ from Lima import Core, Basler
 import pyFAI
 
 IP = "192.168.5.19"
+EXPO = 0.1 #sec
 
 class PyFAILink(Core.Processlib.LinkTask):
     def __init__(self, azimuthalIntgrator, shapeIn=(966, 1296), shapeOut=(360, 500), unit="r_mm"):
@@ -37,8 +38,9 @@ if __name__ == "__main__":
     myTask = PyFAILink(ai)
     myOp.setLinkTask(myTask)
     acq = ctrl.acquisition()
-    acq.setAcqNbFrames(10)
-    acq.setAcqExpoTime(0.1)
+#    acq.setAcqNbFrames(10)
+    acq.setAcqNbFrames(0)
+    acq.setAcqExpoTime(EXPO)
     ctrl.prepareAcq()
     ctrl.startAcq()
     print ctrl.getStatus()
@@ -52,3 +54,11 @@ if __name__ == "__main__":
     subplot1.imshow(base_img.buffer, cmap="gray")
     subplot2.imshow(proc_img.buffer, cmap="gray")
     fig.show()
+    pyplot.ion()
+    while True:
+        base_img = ctrl.ReadBaseImage()
+        proc_img = ctrl.ReadImage()
+        subplot1.imshow(base_img.buffer, cmap="gray")
+        subplot2.imshow(proc_img.buffer, cmap="gray")
+        time.sleep(EXPO)
+        fig.canvas.draw()
