@@ -21,7 +21,7 @@ class PyFAILink(Core.Processlib.LinkTask):
        #print "max src:",data.buffer.min(),data.buffer.max()
        rData = Core.Processlib.Data()
        rData.frameNumber = data.frameNumber
-       rData.buffer = self.ai.integrate2d(data.buffer, self.nbpt_rad, self.nbpt_azim, method="lut", unit=self.unit)[0]
+       rData.buffer = self.ai.integrate2d(data.buffer, self.nbpt_rad, self.nbpt_azim, method="lut", unit=self.unit, safe=False)[0]
        #print "max src:",rData.buffer.min(),rData.buffer.max()
        return rData
 
