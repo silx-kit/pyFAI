@@ -297,6 +297,14 @@ class FReLoN(Detector):
         Detector.__init__(self, splineFile)
         self.max_shape = (self.spline.ymax - self.spline.ymin,
                           self.spline.xmax - self.spline.xmin)
+class Basler(Detector):
+    """
+    Basler camera are simple CCD camara over GigaE 
+    
+    """
+    def __init__(self, pixel=3.75e-6):
+        Detector.__init__(self, pixel1=pixel, pixel2=pixel)
+        self.max_shape = (966, 1296)
 
 class Xpad_flat(Detector):
     """
@@ -376,7 +384,8 @@ ALL_DETECTORS = {"pilatus1m": Pilatus1M,
                  "fairchild": Fairchild,
                  "frelon": FReLoN,
                  "xpad": Xpad_flat,
-                 "xpad_flat": Xpad_flat}
+                 "xpad_flat": Xpad_flat,
+                 "basler": Basler}
 
 
 def detector_factory(name):
