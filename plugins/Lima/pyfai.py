@@ -1,8 +1,9 @@
 #!/usr/bin/python
 #coding: utf8
 #Class defining the link task for azimuthal regrouping in process lib for Lima
-# 
+#
 import time
+import numpy
 from Lima import Core, Basler
 import pyFAI
 
@@ -13,17 +14,18 @@ class PyFAILink(Core.Processlib.LinkTask):
     def __init__(self, azimuthalIntgrator, shapeIn=(966, 1296), shapeOut=(360, 500), unit="r_mm"):
         Core.Processlib.LinkTask.__init__(self)
         self.ai = azimuthalIntgrator
-        self.ai._lut_integrator = self.ai.setup_LUT(shape=shapeIn, nbPt=shapeOut, unit=unit)
         self.nbpt_azim, self.nbpt_rad = shapeOut
         self.unit = unit
+        # this is just to force the integrator to initialize
+        _ = self.ai.integrate2d(numpy.zeros(shapeIn, dtype=numpy.float32),
+                            self.nbpt_rad, self.nbpt_azim, method="lut", unit=self.unit,)
 
     def process(self, data) :
-       #print "max src:",data.buffer.min(),data.buffer.max()
-       rData = Core.Processlib.Data()
-       rData.frameNumber = data.frameNumber
-       rData.buffer = self.ai.integrate2d(data.buffer, self.nbpt_rad, self.nbpt_azim, method="lut", unit=self.unit, safe=False)[0]
-       #print "max src:",rData.buffer.min(),rData.buffer.max()
-       return rData
+        rData = Core.Processlib.Data()
+        rData.frameNumber = data.frameNumber
+        rData.buffer = self.ai.integrate2d(data.buffer, self.nbpt_rad, self.nbpt_azim,
+                                           method="lut", unit=self.unit, safe=False)[0]
+        return rData
 
 
 if __name__ == "__main__":
