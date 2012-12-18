@@ -46,9 +46,19 @@ except ImportError:
 
 
 class Detector(object):
-    "Generic class representing a 2D detector"
+    """
+    Generic class representing a 2D detector
+    """
 
     def __init__(self, pixel1=None, pixel2=None, splineFile=None):
+        """
+        @param pixel1: size of the pixel along the x direction ???
+        @type pixel1: float
+        @param pixel2: size of the pixel along the y direction ???
+        @type pixel2: float
+        @param splineFile: filename containing the geometric correction.
+        @type splineFile: str
+        """
         self.name = self.__class__.__name__
         self.pixel1 = pixel1
         self.pixel2 = pixel2
@@ -72,6 +82,7 @@ class Detector(object):
 
     def get_splineFile(self):
         return self._splineFile
+
     def set_splineFile(self, splineFile):
         if splineFile is not None:
             self._splineFile = os.path.abspath(splineFile)
@@ -83,8 +94,10 @@ class Detector(object):
             self._splineFile = None
             self.spline = None
     splineFile = property(get_splineFile, set_splineFile)
+
     def get_binning(self):
         return self._binning
+
     def set_binning(self, bin_size=(1, 1)):
         """
         Set the "binning" of the detector,
@@ -108,21 +121,33 @@ class Detector(object):
                 self.pixel1 *= ratioY
                 self.pixel2 *= ratioX
             self._binning = bin_size
+
     binning = property(get_binning, set_binning)
 
 
     def getPyFAI(self):
+        """
+        ???
+        """
         return {"detector": self.name,
                 "pixel1": self.pixel1,
                 "pixel2": self.pixel2,
                 "splineFile": self._splineFile}
 
     def getFit2D(self):
+        """
+        ???
+        """
         return {"pixelX": self.pixel2 * 1e6,
                 "pixelY": self.pixel1 * 1e6,
                 "splineFile": self._splineFile}
 
     def setPyFAI(self, **kwarg):
+        """
+        ???
+
+        jerome peux-tu decrire les keywords possibles ???
+        """
         if "detector" in kwarg:
             self = detector_factory(kwarg["detector"])
         for kw in kwarg:
@@ -132,6 +157,11 @@ class Detector(object):
                 self.set_splineFile(kwarg[kw])
 
     def setFit2D(self, **kwarg):
+        """
+        ???
+
+        jerome peux-tu decrire les keywords possibles ???
+        """
         for kw, val in kwarg.items():
             if kw == "pixelX":
                 self.pixel2 = val * 1e-6
@@ -146,10 +176,13 @@ class Detector(object):
         and in meter of a couple of coordinates.
         The half pixel offset is taken into account here !!!
 
-        @param d1: ndarray of dimension 1 or 2 containing the Y pixel positions
-        @param d2: ndarray of dimension 1or 2 containing the X pixel positions
+        @param d1: the Y pixel positions
+        @type d1: ndarray (1D or 2D)
+        @param d2: the X pixel positions
+        @type d2: ndarray (1D or 2D)
 
-        @return: 2-arrays of same shape as d1 & d2 with the position in meter
+        @return: position in meter of the center of each pixels.
+        @rtype: ndarray
 
         d1 and d2 must have the same shape, returned array will have
         the same shape.
@@ -224,7 +257,7 @@ class Detector(object):
 class Pilatus(Detector):
     """
     Pilatus detector: generic description containing mask algorithm
-    
+
     Sub-classed by Pilatus1M, Pilatus2M and Pilatus6M
     """
     MODULE_SIZE = (195, 487)
@@ -255,6 +288,7 @@ class Pilatus(Detector):
             mask[:, i: i + self.MODULE_GAP[1]] = 1
         return mask
 
+
 class Pilatus1M(Pilatus):
     """
     Pilatus 1M detector
@@ -262,6 +296,7 @@ class Pilatus1M(Pilatus):
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         Pilatus.__init__(self, pixel1, pixel2)
         self.max_shape = (1043, 981)
+
 
 class Pilatus2M(Pilatus):
     """
@@ -271,6 +306,7 @@ class Pilatus2M(Pilatus):
         Pilatus.__init__(self, pixel1, pixel2)
         self.max_shape = (1475, 1679)
 
+
 class Pilatus6M(Pilatus):
     """
     Pilatus 6M detector
@@ -278,6 +314,7 @@ class Pilatus6M(Pilatus):
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         Pilatus.__init__(self, pixel1, pixel2)
         self.max_shape = (2527, 2463)
+
 
 class Fairchild(Detector):
     """
@@ -288,9 +325,10 @@ class Fairchild(Detector):
         self.name = "Fairchild Condor 486:90"
         self.max_shape = (4096, 4096)
 
+
 class FReLoN(Detector):
     """
-    FReLoN detector: 
+    FReLoN detector:
     The spline is mandatory to correct for geometric distortion of the taper
     """
     def __init__(self, splineFile):
@@ -306,24 +344,27 @@ class Basler(Detector):
         Detector.__init__(self, pixel1=pixel, pixel2=pixel)
         self.max_shape = (966, 1296)
 
+
 class Xpad_flat(Detector):
     """
-    Xpad detector: generic description for 
+    Xpad detector: generic description for
     ImXPad detector with 8x7modules
     """
     MODULE_SIZE = (120, 80)
     MODULE_GAP = (3 + 3.57 * 1000 / 130, 3)  # in pixels
+
     def __init__(self, pixel1=130e-6, pixel2=130e-6):
         Detector.__init__(self, pixel1, pixel2)
         self.max_shape = (960, 560)
+
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
-                (self.name, self.pixel1, self.pixel2)
+            (self.name, self.pixel1, self.pixel2)
 
     def calc_mask(self):
         """
         Returns a generic mask for Xpad detectors...
-        discards the first line and raw form all modules: 
+        discards the first line and raw form all modules:
         those are 2.5x bigger and often mis - behaving
         """
         with self._sem:
@@ -347,10 +388,13 @@ class Xpad_flat(Detector):
         and in meter of a couple of coordinates.
         The half pixel offset is taken into account here !!!
 
-        @param d1: ndarray of dimension 1 or 2 containing the Y pixel positions
-        @param d2: ndarray of dimension 1or 2 containing the X pixel positions
+        @param d1: the Y pixel positions
+        @type d1: ndarray (1D or 2D)
+        @param d2: the X pixel positions
+        @type d2: ndarray (1D or 2D)
 
         @return: 2-arrays of same shape as d1 & d2 with the position in meter
+        @rtype: ndarray
 
         d1 and d2 must have the same shape, returned array will have
         the same shape.
@@ -392,7 +436,10 @@ def detector_factory(name):
     """
     A kind of factory...
     @param name: name of a detector
+    @type name: str
+
     @return: an instance of the right detector
+    @rtype: pyFAI.detectors.Detector
     """
     name = name.lower()
     if name in ALL_DETECTORS:
