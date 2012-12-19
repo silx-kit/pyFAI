@@ -94,7 +94,7 @@ except ImportError as error:
     logger.error("Unable to import pyFAI.histogram"
                  " Cython OpenMP histogram implementation: %s" % error)
     histogram = None
-del error #just to see how clever pylint is ! 
+del error  # just to see how clever pylint is !
 
 
 class AzimuthalIntegrator(Geometry):
@@ -325,8 +325,9 @@ class AzimuthalIntegrator(Geometry):
             data /= self.polarization(data.shape, factor=polarization_factor)
         data = data[mask]
         if tthRange is not None:
-            tthRange = tuple([numpy.deg2rad(i) for i in tthRange])
-
+            tthRange = (numpy.deg2rad(tthRange[0]), numpy.deg2rad(tthRange[-1]) * EPS32)
+        else:
+            tthRange = (tth.min(), tth.max() * EPS32)
         if nbPt not in self._nbPixCache:
             ref, b = numpy.histogram(tth, nbPt, range=tthRange)
             self._nbPixCache[nbPt] = numpy.maximum(1, ref)
@@ -463,7 +464,7 @@ class AzimuthalIntegrator(Geometry):
         pixel into account you just need to set a value of 0 in the
         mask array. Indeed the shape of the mask array should be
         idential to the data shape (size of the array _must_ be the
-        same). Pixels can also be maseked by seting them to an  
+        same). Pixels can also be maseked by seting them to an
 
         Bad pixels can be masked out by setting them to an impossible
         value (-1) and calling this value the "dummy value".  Some
@@ -1435,30 +1436,30 @@ class AzimuthalIntegrator(Geometry):
         mask = self.makeMask(data, mask, dummy, delta_dummy)
         tth = self.twoThetaArray(data.shape)[mask]
         chi = self.chiArray(data.shape)[mask]
+        if tthRange is not None:
+            tthRange=[deg2rad(tthRange[0]),deg2rad(tthRange[-1])]
+        else:
+            tthRange=[tth.min(),tth.max()*EPS32]
+        if chiRange is not None:
+            chiRange=[deg2rad(chiRange[0]),deg2rad(chiRange[-1])]
+        else:
+            chiRange=[chi.min(),chi.max()*EPS32]
+        chi = self.chiArray(data.shape)[mask]
         bins = (nbPtChi, nbPt2Th)
         if bins not in self._nbPixCache:
             ref, binsChi, bins2Th = numpy.histogram2d(chi, tth,
-                                                      bins=list(bins))
+                                                      bins=list(bins),
+                                                      range=[chiRange,tthRange])
             self._nbPixCache[bins] = numpy.maximum(1.0, ref)
         if correctSolidAngle:
             data = (data / self.solidAngleArray(data.shape))[mask].astype("float64")
         else:
             data = data[mask].astype("float64")
-        if tthRange is not None:
-            tthRange = [numpy.deg2rad(i) for i in tthRange]
-        else:
-            tthRange = [numpy.deg2rad(tth.min()), numpy.deg2rad(tth.max())]
-        if chiRange is not None:
-            chiRange = tuple([numpy.deg2rad(i) for i in chiRange])
-        else:
-            chiRange = tuple([numpy.deg2rad(chi.min()),
-                              numpy.deg2rad(chi.max())])
 
         val, binsChi, bins2Th = numpy.histogram2d(chi, tth,
                                                   bins=list(bins),
-                                                  weights=data)
-#        ,
-#                                                  range=[chiRange, tthRange])
+                                                  weights=data,
+                                                  range=[chiRange,tthRange])
         I = val / self._nbPixCache[bins]
         if filename:
             self.save2D(filename, I, bins2Th, binsChi)
@@ -2228,14 +2229,16 @@ class AzimuthalIntegrator(Geometry):
             data = data[mask]
             if variance is not None:
                 variance = variance[mask]
-            ref, b = numpy.histogram(pos0, nbPt)
+            if radial_range is None:
+                radial_range = (pos0.min(), pos0.max() * EPS32)
+            ref, b = numpy.histogram(pos0, nbPt, range=radial_range)
             qAxis = (b[1:] + b[:-1]) / 2.0
             count = numpy.maximum(1, ref)
-            val, b = numpy.histogram(pos0, nbPt, weights=data)
+            val, b = numpy.histogram(pos0, nbPt, weights=data, range=radial_range)
             if error_model == "azimuthal":
                 variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
             if variance is not None:
-                var1d, b = numpy.histogram(pos0, nbPt, weights=variance)
+                var1d, b = numpy.histogram(pos0, nbPt, weights=variance, range=radial_range)
                 sigma = numpy.sqrt(var1d) / count
             I = val / count
         if pos0_scale:
@@ -2567,23 +2570,29 @@ class AzimuthalIntegrator(Geometry):
                 data /= polarization
             if solidangle is not None:
                 data /= solidangle
+            pos0 = self.array_from_unit(shape, "center", unit)
+            pos1 = self.chiArray(shape)
             if radial_range is not None:
                 mask *= (pos0 >= min(radial_range))
                 mask *= (pos0 <= min(radial_range))
+            else:
+                radial_range = [pos0.min(), pos0.max() * EPS32]
             if azimuth_range is not None:
                 mask *= (pos1 >= min(azimuth_range))
                 mask *= (pos1 <= max(azimuth_range))
+            else:
+                azimuth_range = [pos1.min(), pos1.max() * EPS32]
             data = data[mask]
-            pos0 = self.array_from_unit(shape, "center", unit)[mask]
-            pos1 = self.chiArray(shape)[mask]
+            pos0 = pos0[mask]
+            pos1 = pos1[mask]
 #            if variance is not None:
 #                variance = variance[mask]
-            ref, b, c = numpy.histogram2d(pos1, pos0, (nbPt_azim, nbPt_rad))
+            ref, b, c = numpy.histogram2d(pos1, pos0, (nbPt_azim, nbPt_rad), range=[azimuth_range, radial_range])
             bins_azim = (b[1:] + b[:-1]) / 2.0
             bins_rad = (c[1:] + c[:-1]) / 2.0
             count = numpy.maximum(1, ref)
             val, b, c = numpy.histogram2d(pos1, pos0, (nbPt_azim, nbPt_rad),
-                                          weights=data)
+                                          weights=data, range=[azimuth_range, radial_range])
 #            if error_model == "azimuthal":
 #                variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
 #            if variance is not None:

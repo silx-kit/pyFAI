@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: Azimuthal integration 
+#    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
 #
 #    File: "$Id$"
@@ -44,7 +44,7 @@ from pyFAI.histogram import histogram, histogram2d
 
 if logger.getEffectiveLevel() == logging.DEBUG:
     import pylab
-
+EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 class test_histogram1d(unittest.TestCase):
     """basic test"""
     shape = (2048, 2048)#(numpy.random.randint(1000, 4000), numpy.random.randint(1000, 4000))
@@ -54,9 +54,10 @@ class test_histogram1d(unittest.TestCase):
     tth = (numpy.random.random(shape).astype("float64"))
     data = numpy.random.random_integers(1, 65000, size=shape).astype("uint16")
     t0 = time.time()
-    unweight_numpy, bin_edges = numpy.histogram(tth, npt)
+    drange = (tth.min(), tth.max() * EPS32)
+    unweight_numpy, bin_edges = numpy.histogram(tth, npt, range=drange)
     t1 = time.time()
-    weight_numpy, bin_edges = numpy.histogram(tth, npt, weights=data.astype("float64"))
+    weight_numpy, bin_edges = numpy.histogram(tth, npt, weights=data.astype("float64"), range=drange)
     t2 = time.time()
     logger.info("Timing for Numpy   raw    histogram: %.3f", t1 - t0)
     logger.info("Timing for Numpy weighted histogram: %.3f", t2 - t1)
@@ -70,8 +71,8 @@ class test_histogram1d(unittest.TestCase):
 
     def test_count_numpy(self):
         """
-        Test that the pixel count and the total intensity is conserved 
-        in numpy implementation 
+        Test that the pixel count and the total intensity is conserved
+        in numpy implementation
         """
         sump = int(self.unweight_numpy.sum(dtype="int64"))
         intensity_obt = self.I_numpy.sum(dtype="float64") * self.size / self.npt
@@ -86,8 +87,8 @@ class test_histogram1d(unittest.TestCase):
 
     def test_count_cython(self):
         """
-        Test that the pixel count and the total intensity is conserved 
-        in cython implementation 
+        Test that the pixel count and the total intensity is conserved
+        in cython implementation
         """
         sump = int(self.unweight_cython.sum(dtype="float64"))
         intensity_obt = self.I_cython.sum(dtype="float64") * self.size / self.npt
@@ -106,10 +107,10 @@ class test_histogram1d(unittest.TestCase):
         """
         max_delta = abs(self.bins_numpy - self.bins_cython).max()
         logger.info("Bin-center position for cython/numpy, max delta=%s", max_delta)
-        assert max_delta < self.epsilon
+        self.assert_(max_delta < self.epsilon,"Bin-center position for cython/numpy, max delta=%s"% max_delta)
         rwp = Rwp((self.bins_cython, self.I_cython), (self.bins_numpy, self.I_numpy))
         logger.info("Rwp Cython/Numpy = %.3f" % rwp)
-        assert rwp < 5.0
+        self.assert_(rwp < 5.0, "Rwp Cython/Numpy = %.3f" % rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
             logger.info("Plotting results")
             fig = pylab.figure()
@@ -122,11 +123,11 @@ class test_histogram1d(unittest.TestCase):
             fig.show()
             raw_input("Press enter to quit")
         delta_max = abs(self.unweight_numpy - self.unweight_cython).max()
-        logger.info("pixel count difference numyp/cython : max delta=%s", delta_max)
-        assert  delta_max < 2
+        logger.info("pixel count difference numpy/cython : max delta=%s", delta_max)
+        self.assert_(delta_max < 2, "numpy_vs_cython_1d max delta unweight = %s" % delta_max)
         delta_max = abs(self.I_cython - self.I_numpy).max()
-        logger.info("Intensity count difference numyp/cython : max delta=%s", delta_max)
-        assert delta_max < self.epsilon
+        logger.info("Intensity count difference numpy/cython : max delta=%s", delta_max)
+        self.assert_(delta_max < self.epsilon, "Intensity count difference numpy/cython : max delta=%s" % delta_max)
 
 
 class test_histogram2d(unittest.TestCase):
@@ -139,9 +140,10 @@ class test_histogram2d(unittest.TestCase):
     chi = (numpy.random.random(shape).astype("float64"))
     data = numpy.random.random_integers(1, 65000, size=shape).astype("uint16")
     t0 = time.time()
-    unweight_numpy, tth_edges, chi_edges = numpy.histogram2d(tth.flatten(), chi.flatten(), npt)
+    drange = [[tth.min(), tth.max() * EPS32], [chi.min(), chi.max() * EPS32]]
+    unweight_numpy, tth_edges, chi_edges = numpy.histogram2d(tth.flatten(), chi.flatten(), npt,range=drange)
     t1 = time.time()
-    weight_numpy, tth_edges, chi_edges = numpy.histogram2d(tth.flatten(), chi.flatten(), npt, weights=data.astype("float64").flatten())
+    weight_numpy, tth_edges, chi_edges = numpy.histogram2d(tth.flatten(), chi.flatten(), npt, weights=data.astype("float64").flatten(),range=drange)
     t2 = time.time()
     logger.info("Timing for Numpy  raw     histogram2d: %.3f", t1 - t0)
     logger.info("Timing for Numpy weighted histogram2d: %.3f", t2 - t1)
@@ -155,8 +157,8 @@ class test_histogram2d(unittest.TestCase):
 
     def test_count_numpy(self):
         """
-        Test that the pixel count and the total intensity is conserved 
-        in numpy implementation 
+        Test that the pixel count and the total intensity is conserved
+        in numpy implementation
         """
         sump = int(self.unweight_numpy.sum(dtype="int64"))
         intensity_obt = self.I_numpy.sum(dtype="float64") * self.size / float(self.npt[0] * self.npt[1])
@@ -165,14 +167,14 @@ class test_histogram2d(unittest.TestCase):
         logger.info("Numpy: Total number of points: %s (%s expected), delta = %s", sump, self.size, delta)
         v = abs(intensity_obt - intensity_exp) / intensity_exp
         logger.info("Numpy: Total Intensity: %s (%s expected), variation = %s", intensity_obt, intensity_exp, v)
-        assert  delta == 0
-        assert v < self.epsilon
+        self.assert_( delta == 0,"Numpy: Total number of points: %s (%s expected), delta = %s"%(sump, self.size, delta))
+        self.assert_(v < self.epsilon,"Numpy: Total Intensity: %s (%s expected), variation = %s"%( intensity_obt, intensity_exp, v))
 
 
     def test_count_cython(self):
         """
-        Test that the pixel count and the total intensity is conserved 
-        in cython implementation 
+        Test that the pixel count and the total intensity is conserved
+        in cython implementation
         """
         sump = int(self.unweight_cython.sum(dtype="int64"))
         intensity_obt = self.I_cython.sum(dtype="float64") * self.size / float(self.npt[0] * self.npt[1])
@@ -185,23 +187,23 @@ class test_histogram2d(unittest.TestCase):
         self.assertTrue(v < self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
 
 
-    def test_numpy_vs_cython_1d(self):
+    def test_numpy_vs_cython_2d(self):
         """
         Compare numpy histogram with cython simple implementation
         """
         max_delta = abs(self.tth_numpy - self.tth_cython).max()
         logger.info("Bin-center position for cython/numpy tth, max delta=%s", max_delta)
-        assert max_delta < self.epsilon
+        self.assert_(max_delta < self.epsilon, "Bin-center position for cython/numpy tth, max delta=%s" % max_delta)
         max_delta = abs(self.chi_numpy - self.chi_cython).max()
         logger.info("Bin-center position for cython/numpy chi, max delta=%s", max_delta)
-        assert max_delta < self.epsilon
+        self.assert_(max_delta < self.epsilon,"Bin-center position for cython/numpy chi, max delta=%s"% max_delta)
 
         delta_max = abs(self.unweight_numpy - self.unweight_cython).max()
-        logger.info("pixel count difference numyp/cython : max delta=%s", delta_max)
-        assert  delta_max < 2
+        logger.info("pixel count difference numpy/cython : max delta=%s", delta_max)
+        self.assert_(delta_max < 2, "pixel count difference numpy/cython : max delta=%s" % delta_max)
         delta_max = abs(self.I_cython - self.I_numpy).max()
-        logger.info("Intensity count difference numyp/cython : max delta=%s", delta_max)
-        assert delta_max < self.epsilon
+        logger.info("Intensity count difference numpy/cython : max delta=%s", delta_max)
+        self.assert_(delta_max < self.epsilon, "Intensity count difference numpy/cython : max delta=%s" % delta_max)
 
 
 def test_suite_all_Histogram():
@@ -211,7 +213,7 @@ def test_suite_all_Histogram():
     testSuite.addTest(test_histogram1d("test_numpy_vs_cython_1d"))
     testSuite.addTest(test_histogram2d("test_count_numpy"))
     testSuite.addTest(test_histogram2d("test_count_cython"))
-    testSuite.addTest(test_histogram2d("test_numpy_vs_cython_1d"))
+    testSuite.addTest(test_histogram2d("test_numpy_vs_cython_2d"))
 
     return testSuite
 
