@@ -300,7 +300,7 @@ class AzimuthalIntegrator(Geometry):
         dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so that
         any value between -3.5 and -0.5 are considered as bad.
 
-        the polarisation correction can be taken into account with the
+        The polarisation correction can be taken into account with the
         *polarization_factor* parameter. Set it between [-1, 1], to
         correct your data. If set to 0 there is no correction at all.
 
@@ -462,19 +462,19 @@ class AzimuthalIntegrator(Geometry):
         pixel into account you just need to set a value of 0 in the
         mask array. Indeed the shape of the mask array should be
         idential to the data shape (size of the array _must_ be the
-        same).
+        same). Pixels can also be maseked by seting them to an  
 
-        Dynamic masking (i.e recalculated for each image) can be
-        achieved by setting masked pixels to an impossible value (-1)
-        and calling this value the "dummy value". Dynamic masking is
-        computed at integration whereas static masking is done at
-        LUT-generation, hence faster.
+        Bad pixels can be masked out by setting them to an impossible
+        value (-1) and calling this value the "dummy value".  Some
+        Pilatus detectors are setting non existing pixel to -1 and
+        dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so that
+        any value between -3.5 and -0.5 are considered as bad.
 
         Some Pilatus detectors are setting non existing pixel to -1
         and dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so
         that any value between -3.5 and -0.5 are considered as bad.
 
-        the polarisation correction can be taken into account with the
+        The polarisation correction can be taken into account with the
         *polarization_factor* parameter. Set it between [-1, 1], to
         correct your data. If set to 0 there is no correction at all.
 
@@ -611,17 +611,17 @@ class AzimuthalIntegrator(Geometry):
         idential to the data shape (size of the array _must_ be the
         same).
 
-        Dynamic masking (i.e recalculated for each image) can be
-        achieved by setting masked pixels to an impossible value (-1)
-        and calling this value the "dummy value". Dynamic masking is
-        computed at integration whereas static masking is done at
-        LUT-generation, hence faster.
+        Bad pixels can be masked out by setting them to an impossible
+        value (-1) and calling this value the "dummy value".  Some
+        Pilatus detectors are setting non existing pixel to -1 and
+        dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so that
+        any value between -3.5 and -0.5 are considered as bad.
 
         Some Pilatus detectors are setting non existing pixel to -1
         and dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so
         that any value between -3.5 and -0.5 are considered as bad.
 
-        the polarisation correction can be taken into account with the
+        The polarisation correction can be taken into account with the
         *polarization_factor* parameter. Set it between [-1, 1], to
         correct your data. If set to 0 there is no correction at all.
 
