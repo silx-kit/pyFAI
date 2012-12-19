@@ -52,11 +52,11 @@ class Detector(object):
 
     def __init__(self, pixel1=None, pixel2=None, splineFile=None):
         """
-        @param pixel1: size of the pixel along the x direction ???
+        @param pixel1: size of the pixel in meter along the slow dimension (often Y)
         @type pixel1: float
-        @param pixel2: size of the pixel along the y direction ???
+        @param pixel2: size of the pixel in meter along the fast dimension (ofter x)
         @type pixel2: float
-        @param splineFile: filename containing the geometric correction.
+        @param splineFile: path to file containing the geometric correction.
         @type splineFile: str
         """
         self.name = self.__class__.__name__
@@ -127,7 +127,11 @@ class Detector(object):
 
     def getPyFAI(self):
         """
-        ???
+        Helper method to serialize the description of a detector using the pyFAI way
+        with everything in S.I units. 
+         
+        @return: representation of the detector easy to serialize 
+        @rtype: dict 
         """
         return {"detector": self.name,
                 "pixel1": self.pixel1,
@@ -136,7 +140,10 @@ class Detector(object):
 
     def getFit2D(self):
         """
-        ???
+        Helper method to serialize the description of a detector using the Fit2d units
+         
+        @return: representation of the detector easy to serialize 
+        @rtype: dict 
         """
         return {"pixelX": self.pixel2 * 1e6,
                 "pixelY": self.pixel1 * 1e6,
@@ -144,9 +151,10 @@ class Detector(object):
 
     def setPyFAI(self, **kwarg):
         """
-        ???
-
-        jerome peux-tu decrire les keywords possibles ???
+        Twin method of getPyFAI: setup a detector instance according to a description 
+          
+        @param kwarg: dictionary containing detector, pixel1, pixel2 and splineFile
+        
         """
         if "detector" in kwarg:
             self = detector_factory(kwarg["detector"])
@@ -158,9 +166,10 @@ class Detector(object):
 
     def setFit2D(self, **kwarg):
         """
-        ???
-
-        jerome peux-tu decrire les keywords possibles ???
+        Twin method of getFit2D: setup a detector instance according to a description 
+          
+        @param kwarg: dictionary containing pixel1, pixel2 and splineFile
+        
         """
         for kw, val in kwarg.items():
             if kw == "pixelX":
@@ -176,9 +185,9 @@ class Detector(object):
         and in meter of a couple of coordinates.
         The half pixel offset is taken into account here !!!
 
-        @param d1: the Y pixel positions
+        @param d1: the Y pixel positions (slow dimension)
         @type d1: ndarray (1D or 2D)
-        @param d2: the X pixel positions
+        @param d2: the X pixel positions (fast dimension)
         @type d2: ndarray (1D or 2D)
 
         @return: position in meter of the center of each pixels.
@@ -359,7 +368,7 @@ class Xpad_flat(Detector):
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
-            (self.name, self.pixel1, self.pixel2)
+                (self.name, self.pixel1, self.pixel2)
 
     def calc_mask(self):
         """
@@ -388,16 +397,17 @@ class Xpad_flat(Detector):
         and in meter of a couple of coordinates.
         The half pixel offset is taken into account here !!!
 
-        @param d1: the Y pixel positions
+        @param d1: the Y pixel positions (slow dimension)
         @type d1: ndarray (1D or 2D)
-        @param d2: the X pixel positions
+        @param d2: the X pixel positions (fast dimension)
         @type d2: ndarray (1D or 2D)
 
-        @return: 2-arrays of same shape as d1 & d2 with the position in meter
+        @return: position in meter of the center of each pixels.
         @rtype: ndarray
 
         d1 and d2 must have the same shape, returned array will have
         the same shape.
+
         """
         if (d1 is None):
             c1 = numpy.arange(self.max_shape[0])
