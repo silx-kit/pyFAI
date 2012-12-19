@@ -21,15 +21,26 @@ class AIWidget(QtGui.QWidget):
         self.ai=None
         QtGui.QWidget.__init__(self)
         uic.loadUi('integration.ui', self)
+        self.all_detectors = pyFAI.detectors.ALL_DETECTORS.keys() + ["detector"]
+        self.all_detectors.sort()
+        self.detector.addItems([i.capitalize() for i in self.all_detectors])
+        self.detector.setCurrentIndex(self.all_detectors.index("detector"))
         # Connect up the buttons.
 #         self.connect(self.ui.okButton, QtCore.SIGNAL("clicked()"),
 #                      self, QtCore.SLOT("accept()"))
 #         self.connect(self.ui.cancelButton, QtCore.SIGNAL("clicked()"),
 #                      self, QtCore.SLOT("reject()"))
         self.connect(self.file_poni, QtCore.SIGNAL("clicked()"), self.select_ponifile)
+
     def select_ponifile(self):
         ponifile = QtGui.QFileDialog.getOpenFileName()
         self.poni.setText(ponifile)
+        self.set_ponifile(ponifile)
+
+    def set_ponifile(self, ponifile=None):
+        if ponifile is None:
+            ponifile = self.poni.getText()
+            print ponifile
         try:
             self.ai = pyFAI.load(ponifile)
         except:
@@ -43,7 +54,13 @@ class AIWidget(QtGui.QWidget):
         self.rot1.setText(str(self.ai.rot1))
         self.rot2.setText(str(self.ai.rot2))
         self.rot3.setText(str(self.ai.rot3))
-        self.splinefile.setText(self.ai.detector.splineFile)
+        self.splinefile.setText(self.ai.detector.splineFile or "")
+        name = self.ai.detector.name.lower()
+        if name in self.all_detectors:
+            self.detector.setCurrentIndex(self.all_detectors.index(name))
+        else:
+            self.detector.setCurrentIndex(self.all_detectors.index("detector"))
+
 if __name__=="__main__":
     app = QtGui.QApplication(sys.argv)
     window = AIWidget()
