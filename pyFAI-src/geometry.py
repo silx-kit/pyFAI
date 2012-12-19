@@ -50,7 +50,7 @@ try:
     from pyFAI.fastcrc import crc32
 except ImportError:
     from zlib import crc32
-from .unit import UnitEnum
+from . import units
 
 
 class Geometry(object):
@@ -1110,7 +1110,7 @@ class Geometry(object):
         self._polarization_factor = 0
 
     def calcfrom1d(self, tth, I, shape=None, mask=None,
-                   dim1_unit=UnitEnum.TTH, correctSolidAngle=True):
+                   dim1_unit=units.TTH, correctSolidAngle=True):
         """
         Computes a 2D image from a 1D integrated profile
 
@@ -1118,14 +1118,15 @@ class Geometry(object):
         @param I: scattering intensity
         @return 2D image reconstructed
         """
-        if dim1_unit == UnitEnum.TTH:
+        dim1_unit = units.to_unit(dim1_unit)
+        if dim1_unit == units.TTH:
             tth = numpy.radians(tth)
             if shape is None:
                 ttha = self._ttha
                 shape = self._ttha.shape
             else:
                 ttha = self.twoThetaArray(shape)
-        elif dim1_unit == UnitEnum.Q:
+        elif dim1_unit == units.Q:
             if shape is None:
                 ttha = self._qa
                 shape = ttha.shape

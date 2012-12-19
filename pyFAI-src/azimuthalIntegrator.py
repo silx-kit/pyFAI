@@ -33,6 +33,7 @@ __docformat__ = 'restructuredtext'
 
 import os
 import logging
+logger = logging.getLogger("pyFAI.azimuthalIntegrator")
 import tempfile
 import threading
 import gc
@@ -41,8 +42,8 @@ import numpy
 from numpy import rad2deg, deg2rad, pi
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 from .geometry import Geometry
+from . import units
 import fabio
-logger = logging.getLogger("pyFAI.azimuthalIntegrator")
 error = None
 try:
     from . import ocl_azim  # IGNORE:F0401
@@ -93,8 +94,8 @@ except ImportError as error:
     logger.error("Unable to import pyFAI.histogram"
                  " Cython OpenMP histogram implementation: %s" % error)
     histogram = None
-del error
-from .unit import UnitEnum
+del error #just to see how clever pylint is ! 
+
 
 class AzimuthalIntegrator(Geometry):
     """
@@ -858,7 +859,7 @@ class AzimuthalIntegrator(Geometry):
 
     def setup_LUT(self, shape, nbPt, mask=None,
                   pos0_range=None, pos1_range=None, mask_checksum=None,
-                  unit=UnitEnum.TTH):
+                  unit=units.TTH):
         """
         Prepare a look-up-table
 
@@ -875,7 +876,7 @@ class AzimuthalIntegrator(Geometry):
         @param mask_checksum: checksum of the mask buffer
         @type mask_checksum: int (or anything else ...)
         @param unit: use to propagate the LUT object for further checkings
-        @type unit: pyFAI.unit.UnitEnum
+        @type unit: pyFAI.units.Enum
 
         This method is called when a look-up table needs to be set-up.
         The *shape* parameter, correspond to the shape of the original
@@ -1843,7 +1844,7 @@ class AzimuthalIntegrator(Geometry):
         return I, bins2Th, binsChi
     xrpd2 = xrpd2_splitBBox
 
-    def array_from_unit(self, shape, typ="center", unit=UnitEnum.TTH):
+    def array_from_unit(self, shape, typ="center", unit=units.TTH):
         """
         Generate an array of position in different dimentions (R, Q,
         2Theta)
@@ -1853,7 +1854,7 @@ class AzimuthalIntegrator(Geometry):
         @param typ: "center", "corner" or "delta"
         @type typ: str
         @param unit: can be Q, TTH, R for now
-        @type unit: pyFAI.unit.UnitEnum
+        @type unit: pyFAI.units.Enum
 
         @return: R, Q or 2Theta array depending on unit
         @rtype: ndarray
@@ -1862,35 +1863,8 @@ class AzimuthalIntegrator(Geometry):
             logger.warning("Unknown type of array %s,"
                            " defaulting to 'center'" % typ)
             typ = "center"
-        if unit == UnitEnum.Q:
-            if typ == "center":
-                out = self.qArray(shape)
-            elif typ == "corner":
-                out = self.cornerQArray(shape)
-            else:  # delta
-                out = self.deltaQ(shape)
-        elif unit == UnitEnum.TTH:
-            if typ == "center":
-                out = self.twoThetaArray(shape)
-            elif typ == "corner":
-                out = self.cornerArray(shape)
-            else:  # delta
-                out = self.delta2Theta(shape)
-        elif unit == UnitEnum.R:
-            if typ == "center":
-                out = self.rArray(shape)
-            elif typ == "corner":
-                out = self.cornerRArray(shape)
-            else:  # delta
-                out = self.deltaR(shape)
-        else:
-            logger.warning("Unknown unit %s, defaulting to 2theta" % unit)
-            if typ == "center":
-                out = self.twoThetaArray(shape)
-            elif typ == "corner":
-                out = self.cornerArray(shape)
-            else:  # delta
-                out = self.delta2Theta(shape)
+        unit = units.to_unit(unit)
+        out = Geometry.__dict__[unit[typ]](self, shape)
         return out
 
     def integrate1d(self, data, nbPt, filename=None,
@@ -1899,7 +1873,7 @@ class AzimuthalIntegrator(Geometry):
                     radial_range=None, azimuth_range=None,
                     mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=0, dark=None, flat=None,
-                    method="lut", unit=UnitEnum.Q, safe=True):
+                    method="lut", unit=units.Q, safe=True):
         """
         Calculate the azimuthal integrated Saxs curve in q(nm^-1) by
         default
@@ -1937,7 +1911,7 @@ class AzimuthalIntegrator(Geometry):
         @param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "lut_ocl" if you want to go on GPU, ....
         @type method: str
         @param unit: can be Q, TTh, R for now
-        @type unit: pyFAI.unit.UnitEnum
+        @type unit: pyFAI.units.Enum
         @param safe: Do some extra checks to ensure LUT is still valid. False is faster.
         @type safe: bool
 
@@ -1945,34 +1919,14 @@ class AzimuthalIntegrator(Geometry):
         @rtype: 3-tuple of ndarrays
         """
         method = method.lower()
+        unit = units.to_unit(unit)
         pos0_scale = 1.0  # nota we need anyway to make a copy !
         if mask is None:
             mask = self.mask
         shape = data.shape
-        if unit == UnitEnum.Q:
-            pos0_scale = 1.0
-        elif unit == UnitEnum.Q_A:
-            if radial_range:
-                radial_range = tuple([0.1 * i for i in radial_range])
-            pos0_scale = 10.0
-        elif unit == UnitEnum.TTH_RAD:
-            pos0_scale = 1.0
-        elif unit == UnitEnum.TTH:
-            if radial_range:
-                radial_range = \
-                    tuple([deg2rad(i) for i in radial_range])
-            pos0_scale = 180.0 / pi
-        elif unit == UnitEnum.R:
-            if radial_range:
-                radial_range = tuple([0.001 * i for i in radial_range])
-            pos0_scale = 1000.0  # convert m->mm
-        else:
-            logger.warning("Unknown unit %s,"
-                           " defaulting to 2theta (deg)" % unit)
-            unit = UnitEnum.TTH
-            if radial_range:
-                radial_range = tuple([numpy.deg2rad(i) for i in radial_range])
-            pos0_scale = 180.0 / pi
+        pos0_scale = unit.scale
+        if radial_range:
+            radial_range = tuple([i / pos0_scale for i in radial_range])
         if variance is not None:
             assert variance.size == data.size
         elif error_model:
@@ -2298,7 +2252,7 @@ class AzimuthalIntegrator(Geometry):
                     error_model=None, radial_range=None, azimuth_range=None,
                     mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=0, dark=None, flat=None,
-                    method="bbox", unit=UnitEnum.Q, safe=True):
+                    method="bbox", unit=units.Q, safe=True):
         """
         Calculate the azimuthal regrouped 2d image in q(nm^-1)/deg by default
 
@@ -2337,7 +2291,7 @@ class AzimuthalIntegrator(Geometry):
         @param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "lut_ocl" if you want to go on GPU, ....
         @type method: str
         @param unit: can be Q, TTH, R for now
-        @type unit: pyFAI.unit.UnitEnum
+        @type unit: pyFAI.units.Enum
         @param safe: Do some extra checks to ensure LUT is still valid. False is faster.
         @type safe: bool
 
@@ -2346,31 +2300,13 @@ class AzimuthalIntegrator(Geometry):
         """
         method = method.lower()
         nbPt = (nbPt_rad, nbPt_azim)
-        pos0_scale = 1.0  # nota we need anyway t
+        unit = units.to_unit(unit)
+        pos0_scale = unit.scale
         if mask is None:
             mask = self.mask
         shape = data.shape
-        if unit == UnitEnum.Q:
-            pos0_scale = 1.0
-        elif unit == UnitEnum.Q_A:
-            if radial_range:
-                radial_range = tuple([i / 10.0 for i in radial_range])
-            pos0_scale = 10.0
-        elif unit == UnitEnum.TTH_RAD:
-            pos0_scale = 1.0
-        elif unit == UnitEnum.TTH:
-            if radial_range:
-                radial_range = tuple([pi * i / 180.0 for i in radial_range])
-            pos0_scale = 180.0 / pi
-        elif unit == UnitEnum.R:
-            pos0_scale = 0.001  # convert m->mm
-        else:
-            logger.warning("Unknown unit %s,"
-                           " defaulting to 2theta (deg)" % unit)
-            unit = UnitEnum.TTH
-            if radial_range:
-                radial_range = tuple([numpy.deg2rad(i) for i in radial_range])
-            pos0_scale = 180.0 / pi
+        if radial_range:
+            radial_range = tuple([i / pos0_scale  for i in radial_range])
         if variance is not None:
             assert variance.size == data.size
         elif error_model:
@@ -2655,8 +2591,7 @@ class AzimuthalIntegrator(Geometry):
 #                sigma = numpy.sqrt(var1d) / count
             I = val / count
         # I know I make copies ....
-        if pos0_scale:
-            bins_rad = bins_rad * pos0_scale
+        bins_rad = bins_rad * pos0_scale
         bins_azim = bins_azim * 180.0 / pi
         if filename:
             self.save2D(filename, bins_rad, I, sigma, unit)
@@ -2670,7 +2605,7 @@ class AzimuthalIntegrator(Geometry):
              error_model=None, qRange=None, chiRange=None,
              mask=None, dummy=None, delta_dummy=None,
              polarization_factor=0, dark=None, flat=None,
-             method="bbox", unit=UnitEnum.Q):
+             method="bbox", unit=units.Q):
         """
         Calculate the azimuthal integrated Saxs curve in q in nm^-1.
 
@@ -2764,7 +2699,8 @@ class AzimuthalIntegrator(Geometry):
             self.header = os.linesep.join([hdr + " " + i for i in headerLst])
         return self.header
 
-    def save1D(self, filename, dim1, I, error=None, dim1_unit=UnitEnum.TTH):
+    def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH):
+        dim1_unit = units.to_unit(dim1_unit)
         if filename:
             with open(filename, "w") as f:
                 f.write(self.makeHeaders())
@@ -2778,7 +2714,8 @@ class AzimuthalIntegrator(Geometry):
                     f.write(os.linesep.join(["%14.6e  %14.6e %14.6e %s" % (t, i, s, os.linesep) for t, i, s in zip(dim1, I, error)]))
                 f.write(os.linesep)
 
-    def save2D(self, filename, I, dim1, dim2, dim1_unit=UnitEnum.TTH):
+    def save2D(self, filename, I, dim1, dim2, dim1_unit=units.TTH):
+        dim1_unit = units.to_unit(dim1_unit)
         header = {"dist": str(self._dist),
                   "poni1": str(self._poni1),
                   "poni2": str(self._poni2),
