@@ -878,22 +878,23 @@ class AzimuthalIntegrator(Geometry):
         @type unit: str
 
         This method is called when a look-up table needs to be set-up.
-        The *shape* parameter, correspond to the shape of the
-        original datatset. It is possible to customize the number of
-        point of the output histogram with the *nbPt* parameter which
-        can be either an integer for an 1D integration or a 2-tuple of
-        integer in case of a 2D integration.
-        The LUT will have a different shape: (nbPt, lut_max_size), 
-        the later parameter being calculated during the
-        instanciation of the splitBBoxLUT class.
+        The *shape* parameter, correspond to the shape of the original
+        datatset. It is possible to customize the number of point of
+        the output histogram with the *nbPt* parameter which can be
+        either an integer for an 1D integration or a 2-tuple of
+        integer in case of a 2D integration. The LUT will have a
+        different shape: (nbPt, lut_max_size), the later parameter
+        being calculated during the instanciation of the splitBBoxLUT
+        class.
         
         It is possible to prepare the LUT with a predefine
-        *mask*. This operation can speedup the computation of the later
-        integrations. Instead of applying the patch on the dataset, it
-        is taken into account during the histogram computation. If
-        provided the *mask_checksum* prevent the re-calculation of the
-        mask. When the mask changes, its checksum is used to reset (or not)
-        the LUT (which is a very time consuming operation !) 
+        *mask*. This operation can speedup the computation of the
+        later integrations. Instead of applying the patch on the
+        dataset, it is taken into account during the histogram
+        computation. If provided the *mask_checksum* prevent the
+        re-calculation of the mask. When the mask changes, its
+        checksum is used to reset (or not) the LUT (which is a very
+        time consuming operation !)
 
         It is also possible to restrain the range of the 1D or 2D
         pattern with the *pos1_range* and *pos2_range*.
@@ -1412,11 +1413,11 @@ class AzimuthalIntegrator(Geometry):
         *tthRange* parameter. If not given the maximum available range
         is used. Indeed pixel outside this range are ignored.
 
-        Each pixel of the *data* image has a 2theta and a chi coordinate.
-        So it is possible to restrain on any of those ranges ; you just 
-        need to set the range with the  *tthRange* or thee 
-        *chiRange* parameter. like the *tthRange* parameter, value
-        outside this range are ignored.
+        Each pixel of the *data* image has a 2theta and a chi
+        coordinate. So it is possible to restrain on any of those
+        ranges ; you just need to set the range with the *tthRange* or
+        thee *chiRange* parameter. like the *tthRange* parameter,
+        value outside this range are ignored.
 
         Sometimes one needs to mask a few pixels (beamstop, hot
         pixels, ...), to ignore a few of them you just need to provide
@@ -1426,11 +1427,12 @@ class AzimuthalIntegrator(Geometry):
         idential to the data shape (size of the array _must_ be the
         same).
 
-        Masking can also be achieved by setting masked pixels to an 
-        impossible value (-1) and calling this value the "dummy value".
-        Some Pilatus detectors are setting non existing pixel to -1
-        and dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so
-        that any value between -3.5 and -0.5 are considered as bad.
+        Masking can also be achieved by setting masked pixels to an
+        impossible value (-1) and calling this value the "dummy
+        value".  Some Pilatus detectors are setting non existing pixel
+        to -1 and dead pixels to -2. Then use dummy=-2 &
+        delta_dummy=1.5 so that any value between -3.5 and -0.5 are
+        considered as bad.
         """
         mask = self.makeMask(data, mask, dummy, delta_dummy)
         tth = self.twoThetaArray(data.shape)[mask]
@@ -1498,6 +1500,41 @@ class AzimuthalIntegrator(Geometry):
 
         @return: azimuthaly regrouped data, 2theta pos and chipos
         @rtype: 3-tuple of ndarrays
+
+        This method convert the *data* image from the pixel
+        coordinates to the 2theta, chi coordinates. This is simular to
+        a rectangular to polar conversion. The number of point of the
+        new image is given by *nbPt2Th* and *nbPtChi*. If you give a
+        *filename*, the new image is also saved as an edf file.
+
+        It is possible to correct the 2theta/chi pattern using the
+        *correctSolidAngle* parameter. The weight of a pixel is
+        ponderate by its solid angle.
+
+        The 2theta and range of the new image can be set using the
+        *tthRange* parameter. If not given the maximum available range
+        is used. Indeed pixel outside this range are ignored.
+
+        Each pixel of the *data* image has a 2theta and a chi
+        coordinate. So it is possible to restrain on any of those
+        ranges ; you just need to set the range with the *tthRange* or
+        thee *chiRange* parameter. like the *tthRange* parameter,
+        value outside this range are ignored.
+
+        Sometimes one needs to mask a few pixels (beamstop, hot
+        pixels, ...), to ignore a few of them you just need to provide
+        a *mask* array with a value of 1 for those pixels. To take a
+        pixel into account you just need to set a value of 0 in the
+        mask array. Indeed the shape of the mask array should be
+        idential to the data shape (size of the array _must_ be the
+        same).
+
+        Masking can also be achieved by setting masked pixels to an
+        impossible value (-1) and calling this value the "dummy
+        value". Some Pilatus detectors are setting non existing pixel
+        to -1 and dead pixels to -2. Then use dummy=-2 &
+        delta_dummy=1.5 so that any value between -3.5 and -0.5 are
+        considered as bad.
         """
 
         if histogram is None:
@@ -1575,6 +1612,48 @@ class AzimuthalIntegrator(Geometry):
 
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
         @rtype: 3-tuple of ndarrays
+
+        This method convert the *data* image from the pixel
+        coordinates to the 2theta, chi coordinates. This is similar to
+        a rectangular to polar conversion. The number of point of the
+        new image is given by *nbPt2Th* and *nbPtChi*. If you give a
+        *filename*, the new image is also saved as an edf file.
+
+        It is possible to correct the 2theta/chi pattern using the
+        *correctSolidAngle* parameter. The weight of a pixel is
+        ponderate by its solid angle.
+
+        The 2theta and range of the new image can be set using the
+        *tthRange* parameter. If not given the maximum available range
+        is used. Indeed pixel outside this range are ignored.
+
+        Each pixel of the *data* image has a 2theta and a chi
+        coordinate. So it is possible to restrain on any of those
+        ranges ; you just need to set the range with the *tthRange* or
+        thee *chiRange* parameter. like the *tthRange* parameter,
+        value outside this range are ignored.
+
+        Sometimes one needs to mask a few pixels (beamstop, hot
+        pixels, ...), to ignore a few of them you just need to provide
+        a *mask* array with a value of 1 for those pixels. To take a
+        pixel into account you just need to set a value of 0 in the
+        mask array. Indeed the shape of the mask array should be
+        idential to the data shape (size of the array _must_ be the
+        same).
+
+        Masking can also be achieved by setting masked pixels to an
+        impossible value (-1) and calling this value the "dummy
+        value". Some Pilatus detectors are setting non existing pixel
+        to -1 and dead pixels to -2. Then use dummy=-2 &
+        delta_dummy=1.5 so that any value between -3.5 and -0.5 are
+        considered as bad.
+
+        the polarisation correction can be taken into account with the
+        *polarization_factor* parameter. Set it between [-1, 1], to
+        correct your data. If set to 0 there is no correction at all.
+
+        The *dark* and the *flat* can be provided to correct the data
+        before computing the radial integration.
         """
         if splitBBox is None:
             logger.warning("Unable to use splitBBox,"
@@ -1671,6 +1750,48 @@ class AzimuthalIntegrator(Geometry):
 
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
         @rtype: 3-tuple of ndarrays
+
+        This method convert the *data* image from the pixel
+        coordinates to the 2theta, chi coordinates. This is similar to
+        a rectangular to polar conversion. The number of point of the
+        new image is given by *nbPt2Th* and *nbPtChi*. If you give a
+        *filename*, the new image is also saved as an edf file.
+
+        It is possible to correct the 2theta/chi pattern using the
+        *correctSolidAngle* parameter. The weight of a pixel is
+        ponderate by its solid angle.
+
+        The 2theta and range of the new image can be set using the
+        *tthRange* parameter. If not given the maximum available range
+        is used. Indeed pixel outside this range are ignored.
+
+        Each pixel of the *data* image has a 2theta and a chi
+        coordinate. So it is possible to restrain on any of those
+        ranges ; you just need to set the range with the *tthRange* or
+        thee *chiRange* parameter. like the *tthRange* parameter,
+        value outside this range are ignored.
+
+        Sometimes one needs to mask a few pixels (beamstop, hot
+        pixels, ...), to ignore a few of them you just need to provide
+        a *mask* array with a value of 1 for those pixels. To take a
+        pixel into account you just need to set a value of 0 in the
+        mask array. Indeed the shape of the mask array should be
+        idential to the data shape (size of the array _must_ be the
+        same).
+
+        Masking can also be achieved by setting masked pixels to an
+        impossible value (-1) and calling this value the "dummy
+        value". Some Pilatus detectors are setting non existing pixel
+        to -1 and dead pixels to -2. Then use dummy=-2 &
+        delta_dummy=1.5 so that any value between -3.5 and -0.5 are
+        considered as bad.
+
+        the polarisation correction can be taken into account with the
+        *polarization_factor* parameter. Set it between [-1, 1], to
+        correct your data. If set to 0 there is no correction at all.
+
+        The *dark* and the *flat* can be provided to correct the data
+        before computing the radial integration.
         """
         if splitPixel is None:
             logger.warning("splitPixel is not available,"
