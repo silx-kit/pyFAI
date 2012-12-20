@@ -18,7 +18,7 @@ except ImportError:
 window = None
 class AIWidget(QtGui.QWidget):
     """
-
+    TODO: add progress bar at bottom & update when proceeding
     """
     def __init__(self, input_data=None):
         self.ai = None
@@ -31,10 +31,10 @@ class AIWidget(QtGui.QWidget):
         self.detector.setCurrentIndex(self.all_detectors.index("detector"))
         self.connect(self.file_poni, QtCore.SIGNAL("clicked()"), self.select_ponifile)
         self.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.dump)
-        saveButton = self.buttonBox.button(QtGui.QDialogButtonBox.Save)
-        self.connect(saveButton, QtCore.SIGNAL("clicked()"), self.dump)
-        resetButton = self.buttonBox.button(QtGui.QDialogButtonBox.Reset)
-        self.connect(resetButton, QtCore.SIGNAL("clicked()"), self.restore)
+#        saveButton = self.buttonBox.button(QtGui.QDialogButtonBox.Save)
+#        self.connect(saveButton, QtCore.SIGNAL("clicked()"), self.dump)
+#        resetButton = self.buttonBox.button(QtGui.QDialogButtonBox.Reset)
+#        self.connect(resetButton, QtCore.SIGNAL("clicked()"), self.restore)
         self.connect(self.buttonBox, QtCore.SIGNAL("helpRequested()"), self.help)
         self.restore()
 
@@ -105,6 +105,7 @@ class AIWidget(QtGui.QWidget):
         print("Restore")
         if not os.path.isfile(filename):
             logger.error("No such file: %s" % filename)
+            return
         data = json.load(open(filename))
         setup_data = {  "poni": self.poni.setText,
 #        "detector": self.all_detectors[self.detector.getCurrentIndex()],
