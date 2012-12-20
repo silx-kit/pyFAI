@@ -100,6 +100,7 @@ class Calibration(object):
         self.reconstruct = False
         self.mask = None
         self.max_iter = 1000
+        self.maximum_filter = False
 
     def __repr__(self):
         lst = ["Calibration object:",
@@ -148,6 +149,10 @@ decrease the value if arcs are mixed together.""", default=None)
                       help="file containing the mask (for image reconstruction)", default=None)
         parser.add_option("-n", "--npt", dest="npt",
                       help="file with datapoints saved", default=None)
+        parser.add_option("--max", dest="maximum_filter",
+                      help="perform a maximum filter instead of a mean filter when multiple input files are provided",
+                       default=False, action="store_true")
+
         (options, args) = parser.parse_args()
 
         # Analyse aruments and options
@@ -188,6 +193,7 @@ decrease the value if arcs are mixed together.""", default=None)
                 logger.error("Unknown spline file %s" % (options.spline))
         if options.pixel is not None:
             self.get_pixelSize(options.pixel)
+        self.maximum_filter = options.maximum_filter
         self.dataFiles = [f for f in args if os.path.isfile(f)]
         if not self.dataFiles:
             raise RuntimeError("Please provide some calibration images ... if you want to analyze them. Try also the --help option to see all options!")
@@ -231,7 +237,7 @@ decrease the value if arcs are mixed together.""", default=None)
         """
         if len(self.dataFiles) > 1 or self.cutBackground or self.darkFiles or self.flatFiles:
             self.outfile = averageImages(self.dataFiles, self.outfile, minimum=self.cutBackground,
-                                      darks=self.darkFiles, flats=self.flatFiles)
+                                      darks=self.darkFiles, flats=self.flatFiles, max_filter=self.maximum_filter)
         else:
             self.outfile = self.dataFiles[0]
         self.basename = os.path.splitext(self.outfile)[0]
