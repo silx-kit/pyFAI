@@ -18,38 +18,34 @@ except ImportError:
 window = None
 class AIWidget(QtGui.QWidget):
     """
-    TODO: 
-    - dump & restore method to json
-    
+    TODO: add progress bar at bottom & update when proceeding
     """
-    def __init__(self):
+    def __init__(self, input_data=None):
         self.ai = None
+        self.input_data = input_data
         QtGui.QWidget.__init__(self)
         uic.loadUi('integration.ui', self)
         self.all_detectors = pyFAI.detectors.ALL_DETECTORS.keys() + ["detector"]
         self.all_detectors.sort()
         self.detector.addItems([i.capitalize() for i in self.all_detectors])
         self.detector.setCurrentIndex(self.all_detectors.index("detector"))
-        # Connect up the buttons.
-#         self.connect(self.ui.okButton, QtCore.SIGNAL("clicked()"),
-#                      self, QtCore.SLOT("accept()"))
-#         self.connect(self.ui.cancelButton, QtCore.SIGNAL("clicked()"),
-#                      self, QtCore.SLOT("reject()"))
         self.connect(self.file_poni, QtCore.SIGNAL("clicked()"), self.select_ponifile)
         self.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.dump)
-        saveButton = self.buttonBox.button(QtGui.QDialogButtonBox.Save)
-        self.connect(saveButton, QtCore.SIGNAL("clicked()"), self.dump)
-        resetButton = self.buttonBox.button(QtGui.QDialogButtonBox.Reset)
-        self.connect(resetButton, QtCore.SIGNAL("clicked()"), self.restore)
+#        saveButton = self.buttonBox.button(QtGui.QDialogButtonBox.Save)
+#        self.connect(saveButton, QtCore.SIGNAL("clicked()"), self.dump)
+#        resetButton = self.buttonBox.button(QtGui.QDialogButtonBox.Reset)
+#        self.connect(resetButton, QtCore.SIGNAL("clicked()"), self.restore)
         self.connect(self.buttonBox, QtCore.SIGNAL("helpRequested()"), self.help)
         self.restore()
 
     def proceed(self):
         self.dump()
         print("Let's work a bit")
+        self.die()
 
     def die(self):
         print("bye bye")
+        self.destroy()
 
     def help(self):
         print("Please, help")
@@ -57,10 +53,10 @@ class AIWidget(QtGui.QWidget):
     def dump(self, filename=".azimint.json"):
         """
         Dump the status of the current widget to a file in JSON
-        
+
         @param filename: path where to save the config
         @type filename: str
-        
+
         """
         print "Dump!"
         to_save = {"poni": str(self.poni.text()),
@@ -101,14 +97,15 @@ class AIWidget(QtGui.QWidget):
     def restore(self, filename=".azimint.json"):
         """
         restore from JSON file the status of the current widget
-        
+
         @param filename: path where the config was saved
         @type filename: str
-        
+
         """
         print("Restore")
         if not os.path.isfile(filename):
             logger.error("No such file: %s" % filename)
+            return
         data = json.load(open(filename))
         setup_data = {  "poni": self.poni.setText,
 #        "detector": self.all_detectors[self.detector.getCurrentIndex()],
