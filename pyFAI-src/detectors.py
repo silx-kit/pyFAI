@@ -430,7 +430,6 @@ class Xpad_flat(Detector):
         p2 = self.pixel2 * (0.5 + c2)
         return p1, p2
 
-# I prefer not allowing the instantiation of generic detectors
 ALL_DETECTORS = {"pilatus1m": Pilatus1M,
                  "pilatus2m": Pilatus2M,
                  "pilatus6m": Pilatus6M,
@@ -439,7 +438,8 @@ ALL_DETECTORS = {"pilatus1m": Pilatus1M,
                  "frelon": FReLoN,
                  "xpad": Xpad_flat,
                  "xpad_flat": Xpad_flat,
-                 "basler": Basler}
+                 "basler": Basler,
+                 "detector": Detector}
 
 
 def detector_factory(name):

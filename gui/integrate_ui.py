@@ -43,6 +43,16 @@ class AIWidget(QtGui.QWidget):
     def proceed(self):
         self.dump()
         print("Let's work a bit")
+        self.set_ai()
+
+
+
+#                   "polarization_factor":str(self.val_dummy.text()).strip(),
+#                   "rad_pt":str(self.rad_pt.text()).strip(),
+#                   "do_2D":bool(self.do_2D.isChecked()),
+#                   "azim_pt":str(self.rad_pt.text()).strip(),
+#                   }
+
         for i in range(100):
             self.progressBar.setValue(i)
             time.sleep(0.1)
@@ -199,7 +209,7 @@ class AIWidget(QtGui.QWidget):
 
     def set_ai(self):
         poni = str(self.poni.text()).strip()
-        detector = self.detector.currentText().lower().strip() or "detector"
+        detector = str(self.detector.currentText()).lower().strip() or "detector"
         self.ai.detector = pyFAI.detectors.detector_factory(detector)
 
         wavelength = str(self.wavelength.text()).strip()
@@ -227,8 +237,6 @@ class AIWidget(QtGui.QWidget):
         self.ai.rot3 = self._float("rot3", 0)
 
 #                   "do_dummy": bool(self.do_dummy.isChecked()),
-#                   "do_dark": bool(self.do_dark.isChecked()),
-#                   "do_flat": bool(self.do_flat.isChecked()),
 #                   "do_polarization":bool(self.do_polarization.isChecked()),
 #                   "val_dummy":str(self.val_dummy.text()).strip(),
 #                   "delta_dummy":str(self.delta_dummy.text()).strip(),
@@ -246,28 +254,22 @@ class AIWidget(QtGui.QWidget):
             d0 = fabio.open(dark_files[0]).data
             darks = numpy.zeros(d0.shape[0], d0.shape[1], len(dark_files), dtype=numpy.float32)
             for i, f in enumerate(dark_files):
-                dark[:, :, i] = fabio.open(f).data
-            self.ai.dark
+                darks[:, :, i] = fabio.open(f).data
+            self.ai.darkcurrent = darks.mean(axis= -1)
 
-        if mask_file and os.path.exists(mask_file):
-            try:
-                mask = fabio.open(mask_file).data
-            except Exception:
-                logger.error("Unable to load mask file %s" % maskfile)
-            else:
-                ai.mask = mask
+        flat_files = [i.strip() for i in str(self.val_dummy.text()).split(",")
+                      if os.path.isfile(i.strip())]
+        if flat_files:
+            d0 = fabio.open(flat_files[0]).data
+            flats = numpy.zeros(d0.shape[0], d0.shape[1], len(flat_files), dtype=numpy.float32)
+            for i, f in enumerate(flat_files):
+                flats[:, :, i] = fabio.open(f).data
+            self.ai.darkcurrent = flats.mean(axis= -1)
+#                   "do_dark": bool(self.do_dark.isChecked()),
+#                   "do_flat": bool(self.do_flat.isChecked()),
 
-
-
-
-#                   "dark_current":str(self.val_dummy.text()).strip(),
-#                   "flat_field":str(self.val_dummy.text()).strip(),
-#                   "polarization_factor":str(self.val_dummy.text()).strip(),
-#                   "rad_pt":str(self.rad_pt.text()).strip(),
-#                   "do_2D":bool(self.do_2D.isChecked()),
-#                   "azim_pt":str(self.rad_pt.text()).strip(),
-#                   }
         print self.ai
+
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
     window = AIWidget()
