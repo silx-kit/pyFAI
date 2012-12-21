@@ -87,6 +87,7 @@ class AIWidget(QtGui.QWidget):
                    "rot2":str(self.rot2.text()).strip(),
                    "rot3":str(self.rot3.text()).strip(),
                    "do_dummy": bool(self.do_dummy.isChecked()),
+                   "do_mask":  bool(self.do_mask.isChecked()),
                    "do_dark": bool(self.do_dark.isChecked()),
                    "do_flat": bool(self.do_flat.isChecked()),
                    "do_polarization":bool(self.do_polarization.isChecked()),
@@ -138,9 +139,10 @@ class AIWidget(QtGui.QWidget):
                         "do_dummy": self.do_dummy.setChecked,
                         "do_dark": self.do_dark.setChecked,
                         "do_flat": self.do_flat.setChecked,
-                        "do_polarization":self.do_polarization.setChecked,
-                        "val_dummy":self.val_dummy.setText,
-                        "delta_dummy":self.delta_dummy.setText,
+                        "do_polarization": self.do_polarization.setChecked,
+                        "val_dummy": self.val_dummy.setText,
+                        "delta_dummy": self.delta_dummy.setText,
+                        "do_mask":  self.do_mask.setChecked,
                         "mask_file":self.val_dummy.setText,
                         "dark_current":self.val_dummy.setText,
                         "flat_field":self.val_dummy.setText,
@@ -241,7 +243,7 @@ class AIWidget(QtGui.QWidget):
 #                   "val_dummy":str(self.val_dummy.text()).strip(),
 #                   "delta_dummy":str(self.delta_dummy.text()).strip(),
         mask_file = str(self.val_dummy.text()).strip()
-        if mask_file and os.path.exists(mask_file):
+        if mask_file and os.path.exists(mask_file) and bool(self.do_mask.isChecked()):
             try:
                 mask = fabio.open(mask_file).data
             except Exception:
@@ -250,7 +252,7 @@ class AIWidget(QtGui.QWidget):
                 self.ai.mask = mask
         dark_files = [i.strip() for i in str(self.val_dummy.text()).split(",")
                       if os.path.isfile(i.strip())]
-        if dark_files:
+        if dark_files and bool(self.do_dark.isChecked()):
             d0 = fabio.open(dark_files[0]).data
             darks = numpy.zeros(d0.shape[0], d0.shape[1], len(dark_files), dtype=numpy.float32)
             for i, f in enumerate(dark_files):
@@ -259,15 +261,12 @@ class AIWidget(QtGui.QWidget):
 
         flat_files = [i.strip() for i in str(self.val_dummy.text()).split(",")
                       if os.path.isfile(i.strip())]
-        if flat_files:
+        if flat_files and bool(self.do_flat.isChecked()):
             d0 = fabio.open(flat_files[0]).data
             flats = numpy.zeros(d0.shape[0], d0.shape[1], len(flat_files), dtype=numpy.float32)
             for i, f in enumerate(flat_files):
                 flats[:, :, i] = fabio.open(f).data
             self.ai.darkcurrent = flats.mean(axis= -1)
-#                   "do_dark": bool(self.do_dark.isChecked()),
-#                   "do_flat": bool(self.do_flat.isChecked()),
-
         print self.ai
 
 if __name__ == "__main__":
