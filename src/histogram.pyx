@@ -35,7 +35,7 @@ cimport numpy
 from libc.stdlib cimport free, calloc,malloc
 from libc.math cimport floor,fabs
 from openmp cimport omp_set_num_threads, omp_get_max_threads, omp_get_thread_num
-
+EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
 @cython.cdivision(True)
 @cython.boundscheck(False)
@@ -69,11 +69,13 @@ def histogram(numpy.ndarray pos not None, \
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype="float64")
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outMerge = numpy.zeros(bins, dtype="float64")
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outPos = numpy.zeros(bins, dtype="float64")
-    cdef double bin_edge_min = pos.min()
-    cdef double bin_edge_max = pos.max() * (1 + numpy.finfo(numpy.double).eps)
+    cdef double bin_edge_min, bin_edge_max
     if bin_range is not None:
         bin_edge_min = bin_range[0]
-        bin_edge_max = bin_range[1] * (1 + numpy.finfo(numpy.double).eps)
+        bin_edge_max = bin_range[1] * EPS32
+    else:
+        bin_edge_min = pos.min()
+        bin_edge_max = pos.max() * EPS32
     cdef double bin_width = (bin_edge_max - bin_edge_min) / (< double > (bins))
     cdef double inv_bin_width = (< double > (bins)) / (bin_edge_max - bin_edge_min)
     cdef double a = 0.0
@@ -204,24 +206,23 @@ def histogram2d(numpy.ndarray pos0 not None,
     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outData = numpy.zeros((bin0, bin1), dtype="float64")
     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outCount = numpy.zeros((bin0, bin1), dtype="float64")
     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outMerge = numpy.zeros((bin0, bin1), dtype="float64")
-    cdef numpy.ndarray[numpy.float64_t, ndim = 1] edges0 = numpy.zeros(bin0, dtype="float64")
-    cdef numpy.ndarray[numpy.float64_t, ndim = 1] edges1 = numpy.zeros(bin1, dtype="float64")
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] edges0, edges1
     cdef double min0 = pos0.min()
-    cdef double max0 = pos0.max()
+    cdef double max0 = pos0.max() * EPS32
     cdef double min1 = pos1.min()
-    cdef double max1 = pos1.max()
+    cdef double max1 = pos1.max() * EPS32
     cdef double idp0 = (< double > bin0) / (max0 - min0)
     cdef double idp1 = (< double > bin1) / (max1 - min1)
     cdef double dbin0 = 0.5, dbin1 = 0.5
     cdef double fbin0, fbin1, p0, p1, d, rest, delta0l, delta0r, delta1l, delta1r, aera
+    cdef double epsilon = 1e-10
+
+    edges0 = numpy.linspace(min0+(0.5/idp0),max0-(0.5/idp0),bin0)
+    edges1 = numpy.linspace(min1+(0.5/idp1),max1-(0.5/idp1),bin1)
     if nthread is not None:
         if isinstance(nthread, int) and (nthread > 0):
             omp_set_num_threads(< int > nthread)
     with nogil:
-        for i in prange(bin0):
-            edges0[i] = min0 + (0.5 +< double > i) / idp0
-        for i in prange(bin1):
-            edges1[i] = min1 + (0.5 +< double > i) / idp1
         for i in range(size):
             p0 = cpos0[i]
             p1 = cpos1[i]
@@ -316,7 +317,7 @@ def histogram2d(numpy.ndarray pos0 not None,
 
         for i in prange(bin0):
             for j in range(bin1):
-                if outCount[i, j] > 1e-10:
+                if outCount[i, j] > epsilon:
                     outMerge[i, j] += outData[i, j] / outCount[i, j]
                 else:
                     outMerge[i, j] += dummy

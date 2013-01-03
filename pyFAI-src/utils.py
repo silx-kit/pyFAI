@@ -165,7 +165,8 @@ def relabel(label, data, blured, max_size=None):
     return f(label)
 
 
-def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=None, darks=None, flats=None):
+def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=None,
+                   darks=None, flats=None, max_filter=False):
     """
     Takes a list of filenames and create an average frame discarding all saturated pixels.
 
@@ -176,6 +177,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
     @param maximum: maximum valid value
     @param darks: list of dark current images for subtraction
     @param flats: list of flat field images for division
+    @param max_filter: use a maximum filter instead of a mean filter
     """
     ld = len(listImages)
     sumImg = None
@@ -188,7 +190,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
         logger.debug("Intensity range for %s is %s --> %s", fn, ds.min(), ds.max())
         shape = ds.shape
         if sumImg is None:
-            sumImg = numpy.zeros((shape[0], shape[1]), dtype=numpy.float64)
+            sumImg = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
         if dark is None:
             dark = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
             if darks:
@@ -206,9 +208,15 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
                 flat[flats < 1] = 1.0
             else:
                 flat = numpy.ones((shape[0], shape[1]), dtype=numpy.float32)
-
-        sumImg += (removeSaturatedPixel(ds.astype(numpy.float32), threshold, minimum, maximum) - dark) / flat
-    datared = (sumImg / float(ld)).astype(numpy.float32)
+        correctedImg = (removeSaturatedPixel(ds.astype(numpy.float32), threshold, minimum, maximum) - dark) / flat
+        if max_filter:
+            sumImg = numpy.maximum(correctedImg, sumImg)
+        else:
+            sumImg += correctedImg
+    if max_filter:
+        datared = numpy.ascontiguousarray(sumImg, dtype=numpy.float32)
+    else:
+        datared = sumImg / numpy.float32(ld)
     if output is None:
         prefix = ""
         for ch in zip(*listImages):
@@ -222,7 +230,10 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
                 prefix += c
             else:
                 break
-        output = ("merge%02i-" % ld) + prefix + ".edf"
+        if max_filter:
+            output = ("maxfilt%02i-" % ld) + prefix + ".edf"
+        else:
+            output = ("meanfilt%02i-" % ld) + prefix + ".edf"
     logger.debug("Intensity range in merged dataset : %s --> %s", datared.min(), datared.max())
     fabio.edfimage.edfimage(data=datared,
                             header={"merged": ", ".join(listImages)}).write(output)

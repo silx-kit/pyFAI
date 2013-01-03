@@ -47,7 +47,9 @@ class Device(object):
     """
     Simple class that contains the structure of an OpenCL device
     """
-    def __init__(self, name=None, type=None, version=None, driver_version=None, extensions="", memory=None, available=None, cores=None):
+    def __init__(self, name=None, type=None, version=None, driver_version=None,
+                 extensions="", memory=None, available=None,
+                 cores=None, frequency=None):
         self.name = name
         self.type = type
         self.version = version
@@ -56,6 +58,7 @@ class Device(object):
         self.memory = memory
         self.available = available
         self.cores = cores
+        self.frequency = frequency
 
     def __repr__(self):
         return "%s" % self.name
@@ -96,7 +99,8 @@ class OpenCL(object):
                                 extensions += ' cl_khr_int64_base_atomics cl_khr_int64_extended_atomics'
                 devtype = pyopencl.device_type.to_string(device.type)
                 pydev = Device(device.name, devtype, device.version, device.driver_version, extensions,
-                               device.global_mem_size, bool(device.available), device.max_compute_units)
+                               device.global_mem_size, bool(device.available), device.max_compute_units,
+                               device.max_clock_frequency)
                 pypl.add_device(pydev)
             platforms.append(pypl)
         del platform, device, pypl, devtype, extensions, pydev
@@ -133,9 +137,9 @@ class OpenCL(object):
                                 return platformid, deviceid
                             else:
                                 if not best_found:
-                                    best_found = platformid, deviceid, device.cores
-                                elif best_found[2] < device.cores:
-                                    best_found = platformid, deviceid, device.cores
+                                    best_found = platformid, deviceid, device.cores * device.frequency
+                                elif best_found[2] < device.cores * device.frequency:
+                                    best_found = platformid, deviceid, device.cores * device.frequency
         if best_found:
             return  best_found[0], best_found[1]
 

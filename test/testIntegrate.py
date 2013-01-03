@@ -140,7 +140,7 @@ class TestIntegrate2D(unittest.TestCase):
                     logger.error(mesg)
                 else:
                     logger.info(mesg)
-                self.assertTrue(delta_pos_rad <= 0.01, mesg)
+                self.assertTrue(delta_pos_rad <= 0.2, mesg)
                 self.assertTrue(delta_pos_azim <= 0.2, mesg)
                 self.assertTrue(R <= self.Rmax, mesg)
     def test2th(self):

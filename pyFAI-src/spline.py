@@ -21,36 +21,50 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # #######################################################################################
 
-""" This is piece of software aims to manipulate spline files for
-geometric corrections of the 2D detectors  using cubic-spline"""
+""" 
+This is piece of software aims at manipulating spline files 
+describing for geometric corrections of the 2D detectors using cubic-spline.
+
+Mainly used at ESRF with FReLoN CCD camera.
+"""
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
-import os, time, sys
-import numpy, scipy, Image, fabio
+import os
+import time
+import sys
+import numpy
+import scipy
+import logging
 import scipy.optimize
 import scipy.interpolate
-import scipy.interpolate.fitpack
-
+from scipy.interpolate import fitpack
+logger = logging.getLogger("pyFAI.spline")
 
 
 class Spline:
-    """This class is a python representation of the spline file
-    Those file represent cubic splines for 2D detector distortions and makes heavy use of
-    fitpack (dierckx in netlib) --- A Python-C wrapper to FITPACK (by P. Dierckx).
-    FITPACK is a collection of FORTRAN programs for curve and surface fitting with splines and tensor product splines.
-    See
-    http://www.cs.kuleuven.ac.be/cwis/research/nalag/research/topics/fitpack.html
-    or
-    http://www.netlib.org/dierckx/index.html
+    """
+    This class is a python representation of the spline file
+
+    Those file represent cubic splines for 2D detector distortions and
+    makes heavy use of fitpack (dierckx in netlib) --- A Python-C
+    wrapper to FITPACK (by P. Dierckx). FITPACK is a collection of
+    FORTRAN programs for curve and surface fitting with splines and
+    tensor product splines.  See
+    _http://www.cs.kuleuven.ac.be/cwis/research/nalag/research/topics/fitpack.html
+    or _http://www.netlib.org/dierckx/index.html
     """
 
-
     def __init__(self, filename=None):
-        """this is the constructor of the Spline class, for"""
+        """
+        This is the constructor of the Spline class.
+        
+        @param filename: name of the ascii file containing the spline
+        @type filename: str
+        """
         self.splineOrder = 3  # This is the default, so cubic splines
         self.lenStrFloat = 14  # by default one float is 14 char in ascii
         self.xmin = None
@@ -71,103 +85,126 @@ class Spline:
         if filename is not None:
             self.read(filename)
 
-
-
     def __repr__(self):
-        txt = "Array size: x= %s - %s\ty= %s - %s" % (self.xmin, self.xmax, self.ymin, self.ymax)
-        txt += "\nPixel size = %s microns, Grid spacing = %s" % (self.pixelSize, self.grid)
-        txt += "\nX-Displacement spline %i X_knots, %i Y_knots and %i coef: should be (X_knot-1-X_order)*(Y_knot-1-Y_order)" \
-                    % (len(self.xSplineKnotsX), len(self.xSplineKnotsY), len(self.xSplineCoeff))
-        txt += "\nY-Displacement spline %i X_knots, %i Y_knots and %i coef: should be (X_knot-1-X_order)*(Y_knot-1-Y_order)" \
-                    % (len(self.ySplineKnotsX), len(self.ySplineKnotsY), len(self.ySplineCoeff))
-        return txt
+        lst = ["Array size: x= %s - %s\ty= %s - %s" % \
+            (self.xmin, self.xmax, self.ymin, self.ymax)]
+        lst.append("Pixel size = %s microns, Grid spacing = %s" % \
+            (self.pixelSize, self.grid))
+        lst.append("X-Displacement spline %i X_knots, %i Y_knots and %i coef: \
+                should be (X_knot-1-X_order)*(Y_knot-1-Y_order)" % (len(self.xSplineKnotsX),
+                                                                  len(self.xSplineKnotsY),
+                                                                  len(self.xSplineCoeff)))
+        lst.append("Y-Displacement spline %i X_knots, %i Y_knots and %i coef: "
+                "should be (X_knot-1-X_order)*(Y_knot-1-Y_order)" % (len(self.ySplineKnotsX),
+                                                                     len(self.ySplineKnotsY),
+                                                                     len(self.ySplineCoeff)))
+        return os.linesep.join(lst)
 
+    def zeros(self, xmin=0.0, ymin=0.0, xmax=2048.0, ymax=2048.0,
+              pixSize=None):
+        """
+        Defines a spline file with no ( zero ) displacement.
 
-    def zeros(self, xmin=0.0, ymin=0.0, xmax=2048.0, ymax=2048.0, pixSize=None):
-        """defines a spline file with no ( zero ) displacement.
-        @type xmin: float
-        @type xmax: float
-        @type ymax: float
-        @type ymin: float
         @param xmin: minimum coordinate in x, usually zero
+        @type xmin: float
         @param xmax: maximum coordinate in x (+1) usually 2048
+        @type xmax: float
         @param ymin: minimum coordinate in y, usually zero
+        @type ymin: float
         @param ymax: maximum coordinate y (+1) usually 2048
+        @type ymax: float
+        @param pixSize: size of the pixel
+        @type pixSize: float
         """
         self.xmin = xmin
         self.ymin = ymin
         self.xmax = xmax
         self.ymax = ymax
-        self.xDispArray = numpy.zeros((int(xmax - xmin + 1), int(ymax - ymin + 1)))
-        self.yDispArray = numpy.zeros((int(xmax - xmin + 1), int(ymax - ymin + 1)))
+        self.xDispArray = numpy.zeros((int(xmax - xmin + 1),
+                                       int(ymax - ymin + 1)))
+        self.yDispArray = numpy.zeros((int(xmax - xmin + 1),
+                                       int(ymax - ymin + 1)))
         if pixSize:
             self.pixelSize = pixSize
 
-
     def zeros_like(self, other):
-        """defines a spline file with no ( zero ) displacement with the same shape as the other one given.
-        @param other: another Spline
-        @type other: Spline
+        """
+        Defines a spline file with no ( zero ) displacement with the
+        same shape as the other one given.
+
+        @param other: another Spline instance
+        @type other: Spline instance
         """
         self.zeros(self, other.xmin, other.ymin, other.xmax, other.ymax)
 
-
     def read(self, filename):
-        """read an ascii spline file from file
-        @param filename: name of the file containing the cubic spline distortion file
-        @type filename: string
+        """
+        read an ascii spline file from file
+
+        @param filename: file containing the cubic spline distortion file
+        @type filename: str
         """
         if not os.path.isfile(filename):
             raise IOError("File does not exist %s" % filename)
         self.filename = filename
-        stringSpline = [ i.rstrip() for i in open (filename).readlines() ]
+        stringSpline = [i.rstrip() for i in open(filename)]
         indexLine = 0
         for oneLine in stringSpline:
             stripedLine = oneLine.strip().upper()
             if stripedLine == "VALID REGION":
-                data = stringSpline[ indexLine + 1 ]
+                data = stringSpline[indexLine + 1]
                 self.xmin = float(data[self.lenStrFloat * 0:self.lenStrFloat * 1])
                 self.ymin = float(data[self.lenStrFloat * 1:self.lenStrFloat * 2])
                 self.xmax = float(data[self.lenStrFloat * 2:self.lenStrFloat * 3])
                 self.ymax = float(data[self.lenStrFloat * 3:self.lenStrFloat * 4])
             elif stripedLine == "GRID SPACING, X-PIXEL SIZE, Y-PIXEL SIZE":
-                data = stringSpline[ indexLine + 1 ]
+                data = stringSpline[indexLine + 1]
                 self.grid = float(data[:self.lenStrFloat])
-                self.pixelSize = (float(data[self.lenStrFloat:self.lenStrFloat * 2]), float(data[self.lenStrFloat * 2:self.lenStrFloat * 3]))
+                self.pixelSize = \
+                    (float(data[self.lenStrFloat:self.lenStrFloat * 2]),
+                     float(data[self.lenStrFloat * 2:self.lenStrFloat * 3]))
             elif stripedLine == "X-DISTORTION":
-                data = stringSpline[ indexLine + 1 ]
-                [splineKnotsXLen, splineKnotsYLen] = [ int(i)  for i in data.split() ]
+                data = stringSpline[indexLine + 1]
+                [splineKnotsXLen, splineKnotsYLen] = \
+                    [int(i) for i in data.split()]
                 databloc = []
-                for line in  stringSpline[ indexLine + 2 : ]:
-                    if len(line) > 0 :
+                for line in stringSpline[indexLine + 2:]:
+                    if len(line) > 0:
                         for i in range(len(line) / self.lenStrFloat):
-                            databloc.append(float(line[i * self.lenStrFloat: (i + 1) * self.lenStrFloat ]))
+                            databloc.append(float(line[i * self.lenStrFloat: (i + 1) * self.lenStrFloat]))
                     else:
                         break
-                self.xSplineKnotsX = databloc[ : splineKnotsXLen ]
-                self.xSplineKnotsY = databloc[splineKnotsXLen: splineKnotsXLen + splineKnotsYLen]
-                self.xSplineCoeff = databloc[ splineKnotsXLen + splineKnotsYLen: ]
+                self.xSplineKnotsX = databloc[:splineKnotsXLen]
+                self.xSplineKnotsY = databloc[splineKnotsXLen:splineKnotsXLen + splineKnotsYLen]
+                self.xSplineCoeff = databloc[splineKnotsXLen + splineKnotsYLen:]
             elif stripedLine == "Y-DISTORTION":
-                data = stringSpline[ indexLine + 1 ]
-                [splineKnotsXLen, splineKnotsYLen] = [ int(i)  for i in data.split() ]
+                data = stringSpline[indexLine + 1]
+                [splineKnotsXLen, splineKnotsYLen] = [int(i) for i in data.split()]
                 databloc = []
-                for line in  stringSpline[ indexLine + 2 : ]:
-                    if len(line) > 0 :
+                for line in stringSpline[indexLine + 2:]:
+                    if len(line) > 0:
                         for i in range(len(line) / self.lenStrFloat):
-                            databloc.append(float(line[i * self.lenStrFloat: (i + 1) * self.lenStrFloat ]))
+                            databloc.append(float(line[i * self.lenStrFloat:(i + 1) * self.lenStrFloat]))
                     else:
                         break
-                self.ySplineKnotsX = databloc[ : splineKnotsXLen ]
-                self.ySplineKnotsY = databloc[splineKnotsXLen: splineKnotsXLen + splineKnotsYLen]
-                self.ySplineCoeff = databloc[ splineKnotsXLen + splineKnotsYLen: ]
+                self.ySplineKnotsX = databloc[:splineKnotsXLen]
+                self.ySplineKnotsY = databloc[splineKnotsXLen:splineKnotsXLen + splineKnotsYLen]
+                self.ySplineCoeff = databloc[ splineKnotsXLen + splineKnotsYLen:]
 # Keep this at the end
             indexLine += 1
 
-
     def comparison(self, ref, verbose=False):
-        """Compares the current spline distortion with a reference
+        """
+        Compares the current spline distortion with a reference
+
         @param ref: another spline file
-        @return: True or False depending if the splines are the same or not """
+        @type ref: Spline instance
+        @param verbose: print or not pylab plots
+        @type verbose: bool
+
+        @return: True or False depending if the splines are the same or not
+        @rtype: bool
+        """
         self.spline2array()
         ref.spline2array()
         deltax = (self.xDispArray - ref.xDispArray)
@@ -176,61 +213,83 @@ class Spline:
         histY = numpy.histogram(deltay.reshape(deltay.size), bins=100)
         histXdr = (histX[1][1:] + histX[1][:-1]) / 2.0
         histYdr = (histY[1][1:] + histY[1][:-1]) / 2.0
-        histXmax = histXdr [histX[0].argmax()]
-        histYmax = histYdr [histY[0].argmax()]
+        histXmax = histXdr[histX[0].argmax()]
+        histYmax = histYdr[histY[0].argmax()]
         maxErrX = abs(deltax).max()
         maxErrY = abs(deltay).max()
         curvX = scipy.interpolate.interp1d(histXdr, histX[0] - histX[0].max() / 2.0)
         curvY = scipy.interpolate.interp1d(histYdr, histY[0] - histY[0].max() / 2.0)
         fFWHM_X = scipy.optimize.bisect(curvX , histXmax, histXdr[-1]) - scipy.optimize.bisect(curvX , histXdr[0], histXmax)
         fFWHM_Y = scipy.optimize.bisect(curvY , histYmax, histYdr[-1]) - scipy.optimize.bisect(curvY , histYdr[0], histYmax)
-        print ("Analysis of the difference between two splines")
-        print ("Maximum error in X= %.3f pixels,\t in Y= %.3f pixels." % (maxErrX, maxErrY))
-        print ("Maximum of histogram in X= %.3f pixels,\t in Y= %.3f pixels." % (histXmax, histYmax))
-        print ("Mean of histogram in X= %.3f pixels,\t in Y= %.3f pixels." % (deltax.mean(), deltay.mean()))
-        print ("FWHM in X= %.3f pixels,\t in Y= %.3f pixels." % (fFWHM_X, fFWHM_Y))
+        logger.info("Analysis of the difference between two splines")
+        logger.info("Maximum error in X= %.3f pixels,\t in Y= %.3f pixels." % (maxErrX, maxErrY))
+        logger.info("Maximum of histogram in X= %.3f pixels,\t in Y= %.3f pixels." % (histXmax, histYmax))
+        logger.info("Mean of histogram in X= %.3f pixels,\t in Y= %.3f pixels." % (deltax.mean(), deltay.mean()))
+        logger.info("FWHM in X= %.3f pixels,\t in Y= %.3f pixels." % (fFWHM_X, fFWHM_Y))
 
         if verbose:
             import pylab
-            pylab.plot(histXdr , histX[0], label="error in X")
+            pylab.plot(histXdr, histX[0], label="error in X")
             pylab.plot(histYdr, histY[0], label="error in Y")
             pylab.legend()
             pylab.show()
         return (fFWHM_X < 0.05) and (fFWHM_Y < 0.05) and (maxErrX < 0.5) and (maxErrY < 0.5) \
                 and (deltax.mean() < 0.01) and(deltay.mean() < 0.01) and (histXmax < 0.01) and (histYmax < 0.01)
 
-
     def spline2array(self, timing=False):
-        """calculates the displacement matrix using fitpack
-         bisplev(x, y, tck, dx = 0, dy = 0)
-
-         Evaluate a bivariate B-spline and its derivatives.
-         Return a rank-2 array of spline function values (or spline derivative
-         values) at points given by the cross-product of the rank-1 arrays x and y.
-         In special cases, return an array or just a float if either x or y or
-         both are floats.
         """
-        if  (self.xDispArray == None) :
+        Calculates the displacement matrix using fitpack
+        bisplev(x, y, tck, dx = 0, dy = 0)
+
+        @param timing: profile the calculation or not
+        @type timing: bool
+
+        @return: Nothing !
+        @rtype: float or ndarray
+
+        Evaluate a bivariate B-spline and its derivatives. Return a
+        rank-2 array of spline function values (or spline derivative
+        values) at points given by the cross-product of the rank-1
+        arrays x and y. In special cases, return an array or just a
+        float if either x or y or both are floats.
+        """
+        if self.xDispArray is None:
             x_1d_array = numpy.arange(self.xmin, self.xmax + 1)
             y_1d_array = numpy.arange(self.ymin, self.ymax + 1)
             startTime = time.time()
-            self.xDispArray = scipy.interpolate.fitpack.bisplev(x_1d_array, y_1d_array, \
-                                               [self.xSplineKnotsX, self.xSplineKnotsY, self.xSplineCoeff, self.splineOrder, self.splineOrder ], \
-                                               dx=0, dy=0).transpose()
+            self.xDispArray = fitpack.bisplev(
+                x_1d_array, y_1d_array, [self.xSplineKnotsX,
+                                         self.xSplineKnotsY,
+                                         self.xSplineCoeff,
+                                         self.splineOrder,
+                                         self.splineOrder],
+                dx=0, dy=0).transpose()
             intermediateTime = time.time()
-            self.yDispArray = scipy.interpolate.fitpack.bisplev(x_1d_array, y_1d_array, \
-                                               [self.ySplineKnotsX, self.ySplineKnotsY, self.ySplineCoeff, self.splineOrder, self.splineOrder ], \
-                                               dx=0, dy=0).transpose()
+            self.yDispArray = fitpack.bisplev(
+                x_1d_array, y_1d_array, [self.ySplineKnotsX,
+                                         self.ySplineKnotsY,
+                                         self.ySplineCoeff,
+                                         self.splineOrder,
+                                         self.splineOrder],
+                dx=0, dy=0).transpose()
             if timing:
-                print "Timing for: X-Displacement spline evaluation: %.3f sec, Y-Displacement Spline evaluation:  %.3f sec." % \
-                        ((intermediateTime - startTime), (time.time() - intermediateTime))
+                logger.info("Timing for: X-Displacement spline evaluation: %.3f sec,"
+                      " Y-Displacement Spline evaluation:  %.3f sec." %
+                      ((intermediateTime - startTime),
+                       (time.time() - intermediateTime)))
 
     def splineFuncX(self, x, y):
-        """ calculates the displacement matrix using fitpack for the X direction
-        @param x: numpy array repesenting the points in the x direction
-        @param y: numpy array repesenting the points in the y direction
+        """
+        Calculates the displacement matrix using fitpack for the X
+        direction on the given grid.
+
+        @param x: points of the grid in the x direction
+        @type x: ndarray
+        @param y: points of the grid  in the y direction
+        @type y: ndarray
+
         @return: displacement matrix for the X direction
-        @rtype: numpy arrays
+        @rtype: ndarray
         """
         if x.ndim == 2:
             if abs(x[1:, :] - x[:-1, :] - numpy.zeros((x.shape[0] - 1, x.shape[1]))).max() < 1e-6:
@@ -239,17 +298,29 @@ class Spline:
             elif abs(x[:, 1:] - x[:, :-1] - numpy.zeros((x.shape[0], x.shape[1] - 1))).max() < 1e-6:
                 x = x[:, 0]
                 y = y[0]
-        xDispArray = scipy.interpolate.fitpack.bisplev(x, y, \
-                                               [self.xSplineKnotsX, self.xSplineKnotsY, self.xSplineCoeff, self.splineOrder, self.splineOrder ], \
-                                               dx=0, dy=0).transpose()
+
+        xDispArray = fitpack.bisplev(
+            x, y, [self.xSplineKnotsX,
+                   self.xSplineKnotsY,
+                   self.xSplineCoeff,
+                   self.splineOrder,
+                   self.splineOrder ],
+            dx=0, dy=0).transpose()
+
         return xDispArray
 
     def splineFuncY(self, x, y):
-        """ calculates the displacement matrix using fitpack for the Y direction
-        @param x: numpy array repesenting the points in the x direction
-        @param y: numpy array repesenting the points in the y direction
+        """
+        calculates the displacement matrix using fitpack for the Y
+        direction
+
+        @param x: points in the x direction
+        @type x: ndarray
+        @param y: points in the y direction
+        @type y: ndarray
+
         @return: displacement matrix for the Y direction
-        @rtype: numpy array
+        @rtype: ndarray
         """
         if x.ndim == 2:
             if abs(x[1:, :] - x[:-1, :] - numpy.zeros((x.shape[0] - 1, x.shape[1]))).max() < 1e-6:
@@ -259,32 +330,65 @@ class Spline:
                 x = x[:, 0]
                 y = y[0]
 
-        yDispArray = scipy.interpolate.fitpack.bisplev(x, y, \
-                                               [self.ySplineKnotsX, self.ySplineKnotsY, self.ySplineCoeff, self.splineOrder, self.splineOrder ], \
-                                               dx=0, dy=0).transpose()
+        yDispArray = fitpack.bisplev(
+            x, y, [self.ySplineKnotsX,
+                   self.ySplineKnotsY,
+                   self.ySplineCoeff,
+                   self.splineOrder,
+                   self.splineOrder ],
+            dx=0, dy=0).transpose()
+
         return yDispArray
 
-
     def array2spline(self, smoothing=1000, timing=False):
-        """calculates the spline coefficents from the displacements matrix using fitpack
-       """
+        """
+        Calculates the spline coefficients from the displacements
+        matrix using fitpack.
+
+        @param smoothing: the greater the smoothing, the fewer the number of knots remaining
+        @type smoothing: float
+        @param timing: print the profiling of the calculation
+        @type timing: bool
+        """
         self.xmin = 0.0
         self.ymin = 0.0
         self.xmax = float(self.xDispArray.shape[0] - 1)
         self.ymax = float(self.yDispArray.shape[1] - 1)
+
         if timing:
             startTime = time.time()
-        xRectBivariateSpline = scipy.interpolate.fitpack2.RectBivariateSpline(numpy.arange(self.xmax + 1.0), numpy.arange(self.ymax + 1), self.xDispArray.transpose(), s=smoothing)
+
+        xRectBivariateSpline = scipy.interpolate.fitpack2.RectBivariateSpline(
+            numpy.arange(self.xmax + 1.0),
+            numpy.arange(self.ymax + 1),
+            self.xDispArray.transpose(),
+            s=smoothing)
+
         if timing:
             intermediateTime = time.time()
-        yRectBivariateSpline = scipy.interpolate.fitpack2.RectBivariateSpline(numpy.arange(self.xmax + 1.0), numpy.arange(self.ymax + 1), self.yDispArray.transpose(), s=smoothing)
+
+        yRectBivariateSpline = scipy.interpolate.fitpack2.RectBivariateSpline(
+            numpy.arange(self.xmax + 1.0),
+            numpy.arange(self.ymax + 1),
+            self.yDispArray.transpose(),
+            s=smoothing)
+
         if timing:
-            print "X-Displ evaluation= %.3f sec, Y-Displ evaluation=  %.3f sec." % (intermediateTime - startTime, time.time() - intermediateTime)
-        print len(xRectBivariateSpline.get_coeffs()), "x-coefs", xRectBivariateSpline.get_coeffs()
-        print len(yRectBivariateSpline.get_coeffs()), "y-coefs", yRectBivariateSpline.get_coeffs()
-        print len(xRectBivariateSpline.get_knots()[0]), len(xRectBivariateSpline.get_knots()[1]), "x-knots", xRectBivariateSpline.get_knots()
-        print len(yRectBivariateSpline.get_knots()[0]), len(yRectBivariateSpline.get_knots()[1]), "y-knots", yRectBivariateSpline.get_knots()
-        print "Residual x,y", xRectBivariateSpline.get_residual(), yRectBivariateSpline.get_residual()
+            logger.info("X-Displ evaluation= %.3f sec, Y-Displ evaluation=  %.3f sec."
+                  % (intermediateTime - startTime, time.time() - intermediateTime))
+
+        logger.info(len(xRectBivariateSpline.get_coeffs()),
+              "x-coefs", xRectBivariateSpline.get_coeffs())
+        logger.info(len(yRectBivariateSpline.get_coeffs()),
+              "y-coefs", yRectBivariateSpline.get_coeffs())
+        logger.info(len(xRectBivariateSpline.get_knots()[0]),
+              len(xRectBivariateSpline.get_knots()[1]),
+              "x-knots", xRectBivariateSpline.get_knots())
+        logger.info(len(yRectBivariateSpline.get_knots()[0]),
+              len(yRectBivariateSpline.get_knots()[1]),
+              "y-knots", yRectBivariateSpline.get_knots())
+        logger.info("Residual x,y", xRectBivariateSpline.get_residual(),
+              yRectBivariateSpline.get_residual())
         self.xSplineKnotsX = xRectBivariateSpline.get_knots()[0]
         self.xSplineKnotsY = xRectBivariateSpline.get_knots()[1]
         self.xSplineCoeff = xRectBivariateSpline.get_coeffs()
@@ -292,16 +396,19 @@ class Spline:
         self.ySplineKnotsY = yRectBivariateSpline.get_knots()[1]
         self.ySplineCoeff = yRectBivariateSpline.get_coeffs()
 
-
     def writeEDF(self, basename):
-        """save the distortion matrices into a couple of files called basename-x.edf and  basename-y.edf
+        """
+        save the distortion matrices into a couple of files called
+        basename-x.edf and basename-y.edf
 
+        @param basename: base of the name used to save the data
+        @type basename: str
         """
         try:
             from fabio.edfimage import edfimage
-            # from EdfFile import EdfFile as EDF
         except ImportError:
-            print "You will need the Fabio library available from the Fable sourceforge"
+            logger.error("You will need the Fabio library available"
+                  " from the Fable sourceforge")
             return
         self.spline2array()
 
@@ -310,56 +417,96 @@ class Spline:
         edfDispX.write(basename + "-x.edf", force_type="float32")
         edfDispY.write(basename + "-y.edf", force_type="float32")
 
-
     def write(self, filename):
-        """save the cubic spline in an ascii file usable with Fit2D or SPD
+        """
+        save the cubic spline in an ascii file usable with Fit2D or
+        SPD
+
         @param filename: name of the file containing the cubic spline distortion file
-        @type filename: string
+        @type filename: str
         """
 
-        txt = "SPATIAL DISTORTION SPLINE INTERPOLATION COEFFICIENTS\n\n  VALID REGION\n%14.7E%14.7E%14.7E%14.7E\n\n" % (self.xmin, self.ymin, self.xmax, self.ymax)
-        txt += "  GRID SPACING, X-PIXEL SIZE, Y-PIXEL SIZE\n%14.7E%14.7E%14.7E\n\n" % (self.grid, self.pixelSize[0], self.pixelSize[1])
-        txt += "  X-DISTORTION\n%6i%6i" % (len(self.xSplineKnotsX), len(self.xSplineKnotsY))
-        for i in range(len(self.xSplineKnotsX)):
+        lst = ["SPATIAL DISTORTION SPLINE INTERPOLATION COEFFICIENTS",
+               "",
+               "  VALID REGION",
+               "%14.7E%14.7E%14.7E%14.7E" % (self.xmin, self.ymin, self.xmax, self.ymax),
+               "",
+               "  GRID SPACING, X-PIXEL SIZE, Y-PIXEL SIZE",
+               "%14.7E%14.7E%14.7E" % (self.grid, self.pixelSize[0], self.pixelSize[1]),
+               ""
+               "  X-DISTORTION",
+               "%6i%6i" % (len(self.xSplineKnotsX), len(self.xSplineKnotsY))]
+        txt = ""
+        for i, val in enumerate(self.xSplineKnotsX):
             if i % 5 == 0:
-                txt += "\n"
-            txt += "%14.7E" % self.xSplineKnotsX[i]
-        for i in range(len(self.xSplineKnotsY)):
+                lst.append(txt)
+                txt = ""
+            txt += "%14.7E" % val
+        if txt:
+            lst.append(txt)
+            txt = ""
+        for i, val in enumerate(self.xSplineKnotsY):
             if i % 5 == 0:
-                txt += "\n"
-            txt += "%14.7E" % self.xSplineKnotsY[i]
-        for i in range(len(self.xSplineCoeff)):
+                lst.append(txt)
+                txt = ""
+            txt += "%14.7E" % val
+        if txt:
+            lst.append(txt)
+            txt = ""
+        for i, val in enumerate(self.xSplineCoeff):
             if i % 5 == 0:
-                txt += "\n"
+                lst.append(txt)
+                txt = ""
             txt += "%14.7E" % self.xSplineCoeff[i]
-        txt += "\n\n  Y-DISTORTION\n%6i%6i" % (len(self.ySplineKnotsX), len(self.ySplineKnotsY))
-        for i in range(len(self.ySplineKnotsX)):
+        if txt:
+            lst.append(txt)
+            txt = ""
+        lst.append("")
+        lst.append("  Y-DISTORTION\n%6i%6i" % (len(self.ySplineKnotsX),
+                                               len(self.ySplineKnotsY)))
+        for i, val in enumerate(self.ySplineKnotsX):
             if i % 5 == 0:
-                txt += "\n"
-            txt += "%14.7E" % self.ySplineKnotsX[i]
-        for i in range(len(self.ySplineKnotsY)):
+                lst.append(txt)
+                txt = ""
+            txt += "%14.7E" % val
+        if txt:
+            lst.append(txt)
+            txt = ""
+        for i, val in enumerate(self.ySplineKnotsY):
             if i % 5 == 0:
-                txt += "\n"
-            txt += "%14.7E" % self.ySplineKnotsY[i]
-        for i in range(len(self.ySplineCoeff)):
+                lst.append(txt)
+                txt = ""
+            txt += "%14.7E" % val
+        if txt:
+            lst.append(txt)
+            txt = ""
+        for i, val in enumerate(self.ySplineCoeff):
             if i % 5 == 0:
-                txt += "\n"
-            txt += "%14.7E" % self.ySplineCoeff[i]
-        txt += "\n"
-        open(filename, "w").write(txt)
+                lst.append(txt)
+                txt = ""
+            txt += "%14.7E" % val
+        if txt:
+            lst.append(txt)
+            txt = ""
+        lst.append("")
+        with open(filename, "w") as fil:
+            fil.write(os.linesep.join(lst))
 
-
-    def tilt(self, center=(0.0, 0.0), tiltAngle=0.0, tiltPlanRot=0.0, distanceSampleDetector=1.0, timing=False):
-        """The tilt method apply a virtual tilt on the detector, the point of tilt is given by the center
+    def tilt(self, center=(0.0, 0.0), tiltAngle=0.0, tiltPlanRot=0.0,
+             distanceSampleDetector=1.0, timing=False):
+        """
+        The tilt method apply a virtual tilt on the detector, the
+        point of tilt is given by the center
 
         @param center: position of the point of tilt, this point will not be moved.
-        @type center: 2tuple of floats
+        @type center: 2-tuple of floats
         @param tiltAngle: the value of the tilt in degrees
         @type tiltAngle: float in the range [-90:+90] degrees
         @param tiltPlanRot: the rotation of the tilt plan with the Ox axis (0 deg for y axis invariant, 90 deg for x axis invariant)
         @type tiltPlanRot: Float in the range [-180:180]
-        @type distanceSampleDetector: float
         @param distanceSampleDetector: the distance from sample to detector in meter (along the beam, so distance from sample to center)
+        @type distanceSampleDetector: float
+
         @return: tilted Spline instance
         @rtype: Spline
         """
@@ -368,7 +515,7 @@ class Spline:
                 self.zeros()
             else:
                 self.read(self.filename)
-        print("center=%s, tilt=%s, tiltPlanRot=%s, distanceSampleDetector=%sm, pixelSize=%sµm" % (center, tiltAngle, tiltPlanRot, distanceSampleDetector, self.pixelSize))
+        logger.info("center=%s, tilt=%s, tiltPlanRot=%s, distanceSampleDetector=%sm, pixelSize=%sµm" % (center, tiltAngle, tiltPlanRot, distanceSampleDetector, self.pixelSize))
         if timing:
             startTime = time.time()
         distance = 1.0e6 * distanceSampleDetector  # from meters to microns
@@ -377,19 +524,24 @@ class Spline:
         cosf = numpy.cos(numpy.radians(tiltAngle))
         sinf = numpy.sin(numpy.radians(tiltAngle))
 
-        x = lambda i, j: j - center[0] - 0.5  # x and y are tilted in C/Fortran representation
+        # x and y are tilted in C/Fortran representation
+        x = lambda i, j: j - center[0] - 0.5
         y = lambda i, j: i - center[1] - 0.5
 
-        iPos = numpy.fromfunction(x, (int(self.ymax - self.ymin + 1), int(self.xmax - self.xmin + 1)))
-        jPos = numpy.fromfunction(y, (int(self.ymax - self.ymin + 1), int(self.xmax - self.xmin + 1)))
+        iPos = numpy.fromfunction(x,
+                                  (int(self.ymax - self.ymin + 1),
+                                   int(self.xmax - self.xmin + 1)))
+        jPos = numpy.fromfunction(y,
+                                  (int(self.ymax - self.ymin + 1),
+                                   int(self.xmax - self.xmin + 1)))
 
         xPos = (iPos + self.xDispArray) * self.pixelSize[0]
         yPos = (jPos + self.yDispArray) * self.pixelSize[1]
 
         tiltArrayX = distance * (xPos * (cosf * cosb * cosb + sinb * sinb) + yPos * (cosf * cosb * sinb - cosb * sinb)) / \
-                        (distance + xPos * sinf * cosb + yPos * sinf * sinb) / self.pixelSize[0] - iPos
+            (distance + xPos * sinf * cosb + yPos * sinf * sinb) / self.pixelSize[0] - iPos
         tiltArrayY = distance * (xPos * (cosf * sinb * cosb - cosb * sinb) + yPos * (cosf * sinb * sinb + cosb * cosb)) / \
-                        (distance + xPos * sinf * cosb + yPos * sinf * sinb) / self.pixelSize[1] - jPos
+            (distance + xPos * sinf * cosb + yPos * sinf * sinb) / self.pixelSize[1] - jPos
         tiltedSpline = Spline()
         tiltedSpline.pixelSize = self.pixelSize
         tiltedSpline.grid = self.grid
@@ -397,43 +549,40 @@ class Spline:
         tiltedSpline.yDispArray = tiltArrayY
         # tiltedSpline.array2spline(smoothing=1e-6, timing=True)
         if timing:
-            print("Time for the generation of the distorted spline: %.3f sec" % (time.time() - startTime))
+            logger.info("Time for the generation of the distorted spline: %.3f sec" % (time.time() - startTime))
         return tiltedSpline
-
-
-#    def setPixelSize(self, pixelSize):
-#        """
-#        sets the size of the pixel from a 2-tuple of floats expressed in microns.
-#        """
-#        if len(pixelSize) == 2 :
-#            self.pixelSize = pixelSize
-#    def getPixelSize(self):
-#        """
-#        @return: the size of the pixel from a
-#        @rtype: 2-tuple of floats expressed in microns.
-#        """
-#        return self.pixelSize
-#
 
     def setPixelSize(self, pixelSize):
         """
-        sets the size of the pixel from a 2-tuple of floats expressed in meters.
+        Sets the size of the pixel from a 2-tuple of floats expressed
+        in meters.
+
         @param: pixel size in meter
         @type pixelSize: 2-tuple of float
         """
-        if len(pixelSize) == 2 :
+        if len(pixelSize) == 2:
             self.pixelSize = (pixelSize[0] * 1.0e6, pixelSize[1] * 1.0e6)
-
 
     def getPixelSize(self):
         """
+        Return the size of the pixel from as a 2-tuple of floats expressed
+        in meters.
+        
         @return: the size of the pixel from a 2D detector
         @rtype: 2-tuple of floats expressed in meter.
+        
         """
         return (self.pixelSize[0] * 1.0e-6, self.pixelSize[1] * 1.0e-6)
 
     def bin(self, binning=None):
-        if "__len__"  in dir(binning):
+        """
+        Performs the binning of a spline (same camera with different binning)
+        
+        @param binning: binning factor as integer or 2-tuple of integers
+        @type: int or (int, int) 
+        
+        """
+        if "__len__" in dir(binning):
             binX, binY = float(binning[0]), float(binning[1])
         else:
             binX = binY = float(binning)
@@ -450,108 +599,35 @@ class Spline:
         self.yDispArray = None
 
 
-#    def horizontalFlip(self):
-#        """calculate the flipped spline file interverting xmin and xmax
-#        @return: another spline file"""
-#        other = Spline()
-#        other.xmin = self.xmin
-#        other.xmax = self.xmax
-#        other.ymin = self.ymin
-#        other.ymax = self.ymax
-#        other.pixelSize = self.pixelSize
-#        other.grid = self.grid
-#        other.xSplineKnotsX = [ self.xmax + self.xmin - x for x in self.xSplineKnotsX  ]
-#        #other.xSplineKnotsX = self.xSplineKnotsX[:]
-#        other.xSplineKnotsY = self.xSplineKnotsY[:]
-#        other.xSplineCoeff = [ -i for i in self.xSplineCoeff]
-#        other.ySplineKnotsX = [ self.xmax + self.xmin - x for x in self.xSplineKnotsX  ]
-#        #other.ySplineKnotsX = self.ySplineKnotsX[:]
-#        other.ySplineKnotsY = self.ySplineKnotsY[:]
-#        other.ySplineCoeff = self.ySplineCoeff[:]
-#        return other
-#
-# def xDispHorFlip(array):
-#    """make an horizontal flip of the given X displacement array"""
-#    return - numpy.fliplr(array)
-# def yDispHorFlip(array):
-#    """make an horizontal flip of the given Y displacement array"""
-#    return numpy.fliplr(array)
-# def xDispVerFlip(array):
-#    """make a vertical flip of the given X displacement array"""
-#    return numpy.flipud(array)
-# def yDispVerFlip(array):
-#    """make a vertical flip of the given Y displacement array"""
-#    return - numpy.flipud(array)
-
-
-if __name__ == '__main__':
-#    """this is the main program if somebody wants to use this as a library"""
-#
-#
-#
-#
-# #    spline.write("test")
-#    new = Spline()
-#    new.pixelSize = spline.pixelSize
-#    new.grid = spline.grid
-#    new.xDispArray = xDispHorFlip(spline.xDispArray[:])
-#    new.yDispArray = yDispHorFlip(spline.yDispArray[:])
-#    new.array2spline(smoothing=10, timing=False)
-#    print "matrix flipped", new
-#    flipped = spline.horizontalFlip()
-#    print "Spline flipped", flipped
-#
-#
-#    print "---" * 50
-#
-#
-#    print new.comparison(flipped, verbose=True)
-
-#    new.write("new.spline")
-#    new.xDispArray = None
-#    new.yDispArray = None
-#    new.spline2array(timing=True)
-#    print new.comparison(spline, verbose=True)
-    # Size of the image in pixels:
-# #########################################################
-#    spline = Spline()
-#    spline.zeros(0, 0, 2000, 2000)
-#    spline.spline2array()
-#    spline.pixelSize = (100, 100)
-#    spline.grid = 1
-
-    CENTER = (1000, 1000)
-    TILT = 10  # deg
-    ROTATION_TILT = 0  # deg
-    DISTANCE = 100  # mm
-    SPLINE_FILE = "example.spline"
+def main():
+    """
+    Some tests ....
+    """
+    center = (1000, 1000)
+    tilt = 10  # deg
+    rotation_tilt = 0  # deg
+    distance = 100  # mm
+    spline_file = "example.spline"
     for keyword in sys.argv[1:]:
         if os.path.isfile(keyword):
-            SPLINE_FILE = keyword
+            spline_file = keyword
         elif keyword.lower().find("center=") in [0, 1, 2]:
-            CENTER = map(float, keyword.split("=")[1].split("x"))
+            center = map(float, keyword.split("=")[1].split("x"))
         elif keyword.lower().find("dist=") in [0, 1, 2]:
-            DISTANCE = float(keyword.split("=")[1])
+            distance = float(keyword.split("=")[1])
         elif keyword.lower().find("tilt=") in [0, 1, 2]:
-            TILT = float(keyword.split("=")[1])
+            tilt = float(keyword.split("=")[1])
         elif keyword.lower().find("rot=") in [0, 1, 2]:
-            ROTATION_TILT = float(keyword.split("=")[1])
-
+            rotation_tilt = float(keyword.split("=")[1])
 
     spline = Spline()
-    spline.read(SPLINE_FILE)
-    print ("Original Spline: %s" % spline)
+    spline.read(spline_file)
+    logger.info("Original Spline: %s" % spline)
     spline.spline2array(timing=True)
-    tilted = spline.tilt(CENTER, TILT, ROTATION_TILT, DISTANCE, timing=True)
-    # tilted.write("tilted-t%i-p%i-d%i.spline" % (TILT, ROTATION_TILT, DISTANCE))
-    tilted.writeEDF("%s-tilted-t%i-p%i-d%i" % (os.path.splitext(SPLINE_FILE)[0], TILT, ROTATION_TILT, DISTANCE))
-#    for i in range(0, 14, 2):
-#        tilted.array2spline(smoothing=(10.0 ** (-i)), timing=True)
-#        tilted.write("tilted-t%i-p%i-d%i-s%i.spline" % (TILT, ROTATION_TILT, DISTANCE, i))
-#        fromspline = Spline()
-#        fromspline.read("tilted-t%i-p%i-d%i-s%i.spline" % (TILT, ROTATION_TILT, DISTANCE, i))
-#        print fromspline.comparison(tilted, verbose=True)
-#    spline = Spline()
-#    spline.read("tilted-t%i-p%i-d%i.spline" % (TILT, ROTATION_TILT, DISTANCE))
-#    spline.spline2array(timing=True)
-#    print spline.comparison(tilted, verbose=True)
+    tilted = spline.tilt(center, tilt, rotation_tilt, distance, timing=True)
+    tilted.writeEDF("%s-tilted-t%i-p%i-d%i" %
+                    (os.path.splitext(spline_file)[0],
+                     tilt, rotation_tilt, distance))
+
+if __name__ == '__main__':
+    main()

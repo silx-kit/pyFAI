@@ -46,6 +46,7 @@ import numpy
 import fabio
 import h5py
 import pyFAI
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("diff_tomo")
 
 
@@ -80,7 +81,7 @@ class DiffTomo(object):
         self.use_gpu = False
 
     def __repr__(self):
-        return "Diffraction Tomography with r=%s t: %s, d:%s" %\
+        return "Diffraction Tomography with r=%s t: %s, d:%s" % \
             (self.nRot, self.nTrans, self.nDiff)
 
     def parse(self):
@@ -153,7 +154,7 @@ class DiffTomo(object):
             if os.path.isfile(f) and f.endswith(options.extension):
                 self.inputfiles.append(f)
             elif os.path.isdir(f):
-                self.inputfiles += [os.path.join(f, g) for g in os.listdir(f) if g.endswith(options.extention)]
+                self.inputfiles += [os.path.join(f, g) for g in os.listdir(f) if g.endswith(options.extension)]
         self.inputfiles.sort()
         if not self.inputfiles:
             raise RuntimeError("No input files to process")

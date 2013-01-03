@@ -28,8 +28,9 @@
 import cython
 cimport numpy
 import numpy
-
 from libc.math cimport fabs
+
+EPS32 = (1 + numpy.finfo(numpy.float32).eps)
 
 @cython.cdivision(True)
 cdef float  getBinNr(float x0, float pos0_min, float delta) nogil:
@@ -78,7 +79,7 @@ def histoBBox1d(numpy.ndarray weights not None,
     @param delta_dummy: precision of dummy value
     @param mask: array (of int8) with masked pixels with 1 (0=not masked)
     @param dark: array (of float32) with dark noise to be subtracted (or None)
-    @param flat: array (of float32) with flat-field image 
+    @param flat: array (of float32) with flat-field image
     @param polarization: array (of float32) with polarization corrections
     @param solidangle: array (of float32) with solid angle corrections
 
@@ -161,7 +162,7 @@ def histoBBox1d(numpy.ndarray weights not None,
     else:
         pos0_maxin = pos0_max
     if pos0_min<0: pos0_min=0
-    pos0_max = pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps)
+    pos0_max = pos0_maxin * EPS32
 
     if pos1Range is not None and len(pos1Range) > 1:
         assert pos1.size == size
@@ -171,7 +172,7 @@ def histoBBox1d(numpy.ndarray weights not None,
         dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(),dtype=numpy.float32)
         pos1_min = min(pos1Range)
         pos1_maxin = max(pos1Range)
-        pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
+        pos1_max = pos1_maxin * EPS32
 
     cdef float delta = (pos0_max - pos0_min) / (< float > (bins))
     outPos = numpy.linspace(pos0_min+0.5*delta, pos0_maxin-0.5*delta, bins)
@@ -282,7 +283,7 @@ def histoBBox2d(numpy.ndarray weights not None,
     @param delta_dummy: precision of dummy value
     @param mask: array (of int8) with masked pixels with 1 (0=not masked)
     @param dark: array (of float32) with dark noise to be subtracted (or None)
-    @param flat: array (of float32) with flat-field image 
+    @param flat: array (of float32) with flat-field image
     @param polarization: array (of float32) with polarization corrections
     @param solidangle: array (of float32) with solid angle corrections
 
@@ -321,7 +322,7 @@ def histoBBox2d(numpy.ndarray weights not None,
     cdef bint check_mask=False, check_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
     cdef numpy.int8_t[:] cmask
     cdef float[:] cflat, cdark, cpolarization, csolidangle
-    
+
     if  mask is not None:
         assert mask.size == size
         check_mask = True
@@ -376,7 +377,7 @@ def histoBBox2d(numpy.ndarray weights not None,
         pos0_maxin = pos0_max
     if pos0_min<0:
         pos0_min=0
-    pos0_max = pos0_maxin * (1 + numpy.finfo(numpy.float32).eps)
+    pos0_max = pos0_maxin * EPS32
 
     if (pos1Range is not None) and (len(pos1Range) == 2):
         pos1_min = min(pos1Range)
@@ -384,7 +385,7 @@ def histoBBox2d(numpy.ndarray weights not None,
     else:
         pos1_min = cpos1.min()
         pos1_maxin = cpos1.max()
-    pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
+    pos1_max = pos1_maxin * EPS32
 
     delta0 = (pos0_max - pos0_min) / (< float > (bins0))
     delta1 = (pos1_max - pos1_min) / (< float > (bins1))

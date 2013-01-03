@@ -40,6 +40,7 @@ try:
 except:
     from zlib import crc32
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
+
 @cython.cdivision(True)
 cdef float getBinNr( float x0, float pos0_min, float delta) nogil:
     """

@@ -33,6 +33,7 @@ __docformat__ = 'restructuredtext'
 
 import os
 import logging
+logger = logging.getLogger("pyFAI.azimuthalIntegrator")
 import tempfile
 import threading
 import gc
@@ -41,8 +42,8 @@ import numpy
 from numpy import rad2deg, deg2rad, pi
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 from .geometry import Geometry
+from . import units
 import fabio
-logger = logging.getLogger("pyFAI.azimuthalIntegrator")
 error = None
 try:
     from . import ocl_azim  # IGNORE:F0401
@@ -93,7 +94,7 @@ except ImportError as error:
     logger.error("Unable to import pyFAI.histogram"
                  " Cython OpenMP histogram implementation: %s" % error)
     histogram = None
-del error
+del error  # just to see how clever pylint is !
 
 
 class AzimuthalIntegrator(Geometry):
@@ -186,20 +187,20 @@ class AzimuthalIntegrator(Geometry):
         @return: the new mask
         @rtype: ndarray of bool
 
-        This method combine two masks (dynamic mask from *data & dummy*
-        and *mask*) to generate a new one with the 'or' binary operation.
-        One can adjuste the level, with the *dummy* and the *delta_dummy* parameter,
-        when you considere the *data* values needs to be masked out.
+        This method combine two masks (dynamic mask from *data &
+        dummy* and *mask*) to generate a new one with the 'or' binary
+        operation.  One can adjuste the level, with the *dummy* and
+        the *delta_dummy* parameter, when you considere the *data*
+        values needs to be masked out.
 
         This method can work in two different *mode*:
 
             * "normal": False for valid pixels, True for bad pixels
             * "numpy": True for valid pixels, false for others
 
-
-        This method tries to accomodate various types of masks
-        (like valid=0 & masked=-1, ...) and guesses if an input
-        mask needs to be inverted.
+        This method tries to accomodate various types of masks (like
+        valid=0 & masked=-1, ...) and guesses if an input mask needs
+        to be inverted.
         """
         shape = data.shape
         #       ^^^^   this is why data is mandatory !
@@ -300,7 +301,7 @@ class AzimuthalIntegrator(Geometry):
         dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so that
         any value between -3.5 and -0.5 are considered as bad.
 
-        the polarisation correction can be taken into account with the
+        The polarisation correction can be taken into account with the
         *polarization_factor* parameter. Set it between [-1, 1], to
         correct your data. If set to 0 there is no correction at all.
 
@@ -324,8 +325,9 @@ class AzimuthalIntegrator(Geometry):
             data /= self.polarization(data.shape, factor=polarization_factor)
         data = data[mask]
         if tthRange is not None:
-            tthRange = tuple([numpy.deg2rad(i) for i in tthRange])
-
+            tthRange = (numpy.deg2rad(tthRange[0]), numpy.deg2rad(tthRange[-1]) * EPS32)
+        else:
+            tthRange = (tth.min(), tth.max() * EPS32)
         if nbPt not in self._nbPixCache:
             ref, b = numpy.histogram(tth, nbPt, range=tthRange)
             self._nbPixCache[nbPt] = numpy.maximum(1, ref)
@@ -462,19 +464,19 @@ class AzimuthalIntegrator(Geometry):
         pixel into account you just need to set a value of 0 in the
         mask array. Indeed the shape of the mask array should be
         idential to the data shape (size of the array _must_ be the
-        same).
+        same). Pixels can also be maseked by seting them to an
 
-        Dynamic masking (i.e recalculated for each image) can be
-        achieved by setting masked pixels to an impossible value (-1)
-        and calling this value the "dummy value". Dynamic masking is
-        computed at integration whereas static masking is done at
-        LUT-generation, hence faster.
+        Bad pixels can be masked out by setting them to an impossible
+        value (-1) and calling this value the "dummy value".  Some
+        Pilatus detectors are setting non existing pixel to -1 and
+        dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so that
+        any value between -3.5 and -0.5 are considered as bad.
 
         Some Pilatus detectors are setting non existing pixel to -1
         and dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so
         that any value between -3.5 and -0.5 are considered as bad.
 
-        the polarisation correction can be taken into account with the
+        The polarisation correction can be taken into account with the
         *polarization_factor* parameter. Set it between [-1, 1], to
         correct your data. If set to 0 there is no correction at all.
 
@@ -611,17 +613,17 @@ class AzimuthalIntegrator(Geometry):
         idential to the data shape (size of the array _must_ be the
         same).
 
-        Dynamic masking (i.e recalculated for each image) can be
-        achieved by setting masked pixels to an impossible value (-1)
-        and calling this value the "dummy value". Dynamic masking is
-        computed at integration whereas static masking is done at
-        LUT-generation, hence faster.
+        Bad pixels can be masked out by setting them to an impossible
+        value (-1) and calling this value the "dummy value".  Some
+        Pilatus detectors are setting non existing pixel to -1 and
+        dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so that
+        any value between -3.5 and -0.5 are considered as bad.
 
         Some Pilatus detectors are setting non existing pixel to -1
         and dead pixels to -2. Then use dummy=-2 & delta_dummy=1.5 so
         that any value between -3.5 and -0.5 are considered as bad.
 
-        the polarisation correction can be taken into account with the
+        The polarisation correction can be taken into account with the
         *polarization_factor* parameter. Set it between [-1, 1], to
         correct your data. If set to 0 there is no correction at all.
 
@@ -858,14 +860,12 @@ class AzimuthalIntegrator(Geometry):
 
     def setup_LUT(self, shape, nbPt, mask=None,
                   pos0_range=None, pos1_range=None, mask_checksum=None,
-                  unit="2th"):
+                  unit=units.TTH):
         """
-        This method is called when a look-up table needs to be set-up.
-        The nbPt parameter can be either a integer for a 1D integration
-        or a 2-tuple of integer in case of a 
+        Prepare a look-up-table
 
         @param shape: shape of the dataset
-        @type shape: (int,int)
+        @type shape: (int, int)
         @param nbPt: number of points in the the output pattern
         @type nbPt: int or (int, int)
         @param mask: array with masked pixel (1=masked)
@@ -874,17 +874,42 @@ class AzimuthalIntegrator(Geometry):
         @type pos0_range: (float, float)
         @param pos1_range: range in azimuthal dimension
         @type pos1_range: (float, float)
-        @param mask_checksum: checksum of the mask buffer (prevent re-calculating it)
+        @param mask_checksum: checksum of the mask buffer
         @type mask_checksum: int (or anything else ...)
-        @param unit: This is just an information to propagate the LUT object for further checkings
-        @type unit: str
+        @param unit: use to propagate the LUT object for further checkings
+        @type unit: pyFAI.units.Enum
+
+        This method is called when a look-up table needs to be set-up.
+        The *shape* parameter, correspond to the shape of the original
+        datatset. It is possible to customize the number of point of
+        the output histogram with the *nbPt* parameter which can be
+        either an integer for an 1D integration or a 2-tuple of
+        integer in case of a 2D integration. The LUT will have a
+        different shape: (nbPt, lut_max_size), the later parameter
+        being calculated during the instanciation of the splitBBoxLUT
+        class.
+
+        It is possible to prepare the LUT with a predefine
+        *mask*. This operation can speedup the computation of the
+        later integrations. Instead of applying the patch on the
+        dataset, it is taken into account during the histogram
+        computation. If provided the *mask_checksum* prevent the
+        re-calculation of the mask. When the mask changes, its
+        checksum is used to reset (or not) the LUT (which is a very
+        time consuming operation !)
+
+        It is also possible to restrain the range of the 1D or 2D
+        pattern with the *pos1_range* and *pos2_range*.
+
+        The *unit* parameter is just propagated to the LUT integrator
+        for further checkings: The aim is to prevent an integration to
+        be performed in 2th-space when the LUT was setup in q space.
         """
+
         if "__len__" in dir(nbPt) and len(nbPt) == 2:
             int2d = True
         else:
             int2d = False
-        if "_" in unit:
-            unit = str(unit).split("_")[0]
         pos0 = self.array_from_unit(shape, "center", unit)
         dpos0 = self.array_from_unit(shape, "delta", unit)
         if (pos1_range is None) and (not int2d):
@@ -909,7 +934,6 @@ class AzimuthalIntegrator(Geometry):
             mask_checksum = None
         else:
             assert mask.shape == shape
-        unit = str(unit).split("_")[0]
         if int2d:
             return splitBBoxLUT.HistoBBox2d(pos0, dpos0, pos1, dpos1,
                                             bins=nbPt,
@@ -1373,34 +1397,69 @@ class AzimuthalIntegrator(Geometry):
 
         @return: azimuthaly regrouped data, 2theta pos and chipos
         @rtype: 3-tuple of ndarrays
+
+        This method convert the *data* image from the pixel
+        coordinates to the 2theta, chi coordinates. This is simular to
+        a rectangular to polar conversion. The number of point of the
+        new image is given by *nbPt2Th* and *nbPtChi*. If you give a
+        *filename*, the new image is also saved as an edf file.
+
+        It is possible to correct the 2theta/chi pattern using the
+        *correctSolidAngle* parameter. The weight of a pixel is
+        ponderate by its solid angle.
+
+        The 2theta and range of the new image can be set using the
+        *tthRange* parameter. If not given the maximum available range
+        is used. Indeed pixel outside this range are ignored.
+
+        Each pixel of the *data* image has a 2theta and a chi
+        coordinate. So it is possible to restrain on any of those
+        ranges ; you just need to set the range with the *tthRange* or
+        thee *chiRange* parameter. like the *tthRange* parameter,
+        value outside this range are ignored.
+
+        Sometimes one needs to mask a few pixels (beamstop, hot
+        pixels, ...), to ignore a few of them you just need to provide
+        a *mask* array with a value of 1 for those pixels. To take a
+        pixel into account you just need to set a value of 0 in the
+        mask array. Indeed the shape of the mask array should be
+        idential to the data shape (size of the array _must_ be the
+        same).
+
+        Masking can also be achieved by setting masked pixels to an
+        impossible value (-1) and calling this value the "dummy
+        value".  Some Pilatus detectors are setting non existing pixel
+        to -1 and dead pixels to -2. Then use dummy=-2 &
+        delta_dummy=1.5 so that any value between -3.5 and -0.5 are
+        considered as bad.
         """
         mask = self.makeMask(data, mask, dummy, delta_dummy)
         tth = self.twoThetaArray(data.shape)[mask]
         chi = self.chiArray(data.shape)[mask]
+        if tthRange is not None:
+            tthRange=[deg2rad(tthRange[0]),deg2rad(tthRange[-1])]
+        else:
+            tthRange=[tth.min(),tth.max()*EPS32]
+        if chiRange is not None:
+            chiRange=[deg2rad(chiRange[0]),deg2rad(chiRange[-1])]
+        else:
+            chiRange=[chi.min(),chi.max()*EPS32]
+        chi = self.chiArray(data.shape)[mask]
         bins = (nbPtChi, nbPt2Th)
         if bins not in self._nbPixCache:
             ref, binsChi, bins2Th = numpy.histogram2d(chi, tth,
-                                                      bins=list(bins))
+                                                      bins=list(bins),
+                                                      range=[chiRange,tthRange])
             self._nbPixCache[bins] = numpy.maximum(1.0, ref)
         if correctSolidAngle:
             data = (data / self.solidAngleArray(data.shape))[mask].astype("float64")
         else:
             data = data[mask].astype("float64")
-        if tthRange is not None:
-            tthRange = [numpy.deg2rad(i) for i in tthRange]
-        else:
-            tthRange = [numpy.deg2rad(tth.min()), numpy.deg2rad(tth.max())]
-        if chiRange is not None:
-            chiRange = tuple([numpy.deg2rad(i) for i in chiRange])
-        else:
-            chiRange = tuple([numpy.deg2rad(chi.min()),
-                              numpy.deg2rad(chi.max())])
 
         val, binsChi, bins2Th = numpy.histogram2d(chi, tth,
                                                   bins=list(bins),
-                                                  weights=data)
-#        ,
-#                                                  range=[chiRange, tthRange])
+                                                  weights=data,
+                                                  range=[chiRange,tthRange])
         I = val / self._nbPixCache[bins]
         if filename:
             self.save2D(filename, I, bins2Th, binsChi)
@@ -1440,6 +1499,41 @@ class AzimuthalIntegrator(Geometry):
 
         @return: azimuthaly regrouped data, 2theta pos and chipos
         @rtype: 3-tuple of ndarrays
+
+        This method convert the *data* image from the pixel
+        coordinates to the 2theta, chi coordinates. This is simular to
+        a rectangular to polar conversion. The number of point of the
+        new image is given by *nbPt2Th* and *nbPtChi*. If you give a
+        *filename*, the new image is also saved as an edf file.
+
+        It is possible to correct the 2theta/chi pattern using the
+        *correctSolidAngle* parameter. The weight of a pixel is
+        ponderate by its solid angle.
+
+        The 2theta and range of the new image can be set using the
+        *tthRange* parameter. If not given the maximum available range
+        is used. Indeed pixel outside this range are ignored.
+
+        Each pixel of the *data* image has a 2theta and a chi
+        coordinate. So it is possible to restrain on any of those
+        ranges ; you just need to set the range with the *tthRange* or
+        thee *chiRange* parameter. like the *tthRange* parameter,
+        value outside this range are ignored.
+
+        Sometimes one needs to mask a few pixels (beamstop, hot
+        pixels, ...), to ignore a few of them you just need to provide
+        a *mask* array with a value of 1 for those pixels. To take a
+        pixel into account you just need to set a value of 0 in the
+        mask array. Indeed the shape of the mask array should be
+        idential to the data shape (size of the array _must_ be the
+        same).
+
+        Masking can also be achieved by setting masked pixels to an
+        impossible value (-1) and calling this value the "dummy
+        value". Some Pilatus detectors are setting non existing pixel
+        to -1 and dead pixels to -2. Then use dummy=-2 &
+        delta_dummy=1.5 so that any value between -3.5 and -0.5 are
+        considered as bad.
         """
 
         if histogram is None:
@@ -1517,6 +1611,48 @@ class AzimuthalIntegrator(Geometry):
 
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
         @rtype: 3-tuple of ndarrays
+
+        This method convert the *data* image from the pixel
+        coordinates to the 2theta, chi coordinates. This is similar to
+        a rectangular to polar conversion. The number of point of the
+        new image is given by *nbPt2Th* and *nbPtChi*. If you give a
+        *filename*, the new image is also saved as an edf file.
+
+        It is possible to correct the 2theta/chi pattern using the
+        *correctSolidAngle* parameter. The weight of a pixel is
+        ponderate by its solid angle.
+
+        The 2theta and range of the new image can be set using the
+        *tthRange* parameter. If not given the maximum available range
+        is used. Indeed pixel outside this range are ignored.
+
+        Each pixel of the *data* image has a 2theta and a chi
+        coordinate. So it is possible to restrain on any of those
+        ranges ; you just need to set the range with the *tthRange* or
+        thee *chiRange* parameter. like the *tthRange* parameter,
+        value outside this range are ignored.
+
+        Sometimes one needs to mask a few pixels (beamstop, hot
+        pixels, ...), to ignore a few of them you just need to provide
+        a *mask* array with a value of 1 for those pixels. To take a
+        pixel into account you just need to set a value of 0 in the
+        mask array. Indeed the shape of the mask array should be
+        idential to the data shape (size of the array _must_ be the
+        same).
+
+        Masking can also be achieved by setting masked pixels to an
+        impossible value (-1) and calling this value the "dummy
+        value". Some Pilatus detectors are setting non existing pixel
+        to -1 and dead pixels to -2. Then use dummy=-2 &
+        delta_dummy=1.5 so that any value between -3.5 and -0.5 are
+        considered as bad.
+
+        the polarisation correction can be taken into account with the
+        *polarization_factor* parameter. Set it between [-1, 1], to
+        correct your data. If set to 0 there is no correction at all.
+
+        The *dark* and the *flat* can be provided to correct the data
+        before computing the radial integration.
         """
         if splitBBox is None:
             logger.warning("Unable to use splitBBox,"
@@ -1613,6 +1749,48 @@ class AzimuthalIntegrator(Geometry):
 
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
         @rtype: 3-tuple of ndarrays
+
+        This method convert the *data* image from the pixel
+        coordinates to the 2theta, chi coordinates. This is similar to
+        a rectangular to polar conversion. The number of point of the
+        new image is given by *nbPt2Th* and *nbPtChi*. If you give a
+        *filename*, the new image is also saved as an edf file.
+
+        It is possible to correct the 2theta/chi pattern using the
+        *correctSolidAngle* parameter. The weight of a pixel is
+        ponderate by its solid angle.
+
+        The 2theta and range of the new image can be set using the
+        *tthRange* parameter. If not given the maximum available range
+        is used. Indeed pixel outside this range are ignored.
+
+        Each pixel of the *data* image has a 2theta and a chi
+        coordinate. So it is possible to restrain on any of those
+        ranges ; you just need to set the range with the *tthRange* or
+        thee *chiRange* parameter. like the *tthRange* parameter,
+        value outside this range are ignored.
+
+        Sometimes one needs to mask a few pixels (beamstop, hot
+        pixels, ...), to ignore a few of them you just need to provide
+        a *mask* array with a value of 1 for those pixels. To take a
+        pixel into account you just need to set a value of 0 in the
+        mask array. Indeed the shape of the mask array should be
+        idential to the data shape (size of the array _must_ be the
+        same).
+
+        Masking can also be achieved by setting masked pixels to an
+        impossible value (-1) and calling this value the "dummy
+        value". Some Pilatus detectors are setting non existing pixel
+        to -1 and dead pixels to -2. Then use dummy=-2 &
+        delta_dummy=1.5 so that any value between -3.5 and -0.5 are
+        considered as bad.
+
+        the polarisation correction can be taken into account with the
+        *polarization_factor* parameter. Set it between [-1, 1], to
+        correct your data. If set to 0 there is no correction at all.
+
+        The *dark* and the *flat* can be provided to correct the data
+        before computing the radial integration.
         """
         if splitPixel is None:
             logger.warning("splitPixel is not available,"
@@ -1667,7 +1845,7 @@ class AzimuthalIntegrator(Geometry):
         return I, bins2Th, binsChi
     xrpd2 = xrpd2_splitBBox
 
-    def array_from_unit(self, shape, typ="center", unit="2th"):
+    def array_from_unit(self, shape, typ="center", unit=units.TTH):
         """
         Generate an array of position in different dimentions (R, Q,
         2Theta)
@@ -1676,47 +1854,18 @@ class AzimuthalIntegrator(Geometry):
         @type shape: ndarray.shape
         @param typ: "center", "corner" or "delta"
         @type typ: str
-        @param unit: can be "q", "2th" or "r" for now
-        @type unit: str
+        @param unit: can be Q, TTH, R for now
+        @type unit: pyFAI.units.Enum
 
         @return: R, Q or 2Theta array depending on unit
         @rtype: ndarray
         """
-        if "_" in unit:
-            unit = str(unit).split("_")[0].lower()
         if not typ in ("center", "corner", "delta"):
             logger.warning("Unknown type of array %s,"
                            " defaulting to 'center'" % typ)
             typ = "center"
-        if unit == "q":
-            if typ == "center":
-                out = self.qArray(shape)
-            elif typ == "corner":
-                out = self.cornerQArray(shape)
-            else:  # delta
-                out = self.deltaQ(shape)
-        elif unit == "2th":
-            if typ == "center":
-                out = self.twoThetaArray(shape)
-            elif typ == "corner":
-                out = self.cornerArray(shape)
-            else:  # delta
-                out = self.delta2Theta(shape)
-        elif unit == "r":
-            if typ == "center":
-                out = self.rArray(shape)
-            elif typ == "corner":
-                out = self.cornerRArray(shape)
-            else:  # delta
-                out = self.deltaR(shape)
-        else:
-            logger.warning("Unknown unit %s, defaulting to 2theta" % unit)
-            if typ == "center":
-                out = self.twoThetaArray(shape)
-            elif typ == "corner":
-                out = self.cornerArray(shape)
-            else:  # delta
-                out = self.delta2Theta(shape)
+        unit = units.to_unit(unit)
+        out = Geometry.__dict__[unit[typ]](self, shape)
         return out
 
     def integrate1d(self, data, nbPt, filename=None,
@@ -1725,7 +1874,7 @@ class AzimuthalIntegrator(Geometry):
                     radial_range=None, azimuth_range=None,
                     mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=0, dark=None, flat=None,
-                    method="lut", unit="q_nm^-1", safe=True):
+                    method="lut", unit=units.Q, safe=True):
         """
         Calculate the azimuthal integrated Saxs curve in q(nm^-1) by
         default
@@ -1762,8 +1911,8 @@ class AzimuthalIntegrator(Geometry):
         @type flat: ndarray
         @param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "lut_ocl" if you want to go on GPU, ....
         @type method: str
-        @param unit: can be "q_nm^-1", "2th_deg" or "r_mm" for now
-        @type unit: str
+        @param unit: can be Q, TTh, R for now
+        @type unit: pyFAI.units.Enum
         @param safe: Do some extra checks to ensure LUT is still valid. False is faster.
         @type safe: bool
 
@@ -1771,34 +1920,14 @@ class AzimuthalIntegrator(Geometry):
         @rtype: 3-tuple of ndarrays
         """
         method = method.lower()
+        unit = units.to_unit(unit)
         pos0_scale = 1.0  # nota we need anyway to make a copy !
         if mask is None:
             mask = self.mask
         shape = data.shape
-        if unit == "q_nm^-1":
-            pos0_scale = 1.0
-        elif unit == "q_A^-1":
-            if radial_range:
-                radial_range = tuple([0.1 * i for i in radial_range])
-            pos0_scale = 10.0
-        elif unit == "2th_rad":
-            pos0_scale = 1.0
-        elif unit == "2th_deg":
-            if radial_range:
-                radial_range = \
-                    tuple([deg2rad(i) for i in radial_range])
-            pos0_scale = 180.0 / pi
-        elif unit == "r_mm":
-            if radial_range:
-                radial_range = tuple([0.001 * i for i in radial_range])
-            pos0_scale = 1000.0  # convert m->mm
-        else:
-            logger.warning("Unknown unit %s,"
-                           " defaulting to 2theta (deg)" % unit)
-            unit = "2th_deg"
-            if radial_range:
-                radial_range = tuple([numpy.deg2rad(i) for i in radial_range])
-            pos0_scale = 180.0 / pi
+        pos0_scale = unit.scale
+        if radial_range:
+            radial_range = tuple([i / pos0_scale for i in radial_range])
         if variance is not None:
             assert variance.size == data.size
         elif error_model:
@@ -1844,7 +1973,7 @@ class AzimuthalIntegrator(Geometry):
                         mask_crc = self.detector._mask_crc
                     else:
                         mask_crc = crc32(mask)
-                    if self._lut_integrator.unit != unit.split("_")[0]:
+                    if self._lut_integrator.unit != unit:
                         reset = "unit changed"
                     if self._lut_integrator.bins != nbPt:
                         reset = "number of points changed"
@@ -1876,7 +2005,7 @@ class AzimuthalIntegrator(Geometry):
                 error = False
                 if reset:
                     logger.info("AI.integrate1d: Resetting integrator"
-                                   " because of %s" % reset)
+                                " because of %s" % reset)
                     try:
                         self._lut_integrator = \
                             self.setup_LUT(shape, nbPt, mask,
@@ -2100,14 +2229,16 @@ class AzimuthalIntegrator(Geometry):
             data = data[mask]
             if variance is not None:
                 variance = variance[mask]
-            ref, b = numpy.histogram(pos0, nbPt)
+            if radial_range is None:
+                radial_range = (pos0.min(), pos0.max() * EPS32)
+            ref, b = numpy.histogram(pos0, nbPt, range=radial_range)
             qAxis = (b[1:] + b[:-1]) / 2.0
             count = numpy.maximum(1, ref)
-            val, b = numpy.histogram(pos0, nbPt, weights=data)
+            val, b = numpy.histogram(pos0, nbPt, weights=data, range=radial_range)
             if error_model == "azimuthal":
                 variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
             if variance is not None:
-                var1d, b = numpy.histogram(pos0, nbPt, weights=variance)
+                var1d, b = numpy.histogram(pos0, nbPt, weights=variance, range=radial_range)
                 sigma = numpy.sqrt(var1d) / count
             I = val / count
         if pos0_scale:
@@ -2124,7 +2255,7 @@ class AzimuthalIntegrator(Geometry):
                     error_model=None, radial_range=None, azimuth_range=None,
                     mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=0, dark=None, flat=None,
-                    method="bbox", unit="q_nm^-1", safe=True):
+                    method="bbox", unit=units.Q, safe=True):
         """
         Calculate the azimuthal regrouped 2d image in q(nm^-1)/deg by default
 
@@ -2162,8 +2293,8 @@ class AzimuthalIntegrator(Geometry):
         @type flat: ndarray
         @param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "lut_ocl" if you want to go on GPU, ....
         @type method: str
-        @param unit: can be "q_nm^-1", "2th_deg" or "r_mm" for now
-        @type unit: str
+        @param unit: can be Q, TTH, R for now
+        @type unit: pyFAI.units.Enum
         @param safe: Do some extra checks to ensure LUT is still valid. False is faster.
         @type safe: bool
 
@@ -2172,31 +2303,13 @@ class AzimuthalIntegrator(Geometry):
         """
         method = method.lower()
         nbPt = (nbPt_rad, nbPt_azim)
-        pos0_scale = 1.0  # nota we need anyway t
+        unit = units.to_unit(unit)
+        pos0_scale = unit.scale
         if mask is None:
             mask = self.mask
         shape = data.shape
-        if unit == "q_nm^-1":
-            pos0_scale = 1.0
-        elif unit == "q_A^-1":
-            if radial_range:
-                radial_range = tuple([i / 10.0 for i in radial_range])
-            pos0_scale = 10.0
-        elif unit == "2th_rad":
-            pos0_scale = 1.0
-        elif unit == "2th_deg":
-            if radial_range:
-                radial_range = tuple([pi * i / 180.0 for i in radial_range])
-            pos0_scale = 180.0 / pi
-        elif unit == "r_mm":
-            pos0_scale = 0.001  # convert m->mm
-        else:
-            logger.warning("Unknown unit %s,"
-                           " defaulting to 2theta (deg)" % unit)
-            unit = "2th_deg"
-            if radial_range:
-                radial_range = tuple([numpy.deg2rad(i) for i in radial_range])
-            pos0_scale = 180.0 / pi
+        if radial_range:
+            radial_range = tuple([i / pos0_scale  for i in radial_range])
         if variance is not None:
             assert variance.size == data.size
         elif error_model:
@@ -2240,7 +2353,7 @@ class AzimuthalIntegrator(Geometry):
                         mask_crc = self.detector._mask_crc
                     else:
                         mask_crc = crc32(mask)
-                    if self._lut_integrator.unit != unit.split("_")[0]:
+                    if self._lut_integrator.unit != unit:
                         reset = "unit changed"
                     if self._lut_integrator.bins != nbPt:
                         reset = "number of points changed"
@@ -2457,23 +2570,29 @@ class AzimuthalIntegrator(Geometry):
                 data /= polarization
             if solidangle is not None:
                 data /= solidangle
+            pos0 = self.array_from_unit(shape, "center", unit)
+            pos1 = self.chiArray(shape)
             if radial_range is not None:
                 mask *= (pos0 >= min(radial_range))
                 mask *= (pos0 <= min(radial_range))
+            else:
+                radial_range = [pos0.min(), pos0.max() * EPS32]
             if azimuth_range is not None:
                 mask *= (pos1 >= min(azimuth_range))
                 mask *= (pos1 <= max(azimuth_range))
+            else:
+                azimuth_range = [pos1.min(), pos1.max() * EPS32]
             data = data[mask]
-            pos0 = self.array_from_unit(shape, "center", unit)[mask]
-            pos1 = self.chiArray(shape)[mask]
+            pos0 = pos0[mask]
+            pos1 = pos1[mask]
 #            if variance is not None:
 #                variance = variance[mask]
-            ref, b, c = numpy.histogram2d(pos1, pos0, (nbPt_azim, nbPt_rad))
+            ref, b, c = numpy.histogram2d(pos1, pos0, (nbPt_azim, nbPt_rad), range=[azimuth_range, radial_range])
             bins_azim = (b[1:] + b[:-1]) / 2.0
             bins_rad = (c[1:] + c[:-1]) / 2.0
             count = numpy.maximum(1, ref)
             val, b, c = numpy.histogram2d(pos1, pos0, (nbPt_azim, nbPt_rad),
-                                          weights=data)
+                                          weights=data, range=[azimuth_range, radial_range])
 #            if error_model == "azimuthal":
 #                variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
 #            if variance is not None:
@@ -2481,8 +2600,7 @@ class AzimuthalIntegrator(Geometry):
 #                sigma = numpy.sqrt(var1d) / count
             I = val / count
         # I know I make copies ....
-        if pos0_scale:
-            bins_rad = bins_rad * pos0_scale
+        bins_rad = bins_rad * pos0_scale
         bins_azim = bins_azim * 180.0 / pi
         if filename:
             self.save2D(filename, bins_rad, I, sigma, unit)
@@ -2496,7 +2614,7 @@ class AzimuthalIntegrator(Geometry):
              error_model=None, qRange=None, chiRange=None,
              mask=None, dummy=None, delta_dummy=None,
              polarization_factor=0, dark=None, flat=None,
-             method="bbox", unit="q_nm^-1"):
+             method="bbox", unit=units.Q):
         """
         Calculate the azimuthal integrated Saxs curve in q in nm^-1.
 
@@ -2590,21 +2708,23 @@ class AzimuthalIntegrator(Geometry):
             self.header = os.linesep.join([hdr + " " + i for i in headerLst])
         return self.header
 
-    def save1D(self, filename, dim1, I, error=None, dim1_unit="2th_deg"):
+    def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH):
+        dim1_unit = units.to_unit(dim1_unit)
         if filename:
             with open(filename, "w") as f:
                 f.write(self.makeHeaders())
                 f.write("%s# --> %s%s" % (os.linesep, filename, os.linesep))
                 if error is None:
-                    f.write("#%14s %14s %s" % (dim1_unit, "I ", os.linesep))
+                    f.write("#%14s %14s %s" % (dim1_unit.REPR, "I ", os.linesep))
                     f.write(os.linesep.join(["%14.6e  %14.6e %s" % (t, i, os.linesep) for t, i in zip(dim1, I)]))
                 else:
                     f.write("#%14s  %14s  %14s%s" %
-                            (dim1_unit, "I ", "sigma ", os.linesep))
+                            (dim1_unit.REPR, "I ", "sigma ", os.linesep))
                     f.write(os.linesep.join(["%14.6e  %14.6e %14.6e %s" % (t, i, s, os.linesep) for t, i, s in zip(dim1, I, error)]))
                 f.write(os.linesep)
 
-    def save2D(self, filename, I, dim1, dim2, dim1_unit="2th"):
+    def save2D(self, filename, I, dim1, dim2, dim1_unit=units.TTH):
+        dim1_unit = units.to_unit(dim1_unit)
         header = {"dist": str(self._dist),
                   "poni1": str(self._poni1),
                   "poni2": str(self._poni2),
@@ -2613,8 +2733,8 @@ class AzimuthalIntegrator(Geometry):
                   "rot3": str(self._rot3),
                   "chi_min": str(dim2.min()),
                   "chi_max": str(dim2.max()),
-                  dim1_unit + "_min": str(dim1.min()),
-                  dim1_unit + "_max": str(dim1.max()),
+                  dim1_unit.REPR + "_min": str(dim1.min()),
+                  dim1_unit.REPR + "_max": str(dim1.max()),
                   "pixelX": str(self.pixel2), # this is not a bug ... most people expect dim1 to be X
                   "pixelY": str(self.pixel1), # this is not a bug ... most people expect dim2 to be Y
                   }

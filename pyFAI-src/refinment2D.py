@@ -44,11 +44,14 @@ from PyMca import SGModule
 class Refinment2D(object):
     """
     refine the parameters from image itself ...
+    (Jerome est-ce que tu peux elaborer un petit peu plus ???)
     """
     def __init__(self, img, ai=None):
         """
-        @param: raw image we are working on
-        @param: ai azimuhal integrator we are working on
+        @param img: raw image we are working on
+        @type img: ndarray
+        @param ai: azimuhal integrator we are working on
+        @type ai: pyFAI.azimuthalIntegrator.AzimutalIntegrator
         """
         self.img = img
         if ai is None:
@@ -62,14 +65,29 @@ class Refinment2D(object):
 
     def reconstruct(self, tth, I):
         """
-        Reconstruct a perfect image according to 2th / I given in input
+        Reconstruct a perfect image according to 2th / I given in
+        input
 
         @param tth: 2 theta array
+        @type tth: ndarray
         @param I: intensity array
+        @type I: ndarray
+
+        @return: a reconstructed image
+        @rtype: ndarray
         """
         return numpy.interp(self.ai.twoThetaArray(self.shape), tth, I)
 
     def diff_tth_X(self, dx=0.1):
+        """
+        Jerome peux-tu décrire de quoi il retourne ???
+
+        @param dx: ???
+        @type: float ???
+
+        @return: ???
+        @rtype: ???
+        """
         f = self.ai.getFit2D()
         fp = f.copy()
         fm = f.copy()
@@ -88,6 +106,15 @@ class Refinment2D(object):
         return (dtthX * dImg).sum()
 
     def diff_tth_tilt(self, dx=0.1):
+        """
+        idem ici ???
+
+        @param dx: ???
+        @type dx: float ???
+
+        @return: ???
+        @rtype: ???
+        """
         f = self.ai.getFit2D()
         fp = f.copy()
         fm = f.copy()
@@ -106,6 +133,17 @@ class Refinment2D(object):
         return (dtthX * dImg).sum()
 
     def diff_Fit2D(self, axis="all", dx=0.1):
+        """
+        ???
+
+        @param axis: ???
+        @type axis: ???
+        @param dx: ???
+        @type dx: ???
+
+        @return: ???
+        @rtype: ???
+        """
         tth, I = self.ai.xrpd(self.img, max(self.shape))
         dI = SGModule.getSavitzkyGolay(I, npoints=5, degree=2, order=1)\
             / (tth[1] - tth[0])
@@ -131,6 +169,17 @@ class Refinment2D(object):
             return grad[axis]
 
     def scan_centerX(self, width=1.0, points=10):
+        """
+        ???
+
+        @param width: ???
+        @type width: float ???
+        @param points: ???
+        @type points: int ???
+
+        @return: ???
+        @rtype: ???
+        """
         f = self.ai.getFit2D()
         out = []
         for x in numpy.linspace(f["centerX"] - width / 2.0,
@@ -150,6 +199,17 @@ class Refinment2D(object):
                               points), out
 
     def scan_tilt(self, width=1.0, points=10):
+        """
+        ???
+
+        @param width: ???
+        @type width: float ???
+        @param points: ???
+        @type points: int ???
+
+        @return: ???
+        @rtype: ???
+        """
         f = self.ai.getFit2D()
         out = []
         for x in numpy.linspace(f["tilt"] - width / 2.0,
@@ -169,6 +229,21 @@ class Refinment2D(object):
                               points), out
 
     def scan_Fit2D(self, width=1.0, points=10, axis="tilt", dx=0.1):
+        """
+        ???
+
+        @param width: ???
+        @type width: float ???
+        @param points: ???
+        @type points: int ???
+        @param axis: ???
+        @type axis: str ???
+        @param dx: ???
+        @type dx: float ???
+
+        @return: ???
+        @rtype: ???
+        """
         logger.info("Scanning along axis %s" % axis)
         f = self.ai.getFit2D()
         out = []
