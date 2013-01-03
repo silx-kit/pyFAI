@@ -17,7 +17,7 @@ datasets = {"Fairchild.poni":utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
             "Pilatus1M.poni":utilstest.UtilsTest.getimage("1883/Pilatus1M.edf"),
             "Mar3450.poni":utilstest.UtilsTest.getimage("2201/LaB6_260210.mar3450")
       }
-
+b = None
 print pyFAI
 class Bench(object):
     HEADER = '\033[95m'
@@ -47,6 +47,11 @@ class Bench(object):
                 proc = subprocess.Popen(["sysctl", "-n", "machdep.cpu.brand_string"], stdout=subprocess.PIPE)
                 proc.wait()
                 self._cpu = proc.stdout.read().strip()
+            old = self._cpu 
+            self._cpu = old.replace("  "," ")
+            while old != self._cpu:
+                old = self._cpu
+                self._cpu = old.replace("  "," ")
         return self._cpu
 
     def get_gpu(self, devicetype="gpu", useFp64=False, platformid=None, deviceid=None):
@@ -108,7 +113,7 @@ out=ai.xrpd(data,N)""" % (param, fn)
             results[size / 1e6] = tmin * 1000.0
         gc.collect()
         self.print_sep()
-        label = "Forward_cython"
+        label = "1D_CPU_serial"
         self.meth.append(label)
         self.results[label] = results
         self.new_curve(results, label)
@@ -145,7 +150,7 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
             if R < self.LIMIT:
                 results[size / 1e6] = tmin * 1000.0
         self.print_sep()
-        label = "LUT_Cython_OpenMP"
+        label = "1D_CPU_parallel_OpenMP"
         self.meth.append(label)
         self.results[label] = results
         self.new_curve(results, label)
@@ -190,7 +195,7 @@ out=ai.xrpd_LUT_OCL(data,N,devicetype=r"%s",platformid=%s,deviceid=%s)""" % (par
             if R < self.LIMIT:
                 results[size / 1e6] = tmin * 1000.0
             gc.collect()
-        label = "LUT_OpenCL_%s" % devicetype
+        label = "1D_%s_parallel_OpenCL" % devicetype
         self.print_sep()
         self.meth.append(label)
         self.results[label] = results
@@ -228,7 +233,7 @@ out=ai.xrpd2(data,%s,%s)""" % (param, fn, N[0], N[1])
                 results[size / 1e6] = tmin * 1000.0
             gc.collect()
         self.print_sep()
-        label = "Foward_2D_CPU"
+        label = "2D_CPU_serial"
         self.meth.append(label)
         self.results[label] = results
         self.new_curve(results, label)
@@ -266,12 +271,12 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut")""" % (param, fn, N[0
                 results[size / 1e6] = tmin * 1000.0
             gc.collect()
         self.print_sep()
-        label = "LUT_2D_CPU"
+        label = "2D_CPU_parallel_OpenMP"
         self.meth.append(label)
         self.results[label] = results
         self.new_curve(results, label)
 
-    def bench_cpu2d_lut_ocl(self, devicetype="gpu", platformid=None, deviceid=None):
+    def bench_cpu2d_lut_ocl(self, devicetype="GPU", platformid=None, deviceid=None):
         print("Working on device: %s" % self.get_gpu())
         if (ocl is None) or not ocl.select_device(devicetype):
             print("No pyopencl or no such device: skipping benchmark")
@@ -307,7 +312,7 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut_ocl")""" % (param, fn,
                 results[size / 1e6] = tmin * 1000.0
             gc.collect()
         self.print_sep()
-        label = "LUT_2D_CPU"
+        label = "2D_%s_parallel_OpenCL"%devicetype.upper()
         self.meth.append(label)
         self.results[label] = results
         self.new_curve(results, label)
@@ -436,9 +441,9 @@ if __name__ == "__main__":
     print("Averaging over %i repetitions (best of 3)." % n)
     b = Bench(n)
     b.init_curve()
-#    b.bench_cpu1d()
-#    b.bench_cpu1d_lut()
-#    b.bench_cpu1d_ocl_lut("GPU")
+    b.bench_cpu1d()
+    b.bench_cpu1d_lut()
+    b.bench_cpu1d_ocl_lut("GPU")
 #    b.bench_cpu1d_ocl_lut("CPU")
 #    b.bench_gpu1d("gpu", True)
 #    b.bench_gpu1d("gpu", False)
@@ -453,5 +458,7 @@ if __name__ == "__main__":
     b.save()
     b.print_res()
 #    b.display_all()
-    plt.show()
+    b.ax.set_ylim(1,200)
+    #plt.show()
+    plt.ion()
     raw_input("Enter to quit")
