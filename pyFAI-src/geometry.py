@@ -1062,7 +1062,7 @@ class Geometry(object):
         Calculate the polarization correction accoding to the
         polarization factor:
 
-        @param factor: (Ih-Iv)/(Ih+Iv): varies between 0 (no polarization) and 1 (where division by 0 could occure)
+        @param factor: (Ih-Iv)/(Ih+Iv): varies between 0 (no polarization) and 1 (where division by 0 could occure at 2th=90, chi=0)
         @return 2D array with polarization correction array (intensity/polarisation)
         """
         if shape is None:
@@ -1070,22 +1070,28 @@ class Geometry(object):
                 raise RuntimeError(("You should provide a shape if the"
                                     " geometry is not yet initiallized"))
             shape = self._ttha.shape
-        if factor == 0:
-            return numpy.ones(shape, dtype=numpy.float32)
-        with self._sem:
-            if self._polarization \
-                    and (factor == self._polarization_factor) \
+        factor = float(factor)
+
+        if self._polarization is not None:
+            with self._sem:
+                if (factor == self._polarization_factor) \
                     and (shape == self._polarization.shape):
-                return self._polarization
-            else:
-                cos2_tth = numpy.cos(self.twoThetaArray(shape)) ** 2
-                self._polarization = \
-                    (1 + cos2_tth - factor
-                     * numpy.cos(2 * self.chiArray(shape))
-                     * (1 - cos2_tth)) / 2.0
-                self._polarization_factor = factor
-                self._polarization_crc = crc32(self._polarization)
-                return self._polarization
+                    return self._polarization
+        if factor == 0.0:
+            with self._sem:
+                    self._polarization = numpy.ones(shape, dtype=numpy.float32)
+                    self._polarization_factor = factor
+                    self._polarization_crc = crc32(self._polarization)
+                    return self._polarization
+        else:
+            tth = self.twoThetaArray(shape)
+            chi = self.chiArray(shape)
+            with self._sem:
+                    cos2_tth = numpy.cos(tth) ** 2
+                    self._polarization = (1 + cos2_tth - factor * numpy.cos(2 * chi) * (1 - cos2_tth)) / 2.0
+                    self._polarization_factor = factor
+                    self._polarization_crc = crc32(self._polarization)
+                    return self._polarization
 
     def reset(self):
         """
