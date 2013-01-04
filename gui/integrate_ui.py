@@ -1,10 +1,13 @@
 #!/usr/bin/python
 
-import sys, logging, json, os, time
+import sys, logging, json, os, time, types
+
+import os.path as op
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI")
 from PyQt4 import QtCore, QtGui, uic
+from PyQt4.QtCore import SIGNAL
 import pyFAI, fabio
 
 try:
@@ -18,52 +21,136 @@ except ImportError:
 window = None
 class AIWidget(QtGui.QWidget):
     """
-    TODO: add progress bar at bottom & update when proceeding
+
     """
     def __init__(self, input_data=None):
         self.ai = pyFAI.AzimuthalIntegrator()
         self.input_data = input_data
         QtGui.QWidget.__init__(self)
         uic.loadUi('integration.ui', self)
-        self.all_detectors = pyFAI.detectors.ALL_DETECTORS.keys() + ["detector"]
+        self.all_detectors = pyFAI.detectors.ALL_DETECTORS.keys()
         self.all_detectors.sort()
         self.detector.addItems([i.capitalize() for i in self.all_detectors])
         self.detector.setCurrentIndex(self.all_detectors.index("detector"))
-        self.connect(self.file_poni, QtCore.SIGNAL("clicked()"), self.select_ponifile)
-        self.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.proceed)
-        self.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.die)
-        saveButton = self.buttonBox.button(QtGui.QDialogButtonBox.Save)
-        self.connect(saveButton, QtCore.SIGNAL("clicked()"), self.dump)
-        resetButton = self.buttonBox.button(QtGui.QDialogButtonBox.Reset)
-        self.connect(resetButton, QtCore.SIGNAL("clicked()"), self.restore)
-        self.connect(self.buttonBox, QtCore.SIGNAL("helpRequested()"), self.help)
+        #connect file selection windows
+        self.connect(self.file_poni, SIGNAL("clicked()"), self.select_ponifile)
+        self.connect(self.file_splinefile, SIGNAL("clicked()"), self.select_splinefile)
+        self.connect(self.file_mask_file, SIGNAL("clicked()"), self.select_maskfile)
+        self.connect(self.file_dark_current, SIGNAL("clicked()"), self.select_darkcurrent)
+        self.connect(self.file_flat_field, SIGNAL("clicked()"), self.select_flatfield)
+        #connect button bar 
+        self.okButton = self.buttonBox.button(QtGui.QDialogButtonBox.Ok)
+        self.saveButton = self.buttonBox.button(QtGui.QDialogButtonBox.Save)
+        self.resetButton = self.buttonBox.button(QtGui.QDialogButtonBox.Reset)
+        self.connect(self.okButton, SIGNAL("clicked()"), self.proceed)
+        self.connect(self.saveButton, SIGNAL("clicked()"), self.dump)
+        self.connect(self.buttonBox, SIGNAL("helpRequested()"), self.help)
+        self.connect(self.buttonBox, SIGNAL("rejected()"), self.die)
+        self.connect(self.resetButton, SIGNAL("clicked()"), self.restore)
+
+        self.connect(self.detector, SIGNAL("currentIndexChanged(int)"), self.detector_changed)
         self.restore()
         self.progressBar.setValue(0)
 
     def proceed(self):
+        out = None
         self.dump()
-        print("Let's work a bit")
+        logger.debug("Let's work a bit")
         self.set_ai()
+        if self.q_nm.isChecked():
+            unit = "q_nm^-1"
+        elif self.tth_deg.isChecked():
+            unit = "2th_deg"
+        elif self.r_mm.isChecked():
+            unit = "r_mm"
+        else:
+            logger.warning("Undefined unit !!! falling back on 2th_deg")
+            unit = "2th_deg"
+
+        dummy = None
+        delta_dummy = None
+        if bool(self.do_dummy.isChecked()):
+            dummy = float(str(self.val_dummy.text()).strip())
+            delta_dummy = str(self.delta_dummy.text()).strip()
+            if delta_dummy:
+                delta_dummy = float(delta_dummy)
+            else:
+                delta_dummy = None
+        if bool(self.do_polarization.isChecked()):
+            polarization_factor = float(self.polarization_factor.value())
+        else:
+            polarization_factor = 0
+        npt_rad = int(str(self.rad_pt.text()).strip())
+        if self.do_2D.isChecked():
+            npt_azim = int(str(self.rad_pt.text()).strip())
+        else:
+            npt_azim = None
+        logger.debug("processing %s" % self.input_data)
+        if self.input_data in [None, []]:
+            logger.warning("No input data to process")
+            return
+        elif "ndim" in dir(self.input_data) and self.input_data.ndim == 3:
+            #We have a numpy array of dim3 
+            if npt_azim:
+                out = numpy.zeros((self.input_data.shape[0], npt_azim, npt_rad), dtype=numpy.float32)
+                for i in range(self.input_data.shape[0]):
+                    self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
+                    out[i] = self.ai.integrate2d(self.input_data[i], nbPt_rad=npt_rad, nbPt_azim=npt_azim,
+                                                 filename=None, dummy=dummy, delta_dummy=delta_dummy,
+                                                 polarization_factor=polarization_factor,
+                                                 method="lut", unit=unit, safe=False)[0]
+
+            else:
+                out = numpy.zeros((self.input_data.shape[0], npt_azim), dtype=numpy.float32)
+                for i in range(self.input_data.shape[0]):
+                    self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
+                    out[i] = self.ai.integrate1d(self.input_data[i], nbPt=npt_rad,
+                                                 filename=None, dummy=dummy, delta_dummy=delta_dummy,
+                                                 polarization_factor=polarization_factor,
+                                                 method="lut", unit=unit, safe=False)[1]
 
 
+        elif "__len__" in dir(self.input_data):
+            out = []
+            for i, item in enumerate(self.input_data):
+                self.progressBar.setValue(100.0 * i / len(self.input_data))
+                logger.debug("processing %s" % item)
+                if (type(item) in types.StringTypes) and op.exists(item):
+                    data = fabio.open(item).data
+                    if npt_azim:
+                        output = output = op.splitext(item)[0] + ".azim"
+                    else:
+                        output = output = op.splitext(item)[0] + ".dat"
+                else:
+                    logger.warning("item is not a file ... guessing it is a numpy array")
+                    data = item
+                    output = None
+                if npt_azim:
+                    out.append(self.ai.integrate2d(data=data,
+                                                   nbPt_rad=npt_rad, nbPt_azim=npt_azim,
+                                                   filename=output,
+                                                   dummy=dummy, delta_dummy=delta_dummy,
+                                                   polarization_factor=polarization_factor,
+                                                   method="lut", unit=unit, safe=False)[0])
+                else:
+                    out.append(self.ai.integrate1d(data=data,
+                                                   nbPt=npt_rad, # nbPt_azim=npt_azim,
+                                                   filename=output,
+                                                   dummy=dummy, delta_dummy=delta_dummy,
+                                                   polarization_factor=polarization_factor,
+                                                   method="lut", unit=unit, safe=False)[0])
 
-#                   "polarization_factor":str(self.val_dummy.text()).strip(),
-#                   "rad_pt":str(self.rad_pt.text()).strip(),
-#                   "do_2D":bool(self.do_2D.isChecked()),
-#                   "azim_pt":str(self.rad_pt.text()).strip(),
-#                   }
-
-        for i in range(100):
-            self.progressBar.setValue(i)
-            time.sleep(0.1)
+        logger.info("Processing Done !")
+        self.progressBar.setValue(100)
         self.die()
+        return out
 
     def die(self):
-        print("bye bye")
+        logger.debug("bye bye")
         self.deleteLater()
 
     def help(self):
-        print("Please, help")
+        logger.debug("Please, help")
 
     def dump(self, filename=".azimint.json"):
         """
@@ -77,9 +164,9 @@ class AIWidget(QtGui.QWidget):
         to_save = {"poni": str(self.poni.text()).strip(),
                    "detector": str(self.detector.currentText()).lower(),
                    "wavelength":str(self.wavelength.text()).strip(),
-                   "splinefile":str(self.splinefile.text()).strip(),
+                   "splineFile":str(self.splineFile.text()).strip(),
                    "pixel1": str(self.pixel1.text()).strip(),
-                   "poni1":str(self.pixel2.text()).strip(),
+                   "pixel2":str(self.pixel2.text()).strip(),
                    "dist":str(self.dist.text()).strip(),
                    "poni1":str(self.poni1.text()).strip(),
                    "poni2":str(self.poni2.text()).strip(),
@@ -93,10 +180,10 @@ class AIWidget(QtGui.QWidget):
                    "do_polarization":bool(self.do_polarization.isChecked()),
                    "val_dummy":str(self.val_dummy.text()).strip(),
                    "delta_dummy":str(self.delta_dummy.text()).strip(),
-                   "mask_file":str(self.val_dummy.text()).strip(),
-                   "dark_current":str(self.val_dummy.text()).strip(),
-                   "flat_field":str(self.val_dummy.text()).strip(),
-                   "polarization_factor":str(self.val_dummy.text()).strip(),
+                   "mask_file":str(self.mask_file.text()).strip(),
+                   "dark_current":str(self.dark_current.text()).strip(),
+                   "flat_field":str(self.flat_field.text()).strip(),
+                   "polarization_factor":float(self.polarization_factor.value()),
                    "rad_pt":str(self.rad_pt.text()).strip(),
                    "do_2D":bool(self.do_2D.isChecked()),
                    "azim_pt":str(self.rad_pt.text()).strip().strip(),
@@ -109,7 +196,7 @@ class AIWidget(QtGui.QWidget):
             to_save["unit"] = "r_mm"
         with open(filename, "w") as myFile:
             json.dump(to_save, myFile, indent=4)
-        print("Saved")
+        logger.debug("Saved")
 
     def restore(self, filename=".azimint.json"):
         """
@@ -119,7 +206,7 @@ class AIWidget(QtGui.QWidget):
         @type filename: str
 
         """
-        print("Restore")
+        logger.debug("Restore")
         if not os.path.isfile(filename):
             logger.error("No such file: %s" % filename)
             return
@@ -127,7 +214,7 @@ class AIWidget(QtGui.QWidget):
         setup_data = {  "poni": self.poni.setText,
 #        "detector": self.all_detectors[self.detector.getCurrentIndex()],
                         "wavelength":self.wavelength.setText,
-                        "splinefile":self.splinefile.setText,
+                        "splineFile":self.splineFile.setText,
                         "pixel1": self.pixel1.setText,
                         "pixel2":self.pixel2.setText,
                         "dist":self.dist.setText,
@@ -143,13 +230,13 @@ class AIWidget(QtGui.QWidget):
                         "val_dummy": self.val_dummy.setText,
                         "delta_dummy": self.delta_dummy.setText,
                         "do_mask":  self.do_mask.setChecked,
-                        "mask_file":self.val_dummy.setText,
-                        "dark_current":self.val_dummy.setText,
-                        "flat_field":self.val_dummy.setText,
-                        "polarization_factor":self.val_dummy.setText,
+                        "mask_file":self.mask_file.setText,
+                        "dark_current":self.dark_current.setText,
+                        "flat_field":self.flat_field.setText,
+                        "polarization_factor":self.polarization_factor.setValue,
                         "rad_pt":self.rad_pt.setText,
                         "do_2D":self.do_2D.setChecked,
-                        "azim_pt":self.rad_pt.setText,
+                        "azim_pt":self.azim_pt.setText,
                    }
         for key, value in setup_data.items():
             if key in data:
@@ -172,6 +259,39 @@ class AIWidget(QtGui.QWidget):
         self.poni.setText(ponifile)
         self.set_ponifile(ponifile)
 
+    def select_splinefile(self):
+        logger.debug("select_splinefile")
+        splinefile = str(QtGui.QFileDialog.getOpenFileName())
+        if splinefile:
+            try:
+                self.ai.detector.set_splineFile(splinefile)
+                self.pixel1.setText(str(self.ai.pixel1))
+                self.pixel2.setText(str(self.ai.pixel2))
+                self.splineFile.setText(self.ai.detector.splineFile or "")
+            except Exception as error:
+                logger.error("failed %s on %s" % (error, splinefile))
+
+    def select_maskfile(self):
+        logger.debug("select_maskfile")
+        maskfile = str(QtGui.QFileDialog.getOpenFileName())
+        if maskfile:
+            self.mask_file.setText(maskfile or "")
+            self.do_mask.setChecked(True)
+
+    def select_darkcurrent(self):
+        logger.debug("select_darkcurrent")
+        darkcurrent = str(QtGui.QFileDialog.getOpenFileName())
+        if darkcurrent:
+            self.dark_current.setText(darkcurrent or "")
+            self.do_dark.setChecked(True)
+
+    def select_flatfield(self):
+        logger.debug("select_flatfield")
+        flatfield = str(QtGui.QFileDialog.getOpenFileName())
+        if flatfield:
+            self.flat_field.setText(flatfield or "")
+            self.do_flat.setChecked(True)
+
     def set_ponifile(self, ponifile=None):
         if ponifile is None:
             ponifile = self.poni.text()
@@ -189,7 +309,7 @@ class AIWidget(QtGui.QWidget):
         self.rot1.setText(str(self.ai.rot1))
         self.rot2.setText(str(self.ai.rot2))
         self.rot3.setText(str(self.ai.rot3))
-        self.splinefile.setText(self.ai.detector.splineFile or "")
+        self.splineFile.setText(self.ai.detector.splineFile or "")
         name = self.ai.detector.name.lower()
         if name in self.all_detectors:
             self.detector.setCurrentIndex(self.all_detectors.index(name))
@@ -225,9 +345,9 @@ class AIWidget(QtGui.QWidget):
                     logger.warning("Wavelength is in meter ... unlikely value %s" % fwavelength)
                 self.ai.wavelength = fwavelength
 
-        splinefile = str(self.splinefile.text()).strip()
-        if splinefile and os.path.isfile(splinefile):
-            self.ai.detector.splineFile = splinefile
+        splineFile = str(self.splineFile.text()).strip()
+        if splineFile and os.path.isfile(splineFile):
+            self.ai.detector.splineFile = splineFile
 
         self.ai.pixel1 = self._float("pixel1", 1)
         self.ai.pixel2 = self._float("pixel2", 1)
@@ -238,10 +358,7 @@ class AIWidget(QtGui.QWidget):
         self.ai.rot2 = self._float("rot2", 0)
         self.ai.rot3 = self._float("rot3", 0)
 
-#                   "do_dummy": bool(self.do_dummy.isChecked()),
-#                   "do_polarization":bool(self.do_polarization.isChecked()),
-#                   "val_dummy":str(self.val_dummy.text()).strip(),
-#                   "delta_dummy":str(self.delta_dummy.text()).strip(),
+
         mask_file = str(self.val_dummy.text()).strip()
         if mask_file and os.path.exists(mask_file) and bool(self.do_mask.isChecked()):
             try:
@@ -269,8 +386,42 @@ class AIWidget(QtGui.QWidget):
             self.ai.darkcurrent = flats.mean(axis= -1)
         print self.ai
 
+    def detector_changed(self):
+        logger.debug("detector_changed")
+        detector = str(self.detector.currentText()).lower()
+        inst = pyFAI.detectors.detector_factory(detector)
+        if inst.force_pixel:
+            self.pixel1.setText(str(inst.pixel1))
+            self.pixel2.setText(str(inst.pixel2))
+            self.splineFile.setText("")
+        elif self.splineFile.text():
+            splineFile = str(self.splineFile.text()).strip()
+            if os.path.isfile(splineFile):
+                inst.set_splineFile(splineFile)
+                self.pixel1.setText(str(inst.pixel1))
+                self.pixel2.setText(str(inst.pixel2))
+            else:
+                logger.warning("No such spline file %s" % splineFile)
+        self.ai.detector = inst
+
 if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
+    from optparse import OptionParser
+    usage = "usage: %prog [options] file1.edf file2.edf ..."
+    version = "%prog " + pyFAI.version
+    parser = OptionParser(usage=usage, version=version)
+    parser.add_option("-v", "--verbose",
+                          action="store_true", dest="verbose", default=False,
+                          help="switch to verbose/debug mode")
+    (options, args) = parser.parse_args()
+    # Analyse aruments and options
+    args = [i for i in args if os.path.exists(i)]
+#        if len(args) != 1:
+#            parser.error("incorrect number of arguments")
+    if options.verbose:
+         logger.info("setLevel: debug")
+         logger.setLevel(logging.DEBUG)
+    app = QtGui.QApplication([])
     window = AIWidget()
+    window.set_input_data(args)
     window.show()
     sys.exit(app.exec_())
