@@ -2716,11 +2716,11 @@ class AzimuthalIntegrator(Geometry):
                 f.write("%s# --> %s%s" % (os.linesep, filename, os.linesep))
                 if error is None:
                     f.write("#%14s %14s %s" % (dim1_unit.REPR, "I ", os.linesep))
-                    f.write(os.linesep.join(["%14.6e  %14.6e %s" % (t, i, os.linesep) for t, i in zip(dim1, I)]))
+                    f.write(os.linesep.join(["%14.6e  %14.6e" % (t, i) for t, i in zip(dim1, I)]))
                 else:
                     f.write("#%14s  %14s  %14s%s" %
                             (dim1_unit.REPR, "I ", "sigma ", os.linesep))
-                    f.write(os.linesep.join(["%14.6e  %14.6e %14.6e %s" % (t, i, s, os.linesep) for t, i, s in zip(dim1, I, error)]))
+                    f.write(os.linesep.join(["%14.6e  %14.6e %14.6e" % (t, i, s) for t, i, s in zip(dim1, I, error)]))
                 f.write(os.linesep)
 
     def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH):
