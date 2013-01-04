@@ -1,9 +1,8 @@
 #!/usr/bin/python
 
 import sys, logging, json, os, time, types
-
 import os.path as op
-
+import numpy
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI")
 from PyQt4 import QtCore, QtGui, uic
@@ -38,7 +37,7 @@ class AIWidget(QtGui.QWidget):
         self.connect(self.file_mask_file, SIGNAL("clicked()"), self.select_maskfile)
         self.connect(self.file_dark_current, SIGNAL("clicked()"), self.select_darkcurrent)
         self.connect(self.file_flat_field, SIGNAL("clicked()"), self.select_flatfield)
-        #connect button bar 
+        # connect button bar
         self.okButton = self.buttonBox.button(QtGui.QDialogButtonBox.Ok)
         self.saveButton = self.buttonBox.button(QtGui.QDialogButtonBox.Save)
         self.resetButton = self.buttonBox.button(QtGui.QDialogButtonBox.Reset)
@@ -86,11 +85,13 @@ class AIWidget(QtGui.QWidget):
         else:
             npt_azim = None
         logger.debug("processing %s" % self.input_data)
+        start_time = time.time()
         if self.input_data in [None, []]:
             logger.warning("No input data to process")
             return
+
         elif "ndim" in dir(self.input_data) and self.input_data.ndim == 3:
-            #We have a numpy array of dim3 
+            # We have a numpy array of dim3
             if npt_azim:
                 out = numpy.zeros((self.input_data.shape[0], npt_azim, npt_rad), dtype=numpy.float32)
                 for i in range(self.input_data.shape[0]):
@@ -140,7 +141,7 @@ class AIWidget(QtGui.QWidget):
                                                    polarization_factor=polarization_factor,
                                                    method="lut", unit=unit, safe=False)[0])
 
-        logger.info("Processing Done !")
+        logger.info("Processing Done in %.3fs !" % (time.time() - start_time))
         self.progressBar.setValue(100)
         self.die()
         return out
@@ -298,8 +299,8 @@ class AIWidget(QtGui.QWidget):
             print ponifile
         try:
             self.ai = pyFAI.load(ponifile)
-        except:
-            logger.error("file %s does not look like a poni-file" % ponifile)
+        except Exception as error:
+            logger.error("file %s does not look like a poni-file, error %s" % (ponifile, error))
             return
         self.pixel1.setText(str(self.ai.pixel1))
         self.pixel2.setText(str(self.ai.pixel2))
@@ -331,6 +332,8 @@ class AIWidget(QtGui.QWidget):
 
     def set_ai(self):
         poni = str(self.poni.text()).strip()
+        if poni and os.path.isfile(poni):
+            self.ai = pyFAI.load(poni)
         detector = str(self.detector.currentText()).lower().strip() or "detector"
         self.ai.detector = pyFAI.detectors.detector_factory(detector)
 
@@ -363,8 +366,8 @@ class AIWidget(QtGui.QWidget):
         if mask_file and os.path.exists(mask_file) and bool(self.do_mask.isChecked()):
             try:
                 mask = fabio.open(mask_file).data
-            except Exception:
-                logger.error("Unable to load mask file %s" % maskfile)
+            except Exception as error:
+                logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
             else:
                 self.ai.mask = mask
         dark_files = [i.strip() for i in str(self.val_dummy.text()).split(",")
@@ -418,8 +421,8 @@ if __name__ == "__main__":
 #        if len(args) != 1:
 #            parser.error("incorrect number of arguments")
     if options.verbose:
-         logger.info("setLevel: debug")
-         logger.setLevel(logging.DEBUG)
+        logger.info("setLevel: debug")
+        logger.setLevel(logging.DEBUG)
     app = QtGui.QApplication([])
     window = AIWidget()
     window.set_input_data(args)
