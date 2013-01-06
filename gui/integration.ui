@@ -513,7 +513,7 @@
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_7">
          <item>
-          <widget class="QCheckBox" name="checkBox">
+          <widget class="QCheckBox" name="do_radial_range">
            <property name="toolTip">
             <string>Limit/Force the radial range</string>
            </property>
@@ -523,7 +523,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="checkBox_2">
+          <widget class="QCheckBox" name="do_azimuthal_range">
            <property name="toolTip">
             <string>Limit/force the azimuthal range</string>
            </property>

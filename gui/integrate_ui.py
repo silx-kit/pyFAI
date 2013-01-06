@@ -8,6 +8,7 @@ logger = logging.getLogger("pyFAI")
 from PyQt4 import QtCore, QtGui, uic
 from PyQt4.QtCore import SIGNAL
 import pyFAI, fabio
+from pyFAI.opencl import ocl
 
 try:
     from rfoo.utils import rconsole
@@ -20,7 +21,11 @@ except ImportError:
 window = None
 class AIWidget(QtGui.QWidget):
     """
-
+    TODO: code for
+    chi_discontinuity_at_0
+    do_radial_range
+    do_azimuthal_range
+    do_openCL
     """
     def __init__(self, input_data=None):
         self.ai = pyFAI.AzimuthalIntegrator()
@@ -90,7 +95,7 @@ class AIWidget(QtGui.QWidget):
             logger.warning("No input data to process")
             return
 
-        elif "ndim" in dir(self.input_data) and self.input_data.ndim == 3:
+        elif "ndim" in dir(self.input_data) and (self.input_data.ndim == 3):
             # We have a numpy array of dim3
             if npt_azim:
                 out = numpy.zeros((self.input_data.shape[0], npt_azim, npt_rad), dtype=numpy.float32)
