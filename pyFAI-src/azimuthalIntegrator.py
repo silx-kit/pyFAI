@@ -1437,19 +1437,19 @@ class AzimuthalIntegrator(Geometry):
         tth = self.twoThetaArray(data.shape)[mask]
         chi = self.chiArray(data.shape)[mask]
         if tthRange is not None:
-            tthRange=[deg2rad(tthRange[0]),deg2rad(tthRange[-1])]
+            tthRange = [deg2rad(tthRange[0]), deg2rad(tthRange[-1])]
         else:
-            tthRange=[tth.min(),tth.max()*EPS32]
+            tthRange = [tth.min(), tth.max() * EPS32]
         if chiRange is not None:
-            chiRange=[deg2rad(chiRange[0]),deg2rad(chiRange[-1])]
+            chiRange = [deg2rad(chiRange[0]), deg2rad(chiRange[-1])]
         else:
-            chiRange=[chi.min(),chi.max()*EPS32]
+            chiRange = [chi.min(), chi.max() * EPS32]
         chi = self.chiArray(data.shape)[mask]
         bins = (nbPtChi, nbPt2Th)
         if bins not in self._nbPixCache:
             ref, binsChi, bins2Th = numpy.histogram2d(chi, tth,
                                                       bins=list(bins),
-                                                      range=[chiRange,tthRange])
+                                                      range=[chiRange, tthRange])
             self._nbPixCache[bins] = numpy.maximum(1.0, ref)
         if correctSolidAngle:
             data = (data / self.solidAngleArray(data.shape))[mask].astype("float64")
@@ -1459,7 +1459,7 @@ class AzimuthalIntegrator(Geometry):
         val, binsChi, bins2Th = numpy.histogram2d(chi, tth,
                                                   bins=list(bins),
                                                   weights=data,
-                                                  range=[chiRange,tthRange])
+                                                  range=[chiRange, tthRange])
         I = val / self._nbPixCache[bins]
         if filename:
             self.save2D(filename, I, bins2Th, binsChi)
@@ -1945,7 +1945,7 @@ class AzimuthalIntegrator(Geometry):
         else:
             solidangle = None
         if polarization_factor != 0:
-            polarization = self.polarization(shape, polarization_factor)
+            polarization = self.polarization(shape, float(polarization_factor))
         else:
             polarization = None
         if dark is None:
@@ -2603,7 +2603,7 @@ class AzimuthalIntegrator(Geometry):
         bins_rad = bins_rad * pos0_scale
         bins_azim = bins_azim * 180.0 / pi
         if filename:
-            self.save2D(filename, bins_rad, I, sigma, unit)
+            self.save2D(filename, I, bins_rad, bins_azim, sigma, unit)
         if sigma is not None:
             return I, bins_rad, bins_azim, sigma
         else:
@@ -2716,14 +2716,14 @@ class AzimuthalIntegrator(Geometry):
                 f.write("%s# --> %s%s" % (os.linesep, filename, os.linesep))
                 if error is None:
                     f.write("#%14s %14s %s" % (dim1_unit.REPR, "I ", os.linesep))
-                    f.write(os.linesep.join(["%14.6e  %14.6e %s" % (t, i, os.linesep) for t, i in zip(dim1, I)]))
+                    f.write(os.linesep.join(["%14.6e  %14.6e" % (t, i) for t, i in zip(dim1, I)]))
                 else:
                     f.write("#%14s  %14s  %14s%s" %
                             (dim1_unit.REPR, "I ", "sigma ", os.linesep))
-                    f.write(os.linesep.join(["%14.6e  %14.6e %14.6e %s" % (t, i, s, os.linesep) for t, i, s in zip(dim1, I, error)]))
+                    f.write(os.linesep.join(["%14.6e  %14.6e %14.6e" % (t, i, s) for t, i, s in zip(dim1, I, error)]))
                 f.write(os.linesep)
 
-    def save2D(self, filename, I, dim1, dim2, dim1_unit=units.TTH):
+    def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH):
         dim1_unit = units.to_unit(dim1_unit)
         header = {"dist": str(self._dist),
                   "poni1": str(self._poni1),
@@ -2744,8 +2744,11 @@ class AzimuthalIntegrator(Geometry):
         for key in f2d:
             header["key"] = f2d[key]
         try:
-            fabio.edfimage.edfimage(data=I.astype("float32"),
-                                    header=header).write(filename)
+            img = fabio.edfimage.edfimage(data=I.astype("float32"),
+                                    header=header)
+            if error is not None:
+                img.appendFrame(data=error, header={"EDF_DataBlockID":"1.Image.Error"})
+            img.write(filename)
         except IOError:
             logger.error("IOError while writing %s" % filename)
 

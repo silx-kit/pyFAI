@@ -49,7 +49,7 @@ class Detector(object):
     """
     Generic class representing a 2D detector
     """
-
+    force_pixel = False
     def __init__(self, pixel1=None, pixel2=None, splineFile=None):
         """
         @param pixel1: size of the pixel in meter along the slow dimension (often Y)
@@ -271,7 +271,7 @@ class Pilatus(Detector):
     """
     MODULE_SIZE = (195, 487)
     MODULE_GAP = (17, 7)
-
+    force_pixel = True
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         Detector.__init__(self, pixel1, pixel2)
 
@@ -311,6 +311,7 @@ class Pilatus2M(Pilatus):
     """
     Pilatus 2M detector
     """
+    force_pixel = True
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         Pilatus.__init__(self, pixel1, pixel2)
         self.max_shape = (1475, 1679)
@@ -320,6 +321,7 @@ class Pilatus6M(Pilatus):
     """
     Pilatus 6M detector
     """
+    force_pixel = True
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         Pilatus.__init__(self, pixel1, pixel2)
         self.max_shape = (2527, 2463)
@@ -329,6 +331,7 @@ class Fairchild(Detector):
     """
     Fairchild Condor 486:90 detector
     """
+    force_pixel = True
     def __init__(self, pixel1=15e-6, pixel2=15e-6):
         Detector.__init__(self, pixel1, pixel2)
         self.name = "Fairchild Condor 486:90"
@@ -340,15 +343,20 @@ class FReLoN(Detector):
     FReLoN detector:
     The spline is mandatory to correct for geometric distortion of the taper
     """
-    def __init__(self, splineFile):
-        Detector.__init__(self, splineFile)
-        self.max_shape = (self.spline.ymax - self.spline.ymin,
-                          self.spline.xmax - self.spline.xmin)
+    def __init__(self, splineFile=None):
+        Detector.__init__(self, splineFile=splineFile)
+        if splineFile:
+            self.max_shape = (self.spline.ymax - self.spline.ymin,
+                              self.spline.xmax - self.spline.xmin)
+        else:
+            self.max_shape = (2048, 2048)
+
 class Basler(Detector):
     """
     Basler camera are simple CCD camara over GigaE 
     
     """
+    force_pixel = True
     def __init__(self, pixel=3.75e-6):
         Detector.__init__(self, pixel1=pixel, pixel2=pixel)
         self.max_shape = (966, 1296)
@@ -361,7 +369,7 @@ class Xpad_flat(Detector):
     """
     MODULE_SIZE = (120, 80)
     MODULE_GAP = (3 + 3.57 * 1000 / 130, 3)  # in pixels
-
+    force_pixel = True
     def __init__(self, pixel1=130e-6, pixel2=130e-6):
         Detector.__init__(self, pixel1, pixel2)
         self.max_shape = (960, 560)
