@@ -901,6 +901,10 @@ class Geometry(object):
         set the geometry from a pyFAI-like dict
         """
         with self._sem:
+            if "detector" in kwargs:
+                self.detector = detectors.detector_factory(kwargs["detector"])
+            else:
+                self.detector = detectors.Detector()
             for key in ["dist", "poni1", "poni2",
                         "rot1", "rot2", "rot3",
                         "pixel1", "pixel2", "splineFile"]:
