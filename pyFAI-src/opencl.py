@@ -49,7 +49,7 @@ class Device(object):
     """
     def __init__(self, name=None, type=None, version=None, driver_version=None,
                  extensions="", memory=None, available=None,
-                 cores=None, frequency=None):
+                 cores=None, frequency=None, id=0):
         self.name = name
         self.type = type
         self.version = version
@@ -59,6 +59,7 @@ class Device(object):
         self.available = available
         self.cores = cores
         self.frequency = frequency
+        self.id = id
 
     def __repr__(self):
         return "%s" % self.name
@@ -67,18 +68,38 @@ class Platform(object):
     """
     Simple class that contains the structure of an OpenCL platform
     """
-    def __init__(self, name=None, vendor=None, version=None, extensions=None):
+    def __init__(self, name=None, vendor=None, version=None, extensions=None, id=0):
         self.name = name
         self.vendor = vendor
         self.version = version
         self.extensions = extensions.split()
         self.devices = []
+        self.id = id
 
     def __repr__(self):
         return "%s" % self.name
 
     def add_device(self, device):
         self.devices.append(device)
+
+    def get_device(self, key):
+        """
+        Return a device according to key
+        
+        @param key: identifier for a device, either it's id (int) or it's name 
+        @type key: int or str
+        """
+        out = None
+        try:
+            devid = int(key)
+        except ValueError:
+            for a_dev in self.devices:
+                if a_dev.name == key:
+                    out = a_dev
+        else:
+            if len(self.devices) > devid > 0:
+                out = self.devices[devid]
+        return out
 
 
 class OpenCL(object):
@@ -87,9 +108,9 @@ class OpenCL(object):
     """
     platforms = []
     if pyopencl:
-        for platform in pyopencl.get_platforms():
-            pypl = Platform(platform.name, platform.vendor, platform.version, platform.extensions)
-            for device in platform.get_devices():
+        for id, platform in enumerate(pyopencl.get_platforms()):
+            pypl = Platform(platform.name, platform.vendor, platform.version, platform.extensions, id)
+            for idd, device in enumerate(platform.get_devices()):
                 ####################################################
                 # Nvidia does not report int64 atomics (we are using) ...
                 # this is a hack around as any nvidia GPU with double-precision supports int64 atomics
@@ -100,7 +121,7 @@ class OpenCL(object):
                 devtype = pyopencl.device_type.to_string(device.type)
                 pydev = Device(device.name, devtype, device.version, device.driver_version, extensions,
                                device.global_mem_size, bool(device.available), device.max_compute_units,
-                               device.max_clock_frequency)
+                               device.max_clock_frequency, idd)
                 pypl.add_device(pydev)
             platforms.append(pypl)
         del platform, device, pypl, devtype, extensions, pydev
@@ -112,6 +133,24 @@ class OpenCL(object):
             out.append("[%s] %s: " % (platformid, platform.name) + ", ".join(["(%s,%s) %s" % (platformid, deviceid, dev.name) for deviceid, dev in enumerate(platform.devices)]))
         return os.linesep.join(out)
 
+    def get_platform(self, key):
+        """
+        Return a platform according
+        
+        @param key: identifier for a platform, either an Id (int) or it's name 
+        @type key: int or str
+        """
+        out = None
+        try:
+            platid = int(key)
+        except ValueError:
+            for a_plat in self.platforms:
+                if a_plat.name == key:
+                    out = a_plat
+        else:
+            if len(self.platforms) > platid > 0:
+                out = self.platforms[platid]
+        return out
 
     def select_device(self, type="ALL", memory=None, extensions=[], best=True):
         """
