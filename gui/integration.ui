@@ -7,8 +7,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>497</width>
-    <height>697</height>
+    <width>572</width>
+    <height>746</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -52,6 +52,22 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QPushButton" name="poni_save">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>save to File</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
         <item>
@@ -67,6 +83,12 @@
             </item>
             <item>
              <widget class="QComboBox" name="detector">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="toolTip">
                <string>Detector model</string>
               </property>
@@ -507,6 +529,9 @@
                 <property name="text">
                  <string>Number of radial points</string>
                 </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
                </widget>
               </item>
               <item>
@@ -536,7 +561,7 @@
               <item>
                <widget class="QLabel" name="label_18">
                 <property name="text">
-                 <string> </string>
+                 <string/>
                 </property>
                </widget>
               </item>
@@ -649,6 +674,12 @@
           </item>
           <item>
            <widget class="QLabel" name="label_19">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
              <string>Platform</string>
             </property>
@@ -656,6 +687,12 @@
           </item>
           <item>
            <widget class="QComboBox" name="platform">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="minimumSize">
              <size>
               <width>106</width>
@@ -669,6 +706,12 @@
           </item>
           <item>
            <widget class="QLabel" name="label_17">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="autoFillBackground">
              <bool>false</bool>
             </property>
@@ -679,6 +722,12 @@
           </item>
           <item>
            <widget class="QComboBox" name="device">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="toolTip">
              <string>device name</string>
             </property>
