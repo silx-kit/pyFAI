@@ -7,12 +7,18 @@ Destination path:
 Lima/tango/plugins/AzimuthalIntegration  
 """
 __author__ = "Jérôme Kieffer"
+__contact__ = "Jerome.Kieffer@ESRF.eu"
+__license__ = "GPLv3+"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "21/01/2013"
+__status__ = "beta"
+__docformat__ = 'restructuredtext'
 
 import os, json
 import logging
 logger = logging.getLogger("lima.tango.pyfai")
 import PyTango
-
+import numpy
 from Lima import Core
 from Utils import getDataFromFile, BasePostProcess
 import pyFAI
@@ -30,9 +36,30 @@ class PyFAILink(Core.Processlib.LinkTask):
             self.ai = azimuthalIntgrator
         self.nbpt_azim, self.nbpt_rad = shapeOut
         self.unit = unit
-        # this is just to force the integrator to initialize
-        _ = self.ai.integrate2d(numpy.zeros(shapeIn, dtype=numpy.float32),
-                            self.nbpt_rad, self.nbpt_azim, method="lut", unit=self.unit,)
+        self.polarization = 0
+        self.dummy = None
+        self.delta_dummy = None
+        try:
+            self.shapeIn = (camera.getFrameDim.getHeight(), camera.getFrameDim.getWidth())
+        except Exception as error:
+            logger.error("default on shapeIn %s: %s" % (shapeIn, error))
+            self.shapeIn = shapeIn
+
+
+    def do_2D(self):
+        return self.nbpt_azim > 1
+
+    def reconfig(self):
+        """
+        this is just to force the integrator to initialize
+        """
+        self.ai._lut_integrator = None
+        if self.do_2D():
+            _ = self.ai.integrate2d(numpy.zeros(self.shapeIn, dtype=numpy.float32),
+                            self.nbpt_rad, self.nbpt_azim, method="lut", unit=self.unit)
+        else:
+            _ = self.ai.integrate1d(numpy.zeros(self.shapeIn, dtype=numpy.float32),
+                            self.nbpt_rad, method="lut", unit=self.unit)
 
     def process(self, data) :
         rData = Core.Processlib.Data()
@@ -93,7 +120,7 @@ class PyFAILink(Core.Processlib.LinkTask):
         self.ai.rot2 = config.get("rot2", 0)
         self.ai.rot3 = config.get("rot3", 0)
 
-        if self.chi_discontinuity_at_0.isChecked():
+        if config.get("chi_discontinuity_at_0"):
             self.ai.setChiDiscAtZero()
 
         mask_file = config.get("mask_file")
@@ -123,12 +150,20 @@ class PyFAILink(Core.Processlib.LinkTask):
                 flats[:, :, i] = getDataFromFile(f).buffer
             self.ai.darkcurrent = flats.mean(axis= -1)
 
+        if config.get("do_2D") and config.get(azim_pt):
+            self.nbpt_azim = int(config.get("azim_pt"))
+        if config.get("rad_pt"):
+            self.nbpt_rad = int(config.get("rad_pt"))
+        self.unit = config.get("unit")
+        self.reconfig()
+
 class AzimuthalIntegratonDeviceServer(BasePostProcess) :
     AZIMUTHAL_TASK_NAME = 'AzimuthalIntegrationTask'
     Core.DEB_CLASS(Core.DebModApplication, 'AzimuthalIntegration')
     def __init__(self, cl, name):
         self.__azimuthalIntegratorTask = None
         self.__jsonConfig = None
+        self.__pyFAILink = None
         self.get_device_properties(self.get_device_class())
 
         BasePostProcess.__init__(self, cl, name)
@@ -144,16 +179,20 @@ class AzimuthalIntegratonDeviceServer(BasePostProcess) :
         elif(state == PyTango.DevState.ON) :
             if not self.__azimuthalIntegratorTask:
                 try:
-                  ctControl = _control_ref()
-                  extOpt = ctControl.externalOperation()
-                  self.__azimuthalIntegratorTask = extOpt.addOp(Core.BACKGROUNDSUBSTRACTION,
-                                                       self.AZIMUTHAL_TASK_NAME,
-                                                       self._runLevel)
-                  self.__azimuthalIntegratorTask.setBackgroundImage(self.__backGroundImage)
+                    ctControl = _control_ref()
+                    extOpt = ctControl.externalOperation()
+                    self.__azimuthalIntegratorTask = extOpt.addOp(Core.USER_LINK_TASK,
+                                                         self.AZIMUTHAL_TASK_NAME,
+                                                         self._runLevel)
+                    if not self.__pyFAILink:
+                        self.__pyFAILink = PyFAILink()
+                    if self.__jsonConfig :
+                        self.__pyFAILink.setJsonConfig(self.__jsonConfig)
+                    self.__azimuthalIntegratorTask.setLinkTask(self.__pyFAILink)
                 except:
-                        import traceback
-                        traceback.print_exc()
-                        return
+                    import traceback
+                    traceback.print_exc()
+                    return
         PyTango.Device_4Impl.set_state(self, state)
 
 #    @Core.DEB_MEMBER_FUNCT
@@ -226,12 +265,12 @@ class AzimuthalIntegratonDeviceServerClass(PyTango.DeviceClass) :
 #------------------------------------------------------------------
     def __init__(self, name):
         PyTango.DeviceClass.__init__(self, name)
-        self.set_type(name);
+        self.set_type(name)
 
 _control_ref = None
-def set_control_ref(control_class_ref) :
+def set_control_ref(control_class_ref):
     global _control_ref
     _control_ref = control_class_ref
 
 def get_tango_specific_class_n_device() :
-   return AzimuthalIntegratorDeviceServerClass, AzimuthalIntegratorDeviceServer
+    return AzimuthalIntegratonDeviceServerClass, AzimuthalIntegratonDeviceServer
