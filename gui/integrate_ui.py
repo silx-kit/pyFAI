@@ -405,7 +405,7 @@ class AIWidget(QtGui.QWidget):
         if self.chi_discontinuity_at_0.isChecked():
             self.ai.setChiDiscAtZero()
 
-        mask_file = str(self.val_dummy.text()).strip()
+        mask_file = str(self.mask_file.text()).strip()
         if mask_file and os.path.exists(mask_file) and bool(self.do_mask.isChecked()):
             try:
                 mask = fabio.open(mask_file).data
@@ -413,7 +413,7 @@ class AIWidget(QtGui.QWidget):
                 logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
             else:
                 self.ai.mask = mask
-        dark_files = [i.strip() for i in str(self.val_dummy.text()).split(",")
+        dark_files = [i.strip() for i in str(self.dark_current.text()).split(",")
                       if os.path.isfile(i.strip())]
         if dark_files and bool(self.do_dark.isChecked()):
             d0 = fabio.open(dark_files[0]).data
@@ -422,7 +422,7 @@ class AIWidget(QtGui.QWidget):
                 darks[:, :, i] = fabio.open(f).data
             self.ai.darkcurrent = darks.mean(axis= -1)
 
-        flat_files = [i.strip() for i in str(self.val_dummy.text()).split(",")
+        flat_files = [i.strip() for i in str(self.flat_field.text()).split(",")
                       if os.path.isfile(i.strip())]
         if flat_files and bool(self.do_flat.isChecked()):
             d0 = fabio.open(flat_files[0]).data
