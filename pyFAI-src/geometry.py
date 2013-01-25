@@ -901,6 +901,10 @@ class Geometry(object):
         set the geometry from a pyFAI-like dict
         """
         with self._sem:
+            if "detector" in kwargs:
+                self.detector = detectors.detector_factory(kwargs["detector"])
+            else:
+                self.detector = detectors.Detector()
             for key in ["dist", "poni1", "poni2",
                         "rot1", "rot2", "rot3",
                         "pixel1", "pixel2", "splineFile"]:
@@ -1170,7 +1174,7 @@ class Geometry(object):
     def set_poni1(self, value):
         if isinstance(value, float):
             self._poni1 = value
-        elif "__len__" in dir(value):  # tuple or list
+        elif isinstance(value, (tuple, list)):
             self._poni1 = float(value[0])
         else:
             self._poni1 = float(value)
@@ -1184,7 +1188,7 @@ class Geometry(object):
     def set_poni2(self, value):
         if isinstance(value, float):
             self._poni2 = value
-        elif "__len__" in dir(value):  # tuple or list
+        elif isinstance(value, (tuple, list)):
             self._poni2 = float(value[0])
         else:
             self._poni2 = float(value)
@@ -1198,7 +1202,7 @@ class Geometry(object):
     def set_rot1(self, value):
         if isinstance(value, float):
             self._rot1 = value
-        elif "__len__" in dir(value):  # tuple or list
+        elif isinstance(value, (tuple, list)):
             self._rot1 = float(value[0])
         else:
             self._rot1 = float(value)
@@ -1212,7 +1216,7 @@ class Geometry(object):
     def set_rot2(self, value):
         if isinstance(value, float):
             self._rot2 = value
-        elif "__len__" in dir(value):  # tuple or list
+        elif isinstance(value, (tuple, list)):
             self._rot2 = float(value[0])
         else:
             self._rot2 = float(value)
@@ -1226,7 +1230,7 @@ class Geometry(object):
     def set_rot3(self, value):
         if isinstance(value, float):
             self._rot3 = value
-        elif "__len__" in dir(value):  # tuple or list
+        elif isinstance(value, (tuple, list)):
             self._rot3 = float(value[0])
         else:
             self._rot3 = float(value)
@@ -1240,7 +1244,7 @@ class Geometry(object):
     def set_wavelength(self, value):
         if isinstance(value, float):
             self._wavelength = value
-        elif "__len__" in dir(value):  # tuple or list
+        elif isinstance(value, (tuple, list)):
             self._wavelength = float(value[0])
         else:
             self._wavelength = float(value)

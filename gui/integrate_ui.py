@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, logging, json, os, time, types
+import sys, logging, json, os, time, types, threading
 import os.path as op
 import numpy
 logging.basicConfig(level=logging.INFO)
@@ -21,15 +21,11 @@ except ImportError:
 window = None
 class AIWidget(QtGui.QWidget):
     """
-    TODO: code for
-    chi_discontinuity_at_0
-    do_radial_range
-    do_azimuthal_range
-    do_openCL
     """
     def __init__(self, input_data=None):
         self.ai = pyFAI.AzimuthalIntegrator()
         self.input_data = input_data
+        self._sem = threading.Semaphore()
         QtGui.QWidget.__init__(self)
         uic.loadUi('integration.ui', self)
         self.all_detectors = pyFAI.detectors.ALL_DETECTORS.keys()
@@ -53,101 +49,127 @@ class AIWidget(QtGui.QWidget):
         self.connect(self.resetButton, SIGNAL("clicked()"), self.restore)
 
         self.connect(self.detector, SIGNAL("currentIndexChanged(int)"), self.detector_changed)
+        self.connect(self.do_OpenCL, SIGNAL("clicked()"), self.openCL_changed)
+        self.connect(self.platform, SIGNAL("currentIndexChanged(int)"), self.platform_changed)
+
         self.restore()
         self.progressBar.setValue(0)
 
     def proceed(self):
-        out = None
-        self.dump()
-        logger.debug("Let's work a bit")
-        self.set_ai()
-        if self.q_nm.isChecked():
-            unit = "q_nm^-1"
-        elif self.tth_deg.isChecked():
-            unit = "2th_deg"
-        elif self.r_mm.isChecked():
-            unit = "r_mm"
-        else:
-            logger.warning("Undefined unit !!! falling back on 2th_deg")
-            unit = "2th_deg"
+        with self._sem:
+            out = None
+            self.dump()
+            logger.debug("Let's work a bit")
+            self.set_ai()
 
-        dummy = None
-        delta_dummy = None
-        if bool(self.do_dummy.isChecked()):
-            dummy = float(str(self.val_dummy.text()).strip())
-            delta_dummy = str(self.delta_dummy.text()).strip()
-            if delta_dummy:
-                delta_dummy = float(delta_dummy)
+    #        Default Keyword arguments 
+            kwarg = {"unit": "2th_deg",
+                     "dummy": None,
+                     "delta_dummy": None,
+                     "method": "lut",
+                     "polarization_factor":0,
+                     "filename": None,
+                     "safe": False,
+                     }
+
+            if self.q_nm.isChecked():
+                kwarg["unit"] = "q_nm^-1"
+            elif self.tth_deg.isChecked():
+                kwarg["unit"] = "2th_deg"
+            elif self.r_mm.isChecked():
+                kwarg["unit"] = "r_mm"
             else:
-                delta_dummy = None
-        if bool(self.do_polarization.isChecked()):
-            polarization_factor = float(self.polarization_factor.value())
-        else:
-            polarization_factor = 0
-        npt_rad = int(str(self.rad_pt.text()).strip())
-        if self.do_2D.isChecked():
-            npt_azim = int(str(self.rad_pt.text()).strip())
-        else:
-            npt_azim = None
-        logger.debug("processing %s" % self.input_data)
-        start_time = time.time()
-        if self.input_data in [None, []]:
-            logger.warning("No input data to process")
-            return
-
-        elif "ndim" in dir(self.input_data) and (self.input_data.ndim == 3):
-            # We have a numpy array of dim3
-            if npt_azim:
-                out = numpy.zeros((self.input_data.shape[0], npt_azim, npt_rad), dtype=numpy.float32)
-                for i in range(self.input_data.shape[0]):
-                    self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
-                    out[i] = self.ai.integrate2d(self.input_data[i], nbPt_rad=npt_rad, nbPt_azim=npt_azim,
-                                                 filename=None, dummy=dummy, delta_dummy=delta_dummy,
-                                                 polarization_factor=polarization_factor,
-                                                 method="lut", unit=unit, safe=False)[0]
-
-            else:
-                out = numpy.zeros((self.input_data.shape[0], npt_azim), dtype=numpy.float32)
-                for i in range(self.input_data.shape[0]):
-                    self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
-                    out[i] = self.ai.integrate1d(self.input_data[i], nbPt=npt_rad,
-                                                 filename=None, dummy=dummy, delta_dummy=delta_dummy,
-                                                 polarization_factor=polarization_factor,
-                                                 method="lut", unit=unit, safe=False)[1]
+                logger.warning("Undefined unit !!! falling back on 2th_deg")
 
 
-        elif "__len__" in dir(self.input_data):
-            out = []
-            for i, item in enumerate(self.input_data):
-                self.progressBar.setValue(100.0 * i / len(self.input_data))
-                logger.debug("processing %s" % item)
-                if (type(item) in types.StringTypes) and op.exists(item):
-                    data = fabio.open(item).data
-                    if npt_azim:
-                        output = output = op.splitext(item)[0] + ".azim"
+            if bool(self.do_dummy.isChecked()):
+                kwarg["dummy"] = float(str(self.val_dummy.text()).strip())
+                delta_dummy = str(self.delta_dummy.text()).strip()
+                if delta_dummy:
+                    kwarg["delta_dummy"] = float(delta_dummy)
+                else:
+                    kwarg["delta_dummy"] = None
+            if bool(self.do_polarization.isChecked()):
+                polarization_factor = float(self.polarization_factor.value())
+
+            kwarg["nbPt_rad"] = int(str(self.rad_pt.text()).strip())
+            if self.do_2D.isChecked():
+                kwarg["nbPt_azim"] = int(str(self.rad_pt.text()).strip())
+
+            if self.do_OpenCL.isChecked():
+                platform = ocl.get_platform(self.platform.currentText())
+                pid = platform.id
+                did = platform.get_device(self.device.currentText()).id
+                if (pid is not None) and (did is not None):
+                    kwarg["method"] = "lut_ocl_%i,%i" % (pid, did)
+                else:
+                    kwarg["method"] = "lut_ocl"
+
+            if self.do_radial_range:
+                try:
+                    rad_min = float(str(self.radial_range_min.text()).strip())
+                    rad_max = float(str(self.radial_range_max.text()).strip())
+                except ValueError as error:
+                    logger.error("error in parsing radial range: %s" % error)
+                else:
+                    kwarg["radial_range"] = (rad_min, rad_max)
+
+            if self.do_azimuthal_range:
+                try:
+                    azim_min = float(str(self.azimuth_range_min.text()).strip())
+                    azim_max = float(str(self.azimuth_range_max.text()).strip())
+                except ValueError as error:
+                    logger.error("error in parsing azimuthal range: %s" % error)
+                else:
+                    kwarg["azimuth_range"] = (azim_min, azim_max)
+
+            logger.info("Parameters for integration:%s%s" % (os.linesep,
+                            os.linesep.join(["\t%s:\t%s" % (k, v) for k, v in kwarg.items()])))
+
+            logger.debug("processing %s" % self.input_data)
+            start_time = time.time()
+            if self.input_data in [None, []]:
+                logger.warning("No input data to process")
+                return
+
+            elif "ndim" in dir(self.input_data) and (self.input_data.ndim == 3):
+                # We have a numpy array of dim3
+                if "nbPt_azim" in kwarg:
+                    out = numpy.zeros((self.input_data.shape[0], kwarg["nbPt_azim"], kwarg["nbPt_rad"]), dtype=numpy.float32)
+                    for i in range(self.input_data.shape[0]):
+                        self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
+                        kwarg["data"] = self.input_data[i]
+                        out[i] = self.ai.integrate2d(kwarg)[0]
+
+                else:
+                    out = numpy.zeros((self.input_data.shape[0], kwarg["nbPt_rad"]), dtype=numpy.float32)
+                    for i in range(self.input_data.shape[0]):
+                        self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
+                        kwarg["data"] = self.input_data[i]
+                        out[i] = self.ai.integrate1d(**kwarg)[1]
+
+            elif "__len__" in dir(self.input_data):
+                out = []
+                for i, item in enumerate(self.input_data):
+                    self.progressBar.setValue(100.0 * i / len(self.input_data))
+                    logger.debug("processing %s" % item)
+                    if (type(item) in types.StringTypes) and op.exists(item):
+                        kwarg["data"] = fabio.open(item).data
+                        if "nbPt_azim" in kwarg:
+                            kwarg["filename"] = op.splitext(item)[0] + ".azim"
+                        else:
+                            kwarg["filename"] = op.splitext(item)[0] + ".dat"
                     else:
-                        output = output = op.splitext(item)[0] + ".dat"
-                else:
-                    logger.warning("item is not a file ... guessing it is a numpy array")
-                    data = item
-                    output = None
-                if npt_azim:
-                    out.append(self.ai.integrate2d(data=data,
-                                                   nbPt_rad=npt_rad, nbPt_azim=npt_azim,
-                                                   filename=output,
-                                                   dummy=dummy, delta_dummy=delta_dummy,
-                                                   polarization_factor=polarization_factor,
-                                                   method="lut", unit=unit, safe=False)[0])
-                else:
-                    out.append(self.ai.integrate1d(data=data,
-                                                   nbPt=npt_rad, # nbPt_azim=npt_azim,
-                                                   filename=output,
-                                                   dummy=dummy, delta_dummy=delta_dummy,
-                                                   polarization_factor=polarization_factor,
-                                                   method="lut", unit=unit, safe=False)[0])
+                        logger.warning("item is not a file ... guessing it is a numpy array")
+                        kwarg["data"] = item
+                        kwarg["filename"] = None
+                    if "nbPt_azim" in kwarg:
+                        out.append(self.ai.integrate2d(**kwarg)[0])
+                    else:
+                        out.append(self.ai.integrate1d(**kwarg)[0])
 
-        logger.info("Processing Done in %.3fs !" % (time.time() - start_time))
-        self.progressBar.setValue(100)
+            logger.info("Processing Done in %.3fs !" % (time.time() - start_time))
+            self.progressBar.setValue(100)
         self.die()
         return out
 
@@ -167,32 +189,39 @@ class AIWidget(QtGui.QWidget):
 
         """
         print "Dump!"
-        to_save = {"poni": str(self.poni.text()).strip(),
-                   "detector": str(self.detector.currentText()).lower(),
-                   "wavelength":str(self.wavelength.text()).strip(),
-                   "splineFile":str(self.splineFile.text()).strip(),
-                   "pixel1": str(self.pixel1.text()).strip(),
-                   "pixel2":str(self.pixel2.text()).strip(),
-                   "dist":str(self.dist.text()).strip(),
-                   "poni1":str(self.poni1.text()).strip(),
-                   "poni2":str(self.poni2.text()).strip(),
-                   "rot1":str(self.rot1.text()).strip(),
-                   "rot2":str(self.rot2.text()).strip(),
-                   "rot3":str(self.rot3.text()).strip(),
-                   "do_dummy": bool(self.do_dummy.isChecked()),
-                   "do_mask":  bool(self.do_mask.isChecked()),
-                   "do_dark": bool(self.do_dark.isChecked()),
-                   "do_flat": bool(self.do_flat.isChecked()),
-                   "do_polarization":bool(self.do_polarization.isChecked()),
-                   "val_dummy":str(self.val_dummy.text()).strip(),
-                   "delta_dummy":str(self.delta_dummy.text()).strip(),
-                   "mask_file":str(self.mask_file.text()).strip(),
-                   "dark_current":str(self.dark_current.text()).strip(),
-                   "flat_field":str(self.flat_field.text()).strip(),
-                   "polarization_factor":float(self.polarization_factor.value()),
-                   "rad_pt":str(self.rad_pt.text()).strip(),
-                   "do_2D":bool(self.do_2D.isChecked()),
-                   "azim_pt":str(self.rad_pt.text()).strip().strip(),
+        to_save = { "poni": str(self.poni.text()).strip(),
+                    "detector": str(self.detector.currentText()).lower(),
+                    "wavelength":str(self.wavelength.text()).strip(),
+                    "splineFile":str(self.splineFile.text()).strip(),
+                    "pixel1": str(self.pixel1.text()).strip(),
+                    "pixel2":str(self.pixel2.text()).strip(),
+                    "dist":str(self.dist.text()).strip(),
+                    "poni1":str(self.poni1.text()).strip(),
+                    "poni2":str(self.poni2.text()).strip(),
+                    "rot1":str(self.rot1.text()).strip(),
+                    "rot2":str(self.rot2.text()).strip(),
+                    "rot3":str(self.rot3.text()).strip(),
+                    "do_dummy": bool(self.do_dummy.isChecked()),
+                    "do_mask":  bool(self.do_mask.isChecked()),
+                    "do_dark": bool(self.do_dark.isChecked()),
+                    "do_flat": bool(self.do_flat.isChecked()),
+                    "do_polarization":bool(self.do_polarization.isChecked()),
+                    "val_dummy":str(self.val_dummy.text()).strip(),
+                    "delta_dummy":str(self.delta_dummy.text()).strip(),
+                    "mask_file":str(self.mask_file.text()).strip(),
+                    "dark_current":str(self.dark_current.text()).strip(),
+                    "flat_field":str(self.flat_field.text()).strip(),
+                    "polarization_factor":float(self.polarization_factor.value()),
+                    "rad_pt":str(self.rad_pt.text()).strip(),
+                    "do_2D":bool(self.do_2D.isChecked()),
+                    "azim_pt":str(self.rad_pt.text()).strip(),
+                    "chi_discontinuity_at_0": bool(self.chi_discontinuity_at_0.isChecked()),
+                    "do_radial_range": bool(self.do_radial_range.isChecked()),
+                    "do_azimuthal_range": bool(self.do_azimuthal_range.isChecked()),
+                    "radial_range_min":str(self.radial_range_min.text()).strip(),
+                    "radial_range_max":str(self.radial_range_max.text()).strip(),
+                    "azimuth_range_min":str(self.azimuth_range_min.text()).strip(),
+                    "azimuth_range_max":str(self.azimuth_range_max.text()).strip(),
                    }
         if self.q_nm.isChecked():
             to_save["unit"] = "q_nm^-1"
@@ -243,6 +272,13 @@ class AIWidget(QtGui.QWidget):
                         "rad_pt":self.rad_pt.setText,
                         "do_2D":self.do_2D.setChecked,
                         "azim_pt":self.azim_pt.setText,
+                        "chi_discontinuity_at_0": self.chi_discontinuity_at_0.setChecked,
+                        "do_radial_range": self.do_radial_range.setChecked,
+                        "do_azimuthal_range": self.do_azimuthal_range.setChecked,
+                        "radial_range_min":self.radial_range_min.setText,
+                        "radial_range_max":self.radial_range_max.setText,
+                        "azimuth_range_min":self.azimuth_range_min.setText,
+                        "azimuth_range_max":self.azimuth_range_max.setText,
                    }
         for key, value in setup_data.items():
             if key in data:
@@ -366,8 +402,10 @@ class AIWidget(QtGui.QWidget):
         self.ai.rot2 = self._float("rot2", 0)
         self.ai.rot3 = self._float("rot3", 0)
 
+        if self.chi_discontinuity_at_0.isChecked():
+            self.ai.setChiDiscAtZero()
 
-        mask_file = str(self.val_dummy.text()).strip()
+        mask_file = str(self.mask_file.text()).strip()
         if mask_file and os.path.exists(mask_file) and bool(self.do_mask.isChecked()):
             try:
                 mask = fabio.open(mask_file).data
@@ -375,7 +413,7 @@ class AIWidget(QtGui.QWidget):
                 logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
             else:
                 self.ai.mask = mask
-        dark_files = [i.strip() for i in str(self.val_dummy.text()).split(",")
+        dark_files = [i.strip() for i in str(self.dark_current.text()).split(",")
                       if os.path.isfile(i.strip())]
         if dark_files and bool(self.do_dark.isChecked()):
             d0 = fabio.open(dark_files[0]).data
@@ -384,7 +422,7 @@ class AIWidget(QtGui.QWidget):
                 darks[:, :, i] = fabio.open(f).data
             self.ai.darkcurrent = darks.mean(axis= -1)
 
-        flat_files = [i.strip() for i in str(self.val_dummy.text()).split(",")
+        flat_files = [i.strip() for i in str(self.flat_field.text()).split(",")
                       if os.path.isfile(i.strip())]
         if flat_files and bool(self.do_flat.isChecked()):
             d0 = fabio.open(flat_files[0]).data
@@ -411,6 +449,27 @@ class AIWidget(QtGui.QWidget):
             else:
                 logger.warning("No such spline file %s" % splineFile)
         self.ai.detector = inst
+
+    def openCL_changed(self):
+        logger.debug("do_OpenCL")
+        do_ocl = bool(self.do_OpenCL.isChecked())
+        if do_ocl:
+            if ocl is None:
+                self.do_OpenCL.setChecked(0)
+                return
+            if self.platform.count() == 0:
+                self.platform.addItems([i.name for i in ocl.platforms])
+
+    def platform_changed(self):
+        logger.debug("platform_changed")
+        if ocl is None:
+            self.do_OpenCL.setChecked(0)
+            return
+        platform = ocl.get_platform(str(self.platform.currentText()))
+        for i in range(self.device.count())[-1::-1]:
+            self.device.removeItem(i)
+        self.device.addItems([i.name for i in platform.devices])
+
 
 if __name__ == "__main__":
     from optparse import OptionParser

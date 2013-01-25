@@ -2,18 +2,29 @@
 #coding: utf8
 #Class defining the link task for azimuthal regrouping in process lib for Lima
 #
+import logging
 import time
 import numpy
 from Lima import Core, Basler
 import pyFAI
+import fabio
+
+logger = logging.getLogger("PyFAI.LImA.ProcessLib")
 
 IP = "192.168.5.19"
 EXPO = 0.1 #sec
 
 class PyFAILink(Core.Processlib.LinkTask):
-    def __init__(self, azimuthalIntgrator, shapeIn=(966, 1296), shapeOut=(360, 500), unit="r_mm"):
+    def __init__(self, azimuthalIntgrator=None, shapeIn=(966, 1296), shapeOut=(360, 500), unit="r_mm"):
+        """
+        @param azimuthalIntgrator: pyFAI.AzimuthalIntegrator instance
+        
+        """
         Core.Processlib.LinkTask.__init__(self)
-        self.ai = azimuthalIntgrator
+        if azimuthalIntgrator is None:
+            self.ai = pyFAI.AzimuthalIntegrator()
+        else:
+            self.ai = azimuthalIntgrator
         self.nbpt_azim, self.nbpt_rad = shapeOut
         self.unit = unit
         # this is just to force the integrator to initialize
@@ -27,6 +38,22 @@ class PyFAILink(Core.Processlib.LinkTask):
                                            method="lut", unit=self.unit, safe=False)[0]
         return rData
 
+    def setDarkcurrentFile(self, imagefile):
+        try:
+            data = fabio.open(imagefile).data
+        except Exception as error:
+            data = None
+            logger.warning("setDarkcurrentFile: Unable to read file %s: %s" % (imagefile, error))
+        else:
+            self.ai.set_darkcurrent = data
+
+    def setFlatfieldFile(self, imagefile):
+        try:
+            data = fabio.open(imagefile).data
+        except Exception as error:
+            data = None
+            logger.warning("setFlatfieldFile: Unable to read file %s: %s" % (imagefile, error))
+        self.ai.set_flatfield(data)
 
 if __name__ == "__main__":
 
