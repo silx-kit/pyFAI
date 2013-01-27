@@ -44,7 +44,7 @@ if os.name != "nt":
     WindowsError = RuntimeError
 
 logger = logging.getLogger("pyFAI.geometryRefinement")
-#logger.setLevel(logging.DEBUG)
+# logger.setLevel(logging.DEBUG)
 ROCA = "/opt/saxs/roca"
 
 ####################
@@ -145,6 +145,12 @@ class GeometryRefinement(AzimuthalIntegrator):
             self.rot3_min = -(value / 100.) ** 2
             self.rot3_max = (value / 100.) ** 2
 
+    def calc_2th(self, wavelength=None):
+        if not wavelength:
+            wavelength = self.wavelength
+        #
+        # tth = 2.0 * numpy.arcsin(self.ai.wavelength / (2.0e-10 * d))
+        # TODO ...
     def residu1(self, param, d1, d2, tthRef):
         return self.tth(d1, d2, param) - tthRef
 
@@ -169,7 +175,7 @@ class GeometryRefinement(AzimuthalIntegrator):
             logger.info("maxdelta on %s: %s --> %s ",
                         d[i], self.param[i], newParam[i])
             self.param = newParam
-            self.dist, self.poni1, self.poni2,\
+            self.dist, self.poni1, self.poni2, \
                 self.rot1, self.rot2, self.rot3 = tuple(newParam)
             return newDeltaSq
         else:
@@ -204,11 +210,47 @@ class GeometryRefinement(AzimuthalIntegrator):
             logger.info("maxdelta on %s: %s --> %s ",
                         d[i], self.param[i], newParam[i])
             self.param = newParam
-            self.dist, self.poni1, self.poni2,\
+            self.dist, self.poni1, self.poni2, \
                 self.rot1, self.rot2, self.rot3 = tuple(newParam)
             return newDeltaSq
         else:
             return oldDeltaSq
+
+    def refine2_wavelength(self, maxiter=1000000):
+        self.param = numpy.array([self.dist, self.poni1, self.poni2,
+                                  self.rot1, self.rot2, self.rot3],
+                                 dtype="float64")
+        if logger.getEffectiveLevel() <= logging.INFO:
+            disp = 1
+        else:
+            disp = 0
+        newParam = fmin_slsqp(self.residu2, self.param, iter=maxiter,
+                              args=(self.data[:, 0],
+                                    self.data[:, 1],
+                                    self.data[:, 2]),
+                              bounds=[(self._dist_min, self._dist_max),
+                                      (self._poni1_min, self._poni1_max),
+                                      (self._poni2_min, self._poni2_max),
+                                      (self._rot1_min, self._rot1_max),
+                                      (self._rot2_min, self._rot2_max),
+                                      (self._rot3_min, self._rot3_max)],
+                              acc=1.0e-12, iprint=disp)
+        oldDeltaSq = self.chi2()
+        newDeltaSq = self.chi2(newParam)
+        logger.info("Constrained Least square %s --> %s",
+                    oldDeltaSq, newDeltaSq)
+        if newDeltaSq < oldDeltaSq:
+            i = abs(self.param - newParam).argmax()
+            d = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"]
+            logger.info("maxdelta on %s: %s --> %s ",
+                        d[i], self.param[i], newParam[i])
+            self.param = newParam
+            self.dist, self.poni1, self.poni2, \
+                self.rot1, self.rot2, self.rot3 = tuple(newParam)
+            return newDeltaSq
+        else:
+            return oldDeltaSq
+
 
     def simplex(self, maxiter=1000000):
         self.param = numpy.array([self.dist, self.poni1, self.poni2,
@@ -229,7 +271,7 @@ class GeometryRefinement(AzimuthalIntegrator):
             logger.info("maxdelta on %s : %s --> %s ",
                         d[i], self.param[i], newParam[i])
             self.param = newParam
-            self.dist, self.poni1, self.poni2,\
+            self.dist, self.poni1, self.poni2, \
                 self.rot1, self.rot2, self.rot3 = tuple(newParam)
             return newDeltaSq
         else:
@@ -265,7 +307,7 @@ class GeometryRefinement(AzimuthalIntegrator):
             logger.info("maxdelta on %s : %s --> %s ",
                         d[i], self.param[i], newParam[i])
             self.param = newParam
-            self.dist, self.poni1, self.poni2,\
+            self.dist, self.poni1, self.poni2, \
                 self.rot1, self.rot2, self.rot3 = tuple(newParam)
             return newDeltaSq
         else:
@@ -311,7 +353,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         print "Roca", self.chi2(), "--> ", self.chi2(newParam)
         if self.chi2(tuple(newParam)) < self.chi2(tuple(self.param)):
             self.param = newParam
-            self.dist, self.poni1, self.poni2,\
+            self.dist, self.poni1, self.poni2, \
                 self.rot1, self.rot2, self.rot3 = tuple(newParam)
 
         tmpf.close()
