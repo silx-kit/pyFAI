@@ -41,9 +41,9 @@ from math import ceil, floor
 class Distortion(object):
     """
     This class applies a distortion correction on an image.
-    
+
     """
-    def __init__(self, detector="detector"):
+    def __init__(self, detector="detector", shape=None):
         """
         @param detector: detector instance or detector name
         """
@@ -51,10 +51,15 @@ class Distortion(object):
             self.detector = detectors.detector_factory(detector)
         else: #we assume it is a Detector instance
             self.detector = detector
+        if "max_shape" in dir(self.detector):
+            self.shape =  self.detector.max_shape
+        else:
+            self.shape = shape
+        self.shape = tuple([int(i) for i in self.shape])
 
     def correct(self, img):
         """
-        Correct the image  
+        Correct the image
         """
         shape = img.shape
         corr = numpy.zeros(shape, dtype=numpy.float32)
@@ -62,12 +67,40 @@ class Distortion(object):
 #    def calc_lut(self,shape):
     def split_pixel(self,):
         pass
-    def calc_area(self):
+    def calc_LUT_size(self):
         """
+        TODO: here we have a problem:
+        Considering the "half-CCD" spline from ID11 which describes a (1025,2048) detector,
+        the physical location of pixels should go from:
+        [-17.48634 : 1027.0543, -22.768829 : 2028.3689]
+        we have 2 options:
+         - discard pixels falling outside the [0:1025,0:2048] range with a lose of intensity
+         - grow the output image to [-18:1028,-23:2029] with many empty pixels and an offset ) but conservation of the total intensity.
         """
+        pos_corners = numpy.empty((self.shape[0] + 1, self.shape[1] + 1, 2), dtype=numpy.float32)
+        d1 = numpy.outer(numpy.arange(self.shape[0] + 1, dtype=numpy.float32), numpy.ones(self.shape[1] + 1, dtype=numpy.float32)) - 0.5
+        d2 = numpy.outer(numpy.ones(self.shape[0] + 1, dtype=numpy.float32), numpy.arange(self.shape[1] + 1, dtype=numpy.float32)) - 0.5
+        pos_corners[:, :, 0], pos_corners[:, :, 1] = self.detector.calc_cartesian_positions(d1, d2)
+        pos_corners[:, :, 0] /= self.detector.pixel1
+        pos_corners[:, :, 1] /= self.detector.pixel2
+        pos = numpy.empty((self.shape[0], self.shape[1], 4, 2), dtype=numpy.float32)
+        pos[:, :, 0, :] = pos_corners[:-1, :-1]
+        pos[:, :, 1, :] = pos_corners[:-1, 1: ]
+        pos[:, :, 2, :] = pos_corners[1: , 1: ]
+        pos[:, :, 3, :] = pos_corners[1: , :-1]
+        pos0min = numpy.maximum(numpy.floor(pos[:, :, :, 0].min(axis= -1)).astype(numpy.int32), 0)
+        pos1min = numpy.maximum(numpy.floor(pos[:, :, :, 1].min(axis= -1)).astype(numpy.int32), 0)
+        pos0max = numpy.minimum(numpy.ceil(pos[:, :, :, 0].max(axis= -1)).astype(numpy.int32) + 1, self.shape[0])
+        pos1max = numpy.minimum(numpy.ceil(pos[:, :, :, 1].max(axis= -1)).astype(numpy.int32) + 1, self.shape[1])
+        lut_size = numpy.zeros(self.shape, dtype=numpy.int32)
+        for i in range(self.shape[0]):
+            for j in range(self.shape[1]):
+                lut_size[pos0min[i, j]:pos0max[i, j], pos1min[i, j]:pos1max[i, j]] += 1
+        self.lut_size = lut_size.max()
+        return lut_size
 
 class Quad(object):
-    """        
+    """
 
                                      |
                                      |
@@ -119,29 +152,35 @@ class Quad(object):
         self.Dx -= self.offset_x
         self.Dy -= self.offset_y
 
-        if self.Bx == self.Ax:
-            self.pAB = numpy.inf
-        else:
-            self.pAB = (self.By - self.Ay) / (self.Bx - self.Ax)
-        if self.Cx == self.Bx:
-            self.pBC = numpy.inf
-        else:
-             self.pBC = (self.Cy - self.By) / (self.Cx - self.Bx)
-        if self.Dx == self.Cx:
-            self.pCD = numpy.inf
-        else:
-            self.pCD = (self.Dy - self.Cy) / (self.Dx - self.Cx)
-        if self.Ax == self.Dx:
-            self.pDA = numpy.inf
-        else:
-            self.pDA = (self.Ay - self.Dy) / (self.Ax - self.Dx)
-        self.cAB = self.Ay - self.pAB * self.Ax
-        self.cBC = self.By - self.pBC * self.Bx
-        self.cCD = self.Cy - self.pCD * self.Cx
-        self.cDA = self.Dy - self.pDA * self.Dx
-        self.area = None
+        self.pAB = self.pBC = self.pCD = self.pDA = None
+        self.cAB = self.cBC = self.cCD = self.cDA = None
 
-        self.box = numpy.zeros((self.box_size_x, self.box_size_y), dtype=numpy.float32)
+        self.area = self.box = None
+
+    def init_slope(self):
+        if self.pAB is None:
+            if self.Bx == self.Ax:
+                self.pAB = numpy.inf
+            else:
+                self.pAB = (self.By - self.Ay) / (self.Bx - self.Ax)
+            if self.Cx == self.Bx:
+                self.pBC = numpy.inf
+            else:
+                 self.pBC = (self.Cy - self.By) / (self.Cx - self.Bx)
+            if self.Dx == self.Cx:
+                self.pCD = numpy.inf
+            else:
+                self.pCD = (self.Dy - self.Cy) / (self.Dx - self.Cx)
+            if self.Ax == self.Dx:
+                self.pDA = numpy.inf
+            else:
+                self.pDA = (self.Ay - self.Dy) / (self.Ax - self.Dx)
+            self.cAB = self.Ay - self.pAB * self.Ax
+            self.cBC = self.By - self.pBC * self.Bx
+            self.cCD = self.Cy - self.pCD * self.Cx
+            self.cDA = self.Dy - self.pDA * self.Dx
+
+            self.box = numpy.zeros((self.box_size_x, self.box_size_y), dtype=numpy.float32)
 
 
     def calc_area_AB(self, I1x, I2x):
@@ -154,6 +193,8 @@ class Quad(object):
         return 0.5 * (L2x - L1x) * (self.pDA * (L1x + L2x) + 2 * self.cDA)
     def calc_area(self):
         if self.area is None:
+            if self.pAB is None:
+                self.init_slope()
             self.area = -self.calc_area_AB(self.Ax, self.Bx) - \
                self.calc_area_BC(self.Bx, self.Cx) - \
                self.calc_area_CD(self.Cx, self.Dx) - \
