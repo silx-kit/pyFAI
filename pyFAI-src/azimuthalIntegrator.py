@@ -113,7 +113,7 @@ class AzimuthalIntegrator(Geometry):
     def __init__(self, dist=1, poni1=0, poni2=0,
                  rot1=0, rot2=0, rot3=0,
                  pixel1=None, pixel2=None,
-                 splineFile=None, detector=None):
+                 splineFile=None, detector=None, wavelength=None):
         """
         @param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
         @type dist: float
@@ -138,7 +138,7 @@ class AzimuthalIntegrator(Geometry):
         """
         Geometry.__init__(self, dist, poni1, poni2,
                           rot1, rot2, rot3,
-                          pixel1, pixel2, splineFile, detector)
+                          pixel1, pixel2, splineFile, detector, wavelength)
         self._nbPixCache = {}  # key=shape, value: array
 
         #
@@ -2383,7 +2383,7 @@ class AzimuthalIntegrator(Geometry):
                         gc.collect()
                         method = "splitbbox"
                         error = True
-                if not error: #not yet implemented...
+                if not error:  # not yet implemented...
                     if  ("ocl" in method) and ocl_azim_lut:
                         with self._ocl_lut_sem:
                             if "," in method:
@@ -2735,8 +2735,8 @@ class AzimuthalIntegrator(Geometry):
                   "chi_max": str(dim2.max()),
                   dim1_unit.REPR + "_min": str(dim1.min()),
                   dim1_unit.REPR + "_max": str(dim1.max()),
-                  "pixelX": str(self.pixel2), # this is not a bug ... most people expect dim1 to be X
-                  "pixelY": str(self.pixel1), # this is not a bug ... most people expect dim2 to be Y
+                  "pixelX": str(self.pixel2),  # this is not a bug ... most people expect dim1 to be X
+                  "pixelY": str(self.pixel1),  # this is not a bug ... most people expect dim2 to be Y
                   }
         if self.splineFile:
             header["spline"] = str(self.splineFile)

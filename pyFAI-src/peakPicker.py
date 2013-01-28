@@ -31,13 +31,13 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "23/12/2011"
 __status__ = "development"
 
-import os, sys, threading, logging, gc
+import os, sys, threading, logging, gc, types
 from math                   import ceil, sqrt, pi
 import numpy
 from scipy.optimize         import fmin
 from scipy.ndimage.filters  import median_filter
-from scipy.ndimage          import label#, binary_closing, binary_opening, binary_erosion #,binary_propagation
-#import matplotlib
+from scipy.ndimage          import label  # , binary_closing, binary_opening, binary_erosion #,binary_propagation
+# import matplotlib
 import pylab
 import fabio
 from utils                  import relabel, gaussian_filter, binning, unBinning
@@ -55,7 +55,7 @@ class PeakPicker(object):
     def __init__(self, strFilename, reconst=False, mask=None):
         """
         @param: input image filename
-        @param reconst: shall negative values be reconstucted (wipe out problems with pilatus gaps)
+        @param reconst: shall negative values be reconstructed (wipe out problems with pilatus gaps)
         """
         self.strFilename = strFilename
         self.data = fabio.open(strFilename).data.astype("float32")
@@ -130,7 +130,7 @@ class PeakPicker(object):
                 self.fig.canvas.draw()
 
         self._sem.acquire()
-        if event.button == 3: #right click
+        if event.button == 3:  # right click
             x0 = event.xdata
             y0 = event.ydata
             listpeak = self.massif.find_peaks([y0, x0], self.defaultNbPoints, annontate, self.massif_contour)
@@ -145,7 +145,7 @@ class PeakPicker(object):
             self.points.append(listpeak)
             self.fig.show()
             sys.stdout.flush()
-        elif event.button == 2: #center click
+        elif event.button == 2:  # center click
             a = self.points.pop()
 #            for i in a:
             if len(self.ax.texts) > 0:
@@ -242,7 +242,7 @@ class PeakPicker(object):
                 self.msp.imshow(mask, cmap="gray", origin="lower", interpolation="nearest")
             except MemoryError:
                 logging.error("Sorry but your computer does NOT have enough memory to display the massif plot")
-            #self.fig.show()
+            # self.fig.show()
             self.fig.canvas.draw()
 
     def closeGUI(self):
@@ -256,13 +256,21 @@ class PeakPicker(object):
 ################################################################################
 class ControlPoints(object):
     """
-    This class contains a set of control points with (optionaly) their diffrection 2Theta angle
+    This class contains a set of control points with (optionally) their ring number hence d-spacing and diffraction  2Theta angle ... 
     """
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, dSpacing=None, wavelength=None):
+        if dSpacing is not None:
+            if type(dSpacing) == types.StringTypes:
+                self.dSpacing = self.load_dSpacing(dSpacing)
+            else:
+                self.dSpacing = numpy.array(dSpacing)
+        else:
+            self.dSpacing = []
         if filename is not None:
             self.load(filename)
-        self._angles = [] #angles are enforced in radians, conversion from degrees or q-space nm-1 are done on the fly
+        self._angles = []  # angles are enforced in radians, conversion from degrees or q-space nm-1 are done on the fly
         self._points = []
+        self._ring = []  # ring number ...
         self._sem = threading.Semaphore()
         self._wavelength = None
 
@@ -291,10 +299,12 @@ class ControlPoints(object):
         """
         with self._sem:
             self._wavelength = None
-            self._angles = [] #angles are enforced in radians, conversion from degrees or q-space nm-1 are done on the fly
+            self._angles = []  # angles are enforced in radians, conversion from degrees or q-space nm-1 are done on the fly
             self._points = []
+            self._ring = []
 
-    def append(self, points, angle=None):
+
+    def append(self, points, angle=None, ring=None):
         """
         @param point: list of points
         @param angle: 2-theta angle in radians
@@ -302,9 +312,16 @@ class ControlPoints(object):
         with self._sem:
             self._angles.append(angle)
             self._points.append(points)
-#    append_2theta_deg = append
+            if ring is None:
+                if angle in self.dSpacing:
+                    self._ring.append(self.dSpacing.index(angle))
+                else:
+                    self.dSpacing.append(angle)
+                    self._ring.append(self.dSpacing.index(angle))
+            else:
+                self._ring.append(ring)
 
-    def append_2theta_deg(self, points, angle=None):
+    def append_2theta_deg(self, points, angle=None, ring=None):
         """
         @param point: list of points
         @param angle: 2-theta angle in degrees
@@ -312,11 +329,19 @@ class ControlPoints(object):
         with self._sem:
             self._angles.append(pi * angle / 180.)
             self._points.append(points)
+            if ring is None:
+                if angle in self.dSpacing:
+                    self._ring.append(self.dSpacing.index(angle))
+                else:
+                    self.dSpacing.append(angle)
+                    self._ring.append(self.dSpacing.index(angle))
+            else:
+                self._ring.append(ring)
 
     def pop(self, idx=None):
         """
         Remove the set of points at given index (by default the last)
-        @param idx: poistion of the point to remove
+        @param idx: position of the point to remove
         """
         out = None
         if idx is None:
@@ -341,11 +366,13 @@ class ControlPoints(object):
                       "#angles are in radians, wavelength in meter and positions in pixels"]
 
             if self._wavelength is not None:
-                lstOut = "wavelength: %s" % self._wavelength
+                lstOut.append("wavelength: %s" % self._wavelength)
             for idx, angle, points in zip(range(self.__len__()), self._angles, self._points):
                 lstOut.append("")
                 lstOut.append("New group of points: %i" % idx)
                 lstOut.append("2theta: %s" % angle)
+                if self._wavelength is not None:
+                    lstOut.append("dSpacing: %s" % (5e9 * self.wavelength / numpy.sin(angle / 2.0)))
                 for point in points:
                     lstOut.append("point: x=%s y=%s" % (point[1], point[0]))
             with open(filename, "w") as f:
@@ -360,6 +387,7 @@ class ControlPoints(object):
             return
         self.reset()
         tth = None
+        ds = None
         points = []
         for line in open(filename, "r"):
             if line.startswith("#"):
@@ -381,6 +409,17 @@ class ControlPoints(object):
                             tth = float(value)
                         except:
                             logger.error("ControlPoints.load: unable to convert to float %s (2theta)", value)
+                elif key == "dspacing":
+                    if value.lower() == "none":
+                        ds = None
+                    else:
+                        try:
+                            ds = float(value)
+                        except:
+                            logger.error("ControlPoints.load: unable to convert to float %s (dSpacing)", value)
+                        else:
+                            if ds not in self.dSpacing:
+                                self.dSpacing.append(ds)
                 elif key == "point":
                     vx = None
                     vy = None
@@ -400,6 +439,10 @@ class ControlPoints(object):
                     if len(points) > 0:
                         with self._sem:
                             self._angles.append(tth)
+                            if ds is None:
+                                self._ring.append(None)
+                            else:
+                                self._ring.append(self.dSpacing.index(ds))
                             self._points.append(points)
                             tth = None
                             points = []
@@ -409,6 +452,22 @@ class ControlPoints(object):
             self._angles.append(tth)
             self._points.append(points)
 
+    def load_dSpacing(self, filename):
+        """
+        Load a d-spacing file containing the inter-reticular plan distance in Angstrom  
+        """
+        if not os.path.isfile(filename):
+            logger.error("ControlPoint.load_dSpacing: No such file %s", filename)
+            return
+        self.dSpacing = numpy.loadtxt(filename)
+
+    def save_dSpacing(self, filename):
+        """
+        save the d-spacing to a file  
+        """
+        with open(filename) as f:
+            for i in self.dSpacing:
+                f.write("%s%s" % (i, os.linesep))
 
     def getList(self):
         """
@@ -417,6 +476,15 @@ class ControlPoints(object):
         lstOut = []
         for tth, points in zip(self._angles, self._points):
             lstOut += [[pt[0], pt[1], tth] for pt in points]
+        return lstOut
+
+    def getListRing(self):
+        """
+        Retrieve the list of control points suitable for geometry refinement with variable wavelength
+        """
+        lstOut = []
+        for ring, points in zip(self._ring, self._points):
+            lstOut += [[pt[0], pt[1], ring] for pt in points]
         return lstOut
 
 
@@ -443,11 +511,69 @@ class ControlPoints(object):
                         self._angles[idx] = numpy.deg2rad(tth)
                         bOk = True
 
+    def readRingNrFromKeyboard(self):
+        """
+        Ask the ring number values for the given points
+        """
+        lastRing = None
+        for idx, ring, point in zip(range(self.__len__()), self._ring, self._points):
+            bOk = False
+            while not bOk:
+                if ring is not None:
+                    lastRing = ring
+                res = raw_input("Point group #%2i (%i points)\t (%6.1f,%6.1f) \t [default=%s] Ring# " % (idx, len(point), point[0][1], point[0][0], lastRing)).strip()
+                if res == "":
+                    res = lastRing
+                try:
+                    ring = int(res)
+                except (ValueError, TypeError):
+                    logging.error("I did not understand the ring number you entered")
+                else:
+                    if ring >= 0 and ring < len(self.dSpacing):
+                        lastRing = ring
+                        self._ring[idx] = ring
+                        self._angles[idx] = 2.0 * numpy.arcsin(self.wavelength / 2e-10 * self.dSpacing[ring])
+                        bOk = True
+
+
+    def setWavelength_change2th(self, value=None):
+        with self._sem:
+            if value :
+                self._wavelength = float(value)
+                if self._wavelength < 0 or self._wavelength > 1e-6:
+                    logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
+
+                self._angles = list(2.0 * numpy.arcsin(self._wavelength / (2.0e-10 * self.dSpacing[self._ring])))
+
+    def setWavelength_changeDs(self, value=None):
+        """
+        This is probably not a good idea, but who knows !
+        """
+        with self._sem:
+            if value :
+                self._wavelength = float(value)
+                if self._wavelength < 0 or self._wavelength > 1e-6:
+                    logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
+
+                ds = []
+                d = 5e9 * self.wavelength / numpy.sin(self.angles / 2.0)
+                for i in d:
+                    if i not in ds:
+                        ds.append(i)
+                ds.sort()
+                self.dSpacing = ds
+                self._ring = [self.dSpacing.index(i) for i in d]
+
+
+
 
     def setWavelength(self, value=None):
         with self._sem:
             if self._wavelength is None:
-                self._wavelength = value
+                if value:
+                    self._wavelength = float(value)
+                    if self._wavelength < 0 or self._wavelength > 1e-6:
+                        logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
             else:
                 logger.warning("Forbidden to change the wavelength once it is fixed !!!!")
     def getWavelength(self): return self._wavelength
@@ -480,7 +606,7 @@ class Massif(object):
         self._number_massif = None
         self._valley_size = None
         self._binned_data = None
-        self.binning = None #Binning is 2-list usually
+        self.binning = None  # Binning is 2-list usually
         self._sem = threading.Semaphore()
         self._sem_label = threading.Semaphore()
         self._sem_binning = threading.Semaphore()
@@ -641,7 +767,7 @@ class Massif(object):
             with self._sem_label:
                 if self._labeled_massif is None:
                     if pattern is None:
-                        pattern = [[1] * 3] * 3#[[0, 1, 0], [1, 1, 1], [0, 1, 0]]#[[1] * 3] * 3
+                        pattern = [[1] * 3] * 3  # [[0, 1, 0], [1, 1, 1], [0, 1, 0]]#[[1] * 3] * 3
                     logger.debug("Labeling all massifs. This takes some time !!!")
                     labeled_massif, self._number_massif = label((self.getBinnedData() > self.getBluredData()), pattern)
                     logger.info("Labeling found %s massifs." % self._number_massif)
