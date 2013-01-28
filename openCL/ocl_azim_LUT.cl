@@ -50,6 +50,33 @@
 
 #define GROUP_SIZE BLOCK_SIZE
 
+struct lut_point_t
+{
+	uint idx;
+	float coef;
+};
+
+
+/**
+ * \brief cast values of an array on uint16 into a float output arrays to zero.
+ *
+ * Gridsize = size of arrays + padding.
+ *
+ * @param array_u16: Pointer to global memory with the input data as unsigned16 array
+ * @param array_float:  Pointer to global memory with the output data as float array
+ */
+__kernel void
+u16_to_float(__global unsigned short  *array_u16,
+		     __global float *array_float
+)
+{
+  uint i = get_global_id(0);
+  //Global memory guard for padding
+  if(i < NIMAGE)
+	array_float[i]=(float)array_u16[i];
+}
+
+
 /**
  * \brief Sets the values of 3 float output arrays to zero.
  *
@@ -75,11 +102,6 @@ memset_out(__global float *array0,
   }
 }
 
-struct lut_point_t
-{
-		uint idx;
-	    float coef;
-};
 
 /**
  * \brief Performs Normalization of input image
