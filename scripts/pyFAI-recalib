@@ -91,6 +91,7 @@ class Recalibration(object):
         self.reconstruct = False
         self.spacing_file = None
         self.mask = None
+        self.saturation = 0.1
         self.fixed = ["wavelength"]  # parameter fixed during optimization
 
     def __repr__(self):
@@ -178,6 +179,9 @@ class Recalibration(object):
                       help="fix the wavelength parameter", default=True, action="store_true")
         parser.add_option("--free-wavelength", dest="fix_wavelength",
                       help="free the wavelength parameter", default=True, action="store_false")
+        parser.add_option("--saturation", dest="saturation",
+                      help="consider all pixel>max*(1-saturation) as saturated and reconstruct them",
+                      default=0.1, type="float")
 
         (options, args) = parser.parse_args()
 
@@ -233,6 +237,7 @@ class Recalibration(object):
             self.fixed.append("rot3")
         if options.fix_wavelength:
             self.fixed.append("wavelength")
+        self.saturation = options.saturation
 
         print self.ai
         print "fixed:", self.fixed
@@ -242,14 +247,14 @@ class Recalibration(object):
         do dark, flat correction thresholding, ...
         """
         if len(self.dataFiles) > 1 or self.cutBackground or self.darkFiles or self.flatFiles:
-            self.outfile = averageImages(self.dataFiles, self.outfile, minimum=self.cutBackground,
+            self.outfile = averageImages(self.dataFiles, self.outfile, threshold=self.saturation, minimum=self.cutBackground,
                                       darks=self.darkFiles, flats=self.flatFiles)
 
         else:
             self.outfile = self.dataFiles[0]
         self.peakPicker = PeakPicker(self.outfile, mask=self.mask)
         self.basename = os.path.splitext(self.outfile)[0]
-        self.peakPicker.gui(log=True)
+        self.peakPicker.gui(log=True, maximize=True)
         self.peakPicker.fig.canvas.draw()
 
     def extract_cpt(self):
@@ -426,6 +431,8 @@ if __name__ == "__main__":
     c = Recalibration()
     c.parse()
     c.preprocess()
+#    time.sleep(2)
+#    raw_input("resize and press enter")
     c.extract_cpt()
 #    print c.peakPicker.points
 #    c.gui_peakPicker()

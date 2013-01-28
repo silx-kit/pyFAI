@@ -48,6 +48,7 @@ if os.name != "nt":
     WindowsError = RuntimeError
 TARGET_SIZE = 1024
 
+
 ################################################################################
 # PeakPicker
 ################################################################################
@@ -82,7 +83,7 @@ class PeakPicker(object):
         self._semGui = threading.Semaphore()
         self.defaultNbPoints = 100
 
-    def gui(self, log=False):
+    def gui(self, log=False, maximize=False):
         """
         @param log: show z in log scale
         """
@@ -94,6 +95,12 @@ class PeakPicker(object):
         else:
             self.ax.imshow(self.data, origin="lower", interpolation="nearest")
         self.fig.show()
+        if maximize:
+            mng = pylab.get_current_fig_manager()
+#            print mng.window.maxsize()
+            event = Event(1920, 1200)  # *mng.window.maxsize())
+            mng.resize(event)
+            self.fig.canvas.draw()
         self.fig.canvas.mpl_connect('button_press_event', self.onclick)
 
     def load(self, filename):
@@ -781,3 +788,9 @@ class Massif(object):
                         fabio.edfimage.edfimage(data=self._labeled_massif).write("labeled_massif.edf")
                     logger.info("Labeling found %s massifs." % self._number_massif)
         return self._labeled_massif
+
+class Event(object):
+    "Dummy class for dumm things"
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height

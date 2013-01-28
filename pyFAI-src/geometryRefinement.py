@@ -268,7 +268,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         if "wavelength" in fix:
             bounds[6] = (self.wavelength, self.wavelength)
 
-        newParam = fmin_slsqp(self.residu2, self.param, iter=maxiter,
+        newParam = fmin_slsqp(self.residu2_wavelength, self.param, iter=maxiter,
                               args=(self.data[:, 0],
                                     self.data[:, 1],
                                     self.data[:, 2].astype(numpy.int32)),
@@ -286,7 +286,7 @@ class GeometryRefinement(AzimuthalIntegrator):
             self.param = newParam
             self.dist, self.poni1, self.poni2, \
                 self.rot1, self.rot2, self.rot3 = tuple(newParam[:6])
-            self.wavelength = 1e-10 * newParam[7]
+            self.wavelength = 1e-10 * newParam[6]
             return newDeltaSq
         else:
             return oldDeltaSq

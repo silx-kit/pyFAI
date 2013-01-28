@@ -101,6 +101,7 @@ class Calibration(object):
         self.mask = None
         self.max_iter = 1000
         self.maximum_filter = False
+        self.threshold = 0.1
 
     def __repr__(self):
         lst = ["Calibration object:",
@@ -152,6 +153,9 @@ decrease the value if arcs are mixed together.""", default=None)
         parser.add_option("--max", dest="maximum_filter",
                       help="perform a maximum filter instead of a mean filter when multiple input files are provided",
                        default=False, action="store_true")
+        parser.add_option("--saturation", dest="saturation",
+                      help="consider all pixel>max*(1-saturation) as saturated and reconstruct them",
+                      default=0.1, type="float")
 
         (options, args) = parser.parse_args()
 
@@ -194,6 +198,7 @@ decrease the value if arcs are mixed together.""", default=None)
         if options.pixel is not None:
             self.get_pixelSize(options.pixel)
         self.maximum_filter = options.maximum_filter
+        self.threshold = options.saturation
         self.dataFiles = [f for f in args if os.path.isfile(f)]
         if not self.dataFiles:
             raise RuntimeError("Please provide some calibration images ... if you want to analyze them. Try also the --help option to see all options!")
@@ -236,7 +241,7 @@ decrease the value if arcs are mixed together.""", default=None)
         do dark, flat correction thresholding, ...
         """
         if len(self.dataFiles) > 1 or self.cutBackground or self.darkFiles or self.flatFiles:
-            self.outfile = averageImages(self.dataFiles, self.outfile, minimum=self.cutBackground,
+            self.outfile = averageImages(self.dataFiles, self.outfile, threshold=self.threshold, minimum=self.cutBackground,
                                       darks=self.darkFiles, flats=self.flatFiles, max_filter=self.maximum_filter)
         else:
             self.outfile = self.dataFiles[0]
