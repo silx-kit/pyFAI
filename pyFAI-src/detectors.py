@@ -354,6 +354,23 @@ class FReLoN(Detector):
         else:
             self.max_shape = (2048, 2048)
 
+    def calc_mask(self):
+        """
+        Returns a generic mask for Frelon detectors...
+        All pixels which (center) turns to be out of the valid region are by default discarded
+        """
+
+        d1 = numpy.outer(numpy.arange(self.max_shape[0]), numpy.ones(self.max_shape[1])) + 0.5
+        d2 = numpy.outer(numpy.ones(self.max_shape[0]), numpy.arange(self.max_shape[1])) + 0.5
+        dX = self.spline.splineFuncX(d2, d1)
+        dY = self.spline.splineFuncY(d2, d1)
+        p1 = dY + d1
+        p2 = dX + d2
+        below_min = numpy.logical_or((p2 < self.spline.xmin), (p1 < self.spline.ymin))
+        above_max = numpy.logical_or((p2 > self.spline.xmax), (p1 > self.spline.ymax))
+        mask = numpy.logical_or(below_min, above_max)
+        return mask
+
 class Basler(Detector):
     """
     Basler camera are simple CCD camara over GigaE
