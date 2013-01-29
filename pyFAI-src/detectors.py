@@ -128,10 +128,10 @@ class Detector(object):
     def getPyFAI(self):
         """
         Helper method to serialize the description of a detector using the pyFAI way
-        with everything in S.I units. 
-         
-        @return: representation of the detector easy to serialize 
-        @rtype: dict 
+        with everything in S.I units.
+
+        @return: representation of the detector easy to serialize
+        @rtype: dict
         """
         return {"detector": self.name,
                 "pixel1": self.pixel1,
@@ -141,9 +141,9 @@ class Detector(object):
     def getFit2D(self):
         """
         Helper method to serialize the description of a detector using the Fit2d units
-         
-        @return: representation of the detector easy to serialize 
-        @rtype: dict 
+
+        @return: representation of the detector easy to serialize
+        @rtype: dict
         """
         return {"pixelX": self.pixel2 * 1e6,
                 "pixelY": self.pixel1 * 1e6,
@@ -151,10 +151,10 @@ class Detector(object):
 
     def setPyFAI(self, **kwarg):
         """
-        Twin method of getPyFAI: setup a detector instance according to a description 
-          
+        Twin method of getPyFAI: setup a detector instance according to a description
+
         @param kwarg: dictionary containing detector, pixel1, pixel2 and splineFile
-        
+
         """
         if "detector" in kwarg:
             self = detector_factory(kwarg["detector"])
@@ -166,10 +166,10 @@ class Detector(object):
 
     def setFit2D(self, **kwarg):
         """
-        Twin method of getFit2D: setup a detector instance according to a description 
-          
+        Twin method of getFit2D: setup a detector instance according to a description
+
         @param kwarg: dictionary containing pixel1, pixel2 and splineFile
-        
+
         """
         for kw, val in kwarg.items():
             if kw == "pixelX":
@@ -197,9 +197,10 @@ class Detector(object):
         the same shape.
         """
         if (d1 is None):
-            d1 = numpy.arange(self.max_shape[0])
+            d1 = numpy.outer(numpy.arange(self.max_shape[0]), numpy.ones(self.max_shape[1]))
+
         if (d2 is None):
-            d2 = numpy.arange(self.max_shape[1])
+            d2 = numpy.outer(numpy.ones(self.max_shape[0]), numpy.arange(self.max_shape[1]))
 
         if self.spline is None:
             dX = 0.
@@ -351,10 +352,27 @@ class FReLoN(Detector):
         else:
             self.max_shape = (2048, 2048)
 
+    def calc_mask(self):
+        """
+        Returns a generic mask for Frelon detectors...
+        All pixels which (center) turns to be out of the valid region are by default discarded
+        """
+
+        d1 = numpy.outer(numpy.arange(self.max_shape[0]), numpy.ones(self.max_shape[1])) + 0.5
+        d2 = numpy.outer(numpy.ones(self.max_shape[0]), numpy.arange(self.max_shape[1])) + 0.5
+        dX = self.spline.splineFuncX(d2, d1)
+        dY = self.spline.splineFuncY(d2, d1)
+        p1 = dY + d1
+        p2 = dX + d2
+        below_min = numpy.logical_or((p2 < self.spline.xmin), (p1 < self.spline.ymin))
+        above_max = numpy.logical_or((p2 > self.spline.xmax), (p1 > self.spline.ymax))
+        mask = numpy.logical_or(below_min, above_max)
+        return mask
+
 class Basler(Detector):
     """
-    Basler camera are simple CCD camara over GigaE 
-    
+    Basler camera are simple CCD camara over GigaE
+
     """
     force_pixel = True
     def __init__(self, pixel=3.75e-6):
