@@ -76,18 +76,19 @@ u16_to_float(__global unsigned short  *array_u16,
 
 
 /**
- * \brief cast values of an array of int32 into a float output array inplace.
+ * \brief convert values of an array of int32 into a float output array inplace.
  *
  * @param array:  Pointer to global memory with the data
  */
 __kernel void
-s32_to_float(__global int  *array
+s32_to_float(	__global int  *array_int,
+				__global float  *array_float
 		)
 {
   uint i = get_global_id(0);
   //Global memory guard for padding
   if(i < NIMAGE)
-	array[i]=(float)array[i];
+	array_float[i] = (float)(array_int[i]);
 }
 
 
