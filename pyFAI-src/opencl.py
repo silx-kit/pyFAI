@@ -41,7 +41,9 @@ except ImportError:
     logger.error("Unable to import pyOpenCl. Please install it from: http://pypi.python.org/pypi/pyopencl")
     pyopencl = None
 
-
+FLOPS_PER_CORE = {"GPU": 64,  # GPU, Fermi at least perform 64 flops per cycle/multicore, G80 were at 24 or 48 ...
+                  "CPU": 4  # CPU, at least intel's have 4 operation per cycle
+                  }
 
 class Device(object):
     """
@@ -60,6 +62,11 @@ class Device(object):
         self.cores = cores
         self.frequency = frequency
         self.id = id
+        if cores and frequency:
+            self.flops = cores * frequency * FLOPS_PER_CORE.get(type, 1)
+        else:
+            self.flops = 1
+
 
     def __repr__(self):
         return "%s" % self.name
@@ -176,9 +183,9 @@ class OpenCL(object):
                                 return platformid, deviceid
                             else:
                                 if not best_found:
-                                    best_found = platformid, deviceid, device.cores * device.frequency
-                                elif best_found[2] < device.cores * device.frequency:
-                                    best_found = platformid, deviceid, device.cores * device.frequency
+                                    best_found = platformid, deviceid, device.flops
+                                elif best_found[2] < device.flops:
+                                    best_found = platformid, deviceid, device.flops
         if best_found:
             return  best_found[0], best_found[1]
 
