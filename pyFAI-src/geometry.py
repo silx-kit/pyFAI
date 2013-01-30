@@ -1142,6 +1142,12 @@ class Geometry(object):
                 shape = ttha.shape
             else:
                 ttha = self.qArray(shape)
+        elif dim1_unit == units.R:
+            if shape is None:
+                ttha = self._ra
+                shape = ttha.shape
+            else:
+                ttha = self.rArray(shape)
         else:
 #            TODO
             raise RuntimeError("in pyFAI.Geometry.calcfrom1d: "
