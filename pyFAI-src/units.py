@@ -88,6 +88,6 @@ def to_unit(obj):
                 break
     elif isinstance(obj, Enum):
         rad_unit = obj
-    else:
-        logger.error("Unable to recognize this type unit %s" % obj)
+    if rad_unit is None:
+        logger.error("Unable to recognize this type unit %s. Valid units are 2th_deg, 2th_rad, q_nm^-1, q_A^-1 and r_mm" % obj)
     return rad_unit
