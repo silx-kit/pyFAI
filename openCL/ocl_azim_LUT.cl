@@ -58,9 +58,7 @@ struct lut_point_t
 
 
 /**
- * \brief cast values of an array on uint16 into a float output arrays to zero.
- *
- * Gridsize = size of arrays + padding.
+ * \brief cast values of an array of uint16 into a float output array.
  *
  * @param array_u16: Pointer to global memory with the input data as unsigned16 array
  * @param array_float:  Pointer to global memory with the output data as float array
@@ -75,6 +73,24 @@ u16_to_float(__global unsigned short  *array_u16,
   if(i < NIMAGE)
 	array_float[i]=(float)array_u16[i];
 }
+
+
+/**
+ * \brief convert values of an array of int32 into a float output array inplace.
+ *
+ * @param array:  Pointer to global memory with the data
+ */
+__kernel void
+s32_to_float(	__global int  *array_int,
+				__global float  *array_float
+		)
+{
+  uint i = get_global_id(0);
+  //Global memory guard for padding
+  if(i < NIMAGE)
+	array_float[i] = (float)(array_int[i]);
+}
+
 
 
 /**

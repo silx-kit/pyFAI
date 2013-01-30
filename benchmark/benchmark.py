@@ -9,7 +9,7 @@ ocl = pyFAI.opencl.ocl
 from matplotlib import pyplot as plt
 
 ds_list = ["Pilatus1M.poni", "halfccd.poni", "Frelon2k.poni", "Pilatus6M.poni", "Mar3450.poni", "Fairchild.poni"]
-#ds_list = ["Pilatus1M.poni", "halfccd.poni"]
+#ds_list = ["Pilatus1M.poni", "halfccd.poni", "Frelon2k.poni", "Pilatus6M.poni"]
 datasets = {"Fairchild.poni":utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
             "halfccd.poni":utilstest.UtilsTest.getimage("1882/halfccd.edf"),
             "Frelon2k.poni":utilstest.UtilsTest.getimage("1881/Frelon2k.edf"),
@@ -47,7 +47,7 @@ class Bench(object):
                 proc = subprocess.Popen(["sysctl", "-n", "machdep.cpu.brand_string"], stdout=subprocess.PIPE)
                 proc.wait()
                 self._cpu = proc.stdout.read().strip()
-            old = self._cpu 
+            old = self._cpu
             self._cpu = old.replace("  "," ")
             while old != self._cpu:
                 old = self._cpu
@@ -438,6 +438,8 @@ if __name__ == "__main__":
         n = int(sys.argv[1])
     else:
         n = 10
+    if "--small" in  sys.argv:
+        ds_list = ds_list[:4]
     print("Averaging over %i repetitions (best of 3)." % n)
     b = Bench(n)
     b.init_curve()
@@ -447,7 +449,7 @@ if __name__ == "__main__":
 #    b.bench_cpu1d_ocl_lut("CPU")
 #    b.bench_gpu1d("gpu", True)
 #    b.bench_gpu1d("gpu", False)
- #   b.bench_gpu1d("cpu", True)
+#    b.bench_gpu1d("cpu", True)
 #    b.bench_gpu1d("cpu", False)
     b.bench_cpu2d()
     b.bench_cpu2d_lut()
