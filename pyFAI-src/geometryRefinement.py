@@ -88,7 +88,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         self._rot2_max = pi
         self._rot3_min = -pi
         self._rot3_max = pi
-        self._wavelength_min = 0
+        self._wavelength_min = 1e-15
         self._wavelength_max = 100.e-10
         if dSpacing:
             if type(dSpacing) in types.StringTypes:
@@ -156,25 +156,28 @@ class GeometryRefinement(AzimuthalIntegrator):
         else:
             self.rot3_min = -(value / 100.) ** 2
             self.rot3_max = (value / 100.) ** 2
+        self.wavelength_min = low * self.wavelength
+        self.wavelength_max = hi * self.wavelength
 
-    def residu1(self, param, d1, d2, tthRef):
-        return self.tth(d1, d2, param) - tthRef
 
     def calc_2th(self, rings, wavelength):
         """
-        @param rings: indices of the rings. starts at 0 and self.dSpacing should be long enough !!! 
-        @param wavelength: wavelength in meter 
+        @param rings: indices of the rings. starts at 0 and self.dSpacing should be long enough !!!
+        @param wavelength: wavelength in meter
         """
         rings = numpy.ascontiguousarray(rings, dtype=numpy.int32)
         return 2.0 * numpy.arcsin(wavelength / (2.0e-10 * self.dSpacing[rings]))
+
+    def residu1(self, param, d1, d2, rings):
+        return self.tth(d1, d2, param) - self.calc_2th(rings, self.wavelength)
 
 
     def residu1_wavelength(self, param, d1, d2, rings):
         return self.tth(d1, d2, param) - self.calc_2th(rings, param[6] * 1e-10)
 
 
-    def residu2(self, param, d1, d2, tthRef):
-        return (self.residu1(param, d1, d2, tthRef) ** 2).sum()
+    def residu2(self, param, d1, d2, rings):
+        return (self.residu1(param, d1, d2, rings) ** 2).sum()
 
     def residu2_wavelength(self, param, d1, d2, rings):
         return (self.residu1_wavelength(param, d1, d2, rings) ** 2).sum()
@@ -218,7 +221,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         newParam = fmin_slsqp(self.residu2, self.param, iter=maxiter,
                               args=(self.data[:, 0],
                                     self.data[:, 1],
-                                    self.data[:, 2]),
+                                    self.data[:, 2].astype(numpy.int32)),
                               bounds=bounds,
                               acc=1.0e-12,
                               iprint=(logger.getEffectiveLevel() <= logging.INFO))
@@ -253,9 +256,9 @@ class GeometryRefinement(AzimuthalIntegrator):
                 bounds.append((val, val))
             else:
                 bounds.append((getattr(self, "_%s_min" % i), getattr(self, "_%s_max" % i)))
-        # wavelength
-        bounds[-1] = (bounds[-1][0] * 1e-10, bounds[-1][1] * 1e-10)
-        param[-1] = 1e-10 * param[-1]
+        # wavelength is multiplied to 10^10 to have values in the range 0.1-10: better numerical differentiation
+        bounds[-1] = (bounds[-1][0] * 1e10, bounds[-1][1] * 1e10)
+        param[-1] = 1e10 * param[-1]
         self.param = numpy.array(param)
         newParam = fmin_slsqp(self.residu2_wavelength, self.param, iter=maxiter,
                               args=(self.data[:, 0],
@@ -273,9 +276,8 @@ class GeometryRefinement(AzimuthalIntegrator):
             logger.info("maxdelta on %s: %s --> %s ",
                         d[i], self.param[i], newParam[i])
             self.param = newParam
-            self.dist, self.poni1, self.poni2, \
-                self.rot1, self.rot2, self.rot3 = tuple(newParam[:6])
-            self.wavelength = 1e-10 * newParam[6]
+            self.dist, self.poni1, self.poni2, self.rot1, self.rot2, self.rot3 = tuple(newParam[:-1])
+            self.wavelength = 1e-10 * newParam[-1]
             return newDeltaSq
         else:
             return oldDeltaSq
@@ -498,3 +500,20 @@ class GeometryRefinement(AzimuthalIntegrator):
     def get_rot3_max(self):
         return self._rot3_max
     rot3_max = property(get_rot3_max, set_rot3_max)
+
+    def set_wavelength_min(self, value):
+        if isinstance(value, float):
+            self._wavelength_min = value
+        else:
+            self._wavelength_min = float(value)
+    def get_wavelength_min(self):
+        return self._wavelength_min
+    wavelength_min = property(get_wavelength_min, set_wavelength_min)
+    def set_wavelength_max(self, value):
+        if isinstance(value, float):
+            self._wavelength_max = value
+        else:
+            self._wavelength_max = float(value)
+    def get_wavelength_max(self):
+        return self._wavelength_max
+    wavelength_max = property(get_wavelength_max, set_wavelength_max)

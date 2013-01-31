@@ -53,7 +53,7 @@ TARGET_SIZE = 1024
 # PeakPicker
 ################################################################################
 class PeakPicker(object):
-    def __init__(self, strFilename, reconst=False, mask=None):
+    def __init__(self, strFilename, reconst=False, mask=None, dSpacing=None, wavelength=None):
         """
         @param: input image filename
         @param reconst: shall negative values be reconstructed (wipe out problems with pilatus gaps)
@@ -65,8 +65,8 @@ class PeakPicker(object):
             flat_mask = mask.ravel()
             view[numpy.where(flat_mask)] = 0
         self.shape = self.data.shape
-        self.points = ControlPoints()
-        self.lstPoints = []
+        self.points = ControlPoints(dSpacing=dSpacing, wavelength=wavelength)
+#        self.lstPoints = []
         self.fig = None
         self.fig2 = None
         self.fig2sp = None
@@ -186,18 +186,20 @@ class PeakPicker(object):
                 logging.error("You should provide the good number of floats")
 
 
-    def finish(self, filename=None):
+    def finish(self, filename=None,):
         """
-        Ask the 2theta values for the given points
-        """
-        logging.info("Please use the GUI and Right-click on the peaks to mark them")
+        Ask the ring number for the given points
 
-        raw_input("Please press enter when you are happy; to fill in 2theta values" + os.linesep)
-        self.points.readAngleFromKeyboard()
+        @param filename: file with the point coordinates saved
+        """
+        logging.info("Please use the GUI and Right-click on the peaks to mark them (center-click to erase last group)")
+
+        raw_input("Please press enter when you are happy; to fill in ring number" + os.linesep)
+        self.points.readRingNrFromKeyboard()  # readAngleFromKeyboard()
         if filename is not None:
             self.points.save(filename)
-        self.lstPoints = self.points.getList()
-        return self.lstPoints
+#        self.lstPoints = self.points.getList()
+        return self.points.getListRing()
 
 
     def contour(self, data):
@@ -263,7 +265,7 @@ class PeakPicker(object):
 ################################################################################
 class ControlPoints(object):
     """
-    This class contains a set of control points with (optionally) their ring number hence d-spacing and diffraction  2Theta angle ... 
+    This class contains a set of control points with (optionally) their ring number hence d-spacing and diffraction  2Theta angle ...
     """
     def __init__(self, filename=None, dSpacing=None, wavelength=None):
         if dSpacing is not None:
@@ -461,7 +463,7 @@ class ControlPoints(object):
 
     def load_dSpacing(self, filename):
         """
-        Load a d-spacing file containing the inter-reticular plan distance in Angstrom  
+        Load a d-spacing file containing the inter-reticular plan distance in Angstrom
         """
         if not os.path.isfile(filename):
             logger.error("ControlPoint.load_dSpacing: No such file %s", filename)
@@ -470,7 +472,7 @@ class ControlPoints(object):
 
     def save_dSpacing(self, filename):
         """
-        save the d-spacing to a file  
+        save the d-spacing to a file
         """
         with open(filename) as f:
             for i in self.dSpacing:

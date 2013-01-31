@@ -119,7 +119,7 @@ class Recalibration(object):
                           action="store_true", dest="verbose", default=False,
                           help="switch to debug mode")
         parser.add_option("-s", "--spacing", dest="spacing", metavar="FILE",
-                      help="file containing d-spacing of the reference sample", default=None)
+                      help="file containing d-spacing of the reference sample (MANDATORY)", default=None)
         parser.add_option("-r", "--ring", dest="max_rings", type="float",
                       help="maximum number of rings to extract", default=None)
         parser.add_option("-d", "--dark", dest="dark", metavar="FILE",
@@ -204,6 +204,8 @@ class Recalibration(object):
             self.flatFiles = [f for f in options.flat.split(",") if os.path.isfile(f)]
         self.pointfile = options.npt
         self.spacing_file = options.spacing
+        if not self.spacing_file or not os.path.isfile(self.spacing_file):
+            raise RuntimeError("you must specify the d-spacing file")
         self.ai = pyFAI.load(options.poni)
         if options.wavelength:
             self.ai.wavelength = 1e-10 * options.wavelength
@@ -257,7 +259,7 @@ class Recalibration(object):
 
         else:
             self.outfile = self.dataFiles[0]
-        self.peakPicker = PeakPicker(self.outfile, mask=self.mask)
+        self.peakPicker = PeakPicker(self.outfile, mask=self.mask, dSpacing=self.spacing_file, wavelength=self.wavelength)
         self.basename = os.path.splitext(self.outfile)[0]
         self.peakPicker.gui(log=True, maximize=True)
         self.peakPicker.fig.canvas.draw()
@@ -275,8 +277,8 @@ class Recalibration(object):
         dtth[0, 1] = delta[0]
         dtth = dtth.min(axis= -1)
         ttha = self.ai.twoThetaArray(self.peakPicker.data.shape)
-        self.peakPicker.points.wavelength = self.ai.wavelength
-        self.peakPicker.points.dSpacing = d
+#        self.peakPicker.points.wavelength = self.ai.wavelength
+#        self.peakPicker.points.dSpacing = d
         rings = 0
         if self.max_rings is None:
             self.max_rings = tth.size
@@ -309,7 +311,7 @@ class Recalibration(object):
                 numpy.random.shuffle(all_points)
                 for idx in all_points:
                     out = self.peakPicker.massif.nearest_peak(idx)
-                    print idx, "->", out
+                    print "[%3i,%3i] -> [%.1f,%.1f]" % (idx[1], idx[0], out[1], out[0])
                     if out is not None:
                         p0, p1 = out
                         if mask[p0, p1]:
@@ -348,7 +350,7 @@ class Recalibration(object):
             if "wavelength" in self.fixed:
                 while (previous > self.geoRef.chi2()) and (count < self.max_iter):
                     previous = self.geoRef.chi2()
-                    self.geoRef.refine2(1000000)
+                    self.geoRef.refine2(1000000, fix=self.fixed)
                     print(self.geoRef)
                     count += 1
             else:
