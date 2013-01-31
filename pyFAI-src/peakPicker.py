@@ -40,8 +40,8 @@ from scipy.ndimage          import label  # , binary_closing, binary_opening, bi
 # import matplotlib
 import pylab
 import fabio
-from utils                  import relabel, gaussian_filter, binning, unBinning
-from bilinear               import bilinear
+from .utils                  import relabel, gaussian_filter, binning, unBinning
+from . import bilinear
 from reconstruct            import reconstruct
 logger = logging.getLogger("pyFAI.peakPicker")
 if os.name != "nt":
@@ -606,7 +606,7 @@ class Massif(object):
                 self.data = data.astype("float32")
             except Exception as error:
                 logger.error("Unable to understand this type of data %s: %s", data, error)
-        self._bilin = bilinear(self.data)
+        self._bilin = bilinear.Bilinear(self.data)
         self._blured_data = None
         self._median_data = None
         self._labeled_massif = None

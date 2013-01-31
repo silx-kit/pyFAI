@@ -25,8 +25,8 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
-__date__ = "27/10/2012"
-__copyright__ = "2011-2012, ESRF"
+__date__ = "31/01/2013"
+__copyright__ = "2011-2013, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import cython
@@ -36,14 +36,14 @@ cimport numpy
 from libc.math cimport floor,ceil
 
 
-cdef class bilinear:
+cdef class Bilinear:
     """Bilinear interpolator for finding max"""
 
     cdef float[:,:] data
     cdef float maxi, mini
     cdef size_t d0_max, d1_max, r
 
-    def __cinit__(self, numpy.ndarray[numpy.float32_t, ndim = 2] data not None):
+    def __cinit__(self, data not None):
         assert data.ndim == 2
         self.d0_max = data.shape[0] - 1
         self.d1_max = data.shape[1] - 1
@@ -96,66 +96,59 @@ cdef class bilinear:
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def local_maxi(self, x):
+    def local_maxi(self, x, int w=1):
         """
-        return the local maximum
+        Return the local maximum ... with sub-pixel refinement
+        
         @param x: 2-tuple of int
+        @param w: half with of the window: 1 or 2 are adviced
         @return: 2-tuple of int with the nearest local maximum
 
         """
-        cdef int d0 = x[0]
-        cdef int d1 = x[1]
-        cdef int i0, i1, d0m, d0p, d1m, d1p, n0, n1, cnt=0
-        cdef float tmp, value, current_value
-        value = current_value = self.data[d0,d1]
+        cdef int current0 = x[0]
+        cdef int current1 = x[1]
+        cdef int i0, i1, start0, stop0, start1, stop1, new0, new1, cnt=0, width0=w, width1=w
+        cdef float tmp, value, current_value, sum0=0,  sum1=0, sum=0
+        value = self.data[current0,current1]
+        current_value = value-1.0
+        new0,new1 = current0,current1
         with nogil:
-            if d0==0:
-                d0m=0
-            else:
-                d0m = d0-1
-            if d0 == self.d0_max:
-                d0p=self.d0_max
-            else:
-                d0p = d0+1
-            if d1==0:
-                d1m=0
-            else:
-                d1m = d1-1
-            if d1 == self.d1_max:
-                d1p=self.d1_max
-            else:
-                d1p = d1+1
-            for i0 in range(d0m,d0p+1):
-                for i1 in range(d1m,d1p+1):
-                    tmp=self.data[i0,i1]
-                    if tmp>current_value:
-                        value = tmp
             while value>current_value:
                 current_value=value
-                n0,n1 = d0,d1
                 cnt+=1
-                if d0==0:
-                    d0m=0
+                if current0 < width0:
+                    start0 = 0
                 else:
-                    d0m = d0-1
-                if d0 == self.d0_max:
-                    d0p=self.d0_max
+                    start0 = current0 - width0
+                if current0 >= self.d0_max - width0:
+                    stop0 = self.d0_max
                 else:
-                    d0p = d0+1
-                if d1==0:
-                    d1m=0
+                    stop0 = current0 + width0
+                if current1 < width1:
+                    start1 = 0
                 else:
-                    d1m = d1-1
-                if d1 == self.d1_max:
-                    d1p=self.d1_max
+                    start1 = current1 - width1
+                if current1 >= self.d1_max - width1:
+                    stop1=self.d1_max
                 else:
-                    d1p = d1+1
-                for i0 in range(d0m,d0p+1):
-                    for i1 in range(d1m,d1p+1):
+                    stop1 = current1 + width1
+                for i0 in range(start0, stop0+1):
+                    for i1 in range(start1, stop1+1):
                         tmp=self.data[i0,i1]
                         if tmp>current_value:
-                            n0,n1=i0,i1
+                            new0,new1=i0,i1
                             value = tmp
-                d0,d1=n0,n1
-#        print "Exit after %i loops"%cnt
-        return (d0,d1)
+                current0,current1=new0,new1
+        #refinement of the position by a simple center of mass of the last valid region used
+        for i0 in range(start0, stop0+1):
+            for i1 in range(start1, stop1+1):
+                tmp = self.data[i0,i1]
+                sum0 += tmp * i0
+                sum1 += tmp * i1
+                sum += tmp
+        if sum>0:
+#            print current0,current1,sum0/sum,sum1/sum
+            return (sum0/sum,sum1/sum)
+        else:
+            return (current0,current1)
+        
