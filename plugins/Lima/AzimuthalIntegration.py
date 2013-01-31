@@ -81,8 +81,6 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
                                  kwargs=dict(method="lut", unit=self.unit)
                                  )
             t.start()
-#            _ = self.ai.integrate2d(numpy.zeros(self.shapeIn, dtype=numpy.float32),
-#                            self.nbpt_rad, self.nbpt_azim, method="lut", unit=self.unit)
         else:
             t = threading.Thread(target=self.ai.integrate2d,
                                  name="init2d",
@@ -91,13 +89,8 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
                                  kwargs=dict(method="lut", unit=self.unit)
                                  )
             t.start()
-#            _ = self.ai.integrate1d(numpy.zeros(self.shapeIn, dtype=numpy.float32),
-#                            self.nbpt_rad, method="lut", unit=self.unit)
 
     def process(self, data) :
-        # rData = Core.Processlib.Data()
-        # rData.frameNumber = data.frameNumber
-        # rData.buffer =
         ctControl = _control_ref()
         saving = ctControl.saving()
         sav_parms = saving.getParameters()
@@ -106,16 +99,17 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         nextNumber = sav_parms.nextNumber
         indexFormat = sav_parms.indexFormat
         output = os.path.join(directory, prefix + indexFormat % (nextNumber + data.frameNumber))
-        if self.do_2D():
-            self.ai.integrate2d(data.buffer, self.nbpt_rad, self.nbpt_azim,
-                                method="lut", unit=self.unit, safe=True,
-                                filename=output + ".azim")
-        else:
-            try:
+        try:
+
+            if self.do_2D():
+                self.ai.integrate2d(data.buffer, self.nbpt_rad, self.nbpt_azim,
+                                    method="lut", unit=self.unit, safe=True,
+                                    filename=output + ".azim")
+            else:
                 self.ai.integrate1d(data.buffer,
-                            self.nbpt_rad, method="lut", unit=self.unit, safe=True,
-                            filename=output + ".xy")
-            except :
+                                self.nbpt_rad, method="lut", unit=self.unit, safe=True,
+                                filename=output + ".xy")
+        except :
                 print data.buffer.shape, data.buffer.size
                 print self.ai
                 print self.ai._lut_integrator
@@ -283,6 +277,12 @@ class AzimuthalIntegratonDeviceServer(BasePostProcess) :
         if(self.__pyFAISink) :
             self.__pyFAISink.reset()
 
+    @Core.DEB_MEMBER_FUNCT
+    def Reconfig(self, shape) :
+        deb.Param('Reconfig: %s' % shape)
+        if(self.__pyFAISink) :
+            self.__pyFAISink.reconfig(shape)
+
 
 class AzimuthalIntegratonDeviceServerClass(PyTango.DeviceClass) :
         #        Class Properties
@@ -317,6 +317,9 @@ class AzimuthalIntegratonDeviceServerClass(PyTango.DeviceClass) :
          [PyTango.DevVoid, ""]],
         'Reset':
         [[PyTango.DevVoid, ""],
+         [PyTango.DevVoid, ""]],
+        'Reconfig':
+        [[PyTango.DevVarUShortArray, "Input image size [1080,1920]"],
          [PyTango.DevVoid, ""]],
         }
 
