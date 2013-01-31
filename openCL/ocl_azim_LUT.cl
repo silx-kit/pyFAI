@@ -76,9 +76,10 @@ u16_to_float(__global unsigned short  *array_u16,
 
 
 /**
- * \brief convert values of an array of int32 into a float output array inplace.
+ * \brief convert values of an array of int32 into a float output array.
  *
- * @param array:  Pointer to global memory with the data
+ * @param array_int:  Pointer to global memory with the data in int
+ * @param array_float:  Pointer to global memory with the data in float
  */
 __kernel void
 s32_to_float(	__global int  *array_int,

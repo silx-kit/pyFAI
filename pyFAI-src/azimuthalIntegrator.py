@@ -113,7 +113,7 @@ class AzimuthalIntegrator(Geometry):
     def __init__(self, dist=1, poni1=0, poni2=0,
                  rot1=0, rot2=0, rot3=0,
                  pixel1=None, pixel2=None,
-                 splineFile=None, detector=None):
+                 splineFile=None, detector=None, wavelength=None):
         """
         @param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
         @type dist: float
@@ -138,7 +138,7 @@ class AzimuthalIntegrator(Geometry):
         """
         Geometry.__init__(self, dist, poni1, poni2,
                           rot1, rot2, rot3,
-                          pixel1, pixel2, splineFile, detector)
+                          pixel1, pixel2, splineFile, detector, wavelength)
         self._nbPixCache = {}  # key=shape, value: array
 
         #
