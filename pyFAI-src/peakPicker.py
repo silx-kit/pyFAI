@@ -670,7 +670,7 @@ class Massif(object):
             logger.error("Unable to find peak in the vinicy of %s", x)
             return listpeaks
         else:
-            if not region[xinit[0], xinit[1]]:
+            if not region[int(xinit[0] + 0.5), int(xinit[1] + 0.5)]:
                 logger.error("Nearest peak %s is not in the same region  %s", xinit, x)
                 return listpeaks
 
