@@ -50,7 +50,7 @@ class Detector(object):
     Generic class representing a 2D detector
     """
     force_pixel = False
-    def __init__(self, pixel1=None, pixel2=None, splineFile=None):
+    def __init__(self, pixel1=1e-6, pixel2=1e-6, splineFile=None):
         """
         @param pixel1: size of the pixel in meter along the slow dimension (often Y)
         @type pixel1: float
@@ -60,8 +60,12 @@ class Detector(object):
         @type splineFile: str
         """
         self.name = self.__class__.__name__
-        self.pixel1 = pixel1
-        self.pixel2 = pixel2
+        self._pixel1 = None
+        self._pixel2 = None
+        if pixel1:
+            self.pixel1 = pixel1
+        if pixel2:
+            self.pixel2 = pixel2
         self.max_shape = (None, None)
         self._binning = (1, 1)
         self._mask = False
@@ -75,10 +79,10 @@ class Detector(object):
             self.set_splineFile(splineFile)
 
     def __repr__(self):
-        if (self.pixel1 is None) and (self.pixel2 is None):
+        if (self._pixel1 is None) or (self._pixel2 is None):
             return "Undefined detector"
         return "Detector %s\t Spline= %s\t PixelSize= %.3e, %.3e m" % \
-            (self.name, self.splineFile, self.pixel1, self.pixel2)
+            (self.name, self.splineFile, self._pixel1, self._pixel2)
 
     def get_splineFile(self):
         return self._splineFile
@@ -88,7 +92,7 @@ class Detector(object):
             self._splineFile = os.path.abspath(splineFile)
             self.spline = Spline(self._splineFile)
             # NOTA : X is axis 1 and Y is Axis 0
-            self.pixel2, self.pixel1 = self.spline.getPixelSize()
+            self._pixel2, self._pixel1 = self.spline.getPixelSize()
             self._splineCache = {}
         else:
             self._splineFile = None
@@ -115,11 +119,11 @@ class Detector(object):
             ratioY = bin_size[0] / self._binning[0]
             if self.spline is not None:
                 self.spline.bin((ratioX, ratioY))
-                self.pixel2, self.pixel1 = self.spline.getPixelSize()
+                self._pixel2, self._pixel1 = self.spline.getPixelSize()
                 self._splineCache = {}
             else:
-                self.pixel1 *= ratioY
-                self.pixel2 *= ratioX
+                self._pixel1 *= ratioY
+                self._pixel2 *= ratioX
             self._binning = bin_size
 
     binning = property(get_binning, set_binning)
@@ -134,8 +138,8 @@ class Detector(object):
         @rtype: dict
         """
         return {"detector": self.name,
-                "pixel1": self.pixel1,
-                "pixel2": self.pixel2,
+                "pixel1": self._pixel1,
+                "pixel2": self._pixel2,
                 "splineFile": self._splineFile}
 
     def getFit2D(self):
@@ -145,8 +149,8 @@ class Detector(object):
         @return: representation of the detector easy to serialize
         @rtype: dict
         """
-        return {"pixelX": self.pixel2 * 1e6,
-                "pixelY": self.pixel1 * 1e6,
+        return {"pixelX": self._pixel2 * 1e6,
+                "pixelY": self._pixel1 * 1e6,
                 "splineFile": self._splineFile}
 
     def setPyFAI(self, **kwarg):
@@ -224,8 +228,8 @@ class Detector(object):
             else:
                 dX = self.spline.splineFuncX(d2 + 0.5, d1 + 0.5)
                 dY = self.spline.splineFuncY(d2 + 0.5, d1 + 0.5)
-        p1 = (self.pixel1 * (dY + 0.5 + d1))
-        p2 = (self.pixel2 * (dX + 0.5 + d2))
+        p1 = (self._pixel1 * (dY + 0.5 + d1))
+        p2 = (self._pixel2 * (dX + 0.5 + d2))
         return p1, p2
 
     def calc_mask(self):
@@ -236,6 +240,9 @@ class Detector(object):
 #        logger.debug("Detector.calc_mask is not implemented for generic detectors")
         return None
 
+    ############################################################################
+    # Few properties
+    ############################################################################
     def get_mask(self):
         if self._mask is False:
             with self._sem:
@@ -262,6 +269,28 @@ class Detector(object):
     def get_maskfile(self):
         return self._maskfile
     maskfile = property(get_maskfile, set_maskfile)
+
+    def get_pixel1(self):
+        return self._pixel1
+    def set_pixel1(self, value):
+        if isinstance(value, float):
+            self._pixel1 = value
+        elif isinstance(value, (tuple, list)):
+            self._pixel1 = float(value[0])
+        else:
+            self._pixel1 = float(value)
+    pixel1 = property(get_pixel1, set_pixel1)
+
+    def get_pixel2(self):
+        return self._pixel2
+    def set_pixel2(self, value):
+        if isinstance(value, float):
+            self._pixel2 = value
+        elif isinstance(value, (tuple, list)):
+            self._pixel2 = float(value[0])
+        else:
+            self._pixel2 = float(value)
+    pixel2 = property(get_pixel2, set_pixel2)
 
 
 class Pilatus(Detector):
