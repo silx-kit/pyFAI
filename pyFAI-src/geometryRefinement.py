@@ -203,32 +203,32 @@ class GeometryRefinement(AzimuthalIntegrator):
         else:
             return oldDeltaSq
 
-    def refine2(self, maxiter=1000000):
-        self.param = numpy.array([self.dist, self.poni1, self.poni2,
-                                  self.rot1, self.rot2, self.rot3],
-                                 dtype="float64")
-        if logger.getEffectiveLevel() <= logging.INFO:
-            disp = 1
-        else:
-            disp = 0
+    def refine2(self, maxiter=1000000, fix=["wavelength"]):
+        d = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"]
+        param = []
+        bounds = []
+        for i in d:
+            param.append(getattr(self, i))
+            if i in fix:
+                val = getattr(self, i)
+                bounds.append((val, val))
+            else:
+                bounds.append((getattr(self, "_%s_min" % i), getattr(self, "_%s_max" % i)))
+        self.param = numpy.array(param)
         newParam = fmin_slsqp(self.residu2, self.param, iter=maxiter,
                               args=(self.data[:, 0],
                                     self.data[:, 1],
                                     self.data[:, 2]),
-                              bounds=[(self._dist_min, self._dist_max),
-                                      (self._poni1_min, self._poni1_max),
-                                      (self._poni2_min, self._poni2_max),
-                                      (self._rot1_min, self._rot1_max),
-                                      (self._rot2_min, self._rot2_max),
-                                      (self._rot3_min, self._rot3_max)],
-                              acc=1.0e-12, iprint=disp)
+                              bounds=bounds,
+                              acc=1.0e-12,
+                              iprint=(logger.getEffectiveLevel() <= logging.INFO))
         oldDeltaSq = self.chi2()
         newDeltaSq = self.chi2(newParam)
         logger.info("Constrained Least square %s --> %s",
                     oldDeltaSq, newDeltaSq)
         if newDeltaSq < oldDeltaSq:
             i = abs(self.param - newParam).argmax()
-            d = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3"]
+
             logger.info("maxdelta on %s: %s --> %s ",
                         d[i], self.param[i], newParam[i])
             self.param = newParam
@@ -239,48 +239,37 @@ class GeometryRefinement(AzimuthalIntegrator):
             return oldDeltaSq
 
     def refine2_wavelength(self, maxiter=1000000, fix=["wavelength"]):
-        self.param = numpy.array([self.dist, self.poni1, self.poni2,
-                                  self.rot1, self.rot2, self.rot3, self.wavelength * 1e10],
-                                 dtype="float64")
-        if logger.getEffectiveLevel() <= logging.INFO:
-            disp = 1
-        else:
-            disp = 0
-        bounds = [(self._dist_min, self._dist_max),
-                  (self._poni1_min, self._poni1_max),
-                  (self._poni2_min, self._poni2_max),
-                  (self._rot1_min, self._rot1_max),
-                  (self._rot2_min, self._rot2_max),
-                  (self._rot3_min, self._rot3_max),
-                  (self._wavelength_min, self._wavelength_max)]
-        if "dist" in fix:
-            bounds[0] = (self.dist, self.dist)
-        if "poni1" in fix:
-            bounds[1] = (self.poni1, self.poni1)
-        if "poni2" in fix:
-            bounds[2] = (self.poni2, self.poni2)
-        if "rot1" in fix:
-            bounds[3] = (self.rot1, self.rot1)
-        if "rot2" in fix:
-            bounds[4] = (self.rot2, self.rot2)
-        if "rot3" in fix:
-            bounds[5] = (self.rot3, self.rot3)
-        if "wavelength" in fix:
-            bounds[6] = (self.wavelength, self.wavelength)
+        d = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
 
+        self.param = numpy.array([self.dist, self.poni1, self.poni2,
+                                  self.rot1, self.rot2, self.rot3, self.wavelength],
+                                 dtype="float64")
+        param = []
+        bounds = []
+        for i in d:
+            param.append(getattr(self, i))
+            if i in fix:
+                val = getattr(self, i)
+                bounds.append((val, val))
+            else:
+                bounds.append((getattr(self, "_%s_min" % i), getattr(self, "_%s_max" % i)))
+        # wavelength
+        bounds[-1] = (bounds[-1][0] * 1e-10, bounds[-1][1] * 1e-10)
+        param[-1] = 1e-10 * param[-1]
+        self.param = numpy.array(param)
         newParam = fmin_slsqp(self.residu2_wavelength, self.param, iter=maxiter,
                               args=(self.data[:, 0],
                                     self.data[:, 1],
                                     self.data[:, 2].astype(numpy.int32)),
                               bounds=bounds,
-                              acc=1.0e-12, iprint=disp)
+                              acc=1.0e-12,
+                              iprint=(logger.getEffectiveLevel() <= logging.INFO))
         oldDeltaSq = self.chi2_wavelength()
         newDeltaSq = self.chi2_wavelength(newParam)
         logger.info("Constrained Least square %s --> %s",
                     oldDeltaSq, newDeltaSq)
         if newDeltaSq < oldDeltaSq:
             i = abs(self.param - newParam).argmax()
-            d = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
             logger.info("maxdelta on %s: %s --> %s ",
                         d[i], self.param[i], newParam[i])
             self.param = newParam

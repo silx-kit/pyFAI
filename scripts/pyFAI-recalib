@@ -93,6 +93,8 @@ class Recalibration(object):
         self.mask = None
         self.saturation = 0.1
         self.fixed = ["wavelength"]  # parameter fixed during optimization
+        self.max_rings = None
+        self.max_iter = 1000
 
     def __repr__(self):
         lst = ["Calibration object:",
@@ -118,6 +120,8 @@ class Recalibration(object):
                           help="switch to debug mode")
         parser.add_option("-s", "--spacing", dest="spacing", metavar="FILE",
                       help="file containing d-spacing of the reference sample", default=None)
+        parser.add_option("-r", "--ring", dest="max_rings", type="float",
+                      help="maximum number of rings to extract", default=None)
         parser.add_option("-d", "--dark", dest="dark", metavar="FILE",
                       help="list of dark images to average and subtract", default=None)
         parser.add_option("-f", "--flat", dest="flat", metavar="FILE",
@@ -238,6 +242,7 @@ class Recalibration(object):
         if options.fix_wavelength:
             self.fixed.append("wavelength")
         self.saturation = options.saturation
+        self.max_rings = options.max_rings
 
         print self.ai
         print "fixed:", self.fixed
@@ -272,12 +277,16 @@ class Recalibration(object):
         ttha = self.ai.twoThetaArray(self.peakPicker.data.shape)
         self.peakPicker.points.wavelength = self.ai.wavelength
         self.peakPicker.points.dSpacing = d
+        rings = 0
+        if self.max_rings is None:
+            self.max_rings = tth.size
         for i in range(tth.size):
             mask = abs(ttha - tth[i]) <= (dtth[i] / 4.0)
             if self.mask is not None:
                 mask = mask & (1 - self.mask)
             size = mask.sum(dtype=int)
-            if size > 0:
+            if (size > 0) and (rings < self.max_rings):
+                rings += 1
                 self.peakPicker.massif_contour(mask)
                 self.peakPicker.fig.canvas.draw()
                 sub_data = self.peakPicker.data.ravel()[numpy.where(mask.ravel())]
@@ -334,12 +343,20 @@ class Recalibration(object):
         finished = False
         fig2 = None
         while not finished:
-            while previous > self.geoRef.chi2_wavelength():
-                previous = self.geoRef.chi2_wavelength()
-                print("fixed: " + ", ".join(self.fixed))
-                self.geoRef.refine2_wavelength(1000000, fix=self.fixed)
-                print(self.geoRef)
-            print(self.geoRef)
+            count = 0
+            print("fixed: " + ", ".join(self.fixed))
+            if "wavelength" in self.fixed:
+                while (previous > self.geoRef.chi2()) and (count < self.max_iter):
+                    previous = self.geoRef.chi2()
+                    self.geoRef.refine2(1000000)
+                    print(self.geoRef)
+                    count += 1
+            else:
+                while (previous > self.geoRef.chi2_wavelength()) and (count < self.max_iter):
+                    previous = self.geoRef.chi2_wavelength()
+                    self.geoRef.refine2_wavelength(1000000, fix=self.fixed)
+                    print(self.geoRef)
+                    count += 1
             self.geoRef.save(self.basename + ".poni")
             self.geoRef.del_ttha()
             self.geoRef.del_dssa()
@@ -363,7 +380,6 @@ class Recalibration(object):
                 else:
                     sp.images.pop()
                 sp.imshow(dsa, origin="lower")
-                # self.fig.canvas.draw()
                 fig2.show()
 
             change = raw_input("Modify parameters ?\t ").strip().lower()
@@ -377,6 +393,15 @@ class Recalibration(object):
                 what = change.split()[-1]
                 if what not in self.fixed:
                     self.fixed.append(what)
+            elif change.startswith("set"):
+                words = change.split()
+                if len(words) == 3:
+                    what = words[1]
+                    val = words[2]
+                    if what in dir(self.geoRef):
+                        setattr(self.geoRef, what, value)
+                else:
+                    print("example: set wavelength 1e-10")
             else:
                 self.peakPicker.readFloatFromKeyboard("Enter Distance in meter (or dist_min[%.3f] dist[%.3f] dist_max[%.3f]):\t " % (self.geoRef.dist_min, self.geoRef.dist, self.geoRef.dist_max), {1:[self.geoRef.set_dist], 3:[ self.geoRef.set_dist_min, self.geoRef.set_dist, self.geoRef.set_dist_max]})
                 self.peakPicker.readFloatFromKeyboard("Enter Poni1 in meter (or poni1_min[%.3f] poni1[%.3f] poni1_max[%.3f]):\t " % (self.geoRef.poni1_min, self.geoRef.poni1, self.geoRef.poni1_max), {1:[self.geoRef.set_poni1], 3:[ self.geoRef.set_poni1_min, self.geoRef.set_poni1, self.geoRef.set_poni1_max]})
