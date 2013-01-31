@@ -139,7 +139,7 @@ class OpenCL(object):
                 devtype = pyopencl.device_type.to_string(device.type)
                 if (pypl.vendor == "NVIDIA Corporation") and (devtype == "GPU") and "compute_capability_major_nv" in dir(device):
                     comput_cap = device.compute_capability_major_nv, device.compute_capability_minor_nv
-                    flop_core = NVIDIA_FLOP_PER_CORE.get(comput_cap, min(NVIDIA_FLOP_PER_CORE.values))
+                    flop_core = NVIDIA_FLOP_PER_CORE.get(comput_cap, min(NVIDIA_FLOP_PER_CORE.values()))
                 elif (pypl.vendor == "Advanced Micro Devices, Inc.") and (devtype == "GPU"):
                     flop_core = AMD_FLOP_PER_CORE
                 elif devtype == "CPU":
