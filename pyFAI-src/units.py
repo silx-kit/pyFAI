@@ -69,7 +69,7 @@ Q_A = Enum(REPR="q_A^-1",
            center="qArray",
            corner="cornerQArray",
            delta="deltaQ",
-           scale=10.0)
+           scale=0.1)
 
 R = R_MM = Enum(REPR="r_mm",
                 center="rArray",
