@@ -100,7 +100,7 @@ class Calibration(object):
         self.reconstruct = False
         self.mask = None
         self.max_iter = 1000
-        self.maximum_filter = False
+        self.filter = "mean"
         self.threshold = 0.1
         self.spacing_file = None
         self.wavelength = None
@@ -158,9 +158,9 @@ decrease the value if arcs are mixed together.""", default=None)
                       help="file containing the mask (for image reconstruction)", default=None)
         parser.add_option("-n", "--npt", dest="npt",
                       help="file with datapoints saved", default=None)
-        parser.add_option("--max", dest="maximum_filter",
-                      help="perform a maximum filter instead of a mean filter when multiple input files are provided",
-                       default=False, action="store_true")
+        parser.add_option("--filter", dest="filter",
+                      help="select the filter, either mean(default), max or median",
+                       default="mean")
         parser.add_option("--saturation", dest="saturation",
                       help="consider all pixel>max*(1-saturation) as saturated and reconstruct them",
                       default=0.1, type="float")
@@ -205,7 +205,7 @@ decrease the value if arcs are mixed together.""", default=None)
                 logger.error("Unknown spline file %s" % (options.spline))
         if options.pixel is not None:
             self.get_pixelSize(options.pixel)
-        self.maximum_filter = options.maximum_filter
+        self.filter = options.filter
         self.threshold = options.saturation
         if options.wavelength:
             self.wavelength = 1e-10 * options.wavelength
@@ -279,7 +279,7 @@ decrease the value if arcs are mixed together.""", default=None)
         """
         if len(self.dataFiles) > 1 or self.cutBackground or self.darkFiles or self.flatFiles:
             self.outfile = averageImages(self.dataFiles, self.outfile, threshold=self.threshold, minimum=self.cutBackground,
-                                      darks=self.darkFiles, flats=self.flatFiles, max_filter=self.maximum_filter)
+                                      darks=self.darkFiles, flats=self.flatFiles, filter_=self.filter)
         else:
             self.outfile = self.dataFiles[0]
         self.basename = os.path.splitext(self.outfile)[0]

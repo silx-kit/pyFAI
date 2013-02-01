@@ -97,6 +97,8 @@ class Recalibration(object):
         self.max_iter = 1000
         self.gui = True
         self.interactive = True
+        self.filter = "mean"
+
 
     def __repr__(self):
         lst = ["Calibration object:",
@@ -194,7 +196,9 @@ class Recalibration(object):
         parser.add_option("--no-interactive", dest="interactive",
                       help="force the program to run and exit without prompting for refinements",
                       default=True, action="store_false")
-
+        parser.add_option("--filter", dest="filter",
+                      help="select the filter, either mean(default), max or median",
+                       default="mean")
         (options, args) = parser.parse_args()
 
         # Analyse aruments and options
@@ -257,6 +261,7 @@ class Recalibration(object):
         self.max_rings = options.max_rings
         self.gui = options.gui
         self.interactive = options.interactive
+        self.filter = options.filter
         print self.ai
         print "fixed:", self.fixed
 
@@ -288,9 +293,10 @@ class Recalibration(object):
         do dark, flat correction thresholding, ...
         """
         if len(self.dataFiles) > 1 or self.cutBackground or self.darkFiles or self.flatFiles:
-            self.outfile = averageImages(self.dataFiles, self.outfile, threshold=self.saturation, minimum=self.cutBackground,
-                                      darks=self.darkFiles, flats=self.flatFiles)
-
+            self.outfile = averageImages(self.dataFiles, self.outfile,
+                                         threshold=self.saturation, minimum=self.cutBackground,
+                                         darks=self.darkFiles, flats=self.flatFiles,
+                                         filter_=self.filter)
         else:
             self.outfile = self.dataFiles[0]
 

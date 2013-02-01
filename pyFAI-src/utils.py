@@ -166,7 +166,7 @@ def relabel(label, data, blured, max_size=None):
 
 
 def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=None,
-                   darks=None, flats=None, max_filter=False, correct_flat_from_dark=False):
+                   darks=None, flats=None, filter_="mean", correct_flat_from_dark=False):
     """
     Takes a list of filenames and create an average frame discarding all saturated pixels.
 
@@ -177,14 +177,14 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
     @param maximum: maximum valid value
     @param darks: list of dark current images for subtraction
     @param flats: list of flat field images for division
-    @param max_filter: use a maximum filter instead of a mean filter
+    @param filter_: can be maximum, mean or median (default=mean)
     """
     ld = len(listImages)
     sumImg = None
     dark = None
     flat = None
-
-    for fn in listImages:
+    big_img = None
+    for idx, fn in enumerate(listImages):
         logger.info("Reading %s" % fn)
         ds = fabio.open(fn).data
         logger.debug("Intensity range for %s is %s --> %s", fn, ds.min(), ds.max())
@@ -210,13 +210,20 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             else:
                 flat = numpy.ones((shape[0], shape[1]), dtype=numpy.float32)
         correctedImg = (removeSaturatedPixel(ds.astype(numpy.float32), threshold, minimum, maximum) - dark) / flat
-        if max_filter:
+        if filter_ == "max":
             sumImg = numpy.maximum(correctedImg, sumImg)
-        else:
+        elif filter_ == "median":
+            if big_img is None:
+                logger.info("Big array allocation for median filter")
+                big_img = numpy.zeros((correctedImg.shape[0],correctedImg.shape[1],ld),dtype=numpy.float32)
+            big_img[:,:,idx] = correctedImg
+        else: #mean 
             sumImg += correctedImg
-    if max_filter:
+    if filter_ == "max":
         datared = numpy.ascontiguousarray(sumImg, dtype=numpy.float32)
-    else:
+    elif filter_ == "median":
+        datared = numpy.median(big_img,axis=-1)
+    else:#mean 
         datared = sumImg / numpy.float32(ld)
     if output is None:
         prefix = ""
