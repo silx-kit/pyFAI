@@ -101,10 +101,33 @@ class test_geometryRefinement(unittest.TestCase):
 [2598.0000021676074, 386.99999979901884, 0.94195419730133967],
 [2959.9998766657627, 410.00000323183838, 0.94195419730133967],
 ]
-        r = GeometryRefinement(data, pixel1=pixelSize[0], pixel2=pixelSize[1])
+        data = numpy.array(data)
+#        tth = data[:,2]
+        ring = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3,
+                3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5,
+                5, 5, 5, 5, 5]
+        ds = [ 4.15695   ,  2.93940753,  2.4000162 ,  2.078475  ,  1.85904456,
+        1.69706773,  1.46970377,  1.38565   ,  1.31454301,  1.25336758,
+        1.2000081 ,  1.15293049,  1.11099162,  1.0392375 ,  1.00820847,
+        0.97980251,  0.95366973,  0.92952228,  0.90712086,  0.88626472,
+        0.84853387,  0.83139   ,  0.81524497,  0.8000054 ,  0.77192624,
+        0.75895176,  0.73485188,  0.72363211,  0.71291104,  0.7026528 ,
+        0.692825  ,  0.68339837,  0.67434634,  0.65727151,  0.64920652,
+        0.64143131,  0.63392893,  0.62668379,  0.61968152,  0.61290884,
+        0.60000405,  0.59385   ,  0.58788151,  0.58208943,  0.57646525,
+        0.571001  ,  0.56568924,  0.55549581,  0.55060148,  0.54583428,
+        0.54118879,  0.53224291,  0.52793318,  0.52372647,  0.51961875,
+        0.51560619,  0.51168517,  0.50785227,  0.50410423,  0.50043797,
+        0.49685056]#LaB6
+
+        data[:, 2] = ring
+
+        r = GeometryRefinement(data, pixel1=pixelSize[0], pixel2=pixelSize[1], 
+                               wavelength=1.54e-10, dSpacing=ds)
         r.refine2(10000000)
 
-        ref = numpy.array([0.089652, 0.030970, 0.027668, -0.699407 , 0.010067  , 0.000001])
+        ref = numpy.array([0.089652, 0.030970, 0.027668, -0.699407, 0.010067, 0.000001])
+        ref = numpy.array([0.089750, 0.030897, 0.027172, -0.704730, 0.010649, 3.51e-06])
 #        print "Réference:"
 #        print Geometry(*ref, pixel1=15e-6, pixel2=15e-6)
 #        print "Obtained:"
@@ -165,7 +188,18 @@ class test_geometryRefinement(unittest.TestCase):
         [402, 606, 0.3490658503988659],
         [437, 555, 0.3490658503988659],
         [513, 467, 0.3490658503988659]]
-        r2 = GeometryRefinement(data, dist=0.1, splineFile=splineFine)
+
+#        data = numpy.array(data)
+        # let's sheat ... 0.34 as int is 0
+
+        tth = data[0][2]
+        # data[:, 2] = ring
+        wl = 2e-10 * numpy.sin(tth / 2.0)
+        ds = [1.0]
+#        print tth, wl, ds, 2 * ds[0] * numpy.sin(tth / 2)
+        r2 = GeometryRefinement(data, dist=0.1, splineFile=splineFine, wavelength=wl, dSpacing=ds)
+#        r2.poni1 = 5e-2
+#        r2.poni2 = 5e-2
         r2.rot1_max = 0
         r2.rot1_min = -0
         r2.rot2_max = 0
@@ -174,6 +208,8 @@ class test_geometryRefinement(unittest.TestCase):
         r2.rot3_min = -0.1
         r2.refine2(10000000)
         ref2 = numpy.array([0.1, 4.917310e-02, 4.722438e-02, 0 , 0.  , 0.00000])
+#        print "ref", ref2
+#        print "obt", r2.param
         for i, key in enumerate(("dist", "poni1", "poni2", "rot1", "rot2", "rot3")):
             self.assertAlmostEqual(ref2[i], r2.__getattribute__(key), 3,
                                    "%s is %s, I expected %s%s%s" % (key, r2.__getattribute__(key) , ref2[i], os.linesep, r2))
