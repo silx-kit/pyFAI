@@ -50,7 +50,7 @@ class Detector(object):
     Generic class representing a 2D detector
     """
     force_pixel = False
-    def __init__(self, pixel1=1e-6, pixel2=1e-6, splineFile=None):
+    def __init__(self, pixel1=None, pixel2=None, splineFile=None):
         """
         @param pixel1: size of the pixel in meter along the slow dimension (often Y)
         @type pixel1: float

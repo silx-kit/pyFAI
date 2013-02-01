@@ -133,7 +133,7 @@ Increase the value if the arc is not complete;
 decrease the value if arcs are mixed together.""", default=None)
         parser.add_option("-c", "--square", dest="square", action="store_true",
                       help="Use square kernel shape for neighbor search instead of diamond shape", default=False)
-        parser.add_option("-s", "--spacing", dest="spacing", metavar="FILE",
+        parser.add_option("--spacing", dest="spacing", metavar="FILE",
                       help="file containing d-spacing of the reference sample (MANDATORY)", default=None)
         parser.add_option("-w", "--wavelength", dest="wavelength", type="float",
                       help="wavelength of the X-Ray beam in Angstrom", default=None)
@@ -148,7 +148,7 @@ decrease the value if arcs are mixed together.""", default=None)
         parser.add_option("-r", "--reconstruct", dest="reconstruct",
                       help="Reconstruct image where data are masked or <0  (for Pilatus detectors or detectors with modules)",
                       action="store_true", default=False)
-        parser.add_option("--spline", dest="spline",
+        parser.add_option("-s", "--spline", dest="spline",
                       help="spline file describing the detector distortion", default=None)
         parser.add_option("-p", "--pixel", dest="pixel",
                       help="size of the pixel in micron", default=None)
@@ -208,12 +208,12 @@ decrease the value if arcs are mixed together.""", default=None)
         self.maximum_filter = options.maximum_filter
         self.threshold = options.saturation
         if options.wavelength:
-            self.ai.wavelength = 1e-10 * options.wavelength
+            self.wavelength = 1e-10 * options.wavelength
         elif options.energy:
-            self.ai.wavelength = 1e-10 * hc / options.energy
+            self.wavelength = 1e-10 * hc / options.energy
         self.spacing_file = options.spacing
-        if not self.spacing_file or not os.path.isfile(self.spacing_file):
-            raise RuntimeError("you must specify the d-spacing file")
+#        if not self.spacing_file or not os.path.isfile(self.spacing_file):
+#            raise RuntimeError("you must specify the d-spacing file")
         self.dataFiles = [f for f in args if os.path.isfile(f)]
         if not self.dataFiles:
             raise RuntimeError("Please provide some calibration images ... if you want to analyze them. Try also the --help option to see all options!")
@@ -250,6 +250,28 @@ decrease the value if arcs are mixed together.""", default=None)
             else:
                 self.get_pixelSize(ans)
 
+    def read_dSpacingFile(self):
+        """Read the name of the file with d-spacing"""
+        if (self.spacing_file is None):
+            comments = ["pyFAI calib has changed !!!",
+                        "Instead of entering the 2theta value, which was tedious,"
+                        "the program takes a d-spacing file in input (just a serie of number representing the inter planar distance in Angstrom)",
+                        "and an associated wavelength",""
+                        "You will be asked to enter the ring number, which is usually a simpler than the 2theta value."]
+            print(os.linesep.join(comments))
+            ans = ""
+            while not os.path.isfile(ans):
+                ans = raw_input("Please enter the name of the file containing the d-spacing:\t").strip()
+            self.spacing_file = ans
+
+    def read_wavelength(self):
+        """Read the wavelength"""
+        while not self.wavelength:
+            ans = raw_input("Please enter wavelength in Angstrom:\t").strip()
+            try:
+                self.wavelength = 1e-10 * float(ans)
+            except:
+                self.wavelength = None
 
     def preprocess(self):
         """
@@ -261,16 +283,23 @@ decrease the value if arcs are mixed together.""", default=None)
         else:
             self.outfile = self.dataFiles[0]
         self.basename = os.path.splitext(self.outfile)[0]
-        self.peakPicker = PeakPicker(self.outfile, reconst=self.reconstruct, mask=self.mask, dSpacing=self.spacing_file, wavelength=self.wavelength)
+        self.pointfile = self.basename + ".npt"
+        self.peakPicker = PeakPicker(self.outfile, reconst=self.reconstruct, mask=self.mask,
+                                     pointfile = self.pointfile, dSpacing=self.spacing_file, wavelength=self.wavelength)
         if self.gaussianWidth is not None:
             self.peakPicker.massif.setValleySize(self.gaussianWidth)
         else:
             self.peakPicker.massif.initValleySize()
+        if not self.peakPicker.points.dSpacing:
+            self.read_dSpacingFile()
+            self.peakPicker.points.load_dSpacing(self.dSpacing)
+        if not self.peakPicker.points.wavelength:
+            self.read_wavelength()
+            self.peakPicker.points.wavelength = self.wavelength
 
     def gui_peakPicker(self):
         if self.peakPicker is None:
             self.preprocess()
-        self.pointfile = self.basename + ".npt"
         self.peakPicker.gui(True)
         if os.path.isfile(self.pointfile):
             self.peakPicker.load(self.pointfile)
@@ -280,7 +309,7 @@ decrease the value if arcs are mixed together.""", default=None)
         if os.name == "nt" and self.peakPicker is not None:
             logging.info("We are under windows, matplotlib is not able to display too many images without crashing, this is why the window showing the diffraction image is closed")
             self.peakPicker.closeGUI()
-        self.geoRef = GeometryRefinement(self.data, dist=0.1, detector=self.detector)
+        self.geoRef = GeometryRefinement(self.data, dist=0.1, detector=self.detector, wavelength=self.wavelength, dSpacing=self.peakPicker.points.dSpacing)
         paramfile = self.basename + ".poni"
         if os.path.isfile(paramfile):
             self.geoRef.load(paramfile)
@@ -377,6 +406,8 @@ if __name__ == "__main__":
     c = Calibration()
     c.parse()
     c.read_pixelsSize()
+#    c.read_dSpacingFile()
+#    c.read_wavelength()
     c.preprocess()
     c.gui_peakPicker()
     c.refine()

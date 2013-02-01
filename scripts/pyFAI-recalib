@@ -95,6 +95,8 @@ class Recalibration(object):
         self.fixed = ["wavelength"]  # parameter fixed during optimization
         self.max_rings = None
         self.max_iter = 1000
+        self.gui = True
+        self.interactive = True
 
     def __repr__(self):
         lst = ["Calibration object:",
@@ -186,6 +188,12 @@ class Recalibration(object):
         parser.add_option("--saturation", dest="saturation",
                       help="consider all pixel>max*(1-saturation) as saturated and reconstruct them",
                       default=0.1, type="float")
+        parser.add_option("--no-gui", dest="gui",
+                      help="force the program to run without a Graphical interface",
+                      default=True, action="store_false")
+        parser.add_option("--no-interactive", dest="interactive",
+                      help="force the program to run and exit without prompting for refinements",
+                      default=True, action="store_false")
 
         (options, args) = parser.parse_args()
 
@@ -205,12 +213,14 @@ class Recalibration(object):
         self.pointfile = options.npt
         self.spacing_file = options.spacing
         if not self.spacing_file or not os.path.isfile(self.spacing_file):
-            raise RuntimeError("you must specify the d-spacing file")
+            self.read_dSpacingFile()
         self.ai = pyFAI.load(options.poni)
         if options.wavelength:
             self.ai.wavelength = 1e-10 * options.wavelength
         elif options.energy:
             self.ai.wavelength = 1e-10 * hc / options.energy
+        else:
+            self.read_wavelength()
         if options.distance:
             self.ai.dist = 1e-3 * options.distance
         if options.poni1 is not None:
@@ -245,9 +255,33 @@ class Recalibration(object):
             self.fixed.append("wavelength")
         self.saturation = options.saturation
         self.max_rings = options.max_rings
-
+        self.gui = options.gui
+        self.interactive = options.interactive
         print self.ai
         print "fixed:", self.fixed
+
+    def read_dSpacingFile(self):
+        """Read the name of the file with d-spacing"""
+        if (self.spacing_file is None):
+#            comments = ["pyFAI calib has changed !!!",
+#                        "Instead of entering the 2theta value, which was tedious,"
+#                        "the program takes a d-spacing file in input (just a serie of number representing the inter planar distance in Angstrom)",
+#                        "and an associated wavelength", ""
+#                        "You will be asked to enter the ring number, which is usually a simpler than the 2theta value."]
+            print(os.linesep.join(comments))
+            ans = ""
+            while not os.path.isfile(ans):
+                ans = raw_input("Please enter the name of the file containing the d-spacing:\t").strip()
+            self.spacing_file = ans
+
+    def read_wavelength(self):
+        """Read the wavelength"""
+        while not self.ai.wavelength:
+            ans = raw_input("Please enter wavelength in Angstrom:\t").strip()
+            try:
+                self.ai.wavelength = 1e-10 * float(ans)
+            except:
+                self.ai.wavelength = None
 
     def preprocess(self):
         """
@@ -259,10 +293,12 @@ class Recalibration(object):
 
         else:
             self.outfile = self.dataFiles[0]
-        self.peakPicker = PeakPicker(self.outfile, mask=self.mask, dSpacing=self.spacing_file, wavelength=self.wavelength)
+
+        self.peakPicker = PeakPicker(self.outfile, mask=self.mask, dSpacing=self.spacing_file, wavelength=self.ai.wavelength)
         self.basename = os.path.splitext(self.outfile)[0]
-        self.peakPicker.gui(log=True, maximize=True)
-        self.peakPicker.fig.canvas.draw()
+        if self.gui:
+            self.peakPicker.gui(log=True, maximize=True)
+            self.peakPicker.fig.canvas.draw()
 
     def extract_cpt(self):
         d = numpy.loadtxt(self.spacing_file)
@@ -290,7 +326,8 @@ class Recalibration(object):
             if (size > 0) and (rings < self.max_rings):
                 rings += 1
                 self.peakPicker.massif_contour(mask)
-                self.peakPicker.fig.canvas.draw()
+                if self.gui:
+                    self.peakPicker.fig.canvas.draw()
                 sub_data = self.peakPicker.data.ravel()[numpy.where(mask.ravel())]
                 mean = sub_data.mean(dtype=numpy.float64)
                 std = sub_data.std(dtype=numpy.float64)
@@ -311,7 +348,7 @@ class Recalibration(object):
                 numpy.random.shuffle(all_points)
                 for idx in all_points:
                     out = self.peakPicker.massif.nearest_peak(idx)
-                    print "[%3i,%3i] -> [%.1f,%.1f]" % (idx[1], idx[0], out[1], out[0])
+                    print "[ %3i, %3i ] -> [ %.1f, %.1f ]" % (idx[1], idx[0], out[1], out[0])
                     if out is not None:
                         p0, p1 = out
                         if mask[p0, p1]:
@@ -325,9 +362,9 @@ class Recalibration(object):
                         cnt += 1
 
                 self.peakPicker.points.append(res, tth[i], i)
-
-                self.peakPicker.display_points()
-                self.peakPicker.fig.canvas.draw()
+                if self.gui:
+                    self.peakPicker.display_points()
+                    self.peakPicker.fig.canvas.draw()
 
         self.peakPicker.points.save(self.basename + ".npt")
         self.data = self.peakPicker.points.getListRing()
@@ -375,15 +412,17 @@ class Recalibration(object):
             if os.name == "nt":
                 logger.info("We are under windows, matplotlib is not able to display too many images without crashing, this is why little information is displayed")
             else:
-                self.peakPicker.contour(tth)
-                if fig2 is None:
-                    fig2 = pylab.plt.figure()
-                    sp = fig2.add_subplot(111)
-                else:
-                    sp.images.pop()
-                sp.imshow(dsa, origin="lower")
-                fig2.show()
-
+                if self.gui:
+                    self.peakPicker.contour(tth)
+                    if fig2 is None:
+                        fig2 = pylab.plt.figure()
+                        sp = fig2.add_subplot(111)
+                    else:
+                        sp.images.pop()
+                    sp.imshow(dsa, origin="lower")
+                    fig2.show()
+            if not self.interactive:
+                break
             change = raw_input("Modify parameters ?\t ").strip().lower()
             if (change == '') or (change[0] == "n"):
                 finished = True
@@ -432,11 +471,11 @@ class Recalibration(object):
         t2a = time.time()
         self.geoRef.cornerArray(self.peakPicker.shape)
         t2b = time.time()
-
-        fig3 = pylab.plt.figure()
-        xrpd = fig3.add_subplot(111)
-        fig4 = pylab.plt.figure()
-        xrpd2 = fig4.add_subplot(111)
+        if self.gui:
+            fig3 = pylab.plt.figure()
+            xrpd = fig3.add_subplot(111)
+            fig4 = pylab.plt.figure()
+            xrpd2 = fig4.add_subplot(111)
         t3 = time.time()
         a, b = self.geoRef.xrpd(self.peakPicker.data, 1024, self.basename + ".xy", mask=self.mask)
         t4 = time.time()
@@ -447,10 +486,11 @@ class Recalibration(object):
      corner coordinate array %.3fs\n\
      1D Azimuthal integration: %.3fs\n\
      2D Azimuthal integration: %.3fs" % (t1 - t0, t2 - t1, t2a - t2, t2b - t2a, t4 - t3, t5 - t4))
-        xrpd.plot(a, b)
-        fig3.show()
-        xrpd2.imshow(numpy.log(img - img.min() + 1e-3), origin="lower")
-        fig4.show()
+        if self.gui:
+            xrpd.plot(a, b)
+            fig3.show()
+            xrpd2.imshow(numpy.log(img - img.min() + 1e-3), origin="lower")
+            fig4.show()
 
 # This is for debugin wtih rconsole
 c = None
@@ -465,4 +505,5 @@ if __name__ == "__main__":
 #    c.gui_peakPicker()
     c.refine()
     c.postProcess()
-    raw_input("Press enter to quit")
+    if c.interactive:
+        raw_input("Press enter to quit")
