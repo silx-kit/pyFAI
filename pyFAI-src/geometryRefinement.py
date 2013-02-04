@@ -90,7 +90,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         self._rot3_max = pi
         self._wavelength_min = 1e-15
         self._wavelength_max = 100.e-10
-        if dSpacing:
+        if dSpacing is not None:
             if type(dSpacing) in types.StringTypes:
                 self.dSpacing = numpy.loadtxt(dSpacing)
             else:

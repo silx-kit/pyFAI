@@ -491,7 +491,7 @@ class ControlPoints(object):
             for i in self.dSpacing:
                 f.write("%s%s" % (i, os.linesep))
 
-    def getList(self):
+    def getList2theta(self):
         """
         Retrieve the list of control points suitable for geometry refinement
         """
@@ -508,7 +508,7 @@ class ControlPoints(object):
         for ring, points in zip(self._ring, self._points):
             lstOut += [[pt[0], pt[1], ring] for pt in points]
         return lstOut
-
+    getList = getListRing
 
     def readAngleFromKeyboard(self):
         """

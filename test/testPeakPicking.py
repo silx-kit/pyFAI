@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: Azimuthal integration 
+#    Project: Azimuthal integration
 #             https://forge.epn-campus.eu/projects/azimuthal
 #
 #    File: "$Id$"
@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/06/2012"
+__date__ = "04/02/2013"
 
 
 import unittest
@@ -52,20 +52,26 @@ class test_peak_picking(unittest.TestCase):
     """basic test"""
     calibFile = "1788/moke.tif"
 #    gr = GeometryRefinement()
-    ctrlPt = {4:(300, 230),
-              5:(300, 212),
-              6:(300, 195),
-              7:(300, 177),
-              8:(300, 159),
-              9:(300, 140),
-              10:(300, 123),
-              11:(300, 105),
-              12:(300, 87)}
+
+
+    ctrlPt = {0:(300, 230),
+              1:(300, 212),
+              2:(300, 195),
+              3:(300, 177),
+              4:(300, 159),
+              5:(300, 140),
+              6:(300, 123),
+              7:(300, 105),
+              8:(300, 87)}
+    tth = numpy.radians(numpy.arange(4, 13))
+    wavelength = 1e-10
+    ds = wavelength * 5e9 / numpy.sin(tth / 2)
     maxiter = 100
+
     def setUp(self):
         """Download files"""
         self.img = UtilsTest.getimage(self.__class__.calibFile)
-        self.pp = PeakPicker(self.img)
+        self.pp = PeakPicker(self.img, dSpacing=self.ds, wavelength=self.wavelength)
         dirname = os.path.dirname(os.path.abspath(__file__))
         self.tmpdir = os.path.join(dirname, "tmp")
         if not os.path.isdir(self.tmpdir):
@@ -77,16 +83,19 @@ class test_peak_picking(unittest.TestCase):
 
         for i in self.ctrlPt:
             pts = self.pp.massif.find_peaks(self.ctrlPt[i], stdout=open(logfile, "a"))
-            logger.info("point %s at %i deg generated %i points", self.ctrlPt[i], i, len(pts))
+            logger.info("point %s at ring #%i (tth=%.1f deg) generated %i points", self.ctrlPt[i], i, self.tth[i], len(pts))
             if len(pts) > 0:
-                self.pp.points.append_2theta_deg(pts, i)
+                self.pp.points.append(pts, angle=self.tth[i], ring=i)
             else:
                 logger.error("point %s caused error (%s) ", i, self.ctrlPt[i])
 
         self.pp.points.save(os.path.join(self.tmpdir, "testpeakPicking.npt"))
-        lstPeak = self.pp.points.getList()
-        logger.info("After peak-picking, we have %s points generated from %s points ", len(lstPeak), len(self.ctrlPt))
-        gr = GeometryRefinement(lstPeak, dist=0.05, pixel1=1e-4, pixel2=1e-4)
+        lstPeak = self.pp.points.getListRing()
+#        print self.pp.points
+#        print lstPeak
+        logger.info("After peak-picking, we have %s points generated from %s groups ", len(lstPeak), len(self.ctrlPt))
+        gr = GeometryRefinement(lstPeak, dist=0.01, pixel1=1e-4, pixel2=1e-4, wavelength=self.wavelength, dSpacing=self.ds)
+        gr.guess_poni()
         logger.info(gr.__repr__())
         last = sys.maxint
         for i in range(self.maxiter):
@@ -96,13 +105,13 @@ class test_peak_picking(unittest.TestCase):
                 logger.info("refinement finished after %s iteration" % i)
                 break
             last = delta2
-        self.assertEquals(last < 1e-4, True, "residual error is less than 1e-4")
-        self.assertAlmostEquals(gr.dist, 0.1, 2, "distance is OK")
-        self.assertAlmostEquals(gr.poni1, 3e-2, 2, "PONI1 is OK")
-        self.assertAlmostEquals(gr.poni2, 3e-2, 2, "PONI2 is OK")
-        self.assertAlmostEquals(gr.rot1, 0, 2, "rot1 is OK")
-        self.assertAlmostEquals(gr.rot2, 0, 2, "rot2 is OK")
-        self.assertAlmostEquals(gr.rot3, 0, 2, "rot3 is OK")
+        self.assertEquals(last < 1e-4, True, "residual error is less than 1e-4, got %s" % last)
+        self.assertAlmostEquals(gr.dist, 0.1, 2, "distance is OK, got %s, expected 0.1" % gr.dist)
+        self.assertAlmostEquals(gr.poni1, 3e-2, 2, "PONI1 is OK, got %s, expected 3e-2" % gr.poni1)
+        self.assertAlmostEquals(gr.poni2, 3e-2, 2, "PONI2 is OK, got %s, expected 3e-2" % gr.poni2)
+        self.assertAlmostEquals(gr.rot1, 0, 2, "rot1 is OK, got %s, expected 0" % gr.rot1)
+        self.assertAlmostEquals(gr.rot2, 0, 2, "rot2 is OK, got %s, expected 0" % gr.rot2)
+        self.assertAlmostEquals(gr.rot3, 0, 2, "rot3 is OK, got %s, expected 0" % gr.rot3)
 
 #        print self.pp.points
 
