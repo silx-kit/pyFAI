@@ -373,7 +373,7 @@ class Recalibration(object):
                     self.peakPicker.fig.canvas.draw()
 
         self.peakPicker.points.save(self.basename + ".npt")
-        self.data = self.peakPicker.points.getListRing()
+        self.data = self.peakPicker.points.getWeightedList(self.peakPicker.data)
 
     def refine(self):
         if os.name == "nt" and self.peakPicker is not None:

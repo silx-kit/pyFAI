@@ -1,8 +1,10 @@
 #!/usr/bin/python
 
 # this is a very simple tool that checks the calibratation
+from optparse import OptionParser
 import pyFAI, fabio, numpy, sys, os, optparse, time
 import pylab
+hc = 12.398
 
 def shift(input, shift):
     """
@@ -143,19 +145,69 @@ def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
             return offset
 
 class CheckCalib(object):
-    def __init__(self, poni, img):
+    def __init__(self, poni=None, img=None):
         self.ponifile = poni
-        self.ai = pyFAI.load(poni)
-        self.img = fabio.open(img)
+        if poni :
+            self.ai = pyFAI.load(poni)
+        if img:
+            self.img = fabio.open(img)
+        self.mask = None
         self.r = None
         self.I = None
+        self.wavelength = None
         self.resynth = None
         self.delta = None
     def __repr__(self, *args, **kwargs):
         return self.ai.__repr__()
 
+    def parse(self):
+        parser = OptionParser()
+        parser.add_option("-V", "--version", dest="version", action="store_true",
+                          help="print version of the program and quit", metavar="FILE", default=False)
+        parser.add_option("-d", "--dark", dest="dark", metavar="FILE",
+                      help="file containing the dark images to subtract", default=None)
+        parser.add_option("-f", "--flat", dest="flat", metavar="FILE",
+                      help="file containing the flat images to divide", default=None)
+        parser.add_option("-m", "--mask", dest="mask", metavar="FILE",
+                      help="file containing the mask", default=None)
+        parser.add_option("-p", "--poni", dest="poni", metavar="FILE",
+                      help="file containing the diffraction parameter (poni-file)", default=None)
+        parser.add_option("-e", "--energy", dest="energy", type="float",
+                      help="energy of the X-Ray beam in keV (hc=%skeV.A)" % hc, default=None)
+        parser.add_option("-w", "--wavelength", dest="wavelength", type="float",
+                      help="wavelength of the X-Ray beam in Angstrom", default=None)
+
+        (options, args) = parser.parse_args()
+
+        if options.version:
+            print("Check calibrarion: version %s" % pyFAI.version)
+            sys.exit(0)
+        if options.mask is not None:
+            self.mask = fabio.open(options.mask).data
+        if len(args) > 0:
+            f = args[0]
+            if os.path.isfile(f):
+                self.data = fabio.open(f).data
+            else:
+                print("Please enter diffraction inages as arguments")
+                sys.exit(1)
+
+        self.data = [f for f in args if os.path.isfile(f)]
+        self.ai = pyFAI.load(options.poni)
+        if options.wavelength:
+            self.ai.wavelength = 1e-10 * options.wavelength
+        elif options.energy:
+            self.ai.wavelength = 1e-10 * hc / options.energy
+#        else:
+#            self.read_wavelength()
+
+
+    def get_1dsize(self):
+        return numpy.sqrt(self.img.data[0] ** 2 + self.img.data[0] ** 2)
+    size1d = property(get_1dsize)
+
     def integrate(self):
-        self.r, self.I = self.ai.integrate1d(self.img.data, 2048, unit="q_nm^-1")
+        self.r, self.I = self.ai.integrate1d(self.img.data, self.size1d , unit="q_nm^-1")
 
     def rebuild(self):
         if self.r is None:

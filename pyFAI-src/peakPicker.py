@@ -199,7 +199,7 @@ class PeakPicker(object):
         if filename is not None:
             self.points.save(filename)
 #        self.lstPoints = self.points.getList()
-        return self.points.getListRing()
+        return self.points.getListRing(self.data)
 
 
     def contour(self, data):
@@ -502,13 +502,24 @@ class ControlPoints(object):
 
     def getListRing(self):
         """
-        Retrieve the list of control points suitable for geometry refinement with variable wavelength
+        Retrieve the list of control points suitable for geometry refinement with ring number 
         """
         lstOut = []
         for ring, points in zip(self._ring, self._points):
             lstOut += [[pt[0], pt[1], ring] for pt in points]
         return lstOut
     getList = getListRing
+
+    def getWeightedList(self, image):
+        """
+        Retrieve the list of control points suitable for geometry refinement with ring number and intensities
+        @param image: 
+        @return: a (x,4) array with pos0, pos1, ring nr and intensity
+        """
+        lstOut = []
+        for ring, points in zip(self._ring, self._points):
+            lstOut += [[pt[0], pt[1], ring, image[int(pt[0] + 0.5), int(pt[1] + 0.5)]] for pt in points]
+        return lstOut
 
     def readAngleFromKeyboard(self):
         """
