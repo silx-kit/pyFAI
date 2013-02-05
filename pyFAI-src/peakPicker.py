@@ -199,7 +199,7 @@ class PeakPicker(object):
         if filename is not None:
             self.points.save(filename)
 #        self.lstPoints = self.points.getList()
-        return self.points.getListRing(self.data)
+        return self.points.getWeightedList(self.data)
 
 
     def contour(self, data):
