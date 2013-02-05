@@ -98,7 +98,7 @@ class Recalibration(object):
         self.gui = True
         self.interactive = True
         self.filter = "mean"
-
+        self.weighted = False
 
     def __repr__(self):
         lst = ["Calibration object:",
@@ -199,6 +199,10 @@ class Recalibration(object):
         parser.add_option("--filter", dest="filter",
                       help="select the filter, either mean(default), max or median",
                        default="mean")
+        parser.add_option("--weighted", dest="weighted",
+                      help="weight fit by intensity",
+                       default=False, action="store_true")
+
         (options, args) = parser.parse_args()
 
         # Analyse aruments and options
@@ -262,6 +266,7 @@ class Recalibration(object):
         self.gui = options.gui
         self.interactive = options.interactive
         self.filter = options.filter
+        self.weighted = options.weighted
         print self.ai
         print "fixed:", self.fixed
 
@@ -373,7 +378,10 @@ class Recalibration(object):
                     self.peakPicker.fig.canvas.draw()
 
         self.peakPicker.points.save(self.basename + ".npt")
-        self.data = self.peakPicker.points.getWeightedList(self.peakPicker.data)
+        if self.weighted:
+            self.data = self.peakPicker.points.getWeightedList(self.peakPicker.data)
+        else:
+            self.data = self.peakPicker.points.getList()
 
     def refine(self):
         if os.name == "nt" and self.peakPicker is not None:
