@@ -565,7 +565,7 @@ class ControlPoints(object):
                     if ring >= 0 and ring < len(self.dSpacing):
                         lastRing = ring
                         self._ring[idx] = ring
-                        print ring, self.dSpacing[ring]
+#                        print ring, self.dSpacing[ring]
                         self._angles[idx] = 2.0 * numpy.arcsin(5e9 * self.wavelength / self.dSpacing[ring])
                         bOk = True
 

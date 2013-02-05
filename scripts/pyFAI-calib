@@ -104,6 +104,7 @@ class Calibration(object):
         self.threshold = 0.1
         self.spacing_file = None
         self.wavelength = None
+        self.weighted = False
 
     def __repr__(self):
         lst = ["Calibration object:",
@@ -164,6 +165,9 @@ decrease the value if arcs are mixed together.""", default=None)
         parser.add_option("--saturation", dest="saturation",
                       help="consider all pixel>max*(1-saturation) as saturated and reconstruct them",
                       default=0.1, type="float")
+        parser.add_option("--weighted", dest="weighted",
+                      help="weight fit by intensity",
+                       default=False, action="store_true")
 
         (options, args) = parser.parse_args()
 
@@ -217,6 +221,7 @@ decrease the value if arcs are mixed together.""", default=None)
         self.dataFiles = [f for f in args if os.path.isfile(f)]
         if not self.dataFiles:
             raise RuntimeError("Please provide some calibration images ... if you want to analyze them. Try also the --help option to see all options!")
+        self.weighted = options.weighted
 
     def get_pixelSize(self, ans):
         """convert a comma separated sting into pixel size"""
@@ -304,6 +309,8 @@ decrease the value if arcs are mixed together.""", default=None)
         if os.path.isfile(self.pointfile):
             self.peakPicker.load(self.pointfile)
         self.data = self.peakPicker.finish(self.pointfile)
+        if not self.weighted:
+            self.data = numpy.array(self.data)[:, :-1]
 
     def refine(self):
         if os.name == "nt" and self.peakPicker is not None:
