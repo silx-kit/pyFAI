@@ -91,6 +91,14 @@ class Recalibration(object):
         self.reconstruct = False
         self.spacing_file = None
         self.mask = None
+        self.saturation = 0.1
+        self.fixed = ["wavelength"]  # parameter fixed during optimization
+        self.max_rings = None
+        self.max_iter = 1000
+        self.gui = True
+        self.interactive = True
+        self.filter = "mean"
+
 
     def __repr__(self):
         lst = ["Calibration object:",
@@ -115,7 +123,9 @@ class Recalibration(object):
                           action="store_true", dest="verbose", default=False,
                           help="switch to debug mode")
         parser.add_option("-s", "--spacing", dest="spacing", metavar="FILE",
-                      help="file containing d-spacing of the reference sample", default=None)
+                      help="file containing d-spacing of the reference sample (MANDATORY)", default=None)
+        parser.add_option("-r", "--ring", dest="max_rings", type="float",
+                      help="maximum number of rings to extract", default=None)
         parser.add_option("-d", "--dark", dest="dark", metavar="FILE",
                       help="list of dark images to average and subtract", default=None)
         parser.add_option("-f", "--flat", dest="flat", metavar="FILE",
@@ -143,9 +153,55 @@ class Recalibration(object):
         parser.add_option("--rot3", dest="rot3", type="float",
                       help="rot3 in radians", default=None)
 
+        parser.add_option("--fix-dist", dest="fix_dist",
+                      help="fix the distance parameter", default=None, action="store_true")
+        parser.add_option("--free-dist", dest="fix_dist",
+                      help="free the distance parameter", default=None, action="store_false")
+
+        parser.add_option("--fix-poni1", dest="fix_poni1",
+                      help="fix the poni1 parameter", default=None, action="store_true")
+        parser.add_option("--free-poni1", dest="fix_poni1",
+                      help="free the poni1 parameter", default=None, action="store_false")
+
+        parser.add_option("--fix-poni2", dest="fix_poni2",
+                      help="fix the poni2 parameter", default=None, action="store_true")
+        parser.add_option("--free-poni2", dest="fix_poni2",
+                      help="free the poni2 parameter", default=None, action="store_false")
+
+        parser.add_option("--fix-rot1", dest="fix_rot1",
+                      help="fix the rot1 parameter", default=None, action="store_true")
+        parser.add_option("--free-rot1", dest="fix_rot1",
+                      help="free the rot1 parameter", default=None, action="store_false")
+
+        parser.add_option("--fix-rot2", dest="fix_rot2",
+                      help="fix the rot2 parameter", default=None, action="store_true")
+        parser.add_option("--free-rot2", dest="fix_rot2",
+                      help="free the rot2 parameter", default=None, action="store_false")
+
+        parser.add_option("--fix-rot3", dest="fix_rot3",
+                      help="fix the rot3 parameter", default=None, action="store_true")
+        parser.add_option("--free-rot3", dest="fix_rot3",
+                      help="free the rot3 parameter", default=None, action="store_false")
+
+        parser.add_option("--fix-wavelength", dest="fix_wavelength",
+                      help="fix the wavelength parameter", default=True, action="store_true")
+        parser.add_option("--free-wavelength", dest="fix_wavelength",
+                      help="free the wavelength parameter", default=True, action="store_false")
+        parser.add_option("--saturation", dest="saturation",
+                      help="consider all pixel>max*(1-saturation) as saturated and reconstruct them",
+                      default=0.1, type="float")
+        parser.add_option("--no-gui", dest="gui",
+                      help="force the program to run without a Graphical interface",
+                      default=True, action="store_false")
+        parser.add_option("--no-interactive", dest="interactive",
+                      help="force the program to run and exit without prompting for refinements",
+                      default=True, action="store_false")
+        parser.add_option("--filter", dest="filter",
+                      help="select the filter, either mean(default), max or median",
+                       default="mean")
         (options, args) = parser.parse_args()
 
-        #Analyse aruments and options
+        # Analyse aruments and options
         if options.version:
             print("pyFAI-recalib version %s" % pyFAI.version)
             sys.exit(0)
@@ -160,11 +216,15 @@ class Recalibration(object):
             self.flatFiles = [f for f in options.flat.split(",") if os.path.isfile(f)]
         self.pointfile = options.npt
         self.spacing_file = options.spacing
+        if not self.spacing_file or not os.path.isfile(self.spacing_file):
+            self.read_dSpacingFile()
         self.ai = pyFAI.load(options.poni)
         if options.wavelength:
             self.ai.wavelength = 1e-10 * options.wavelength
         elif options.energy:
             self.ai.wavelength = 1e-10 * hc / options.energy
+        else:
+            self.read_wavelength()
         if options.distance:
             self.ai.dist = 1e-3 * options.distance
         if options.poni1 is not None:
@@ -182,24 +242,69 @@ class Recalibration(object):
         self.dataFiles = [f for f in args if os.path.isfile(f)]
         if not self.dataFiles:
             raise RuntimeError("Please provide some calibration images ... if you want to analyze them. Try also the --help option to see all options!")
-
+        self.fixed = []
+        if options.fix_dist:
+            self.fixed.append("dist")
+        if options.fix_poni1:
+            self.fixed.append("poni1")
+        if options.fix_poni2:
+            self.fixed.append("poni2")
+        if options.fix_rot1:
+            self.fixed.append("rot1")
+        if options.fix_rot2:
+            self.fixed.append("rot2")
+        if options.fix_rot3:
+            self.fixed.append("rot3")
+        if options.fix_wavelength:
+            self.fixed.append("wavelength")
+        self.saturation = options.saturation
+        self.max_rings = options.max_rings
+        self.gui = options.gui
+        self.interactive = options.interactive
+        self.filter = options.filter
         print self.ai
+        print "fixed:", self.fixed
 
+    def read_dSpacingFile(self):
+        """Read the name of the file with d-spacing"""
+        if (self.spacing_file is None):
+#            comments = ["pyFAI calib has changed !!!",
+#                        "Instead of entering the 2theta value, which was tedious,"
+#                        "the program takes a d-spacing file in input (just a serie of number representing the inter planar distance in Angstrom)",
+#                        "and an associated wavelength", ""
+#                        "You will be asked to enter the ring number, which is usually a simpler than the 2theta value."]
+            print(os.linesep.join(comments))
+            ans = ""
+            while not os.path.isfile(ans):
+                ans = raw_input("Please enter the name of the file containing the d-spacing:\t").strip()
+            self.spacing_file = ans
+
+    def read_wavelength(self):
+        """Read the wavelength"""
+        while not self.ai.wavelength:
+            ans = raw_input("Please enter wavelength in Angstrom:\t").strip()
+            try:
+                self.ai.wavelength = 1e-10 * float(ans)
+            except:
+                self.ai.wavelength = None
 
     def preprocess(self):
         """
         do dark, flat correction thresholding, ...
         """
         if len(self.dataFiles) > 1 or self.cutBackground or self.darkFiles or self.flatFiles:
-            self.outfile = averageImages(self.dataFiles, self.outfile, minimum=self.cutBackground,
-                                      darks=self.darkFiles, flats=self.flatFiles)
-
+            self.outfile = averageImages(self.dataFiles, self.outfile,
+                                         threshold=self.saturation, minimum=self.cutBackground,
+                                         darks=self.darkFiles, flats=self.flatFiles,
+                                         filter_=self.filter)
         else:
             self.outfile = self.dataFiles[0]
-        self.peakPicker = PeakPicker(self.outfile, mask=self.mask)
+
+        self.peakPicker = PeakPicker(self.outfile, mask=self.mask, dSpacing=self.spacing_file, wavelength=self.ai.wavelength)
         self.basename = os.path.splitext(self.outfile)[0]
-        self.peakPicker.gui(log=True)
-        self.peakPicker.fig.canvas.draw()
+        if self.gui:
+            self.peakPicker.gui(log=True, maximize=True)
+            self.peakPicker.fig.canvas.draw()
 
     def extract_cpt(self):
         d = numpy.loadtxt(self.spacing_file)
@@ -214,14 +319,21 @@ class Recalibration(object):
         dtth[0, 1] = delta[0]
         dtth = dtth.min(axis= -1)
         ttha = self.ai.twoThetaArray(self.peakPicker.data.shape)
+#        self.peakPicker.points.wavelength = self.ai.wavelength
+#        self.peakPicker.points.dSpacing = d
+        rings = 0
+        if self.max_rings is None:
+            self.max_rings = tth.size
         for i in range(tth.size):
             mask = abs(ttha - tth[i]) <= (dtth[i] / 4.0)
             if self.mask is not None:
                 mask = mask & (1 - self.mask)
             size = mask.sum(dtype=int)
-            if size > 0:
+            if (size > 0) and (rings < self.max_rings):
+                rings += 1
                 self.peakPicker.massif_contour(mask)
-                self.peakPicker.fig.canvas.draw()
+                if self.gui:
+                    self.peakPicker.fig.canvas.draw()
                 sub_data = self.peakPicker.data.ravel()[numpy.where(mask.ravel())]
                 mean = sub_data.mean(dtype=numpy.float64)
                 std = sub_data.std(dtype=numpy.float64)
@@ -242,7 +354,7 @@ class Recalibration(object):
                 numpy.random.shuffle(all_points)
                 for idx in all_points:
                     out = self.peakPicker.massif.nearest_peak(idx)
-                    print idx, "->", out
+                    print "[ %3i, %3i ] -> [ %.1f, %.1f ]" % (idx[1], idx[0], out[1], out[0])
                     if out is not None:
                         p0, p1 = out
                         if mask[p0, p1]:
@@ -255,11 +367,13 @@ class Recalibration(object):
                     else:
                         cnt += 1
 
-                self.peakPicker.points.append(res, tth[i])
-                self.peakPicker.display_points()
-                self.peakPicker.fig.canvas.draw()
+                self.peakPicker.points.append(res, tth[i], i)
+                if self.gui:
+                    self.peakPicker.display_points()
+                    self.peakPicker.fig.canvas.draw()
+
         self.peakPicker.points.save(self.basename + ".npt")
-        self.data = self.peakPicker.points.getList()
+        self.data = self.peakPicker.points.getListRing()
 
     def refine(self):
         if os.name == "nt" and self.peakPicker is not None:
@@ -267,18 +381,27 @@ class Recalibration(object):
             self.peakPicker.closeGUI()
         self.geoRef = GeometryRefinement(self.data, dist=self.ai.dist, poni1=self.ai.poni1, poni2=self.ai.poni2,
                                              rot1=self.ai.rot1, rot2=self.ai.rot2, rot3=self.ai.rot3,
-                                             detector=self.ai.detector)
+                                             detector=self.ai.detector, dSpacing=self.spacing_file, wavelength=self.ai._wavelength)
         self.geoRef.set_tolerance(10)
         print self.geoRef
         previous = sys.maxint
         finished = False
         fig2 = None
         while not finished:
-            while previous > self.geoRef.chi2():
-                previous = self.geoRef.chi2()
-                self.geoRef.refine2(1000000)
-                print(self.geoRef)
-            print(self.geoRef)
+            count = 0
+            print("fixed: " + ", ".join(self.fixed))
+            if "wavelength" in self.fixed:
+                while (previous > self.geoRef.chi2()) and (count < self.max_iter):
+                    previous = self.geoRef.chi2()
+                    self.geoRef.refine2(1000000, fix=self.fixed)
+                    print(self.geoRef)
+                    count += 1
+            else:
+                while (previous > self.geoRef.chi2_wavelength()) and (count < self.max_iter):
+                    previous = self.geoRef.chi2_wavelength()
+                    self.geoRef.refine2_wavelength(1000000, fix=self.fixed)
+                    print(self.geoRef)
+                    count += 1
             self.geoRef.save(self.basename + ".poni")
             self.geoRef.del_ttha()
             self.geoRef.del_dssa()
@@ -295,19 +418,37 @@ class Recalibration(object):
             if os.name == "nt":
                 logger.info("We are under windows, matplotlib is not able to display too many images without crashing, this is why little information is displayed")
             else:
-                self.peakPicker.contour(tth)
-                if fig2 is None:
-                    fig2 = pylab.plt.figure()
-                    sp = fig2.add_subplot(111)
-                else:
-                    sp.images.pop()
-                sp.imshow(dsa, origin="lower")
-                #self.fig.canvas.draw()
-                fig2.show()
-
-            change = raw_input("Modify parameters ?\t ").strip()
-            if (change == '') or (change.lower()[0] == "n"):
+                if self.gui:
+                    self.peakPicker.contour(tth)
+                    if fig2 is None:
+                        fig2 = pylab.plt.figure()
+                        sp = fig2.add_subplot(111)
+                    else:
+                        sp.images.pop()
+                    sp.imshow(dsa, origin="lower")
+                    fig2.show()
+            if not self.interactive:
+                break
+            change = raw_input("Modify parameters ?\t ").strip().lower()
+            if (change == '') or (change[0] == "n"):
                 finished = True
+            elif change.startswith("free"):
+                what = change.split()[-1]
+                if what in self.fixed:
+                    self.fixed.remove(what)
+            elif change.startswith("fix"):
+                what = change.split()[-1]
+                if what not in self.fixed:
+                    self.fixed.append(what)
+            elif change.startswith("set"):
+                words = change.split()
+                if len(words) == 3:
+                    what = words[1]
+                    val = words[2]
+                    if what in dir(self.geoRef):
+                        setattr(self.geoRef, what, value)
+                else:
+                    print("example: set wavelength 1e-10")
             else:
                 self.peakPicker.readFloatFromKeyboard("Enter Distance in meter (or dist_min[%.3f] dist[%.3f] dist_max[%.3f]):\t " % (self.geoRef.dist_min, self.geoRef.dist, self.geoRef.dist_max), {1:[self.geoRef.set_dist], 3:[ self.geoRef.set_dist_min, self.geoRef.set_dist, self.geoRef.set_dist_max]})
                 self.peakPicker.readFloatFromKeyboard("Enter Poni1 in meter (or poni1_min[%.3f] poni1[%.3f] poni1_max[%.3f]):\t " % (self.geoRef.poni1_min, self.geoRef.poni1, self.geoRef.poni1_max), {1:[self.geoRef.set_poni1], 3:[ self.geoRef.set_poni1_min, self.geoRef.set_poni1, self.geoRef.set_poni1_max]})
@@ -315,12 +456,14 @@ class Recalibration(object):
                 self.peakPicker.readFloatFromKeyboard("Enter Rot1 in rad (or rot1_min[%.3f] rot1[%.3f] rot1_max[%.3f]):\t " % (self.geoRef.rot1_min, self.geoRef.rot1, self.geoRef.rot1_max), {1:[self.geoRef.set_rot1], 3:[ self.geoRef.set_rot1_min, self.geoRef.set_rot1, self.geoRef.set_rot1_max]})
                 self.peakPicker.readFloatFromKeyboard("Enter Rot2 in rad (or rot2_min[%.3f] rot2[%.3f] rot2_max[%.3f]):\t " % (self.geoRef.rot2_min, self.geoRef.rot2, self.geoRef.rot2_max), {1:[self.geoRef.set_rot2], 3:[ self.geoRef.set_rot2_min, self.geoRef.set_rot2, self.geoRef.set_rot2_max]})
                 self.peakPicker.readFloatFromKeyboard("Enter Rot3 in rad (or rot3_min[%.3f] rot3[%.3f] rot3_max[%.3f]):\t " % (self.geoRef.rot3_min, self.geoRef.rot3, self.geoRef.rot3_max), {1:[self.geoRef.set_rot3], 3:[ self.geoRef.set_rot3_min, self.geoRef.set_rot3, self.geoRef.set_rot3_max]})
-                previous = sys.maxint
+            previous = sys.maxint
 
 
     def postProcess(self):
         if self.geoRef is None:
             self.refine()
+        self.peakPicker.points.setWavelength_change2th(self.geoRef.wavelength)
+        self.peakPicker.points.save(self.basename + ".npt")
         self.geoRef.save(self.basename + ".poni")
         self.geoRef.del_ttha()
         self.geoRef.del_dssa()
@@ -334,11 +477,11 @@ class Recalibration(object):
         t2a = time.time()
         self.geoRef.cornerArray(self.peakPicker.shape)
         t2b = time.time()
-
-        fig3 = pylab.plt.figure()
-        xrpd = fig3.add_subplot(111)
-        fig4 = pylab.plt.figure()
-        xrpd2 = fig4.add_subplot(111)
+        if self.gui:
+            fig3 = pylab.plt.figure()
+            xrpd = fig3.add_subplot(111)
+            fig4 = pylab.plt.figure()
+            xrpd2 = fig4.add_subplot(111)
         t3 = time.time()
         a, b = self.geoRef.xrpd(self.peakPicker.data, 1024, self.basename + ".xy", mask=self.mask)
         t4 = time.time()
@@ -349,20 +492,24 @@ class Recalibration(object):
      corner coordinate array %.3fs\n\
      1D Azimuthal integration: %.3fs\n\
      2D Azimuthal integration: %.3fs" % (t1 - t0, t2 - t1, t2a - t2, t2b - t2a, t4 - t3, t5 - t4))
-        xrpd.plot(a, b)
-        fig3.show()
-        xrpd2.imshow(numpy.log(img - img.min() + 1e-3), origin="lower")
-        fig4.show()
+        if self.gui:
+            xrpd.plot(a, b)
+            fig3.show()
+            xrpd2.imshow(numpy.log(img - img.min() + 1e-3), origin="lower")
+            fig4.show()
 
-#This is for debugin wtih rconsole
+# This is for debugin wtih rconsole
 c = None
 if __name__ == "__main__":
     c = Recalibration()
     c.parse()
     c.preprocess()
+#    time.sleep(2)
+#    raw_input("resize and press enter")
     c.extract_cpt()
 #    print c.peakPicker.points
 #    c.gui_peakPicker()
     c.refine()
     c.postProcess()
-    raw_input("Press enter to quit")
+    if c.interactive:
+        raw_input("Press enter to quit")

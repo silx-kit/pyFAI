@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/11/2012"
+__date__ = "31/01/2013"
 __status__ = "beta"
 
 import os, logging
@@ -41,7 +41,18 @@ except ImportError:
     logger.error("Unable to import pyOpenCl. Please install it from: http://pypi.python.org/pypi/pyopencl")
     pyopencl = None
 
-
+FLOP_PER_CORE = {"GPU": 64,  # GPU, Fermi at least perform 64 flops per cycle/multicore, G80 were at 24 or 48 ...
+                  "CPU": 4  # CPU, at least intel's have 4 operation per cycle
+                  }
+NVIDIA_FLOP_PER_CORE = {(1, 0): 24,  # Guessed !
+                         (1, 1): 24,  # Measured on G98 [Quadro NVS 295]
+                         (1, 2): 24,  # Guessed !
+                         (1, 3): 24,  # measured on a GT285 (GT200)
+                         (2, 0): 64,  # Measured on a 580 (GF110)
+                         (2, 1): 96,  # Measured on Quadro2000 GF106GL
+                         (3, 0): 384,  # Guessed!
+                         (3, 5): 384}  # Measured on K20
+AMD_FLOP_PER_CORE = 160  # Measured on a M7820 10 core, 700MHz 1120GFlops
 
 class Device(object):
     """
@@ -49,7 +60,7 @@ class Device(object):
     """
     def __init__(self, name=None, type=None, version=None, driver_version=None,
                  extensions="", memory=None, available=None,
-                 cores=None, frequency=None, id=0):
+                 cores=None, frequency=None, flop_core=None, id=0):
         self.name = name
         self.type = type
         self.version = version
@@ -60,6 +71,13 @@ class Device(object):
         self.cores = cores
         self.frequency = frequency
         self.id = id
+        if not flop_core:
+            flop_core = FLOP_PER_CORE.get(type, 1)
+        if cores and frequency:
+            self.flops = cores * frequency * flop_core
+        else:
+            self.flops = flop_core
+
 
     def __repr__(self):
         return "%s" % self.name
@@ -119,9 +137,18 @@ class OpenCL(object):
                 if (pypl.vendor == "NVIDIA Corporation") and ('cl_khr_fp64' in extensions):
                                 extensions += ' cl_khr_int64_base_atomics cl_khr_int64_extended_atomics'
                 devtype = pyopencl.device_type.to_string(device.type)
+                if (pypl.vendor == "NVIDIA Corporation") and (devtype == "GPU") and "compute_capability_major_nv" in dir(device):
+                    comput_cap = device.compute_capability_major_nv, device.compute_capability_minor_nv
+                    flop_core = NVIDIA_FLOP_PER_CORE.get(comput_cap, min(NVIDIA_FLOP_PER_CORE.values()))
+                elif (pypl.vendor == "Advanced Micro Devices, Inc.") and (devtype == "GPU"):
+                    flop_core = AMD_FLOP_PER_CORE
+                elif devtype == "CPU":
+                    flop_core = FLOP_PER_CORE.get(devtype, 1)
+                else:
+                     flop_core = 1
                 pydev = Device(device.name, devtype, device.version, device.driver_version, extensions,
                                device.global_mem_size, bool(device.available), device.max_compute_units,
-                               device.max_clock_frequency, idd)
+                               device.max_clock_frequency, flop_core, idd)
                 pypl.add_device(pydev)
             platforms.append(pypl)
         del platform, device, pypl, devtype, extensions, pydev
@@ -176,9 +203,9 @@ class OpenCL(object):
                                 return platformid, deviceid
                             else:
                                 if not best_found:
-                                    best_found = platformid, deviceid, device.cores * device.frequency
-                                elif best_found[2] < device.cores * device.frequency:
-                                    best_found = platformid, deviceid, device.cores * device.frequency
+                                    best_found = platformid, deviceid, device.flops
+                                elif best_found[2] < device.flops:
+                                    best_found = platformid, deviceid, device.flops
         if best_found:
             return  best_found[0], best_found[1]
 

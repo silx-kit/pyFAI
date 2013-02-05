@@ -137,10 +137,6 @@ def test_suite_all_Mask():
     testSuite.addTest(test_mask("test_mask_splitBBox"))
     testSuite.addTest(test_mask("test_mask_LUT"))
     testSuite.addTest(test_mask("test_mask_LUT_OCL"))
-#    testSuite.addTest(test_mask("test_mask_splitBBox"))
-#    testSuite.addTest(test_mask("test_mask_splitBBox"))
-#    testSuite.addTest(test_mask("test_mask_splitBBox"))
-#    testSuite.addTest(test_mask("test_mask_splitBBox"))
     return testSuite
 
 if __name__ == '__main__':

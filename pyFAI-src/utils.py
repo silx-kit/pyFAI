@@ -1,5 +1,5 @@
 import numpy
-import fabio #, h5py
+import fabio  # , h5py
 from scipy import ndimage
 from scipy.interpolate import interp1d
 from math import  ceil
@@ -117,23 +117,23 @@ def expand(input, sigma, mode="constant", cval=0.0):
     output = numpy.zeros((s0 + 2 * k0, s1 + 2 * k1), dtype=dtype) + float(cval)
     output[k0:k0 + s0, k1:k1 + s1] = input
     if mode in  ["reflect", "mirror"]:
-    #4 corners
+    # 4 corners
         output[s0 + k0:, s1 + k1:] = input[-1:-k0 - 1:-1, -1:-k1 - 1:-1]
         output[:k0, :k1] = input[k0 - 1::-1, k1 - 1::-1]
         output[:k0, s1 + k1:] = input[k0 - 1::-1, s1 - 1: s1 - k1 - 1:-1]
         output[s0 + k0:, :k1] = input[s0 - 1: s0 - k0 - 1:-1, k1 - 1::-1]
-    #4 sides
+    # 4 sides
         output[k0:k0 + s0, :k1] = input[:s0, k1 - 1::-1]
         output[:k0, k1:k1 + s1] = input[k0 - 1::-1, :s1]
         output[-k0:, k1:s1 + k1] = input[:s0 - k0 - 1:-1, :]
         output[k0:s0 + k0, -k1:] = input[:, :s1 - k1 - 1:-1]
     elif mode == "nearest":
-    #4 corners
+    # 4 corners
         output[s0 + k0:, s1 + k1:] = input[-1, -1]
         output[:k0, :k1] = input[0, 0]
         output[:k0, s1 + k1:] = input[0, -1]
         output[s0 + k0:, :k1] = input[-1, 0]
-    #4 sides
+    # 4 sides
         output[k0:k0 + s0, :k1] = numpy.outer(input[:, 0], numpy.ones(k1))
         output[:k0, k1:k1 + s1] = numpy.outer(numpy.ones(k0), input[0, :])
         output[-k0:, k1:s1 + k1] = numpy.outer(numpy.ones(k0), input[-1, :])
@@ -166,7 +166,7 @@ def relabel(label, data, blured, max_size=None):
 
 
 def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=None,
-                   darks=None, flats=None, max_filter=False):
+                   darks=None, flats=None, filter_="mean", correct_flat_from_dark=False):
     """
     Takes a list of filenames and create an average frame discarding all saturated pixels.
 
@@ -177,14 +177,14 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
     @param maximum: maximum valid value
     @param darks: list of dark current images for subtraction
     @param flats: list of flat field images for division
-    @param max_filter: use a maximum filter instead of a mean filter
+    @param filter_: can be maximum, mean or median (default=mean)
     """
     ld = len(listImages)
     sumImg = None
     dark = None
     flat = None
-
-    for fn in listImages:
+    big_img = None
+    for idx, fn in enumerate(listImages):
         logger.info("Reading %s" % fn)
         ds = fabio.open(fn).data
         logger.debug("Intensity range for %s is %s --> %s", fn, ds.min(), ds.max())
@@ -204,18 +204,26 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
                 for f in flats:
                     flat += fabio.open(f).data
                 flat /= max(1, len(flats))
-                flat -= dark
+                if correct_flat_from_dark:
+                    flat -= dark
                 flat[flats < 1] = 1.0
             else:
                 flat = numpy.ones((shape[0], shape[1]), dtype=numpy.float32)
         correctedImg = (removeSaturatedPixel(ds.astype(numpy.float32), threshold, minimum, maximum) - dark) / flat
-        if max_filter:
+        if filter_ == "max":
             sumImg = numpy.maximum(correctedImg, sumImg)
-        else:
+        elif filter_ == "median":
+            if big_img is None:
+                logger.info("Big array allocation for median filter")
+                big_img = numpy.zeros((correctedImg.shape[0],correctedImg.shape[1],ld),dtype=numpy.float32)
+            big_img[:,:,idx] = correctedImg
+        else: #mean 
             sumImg += correctedImg
-    if max_filter:
+    if filter_ == "max":
         datared = numpy.ascontiguousarray(sumImg, dtype=numpy.float32)
-    else:
+    elif filter_ == "median":
+        datared = numpy.median(big_img,axis=-1)
+    else:#mean 
         datared = sumImg / numpy.float32(ld)
     if output is None:
         prefix = ""
@@ -290,7 +298,7 @@ def removeSaturatedPixel(ds, threshold=0.1, minimum=None, maximum=None):
         maxt = min(maxt, maximum)
     invalid = (ds > maxt)
     if minimum:
-        if  minimum is True: #automatic guess of the best minimum TODO: use the HWHM to guess the minumum...
+        if  minimum is True:  # automatic guess of the best minimum TODO: use the HWHM to guess the minumum...
             data_min = ds.min()
             x, y = numpy.histogram(numpy.log(ds - data_min + 1.0), bins=100)
             f = interp1d((y[1:] + y[:-1]) / 2.0, -x, bounds_error=False, fill_value= -x.min())
@@ -304,7 +312,7 @@ def removeSaturatedPixel(ds, threshold=0.1, minimum=None, maximum=None):
             minimum = float(numpy.exp(y[((min_center / y) > 1).sum() - 1])) - 1.0 + data_min
             logger.debug("removeSaturatedPixel: best minimum guessed is %s", minimum)
         ds[ds < minimum] = minimum
-        ds -= minimum #- 1.0
+        ds -= minimum  # - 1.0
 
     if invalid.sum(dtype=int) == 0:
         logger.debug("No saturated area where found")

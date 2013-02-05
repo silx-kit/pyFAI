@@ -113,7 +113,7 @@ class AzimuthalIntegrator(Geometry):
     def __init__(self, dist=1, poni1=0, poni2=0,
                  rot1=0, rot2=0, rot3=0,
                  pixel1=None, pixel2=None,
-                 splineFile=None, detector=None):
+                 splineFile=None, detector=None, wavelength=None):
         """
         @param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
         @type dist: float
@@ -138,7 +138,7 @@ class AzimuthalIntegrator(Geometry):
         """
         Geometry.__init__(self, dist, poni1, poni2,
                           rot1, rot2, rot3,
-                          pixel1, pixel2, splineFile, detector)
+                          pixel1, pixel2, splineFile, detector, wavelength)
         self._nbPixCache = {}  # key=shape, value: array
 
         #
@@ -1112,8 +1112,7 @@ class AzimuthalIntegrator(Geometry):
                 logger.debug("xrpd_LUT: Resetting integrator because %s" %
                              reset)
                 try:
-                    self._lut_integrator = \
-                        self.setup_LUT(shape, nbPt, mask,
+                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask,
                                        pos0_range, pos1_range,
                                        mask_checksum=mask_crc)
                 except MemoryError:  # LUT method is hungry...
@@ -1332,8 +1331,7 @@ class AzimuthalIntegrator(Geometry):
                 logger.debug("xrpd_LUT_OCL:"
                              " Resetting integrator because of %s" % reset)
                 try:
-                    self._lut_integrator = \
-                        self.setup_LUT(shape, nbPt, mask,
+                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask,
                                        tthRange, chiRange,
                                        mask_checksum=mask_crc)
                 except MemoryError:  # LUT method is hungry...
@@ -1559,8 +1557,7 @@ class AzimuthalIntegrator(Geometry):
             data = data[mask]
         if dummy is None:
             dummy = 0.0
-            I, binsChi, bins2Th, _, _ = \
-                histogram.histogram2d(pos0=chi, pos1=tth,
+            I, binsChi, bins2Th, _, _ = histogram.histogram2d(pos0=chi, pos1=tth,
                                       bins=(nbPtChi, nbPt2Th),
                                       weights=data,
                                       split=1,
@@ -1687,8 +1684,7 @@ class AzimuthalIntegrator(Geometry):
             polarization = self.polarization(data.shape, polarization_factor)
         else:
             polarization = None
-        I, bins2Th, binsChi, _, _ = \
-            splitBBox.histoBBox2d(weights=data,
+        I, bins2Th, binsChi, _, _ = splitBBox.histoBBox2d(weights=data,
                                   pos0=tth,
                                   delta_pos0=dtth,
                                   pos1=chi,
@@ -1825,8 +1821,7 @@ class AzimuthalIntegrator(Geometry):
         if chiRange is not None:
             chiRange = tuple([numpy.deg2rad(i) for i in chiRange])
 
-        I, bins2Th, binsChi, _, _ = \
-            splitPixel.fullSplit2D(pos=pos,
+        I, bins2Th, binsChi, _, _ = splitPixel.fullSplit2D(pos=pos,
                                    weights=data,
                                    bins=(nbPt2Th, nbPtChi),
                                    pos0Range=tthRange,
@@ -1977,6 +1972,8 @@ class AzimuthalIntegrator(Geometry):
                         reset = "unit changed"
                     if self._lut_integrator.bins != nbPt:
                         reset = "number of points changed"
+                    if self._lut_integrator.size != data.size:
+                        reset = "input image size changed"
                     if (mask is not None) and\
                             (not self._lut_integrator.check_mask):
                         reset = "mask but LUT was without mask"
@@ -2004,17 +2001,14 @@ class AzimuthalIntegrator(Geometry):
                                  " LUT's azimuth_range don't match")
                 error = False
                 if reset:
-                    logger.info("AI.integrate1d: Resetting integrator"
-                                " because of %s" % reset)
+                    logger.info("AI.integrate1d: Resetting integrator because %s" % reset)
                     try:
-                        self._lut_integrator = \
-                            self.setup_LUT(shape, nbPt, mask,
-                                           radial_range, azimuth_range,
-                                           mask_checksum=mask_crc, unit=unit)
+                        self._lut_integrator = self.setup_LUT(shape, nbPt, mask,
+                                                              radial_range, azimuth_range,
+                                                              mask_checksum=mask_crc, unit=unit)
                         error = False
                     except MemoryError:  # LUT method is hungry...
-                        logger.warning("MemoryError: falling back"
-                                       " on forward implementation")
+                        logger.warning("MemoryError: falling back on forward implementation")
                         self._ocl_lut_integr = None
                         gc.collect()
                         method = "splitbbox"
@@ -2062,8 +2056,7 @@ class AzimuthalIntegrator(Geometry):
                                                                              delta_dummy=delta_dummy)
                                 sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
                     else:
-                        qAxis, I, a, b = \
-                            self._lut_integrator.integrate(data,
+                        qAxis, I, a, b = self._lut_integrator.integrate(data,
                                                            solidAngle=solidangle,
                                                            dummy=dummy,
                                                            delta_dummy=delta_dummy)
@@ -2071,8 +2064,7 @@ class AzimuthalIntegrator(Geometry):
                         if error_model == "azimuthal":
                             variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
                         if variance is not None:
-                            qAxis, I, a, b = \
-                                self._lut_integrator.integrate(variance,
+                            qAxis, I, a, b = self._lut_integrator.integrate(variance,
                                                                solidAngle=None,
                                                                dummy=dummy,
                                                                delta_dummy=delta_dummy)
@@ -2357,6 +2349,8 @@ class AzimuthalIntegrator(Geometry):
                         reset = "unit changed"
                     if self._lut_integrator.bins != nbPt:
                         reset = "number of points changed"
+                    if self._lut_integrator.size != data.size:
+                        reset = "input image size changed"
                     if (mask is not None) and (not self._lut_integrator.check_mask):
                         reset = "mask but LUT was without mask"
                     elif (mask is None) and (self._lut_integrator.check_mask):
@@ -2373,7 +2367,7 @@ class AzimuthalIntegrator(Geometry):
                         reset = "azimuth_range requested and LUT's azimuth_range don't match"
                 error = False
                 if reset:
-                    logger.info("AI.integrate1d: Resetting integrator because of %s" % reset)
+                    logger.info("AI.integrate2d: Resetting integrator because %s" % reset)
                     try:
                         self._lut_integrator = self.setup_LUT(shape, nbPt, mask, radial_range, azimuth_range, mask_checksum=mask_crc, unit=unit)
                         error = False
@@ -2383,7 +2377,7 @@ class AzimuthalIntegrator(Geometry):
                         gc.collect()
                         method = "splitbbox"
                         error = True
-                if not error: #not yet implemented...
+                if not error:  # not yet implemented...
                     if  ("ocl" in method) and ocl_azim_lut:
                         with self._ocl_lut_sem:
                             if "," in method:
@@ -2735,8 +2729,8 @@ class AzimuthalIntegrator(Geometry):
                   "chi_max": str(dim2.max()),
                   dim1_unit.REPR + "_min": str(dim1.min()),
                   dim1_unit.REPR + "_max": str(dim1.max()),
-                  "pixelX": str(self.pixel2), # this is not a bug ... most people expect dim1 to be X
-                  "pixelY": str(self.pixel1), # this is not a bug ... most people expect dim2 to be Y
+                  "pixelX": str(self.pixel2),  # this is not a bug ... most people expect dim1 to be X
+                  "pixelY": str(self.pixel1),  # this is not a bug ... most people expect dim2 to be Y
                   }
         if self.splineFile:
             header["spline"] = str(self.splineFile)

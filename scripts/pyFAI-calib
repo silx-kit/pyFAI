@@ -60,7 +60,7 @@ from  matplotlib.path import Path
 import matplotlib.path as mpath
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-
+hc = 12.398
 
 try:
     from rfoo.utils import rconsole
@@ -100,7 +100,10 @@ class Calibration(object):
         self.reconstruct = False
         self.mask = None
         self.max_iter = 1000
-        self.maximum_filter = False
+        self.filter = "mean"
+        self.threshold = 0.1
+        self.spacing_file = None
+        self.wavelength = None
 
     def __repr__(self):
         lst = ["Calibration object:",
@@ -130,6 +133,12 @@ Increase the value if the arc is not complete;
 decrease the value if arcs are mixed together.""", default=None)
         parser.add_option("-c", "--square", dest="square", action="store_true",
                       help="Use square kernel shape for neighbor search instead of diamond shape", default=False)
+        parser.add_option("--spacing", dest="spacing", metavar="FILE",
+                      help="file containing d-spacing of the reference sample (MANDATORY)", default=None)
+        parser.add_option("-w", "--wavelength", dest="wavelength", type="float",
+                      help="wavelength of the X-Ray beam in Angstrom", default=None)
+        parser.add_option("-e", "--energy", dest="energy", type="float",
+                      help="energy of the X-Ray beam in keV (hc=%skeV.A)" % hc, default=None)
         parser.add_option("-b", "--background", dest="background",
                       help="Automatic background subtraction if no value are provided", default=None)
         parser.add_option("-d", "--dark", dest="dark",
@@ -149,9 +158,12 @@ decrease the value if arcs are mixed together.""", default=None)
                       help="file containing the mask (for image reconstruction)", default=None)
         parser.add_option("-n", "--npt", dest="npt",
                       help="file with datapoints saved", default=None)
-        parser.add_option("--max", dest="maximum_filter",
-                      help="perform a maximum filter instead of a mean filter when multiple input files are provided",
-                       default=False, action="store_true")
+        parser.add_option("--filter", dest="filter",
+                      help="select the filter, either mean(default), max or median",
+                       default="mean")
+        parser.add_option("--saturation", dest="saturation",
+                      help="consider all pixel>max*(1-saturation) as saturated and reconstruct them",
+                      default=0.1, type="float")
 
         (options, args) = parser.parse_args()
 
@@ -193,7 +205,15 @@ decrease the value if arcs are mixed together.""", default=None)
                 logger.error("Unknown spline file %s" % (options.spline))
         if options.pixel is not None:
             self.get_pixelSize(options.pixel)
-        self.maximum_filter = options.maximum_filter
+        self.filter = options.filter
+        self.threshold = options.saturation
+        if options.wavelength:
+            self.wavelength = 1e-10 * options.wavelength
+        elif options.energy:
+            self.wavelength = 1e-10 * hc / options.energy
+        self.spacing_file = options.spacing
+#        if not self.spacing_file or not os.path.isfile(self.spacing_file):
+#            raise RuntimeError("you must specify the d-spacing file")
         self.dataFiles = [f for f in args if os.path.isfile(f)]
         if not self.dataFiles:
             raise RuntimeError("Please provide some calibration images ... if you want to analyze them. Try also the --help option to see all options!")
@@ -230,27 +250,56 @@ decrease the value if arcs are mixed together.""", default=None)
             else:
                 self.get_pixelSize(ans)
 
+    def read_dSpacingFile(self):
+        """Read the name of the file with d-spacing"""
+        if (self.spacing_file is None):
+            comments = ["pyFAI calib has changed !!!",
+                        "Instead of entering the 2theta value, which was tedious,"
+                        "the program takes a d-spacing file in input (just a serie of number representing the inter planar distance in Angstrom)",
+                        "and an associated wavelength",""
+                        "You will be asked to enter the ring number, which is usually a simpler than the 2theta value."]
+            print(os.linesep.join(comments))
+            ans = ""
+            while not os.path.isfile(ans):
+                ans = raw_input("Please enter the name of the file containing the d-spacing:\t").strip()
+            self.spacing_file = ans
+
+    def read_wavelength(self):
+        """Read the wavelength"""
+        while not self.wavelength:
+            ans = raw_input("Please enter wavelength in Angstrom:\t").strip()
+            try:
+                self.wavelength = 1e-10 * float(ans)
+            except:
+                self.wavelength = None
 
     def preprocess(self):
         """
         do dark, flat correction thresholding, ...
         """
         if len(self.dataFiles) > 1 or self.cutBackground or self.darkFiles or self.flatFiles:
-            self.outfile = averageImages(self.dataFiles, self.outfile, minimum=self.cutBackground,
-                                      darks=self.darkFiles, flats=self.flatFiles, max_filter=self.maximum_filter)
+            self.outfile = averageImages(self.dataFiles, self.outfile, threshold=self.threshold, minimum=self.cutBackground,
+                                      darks=self.darkFiles, flats=self.flatFiles, filter_=self.filter)
         else:
             self.outfile = self.dataFiles[0]
         self.basename = os.path.splitext(self.outfile)[0]
-        self.peakPicker = PeakPicker(self.outfile, reconst=self.reconstruct, mask=self.mask)
+        self.pointfile = self.basename + ".npt"
+        self.peakPicker = PeakPicker(self.outfile, reconst=self.reconstruct, mask=self.mask,
+                                     pointfile = self.pointfile, dSpacing=self.spacing_file, wavelength=self.wavelength)
         if self.gaussianWidth is not None:
             self.peakPicker.massif.setValleySize(self.gaussianWidth)
         else:
             self.peakPicker.massif.initValleySize()
+        if not self.peakPicker.points.dSpacing:
+            self.read_dSpacingFile()
+            self.peakPicker.points.load_dSpacing(self.dSpacing)
+        if not self.peakPicker.points.wavelength:
+            self.read_wavelength()
+            self.peakPicker.points.wavelength = self.wavelength
 
     def gui_peakPicker(self):
         if self.peakPicker is None:
             self.preprocess()
-        self.pointfile = self.basename + ".npt"
         self.peakPicker.gui(True)
         if os.path.isfile(self.pointfile):
             self.peakPicker.load(self.pointfile)
@@ -260,7 +309,7 @@ decrease the value if arcs are mixed together.""", default=None)
         if os.name == "nt" and self.peakPicker is not None:
             logging.info("We are under windows, matplotlib is not able to display too many images without crashing, this is why the window showing the diffraction image is closed")
             self.peakPicker.closeGUI()
-        self.geoRef = GeometryRefinement(self.data, dist=0.1, detector=self.detector)
+        self.geoRef = GeometryRefinement(self.data, dist=0.1, detector=self.detector, wavelength=self.wavelength, dSpacing=self.peakPicker.points.dSpacing)
         paramfile = self.basename + ".poni"
         if os.path.isfile(paramfile):
             self.geoRef.load(paramfile)
@@ -357,6 +406,8 @@ if __name__ == "__main__":
     c = Calibration()
     c.parse()
     c.read_pixelsSize()
+#    c.read_dSpacingFile()
+#    c.read_wavelength()
     c.preprocess()
     c.gui_peakPicker()
     c.refine()

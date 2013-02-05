@@ -9,7 +9,6 @@ ocl = pyFAI.opencl.ocl
 from matplotlib import pyplot as plt
 
 ds_list = ["Pilatus1M.poni", "halfccd.poni", "Frelon2k.poni", "Pilatus6M.poni", "Mar3450.poni", "Fairchild.poni"]
-#ds_list = ["Pilatus1M.poni", "halfccd.poni"]
 datasets = {"Fairchild.poni":utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
             "halfccd.poni":utilstest.UtilsTest.getimage("1882/halfccd.edf"),
             "Frelon2k.poni":utilstest.UtilsTest.getimage("1881/Frelon2k.edf"),
@@ -47,11 +46,11 @@ class Bench(object):
                 proc = subprocess.Popen(["sysctl", "-n", "machdep.cpu.brand_string"], stdout=subprocess.PIPE)
                 proc.wait()
                 self._cpu = proc.stdout.read().strip()
-            old = self._cpu 
-            self._cpu = old.replace("  "," ")
+            old = self._cpu
+            self._cpu = old.replace("  ", " ")
             while old != self._cpu:
                 old = self._cpu
-                self._cpu = old.replace("  "," ")
+                self._cpu = old.replace("  ", " ")
         return self._cpu
 
     def get_gpu(self, devicetype="gpu", useFp64=False, platformid=None, deviceid=None):
@@ -157,10 +156,17 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
         gc.collect()
 
     def bench_cpu1d_ocl_lut(self, devicetype="all", platformid=None, deviceid=None):
-        print("Working on device: %s" % devicetype)
-        if (ocl is None) or not ocl.select_device(devicetype):
-            print("No pyopencl or no such device: skipping benchmark")
+        if (ocl is None):
+            print("No pyopencl")
             return
+        if (platformid is None) or (deviceid is None):
+            platdev = ocl.select_device(devicetype)
+            if not platdev:
+                print("No such OpenCL device: skipping benchmark")
+                return
+            platformid, deviceid = platdev
+        print("Working on device: %s platform: %s device: %s" % (devicetype, ocl.platforms[platformid], ocl.platforms[platformid].devices[deviceid]))
+
         results = {}
         for param in ds_list:
             ref = self.get_ref(param)
@@ -229,7 +235,7 @@ out=ai.xrpd2(data,%s,%s)""" % (param, fn, N[0], N[1])
 
             self.print_exec(tmin)
             print("")
-            if 1:#R < self.LIMIT:
+            if 1:  # R < self.LIMIT:
                 results[size / 1e6] = tmin * 1000.0
             gc.collect()
         self.print_sep()
@@ -267,7 +273,7 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut")""" % (param, fn, N[0
 
             self.print_exec(tmin)
             print("")
-            if 1:#R < self.LIMIT:
+            if 1:  # R < self.LIMIT:
                 results[size / 1e6] = tmin * 1000.0
             gc.collect()
         self.print_sep()
@@ -277,10 +283,16 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut")""" % (param, fn, N[0
         self.new_curve(results, label)
 
     def bench_cpu2d_lut_ocl(self, devicetype="GPU", platformid=None, deviceid=None):
-        print("Working on device: %s" % self.get_gpu())
-        if (ocl is None) or not ocl.select_device(devicetype):
-            print("No pyopencl or no such device: skipping benchmark")
+        if (ocl is None):
+            print("No pyopencl")
             return
+        if (platformid is None) or (deviceid is None):
+            platdev = ocl.select_device(devicetype)
+            if not platdev:
+                print("No such OpenCL device: skipping benchmark")
+                return
+            platformid, deviceid = platdev
+        print("Working on device: %s platform: %s device: %s" % (devicetype, ocl.platforms[platformid], ocl.platforms[platformid].devices[deviceid]))
         results = {}
         for param in ds_list:
             fn = datasets[param]
@@ -308,11 +320,11 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut_ocl")""" % (param, fn,
 
             self.print_exec(tmin)
             print("")
-            if 1:#R < self.LIMIT:
+            if 1:  # R < self.LIMIT:
                 results[size / 1e6] = tmin * 1000.0
             gc.collect()
         self.print_sep()
-        label = "2D_%s_parallel_OpenCL"%devicetype.upper()
+        label = "2D_%s_parallel_OpenCL" % devicetype.upper()
         self.meth.append(label)
         self.results[label] = results
         self.new_curve(results, label)
@@ -438,27 +450,29 @@ if __name__ == "__main__":
         n = int(sys.argv[1])
     else:
         n = 10
+    if "--small" in  sys.argv:
+        ds_list = ds_list[:4]
     print("Averaging over %i repetitions (best of 3)." % n)
     b = Bench(n)
     b.init_curve()
     b.bench_cpu1d()
     b.bench_cpu1d_lut()
-    b.bench_cpu1d_ocl_lut("GPU")
+    b.bench_cpu1d_ocl_lut("ALL")
 #    b.bench_cpu1d_ocl_lut("CPU")
 #    b.bench_gpu1d("gpu", True)
 #    b.bench_gpu1d("gpu", False)
- #   b.bench_gpu1d("cpu", True)
+#    b.bench_gpu1d("cpu", True)
 #    b.bench_gpu1d("cpu", False)
     b.bench_cpu2d()
     b.bench_cpu2d_lut()
-    b.bench_cpu2d_lut_ocl()
+    b.bench_cpu2d_lut_ocl("ALL")
 
 #    b.bench_cpu2d_lut()
 #    b.bench_cpu2d_lut_ocl()
     b.save()
     b.print_res()
 #    b.display_all()
-    b.ax.set_ylim(1,200)
-    #plt.show()
+    b.ax.set_ylim(1, 200)
+    # plt.show()
     plt.ion()
     raw_input("Enter to quit")

@@ -167,7 +167,7 @@ class Geometry(object):
     """
 
     def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0,
-                 pixel1=None, pixel2=None, splineFile=None, detector=None):
+                 pixel1=None, pixel2=None, splineFile=None, detector=None, wavelength=None):
         """
         @param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
         @param poni1: coordinate of the point of normal incidence along the detector's first dimension, in meter
@@ -201,7 +201,7 @@ class Geometry(object):
         self._corner4Da = None
         self._corner4Dqa = None
         self._corner4Dra = None
-        self._wavelength = None
+        self._wavelength = wavelength
         self._oversampling = None
         self._correct_solid_angle_for_spline = True
         self._sem = threading.Semaphore()
@@ -226,6 +226,8 @@ class Geometry(object):
         self.param = [self._dist, self._poni1, self._poni2,
                       self._rot1, self._rot2, self._rot3]
         lstTxt = [self.detector.__repr__()]
+        if self._wavelength:
+            lstTxt.append("Wavelength= %.6em" % self._wavelength)
         lstTxt.append(("SampleDetDist= %.6em\tPONI= %.6e, %.6em\trot1=%.6f"
                        "  rot2= %.6f  rot3= %.6f rad") % tuple(self.param))
         if self.detector.pixel1:
@@ -1142,6 +1144,12 @@ class Geometry(object):
                 shape = ttha.shape
             else:
                 ttha = self.qArray(shape)
+        elif dim1_unit == units.R:
+            if shape is None:
+                ttha = self._ra
+                shape = ttha.shape
+            else:
+                ttha = self.rArray(shape)
         else:
 #            TODO
             raise RuntimeError("in pyFAI.Geometry.calcfrom1d: "

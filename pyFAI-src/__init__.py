@@ -1,4 +1,4 @@
-version = "0.8.1"
+version = "0.8.5"
 import sys, logging
 logging.basicConfig()
 
