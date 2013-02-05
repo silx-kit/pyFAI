@@ -94,7 +94,93 @@ else:
             return scipy.ndimage.filters.gaussian_filter(input, sigma, mode=(mode or "reflect"))
 
 
+def shift(input, shift):
+    """
+    Shift an array like  scipy.ndimage.interpolation.shift(input, shift, mode="wrap", order=0) but faster
+    @param input: 2d numpy array
+    @param shift: 2-tuple of integers
+    @return: shifted image
+    """
+    re = numpy.zeros_like(input)
+    s0, s1 = input.shape
+    d0 = shift[0] % s0
+    d1 = shift[1] % s1
+    r0 = (-d0) % s0
+    r1 = (-d1) % s1
+    re[d0:, d1:] = input[:r0, :r1]
+    re[:d0, d1:] = input[r0:, :r1]
+    re[d0:, :d1] = input[:r0, r1:]
+    re[:d0, :d1] = input[r0:, r1:]
+    return re
 
+def dog(s1, s2, shape=None):
+    """
+    2D difference of gaussian
+    typically 1 to 10 parameters
+    """
+    if shape is None:
+        maxi = max(s1, s2) * 5
+        u, v = numpy.ogrid[-maxi:maxi + 1, -maxi:maxi + 1]
+    else:
+        u, v = numpy.ogrid[-shape[0] // 2:shape[0] - shape[0] // 2, -shape[1] // 2:shape[1] - shape[1] // 2]
+    r2 = u * u + v * v
+    centered = numpy.exp(-r2 / (2.*s1) ** 2) / 2. / pi / s1 - numpy.exp(-r2 / (2.*s2) ** 2) / 2. / pi / s2
+    return centered
+
+def dog_filter(input, sigma1, sigma2, mode="reflect", cval=0.0):
+        """
+        2-dimensional Difference of Gaussian filter implemented with FFTw
+
+        @param input:    input array to filter
+        @type input: array-like
+        @param sigma: standard deviation for Gaussian kernel.
+            The standard deviations of the Gaussian filter are given for each axis as a sequence,
+            or as a single number, in which case it is equal for all axes.
+        @type sigma: scalar or sequence of scalars
+        @param mode: {'reflect','constant','nearest','mirror', 'wrap'}, optional
+            The ``mode`` parameter determines how the array borders are
+            handled, where ``cval`` is the value when mode is equal to
+            'constant'. Default is 'reflect'
+        @param cval: scalar, optional
+            Value to fill past edges of input if ``mode`` is 'constant'. Default is 0.0
+"""
+
+        if 1:  # try:
+#            orig_shape = input.shape
+            sigma = max(sigma1, sigma2)
+            if mode != "wrap":
+                input = expand(input, sigma, mode, cval)
+            s0, s1 = input.shape
+            if isinstance(sigma, (list, tuple)):
+                k0 = int(ceil(float(sigma[0])))
+                k1 = int(ceil(float(sigma[1])))
+            else:
+                k0 = k1 = int(ceil(float(sigma)))
+
+            sum_init = input.astype(numpy.float32).sum()
+            fftOut = numpy.zeros((s0, s1), dtype=complex)
+            fftIn = numpy.zeros((s0, s1), dtype=complex)
+            fft = fftw3.Plan(fftIn, fftOut, direction='forward')
+            ifft = fftw3.Plan(fftOut, fftIn, direction='backward')
+
+
+            g2fft = numpy.zeros((s0, s1), dtype=complex)
+            fftIn[:, :] = shift(dog(sigma1,sigma2,(s0,s1)),(s0//2, s1//2)).astype(complex)
+            fft()
+            g2fft[:, :] = fftOut.conjugate()
+
+            fftIn[:, :] = input.astype(complex)
+            fft()
+
+            fftOut *= g2fft
+            ifft()
+            out = fftIn.real.astype(numpy.float32)
+            sum_out = out.sum()
+            res = out * sum_init / sum_out
+            if mode == "wrap":
+                return res
+            else:
+                return res[k0:-k0, k1:-k1]
 
 def expand(input, sigma, mode="constant", cval=0.0):
 
@@ -217,13 +303,13 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
                 logger.info("Big array allocation for median filter")
                 big_img = numpy.zeros((correctedImg.shape[0],correctedImg.shape[1],ld),dtype=numpy.float32)
             big_img[:,:,idx] = correctedImg
-        else: #mean 
+        else:  # mean
             sumImg += correctedImg
     if filter_ == "max":
         datared = numpy.ascontiguousarray(sumImg, dtype=numpy.float32)
     elif filter_ == "median":
         datared = numpy.median(big_img,axis=-1)
-    else:#mean 
+    else:  # mean
         datared = sumImg / numpy.float32(ld)
     if output is None:
         prefix = ""
