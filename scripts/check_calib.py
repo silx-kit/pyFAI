@@ -4,6 +4,9 @@
 from optparse import OptionParser
 import pyFAI, fabio, numpy, sys, os, optparse, time
 import pylab
+import scipy.ndimage
+import logging
+logger = logging.getLogger("check_calib")
 hc = 12.398
 
 def shift(input, shift):
@@ -149,21 +152,32 @@ class CheckCalib(object):
         self.ponifile = poni
         if poni :
             self.ai = pyFAI.load(poni)
+        else:
+            self.ai = None
         if img:
             self.img = fabio.open(img)
+        else:
+            self.img = None
         self.mask = None
         self.r = None
         self.I = None
         self.wavelength = None
         self.resynth = None
         self.delta = None
+        self.unit = "r_mm"
+
     def __repr__(self, *args, **kwargs):
-        return self.ai.__repr__()
+        if self.ai:
+            return self.ai.__repr__()
 
     def parse(self):
+        logger.debug("in parse")
         parser = OptionParser()
         parser.add_option("-V", "--version", dest="version", action="store_true",
                           help="print version of the program and quit", metavar="FILE", default=False)
+        parser.add_option("-v", "--verbose",
+                          action="store_true", dest="verbose", default=False,
+                          help="switch to debug mode")
         parser.add_option("-d", "--dark", dest="dark", metavar="FILE",
                       help="file containing the dark images to subtract", default=None)
         parser.add_option("-f", "--flat", dest="flat", metavar="FILE",
@@ -178,6 +192,8 @@ class CheckCalib(object):
                       help="wavelength of the X-Ray beam in Angstrom", default=None)
 
         (options, args) = parser.parse_args()
+        if options.verbose:
+            logger.setLevel(logging.DEBUG)
 
         if options.version:
             print("Check calibrarion: version %s" % pyFAI.version)
@@ -187,11 +203,18 @@ class CheckCalib(object):
         if len(args) > 0:
             f = args[0]
             if os.path.isfile(f):
-                self.data = fabio.open(f).data
+                self.img = fabio.open(f).data.astype(numpy.float32)
             else:
-                print("Please enter diffraction inages as arguments")
+                print("Please enter diffraction images as arguments")
                 sys.exit(1)
-
+            for f in args[1:]:
+                self.img += fabio.open(f).data
+        if options.dark and os.path.exists(options.dark):
+            self.img -= fabio.open(options.dark).data
+        if options.flat and os.path.exists(options.flat):
+            self.img /= fabio.open(options.flat).data
+        if options.poni:
+            self.ai = pyFAI.load(options.poni)
         self.data = [f for f in args if os.path.isfile(f)]
         self.ai = pyFAI.load(options.poni)
         if options.wavelength:
@@ -203,23 +226,43 @@ class CheckCalib(object):
 
 
     def get_1dsize(self):
-        return numpy.sqrt(self.img.data[0] ** 2 + self.img.data[0] ** 2)
+        logger.debug("in get_1dsize")
+        return int(numpy.sqrt(self.img.shape[0] ** 2 + self.img.shape[1] ** 2))
     size1d = property(get_1dsize)
 
     def integrate(self):
-        self.r, self.I = self.ai.integrate1d(self.img.data, self.size1d , unit="q_nm^-1")
+        logger.debug("in integrate")
+        self.r, self.I = self.ai.integrate1d(self.img, self.size1d, mask=self.mask, unit=self.unit)
 
     def rebuild(self):
+        logger.debug("in rebuild")
         if self.r is None:
             self.integrate()
-        self.resynth = self.ai.calcfrom1d(self.r, self.I, self.img.data.shape, mask=None,
-                   dim1_unit="q_nm^-1", correctSolidAngle=True)
-        self.delta = self.resynth - self.img.data
-        self.offset, log = measure_offset(self.resynth, self.img.data, withLog=1)
+        self.resynth = self.ai.calcfrom1d(self.r, self.I, mask=self.mask,
+                   dim1_unit=self.unit, correctSolidAngle=True)
+        self.img[numpy.where(self.mask)] = 0
+#        self.resynth[numpy.where(self.mask)] = 0
+        self.delta = self.resynth - self.img
+        if self.mask is not None:
+            smooth_mask = self.smooth_mask()
+        else:
+            smooth_mask = 1.0
+        self.offset, log = measure_offset(self.resynth * smooth_mask, self.img * smooth_mask, withLog=1)
         print os.linesep.join(log)
-        print self.offset
+
+        print "offset:", self.offset
+
+    def smooth_mask(self):
+        logger.debug("in smooth_mask")
+        if self.mask is not None:
+            big_mask = scipy.ndimage.binary_dilation(self.mask, numpy.ones((10, 10)))
+            smooth_mask = 1 - scipy.ndimage.filters.gaussian_filter(big_mask, 5)
+            return smooth_mask
+
 if __name__ == "__main__":
-    cc = CheckCalib(sys.argv[1], sys.argv[2])
+
+    cc = CheckCalib()
+    cc.parse()
     cc.integrate()
     cc.rebuild()
     pylab.ion()
@@ -227,7 +270,7 @@ if __name__ == "__main__":
     pylab.imshow(cc.delta, aspect="auto", interpolation=None, origin="bottom")
 #    pylab.show()
     raw_input("Delta image")
-    pylab.imshow(cc.img.data, aspect="auto", interpolation=None, origin="bottom")
+    pylab.imshow(cc.img, aspect="auto", interpolation=None, origin="bottom")
     raw_input("raw image")
     pylab.imshow(cc.resynth, aspect="auto", interpolation=None, origin="bottom")
     raw_input("rebuild image")

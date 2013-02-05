@@ -1131,8 +1131,8 @@ class Geometry(object):
         @return 2D image reconstructed
         """
         dim1_unit = units.to_unit(dim1_unit)
+        tth /= dim1_unit.scale
         if dim1_unit == units.TTH:
-            tth = numpy.radians(tth)
             if shape is None:
                 ttha = self._ttha
                 shape = self._ttha.shape
@@ -1160,7 +1160,7 @@ class Geometry(object):
             calcimage *= self.solidAngleArray(shape)
         if mask is not None:
             assert mask.shape == tuple(shape)
-            calcimage[mask] = 0
+            calcimage[numpy.where(mask)] = 0
         return calcimage
 
 # ############################################

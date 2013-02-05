@@ -273,7 +273,7 @@ class Recalibration(object):
 #                        "the program takes a d-spacing file in input (just a serie of number representing the inter planar distance in Angstrom)",
 #                        "and an associated wavelength", ""
 #                        "You will be asked to enter the ring number, which is usually a simpler than the 2theta value."]
-            print(os.linesep.join(comments))
+#            print(os.linesep.join(comments))
             ans = ""
             while not os.path.isfile(ans):
                 ans = raw_input("Please enter the name of the file containing the d-spacing:\t").strip()

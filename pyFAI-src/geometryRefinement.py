@@ -177,14 +177,14 @@ class GeometryRefinement(AzimuthalIntegrator):
 
 
     def residu2(self, param, d1, d2, rings, weight=None):
-        if weight:
-            return ((numpy.maximum(0, weight) * self.residu1(param, d1, d2, rings)) ** 2).sum()
+        if weight is not None:
+            return (weight * self.residu1(param, d1, d2, rings) ** 2).sum()
         else:
             return (self.residu1(param, d1, d2, rings) ** 2).sum()
 
     def residu2_wavelength(self, param, d1, d2, rings, weight=None):
-        if weight:
-            return ((numpy.maximum(0, weight) * self.residu1_wavelength(param, d1, d2, rings)) ** 2).sum()
+        if weight is not None:
+            return (weight * self.residu1_wavelength(param, d1, d2, rings) ** 2).sum()
         else:
             return (self.residu1_wavelength(param, d1, d2, rings) ** 2).sum()
 
