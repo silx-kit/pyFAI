@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/12/2011"
+__date__ = "07/02/2013"
 __status__ = "development"
 
 import os, sys, threading, logging, gc, types
@@ -36,8 +36,7 @@ from math                   import ceil, sqrt, pi
 import numpy
 from scipy.optimize         import fmin
 from scipy.ndimage.filters  import median_filter
-from scipy.ndimage          import label  # , binary_closing, binary_opening, binary_erosion #,binary_propagation
-# import matplotlib
+from scipy.ndimage          import label
 import pylab
 import fabio
 import utils
@@ -502,7 +501,7 @@ class ControlPoints(object):
 
     def getListRing(self):
         """
-        Retrieve the list of control points suitable for geometry refinement with ring number 
+        Retrieve the list of control points suitable for geometry refinement with ring number
         """
         lstOut = []
         for ring, points in zip(self._ring, self._points):
@@ -513,7 +512,7 @@ class ControlPoints(object):
     def getWeightedList(self, image):
         """
         Retrieve the list of control points suitable for geometry refinement with ring number and intensities
-        @param image: 
+        @param image:
         @return: a (x,4) array with pos0, pos1, ring nr and intensity
         """
         lstOut = []

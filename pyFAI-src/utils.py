@@ -24,7 +24,7 @@
 
 """
 
-Utilities, mainly for image treatment 
+Utilities, mainly for image treatment
 
 """
 
@@ -90,7 +90,9 @@ def gaussian_filter(input, sigma, mode="reflect", cval=0.0):
         Value to fill past edges of input if ``mode`` is 'constant'. Default is 0.0
     """
     res = None
-
+    # TODO: understund why this is needed !
+    if "fftw3" not in dir():
+        fftw3 = sys.modules.get("fftw3")
     if fftw3:
         try:
             if mode != "wrap":
