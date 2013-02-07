@@ -48,6 +48,10 @@ logger = logging.getLogger("pyFAI.utils")
 import time
 timelog = logging.getLogger("pyFAI.timeit")
 from scipy.signal           import gaussian
+
+if sys.platform != "win32":
+    WindowsError = RuntimeError
+
 fftw3 = None
 try:
     import fftw3
@@ -55,8 +59,6 @@ except (ImportError, WindowsError) as e:
     logging.warn("Exception %s: FFTw3 not available. Falling back on Scipy" % e)
     fftw3 = None
 
-if sys.platform != "win32":
-    WindowsError = RuntimeError
 
 def timeit(func):
     def wrapper(*arg, **kw):
