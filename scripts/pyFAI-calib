@@ -42,7 +42,7 @@ __satus__ = "development"
 import os, sys, logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI.calib")
-import pyFAI
+import pyFAI, pyFAI.calibration
 from pyFAI.calibration import Calibration
 try:
     from rfoo.utils import rconsole

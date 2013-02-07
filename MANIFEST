@@ -37,6 +37,7 @@ openCL/ocl_azim_kernel2d_2.cl
 openCL/ocl_azim_kernel_2.cl
 pyFAI-src/__init__.py
 pyFAI-src/azimuthalIntegrator.py
+pyFAI-src/calibration.py
 pyFAI-src/detectors.py
 pyFAI-src/geometry.py
 pyFAI-src/geometryRefinement.py
@@ -55,9 +56,9 @@ scripts/pyFAI-calib
 scripts/pyFAI-recalib
 scripts/pyFAI-saxs
 scripts/pyFAI-waxs
+scripts/check_calib
 scripts/refine_wavelength.py
 scripts/saxs_integrate_exp.py
-src/Copy of splitPixel.pyx
 src/_geometry.c
 src/_geometry.pyx
 src/bilinear.c

@@ -42,6 +42,7 @@ __satus__ = "development"
 import os, sys, gc, threading, time, logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI.recalib")
+import pyFAI, pyFAI.calibration
 from pyFAI.calibration import Recalibration
 try:
     from rfoo.utils import rconsole

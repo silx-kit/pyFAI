@@ -39,9 +39,10 @@ __date__ = "06/02/2013"
 __status__ = "development"
 
 import os, sys, gc, threading, time, logging
+from optparse import OptionParser
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI.calibration")
-import numpy
+import numpy, scipy, scipy.ndimage
 from numpy import sin, cos, arccos, sqrt, floor, ceil, radians, degrees, pi
 import fabio
 import matplotlib
@@ -50,7 +51,7 @@ from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
 from .peakPicker import PeakPicker, Massif
 from .utils import averageImages, timeit, measure_offset
-
+from .azimuthalIntegrator import AzimuthalIntegrator
 from  matplotlib.path import Path
 import matplotlib.path as mpath
 import matplotlib.patches as mpatches
@@ -115,7 +116,6 @@ class Calibration(object):
         """
         parse options from command line
         """
-        from optparse import OptionParser
         parser = OptionParser()
         parser.add_option("-V", "--version", dest="version", action="store_true",
                           help="print version of the program and quit", metavar="FILE", default=False)
@@ -454,7 +454,6 @@ class Recalibration(object):
         """
         parse options from command line
         """
-        from optparse import OptionParser
         parser = OptionParser()
         parser.add_option("-V", "--version", dest="version", action="store_true",
                           help="print version of the program and quit", metavar="FILE", default=False)
@@ -563,7 +562,7 @@ class Recalibration(object):
         self.spacing_file = options.spacing
         if not self.spacing_file or not os.path.isfile(self.spacing_file):
             self.read_dSpacingFile()
-        self.ai = pyFAI.load(options.poni)
+        self.ai = AzimuthalIntegrator.sload(options.poni)
         if options.wavelength:
             self.ai.wavelength = 1e-10 * options.wavelength
         elif options.energy:
@@ -853,7 +852,7 @@ class CheckCalib(object):
     def __init__(self, poni=None, img=None):
         self.ponifile = poni
         if poni :
-            self.ai = pyFAI.load(poni)
+            self.ai = AzimuthalIntegrator.sload(poni)
         else:
             self.ai = None
         if img:
@@ -867,6 +866,8 @@ class CheckCalib(object):
         self.resynth = None
         self.delta = None
         self.unit = "r_mm"
+        self.masked_resynth = None
+        self.masked_image = None
 
     def __repr__(self, *args, **kwargs):
         if self.ai:
@@ -916,12 +917,12 @@ class CheckCalib(object):
         if options.flat and os.path.exists(options.flat):
             self.img /= fabio.open(options.flat).data
         if options.poni:
-            self.ai = pyFAI.load(options.poni)
+            self.ai = AzimuthalIntegrator.sload(options.poni)
         self.data = [f for f in args if os.path.isfile(f)]
         if options.poni is None:
             logger.error("PONI parameter is mandatory")
             sys.exit(1)
-        self.ai = pyFAI.load(options.poni)
+        self.ai = AzimuthalIntegrator.sload(options.poni)
         if options.wavelength:
             self.ai.wavelength = 1e-10 * options.wavelength
         elif options.energy:
@@ -953,7 +954,9 @@ class CheckCalib(object):
             smooth_mask = self.smooth_mask()
         else:
             smooth_mask = 1.0
-        self.offset, log = measure_offset(self.resynth * smooth_mask, self.img * smooth_mask, withLog=1)
+        self.masked_resynth = self.resynth * smooth_mask
+        self.masked_image = self.img * smooth_mask
+        self.offset, log = measure_offset(self.masked_resynth, self.masked_image, withLog=1)
         print os.linesep.join(log)
 
         print "offset:", self.offset

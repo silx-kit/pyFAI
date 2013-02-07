@@ -40,8 +40,8 @@ from scipy.ndimage          import label  # , binary_closing, binary_opening, bi
 # import matplotlib
 import pylab
 import fabio
-from .utils                  import relabel, gaussian_filter, binning, unBinning
-from . import bilinear
+import utils
+import bilinear
 from reconstruct            import reconstruct
 logger = logging.getLogger("pyFAI.peakPicker")
 if os.name != "nt":
@@ -774,7 +774,7 @@ class Massif(object):
                                 self.binning.append(1)
 #                    self.binning = max([max(1, i // TARGET_SIZE) for i in self.data.shape])
                     logger.info("Binning size is %s", self.binning)
-                    self._binned_data = binning(self.data, self.binning)
+                    self._binned_data = utils.binning(self.data, self.binning)
         return self._binned_data
 
     def getMedianData(self):
@@ -791,7 +791,7 @@ class Massif(object):
             with self._sem:
                 if self._blured_data is None:
                     logger.debug("Blurring image with kernel size: %s" , self.valley_size)
-                    self._blured_data = gaussian_filter(self.getBinnedData(), [self.valley_size / i for i in  self.binning], mode="reflect")
+                    self._blured_data = utils.gaussian_filter(self.getBinnedData(), [self.valley_size / i for i in  self.binning], mode="reflect")
                     if logger.getEffectiveLevel() == logging.DEBUG:
                         fabio.edfimage.edfimage(data=self._blured_data).write("blured_data.edf")
         return self._blured_data
@@ -807,10 +807,10 @@ class Massif(object):
                     logger.info("Labeling found %s massifs." % self._number_massif)
                     if logger.getEffectiveLevel() == logging.DEBUG:
                         fabio.edfimage.edfimage(data=labeled_massif).write("labeled_massif_small.edf")
-                    relabeled = relabel(labeled_massif, self.getBinnedData(), self.getBluredData())
+                    relabeled = utils.relabel(labeled_massif, self.getBinnedData(), self.getBluredData())
                     if logger.getEffectiveLevel() == logging.DEBUG:
                             fabio.edfimage.edfimage(data=relabeled).write("relabeled_massif_small.edf")
-                    self._labeled_massif = unBinning(relabeled, self.binning)
+                    self._labeled_massif = utils.unBinning(relabeled, self.binning)
                     if logger.getEffectiveLevel() == logging.DEBUG:
                         fabio.edfimage.edfimage(data=self._labeled_massif).write("labeled_massif.edf")
                     logger.info("Labeling found %s massifs." % self._number_massif)

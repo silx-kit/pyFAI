@@ -32,21 +32,29 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/02/2013"
+__date__ = "07/02/2013"
 __status__ = "development"
 
 import numpy
-import fabio  # , h5py
+import fabio
 from scipy import ndimage
 from scipy.interpolate import interp1d
 from math import  ceil
 import logging, sys
 import relabel as relabelCython
 from scipy.optimize.optimize import fmin, fminbound
+import scipy.ndimage.filters
 logger = logging.getLogger("pyFAI.utils")
 import time
 timelog = logging.getLogger("pyFAI.timeit")
 from scipy.signal           import gaussian
+fftw3 = None
+try:
+    import fftw3
+except (ImportError, WindowsError) as e:
+    logging.warn("Exception %s: FFTw3 not available. Falling back on Scipy" % e)
+    fftw3 = None
+
 if sys.platform != "win32":
     WindowsError = RuntimeError
 
@@ -62,33 +70,27 @@ def timeit(func):
     wrapper.__doc__ = func.__doc__
     return wrapper
 
-try:
-    import fftw3
-except (ImportError, WindowsError) as e:
-    logging.warn("Exception %s: FFTw3 not available. Falling back on Scipy" % e)
-    from scipy.ndimage.filters import gaussian_filter
-    fftw3 = None
-else:
-    def gaussian_filter(input, sigma, mode="reflect", cval=0.0):
-        """
-        2-dimensional Gaussian filter implemented with FFTw
+def gaussian_filter(input, sigma, mode="reflect", cval=0.0):
+    """
+    2-dimensional Gaussian filter implemented with FFTw
 
-        @param input:    input array to filter
-        @type input: array-like
-        @param sigma: standard deviation for Gaussian kernel.
-            The standard deviations of the Gaussian filter are given for each axis as a sequence,
-            or as a single number, in which case it is equal for all axes.
-        @type sigma: scalar or sequence of scalars
-        @param mode: {'reflect','constant','nearest','mirror', 'wrap'}, optional
-            The ``mode`` parameter determines how the array borders are
-            handled, where ``cval`` is the value when mode is equal to
-            'constant'. Default is 'reflect'
-        @param cval: scalar, optional
-            Value to fill past edges of input if ``mode`` is 'constant'. Default is 0.0
-"""
+    @param input:    input array to filter
+    @type input: array-like
+    @param sigma: standard deviation for Gaussian kernel.
+        The standard deviations of the Gaussian filter are given for each axis as a sequence,
+        or as a single number, in which case it is equal for all axes.
+    @type sigma: scalar or sequence of scalars
+    @param mode: {'reflect','constant','nearest','mirror', 'wrap'}, optional
+        The ``mode`` parameter determines how the array borders are
+        handled, where ``cval`` is the value when mode is equal to
+        'constant'. Default is 'reflect'
+    @param cval: scalar, optional
+        Value to fill past edges of input if ``mode`` is 'constant'. Default is 0.0
+    """
+    res = None
 
+    if fftw3:
         try:
-#            orig_shape = input.shape
             if mode != "wrap":
                 input = expand(input, sigma, mode, cval)
             s0, s1 = input.shape
@@ -122,15 +124,15 @@ else:
             out = fftIn.real.astype(numpy.float32)
             sum_out = out.sum()
             res = out * sum_init / sum_out
-            if mode == "wrap":
-                return res
-            else:
-                return res[k0:-k0, k1:-k1]
+            if mode != "wrap":
+                res = res[k0:-k0, k1:-k1]
         except MemoryError:
             logging.error("MemoryError in FFTw3 part. Falling back on Scipy")
-            import scipy.ndimage.filters
-            return scipy.ndimage.filters.gaussian_filter(input, sigma, mode=(mode or "reflect"))
-            fftw3 = None
+    if res is None:
+        fftw3 = None
+        res = scipy.ndimage.filters.gaussian_filter(input, sigma, mode=(mode or "reflect"))
+    return res
+
 
 
 def shift(input, shift):
@@ -196,26 +198,31 @@ def dog_filter(input, sigma1, sigma2, mode="reflect", cval=0.0):
             else:
                 k0 = k1 = int(ceil(float(sigma)))
 
-            sum_init = input.astype(numpy.float32).sum()
-            fftOut = numpy.zeros((s0, s1), dtype=complex)
-            fftIn = numpy.zeros((s0, s1), dtype=complex)
-            fft = fftw3.Plan(fftIn, fftOut, direction='forward')
-            ifft = fftw3.Plan(fftOut, fftIn, direction='backward')
+            if fftw3:
+                sum_init = input.astype(numpy.float32).sum()
+                fftOut = numpy.zeros((s0, s1), dtype=complex)
+                fftIn = numpy.zeros((s0, s1), dtype=complex)
+
+                fft = fftw3.Plan(fftIn, fftOut, direction='forward')
+                ifft = fftw3.Plan(fftOut, fftIn, direction='backward')
 
 
-            g2fft = numpy.zeros((s0, s1), dtype=complex)
-            fftIn[:, :] = shift(dog(sigma1,sigma2,(s0,s1)),(s0//2, s1//2)).astype(complex)
-            fft()
-            g2fft[:, :] = fftOut.conjugate()
+                g2fft = numpy.zeros((s0, s1), dtype=complex)
+                fftIn[:, :] = shift(dog(sigma1, sigma2, (s0, s1)), (s0 // 2, s1 // 2)).astype(complex)
+                fft()
+                g2fft[:, :] = fftOut.conjugate()
 
-            fftIn[:, :] = input.astype(complex)
-            fft()
+                fftIn[:, :] = input.astype(complex)
+                fft()
 
-            fftOut *= g2fft
-            ifft()
-            out = fftIn.real.astype(numpy.float32)
-            sum_out = out.sum()
-            res = out * sum_init / sum_out
+                fftOut *= g2fft
+                ifft()
+                out = fftIn.real.astype(numpy.float32)
+                sum_out = out.sum()
+                res = out * sum_init / sum_out
+            else:
+                res = numpy.fft.ifft2(numpy.fft.fft2(input.astype(complex)) * \
+                                      numpy.fft.fft2(shift(dog(sigma1, sigma2, (s0, s1)), (s0 // 2, s1 // 2)).astype(complex)).conjugate())
             if mode == "wrap":
                 return res
             else:
@@ -340,14 +347,14 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
         elif filter_ == "median":
             if big_img is None:
                 logger.info("Big array allocation for median filter")
-                big_img = numpy.zeros((correctedImg.shape[0],correctedImg.shape[1],ld),dtype=numpy.float32)
-            big_img[:,:,idx] = correctedImg
+                big_img = numpy.zeros((correctedImg.shape[0], correctedImg.shape[1], ld), dtype=numpy.float32)
+            big_img[:, :, idx] = correctedImg
         else:  # mean
             sumImg += correctedImg
     if filter_ == "max":
         datared = numpy.ascontiguousarray(sumImg, dtype=numpy.float32)
     elif filter_ == "median":
-        datared = numpy.median(big_img,axis=-1)
+        datared = numpy.median(big_img, axis= -1)
     else:  # mean
         datared = sumImg / numpy.float32(ld)
     if output is None:
@@ -542,12 +549,10 @@ def shiftFFT(inp, shift, method="fftw"):
     e1 = numpy.exp(-2j * numpy.pi * v1 * m1 / float(d1))
     e = e0 * e1
     if method.startswith("fftw") and (fftw3 is not None):
-
         input = numpy.zeros((d0, d1), dtype=complex)
         output = numpy.zeros((d0, d1), dtype=complex)
-        with sem:
-                fft = fftw3.Plan(input, output, direction='forward', flags=['estimate'])
-                ifft = fftw3.Plan(output, input, direction='backward', flags=['estimate'])
+        fft = fftw3.Plan(input, output, direction='forward', flags=['estimate'])
+        ifft = fftw3.Plan(output, input, direction='backward', flags=['estimate'])
         input[:, :] = inp.astype(complex)
         fft()
         output *= e
