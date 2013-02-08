@@ -152,14 +152,18 @@ class PeakPicker(object):
             self.fig.show()
             sys.stdout.flush()
         elif event.button == 2:  # center click
-            a = self.points.pop()
+            poped_points = self.points.pop()
 #            for i in a:
             if len(self.ax.texts) > 0:
                 self.ax.texts.pop()
             if len(self.ax.lines) > 0:
                 self.ax.lines.pop()
             self.fig.show()
-            logging.info("Removing point group #%i (%5.1f %5.1f) containing %i subpoints" % (len(self.points), a[0][0], a[0][1], len(a)))
+            if poped_points is None:
+                logging.info("Removing No group point (non existing?)")
+            else:
+                logging.info("Removing point group #%i (%5.1f %5.1f) containing %i subpoints" % (len(self.points), poped_points[0][0], poped_points[0][1], len(poped_points)))
+
             sys.stdout.flush()
         self._sem.release()
 
@@ -363,12 +367,16 @@ class ControlPoints(object):
         out = None
         if idx is None:
             with self._sem:
-                self._angles.pop()
-                out = self._points.pop()
+                if self._angles:
+                    self._angles.pop()
+                    self._ring.pop()
+                    out = self._points.pop()
         else:
             with self._sem:
-                self._angles.pop(idx)
-                out = self._points.pop(idx)
+                if idx <= len(self._angles):
+                    self._angles.pop(idx)
+                    self._ring.pop()
+                    out = self._points.pop(idx)
         return out
 
     def save(self, filename):
