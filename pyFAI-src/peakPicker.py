@@ -39,9 +39,9 @@ from scipy.ndimage.filters  import median_filter
 from scipy.ndimage          import label
 import pylab
 import fabio
-import utils
-import bilinear
-from reconstruct            import reconstruct
+from . import utils
+from . import bilinear
+from .reconstruct            import reconstruct
 logger = logging.getLogger("pyFAI.peakPicker")
 if os.name != "nt":
     WindowsError = RuntimeError

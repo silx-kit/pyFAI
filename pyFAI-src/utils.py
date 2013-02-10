@@ -32,9 +32,10 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/02/2013"
+__date__ = "10/02/2013"
 __status__ = "development"
 
+import logging, sys
 import threading
 sem = threading.Semaphore()  # global lock for image processing initialization
 import numpy
@@ -42,7 +43,6 @@ import fabio
 from scipy import ndimage
 from scipy.interpolate import interp1d
 from math import  ceil
-import logging, sys
 import relabel as relabelCython
 from scipy.optimize.optimize import fmin, fminbound
 import scipy.ndimage.filters
@@ -53,12 +53,15 @@ from scipy.signal           import gaussian
 cu_fft = None  # No cuda here !
 if sys.platform != "win32":
     WindowsError = RuntimeError
-global fftw3
+fftw3 = None
 try:
     fftw3 = __import__("fftw3")
 except (ImportError, WindowsError) as err:
     logging.warn("Exception %s: FFTw3 not available. Falling back on Scipy", err)
     fftw3 = None
+else:
+    print("defining FFTw3: %s" % fftw3)
+
 
 def float_(val):
     try:
@@ -105,9 +108,10 @@ def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0):
         Value to fill past edges of input if ``mode`` is 'constant'. Default is 0.0
     """
     res = None
-    # TODO: understund why this is needed !
-#    if "fftw3" not in dir():
-#        fftw3 = sys.modules.get("fftw3")
+    # TODO: understand why this is needed !
+    if "fftw3" not in dir():
+        global fftw3
+        fftw3 = sys.modules.get("fftw3")
     if fftw3:
         try:
             if mode != "wrap":
