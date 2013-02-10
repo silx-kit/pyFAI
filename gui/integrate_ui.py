@@ -9,6 +9,7 @@ from PyQt4 import QtCore, QtGui, uic
 from PyQt4.QtCore import SIGNAL
 import pyFAI, fabio
 from pyFAI.opencl import ocl
+from pyFAI.utils import float_, int_
 
 try:
     from rfoo.utils import rconsole
@@ -62,7 +63,7 @@ class AIWidget(QtGui.QWidget):
             logger.debug("Let's work a bit")
             self.set_ai()
 
-    #        Default Keyword arguments 
+    #        Default Keyword arguments
             kwarg = {"unit": "2th_deg",
                      "dummy": None,
                      "delta_dummy": None,
@@ -83,14 +84,14 @@ class AIWidget(QtGui.QWidget):
 
 
             if bool(self.do_dummy.isChecked()):
-                kwarg["dummy"] = float(str(self.val_dummy.text()).strip())
-                delta_dummy = str(self.delta_dummy.text()).strip()
+                kwarg["dummy"] = float_(self.val_dummy.text())
+                delta_dummy = str(self.delta_dummy.text())
                 if delta_dummy:
                     kwarg["delta_dummy"] = float(delta_dummy)
                 else:
                     kwarg["delta_dummy"] = None
             if bool(self.do_polarization.isChecked()):
-                polarization_factor = float(self.polarization_factor.value())
+                kwarg["polarization_factor"] = float(self.polarization_factor.value())
 
             kwarg["nbPt_rad"] = int(str(self.rad_pt.text()).strip())
             if self.do_2D.isChecked():
@@ -107,8 +108,8 @@ class AIWidget(QtGui.QWidget):
 
             if self.do_radial_range:
                 try:
-                    rad_min = float(str(self.radial_range_min.text()).strip())
-                    rad_max = float(str(self.radial_range_max.text()).strip())
+                    rad_min = float_(self.radial_range_min.text())
+                    rad_max = float_(self.radial_range_max.text())
                 except ValueError as error:
                     logger.error("error in parsing radial range: %s" % error)
                 else:
@@ -116,8 +117,8 @@ class AIWidget(QtGui.QWidget):
 
             if self.do_azimuthal_range:
                 try:
-                    azim_min = float(str(self.azimuth_range_min.text()).strip())
-                    azim_max = float(str(self.azimuth_range_max.text()).strip())
+                    azim_min = float_(self.azimuth_range_min.text())
+                    azim_max = float_(self.azimuth_range_max.text())
                 except ValueError as error:
                     logger.error("error in parsing azimuthal range: %s" % error)
                 else:
@@ -191,37 +192,37 @@ class AIWidget(QtGui.QWidget):
         print "Dump!"
         to_save = { "poni": str(self.poni.text()).strip(),
                     "detector": str(self.detector.currentText()).lower(),
-                    "wavelength":str(self.wavelength.text()).strip(),
+                    "wavelength":float_(self.wavelength.text()),
                     "splineFile":str(self.splineFile.text()).strip(),
-                    "pixel1": str(self.pixel1.text()).strip(),
-                    "pixel2":str(self.pixel2.text()).strip(),
-                    "dist":str(self.dist.text()).strip(),
-                    "poni1":str(self.poni1.text()).strip(),
-                    "poni2":str(self.poni2.text()).strip(),
-                    "rot1":str(self.rot1.text()).strip(),
-                    "rot2":str(self.rot2.text()).strip(),
-                    "rot3":str(self.rot3.text()).strip(),
+                    "pixel1": float_(self.pixel1.text()),
+                    "pixel2":float_(self.pixel2.text()),
+                    "dist":float_(self.dist.text()),
+                    "poni1":float_(self.poni1.text()).strip(),
+                    "poni2":float_(self.poni2.text()).strip(),
+                    "rot1":float_(self.rot1.text()).strip(),
+                    "rot2":float_(self.rot2.text()).strip(),
+                    "rot3":float_(self.rot3.text()).strip(),
                     "do_dummy": bool(self.do_dummy.isChecked()),
                     "do_mask":  bool(self.do_mask.isChecked()),
                     "do_dark": bool(self.do_dark.isChecked()),
                     "do_flat": bool(self.do_flat.isChecked()),
                     "do_polarization":bool(self.do_polarization.isChecked()),
-                    "val_dummy":str(self.val_dummy.text()).strip(),
-                    "delta_dummy":str(self.delta_dummy.text()).strip(),
+                    "val_dummy":float_(self.val_dummy.text()).strip(),
+                    "delta_dummy":float_(self.delta_dummy.text()).strip(),
                     "mask_file":str(self.mask_file.text()).strip(),
                     "dark_current":str(self.dark_current.text()).strip(),
                     "flat_field":str(self.flat_field.text()).strip(),
-                    "polarization_factor":float(self.polarization_factor.value()),
-                    "rad_pt":str(self.rad_pt.text()).strip(),
+                    "polarization_factor":float_(self.polarization_factor.value()),
+                    "rad_pt":int_(self.rad_pt.text()),
                     "do_2D":bool(self.do_2D.isChecked()),
-                    "azim_pt":str(self.rad_pt.text()).strip(),
+                    "azim_pt":int_(self.rad_pt.text()),
                     "chi_discontinuity_at_0": bool(self.chi_discontinuity_at_0.isChecked()),
                     "do_radial_range": bool(self.do_radial_range.isChecked()),
                     "do_azimuthal_range": bool(self.do_azimuthal_range.isChecked()),
-                    "radial_range_min":str(self.radial_range_min.text()).strip(),
-                    "radial_range_max":str(self.radial_range_max.text()).strip(),
-                    "azimuth_range_min":str(self.azimuth_range_min.text()).strip(),
-                    "azimuth_range_max":str(self.azimuth_range_max.text()).strip(),
+                    "radial_range_min":float_(self.radial_range_min.text()),
+                    "radial_range_max":float_(self.radial_range_max.text()),
+                    "azimuth_range_min":float_(self.azimuth_range_min.text()),
+                    "azimuth_range_max":float_(self.azimuth_range_max.text()),
                    }
         if self.q_nm.isChecked():
             to_save["unit"] = "q_nm^-1"
@@ -363,7 +364,7 @@ class AIWidget(QtGui.QWidget):
 
     def _float(self, kw, default=0):
         fval = default
-        txtval = str(self.__dict__[kw].text()).strip()
+        txtval = str(self.__dict__[kw].text())
         if txtval:
             try:
                 fval = float(txtval)

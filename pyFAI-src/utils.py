@@ -52,12 +52,25 @@ from scipy.signal           import gaussian
 if sys.platform != "win32":
     WindowsError = RuntimeError
 
-fftw3 = None
 try:
     import fftw3
 except (ImportError, WindowsError) as e:
     logging.warn("Exception %s: FFTw3 not available. Falling back on Scipy" % e)
     fftw3 = None
+
+def float_(val):
+    try:
+        f = float(str(val))
+    except ValueError:
+        f = ""
+    return f
+
+def int_(val):
+    try:
+        f = int(str(val))
+    except ValueError:
+        f = ""
+    return f
 
 
 def timeit(func):
