@@ -302,7 +302,7 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut")""" % (param, fn, N[0
             N = (500, 360)
             print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), size / 1e6, N))
             t0 = time.time()
-            _ = ai.integrate2d(data, N[0], N[1], unit="2th_deg", method="lut_ocl")
+            _ = ai.integrate2d(data, N[0], N[1], unit="2th_deg", method="lut_ocl%i,%i"%(platformid,deviceid))
             t1 = time.time()
             self.print_init(t1 - t0)
             print("Size of the LUT: %.3fMByte" % (ai._lut_integrator.lut.nbytes / 1e6))
@@ -313,8 +313,8 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut")""" % (param, fn, N[0
 import pyFAI,fabio
 ai=pyFAI.load(r"%s")
 data = fabio.open(r"%s").data
-out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut_ocl")""" % (param, fn, N[0], N[1])
-            t = timeit.Timer("out=ai.integrate2d(data,%s,%s,unit='2th_deg', method='lut')" % N, setup)
+out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut_ocl_%i,%i")""" % (param, fn, N[0], N[1], platformid, deviceid)
+            t = timeit.Timer("out=ai.integrate2d(data,%s,%s,unit='2th_deg', method='lut_ocl')" % N, setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
             del t
 
@@ -466,6 +466,8 @@ if __name__ == "__main__":
     b.bench_cpu2d()
     b.bench_cpu2d_lut()
     b.bench_cpu2d_lut_ocl("ALL")
+    #b.bench_cpu2d_lut_ocl("GPU",0,0)
+    #b.bench_cpu2d_lut_ocl("GPU",0,1)
 
 #    b.bench_cpu2d_lut()
 #    b.bench_cpu2d_lut_ocl()
