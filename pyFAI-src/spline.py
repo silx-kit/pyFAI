@@ -21,8 +21,8 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # #######################################################################################
 
-""" 
-This is piece of software aims at manipulating spline files 
+"""
+This is piece of software aims at manipulating spline files
 describing for geometric corrections of the 2D detectors using cubic-spline.
 
 Mainly used at ESRF with FReLoN CCD camera.
@@ -61,7 +61,7 @@ class Spline:
     def __init__(self, filename=None):
         """
         This is the constructor of the Spline class.
-        
+
         @param filename: name of the ascii file containing the spline
         @type filename: str
         """
@@ -433,31 +433,31 @@ class Spline:
                "",
                "  GRID SPACING, X-PIXEL SIZE, Y-PIXEL SIZE",
                "%14.7E%14.7E%14.7E" % (self.grid, self.pixelSize[0], self.pixelSize[1]),
-               ""
+               "",
                "  X-DISTORTION",
                "%6i%6i" % (len(self.xSplineKnotsX), len(self.xSplineKnotsY))]
         txt = ""
         for i, val in enumerate(self.xSplineKnotsX):
-            if i % 5 == 0:
+            txt += "%14.7E" % val
+            if i % 5 == 4:
                 lst.append(txt)
                 txt = ""
-            txt += "%14.7E" % val
         if txt:
             lst.append(txt)
             txt = ""
         for i, val in enumerate(self.xSplineKnotsY):
-            if i % 5 == 0:
+            txt += "%14.7E" % val
+            if i % 5 == 4:
                 lst.append(txt)
                 txt = ""
-            txt += "%14.7E" % val
         if txt:
             lst.append(txt)
             txt = ""
         for i, val in enumerate(self.xSplineCoeff):
-            if i % 5 == 0:
+            txt += "%14.7E" % self.xSplineCoeff[i]
+            if i % 5 == 4:
                 lst.append(txt)
                 txt = ""
-            txt += "%14.7E" % self.xSplineCoeff[i]
         if txt:
             lst.append(txt)
             txt = ""
@@ -465,26 +465,26 @@ class Spline:
         lst.append("  Y-DISTORTION\n%6i%6i" % (len(self.ySplineKnotsX),
                                                len(self.ySplineKnotsY)))
         for i, val in enumerate(self.ySplineKnotsX):
-            if i % 5 == 0:
+            txt += "%14.7E" % val
+            if i % 5 == 4:
                 lst.append(txt)
                 txt = ""
-            txt += "%14.7E" % val
         if txt:
             lst.append(txt)
             txt = ""
         for i, val in enumerate(self.ySplineKnotsY):
-            if i % 5 == 0:
+            txt += "%14.7E" % val
+            if i % 5 == 4:
                 lst.append(txt)
                 txt = ""
-            txt += "%14.7E" % val
         if txt:
             lst.append(txt)
             txt = ""
         for i, val in enumerate(self.ySplineCoeff):
-            if i % 5 == 0:
+            txt += "%14.7E" % val
+            if i % 5 == 4:
                 lst.append(txt)
                 txt = ""
-            txt += "%14.7E" % val
         if txt:
             lst.append(txt)
             txt = ""
@@ -567,20 +567,20 @@ class Spline:
         """
         Return the size of the pixel from as a 2-tuple of floats expressed
         in meters.
-        
+
         @return: the size of the pixel from a 2D detector
         @rtype: 2-tuple of floats expressed in meter.
-        
+
         """
         return (self.pixelSize[0] * 1.0e-6, self.pixelSize[1] * 1.0e-6)
 
     def bin(self, binning=None):
         """
         Performs the binning of a spline (same camera with different binning)
-        
+
         @param binning: binning factor as integer or 2-tuple of integers
-        @type: int or (int, int) 
-        
+        @type: int or (int, int)
+
         """
         if "__len__" in dir(binning):
             binX, binY = float(binning[0]), float(binning[1])
