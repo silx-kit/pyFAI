@@ -155,7 +155,7 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
         self.new_curve(results, label)
         gc.collect()
 
-    def bench_cpu1d_ocl_lut(self, devicetype="all", platformid=None, deviceid=None):
+    def bench_cpu1d_ocl_lut(self, devicetype="ALL", platformid=None, deviceid=None):
         if (ocl is None):
             print("No pyopencl")
             return
@@ -282,7 +282,7 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut")""" % (param, fn, N[0
         self.results[label] = results
         self.new_curve(results, label)
 
-    def bench_cpu2d_lut_ocl(self, devicetype="GPU", platformid=None, deviceid=None):
+    def bench_cpu2d_lut_ocl(self, devicetype="ALL", platformid=None, deviceid=None):
         if (ocl is None):
             print("No pyopencl")
             return
@@ -303,7 +303,7 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut")""" % (param, fn, N[0
             print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), size / 1e6, N))
             t0 = time.time()
             try:
-                _ = ai.integrate2d(data, N[0], N[1], unit="2th_deg", method="lut_ocl")
+                _ = ai.integrate2d(data, N[0], N[1], unit="2th_deg", method="lut_ocl_%i,%i" % (platformid, deviceid))
             except MemoryError as error:
                 print(error)
                 break
@@ -317,8 +317,8 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut")""" % (param, fn, N[0
 import pyFAI,fabio
 ai=pyFAI.load(r"%s")
 data = fabio.open(r"%s").data
-out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut_ocl")""" % (param, fn, N[0], N[1])
-            t = timeit.Timer("out=ai.integrate2d(data,%s,%s,unit='2th_deg', method='lut')" % N, setup)
+out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut_ocl_%i,%i")""" % (param, fn, N[0], N[1], platformid, deviceid)
+            t = timeit.Timer("out=ai.integrate2d(data,%s,%s,unit='2th_deg', method='lut_ocl')" % N, setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
             del t
 
