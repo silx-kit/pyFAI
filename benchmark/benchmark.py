@@ -179,8 +179,8 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
             t0 = time.time()
             try:
                 res = ai.xrpd_LUT_OCL(data, N, devicetype=devicetype, platformid=platformid, deviceid=deviceid)
-            except MemoryError:
-                print("Not enough memory")
+            except MemoryError as error:
+                print(error)
                 break
             t1 = time.time()
             self.print_init(t1 - t0)
@@ -302,7 +302,15 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut")""" % (param, fn, N[0
             N = (500, 360)
             print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), size / 1e6, N))
             t0 = time.time()
+<<<<<<< .merge_file_8MtRO1
             _ = ai.integrate2d(data, N[0], N[1], unit="2th_deg", method="lut_ocl%i,%i"%(platformid,deviceid))
+=======
+            try:
+                _ = ai.integrate2d(data, N[0], N[1], unit="2th_deg", method="lut_ocl")
+            except MemoryError as error:
+                print(error)
+                break
+>>>>>>> .merge_file_CDsOT0
             t1 = time.time()
             self.print_init(t1 - t0)
             print("Size of the LUT: %.3fMByte" % (ai._lut_integrator.lut.nbytes / 1e6))
@@ -457,7 +465,8 @@ if __name__ == "__main__":
     b.init_curve()
     b.bench_cpu1d()
     b.bench_cpu1d_lut()
-    b.bench_cpu1d_ocl_lut("ALL")
+    b.bench_cpu1d_ocl_lut("GPU")
+    b.bench_cpu1d_ocl_lut("CPU")
 #    b.bench_cpu1d_ocl_lut("CPU")
 #    b.bench_gpu1d("gpu", True)
 #    b.bench_gpu1d("gpu", False)
@@ -465,9 +474,8 @@ if __name__ == "__main__":
 #    b.bench_gpu1d("cpu", False)
     b.bench_cpu2d()
     b.bench_cpu2d_lut()
-    b.bench_cpu2d_lut_ocl("ALL")
-    #b.bench_cpu2d_lut_ocl("GPU",0,0)
-    #b.bench_cpu2d_lut_ocl("GPU",0,1)
+    b.bench_cpu2d_lut_ocl("GPU")
+    b.bench_cpu2d_lut_ocl("CPU")
 
 #    b.bench_cpu2d_lut()
 #    b.bench_cpu2d_lut_ocl()
