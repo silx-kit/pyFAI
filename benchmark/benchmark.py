@@ -179,8 +179,8 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
             t0 = time.time()
             try:
                 res = ai.xrpd_LUT_OCL(data, N, devicetype=devicetype, platformid=platformid, deviceid=deviceid)
-            except MemoryError:
-                print("Not enough memory")
+            except MemoryError as error:
+                print(error)
                 break
             t1 = time.time()
             self.print_init(t1 - t0)
@@ -302,7 +302,11 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut")""" % (param, fn, N[0
             N = (500, 360)
             print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), size / 1e6, N))
             t0 = time.time()
-            _ = ai.integrate2d(data, N[0], N[1], unit="2th_deg", method="lut_ocl")
+            try:
+                _ = ai.integrate2d(data, N[0], N[1], unit="2th_deg", method="lut_ocl")
+            except MemoryError as error:
+                print(error)
+                break
             t1 = time.time()
             self.print_init(t1 - t0)
             print("Size of the LUT: %.3fMByte" % (ai._lut_integrator.lut.nbytes / 1e6))
