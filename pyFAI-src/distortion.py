@@ -32,7 +32,7 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "22/01/2013"
 __status__ = "development"
 
-import logging
+import logging, threading
 import types, os
 import numpy
 logger = logging.getLogger("pyFAI.distortion")
@@ -57,7 +57,11 @@ class Distortion(object):
         else:
             self.shape = shape
         self.shape = tuple([int(i) for i in self.shape])
+        self._sem = threading.Semaphore()
 
+        self.lut_size = None
+        self.pos = None
+        self.LUT = None
     def __repr__(self):
         return os.linesep.join(["Distortion correction for detector:",
                                 self.detector.__repr__()])
@@ -72,16 +76,8 @@ class Distortion(object):
 #    def calc_lut(self,shape):
     def split_pixel(self,):
         pass
-    def calc_LUT_size(self):
-        """
-        TODO: here we have a problem:
-        Considering the "half-CCD" spline from ID11 which describes a (1025,2048) detector,
-        the physical location of pixels should go from:
-        [-17.48634 : 1027.0543, -22.768829 : 2028.3689]
-        we have 2 options:
-         - discard pixels falling outside the [0:1025,0:2048] range with a lose of intensity
-         - grow the output image to [-18:1028,-23:2029] with many empty pixels and an offset ) but conservation of the total intensity.
-        """
+
+    def calc_pos(self):
         pos_corners = numpy.empty((self.shape[0] + 1, self.shape[1] + 1, 2), dtype=numpy.float32)
         d1 = numpy.outer(numpy.arange(self.shape[0] + 1, dtype=numpy.float32), numpy.ones(self.shape[1] + 1, dtype=numpy.float32)) - 0.5
         d2 = numpy.outer(numpy.ones(self.shape[0] + 1, dtype=numpy.float32), numpy.arange(self.shape[1] + 1, dtype=numpy.float32)) - 0.5
@@ -93,6 +89,24 @@ class Distortion(object):
         pos[:, :, 1, :] = pos_corners[:-1, 1: ]
         pos[:, :, 2, :] = pos_corners[1: , 1: ]
         pos[:, :, 3, :] = pos_corners[1: , :-1]
+        self.pos = pos
+        return pos
+
+    def calc_LUT_size(self):
+        """
+        Here we have a problem:
+        Considering the "half-CCD" spline from ID11 which describes a (1025,2048) detector,
+        the physical location of pixels should go from:
+        [-17.48634 : 1027.0543, -22.768829 : 2028.3689]
+        We chose to discard pixels falling outside the [0:1025,0:2048] range with a lose of intensity
+        
+        TODO: if done with Cython, avoid working with pos: pos_corners is enough
+        
+        """
+        if self.pos is None:
+            pos = self.calc_pos()
+        else:
+            pos = self.pos
         pos0min = numpy.maximum(numpy.floor(pos[:, :, :, 0].min(axis= -1)).astype(numpy.int32), 0)
         pos1min = numpy.maximum(numpy.floor(pos[:, :, :, 1].min(axis= -1)).astype(numpy.int32), 0)
         pos0max = numpy.minimum(numpy.ceil(pos[:, :, :, 0].max(axis= -1)).astype(numpy.int32) + 1, self.shape[0])
@@ -103,6 +117,25 @@ class Distortion(object):
                 lut_size[pos0min[i, j]:pos0max[i, j], pos1min[i, j]:pos1max[i, j]] += 1
         self.lut_size = lut_size.max()
         return lut_size
+
+    def calc_LUT(self):
+        if self.lut_size is None:
+            with self._sem:
+                if self.lut_size is None:
+                    self.calc_LUT_size()
+        lut = numpy.recarray(shape=(self.shape[0] , self.shape[1], self.lut_size), dtype=[("idx", numpy.uint32), ("coef", numpy.float32)])
+        outMax = numpy.zeros(self.shape, dtype=numpy.uint32)
+        idx = 0
+        for i in range(self.shape[0]):
+            for j in range(self.shape[1]):
+                q = Quad(self.pos[i, j, 0, :], self.pos[i, j, 1, :], self.pos[i, j, 2, :], self.pos[i, j, 3, :])
+                # print self.pos[i, j, 0, :], self.pos[i, j, 1, :], self.pos[i, j, 2, :], self.pos[i, j, 3, :]
+#                print q
+#                print "area", q.calc_area()
+                q.populate_box()
+                print q.box
+                idx += 1
+#                return
 
 class Quad(object):
     """
@@ -144,8 +177,8 @@ class Quad(object):
         self.Cy = C[1]
         self.Dx = D[0]
         self.Dy = D[1]
-        self.offset_x = int(min(self.Ax, self.Bx, self.Cx, self.Dx))
-        self.offset_y = int(min(self.Ay, self.By, self.Cy, self.Dy))
+        self.offset_x = int(floor(min(self.Ax, self.Bx, self.Cx, self.Dx)))
+        self.offset_y = int(floor(min(self.Ay, self.By, self.Cy, self.Dy)))
         self.box_size_x = int(ceil(max(self.Ax, self.Bx, self.Cx, self.Dx))) - self.offset_x
         self.box_size_y = int(ceil(max(self.Ay, self.By, self.Cy, self.Dy))) - self.offset_y
         self.Ax -= self.offset_x
@@ -161,7 +194,8 @@ class Quad(object):
         self.cAB = self.cBC = self.cCD = self.cDA = None
 
         self.area = self.box = None
-
+    def __repr__(self):
+        return os.linesep.join(["offset %i,%i size %i, %i" % (self.offset_x, self.offset_y, self.box_size_x, self.box_size_y), "box: %s" % self.box])
     def init_slope(self):
         if self.pAB is None:
             if self.Bx == self.Ax:
@@ -185,7 +219,7 @@ class Quad(object):
             self.cCD = self.Cy - self.pCD * self.Cx
             self.cDA = self.Dy - self.pDA * self.Dx
 
-            self.box = numpy.zeros((self.box_size_x, self.box_size_y), dtype=numpy.float32)
+            self.box = numpy.zeros((self.box_size_x , self.box_size_y), dtype=numpy.float32)
 
 
     def calc_area_AB(self, I1x, I2x):
@@ -206,89 +240,130 @@ class Quad(object):
                self.calc_area_DA(self.Dx, self.Ax)
         return self.area
     def populate_box(self):
+        if self.pAB is None:
+            self.init_slope()
         self.integrateAB(self.Bx, self.Ax, self.calc_area_AB)
         self.integrateAB(self.Ax, self.Dx, self.calc_area_DA)
         self.integrateAB(self.Dx, self.Cx, self.calc_area_CD)
         self.integrateAB(self.Cx, self.Bx, self.calc_area_BC)
 #        print self.box.T
         self.box /= self.calc_area()
-    def integrateAB(self, Ax, Bx, calc_area):
+    def integrateAB(self, start, stop, calc_area):
         h = 0
-        if Ax < Bx: #positive contribution
-            P = ceil(Ax)
-            dP = P - Ax
-            if dP > 0:
-                A = calc_area(Ax, P)
+#        print start, stop, calc_area(start, stop)
+        if start < stop:  # positive contribution
+            P = ceil(start)
+            dP = P - start
+            if P > stop:  # start and stop are in the same unit
+                A = calc_area(start, stop)
+                sign = A / abs(A)
+                A = abs(A)
+                dA = A / (stop - start)  # always positive
                 h = 0
-                dA = dP
+                if sign < 0: print("Something is wrong")
                 while A > 0:
                     if dA > A:
                         dA = A
-                    self.box[int(P) - 1, h] += dA
+                    self.box[int(floor(start)), h] += sign * dA
                     A -= dA
                     h += 1
-            #subsection P1->Pn
-            for i in range(int(P), int(Bx)):
-                A = calc_area(i, i + 1)
+            else:
+                if dP > 0:
+                    A = calc_area(start, P)
+                    sign = A / abs(A)
+                    A = abs(A)
+                    h = 0
+                    dA = dP
+                    while A > 0:
+                        if dA > A:
+                            dA = A
+                        self.box[int(floor(P)) - 1, h] += sign * dA
+                        A -= dA
+                        h += 1
+                # subsection P1->Pn
+                for i in range(int(floor(P)), int(stop)):
+                    A = calc_area(i, i + 1)
+                    sign = A / abs(A)
+                    A = abs(A)
+                    h = 0
+                    dA = 1.0
+                    while A > 0:
+                        if dA > A:
+                            dA = A
+                        self.box[i , h] += sign * dA
+                        A -= dA
+                        h += 1
+                # Section Pn->B
+                P = floor(stop)
+                dP = stop - P
+                if dP > 0:
+                    A = calc_area(P, stop)
+                    sign = A / abs(A)
+                    A = abs(A)
+                    h = 0
+                    dA = dP
+                    while A > 0:
+                        if dA > A:
+                            dA = A
+                        self.box[int(floor(P)), h] += sign * dA
+                        A -= dA
+                        h += 1
+        elif    start > stop:  # negative contribution. Nota is start=stop: no contribution
+            P = floor(start)
+            if stop > P:  # start and stop are in the same unit
+                A = calc_area(start, stop)
+                sign = A / abs(A)
+                A = abs(A)
+                dA = A / (start - stop)  # always positive
                 h = 0
-                dA = 1.0
                 while A > 0:
                     if dA > A:
                         dA = A
-                    self.box[i , h] += dA
+                    self.box[int(floor(start)), h] += sign * dA
                     A -= dA
                     h += 1
-            #Section Pn->B
-            P = floor(Bx)
-            dP = Bx - P
-            if dP > 0:
-                A = calc_area(P, Bx)
-                h = 0
-                dA = dP
-                while A > 0:
-                    if dA > A:
-                        dA = A
-                    self.box[int(P), h] += dA
-                    A -= dA
-                    h += 1
-        elif    Ax > Bx: #negative contribution. Nota is Ax=Bx: no contribution
-            P = floor(Ax)
-            dP = P - Ax
-            if dP < 0:
-                A = calc_area(Ax, P)
-                h = 0
-                dA = dP
-                while A < 0:
-                    if dA < A:
-                        dA = A
-                    self.box[int(P) , h] += dA
-                    A -= dA
-                    h += 1
-            #subsection P1->Pn
-            for i in range(int(Ax), int(ceil(Bx)), -1):
-                A = calc_area(i, i - 1)
-                h = 0
-                dA = -1.0
-                print A
-                while A < 0:
-                    if dA < A:
-                        dA = A
-                    self.box[i - 1 , h] += dA
-                    A -= dA
-                    h += 1
-            #Section Pn->B
-            P = ceil(Bx)
-            dP = Bx - P
-            if dP < 0:
-                A = calc_area(P, Bx)
-                h = 0
-                dA = dP
-                while A < 0:
-                    if dA < A:
-                        dA = A
-                    self.box[int(Bx), h] += dA
-                    A -= dA
-                    h += 1
+            else:
+                dP = P - start
+                if dP < 0:
+                    A = calc_area(start, P)
+                    sign = A / abs(A)
+                    A = abs(A)
+                    h = 0
+                    dA = abs(dP)
+                    while A > 0:
+                        if dA > A:
+                            dA = A
+                        self.box[int(floor(P)) , h] += sign * dA
+                        A -= dA
+                        h += 1
+                #subsection P1->Pn
+                for i in range(int(start), int(ceil(stop)), -1):
+                    A = calc_area(i, i - 1)
+                    sign = A / abs(A)
+                    A = abs(A)
+                    h = 0
+                    dA = 1
+                    while A > 0:
+                        if dA > A:
+                            dA = A
+                        self.box[i - 1 , h] += sign * dA
+                        A -= dA
+                        h += 1
+                #Section Pn->B
+                P = ceil(stop)
+                dP = stop - P
+                if dP < 0:
+                    A = calc_area(P, stop)
+                    sign = A / abs(A)
+                    A = abs(A)
+                    h = 0
+                    dA = abs(dP)
+                    while A > 0:
+                        if dA > A:
+                            dA = A
+                        self.box[int(floor(stop)), h] += sign * dA
+                        A -= dA
+                        h += 1
 def test():
     Q = Quad((7.5, 6.5), (2.5, 5.5), (3.5, 1.5), (8.5, 1.5))
     Q.init_slope()
@@ -300,6 +375,18 @@ def test():
     Q.populate_box()
     print Q.box.T
     print Q.box.sum()
+
+    Q = Quad((8.5, 1.5), (3.5, 1.5), (2.5, 5.5), (7.5, 6.5))
+    Q.init_slope()
+    print Q.calc_area_AB(Q.Ax, Q.Bx)
+    print Q.calc_area_BC(Q.Bx, Q.Cx)
+    print Q.calc_area_CD(Q.Cx, Q.Dx)
+    print Q.calc_area_DA(Q.Dx, Q.Ax)
+    print Q.calc_area()
+    Q.populate_box()
+    print Q.box.T
+    print Q.box.sum()
+
     import fabio, numpy
     raw = numpy.arange(256 * 256)
     raw.shape = 256, 256
@@ -307,7 +394,13 @@ def test():
     print det, det.max_shape
     dis = Distortion(det)
     print dis
-#    print Q.calc_area_DA(7.5, 8.5)
+    lut = dis.calc_LUT_size()
+    print dis.lut_size
+    print lut.mean()
+    dis.calc_LUT()
+    import pylab
+    pylab.imshow(lut, interpolation="nearest")
+    pylab.show()
 
 if __name__ == "__main__":
     test()
