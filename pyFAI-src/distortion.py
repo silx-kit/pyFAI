@@ -23,6 +23,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from pyFAI.detectors import Detector
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
@@ -36,7 +37,7 @@ import types, os
 import numpy
 logger = logging.getLogger("pyFAI.distortion")
 from math import ceil, floor
-#from . import detectors
+from pyFAI import detectors
 
 class Distortion(object):
     """
@@ -56,6 +57,10 @@ class Distortion(object):
         else:
             self.shape = shape
         self.shape = tuple([int(i) for i in self.shape])
+
+    def __repr__(self):
+        return os.linesep.join(["Distortion correction for detector:",
+                                self.detector.__repr__()])
 
     def correct(self, img):
         """
@@ -286,6 +291,7 @@ class Quad(object):
                     h += 1
 def test():
     Q = Quad((7.5, 6.5), (2.5, 5.5), (3.5, 1.5), (8.5, 1.5))
+    Q.init_slope()
     print Q.calc_area_AB(Q.Ax, Q.Bx)
     print Q.calc_area_BC(Q.Bx, Q.Cx)
     print Q.calc_area_CD(Q.Cx, Q.Dx)
@@ -294,7 +300,13 @@ def test():
     Q.populate_box()
     print Q.box.T
     print Q.box.sum()
-
+    import fabio, numpy
+    raw = numpy.arange(256 * 256)
+    raw.shape = 256, 256
+    det = detectors.FReLoN("frelon_8_8.spline")
+    print det, det.max_shape
+    dis = Distortion(det)
+    print dis
 #    print Q.calc_area_DA(7.5, 8.5)
 
 if __name__ == "__main__":
