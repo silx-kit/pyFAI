@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/11/2011"
+__date__ = "15/02/2013"
 
 import os
 import time
@@ -70,6 +70,12 @@ def main():
     parser.add_option("-b", "--background", dest="background",
                       type="string", default=None,
                       help="name of the file containing the background")
+    parser.add_option("--error-model", dest="error_model",
+                      type="string", default=None,
+                      help="Error model to use. Currently on 'poisson' is implemented ")
+    parser.add_option("--unit", dest="unit",
+                      type="string", default="q_nm^-1",
+                      help="unit for the radial dimension: can be q_nm^-1, q_A^-1, 2th_deg, 2th_rad or r_mm")
 
     (options, args) = parser.parse_args()
     if len(args) != 1:
@@ -98,22 +104,27 @@ def main():
             fabioFile = fabio.open(oneFile)
             outFile = os.path.splitext(oneFile)[0] + ".dat"
             if fabioFile.nframes > 1:
-                integrator.saxs(data=fabioFile.data,
+                integrator.integrate1d(data=fabioFile.data,
                                 nbPt=min(fabioFile.data.shape),
                                 dummy=options.dummy,
                                 delta_dummy=options.delta_dummy,
                                 filename=outFile,
                                 mask=mask,
                                 variance=fabioFile.next().data,
-                                method="BBox")
+                                method="BBox",
+                                unit=options.unit,
+                                error_model=options.error_model
+                                )
             else:
-                integrator.saxs(data=fabioFile.data,
+                integrator.integrate1d(data=fabioFile.data,
                                 nbPt=min(fabioFile.data.shape),
                                 dummy=options.dummy,
                                 delta_dummy=options.delta_dummy,
                                 filename=outFile,
                                 mask=mask,
-                                method="BBox")
+                                method="BBox",
+                                unit=options.unit,
+                                error_model=options.error_model)
             t1 = time.time()
 
             print("Integration took %6.3fs %s --> %s" %
