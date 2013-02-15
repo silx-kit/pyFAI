@@ -33,7 +33,7 @@ __date__ = "22/01/2013"
 __status__ = "development"
 
 import logging, threading
-import types, os
+import types, os, sys
 import numpy
 logger = logging.getLogger("pyFAI.distortion")
 from math import ceil, floor
@@ -50,10 +50,10 @@ class Distortion(object):
         """
         if type(detector) in types.StringTypes:
             self.detector = detectors.detector_factory(detector)
-        else: #we assume it is a Detector instance
+        else:  # we assume it is a Detector instance
             self.detector = detector
         if "max_shape" in dir(self.detector):
-            self.shape =  self.detector.max_shape
+            self.shape = self.detector.max_shape
         else:
             self.shape = shape
         self.shape = tuple([int(i) for i in self.shape])
@@ -132,8 +132,13 @@ class Distortion(object):
                 # print self.pos[i, j, 0, :], self.pos[i, j, 1, :], self.pos[i, j, 2, :], self.pos[i, j, 3, :]
 #                print q
 #                print "area", q.calc_area()
-                q.populate_box()
-                print q.box
+                try:
+                    q.populate_box()
+                except:
+                    print "calc_area_vectorial", q.calc_area_vectorial()
+                    print self.pos[i, j, 0, :], self.pos[i, j, 1, :], self.pos[i, j, 2, :], self.pos[i, j, 3, :]
+                    raise
+
                 idx += 1
 #                return
 
@@ -219,17 +224,29 @@ class Quad(object):
             self.cCD = self.Cy - self.pCD * self.Cx
             self.cDA = self.Dy - self.pDA * self.Dx
 
-            self.box = numpy.zeros((self.box_size_x , self.box_size_y), dtype=numpy.float32)
+            self.box = numpy.zeros((self.box_size_x , self.box_size_y), dtype=numpy.float64)
 
 
     def calc_area_AB(self, I1x, I2x):
-        return 0.5 * (I2x - I1x) * (self.pAB * (I2x + I1x) + 2 * self.cAB)
+        if numpy.isfinite(self.pAB):
+            return 0.5 * (I2x - I1x) * (self.pAB * (I2x + I1x) + 2 * self.cAB)
+        else:
+            return 0
     def calc_area_BC(self, J1x, J2x):
-        return 0.5 * (J2x - J1x) * (self.pBC * (J1x + J2x) + 2 * self.cBC)
+        if numpy.isfinite(self.pBC):
+            return 0.5 * (J2x - J1x) * (self.pBC * (J1x + J2x) + 2 * self.cBC)
+        else:
+            return 0
     def calc_area_CD(self, K1x, K2x):
-        return 0.5 * (K2x - K1x) * (self.pCD * (K2x + K1x) + 2 * self.cCD)
+        if numpy.isfinite(self.pCD):
+            return 0.5 * (K2x - K1x) * (self.pCD * (K2x + K1x) + 2 * self.cCD)
+        else:
+            return 0
     def calc_area_DA(self, L1x, L2x):
-        return 0.5 * (L2x - L1x) * (self.pDA * (L1x + L2x) + 2 * self.cDA)
+        if numpy.isfinite(self.pDA):
+            return 0.5 * (L2x - L1x) * (self.pDA * (L1x + L2x) + 2 * self.cDA)
+        else:
+            return 0
     def calc_area(self):
         if self.area is None:
             if self.pAB is None:
@@ -239,6 +256,11 @@ class Quad(object):
                self.calc_area_CD(self.Cx, self.Dx) - \
                self.calc_area_DA(self.Dx, self.Ax)
         return self.area
+    def calc_area_vectorial(self):
+
+        return numpy.cross([self.Cx - self.Ax, self.Cy - self.Ay], [self.Dx - self.Bx, self.Dy - self.By]) / 2
+
+
     def populate_box(self):
         if self.pAB is None:
             self.init_slope()
@@ -246,124 +268,160 @@ class Quad(object):
         self.integrateAB(self.Ax, self.Dx, self.calc_area_DA)
         self.integrateAB(self.Dx, self.Cx, self.calc_area_CD)
         self.integrateAB(self.Cx, self.Bx, self.calc_area_BC)
-#        print self.box.T
-        self.box /= self.calc_area()
+        if (self.box / self.calc_area()).min() < 0:
+            print self.box
+            self.box = numpy.zeros_like(self.box)
+            print "AB"
+            self.integrateAB(self.Bx, self.Ax, self.calc_area_AB)
+            print self.box
+            self.box = numpy.zeros_like(self.box)
+            print "DA"
+            self.integrateAB(self.Ax, self.Dx, self.calc_area_DA)
+            print self.box
+            self.box = numpy.zeros_like(self.box)
+            print "CD"
+            self.integrateAB(self.Dx, self.Cx, self.calc_area_CD)
+            print self.box
+            self.box = numpy.zeros_like(self.box)
+            print "BC"
+            self.integrateAB(self.Cx, self.Bx, self.calc_area_BC)
+            print self.box
+            print self
+            raise RuntimeError()
+#        self.box /= self.calc_area()
     def integrateAB(self, start, stop, calc_area):
         h = 0
 #        print start, stop, calc_area(start, stop)
         if start < stop:  # positive contribution
             P = ceil(start)
             dP = P - start
+#            print "Integrate", start, P, stop, calc_area(start, stop)
             if P > stop:  # start and stop are in the same unit
                 A = calc_area(start, stop)
-                sign = A / abs(A)
-                A = abs(A)
-                dA = A / (stop - start)  # always positive
-                h = 0
-                if sign < 0: print("Something is wrong")
-                while A > 0:
-                    if dA > A:
-                        dA = A
-                    self.box[int(floor(start)), h] += sign * dA
-                    A -= dA
-                    h += 1
+                if A != 0:
+                    AA = abs(A)
+                    sign = A / AA
+                    dA = (stop - start)  # always positive
+#                    print AA, sign, dA
+                    h = 0
+                    while AA > 0:
+                        if dA > AA:
+                            dA = AA
+                            AA = -1
+                        self.box[int(floor(start)), h] += sign * dA
+                        AA -= dA
+                        h += 1
             else:
                 if dP > 0:
                     A = calc_area(start, P)
-                    sign = A / abs(A)
-                    A = abs(A)
-                    h = 0
-                    dA = dP
-                    while A > 0:
-                        if dA > A:
-                            dA = A
-                        self.box[int(floor(P)) - 1, h] += sign * dA
-                        A -= dA
-                        h += 1
+                    if A != 0:
+                        AA = abs(A)
+                        sign = A / AA
+                        h = 0
+                        dA = dP
+                        while AA > 0:
+                            if dA > AA:
+                                dA = AA
+                                AA = -1
+                            self.box[int(floor(P)) - 1, h] += sign * dA
+                            AA -= dA
+                            h += 1
                 # subsection P1->Pn
-                for i in range(int(floor(P)), int(stop)):
+                for i in range(int(floor(P)), int(floor(stop))):
                     A = calc_area(i, i + 1)
-                    sign = A / abs(A)
-                    A = abs(A)
-                    h = 0
-                    dA = 1.0
-                    while A > 0:
-                        if dA > A:
-                            dA = A
-                        self.box[i , h] += sign * dA
-                        A -= dA
-                        h += 1
+                    if A != 0:
+                        AA = abs(A)
+                        sign = A / AA
+
+                        h = 0
+                        dA = 1.0
+                        while AA > 0:
+                            if dA > AA:
+                                dA = AA
+                                AA = -1
+                            self.box[i , h] += sign * dA
+                            AA -= dA
+                            h += 1
                 # Section Pn->B
                 P = floor(stop)
                 dP = stop - P
                 if dP > 0:
                     A = calc_area(P, stop)
-                    sign = A / abs(A)
-                    A = abs(A)
-                    h = 0
-                    dA = dP
-                    while A > 0:
-                        if dA > A:
-                            dA = A
-                        self.box[int(floor(P)), h] += sign * dA
-                        A -= dA
-                        h += 1
+                    if A != 0:
+                        AA = abs(A)
+                        sign = A / AA
+                        h = 0
+                        dA = abs(dP)
+                        while AA > 0:
+                            if dA > AA:
+                                dA = AA
+                                AA = -1
+                            self.box[int(floor(P)), h] += sign * dA
+                            AA -= dA
+                            h += 1
         elif    start > stop:  # negative contribution. Nota is start=stop: no contribution
             P = floor(start)
             if stop > P:  # start and stop are in the same unit
                 A = calc_area(start, stop)
-                sign = A / abs(A)
-                A = abs(A)
-                dA = A / (start - stop)  # always positive
-                h = 0
-                while A > 0:
-                    if dA > A:
-                        dA = A
-                    self.box[int(floor(start)), h] += sign * dA
-                    A -= dA
-                    h += 1
+                if A != 0:
+                    AA = abs(A)
+                    sign = A / AA
+                    dA = (start - stop)  # always positive
+                    h = 0
+                    while AA > 0:
+                        if dA > AA:
+                            dA = AA
+                            AA = -1
+                        self.box[int(floor(start)), h] += sign * dA
+                        AA -= dA
+                        h += 1
             else:
                 dP = P - start
                 if dP < 0:
                     A = calc_area(start, P)
-                    sign = A / abs(A)
-                    A = abs(A)
-                    h = 0
-                    dA = abs(dP)
-                    while A > 0:
-                        if dA > A:
-                            dA = A
-                        self.box[int(floor(P)) , h] += sign * dA
-                        A -= dA
-                        h += 1
-                #subsection P1->Pn
+                    if A != 0:
+                        AA = abs(A)
+                        sign = A / AA
+                        h = 0
+                        dA = abs(dP)
+                        while AA > 0:
+                            if dA > AA:
+                                dA = AA
+                                AA = -1
+                            self.box[int(floor(P)) , h] += sign * dA
+                            AA -= dA
+                            h += 1
+                # subsection P1->Pn
                 for i in range(int(start), int(ceil(stop)), -1):
                     A = calc_area(i, i - 1)
-                    sign = A / abs(A)
-                    A = abs(A)
-                    h = 0
-                    dA = 1
-                    while A > 0:
-                        if dA > A:
-                            dA = A
-                        self.box[i - 1 , h] += sign * dA
-                        A -= dA
-                        h += 1
-                #Section Pn->B
+                    if A != 0:
+                        AA = abs(A)
+                        sign = A / AA
+                        h = 0
+                        dA = 1
+                        while AA > 0:
+                            if dA > AA:
+                                dA = AA
+                                AA = -1
+                            self.box[i - 1 , h] += sign * dA
+                            AA -= dA
+                            h += 1
+                # Section Pn->B
                 P = ceil(stop)
                 dP = stop - P
                 if dP < 0:
                     A = calc_area(P, stop)
-                    sign = A / abs(A)
-                    A = abs(A)
-                    h = 0
-                    dA = abs(dP)
-                    while A > 0:
-                        if dA > A:
-                            dA = A
-                        self.box[int(floor(stop)), h] += sign * dA
-                        A -= dA
-                        h += 1
+                    if A != 0:
+                        AA = abs(A)
+                        sign = A / AA
+                        h = 0
+                        dA = abs(dP)
+                        while AA > 0:
+                            if dA > AA:
+                                dA = AA; AA = -1
+                            self.box[int(floor(stop)), h] += sign * dA
+                            AA -= dA
+                            h += 1
 def test():
     Q = Quad((7.5, 6.5), (2.5, 5.5), (3.5, 1.5), (8.5, 1.5))
     Q.init_slope()
@@ -376,6 +434,8 @@ def test():
     print Q.box.T
     print Q.box.sum()
 
+    print("#"*50)
+
     Q = Quad((8.5, 1.5), (3.5, 1.5), (2.5, 5.5), (7.5, 6.5))
     Q.init_slope()
     print Q.calc_area_AB(Q.Ax, Q.Bx)
@@ -386,6 +446,22 @@ def test():
     Q.populate_box()
     print Q.box.T
     print Q.box.sum()
+
+    Q = Quad((0.9, 0.9), (0.8, 6.9), (4.3, 3.9), (4.3, 0.9))
+#    Q = Quad((-0.3, 1.9), (-0.4, 2.9), (1.3, 2.9), (1.3, 1.9))
+    Q.init_slope()
+    print "calc_area_vectorial", Q.calc_area_vectorial()
+    print Q.Ax, Q.Ay, Q.Bx, Q.By, Q.Cx, Q.Cy, Q.Dx, Q.Dy
+    print "Slope", Q.pAB, Q.pBC, Q.pCD, Q.pDA
+    print Q.calc_area_AB(Q.Ax, Q.Bx), Q.calc_area_BC(Q.Bx, Q.Cx), Q.calc_area_CD(Q.Cx, Q.Dx), Q.calc_area_DA(Q.Dx, Q.Ax)
+    print Q.calc_area()
+    Q.populate_box()
+    print Q.box.T
+    print Q.box.sum()
+    print Q.calc_area_vectorial()
+#    sys.exit()
+
+    print("#"*50)
 
     import fabio, numpy
     raw = numpy.arange(256 * 256)
