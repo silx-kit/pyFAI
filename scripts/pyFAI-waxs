@@ -100,7 +100,7 @@ def main():
         if options.wavelength:
             integrator.wavelength = options.wavelength*1e-10
         elif options.energy:
-            integrator.wavelength = hc/options.energy*1e-10
+            integrator.wavelength = hc / options.energy*1e-10
         if options.mask and os.path.exists(options.mask):  # override with the command line mask
             integrator.maskfile = options.mask
         if options.dark and os.path.exists(options.dark):  # set dark current

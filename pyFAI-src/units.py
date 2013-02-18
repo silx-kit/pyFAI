@@ -35,7 +35,7 @@ import logging
 logger = logging.getLogger("pyFAI.unit")
 from numpy import pi
 import types
-hc = 12.398
+hc = 12.398419292004204
 
 class Enum(dict):
     """
