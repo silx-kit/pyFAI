@@ -52,11 +52,11 @@ from .geometryRefinement import GeometryRefinement
 from .peakPicker import PeakPicker, Massif
 from .utils import averageImages, timeit, measure_offset
 from .azimuthalIntegrator import AzimuthalIntegrator
+from .units import hc
 from  matplotlib.path import Path
 import matplotlib.path as mpath
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-hc = 12.398
 
 matplotlib.interactive(True)
 
@@ -371,6 +371,7 @@ decrease the value if arcs are mixed together.""", default=None)
         if self.geoRef is None:
             self.refine()
         self.geoRef.save(self.basename + ".poni")
+        self.geoRef.mask = self.mask
         self.geoRef.del_ttha()
         self.geoRef.del_dssa()
         self.geoRef.del_chia()
@@ -389,9 +390,9 @@ decrease the value if arcs are mixed together.""", default=None)
         fig4 = pylab.plt.figure()
         xrpd2 = fig4.add_subplot(111)
         t3 = time.time()
-        a, b = self.geoRef.xrpd(self.peakPicker.data, 1024, self.basename + ".xy", mask=self.mask)
+        a, b = self.geoRef.xrpd(self.peakPicker.data, 1024, self.basename + ".xy")
         t4 = time.time()
-        img = self.geoRef.xrpd2(self.peakPicker.data, 400, 360, self.basename + ".azim", mask=self.mask)[0]
+        img = self.geoRef.xrpd2(self.peakPicker.data, 400, 360, self.basename + ".azim")[0]
         t5 = time.time()
         print ("Timings:\n two theta array generation %.3fs\n diff Solid Angle  %.3fs\n\
      chi array generation %.3fs\n\
@@ -813,6 +814,7 @@ class Recalibration(object):
         self.peakPicker.points.setWavelength_change2th(self.geoRef.wavelength)
         self.peakPicker.points.save(self.basename + ".npt")
         self.geoRef.save(self.basename + ".poni")
+        self.geoRef.mask = self.mask
         self.geoRef.del_ttha()
         self.geoRef.del_dssa()
         self.geoRef.del_chia()
@@ -831,9 +833,9 @@ class Recalibration(object):
             fig4 = pylab.plt.figure()
             xrpd2 = fig4.add_subplot(111)
         t3 = time.time()
-        a, b = self.geoRef.xrpd(self.peakPicker.data, 1024, self.basename + ".xy", mask=self.mask)
+        a, b = self.geoRef.xrpd(self.peakPicker.data, 1024, self.basename + ".xy")
         t4 = time.time()
-        img = self.geoRef.xrpd2(self.peakPicker.data, 400, 360, self.basename + ".azim", mask=self.mask)[0]
+        img = self.geoRef.xrpd2(self.peakPicker.data, 400, 360, self.basename + ".azim")[0]
         t5 = time.time()
         print ("Timings:\n two theta array generation %.3fs\n diff Solid Angle  %.3fs\n\
      chi array generation %.3fs\n\
