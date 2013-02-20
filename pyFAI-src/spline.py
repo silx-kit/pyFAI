@@ -599,6 +599,23 @@ class Spline:
         self.yDispArray = None
 
 
+    def correct(self, pos):
+        delta1 = fitpack.bisplev(pos[1], pos[0],
+                                        [self.xSplineKnotsX,
+                                         self.xSplineKnotsY,
+                                         self.xSplineCoeff,
+                                         self.splineOrder,
+                                         self.splineOrder],
+                                 dx=0, dy=0)
+
+        delta0 = fitpack.bisplev(pos[1], pos[0], [self.ySplineKnotsX,
+                                         self.ySplineKnotsY,
+                                         self.ySplineCoeff,
+                                         self.splineOrder,
+                                         self.splineOrder],
+                                 dx=0, dy=0)
+        return delta0 + pos[0], delta1 + pos[1]
+
 def main():
     """
     Some tests ....

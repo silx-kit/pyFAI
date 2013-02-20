@@ -38,6 +38,8 @@ logger = logging.getLogger("pyFAI.distortion")
 from math import ceil, floor
 from pyFAI import detectors, ocl_azim_lut
 from pyFAI.utils import timeit
+import fabio
+
 class Distortion(object):
     """
     This class applies a distortion correction on an image.
@@ -121,10 +123,13 @@ class Distortion(object):
                 if self.lut_size is None:
                     self.calc_LUT_size()
         lut = numpy.recarray(shape=(self.shape[0] , self.shape[1], self.lut_size), dtype=[("idx", numpy.uint32), ("coef", numpy.float32)])
+        lut[:, :, :].idx = 0
+        lut[:, :, :].coef = 0.0
+        print "LUT shape", lut.shape
         outMax = numpy.zeros(self.shape, dtype=numpy.uint32)
         idx = 0
         buffer = numpy.empty((self.delta0, self.delta1))
-        print buffer.shape
+        print "Buffer shape: ", buffer.shape
         quad = Quad(buffer)
         for i in range(self.shape[0]):
             for j in range(self.shape[1]):
@@ -133,9 +138,11 @@ class Distortion(object):
                 # print self.pos[i, j, 0, :], self.pos[i, j, 1, :], self.pos[i, j, 2, :], self.pos[i, j, 3, :]
                 try:
                     quad.populate_box()
-                except:
+                except Exception as error:
+                    print "error in quad.populate_box of pixel %i, %i: %s" % (i, j, error)
                     print "calc_area_vectorial", quad.calc_area_vectorial()
                     print self.pos[i, j, 0, :], self.pos[i, j, 1, :], self.pos[i, j, 2, :], self.pos[i, j, 3, :]
+                    print quad
                 for ms in range(quad.box_size0):
                     ml = ms + quad.offset0
                     if ml < 0 or ml >= self.shape[0]:
@@ -150,24 +157,31 @@ class Distortion(object):
                         lut[ml, nl, k].coef = quad.box[ms, ns]
                         outMax[ml, nl] = k + 1
                 idx += 1
-#                return
         lut.shape = self.shape[0] * self.shape[1], self.lut_size
         self.LUT = lut
+
     @timeit
     def correct(self, image):
         """
         @param image: 2D-array with the image
         """
-#        if self.integrator is None:
-#            self.integrator = ocl_azim_lut.OCL_LUT_Integrator(self.LUT, self.shape[0] * self.shape[1])
-#        out = self.integrator.integrate(image)
-        out = numpy.zeros(self.shape)
-        lout = out.ravel()
-        lin = image.ravel()
-        for i in range(self.LUT.shape[0]):
-            for j in self.LUT[i]:
-                lout[i] += lin[j.idx] * j.coef
-        return out
+        if self.integrator is None:
+            self.integrator = ocl_azim_lut.OCL_LUT_Integrator(self.LUT, self.shape[0] * self.shape[1])
+        out = self.integrator.integrate(image)
+        out[0].shape = self.shape
+        out[1].shape = self.shape
+        out[2].shape = self.shape
+        fabio.edfimage.edfimage(data=out[0]).write("out0.edf")
+        fabio.edfimage.edfimage(data=out[1]).write("out1.edf")
+        fabio.edfimage.edfimage(data=out[2]).write("out2.edf")
+        mask = (out[2] == 0)
+#        out = numpy.zeros(self.shape)
+#        lout = out.ravel()
+#        lin = image.ravel()
+#        for i in range(self.LUT.shape[0]):
+#            for j in self.LUT[i]:
+#                lout[i] += lin[j.idx] * j.coef
+        return out[1]
 
 class Quad(object):
     """
@@ -513,6 +527,9 @@ def test():
     import fabio, numpy
     raw = numpy.arange(256 * 256)
     raw.shape = 256, 256
+    x, y = numpy.ogrid[:256, :256]
+    dots = numpy.logical_and(x % 10 == 0, y % 10 == 0)
+    grid = numpy.logical_or(x % 10 == 0, y % 10 == 0)
     det = detectors.FReLoN("frelon_8_8.spline")
     print det, det.max_shape
     dis = Distortion(det)
@@ -522,7 +539,7 @@ def test():
     print lut.mean()
 
     dis.calc_LUT()
-    out = dis.correct(raw)
+    out = dis.correct(grid)
     fabio.edfimage.edfimage(data=out.astype("float32")).write("test256.edf")
     import pylab
     pylab.imshow(out, interpolation="nearest")
