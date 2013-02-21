@@ -176,17 +176,18 @@ class GeometryRefinement(AzimuthalIntegrator):
         return self.tth(d1, d2, param) - self.calc_2th(rings, param[6] * 1e-10)
 
 
-    def residu2(self, param, d1, d2, rings, weight=None):
-        if weight:
-            return ((numpy.maximum(0, weight) * self.residu1(param, d1, d2, rings)) ** 2).sum()
-        else:
-            return (self.residu1(param, d1, d2, rings) ** 2).sum()
+    def residu2(self, param, d1, d2, rings):
+        return (self.residu1(param, d1, d2, rings) ** 2).sum()
 
-    def residu2_wavelength(self, param, d1, d2, rings, weight=None):
-        if weight:
-            return ((numpy.maximum(0, weight) * self.residu1_wavelength(param, d1, d2, rings)) ** 2).sum()
-        else:
-            return (self.residu1_wavelength(param, d1, d2, rings) ** 2).sum()
+    def residu2_weighted(self, param, d1, d2, rings, weight):
+        return (weight * self.residu1(param, d1, d2, rings) ** 2).sum()
+
+    def residu2_wavelength(self, param, d1, d2, rings):
+        return (self.residu1_wavelength(param, d1, d2, rings) ** 2).sum()
+
+    def residu2_wavelength_weighted(self, param, d1, d2, rings, weight):
+        return (weight * self.residu1_wavelength(param, d1, d2, rings) ** 2).sum()
+
 
     def refine1(self):
         self.param = numpy.array([self._dist, self._poni1, self._poni2,
@@ -229,12 +230,18 @@ class GeometryRefinement(AzimuthalIntegrator):
            pos1 = self.data[:, 1]
            ring = self.data[:, 2].astype(numpy.int32)
            weight = None
+           newParam = fmin_slsqp(self.residu2, self.param, iter=maxiter,
+                              args=(pos0, pos1, ring),
+                              bounds=bounds,
+                              acc=1.0e-12,
+                              iprint=(logger.getEffectiveLevel() <= logging.INFO))
+
         elif self.data.shape[-1] == 4:
            pos0 = self.data[:, 0]
            pos1 = self.data[:, 1]
            ring = self.data[:, 2].astype(numpy.int32)
            weight = self.data[:, 3]
-        newParam = fmin_slsqp(self.residu2, self.param, iter=maxiter,
+           newParam = fmin_slsqp(self.residu2_weighted, self.param, iter=maxiter,
                               args=(pos0, pos1, ring, weight),
                               bounds=bounds,
                               acc=1.0e-12,
@@ -279,17 +286,24 @@ class GeometryRefinement(AzimuthalIntegrator):
            pos1 = self.data[:, 1]
            ring = self.data[:, 2].astype(numpy.int32)
            weight = None
+           newParam = fmin_slsqp(self.residu2_wavelength,
+                                 self.param, iter=maxiter,
+                                 args=(pos0, pos1, ring),
+                                 bounds=bounds,
+                                 acc=1.0e-12,
+                                 iprint=(logger.getEffectiveLevel() <= logging.INFO))
+
         elif self.data.shape[-1] == 4:
            pos0 = self.data[:, 0]
            pos1 = self.data[:, 1]
            ring = self.data[:, 2].astype(numpy.int32)
            weight = self.data[:, 3]
-
-        newParam = fmin_slsqp(self.residu2_wavelength, self.param, iter=maxiter,
-                              args=(pos0, pos1, ring, weight),
-                              bounds=bounds,
-                              acc=1.0e-12,
-                              iprint=(logger.getEffectiveLevel() <= logging.INFO))
+           newParam = fmin_slsqp(self.residu2_wavelength_weighted,
+                                 self.param, iter=maxiter,
+                                 args=(pos0, pos1, ring, weight),
+                                 bounds=bounds,
+                                 acc=1.0e-12,
+                                 iprint=(logger.getEffectiveLevel() <= logging.INFO))
         oldDeltaSq = self.chi2_wavelength()
         newDeltaSq = self.chi2_wavelength(newParam)
         logger.info("Constrained Least square %s --> %s",

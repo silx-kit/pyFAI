@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/12/2011"
+__date__ = "07/02/2013"
 __status__ = "development"
 
 import os, sys, threading, logging, gc, types
@@ -36,13 +36,12 @@ from math                   import ceil, sqrt, pi
 import numpy
 from scipy.optimize         import fmin
 from scipy.ndimage.filters  import median_filter
-from scipy.ndimage          import label  # , binary_closing, binary_opening, binary_erosion #,binary_propagation
-# import matplotlib
+from scipy.ndimage          import label
 import pylab
 import fabio
-from .utils                  import relabel, gaussian_filter, binning, unBinning
+from . import utils
 from . import bilinear
-from reconstruct            import reconstruct
+from .reconstruct            import reconstruct
 logger = logging.getLogger("pyFAI.peakPicker")
 if os.name != "nt":
     WindowsError = RuntimeError
@@ -153,14 +152,18 @@ class PeakPicker(object):
             self.fig.show()
             sys.stdout.flush()
         elif event.button == 2:  # center click
-            a = self.points.pop()
+            poped_points = self.points.pop()
 #            for i in a:
             if len(self.ax.texts) > 0:
                 self.ax.texts.pop()
             if len(self.ax.lines) > 0:
                 self.ax.lines.pop()
             self.fig.show()
-            logging.info("Removing point group #%i (%5.1f %5.1f) containing %i subpoints" % (len(self.points), a[0][0], a[0][1], len(a)))
+            if poped_points is None:
+                logging.info("Removing No group point (non existing?)")
+            else:
+                logging.info("Removing point group #%i (%5.1f %5.1f) containing %i subpoints" % (len(self.points), poped_points[0][0], poped_points[0][1], len(poped_points)))
+
             sys.stdout.flush()
         self._sem.release()
 
@@ -199,7 +202,7 @@ class PeakPicker(object):
         if filename is not None:
             self.points.save(filename)
 #        self.lstPoints = self.points.getList()
-        return self.points.getListRing(self.data)
+        return self.points.getWeightedList(self.data)
 
 
     def contour(self, data):
@@ -364,12 +367,16 @@ class ControlPoints(object):
         out = None
         if idx is None:
             with self._sem:
-                self._angles.pop()
-                out = self._points.pop()
+                if self._angles:
+                    self._angles.pop()
+                    self._ring.pop()
+                    out = self._points.pop()
         else:
             with self._sem:
-                self._angles.pop(idx)
-                out = self._points.pop(idx)
+                if idx <= len(self._angles):
+                    self._angles.pop(idx)
+                    self._ring.pop()
+                    out = self._points.pop(idx)
         return out
 
     def save(self, filename):
@@ -502,7 +509,7 @@ class ControlPoints(object):
 
     def getListRing(self):
         """
-        Retrieve the list of control points suitable for geometry refinement with ring number 
+        Retrieve the list of control points suitable for geometry refinement with ring number
         """
         lstOut = []
         for ring, points in zip(self._ring, self._points):
@@ -513,7 +520,7 @@ class ControlPoints(object):
     def getWeightedList(self, image):
         """
         Retrieve the list of control points suitable for geometry refinement with ring number and intensities
-        @param image: 
+        @param image:
         @return: a (x,4) array with pos0, pos1, ring nr and intensity
         """
         lstOut = []
@@ -565,7 +572,7 @@ class ControlPoints(object):
                     if ring >= 0 and ring < len(self.dSpacing):
                         lastRing = ring
                         self._ring[idx] = ring
-                        print ring, self.dSpacing[ring]
+#                        print ring, self.dSpacing[ring]
                         self._angles[idx] = 2.0 * numpy.arcsin(5e9 * self.wavelength / self.dSpacing[ring])
                         bOk = True
 
@@ -774,7 +781,7 @@ class Massif(object):
                                 self.binning.append(1)
 #                    self.binning = max([max(1, i // TARGET_SIZE) for i in self.data.shape])
                     logger.info("Binning size is %s", self.binning)
-                    self._binned_data = binning(self.data, self.binning)
+                    self._binned_data = utils.binning(self.data, self.binning)
         return self._binned_data
 
     def getMedianData(self):
@@ -791,7 +798,7 @@ class Massif(object):
             with self._sem:
                 if self._blured_data is None:
                     logger.debug("Blurring image with kernel size: %s" , self.valley_size)
-                    self._blured_data = gaussian_filter(self.getBinnedData(), [self.valley_size / i for i in  self.binning], mode="reflect")
+                    self._blured_data = utils.gaussian_filter(self.getBinnedData(), [self.valley_size / i for i in  self.binning], mode="reflect")
                     if logger.getEffectiveLevel() == logging.DEBUG:
                         fabio.edfimage.edfimage(data=self._blured_data).write("blured_data.edf")
         return self._blured_data
@@ -807,10 +814,10 @@ class Massif(object):
                     logger.info("Labeling found %s massifs." % self._number_massif)
                     if logger.getEffectiveLevel() == logging.DEBUG:
                         fabio.edfimage.edfimage(data=labeled_massif).write("labeled_massif_small.edf")
-                    relabeled = relabel(labeled_massif, self.getBinnedData(), self.getBluredData())
+                    relabeled = utils.relabel(labeled_massif, self.getBinnedData(), self.getBluredData())
                     if logger.getEffectiveLevel() == logging.DEBUG:
                             fabio.edfimage.edfimage(data=relabeled).write("relabeled_massif_small.edf")
-                    self._labeled_massif = unBinning(relabeled, self.binning)
+                    self._labeled_massif = utils.unBinning(relabeled, self.binning)
                     if logger.getEffectiveLevel() == logging.DEBUG:
                         fabio.edfimage.edfimage(data=self._labeled_massif).write("labeled_massif.edf")
                     logger.info("Labeling found %s massifs." % self._number_massif)

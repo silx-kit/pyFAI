@@ -155,7 +155,7 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
         self.new_curve(results, label)
         gc.collect()
 
-    def bench_cpu1d_ocl_lut(self, devicetype="all", platformid=None, deviceid=None):
+    def bench_cpu1d_ocl_lut(self, devicetype="ALL", platformid=None, deviceid=None):
         if (ocl is None):
             print("No pyopencl")
             return
@@ -179,8 +179,8 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
             t0 = time.time()
             try:
                 res = ai.xrpd_LUT_OCL(data, N, devicetype=devicetype, platformid=platformid, deviceid=deviceid)
-            except MemoryError:
-                print("Not enough memory")
+            except MemoryError as error:
+                print(error)
                 break
             t1 = time.time()
             self.print_init(t1 - t0)
@@ -282,7 +282,7 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut")""" % (param, fn, N[0
         self.results[label] = results
         self.new_curve(results, label)
 
-    def bench_cpu2d_lut_ocl(self, devicetype="GPU", platformid=None, deviceid=None):
+    def bench_cpu2d_lut_ocl(self, devicetype="ALL", platformid=None, deviceid=None):
         if (ocl is None):
             print("No pyopencl")
             return
@@ -302,7 +302,11 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut")""" % (param, fn, N[0
             N = (500, 360)
             print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), size / 1e6, N))
             t0 = time.time()
-            _ = ai.integrate2d(data, N[0], N[1], unit="2th_deg", method="lut_ocl")
+            try:
+                _ = ai.integrate2d(data, N[0], N[1], unit="2th_deg", method="lut_ocl_%i,%i" % (platformid, deviceid))
+            except MemoryError as error:
+                print(error)
+                break
             t1 = time.time()
             self.print_init(t1 - t0)
             print("Size of the LUT: %.3fMByte" % (ai._lut_integrator.lut.nbytes / 1e6))
@@ -313,8 +317,8 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut")""" % (param, fn, N[0
 import pyFAI,fabio
 ai=pyFAI.load(r"%s")
 data = fabio.open(r"%s").data
-out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut_ocl")""" % (param, fn, N[0], N[1])
-            t = timeit.Timer("out=ai.integrate2d(data,%s,%s,unit='2th_deg', method='lut')" % N, setup)
+out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut_ocl_%i,%i")""" % (param, fn, N[0], N[1], platformid, deviceid)
+            t = timeit.Timer("out=ai.integrate2d(data,%s,%s,unit='2th_deg', method='lut_ocl')" % N, setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
             del t
 
@@ -457,7 +461,8 @@ if __name__ == "__main__":
     b.init_curve()
     b.bench_cpu1d()
     b.bench_cpu1d_lut()
-    b.bench_cpu1d_ocl_lut("ALL")
+    b.bench_cpu1d_ocl_lut("GPU")
+    b.bench_cpu1d_ocl_lut("CPU")
 #    b.bench_cpu1d_ocl_lut("CPU")
 #    b.bench_gpu1d("gpu", True)
 #    b.bench_gpu1d("gpu", False)
@@ -465,7 +470,8 @@ if __name__ == "__main__":
 #    b.bench_gpu1d("cpu", False)
     b.bench_cpu2d()
     b.bench_cpu2d_lut()
-    b.bench_cpu2d_lut_ocl("ALL")
+    b.bench_cpu2d_lut_ocl("GPU")
+    b.bench_cpu2d_lut_ocl("CPU")
 
 #    b.bench_cpu2d_lut()
 #    b.bench_cpu2d_lut_ocl()

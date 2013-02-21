@@ -2,6 +2,7 @@ graft doc
 recursive-include openCL *.cl
 recursive-include src  *.c *.h *.pyx *.pxd
 recursive-include benchmark *.py *.spline *.poni
+recursive-include pyFAI-src *.py 
 include stdeb.cfg
 include setup.cfg
 include MANIFEST.in
@@ -28,3 +29,12 @@ include test/testSaxs.py
 include test/test_all.py
 include test/test_ocl_lut.py
 include test/utilstest.py
+include scripts/diff_tomo
+include scripts/drawMask_pymca
+include scripts/pyFAI-calib
+include scripts/pyFAI-recalib
+include scripts/pyFAI-saxs
+include scripts/pyFAI-waxs
+include scripts/check_calib
+include scripts/diff_tomo
+
