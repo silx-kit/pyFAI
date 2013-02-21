@@ -32,6 +32,7 @@ doc/source/conf.py
 doc/source/index.rst
 doc/source/api/modules.rst
 doc/source/api/pyFAI.rst
+gui/integration.ui
 openCL/ocl_azim_LUT.cl
 openCL/ocl_azim_kernel2d_2.cl
 openCL/ocl_azim_kernel_2.cl
@@ -39,6 +40,7 @@ pyFAI-src/__init__.py
 pyFAI-src/azimuthalIntegrator.py
 pyFAI-src/calibration.py
 pyFAI-src/detectors.py
+pyFAI-src/distortion.py
 pyFAI-src/geometry.py
 pyFAI-src/geometryRefinement.py
 pyFAI-src/ocl_azim.py
@@ -49,16 +51,21 @@ pyFAI-src/refinment2D.py
 pyFAI-src/spline.py
 pyFAI-src/units.py
 pyFAI-src/utils.py
+scripts/check_calib
 scripts/diff_tomo
 scripts/drawMask_pymca
 scripts/integrate_exp.py
 scripts/pyFAI-calib
+scripts/pyFAI-integrate
 scripts/pyFAI-recalib
 scripts/pyFAI-saxs
 scripts/pyFAI-waxs
-scripts/check_calib
 scripts/refine_wavelength.py
 scripts/saxs_integrate_exp.py
+scripts/utils.py
+src/Copy of splitPixel.pyx
+src/_distortion.c
+src/_distortion.pyx
 src/_geometry.c
 src/_geometry.pyx
 src/bilinear.c
@@ -90,6 +97,7 @@ test/__init__.py
 test/example.sp
 test/moke.poni
 test/testAzimuthalIntegrator.py
+test/testBilinear.py
 test/testExport.py
 test/testGeometry.py
 test/testGeometryRefinement.py
@@ -100,5 +108,6 @@ test/testOpenCL.py
 test/testPeakPicking.py
 test/testSaxs.py
 test/test_all.py
+test/test_bilinear.py
 test/test_ocl_lut.py
 test/utilstest.py

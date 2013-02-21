@@ -206,7 +206,8 @@ else:
 
 
 data_files += [(installDir, [os.path.join('openCL', o) for o in [
-      "ocl_azim_kernel_2.cl", "ocl_azim_kernel2d_2.cl", "ocl_azim_LUT.cl"]])]
+      "ocl_azim_kernel_2.cl", "ocl_azim_kernel2d_2.cl", "ocl_azim_LUT.cl"]] +
+                [os.path.join('gui', o) for o in ("integration.ui",)])]
 
 version = [eval(l.split("=")[1]) for l in open(os.path.join(os.path.dirname(
     os.path.abspath(__file__)), "pyFAI-src", "__init__.py"))

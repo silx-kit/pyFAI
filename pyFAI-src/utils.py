@@ -43,7 +43,7 @@ import fabio
 from scipy import ndimage
 from scipy.interpolate import interp1d
 from math import  ceil
-import relabel as relabelCython
+from . import relabel as relabelCython
 from scipy.optimize.optimize import fmin, fminbound
 import scipy.ndimage.filters
 logger = logging.getLogger("pyFAI.utils")
