@@ -110,7 +110,24 @@ cdef class Quad:
         self.has_slope = 0
 
     def __repr__(self):
-        return os.linesep.join(["offset %i,%i size %i, %i" % (self.offset0, self.offset1, self.box_size0, self.box_size1), "box: %s" % self.box[:self.box_size0, :self.box_size1]])
+        res = ["offset %i,%i size %i, %i" % (self.offset0, self.offset1, self.box_size0, self.box_size1), "box:"]
+        for i in range(self.box_size0):
+            line=""
+            for j in range(self.box_size1):
+                line+="\t%.3f"%self.box[i,j]
+            res.append(line)
+        return os.linesep.join(res)
+
+    cpdef double get_box(self, int i, int j):
+        return self.box[i,j]
+    cpdef int get_offset0(self):
+        return self.offset0
+    cpdef int  get_offset1(self):
+        return self.offset1
+    cpdef int  get_box_size0(self):
+        return self.box_size0
+    cpdef int  get_box_size1(self):
+        return self.box_size1
 
     cpdef init_slope(self):
         if not self.has_slope:
@@ -172,7 +189,7 @@ cdef class Quad:
     def populate_box(self):
         cdef int i0, i1
         cdef double area,value
-        if self.pAB is None:
+        if not self.has_slope:
             self.init_slope()
         self.integrateAB(self.B0, self.A0, self.calc_area_AB)
         self.integrateAB(self.A0, self.D0, self.calc_area_DA)
