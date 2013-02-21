@@ -97,9 +97,9 @@ class Distortion(object):
         the physical location of pixels should go from:
         [-17.48634 : 1027.0543, -22.768829 : 2028.3689]
         We chose to discard pixels falling outside the [0:1025,0:2048] range with a lose of intensity
-        
+
         TODO: if done with Cython, avoid working with pos: pos_corners is enough
-        
+
         """
         if self.pos is None:
             pos = self.calc_pos()
@@ -107,8 +107,8 @@ class Distortion(object):
             pos = self.pos
         pos0min = numpy.maximum(numpy.floor(pos[:, :, :, 0].min(axis= -1)).astype(numpy.int32), 0)
         pos1min = numpy.maximum(numpy.floor(pos[:, :, :, 1].min(axis= -1)).astype(numpy.int32), 0)
-        pos0max = numpy.minimum(numpy.ceil(pos[:, :, :, 0].max(axis= -1)).astype(numpy.int32) , self.shape[0])
-        pos1max = numpy.minimum(numpy.ceil(pos[:, :, :, 1].max(axis= -1)).astype(numpy.int32) , self.shape[1])
+        pos0max = numpy.minimum(numpy.ceil(pos[:, :, :, 0].max(axis= -1)).astype(numpy.int32) + 1, self.shape[0])
+        pos1max = numpy.minimum(numpy.ceil(pos[:, :, :, 1].max(axis= -1)).astype(numpy.int32) + 1, self.shape[1])
         lut_size = numpy.zeros(self.shape, dtype=numpy.int32)
         for i in range(self.shape[0]):
             for j in range(self.shape[1]):
@@ -170,7 +170,7 @@ class Distortion(object):
     def correct(self, image):
         """
         Correct an image based on the look-up table calculated ...
-        
+
         @param image: 2D-array with the image
         @return: corrected 2D image
         """
@@ -200,9 +200,9 @@ class Distortion(object):
     def uncorrect(self, image):
         """
         Take an image which has been corrected and transform it into it's raw (with loose of information)
-        
+
         @param image: 2D-array with the image
-        @return: uncorrected 2D image and a mask (pixels in raw image 
+        @return: uncorrected 2D image and a mask (pixels in raw image
         """
         if self.LUT is None:
             with self._sem:
@@ -222,8 +222,8 @@ class Distortion(object):
             val = lin[idx]/t
             lout[self.LUT[idx].idx] += val * self.LUT[idx].coef
 #            lout[]
-            
-            
+
+
         return out, mask
 
 
