@@ -35,6 +35,7 @@ import logging, threading
 import types, os, sys
 import numpy
 logger = logging.getLogger("pyFAI.distortion")
+logging.basicConfig(level=logging.INFO)
 from math import ceil, floor
 from pyFAI import detectors, ocl_azim_lut
 from pyFAI.utils import timeit
@@ -565,7 +566,7 @@ else:
 
 def test():
     import numpy
-    buffer = numpy.empty((20, 20))
+    buffer = numpy.empty((20, 20), dtype=numpy.float32)
     Q = Quad(buffer)
     Q.reinit(7.5, 6.5, 2.5, 5.5, 3.5, 1.5, 8.5, 1.5)
     Q.init_slope()
@@ -608,12 +609,20 @@ def test():
     print("#"*50)
 
     import fabio, numpy
-    raw = numpy.arange(256 * 256)
-    raw.shape = 256, 256
-    x, y = numpy.ogrid[:256, :256]
-    dots = numpy.logical_and(x % 10 == 0, y % 10 == 0)
-    grid = numpy.logical_or(x % 10 == 0, y % 10 == 0)
-    det = detectors.FReLoN("frelon_8_8.spline")
+#    workin on 256x256
+#    x, y = numpy.ogrid[:256, :256]
+#    grid = numpy.logical_or(x % 10 == 0, y % 10 == 0) + numpy.ones((256, 256), numpy.float32)
+#    det = detectors.FReLoN("frelon_8_8.spline")
+
+#    # working with halfccd spline
+    x, y = numpy.ogrid[:1024, :2048]
+    grid = numpy.logical_or(x % 100 == 0, y % 100 == 0) + numpy.ones((1024, 2048), numpy.float32)
+    det = detectors.FReLoN("halfccd.spline")
+    # working with halfccd spline
+#    x, y = numpy.ogrid[:2048, :2048]
+#    grid = numpy.logical_or(x % 100 == 0, y % 100 == 0).astype(numpy.float32) + numpy.ones((2048, 2048), numpy.float32)
+#    det = detectors.FReLoN("frelon.spline")
+
     print det, det.max_shape
     dis = Distortion(det)
     print dis
@@ -623,22 +632,22 @@ def test():
 
     dis.calc_LUT()
     out = dis.correct(grid)
-    fabio.edfimage.edfimage(data=out.astype("float32")).write("test256.edf")
+    fabio.edfimage.edfimage(data=out.astype("float32")).write("test_correct.edf")
 
     print("*"*50)
 
-    x, y = numpy.ogrid[:2048, :2048]
-    grid = numpy.logical_or(x % 100 == 0, y % 100 == 0)
-    det = detectors.FReLoN("frelon.spline")
-    print det, det.max_shape
-    dis = Distortion(det)
-    print dis
-    lut = dis.calc_LUT_size()
-    print dis.lut_size
-    print "LUT mean & max", lut.mean(), lut.max()
-    dis.calc_LUT()
-    out = dis.correct(grid)
-    fabio.edfimage.edfimage(data=out.astype("float32")).write("test2048.edf")
+#    x, y = numpy.ogrid[:2048, :2048]
+#    grid = numpy.logical_or(x % 100 == 0, y % 100 == 0)
+#    det = detectors.FReLoN("frelon.spline")
+#    print det, det.max_shape
+#    dis = Distortion(det)
+#    print dis
+#    lut = dis.calc_LUT_size()
+#    print dis.lut_size
+#    print "LUT mean & max", lut.mean(), lut.max()
+#    dis.calc_LUT()
+#    out = dis.correct(grid)
+#    fabio.edfimage.edfimage(data=out.astype("float32")).write("test2048.edf")
     import pylab
     pylab.imshow(out)  # , interpolation="nearest")
     pylab.show()
