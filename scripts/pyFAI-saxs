@@ -77,6 +77,9 @@ def main():
 #    parser.add_option("-b", "--background", dest="background",
 #                      type="string", default=None,
 #                      help="name of the file containing the background")
+    parser.add_option("-P", "--polarization", dest="polarization_factor",
+                      type="float", default=0.0,
+                      help="Polarization factor, from -1 (vertical) to +1 (horizontal), default is 0, synchrotrons are around 0.95")
     parser.add_option("--error-model", dest="error_model",
                       type="string", default=None,
                       help="Error model to use. Currently on 'poisson' is implemented ")
@@ -116,7 +119,7 @@ def main():
         for oneFile in processFile:
             sys.stdout.write("Integrating %s --> " % oneFile)
             outFile = os.path.splitext(oneFile)[0] + options.ext
-            #azimFile = os.path.splitext(oneFile)[0] + ".azim"
+            # azimFile = os.path.splitext(oneFile)[0] + ".azim"
             fabioFile = fabio.open(oneFile)
             t0 = time.time()
             if fabioFile.nframes > 1:
@@ -128,7 +131,8 @@ def main():
                                 variance=fabioFile.next().data,
                                 method=method,
                                 unit=options.unit,
-                                error_model=options.error_model
+                                error_model=options.error_model,
+                                polarization_factor=options.polarization_factor
                                 )
             else:
                 integrator.integrate1d(data=fabioFile.data,
@@ -138,7 +142,8 @@ def main():
                                 filename=outFile,
                                 method=method,
                                 unit=options.unit,
-                                error_model=options.error_model)
+                                error_model=options.error_model,
+                                polarization_factor=options.polarization_factor)
             t1 = time.time()
 
             print("Integration took %6.3fs %s --> %s" %

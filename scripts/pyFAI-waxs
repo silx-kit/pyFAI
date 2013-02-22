@@ -76,6 +76,10 @@ def main():
     parser.add_option("-f", "--flat", dest="flat",
                       type="string", default=None,
                       help="name of the file containing the flat field")
+    parser.add_option("-P", "--polarization", dest="polarization_factor",
+                      type="float", default=0.0,
+                      help="Polarization factor, from -1 (vertical) to +1 (horizontal), default is 0, synchrotrons are around 0.95")
+
 #    parser.add_option("-b", "--background", dest="background",
 #                      type="string", default=None,
 #                      help="name of the file containing the background")
@@ -127,7 +131,8 @@ def main():
                                    delta_dummy=options.delta_dummy,
                                    method=method,
                                    unit=options.unit,
-                                   error_model=options.error_model
+                                   error_model=options.error_model,
+                                   polarization_factor=options.polarization_factor
                                    )
 
             t1 = time.time()
@@ -139,7 +144,8 @@ def main():
                                    delta_dummy=options.delta_dummy,
                                    method=method,
                                    unit=options.unit,
-                                   error_model=options.error_model
+                                   error_model=options.error_model,
+                                   polarization_factor=options.polarization_factor
                                    )
             print("%s\t 1D took  %.3fs, 2D took %.3fs" %
                   (outFile, t1 - t0, time.time() - t1))
