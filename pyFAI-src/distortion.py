@@ -105,13 +105,32 @@ class Distortion(object):
             pos = self.calc_pos()
         else:
             pos = self.pos
-        pos0min = numpy.maximum(numpy.floor(pos[:, :, :, 0].min(axis= -1)).astype(numpy.int32), 0)
-        pos1min = numpy.maximum(numpy.floor(pos[:, :, :, 1].min(axis= -1)).astype(numpy.int32), 0)
-        pos0max = numpy.minimum(numpy.ceil(pos[:, :, :, 0].max(axis= -1)).astype(numpy.int32) + 1, self.shape[0])
-        pos1max = numpy.minimum(numpy.ceil(pos[:, :, :, 1].max(axis= -1)).astype(numpy.int32) + 1, self.shape[1])
+        pos0min = numpy.floor(pos[:, :, :, 0].min(axis= -1)).astype(numpy.int32).clip(0, self.shape[0])
+        pos1min = numpy.floor(pos[:, :, :, 1].min(axis= -1)).astype(numpy.int32).clip(0, self.shape[1])
+        pos0max = (numpy.ceil(pos[:, :, :, 0].max(axis= -1)).astype(numpy.int32) + 1).clip(0, self.shape[0])
+        pos1max = (numpy.ceil(pos[:, :, :, 1].max(axis= -1)).astype(numpy.int32) + 1).clip(0, self.shape[1])
         lut_size = numpy.zeros(self.shape, dtype=numpy.int32)
+        max0 = 0
+        max1 = 0
+        print "pos0min"
+        print pos0min
+        print "pos1min"
+        print pos1min
+        print "pos0max"
+        print pos0max
+        print "pos1max"
+        print pos1max
         for i in range(self.shape[0]):
             for j in range(self.shape[1]):
+                if (pos0max[i, j] - pos0min[i, j]) > max0:
+                    old = max0
+                    max0 = pos0max[i, j] - pos0min[i, j]
+                    print old, "new max0", max0, i, j
+                if (pos1max[i, j] - pos1min[i, j]) > max1:
+                    old = max1
+                    max1 = pos1max[i, j] - pos1min[i, j]
+                    print old, "new max1", max1, i, j
+
                 lut_size[pos0min[i, j]:pos0max[i, j], pos1min[i, j]:pos1max[i, j]] += 1
         self.lut_size = lut_size.max()
         return lut_size
