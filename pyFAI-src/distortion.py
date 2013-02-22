@@ -560,6 +560,9 @@ except ImportError:
 else:
     print dir(pyFAI._distortion)
     Quad = pyFAI._distortion.Quad
+    Distortion = pyFAI._distortion.Distortion
+
+
 def test():
     import numpy
     buffer = numpy.empty((20, 20))
@@ -621,8 +624,23 @@ def test():
     dis.calc_LUT()
     out = dis.correct(grid)
     fabio.edfimage.edfimage(data=out.astype("float32")).write("test256.edf")
+
+    print("*"*50)
+
+    x, y = numpy.ogrid[:2048, :2048]
+    grid = numpy.logical_or(x % 100 == 0, y % 100 == 0)
+    det = detectors.FReLoN("frelon.spline")
+    print det, det.max_shape
+    dis = Distortion(det)
+    print dis
+    lut = dis.calc_LUT_size()
+    print dis.lut_size
+    print "LUT mean & max", lut.mean(), lut.max()
+    dis.calc_LUT()
+    out = dis.correct(grid)
+    fabio.edfimage.edfimage(data=out.astype("float32")).write("test2048.edf")
     import pylab
-    pylab.imshow(out, interpolation="nearest")
+    pylab.imshow(out)  # , interpolation="nearest")
     pylab.show()
 
 if __name__ == "__main__":
