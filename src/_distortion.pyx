@@ -589,11 +589,11 @@ class Distortion(object):
         cdef numpy.ndarray[numpy.float32_t, ndim = 4] pos
         cdef int[:,:] pos0min, pos1min, pos0max, pos1max
         cdef numpy.ndarray[numpy.uint32_t, ndim = 2] lut_size
+        if self.pos is None:
+            pos = self.calc_pos()
+        else:
+            pos = self.pos
         if self.lut_size is None:
-            if self.pos is None:
-                pos = self.calc_pos()
-            else:
-                pos = self.pos
             with self._sem:
                 if self.lut_size is None:
                     shape0, shape1 = self.shape
@@ -609,7 +609,7 @@ class Distortion(object):
                                     for l in range(pos1min[i, j],pos1max[i, j]):
                                         lut_size[k,l] += 1
                     self.lut_size = lut_size.max()
-        return lut_size
+                    return lut_size
 
     @timeit
     @cython.wraparound(False)
@@ -725,11 +725,8 @@ class Distortion(object):
         cdef float coef
         cdef lut_point[:,:] LUT
         cdef float[:] lout, lin
-#        if self.integrator is None:
         if self.LUT is None:
-                with self._sem:
-                    if self.LUT is None:
-                        self.calc_LUT()
+            self.calc_LUT()
         LUT = self.LUT
         lshape0 = LUT.shape[0]
         lshape1 = LUT.shape[1]

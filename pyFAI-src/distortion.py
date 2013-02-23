@@ -69,27 +69,26 @@ class Distortion(object):
     def __repr__(self):
         return os.linesep.join(["Distortion correction for detector:",
                                 self.detector.__repr__()])
-
-#    def calc_lut(self,shape):
-    def split_pixel(self,):
-        pass
     @timeit
     def calc_pos(self):
-        pos_corners = numpy.empty((self.shape[0] + 1, self.shape[1] + 1, 2), dtype=numpy.float64)
-        d1 = numpy.outer(numpy.arange(self.shape[0] + 1, dtype=numpy.float64), numpy.ones(self.shape[1] + 1, dtype=numpy.float64)) - 0.5
-        d2 = numpy.outer(numpy.ones(self.shape[0] + 1, dtype=numpy.float64), numpy.arange(self.shape[1] + 1, dtype=numpy.float64)) - 0.5
-        pos_corners[:, :, 0], pos_corners[:, :, 1] = self.detector.calc_cartesian_positions(d1, d2)
-        pos_corners[:, :, 0] /= self.detector.pixel1
-        pos_corners[:, :, 1] /= self.detector.pixel2
-        pos = numpy.empty((self.shape[0], self.shape[1], 4, 2), dtype=numpy.float32)
-        pos[:, :, 0, :] = pos_corners[:-1, :-1]
-        pos[:, :, 1, :] = pos_corners[:-1, 1: ]
-        pos[:, :, 2, :] = pos_corners[1: , 1: ]
-        pos[:, :, 3, :] = pos_corners[1: , :-1]
-        self.pos = pos
-        self.delta0 = int((numpy.ceil(pos_corners[1:, :, 0]) - numpy.floor(pos_corners[:-1, :, 0])).max())
-        self.delta1 = int((numpy.ceil(pos_corners[:, 1:, 1]) - numpy.floor(pos_corners[:, :-1, 1])).max())
-        return pos
+        if self.delta1 is None:
+            with self._sem:
+                if self.delta1 is None:
+                    pos_corners = numpy.empty((self.shape[0] + 1, self.shape[1] + 1, 2), dtype=numpy.float64)
+                    d1 = numpy.outer(numpy.arange(self.shape[0] + 1, dtype=numpy.float64), numpy.ones(self.shape[1] + 1, dtype=numpy.float64)) - 0.5
+                    d2 = numpy.outer(numpy.ones(self.shape[0] + 1, dtype=numpy.float64), numpy.arange(self.shape[1] + 1, dtype=numpy.float64)) - 0.5
+                    pos_corners[:, :, 0], pos_corners[:, :, 1] = self.detector.calc_cartesian_positions(d1, d2)
+                    pos_corners[:, :, 0] /= self.detector.pixel1
+                    pos_corners[:, :, 1] /= self.detector.pixel2
+                    pos = numpy.empty((self.shape[0], self.shape[1], 4, 2), dtype=numpy.float32)
+                    pos[:, :, 0, :] = pos_corners[:-1, :-1]
+                    pos[:, :, 1, :] = pos_corners[:-1, 1: ]
+                    pos[:, :, 2, :] = pos_corners[1: , 1: ]
+                    pos[:, :, 3, :] = pos_corners[1: , :-1]
+                    self.pos = pos
+                    self.delta0 = int((numpy.ceil(pos_corners[1:, :, 0]) - numpy.floor(pos_corners[:-1, :, 0])).max())
+                    self.delta1 = int((numpy.ceil(pos_corners[:, 1:, 1]) - numpy.floor(pos_corners[:, :-1, 1])).max())
+        return self.pos
 
     @timeit
     def calc_LUT_size(self):
@@ -106,85 +105,89 @@ class Distortion(object):
             pos = self.calc_pos()
         else:
             pos = self.pos
-        pos0min = numpy.floor(pos[:, :, :, 0].min(axis= -1)).astype(numpy.int32).clip(0, self.shape[0])
-        pos1min = numpy.floor(pos[:, :, :, 1].min(axis= -1)).astype(numpy.int32).clip(0, self.shape[1])
-        pos0max = (numpy.ceil(pos[:, :, :, 0].max(axis= -1)).astype(numpy.int32) + 1).clip(0, self.shape[0])
-        pos1max = (numpy.ceil(pos[:, :, :, 1].max(axis= -1)).astype(numpy.int32) + 1).clip(0, self.shape[1])
-        lut_size = numpy.zeros(self.shape, dtype=numpy.int32)
-        max0 = 0
-        max1 = 0
-        print "pos0min"
-        print pos0min
-        print "pos1min"
-        print pos1min
-        print "pos0max"
-        print pos0max
-        print "pos1max"
-        print pos1max
-        for i in range(self.shape[0]):
-            for j in range(self.shape[1]):
-                if (pos0max[i, j] - pos0min[i, j]) > max0:
-                    old = max0
-                    max0 = pos0max[i, j] - pos0min[i, j]
-                    print old, "new max0", max0, i, j
-                if (pos1max[i, j] - pos1min[i, j]) > max1:
-                    old = max1
-                    max1 = pos1max[i, j] - pos1min[i, j]
-                    print old, "new max1", max1, i, j
+        if self.lut_size is None:
+            with self._sem:
+                if self.lut_size is None:
+                    pos0min = numpy.floor(pos[:, :, :, 0].min(axis= -1)).astype(numpy.int32).clip(0, self.shape[0])
+                    pos1min = numpy.floor(pos[:, :, :, 1].min(axis= -1)).astype(numpy.int32).clip(0, self.shape[1])
+                    pos0max = (numpy.ceil(pos[:, :, :, 0].max(axis= -1)).astype(numpy.int32) + 1).clip(0, self.shape[0])
+                    pos1max = (numpy.ceil(pos[:, :, :, 1].max(axis= -1)).astype(numpy.int32) + 1).clip(0, self.shape[1])
+                    lut_size = numpy.zeros(self.shape, dtype=numpy.int32)
+                    max0 = 0
+                    max1 = 0
+                    print "pos0min"
+                    print pos0min
+                    print "pos1min"
+                    print pos1min
+                    print "pos0max"
+                    print pos0max
+                    print "pos1max"
+                    print pos1max
+                    for i in range(self.shape[0]):
+                        for j in range(self.shape[1]):
+                            if (pos0max[i, j] - pos0min[i, j]) > max0:
+                                old = max0
+                                max0 = pos0max[i, j] - pos0min[i, j]
+                                print old, "new max0", max0, i, j
+                            if (pos1max[i, j] - pos1min[i, j]) > max1:
+                                old = max1
+                                max1 = pos1max[i, j] - pos1min[i, j]
+                                print old, "new max1", max1, i, j
 
-                lut_size[pos0min[i, j]:pos0max[i, j], pos1min[i, j]:pos1max[i, j]] += 1
-        self.lut_size = lut_size.max()
-        return lut_size
+                            lut_size[pos0min[i, j]:pos0max[i, j], pos1min[i, j]:pos1max[i, j]] += 1
+                    self.lut_size = lut_size.max()
+                    return lut_size
 
     @timeit
     def calc_LUT(self):
         if self.lut_size is None:
+            self.calc_LUT_size()
+        if self.LUT is None:
             with self._sem:
-                if self.lut_size is None:
-                    self.calc_LUT_size()
-        lut = numpy.recarray(shape=(self.shape[0] , self.shape[1], self.lut_size), dtype=[("idx", numpy.uint32), ("coef", numpy.float32)])
-        lut[:, :, :].idx = 0
-        lut[:, :, :].coef = 0.0
-        print "LUT shape", lut.shape
-        outMax = numpy.zeros(self.shape, dtype=numpy.uint32)
-        idx = 0
-        buffer = numpy.empty((self.delta0, self.delta1))
-        print "Buffer shape: ", buffer.shape
-        quad = Quad(buffer)
-        for i in range(self.shape[0]):
-            for j in range(self.shape[1]):
-                # i,j, idx are indexes of the raw image uncorrected
-                quad.reinit(*list(self.pos[i, j, :, :].ravel()))
-                # print self.pos[i, j, 0, :], self.pos[i, j, 1, :], self.pos[i, j, 2, :], self.pos[i, j, 3, :]
-                try:
-                    quad.populate_box()
-                except Exception as error:
-                    print "error in quad.populate_box of pixel %i, %i: %s" % (i, j, error)
-                    print "calc_area_vectorial", quad.calc_area_vectorial()
-                    print self.pos[i, j, 0, :], self.pos[i, j, 1, :], self.pos[i, j, 2, :], self.pos[i, j, 3, :]
-                    print quad
-                    raise
-#                box = quad.get_box()
-                for ms in range(quad.get_box_size0()):
-                    ml = ms + quad.get_offset0()
-                    if ml < 0 or ml >= self.shape[0]:
-                        continue
-                    for ns in range(quad.get_box_size1()):
-                        # ms,ns are indexes of the corrected image in short form, ml & nl are the same
-                        nl = ns + quad.get_offset1()
-                        if nl < 0 or nl >= self.shape[1]:
-                            continue
-                        val = quad.get_box(ms, ns)
-                        if val <= 0:
-#                            print "Val ", val, i, j, idx, ms, ns, ml, nl
-                            continue
-                        k = outMax[ml, nl]
-                        lut[ml, nl, k].idx = idx
-                        lut[ml, nl, k].coef = val
-                        outMax[ml, nl] = k + 1
-                idx += 1
-        lut.shape = self.shape[0] * self.shape[1], self.lut_size
-        self.LUT = lut
+                if self.LUT is None:
+                    lut = numpy.recarray(shape=(self.shape[0] , self.shape[1], self.lut_size), dtype=[("idx", numpy.uint32), ("coef", numpy.float32)])
+                    lut[:, :, :].idx = 0
+                    lut[:, :, :].coef = 0.0
+                    print "LUT shape", lut.shape
+                    outMax = numpy.zeros(self.shape, dtype=numpy.uint32)
+                    idx = 0
+                    buffer = numpy.empty((self.delta0, self.delta1))
+                    print "Buffer shape: ", buffer.shape
+                    quad = Quad(buffer)
+                    for i in range(self.shape[0]):
+                        for j in range(self.shape[1]):
+                            # i,j, idx are indexes of the raw image uncorrected
+                            quad.reinit(*list(self.pos[i, j, :, :].ravel()))
+                            # print self.pos[i, j, 0, :], self.pos[i, j, 1, :], self.pos[i, j, 2, :], self.pos[i, j, 3, :]
+                            try:
+                                quad.populate_box()
+                            except Exception as error:
+                                print "error in quad.populate_box of pixel %i, %i: %s" % (i, j, error)
+                                print "calc_area_vectorial", quad.calc_area_vectorial()
+                                print self.pos[i, j, 0, :], self.pos[i, j, 1, :], self.pos[i, j, 2, :], self.pos[i, j, 3, :]
+                                print quad
+                                raise
+            #                box = quad.get_box()
+                            for ms in range(quad.get_box_size0()):
+                                ml = ms + quad.get_offset0()
+                                if ml < 0 or ml >= self.shape[0]:
+                                    continue
+                                for ns in range(quad.get_box_size1()):
+                                    # ms,ns are indexes of the corrected image in short form, ml & nl are the same
+                                    nl = ns + quad.get_offset1()
+                                    if nl < 0 or nl >= self.shape[1]:
+                                        continue
+                                    val = quad.get_box(ms, ns)
+                                    if val <= 0:
+            #                            print "Val ", val, i, j, idx, ms, ns, ml, nl
+                                        continue
+                                    k = outMax[ml, nl]
+                                    lut[ml, nl, k].idx = idx
+                                    lut[ml, nl, k].coef = val
+                                    outMax[ml, nl] = k + 1
+                            idx += 1
+                    lut.shape = self.shape[0] * self.shape[1], self.lut_size
+                    self.LUT = lut
 
     @timeit
     def correct(self, image):
@@ -196,24 +199,10 @@ class Distortion(object):
         """
         if self.integrator is None:
             if self.LUT is None:
-                with self._sem:
-                    if self.LUT is None:
-                        self.calc_LUT()
+                self.calc_LUT()
             self.integrator = ocl_azim_lut.OCL_LUT_Integrator(self.LUT, self.shape[0] * self.shape[1])
         out = self.integrator.integrate(image)
-        out[0].shape = self.shape
         out[1].shape = self.shape
-        out[2].shape = self.shape
-        fabio.edfimage.edfimage(data=out[0]).write("out0.edf")
-        fabio.edfimage.edfimage(data=out[1]).write("out1.edf")
-        fabio.edfimage.edfimage(data=out[2]).write("out2.edf")
-        mask = (out[2] == 0)
-#        out = numpy.zeros(self.shape)
-#        lout = out.ravel()
-#        lin = image.ravel()
-#        for i in range(self.LUT.shape[0]):
-#            for j in self.LUT[i]:
-#                lout[i] += lin[j.idx] * j.coef
         return out[1]
 
     @timeit
@@ -225,9 +214,7 @@ class Distortion(object):
         @return: uncorrected 2D image and a mask (pixels in raw image
         """
         if self.LUT is None:
-            with self._sem:
-                if self.LUT is None:
-                    self.calc_LUT()
+            self.calc_LUT()
         out = numpy.zeros(self.shape,dtype=numpy.float32)
         mask = numpy.zeros(self.shape, dtype=numpy.int8)
         lmask = mask.ravel()
@@ -557,9 +544,9 @@ class Quad(object):
 try:
     import pyFAI._distortion
 except ImportError:
-    logger.warning("Import _distortion cython implementation failed")
+    logger.warning("Import _distortion cython implementation failed ... pure python version is terribly slow !!!")
 else:
-    print dir(pyFAI._distortion)
+    logger.debug(" ".join(dir(pyFAI._distortion)))
     Quad = pyFAI._distortion.Quad
     Distortion = pyFAI._distortion.Distortion
 

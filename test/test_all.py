@@ -2,9 +2,8 @@
 # coding: utf-8
 #
 #    Project: pyFAI tests class utilities
-#             http://forge.epn-campus.eu/projects/azimuthal
+#             https://github.com/kif/pyFAI
 #
-#    File: "$Id:$"
 #
 #    Copyright (C) 2010 European Synchrotron Radiation Facility
 #                       Grenoble, France
@@ -32,7 +31,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__data__ = "2012-11-20"
+__data__ = "2013-02-23"
 
 import sys
 import unittest
@@ -51,6 +50,7 @@ from testExport               import test_suite_all_Export
 from testSaxs                 import test_suite_all_Saxs
 from testIntegrate            import test_suite_all_Integrate1d
 from testBilinear             import test_suite_all_bilinear
+from testDistortion           import test_suite_all_distortion
 
 def test_suite_all():
     testSuite = unittest.TestSuite()
@@ -65,6 +65,7 @@ def test_suite_all():
     testSuite.addTest(test_suite_all_Saxs())
     testSuite.addTest(test_suite_all_Integrate1d())
     testSuite.addTest(test_suite_all_bilinear())
+    testSuite.addTest(test_suite_all_distortion())
     return testSuite
 
 if __name__ == '__main__':

@@ -59,8 +59,8 @@ try:
 except (ImportError, WindowsError) as err:
     logging.warn("Exception %s: FFTw3 not available. Falling back on Scipy", err)
     fftw3 = None
-else:
-    print("defining FFTw3: %s" % fftw3)
+# else:
+#    print("defining FFTw3: %s" % fftw3)
 
 
 def float_(val):

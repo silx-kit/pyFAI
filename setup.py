@@ -170,8 +170,8 @@ _distortion_dic = dict(name="_distortion",
                         include_dirs=get_numpy_include_dirs(),
                         sources=[src['_distortion'] ],
 #                        extra_compile_args=['-msse4.2'],
-#                        extra_compile_args=['openmp'],
-#                        extra_link_args=['openmp'],
+                        extra_compile_args=['openmp'],
+                        extra_link_args=['openmp'],
 
                         )
 
