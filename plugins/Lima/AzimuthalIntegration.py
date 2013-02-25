@@ -74,21 +74,20 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         self.ai.reset()
 
         if self.do_2D():
-            t = threading.Thread(target=self.ai.integrate2d,
+            threading.Thread(target=self.ai.integrate2d,
                                  name="init2d",
                                  args=(numpy.zeros(self.shapeIn, dtype=numpy.float32),
                                         self.nbpt_rad, self.nbpt_azim),
                                  kwargs=dict(method="lut", unit=self.unit)
-                                 )
-            t.start()
+                                 ).start()
         else:
-            t = threading.Thread(target=self.ai.integrate2d,
-                                 name="init2d",
+            threading.Thread(target=self.ai.integrate1d,
+                                 name="init1d",
                                  args=(numpy.zeros(self.shapeIn, dtype=numpy.float32),
                                         self.nbpt_rad),
                                  kwargs=dict(method="lut", unit=self.unit)
-                                 )
-            t.start()
+                                 ).start()
+
 
     def process(self, data) :
         ctControl = _control_ref()
@@ -109,17 +108,17 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
                 self.ai.integrate1d(data.buffer,
                                 self.nbpt_rad, method="lut", unit=self.unit, safe=True,
                                 filename=output + ".xy")
-        except :
-                print data.buffer.shape, data.buffer.size
-                print self.ai
-                print self.ai._lut_integrator
-                print self.ai._lut_integrator.size
-                raise
+        except:
+            print data.buffer.shape, data.buffer.size
+            print self.ai
+            print self.ai._lut_integrator
+            print self.ai._lut_integrator.size
+            raise
         # return rData
 
     def setDarkcurrentFile(self, imagefile):
         try:
-            darkcurrentImage = getDataFromFile(filepath)
+            darkcurrentImage = getDataFromFile(imagefile)
         except Exception as error:
             logger.warning("setDarkcurrentFile: Unable to read file %s: %s" % (imagefile, error))
         else:
@@ -127,7 +126,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
 
     def setFlatfieldFile(self, imagefile):
         try:
-            backGroundImage = getDataFromFile(filepath)
+            backGroundImage = getDataFromFile(imagefile)
         except Exception as error:
             logger.warning("setFlatfieldFile: Unable to read file %s: %s" % (imagefile, error))
         else:

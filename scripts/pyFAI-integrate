@@ -1,5 +1,42 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+#
+#    Project: Fast Azimuthal integration
+#             https://github.com/kif/pyFAI
+#
+#
+#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#
+#    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 
+"""
+pyFAI-integrate
+
+A graphical tool (based on PyQt4) for performing azimuthal integration on series of files.
+
+
+"""
+
+__author__ = "Jerome Kieffer"
+__contact__ = "Jerome.Kieffer@ESRF.eu"
+__license__ = "GPLv3+"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "21/02/2013"
+__satus__ = "development"
 import sys, logging, json, os, time, types, threading
 import os.path as op
 import numpy
@@ -10,6 +47,7 @@ from PyQt4.QtCore import SIGNAL
 import pyFAI, fabio
 from pyFAI.opencl import ocl
 from pyFAI.utils import float_, int_
+UIC = op.join(op.dirname(pyFAI.__file__), "integration.ui")
 
 try:
     from rfoo.utils import rconsole
@@ -28,7 +66,7 @@ class AIWidget(QtGui.QWidget):
         self.input_data = input_data
         self._sem = threading.Semaphore()
         QtGui.QWidget.__init__(self)
-        uic.loadUi('integration.ui', self)
+        uic.loadUi(UIC, self)
         self.all_detectors = pyFAI.detectors.ALL_DETECTORS.keys()
         self.all_detectors.sort()
         self.detector.addItems([i.capitalize() for i in self.all_detectors])

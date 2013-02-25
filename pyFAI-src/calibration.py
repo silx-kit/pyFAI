@@ -52,11 +52,11 @@ from .geometryRefinement import GeometryRefinement
 from .peakPicker import PeakPicker, Massif
 from .utils import averageImages, timeit, measure_offset
 from .azimuthalIntegrator import AzimuthalIntegrator
+from .units import hc
 from  matplotlib.path import Path
 import matplotlib.path as mpath
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-hc = 12.398
 
 matplotlib.interactive(True)
 
@@ -102,6 +102,7 @@ class Calibration(object):
         self.spacing_file = None
         self.wavelength = None
         self.weighted = False
+        self.polarization_factor = 0
 
     def __repr__(self):
         lst = ["Calibration object:",
@@ -136,6 +137,9 @@ decrease the value if arcs are mixed together.""", default=None)
                       help="wavelength of the X-Ray beam in Angstrom", default=None)
         parser.add_option("-e", "--energy", dest="energy", type="float",
                       help="energy of the X-Ray beam in keV (hc=%skeV.A)" % hc, default=None)
+        parser.add_option("-P", "--polarization", dest="polarization_factor",
+                      type="float", default=0.0,
+                      help="polarization factor, from -1 (vertical) to +1 (horizontal), default is 0, synchrotrons are around 0.95")
         parser.add_option("-b", "--background", dest="background",
                       help="Automatic background subtraction if no value are provided", default=None)
         parser.add_option("-d", "--dark", dest="dark",
@@ -164,6 +168,7 @@ decrease the value if arcs are mixed together.""", default=None)
         parser.add_option("--weighted", dest="weighted",
                       help="weight fit by intensity",
                        default=False, action="store_true")
+
 
         (options, args) = parser.parse_args()
 
@@ -212,6 +217,7 @@ decrease the value if arcs are mixed together.""", default=None)
         elif options.energy:
             self.wavelength = 1e-10 * hc / options.energy
         self.spacing_file = options.spacing
+        self.polarization_factor = options.polarization_factor
 #        if not self.spacing_file or not os.path.isfile(self.spacing_file):
 #            raise RuntimeError("you must specify the d-spacing file")
         self.dataFiles = [f for f in args if os.path.isfile(f)]
@@ -371,6 +377,7 @@ decrease the value if arcs are mixed together.""", default=None)
         if self.geoRef is None:
             self.refine()
         self.geoRef.save(self.basename + ".poni")
+        self.geoRef.mask = self.mask
         self.geoRef.del_ttha()
         self.geoRef.del_dssa()
         self.geoRef.del_chia()
@@ -389,9 +396,11 @@ decrease the value if arcs are mixed together.""", default=None)
         fig4 = pylab.plt.figure()
         xrpd2 = fig4.add_subplot(111)
         t3 = time.time()
-        a, b = self.geoRef.xrpd(self.peakPicker.data, 1024, self.basename + ".xy", mask=self.mask)
+        a, b = self.geoRef.xrpd(self.peakPicker.data, 1024, self.basename + ".xy",
+                                polarization_factor=self.polarization_factor)
         t4 = time.time()
-        img = self.geoRef.xrpd2(self.peakPicker.data, 400, 360, self.basename + ".azim", mask=self.mask)[0]
+        img = self.geoRef.xrpd2(self.peakPicker.data, 400, 360, self.basename + ".azim",
+                                polarization_factor=self.polarization_factor)[0]
         t5 = time.time()
         print ("Timings:\n two theta array generation %.3fs\n diff Solid Angle  %.3fs\n\
      chi array generation %.3fs\n\
@@ -440,6 +449,7 @@ class Recalibration(object):
         self.interactive = True
         self.filter = "mean"
         self.weighted = False
+        self.polarization_factor = 0
 
     def __repr__(self):
         lst = ["Calibration object:",
@@ -480,6 +490,9 @@ class Recalibration(object):
                       help="energy of the X-Ray beam in keV (hc=%skeV.A)" % hc, default=None)
         parser.add_option("-w", "--wavelength", dest="wavelength", type="float",
                       help="wavelength of the X-Ray beam in Angstrom", default=None)
+        parser.add_option("-P", "--polarization", dest="polarization_factor",
+                      type="float", default=0.0,
+                      help="polarization factor, from -1 (vertical) to +1 (horizontal), default is 0, synchrotrons are around 0.95")
         parser.add_option("-l", "--distance", dest="distance", type="float",
                       help="sample-detector distance in millimeter", default=None)
         parser.add_option("--poni1", dest="poni1", type="float",
@@ -542,6 +555,7 @@ class Recalibration(object):
         parser.add_option("--weighted", dest="weighted",
                       help="weight fit by intensity",
                        default=False, action="store_true")
+        
 
         (options, args) = parser.parse_args()
 
@@ -607,6 +621,7 @@ class Recalibration(object):
         self.interactive = options.interactive
         self.filter = options.filter
         self.weighted = options.weighted
+        self.polarization_factor = options.polarization_factor
         print self.ai
         print "fixed:", self.fixed
 
@@ -813,6 +828,7 @@ class Recalibration(object):
         self.peakPicker.points.setWavelength_change2th(self.geoRef.wavelength)
         self.peakPicker.points.save(self.basename + ".npt")
         self.geoRef.save(self.basename + ".poni")
+        self.geoRef.mask = self.mask
         self.geoRef.del_ttha()
         self.geoRef.del_dssa()
         self.geoRef.del_chia()
@@ -831,9 +847,11 @@ class Recalibration(object):
             fig4 = pylab.plt.figure()
             xrpd2 = fig4.add_subplot(111)
         t3 = time.time()
-        a, b = self.geoRef.xrpd(self.peakPicker.data, 1024, self.basename + ".xy", mask=self.mask)
+        a, b = self.geoRef.xrpd(self.peakPicker.data, 1024, self.basename + ".xy",
+                                polarization_factor=self.polarization_factor)
         t4 = time.time()
-        img = self.geoRef.xrpd2(self.peakPicker.data, 400, 360, self.basename + ".azim", mask=self.mask)[0]
+        img = self.geoRef.xrpd2(self.peakPicker.data, 400, 360, self.basename + ".azim",
+                                polarization_factor=self.polarization_factor)[0]
         t5 = time.time()
         print ("Timings:\n two theta array generation %.3fs\n diff Solid Angle  %.3fs\n\
      chi array generation %.3fs\n\

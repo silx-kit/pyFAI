@@ -106,7 +106,7 @@ if ("sdist" in sys.argv):
 # pyFAI extensions
 # ###############################################################################
 cython_modules = ["histogram", "splitPixel", "splitBBox", "splitBBoxLUT",
-                  "relabel", "bilinear", "_geometry", "reconstruct", "fastcrc"]
+                  "relabel", "bilinear", "_geometry", "reconstruct", "fastcrc", "_distortion"]
 src = {}
 for ext in cython_modules:
     src[ext] = os.path.join("src", ext + cython_c_ext)
@@ -166,10 +166,18 @@ fastcrc_dic = dict(name="fastcrc",
                         sources=[src['fastcrc'] , os.path.join("src", "crc32.c")],
 #                        extra_compile_args=['-msse4.2'],
                         )
+_distortion_dic = dict(name="_distortion",
+                        include_dirs=get_numpy_include_dirs(),
+                        sources=[src['_distortion'] ],
+#                        extra_compile_args=['-msse4.2'],
+                        extra_compile_args=['openmp'],
+                        extra_link_args=['openmp'],
+
+                        )
 
 
 ext_modules = [histogram_dic, splitPixel_dic, splitBBox_dic, splitBBoxLUT_dic, relabel_dic,
-               _geometry_dic, reconstruct_dic, bilinear_dic, fastcrc_dic]
+               _geometry_dic, reconstruct_dic, bilinear_dic, fastcrc_dic, _distortion_dic]
 
 
 if (os.name != "posix") or ("x86" not in platform.machine()):
@@ -206,7 +214,8 @@ else:
 
 
 data_files += [(installDir, [os.path.join('openCL', o) for o in [
-      "ocl_azim_kernel_2.cl", "ocl_azim_kernel2d_2.cl", "ocl_azim_LUT.cl"]])]
+      "ocl_azim_kernel_2.cl", "ocl_azim_kernel2d_2.cl", "ocl_azim_LUT.cl"]] +
+                [os.path.join('gui', o) for o in ("integration.ui",)])]
 
 version = [eval(l.split("=")[1]) for l in open(os.path.join(os.path.dirname(
     os.path.abspath(__file__)), "pyFAI-src", "__init__.py"))

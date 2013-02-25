@@ -372,14 +372,14 @@ class FReLoN(Detector):
     """
     FReLoN detector:
     The spline is mandatory to correct for geometric distortion of the taper
-    
+
     TODO: create automatically a mask that removes pixels out of the "valid reagion"
     """
     def __init__(self, splineFile=None):
         Detector.__init__(self, splineFile=splineFile)
         if splineFile:
-            self.max_shape = (self.spline.ymax - self.spline.ymin,
-                              self.spline.xmax - self.spline.xmin)
+            self.max_shape = (int(self.spline.ymax - self.spline.ymin),
+                              int(self.spline.xmax - self.spline.xmin))
         else:
             self.max_shape = (2048, 2048)
 

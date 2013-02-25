@@ -32,36 +32,31 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/02/2013"
+__date__ = "07/02/2013"
 __status__ = "development"
 
-import logging, sys
-import threading
-sem = threading.Semaphore()  # global lock for image processing initialization
 import numpy
 import fabio
 from scipy import ndimage
 from scipy.interpolate import interp1d
 from math import  ceil
-from . import relabel as relabelCython
+import logging, sys
+import relabel as relabelCython
 from scipy.optimize.optimize import fmin, fminbound
 import scipy.ndimage.filters
 logger = logging.getLogger("pyFAI.utils")
 import time
 timelog = logging.getLogger("pyFAI.timeit")
 from scipy.signal           import gaussian
-cu_fft = None  # No cuda here !
+
 if sys.platform != "win32":
     WindowsError = RuntimeError
-fftw3 = None
-try:
-    fftw3 = __import__("fftw3")
-except (ImportError, WindowsError) as err:
-    logging.warn("Exception %s: FFTw3 not available. Falling back on Scipy", err)
-    fftw3 = None
-# else:
-#    print("defining FFTw3: %s" % fftw3)
 
+try:
+    import fftw3
+except (ImportError, WindowsError) as e:
+    logging.warn("Exception %s: FFTw3 not available. Falling back on Scipy" % e)
+    fftw3 = None
 
 def float_(val):
     try:
@@ -90,12 +85,12 @@ def timeit(func):
     wrapper.__doc__ = func.__doc__
     return wrapper
 
-def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0):
+def gaussian_filter(input, sigma, mode="reflect", cval=0.0):
     """
     2-dimensional Gaussian filter implemented with FFTw
 
-    @param input_img:    input array to filter
-    @type input_img: array-like
+    @param input:    input array to filter
+    @type input: array-like
     @param sigma: standard deviation for Gaussian kernel.
         The standard deviations of the Gaussian filter are given for each axis as a sequence,
         or as a single number, in which case it is equal for all axes.
@@ -108,27 +103,25 @@ def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0):
         Value to fill past edges of input if ``mode`` is 'constant'. Default is 0.0
     """
     res = None
-    # TODO: understand why this is needed !
+    # TODO: understund why this is needed !
     if "fftw3" not in dir():
-        global fftw3
         fftw3 = sys.modules.get("fftw3")
     if fftw3:
         try:
             if mode != "wrap":
-                input_img = expand(input_img, sigma, mode, cval)
-            s0, s1 = input_img.shape
+                input = expand(input, sigma, mode, cval)
+            s0, s1 = input.shape
             if isinstance(sigma, (list, tuple)):
                 k0 = int(ceil(float(sigma[0])))
                 k1 = int(ceil(float(sigma[1])))
             else:
                 k0 = k1 = int(ceil(float(sigma)))
 
-            sum_init = input_img.astype(numpy.float32).sum()
+            sum_init = input.astype(numpy.float32).sum()
             fftOut = numpy.zeros((s0, s1), dtype=complex)
             fftIn = numpy.zeros((s0, s1), dtype=complex)
-            with sem:
-                fft = fftw3.Plan(fftIn, fftOut, direction='forward')
-                ifft = fftw3.Plan(fftOut, fftIn, direction='backward')
+            fft = fftw3.Plan(fftIn, fftOut, direction='forward')
+            ifft = fftw3.Plan(fftOut, fftIn, direction='backward')
 
             g0 = gaussian(s0, k0)
             g1 = gaussian(s1, k1)
@@ -140,7 +133,7 @@ def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0):
             fft()
             g2fft[:, :] = fftOut.conjugate()
 
-            fftIn[:, :] = input_img.astype(complex)
+            fftIn[:, :] = input.astype(complex)
             fft()
 
             fftOut *= g2fft
@@ -154,28 +147,28 @@ def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0):
             logging.error("MemoryError in FFTw3 part. Falling back on Scipy")
     if res is None:
         fftw3 = None
-        res = scipy.ndimage.filters.gaussian_filter(input_img, sigma, mode=(mode or "reflect"))
+        res = scipy.ndimage.filters.gaussian_filter(input, sigma, mode=(mode or "reflect"))
     return res
 
 
 
-def shift(input_img, shift_val):
+def shift(input, shift):
     """
-    Shift an array like  scipy.ndimage.interpolation.shift(input_img, shift_val, mode="wrap", order=0) but faster
-    @param input_img: 2d numpy array
-    @param shift_val: 2-tuple of integers
+    Shift an array like  scipy.ndimage.interpolation.shift(input, shift, mode="wrap", order=0) but faster
+    @param input: 2d numpy array
+    @param shift: 2-tuple of integers
     @return: shifted image
     """
-    re = numpy.zeros_like(input_img)
-    s0, s1 = input_img.shape
-    d0 = shift_val[0] % s0
-    d1 = shift_val[1] % s1
+    re = numpy.zeros_like(input)
+    s0, s1 = input.shape
+    d0 = shift[0] % s0
+    d1 = shift[1] % s1
     r0 = (-d0) % s0
     r1 = (-d1) % s1
-    re[d0:, d1:] = input_img[:r0, :r1]
-    re[:d0, d1:] = input_img[r0:, :r1]
-    re[d0:, :d1] = input_img[:r0, r1:]
-    re[:d0, :d1] = input_img[r0:, r1:]
+    re[d0:, d1:] = input[:r0, :r1]
+    re[:d0, d1:] = input[r0:, :r1]
+    re[d0:, :d1] = input[:r0, r1:]
+    re[:d0, :d1] = input[r0:, r1:]
     return re
 
 def dog(s1, s2, shape=None):
@@ -189,70 +182,70 @@ def dog(s1, s2, shape=None):
     else:
         u, v = numpy.ogrid[-shape[0] // 2:shape[0] - shape[0] // 2, -shape[1] // 2:shape[1] - shape[1] // 2]
     r2 = u * u + v * v
-    centered = numpy.exp(-r2 / (2.*s1) ** 2) / 2. / numpy.pi / s1 - numpy.exp(-r2 / (2.*s2) ** 2) / 2. / numpy.pi / s2
+    centered = numpy.exp(-r2 / (2.*s1) ** 2) / 2. / pi / s1 - numpy.exp(-r2 / (2.*s2) ** 2) / 2. / pi / s2
     return centered
 
-def dog_filter(input_img, sigma1, sigma2, mode="reflect", cval=0.0):
-    """
-    2-dimensional Difference of Gaussian filter implemented with FFTw
+def dog_filter(input, sigma1, sigma2, mode="reflect", cval=0.0):
+        """
+        2-dimensional Difference of Gaussian filter implemented with FFTw
 
-    @param input_img:    input_img array to filter
-    @type input_img: array-like
-    @param sigma: standard deviation for Gaussian kernel.
-        The standard deviations of the Gaussian filter are given for each axis as a sequence,
-        or as a single number, in which case it is equal for all axes.
-    @type sigma: scalar or sequence of scalars
-    @param mode: {'reflect','constant','nearest','mirror', 'wrap'}, optional
-        The ``mode`` parameter determines how the array borders are
-        handled, where ``cval`` is the value when mode is equal to
-        'constant'. Default is 'reflect'
-    @param cval: scalar, optional
+        @param input:    input array to filter
+        @type input: array-like
+        @param sigma: standard deviation for Gaussian kernel.
+            The standard deviations of the Gaussian filter are given for each axis as a sequence,
+            or as a single number, in which case it is equal for all axes.
+        @type sigma: scalar or sequence of scalars
+        @param mode: {'reflect','constant','nearest','mirror', 'wrap'}, optional
+            The ``mode`` parameter determines how the array borders are
+            handled, where ``cval`` is the value when mode is equal to
+            'constant'. Default is 'reflect'
+        @param cval: scalar, optional
             Value to fill past edges of input if ``mode`` is 'constant'. Default is 0.0
-    """
+"""
 
-    if 1:  # try:
-        sigma = max(sigma1, sigma2)
-        if mode != "wrap":
-            input_img = expand(input_img, sigma, mode, cval)
-        s0, s1 = input_img.shape
-        if isinstance(sigma, (list, tuple)):
-            k0 = int(ceil(float(sigma[0])))
-            k1 = int(ceil(float(sigma[1])))
-        else:
-            k0 = k1 = int(ceil(float(sigma)))
+        if 1:  # try:
+#            orig_shape = input.shape
+            sigma = max(sigma1, sigma2)
+            if mode != "wrap":
+                input = expand(input, sigma, mode, cval)
+            s0, s1 = input.shape
+            if isinstance(sigma, (list, tuple)):
+                k0 = int(ceil(float(sigma[0])))
+                k1 = int(ceil(float(sigma[1])))
+            else:
+                k0 = k1 = int(ceil(float(sigma)))
 
-        if fftw3:
-            sum_init = input_img.astype(numpy.float32).sum()
-            fftOut = numpy.zeros((s0, s1), dtype=complex)
-            fftIn = numpy.zeros((s0, s1), dtype=complex)
+            if fftw3:
+                sum_init = input.astype(numpy.float32).sum()
+                fftOut = numpy.zeros((s0, s1), dtype=complex)
+                fftIn = numpy.zeros((s0, s1), dtype=complex)
 
-            with sem:
                 fft = fftw3.Plan(fftIn, fftOut, direction='forward')
                 ifft = fftw3.Plan(fftOut, fftIn, direction='backward')
 
 
-            g2fft = numpy.zeros((s0, s1), dtype=complex)
-            fftIn[:, :] = shift(dog(sigma1, sigma2, (s0, s1)), (s0 // 2, s1 // 2)).astype(complex)
-            fft()
-            g2fft[:, :] = fftOut.conjugate()
+                g2fft = numpy.zeros((s0, s1), dtype=complex)
+                fftIn[:, :] = shift(dog(sigma1, sigma2, (s0, s1)), (s0 // 2, s1 // 2)).astype(complex)
+                fft()
+                g2fft[:, :] = fftOut.conjugate()
 
-            fftIn[:, :] = input_img.astype(complex)
-            fft()
+                fftIn[:, :] = input.astype(complex)
+                fft()
 
-            fftOut *= g2fft
-            ifft()
-            out = fftIn.real.astype(numpy.float32)
-            sum_out = out.sum()
-            res = out * sum_init / sum_out
-        else:
-            res = numpy.fft.ifft2(numpy.fft.fft2(input_img.astype(complex)) * \
-                                  numpy.fft.fft2(shift(dog(sigma1, sigma2, (s0, s1)), (s0 // 2, s1 // 2)).astype(complex)).conjugate())
-        if mode == "wrap":
-            return res
-        else:
-            return res[k0:-k0, k1:-k1]
+                fftOut *= g2fft
+                ifft()
+                out = fftIn.real.astype(numpy.float32)
+                sum_out = out.sum()
+                res = out * sum_init / sum_out
+            else:
+                res = numpy.fft.ifft2(numpy.fft.fft2(input.astype(complex)) * \
+                                      numpy.fft.fft2(shift(dog(sigma1, sigma2, (s0, s1)), (s0 // 2, s1 // 2)).astype(complex)).conjugate())
+            if mode == "wrap":
+                return res
+            else:
+                return res[k0:-k0, k1:-k1]
 
-def expand(input_img, sigma, mode="constant", cval=0.0):
+def expand(input, sigma, mode="constant", cval=0.0):
 
     """Expand array a with its reflection on boundaries
 
@@ -261,8 +254,8 @@ def expand(input_img, sigma, mode="constant", cval=0.0):
     @param mode:"constant","nearest" or "reflect"
     @param cval: filling value used for constant, 0.0 by default
     """
-    s0, s1 = input_img.shape
-    dtype = input_img.dtype
+    s0, s1 = input.shape
+    dtype = input.dtype
     if isinstance(sigma, (list, tuple)):
         k0 = int(ceil(float(sigma[0])))
         k1 = int(ceil(float(sigma[1])))
@@ -271,29 +264,29 @@ def expand(input_img, sigma, mode="constant", cval=0.0):
     if k0 > s0 or k1 > s1:
         raise RuntimeError("Makes little sense to apply a kernel (%i,%i)larger than the image (%i,%i)" % (k0, k1, s0, s1))
     output = numpy.zeros((s0 + 2 * k0, s1 + 2 * k1), dtype=dtype) + float(cval)
-    output[k0:k0 + s0, k1:k1 + s1] = input_img
+    output[k0:k0 + s0, k1:k1 + s1] = input
     if mode in  ["reflect", "mirror"]:
     # 4 corners
-        output[s0 + k0:, s1 + k1:] = input_img[-1:-k0 - 1:-1, -1:-k1 - 1:-1]
-        output[:k0, :k1] = input_img[k0 - 1::-1, k1 - 1::-1]
-        output[:k0, s1 + k1:] = input_img[k0 - 1::-1, s1 - 1: s1 - k1 - 1:-1]
-        output[s0 + k0:, :k1] = input_img[s0 - 1: s0 - k0 - 1:-1, k1 - 1::-1]
+        output[s0 + k0:, s1 + k1:] = input[-1:-k0 - 1:-1, -1:-k1 - 1:-1]
+        output[:k0, :k1] = input[k0 - 1::-1, k1 - 1::-1]
+        output[:k0, s1 + k1:] = input[k0 - 1::-1, s1 - 1: s1 - k1 - 1:-1]
+        output[s0 + k0:, :k1] = input[s0 - 1: s0 - k0 - 1:-1, k1 - 1::-1]
     # 4 sides
-        output[k0:k0 + s0, :k1] = input_img[:s0, k1 - 1::-1]
-        output[:k0, k1:k1 + s1] = input_img[k0 - 1::-1, :s1]
-        output[-k0:, k1:s1 + k1] = input_img[:s0 - k0 - 1:-1, :]
-        output[k0:s0 + k0, -k1:] = input_img[:, :s1 - k1 - 1:-1]
+        output[k0:k0 + s0, :k1] = input[:s0, k1 - 1::-1]
+        output[:k0, k1:k1 + s1] = input[k0 - 1::-1, :s1]
+        output[-k0:, k1:s1 + k1] = input[:s0 - k0 - 1:-1, :]
+        output[k0:s0 + k0, -k1:] = input[:, :s1 - k1 - 1:-1]
     elif mode == "nearest":
     # 4 corners
-        output[s0 + k0:, s1 + k1:] = input_img[-1, -1]
-        output[:k0, :k1] = input_img[0, 0]
-        output[:k0, s1 + k1:] = input_img[0, -1]
-        output[s0 + k0:, :k1] = input_img[-1, 0]
+        output[s0 + k0:, s1 + k1:] = input[-1, -1]
+        output[:k0, :k1] = input[0, 0]
+        output[:k0, s1 + k1:] = input[0, -1]
+        output[s0 + k0:, :k1] = input[-1, 0]
     # 4 sides
-        output[k0:k0 + s0, :k1] = numpy.outer(input_img[:, 0], numpy.ones(k1))
-        output[:k0, k1:k1 + s1] = numpy.outer(numpy.ones(k0), input_img[0, :])
-        output[-k0:, k1:s1 + k1] = numpy.outer(numpy.ones(k0), input_img[-1, :])
-        output[k0:s0 + k0, -k1:] = numpy.outer(input_img[:, -1], numpy.ones(k1))
+        output[k0:k0 + s0, :k1] = numpy.outer(input[:, 0], numpy.ones(k1))
+        output[:k0, k1:k1 + s1] = numpy.outer(numpy.ones(k0), input[0, :])
+        output[-k0:, k1:s1 + k1] = numpy.outer(numpy.ones(k0), input[-1, :])
+        output[k0:s0 + k0, -k1:] = numpy.outer(input[:, -1], numpy.ones(k1))
     return output
 
 
@@ -394,14 +387,10 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
                 prefix += c
             else:
                 break
-        if filter_ == "max":
+        if max_filter:
             output = ("maxfilt%02i-" % ld) + prefix + ".edf"
-        elif filter_ == "median":
-            output = ("medfilt%02i-" % ld) + prefix + ".edf"
-        elif filter_ == "median":
-            output = ("meanfilt%02i-" % ld) + prefix + ".edf"
         else:
-            output = ("merged%02i-" % ld) + prefix + ".edf"
+            output = ("meanfilt%02i-" % ld) + prefix + ".edf"
     logger.debug("Intensity range in merged dataset : %s --> %s", datared.min(), datared.max())
     fabio.edfimage.edfimage(data=datared,
                             header={"merged": ", ".join(listImages)}).write(output)
@@ -495,13 +484,13 @@ def removeSaturatedPixel(ds, threshold=0.1, minimum=None, maximum=None):
     return ds
 
 
-def binning(input_img, binsize):
+def binning(inputArray, binsize):
     """
-    @param input_img: input ndarray
+    @param inputArray: input ndarray
     @param binsize: int or 2-tuple representing the size of the binning
     @return: binned input ndarray
     """
-    inputSize = input_img.shape
+    inputSize = inputArray.shape
     outputSize = []
     assert(len(inputSize) == 2)
     if isinstance(binsize, int):
@@ -514,9 +503,9 @@ def binning(input_img, binsize):
         out = numpy.zeros(tuple(outputSize))
         for i in xrange(binsize[0]):
             for j in xrange(binsize[1]):
-                out += input_img[i::binsize[0], j::binsize[1]]
+                out += inputArray[i::binsize[0], j::binsize[1]]
     else:
-        temp = input_img.copy()
+        temp = inputArray.copy()
         temp.shape = (outputSize[0], binsize[0], outputSize[1], binsize[1])
         out = temp.sum(axis=3).sum(axis=1)
     return out
@@ -540,18 +529,36 @@ def unBinning(binnedArray, binsize):
     return out
 
 
+def shift(input, shift):
+    """
+    Shift an array like  scipy.ndimage.interpolation.shift(input, shift, mode="wrap", order=0) but faster
+    @param input: 2d numpy array
+    @param shift: 2-tuple of integers
+    @return: shifted image
+    """
+    re = numpy.zeros_like(input)
+    s0, s1 = input.shape
+    d0 = shift[0] % s0
+    d1 = shift[1] % s1
+    r0 = (-d0) % s0
+    r1 = (-d1) % s1
+    re[d0:, d1:] = input[:r0, :r1]
+    re[:d0, d1:] = input[r0:, :r1]
+    re[d0:, :d1] = input[:r0, r1:]
+    re[:d0, :d1] = input[r0:, r1:]
+    return re
 
-def shiftFFT(input_img, shift_val, method="fftw"):
+def shiftFFT(inp, shift, method="fftw"):
     """
     Do shift using FFTs
     Shift an array like  scipy.ndimage.interpolation.shift(input, shift, mode="wrap", order="infinity") but faster
-    @param input_img: 2d numpy array
-    @param shift_val: 2-tuple of float
+    @param input: 2d numpy array
+    @param shift: 2-tuple of float
     @return: shifted image
 
     """
-    d0, d1 = input_img.shape
-    v0, v1 = shift_val
+    d0, d1 = inp.shape
+    v0, v1 = shift
     f0 = numpy.fft.ifftshift(numpy.arange(-d0 // 2, d0 // 2))
     f1 = numpy.fft.ifftshift(numpy.arange(-d1 // 2, d1 // 2))
     m1, m0 = numpy.meshgrid(f1, f0)
@@ -559,18 +566,17 @@ def shiftFFT(input_img, shift_val, method="fftw"):
     e1 = numpy.exp(-2j * numpy.pi * v1 * m1 / float(d1))
     e = e0 * e1
     if method.startswith("fftw") and (fftw3 is not None):
-        input_ = numpy.zeros((d0, d1), dtype=complex)
+        input = numpy.zeros((d0, d1), dtype=complex)
         output = numpy.zeros((d0, d1), dtype=complex)
-        with sem:
-            fft = fftw3.Plan(input_, output, direction='forward', flags=['estimate'])
-            ifft = fftw3.Plan(output, input_, direction='backward', flags=['estimate'])
-        input_[:, :] = input_img.astype(complex)
+        fft = fftw3.Plan(input, output, direction='forward', flags=['estimate'])
+        ifft = fftw3.Plan(output, input, direction='backward', flags=['estimate'])
+        input[:, :] = inp.astype(complex)
         fft()
         output *= e
         ifft()
-        out = input_ / input_.size
+        out = input / input.size
     else:
-        out = numpy.fft.ifft2(numpy.fft.fft2(input_img) * e)
+        out = numpy.fft.ifft2(numpy.fft.fft2(inp) * e)
     return abs(out)
 
 def maximum_position(img):
@@ -582,7 +588,7 @@ def maximum_position(img):
     @return: 2-tuple of int with the position of the maximum
     """
     maxarg = numpy.argmax(img)
-    _, s1 = img.shape
+    s0, s1 = img.shape
     return (maxarg // s1, maxarg % s1)
 
 def center_of_mass(img):
@@ -615,23 +621,23 @@ def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
     assert img2.shape == shape
     t0 = time.time()
     if method[:4] == "fftw" and (fftw3 is not None):
-        input_ = numpy.zeros(shape, dtype=complex)
+        input = numpy.zeros(shape, dtype=complex)
         output = numpy.zeros(shape, dtype=complex)
         with sem:
-            fft = fftw3.Plan(input_, output, direction='forward', flags=['measure'])
-            ifft = fftw3.Plan(output, input_, direction='backward', flags=['measure'])
-        input_[:, :] = img2.astype(complex)
+                fft = fftw3.Plan(input, output, direction='forward', flags=['measure'])
+                ifft = fftw3.Plan(output, input, direction='backward', flags=['measure'])
+        input[:, :] = img2.astype(complex)
         fft()
         temp = output.conjugate()
-        input_[:, :] = img1.astype(complex)
+        input[:, :] = img1.astype(complex)
         fft()
         output *= temp
         ifft()
-        res = input_.real / input_.size
-#    elif method[:4] == "cuda" and (cu_fft is not None):
-#        with sem:
-#            cuda_correlate = CudaCorrelate(shape)
-#            res = cuda_correlate.correlate(img1, img2)
+        res = input.real / input.size
+    if method[:4] == "cuda" and (cu_fft is not None):
+        with sem:
+            cuda_correlate = CudaCorrelate(shape)
+            res = cuda_correlate.correlate(img1, img2)
     else:  # use numpy fftpack
         i1f = numpy.fft.fft2(img1)
         i2f = numpy.fft.fft2(img2)

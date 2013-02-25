@@ -58,10 +58,10 @@ class Device(object):
     """
     Simple class that contains the structure of an OpenCL device
     """
-    def __init__(self, name=None, type=None, version=None, driver_version=None,
+    def __init__(self, name="None", type=None, version=None, driver_version=None,
                  extensions="", memory=None, available=None,
                  cores=None, frequency=None, flop_core=None, id=0):
-        self.name = name
+        self.name = name.strip()
         self.type = type
         self.version = version
         self.driver_version = driver_version
@@ -86,9 +86,9 @@ class Platform(object):
     """
     Simple class that contains the structure of an OpenCL platform
     """
-    def __init__(self, name=None, vendor=None, version=None, extensions=None, id=0):
-        self.name = name
-        self.vendor = vendor
+    def __init__(self, name="None", vendor="None", version=None, extensions=None, id=0):
+        self.name = name.strip()
+        self.vendor = vendor.strip()
         self.version = version
         self.extensions = extensions.split()
         self.devices = []
@@ -103,8 +103,8 @@ class Platform(object):
     def get_device(self, key):
         """
         Return a device according to key
-        
-        @param key: identifier for a device, either it's id (int) or it's name 
+
+        @param key: identifier for a device, either it's id (int) or it's name
         @type key: int or str
         """
         out = None
@@ -163,8 +163,8 @@ class OpenCL(object):
     def get_platform(self, key):
         """
         Return a platform according
-        
-        @param key: identifier for a platform, either an Id (int) or it's name 
+
+        @param key: identifier for a platform, either an Id (int) or it's name
         @type key: int or str
         """
         out = None
