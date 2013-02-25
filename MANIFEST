@@ -139,6 +139,7 @@ test/example.sp
 test/moke.poni
 test/testAzimuthalIntegrator.py
 test/testBilinear.py
+test/testDistortion.py
 test/testExport.py
 test/testGeometry.py
 test/testGeometryRefinement.py
