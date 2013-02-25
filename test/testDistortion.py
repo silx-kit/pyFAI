@@ -73,7 +73,7 @@ class test_halfccd(unittest.TestCase):
         ratio[numpy.where(self.fit2d == 0)] = 0
         good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
         logger.info("ratio of good points (less than 1/1000 relative error): %.4f" % good_points_ratio)
-        self.assertGreater(good_points_ratio, 0.99, "99% of all points have a relative error below 1/1000")
+        self.assert_(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
 
 def test_suite_all_distortion():
     testSuite = unittest.TestSuite()
