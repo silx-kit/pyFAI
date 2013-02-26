@@ -2045,7 +2045,9 @@ class AzimuthalIntegrator(Geometry):
                                                                      solidAngle=solidangle,
                                                                      solidAngle_checksum=self._dssa_crc,
                                                                      dummy=dummy,
-                                                                     delta_dummy=delta_dummy)
+                                                                     delta_dummy=delta_dummy,
+                                                                     polarization=polarization,
+                                                                     polarization_checksum = self.__polarization_crc)
                             qAxis = self._lut_integrator.outPos  # this will be copied later
                             if error_model == "azimuthal":
                                 variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
@@ -2059,7 +2061,8 @@ class AzimuthalIntegrator(Geometry):
                         qAxis, I, a, b = self._lut_integrator.integrate(data,
                                                            solidAngle=solidangle,
                                                            dummy=dummy,
-                                                           delta_dummy=delta_dummy)
+                                                           delta_dummy=delta_dummy,
+                                                           polarization=polarization)
 
                         if error_model == "azimuthal":
                             variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
@@ -2408,7 +2411,9 @@ class AzimuthalIntegrator(Geometry):
                                                                      solidAngle=solidangle,
                                                                      solidAngle_checksum=self._dssa_crc,
                                                                      dummy=dummy,
-                                                                     delta_dummy=delta_dummy)
+                                                                     delta_dummy=delta_dummy,
+                                                                     polarization=polarization,
+                                                                     polarization_checksum=self.__polarization_crc)
                             I.shape = nbPt
                             I = I.T
                             bins_rad = self._lut_integrator.outPos0  # this will be copied later
@@ -2419,7 +2424,11 @@ class AzimuthalIntegrator(Geometry):
 #                                var1d, a, b = self._ocl_lut_integr.integrate(variance, solidAngle=None, dummy=dummy, delta_dummy=delta_dummy)
 #                                sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
                     else:
-                        I, bins_rad, bins_azim, _, _ = self._lut_integrator.integrate(data, solidAngle=solidangle, dummy=dummy, delta_dummy=delta_dummy)
+                        I, bins_rad, bins_azim, _, _ = self._lut_integrator.integrate(data,
+                                                                                      solidAngle=solidangle,
+                                                                                      dummy=dummy,
+                                                                                      delta_dummy=delta_dummy,
+                                                                                      polarization=polarization)
 
 #                        if error_model == "azimuthal":
 #                            variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
