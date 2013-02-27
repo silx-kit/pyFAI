@@ -39,8 +39,9 @@ from scipy.ndimage.filters  import median_filter
 from scipy.ndimage          import label
 import pylab
 import fabio
-from . import utils
-from . import bilinear
+import utils
+from .utils import gaussian_filter, binning, unBinning
+from .bilinear import Bilinear
 from .reconstruct            import reconstruct
 logger = logging.getLogger("pyFAI.peakPicker")
 if os.name != "nt":
@@ -640,7 +641,7 @@ class Massif(object):
                 self.data = data.astype("float32")
             except Exception as error:
                 logger.error("Unable to understand this type of data %s: %s", data, error)
-        self._bilin = bilinear.Bilinear(self.data)
+        self._bilin = Bilinear(self.data)
         self._blured_data = None
         self._median_data = None
         self._labeled_massif = None
@@ -752,9 +753,12 @@ class Massif(object):
             self.initValleySize()
         return self._valley_size
     def setValleySize(self, size):
-        self._valley_size = float(size)
-        t = threading.Thread(target=self.getLabeledMassif)
-        t.start()
+        new_size = float(size)
+        if self._valley_size != new_size:
+            self._valley_size = new_size
+#            self.getLabeledMassif()
+            t = threading.Thread(target=self.getLabeledMassif)
+            t.start()
     def delValleySize(self):
         self._valley_size = None
         self._blured_data = None
@@ -798,7 +802,7 @@ class Massif(object):
             with self._sem:
                 if self._blured_data is None:
                     logger.debug("Blurring image with kernel size: %s" , self.valley_size)
-                    self._blured_data = utils.gaussian_filter(self.getBinnedData(), [self.valley_size / i for i in  self.binning], mode="reflect")
+                    self._blured_data = gaussian_filter(self.getBinnedData(), [self.valley_size / i for i in  self.binning], mode="reflect")
                     if logger.getEffectiveLevel() == logging.DEBUG:
                         fabio.edfimage.edfimage(data=self._blured_data).write("blured_data.edf")
         return self._blured_data

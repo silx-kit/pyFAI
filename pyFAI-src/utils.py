@@ -53,14 +53,13 @@ from scipy.signal           import gaussian
 cu_fft = None  # No cuda here !
 if sys.platform != "win32":
     WindowsError = RuntimeError
-fftw3 = None
+has_fftw3 = None
 try:
-    fftw3 = __import__("fftw3")
+    import fftw3
+    has_fftw3 = True
 except (ImportError, WindowsError) as err:
     logging.warn("Exception %s: FFTw3 not available. Falling back on Scipy", err)
-    fftw3 = None
-# else:
-#    print("defining FFTw3: %s" % fftw3)
+    has_fftw3 = False
 
 
 def float_(val):
@@ -109,10 +108,9 @@ def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0):
     """
     res = None
     # TODO: understand why this is needed !
-    if "fftw3" not in dir():
-        global fftw3
-        fftw3 = sys.modules.get("fftw3")
-    if fftw3:
+    if "has_fftw3" not in dir():
+        has_fftw3 = ("fftw3" in sys.modules)
+    if has_fftw3:
         try:
             if mode != "wrap":
                 input_img = expand(input_img, sigma, mode, cval)
@@ -153,7 +151,7 @@ def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0):
         except MemoryError:
             logging.error("MemoryError in FFTw3 part. Falling back on Scipy")
     if res is None:
-        fftw3 = None
+        has_fftw3 = False
         res = scipy.ndimage.filters.gaussian_filter(input_img, sigma, mode=(mode or "reflect"))
     return res
 
