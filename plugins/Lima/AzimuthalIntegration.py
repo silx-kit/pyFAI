@@ -4,7 +4,7 @@
 Tango device server for setting up pyFAI azimuthal integrator in a LImA ProcessLib.
 
 Destination path:
-Lima/tango/plugins/AzimuthalIntegration  
+Lima/tango/plugins/AzimuthalIntegration
 """
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
@@ -178,7 +178,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         do_mask = config.get("do_mask")
         if mask_file and os.path.exists(mask_file) and do_mask:
             try:
-                mask = fabio.open(mask_file).data  
+                mask = fabio.open(mask_file).data
             except Exception as error:
                 logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
             else:
@@ -186,19 +186,19 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         dark_files = [i.strip() for i in config.get("dark_current", "").split(",")
                       if os.path.isfile(i.strip())]
         if dark_files and config.get("do_dark"):
-            d0 = fabio.open(dark_files[0]).data  
+            d0 = fabio.open(dark_files[0]).data
             darks = numpy.zeros((d0.shape[0], d0.shape[1], len(dark_files)), dtype=numpy.float32)
             for i, f in enumerate(dark_files):
-                darks[:, :, i] = fabio.open(f).data  
+                darks[:, :, i] = fabio.open(f).data
             self.ai.darkcurrent = darks.mean(axis= -1)
 
         flat_files = [i.strip() for i in config.get("flat_field", "").split(",")
                       if os.path.isfile(i.strip())]
         if flat_files and config.get("do_flat"):
-            d0 = fabio.open(flat_files[0]).data  
+            d0 = fabio.open(flat_files[0]).data
             flats = numpy.zeros((d0.shape[0], d0.shape[1], len(flat_files)), dtype=numpy.float32)
             for i, f in enumerate(flat_files):
-                flats[:, :, i] = fabio.open(f).data  
+                flats[:, :, i] = fabio.open(f).data
             self.ai.darkcurrent = flats.mean(axis= -1)
 
         if config.get("do_2D"):
@@ -252,39 +252,48 @@ class AzimuthalIntegratonDeviceServer(BasePostProcess) :
                     return
         PyTango.Device_4Impl.set_state(self, state)
 
-    @Core.DEB_MEMBER_FUNCT
+#    @Core.DEB_MEMBER_FUNCT
     def setBackgroundImage(self, filepath) :
-        deb.Param('setBackgroundImage filepath=%s' % filepath)
+#        deb.Param('setBackgroundImage filepath=%s' % filepath)
         if(self.__pyFAISink) :
             self.__pyFAISink.setBackgroundFile(filepath)
 
-    @Core.DEB_MEMBER_FUNCT
+#    @Core.DEB_MEMBER_FUNCT
     def setFlatfieldImage(self, filepath) :
-        deb.Param('setFlatfieldImage filepath=%s' % filepath)
+#        deb.Param('setFlatfieldImage filepath=%s' % filepath)
         if(self.__pyFAISink) :
             self.__pyFAISink.setFlatfieldFile(filepath)
 
 
-    @Core.DEB_MEMBER_FUNCT
+#    @Core.DEB_MEMBER_FUNCT
     def setJsonConfig(self, filepath) :
-        deb.Param('setJsonConfig: filepath=%s' % filepath)
+#        deb.Param('setJsonConfig: filepath=%s' % filepath)
         if(self.__pyFAISink) :
             self.__pyFAISink.setJsonConfig(filepath)
-
-    @Core.DEB_MEMBER_FUNCT
+    def setProcessedSubdir(self, filepath):
+        """
+        TODO: implement
+        """
+        pass
+    def setProcessedExt(self, ext):
+        """
+        TODO: implement
+        """
+        pass
+#    @Core.DEB_MEMBER_FUNCT
     def Reset(self) :
-        deb.Param('Reset')
+#        deb.Param('Reset')
         if(self.__pyFAISink) :
             self.__pyFAISink.reset()
 
-    @Core.DEB_MEMBER_FUNCT
+#    @Core.DEB_MEMBER_FUNCT
     def Reconfig(self, shape) :
-        deb.Param('Reconfig: %s' % shape)
+#        deb.Param('Reconfig: %s' % shape)
         if(self.__pyFAISink) :
             self.__pyFAISink.reconfig(shape)
 
 
-class AzimuthalIntegratonDeviceServerClass(PyTango.DeviceClass) :
+class AzimuthalIntegrationDeviceServerClass(PyTango.DeviceClass) :
         #        Class Properties
     class_property_list = {
         }
@@ -307,6 +316,14 @@ class AzimuthalIntegratonDeviceServerClass(PyTango.DeviceClass) :
 
         'setJsonConfig':
         [[PyTango.DevString, "Full path of background image file"],
+         [PyTango.DevVoid, ""]],
+
+        'setProcessedSubdir':
+        [[PyTango.DevString, "Sub-directory with processed data"],
+         [PyTango.DevVoid, ""]],
+
+        'setProcessedExt':
+        [[PyTango.DevString, "Extension of processed data files"],
          [PyTango.DevVoid, ""]],
 
         'Start':
@@ -348,4 +365,4 @@ def set_control_ref(control_class_ref):
     _control_ref = control_class_ref
 
 def get_tango_specific_class_n_device() :
-    return AzimuthalIntegratonDeviceServerClass, AzimuthalIntegratonDeviceServer
+    return AzimuthalIntegrationDeviceServerClass, AzimuthalIntegratonDeviceServer
