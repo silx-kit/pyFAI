@@ -4,7 +4,7 @@
 Tango device server for setting up pyFAI azimuthal integrator in a LImA ProcessLib.
 
 Destination path:
-Lima/tango/plugins/DistortionCorrection  
+Lima/tango/plugins/DistortionCorrection
 """
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
@@ -51,8 +51,8 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         """
         @param splinefile: File with the description of the distortion as a cubic spline
         @param darkfile: image with the dark current
-        @param flatfile: image with the flat field correction 
-        @param extraheader: dictionary with additional static header for EDF files  
+        @param flatfile: image with the flat field correction
+        @param extraheader: dictionary with additional static header for EDF files
         """
         Core.Processlib.SinkTaskBase.__init__(self)
 
@@ -162,8 +162,8 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
 
     def calc_LUT(self):
         """
-        This is the "slow" calculation of the Look-up table that can be spown in another thread 
-        (especially to avoid Tango from timing out) 
+        This is the "slow" calculation of the Look-up table that can be spown in another thread
+        (especially to avoid Tango from timing out)
         """
         with self._sem:
             if self.dis:
@@ -200,6 +200,19 @@ class DistortionCorrectionDeviceServer(BasePostProcess) :
         self.__darkcurrent_filename = None
         self.__flatfield_filename = None
         self.__pyFAISink = None
+        self.set_change_event("SplineFile", True, False)
+        self.set_change_event("DarkCurrent", True, False)
+        self.set_change_event("FlatField", True, False)
+
+    def readSplineFile(self, attr):
+        attr.set_value(str(self.__spline_filename))
+
+    def readDarkCurrent(self, attr):
+        attr.set_value(str(self.__darkcurrent_filename))
+
+    def readFlatField(self, attr):
+        attr.set_value(str(self.__flatfield_filename))
+
 
     def set_state(self, state) :
         """
@@ -230,7 +243,7 @@ class DistortionCorrectionDeviceServer(BasePostProcess) :
                     return
         PyTango.Device_4Impl.set_state(self, state)
 
-    def setDarkcurrentFile(self, filepath):
+    def setDarkcurrentImage(self, filepath):
         """
         @param imagefile: filename with the path to the dark image
         """
@@ -238,6 +251,7 @@ class DistortionCorrectionDeviceServer(BasePostProcess) :
         self.__darkcurrent_filename = filepath
         if(self.__pyFAISink) :
             self.__pyFAISink.setDarkcurrentFile(filepath)
+        self.push_change_event("DarkCurrent", filepath)
 
     def setFlatfieldImage(self, filepath):
         """
@@ -246,6 +260,7 @@ class DistortionCorrectionDeviceServer(BasePostProcess) :
         self.__flatfield_filename = filepath
         if(self.__pyFAISink) :
             self.__pyFAISink.setFlatfieldFile(filepath)
+        self.push_change_event("FlatField", filepath)
 
     def setSplineFile(self, filepath):
         """
@@ -255,6 +270,7 @@ class DistortionCorrectionDeviceServer(BasePostProcess) :
         self.__spline_filename = filepath
         if(self.__pyFAISink) :
             self.__pyFAISink.setSplineFile(filepath)
+        self.push_change_event("SplineFile", filepath)
 
     def Reset(self) :
         """
@@ -279,7 +295,7 @@ class DistortionCorrectionDeviceServerClass(PyTango.DeviceClass) :
 
     #    Command definitions
     cmd_list = {
-        'setDarkcurrentFile':
+        'setDarkcurrentImage':
         [[PyTango.DevString, "Full path of darkcurrent image file"],
          [PyTango.DevVoid, ""]],
 
@@ -309,6 +325,19 @@ class DistortionCorrectionDeviceServerClass(PyTango.DeviceClass) :
             [[PyTango.DevLong,
             PyTango.SCALAR,
             PyTango.READ_WRITE]],
+        'SplineFile':
+            [[PyTango.DevString,
+            PyTango.SCALAR,
+            PyTango.READ]],
+        'DarkCurrent':
+            [[PyTango.DevString,
+            PyTango.SCALAR,
+            PyTango.READ]],
+        'FlatField':
+            [[PyTango.DevString,
+            PyTango.SCALAR,
+            PyTango.READ]],
+
 #        'delete_dark_after_read':
 #        [[PyTango.DevBoolean,
 #          PyTango.SCALAR,
