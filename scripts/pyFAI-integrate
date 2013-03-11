@@ -46,7 +46,7 @@ from PyQt4 import QtCore, QtGui, uic
 from PyQt4.QtCore import SIGNAL
 import pyFAI, fabio
 from pyFAI.opencl import ocl
-from pyFAI.utils import float_, int_
+from pyFAI.utils import float_, int_, str_
 UIC = op.join(op.dirname(pyFAI.__file__), "integration.ui")
 
 try:
@@ -152,7 +152,7 @@ class AIWidget(QtGui.QWidget):
                     logger.error("error in parsing radial range: %s" % error)
                 else:
                     kwarg["radial_range"] = (rad_min, rad_max)
-                if kwarg["radial_range"] == ("", ""):
+                if kwarg["radial_range"] == (None, None):
                     kwarg["radial_range"] = None
 
             if self.do_azimuthal_range:
@@ -163,7 +163,7 @@ class AIWidget(QtGui.QWidget):
                     logger.error("error in parsing azimuthal range: %s" % error)
                 else:
                     kwarg["azimuth_range"] = (azim_min, azim_max)
-                if kwarg["azimuth_range"] == (""  , ""  ):
+                if kwarg["azimuth_range"] == (None, None):
                     kwarg["azimuth_range"] = None
 
             logger.info("Parameters for integration:%s%s" % (os.linesep,
@@ -291,37 +291,37 @@ class AIWidget(QtGui.QWidget):
         data = json.load(open(filename))
         setup_data = {  "poni": self.poni.setText,
 #        "detector": self.all_detectors[self.detector.getCurrentIndex()],
-                        "wavelength":lambda a:self.wavelength.setText(str(a)),
-                        "splineFile":lambda a:self.splineFile.setText(str(a)),
-                        "pixel1":lambda a: self.pixel1.setText(str(a)),
-                        "pixel2":lambda a:self.pixel2.setText(str(a)),
-                        "dist":lambda a:self.dist.setText(str(a)),
-                        "poni1":lambda a:self.poni1.setText(str(a)),
-                        "poni2":lambda a:self.poni2.setText(str(a)),
-                        "rot1":lambda a:self.rot1.setText(str(a)),
-                        "rot2":lambda a:self.rot2.setText(str(a)),
-                        "rot3":lambda a:self.rot3.setText(str(a)),
+                        "wavelength":lambda a:self.wavelength.setText(str_(a)),
+                        "splineFile":lambda a:self.splineFile.setText(str_(a)),
+                        "pixel1":lambda a: self.pixel1.setText(str_(a)),
+                        "pixel2":lambda a:self.pixel2.setText(str_(a)),
+                        "dist":lambda a:self.dist.setText(str_(a)),
+                        "poni1":lambda a:self.poni1.setText(str_(a)),
+                        "poni2":lambda a:self.poni2.setText(str_(a)),
+                        "rot1":lambda a:self.rot1.setText(str_(a)),
+                        "rot2":lambda a:self.rot2.setText(str_(a)),
+                        "rot3":lambda a:self.rot3.setText(str_(a)),
                         "do_dummy": self.do_dummy.setChecked,
                         "do_dark": self.do_dark.setChecked,
                         "do_flat": self.do_flat.setChecked,
                         "do_polarization": self.do_polarization.setChecked,
-                        "val_dummy":lambda a: self.val_dummy.setText(str(a)),
-                        "delta_dummy":lambda a: self.delta_dummy.setText(str(a)),
+                        "val_dummy":lambda a: self.val_dummy.setText(str_(a)),
+                        "delta_dummy":lambda a: self.delta_dummy.setText(str_(a)),
                         "do_mask":  self.do_mask.setChecked,
-                        "mask_file":lambda a:self.mask_file.setText(str(a)),
-                        "dark_current":lambda a:self.dark_current.setText(str(a)),
-                        "flat_field":lambda a:self.flat_field.setText(str(a)),
+                        "mask_file":lambda a:self.mask_file.setText(str_(a)),
+                        "dark_current":lambda a:self.dark_current.setText(str_(a)),
+                        "flat_field":lambda a:self.flat_field.setText(str_(a)),
                         "polarization_factor":self.polarization_factor.setValue,
-                        "rad_pt":lambda a:self.rad_pt.setText(str(a)),
+                        "rad_pt":lambda a:self.rad_pt.setText(str_(a)),
                         "do_2D":self.do_2D.setChecked,
-                        "azim_pt":lambda a:self.azim_pt.setText(str(a)),
+                        "azim_pt":lambda a:self.azim_pt.setText(str_(a)),
                         "chi_discontinuity_at_0": self.chi_discontinuity_at_0.setChecked,
                         "do_radial_range": self.do_radial_range.setChecked,
                         "do_azimuthal_range": self.do_azimuthal_range.setChecked,
-                        "radial_range_min":lambda a:self.radial_range_min.setText(str(a)),
-                        "radial_range_max":lambda a:self.radial_range_max.setText(str(a)),
-                        "azimuth_range_min":lambda a:self.azimuth_range_min.setText(str(a)),
-                        "azimuth_range_max":lambda a:self.azimuth_range_max.setText(str(a)),
+                        "radial_range_min":lambda a:self.radial_range_min.setText(str_(a)),
+                        "radial_range_max":lambda a:self.radial_range_max.setText(str_(a)),
+                        "azimuth_range_min":lambda a:self.azimuth_range_min.setText(str_(a)),
+                        "azimuth_range_max":lambda a:self.azimuth_range_max.setText(str_(a)),
                    }
         for key, value in setup_data.items():
             if key in data:
