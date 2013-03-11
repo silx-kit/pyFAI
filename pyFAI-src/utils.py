@@ -63,18 +63,33 @@ except (ImportError, WindowsError) as err:
 
 
 def float_(val):
+    """
+    Convert anything to a float ... or None if not applicable 
+    """
     try:
-        f = float(str(val))
+        f = float(str(val).strip())
     except ValueError:
-        f = ""
+        f = None
     return f
 
 def int_(val):
+    """
+    Convert anything to an int ... or None if not applicable 
+    """
     try:
-        f = int(str(val))
+        f = int(str(val).strip())
     except ValueError:
-        f = ""
+        f = None
     return f
+
+def str_(val):
+    """
+    Convert anything to a string ... but None -> "" 
+    """
+    s = ""
+    if val != None:
+        s = str(val)
+    return s
 
 
 def timeit(func):
