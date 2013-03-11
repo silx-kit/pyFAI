@@ -29,8 +29,9 @@ sys.path.append(os.path.join(cwd, "build", "lib.linux-x86_64-2.6"))
 import PyTango
 import numpy
 from Lima import Core
-from Utils import getDataFromFile, BasePostProcess
+from Utils import BasePostProcess
 import pyFAI
+import fabio
 
 class PyFAISink(Core.Processlib.SinkTaskBase):
     def __init__(self, azimuthalIntgrator=None, shapeIn=(2048, 2048), shapeOut=(360, 500), unit="r_mm"):
@@ -118,19 +119,19 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
 
     def setDarkcurrentFile(self, imagefile):
         try:
-            darkcurrentImage = getDataFromFile(imagefile)
+            darkcurrentImage = fabio.open(imagefile).data
         except Exception as error:
             logger.warning("setDarkcurrentFile: Unable to read file %s: %s" % (imagefile, error))
         else:
-            self.ai.set_darkcurrent(darkcurrentImage.buffer)
+            self.ai.set_darkcurrent(darkcurrentImage)
 
     def setFlatfieldFile(self, imagefile):
         try:
-            backGroundImage = getDataFromFile(imagefile)
+            backGroundImage = fabio.open(imagefile).data
         except Exception as error:
             logger.warning("setFlatfieldFile: Unable to read file %s: %s" % (imagefile, error))
         else:
-            self.ai.set_flatfield(backGroundImage.buffer)
+            self.ai.set_flatfield(backGroundImage)
 
     def setJsonConfig(self, jsonconfig):
         print("start config ...")
@@ -177,7 +178,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         do_mask = config.get("do_mask")
         if mask_file and os.path.exists(mask_file) and do_mask:
             try:
-                mask = getDataFromFile(mask_file).buffer
+                mask = fabio.open(mask_file).data  
             except Exception as error:
                 logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
             else:
@@ -185,19 +186,19 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         dark_files = [i.strip() for i in config.get("dark_current", "").split(",")
                       if os.path.isfile(i.strip())]
         if dark_files and config.get("do_dark"):
-            d0 = getDataFromFile(dark_files[0]).buffer
-            darks = numpy.zeros(d0.shape[0], d0.shape[1], len(dark_files), dtype=numpy.float32)
+            d0 = fabio.open(dark_files[0]).data  
+            darks = numpy.zeros((d0.shape[0], d0.shape[1], len(dark_files)), dtype=numpy.float32)
             for i, f in enumerate(dark_files):
-                darks[:, :, i] = getDataFromFile(f).buffer
+                darks[:, :, i] = fabio.open(f).data  
             self.ai.darkcurrent = darks.mean(axis= -1)
 
         flat_files = [i.strip() for i in config.get("flat_field", "").split(",")
                       if os.path.isfile(i.strip())]
         if flat_files and config.get("do_flat"):
-            d0 = getDataFromFile(flat_files[0]).buffer
-            flats = numpy.zeros(d0.shape[0], d0.shape[1], len(flat_files), dtype=numpy.float32)
+            d0 = fabio.open(flat_files[0]).data  
+            flats = numpy.zeros((d0.shape[0], d0.shape[1], len(flat_files)), dtype=numpy.float32)
             for i, f in enumerate(flat_files):
-                flats[:, :, i] = getDataFromFile(f).buffer
+                flats[:, :, i] = fabio.open(f).data  
             self.ai.darkcurrent = flats.mean(axis= -1)
 
         if config.get("do_2D"):

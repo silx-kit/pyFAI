@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# coding: utf8
+#coding: utf8
 """
 Tango device server for setting up pyFAI azimuthal integrator in a LImA ProcessLib.
 
@@ -77,10 +77,16 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         saving = ctControl.saving()
         sav_parms = saving.getParameters()
         directory = sav_parms.directory
+        new_dir = os.path.join(directory,"DIST_COR__")
+        if not os.path.exists(new_dir):
+            try:
+                os.makedirs(new_dir)
+            except: #No luck withthreads
+                pass
         prefix = sav_parms.prefix
         nextNumber = sav_parms.nextNumber
         indexFormat = sav_parms.indexFormat
-        output = os.path.join(directory, prefix + indexFormat % (nextNumber + data.frameNumber) + ".cor.edf")
+        output = os.path.join(new_dir, prefix + indexFormat % (nextNumber + data.frameNumber) + ".edf")
         header = self.header.copy()
         header["index"] = nextNumber + data.frameNumber
         if pyopencl and self.ocl_integrator:
@@ -231,7 +237,7 @@ class DistortionCorrectionDeviceServer(BasePostProcess) :
 
         self.__darkcurrent_filename = filepath
         if(self.__pyFAISink) :
-            self.__pyFAISink.setBackgroundFile(filepath)
+            self.__pyFAISink.setDarkcurrentFile(filepath)
 
     def setFlatfieldImage(self, filepath):
         """

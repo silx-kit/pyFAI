@@ -133,7 +133,7 @@ class AIWidget(QtGui.QWidget):
 
             kwarg["nbPt_rad"] = int(str(self.rad_pt.text()).strip())
             if self.do_2D.isChecked():
-                kwarg["nbPt_azim"] = int(str(self.rad_pt.text()).strip())
+                kwarg["nbPt_azim"] = int(str(self.azim_pt.text()).strip())
 
             if self.do_OpenCL.isChecked():
                 platform = ocl.get_platform(self.platform.currentText())
@@ -152,6 +152,8 @@ class AIWidget(QtGui.QWidget):
                     logger.error("error in parsing radial range: %s" % error)
                 else:
                     kwarg["radial_range"] = (rad_min, rad_max)
+                if kwarg["radial_range"] == ("", ""):
+                    kwarg["radial_range"] = None
 
             if self.do_azimuthal_range:
                 try:
@@ -161,6 +163,8 @@ class AIWidget(QtGui.QWidget):
                     logger.error("error in parsing azimuthal range: %s" % error)
                 else:
                     kwarg["azimuth_range"] = (azim_min, azim_max)
+                if kwarg["azimuth_range"] == (""  , ""  ):
+                    kwarg["azimuth_range"] = None
 
             logger.info("Parameters for integration:%s%s" % (os.linesep,
                             os.linesep.join(["\t%s:\t%s" % (k, v) for k, v in kwarg.items()])))
@@ -235,25 +239,25 @@ class AIWidget(QtGui.QWidget):
                     "pixel1": float_(self.pixel1.text()),
                     "pixel2":float_(self.pixel2.text()),
                     "dist":float_(self.dist.text()),
-                    "poni1":float_(self.poni1.text()).strip(),
-                    "poni2":float_(self.poni2.text()).strip(),
-                    "rot1":float_(self.rot1.text()).strip(),
-                    "rot2":float_(self.rot2.text()).strip(),
-                    "rot3":float_(self.rot3.text()).strip(),
+                    "poni1":float_(self.poni1.text()),
+                    "poni2":float_(self.poni2.text()),
+                    "rot1":float_(self.rot1.text()),
+                    "rot2":float_(self.rot2.text()),
+                    "rot3":float_(self.rot3.text()),
                     "do_dummy": bool(self.do_dummy.isChecked()),
                     "do_mask":  bool(self.do_mask.isChecked()),
                     "do_dark": bool(self.do_dark.isChecked()),
                     "do_flat": bool(self.do_flat.isChecked()),
                     "do_polarization":bool(self.do_polarization.isChecked()),
-                    "val_dummy":float_(self.val_dummy.text()).strip(),
-                    "delta_dummy":float_(self.delta_dummy.text()).strip(),
+                    "val_dummy":float_(self.val_dummy.text()),
+                    "delta_dummy":float_(self.delta_dummy.text()),
                     "mask_file":str(self.mask_file.text()).strip(),
                     "dark_current":str(self.dark_current.text()).strip(),
                     "flat_field":str(self.flat_field.text()).strip(),
                     "polarization_factor":float_(self.polarization_factor.value()),
                     "rad_pt":int_(self.rad_pt.text()),
                     "do_2D":bool(self.do_2D.isChecked()),
-                    "azim_pt":int_(self.rad_pt.text()),
+                    "azim_pt":int_(self.azim_pt.text()),
                     "chi_discontinuity_at_0": bool(self.chi_discontinuity_at_0.isChecked()),
                     "do_radial_range": bool(self.do_radial_range.isChecked()),
                     "do_azimuthal_range": bool(self.do_azimuthal_range.isChecked()),
@@ -287,37 +291,37 @@ class AIWidget(QtGui.QWidget):
         data = json.load(open(filename))
         setup_data = {  "poni": self.poni.setText,
 #        "detector": self.all_detectors[self.detector.getCurrentIndex()],
-                        "wavelength":self.wavelength.setText,
-                        "splineFile":self.splineFile.setText,
-                        "pixel1": self.pixel1.setText,
-                        "pixel2":self.pixel2.setText,
-                        "dist":self.dist.setText,
-                        "poni1":self.poni1.setText,
-                        "poni2":self.poni2.setText,
-                        "rot1":self.rot1.setText,
-                        "rot2":self.rot2.setText,
-                        "rot3":self.rot3.setText,
+                        "wavelength":lambda a:self.wavelength.setText(str(a)),
+                        "splineFile":lambda a:self.splineFile.setText(str(a)),
+                        "pixel1":lambda a: self.pixel1.setText(str(a)),
+                        "pixel2":lambda a:self.pixel2.setText(str(a)),
+                        "dist":lambda a:self.dist.setText(str(a)),
+                        "poni1":lambda a:self.poni1.setText(str(a)),
+                        "poni2":lambda a:self.poni2.setText(str(a)),
+                        "rot1":lambda a:self.rot1.setText(str(a)),
+                        "rot2":lambda a:self.rot2.setText(str(a)),
+                        "rot3":lambda a:self.rot3.setText(str(a)),
                         "do_dummy": self.do_dummy.setChecked,
                         "do_dark": self.do_dark.setChecked,
                         "do_flat": self.do_flat.setChecked,
                         "do_polarization": self.do_polarization.setChecked,
-                        "val_dummy": self.val_dummy.setText,
-                        "delta_dummy": self.delta_dummy.setText,
+                        "val_dummy":lambda a: self.val_dummy.setText(str(a)),
+                        "delta_dummy":lambda a: self.delta_dummy.setText(str(a)),
                         "do_mask":  self.do_mask.setChecked,
-                        "mask_file":self.mask_file.setText,
-                        "dark_current":self.dark_current.setText,
-                        "flat_field":self.flat_field.setText,
+                        "mask_file":lambda a:self.mask_file.setText(str(a)),
+                        "dark_current":lambda a:self.dark_current.setText(str(a)),
+                        "flat_field":lambda a:self.flat_field.setText(str(a)),
                         "polarization_factor":self.polarization_factor.setValue,
-                        "rad_pt":self.rad_pt.setText,
+                        "rad_pt":lambda a:self.rad_pt.setText(str(a)),
                         "do_2D":self.do_2D.setChecked,
-                        "azim_pt":self.azim_pt.setText,
+                        "azim_pt":lambda a:self.azim_pt.setText(str(a)),
                         "chi_discontinuity_at_0": self.chi_discontinuity_at_0.setChecked,
                         "do_radial_range": self.do_radial_range.setChecked,
                         "do_azimuthal_range": self.do_azimuthal_range.setChecked,
-                        "radial_range_min":self.radial_range_min.setText,
-                        "radial_range_max":self.radial_range_max.setText,
-                        "azimuth_range_min":self.azimuth_range_min.setText,
-                        "azimuth_range_max":self.azimuth_range_max.setText,
+                        "radial_range_min":lambda a:self.radial_range_min.setText(str(a)),
+                        "radial_range_max":lambda a:self.radial_range_max.setText(str(a)),
+                        "azimuth_range_min":lambda a:self.azimuth_range_min.setText(str(a)),
+                        "azimuth_range_max":lambda a:self.azimuth_range_max.setText(str(a)),
                    }
         for key, value in setup_data.items():
             if key in data:
@@ -456,7 +460,7 @@ class AIWidget(QtGui.QWidget):
                       if os.path.isfile(i.strip())]
         if dark_files and bool(self.do_dark.isChecked()):
             d0 = fabio.open(dark_files[0]).data
-            darks = numpy.zeros(d0.shape[0], d0.shape[1], len(dark_files), dtype=numpy.float32)
+            darks = numpy.zeros((d0.shape[0], d0.shape[1], len(dark_files)), dtype=numpy.float32)
             for i, f in enumerate(dark_files):
                 darks[:, :, i] = fabio.open(f).data
             self.ai.darkcurrent = darks.mean(axis= -1)
@@ -465,7 +469,7 @@ class AIWidget(QtGui.QWidget):
                       if os.path.isfile(i.strip())]
         if flat_files and bool(self.do_flat.isChecked()):
             d0 = fabio.open(flat_files[0]).data
-            flats = numpy.zeros(d0.shape[0], d0.shape[1], len(flat_files), dtype=numpy.float32)
+            flats = numpy.zeros((d0.shape[0], d0.shape[1], len(flat_files)), dtype=numpy.float32)
             for i, f in enumerate(flat_files):
                 flats[:, :, i] = fabio.open(f).data
             self.ai.darkcurrent = flats.mean(axis= -1)
