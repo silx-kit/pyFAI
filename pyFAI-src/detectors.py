@@ -254,7 +254,10 @@ class Detector(object):
     def set_mask(self, mask):
         with self._sem:
             self._mask = mask
-            self._mask_crc = crc32(mask)
+            if mask is not None:
+                self._mask_crc = crc32(mask)
+            else:
+                self._mask_crc = None
     mask = property(get_mask, set_mask)
     def set_maskfile(self, maskfile):
         try:
