@@ -214,7 +214,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         # For now we do not calculate the LUT as the size of the input image is unknown
 
 
-class AzimuthalIntegratonDeviceServer(BasePostProcess) :
+class AzimuthalIntegrationDeviceServer(BasePostProcess) :
     AZIMUTHAL_TASK_NAME = 'AzimuthalIntegrationTask'
     Core.DEB_CLASS(Core.DebModApplication, 'AzimuthalIntegration')
     def __init__(self, cl, name):
@@ -224,7 +224,7 @@ class AzimuthalIntegratonDeviceServer(BasePostProcess) :
         self.get_device_properties(self.get_device_class())
 
         BasePostProcess.__init__(self, cl, name)
-        AzimuthalIntegratonDeviceServer.init_device(self)
+        AzimuthalIntegrationDeviceServer.init_device(self)
 
     def set_state(self, state) :
         if(state == PyTango.DevState.OFF) :
@@ -365,4 +365,4 @@ def set_control_ref(control_class_ref):
     _control_ref = control_class_ref
 
 def get_tango_specific_class_n_device() :
-    return AzimuthalIntegrationDeviceServerClass, AzimuthalIntegratonDeviceServer
+    return AzimuthalIntegrationDeviceServerClass, AzimuthalIntegrationDeviceServer
