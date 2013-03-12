@@ -89,7 +89,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         """
         print "did a reset"
         self.ai.reset()
-        print self.__repr__()
+        #print self.__repr__()
 
     def reconfig(self, shape=(2048, 2048)):
         """
