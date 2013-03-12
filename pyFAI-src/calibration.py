@@ -714,8 +714,8 @@ class Recalibration(object):
                 numpy.random.shuffle(all_points)
                 for idx in all_points:
                     out = self.peakPicker.massif.nearest_peak(idx)
-                    print "[ %3i, %3i ] -> [ %.1f, %.1f ]" % (idx[1], idx[0], out[1], out[0])
                     if out is not None:
+                        print "[ %3i, %3i ] -> [ %.1f, %.1f ]" % (idx[1], idx[0], out[1], out[0])
                         p0, p1 = out
                         if mask[p0, p1]:
                             if (out not in res) and (self.peakPicker.data[p0, p1] > upper_limit):
