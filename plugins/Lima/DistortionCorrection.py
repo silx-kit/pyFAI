@@ -39,9 +39,6 @@ except ImportError:
     pyopencl = None
     logger.warning("Unable to import pyopencl, will use OpenMP (if available)")
 import PyTango
-from os.path import dirname
-cwd = dirname(dirname(dirname(os.path.abspath(__file__))))
-sys.path.append(os.path.join(cwd, "build", "lib.linux-x86_64-2.6"))
 import numpy
 from Lima import Core
 from Utils import BasePostProcess
@@ -67,9 +64,22 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         self.splinefile = self.dis = self.det = self.ocl_integrator = None
         self.darkfile = self.darkcurrent = self.darkcurrent_crc = None
         self.flatfile = self.flatfield = self.flatfield_crc = None
+        self.subdir = ""
+        self.extension = ".cor"
+        self.binning = (1,1)
+        self.shape = (None, None)
         self.setSplineFile(splinefile)
         self.setDarkcurrentFile(darkfile)
         self.setFlatfieldFile(flatfile)
+
+    def __repr__(self):
+        lstout = ["Spline filename: %s" % self.splinefile,
+                "Dark current image: %s" % self.darkfile,
+                "Flat field image: %s" % self.flatfile,
+                "Binning factor: %s, %s"%self.binning,
+                "Image shape: %s, %s" % self.shape,
+                "Directory: %s, \tExtension: %s" % (self.subdir, self.extension)]
+        return os.linesep.join(lstout)
 
     def process(self, data) :
         """
@@ -80,16 +90,30 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         saving = ctControl.saving()
         sav_parms = saving.getParameters()
         directory = sav_parms.directory
-        new_dir = os.path.join(directory,"DIST_COR__")
-        if not os.path.exists(new_dir):
+        if not self.subdir:
+            directory = sav_parms.directory
+        elif self.subdir.startswith("/"):
+            directory = self.subdir
+        else:
+            directory = os.path.join(sav_parms.directory, self.subdir)
+
+        if not os.path.exists(directory):
+            logger.error("Ouput directory does not exist !!!  %s" % directory)
+
             try:
-                os.makedirs(new_dir)
+                os.makedirs(directory)
             except: #No luck withthreads
                 pass
+        if not self.extension:
+            self.extension = ".cor"
+        elif (self.extension == ".edf") and (self.subdir == ""):
+            logger.warning("Modify extenstion to .cor.edf to prevent overwriting raw files !!!")
+            self.extension = ".cor.edf"
+
         prefix = sav_parms.prefix
         nextNumber = sav_parms.nextNumber
         indexFormat = sav_parms.indexFormat
-        output = os.path.join(new_dir, prefix + indexFormat % (nextNumber + data.frameNumber) + ".edf")
+        output = os.path.join(directory, prefix + indexFormat % (nextNumber + data.frameNumber) + self.extension)
         header = self.header.copy()
         header["index"] = nextNumber + data.frameNumber
         if pyopencl and self.ocl_integrator:
@@ -163,6 +187,21 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
                 self.reset()
                 self.header["splinefile"] = splineFile
 
+    def setSubdir(self, path):
+        """
+        Set the relative or absolute path for processed data
+        """
+        self.subdir = path
+
+    def setExtension(self, ext):
+        """
+        enforce the extension of the processed data file written
+        """
+        if ext:
+            self.extension = ext
+        else:
+            self.extension = None
+
     def calc_LUT(self):
         """
         This is the "slow" calculation of the Look-up table that can be spown in another thread
@@ -199,22 +238,12 @@ class DistortionCorrectionDeviceServer(BasePostProcess) :
         BasePostProcess.__init__(self, cl, name)
         DistortionCorrectionDeviceServer.init_device(self)
 
+        self.__pyFAISink = None
+        self.__subdir = None
+        self.__extension = None
         self.__spline_filename = None
         self.__darkcurrent_filename = None
         self.__flatfield_filename = None
-        self.__pyFAISink = None
-        self.set_change_event("SplineFile", True, False)
-        self.set_change_event("DarkCurrent", True, False)
-        self.set_change_event("FlatField", True, False)
-
-    def readSplineFile(self, attr):
-        attr.set_value(str(self.__spline_filename))
-
-    def readDarkCurrent(self, attr):
-        attr.set_value(str(self.__darkcurrent_filename))
-
-    def readFlatField(self, attr):
-        attr.set_value(str(self.__flatfield_filename))
 
 
     def set_state(self, state) :
@@ -275,6 +304,22 @@ class DistortionCorrectionDeviceServer(BasePostProcess) :
             self.__pyFAISink.setSplineFile(filepath)
         self.push_change_event("SplineFile", filepath)
 
+    def setProcessedSubdir(self, filepath):
+        """
+        Directory  (relative or absolute) for processed data
+        """
+        self.__subdir = filepath
+        if self.__pyFAISink:
+            self.__pyFAISink.setSubdir(self.__subdir)
+
+    def setProcessedExt(self, ext):
+        """
+        Extension for prcessed data files
+        """
+        self.__extension = ext
+        if self.__pyFAISink:
+            self.__pyFAISink.setExtension(self.__extension)
+
     def Reset(self) :
         """
         Force the reinitialization
@@ -284,6 +329,24 @@ class DistortionCorrectionDeviceServer(BasePostProcess) :
                                      flatfile=self.__flatfield_filename)
         self.__Task.setSinkTask(self.__pyFAISink)
 
+    def read_Parameters(self, attr):
+        """
+        Called  when reading the "Parameters" attribute
+        """
+#        logger.warning("in AzimuthalIntegrationDeviceServer.read_Parameters")
+        if self.__pyFAISink:
+            attr.set_value(self.__pyFAISink.__repr__())
+        else:
+            attr.set_value("No pyFAI Sink processlib active for the moment")
+
+    def read_SplineFile(self, attr):
+        attr.set_value(str(self.__spline_filename))
+
+    def read_DarkCurrent(self, attr):
+        attr.set_value(str(self.__darkcurrent_filename))
+
+    def read_FlatField(self, attr):
+        attr.set_value(str(self.__flatfield_filename))
 
 class DistortionCorrectionDeviceServerClass(PyTango.DeviceClass) :
         #        Class Properties
@@ -308,6 +371,14 @@ class DistortionCorrectionDeviceServerClass(PyTango.DeviceClass) :
 
         'setSplineFile':
         [[PyTango.DevString, "Full path of spline distortion file"],
+         [PyTango.DevVoid, ""]],
+
+        'setProcessedSubdir':
+        [[PyTango.DevString, "Sub-directory with processed data"],
+         [PyTango.DevVoid, ""]],
+
+        'setProcessedExt':
+        [[PyTango.DevString, "Extension of processed data files"],
          [PyTango.DevVoid, ""]],
 
         'Start':
@@ -337,6 +408,10 @@ class DistortionCorrectionDeviceServerClass(PyTango.DeviceClass) :
             PyTango.SCALAR,
             PyTango.READ]],
         'FlatField':
+            [[PyTango.DevString,
+            PyTango.SCALAR,
+            PyTango.READ]],
+        'Parameters':
             [[PyTango.DevString,
             PyTango.SCALAR,
             PyTango.READ]],

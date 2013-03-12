@@ -67,17 +67,18 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         """
         pretty print of myself
         """
-        lstout = ["Azimuthal Integrator:", self.ai.__repr__()]
-        lstout.append("Input image shape: %s" % list(self.shapeIn))
-        lstout.append("Number of points in radial direction: %s" % self.nbpt_rad)
-        lstout.append("Number of points in azimuthal direction: %s" % self.nbpt_azim)
-        lstout.append("Unit in radial dimension: %s" % self.unit.REPR)
-        lstout.append("Correct for solid angle: %s" % self.correct_solid_angle)
-        lstout.append("Polarization factor: %s" % self.polarization)
-        lstout.append("Dark current image: %s" % self.dark_current_image)
-        lstout.append("Flat field image: %s" % self.flat_field_image)
-        lstout.append("Mask image: %s" % self.mask_image)
-        lstout.append("Dummy: %s, Delta_Dummy: %s" % (self.dummy, self.delta_dummy))
+        lstout = ["Azimuthal Integrator:", self.ai.__repr__(),
+                "Input image shape: %s" % list(self.shapeIn),
+                "Number of points in radial direction: %s" % self.nbpt_rad,
+                "Number of points in azimuthal direction: %s" % self.nbpt_azim,
+                "Unit in radial dimension: %s" % self.unit.REPR,
+                "Correct for solid angle: %s" % self.correct_solid_angle,
+                "Polarization factor: %s" % self.polarization,
+                "Dark current image: %s" % self.dark_current_image,
+                "Flat field image: %s" % self.flat_field_image,
+                "Mask image: %s" % self.mask_image,
+                "Dummy: %s,\tDelta_Dummy: %s" % (self.dummy, self.delta_dummy),
+                "Directory: %s, \tExtension: %s" % (self.subdir, self.extension)]
         return os.linesep.join(lstout)
 
     def do_2D(self):
@@ -138,6 +139,10 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
             directory = os.path.join(sav_parms.directory, self.subdir)
         if not os.path.exists(directory):
             logger.error("Ouput directory does not exist !!!  %s" % directory)
+            try:
+                os.makedirs(new_dir)
+            except:  # No luck withthreads
+                pass
 
         directory = sav_parms.directory
         prefix = sav_parms.prefix
