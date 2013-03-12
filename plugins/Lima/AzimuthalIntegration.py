@@ -51,7 +51,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         self.polarization = 0
         self.dummy = None
         self.delta_dummy = None
-        self.correct_solid_angle=True
+        self.correct_solid_angle = True
         self.dark_current_image = None
         self.flat_field_image = None
         self.mask_image = None
@@ -67,17 +67,17 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         """
         pretty print of myself
         """
-        lstout = ["Azimuthal Integrator:",self.ai.__repr__()]
-        lstout.append("Input image shape: %s"%list(self.shapeIn))
-        lstout.append("Number of points in radial direction: %s"%self.nbpt_rad)
-        lstout.append("Number of points in azimuthal direction: %s"%self.nbpt_azim)
-        lstout.append("Unit in radial dimension: %s"%self.unit.REPR)
-        lstout.append("Correct for solid angle: %s"%self.correct_solid_angle)
-        lstout.append("Polarization factor: %s"%self.polarization)
-        lstout.append("Dark current image: %s"%self.dark_current_image)
-        lstout.append("Flat field image: %s"%self.flat_field_image)
-        lstout.append("Mask image: %s"%self.mask_image)
-        lstout.append("Dummy: %s, Delta_Dummy: %s"%(self.dummy,self.delta_dummy))
+        lstout = ["Azimuthal Integrator:", self.ai.__repr__()]
+        lstout.append("Input image shape: %s" % list(self.shapeIn))
+        lstout.append("Number of points in radial direction: %s" % self.nbpt_rad)
+        lstout.append("Number of points in azimuthal direction: %s" % self.nbpt_azim)
+        lstout.append("Unit in radial dimension: %s" % self.unit.REPR)
+        lstout.append("Correct for solid angle: %s" % self.correct_solid_angle)
+        lstout.append("Polarization factor: %s" % self.polarization)
+        lstout.append("Dark current image: %s" % self.dark_current_image)
+        lstout.append("Flat field image: %s" % self.flat_field_image)
+        lstout.append("Mask image: %s" % self.mask_image)
+        lstout.append("Dummy: %s, Delta_Dummy: %s" % (self.dummy, self.delta_dummy))
         return os.linesep.join(lstout)
 
     def do_2D(self):
@@ -89,7 +89,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         """
         print "did a reset"
         self.ai.reset()
-        #print self.__repr__()
+        # print self.__repr__()
 
     def reconfig(self, shape=(2048, 2048)):
         """
@@ -123,22 +123,22 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
                  "delta_dummy": self.delta_dummy,
                  "method": "lut",
                  "polarization_factor":self.polarization,
-                 #"filename": None,
+                 # "filename": None,
                  "safe": True,
                  "data": data.buffer,
-                 } 
+                 }
         ctControl = _control_ref()
         saving = ctControl.saving()
         sav_parms = saving.getParameters()
-        if not self.subdir: 
+        if not self.subdir:
             directory = sav_parms.directory
         elif self.subdir.startswith("/"):
             directory = self.subdir
         else:
-            directory = os.path.join(sav_parms.directory,self.subdir)
+            directory = os.path.join(sav_parms.directory, self.subdir)
         if not os.path.exists(directory):
-            logger.error("Ouput directory does not exist !!!  %s"%directory)
-       
+            logger.error("Ouput directory does not exist !!!  %s" % directory)
+
         directory = sav_parms.directory
         prefix = sav_parms.prefix
         nextNumber = sav_parms.nextNumber
@@ -158,16 +158,9 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
             else:
                 kwarg["filename"] += ".xy"
         try:
-
             if self.do_2D():
                 self.ai.integrate2d(**kwarg)
             else:
-                kwarg["nbPt"] = self.nbpt_rad
-                if self.extension:
-                    kwarg["filename"] += self.extension
-                else:
-                    kwarg["filename"] += ".xy"
-
                 self.ai.integrate1d(**kwarg)
         except:
             print data.buffer.shape, data.buffer.size
@@ -183,7 +176,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         """
         self.subdir = path
 
-    def setExtension(self,ext):
+    def setExtension(self, ext):
         """
         enforce the extension of the processed data file written
         """
@@ -260,7 +253,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
                 logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
             else:
                 self.ai.mask = mask
-                self.mask_image =  os.path.abspath(mask_file)
+                self.mask_image = os.path.abspath(mask_file)
 
         self.dark_current_image = config.get("dark_current")
         dark_files = [i.strip() for i in config.get("dark_current", "").split(",")
@@ -303,7 +296,7 @@ class AzimuthalIntegrationDeviceServer(BasePostProcess) :
         self.__jsonConfig = None
         self.__pyFAISink = None
         self.get_device_properties(self.get_device_class())
-        self.__extension = ""  
+        self.__extension = ""
         self.__subdir = None
         BasePostProcess.__init__(self, cl, name)
         AzimuthalIntegrationDeviceServer.init_device(self)
@@ -369,9 +362,9 @@ class AzimuthalIntegrationDeviceServer(BasePostProcess) :
         """
         Extension for prcessed data files
         """
-        self.__ext = ext
+        self.__extension = ext
         if self.__pyFAISink:
-            self.__pyFAISink.setExtension(self.__ext)
+            self.__pyFAISink.setExtension(self.__extension)
 
 #    @Core.DEB_MEMBER_FUNCT
     def Reset(self) :
