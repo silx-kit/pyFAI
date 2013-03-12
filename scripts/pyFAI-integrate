@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/02/2013"
+__date__ = "12/03/2013"
 __satus__ = "development"
 import sys, logging, json, os, time, types, threading
 import os.path as op
@@ -122,6 +122,7 @@ class AIWidget(QtGui.QWidget):
             else:
                 logger.warning("Undefined unit !!! falling back on 2th_deg")
 
+            kwarg["correctSolidAngle"] = bool(self.do_solid_angle.isChecked())
 
             if bool(self.do_dummy.isChecked()):
                 kwarg["dummy"] = float_(self.val_dummy.text())
@@ -184,7 +185,7 @@ class AIWidget(QtGui.QWidget):
                     for i in range(self.input_data.shape[0]):
                         self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
                         kwarg["data"] = self.input_data[i]
-                        out[i] = self.ai.integrate2d(kwarg)[0]
+                        out[i] = self.ai.integrate2d(**kwarg)[0]
 
                 else:
                     out = numpy.zeros((self.input_data.shape[0], kwarg["nbPt_rad"]), dtype=numpy.float32)
@@ -261,6 +262,7 @@ class AIWidget(QtGui.QWidget):
                     "do_2D":bool(self.do_2D.isChecked()),
                     "azim_pt":int_(self.azim_pt.text()),
                     "chi_discontinuity_at_0": bool(self.chi_discontinuity_at_0.isChecked()),
+                    "do_solid_angle": bool(self.do_solid_angle.isChecked()),
                     "do_radial_range": bool(self.do_radial_range.isChecked()),
                     "do_azimuthal_range": bool(self.do_azimuthal_range.isChecked()),
                     "radial_range_min":float_(self.radial_range_min.text()),
@@ -274,6 +276,9 @@ class AIWidget(QtGui.QWidget):
             to_save["unit"] = "2th_deg"
         elif self.r_mm.isChecked():
             to_save["unit"] = "r_mm"
+        elif self.q_A.isChecked():
+            to_save["unit"] = "q_A^-1"
+
         with open(filename, "w") as myFile:
             json.dump(to_save, myFile, indent=4)
         logger.debug("Saved")
@@ -324,6 +329,7 @@ class AIWidget(QtGui.QWidget):
                         "radial_range_max":lambda a:self.radial_range_max.setText(str_(a)),
                         "azimuth_range_min":lambda a:self.azimuth_range_min.setText(str_(a)),
                         "azimuth_range_max":lambda a:self.azimuth_range_max.setText(str_(a)),
+                        "do_solid_angle": self.do_solid_angle.setChecked,
                    }
         for key, value in setup_data.items():
             if key in data:
@@ -371,14 +377,14 @@ class AIWidget(QtGui.QWidget):
         logger.debug("select_darkcurrent")
         darkcurrent = str(QtGui.QFileDialog.getOpenFileName())
         if darkcurrent:
-            self.dark_current.setText(darkcurrent or "")
+            self.dark_current.setText(str_(darkcurrent))
             self.do_dark.setChecked(True)
 
     def select_flatfield(self):
         logger.debug("select_flatfield")
         flatfield = str(QtGui.QFileDialog.getOpenFileName())
         if flatfield:
-            self.flat_field.setText(flatfield or "")
+            self.flat_field.setText(str_(flatfield))
             self.do_flat.setChecked(True)
 
     def set_ponifile(self, ponifile=None):
@@ -399,7 +405,7 @@ class AIWidget(QtGui.QWidget):
         self.rot2.setText(str_(self.ai.rot2))
         self.rot3.setText(str_(self.ai.rot3))
         self.splineFile.setText(str_(self.ai.detector.splineFile))
-	self.wavelength.setText(str_(self.ai._wavelength))
+        self.wavelength.setText(str_(self.ai._wavelength))
         name = self.ai.detector.name.lower()
         if name in self.all_detectors:
             self.detector.setCurrentIndex(self.all_detectors.index(name))
@@ -465,19 +471,19 @@ class AIWidget(QtGui.QWidget):
                       if os.path.isfile(i.strip())]
         if dark_files and bool(self.do_dark.isChecked()):
             d0 = fabio.open(dark_files[0]).data
-            darks = numpy.zeros((d0.shape[0], d0.shape[1], len(dark_files)), dtype=numpy.float32)
-            for i, f in enumerate(dark_files):
-                darks[:, :, i] = fabio.open(f).data
-            self.ai.darkcurrent = darks.mean(axis= -1)
+            darks = d0.astype(numpy.float32)
+            for  f in dark_files[1:]:
+                darks += fabio.open(f).data
+            self.ai.darkcurrent = darks / len(dark_files)
 
         flat_files = [i.strip() for i in str(self.flat_field.text()).split(",")
                       if os.path.isfile(i.strip())]
         if flat_files and bool(self.do_flat.isChecked()):
             d0 = fabio.open(flat_files[0]).data
-            flats = numpy.zeros((d0.shape[0], d0.shape[1], len(flat_files)), dtype=numpy.float32)
-            for i, f in enumerate(flat_files):
-                flats[:, :, i] = fabio.open(f).data
-            self.ai.darkcurrent = flats.mean(axis= -1)
+            flats = d0.astype(numpy.float32)
+            for f in flat_files[1:]:
+                flats += fabio.open(f).data
+            self.ai.darkcurrent = flats / len(flat_files)
         print self.ai
 
     def detector_changed(self):
