@@ -22,7 +22,10 @@ logger = logging.getLogger("lima.tango.pyfai")
 # set loglevel at least at INFO
 if logger.getEffectiveLevel() > logging.INFO:
     logger.setLevel(logging.INFO)
-import pyFAI, pyFAI._distortion
+from os.path import dirname
+cwd = dirname(dirname(dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.join(cwd, "build", "lib.linux-x86_64-2.6"))
+import pyFAI
 try:
     from pyFAI.fastcrc import crc32
 except ImportError:
