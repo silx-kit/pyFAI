@@ -332,6 +332,8 @@ class AIWidget(QtGui.QWidget):
             unit = data["unit"].lower()
             if unit == "q_nm^-1":
                 self.q_nm.setChecked(1)
+            elif unit == "q_A^-1":
+                self.q_A.setChecked(1)
             elif unit == "2th_deg":
                 self.tth_deg.setChecked(1)
             elif unit == "r_mm":
@@ -388,15 +390,16 @@ class AIWidget(QtGui.QWidget):
         except Exception as error:
             logger.error("file %s does not look like a poni-file, error %s" % (ponifile, error))
             return
-        self.pixel1.setText(str(self.ai.pixel1))
-        self.pixel2.setText(str(self.ai.pixel2))
-        self.dist.setText(str(self.ai.dist))
-        self.poni1.setText(str(self.ai.poni1))
-        self.poni2.setText(str(self.ai.poni2))
-        self.rot1.setText(str(self.ai.rot1))
-        self.rot2.setText(str(self.ai.rot2))
-        self.rot3.setText(str(self.ai.rot3))
-        self.splineFile.setText(self.ai.detector.splineFile or "")
+        self.pixel1.setText(str_(self.ai.pixel1))
+        self.pixel2.setText(str_(self.ai.pixel2))
+        self.dist.setText(str_(self.ai.dist))
+        self.poni1.setText(str_(self.ai.poni1))
+        self.poni2.setText(str_(self.ai.poni2))
+        self.rot1.setText(str_(self.ai.rot1))
+        self.rot2.setText(str_(self.ai.rot2))
+        self.rot3.setText(str_(self.ai.rot3))
+        self.splineFile.setText(str_(self.ai.detector.splineFile))
+	self.wavelength.setText(str_(self.ai._wavelength))
         name = self.ai.detector.name.lower()
         if name in self.all_detectors:
             self.detector.setCurrentIndex(self.all_detectors.index(name))
