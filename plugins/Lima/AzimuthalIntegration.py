@@ -47,7 +47,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         else:
             self.ai = azimuthalIntgrator
         self.nbpt_azim, self.nbpt_rad = shapeOut
-        self.unit = unit
+        self.unit = pyFAI.units.to_unit(unit)
         self.polarization = 0
         self.dummy = None
         self.delta_dummy = None
