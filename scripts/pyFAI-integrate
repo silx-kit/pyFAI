@@ -117,6 +117,8 @@ class AIWidget(QtGui.QWidget):
                 kwarg["unit"] = "2th_deg"
             elif self.r_mm.isChecked():
                 kwarg["unit"] = "r_mm"
+            elif self.q_A.isChecked():
+                kwarg["unit"] = "q_A^-1"
             else:
                 logger.warning("Undefined unit !!! falling back on 2th_deg")
 
