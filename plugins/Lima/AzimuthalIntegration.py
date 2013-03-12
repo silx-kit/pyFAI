@@ -379,6 +379,16 @@ class AzimuthalIntegrationDeviceServer(BasePostProcess) :
         if(self.__pyFAISink) :
             self.__pyFAISink.reconfig(shape)
 
+    def read_Parameters(self, the_att):
+        """
+        Called  when reading the "Parameters" attribute
+        """
+        logger.warning("in AzimuthalIntegrationDeviceServer.read_Parameters")
+        if self.__pyFAISink:
+            the_att.set_value(str(self.__pyFAISink))
+        else:
+            the_att.set_value("No pyFAI Sink processlib active for the moment")
+
 
 class AzimuthalIntegrationDeviceServerClass(PyTango.DeviceClass) :
         #        Class Properties
