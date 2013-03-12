@@ -65,9 +65,9 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
 
     def __repr__(self):
         """
-        pretty prin of myself
+        pretty print of myself
         """
-        lstout = ["Azimuthal Integrator:",str(self.ai)]
+        lstout = ["Azimuthal Integrator:",self.ai.__repr__()]
         lstout.append("Input image shape: %s"%list(self.shapeIn))
         lstout.append("Number of points in radial direction: %s"%self.nbpt_rad)
         lstout.append("Number of points in azimuthal direction: %s"%self.nbpt_azim)
@@ -78,6 +78,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         lstout.append("Flat field image: %s"%self.flat_field_image)
         lstout.append("Mask image: %s"%self.mask_image)
         lstout.append("Dummy: %s, Delta_Dummy: %s"%(self.dummy,self.delta_dummy))
+        print lstout
         return os.linesep.join(lstout)
 
     def do_2D(self):
