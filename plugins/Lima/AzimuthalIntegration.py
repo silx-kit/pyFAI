@@ -77,6 +77,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         lstout.append("Dark current image: %s"%self.dark_current_image)
         lstout.append("Flat field image: %s"%self.flat_field_image)
         lstout.append("Mask image: %s"%self.mask_image)
+        lstout.append("Dummy: %s, Delta_Dummy: %s"%(self.dummy,self.delta_dummy))
         return os.linesep.join(lstout)
 
     def do_2D(self):
@@ -116,7 +117,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         """
         Process a frame
         """
-        kwarg = {"unit": self.unit
+        kwarg = {"unit": self.unit,
                  "dummy": self.dummy,
                  "delta_dummy": self.delta_dummy,
                  "method": "lut",
