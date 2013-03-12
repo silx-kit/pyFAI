@@ -150,7 +150,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
                 kwarg["filename"] += self.extension
             else:
                 kwarg["filename"] += ".azim"
-       else:
+        else:
             kwarg["nbPt"] = self.nbpt_rad
             if self.extension:
                 kwarg["filename"] += self.extension
