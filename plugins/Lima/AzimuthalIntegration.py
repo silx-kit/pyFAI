@@ -199,6 +199,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
             logger.warning("setDarkcurrentFile: Unable to read file %s: %s" % (imagefile, error))
         else:
             self.ai.set_darkcurrent(darkcurrentImage)
+            self.dark_current_image = os.path.abspath(imagefile)
 
     def setFlatfieldFile(self, imagefile):
         try:
@@ -207,6 +208,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
             logger.warning("setFlatfieldFile: Unable to read file %s: %s" % (imagefile, error))
         else:
             self.ai.set_flatfield(backGroundImage)
+            self.flat_field_image = os.path.abspath(imagefile)
 
     def setJsonConfig(self, jsonconfig):
         print("start config ...")
@@ -258,6 +260,9 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
                 logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
             else:
                 self.ai.mask = mask
+                self.mask_image =  os.path.abspath(mask_file)
+
+        self.dark_current_image = config.get("dark_current")
         dark_files = [i.strip() for i in config.get("dark_current", "").split(",")
                       if os.path.isfile(i.strip())]
         if dark_files and config.get("do_dark"):
@@ -267,6 +272,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
                 darks[:, :, i] = fabio.open(f).data
             self.ai.darkcurrent = darks.mean(axis= -1)
 
+        self.flat_field_image = config.get("flat_field")
         flat_files = [i.strip() for i in config.get("flat_field", "").split(",")
                       if os.path.isfile(i.strip())]
         if flat_files and config.get("do_flat"):
