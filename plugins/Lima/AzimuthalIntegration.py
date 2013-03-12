@@ -71,14 +71,13 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         lstout.append("Input image shape: %s"%list(self.shapeIn))
         lstout.append("Number of points in radial direction: %s"%self.nbpt_rad)
         lstout.append("Number of points in azimuthal direction: %s"%self.nbpt_azim)
-        lstout.append("Unit in radial dimension: %s"%self.unit)
-        lstout.append("Correct for solid angle: %s"%self.self.correct_solid_angle)
+        lstout.append("Unit in radial dimension: %s"%self.unit.REPR)
+        lstout.append("Correct for solid angle: %s"%self.correct_solid_angle)
         lstout.append("Polarization factor: %s"%self.polarization)
         lstout.append("Dark current image: %s"%self.dark_current_image)
         lstout.append("Flat field image: %s"%self.flat_field_image)
         lstout.append("Mask image: %s"%self.mask_image)
         lstout.append("Dummy: %s, Delta_Dummy: %s"%(self.dummy,self.delta_dummy))
-        print lstout
         return os.linesep.join(lstout)
 
     def do_2D(self):
@@ -384,9 +383,9 @@ class AzimuthalIntegrationDeviceServer(BasePostProcess) :
         """
         Called  when reading the "Parameters" attribute
         """
-        logger.warning("in AzimuthalIntegrationDeviceServer.read_Parameters")
+#        logger.warning("in AzimuthalIntegrationDeviceServer.read_Parameters")
         if self.__pyFAISink:
-            the_att.set_value(str(self.__pyFAISink))
+            the_att.set_value(self.__pyFAISink.__repr__())
         else:
             the_att.set_value("No pyFAI Sink processlib active for the moment")
 
