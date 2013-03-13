@@ -336,22 +336,16 @@ class AzimuthalIntegrationDeviceServer(BasePostProcess) :
                     return
         PyTango.Device_4Impl.set_state(self, state)
 
-#    @Core.DEB_MEMBER_FUNCT
     def setBackgroundImage(self, filepath) :
-#        deb.Param('setBackgroundImage filepath=%s' % filepath)
         if(self.__pyFAISink) :
             self.__pyFAISink.setBackgroundFile(filepath)
 
-#    @Core.DEB_MEMBER_FUNCT
     def setFlatfieldImage(self, filepath) :
-#        deb.Param('setFlatfieldImage filepath=%s' % filepath)
         if(self.__pyFAISink) :
             self.__pyFAISink.setFlatfieldFile(filepath)
 
 
-#    @Core.DEB_MEMBER_FUNCT
     def setJsonConfig(self, filepath) :
-#        deb.Param('setJsonConfig: filepath=%s' % filepath)
         if(self.__pyFAISink) :
             self.__pyFAISink.setJsonConfig(filepath)
 
@@ -371,15 +365,11 @@ class AzimuthalIntegrationDeviceServer(BasePostProcess) :
         if self.__pyFAISink:
             self.__pyFAISink.setExtension(self.__extension)
 
-#    @Core.DEB_MEMBER_FUNCT
     def Reset(self) :
-#        deb.Param('Reset')
         if(self.__pyFAISink) :
             self.__pyFAISink.reset()
 
-#    @Core.DEB_MEMBER_FUNCT
     def Reconfig(self, shape) :
-#        deb.Param('Reconfig: %s' % shape)
         if(self.__pyFAISink) :
             self.__pyFAISink.reconfig(shape)
 
@@ -387,7 +377,6 @@ class AzimuthalIntegrationDeviceServer(BasePostProcess) :
         """
         Called  when reading the "Parameters" attribute
         """
-#        logger.warning("in AzimuthalIntegrationDeviceServer.read_Parameters")
         if self.__pyFAISink:
             the_att.set_value(self.__pyFAISink.__repr__())
         else:

@@ -10,7 +10,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/02/2013"
+__date__ = "12/03/2013"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 
