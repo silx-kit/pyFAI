@@ -7,7 +7,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>504</width>
+    <width>522</width>
     <height>710</height>
    </rect>
   </property>
@@ -496,7 +496,17 @@
              <string>Scattering angle in degrees</string>
             </property>
             <property name="text">
-             <string>2theta (deg)</string>
+             <string>2θ (°)</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroup</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="tth_rad">
+            <property name="text">
+             <string>2θ (rad)</string>
             </property>
             <attribute name="buttonGroup">
              <string notr="true">buttonGroup</string>
@@ -509,7 +519,7 @@
              <string>Momentum transfer in inverse nanometers</string>
             </property>
             <property name="text">
-             <string>q (nm^-1)</string>
+             <string>q (1/nm)</string>
             </property>
             <attribute name="buttonGroup">
              <string notr="true">buttonGroup</string>
@@ -522,7 +532,7 @@
              <string>Momentum transfer in inverse nanometers</string>
             </property>
             <property name="text">
-             <string>q (A^-1)</string>
+             <string>q (1/Å)</string>
             </property>
             <attribute name="buttonGroup">
              <string notr="true">buttonGroup</string>
