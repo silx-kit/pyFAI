@@ -33,7 +33,7 @@ import numpy
 cimport numpy
 from libc.math cimport fabs
 cdef struct lut_point:
-    numpy.uint32_t idx
+    numpy.int32_t idx
     numpy.float32_t coef
 try:
     from fastcrc import crc32
@@ -125,9 +125,9 @@ class HistoBBox1d(object):
         'calculate the max number of elements in the LUT and populate it'
         cdef float delta=self.delta, pos0_min=self.pos0_min, pos1_min, pos1_max, min0, max0, fbin0_min, fbin0_max, deltaL, deltaR, deltaA
         cdef int bin0_min, bin0_max, bins = self.bins, lut_size, i, size
-        cdef numpy.uint32_t k,idx #same as numpy.uint32
+        cdef numpy.int32_t k,idx #same as numpy.int32
         cdef bint check_mask, check_pos1
-        cdef numpy.ndarray[numpy.uint32_t, ndim = 1] outMax = numpy.zeros(bins, dtype=numpy.uint32)
+        cdef numpy.ndarray[numpy.int32_t, ndim = 1] outMax = numpy.zeros(bins, dtype=numpy.int32)
         cdef float[:] cpos0_sup = self.cpos0_sup
         cdef float[:] cpos0_inf = self.cpos0_inf
         cdef float[:] cpos1_min, cpos1_max
@@ -182,8 +182,8 @@ class HistoBBox1d(object):
 
         lut_size = outMax.max()
         #just recycle the outMax array
-        #outMax = numpy.zeros((bins0,bins1), dtype=numpy.uint32)
-        memset(&outMax[0], 0, bins * sizeof(numpy.uint32_t))
+        #outMax = numpy.zeros((bins0,bins1), dtype=numpy.int32)
+        memset(&outMax[0], 0, bins * sizeof(numpy.int32_t))
 
         self.lut_size = lut_size
 
@@ -193,7 +193,7 @@ class HistoBBox1d(object):
             if memsize <  lut_nbytes:
                 raise MemoryError("Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %s"%(bins,lut_size,lut_nbytes,memsize))
         #else hope we have enough memory
-        lut = numpy.recarray(shape=(bins, lut_size),dtype=[("idx",numpy.uint32),("coef",numpy.float32)])
+        lut = numpy.recarray(shape=(bins, lut_size),dtype=[("idx",numpy.int32),("coef",numpy.float32)])
         memset(&lut[0,0], 0, bins*lut_size*sizeof(lut_point))
         #NOGIL
         with nogil:
@@ -276,7 +276,7 @@ class HistoBBox1d(object):
         @rtype: 4-tuple of ndarrays
         
         """
-        cdef ssize_t i=0, j=0, idx=0, bins=self.bins, lut_size=self.lut_size, size=self.size
+        cdef int i=0, j=0, idx=0, bins=self.bins, lut_size=self.lut_size, size=self.size
         cdef double sum_data=0, sum_count=0, epsilon=1e-10
         cdef float data=0, coef=0, cdummy=0, cddummy=0
         cdef bint do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
@@ -400,7 +400,7 @@ class HistoBBox2d(object):
                  allow_pos0_neg=False,
                  unit="undefined"):
 
-        cdef ssize_t i, size, bin0, bin1
+        cdef int i, size, bin0, bin1
         self.size = pos0.size
         assert delta_pos0.size == self.size
         assert pos1.size == self.size
@@ -473,13 +473,13 @@ class HistoBBox2d(object):
         cdef float delta1=self.delta1, pos1_min=self.pos1_min, min1, max1, fbin1_min, fbin1_max 
         cdef int bin0_min, bin0_max, bins0 = self.bins[0] 
         cdef int bin1_min, bin1_max, bins1 = self.bins[1] 
-        cdef numpy.uint32_t k, idx, lut_size, i, j, size=self.size
+        cdef numpy.int32_t k, idx, lut_size, i, j, size=self.size
         cdef bint check_mask
         cdef float[:] cpos0_sup = self.cpos0_sup
         cdef float[:] cpos0_inf = self.cpos0_inf
         cdef float[:] cpos1_inf = self.cpos1_inf
         cdef float[:] cpos1_sup = self.cpos1_sup
-        cdef numpy.ndarray[numpy.uint32_t, ndim = 2] outMax = numpy.zeros((bins0,bins1), dtype=numpy.uint32)
+        cdef numpy.ndarray[numpy.int32_t, ndim = 2] outMax = numpy.zeros((bins0,bins1), dtype=numpy.int32)
         cdef numpy.ndarray[lut_point, ndim = 3] lut
         cdef numpy.int8_t[:] cmask
         if self.check_mask:
@@ -523,8 +523,8 @@ class HistoBBox2d(object):
 
         self.lut_size = lut_size = outMax.max()
         #just recycle the outMax array
-        #outMax = numpy.zeros((bins0,bins1), dtype=numpy.uint32)
-        memset(&outMax[0,0], 0, bins0*bins1*sizeof(numpy.uint32_t))
+        #outMax = numpy.zeros((bins0,bins1), dtype=numpy.int32)
+        memset(&outMax[0,0], 0, bins0*bins1*sizeof(numpy.int32_t))
 
         lut_nbytes = bins0 * bins1 * lut_size * sizeof(lut_point)
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
@@ -532,7 +532,7 @@ class HistoBBox2d(object):
             if memsize <  lut_nbytes:
                 raise MemoryError("Lookup-table (%i, %i, %i) is %.3fGB whereas the memory of the system is only %s"%(bins0, bins1, lut_size, lut_nbytes, memsize))
         #else hope we have enough memory
-        lut = numpy.recarray(shape=(bins0, bins1, lut_size),dtype=[("idx",numpy.uint32),("coef",numpy.float32)])
+        lut = numpy.recarray(shape=(bins0, bins1, lut_size),dtype=[("idx",numpy.int32),("coef",numpy.float32)])
         memset(&lut[0,0,0], 0, lut_nbytes)
         with nogil:
             for idx in range(size):
@@ -704,8 +704,7 @@ class HistoBBox2d(object):
         @rtype: 5-tuple of ndarrays
         
         """
-        cdef int i=0
-        cdef numpy.uint32_t j=0, idx=0, bins0=self.bins[0], bins1=self.bins[1], bins=bins0*bins1, lut_size=self.lut_size, size=self.size
+        cdef int i=0, j=0, idx=0, bins0=self.bins[0], bins1=self.bins[1], bins=bins0*bins1, lut_size=self.lut_size, size=self.size
         cdef double sum_data=0, sum_count=0, epsilon=1e-10
         cdef float data=0, coef=0, cdummy=0, cddummy=0
         cdef bint do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
@@ -750,7 +749,7 @@ class HistoBBox2d(object):
             tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
             cdata = numpy.zeros(size,dtype=numpy.float32)
             if do_dummy:
-                for i in prange( <int> size, nogil=True, schedule="static"):
+                for i in prange(size, nogil=True, schedule="static"):
                     data = tdata[i]
                     if ((cddummy!=0) and (fabs(data-cdummy) > cddummy)) or ((cddummy==0) and (data!=cdummy)):
                         #Nota: -= and /= operatore are seen as reduction in cython parallel.
@@ -855,7 +854,7 @@ def histoBBox2d(numpy.ndarray weights not None,
     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
 
-    cdef ssize_t bins0, bins1, i, j, idx
+    cdef int bins0, bins1, i, j, idx
     cdef size_t size = weights.size
     assert pos0.size == size
     assert pos1.size == size
@@ -883,7 +882,7 @@ def histoBBox2d(numpy.ndarray weights not None,
     cdef float min0, max0, min1, max1, deltaR, deltaL, deltaU, deltaD, deltaA, tmp, delta0, delta1
     cdef float pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin
     cdef float fbin0_min, fbin0_max, fbin1_min, fbin1_max, data, epsilon = 1e-10, cdummy, ddummy
-    cdef ssize_t  bin0_max, bin0_min, bin1_max, bin1_min
+    cdef int  bin0_max, bin0_min, bin1_max, bin1_min
     cdef bint check_mask=False, check_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
     cdef numpy.int8_t[:] cmask
     cdef float[:] cflat, cdark, cpolarization, csolidangle
@@ -997,10 +996,10 @@ def histoBBox2d(numpy.ndarray weights not None,
             fbin1_min = getBinNr(min1, pos1_min, delta1)
             fbin1_max = getBinNr(max1, pos1_min, delta1)
 
-            bin0_min = <ssize_t> fbin0_min
-            bin0_max = <ssize_t> fbin0_max
-            bin1_min = <ssize_t> fbin1_min
-            bin1_max = <ssize_t> fbin1_max
+            bin0_min = <int> fbin0_min
+            bin0_max = <int> fbin0_max
+            bin1_min = <int> fbin1_min
+            bin1_max = <int> fbin1_max
 
 
             if bin0_min == bin0_max:

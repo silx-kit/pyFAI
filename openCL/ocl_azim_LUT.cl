@@ -52,7 +52,7 @@
 
 struct lut_point_t
 {
-	uint idx;
+	int idx;
 	float coef;
 };
 
@@ -68,7 +68,7 @@ u16_to_float(__global unsigned short  *array_u16,
 		     __global float *array_float
 )
 {
-  uint i = get_global_id(0);
+  int i = get_global_id(0);
   //Global memory guard for padding
   if(i < NIMAGE)
 	array_float[i]=(float)array_u16[i];
@@ -86,7 +86,7 @@ s32_to_float(	__global int  *array_int,
 				__global float  *array_float
 		)
 {
-  uint i = get_global_id(0);
+  int i = get_global_id(0);
   //Global memory guard for padding
   if(i < NIMAGE)
 	array_float[i] = (float)(array_int[i]);
@@ -109,7 +109,7 @@ memset_out(__global float *array0,
 		   __global float *array2
 )
 {
-  uint i = get_global_id(0);
+  int i = get_global_id(0);
   //Global memory guard for padding
   if(i < NBINS)
   {
@@ -161,7 +161,7 @@ corrections( 		__global float 	*image,
 			)
 {
 	float data;
-	uint i= get_global_id(0);
+	int i= get_global_id(0);
 	if(i < NIMAGE)
 	{
 		data = image[i];

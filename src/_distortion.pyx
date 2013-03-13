@@ -37,7 +37,7 @@ from .utils import timeit
 import fabio
 
 cdef struct lut_point:
-    numpy.uint32_t idx
+    numpy.int32_t idx
     numpy.float32_t coef
 
 cdef inline float min4f(float a, float b, float c, float d) nogil:
@@ -588,7 +588,7 @@ class Distortion(object):
         cdef int i, j, k, l, shape0, shape1
         cdef numpy.ndarray[numpy.float32_t, ndim = 4] pos
         cdef int[:,:] pos0min, pos1min, pos0max, pos1max
-        cdef numpy.ndarray[numpy.uint32_t, ndim = 2] lut_size
+        cdef numpy.ndarray[numpy.int32_t, ndim = 2] lut_size
         if self.pos is None:
             pos = self.calc_pos()
         else:
@@ -601,7 +601,7 @@ class Distortion(object):
                     pos1min = numpy.floor(pos[:, :, :, 1].min(axis= -1)).astype(numpy.int32).clip(0, self.shape[1])
                     pos0max = (numpy.ceil(pos[:, :, :, 0].max(axis= -1)).astype(numpy.int32) + 1).clip(0, self.shape[0])
                     pos1max = (numpy.ceil(pos[:, :, :, 1].max(axis= -1)).astype(numpy.int32) + 1).clip(0, self.shape[1])
-                    lut_size = numpy.zeros(self.shape, dtype=numpy.uint32)
+                    lut_size = numpy.zeros(self.shape, dtype=numpy.int32)
                     with nogil:
                         for i in range(shape0):
                             for j in range(shape1):
@@ -618,12 +618,12 @@ class Distortion(object):
     def calc_LUT(self):
         cdef int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1, size
         cdef int offset0, offset1, box_size0, box_size1
-        cdef numpy.uint32_t k, idx=0
+        cdef numpy.int32_t k, idx=0
         cdef float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area, value
 #        cdef numpy.ndarray[numpy.float32_t, ndim = 3]  pos
         cdef float[:,:,:,:] pos
         cdef numpy.ndarray[lut_point, ndim = 3] lut
-        cdef numpy.ndarray[numpy.uint32_t, ndim = 2] outMax = numpy.zeros(self.shape, dtype=numpy.uint32)
+        cdef numpy.ndarray[numpy.int32_t, ndim = 2] outMax = numpy.zeros(self.shape, dtype=numpy.int32)
         cdef  float[:,:] buffer
         #cdef float[:,:,:] pos
         shape0, shape1 = self.shape
@@ -634,7 +634,7 @@ class Distortion(object):
             with self._sem:
                 if self.LUT is None:
                     pos = self.pos#.reshape(shape0,shape1,4*sizeof(float))
-                    lut = numpy.recarray(shape=(self.shape[0] , self.shape[1], self.lut_size), dtype=[("idx", numpy.uint32), ("coef", numpy.float32)])
+                    lut = numpy.recarray(shape=(self.shape[0] , self.shape[1], self.lut_size), dtype=[("idx", numpy.int32), ("coef", numpy.float32)])
                     size = self.shape[0]*self.shape[1]*self.lut_size*sizeof(lut_point)
                     memset(&lut[0,0,0], 0, size)
                     logger.info("LUT shape: (%i,%i,%i) %.3f MByte"%(lut.shape[0], lut.shape[1],lut.shape[2],size/1.0e6))
