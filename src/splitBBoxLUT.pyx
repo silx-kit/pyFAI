@@ -750,7 +750,7 @@ class HistoBBox2d(object):
             tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
             cdata = numpy.zeros(size,dtype=numpy.float32)
             if do_dummy:
-                for i in prange(size, nogil=True, schedule="static"):
+                for i in prange( <int> size, nogil=True, schedule="static"):
                     data = tdata[i]
                     if ((cddummy!=0) and (fabs(data-cdummy) > cddummy)) or ((cddummy==0) and (data!=cdummy)):
                         #Nota: -= and /= operatore are seen as reduction in cython parallel.
