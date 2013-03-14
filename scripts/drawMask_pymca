@@ -10,9 +10,11 @@ from PyQt4.QtGui import *
 import PyMca
 from PyMca import MaskImageWidget
 import fabio
+import numpy
 
+assert len(sys.argv) > 1
 filename = sys.argv[1]
-
+datafiles = sys.argv[1:]
 qapp = QApplication(sys.argv)
 w = PyMca.MaskImageWidget.MaskImageWidget()
 e = fabio.open(filename).data
@@ -23,3 +25,8 @@ finished = raw_input("Press enter when you are finished")
 m = w.getSelectionMask()
 outfile = os.path.splitext(filename)[0] + "-mask.edf"
 fabio.edfimage.edfimage(data=m).write(outfile)
+
+print("Selected %i datapoints on file %s" % (m.sum(), filename))
+for datafile in datafiles:
+    data = fabio.open(datafile).data[numpy.where(m)]
+    print("On File: %s,\t mean= %s \t std= %s" % (datafile, data.mean(), data.std()))
