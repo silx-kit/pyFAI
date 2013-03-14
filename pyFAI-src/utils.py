@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/02/2013"
+__date__ = "14/03/2013"
 __status__ = "development"
 
 import logging, sys
@@ -64,7 +64,7 @@ except (ImportError, WindowsError) as err:
 
 def float_(val):
     """
-    Convert anything to a float ... or None if not applicable 
+    Convert anything to a float ... or None if not applicable
     """
     try:
         f = float(str(val).strip())
@@ -74,7 +74,7 @@ def float_(val):
 
 def int_(val):
     """
-    Convert anything to an int ... or None if not applicable 
+    Convert anything to an int ... or None if not applicable
     """
     try:
         f = int(str(val).strip())
@@ -84,7 +84,7 @@ def int_(val):
 
 def str_(val):
     """
-    Convert anything to a string ... but None -> "" 
+    Convert anything to a string ... but None -> ""
     """
     s = ""
     if val != None:
@@ -334,6 +334,45 @@ def relabel(label, data, blured, max_size=None):
     return f(label)
 
 
+def averageDark(lstimg, center_method="mean", cutoff=None):
+    """
+    Averages a serie of dark (or flat) images.
+    Centers the result on the mean or the median ...
+    but averages all frames within  cutoff*std
+
+    @param lstimg: list of 2D images or a 3D stack
+    @param center: is the center calculated by a "mean" or a "median"
+    @param cutoff: keep all data where (I-center)/std < cutoff
+    @return: 2D image averaged
+    """
+    if "ndim" in dir(lstimg) and lstimg.ndim == 3:
+        stack = lstimg.astype(numpy.float32)
+        shape = stack.shape[1:]
+        length = stack.shape[0]
+    else:
+        shape = lstimg[0].shape
+        length = len(lstimg)
+        if length==1:
+            return lstimg.astype(numpy.float32)
+        stack = numpy.zeros((length, shape[0], shape[1]), dtype=float32)
+        for i, img in enumerate(lstimg):
+           stack[i] = img
+    center = stack.__getattribute__(center)(axis=0)
+    if cutoff is None or cutoff <= 0:
+        output = center
+    else:
+        std = stack.std(axis=0)
+        stride = 0, std.stride[1], std.stride[1]
+        std.shape = 1, shape[0], shape[1]
+        std.stride = stride
+        center.shape = 1, shape[0], shape[1]
+        center.stride = stride
+        mask = ((abs(stack - center) / std) > cutoff)
+        stack[numpy.where(mask)] = 0.0
+        summed = stack.sum(axis=0)
+        output = summed / (length - mask.sum(axis=0))
+    return output
+
 def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=None,
                    darks=None, flats=None, filter_="mean", correct_flat_from_dark=False):
     """
@@ -347,6 +386,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
     @param darks: list of dark current images for subtraction
     @param flats: list of flat field images for division
     @param filter_: can be maximum, mean or median (default=mean)
+    @param correct_flat_from_dark: shall the flat be re-corrected ?
     """
     ld = len(listImages)
     sumImg = None
@@ -361,21 +401,16 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
         if sumImg is None:
             sumImg = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
         if dark is None:
-            dark = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
             if darks:
-                for f in darks:
-                    dark += fabio.open(f).data
-                dark /= max(1, len(darks))
+                dark = averageDark([fabio.open(f).data for f in darks], center="mean", cutoff=4)
+            else:
+                dark = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
         if flat is None:
-            print flats
             if flats:
-                flat = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
-                for f in flats:
-                    flat += fabio.open(f).data
-                flat /= max(1, len(flats))
+                flat = averageDark([fabio.open(f).data for f in flats], center="mean", cutoff=4)
                 if correct_flat_from_dark:
                     flat -= dark
-                flat[flats < 1] = 1.0
+                flat[flats <= 0 ] = 1.0
             else:
                 flat = numpy.ones((shape[0], shape[1]), dtype=numpy.float32)
         correctedImg = (removeSaturatedPixel(ds.astype(numpy.float32), threshold, minimum, maximum) - dark) / flat
