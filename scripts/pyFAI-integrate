@@ -115,6 +115,8 @@ class AIWidget(QtGui.QWidget):
                 kwarg["unit"] = "q_nm^-1"
             elif self.tth_deg.isChecked():
                 kwarg["unit"] = "2th_deg"
+            elif self.tth_rad.isChecked():
+                kwarg["unit"] = "2th_rad"
             elif self.r_mm.isChecked():
                 kwarg["unit"] = "r_mm"
             elif self.q_A.isChecked():
@@ -272,12 +274,14 @@ class AIWidget(QtGui.QWidget):
                    }
         if self.q_nm.isChecked():
             to_save["unit"] = "q_nm^-1"
-        elif self.tth_deg.isChecked():
-            to_save["unit"] = "2th_deg"
-        elif self.r_mm.isChecked():
-            to_save["unit"] = "r_mm"
         elif self.q_A.isChecked():
             to_save["unit"] = "q_A^-1"
+        elif self.tth_deg.isChecked():
+            to_save["unit"] = "2th_deg"
+        elif self.tth_rad.isChecked():
+            to_save["unit"] = "2th_rad"
+        elif self.r_mm.isChecked():
+            to_save["unit"] = "r_mm"
 
         with open(filename, "w") as myFile:
             json.dump(to_save, myFile, indent=4)
@@ -342,6 +346,8 @@ class AIWidget(QtGui.QWidget):
                 self.q_A.setChecked(1)
             elif unit == "2th_deg":
                 self.tth_deg.setChecked(1)
+            elif unit == "2th_rad":
+                self.tth_rad.setChecked(1)
             elif unit == "r_mm":
                 self.r_mm.setChecked(1)
         if "detector" in data:
