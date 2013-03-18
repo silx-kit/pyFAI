@@ -137,7 +137,21 @@ class PeakPicker(object):
                 self.fig.canvas.draw()
 
         self._sem.acquire()
-        if event.button == 3:  # right click
+        if event.button == 1:  # left click add 1 point
+            x0 = event.xdata
+            y0 = event.ydata
+            if event.key == 'shift': # if 'shift' pressed add to the current group
+                points = self.points.pop() or []
+            else:
+                points = []
+            points.append([y0, x0])
+            self.points.append(points)
+            npl = numpy.array(points)
+            logging.info("x=%f, y=%f added to group #%i" % (x0, y0, len(self.points)))
+            self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
+            self.fig.show()
+            sys.stdout.flush()
+        elif event.button == 3:  # right click
             x0 = event.xdata
             y0 = event.ydata
             listpeak = self.massif.find_peaks([y0, x0], self.defaultNbPoints, annontate, self.massif_contour)
@@ -196,7 +210,11 @@ class PeakPicker(object):
 
         @param filename: file with the point coordinates saved
         """
-        logging.info("Please use the GUI and Right-click on the peaks to mark them (center-click to erase last group)")
+        logging.info("Please use the GUI and:\n"
+                     " 1) Left click : add a point to a new group\n"
+                     " 2) Left click + shift : add a point to the current group\n"
+                     " 3) Right-click : try an auto find for a ring\n"
+                     " 4) center-click: erase the current group")
 
         raw_input("Please press enter when you are happy; to fill in ring number" + os.linesep)
         self.points.readRingNrFromKeyboard()  # readAngleFromKeyboard()
