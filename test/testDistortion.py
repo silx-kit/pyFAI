@@ -32,13 +32,13 @@ __date__ = "23/02/2013"
 
 
 import unittest
-import os
+# import os
 import numpy
-import logging, time
+# import logging, time
 import sys
 import fabio
 
-from utilstest import UtilsTest, Rwp, getLogger
+from utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import _distortion, detectors
@@ -69,8 +69,11 @@ class test_halfccd(unittest.TestCase):
         self.dis.calc_LUT()
         cor = self.dis.correct(self.raw)
         delta = abs(cor - self.fit2d)
-        ratio = delta / self.fit2d
-        ratio[numpy.where(self.fit2d == 0)] = 0
+        mask = numpy.where(self.fit2d == 0)
+        denom = self.fit2d.copy()
+        denom[mask] = 1
+        ratio = delta / denom
+        ratio[mask] = 0
         good_points_ratio = 1.0 * (ratio < 1e-3).sum() / self.raw.size
         logger.info("ratio of good points (less than 1/1000 relative error): %.4f" % good_points_ratio)
         self.assert_(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")

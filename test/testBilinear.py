@@ -33,18 +33,18 @@ __date__ = "31/01/2012"
 
 
 import unittest
-import os
+# import os
 import numpy
-import logging, time
+# import logging  # , time
 import sys
-import fabio
+# import fabio
 
-from utilstest import UtilsTest, Rwp, getLogger
+from utilstest import getLogger  # UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
-from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
-if logger.getEffectiveLevel() <= logging.INFO:
-    import pylab
+# from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
+# if logger.getEffectiveLevel() <= logging.INFO:
+#    import pylab
 from pyFAI import bilinear
 
 class test_bilinear(unittest.TestCase):
