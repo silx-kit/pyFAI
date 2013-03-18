@@ -246,7 +246,9 @@ class PeakPicker(object):
 
     def contour(self, data):
         """
-        @param data:
+        Overlay a contour-plot
+
+        @param data: 2darray with the 2theta values in radians...
         """
         if self.fig is None:
             logging.warning("No diffraction image available => not showing the contour")
@@ -263,8 +265,12 @@ class PeakPicker(object):
                 while len(self.ct.collections) > 0:
                     self.ct.collections.pop()
 
+            if self.points.dSpacing and  self.points._wavelength:
+                angles = list(2.0 * numpy.arcsin(5e9 * self.points._wavelength / numpy.array(self.points.dSpacing)))
+            else:
+                angles = None
             try:
-                self.ct.contour(data)
+                self.ct.contour(data, levels=angles)
             except MemoryError:
                 logging.error("Sorry but your computer does NOT have enough memory to display the 2-theta contour plot")
             self.fig.show()
