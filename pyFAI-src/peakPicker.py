@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/02/2013"
+__date__ = "18/03/2013"
 __status__ = "development"
 
 import os, sys, threading, logging, gc, types
@@ -136,51 +136,71 @@ class PeakPicker(object):
                      arrowprops=dict(facecolor='white', edgecolor='white'),)
                 self.fig.canvas.draw()
 
-        self._sem.acquire()
-        if event.button == 1:  # left click add 1 point
-            x0 = event.xdata
-            y0 = event.ydata
-            if event.key == 'shift': # if 'shift' pressed add to the current group
-                points = self.points.pop() or []
-            else:
-                points = []
-            points.append([y0, x0])
-            self.points.append(points)
-            npl = numpy.array(points)
-            logging.info("x=%f, y=%f added to group #%i" % (x0, y0, len(self.points)))
-            self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
-            self.fig.show()
-            sys.stdout.flush()
-        elif event.button == 3:  # right click
-            x0 = event.xdata
-            y0 = event.ydata
-            listpeak = self.massif.find_peaks([y0, x0], self.defaultNbPoints, annontate, self.massif_contour)
-            if len(listpeak) == 0:
-                logging.warning("No peak found !!!")
-                self._sem.release()
-                return
-            npl = numpy.array(listpeak)
-            self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
+        with self._sem:
+            if event.button == 3:  # right click
+                x0 = event.xdata
+                y0 = event.ydata
+                logger.debug("Key modifier: %s" % event.key)
+                if event.key == 'shift':  # if 'shift' pressed add nearest maximum to the current group
+                    points = self.points.pop() or []
+                    if len(self.ax.texts) > 0:
+                        self.ax.texts.pop()
+                    if len(self.ax.lines) > 0:
+                        self.ax.lines.pop()
 
-            logging.info("Added %3i points to group #%i" % (len(listpeak), len(self.points)))
-            self.points.append(listpeak)
-            self.fig.show()
-            sys.stdout.flush()
-        elif event.button == 2:  # center click
-            poped_points = self.points.pop()
-#            for i in a:
-            if len(self.ax.texts) > 0:
-                self.ax.texts.pop()
-            if len(self.ax.lines) > 0:
-                self.ax.lines.pop()
-            self.fig.show()
-            if poped_points is None:
-                logging.info("Removing No group point (non existing?)")
-            else:
-                logging.info("Removing point group #%i (%5.1f %5.1f) containing %i subpoints" % (len(self.points), poped_points[0][0], poped_points[0][1], len(poped_points)))
+                    self.fig.show()
+                    newpeak = self.massif.nearest_peak([y0, x0])
+                    if newpeak:
+                        points.append(newpeak)
+                        annontate(newpeak, [y0, x0])
+                    else:
+                        logging.warning("No peak found !!!")
 
-            sys.stdout.flush()
-        self._sem.release()
+                elif event.key == 'control':  # if 'control' pressed add nearest maximum to a new group
+                    points = []
+                    newpeak = self.massif.nearest_peak([y0, x0])
+                    if newpeak:
+                        points.append(newpeak)
+                        annontate(newpeak, [y0, x0])
+                    else:
+                        logging.warning("No peak found !!!")
+                elif event.key == 'm':  # if 'm' pressed add new group to current  group ...  ?
+                    points = self.points.pop() or []
+                    if len(self.ax.texts) > 0:
+                        self.ax.texts.pop()
+                    if len(self.ax.lines) > 0:
+                        self.ax.lines.pop()
+                    self.fig.show()
+                    listpeak = self.massif.find_peaks([y0, x0], self.defaultNbPoints, annontate, self.massif_contour)
+                    if len(listpeak) == 0:
+                        logging.warning("No peak found !!!")
+                    else:
+                        points += listpeak
+                else:  # create new group
+                    points = self.massif.find_peaks([y0, x0], self.defaultNbPoints, annontate, self.massif_contour)
+                    if not points:
+                        logging.warning("No peak found !!!")
+                if not points:
+                    return
+                self.points.append(points)
+                npl = numpy.array(points)
+                logging.info("x=%f, y=%f added to group #%i" % (x0, y0, len(self.points)))
+                self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
+                self.fig.show()
+                sys.stdout.flush()
+            elif event.button == 2:  # center click
+                poped_points = self.points.pop()
+                if len(self.ax.texts) > 0:
+                    self.ax.texts.pop()
+                if len(self.ax.lines) > 0:
+                    self.ax.lines.pop()
+                self.fig.show()
+                if poped_points is None:
+                    logging.info("Removing No group point (non existing?)")
+                else:
+                    logging.info("Removing point group #%i (%5.1f %5.1f) containing %i subpoints" % (len(self.points), poped_points[0][0], poped_points[0][1], len(poped_points)))
+
+                sys.stdout.flush()
 
     def readFloatFromKeyboard(self, text, dictVar):
         """
@@ -210,11 +230,11 @@ class PeakPicker(object):
 
         @param filename: file with the point coordinates saved
         """
-        logging.info("Please use the GUI and:\n"
-                     " 1) Left click : add a point to a new group\n"
-                     " 2) Left click + shift : add a point to the current group\n"
-                     " 3) Right-click : try an auto find for a ring\n"
-                     " 4) center-click: erase the current group")
+        logging.info(os.linesep.join(["Please use the GUI and:",
+                                      " 1) Right-click: try an auto find for a ring",
+                                      " 2) Shift + Right-click: add one point to the current group",
+                                      " 3) Control + Right-click : add a point to a new group",
+                                      " 4) Center-click: erase the current group"]))
 
         raw_input("Please press enter when you are happy; to fill in ring number" + os.linesep)
         self.points.readRingNrFromKeyboard()  # readAngleFromKeyboard()
