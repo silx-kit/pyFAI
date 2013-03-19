@@ -593,9 +593,9 @@
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_10">
             <item>
-             <widget class="QLabel" name="label_18">
+             <widget class="QCheckBox" name="poisson">
               <property name="text">
-               <string/>
+               <string>Std-err (Poisson law)</string>
               </property>
              </widget>
             </item>
@@ -605,7 +605,7 @@
                <string>if unset, the discontinuity is at 180°</string>
               </property>
               <property name="text">
-               <string>Chi discontinuity at 0</string>
+               <string>χ discontinuity at 0</string>
               </property>
              </widget>
             </item>
