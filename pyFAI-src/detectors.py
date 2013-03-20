@@ -371,6 +371,17 @@ class Fairchild(Detector):
         self.max_shape = (4096, 4096)
 
 
+class Dexela2923(Detector):
+    """
+    Dexela CMOS family detector
+    """
+    force_pixel = True
+    def __init__(self, pixel1=75e-6, pixel2=75e-6):
+        Detector.__init__(self, pixel1, pixel2)
+        self.name = "Dexela 2923"
+        self.max_shape = (3888, 3072)
+
+
 class FReLoN(Detector):
     """
     FReLoN detector:
@@ -499,6 +510,7 @@ ALL_DETECTORS = {"pilatus1m": Pilatus1M,
                  "xpad": Xpad_flat,
                  "xpad_flat": Xpad_flat,
                  "basler": Basler,
+                 "dexela2923": Dexela2923,
                  "detector": Detector}
 
 
