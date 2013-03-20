@@ -71,7 +71,7 @@ class AIWidget(QtGui.QWidget):
         self.all_detectors.sort()
         self.detector.addItems([i.capitalize() for i in self.all_detectors])
         self.detector.setCurrentIndex(self.all_detectors.index("detector"))
-        #connect file selection windows
+        # connect file selection windows
         self.connect(self.file_poni, SIGNAL("clicked()"), self.select_ponifile)
         self.connect(self.file_splinefile, SIGNAL("clicked()"), self.select_splinefile)
         self.connect(self.file_mask_file, SIGNAL("clicked()"), self.select_maskfile)
@@ -170,7 +170,10 @@ class AIWidget(QtGui.QWidget):
                     kwarg["azimuth_range"] = (azim_min, azim_max)
                 if kwarg["azimuth_range"] == (None, None):
                     kwarg["azimuth_range"] = None
-
+            if self.do_poisson:
+                kwarg["error_model"] = "poisson"
+            else:
+                kwarg["error_model"] = "None"
             logger.info("Parameters for integration:%s%s" % (os.linesep,
                             os.linesep.join(["\t%s:\t%s" % (k, v) for k, v in kwarg.items()])))
 
@@ -267,6 +270,7 @@ class AIWidget(QtGui.QWidget):
                     "do_solid_angle": bool(self.do_solid_angle.isChecked()),
                     "do_radial_range": bool(self.do_radial_range.isChecked()),
                     "do_azimuthal_range": bool(self.do_azimuthal_range.isChecked()),
+                    "do_poisson": bool(self.do_poisson.isChecked()),
                     "radial_range_min":float_(self.radial_range_min.text()),
                     "radial_range_max":float_(self.radial_range_max.text()),
                     "azimuth_range_min":float_(self.azimuth_range_min.text()),
@@ -329,6 +333,7 @@ class AIWidget(QtGui.QWidget):
                         "chi_discontinuity_at_0": self.chi_discontinuity_at_0.setChecked,
                         "do_radial_range": self.do_radial_range.setChecked,
                         "do_azimuthal_range": self.do_azimuthal_range.setChecked,
+                        "do_poisson": self.do_poisson.setChecked,
                         "radial_range_min":lambda a:self.radial_range_min.setText(str_(a)),
                         "radial_range_max":lambda a:self.radial_range_max.setText(str_(a)),
                         "azimuth_range_min":lambda a:self.azimuth_range_min.setText(str_(a)),

@@ -57,6 +57,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         self.mask_image = None
         self.subdir = ""
         self.extension = None
+        self.do_poisson = None
         try:
             self.shapeIn = (camera.getFrameDim.getHeight(), camera.getFrameDim.getWidth())
         except Exception as error:
@@ -162,6 +163,11 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
                 kwarg["filename"] += self.extension
             else:
                 kwarg["filename"] += ".xy"
+        if self.do_poisson:
+            kwarg["error_model"] = "poisson"
+        else:
+            kwarg["error_model"] = "None"
+
         try:
             if self.do_2D():
                 self.ai.integrate2d(**kwarg)
@@ -287,7 +293,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         if config.get("rad_pt"):
             self.nbpt_rad = int(config.get("rad_pt"))
         self.unit = pyFAI.units.to_unit(config.get("unit", pyFAI.units.TTH_DEG))
-
+        self.do_poisson = config.get("do_poisson")
         logger.info(self.ai.__repr__())
         self.reset()
         # For now we do not calculate the LUT as the size of the input image is unknown
