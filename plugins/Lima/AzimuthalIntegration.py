@@ -4,13 +4,13 @@
 Tango device server for setting up pyFAI azimuthal integrator in a LImA ProcessLib.
 
 Destination path:
-Lima/tango/plugins/AzimuthalIntegration  
+Lima/tango/plugins/AzimuthalIntegration
 """
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2013"
+__date__ = "12/03/2013"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 
@@ -29,8 +29,9 @@ sys.path.append(os.path.join(cwd, "build", "lib.linux-x86_64-2.6"))
 import PyTango
 import numpy
 from Lima import Core
-from Utils import getDataFromFile, BasePostProcess
+from Utils import BasePostProcess
 import pyFAI
+import fabio
 
 class PyFAISink(Core.Processlib.SinkTaskBase):
     def __init__(self, azimuthalIntgrator=None, shapeIn=(2048, 2048), shapeOut=(360, 500), unit="r_mm"):
@@ -46,15 +47,40 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         else:
             self.ai = azimuthalIntgrator
         self.nbpt_azim, self.nbpt_rad = shapeOut
-        self.unit = unit
+        self.unit = pyFAI.units.to_unit(unit)
         self.polarization = 0
         self.dummy = None
         self.delta_dummy = None
+        self.correct_solid_angle = True
+        self.dark_current_image = None
+        self.flat_field_image = None
+        self.mask_image = None
+        self.subdir = ""
+        self.extension = None
+        self.do_poisson = None
         try:
             self.shapeIn = (camera.getFrameDim.getHeight(), camera.getFrameDim.getWidth())
         except Exception as error:
             logger.error("default on shapeIn %s: %s" % (shapeIn, error))
             self.shapeIn = shapeIn
+
+    def __repr__(self):
+        """
+        pretty print of myself
+        """
+        lstout = ["Azimuthal Integrator:", self.ai.__repr__(),
+                "Input image shape: %s" % list(self.shapeIn),
+                "Number of points in radial direction: %s" % self.nbpt_rad,
+                "Number of points in azimuthal direction: %s" % self.nbpt_azim,
+                "Unit in radial dimension: %s" % self.unit.REPR,
+                "Correct for solid angle: %s" % self.correct_solid_angle,
+                "Polarization factor: %s" % self.polarization,
+                "Dark current image: %s" % self.dark_current_image,
+                "Flat field image: %s" % self.flat_field_image,
+                "Mask image: %s" % self.mask_image,
+                "Dummy: %s,\tDelta_Dummy: %s" % (self.dummy, self.delta_dummy),
+                "Directory: %s, \tExtension: %s" % (self.subdir, self.extension)]
+        return os.linesep.join(lstout)
 
     def do_2D(self):
         return self.nbpt_azim > 1
@@ -65,6 +91,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         """
         print "did a reset"
         self.ai.reset()
+        # print self.__repr__()
 
     def reconfig(self, shape=(2048, 2048)):
         """
@@ -74,64 +101,118 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         self.ai.reset()
 
         if self.do_2D():
-            t = threading.Thread(target=self.ai.integrate2d,
+            threading.Thread(target=self.ai.integrate2d,
                                  name="init2d",
                                  args=(numpy.zeros(self.shapeIn, dtype=numpy.float32),
                                         self.nbpt_rad, self.nbpt_azim),
                                  kwargs=dict(method="lut", unit=self.unit)
-                                 )
-            t.start()
+                                 ).start()
         else:
-            t = threading.Thread(target=self.ai.integrate2d,
-                                 name="init2d",
+            threading.Thread(target=self.ai.integrate1d,
+                                 name="init1d",
                                  args=(numpy.zeros(self.shapeIn, dtype=numpy.float32),
                                         self.nbpt_rad),
                                  kwargs=dict(method="lut", unit=self.unit)
-                                 )
-            t.start()
+                                 ).start()
+
 
     def process(self, data) :
+        """
+        Process a frame
+        """
+        kwarg = {"unit": self.unit,
+                 "dummy": self.dummy,
+                 "delta_dummy": self.delta_dummy,
+                 "method": "lut",
+                 "polarization_factor":self.polarization,
+                 # "filename": None,
+                 "safe": True,
+                 "data": data.buffer,
+                 }
         ctControl = _control_ref()
         saving = ctControl.saving()
         sav_parms = saving.getParameters()
+        if not self.subdir:
+            directory = sav_parms.directory
+        elif self.subdir.startswith("/"):
+            directory = self.subdir
+        else:
+            directory = os.path.join(sav_parms.directory, self.subdir)
+        if not os.path.exists(directory):
+            logger.error("Ouput directory does not exist !!!  %s" % directory)
+            try:
+                os.makedirs(new_dir)
+            except:  # No luck withthreads
+                pass
+
         directory = sav_parms.directory
         prefix = sav_parms.prefix
         nextNumber = sav_parms.nextNumber
         indexFormat = sav_parms.indexFormat
-        output = os.path.join(directory, prefix + indexFormat % (nextNumber + data.frameNumber))
-        try:
-
-            if self.do_2D():
-                self.ai.integrate2d(data.buffer, self.nbpt_rad, self.nbpt_azim,
-                                    method="lut", unit=self.unit, safe=True,
-                                    filename=output + ".azim")
+        kwarg["filename"] = os.path.join(directory, prefix + indexFormat % (nextNumber + data.frameNumber))
+        if self.do_2D():
+            kwarg["nbPt_rad"] = self.nbpt_rad
+            kwarg["nbPt_azim"] = self.nbpt_azim
+            if self.extension:
+                kwarg["filename"] += self.extension
             else:
-                self.ai.integrate1d(data.buffer,
-                                self.nbpt_rad, method="lut", unit=self.unit, safe=True,
-                                filename=output + ".xy")
-        except :
-                print data.buffer.shape, data.buffer.size
-                print self.ai
-                print self.ai._lut_integrator
-                print self.ai._lut_integrator.size
-                raise
+                kwarg["filename"] += ".azim"
+        else:
+            kwarg["nbPt"] = self.nbpt_rad
+            if self.extension:
+                kwarg["filename"] += self.extension
+            else:
+                kwarg["filename"] += ".xy"
+        if self.do_poisson:
+            kwarg["error_model"] = "poisson"
+        else:
+            kwarg["error_model"] = "None"
+
+        try:
+            if self.do_2D():
+                self.ai.integrate2d(**kwarg)
+            else:
+                self.ai.integrate1d(**kwarg)
+        except:
+            print data.buffer.shape, data.buffer.size
+            print self.ai
+            print self.ai._lut_integrator
+            print self.ai._lut_integrator.size
+            raise
         # return rData
+
+    def setSubdir(self, path):
+        """
+        Set the relative or absolute path for processed data
+        """
+        self.subdir = path
+
+    def setExtension(self, ext):
+        """
+        enforce the extension of the processed data file written
+        """
+        if ext:
+            self.extension = ext
+        else:
+            self.extension = None
 
     def setDarkcurrentFile(self, imagefile):
         try:
-            darkcurrentImage = getDataFromFile(filepath)
+            darkcurrentImage = fabio.open(imagefile).data
         except Exception as error:
             logger.warning("setDarkcurrentFile: Unable to read file %s: %s" % (imagefile, error))
         else:
-            self.ai.set_darkcurrent(darkcurrentImage.buffer)
+            self.ai.set_darkcurrent(darkcurrentImage)
+            self.dark_current_image = os.path.abspath(imagefile)
 
     def setFlatfieldFile(self, imagefile):
         try:
-            backGroundImage = getDataFromFile(filepath)
+            backGroundImage = fabio.open(imagefile).data
         except Exception as error:
             logger.warning("setFlatfieldFile: Unable to read file %s: %s" % (imagefile, error))
         else:
-            self.ai.set_flatfield(backGroundImage.buffer)
+            self.ai.set_flatfield(backGroundImage)
+            self.flat_field_image = os.path.abspath(imagefile)
 
     def setJsonConfig(self, jsonconfig):
         print("start config ...")
@@ -178,27 +259,31 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         do_mask = config.get("do_mask")
         if mask_file and os.path.exists(mask_file) and do_mask:
             try:
-                mask = getDataFromFile(mask_file).buffer
+                mask = fabio.open(mask_file).data
             except Exception as error:
                 logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
             else:
                 self.ai.mask = mask
+                self.mask_image = os.path.abspath(mask_file)
+
+        self.dark_current_image = config.get("dark_current")
         dark_files = [i.strip() for i in config.get("dark_current", "").split(",")
                       if os.path.isfile(i.strip())]
         if dark_files and config.get("do_dark"):
-            d0 = getDataFromFile(dark_files[0]).buffer
-            darks = numpy.zeros(d0.shape[0], d0.shape[1], len(dark_files), dtype=numpy.float32)
+            d0 = fabio.open(dark_files[0]).data
+            darks = numpy.zeros((d0.shape[0], d0.shape[1], len(dark_files)), dtype=numpy.float32)
             for i, f in enumerate(dark_files):
-                darks[:, :, i] = getDataFromFile(f).buffer
+                darks[:, :, i] = fabio.open(f).data
             self.ai.darkcurrent = darks.mean(axis= -1)
 
+        self.flat_field_image = config.get("flat_field")
         flat_files = [i.strip() for i in config.get("flat_field", "").split(",")
                       if os.path.isfile(i.strip())]
         if flat_files and config.get("do_flat"):
-            d0 = getDataFromFile(flat_files[0]).buffer
-            flats = numpy.zeros(d0.shape[0], d0.shape[1], len(flat_files), dtype=numpy.float32)
+            d0 = fabio.open(flat_files[0]).data
+            flats = numpy.zeros((d0.shape[0], d0.shape[1], len(flat_files)), dtype=numpy.float32)
             for i, f in enumerate(flat_files):
-                flats[:, :, i] = getDataFromFile(f).buffer
+                flats[:, :, i] = fabio.open(f).data
             self.ai.darkcurrent = flats.mean(axis= -1)
 
         if config.get("do_2D"):
@@ -208,13 +293,13 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         if config.get("rad_pt"):
             self.nbpt_rad = int(config.get("rad_pt"))
         self.unit = pyFAI.units.to_unit(config.get("unit", pyFAI.units.TTH_DEG))
-
+        self.do_poisson = config.get("do_poisson")
         logger.info(self.ai.__repr__())
         self.reset()
         # For now we do not calculate the LUT as the size of the input image is unknown
 
 
-class AzimuthalIntegratonDeviceServer(BasePostProcess) :
+class AzimuthalIntegrationDeviceServer(BasePostProcess) :
     AZIMUTHAL_TASK_NAME = 'AzimuthalIntegrationTask'
     Core.DEB_CLASS(Core.DebModApplication, 'AzimuthalIntegration')
     def __init__(self, cl, name):
@@ -222,9 +307,10 @@ class AzimuthalIntegratonDeviceServer(BasePostProcess) :
         self.__jsonConfig = None
         self.__pyFAISink = None
         self.get_device_properties(self.get_device_class())
-
+        self.__extension = ""
+        self.__subdir = None
         BasePostProcess.__init__(self, cl, name)
-        AzimuthalIntegratonDeviceServer.init_device(self)
+        AzimuthalIntegrationDeviceServer.init_device(self)
 
     def set_state(self, state) :
         if(state == PyTango.DevState.OFF) :
@@ -243,8 +329,12 @@ class AzimuthalIntegratonDeviceServer(BasePostProcess) :
                                                          self._runLevel)
                     if not self.__pyFAISink:
                         self.__pyFAISink = PyFAISink()
-                    if self.__jsonConfig :
+                    if self.__jsonConfig:
                         self.__pyFAISink.setJsonConfig(self.__jsonConfig)
+                    if self.__extension:
+                        self.__pyFAISink.setExtension(self.__extension)
+                    if self.__subdir:
+                        self.__pyFAISink.setSubdir(self.__subdir)
                     self.__azimuthalIntegratorTask.setSinkTask(self.__pyFAISink)
                 except:
                     import traceback
@@ -252,39 +342,54 @@ class AzimuthalIntegratonDeviceServer(BasePostProcess) :
                     return
         PyTango.Device_4Impl.set_state(self, state)
 
-    @Core.DEB_MEMBER_FUNCT
     def setBackgroundImage(self, filepath) :
-        deb.Param('setBackgroundImage filepath=%s' % filepath)
         if(self.__pyFAISink) :
             self.__pyFAISink.setBackgroundFile(filepath)
 
-    @Core.DEB_MEMBER_FUNCT
     def setFlatfieldImage(self, filepath) :
-        deb.Param('setFlatfieldImage filepath=%s' % filepath)
         if(self.__pyFAISink) :
             self.__pyFAISink.setFlatfieldFile(filepath)
 
 
-    @Core.DEB_MEMBER_FUNCT
     def setJsonConfig(self, filepath) :
-        deb.Param('setJsonConfig: filepath=%s' % filepath)
         if(self.__pyFAISink) :
             self.__pyFAISink.setJsonConfig(filepath)
 
-    @Core.DEB_MEMBER_FUNCT
+    def setProcessedSubdir(self, filepath):
+        """
+        Directory  (relative or absolute) for processed data
+        """
+        self.__subdir = filepath
+        if self.__pyFAISink:
+            self.__pyFAISink.setSubdir(self.__subdir)
+
+    def setProcessedExt(self, ext):
+        """
+        Extension for prcessed data files
+        """
+        self.__extension = ext
+        if self.__pyFAISink:
+            self.__pyFAISink.setExtension(self.__extension)
+
     def Reset(self) :
-        deb.Param('Reset')
         if(self.__pyFAISink) :
             self.__pyFAISink.reset()
 
-    @Core.DEB_MEMBER_FUNCT
     def Reconfig(self, shape) :
-        deb.Param('Reconfig: %s' % shape)
         if(self.__pyFAISink) :
             self.__pyFAISink.reconfig(shape)
 
+    def read_Parameters(self, the_att):
+        """
+        Called  when reading the "Parameters" attribute
+        """
+        if self.__pyFAISink:
+            the_att.set_value(self.__pyFAISink.__repr__())
+        else:
+            the_att.set_value("No pyFAI Sink processlib active for the moment")
 
-class AzimuthalIntegratonDeviceServerClass(PyTango.DeviceClass) :
+
+class AzimuthalIntegrationDeviceServerClass(PyTango.DeviceClass) :
         #        Class Properties
     class_property_list = {
         }
@@ -309,6 +414,14 @@ class AzimuthalIntegratonDeviceServerClass(PyTango.DeviceClass) :
         [[PyTango.DevString, "Full path of background image file"],
          [PyTango.DevVoid, ""]],
 
+        'setProcessedSubdir':
+        [[PyTango.DevString, "Sub-directory with processed data"],
+         [PyTango.DevVoid, ""]],
+
+        'setProcessedExt':
+        [[PyTango.DevString, "Extension of processed data files"],
+         [PyTango.DevVoid, ""]],
+
         'Start':
         [[PyTango.DevVoid, ""],
          [PyTango.DevVoid, ""]],
@@ -330,6 +443,10 @@ class AzimuthalIntegratonDeviceServerClass(PyTango.DeviceClass) :
             [[PyTango.DevLong,
             PyTango.SCALAR,
             PyTango.READ_WRITE]],
+        'Parameters':
+            [[PyTango.DevString,
+            PyTango.SCALAR,
+            PyTango.READ]],
 #        'delete_dark_after_read':
 #        [[PyTango.DevBoolean,
 #          PyTango.SCALAR,
@@ -348,4 +465,4 @@ def set_control_ref(control_class_ref):
     _control_ref = control_class_ref
 
 def get_tango_specific_class_n_device() :
-    return AzimuthalIntegratonDeviceServerClass, AzimuthalIntegratonDeviceServer
+    return AzimuthalIntegrationDeviceServerClass, AzimuthalIntegrationDeviceServer

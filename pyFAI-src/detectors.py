@@ -254,7 +254,10 @@ class Detector(object):
     def set_mask(self, mask):
         with self._sem:
             self._mask = mask
-            self._mask_crc = crc32(mask)
+            if mask is not None:
+                self._mask_crc = crc32(mask)
+            else:
+                self._mask_crc = None
     mask = property(get_mask, set_mask)
     def set_maskfile(self, maskfile):
         try:
@@ -366,6 +369,17 @@ class Fairchild(Detector):
         Detector.__init__(self, pixel1, pixel2)
         self.name = "Fairchild Condor 486:90"
         self.max_shape = (4096, 4096)
+
+
+class Dexela2923(Detector):
+    """
+    Dexela CMOS family detector
+    """
+    force_pixel = True
+    def __init__(self, pixel1=75e-6, pixel2=75e-6):
+        Detector.__init__(self, pixel1, pixel2)
+        self.name = "Dexela 2923"
+        self.max_shape = (3888, 3072)
 
 
 class FReLoN(Detector):
@@ -496,6 +510,7 @@ ALL_DETECTORS = {"pilatus1m": Pilatus1M,
                  "xpad": Xpad_flat,
                  "xpad_flat": Xpad_flat,
                  "basler": Basler,
+                 "dexela2923": Dexela2923,
                  "detector": Detector}
 
 
