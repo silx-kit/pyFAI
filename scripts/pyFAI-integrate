@@ -206,15 +206,16 @@ class AIWidget(QtGui.QWidget):
                     logger.debug("processing %s" % item)
                     if (type(item) in types.StringTypes) and op.exists(item):
                         kwarg["data"] = fabio.open(item).data
-                        if "nbPt_azim" in kwarg:
+                        if kwarg.get("nbPt_azim"):
                             kwarg["filename"] = op.splitext(item)[0] + ".azim"
                         else:
                             kwarg["filename"] = op.splitext(item)[0] + ".dat"
+                            kwarg["nbPt"] = kwarg.pop("nbPt_rad")
                     else:
                         logger.warning("item is not a file ... guessing it is a numpy array")
                         kwarg["data"] = item
                         kwarg["filename"] = None
-                    if "nbPt_azim" in kwarg:
+                    if kwarg.get("nbPt_azim"):
                         out.append(self.ai.integrate2d(**kwarg)[0])
                     else:
                         out.append(self.ai.integrate1d(**kwarg)[0])
