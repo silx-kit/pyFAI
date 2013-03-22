@@ -593,7 +593,7 @@
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_10">
             <item>
-             <widget class="QCheckBox" name="poisson">
+             <widget class="QCheckBox" name="do_poisson">
               <property name="text">
                <string>Std-err (Poisson law)</string>
               </property>
