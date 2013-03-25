@@ -572,7 +572,6 @@ class Distortion(object):
                     self.delta1 = int((numpy.ceil(pos_corners[:, 1:, 1]) - numpy.floor(pos_corners[:, :-1, 1])).max())
         return self.pos
 
-    @timeit
     @cython.wraparound(False)
     @cython.boundscheck(False)
     def calc_LUT_size(self):
@@ -611,7 +610,6 @@ class Distortion(object):
                     self.lut_size = lut_size.max()
                     return lut_size
 
-    @timeit
     @cython.wraparound(False)
     @cython.boundscheck(False)
     @cython.cdivision(True)
@@ -711,7 +709,6 @@ class Distortion(object):
                                 idx += 1
                     self.LUT = lut.reshape(self.shape[0] * self.shape[1], self.lut_size)
 
-    @timeit
     @cython.wraparound(False)
     @cython.boundscheck(False)
     def correct(self, image):

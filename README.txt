@@ -42,6 +42,14 @@ http://mathema.tician.de/software/pyopencl
 If you are using MS Windows you can also download a binary version packaged as executable
 installation files (Chose the one corresponding to your python version).
 
+Documentation
+-------------
+
+Documentation can be build using this command and Sphinx (installed on your computer):
+
+::
+    python setup.py build_doc
+
 
 Dependencies
 ============
@@ -78,7 +86,7 @@ sudo dpkg -i python-fabio_0.0.7-1_amd64.deb
 
 Contributors
 ============
- * Jérôme Kieffer 
+ * Jérôme Kieffer
  * Dimitris Karkoulis
  * Jon Wright
  * Frédéric-Emmanuel Picca
