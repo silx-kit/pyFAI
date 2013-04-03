@@ -35,10 +35,10 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/02/2013"
+__date__ = "03/04/2013"
 __status__ = "development"
 
-import os, sys, gc, threading, time, logging
+import os, sys, gc, threading, time, logging, types
 from optparse import OptionParser
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI.calibration")
@@ -69,7 +69,7 @@ class Calibration(object):
     """
     class doing the calibration of frames
     """
-    def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None, splineFile=None, detector=None, gaussianWidth=None):
+    def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None, splineFile=None, detector=None, gaussianWidth=None, spacing_file=None, wavelength=None):
         """
         """
         self.dataFiles = dataFiles or []
@@ -78,8 +78,13 @@ class Calibration(object):
         self.pointfile = None
         self.gaussianWidth = gaussianWidth
         self.labelPattern = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
-        if not detector:
+        if type(detector) in types.StringTypes:
+            self.detector = detector_factory(detector)
+        elif isinstance(detector, Detector):
+            self.detector = detector
+        else:
             self.detector = Detector()
+
         if splineFile and os.path.isfile(splineFile):
             self.detector.splineFile = os.path.abspath(splineFile)
         if pixelSize:
@@ -99,8 +104,8 @@ class Calibration(object):
         self.max_iter = 1000
         self.filter = "mean"
         self.threshold = 0.1
-        self.spacing_file = None
-        self.wavelength = None
+        self.spacing_file = spacing_file
+        self.wavelength = wavelength
         self.weighted = False
         self.polarization_factor = 0
 
@@ -131,7 +136,7 @@ Increase the value if the arc is not complete;
 decrease the value if arcs are mixed together.""", default=None)
         parser.add_option("-c", "--square", dest="square", action="store_true",
                       help="Use square kernel shape for neighbor search instead of diamond shape", default=False)
-        parser.add_option("--spacing", dest="spacing", metavar="FILE",
+        parser.add_option("-S", "--spacing", dest="spacing", metavar="FILE",
                       help="file containing d-spacing of the reference sample (MANDATORY)", default=None)
         parser.add_option("-w", "--wavelength", dest="wavelength", type="float",
                       help="wavelength of the X-Ray beam in Angstrom", default=None)
@@ -420,26 +425,43 @@ class Recalibration(object):
     """
     class doing the re-calibration of frames
     """
-    def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, splineFile=None, gaussianWidth=None):
+    def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None, splineFile=None, detector=None, spacing_file=None, wavelength=None):
         """
         """
         self.dataFiles = dataFiles or []
         self.darkFiles = darkFiles or []
         self.flatFiles = flatFiles or []
         self.pointfile = None
-        self.gaussianWidth = gaussianWidth
         self.labelPattern = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
-        self.splineFile = splineFile
+
+        if type(detector) in types.StringTypes:
+            self.detector = detector_factory(detector)
+        elif isinstance(detector, Detector):
+            self.detector = detector
+        else:
+            self.detector = Detector()
+
+        if splineFile and os.path.isfile(splineFile):
+            self.detector.splineFile = os.path.abspath(splineFile)
+        if pixelSize:
+            if __len__ in pixelSize and len(pixelSize) >= 2:
+                self.detector.pixel1 = float(pixelSize[0])
+                self.detector.pixel2 = float(pixelSize[1])
+            else:
+                self.detector.pixel1 = self.detector.pixel2 = float(pixelSize)
+
         self.cutBackground = None
         self.outfile = "merged.edf"
         self.peakPicker = None
         self.img = None
-        self.ai = None
+        self.ai = AzimuthalIntegrator(dist=1, detector=self.detector)
+        if wavelength:
+            self.ai.wavelength = wavelength
         self.data = None
         self.basename = None
         self.geoRef = None
         self.reconstruct = False
-        self.spacing_file = None
+        self.spacing_file = spacing_file
         self.mask = None
         self.saturation = 0.1
         self.fixed = ["wavelength"]  # parameter fixed during optimization
@@ -456,8 +478,7 @@ class Recalibration(object):
              "data= " + ", ".join(self.dataFiles),
              "dark= " + ", ".join(self.darkFiles),
              "flat= " + ", ".join(self.flatFiles)]
-        lst += ["spline= %s" % self.splineFile,
-             "gaussian= %s" % self.gaussianWidth]
+        lst.append(self.detector.__repr__())
         return os.linesep.join(lst)
 
     def parse(self):
@@ -472,7 +493,7 @@ class Recalibration(object):
         parser.add_option("-v", "--verbose",
                           action="store_true", dest="verbose", default=False,
                           help="switch to debug mode")
-        parser.add_option("-s", "--spacing", dest="spacing", metavar="FILE",
+        parser.add_option("-S", "-s", "--spacing", dest="spacing", metavar="FILE",
                       help="file containing d-spacing of the reference sample (MANDATORY)", default=None)
         parser.add_option("-r", "--ring", dest="max_rings", type="float",
                       help="maximum number of rings to extract", default=None)
@@ -567,10 +588,10 @@ class Recalibration(object):
             logger.setLevel(logging.DEBUG)
         self.outfile = options.outfile
         if options.dark:
-            print options.dark, type(options.dark)
+#            print options.dark, type(options.dark)
             self.darkFiles = [f for f in options.dark.split(",") if os.path.isfile(f)]
         if options.flat:
-            print options.flat, type(options.flat)
+#            print options.flat, type(options.flat)
             self.flatFiles = [f for f in options.flat.split(",") if os.path.isfile(f)]
         self.pointfile = options.npt
         self.spacing_file = options.spacing
@@ -622,6 +643,7 @@ class Recalibration(object):
         self.filter = options.filter
         self.weighted = options.weighted
         self.polarization_factor = options.polarization_factor
+        self.detector = self.ai.detector
         print self.ai
         print "fixed:", self.fixed
 
