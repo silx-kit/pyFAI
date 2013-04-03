@@ -26,13 +26,13 @@
 
 """
 
-MX-calibrate is a tool to calibrate the distance of a detector from a set of powder diffraction patterns  
+MX-calibrate is a tool to calibrate the distance of a detector from a set of powder diffraction patterns
 
 Idea:
 
 MX-calibrate -e 12 --spacing dSpacing.D file1.edf file2.edf file3.edf
 
-calibrate the by hand the most distant frame then calibrate subsequently all frames 
+calibrate the by hand the most distant frame then calibrate subsequently all frames
 
 """
 
@@ -59,52 +59,52 @@ try:
 except ImportError:
     logging.info("No socket opened for debugging. Please install rfoo")
 from scipy.stats import linregress
-
-class FileSerie(object):
-    def __init__(self, *lst):
-        self.lst = lst
-        self.dico = {}
-        assert len(lst) > 1
-        self.len = len(lst[0])
-        for fn in self.lst:
-            assert len(fn) == self.len
-        self.fixed = [None] * self.len
-        self.start = self.stop = None
-    def analyse(self):
-        for idx in range(self.len):
-            char0 = self.lst[0][idx]
-            same = True
-            for fn in self.lst[1:]:
-                if fn[idx] != char0:
-                    same = False
-            self.fixed[idx] = same
-        start = self.fixed.find(False)
-        stop = self.len - self.fixed[-1::-1].find(False)
-        for idx in range(start, 0, -1):
-            if lst[0][idx].isdigit():
-                self.fixed[idx] = False
-                start = idx
-            else:
-                break
-        for idx in range(start, 0, -1):
-            if lst[0][idx].isdigit():
-                self.fixed[idx] = False
-                start = idx
-            else:
-                break
-        for idx in range(stop, self.len, 1):
-            if lst[0][idx].isdigit():
-                self.fixed[idx] = False
-                stop = idx + 1
-            else:
-                break
-        self.start = start
-        self.stop = stop
-        for fn in self.lst:
-            try:
-                nr = int(fn[start:stop])
-            except:
-                print
+#
+# class FileSerie(object):
+#    def __init__(self, *lst):
+#        self.lst = lst
+#        self.dico = {}
+#        assert len(lst) > 1
+#        self.len = len(lst[0])
+#        for fn in self.lst:
+#            assert len(fn) == self.len
+#        self.fixed = [None] * self.len
+#        self.start = self.stop = None
+#    def analyse(self):
+#        for idx in range(self.len):
+#            char0 = self.lst[0][idx]
+#            same = True
+#            for fn in self.lst[1:]:
+#                if fn[idx] != char0:
+#                    same = False
+#            self.fixed[idx] = same
+#        start = self.fixed.find(False)
+#        stop = self.len - self.fixed[-1::-1].find(False)
+#        for idx in range(start, 0, -1):
+#            if lst[0][idx].isdigit():
+#                self.fixed[idx] = False
+#                start = idx
+#            else:
+#                break
+#        for idx in range(start, 0, -1):
+#            if lst[0][idx].isdigit():
+#                self.fixed[idx] = False
+#                start = idx
+#            else:
+#                break
+#        for idx in range(stop, self.len, 1):
+#            if lst[0][idx].isdigit():
+#                self.fixed[idx] = False
+#                stop = idx + 1
+#            else:
+#                break
+#        self.start = start
+#        self.stop = stop
+#        for fn in self.lst:
+#            try:
+#                nr = int(fn[start:stop])
+#            except:
+#                print
 
 class MultiCalib(object):
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None, splineFile=None, detector=None):
@@ -139,12 +139,15 @@ class MultiCalib(object):
         self.mask = None
         self.max_iter = 1000
         self.filter = "mean"
-        self.threshold = 0.1
+        self.saturation = 0.1
         self.spacing_file = None
         self.wavelength = None
         self.weighted = False
         self.polarization_factor = 0
         self.results = {}
+        self.gui = True
+        self.interactive = True
+
     def __repr__(self):
         lst = ["Multi-Calibration object:",
              "data= " + ", ".join(self.dataFiles),
@@ -187,9 +190,9 @@ class MultiCalib(object):
                       help="list of dark images to average and subtract", default=None)
         parser.add_option("-f", "--flat", dest="flat",
                       help="list of flat images to average and divide", default=None)
-        parser.add_option("-r", "--reconstruct", dest="reconstruct",
-                      help="Reconstruct image where data are masked or <0  (for Pilatus detectors or detectors with modules)",
-                      action="store_true", default=False)
+#        parser.add_option("-r", "--reconstruct", dest="reconstruct",
+#                      help="Reconstruct image where data are masked or <0  (for Pilatus detectors or detectors with modules)",
+#                      action="store_true", default=False)
         parser.add_option("-s", "--spline", dest="spline",
                       help="spline file describing the detector distortion", default=None)
         parser.add_option("-p", "--pixel", dest="pixel",
@@ -209,7 +212,19 @@ class MultiCalib(object):
 #        parser.add_option("--weighted", dest="weighted",
 #                      help="weight fit by intensity",
 #                       default=False, action="store_true")
+        parser.add_option("--no-gui", dest="gui",
+                      help="force the program to run without a Graphical interface",
+                      default=True, action="store_false")
+        parser.add_option("--gui", dest="gui",
+                      help="force the program to run with a Graphical interface",
+                      default=True, action="store_true")
 
+        parser.add_option("--no-interactive", dest="interactive",
+                      help="force the program to run and exit without prompting for refinements",
+                      default=True, action="store_false")
+        parser.add_option("--interactive", dest="interactive",
+                      help="force the program to prompt for refinements",
+                      default=True, action="store_true")
 
         (options, args) = parser.parse_args()
 
@@ -251,7 +266,7 @@ class MultiCalib(object):
         if options.pixel is not None:
             self.get_pixelSize(options.pixel)
         self.filter = options.filter
-        self.threshold = options.saturation
+        self.saturation = options.saturation
         if options.wavelength:
             self.wavelength = 1e-10 * options.wavelength
         elif options.energy:
@@ -260,6 +275,9 @@ class MultiCalib(object):
         self.polarization_factor = options.polarization_factor
 #        if not self.spacing_file or not os.path.isfile(self.spacing_file):
 #            raise RuntimeError("you must specify the d-spacing file")
+        self.gui = options.gui
+        self.interactive = options.interactive
+
         self.dataFiles = [f for f in args if os.path.isfile(f)]
         if not self.dataFiles:
             raise RuntimeError("Please provide some calibration images ... if you want to analyze them. Try also the --help option to see all options!")
@@ -322,7 +340,7 @@ class MultiCalib(object):
 
     def process(self):
         """
-        
+
         """
         self.dataFiles.sort()
         for fn in self.dataFiles:
@@ -344,8 +362,12 @@ class MultiCalib(object):
             rec = pyFAI.calibration.Recalibration(dataFiles=[fn], darkFiles=self.darkFiles, flatFiles=self.flatFiles,
                                                   detector=self.detector, spacing_file=self.spacing_file, wavelength=wavelength)
             rec.outfile = os.path.splitext(fn)[0] + ".proc.edf"
-            rec.interactive=False
-            rec.gui = False
+            rec.interactive = self.interactive
+            rec.gui = self.gui
+            rec.saturation = self.saturation
+            rec.mask = self.mask
+            rec.filter = self.filter
+            rec.cutBackground = self.cutBackground
             if centerY:
                 rec.ai.poni1 = centerY * self.detector.pixel1
             if centerX:
@@ -372,6 +394,8 @@ class MultiCalib(object):
         centerX = dist.copy()
         centerY = dist.copy()
         idx = 0
+        print("")
+        print("Results of linear regression for distance in mm")
         for key, dico in  self.results.iteritems():
             print key, dico["dist"]
             print dico["ai"]
@@ -395,8 +419,9 @@ class MultiCalib(object):
                          ("direct", direct), ("tilt", tilt), ("trp", trp),
                          ("centerX", centerX), ("centerY", centerY)]:
             slope, intercept, r, two, stderr = linregress(x, elt)
-            print "%s: slope= %s\t intercept= %s\t R= %s\t stderr= %s"%(name,slope,intercept,r,stderr) 
-            
+
+            print "%s = %s * dist_mm + %s \t R= %s\t stderr= %s" % (name, slope, intercept, r, stderr)
+
 
 # This is for debugin wtih rconsole
 c = None
