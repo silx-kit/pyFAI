@@ -109,15 +109,19 @@ class test_mask(unittest.TestCase):
             for ds in self.datasets:
                 ai = pyFAI.load(ds["poni"])
                 data = fabio.open(ds["img"]).data
-                res = ai.xrpd_LUT_OCL(data, 1000, devicetype="all", platformid=ids[0], deviceid=ids[1])
-                t0 = time.time()
-                ref = ai.xrpd(data, 1000)
-                t1 = time.time()
-                res = ai.xrpd_LUT_OCL(data, 1000, safe=False)
-                t2 = time.time()
-                logger.info("For image %15s;\tspeed up is %.3fx;\trate is %.3f Hz" % (os.path.basename(ds["img"]), ((t1 - t0) / (t2 - t1)), 1. / (t2 - t1)))
-                r = Rwp(ref, res)
-                self.assertTrue(r < 10, "Rwp=%.3f for OpenCL processing of %s" % (r, ds))
+                try:
+                    res = ai.xrpd_LUT_OCL(data, 1000, devicetype="all", platformid=ids[0], deviceid=ids[1])
+                except MemoryError as error:
+                    logger.warning("Memory Error on %s dataset %s: %s%s. Converted into warnining: device may not have enough memory." % (devtype, os.path.basename(ds["img"]), os.linesep, error))
+                else:
+                    t0 = time.time()
+                    ref = ai.xrpd(data, 1000)
+                    t1 = time.time()
+                    res = ai.xrpd_LUT_OCL(data, 1000, safe=False)
+                    t2 = time.time()
+                    logger.info("For image %15s;\tspeed up is %.3fx;\trate is %.3f Hz" % (os.path.basename(ds["img"]), ((t1 - t0) / (t2 - t1)), 1. / (t2 - t1)))
+                    r = Rwp(ref, res)
+                    self.assertTrue(r < 10, "Rwp=%.3f for OpenCL processing of %s" % (r, ds))
 
 
 def test_suite_all_OpenCL():
