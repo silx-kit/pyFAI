@@ -45,6 +45,7 @@ __satus__ = "development"
 
 import os, types
 import pyFAI, pyFAI.calibration
+import numpy
 import pylab
 import fabio
 import logging
@@ -57,7 +58,7 @@ try:
     rconsole.spawn_server()
 except ImportError:
     logging.info("No socket opened for debugging. Please install rfoo")
-
+from scipy.stats import linregress
 
 class FileSerie(object):
     def __init__(self, *lst):
@@ -343,6 +344,8 @@ class MultiCalib(object):
             rec = pyFAI.calibration.Recalibration(dataFiles=[fn], darkFiles=self.darkFiles, flatFiles=self.flatFiles,
                                                   detector=self.detector, spacing_file=self.spacing_file, wavelength=wavelength)
             rec.outfile = os.path.splitext(fn)[0] + ".proc.edf"
+            rec.interactive=False
+            rec.gui = False
             if centerY:
                 rec.ai.poni1 = centerY * self.detector.pixel1
             if centerX:
@@ -356,6 +359,44 @@ class MultiCalib(object):
 
     def regression(self):
         print self.results
+        dist = numpy.zeros(len(self.results))
+        x = dist.copy()
+        poni1 = dist.copy()
+        poni2 = dist.copy()
+        rot1 = dist.copy()
+        rot2 = dist.copy()
+        rot3 = dist.copy()
+        direct = dist.copy()
+        tilt = dist.copy()
+        trp = dist.copy()
+        centerX = dist.copy()
+        centerY = dist.copy()
+        idx = 0
+        for key, dico in  self.results.iteritems():
+            print key, dico["dist"]
+            print dico["ai"]
+            x[idx] = dico["dist"]
+            dist[idx] = dico["ai"].dist
+            poni1[idx] = dico["ai"].poni1
+            poni2[idx] = dico["ai"].poni2
+            rot1[idx] = dico["ai"].rot1
+            rot2[idx] = dico["ai"].rot2
+            rot3[idx] = dico["ai"].rot3
+            f = dico["ai"].getFit2D()
+            direct[idx] = f["directDist"]
+            tilt[idx] = f["tilt"]
+            trp[idx] = f["tiltPlanRotation"]
+            centerX[idx] = f["centerX"]
+            centerY[idx] = f["centerY"]
+            idx += 1
+        for name, elt in [("dist", dist),
+                         ("poni1", poni1), ("poni2", poni2),
+                         ("rot1", rot1), ("rot2", rot2), ("rot3", rot3),
+                         ("direct", direct), ("tilt", tilt), ("trp", trp),
+                         ("centerX", centerX), ("centerY", centerY)]:
+            slope, intercept, r, two, stderr = linregress(x, elt)
+            print "%s: slope= %s\t intercept= %s\t R= %s\t stderr= %s"%(name,slope,intercept,r,stderr) 
+            
 
 # This is for debugin wtih rconsole
 c = None
