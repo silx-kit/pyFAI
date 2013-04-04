@@ -141,11 +141,11 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         if not os.path.exists(directory):
             logger.error("Ouput directory does not exist !!!  %s" % directory)
             try:
-                os.makedirs(new_dir)
+                os.makedirs(directory)
             except:  # No luck withthreads
                 pass
 
-        directory = sav_parms.directory
+#        directory = sav_parms.directory
         prefix = sav_parms.prefix
         nextNumber = sav_parms.nextNumber
         indexFormat = sav_parms.indexFormat
@@ -275,7 +275,8 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
             for i, f in enumerate(dark_files):
                 darks[:, :, i] = fabio.open(f).data
             self.ai.darkcurrent = darks.mean(axis= -1)
-
+        else:
+            self.ai.darkcurrent = None
         self.flat_field_image = config.get("flat_field")
         flat_files = [i.strip() for i in config.get("flat_field", "").split(",")
                       if os.path.isfile(i.strip())]
@@ -284,7 +285,9 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
             flats = numpy.zeros((d0.shape[0], d0.shape[1], len(flat_files)), dtype=numpy.float32)
             for i, f in enumerate(flat_files):
                 flats[:, :, i] = fabio.open(f).data
-            self.ai.darkcurrent = flats.mean(axis= -1)
+            self.ai.flatfield = flats.mean(axis= -1)
+        else:
+            self.ai.flatfield = None
 
         if config.get("do_2D"):
             self.nbpt_azim = int(config.get("azim_pt"))

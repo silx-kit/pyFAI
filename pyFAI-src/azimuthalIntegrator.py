@@ -1130,10 +1130,9 @@ class AzimuthalIntegrator(Geometry):
             else:
                 solid_angle_array = None
             try:
-                tthAxis, I, _, _ = self._lut_integrator.integrate(
-                    data,
-                    solidAngle=solid_angle_array,
-                    dummy=dummy, delta_dummy=delta_dummy)
+                tthAxis, I, _, _ = self._lut_integrator.integrate(data,
+                                                                solidAngle=solid_angle_array,
+                                                                dummy=dummy, delta_dummy=delta_dummy)
             except MemoryError:  # LUT method is hungry...
                 logger.warning("MemoryError:"
                                " falling back on forward implementation")
@@ -2041,7 +2040,7 @@ class AzimuthalIntegrator(Geometry):
                                                                                        platformid=platformid,
                                                                                        deviceid=deviceid,
                                                                                        checksum=self._lut_integrator.lut_checksum)
-                            I, _, _ = self._ocl_lut_integr.integrate(data,
+                            I, _, _ = self._ocl_lut_integr.integrate(data, dark=dark, flat=flat,
                                                                      solidAngle=solidangle,
                                                                      solidAngle_checksum=self._dssa_crc,
                                                                      dummy=dummy,
@@ -2058,7 +2057,7 @@ class AzimuthalIntegrator(Geometry):
                                                                              delta_dummy=delta_dummy)
                                 sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
                     else:
-                        qAxis, I, a, b = self._lut_integrator.integrate(data,
+                        qAxis, I, a, b = self._lut_integrator.integrate(data, dark=dark, flat=flat,
                                                            solidAngle=solidangle,
                                                            dummy=dummy,
                                                            delta_dummy=delta_dummy,
@@ -2067,7 +2066,7 @@ class AzimuthalIntegrator(Geometry):
                         if error_model == "azimuthal":
                             variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
                         if variance is not None:
-                            qAxis, I, a, b = self._lut_integrator.integrate(variance,
+                            _, var1d, a, b = self._lut_integrator.integrate(variance,
                                                                solidAngle=None,
                                                                dummy=dummy,
                                                                delta_dummy=delta_dummy)
@@ -2407,7 +2406,7 @@ class AzimuthalIntegrator(Geometry):
                                                                                        platformid=platformid,
                                                                                        deviceid=deviceid,
                                                                                        checksum=self._lut_integrator.lut_checksum)
-                            I, _, _ = self._ocl_lut_integr.integrate(data,
+                            I, _, _ = self._ocl_lut_integr.integrate(data, dark=dark, flat=flat,
                                                                      solidAngle=solidangle,
                                                                      solidAngle_checksum=self._dssa_crc,
                                                                      dummy=dummy,
@@ -2424,7 +2423,7 @@ class AzimuthalIntegrator(Geometry):
 #                                var1d, a, b = self._ocl_lut_integr.integrate(variance, solidAngle=None, dummy=dummy, delta_dummy=delta_dummy)
 #                                sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
                     else:
-                        I, bins_rad, bins_azim, _, _ = self._lut_integrator.integrate(data,
+                        I, bins_rad, bins_azim, _, _ = self._lut_integrator.integrate(data, dark=dark, flat=flat,
                                                                                       solidAngle=solidangle,
                                                                                       dummy=dummy,
                                                                                       delta_dummy=delta_dummy,
