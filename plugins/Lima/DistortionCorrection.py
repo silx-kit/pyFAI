@@ -362,11 +362,11 @@ class DistortionCorrectionDeviceServerClass(PyTango.DeviceClass) :
     #    Command definitions
     cmd_list = {
         'setDarkcurrentImage':
-        [[PyTango.DevString, "Full path of darkcurrent image file"],
+        [[PyTango.DevString, "Full path of darkCurrent image file"],
          [PyTango.DevVoid, ""]],
 
         'setFlatfieldImage':
-        [[PyTango.DevString, "Full path of flatfield image file"],
+        [[PyTango.DevString, "Full path of flatField image file"],
          [PyTango.DevVoid, ""]],
 
         'setSplineFile':

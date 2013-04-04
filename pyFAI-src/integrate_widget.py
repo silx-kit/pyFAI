@@ -50,12 +50,15 @@ from pyFAI.opencl import ocl
 from pyFAI.utils import float_, int_, str_
 UIC = op.join(op.dirname(__file__), "integration.ui")
 
+FROM_PYMCA = "From PyMca"
+
 class AIWidget(QtGui.QWidget):
     """
     """
     def __init__(self, input_data=None):
         self.ai = pyFAI.AzimuthalIntegrator()
         self.input_data = input_data
+        self.name = None
         self._sem = threading.Semaphore()
         QtGui.QWidget.__init__(self)
         uic.loadUi(UIC, self)
@@ -416,8 +419,34 @@ class AIWidget(QtGui.QWidget):
         else:
             self.detector.setCurrentIndex(self.all_detectors.index("detector"))
 
-    def set_input_data(self, data):
-        self.input_data = data
+    def set_input_data(self, stack, stack_name=None):
+        self.input_data = stack
+        self.name = stack_name
+    setStackDataObject = set_input_data
+
+    def setSelectionMask(self, mask=None):
+        """
+        PyMca Plugin specific
+
+        @param mask: 2D array with the masked region
+
+        """
+        if (mask is not None) and (mask.sum() > 0):
+            self.ai.mask = mask
+            self.do_mask.setChecked(True)
+            self.mask_file.setText(FROM_PYMCA)
+
+    def setBackgroundImage(self, dark=None):
+        """
+        PyMca Plugin specific
+
+        @param dark: 2D array with the dark-current
+
+        """
+        if (dark is not None) and (dark.sum() > 0):
+            self.ai.darkcurrent = dark
+            self.do_dark.setChecked(True)
+            self.dark_current.setText(FROM_PYMCA)
 
     def _float(self, kw, default=0):
         fval = default
@@ -464,13 +493,16 @@ class AIWidget(QtGui.QWidget):
             self.ai.setChiDiscAtZero()
 
         mask_file = str(self.mask_file.text()).strip()
-        if mask_file and os.path.exists(mask_file) and bool(self.do_mask.isChecked()):
-            try:
-                mask = fabio.open(mask_file).data
-            except Exception as error:
-                logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
-            else:
-                self.ai.mask = mask
+        if mask_file  and bool(self.do_mask.isChecked()):
+            if os.path.exists(mask_file):
+                try:
+                    mask = fabio.open(mask_file).data
+                except Exception as error:
+                    logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
+                else:
+                    self.ai.mask = mask
+#            elif mask_file==FROM_PYMCA:
+#                self.ai.mask = mask
         dark_files = [i.strip() for i in str(self.dark_current.text()).split(",")
                       if os.path.isfile(i.strip())]
         if dark_files and bool(self.do_dark.isChecked()):

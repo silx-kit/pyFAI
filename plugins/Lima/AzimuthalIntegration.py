@@ -411,7 +411,7 @@ class AzimuthalIntegrationDeviceServerClass(PyTango.DeviceClass) :
          [PyTango.DevVoid, ""]],
 
         'setJsonConfig':
-        [[PyTango.DevString, "Full path of background image file"],
+        [[PyTango.DevString, "Path of the JSON configuration file or the configuration itself"],
          [PyTango.DevVoid, ""]],
 
         'setProcessedSubdir':

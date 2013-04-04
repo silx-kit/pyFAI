@@ -27,6 +27,7 @@ try:
     import pyFAI
     import pyFAI.integrate_widget
 except:
+    logger.error("error in importing pyFAI")
     pass
 try:
     from PyMca import StackPluginBase
@@ -93,7 +94,7 @@ class AzimuthalIntegrationPlugin(StackPluginBase.StackPluginBase):
         elif ddict['event'] == "resetSelection":
             self.setStackSelectionMask(None)
 
-    #Methods implemented by the plugin
+    # Methods implemented by the plugin
     def getMethods(self):
         return self.__methodKeys
 
@@ -106,11 +107,12 @@ class AzimuthalIntegrationPlugin(StackPluginBase.StackPluginBase):
     def applyMethod(self, name):
         return self.methodDict[name][0]()
 
+
     def _showWidget(self):
         if self.widget is None:
             self.widget = pyFAI.integrate_widget.AIWidget()
-            #window.set_input_data(args)
-            #window.show()
+            # window.set_input_data(args)
+            # window.show()
 #             = Median2DBrowser.Median2DBrowser(parent=None,
 #                                                    rgbwidget=None,
 #                                                    selection=True,
@@ -125,11 +127,11 @@ class AzimuthalIntegrationPlugin(StackPluginBase.StackPluginBase):
 #                   qt.SIGNAL('MaskImageWidgetSignal'),
 #                   self.mySlot)
 
-        #Show
+        # Show
         self.widget.show()
         self.widget.raise_()
 
-        #update
+        # update
         self.stackUpdated()
 
 
