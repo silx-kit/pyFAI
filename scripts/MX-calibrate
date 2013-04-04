@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/04/2012"
+__date__ = "04/04/2012"
 __satus__ = "development"
 
 import os, types
@@ -135,7 +135,7 @@ class MultiCalib(object):
         self.peakPicker = None
         self.basename = None
         self.geoRef = None
-        self.reconstruct = False
+#        self.reconstruct = False
         self.mask = None
         self.max_iter = 1000
         self.filter = "mean"
@@ -251,7 +251,7 @@ class MultiCalib(object):
         if options.flat:
 #            print options.flat, type(options.flat)
             self.flatFiles = [f for f in options.flat.split(",") if os.path.isfile(f)]
-        self.reconstruct = options.reconstruct
+#        self.reconstruct = options.reconstruct
         if options.mask and os.path.isfile(options.mask):
             self.mask = fabio.open(options.mask).data
 
