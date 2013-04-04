@@ -763,6 +763,7 @@ class Recalibration(object):
         self.geoRef = GeometryRefinement(self.data, dist=self.ai.dist, poni1=self.ai.poni1, poni2=self.ai.poni2,
                                              rot1=self.ai.rot1, rot2=self.ai.rot2, rot3=self.ai.rot3,
                                              detector=self.ai.detector, dSpacing=self.spacing_file, wavelength=self.ai._wavelength)
+        self.ai = self.geoRef
         self.geoRef.set_tolerance(10)
         print self.geoRef
         previous = sys.maxint
