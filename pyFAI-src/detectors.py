@@ -501,6 +501,18 @@ class Xpad_flat(Detector):
         p2 = self.pixel2 * (0.5 + c2)
         return p1, p2
 
+class Perkin(Detector):
+    """
+    Perkin detector
+
+    """
+    force_pixel = True
+    def __init__(self, pixel=200e-6):
+        Detector.__init__(self, pixel, pixel)
+        self.name = "Perkin detector"
+        self.max_shape = (2048,2048)
+
+
 ALL_DETECTORS = {"pilatus1m": Pilatus1M,
                  "pilatus2m": Pilatus2M,
                  "pilatus6m": Pilatus6M,
@@ -511,6 +523,7 @@ ALL_DETECTORS = {"pilatus1m": Pilatus1M,
                  "xpad_flat": Xpad_flat,
                  "basler": Basler,
                  "dexela2923": Dexela2923,
+                 "perkin": Perkin,
                  "detector": Detector}
 
 
