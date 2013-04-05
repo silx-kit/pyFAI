@@ -351,7 +351,7 @@ def averageDark(lstimg, center_method="mean", cutoff=None):
     but averages all frames within  cutoff*std
 
     @param lstimg: list of 2D images or a 3D stack
-    @param center: is the center calculated by a "mean" or a "median"
+    @param center_method: is the center calculated by a "mean" or a "median"
     @param cutoff: keep all data where (I-center)/std < cutoff
     @return: 2D image averaged
     """
@@ -367,7 +367,7 @@ def averageDark(lstimg, center_method="mean", cutoff=None):
         stack = numpy.zeros((length, shape[0], shape[1]), dtype=float32)
         for i, img in enumerate(lstimg):
            stack[i] = img
-    center = stack.__getattribute__(center)(axis=0)
+    center = stack.__getattribute__(center_method)(axis=0)
     if cutoff is None or cutoff <= 0:
         output = center
     else:
