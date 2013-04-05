@@ -2165,6 +2165,7 @@ class AzimuthalIntegrator(Geometry):
                 method = "numpy"
             else:
                 logger.debug("integrate1d uses cython implementation")
+                data = numpy.ascontiguousarray(data, dtype=numpy.float32)
                 mask = self.makeMask(data, mask, dummy, delta_dummy,
                                      mode="numpy")
                 pos0 = self.array_from_unit(shape, "center", unit)
@@ -2524,6 +2525,7 @@ class AzimuthalIntegrator(Geometry):
                 method = "numpy"
             else:
                 logger.debug("integrate2d uses cython implementation")
+                data = numpy.ascontiguousarray(data, dtype=numpy.float32)
                 mask = self.makeMask(data, mask, dummy, delta_dummy,
                                      mode="numpy")
                 pos0 = self.array_from_unit(shape, "center", unit)
