@@ -61,6 +61,16 @@ except (ImportError, WindowsError) as err:
     logging.warn("Exception %s: FFTw3 not available. Falling back on Scipy", err)
     has_fftw3 = False
 
+import traceback
+
+def deprecated(func):
+    def wrapper(*arg, **kw):
+        """
+        decorator that deprecates the use of a function  
+        """
+        logger.warning("%s is Deprecated !!! %s" % (func.func_name, os.linesep.join([""] + traceback.format_stack()[:-1])))
+        return func(*arg, **kw)
+    return wrapper
 
 def float_(val):
     """
