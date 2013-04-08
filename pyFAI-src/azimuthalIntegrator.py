@@ -681,6 +681,7 @@ class AzimuthalIntegrator(Geometry):
     xrpd = xrpd_splitBBox
 
     def xrpd_OpenCL(self, data, nbPt, filename=None, correctSolidAngle=True,
+                    dark=None, flat=None,
                     tthRange=None, mask=None, dummy=None, delta_dummy=None,
                     devicetype="gpu", useFp64=True,
                     platformid=None, deviceid=None, safe=True):
@@ -793,7 +794,14 @@ class AzimuthalIntegrator(Geometry):
                                        dummy=dummy,
                                        delta_dummy=delta_dummy)
         shape = data.shape
-
+        if flat is None:
+            flat = self.flatfield
+        if flat is None:
+            flat = 1
+        if dark is None:
+            dark = self.darkcurrent
+        if dark is not None:
+            data = data.astype(numpy.float32) - dark
         if self._ocl_integrator is None:
             with self._ocl_sem:
                 if self._ocl_integrator is None:
@@ -845,11 +853,12 @@ class AzimuthalIntegrator(Geometry):
                     if delta_dummy is None:
                         delta_dummy = 1e-6
                     self._ocl_integrator.setDummyValue(dummy, delta_dummy)
-                if correctSolidAngle and not param["solid_angle"]:
-                    self._ocl_integrator.setSolidAngle(
-                        self.solidAngleArray(shape))
-                elif (not correctSolidAngle) and param["solid_angle"]:
+                if (correctSolidAngle and not param["solid_angle"]):
+                    self._ocl_integrator.setSolidAngle(flat * self.solidAngleArray(shape))
+                elif (not correctSolidAngle) and param["solid_angle"] and (flat is 1):
                     self._ocl_integrator.unsetSolidAngle()
+                elif not correctSolidAngle and not param["solid_angle"] and (flat is not 1) :
+                    self._ocl_integrator.setSolidAngle(flat)
                 if (mask is not None) and not param["mask"]:
                     self._ocl_integrator.setMask(mask)
                 elif (mask is None) and param["mask"]:
