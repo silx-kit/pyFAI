@@ -183,7 +183,7 @@ class AzimuthalIntegrator(Geometry):
         @type dummy: float
         @param delta_dumy: precision of dummy pixels
         @type delta_dummy: float
-        @param mode: can be "normal" or "numpy"
+        @param mode: can be "normal" or "numpy" (inverted) or "where" applied to the mask 
         @type mode: str
 
         @return: the new mask
@@ -233,8 +233,10 @@ class AzimuthalIntegrator(Geometry):
                 numpy.logical_or(mask,
                                  abs(data - dummy) <= delta_dummy,
                                  mask)
-        if mode != "normal":
+        if mode == "numpy":
             numpy.logical_not(mask, mask)
+        elif mode == "where":
+            mask = numpy.where(numpy.logical_not(mask))
         return mask
 
     def xrpd_numpy(self, data, nbPt, filename=None, correctSolidAngle=True,
@@ -310,7 +312,7 @@ class AzimuthalIntegrator(Geometry):
         The *dark* and the *flat* can be provided to correct the data
         before computing the radial integration.
         """
-        mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
+        mask = self.makeMask(data, mask, dummy, delta_dummy, mode="where")
         tth = self.twoThetaArray(data.shape)[mask]
         data = numpy.ascontiguousarray(data, dtype=numpy.float32)
         if dark is None:
@@ -371,7 +373,7 @@ class AzimuthalIntegrator(Geometry):
                                    delta_dummy=delta_dummy,
                                    polarization_factor=polarization_factor)
 
-        mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
+        mask = self.makeMask(data, mask, dummy, delta_dummy, mode="where")
         tth = self.twoThetaArray(data.shape)[mask]
         data = numpy.ascontiguousarray(data, dtype=numpy.float32)
         if dark is None:
@@ -1377,6 +1379,7 @@ class AzimuthalIntegrator(Geometry):
 
     def xrpd2_numpy(self, data, nbPt2Th, nbPtChi=360,
                     filename=None, correctSolidAngle=True,
+                    dark=None, flat=None,
                     tthRange=None, chiRange=None,
                     mask=None, dummy=None, delta_dummy=None):
         """
@@ -1444,9 +1447,22 @@ class AzimuthalIntegrator(Geometry):
         delta_dummy=1.5 so that any value between -3.5 and -0.5 are
         considered as bad.
         """
-        mask = self.makeMask(data, mask, dummy, delta_dummy)
-        tth = self.twoThetaArray(data.shape)[mask]
-        chi = self.chiArray(data.shape)[mask]
+        mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
+        shape = data.shape
+        tth = self.twoThetaArray(shape)[mask]
+        chi = self.chiArray(shape)[mask]
+        data = data.astype(numpy.float32)[mask]
+        if dark is None:
+            dark = self.darkcurrent
+        if dark is not None:
+            data -= dark[mask]
+        if flat is None:
+            flat = self.flatfield
+        if flat is not None:
+            data /= flat[mask]
+        if correctSolidAngle is not None:
+            data /= self.solidAngleArray(shape)[mask]
+
         if tthRange is not None:
             tthRange = [deg2rad(tthRange[0]), deg2rad(tthRange[-1])]
         else:
@@ -1455,17 +1471,13 @@ class AzimuthalIntegrator(Geometry):
             chiRange = [deg2rad(chiRange[0]), deg2rad(chiRange[-1])]
         else:
             chiRange = [chi.min(), chi.max() * EPS32]
-        chi = self.chiArray(data.shape)[mask]
+
         bins = (nbPtChi, nbPt2Th)
         if bins not in self._nbPixCache:
             ref, binsChi, bins2Th = numpy.histogram2d(chi, tth,
                                                       bins=list(bins),
                                                       range=[chiRange, tthRange])
             self._nbPixCache[bins] = numpy.maximum(1.0, ref)
-        if correctSolidAngle:
-            data = (data / self.solidAngleArray(data.shape))[mask].astype("float64")
-        else:
-            data = data[mask].astype("float64")
 
         val, binsChi, bins2Th = numpy.histogram2d(chi, tth,
                                                   bins=list(bins),
@@ -1479,6 +1491,7 @@ class AzimuthalIntegrator(Geometry):
 
     def xrpd2_histogram(self, data, nbPt2Th, nbPtChi=360,
                         filename=None, correctSolidAngle=True,
+                        dark=None, flat=None,
                         tthRange=None, chiRange=None, mask=None,
                         dummy=None, delta_dummy=None):
         """
@@ -1561,13 +1574,21 @@ class AzimuthalIntegrator(Geometry):
                                     dummy=dummy,
                                     delta_dummy=delta_dummy)
 
-        mask = self.makeMask(data, mask, dummy, delta_dummy)
+        mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
+        shape = data.shape
         tth = self.twoThetaArray(data.shape)[mask]
         chi = self.chiArray(data.shape)[mask]
-        if correctSolidAngle:
-            data = (data / self.solidAngleArray(data.shape))[mask]
-        else:
-            data = data[mask]
+        data = data.astype(numpy.float32)[mask]
+        if dark is None:
+            dark = self.darkcurrent
+        if dark is not None:
+            data -= dark[mask]
+        if flat is None:
+            flat = self.flatfield
+        if flat is not None:
+            data /= flat[mask]
+        if correctSolidAngle is not None:
+            data /= self.solidAngleArray(data.shape)[mask]
         if dummy is None:
             dummy = 0.0
             I, binsChi, bins2Th, _, _ = histogram.histogram2d(pos0=chi, pos1=tth,
@@ -2185,6 +2206,7 @@ class AzimuthalIntegrator(Geometry):
                     chiMin, chiMax = azimuth_range
                     chi = self.chiArray(shape)
                     mask *= (chi >= chiMin) * (chi <= chiMax)
+                mask = numpy.where(mask)
                 pos0 = pos0[mask]
                 if variance is not None:
                     variance = variance[mask]
@@ -2226,6 +2248,7 @@ class AzimuthalIntegrator(Geometry):
                 chiMin, chiMax = azimuth_range
                 chi = self.chiArray(shape)
                 mask *= (chi >= chiMin) * (chi <= chiMax)
+            mask = numpy.where(mask)
             pos0 = pos0[mask]
             if dark is not None:
                 data -= dark
@@ -2834,7 +2857,7 @@ class AzimuthalIntegrator(Geometry):
         if flat is not None:
             self._flatfield_crc = crc32(flat)
         else:
-            self._flatfield_crc =None
+            self._flatfield_crc = None
 
     def get_flatfield(self):
         return self._flatfield
@@ -2848,8 +2871,8 @@ class AzimuthalIntegrator(Geometry):
         if type(files) in types.StringTypes:
             files = [i.strip for i in files.split(",")]
         elif not files:
-            files=[]
-        if len(files)==0:
+            files = []
+        if len(files) == 0:
             self.set_darkcurrent(None)
         elif len(files) == 1:
             self.set_darkcurrent(fabio.open(files[0]).data.astype(numpy.float32))

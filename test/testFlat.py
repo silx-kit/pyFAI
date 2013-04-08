@@ -64,8 +64,13 @@ class TestFlat1D(unittest.TestCase):
         for meth in ["numpy", "cython", "splitbbox", "splitpix", "lut", "lut_ocl" ]:
             r, I = self.ai.integrate1d(self.raw, self.bins, unit="r_mm", method=meth, correctSolidAngle=False, dark=self.dark, flat=self.flat)
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s" % (meth, I.min(), I.max(), I.mean(), I.std()))
-            self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1")
-            self.assert_(I.max() - I.min() < self.eps, "deviation shaould be small")
+            self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
+            self.assert_(I.max() - I.min() < self.eps, "deviation should be small")
+        for meth in ["xrpd_numpy", "xrpd_cython", "xrpd_splitBBox", "xrpd_splitPixel", "xrpd_OpenCL" ]:
+            r, I = self.ai.__getattribute__(meth)(self.raw, self.bins, correctSolidAngle=False, dark=self.dark, flat=self.flat)
+            logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s" % (meth, I.min(), I.max(), I.mean(), I.std()))
+            self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
+            self.assert_(I.max() - I.min() < self.eps, "deviation should be small")
 
 class TestFlat2D(unittest.TestCase):
     shape = 640, 480
@@ -90,9 +95,14 @@ class TestFlat2D(unittest.TestCase):
             I, _, _ = self.ai.integrate2d(self.raw, self.bins, self.azim, unit="r_mm", method=meth, correctSolidAngle=False, dark=self.dark, flat=self.flat)
             I = I[numpy.where(I > 0)]
             logger.info("2D method:%s Imin=%s Imax=%s <I>=%s std=%s" % (meth, I.min(), I.max(), I.mean(), I.std()))
-            self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1")
-            self.assert_(I.max() - I.min() < self.eps, "deviation shaould be small")
-
+            self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
+            self.assert_(I.max() - I.min() < self.eps, "deviation should be small")
+        for meth in ["xrpd2_numpy", "xrpd2_histogram", "xrpd2_splitBBox", "xrpd2_splitPixel"]:
+            I, _, _ = self.ai.__getattribute__(meth)(self.raw, self.bins, self.azim, correctSolidAngle=False, dark=self.dark, flat=self.flat)
+            I = I[numpy.where(I > 0)]
+            logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s" % (meth, I.min(), I.max(), I.mean(), I.std()))
+            self.assertAlmostEqual(I.mean(), 1, 1, "Mean should be 1 in %s" % meth)
+            self.assert_(I.max() - I.min() < 0.1, "deviation should be small")
 
 def test_suite_all_Flat():
     testSuite = unittest.TestSuite()
