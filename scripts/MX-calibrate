@@ -176,7 +176,7 @@ class MultiCalib(object):
                        default=False, action="store_true")
         parser.add_option("-l", "--distance", dest="distance", type="float",
                       help="sample-detector distance in millimeter", default=None)
-        parser.add_option("--no-tilt", dest="tilt", type="float",
+        parser.add_option("--no-tilt", dest="tilt", 
                       help="refine the detector tilt", default=True , action="store_false")
         parser.add_option("--poni1", dest="poni1", type="float",
                       help="poni1 coordinate in meter", default=None)
@@ -293,7 +293,7 @@ class MultiCalib(object):
         self.max_rings = options.max_rings
         self.fixed = []
         if not options.tilt:
-            self.fixed.append("rot1", "rot2", "rot3")
+            self.fixed+=["rot1", "rot2", "rot3"]
         if options.fix_dist:
             self.fixed.append("dist")
         if options.fix_poni1:
