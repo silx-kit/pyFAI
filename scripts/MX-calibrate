@@ -312,7 +312,7 @@ class MultiCalib(object):
         self.dataFiles = [f for f in args if os.path.isfile(f)]
         if not self.dataFiles:
             raise RuntimeError("Please provide some calibration images ... if you want to analyze them. Try also the --help option to see all options!")
-#        self.weighted = options.weighted
+        self.weighted = options.weighted
 
     def get_pixelSize(self, ans):
         """convert a comma separated sting into pixel size"""
@@ -415,6 +415,7 @@ class MultiCalib(object):
             rec.cutBackground = self.cutBackground
             rec.fixed = self.fixed
             rec.max_rings = self.max_rings
+            rec.weighted = self.weighted
             if centerY:
                 rec.ai.poni1 = centerY * self.detector.pixel1
             if centerX:
