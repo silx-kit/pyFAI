@@ -66,7 +66,7 @@ import traceback
 def deprecated(func):
     def wrapper(*arg, **kw):
         """
-        decorator that deprecates the use of a function  
+        decorator that deprecates the use of a function
         """
         logger.warning("%s is Deprecated !!! %s" % (func.func_name, os.linesep.join([""] + traceback.format_stack()[:-1])))
         return func(*arg, **kw)
@@ -363,7 +363,7 @@ def averageDark(lstimg, center_method="mean", cutoff=None):
         shape = lstimg[0].shape
         length = len(lstimg)
         if length==1:
-            return lstimg.astype(numpy.float32)
+            return lstimg[0].astype(numpy.float32)
         stack = numpy.zeros((length, shape[0], shape[1]), dtype=float32)
         for i, img in enumerate(lstimg):
            stack[i] = img
@@ -412,12 +412,12 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             sumImg = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
         if dark is None:
             if darks:
-                dark = averageDark([fabio.open(f).data for f in darks], center="mean", cutoff=4)
+                dark = averageDark([fabio.open(f).data for f in darks], center_method="mean", cutoff=4)
             else:
                 dark = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
         if flat is None:
             if flats:
-                flat = averageDark([fabio.open(f).data for f in flats], center="mean", cutoff=4)
+                flat = averageDark([fabio.open(f).data for f in flats], center_method="mean", cutoff=4)
                 if correct_flat_from_dark:
                     flat -= dark
                 flat[flats <= 0 ] = 1.0
