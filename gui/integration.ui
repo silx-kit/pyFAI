@@ -7,8 +7,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>572</width>
-    <height>746</height>
+    <width>522</width>
+    <height>710</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -454,6 +454,19 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QCheckBox" name="do_solid_angle">
+            <property name="toolTip">
+             <string>Correct solid angle effects</string>
+            </property>
+            <property name="text">
+             <string>Solid Angle corrections</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
        </layout>
@@ -467,182 +480,201 @@
        <property name="frameShadow">
         <enum>QFrame::Raised</enum>
        </property>
-       <layout class="QHBoxLayout" name="horizontalLayout_22">
+       <layout class="QVBoxLayout" name="verticalLayout_12">
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_12">
+         <layout class="QHBoxLayout" name="horizontalLayout_19">
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_19">
+           <widget class="QLabel" name="label_10">
+            <property name="text">
+             <string>Radial units:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="tth_deg">
+            <property name="toolTip">
+             <string>Scattering angle in degrees</string>
+            </property>
+            <property name="text">
+             <string>2θ (°)</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroup</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="tth_rad">
+            <property name="text">
+             <string>2θ (rad)</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroup</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="q_nm">
+            <property name="toolTip">
+             <string>Momentum transfer in inverse nanometers</string>
+            </property>
+            <property name="text">
+             <string>q (1/nm)</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroup</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="q_A">
+            <property name="toolTip">
+             <string>Momentum transfer in inverse nanometers</string>
+            </property>
+            <property name="text">
+             <string>q (1/Å)</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroup</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="r_mm">
+            <property name="toolTip">
+             <string>radius in millimeters (from beam center, not from PONI)</string>
+            </property>
+            <property name="text">
+             <string>r (mm)</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroup</string>
+            </attribute>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_21">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_8">
             <item>
-             <widget class="QLabel" name="label_10">
+             <widget class="QLabel" name="label_8">
               <property name="text">
-               <string>Radial units:</string>
+               <string>Number of radial points</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QRadioButton" name="tth_deg">
+             <widget class="QCheckBox" name="do_2D">
               <property name="toolTip">
-               <string>Scattering angle in degrees</string>
+               <string>Perform Caking instead of full integration</string>
               </property>
               <property name="text">
-               <string>2theta (deg)</string>
+               <string>Number of azimuthal points (2D)</string>
               </property>
-              <attribute name="buttonGroup">
-               <string>buttonGroup</string>
-              </attribute>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="q_nm">
-              <property name="toolTip">
-               <string>Momentum transfer in inverse nanometers</string>
-              </property>
-              <property name="text">
-               <string>q (nm^-1)</string>
-              </property>
-              <attribute name="buttonGroup">
-               <string>buttonGroup</string>
-              </attribute>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="r_mm">
-              <property name="toolTip">
-               <string>radius in millimeters (from beam center, not from PONI)</string>
-              </property>
-              <property name="text">
-               <string>r (mm)</string>
-              </property>
-              <attribute name="buttonGroup">
-               <string>buttonGroup</string>
-              </attribute>
              </widget>
             </item>
            </layout>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_21">
+           <layout class="QVBoxLayout" name="verticalLayout_9">
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_8">
-              <item>
-               <widget class="QLabel" name="label_8">
-                <property name="text">
-                 <string>Number of radial points</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="do_2D">
-                <property name="toolTip">
-                 <string>Perform Caking instead of full integration</string>
-                </property>
-                <property name="text">
-                 <string>Number of azimuthal points (2D)</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
+             <widget class="QLineEdit" name="rad_pt"/>
             </item>
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_9">
-              <item>
-               <widget class="QLineEdit" name="rad_pt"/>
-              </item>
-              <item>
-               <widget class="QLineEdit" name="azim_pt"/>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <layout class="QVBoxLayout" name="verticalLayout_10">
-              <item>
-               <widget class="QLabel" name="label_18">
-                <property name="text">
-                 <string/>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="chi_discontinuity_at_0">
-                <property name="toolTip">
-                 <string>if unset, the discontinuity is at 180°</string>
-                </property>
-                <property name="text">
-                 <string>Chi discontinuity at 0</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
+             <widget class="QLineEdit" name="azim_pt"/>
             </item>
            </layout>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_8">
+           <layout class="QVBoxLayout" name="verticalLayout_10">
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_7">
-              <item>
-               <widget class="QCheckBox" name="do_radial_range">
-                <property name="toolTip">
-                 <string>Limit/Force the radial range</string>
-                </property>
-                <property name="text">
-                 <string>Radial range</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="do_azimuthal_range">
-                <property name="toolTip">
-                 <string>Limit/force the azimuthal range</string>
-                </property>
-                <property name="text">
-                 <string>Azimuthal range</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
+             <widget class="QCheckBox" name="do_poisson">
+              <property name="text">
+               <string>Std-err (Poisson law)</string>
+              </property>
+             </widget>
             </item>
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_6">
-              <item>
-               <widget class="QLineEdit" name="radial_range_min">
-                <property name="toolTip">
-                 <string>Lower radial bound</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLineEdit" name="azimuth_range_min">
-                <property name="toolTip">
-                 <string>Lower azimuthal bound</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-               </widget>
-              </item>
-             </layout>
+             <widget class="QCheckBox" name="chi_discontinuity_at_0">
+              <property name="toolTip">
+               <string>if unset, the discontinuity is at 180°</string>
+              </property>
+              <property name="text">
+               <string>χ discontinuity at 0</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_8">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_7">
+            <item>
+             <widget class="QCheckBox" name="do_radial_range">
+              <property name="toolTip">
+               <string>Limit/Force the radial range</string>
+              </property>
+              <property name="text">
+               <string>Radial range</string>
+              </property>
+             </widget>
             </item>
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_5">
-              <item>
-               <widget class="QLineEdit" name="radial_range_max">
-                <property name="toolTip">
-                 <string>upper radial bound</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLineEdit" name="azimuth_range_max">
-                <property name="toolTip">
-                 <string>Upper azimuthal bound</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
+             <widget class="QCheckBox" name="do_azimuthal_range">
+              <property name="toolTip">
+               <string>Limit/force the azimuthal range</string>
+              </property>
+              <property name="text">
+               <string>Azimuthal range</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_6">
+            <item>
+             <widget class="QLineEdit" name="radial_range_min">
+              <property name="toolTip">
+               <string>Lower radial bound</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="azimuth_range_min">
+              <property name="toolTip">
+               <string>Lower azimuthal bound</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_5">
+            <item>
+             <widget class="QLineEdit" name="radial_range_max">
+              <property name="toolTip">
+               <string>upper radial bound</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="azimuth_range_max">
+              <property name="toolTip">
+               <string>Upper azimuthal bound</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>

@@ -51,7 +51,7 @@ from testSaxs                 import test_suite_all_Saxs
 from testIntegrate            import test_suite_all_Integrate1d
 from testBilinear             import test_suite_all_bilinear
 from testDistortion           import test_suite_all_distortion
-
+from testFlat                 import test_suite_all_Flat
 def test_suite_all():
     testSuite = unittest.TestSuite()
     testSuite.addTest(test_suite_all_Histogram())
@@ -66,6 +66,7 @@ def test_suite_all():
     testSuite.addTest(test_suite_all_Integrate1d())
     testSuite.addTest(test_suite_all_bilinear())
     testSuite.addTest(test_suite_all_distortion())
+    testSuite.addTest(test_suite_all_Flat())
     return testSuite
 
 if __name__ == '__main__':

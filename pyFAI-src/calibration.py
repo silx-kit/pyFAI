@@ -35,28 +35,24 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/02/2013"
+__date__ = "03/04/2013"
 __status__ = "development"
 
-import os, sys, gc, threading, time, logging
+import os, sys, time, logging, types
 from optparse import OptionParser
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI.calibration")
-import numpy, scipy, scipy.ndimage
-from numpy import sin, cos, arccos, sqrt, floor, ceil, radians, degrees, pi
+import numpy, scipy.ndimage
 import fabio
 import matplotlib
 import pylab
 from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
-from .peakPicker import PeakPicker, Massif
-from .utils import averageImages, timeit, measure_offset
+from .peakPicker import PeakPicker
+from .utils import averageImages, measure_offset  # ,timeit
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import hc
-from  matplotlib.path import Path
-import matplotlib.path as mpath
-import matplotlib.patches as mpatches
-import matplotlib.pyplot as plt
+from . import version
 
 matplotlib.interactive(True)
 
@@ -69,7 +65,7 @@ class Calibration(object):
     """
     class doing the calibration of frames
     """
-    def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None, splineFile=None, detector=None, gaussianWidth=None):
+    def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None, splineFile=None, detector=None, gaussianWidth=None, spacing_file=None, wavelength=None):
         """
         """
         self.dataFiles = dataFiles or []
@@ -78,12 +74,17 @@ class Calibration(object):
         self.pointfile = None
         self.gaussianWidth = gaussianWidth
         self.labelPattern = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
-        if not detector:
+        if type(detector) in types.StringTypes:
+            self.detector = detector_factory(detector)
+        elif isinstance(detector, Detector):
+            self.detector = detector
+        else:
             self.detector = Detector()
+
         if splineFile and os.path.isfile(splineFile):
             self.detector.splineFile = os.path.abspath(splineFile)
         if pixelSize:
-            if __len__ in pixelSize and len(pixelSize) >= 2:
+            if ("__len__" in dir(pixelSize)) and len(pixelSize) >= 2:
                 self.detector.pixel1 = float(pixelSize[0])
                 self.detector.pixel2 = float(pixelSize[1])
             else:
@@ -98,9 +99,9 @@ class Calibration(object):
         self.mask = None
         self.max_iter = 1000
         self.filter = "mean"
-        self.threshold = 0.1
-        self.spacing_file = None
-        self.wavelength = None
+        self.saturation = 0.1
+        self.spacing_file = spacing_file
+        self.wavelength = wavelength
         self.weighted = False
         self.polarization_factor = 0
 
@@ -131,7 +132,7 @@ Increase the value if the arc is not complete;
 decrease the value if arcs are mixed together.""", default=None)
         parser.add_option("-c", "--square", dest="square", action="store_true",
                       help="Use square kernel shape for neighbor search instead of diamond shape", default=False)
-        parser.add_option("--spacing", dest="spacing", metavar="FILE",
+        parser.add_option("-S", "--spacing", dest="spacing", metavar="FILE",
                       help="file containing d-spacing of the reference sample (MANDATORY)", default=None)
         parser.add_option("-w", "--wavelength", dest="wavelength", type="float",
                       help="wavelength of the X-Ray beam in Angstrom", default=None)
@@ -174,7 +175,7 @@ decrease the value if arcs are mixed together.""", default=None)
 
         # Analyse aruments and options
         if options.version:
-            print("pyFAI-calib version %s" % pyFAI.version)
+            print("pyFAI-calib version %s" % version)
             sys.exit(0)
         if options.debug:
             logger.setLevel(logging.DEBUG)
@@ -211,7 +212,7 @@ decrease the value if arcs are mixed together.""", default=None)
         if options.pixel is not None:
             self.get_pixelSize(options.pixel)
         self.filter = options.filter
-        self.threshold = options.saturation
+        self.saturation = options.saturation
         if options.wavelength:
             self.wavelength = 1e-10 * options.wavelength
         elif options.energy:
@@ -277,7 +278,7 @@ decrease the value if arcs are mixed together.""", default=None)
             ans = raw_input("Please enter wavelength in Angstrom:\t").strip()
             try:
                 self.wavelength = 1e-10 * float(ans)
-            except:
+            except Exception:
                 self.wavelength = None
 
     def preprocess(self):
@@ -285,7 +286,7 @@ decrease the value if arcs are mixed together.""", default=None)
         do dark, flat correction thresholding, ...
         """
         if len(self.dataFiles) > 1 or self.cutBackground or self.darkFiles or self.flatFiles:
-            self.outfile = averageImages(self.dataFiles, self.outfile, threshold=self.threshold, minimum=self.cutBackground,
+            self.outfile = averageImages(self.dataFiles, self.outfile, threshold=self.saturation, minimum=self.cutBackground,
                                       darks=self.darkFiles, flats=self.flatFiles, filter_=self.filter)
         else:
             self.outfile = self.dataFiles[0]
@@ -299,7 +300,7 @@ decrease the value if arcs are mixed together.""", default=None)
             self.peakPicker.massif.initValleySize()
         if not self.peakPicker.points.dSpacing:
             self.read_dSpacingFile()
-            self.peakPicker.points.load_dSpacing(self.dSpacing)
+            self.peakPicker.points.load_dSpacing(self.spacing_file)
         if not self.peakPicker.points.wavelength:
             self.read_wavelength()
             self.peakPicker.points.wavelength = self.wavelength
@@ -338,15 +339,15 @@ decrease the value if arcs are mixed together.""", default=None)
             self.geoRef.del_ttha()
             self.geoRef.del_dssa()
             self.geoRef.del_chia()
-            t0 = time.time()
+#            t0 = time.time()
             tth = self.geoRef.twoThetaArray(self.peakPicker.shape)
-            t1 = time.time()
+#            t1 = time.time()
             dsa = self.geoRef.solidAngleArray(self.peakPicker.shape)
-            t2 = time.time()
+#            t2 = time.time()
             self.geoRef.chiArray(self.peakPicker.shape)
-            t2a = time.time()
+#            t2a = time.time()
             self.geoRef.cornerArray(self.peakPicker.shape)
-            t2b = time.time()
+#            t2b = time.time()
             if os.name == "nt":
                 logger.info("We are under windows, matplotlib is not able to display too many images without crashing, this is why little information is displayed")
             else:
@@ -420,26 +421,43 @@ class Recalibration(object):
     """
     class doing the re-calibration of frames
     """
-    def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, splineFile=None, gaussianWidth=None):
+    def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None, splineFile=None, detector=None, spacing_file=None, wavelength=None):
         """
         """
         self.dataFiles = dataFiles or []
         self.darkFiles = darkFiles or []
         self.flatFiles = flatFiles or []
         self.pointfile = None
-        self.gaussianWidth = gaussianWidth
         self.labelPattern = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
-        self.splineFile = splineFile
+
+        if type(detector) in types.StringTypes:
+            self.detector = detector_factory(detector)
+        elif isinstance(detector, Detector):
+            self.detector = detector
+        else:
+            self.detector = Detector()
+
+        if splineFile and os.path.isfile(splineFile):
+            self.detector.splineFile = os.path.abspath(splineFile)
+        if pixelSize:
+            if "__len__" in dir(pixelSize) and len(pixelSize) >= 2:
+                self.detector.pixel1 = float(pixelSize[0])
+                self.detector.pixel2 = float(pixelSize[1])
+            else:
+                self.detector.pixel1 = self.detector.pixel2 = float(pixelSize)
+
         self.cutBackground = None
         self.outfile = "merged.edf"
         self.peakPicker = None
         self.img = None
-        self.ai = None
+        self.ai = AzimuthalIntegrator(dist=1, detector=self.detector)
+        if wavelength:
+            self.ai.wavelength = wavelength
         self.data = None
         self.basename = None
         self.geoRef = None
         self.reconstruct = False
-        self.spacing_file = None
+        self.spacing_file = spacing_file
         self.mask = None
         self.saturation = 0.1
         self.fixed = ["wavelength"]  # parameter fixed during optimization
@@ -456,8 +474,7 @@ class Recalibration(object):
              "data= " + ", ".join(self.dataFiles),
              "dark= " + ", ".join(self.darkFiles),
              "flat= " + ", ".join(self.flatFiles)]
-        lst += ["spline= %s" % self.splineFile,
-             "gaussian= %s" % self.gaussianWidth]
+        lst.append(self.detector.__repr__())
         return os.linesep.join(lst)
 
     def parse(self):
@@ -472,7 +489,7 @@ class Recalibration(object):
         parser.add_option("-v", "--verbose",
                           action="store_true", dest="verbose", default=False,
                           help="switch to debug mode")
-        parser.add_option("-s", "--spacing", dest="spacing", metavar="FILE",
+        parser.add_option("-S", "-s", "--spacing", dest="spacing", metavar="FILE",
                       help="file containing d-spacing of the reference sample (MANDATORY)", default=None)
         parser.add_option("-r", "--ring", dest="max_rings", type="float",
                       help="maximum number of rings to extract", default=None)
@@ -555,22 +572,22 @@ class Recalibration(object):
         parser.add_option("--weighted", dest="weighted",
                       help="weight fit by intensity",
                        default=False, action="store_true")
-        
+
 
         (options, args) = parser.parse_args()
 
         # Analyse aruments and options
         if options.version:
-            print("pyFAI-recalib version %s" % pyFAI.version)
+            print("pyFAI-recalib version %s" % version)
             sys.exit(0)
         if options.verbose:
             logger.setLevel(logging.DEBUG)
         self.outfile = options.outfile
         if options.dark:
-            print options.dark, type(options.dark)
+#            print options.dark, type(options.dark)
             self.darkFiles = [f for f in options.dark.split(",") if os.path.isfile(f)]
         if options.flat:
-            print options.flat, type(options.flat)
+#            print options.flat, type(options.flat)
             self.flatFiles = [f for f in options.flat.split(",") if os.path.isfile(f)]
         self.pointfile = options.npt
         self.spacing_file = options.spacing
@@ -622,6 +639,7 @@ class Recalibration(object):
         self.filter = options.filter
         self.weighted = options.weighted
         self.polarization_factor = options.polarization_factor
+        self.detector = self.ai.detector
         print self.ai
         print "fixed:", self.fixed
 
@@ -645,7 +663,7 @@ class Recalibration(object):
             ans = raw_input("Please enter wavelength in Angstrom:\t").strip()
             try:
                 self.ai.wavelength = 1e-10 * float(ans)
-            except:
+            except Exception:
                 self.ai.wavelength = None
 
     def preprocess(self):
@@ -714,8 +732,8 @@ class Recalibration(object):
                 numpy.random.shuffle(all_points)
                 for idx in all_points:
                     out = self.peakPicker.massif.nearest_peak(idx)
-                    print "[ %3i, %3i ] -> [ %.1f, %.1f ]" % (idx[1], idx[0], out[1], out[0])
                     if out is not None:
+                        print "[ %3i, %3i ] -> [ %.1f, %.1f ]" % (idx[1], idx[0], out[1], out[0])
                         p0, p1 = out
                         if mask[p0, p1]:
                             if (out not in res) and (self.peakPicker.data[p0, p1] > upper_limit):
@@ -745,6 +763,7 @@ class Recalibration(object):
         self.geoRef = GeometryRefinement(self.data, dist=self.ai.dist, poni1=self.ai.poni1, poni2=self.ai.poni2,
                                              rot1=self.ai.rot1, rot2=self.ai.rot2, rot3=self.ai.rot3,
                                              detector=self.ai.detector, dSpacing=self.spacing_file, wavelength=self.ai._wavelength)
+        self.ai = self.geoRef
         self.geoRef.set_tolerance(10)
         print self.geoRef
         previous = sys.maxint
@@ -769,27 +788,28 @@ class Recalibration(object):
             self.geoRef.del_ttha()
             self.geoRef.del_dssa()
             self.geoRef.del_chia()
-            t0 = time.time()
+#            t0 = time.time()
             tth = self.geoRef.twoThetaArray(self.peakPicker.shape)
-            t1 = time.time()
+#            t1 = time.time()
             dsa = self.geoRef.solidAngleArray(self.peakPicker.shape)
-            t2 = time.time()
+#            t2 = time.time()
             self.geoRef.chiArray(self.peakPicker.shape)
-            t2a = time.time()
+#            t2a = time.time()
             self.geoRef.cornerArray(self.peakPicker.shape)
-            t2b = time.time()
+#            t2b = time.time()
             if os.name == "nt":
                 logger.info("We are under windows, matplotlib is not able to display too many images without crashing, this is why little information is displayed")
             else:
                 if self.gui:
                     self.peakPicker.contour(tth)
-                    if fig2 is None:
-                        fig2 = pylab.plt.figure()
-                        sp = fig2.add_subplot(111)
-                    else:
-                        sp.images.pop()
-                    sp.imshow(dsa, origin="lower")
-                    fig2.show()
+                    if self.interactive:
+                        if fig2 is None:
+                            fig2 = pylab.plt.figure()
+                            sp = fig2.add_subplot(111)
+                        else:
+                            sp.images.pop()
+                        sp.imshow(dsa, origin="lower")
+                        fig2.show()
             if not self.interactive:
                 break
             change = raw_input("Modify parameters ?\t ").strip().lower()
@@ -809,7 +829,7 @@ class Recalibration(object):
                     what = words[1]
                     val = words[2]
                     if what in dir(self.geoRef):
-                        setattr(self.geoRef, what, value)
+                        setattr(self.geoRef, what, val)
                 else:
                     print("example: set wavelength 1e-10")
             else:
@@ -886,6 +906,7 @@ class CheckCalib(object):
         self.unit = "r_mm"
         self.masked_resynth = None
         self.masked_image = None
+        self.offset = None
 
     def __repr__(self, *args, **kwargs):
         if self.ai:
@@ -917,7 +938,7 @@ class CheckCalib(object):
             logger.setLevel(logging.DEBUG)
 
         if options.version:
-            print("Check calibrarion: version %s" % pyFAI.version)
+            print("Check calibrarion: version %s" % version)
             sys.exit(0)
         if options.mask is not None:
             self.mask = fabio.open(options.mask).data

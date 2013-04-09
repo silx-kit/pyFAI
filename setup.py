@@ -36,7 +36,7 @@ __status__ = "stable"
 
 
 import os, sys, glob, shutil, ConfigParser, platform
-from distutils.core import setup, Extension
+from distutils.core import setup, Extension, Command
 from numpy.distutils.misc_util import get_numpy_include_dirs
 from distutils.sysconfig import get_python_lib
 
@@ -270,7 +270,21 @@ class build_ext_pyFAI(build_ext):
         build_ext.build_extensions(self)
 
 cmdclass['build_ext'] = build_ext_pyFAI
-
+class PyTest(Command):
+    user_options = []
+    def initialize_options(self):
+        pass
+    def finalize_options(self):
+        pass
+    def run(self):
+        import sys, subprocess
+        os.chdir("test")
+        errno = subprocess.call([sys.executable, 'test_all.py'])
+        if errno != 0:
+            raise SystemExit(errno)
+        else:
+            os.chdir("..")
+cmdclass['test'] = PyTest
 #######################
 # build_doc commandes #
 #######################

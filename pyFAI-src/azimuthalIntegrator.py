@@ -35,10 +35,10 @@ import os
 import logging
 logger = logging.getLogger("pyFAI.azimuthalIntegrator")
 import tempfile
+import types
 import threading
 import gc
 import numpy
-
 from numpy import rad2deg, deg2rad, pi
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 from .geometry import Geometry
@@ -148,6 +148,8 @@ class AzimuthalIntegrator(Geometry):
         self._darkcurrent = None  # just a placeholder
         self._flatfield_crc = None  # just a placeholder
         self._darkcurrent_crc = None  # just a placeholder
+        self.flatfiles = None
+        self.darkfiles = None
 
         self.header = None
 
@@ -181,7 +183,7 @@ class AzimuthalIntegrator(Geometry):
         @type dummy: float
         @param delta_dumy: precision of dummy pixels
         @type delta_dummy: float
-        @param mode: can be "normal" or "numpy"
+        @param mode: can be "normal" or "numpy" (inverted) or "where" applied to the mask 
         @type mode: str
 
         @return: the new mask
@@ -231,8 +233,10 @@ class AzimuthalIntegrator(Geometry):
                 numpy.logical_or(mask,
                                  abs(data - dummy) <= delta_dummy,
                                  mask)
-        if mode != "normal":
+        if mode == "numpy":
             numpy.logical_not(mask, mask)
+        elif mode == "where":
+            mask = numpy.where(numpy.logical_not(mask))
         return mask
 
     def xrpd_numpy(self, data, nbPt, filename=None, correctSolidAngle=True,
@@ -308,17 +312,17 @@ class AzimuthalIntegrator(Geometry):
         The *dark* and the *flat* can be provided to correct the data
         before computing the radial integration.
         """
-        mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
+        mask = self.makeMask(data, mask, dummy, delta_dummy, mode="where")
         tth = self.twoThetaArray(data.shape)[mask]
         data = numpy.ascontiguousarray(data, dtype=numpy.float32)
+        if dark is None:
+            dark = self.darkcurrent
         if dark is not None:
             data -= dark
-        if self.darkcurrent is not None:
-            data -= self.darkcurrent
-        if flat is not None:
+        if flat is None:
+            flat = self.flatfield
+        elif flat is not None:
             data /= flat
-        elif self.flatfield is not None:
-            data /= self.flatfield
         if correctSolidAngle:
             data /= self.solidAngleArray(data.shape)
         if polarization_factor:
@@ -339,7 +343,7 @@ class AzimuthalIntegrator(Geometry):
         tthAxis = 90.0 * (b[1:] + b[:-1]) / pi
         I = val / self._nbPixCache[nbPt]
         if filename:
-            self.save1D(filename, tthAxis, I, None, "2th_deg")
+            self.save1D(filename, tthAxis, I, None, "2th_deg", dark, flat, polarization_factor)
         return tthAxis, I
 
     def xrpd_cython(self, data, nbPt, filename=None, correctSolidAngle=True,
@@ -369,17 +373,17 @@ class AzimuthalIntegrator(Geometry):
                                    delta_dummy=delta_dummy,
                                    polarization_factor=polarization_factor)
 
-        mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
+        mask = self.makeMask(data, mask, dummy, delta_dummy, mode="where")
         tth = self.twoThetaArray(data.shape)[mask]
         data = numpy.ascontiguousarray(data, dtype=numpy.float32)
+        if dark is None:
+            dark = self.darkcurrent
         if dark is not None:
             data -= dark
-        if self.darkcurrent is not None:
-            data -= self.darkcurrent
+        if flat is None:
+            flat = self.flatfield
         if flat is not None:
             data /= flat
-        elif self.flatfield is not None:
-            data /= self.flatfield
         if correctSolidAngle:
             data /= self.solidAngleArray(data.shape)
         if polarization_factor != 0:
@@ -397,7 +401,7 @@ class AzimuthalIntegrator(Geometry):
                                                dummy=dummy)
         tthAxis = rad2deg(tthAxis)
         if filename:
-            self.save1D(filename, tthAxis, I, None, "2th_deg")
+            self.save1D(filename, tthAxis, I, None, "2th_deg", dark, flat, polarization_factor)
         return tthAxis, I
 
     def xrpd_splitBBox(self, data, nbPt, filename=None, correctSolidAngle=True,
@@ -543,7 +547,7 @@ class AzimuthalIntegrator(Geometry):
                                                  )
         tthAxis = rad2deg(tthAxis)
         if filename:
-            self.save1D(filename, tthAxis, I, None, "2th_deg")
+            self.save1D(filename, tthAxis, I, None, "2th_deg", dark, flat, polarization_factor)
         return tthAxis, I
 
     def xrpd_splitPixel(self, data, nbPt,
@@ -673,12 +677,13 @@ class AzimuthalIntegrator(Geometry):
                                                   )
         tthAxis = rad2deg(tthAxis)
         if filename:
-            self.save1D(filename, tthAxis, I, None, "2th_deg")
+            self.save1D(filename, tthAxis, I, None, "2th_deg", dark, flat, polarization_factor)
         return tthAxis, I
     # Default implementation:
     xrpd = xrpd_splitBBox
 
     def xrpd_OpenCL(self, data, nbPt, filename=None, correctSolidAngle=True,
+                    dark=None, flat=None,
                     tthRange=None, mask=None, dummy=None, delta_dummy=None,
                     devicetype="gpu", useFp64=True,
                     platformid=None, deviceid=None, safe=True):
@@ -791,7 +796,14 @@ class AzimuthalIntegrator(Geometry):
                                        dummy=dummy,
                                        delta_dummy=delta_dummy)
         shape = data.shape
-
+        if flat is None:
+            flat = self.flatfield
+        if flat is None:
+            flat = 1
+        if dark is None:
+            dark = self.darkcurrent
+        if dark is not None:
+            data = data.astype(numpy.float32) - dark
         if self._ocl_integrator is None:
             with self._ocl_sem:
                 if self._ocl_integrator is None:
@@ -843,11 +855,12 @@ class AzimuthalIntegrator(Geometry):
                     if delta_dummy is None:
                         delta_dummy = 1e-6
                     self._ocl_integrator.setDummyValue(dummy, delta_dummy)
-                if correctSolidAngle and not param["solid_angle"]:
-                    self._ocl_integrator.setSolidAngle(
-                        self.solidAngleArray(shape))
-                elif (not correctSolidAngle) and param["solid_angle"]:
+                if (correctSolidAngle and not param["solid_angle"]):
+                    self._ocl_integrator.setSolidAngle(flat * self.solidAngleArray(shape))
+                elif (not correctSolidAngle) and param["solid_angle"] and (flat is 1):
                     self._ocl_integrator.unsetSolidAngle()
+                elif not correctSolidAngle and not param["solid_angle"] and (flat is not 1) :
+                    self._ocl_integrator.setSolidAngle(flat)
                 if (mask is not None) and not param["mask"]:
                     self._ocl_integrator.setMask(mask)
                 elif (mask is None) and param["mask"]:
@@ -855,7 +868,7 @@ class AzimuthalIntegrator(Geometry):
             tthAxis, I, _, = self._ocl_integrator.execute(data)
         tthAxis = rad2deg(tthAxis)
         if filename:
-            self.save1D(filename, tthAxis, I, None, "2th_deg")
+            self.save1D(filename, tthAxis, I, None, "2th_deg")#, dark, flat, polarization_factor)
         return tthAxis, I
 
     def setup_LUT(self, shape, nbPt, mask=None,
@@ -1030,6 +1043,9 @@ class AzimuthalIntegrator(Geometry):
         The *safe* parameter is specific to the LUT implementation,
         you can set it to false if you think the LUT calculated is
         already the correct one (setup, mask, 2theta/chi range).
+        
+        TODO: replace with inegrate1D
+        
         """
 
         shape = data.shape
@@ -1130,10 +1146,9 @@ class AzimuthalIntegrator(Geometry):
             else:
                 solid_angle_array = None
             try:
-                tthAxis, I, _, _ = self._lut_integrator.integrate(
-                    data,
-                    solidAngle=solid_angle_array,
-                    dummy=dummy, delta_dummy=delta_dummy)
+                tthAxis, I, _, _ = self._lut_integrator.integrate(data,
+                                                                solidAngle=solid_angle_array,
+                                                                dummy=dummy, delta_dummy=delta_dummy)
             except MemoryError:  # LUT method is hungry...
                 logger.warning("MemoryError:"
                                " falling back on forward implementation")
@@ -1146,7 +1161,7 @@ class AzimuthalIntegrator(Geometry):
                     dummy=dummy, delta_dummy=delta_dummy)
         tthAxis = 180.0 * self._lut_integrator.outPos / pi
         if filename:
-            self.save1D(filename, tthAxis, I, None, "2th_deg")
+            self.save1D(filename, tthAxis, I, None, "2th_deg")#, dark, flat, polarization_factor)
         return tthAxis, I
 
     def xrpd_LUT_OCL(self, data, nbPt, filename=None, correctSolidAngle=True,
@@ -1359,11 +1374,12 @@ class AzimuthalIntegrator(Geometry):
                     solidAngle_checksum=solid_angle_crc,
                     dummy=dummy, delta_dummy=delta_dummy)
         if filename:
-            self.save1D(filename, tthAxis, I, None, "2th_deg")
+            self.save1D(filename, tthAxis, I, None, "2th_deg")#dark, flat, polarization
         return tthAxis, I
 
     def xrpd2_numpy(self, data, nbPt2Th, nbPtChi=360,
                     filename=None, correctSolidAngle=True,
+                    dark=None, flat=None,
                     tthRange=None, chiRange=None,
                     mask=None, dummy=None, delta_dummy=None):
         """
@@ -1431,9 +1447,22 @@ class AzimuthalIntegrator(Geometry):
         delta_dummy=1.5 so that any value between -3.5 and -0.5 are
         considered as bad.
         """
-        mask = self.makeMask(data, mask, dummy, delta_dummy)
-        tth = self.twoThetaArray(data.shape)[mask]
-        chi = self.chiArray(data.shape)[mask]
+        mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
+        shape = data.shape
+        tth = self.twoThetaArray(shape)[mask]
+        chi = self.chiArray(shape)[mask]
+        data = data.astype(numpy.float32)[mask]
+        if dark is None:
+            dark = self.darkcurrent
+        if dark is not None:
+            data -= dark[mask]
+        if flat is None:
+            flat = self.flatfield
+        if flat is not None:
+            data /= flat[mask]
+        if correctSolidAngle is not None:
+            data /= self.solidAngleArray(shape)[mask]
+
         if tthRange is not None:
             tthRange = [deg2rad(tthRange[0]), deg2rad(tthRange[-1])]
         else:
@@ -1442,17 +1471,13 @@ class AzimuthalIntegrator(Geometry):
             chiRange = [deg2rad(chiRange[0]), deg2rad(chiRange[-1])]
         else:
             chiRange = [chi.min(), chi.max() * EPS32]
-        chi = self.chiArray(data.shape)[mask]
+
         bins = (nbPtChi, nbPt2Th)
         if bins not in self._nbPixCache:
             ref, binsChi, bins2Th = numpy.histogram2d(chi, tth,
                                                       bins=list(bins),
                                                       range=[chiRange, tthRange])
             self._nbPixCache[bins] = numpy.maximum(1.0, ref)
-        if correctSolidAngle:
-            data = (data / self.solidAngleArray(data.shape))[mask].astype("float64")
-        else:
-            data = data[mask].astype("float64")
 
         val, binsChi, bins2Th = numpy.histogram2d(chi, tth,
                                                   bins=list(bins),
@@ -1460,12 +1485,13 @@ class AzimuthalIntegrator(Geometry):
                                                   range=[chiRange, tthRange])
         I = val / self._nbPixCache[bins]
         if filename:
-            self.save2D(filename, I, bins2Th, binsChi)
+            self.save2D(filename, I, bins2Th, binsChi)#, dark, flat, polarization_factor)
 
         return I, bins2Th, binsChi
 
     def xrpd2_histogram(self, data, nbPt2Th, nbPtChi=360,
                         filename=None, correctSolidAngle=True,
+                        dark=None, flat=None,
                         tthRange=None, chiRange=None, mask=None,
                         dummy=None, delta_dummy=None):
         """
@@ -1548,13 +1574,21 @@ class AzimuthalIntegrator(Geometry):
                                     dummy=dummy,
                                     delta_dummy=delta_dummy)
 
-        mask = self.makeMask(data, mask, dummy, delta_dummy)
+        mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
+        shape = data.shape
         tth = self.twoThetaArray(data.shape)[mask]
         chi = self.chiArray(data.shape)[mask]
-        if correctSolidAngle:
-            data = (data / self.solidAngleArray(data.shape))[mask]
-        else:
-            data = data[mask]
+        data = data.astype(numpy.float32)[mask]
+        if dark is None:
+            dark = self.darkcurrent
+        if dark is not None:
+            data -= dark[mask]
+        if flat is None:
+            flat = self.flatfield
+        if flat is not None:
+            data /= flat[mask]
+        if correctSolidAngle is not None:
+            data /= self.solidAngleArray(data.shape)[mask]
         if dummy is None:
             dummy = 0.0
             I, binsChi, bins2Th, _, _ = histogram.histogram2d(pos0=chi, pos1=tth,
@@ -1565,7 +1599,7 @@ class AzimuthalIntegrator(Geometry):
         bins2Th = rad2deg(bins2Th)
         binsChi = rad2deg(binsChi)
         if filename:
-            self.save2D(filename, I, bins2Th, binsChi)
+            self.save2D(filename, I, bins2Th, binsChi)#, dark, flat, polarization_factor)
         return I, bins2Th, binsChi
 
     def xrpd2_splitBBox(self, data, nbPt2Th, nbPtChi=360,
@@ -1702,7 +1736,7 @@ class AzimuthalIntegrator(Geometry):
         bins2Th = rad2deg(bins2Th)
         binsChi = rad2deg(binsChi)
         if filename:
-            self.save2D(filename, I, bins2Th, binsChi)
+            self.save2D(filename, I, bins2Th, binsChi, dark=dark, flat=flat, polarization_factor=polarization_factor)
         return I, bins2Th, binsChi
 
     def xrpd2_splitPixel(self, data, nbPt2Th, nbPtChi=360,
@@ -1836,7 +1870,7 @@ class AzimuthalIntegrator(Geometry):
         bins2Th = rad2deg(bins2Th)
         binsChi = rad2deg(binsChi)
         if filename:
-            self.save2D(filename, I, bins2Th, binsChi)
+            self.save2D(filename, I, bins2Th, binsChi, dark=dark, flat=flat, polarization_factor=polarization_factor)
         return I, bins2Th, binsChi
     xrpd2 = xrpd2_splitBBox
 
@@ -2041,11 +2075,13 @@ class AzimuthalIntegrator(Geometry):
                                                                                        platformid=platformid,
                                                                                        deviceid=deviceid,
                                                                                        checksum=self._lut_integrator.lut_checksum)
-                            I, _, _ = self._ocl_lut_integr.integrate(data,
+                            I, _, _ = self._ocl_lut_integr.integrate(data, dark=dark, flat=flat,
                                                                      solidAngle=solidangle,
                                                                      solidAngle_checksum=self._dssa_crc,
                                                                      dummy=dummy,
-                                                                     delta_dummy=delta_dummy)
+                                                                     delta_dummy=delta_dummy,
+                                                                     polarization=polarization,
+                                                                     polarization_checksum=self._polarization_crc)
                             qAxis = self._lut_integrator.outPos  # this will be copied later
                             if error_model == "azimuthal":
                                 variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
@@ -2056,15 +2092,16 @@ class AzimuthalIntegrator(Geometry):
                                                                              delta_dummy=delta_dummy)
                                 sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
                     else:
-                        qAxis, I, a, b = self._lut_integrator.integrate(data,
+                        qAxis, I, a, b = self._lut_integrator.integrate(data, dark=dark, flat=flat,
                                                            solidAngle=solidangle,
                                                            dummy=dummy,
-                                                           delta_dummy=delta_dummy)
+                                                           delta_dummy=delta_dummy,
+                                                           polarization=polarization)
 
                         if error_model == "azimuthal":
                             variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
                         if variance is not None:
-                            qAxis, I, a, b = self._lut_integrator.integrate(variance,
+                            _, var1d, a, b = self._lut_integrator.integrate(variance,
                                                                solidAngle=None,
                                                                dummy=dummy,
                                                                delta_dummy=delta_dummy)
@@ -2158,6 +2195,7 @@ class AzimuthalIntegrator(Geometry):
                 method = "numpy"
             else:
                 logger.debug("integrate1d uses cython implementation")
+                data = numpy.ascontiguousarray(data, dtype=numpy.float32)
                 mask = self.makeMask(data, mask, dummy, delta_dummy,
                                      mode="numpy")
                 pos0 = self.array_from_unit(shape, "center", unit)
@@ -2168,6 +2206,7 @@ class AzimuthalIntegrator(Geometry):
                     chiMin, chiMax = azimuth_range
                     chi = self.chiArray(shape)
                     mask *= (chi >= chiMin) * (chi <= chiMax)
+                mask = numpy.where(mask)
                 pos0 = pos0[mask]
                 if variance is not None:
                     variance = variance[mask]
@@ -2209,6 +2248,7 @@ class AzimuthalIntegrator(Geometry):
                 chiMin, chiMax = azimuth_range
                 chi = self.chiArray(shape)
                 mask *= (chi >= chiMin) * (chi <= chiMax)
+            mask = numpy.where(mask)
             pos0 = pos0[mask]
             if dark is not None:
                 data -= dark
@@ -2236,7 +2276,7 @@ class AzimuthalIntegrator(Geometry):
         if pos0_scale:
             qAxis = qAxis * pos0_scale
         if filename:
-            self.save1D(filename, qAxis, I, sigma, unit)
+            self.save1D(filename, qAxis, I, sigma, unit, dark, flat, polarization_factor)
         if sigma is not None:
             return qAxis, I, sigma
         else:
@@ -2404,11 +2444,13 @@ class AzimuthalIntegrator(Geometry):
                                                                                        platformid=platformid,
                                                                                        deviceid=deviceid,
                                                                                        checksum=self._lut_integrator.lut_checksum)
-                            I, _, _ = self._ocl_lut_integr.integrate(data,
+                            I, _, _ = self._ocl_lut_integr.integrate(data, dark=dark, flat=flat,
                                                                      solidAngle=solidangle,
                                                                      solidAngle_checksum=self._dssa_crc,
                                                                      dummy=dummy,
-                                                                     delta_dummy=delta_dummy)
+                                                                     delta_dummy=delta_dummy,
+                                                                     polarization=polarization,
+                                                                     polarization_checksum=self._polarization_crc)
                             I.shape = nbPt
                             I = I.T
                             bins_rad = self._lut_integrator.outPos0  # this will be copied later
@@ -2419,7 +2461,11 @@ class AzimuthalIntegrator(Geometry):
 #                                var1d, a, b = self._ocl_lut_integr.integrate(variance, solidAngle=None, dummy=dummy, delta_dummy=delta_dummy)
 #                                sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
                     else:
-                        I, bins_rad, bins_azim, _, _ = self._lut_integrator.integrate(data, solidAngle=solidangle, dummy=dummy, delta_dummy=delta_dummy)
+                        I, bins_rad, bins_azim, _, _ = self._lut_integrator.integrate(data, dark=dark, flat=flat,
+                                                                                      solidAngle=solidangle,
+                                                                                      dummy=dummy,
+                                                                                      delta_dummy=delta_dummy,
+                                                                                      polarization=polarization)
 
 #                        if error_model == "azimuthal":
 #                            variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
@@ -2511,6 +2557,7 @@ class AzimuthalIntegrator(Geometry):
                 method = "numpy"
             else:
                 logger.debug("integrate2d uses cython implementation")
+                data = numpy.ascontiguousarray(data, dtype=numpy.float32)
                 mask = self.makeMask(data, mask, dummy, delta_dummy,
                                      mode="numpy")
                 pos0 = self.array_from_unit(shape, "center", unit)
@@ -2597,7 +2644,7 @@ class AzimuthalIntegrator(Geometry):
         bins_rad = bins_rad * pos0_scale
         bins_azim = bins_azim * 180.0 / pi
         if filename:
-            self.save2D(filename, I, bins_rad, bins_azim, sigma, unit)
+            self.save2D(filename, I, bins_rad, bins_azim, sigma, unit, dark=dark, flat=flat, polarization_factor=polarization_factor)
         if sigma is not None:
             return I, bins_rad, bins_azim, sigma
         else:
@@ -2668,7 +2715,7 @@ class AzimuthalIntegrator(Geometry):
         else:
             return out
 
-    def makeHeaders(self, hdr="#"):
+    def makeHeaders(self, hdr="#", dark=None, flat=None, polarization_factor=0):
         """
         @param hdr: string used as comment in the header
         @type hdr: str
@@ -2699,14 +2746,25 @@ class AzimuthalIntegrator(Geometry):
                 headerLst.append("Wavelength: %s" % self.wavelength)
             if self.maskfile is not None:
                 headerLst.append("Mask File: %s" % self.maskfile)
+            if (dark is not None) or (self.darkcurrent is not None):
+                if self.darkfiles:
+                    headerLst.append("Dark current: %s" % self.darkfiles)
+                else:
+                    headerLst.append("Dark current: Done with unknown file")
+            if (flat is not None) or (self.flatfield is not None):
+                if self.flatfiles:
+                    headerLst.append("Flat field: %s" % self.flatfiles)
+                else:
+                    headerLst.append("Flat field: Done with unknown file")
+            headerLst.append("Polarization factor: %s" % polarization_factor)
             self.header = os.linesep.join([hdr + " " + i for i in headerLst])
         return self.header
 
-    def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH):
+    def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH, dark=None, flat=None, polarization_factor=None):
         dim1_unit = units.to_unit(dim1_unit)
         if filename:
             with open(filename, "w") as f:
-                f.write(self.makeHeaders())
+                f.write(self.makeHeaders(dark=dark, flat=flat, polarization_factor=polarization_factor))
                 f.write("%s# --> %s%s" % (os.linesep, filename, os.linesep))
                 if error is None:
                     f.write("#%14s %14s %s" % (dim1_unit.REPR, "I ", os.linesep))
@@ -2717,8 +2775,10 @@ class AzimuthalIntegrator(Geometry):
                     f.write(os.linesep.join(["%14.6e  %14.6e %14.6e" % (t, i, s) for t, i, s in zip(dim1, I, error)]))
                 f.write(os.linesep)
 
-    def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH):
+    def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH, dark=None, flat=None, polarization_factor=0):
         dim1_unit = units.to_unit(dim1_unit)
+        header_keys = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "chi_min", "chi_max", dim1_unit.REPR + "_min", dim1_unit.REPR + "_max", "pixelX", "pixelY",
+                       "dark", "flat", "polarization"]
         header = {"dist": str(self._dist),
                   "poni1": str(self._poni1),
                   "poni2": str(self._poni2),
@@ -2731,15 +2791,29 @@ class AzimuthalIntegrator(Geometry):
                   dim1_unit.REPR + "_max": str(dim1.max()),
                   "pixelX": str(self.pixel2),  # this is not a bug ... most people expect dim1 to be X
                   "pixelY": str(self.pixel1),  # this is not a bug ... most people expect dim2 to be Y
-                  }
+                  "polarization": polarization_factor}
+
         if self.splineFile:
             header["spline"] = str(self.splineFile)
+
+        if dark:
+            if self.darkfiles:
+                header["dark"] = self.darkfiles
+            else:
+                header["dark"] = 'unknown dark'
+        if flat:
+            if self.flatfiles:
+                header["flat"] = self.flatfiles
+            else:
+                header["flat"] = 'unknown flat'
         f2d = self.getFit2D()
         for key in f2d:
             header["key"] = f2d[key]
         try:
             img = fabio.edfimage.edfimage(data=I.astype("float32"),
-                                    header=header)
+                                    header=header,
+                                    header_keys=header_keys)
+
             if error is not None:
                 img.appendFrame(data=error, header={"EDF_DataBlockID":"1.Image.Error"})
             img.write(filename)
@@ -2768,7 +2842,10 @@ class AzimuthalIntegrator(Geometry):
 
     def set_darkcurrent(self, dark):
         self._darkcurrent = dark
-        self._darkcurrent_crc = crc32(dark)
+        if dark is not None:
+            self._darkcurrent_crc = crc32(dark)
+        else:
+            self._darkcurrent_crc = None
 
     def get_darkcurrent(self):
         return self._darkcurrent
@@ -2777,9 +2854,45 @@ class AzimuthalIntegrator(Geometry):
 
     def set_flatfield(self, flat):
         self._flatfield = flat
-        self._flatfield_crc = crc32(flat)
+        if flat is not None:
+            self._flatfield_crc = crc32(flat)
+        else:
+            self._flatfield_crc = None
 
     def get_flatfield(self):
         return self._flatfield
 
     flatfield = property(get_flatfield, set_flatfield)
+
+    def set_darkfiles(self, files=None, method="mean"):
+        """
+        Set the dark current from one or mutliple files, avaraged according to the method provided 
+        """
+        if type(files) in types.StringTypes:
+            files = [i.strip for i in files.split(",")]
+        elif not files:
+            files = []
+        if len(files) == 0:
+            self.set_darkcurrent(None)
+        elif len(files) == 1:
+            self.set_darkcurrent(fabio.open(files[0]).data.astype(numpy.float32))
+            self.darkfiles = files[0]
+        else:
+            self.set_darkcurrent(utils.averageDark(files), method)
+            self.darkfiles = "%s(%s)" % (method, ",".join(files))
+    def set_flatfiles(self, files, method="mean"):
+        """
+        Set the flat field from one or mutliple files, avaraged according to the method provided
+        """
+        if type(files) in types.StringTypes:
+            files = [i.strip for i in files.split(",")]
+        elif not files:
+            files = []
+        if len(files) == 0:
+            self.set_flatfield(None)
+        elif len(files) == 1:
+            self.set_flatfield(fabio.open(files[0]).data.astype(numpy.float32))
+            self.flatfiles = files[0]
+        else:
+            self.set_flatfield(utils.averageDark(files), method)
+            self.flatfiles = "%s(%s)" % (method, ",".join(files))

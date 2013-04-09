@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/02/2013"
+__date__ = "14/03/2013"
 __status__ = "development"
 
 import logging, sys
@@ -53,29 +53,53 @@ from scipy.signal           import gaussian
 cu_fft = None  # No cuda here !
 if sys.platform != "win32":
     WindowsError = RuntimeError
-fftw3 = None
+has_fftw3 = None
 try:
-    fftw3 = __import__("fftw3")
+    import fftw3
+    has_fftw3 = True
 except (ImportError, WindowsError) as err:
     logging.warn("Exception %s: FFTw3 not available. Falling back on Scipy", err)
-    fftw3 = None
-# else:
-#    print("defining FFTw3: %s" % fftw3)
+    has_fftw3 = False
 
+import traceback
+
+def deprecated(func):
+    def wrapper(*arg, **kw):
+        """
+        decorator that deprecates the use of a function  
+        """
+        logger.warning("%s is Deprecated !!! %s" % (func.func_name, os.linesep.join([""] + traceback.format_stack()[:-1])))
+        return func(*arg, **kw)
+    return wrapper
 
 def float_(val):
+    """
+    Convert anything to a float ... or None if not applicable
+    """
     try:
-        f = float(str(val))
+        f = float(str(val).strip())
     except ValueError:
-        f = ""
+        f = None
     return f
 
 def int_(val):
+    """
+    Convert anything to an int ... or None if not applicable
+    """
     try:
-        f = int(str(val))
+        f = int(str(val).strip())
     except ValueError:
-        f = ""
+        f = None
     return f
+
+def str_(val):
+    """
+    Convert anything to a string ... but None -> ""
+    """
+    s = ""
+    if val != None:
+        s = str(val)
+    return s
 
 
 def timeit(func):
@@ -109,10 +133,9 @@ def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0):
     """
     res = None
     # TODO: understand why this is needed !
-    if "fftw3" not in dir():
-        global fftw3
-        fftw3 = sys.modules.get("fftw3")
-    if fftw3:
+    if "has_fftw3" not in dir():
+        has_fftw3 = ("fftw3" in sys.modules)
+    if has_fftw3:
         try:
             if mode != "wrap":
                 input_img = expand(input_img, sigma, mode, cval)
@@ -153,7 +176,7 @@ def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0):
         except MemoryError:
             logging.error("MemoryError in FFTw3 part. Falling back on Scipy")
     if res is None:
-        fftw3 = None
+        has_fftw3 = False
         res = scipy.ndimage.filters.gaussian_filter(input_img, sigma, mode=(mode or "reflect"))
     return res
 
@@ -321,6 +344,45 @@ def relabel(label, data, blured, max_size=None):
     return f(label)
 
 
+def averageDark(lstimg, center_method="mean", cutoff=None):
+    """
+    Averages a serie of dark (or flat) images.
+    Centers the result on the mean or the median ...
+    but averages all frames within  cutoff*std
+
+    @param lstimg: list of 2D images or a 3D stack
+    @param center_method: is the center calculated by a "mean" or a "median"
+    @param cutoff: keep all data where (I-center)/std < cutoff
+    @return: 2D image averaged
+    """
+    if "ndim" in dir(lstimg) and lstimg.ndim == 3:
+        stack = lstimg.astype(numpy.float32)
+        shape = stack.shape[1:]
+        length = stack.shape[0]
+    else:
+        shape = lstimg[0].shape
+        length = len(lstimg)
+        if length==1:
+            return lstimg.astype(numpy.float32)
+        stack = numpy.zeros((length, shape[0], shape[1]), dtype=float32)
+        for i, img in enumerate(lstimg):
+           stack[i] = img
+    center = stack.__getattribute__(center_method)(axis=0)
+    if cutoff is None or cutoff <= 0:
+        output = center
+    else:
+        std = stack.std(axis=0)
+        stride = 0, std.stride[1], std.stride[1]
+        std.shape = 1, shape[0], shape[1]
+        std.stride = stride
+        center.shape = 1, shape[0], shape[1]
+        center.stride = stride
+        mask = ((abs(stack - center) / std) > cutoff)
+        stack[numpy.where(mask)] = 0.0
+        summed = stack.sum(axis=0)
+        output = summed / (length - mask.sum(axis=0))
+    return output
+
 def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=None,
                    darks=None, flats=None, filter_="mean", correct_flat_from_dark=False):
     """
@@ -334,6 +396,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
     @param darks: list of dark current images for subtraction
     @param flats: list of flat field images for division
     @param filter_: can be maximum, mean or median (default=mean)
+    @param correct_flat_from_dark: shall the flat be re-corrected ?
     """
     ld = len(listImages)
     sumImg = None
@@ -348,21 +411,16 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
         if sumImg is None:
             sumImg = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
         if dark is None:
-            dark = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
             if darks:
-                for f in darks:
-                    dark += fabio.open(f).data
-                dark /= max(1, len(darks))
+                dark = averageDark([fabio.open(f).data for f in darks], center="mean", cutoff=4)
+            else:
+                dark = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
         if flat is None:
-            print flats
             if flats:
-                flat = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
-                for f in flats:
-                    flat += fabio.open(f).data
-                flat /= max(1, len(flats))
+                flat = averageDark([fabio.open(f).data for f in flats], center="mean", cutoff=4)
                 if correct_flat_from_dark:
                     flat -= dark
-                flat[flats < 1] = 1.0
+                flat[flats <= 0 ] = 1.0
             else:
                 flat = numpy.ones((shape[0], shape[1]), dtype=numpy.float32)
         correctedImg = (removeSaturatedPixel(ds.astype(numpy.float32), threshold, minimum, maximum) - dark) / flat

@@ -48,7 +48,7 @@ logger = logging.getLogger("pyFAI.ocl_azim_lut")
 class OCL_LUT_Integrator(object):
     def __init__(self, lut, image_size, devicetype="all", platformid=None, deviceid=None, checksum=None):
         """
-        @param lut: array of uint32 - float32 with shape (nbins, lut_size) with indexes and coefficients
+        @param lut: array of int32 - float32 with shape (nbins, lut_size) with indexes and coefficients
         @param checksum: pre - calculated checksum to prevent re - calculating it :)
         """
         self.BLOCK_SIZE = 16
