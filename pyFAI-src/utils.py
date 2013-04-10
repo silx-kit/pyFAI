@@ -61,6 +61,16 @@ except (ImportError, WindowsError) as err:
     logging.warn("Exception %s: FFTw3 not available. Falling back on Scipy", err)
     has_fftw3 = False
 
+import traceback
+
+def deprecated(func):
+    def wrapper(*arg, **kw):
+        """
+        decorator that deprecates the use of a function
+        """
+        logger.warning("%s is Deprecated !!! %s" % (func.func_name, os.linesep.join([""] + traceback.format_stack()[:-1])))
+        return func(*arg, **kw)
+    return wrapper
 
 def float_(val):
     """
@@ -341,7 +351,7 @@ def averageDark(lstimg, center_method="mean", cutoff=None):
     but averages all frames within  cutoff*std
 
     @param lstimg: list of 2D images or a 3D stack
-    @param center: is the center calculated by a "mean" or a "median"
+    @param center_method: is the center calculated by a "mean" or a "median"
     @param cutoff: keep all data where (I-center)/std < cutoff
     @return: 2D image averaged
     """
@@ -353,11 +363,11 @@ def averageDark(lstimg, center_method="mean", cutoff=None):
         shape = lstimg[0].shape
         length = len(lstimg)
         if length==1:
-            return lstimg.astype(numpy.float32)
+            return lstimg[0].astype(numpy.float32)
         stack = numpy.zeros((length, shape[0], shape[1]), dtype=float32)
         for i, img in enumerate(lstimg):
            stack[i] = img
-    center = stack.__getattribute__(center)(axis=0)
+    center = stack.__getattribute__(center_method)(axis=0)
     if cutoff is None or cutoff <= 0:
         output = center
     else:
@@ -402,12 +412,12 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             sumImg = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
         if dark is None:
             if darks:
-                dark = averageDark([fabio.open(f).data for f in darks], center="mean", cutoff=4)
+                dark = averageDark([fabio.open(f).data for f in darks], center_method="mean", cutoff=4)
             else:
                 dark = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
         if flat is None:
             if flats:
-                flat = averageDark([fabio.open(f).data for f in flats], center="mean", cutoff=4)
+                flat = averageDark([fabio.open(f).data for f in flats], center_method="mean", cutoff=4)
                 if correct_flat_from_dark:
                     flat -= dark
                 flat[flats <= 0 ] = 1.0

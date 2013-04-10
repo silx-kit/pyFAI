@@ -10,11 +10,11 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/03/2013"
+__date__ = "05/04/2013"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 
-import os, json
+import os, json, distutils.util
 import sys
 import threading
 import logging
@@ -24,7 +24,7 @@ if logger.getEffectiveLevel() > logging.INFO:
     logger.setLevel(logging.INFO)
 from os.path import dirname
 cwd = dirname(dirname(dirname(os.path.abspath(__file__))))
-sys.path.append(os.path.join(cwd, "build", "lib.linux-x86_64-2.6"))
+sys.path.append(os.path.join(cwd, "build", "lib.%s-%i.%i" % (distutils.util.get_platform(), sys.version_info[0], sys.version_info[1])))
 
 import PyTango
 import numpy
@@ -141,11 +141,11 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         if not os.path.exists(directory):
             logger.error("Ouput directory does not exist !!!  %s" % directory)
             try:
-                os.makedirs(new_dir)
+                os.makedirs(directory)
             except:  # No luck withthreads
                 pass
 
-        directory = sav_parms.directory
+#        directory = sav_parms.directory
         prefix = sav_parms.prefix
         nextNumber = sav_parms.nextNumber
         indexFormat = sav_parms.indexFormat
@@ -197,22 +197,12 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
             self.extension = None
 
     def setDarkcurrentFile(self, imagefile):
-        try:
-            darkcurrentImage = fabio.open(imagefile).data
-        except Exception as error:
-            logger.warning("setDarkcurrentFile: Unable to read file %s: %s" % (imagefile, error))
-        else:
-            self.ai.set_darkcurrent(darkcurrentImage)
-            self.dark_current_image = os.path.abspath(imagefile)
+        self.ai.set_darkfiles(imagefile)
+        self.dark_current_image = imagefile
 
     def setFlatfieldFile(self, imagefile):
-        try:
-            backGroundImage = fabio.open(imagefile).data
-        except Exception as error:
-            logger.warning("setFlatfieldFile: Unable to read file %s: %s" % (imagefile, error))
-        else:
-            self.ai.set_flatfield(backGroundImage)
-            self.flat_field_image = os.path.abspath(imagefile)
+        self.ai.set_flatfiles(imagefile)
+        self.flat_field_image = imagefile
 
     def setJsonConfig(self, jsonconfig):
         print("start config ...")
@@ -266,26 +256,12 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
                 self.ai.mask = mask
                 self.mask_image = os.path.abspath(mask_file)
 
-        self.dark_current_image = config.get("dark_current")
-        dark_files = [i.strip() for i in config.get("dark_current", "").split(",")
-                      if os.path.isfile(i.strip())]
-        if dark_files and config.get("do_dark"):
-            d0 = fabio.open(dark_files[0]).data
-            darks = numpy.zeros((d0.shape[0], d0.shape[1], len(dark_files)), dtype=numpy.float32)
-            for i, f in enumerate(dark_files):
-                darks[:, :, i] = fabio.open(f).data
-            self.ai.darkcurrent = darks.mean(axis= -1)
-
-        self.flat_field_image = config.get("flat_field")
-        flat_files = [i.strip() for i in config.get("flat_field", "").split(",")
-                      if os.path.isfile(i.strip())]
-        if flat_files and config.get("do_flat"):
-            d0 = fabio.open(flat_files[0]).data
-            flats = numpy.zeros((d0.shape[0], d0.shape[1], len(flat_files)), dtype=numpy.float32)
-            for i, f in enumerate(flat_files):
-                flats[:, :, i] = fabio.open(f).data
-            self.ai.darkcurrent = flats.mean(axis= -1)
-
+        self.ai.set_darkfiles([i.strip() for i in config.get("dark_current", "").split(",")
+                               if os.path.isfile(i.strip())])
+        self.ai.set_flatfiles([i.strip() for i in config.get("flat_field", "").split(",")
+                               if os.path.isfile(i.strip())])
+        self.dark_current_image = self.ai.darkfiles
+        self.flat_field_image = self.ai.flatfiles
         if config.get("do_2D"):
             self.nbpt_azim = int(config.get("azim_pt"))
         else:
@@ -352,6 +328,7 @@ class AzimuthalIntegrationDeviceServer(BasePostProcess) :
 
 
     def setJsonConfig(self, filepath) :
+        self.__jsonConfig = filepath
         if(self.__pyFAISink) :
             self.__pyFAISink.setJsonConfig(filepath)
 

@@ -59,52 +59,6 @@ try:
 except ImportError:
     logging.info("No socket opened for debugging. Please install rfoo")
 from scipy.stats import linregress
-#
-# class FileSerie(object):
-#    def __init__(self, *lst):
-#        self.lst = lst
-#        self.dico = {}
-#        assert len(lst) > 1
-#        self.len = len(lst[0])
-#        for fn in self.lst:
-#            assert len(fn) == self.len
-#        self.fixed = [None] * self.len
-#        self.start = self.stop = None
-#    def analyse(self):
-#        for idx in range(self.len):
-#            char0 = self.lst[0][idx]
-#            same = True
-#            for fn in self.lst[1:]:
-#                if fn[idx] != char0:
-#                    same = False
-#            self.fixed[idx] = same
-#        start = self.fixed.find(False)
-#        stop = self.len - self.fixed[-1::-1].find(False)
-#        for idx in range(start, 0, -1):
-#            if lst[0][idx].isdigit():
-#                self.fixed[idx] = False
-#                start = idx
-#            else:
-#                break
-#        for idx in range(start, 0, -1):
-#            if lst[0][idx].isdigit():
-#                self.fixed[idx] = False
-#                start = idx
-#            else:
-#                break
-#        for idx in range(stop, self.len, 1):
-#            if lst[0][idx].isdigit():
-#                self.fixed[idx] = False
-#                stop = idx + 1
-#            else:
-#                break
-#        self.start = start
-#        self.stop = stop
-#        for fn in self.lst:
-#            try:
-#                nr = int(fn[start:stop])
-#            except:
-#                print
 
 class MultiCalib(object):
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None, splineFile=None, detector=None):
@@ -147,6 +101,11 @@ class MultiCalib(object):
         self.results = {}
         self.gui = True
         self.interactive = True
+        self.centerX = None
+        self.centerY = None
+        self.distance = None
+        self.fixed = []
+        self.max_rings = None
 
     def __repr__(self):
         lst = ["Multi-Calibration object:",
@@ -209,9 +168,63 @@ class MultiCalib(object):
         parser.add_option("--saturation", dest="saturation",
                       help="consider all pixel>max*(1-saturation) as saturated and reconstruct them",
                       default=0.1, type="float")
-#        parser.add_option("--weighted", dest="weighted",
-#                      help="weight fit by intensity",
-#                       default=False, action="store_true")
+        parser.add_option("-r", "--ring", dest="max_rings", type="float",
+                      help="maximum number of rings to extract", default=None)
+
+        parser.add_option("--weighted", dest="weighted",
+                      help="weight fit by intensity",
+                       default=False, action="store_true")
+        parser.add_option("-l", "--distance", dest="distance", type="float",
+                      help="sample-detector distance in millimeter", default=None)
+        parser.add_option("--no-tilt", dest="tilt", 
+                      help="refine the detector tilt", default=True , action="store_false")
+        parser.add_option("--poni1", dest="poni1", type="float",
+                      help="poni1 coordinate in meter", default=None)
+        parser.add_option("--poni2", dest="poni2", type="float",
+                      help="poni2 coordinate in meter", default=None)
+        parser.add_option("--rot1", dest="rot1", type="float",
+                      help="rot1 in radians", default=None)
+        parser.add_option("--rot2", dest="rot2", type="float",
+                      help="rot2 in radians", default=None)
+        parser.add_option("--rot3", dest="rot3", type="float",
+                      help="rot3 in radians", default=None)
+
+        parser.add_option("--fix-dist", dest="fix_dist",
+                      help="fix the distance parameter", default=None, action="store_true")
+        parser.add_option("--free-dist", dest="fix_dist",
+                      help="free the distance parameter", default=None, action="store_false")
+
+        parser.add_option("--fix-poni1", dest="fix_poni1",
+                      help="fix the poni1 parameter", default=None, action="store_true")
+        parser.add_option("--free-poni1", dest="fix_poni1",
+                      help="free the poni1 parameter", default=None, action="store_false")
+
+        parser.add_option("--fix-poni2", dest="fix_poni2",
+                      help="fix the poni2 parameter", default=None, action="store_true")
+        parser.add_option("--free-poni2", dest="fix_poni2",
+                      help="free the poni2 parameter", default=None, action="store_false")
+
+        parser.add_option("--fix-rot1", dest="fix_rot1",
+                      help="fix the rot1 parameter", default=None, action="store_true")
+        parser.add_option("--free-rot1", dest="fix_rot1",
+                      help="free the rot1 parameter", default=None, action="store_false")
+
+        parser.add_option("--fix-rot2", dest="fix_rot2",
+                      help="fix the rot2 parameter", default=None, action="store_true")
+        parser.add_option("--free-rot2", dest="fix_rot2",
+                      help="free the rot2 parameter", default=None, action="store_false")
+
+        parser.add_option("--fix-rot3", dest="fix_rot3",
+                      help="fix the rot3 parameter", default=None, action="store_true")
+        parser.add_option("--free-rot3", dest="fix_rot3",
+                      help="free the rot3 parameter", default=None, action="store_false")
+
+        parser.add_option("--fix-wavelength", dest="fix_wavelength",
+                      help="fix the wavelength parameter", default=True, action="store_true")
+        parser.add_option("--free-wavelength", dest="fix_wavelength",
+                      help="free the wavelength parameter", default=True, action="store_false")
+
+
         parser.add_option("--no-gui", dest="gui",
                       help="force the program to run without a Graphical interface",
                       default=True, action="store_false")
@@ -277,11 +290,29 @@ class MultiCalib(object):
 #            raise RuntimeError("you must specify the d-spacing file")
         self.gui = options.gui
         self.interactive = options.interactive
+        self.max_rings = options.max_rings
+        self.fixed = []
+        if not options.tilt:
+            self.fixed+=["rot1", "rot2", "rot3"]
+        if options.fix_dist:
+            self.fixed.append("dist")
+        if options.fix_poni1:
+            self.fixed.append("poni1")
+        if options.fix_poni2:
+            self.fixed.append("poni2")
+        if options.fix_rot1:
+            self.fixed.append("rot1")
+        if options.fix_rot2:
+            self.fixed.append("rot2")
+        if options.fix_rot3:
+            self.fixed.append("rot3")
+        if options.fix_wavelength:
+            self.fixed.append("wavelength")
 
         self.dataFiles = [f for f in args if os.path.isfile(f)]
         if not self.dataFiles:
             raise RuntimeError("Please provide some calibration images ... if you want to analyze them. Try also the --help option to see all options!")
-#        self.weighted = options.weighted
+        self.weighted = options.weighted
 
     def get_pixelSize(self, ans):
         """convert a comma separated sting into pixel size"""
@@ -346,9 +377,9 @@ class MultiCalib(object):
         for fn in self.dataFiles:
             fabimg = fabio.open(fn)
             wavelength = self.wavelength
-            dist = None
-            centerX = None
-            centerY = None
+            dist = self.distance
+            centerX = self.centerX
+            centerY = self.centerY
             if "_array_data.header_contents" in fabimg.header:
                 headers = fabimg.header["_array_data.header_contents"].split()
                 if "Detector_distance" in headers:
@@ -358,6 +389,20 @@ class MultiCalib(object):
                 if "Beam_xy" in headers:
                     centerX = float(headers[headers.index("Beam_xy") + 1][1:-1])
                     centerY = float(headers[headers.index("Beam_xy") + 2][:-1])
+            if dist is None:
+                digits = ""
+                for i in os.path.basename(fn):
+                    if i.isdigit() and not digits:
+                        digits += i
+                    elif i.isdigit():
+                        digits += i
+                    elif not i.isdigit() and digits:
+                        break
+                dist = int(digits) * 0.001
+            if centerX is None:
+                centerX = fabimg.data.shape[1] // 2
+            if centerY is None:
+                centerY = fabimg.data.shape[0] // 2
             self.results[fn] = {"wavelength":wavelength, "dist":dist}
             rec = pyFAI.calibration.Recalibration(dataFiles=[fn], darkFiles=self.darkFiles, flatFiles=self.flatFiles,
                                                   detector=self.detector, spacing_file=self.spacing_file, wavelength=wavelength)
@@ -368,6 +413,9 @@ class MultiCalib(object):
             rec.mask = self.mask
             rec.filter = self.filter
             rec.cutBackground = self.cutBackground
+            rec.fixed = self.fixed
+            rec.max_rings = self.max_rings
+            rec.weighted = self.weighted
             if centerY:
                 rec.ai.poni1 = centerY * self.detector.pixel1
             if centerX:
@@ -432,9 +480,4 @@ if __name__ == "__main__":
     c.read_dSpacingFile()
     c.process()
     c.regression()
-#    c.read_wavelength()
-#
-#    c.gui_peakPicker()
-#    c.refine()
-#    c.postProcess()
     raw_input("Press enter to quit")
