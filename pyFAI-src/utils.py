@@ -212,7 +212,7 @@ def dog(s1, s2, shape=None):
     else:
         u, v = numpy.ogrid[-shape[0] // 2:shape[0] - shape[0] // 2, -shape[1] // 2:shape[1] - shape[1] // 2]
     r2 = u * u + v * v
-    centered = numpy.exp(-r2 / (2.*s1) ** 2) / 2. / numpy.pi / s1 - numpy.exp(-r2 / (2.*s2) ** 2) / 2. / numpy.pi / s2
+    centered = numpy.exp(-r2 / (2. * s1) ** 2) / 2. / numpy.pi / s1 - numpy.exp(-r2 / (2. * s2) ** 2) / 2. / numpy.pi / s2
     return centered
 
 def dog_filter(input_img, sigma1, sigma2, mode="reflect", cval=0.0):
@@ -362,9 +362,9 @@ def averageDark(lstimg, center_method="mean", cutoff=None):
     else:
         shape = lstimg[0].shape
         length = len(lstimg)
-        if length==1:
+        if length == 1:
             return lstimg[0].astype(numpy.float32)
-        stack = numpy.zeros((length, shape[0], shape[1]), dtype=float32)
+        stack = numpy.zeros((length, shape[0], shape[1]), dtype=numpy.float32)
         for i, img in enumerate(lstimg):
            stack[i] = img
     center = stack.__getattribute__(center_method)(axis=0)
