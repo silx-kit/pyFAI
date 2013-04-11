@@ -205,7 +205,8 @@ class AIWidget(QtGui.QWidget):
                             kwarg["filename"] = op.splitext(item)[0] + ".azim"
                         else:
                             kwarg["filename"] = op.splitext(item)[0] + ".dat"
-                            kwarg["nbPt"] = kwarg.pop("nbPt_rad")
+                            if kwarg.get("nbPt_rad"):
+                                kwarg["nbPt"] = kwarg.pop("nbPt_rad")
                     else:
                         logger.warning("item is not a file ... guessing it is a numpy array")
                         kwarg["data"] = item
