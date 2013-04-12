@@ -377,15 +377,15 @@ def averageDark(lstimg, center_method="mean", cutoff=None):
         output = center
     else:
         std = stack.std(axis=0)
-        stride = 0, std.stride[1], std.stride[1]
+        strides = 0, std.strides[1], std.strides[1]
         std.shape = 1, shape[0], shape[1]
-        std.stride = stride
+        std.strides = strides
         center.shape = 1, shape[0], shape[1]
-        center.stride = stride
+        center.strides = strides
         mask = ((abs(stack - center) / std) > cutoff)
         stack[numpy.where(mask)] = 0.0
         summed = stack.sum(axis=0)
-        output = summed / (length - mask.sum(axis=0))
+        output = summed / numpy.maximum(1, (length - mask.sum(axis=0)))
     return output
 
 def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=None,
