@@ -94,9 +94,7 @@ class test_utils(unittest.TestCase):
         self.assertEqual(abs(numpy.ones_like(self.dark) - five).max(), 0, "data are the same: max test")
 
         six = pyFAI.utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark), self.dark, self.dark ], "median", .001)
-        print six
-        print self.dark
-        self.assertEqual(abs(self.dark - six).max(), 0, "data are the same: test threshold")
+        self.assert_(abs(self.dark - six).max() < 1e-4, "data are the same: test threshold")
 
 
 def test_suite_all_Utils():

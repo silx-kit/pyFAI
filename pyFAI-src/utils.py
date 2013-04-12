@@ -377,7 +377,7 @@ def averageDark(lstimg, center_method="mean", cutoff=None):
         output = center
     else:
         std = stack.std(axis=0)
-        strides = 0, std.strides[1], std.strides[1]
+        strides = 0, std.strides[0], std.strides[1]
         std.shape = 1, shape[0], shape[1]
         std.strides = strides
         center.shape = 1, shape[0], shape[1]
