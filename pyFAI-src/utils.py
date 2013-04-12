@@ -367,7 +367,12 @@ def averageDark(lstimg, center_method="mean", cutoff=None):
         stack = numpy.zeros((length, shape[0], shape[1]), dtype=numpy.float32)
         for i, img in enumerate(lstimg):
            stack[i] = img
-    center = stack.__getattribute__(center_method)(axis=0)
+    if center_method in dir(stack):
+        center = stack.__getattribute__(center_method)(axis=0)
+    elif center_method == "median":
+        center = numpy.median(stack, axis=0)
+    else:
+        raise RuntimeError("Cannot understand method: %s in averageDark" % center_method)
     if cutoff is None or cutoff <= 0:
         output = center
     else:

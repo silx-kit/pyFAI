@@ -58,24 +58,45 @@ if logger.getEffectiveLevel() <= logging.INFO:
 
 class test_utils(unittest.TestCase):
     unbinned = numpy.random.random((64, 32))
+    dark = unbinned.astype("float32")
+    flat = 1 + numpy.random.random((64, 32))
+    raw = flat + dark
     def setUp(self):
         """Download files"""
         pass
     def test_binning(self):
         """
-        The masked image has a masked ring around 1.5deg with value -10
-        without mask the pixels should be at -10 ; with mask they are at 0
+        test the binning and unbinning functions
         """
         binned = pyFAI.utils.binning(self.unbinned, (4, 2))
         self.assertEqual(binned.shape, (64 / 4, 32 / 2), "binned size is OK")
         unbinned = pyFAI.utils.unBinning(binned, (4, 2))
         self.assertEqual(unbinned.shape, self.unbinned.shape, "unbinned size is OK")
         self.assertAlmostEqual(unbinned.sum(), self.unbinned.sum(), 2, "content is the same")
+    def test_averageDark(self):
+        """
+        
+        """
+        one = pyFAI.utils.averageDark([self.dark])
+        print abs(self.dark - one).max()
+        self.assertEqual(abs(self.dark - one).max(), 0, "data are the same")
 
+        two = pyFAI.utils.averageDark([self.dark, self.dark])
+        self.assertEqual(abs(self.dark - two).max(), 0, "data are the same: mean test")
+
+        three = pyFAI.utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark) ], "median")
+        self.assertEqual(abs(self.dark - three).max(), 0, "data are the same: median test")
+
+        four = pyFAI.utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark) ], "min")
+        self.assertEqual(abs(numpy.zeros_like(self.dark) - four).max(), 0, "data are the same: min test")
+
+        five = pyFAI.utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark) ], "max")
+        self.assertEqual(abs(numpy.ones_like(self.dark) - five).max(), 0, "data are the same: max test")
 
 def test_suite_all_Utils():
     testSuite = unittest.TestSuite()
     testSuite.addTest(test_utils("test_binning"))
+    testSuite.addTest(test_utils("test_averageDark"))
     return testSuite
 
 if __name__ == '__main__':
