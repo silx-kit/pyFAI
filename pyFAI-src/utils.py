@@ -367,20 +367,25 @@ def averageDark(lstimg, center_method="mean", cutoff=None):
         stack = numpy.zeros((length, shape[0], shape[1]), dtype=numpy.float32)
         for i, img in enumerate(lstimg):
            stack[i] = img
-    center = stack.__getattribute__(center_method)(axis=0)
+    if center_method in dir(stack):
+        center = stack.__getattribute__(center_method)(axis=0)
+    elif center_method == "median":
+        center = numpy.median(stack, axis=0)
+    else:
+        raise RuntimeError("Cannot understand method: %s in averageDark" % center_method)
     if cutoff is None or cutoff <= 0:
         output = center
     else:
         std = stack.std(axis=0)
-        stride = 0, std.stride[1], std.stride[1]
+        strides = 0, std.strides[1], std.strides[1]
         std.shape = 1, shape[0], shape[1]
-        std.stride = stride
+        std.strides = strides
         center.shape = 1, shape[0], shape[1]
-        center.stride = stride
+        center.strides = strides
         mask = ((abs(stack - center) / std) > cutoff)
         stack[numpy.where(mask)] = 0.0
         summed = stack.sum(axis=0)
-        output = summed / (length - mask.sum(axis=0))
+        output = summed / numpy.maximum(1, (length - mask.sum(axis=0)))
     return output
 
 def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=None,

@@ -794,7 +794,10 @@ class AzimuthalIntegrator(Geometry):
                                        tthRange=tthRange,
                                        mask=mask,
                                        dummy=dummy,
-                                       delta_dummy=delta_dummy)
+                                       delta_dummy=delta_dummy,
+                                       dark=dark,
+                                       flat=flat
+                                       )
         shape = data.shape
         if flat is None:
             flat = self.flatfield
@@ -2789,8 +2792,8 @@ class AzimuthalIntegrator(Geometry):
                   "chi_max": str(dim2.max()),
                   dim1_unit.REPR + "_min": str(dim1.min()),
                   dim1_unit.REPR + "_max": str(dim1.max()),
-                  "pixelX": str(self.pixel2),  # this is not a bug ... most people expect dim1 to be X
-                  "pixelY": str(self.pixel1),  # this is not a bug ... most people expect dim2 to be Y
+                  "pixelX": str(self.pixel2), # this is not a bug ... most people expect dim1 to be X
+                  "pixelY": str(self.pixel1), # this is not a bug ... most people expect dim2 to be Y
                   "polarization": polarization_factor}
 
         if self.splineFile:
