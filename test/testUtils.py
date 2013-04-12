@@ -44,7 +44,7 @@ if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 
 
-#TODO Test:
+# TODO Test:
 # gaussian_filter
 # shift
 # relabel
@@ -52,9 +52,9 @@ if logger.getEffectiveLevel() <= logging.INFO:
 # averageImages
 # boundingBox
 # removeSaturatedPixel
-#DONE:
-## binning
-## unbinning
+# DONE:
+# # binning
+# # unbinning
 
 class test_utils(unittest.TestCase):
     unbinned = numpy.random.random((64, 32))
@@ -73,12 +73,12 @@ class test_utils(unittest.TestCase):
         unbinned = pyFAI.utils.unBinning(binned, (4, 2))
         self.assertEqual(unbinned.shape, self.unbinned.shape, "unbinned size is OK")
         self.assertAlmostEqual(unbinned.sum(), self.unbinned.sum(), 2, "content is the same")
+
     def test_averageDark(self):
         """
-        
+        Some testing for dark averaging
         """
         one = pyFAI.utils.averageDark([self.dark])
-        print abs(self.dark - one).max()
         self.assertEqual(abs(self.dark - one).max(), 0, "data are the same")
 
         two = pyFAI.utils.averageDark([self.dark, self.dark])
@@ -96,11 +96,21 @@ class test_utils(unittest.TestCase):
         six = pyFAI.utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark), self.dark, self.dark ], "median", .001)
         self.assert_(abs(self.dark - six).max() < 1e-4, "data are the same: test threshold")
 
+        seven = pyFAI.utils.averageImages([self.raw], darks=[self.dark], flats=[self.flat], threshold=0)
+        self.assert_(abs(numpy.ones_like(self.dark) - fabio.open(seven).data).mean() < 1e-2, "averageImages")
+
+    def test_shift(self):
+        """
+        Some testing for image shifting and offset measurment functions.
+        """
+        pass
+
 
 def test_suite_all_Utils():
     testSuite = unittest.TestSuite()
     testSuite.addTest(test_utils("test_binning"))
     testSuite.addTest(test_utils("test_averageDark"))
+    testSuite.addTest(test_utils("test_shift"))
     return testSuite
 
 if __name__ == '__main__':

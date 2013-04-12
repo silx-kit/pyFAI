@@ -35,7 +35,7 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "14/03/2013"
 __status__ = "development"
 
-import logging, sys
+import logging, sys, types, os
 import threading
 sem = threading.Semaphore()  # global lock for image processing initialization
 import numpy
@@ -408,26 +408,39 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
     dark = None
     flat = None
     big_img = None
-    for idx, fn in enumerate(listImages):
-        logger.info("Reading %s" % fn)
-        ds = fabio.open(fn).data
+    for idx, fn in enumerate(listImages[:]):
+        if type(fn) in types.StringTypes:
+            logger.info("Reading %s" % fn)
+            ds = fabio.open(fn).data
+        else:
+            ds = fn
+            fn = "numpy_array"
+            listImages[idx] = fn
         logger.debug("Intensity range for %s is %s --> %s", fn, ds.min(), ds.max())
         shape = ds.shape
         if sumImg is None:
             sumImg = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
-        if dark is None:
-            if darks:
-                dark = averageDark([fabio.open(f).data for f in darks], center_method="mean", cutoff=4)
-            else:
-                dark = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
-        if flat is None:
-            if flats:
-                flat = averageDark([fabio.open(f).data for f in flats], center_method="mean", cutoff=4)
-                if correct_flat_from_dark:
-                    flat -= dark
-                flat[flats <= 0 ] = 1.0
-            else:
-                flat = numpy.ones((shape[0], shape[1]), dtype=numpy.float32)
+        if darks is not None:
+            if "ndim" in dir(darks) and darks.ndim == 3:
+                dark = averageDark(darks, center_method="mean", cutoff=4)
+            elif ("__len__" in dir(darks)) and (type(darks[0]) in types.StringTypes):
+                dark = averageDark([fabio.open(f).data for f in darks if os.path.exists(f)], center_method="mean", cutoff=4)
+            elif ("__len__" in dir(darks)) and ("ndim" in dir(darks[0])) and (darks[0].ndim == 2):
+                dark = averageDark(darks, center_method="mean", cutoff=4)
+        else:
+            dark = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
+        if flats is not None:
+            if "ndim" in dir(flats) and flats.ndim == 3:
+                flat = averageDark(flats, center_method="mean", cutoff=4)
+            elif ("__len__" in dir(flats)) and (type(dark[0]) in types.StringTypes):
+                flat = averageDark([fabio.open(f).data for f in flats if os.path.exists(f)], center_method="mean", cutoff=4)
+            elif ("__len__" in dir(flats)) and ("ndim" in dir(flats[0])) and (flats[0].ndim == 2):
+                flat = averageDark(flats, center_method="mean", cutoff=4)
+            if correct_flat_from_dark:
+                flat -= dark
+            flat[flats <= 0 ] = 1.0
+        else:
+            flat = numpy.ones((shape[0], shape[1]), dtype=numpy.float32)
         correctedImg = (removeSaturatedPixel(ds.astype(numpy.float32), threshold, minimum, maximum) - dark) / flat
         if filter_ == "max":
             sumImg = numpy.maximum(correctedImg, sumImg)
