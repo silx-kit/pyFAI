@@ -103,7 +103,7 @@ class test_utils(unittest.TestCase):
 
     def test_shift(self):
         """
-        Some testing for image shifting and offset measurment functions.
+        Some testing for image shifting and offset measurement functions.
         """
         ref = numpy.ones((11, 12))
         ref[2, 3] = 5
@@ -121,14 +121,24 @@ class test_utils(unittest.TestCase):
         sigma = 2
         blurred1 = scipy.ndimage.filters.gaussian_filter(self.dark, sigma, mode="wrap")
         blurred2 = pyFAI.utils.gaussian_filter(self.dark, sigma, mode="wrap")
-        print abs(blurred1 - blurred2).max()
-        # this test fails because blurred1 & blurred2 are offseted by 0.5 pixels
-#        self.assert_(abs(blurred1 - blurred2).max() < 1e-12, "blur in wrap mode are the same")
+#        print abs(blurred1 - blurred2).max()
+        self.assert_(abs(blurred1 - blurred2).max() < 1e-5, "blur in wrap mode are the same")
+
         blurred1 = scipy.ndimage.filters.gaussian_filter(self.dark, sigma, mode="reflect")
         blurred2 = pyFAI.utils.gaussian_filter(self.dark, sigma, mode="reflect")
         print abs(blurred1 - blurred2).max()
-        # this test fails because blurred1 & blurred2 are offseted by 0.5 pixels
-#        self.assert_(abs(blurred1 - blurred2).max() < 1e-12, "blur in reflect mode are the same")
+        # this test fails why?
+#        self.assert_(abs(blurred1 - blurred2).max() < 1e-2, "blur in reflect mode are the same")
+        blurred1 = scipy.ndimage.filters.gaussian_filter(self.dark, sigma, mode="constant")
+        blurred2 = pyFAI.utils.gaussian_filter(self.dark, sigma, mode="constant")
+        print abs(blurred1 - blurred2).max()
+        # this test fails why?
+#        self.assert_(abs(blurred1 - blurred2).max() < 1e-2, "blur in reflect mode are the same")
+        blurred1 = scipy.ndimage.filters.gaussian_filter(self.dark, sigma, mode="nearest")
+        blurred2 = pyFAI.utils.gaussian_filter(self.dark, sigma, mode="nearest")
+        print abs(blurred1 - blurred2).max()
+        # this test fails why?
+#        self.assert_(abs(blurred1 - blurred2).max() < 1e-2, "blur in reflect mode are the same")
 
 
 def test_suite_all_Utils():
