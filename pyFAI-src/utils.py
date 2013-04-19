@@ -49,7 +49,7 @@ import scipy.ndimage.filters
 logger = logging.getLogger("pyFAI.utils")
 import time
 timelog = logging.getLogger("pyFAI.timeit")
-from scipy.signal           import gaussian
+
 cu_fft = None  # No cuda here !
 if sys.platform != "win32":
     WindowsError = RuntimeError
@@ -71,6 +71,24 @@ def deprecated(func):
         logger.warning("%s is Deprecated !!! %s" % (func.func_name, os.linesep.join([""] + traceback.format_stack()[:-1])))
         return func(*arg, **kw)
     return wrapper
+
+def gaussian(M, std):
+    """
+    Return a Gaussian window of length M with standard-deviation std.
+
+    This differs from the scipy.signal.gaussian implementation as:
+    - The default for sym=False (needed for gaussian filtering without shift)
+    - This implementation is normalized
+
+    @param M: length of the windows (int)
+    @param std: standatd deviation sigma
+
+    The FWHM is 2*numpy.sqrt(2 * numpy.pi)*std
+
+    """
+    x = numpy.arange(M) - M / 2.0
+    return numpy.exp(-(x / std) ** 2 / 2.0) / std / numpy.sqrt(2 * numpy.pi)
+
 
 def float_(val):
     """
@@ -155,8 +173,8 @@ def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0):
 
             g0 = gaussian(s0, k0)
             g1 = gaussian(s1, k1)
-            g0 = numpy.concatenate((g0[s0 // 2:], g0[:s0 // 2]))
-            g1 = numpy.concatenate((g1[s1 // 2:], g1[:s1 // 2]))
+            g0 = numpy.concatenate((g0[s0 // 2:], g0[:s0 // 2]))  # faster than fftshift
+            g1 = numpy.concatenate((g1[s1 // 2:], g1[:s1 // 2]))  # faster than fftshift
             g2 = numpy.outer(g0, g1)
             g2fft = numpy.zeros((s0, s1), dtype=complex)
             fftIn[:, :] = g2.astype(complex)
