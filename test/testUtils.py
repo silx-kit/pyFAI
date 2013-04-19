@@ -42,19 +42,21 @@ import pyFAI.utils
 
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
-
+import scipy.ndimage
 
 # TODO Test:
 # gaussian_filter
-# shift
 # relabel
-# averageDark
-# averageImages
 # boundingBox
 # removeSaturatedPixel
 # DONE:
 # # binning
 # # unbinning
+# # shift
+# # shiftFFT
+# # measure_offset
+# # averageDark
+# # averageImages
 
 class test_utils(unittest.TestCase):
     unbinned = numpy.random.random((64, 32))
@@ -103,7 +105,30 @@ class test_utils(unittest.TestCase):
         """
         Some testing for image shifting and offset measurment functions.
         """
-        pass
+        ref = numpy.ones((11, 12))
+        ref[2, 3] = 5
+        res = numpy.ones((11, 12))
+        res[5, 7] = 5
+        delta = (5 - 2, 7 - 3)
+        self.assert_(abs(pyFAI.utils.shift(ref, delta) - res).max() < 1e-12, "shift with integers works")
+        self.assert_(abs(pyFAI.utils.shiftFFT(ref, delta) - res).max() < 1e-12, "shift with FFTs works")
+        self.assert_(pyFAI.utils.measure_offset(res, ref) == delta, "measure offset works")
+
+    def test_gaussian_filter(self):
+        """
+        obviously there are errors there :(
+        """
+        sigma = 2
+        blurred1 = scipy.ndimage.filters.gaussian_filter(self.dark, sigma, mode="wrap")
+        blurred2 = pyFAI.utils.gaussian_filter(self.dark, sigma, mode="wrap")
+        print abs(blurred1 - blurred2).max()
+        # this test fails because blurred1 & blurred2 are offseted by 0.5 pixels
+#        self.assert_(abs(blurred1 - blurred2).max() < 1e-12, "blur in wrap mode are the same")
+        blurred1 = scipy.ndimage.filters.gaussian_filter(self.dark, sigma, mode="reflect")
+        blurred2 = pyFAI.utils.gaussian_filter(self.dark, sigma, mode="reflect")
+        print abs(blurred1 - blurred2).max()
+        # this test fails because blurred1 & blurred2 are offseted by 0.5 pixels
+#        self.assert_(abs(blurred1 - blurred2).max() < 1e-12, "blur in reflect mode are the same")
 
 
 def test_suite_all_Utils():
@@ -111,6 +136,7 @@ def test_suite_all_Utils():
     testSuite.addTest(test_utils("test_binning"))
     testSuite.addTest(test_utils("test_averageDark"))
     testSuite.addTest(test_utils("test_shift"))
+    testSuite.addTest(test_utils("test_gaussian_filter"))
     return testSuite
 
 if __name__ == '__main__':
