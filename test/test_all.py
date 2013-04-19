@@ -53,6 +53,7 @@ from testBilinear             import test_suite_all_bilinear
 from testDistortion           import test_suite_all_distortion
 from testFlat                 import test_suite_all_Flat
 from testUtils                import test_suite_all_Utils
+from testPolarization         import test_suite_all_Polarization()
 
 def test_suite_all():
     testSuite = unittest.TestSuite()
