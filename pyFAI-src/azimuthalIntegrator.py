@@ -183,7 +183,7 @@ class AzimuthalIntegrator(Geometry):
         @type dummy: float
         @param delta_dumy: precision of dummy pixels
         @type delta_dummy: float
-        @param mode: can be "normal" or "numpy" (inverted) or "where" applied to the mask 
+        @param mode: can be "normal" or "numpy" (inverted) or "where" applied to the mask
         @type mode: str
 
         @return: the new mask
@@ -241,7 +241,7 @@ class AzimuthalIntegrator(Geometry):
 
     def xrpd_numpy(self, data, nbPt, filename=None, correctSolidAngle=True,
                    tthRange=None, mask=None, dummy=None, delta_dummy=None,
-                   polarization_factor=0, dark=None, flat=None):
+                   polarization_factor=None, dark=None, flat=None):
         """
         Calculate the powder diffraction pattern from a set of data,
         an image.
@@ -325,7 +325,7 @@ class AzimuthalIntegrator(Geometry):
             data /= flat
         if correctSolidAngle:
             data /= self.solidAngleArray(data.shape)
-        if polarization_factor:
+        if polarization_factor is not None:
             data /= self.polarization(data.shape, factor=polarization_factor)
         data = data[mask]
         if tthRange is not None:
@@ -348,7 +348,7 @@ class AzimuthalIntegrator(Geometry):
 
     def xrpd_cython(self, data, nbPt, filename=None, correctSolidAngle=True,
                     tthRange=None, mask=None, dummy=None, delta_dummy=None,
-                    polarization_factor=0, dark=None, flat=None,
+                    polarization_factor=None, dark=None, flat=None,
                     pixelSize=None):
         """
         Calculate the powder diffraction pattern from a set of data,
@@ -386,7 +386,7 @@ class AzimuthalIntegrator(Geometry):
             data /= flat
         if correctSolidAngle:
             data /= self.solidAngleArray(data.shape)
-        if polarization_factor != 0:
+        if polarization_factor is not None:
             data /= self.polarization(data.shape, factor=polarization_factor)
         data = data[mask]
         if tthRange is not None:
@@ -407,7 +407,7 @@ class AzimuthalIntegrator(Geometry):
     def xrpd_splitBBox(self, data, nbPt, filename=None, correctSolidAngle=True,
                        tthRange=None, chiRange=None, mask=None,
                        dummy=None, delta_dummy=None,
-                       polarization_factor=0, dark=None, flat=None):
+                       polarization_factor=None, dark=None, flat=None):
         """
         Calculate the powder diffraction pattern from a set of data,
         an image.
@@ -522,10 +522,10 @@ class AzimuthalIntegrator(Geometry):
             solidangle = self.solidAngleArray(data.shape)
         else:
             solidangle = None
-        if polarization_factor == 0:
+        if polarization_factor is None :
             polarization = None
         else:
-            polarization = self.polarization(data.shape)
+            polarization = self.polarization(data.shape, polarization_factor)
         if mask is None:
             mask = self.mask
         # outPos, outMerge, outData, outCount
@@ -554,7 +554,7 @@ class AzimuthalIntegrator(Geometry):
                         filename=None, correctSolidAngle=True,
                         tthRange=None, chiRange=None, mask=None,
                         dummy=None, delta_dummy=None,
-                        polarization_factor=0, dark=None, flat=None):
+                        polarization_factor=None, dark=None, flat=None):
         """
         Calculate the powder diffraction pattern from a set of data,
         an image.
@@ -654,10 +654,11 @@ class AzimuthalIntegrator(Geometry):
             solidangle = self.solidAngleArray(data.shape)
         else:
             solidangle = None
-        if polarization_factor != 0:
-            polarization = self.polarization(data.shape, polarization_factor)
-        else:
+        if polarization_factor is None:
             polarization = None
+        else:
+            polarization = self.polarization(data.shape, polarization_factor)
+
         if tthRange is not None:
             tthRange = tuple([numpy.deg2rad(i) for i in tthRange])
         if chiRange is not None:
@@ -871,7 +872,7 @@ class AzimuthalIntegrator(Geometry):
             tthAxis, I, _, = self._ocl_integrator.execute(data)
         tthAxis = rad2deg(tthAxis)
         if filename:
-            self.save1D(filename, tthAxis, I, None, "2th_deg")#, dark, flat, polarization_factor)
+            self.save1D(filename, tthAxis, I, None, "2th_deg")  # , dark, flat, polarization_factor)
         return tthAxis, I
 
     def setup_LUT(self, shape, nbPt, mask=None,
@@ -1046,9 +1047,9 @@ class AzimuthalIntegrator(Geometry):
         The *safe* parameter is specific to the LUT implementation,
         you can set it to false if you think the LUT calculated is
         already the correct one (setup, mask, 2theta/chi range).
-        
+
         TODO: replace with inegrate1D
-        
+
         """
 
         shape = data.shape
@@ -1164,7 +1165,7 @@ class AzimuthalIntegrator(Geometry):
                     dummy=dummy, delta_dummy=delta_dummy)
         tthAxis = 180.0 * self._lut_integrator.outPos / pi
         if filename:
-            self.save1D(filename, tthAxis, I, None, "2th_deg")#, dark, flat, polarization_factor)
+            self.save1D(filename, tthAxis, I, None, "2th_deg")  # , dark, flat, polarization_factor)
         return tthAxis, I
 
     def xrpd_LUT_OCL(self, data, nbPt, filename=None, correctSolidAngle=True,
@@ -1377,7 +1378,7 @@ class AzimuthalIntegrator(Geometry):
                     solidAngle_checksum=solid_angle_crc,
                     dummy=dummy, delta_dummy=delta_dummy)
         if filename:
-            self.save1D(filename, tthAxis, I, None, "2th_deg")#dark, flat, polarization
+            self.save1D(filename, tthAxis, I, None, "2th_deg")  # dark, flat, polarization
         return tthAxis, I
 
     def xrpd2_numpy(self, data, nbPt2Th, nbPtChi=360,
@@ -1488,7 +1489,7 @@ class AzimuthalIntegrator(Geometry):
                                                   range=[chiRange, tthRange])
         I = val / self._nbPixCache[bins]
         if filename:
-            self.save2D(filename, I, bins2Th, binsChi)#, dark, flat, polarization_factor)
+            self.save2D(filename, I, bins2Th, binsChi)  # , dark, flat, polarization_factor)
 
         return I, bins2Th, binsChi
 
@@ -1602,14 +1603,14 @@ class AzimuthalIntegrator(Geometry):
         bins2Th = rad2deg(bins2Th)
         binsChi = rad2deg(binsChi)
         if filename:
-            self.save2D(filename, I, bins2Th, binsChi)#, dark, flat, polarization_factor)
+            self.save2D(filename, I, bins2Th, binsChi)  # , dark, flat, polarization_factor)
         return I, bins2Th, binsChi
 
     def xrpd2_splitBBox(self, data, nbPt2Th, nbPtChi=360,
                         filename=None, correctSolidAngle=True,
                         tthRange=None, chiRange=None, mask=None,
                         dummy=None, delta_dummy=None,
-                        polarization_factor=0, dark=None, flat=None):
+                        polarization_factor=None, dark=None, flat=None):
         """
         Calculate the 2D powder diffraction pattern (2Theta,Chi) from
         a set of data, an image
@@ -1717,10 +1718,11 @@ class AzimuthalIntegrator(Geometry):
             solidangle = self.solidAngleArray(data.shape)
         else:
             solidangle = None
-        if polarization_factor:
-            polarization = self.polarization(data.shape, polarization_factor)
-        else:
+        if polarization_factor is None:
             polarization = None
+        else:
+            polarization = self.polarization(data.shape, polarization_factor)
+
         I, bins2Th, binsChi, _, _ = splitBBox.histoBBox2d(weights=data,
                                   pos0=tth,
                                   delta_pos0=dtth,
@@ -1746,7 +1748,7 @@ class AzimuthalIntegrator(Geometry):
                          filename=None, correctSolidAngle=True,
                          tthRange=None, chiRange=None, mask=None,
                          dummy=None, delta_dummy=None,
-                         polarization_factor=0, dark=None, flat=None):
+                         polarization_factor=None, dark=None, flat=None):
         """
         Calculate the 2D powder diffraction pattern (2Theta,Chi) from
         a set of data, an image
@@ -1848,10 +1850,10 @@ class AzimuthalIntegrator(Geometry):
             solidangle = self.solidAngleArray(data.shape)
         else:
             solidangle = None
-        if polarization_factor != 0:
-            polarization = self.polarization(data.shape, polarization_factor)
-        else:
+        if polarization_factor is None:
             polarization = None
+        else:
+            polarization = self.polarization(data.shape, polarization_factor)
 
         if tthRange is not None:
             tthRange = tuple([numpy.deg2rad(i) for i in tthRange])
@@ -1905,7 +1907,7 @@ class AzimuthalIntegrator(Geometry):
                     variance=None, error_model=None,
                     radial_range=None, azimuth_range=None,
                     mask=None, dummy=None, delta_dummy=None,
-                    polarization_factor=0, dark=None, flat=None,
+                    polarization_factor=None, dark=None, flat=None,
                     method="lut", unit=units.Q, safe=True):
         """
         Calculate the azimuthal integrated Saxs curve in q(nm^-1) by
@@ -1976,10 +1978,11 @@ class AzimuthalIntegrator(Geometry):
             solidangle = self.solidAngleArray(shape)
         else:
             solidangle = None
-        if polarization_factor != 0:
-            polarization = self.polarization(shape, float(polarization_factor))
-        else:
+        if polarization_factor is None:
             polarization = None
+        else:
+            polarization = self.polarization(shape, float(polarization_factor))
+
         if dark is None:
             dark = self.darkcurrent
         if flat is None:
@@ -2289,7 +2292,7 @@ class AzimuthalIntegrator(Geometry):
                     filename=None, correctSolidAngle=True, variance=None,
                     error_model=None, radial_range=None, azimuth_range=None,
                     mask=None, dummy=None, delta_dummy=None,
-                    polarization_factor=0, dark=None, flat=None,
+                    polarization_factor=None, dark=None, flat=None,
                     method="bbox", unit=units.Q, safe=True):
         """
         Calculate the azimuthal regrouped 2d image in q(nm^-1)/deg by default
@@ -2358,10 +2361,11 @@ class AzimuthalIntegrator(Geometry):
             solidangle = self.solidAngleArray(shape)
         else:
             solidangle = None
-        if polarization_factor != 0:
-            polarization = self.polarization(shape, polarization_factor)
-        else:
+        if polarization_factor is None:
             polarization = None
+        else:
+            polarization = self.polarization(shape, polarization_factor)
+
         if dark is None:
             dark = self.darkcurrent
         if flat is None:
@@ -2657,7 +2661,7 @@ class AzimuthalIntegrator(Geometry):
              correctSolidAngle=True, variance=None,
              error_model=None, qRange=None, chiRange=None,
              mask=None, dummy=None, delta_dummy=None,
-             polarization_factor=0, dark=None, flat=None,
+             polarization_factor=None, dark=None, flat=None,
              method="bbox", unit=units.Q):
         """
         Calculate the azimuthal integrated Saxs curve in q in nm^-1.
@@ -2718,7 +2722,7 @@ class AzimuthalIntegrator(Geometry):
         else:
             return out
 
-    def makeHeaders(self, hdr="#", dark=None, flat=None, polarization_factor=0):
+    def makeHeaders(self, hdr="#", dark=None, flat=None, polarization_factor=None):
         """
         @param hdr: string used as comment in the header
         @type hdr: str
@@ -2778,7 +2782,7 @@ class AzimuthalIntegrator(Geometry):
                     f.write(os.linesep.join(["%14.6e  %14.6e %14.6e" % (t, i, s) for t, i, s in zip(dim1, I, error)]))
                 f.write(os.linesep)
 
-    def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH, dark=None, flat=None, polarization_factor=0):
+    def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH, dark=None, flat=None, polarization_factor=None):
         dim1_unit = units.to_unit(dim1_unit)
         header_keys = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "chi_min", "chi_max", dim1_unit.REPR + "_min", dim1_unit.REPR + "_max", "pixelX", "pixelY",
                        "dark", "flat", "polarization"]
@@ -2792,9 +2796,9 @@ class AzimuthalIntegrator(Geometry):
                   "chi_max": str(dim2.max()),
                   dim1_unit.REPR + "_min": str(dim1.min()),
                   dim1_unit.REPR + "_max": str(dim1.max()),
-                  "pixelX": str(self.pixel2), # this is not a bug ... most people expect dim1 to be X
-                  "pixelY": str(self.pixel1), # this is not a bug ... most people expect dim2 to be Y
-                  "polarization": polarization_factor}
+                  "pixelX": str(self.pixel2),  # this is not a bug ... most people expect dim1 to be X
+                  "pixelY": str(self.pixel1),  # this is not a bug ... most people expect dim2 to be Y
+                  "polarization": str(polarization_factor)}
 
         if self.splineFile:
             header["spline"] = str(self.splineFile)
@@ -2869,7 +2873,7 @@ class AzimuthalIntegrator(Geometry):
 
     def set_darkfiles(self, files=None, method="mean"):
         """
-        Set the dark current from one or mutliple files, avaraged according to the method provided 
+        Set the dark current from one or mutliple files, avaraged according to the method provided
         """
         if type(files) in types.StringTypes:
             files = [i.strip for i in files.split(",")]
