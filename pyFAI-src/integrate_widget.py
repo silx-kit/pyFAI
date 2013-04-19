@@ -101,7 +101,7 @@ class AIWidget(QtGui.QWidget):
                      "dummy": None,
                      "delta_dummy": None,
                      "method": "lut",
-                     "polarization_factor":0,
+                     "polarization_factor":None,
                      "filename": None,
                      "safe": False,
                      }
@@ -130,6 +130,8 @@ class AIWidget(QtGui.QWidget):
                     kwarg["delta_dummy"] = None
             if bool(self.do_polarization.isChecked()):
                 kwarg["polarization_factor"] = float(self.polarization_factor.value())
+            else:
+                kwarg["polarization_factor"] = None
 
             kwarg["nbPt_rad"] = int(str(self.rad_pt.text()).strip())
             if self.do_2D.isChecked():
