@@ -96,7 +96,7 @@ class Geometry(object):
     then axis 2 and finally around axis 3:
 
     R = rotM3.rotM2.rotM1
-    
+
     R = {{cos[rot2] cos[rot3],cos[rot3] sin[rot1] sin[rot2]-cos[rot1] sin[rot3],cos[rot1] cos[rot3] sin[rot2]+sin[rot1] sin[rot3]},
           {cos[rot2] sin[rot3],cos[rot1] cos[rot3]+sin[rot1] sin[rot2] sin[rot3],-cos[rot3] sin[rot1]+cos[rot1] sin[rot2] sin[rot3]},
           {-sin[rot2],cos[rot2] sin[rot1],cos[rot1] cos[rot2]}}
@@ -104,15 +104,15 @@ class Geometry(object):
     In Python notation:
 
     R.x1 = [cos(rot2)*cos(rot3),cos(rot2)*sin(rot3),-sin(rot2)]
-    
+
     R.x2 = [cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3),cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3), cos(rot2)*sin(rot1)]
-    
+
     R.x3 = [cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3),-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3), cos(rot1)*cos(rot2)]
 
     * Coordinates of the Point of Normal Incidence:
-    
+
       PONI = R.{0,0,L}
-      
+
       PONI = [L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3)),
                    L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)),L*cos(rot1)*cos(rot2)]
 
@@ -120,8 +120,8 @@ class Geometry(object):
       meters. Detector is at z=L
 
       P={d1,d2,L}
-      
-      R.P = [t1, t2, t3] 
+
+      R.P = [t1, t2, t3]
       t1 = R.P.x1 = d1*cos(rot2)*cos(rot3) + d2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) + L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3))
       t2 = R.P.x2 = d1*cos(rot2)*sin(rot3)  + d2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3)) + L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3))
       t3 = R.P.x3 = d2*cos(rot2)*sin(rot1) - d1*sin(rot2) + L*cos(rot1)*cos(rot2)
@@ -135,9 +135,9 @@ class Geometry(object):
                         d2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3))),2))
 
     *  cos(2theta) is defined as (R.P component along x3) over the distance from origin to data point |R.P|
-    
+
     tth = ArcCos [-(R.P).x3/|R.P|]
-    
+
     tth = Arccos((-(L*cos(rot1)*cos(rot2)) - d2*cos(rot2)*sin(rot1) + d1*sin(rot2))/
                         sqrt(pow(Abs(L*cos(rot1)*cos(rot2) + d2*cos(rot2)*sin(rot1) - d1*sin(rot2)),2) +
                           pow(Abs(d1*cos(rot2)*cos(rot3) + d2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) +
@@ -158,12 +158,12 @@ class Geometry(object):
       calculation
 
      chi = ArcTan[((R.P).x1) / ((R.P).x2)]
-     
+
      chi = ArcTan2(d1*cos(rot2)*cos(rot3) + d2*(cos(rot3)*sin(rot1)*sin(rot2) - cos(rot1)*sin(rot3)) +
                             L*(cos(rot1)*cos(rot3)*sin(rot2) + sin(rot1)*sin(rot3)),
                           d1*cos(rot2)*sin(rot3) + L*(-(cos(rot3)*sin(rot1)) + cos(rot1)*sin(rot2)*sin(rot3)) +
                             d2*(cos(rot1)*cos(rot3) + sin(rot1)*sin(rot2)*sin(rot3)))
-    
+
     """
 
     def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0,
@@ -206,6 +206,7 @@ class Geometry(object):
         self._correct_solid_angle_for_spline = True
         self._sem = threading.Semaphore()
         self._polarization_factor = 0
+        self._polarization_axis_offset = 0
         self._polarization = None
         self._polarization_crc = None  # checksum associated with _polarization
 
@@ -321,7 +322,7 @@ class Geometry(object):
         @type d2: scalar or array of scalar
         @return q in in nm^(-1)
         @rtype: float or array of floats.
-        
+
         """
         if not self.wavelength:
             raise RuntimeError(("Scattering vector q cannot be calculated"
@@ -356,7 +357,7 @@ class Geometry(object):
         @type d2: scalar or array of scalar
         @return r in in mm
         @rtype: float or array of floats.
-        
+
         """
         cosTilt = cos(self._rot1) * cos(self._rot2)
         directDist = self._dist / cosTilt  # in m
@@ -424,7 +425,7 @@ class Geometry(object):
         @type d2: scalar or array of scalar
         @return 2theta in radians
         @rtype: floar or array of floats.
-        
+
         """
         return self.tth(d1 - 0.5, d2 - 0.5)
 
@@ -1063,12 +1064,20 @@ class Geometry(object):
                 new[i::self._oversampling, j::self._oversampling] = myarray
         return new
 
-    def polarization(self, shape=None, factor=0.98):
+    def polarization(self, shape=None, factor=None, axis_offset=0):
         """
         Calculate the polarization correction accoding to the
         polarization factor:
 
+        If the polarization factor is None, the correction is not applied (returns 1)
+        If the polarization factor is 0 (circular polarization), the correction correspond to (1+(cos2θ)^2)/2
+        If the polarization factor is 1 (linear horizontal polarization), there is no correction in the vertical plane  and a node at 2th=90, chi=0
+        If the polarization factor is -1 (linear vertical polarization), there is no correction in the horizontal plane and a node at 2th=90, chi=90
+        If the polarization is elliptical, the polarization factor varies between -1 and +1.
+        The axis_offset parameter allows correction for the misalignement of the polarization plane (or ellipse main axis) and the the detector's X axis.
+
         @param factor: (Ih-Iv)/(Ih+Iv): varies between 0 (no polarization) and 1 (where division by 0 could occure at 2th=90, chi=0)
+        @param axis_offset: Angle between the polarization main axis and detector X direction (in radians !!!)
         @return 2D array with polarization correction array (intensity/polarisation)
         """
         if shape is None:
@@ -1076,28 +1085,29 @@ class Geometry(object):
                 raise RuntimeError(("You should provide a shape if the"
                                     " geometry is not yet initiallized"))
             shape = self._ttha.shape
-        factor = float(factor)
+
+
+        if factor is None:
+            return numpy.ones(shape, dtype=numpy.float32)
+        else:
+            factor = float(factor)
 
         if self._polarization is not None:
             with self._sem:
                 if (factor == self._polarization_factor) \
-                    and (shape == self._polarization.shape):
+                    and (shape == self._polarization.shape)\
+                    and (axis_offset == self._polarization_axis_offset):
                     return self._polarization
-        if factor == 0.0:
-            with self._sem:
-                    self._polarization = numpy.ones(shape, dtype=numpy.float32)
-                    self._polarization_factor = factor
-                    self._polarization_crc = crc32(self._polarization)
-                    return self._polarization
-        else:
-            tth = self.twoThetaArray(shape)
-            chi = self.chiArray(shape)
-            with self._sem:
-                    cos2_tth = numpy.cos(tth) ** 2
-                    self._polarization = (1 + cos2_tth - factor * numpy.cos(2 * chi) * (1 - cos2_tth)) / 2.0
-                    self._polarization_factor = factor
-                    self._polarization_crc = crc32(self._polarization)
-                    return self._polarization
+
+        tth = self.twoThetaArray(shape)
+        chi = self.chiArray(shape) + axis_offset
+        with self._sem:
+                cos2_tth = numpy.cos(tth) ** 2
+                self._polarization = ((1 + cos2_tth - factor * numpy.cos(2 * chi) * (1 - cos2_tth)) / 2.0)  # .astype(numpy.float32)
+                self._polarization_factor = factor
+                self._polarization_axis_offset = axis_offset
+                self._polarization_crc = crc32(self._polarization)
+                return self._polarization
 
     def reset(self):
         """
