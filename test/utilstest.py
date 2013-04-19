@@ -56,7 +56,9 @@ class UtilsTest(object):
     url_base = "http://forge.epn-campus.eu/attachments/download"
     #Nota https crashes with error 501 under windows.
 #    url_base = "https://forge.epn-campus.eu/attachments/download"
-    test_home = os.path.dirname(__file__)
+    test_home = os.path.dirname(os.path.abspath(__file__))
+    sem = threading.Semaphore()
+    recompiled = False
     name = "pyFAI"
     image_home = os.path.join(test_home, "testimages")
     if not os.path.isdir(image_home):
@@ -71,11 +73,15 @@ class UtilsTest(object):
         logger.info("pyFAI module was already loaded from  %s" % sys.modules["pyFAI"])
         pyFAI = None
         sys.modules.pop("pyFAI")
+
     if not os.path.isdir(pyFAI_home):
-        logger.warning("Building pyFAI to %s" % pyFAI_home)
-        p = subprocess.Popen([sys.executable, "setup.py", "build"],
-                         shell=False, cwd=os.path.dirname(test_home))
-        logger.info("subprocess ended with rc= %s" % p.wait())
+        with sem:
+            if not os.path.isdir(pyFAI_home):
+                logger.warning("Building pyFAI to %s" % pyFAI_home)
+                p = subprocess.Popen([sys.executable, "setup.py", "build"],
+                                 shell=False, cwd=os.path.dirname(test_home))
+                logger.info("subprocess ended with rc= %s" % p.wait())
+                recompiled = True
     opencl = os.path.join(os.path.dirname(test_home), "openCL")
     for clf in os.listdir(opencl):
         if clf.endswith(".cl") and clf not in os.listdir(os.path.join(pyFAI_home, "pyFAI")):
@@ -85,24 +91,28 @@ class UtilsTest(object):
     logger.info("pyFAI loaded from %s" % pyFAI.__file__)
 
 
+
     @classmethod
     def forceBuild(cls):
         """
         force the recompilation of pyFAI
         """
-        logger.info("Building pyFAI to %s" % cls.pyFAI_home)
-        if "pyFAI" in sys.modules:
-            logger.info("pyFAI module was already loaded from  %s" % sys.modules["pyFAI"])
-            pyFAI = None
-            sys.modules.pop("pyFAI")
-        recursive_delete(cls.pyFAI_home)
-        p = subprocess.Popen([sys.executable, "setup.py", "build"],
-                         shell=False, cwd=os.path.dirname(cls.test_home))
-        logger.info("subprocess ended with rc= %s" % p.wait())
-        pyFAI = imp.load_module(*((cls.name,) + imp.find_module(cls.name, [cls.pyFAI_home])))
-        sys.modules[cls.name] = pyFAI
-        logger.info("pyFAI loaded from %s" % pyFAI.__file__)
-
+        if not cls.recompiled:
+            with cls.sem:
+                if not cls.recompiled:
+                    logger.info("Building pyFAI to %s" % cls.pyFAI_home)
+                    if "pyFAI" in sys.modules:
+                        logger.info("pyFAI module was already loaded from  %s" % sys.modules["pyFAI"])
+                        pyFAI = None
+                        sys.modules.pop("pyFAI")
+                    recursive_delete(cls.pyFAI_home)
+                    p = subprocess.Popen([sys.executable, "setup.py", "build"],
+                                     shell=False, cwd=os.path.dirname(cls.test_home))
+                    logger.info("subprocess ended with rc= %s" % p.wait())
+                    pyFAI = imp.load_module(*((cls.name,) + imp.find_module(cls.name, [cls.pyFAI_home])))
+                    sys.modules[cls.name] = pyFAI
+                    logger.info("pyFAI loaded from %s" % pyFAI.__file__)
+                    cls.recompiled = True
 
     @classmethod
     def timeoutDuringDownload(cls, imagename=None):
