@@ -645,6 +645,14 @@ def shiftFFT(input_img, shift_val, method="fftw"):
     @return: shifted image
 
     """
+    # TODO: understand why this is needed !
+    if "has_fftw3" not in dir():
+        has_fftw3 = ("fftw3" in sys.modules)
+    if "has_fftw3" and ("fftw3" not in dir()):
+        fftw3 = sys.modules["fftw3"]
+    else:
+        fftw3 = None
+    print fftw3
     d0, d1 = input_img.shape
     v0, v1 = shift_val
     f0 = numpy.fft.ifftshift(numpy.arange(-d0 // 2, d0 // 2))
