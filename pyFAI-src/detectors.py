@@ -309,14 +309,15 @@ class Pilatus(Detector):
     MODULE_SIZE = (195, 487)
     MODULE_GAP = (17, 7)
     force_pixel = True
-    def __init__(self, pixel1=172e-6, pixel2=172e-6, x_offet_file=None, y_offet_file=None):
+    def __init__(self, pixel1=172e-6, pixel2=172e-6, x_offset_file=None, y_offset_file=None):
         Detector.__init__(self, pixel1, pixel2)
-        self.x_offet_file = x_offet_file
-        self.y_offet_file = y_offet_file
-        if self.x_offet_file and self.y_offet_file:
+        self.x_offset_file = x_offset_file
+        self.y_offset_file = y_offset_file
+        self._splineFile = "%s,%s" % (x_offset_file, y_offset_file)
+        if self.x_offset_file and self.y_offset_file:
             if fabio:
-                self.offset1 = fabio.open(self.y_offet_file).data
-                self.offset2 = fabio.open(self.x_offet_file).data
+                self.offset1 = fabio.open(self.y_offset_file).data
+                self.offset2 = fabio.open(self.x_offset_file).data
             else:
                 logging.error("FabIO is not available: no distortion correction for Pilatus detectors, sorry.")
                 self.offset1 = None
@@ -326,8 +327,34 @@ class Pilatus(Detector):
             self.offset2 = None
 
     def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
+        txt = "Detector %s\t PixelSize= %.3e, %.3e m" % \
                 (self.name, self.pixel1, self.pixel2)
+        if self.x_offset_file:
+            txt += "\t delta_x= %s" % self.x_offset_file
+        if self.y_offset_file:
+            txt += "\t delta_y= %s" % self.y_offset_file
+        return txt
+
+    def get_splineFile(self):
+        return self._splineFile
+
+    def set_splineFile(self, splineFile=None):
+        "In this case splinefile is a couple filenames"
+        if splineFile is not None:
+            self._splineFile = splineFile
+            files = splineFile.split(",")
+            self.x_offset_file = [os.path.abspath(i) for i in files if "x" in i.lower()][0]
+            self.y_offset_file = [os.path.abspath(i) for i in files if "y" in i.lower()][0]
+            if fabio:
+                self.offset1 = fabio.open(self.y_offset_file).data
+                self.offset2 = fabio.open(self.x_offset_file).data
+            else:
+                logging.error("FabIO is not available: no distortion correction for Pilatus detectors, sorry.")
+                self.offset1 = None
+                self.offset2 = None
+        else:
+            self._splineFile = None
+    splineFile = property(get_splineFile, set_splineFile)
 
     def calc_mask(self):
         """
