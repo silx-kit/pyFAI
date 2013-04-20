@@ -13,6 +13,7 @@ Contents:
 
    pyFAI
    api/modules
+   project
 
 
 Indices and tables
