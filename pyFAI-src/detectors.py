@@ -313,7 +313,6 @@ class Pilatus(Detector):
         Detector.__init__(self, pixel1, pixel2)
         self.x_offset_file = x_offset_file
         self.y_offset_file = y_offset_file
-        self._splineFile = "%s,%s" % (x_offset_file, y_offset_file)
         if self.x_offset_file and self.y_offset_file:
             if fabio:
                 self.offset1 = fabio.open(self.y_offset_file).data
@@ -336,12 +335,12 @@ class Pilatus(Detector):
         return txt
 
     def get_splineFile(self):
-        return self._splineFile
+        if self.x_offset_file and self.y_offset_file:
+            return "%s,%s" % (self.x_offset_file, self.y_offset_file)
 
     def set_splineFile(self, splineFile=None):
         "In this case splinefile is a couple filenames"
         if splineFile is not None:
-            self._splineFile = splineFile
             try:
                 files = splineFile.split(",")
                 self.x_offset_file = [os.path.abspath(i) for i in files if "x" in i.lower()][0]
@@ -412,8 +411,8 @@ class Pilatus(Detector):
                 delta2 = self.offset2[d1n, d2n] / 100.0
             else:
                 if d1.shape == self.offset1.shape:
-                    delta1 = self.offset1
-                    delta2 = self.offset2
+                    delta1 = self.offset1 / 100.0  # Offsets are in percent of pixel
+                    delta2 = self.offset2 / 100.0
                 elif d1.shape[0] > self.offset1.shape[0]:  # probably working with corners
                     s0, s1 = self.offset1.shape
                     delta1 = numpy.zeros(d1.shape, dtype=numpy.int32)  # this is the natural type for pilatus CBF
