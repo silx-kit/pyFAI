@@ -325,6 +325,7 @@ decrease the value if arcs are mixed together.""", default=None)
         paramfile = self.basename + ".poni"
         if os.path.isfile(paramfile):
             self.geoRef.load(paramfile)
+
         print self.geoRef
         previous = sys.maxint
         finished = False

@@ -342,9 +342,14 @@ class Pilatus(Detector):
         "In this case splinefile is a couple filenames"
         if splineFile is not None:
             self._splineFile = splineFile
-            files = splineFile.split(",")
-            self.x_offset_file = [os.path.abspath(i) for i in files if "x" in i.lower()][0]
-            self.y_offset_file = [os.path.abspath(i) for i in files if "y" in i.lower()][0]
+            try:
+                files = splineFile.split(",")
+                self.x_offset_file = [os.path.abspath(i) for i in files if "x" in i.lower()][0]
+                self.y_offset_file = [os.path.abspath(i) for i in files if "y" in i.lower()][0]
+            except Exception as error:
+                logger.error("set_splineFile with %s gave error: %s" % (splineFile, error))
+                self.x_offset_file = self.y_offset_file = self.offset1 = self.offset2 = None
+                return
             if fabio:
                 self.offset1 = fabio.open(self.y_offset_file).data
                 self.offset2 = fabio.open(self.x_offset_file).data
@@ -401,18 +406,20 @@ class Pilatus(Detector):
             delta1 = delta2 = 0.
         else:
             if d2.ndim == 1:
-                delta1 = self.offset1[d1, d2] / 100.0  # Offsets are in percent of pixel
-                delta2 = self.offset2[d1, d2] / 100.0
+                d1n = d1.astype(numpy.int32)
+                d2n = d2.astype(numpy.int32)
+                delta1 = self.offset1[d1n, d2n] / 100.0  # Offsets are in percent of pixel
+                delta2 = self.offset2[d1n, d2n] / 100.0
             else:
                 if d1.shape == self.offset1.shape:
                     delta1 = self.offset1
                     delta2 = self.offset2
                 elif d1.shape[0] > self.offset1.shape[0]:  # probably working with corners
                     s0, s1 = self.offset1.shape
-                    delta1 = numpy.zeros(d1.shape, dtype=numpy.int32) #this is the natural type for pilatus CBF
+                    delta1 = numpy.zeros(d1.shape, dtype=numpy.int32)  # this is the natural type for pilatus CBF
                     delta2 = numpy.zeros(d2.shape, dtype=numpy.int32)
-                    delta1[:s0, :s1] = offset1
-                    delta2[:s0, :s1] = offset2
+                    delta1[:s0, :s1] = self.offset1
+                    delta2[:s0, :s1] = self.offset2
                     mask = numpy.where(delta1[-s0:, :s1] == 0)
                     delta1[-s0:, :s1][mask] = self.offset1[mask]
                     delta2[-s0:, :s1][mask] = self.offset2[mask]
@@ -611,7 +618,7 @@ class Perkin(Detector):
     def __init__(self, pixel=200e-6):
         Detector.__init__(self, pixel, pixel)
         self.name = "Perkin detector"
-        self.max_shape = (2048,2048)
+        self.max_shape = (2048, 2048)
 
 
 ALL_DETECTORS = {"pilatus1m": Pilatus1M,
