@@ -649,7 +649,7 @@ def shiftFFT(input_img, shift_val, method="fftw"):
     if "has_fftw3" not in dir():
         has_fftw3 = ("fftw3" in sys.modules)
     if "has_fftw3" and ("fftw3" not in dir()):
-        fftw3 = sys.modules["fftw3"]
+        fftw3 = sys.modules.get("fftw3")
     else:
         fftw3 = None
     print fftw3
