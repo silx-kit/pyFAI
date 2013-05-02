@@ -62,11 +62,24 @@ class GeometryRefinement(AzimuthalIntegrator):
         @param data: ndarray float64 shape = n, 3
             col0: pos in dim0 (in pixels)
             col1: pos in dim1 (in pixels)
-            col2: associated tth value (in rad)
+            col2: ring index in dSpacing file
+        @param dist: guessed sample-detector distance (optional, in m)
+        @param poni1: guessed PONI coordinate along the Y axis (optional, in m)
+        @param poni2: guessed PONI coordinate along the X axis (optional, in m)
+        @param rot1: guessed tilt of the detector around the Y axis (optional, in rad)
+        @param rot2: guessed tilt of the detector around the X axis (optional, in rad)
+        @param rot3: guessed tilt of the detector around the incoming beam axis (optional, in rad)
+        @param pixel1: Pixel size along the vertical direction of the detector (in m), almost mandatory
+        @param pixel2: Pixel size along the horizontal direction of the detector (in m), almost mandatory
+        @param splineFile: file describing the detector as 2 cubic splines. Replaces pixel1 & pixel2
+        @param detector: name of the detector or Detector instance. Replaces splineFile, pixel1 & pixel2
+        @param wavelength: wavelength in m (1.54e-10)
+        @param dSpacing: filename or list or array or vector containing the d-spacing (in Angstrom)
 
-        @param detector: name of the detector or Detector instance.
         """
         self.data = numpy.array(data, dtype="float64")
+        if (pixel1 is None) and (pixel2 is None) and (splineFile is None) and (detector is None):
+            raise RuntimeError("Setting up the geometry refinement without knowing the detector makes little sense")
         AzimuthalIntegrator.__init__(self, dist, 0, 0,
                                      rot1, rot2, rot3,
                                      pixel1, pixel2, splineFile, detector, wavelength=wavelength)
@@ -103,7 +116,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         """
         Poni can be guessed by the centroid of the ring with lowest 2Theta
         """
-        tth = self.data[:, 2]
+        tth = self.calc_2th(self.data[:, 2], self.wavelength)
         asrt = tth.argsort()
         tth = tth[asrt]
         srtdata = self.data[asrt]
