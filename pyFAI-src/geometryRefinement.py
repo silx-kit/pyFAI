@@ -116,7 +116,10 @@ class GeometryRefinement(AzimuthalIntegrator):
         """
         Poni can be guessed by the centroid of the ring with lowest 2Theta
         """
-        tth = self.calc_2th(self.data[:, 2], self.wavelength)
+        if "dSpacing" in dir(self):
+            tth = self.calc_2th(self.data[:, 2], self.wavelength)
+        else:  # assume rings are in decreasing dSpacing in the file
+            tth = self.data[:, 2]
         asrt = tth.argsort()
         tth = tth[asrt]
         srtdata = self.data[asrt]
