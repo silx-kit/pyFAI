@@ -36,6 +36,7 @@ include scripts/pyFAI-calib
 include scripts/pyFAI-recalib
 include scripts/pyFAI-saxs
 include scripts/pyFAI-waxs
+include scripts/pyFAI-average
 include scripts/check_calib
 include scripts/diff_tomo
 
