@@ -33,6 +33,7 @@ __status__ = "beta"
 __docformat__ = 'restructuredtext'
 
 import os
+import time
 import threading
 import logging
 import types
@@ -798,6 +799,7 @@ class Geometry(object):
             with open(filename, "a") as f:
                 f.write(("# Nota: C-Order, 1 refers to the Y axis,"
                          " 2 to the X axis %s") % os.linesep)
+                f.write("# Calibration done at %s" % time.ctime())
                 if self.detector.name != "Detector":
                     f.write("Detector: %s%s" % (self.detector.name,
                                                 os.linesep))
