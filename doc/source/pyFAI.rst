@@ -203,4 +203,13 @@ Acknowledgments
 Porting pyFAI to GPU would have not been possible without
 the financial support of LinkSCEEM-2 (RI-261600).
 
+References:
+-----------
 
+- The philosophy of pyFAI is described in the proceedings of SRI2012:
+  doi:10.1088/1742-6596/425/20/202012
+  http://iopscience.iop.org/1742-6596/425/20/202012/
+
+- The LUT implementation (ported to GPU) is described in the proceedings
+  of EPDIC13:  http://epdic13.grenoble.cnrs.fr/spip.php?article43
+  (to be published)
