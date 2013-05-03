@@ -191,10 +191,10 @@ decrease the value if arcs are mixed together.""", default=None)
             except Exception:
                 self.cutBackground = True
         if options.dark:
-            print options.dark, type(options.dark)
+            print("Dark: %s (%s)" % (options.dark, type(options.dark)))
             self.darkFiles = [f for f in options.dark.split(",") if os.path.isfile(f)]
         if options.flat:
-            print options.flat, type(options.flat)
+            print("Flat: %s (%s)" % (options.flat, type(options.flat)))
             self.flatFiles = [f for f in options.flat.split(",") if os.path.isfile(f)]
         self.reconstruct = options.reconstruct
         if options.mask and os.path.isfile(options.mask):

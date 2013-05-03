@@ -450,13 +450,15 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
         if flats is not None:
             if "ndim" in dir(flats) and flats.ndim == 3:
                 flat = averageDark(flats, center_method="mean", cutoff=4)
-            elif ("__len__" in dir(flats)) and (type(dark[0]) in types.StringTypes):
+            elif ("__len__" in dir(flats)) and (type(flats[0]) in types.StringTypes):
                 flat = averageDark([fabio.open(f).data for f in flats if os.path.exists(f)], center_method="mean", cutoff=4)
             elif ("__len__" in dir(flats)) and ("ndim" in dir(flats[0])) and (flats[0].ndim == 2):
                 flat = averageDark(flats, center_method="mean", cutoff=4)
+            else:
+                logger.warning("there is some wrong with flats=%s" % (flats))
             if correct_flat_from_dark:
                 flat -= dark
-            flat[flats <= 0 ] = 1.0
+            flat[numpy.where(flat <= 0) ] = 1.0
         else:
             flat = numpy.ones((shape[0], shape[1]), dtype=numpy.float32)
         correctedImg = (removeSaturatedPixel(ds.astype(numpy.float32), threshold, minimum, maximum) - dark) / flat

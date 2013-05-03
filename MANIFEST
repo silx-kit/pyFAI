@@ -139,6 +139,7 @@ scripts/pyFAI-waxs
 scripts/refine_wavelength.py
 scripts/saxs_integrate_exp.py
 scripts/utils.py
+scripts/pyFAI-average
 src/_distortion.c
 src/_distortion.pyx
 src/_geometry.c
