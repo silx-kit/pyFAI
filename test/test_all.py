@@ -52,6 +52,9 @@ from testIntegrate            import test_suite_all_Integrate1d
 from testBilinear             import test_suite_all_bilinear
 from testDistortion           import test_suite_all_distortion
 from testFlat                 import test_suite_all_Flat
+from testUtils                import test_suite_all_Utils
+from testPolarization         import test_suite_all_Polarization
+
 def test_suite_all():
     testSuite = unittest.TestSuite()
     testSuite.addTest(test_suite_all_Histogram())
@@ -67,6 +70,7 @@ def test_suite_all():
     testSuite.addTest(test_suite_all_bilinear())
     testSuite.addTest(test_suite_all_distortion())
     testSuite.addTest(test_suite_all_Flat())
+    testSuite.addTest(test_suite_all_Utils())
     return testSuite
 
 if __name__ == '__main__':

@@ -48,7 +48,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
             self.ai = azimuthalIntgrator
         self.nbpt_azim, self.nbpt_rad = shapeOut
         self.unit = pyFAI.units.to_unit(unit)
-        self.polarization = 0
+        self.polarization = None
         self.dummy = None
         self.delta_dummy = None
         self.correct_solid_angle = True
@@ -58,6 +58,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         self.subdir = ""
         self.extension = None
         self.do_poisson = None
+        self.do
         try:
             self.shapeIn = (camera.getFrameDim.getHeight(), camera.getFrameDim.getWidth())
         except Exception as error:
@@ -270,6 +271,10 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
             self.nbpt_rad = int(config.get("rad_pt"))
         self.unit = pyFAI.units.to_unit(config.get("unit", pyFAI.units.TTH_DEG))
         self.do_poisson = config.get("do_poisson")
+        if config.get("do_polarization"):
+            self.polarization = config.get("polarization")
+        else:
+            self.polarization = None
         logger.info(self.ai.__repr__())
         self.reset()
         # For now we do not calculate the LUT as the size of the input image is unknown

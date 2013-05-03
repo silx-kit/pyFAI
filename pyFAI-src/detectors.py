@@ -43,6 +43,10 @@ try:
     from pyFAI.fastcrc import crc32
 except ImportError:
     from zlib import crc32
+try:
+    import fabio
+except ImportError:
+    fabio = None
 
 
 class Detector(object):
@@ -260,15 +264,15 @@ class Detector(object):
                 self._mask_crc = None
     mask = property(get_mask, set_mask)
     def set_maskfile(self, maskfile):
-        try:
-            import fabio
-        except:
-            ImportError("Please install fabio to load images")
-        with self._sem:
-            self._mask = numpy.ascontiguousarray(fabio.open(maskfile).data,
-                                                 dtype=numpy.int8)
-            self._mask_crc = crc32(self._mask)
-            self._maskfile = maskfile
+        if fabio:
+            with self._sem:
+                self._mask = numpy.ascontiguousarray(fabio.open(maskfile).data,
+                                                     dtype=numpy.int8)
+                self._mask_crc = crc32(self._mask)
+                self._maskfile = maskfile
+        else:
+            logger.error("FabIO is not available, unable to load the image to set the mask.")
+
     def get_maskfile(self):
         return self._maskfile
     maskfile = property(get_maskfile, set_maskfile)
@@ -305,12 +309,56 @@ class Pilatus(Detector):
     MODULE_SIZE = (195, 487)
     MODULE_GAP = (17, 7)
     force_pixel = True
-    def __init__(self, pixel1=172e-6, pixel2=172e-6):
+    def __init__(self, pixel1=172e-6, pixel2=172e-6, x_offset_file=None, y_offset_file=None):
         Detector.__init__(self, pixel1, pixel2)
+        self.x_offset_file = x_offset_file
+        self.y_offset_file = y_offset_file
+        if self.x_offset_file and self.y_offset_file:
+            if fabio:
+                self.offset1 = fabio.open(self.y_offset_file).data
+                self.offset2 = fabio.open(self.x_offset_file).data
+            else:
+                logging.error("FabIO is not available: no distortion correction for Pilatus detectors, sorry.")
+                self.offset1 = None
+                self.offset2 = None
+        else:
+            self.offset1 = None
+            self.offset2 = None
 
     def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
+        txt = "Detector %s\t PixelSize= %.3e, %.3e m" % \
                 (self.name, self.pixel1, self.pixel2)
+        if self.x_offset_file:
+            txt += "\t delta_x= %s" % self.x_offset_file
+        if self.y_offset_file:
+            txt += "\t delta_y= %s" % self.y_offset_file
+        return txt
+
+    def get_splineFile(self):
+        if self.x_offset_file and self.y_offset_file:
+            return "%s,%s" % (self.x_offset_file, self.y_offset_file)
+
+    def set_splineFile(self, splineFile=None):
+        "In this case splinefile is a couple filenames"
+        if splineFile is not None:
+            try:
+                files = splineFile.split(",")
+                self.x_offset_file = [os.path.abspath(i) for i in files if "x" in i.lower()][0]
+                self.y_offset_file = [os.path.abspath(i) for i in files if "y" in i.lower()][0]
+            except Exception as error:
+                logger.error("set_splineFile with %s gave error: %s" % (splineFile, error))
+                self.x_offset_file = self.y_offset_file = self.offset1 = self.offset2 = None
+                return
+            if fabio:
+                self.offset1 = fabio.open(self.y_offset_file).data
+                self.offset2 = fabio.open(self.x_offset_file).data
+            else:
+                logging.error("FabIO is not available: no distortion correction for Pilatus detectors, sorry.")
+                self.offset1 = None
+                self.offset2 = None
+        else:
+            self._splineFile = None
+    splineFile = property(get_splineFile, set_splineFile)
 
     def calc_mask(self):
         """
@@ -330,6 +378,65 @@ class Pilatus(Detector):
             mask[:, i: i + self.MODULE_GAP[1]] = 1
         return mask
 
+    def calc_cartesian_positions(self, d1=None, d2=None):
+        """
+        Calculate the position of each pixel center in cartesian coordinate
+        and in meter of a couple of coordinates.
+        The half pixel offset is taken into account here !!!
+
+        @param d1: the Y pixel positions (slow dimension)
+        @type d1: ndarray (1D or 2D)
+        @param d2: the X pixel positions (fast dimension)
+        @type d2: ndarray (1D or 2D)
+
+        @return: position in meter of the center of each pixels.
+        @rtype: ndarray
+
+        d1 and d2 must have the same shape, returned array will have
+        the same shape.
+        """
+        if (d1 is None):
+            d1 = numpy.outer(numpy.arange(self.max_shape[0]), numpy.ones(self.max_shape[1]))
+
+        if (d2 is None):
+            d2 = numpy.outer(numpy.ones(self.max_shape[0]), numpy.arange(self.max_shape[1]))
+
+        if self.offset1 is None or self.offset2 is None:
+            delta1 = delta2 = 0.
+        else:
+            if d2.ndim == 1:
+                d1n = d1.astype(numpy.int32)
+                d2n = d2.astype(numpy.int32)
+                delta1 = self.offset1[d1n, d2n] / 100.0  # Offsets are in percent of pixel
+                delta2 = self.offset2[d1n, d2n] / 100.0
+            else:
+                if d1.shape == self.offset1.shape:
+                    delta1 = self.offset1 / 100.0  # Offsets are in percent of pixel
+                    delta2 = self.offset2 / 100.0
+                elif d1.shape[0] > self.offset1.shape[0]:  # probably working with corners
+                    s0, s1 = self.offset1.shape
+                    delta1 = numpy.zeros(d1.shape, dtype=numpy.int32)  # this is the natural type for pilatus CBF
+                    delta2 = numpy.zeros(d2.shape, dtype=numpy.int32)
+                    delta1[:s0, :s1] = self.offset1
+                    delta2[:s0, :s1] = self.offset2
+                    mask = numpy.where(delta1[-s0:, :s1] == 0)
+                    delta1[-s0:, :s1][mask] = self.offset1[mask]
+                    delta2[-s0:, :s1][mask] = self.offset2[mask]
+                    mask = numpy.where(delta1[-s0:, -s1:] == 0)
+                    delta1[-s0:, -s1:][mask] = self.offset1[mask]
+                    delta2[-s0:, -s1:][mask] = self.offset2[mask]
+                    mask = numpy.where(delta1[:s0, -s1:] == 0)
+                    delta1[:s0, -s1:][mask] = self.offset1[mask]
+                    delta2[:s0, -s1:][mask] = self.offset2[mask]
+                    delta1 = delta1 / 100.0  # Offsets are in percent of pixel
+                    delta2 = delta2 / 100.0  # former arrays were integers
+                else:
+                    logger.warning("Surprizing situation !!! please investigate: offset has shape %s and input array have %s" % (self.offset1.shape, d1, shape))
+                    delta1 = delta2 = 0.
+        # For pilatus,
+        p1 = (self._pixel1 * (delta1 + 0.5 + d1))
+        p2 = (self._pixel2 * (delta2 + 0.5 + d2))
+        return p1, p2
 
 class Pilatus1M(Pilatus):
     """
@@ -501,6 +608,18 @@ class Xpad_flat(Detector):
         p2 = self.pixel2 * (0.5 + c2)
         return p1, p2
 
+class Perkin(Detector):
+    """
+    Perkin detector
+
+    """
+    force_pixel = True
+    def __init__(self, pixel=200e-6):
+        Detector.__init__(self, pixel, pixel)
+        self.name = "Perkin detector"
+        self.max_shape = (2048, 2048)
+
+
 ALL_DETECTORS = {"pilatus1m": Pilatus1M,
                  "pilatus2m": Pilatus2M,
                  "pilatus6m": Pilatus6M,
@@ -511,6 +630,7 @@ ALL_DETECTORS = {"pilatus1m": Pilatus1M,
                  "xpad_flat": Xpad_flat,
                  "basler": Basler,
                  "dexela2923": Dexela2923,
+                 "perkin": Perkin,
                  "detector": Detector}
 
 

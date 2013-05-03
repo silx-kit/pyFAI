@@ -205,8 +205,10 @@ decrease the value if arcs are mixed together.""", default=None)
         if options.detector_name:
             self.detector = detector_factory(options.detector_name)
         if options.spline:
-            if os.path.isfile(options.spline):
-                self.detector.splineFile = os.path.abspath(options.spline)
+            if "Pilatus" in self.detector.name:
+                self.detector.set_splineFile(options.spline)  # is as 2-tuple of path
+            elif os.path.isfile(options.spline):
+                self.detector.set_splineFile(os.path.abspath(options.spline))
             else:
                 logger.error("Unknown spline file %s" % (options.spline))
         if options.pixel is not None:
@@ -323,6 +325,7 @@ decrease the value if arcs are mixed together.""", default=None)
         paramfile = self.basename + ".poni"
         if os.path.isfile(paramfile):
             self.geoRef.load(paramfile)
+
         print self.geoRef
         previous = sys.maxint
         finished = False

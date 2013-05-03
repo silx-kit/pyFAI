@@ -35,7 +35,7 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "14/03/2013"
 __status__ = "development"
 
-import logging, sys
+import logging, sys, types, os
 import threading
 sem = threading.Semaphore()  # global lock for image processing initialization
 import numpy
@@ -49,7 +49,7 @@ import scipy.ndimage.filters
 logger = logging.getLogger("pyFAI.utils")
 import time
 timelog = logging.getLogger("pyFAI.timeit")
-from scipy.signal           import gaussian
+
 cu_fft = None  # No cuda here !
 if sys.platform != "win32":
     WindowsError = RuntimeError
@@ -71,6 +71,24 @@ def deprecated(func):
         logger.warning("%s is Deprecated !!! %s" % (func.func_name, os.linesep.join([""] + traceback.format_stack()[:-1])))
         return func(*arg, **kw)
     return wrapper
+
+def gaussian(M, std):
+    """
+    Return a Gaussian window of length M with standard-deviation std.
+
+    This differs from the scipy.signal.gaussian implementation as:
+    - The default for sym=False (needed for gaussian filtering without shift)
+    - This implementation is normalized
+
+    @param M: length of the windows (int)
+    @param std: standatd deviation sigma
+
+    The FWHM is 2*numpy.sqrt(2 * numpy.pi)*std
+
+    """
+    x = numpy.arange(M) - M / 2.0
+    return numpy.exp(-(x / std) ** 2 / 2.0) / std / numpy.sqrt(2 * numpy.pi)
+
 
 def float_(val):
     """
@@ -155,8 +173,8 @@ def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0):
 
             g0 = gaussian(s0, k0)
             g1 = gaussian(s1, k1)
-            g0 = numpy.concatenate((g0[s0 // 2:], g0[:s0 // 2]))
-            g1 = numpy.concatenate((g1[s1 // 2:], g1[:s1 // 2]))
+            g0 = numpy.concatenate((g0[s0 // 2:], g0[:s0 // 2]))  # faster than fftshift
+            g1 = numpy.concatenate((g1[s1 // 2:], g1[:s1 // 2]))  # faster than fftshift
             g2 = numpy.outer(g0, g1)
             g2fft = numpy.zeros((s0, s1), dtype=complex)
             fftIn[:, :] = g2.astype(complex)
@@ -367,20 +385,25 @@ def averageDark(lstimg, center_method="mean", cutoff=None):
         stack = numpy.zeros((length, shape[0], shape[1]), dtype=numpy.float32)
         for i, img in enumerate(lstimg):
            stack[i] = img
-    center = stack.__getattribute__(center_method)(axis=0)
+    if center_method in dir(stack):
+        center = stack.__getattribute__(center_method)(axis=0)
+    elif center_method == "median":
+        center = numpy.median(stack, axis=0)
+    else:
+        raise RuntimeError("Cannot understand method: %s in averageDark" % center_method)
     if cutoff is None or cutoff <= 0:
         output = center
     else:
         std = stack.std(axis=0)
-        stride = 0, std.stride[1], std.stride[1]
+        strides = 0, std.strides[0], std.strides[1]
         std.shape = 1, shape[0], shape[1]
-        std.stride = stride
+        std.strides = strides
         center.shape = 1, shape[0], shape[1]
-        center.stride = stride
+        center.strides = strides
         mask = ((abs(stack - center) / std) > cutoff)
         stack[numpy.where(mask)] = 0.0
         summed = stack.sum(axis=0)
-        output = summed / (length - mask.sum(axis=0))
+        output = summed / numpy.maximum(1, (length - mask.sum(axis=0)))
     return output
 
 def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=None,
@@ -403,26 +426,39 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
     dark = None
     flat = None
     big_img = None
-    for idx, fn in enumerate(listImages):
-        logger.info("Reading %s" % fn)
-        ds = fabio.open(fn).data
+    for idx, fn in enumerate(listImages[:]):
+        if type(fn) in types.StringTypes:
+            logger.info("Reading %s" % fn)
+            ds = fabio.open(fn).data
+        else:
+            ds = fn
+            fn = "numpy_array"
+            listImages[idx] = fn
         logger.debug("Intensity range for %s is %s --> %s", fn, ds.min(), ds.max())
         shape = ds.shape
         if sumImg is None:
             sumImg = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
-        if dark is None:
-            if darks:
-                dark = averageDark([fabio.open(f).data for f in darks], center_method="mean", cutoff=4)
-            else:
-                dark = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
-        if flat is None:
-            if flats:
-                flat = averageDark([fabio.open(f).data for f in flats], center_method="mean", cutoff=4)
-                if correct_flat_from_dark:
-                    flat -= dark
-                flat[flats <= 0 ] = 1.0
-            else:
-                flat = numpy.ones((shape[0], shape[1]), dtype=numpy.float32)
+        if darks is not None:
+            if "ndim" in dir(darks) and darks.ndim == 3:
+                dark = averageDark(darks, center_method="mean", cutoff=4)
+            elif ("__len__" in dir(darks)) and (type(darks[0]) in types.StringTypes):
+                dark = averageDark([fabio.open(f).data for f in darks if os.path.exists(f)], center_method="mean", cutoff=4)
+            elif ("__len__" in dir(darks)) and ("ndim" in dir(darks[0])) and (darks[0].ndim == 2):
+                dark = averageDark(darks, center_method="mean", cutoff=4)
+        else:
+            dark = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
+        if flats is not None:
+            if "ndim" in dir(flats) and flats.ndim == 3:
+                flat = averageDark(flats, center_method="mean", cutoff=4)
+            elif ("__len__" in dir(flats)) and (type(dark[0]) in types.StringTypes):
+                flat = averageDark([fabio.open(f).data for f in flats if os.path.exists(f)], center_method="mean", cutoff=4)
+            elif ("__len__" in dir(flats)) and ("ndim" in dir(flats[0])) and (flats[0].ndim == 2):
+                flat = averageDark(flats, center_method="mean", cutoff=4)
+            if correct_flat_from_dark:
+                flat -= dark
+            flat[flats <= 0 ] = 1.0
+        else:
+            flat = numpy.ones((shape[0], shape[1]), dtype=numpy.float32)
         correctedImg = (removeSaturatedPixel(ds.astype(numpy.float32), threshold, minimum, maximum) - dark) / flat
         if filter_ == "max":
             sumImg = numpy.maximum(correctedImg, sumImg)
@@ -595,6 +631,7 @@ def unBinning(binnedArray, binsize):
     for i in xrange(binsize[0]):
         for j in xrange(binsize[1]):
             out[i::binsize[0], j::binsize[1]] += binnedArray
+    out /= binsize[0] * binsize[1]
     return out
 
 
@@ -608,6 +645,14 @@ def shiftFFT(input_img, shift_val, method="fftw"):
     @return: shifted image
 
     """
+    # TODO: understand why this is needed !
+    if "has_fftw3" not in dir():
+        has_fftw3 = ("fftw3" in sys.modules)
+    if "has_fftw3" and ("fftw3" not in dir()):
+        fftw3 = sys.modules.get("fftw3")
+    else:
+        fftw3 = None
+    print fftw3
     d0, d1 = input_img.shape
     v0, v1 = shift_val
     f0 = numpy.fft.ifftshift(numpy.arange(-d0 // 2, d0 // 2))

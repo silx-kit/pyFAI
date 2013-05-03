@@ -6,6 +6,12 @@ and even more using OpenCL) It is based on histogramming of the 2theta/Q positio
 of each (center of) pixel weighted by the intensity of each pixel.
 Neighboring output bins get also a contribution of pixels next to the border
 
+References:
+-----------
+The philosophy of pyFAI is described in the proceedings of SRI2012:
+doi:10.1088/1742-6596/425/20/202012
+http://iopscience.iop.org/1742-6596/425/20/202012/
+
 Installation
 ============
 pyFAI can be downloaded from the http://forge.epn-campus.eu/projects/azimuthal/files.

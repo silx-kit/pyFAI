@@ -66,7 +66,13 @@ class TestFlat1D(unittest.TestCase):
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s" % (meth, I.min(), I.max(), I.mean(), I.std()))
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
             self.assert_(I.max() - I.min() < self.eps, "deviation should be small")
-        for meth in ["xrpd_numpy", "xrpd_cython", "xrpd_splitBBox", "xrpd_splitPixel", "xrpd_OpenCL" ]:
+        for meth in ["xrpd_numpy", "xrpd_cython", "xrpd_splitBBox", "xrpd_splitPixel"]:  # , "xrpd_OpenCL" ]: bug with 32 bit GPU and request 64 bit integration
+            r, I = self.ai.__getattribute__(meth)(self.raw, self.bins, correctSolidAngle=False, dark=self.dark, flat=self.flat)
+            logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s" % (meth, I.min(), I.max(), I.mean(), I.std()))
+            self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
+            self.assert_(I.max() - I.min() < self.eps, "deviation should be small")
+        if pyFAI.opencl.ocl and pyFAI.opencl.ocl.select_device("gpu", extensions=["cl_khr_fp64"]):
+            meth = "xrpd_OpenCL"
             r, I = self.ai.__getattribute__(meth)(self.raw, self.bins, correctSolidAngle=False, dark=self.dark, flat=self.flat)
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s" % (meth, I.min(), I.max(), I.mean(), I.std()))
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
