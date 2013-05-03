@@ -61,9 +61,12 @@ class PeakPicker(object):
         self.strFilename = strFilename
         self.data = fabio.open(strFilename).data.astype("float32")
         if mask is not None:
+            mask = mask.astype(bool)
             view = self.data.ravel()
             flat_mask = mask.ravel()
-            view[numpy.where(flat_mask)] = 0
+            min_valid = view[numpy.where(flat_mask == False)].min()
+            view[numpy.where(flat_mask)] = min_valid
+
         self.shape = self.data.shape
         self.points = ControlPoints(pointfile, dSpacing=dSpacing, wavelength=wavelength)
 #        self.lstPoints = []
@@ -94,6 +97,7 @@ class PeakPicker(object):
             self.ax.imshow(numpy.log(1.0 + self.data - self.data.min()), origin="lower", interpolation="nearest")
         else:
             self.ax.imshow(self.data, origin="lower", interpolation="nearest")
+        self.ax.autoscale_view(False, False, False)
         self.fig.show()
         if maximize:
             mng = pylab.get_current_fig_manager()
