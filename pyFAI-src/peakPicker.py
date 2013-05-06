@@ -42,7 +42,7 @@ import fabio
 import utils
 from .utils import gaussian_filter, binning, unBinning
 from .bilinear import Bilinear
-from .reconstruct            import reconstruct
+from .reconstruct import reconstruct
 logger = logging.getLogger("pyFAI.peakPicker")
 if os.name != "nt":
     WindowsError = RuntimeError
@@ -56,7 +56,7 @@ class PeakPicker(object):
     def __init__(self, strFilename, reconst=False, mask=None, pointfile=None, dSpacing=None, wavelength=None):
         """
         @param: input image filename
-        @param reconst: shall negative values be reconstructed (wipe out problems with pilatus gaps)
+        @param reconst: shall mased part or negative values be reconstructed (wipe out problems with pilatus gaps) 
         """
         self.strFilename = strFilename
         self.data = fabio.open(strFilename).data.astype("float32")
@@ -274,7 +274,9 @@ class PeakPicker(object):
             else:
                 angles = None
             try:
+                xlim, ylim = self.ax.get_xlim(), self.ax.get_ylim()
                 self.ct.contour(data, levels=angles)
+                self.ax.set_xlim(xlim);self.ax.set_ylim(ylim);
             except MemoryError:
                 logging.error("Sorry but your computer does NOT have enough memory to display the 2-theta contour plot")
             self.fig.show()
@@ -300,7 +302,9 @@ class PeakPicker(object):
                 if len(self.msp.images) > 1:
                     self.msp.images.pop()
             try:
+                xlim, ylim = self.ax.get_xlim(), self.ax.get_ylim()
                 self.msp.imshow(mask, cmap="gray", origin="lower", interpolation="nearest")
+                self.ax.set_xlim(xlim);self.ax.set_ylim(ylim);
             except MemoryError:
                 logging.error("Sorry but your computer does NOT have enough memory to display the massif plot")
             # self.fig.show()
