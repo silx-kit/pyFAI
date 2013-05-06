@@ -360,8 +360,9 @@ decrease the value if arcs are mixed together.""", default=None)
                     sp = fig2.add_subplot(111)
                 else:
                     sp.images.pop()
-                sp.imshow(dsa, origin="lower")
-                # self.fig.canvas.draw()
+                im = sp.imshow(dsa, origin="lower")
+                cbar = fig2.colorbar(im) #Add color bar
+                sp.set_title("Pixels solid-angle (relative to PONI)")
                 fig2.show()
 
             change = raw_input("Modify parameters ?\t ").strip()
@@ -812,6 +813,8 @@ class Recalibration(object):
                         else:
                             sp.images.pop()
                         sp.imshow(dsa, origin="lower")
+                        cbar = fig2.colorbar(im) #Add color bar
+                        sp.set_title("Pixels solid-angle (relative to PONI)")
                         fig2.show()
             if not self.interactive:
                 break
