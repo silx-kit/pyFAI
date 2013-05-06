@@ -618,7 +618,7 @@ def binning(input_img, binsize):
     return out
 
 
-def unBinning(binnedArray, binsize):
+def unBinning(binnedArray, binsize, norm=True):
     """
     @param binnedArray: input ndarray
     @param binsize: 2-tuple representing the size of the binning
@@ -633,7 +633,8 @@ def unBinning(binnedArray, binsize):
     for i in xrange(binsize[0]):
         for j in xrange(binsize[1]):
             out[i::binsize[0], j::binsize[1]] += binnedArray
-    out /= binsize[0] * binsize[1]
+    if norm:
+        out /= binsize[0] * binsize[1]
     return out
 
 

@@ -869,7 +869,7 @@ class Massif(object):
                     relabeled = utils.relabel(labeled_massif, self.getBinnedData(), self.getBluredData())
                     if logger.getEffectiveLevel() == logging.DEBUG:
                             fabio.edfimage.edfimage(data=relabeled).write("relabeled_massif_small.edf")
-                    self._labeled_massif = utils.unBinning(relabeled, self.binning)
+                    self._labeled_massif = unBinning(relabeled, self.binning, False)
                     if logger.getEffectiveLevel() == logging.DEBUG:
                         fabio.edfimage.edfimage(data=self._labeled_massif).write("labeled_massif.edf")
                     logger.info("Labeling found %s massifs." % self._number_massif)
