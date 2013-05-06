@@ -799,7 +799,7 @@ class Geometry(object):
             with open(filename, "a") as f:
                 f.write(("# Nota: C-Order, 1 refers to the Y axis,"
                          " 2 to the X axis %s") % os.linesep)
-                f.write("# Calibration done at %s" % time.ctime())
+                f.write("# Calibration done at %s%s" % (time.ctime(), os.linesep))
                 if self.detector.name != "Detector":
                     f.write("Detector: %s%s" % (self.detector.name,
                                                 os.linesep))
