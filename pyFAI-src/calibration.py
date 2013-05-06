@@ -198,7 +198,7 @@ decrease the value if arcs are mixed together.""", default=None)
             self.flatFiles = [f for f in options.flat.split(",") if os.path.isfile(f)]
         self.reconstruct = options.reconstruct
         if options.mask and os.path.isfile(options.mask):
-            self.mask = fabio.open(options.mask).data
+            self.mask = (fabio.open(options.mask).data != 0)
 
 
         self.pointfile = options.npt
@@ -616,7 +616,7 @@ class Recalibration(object):
         if options.rot3 is not None:
             self.ai.rot3 = options.rot3
         if options.mask is not None:
-            self.mask = fabio.open(options.mask).data
+            self.mask = (fabio.open(options.mask).data != 0)
         self.dataFiles = [f for f in args if os.path.isfile(f)]
         if not self.dataFiles:
             raise RuntimeError("Please provide some calibration images ... if you want to analyze them. Try also the --help option to see all options!")
@@ -944,7 +944,7 @@ class CheckCalib(object):
             print("Check calibrarion: version %s" % version)
             sys.exit(0)
         if options.mask is not None:
-            self.mask = fabio.open(options.mask).data
+            self.mask = (fabio.open(options.mask).data != 0)
         if len(args) > 0:
             f = args[0]
             if os.path.isfile(f):
