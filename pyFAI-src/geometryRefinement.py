@@ -78,6 +78,10 @@ class GeometryRefinement(AzimuthalIntegrator):
 
         """
         self.data = numpy.array(data, dtype="float64")
+        assert self.data.ndim == 2
+        assert self.data.shape[1] == 3
+        assert self.data.shape[0]>0
+
         if (pixel1 is None) and (pixel2 is None) and (splineFile is None) and (detector is None):
             raise RuntimeError("Setting up the geometry refinement without knowing the detector makes little sense")
         AzimuthalIntegrator.__init__(self, dist, 0, 0,
