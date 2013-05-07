@@ -301,16 +301,21 @@ if sphinx:
     class build_doc(BuildDoc):
 
         def run(self):
+
             # make sure the python path is pointing to the newly built
             # code so that the documentation is built on this and not a
             # previously installed version
 
             build = self.get_finalized_command('build')
             sys.path.insert(0, os.path.abspath(build.build_lib))
-            # we need to reload PyMca from the build directory and not
-            # the one from the source directory which does not contain
-            # the extensions
-            BuildDoc.run(self)
+
+            # Build the Users Guide in HTML and TeX format
+            for builder in ('html', 'latex'):
+                self.builder = builder
+                self.builder_target_dir = os.path.join(self.build_dir, builder)
+                self.mkpath(self.builder_target_dir)
+                builder_index = 'index_{0}.txt'.format(builder)
+                BuildDoc.run(self)
             sys.path.pop(0)
     cmdclass['build_doc'] = build_doc
 
