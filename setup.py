@@ -190,9 +190,13 @@ if (os.name != "posix") or ("x86" not in platform.machine()):
 
 installDir = os.path.join(get_python_lib(), "pyFAI")
 
+data_files = [(installDir, [os.path.join('openCL', o) for o in [
+      "ocl_azim_kernel_2.cl", "ocl_azim_kernel2d_2.cl", "ocl_azim_LUT.cl"]] +
+                [os.path.join('gui', o) for o in ("integration.ui",)])]
+
 if sys.platform == "win32":
     # This is for mingw32/gomp?
-    data_files = [(installDir, [os.path.join("dll", "pthreadGC2.dll")])]
+    data_files[0][1].append(os.path.join("dll", "pthreadGC2.dll"))
     root = os.path.dirname(os.path.abspath(__file__))
     tocopy_files = []
     script_files = []
@@ -209,9 +213,8 @@ if sys.platform == "win32":
             script_files.append(filein + ".py")
 
 else:
-    data_files = []
     script_files = glob.glob("scripts/*")
-
+print(data_files)
 
 data_files += [(installDir, [os.path.join('openCL', o) for o in [
       "ocl_azim_kernel_2.cl", "ocl_azim_kernel2d_2.cl", "ocl_azim_LUT.cl"]] +
