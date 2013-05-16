@@ -56,7 +56,7 @@ class PeakPicker(object):
     def __init__(self, strFilename, reconst=False, mask=None, pointfile=None, dSpacing=None, wavelength=None):
         """
         @param: input image filename
-        @param reconst: shall mased part or negative values be reconstructed (wipe out problems with pilatus gaps) 
+        @param reconst: shall mased part or negative values be reconstructed (wipe out problems with pilatus gaps)
         """
         self.strFilename = strFilename
         self.data = fabio.open(strFilename).data.astype("float32")
@@ -92,7 +92,10 @@ class PeakPicker(object):
         """
         if self.fig is None:
             self.fig = pylab.plt.figure()
-        self.ax = self.fig.add_subplot(111);
+            # add 3 subplots at the same position for debye-sherrer image, contour-plot and massif contour
+            self.ax = self.fig.add_subplot(111)
+            self.ct = self.fig.add_subplot(111)
+            self.msp = self.fig.add_subplot(111)
         if log:
             self.ax.imshow(numpy.log(1.0 + self.data - self.data.min()), origin="lower", interpolation="nearest")
         else:
@@ -257,17 +260,12 @@ class PeakPicker(object):
         if self.fig is None:
             logging.warning("No diffraction image available => not showing the contour")
         else:
-            if self.msp is not None:
-                if len(self.msp.images) > 1:
-                    self.msp.images.pop()
-                    self.msp = None
-            if self.ct is None:
-                self.ct = self.fig.add_subplot(111)
-            else:
-                while len(self.ct.images) > 1:
-                    self.ct.images.pop()
-                while len(self.ct.collections) > 0:
-                    self.ct.collections.pop()
+            while len(self.msp.images) > 1:
+                self.msp.images.pop()
+            while len(self.ct.images) > 1:
+                self.ct.images.pop()
+            while len(self.ct.collections) > 0:
+                self.ct.collections.pop()
 
             if self.points.dSpacing and  self.points._wavelength:
                 angles = list(2.0 * numpy.arcsin(5e9 * self.points._wavelength / numpy.array(self.points.dSpacing)))
@@ -296,11 +294,8 @@ class PeakPicker(object):
             mask[:, :, 1] = tmp
             mask[:, :, 2] = tmp
             mask[:, :, 3] = tmp
-            if self.msp is None:
-                self.msp = self.fig.add_subplot(111)
-            else:
-                if len(self.msp.images) > 1:
-                    self.msp.images.pop()
+            while len(self.msp.images) > 1:
+                self.msp.images.pop()
             try:
                 xlim, ylim = self.ax.get_xlim(), self.ax.get_ylim()
                 self.msp.imshow(mask, cmap="gray", origin="lower", interpolation="nearest")
