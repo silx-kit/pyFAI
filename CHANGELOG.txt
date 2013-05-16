@@ -9,17 +9,32 @@
 0.7: 	Implementation of look-up table based integration and OpenCL version of it
 0.8:	Detector object is member of the geometry
 		Binning of the detector, propagation to the spline if needed(10/2012)
-		Detector object know about their masks. Automatic mask for Pilatus detectors
- 		LUT implementation in 1D (fully tested) both with OpenMP and with OpenCL
+		Detector object know about their masks. 
+		Automatic mask for some detectors like Pilatus or XPad
+		Implementation of sub-pixel position correction for Pilatus detectors 
+ 		LUT implementation in 1D & 2D (fully tested) both with OpenMP and with OpenCL
 		Switch from C++/Cython OpenCL framework to PyOpenCL
 		Port opencl code to both Windows 32/64 bits and MacOSX
 		Add polarization corrections
 		Use fast-CRC checksum on x86 using SSE4 (when available) to track array change on GPU buffers
 		Support for flat 7*8 modules Xpad detectors.
-		Better benchmark with live graphics
+		Benchmark with live graphics (still a memory issue with python2.6)
 		Fat source distribution (python setup.py sdist --with-test-images) for debian
 		Enhanced tests, especially for Saxs and OpenCL
 		Recalibration tool for refining automatically parameters
 		Enhancement of peak picking (much faster, recoded in pure Cython)
 		Easy calibration for pixel detector (reconstruction of inter-module space)
-
+		Error-bar generation using Poisson law
+		Unified programming interface for all integration methods in 2theta, q or radius unit
+		Graphical interface for azimuthal integration (pyFAI-integrate) 
+		Lots of test to prevent non regression 
+		Tool for merging images using various method (mean, median) and with outlayer rejection
+		LImA plugin which can perform azimuthal integration live during the acquisition
+		Distortion correction is available alone and as LImA plugin
+		Recalibration can refine the wavelength in addition to 6 other parameters
+		Calibration always done vs calibrant's ring number, lots of new calibrant are available
+		Selection by hand of single peaks for calibration
+		New detectors: Dexela and Perkin-Elmer flat panel
+		Automatic refinement of multiple images at various geometries (for MX)
+		Many improvements requested by ID11 and ID13  
+0.9:	
