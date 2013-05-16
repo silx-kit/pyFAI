@@ -23,7 +23,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-pyFAI-average is a small utility that averages out a serie of files, 
+pyFAI-average is a small utility that averages out a serie of files,
 for example for dark, or flat or calibration images
 """
 __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
@@ -57,7 +57,7 @@ def main():
     (options, args) = parser.parse_args()
     fabiomod = fabio.__getattribute__(options.format + "image")
     fabioclass = fabiomod.__getattribute__(options.format + "image")
-    images = [fabio.open(param).data for param in args]
+    images = [fabio.open(param).data for param in pyFAI.utils.expand_args(args)]
     if  options.output:
         output = options.output
     else:

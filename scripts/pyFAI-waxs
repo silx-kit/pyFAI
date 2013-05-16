@@ -41,7 +41,7 @@ import os
 import sys
 import time
 import fabio
-import pyFAI, pyFAI.units
+import pyFAI, pyFAI.units, pyFAI.utils
 hc = pyFAI.units.hc
 
 from optparse import OptionParser
@@ -97,7 +97,7 @@ def main():
     if len(args) != 1:
         parser.error("incorrect number of arguments")
 
-    processFile = [param for param in args if os.path.isfile(param)]
+    processFile = pyFAI.utils.expand_args(args)
 
     if options.ponifile and processFile:
         integrator = pyFAI.load(options.ponifile)
