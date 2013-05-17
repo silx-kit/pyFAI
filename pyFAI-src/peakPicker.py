@@ -240,7 +240,7 @@ class PeakPicker(object):
                                       " 3) Control + Right-click : add a point to a new group",
                                       " 4) Center-click: erase the current group"]))
 
-        raw_input("Please press enter when you are happy; to fill in ring number" + os.linesep)
+        raw_input("Please press enter when you are happy; to fill in ring number. Ring number starts at 0" + os.linesep)
         self.points.readRingNrFromKeyboard()  # readAngleFromKeyboard()
         if filename is not None:
             self.points.save(filename)
