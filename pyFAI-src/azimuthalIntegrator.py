@@ -106,8 +106,9 @@ class AzimuthalIntegrator(Geometry):
 
     main methods are:
 
-        >>> tth, I = ai.xrpd(data, nbPt)
-        >>> q, I, sigma = ai.saxs(data, nbPt)
+        >>> tth, I = ai.integrate1d(data, nbPt, unit="2th_deg")
+        >>> q, I, sigma = ai.integrate1d(data, nbPt, unit="q_nm^-1", error_model="poisson")
+        >>> regrouped = ai.integrate2d(data, nbPt_rad, nbPt_azim, unit="q_nm^-1")[0]
     """
 
     def __init__(self, dist=1, poni1=0, poni2=0,

@@ -35,7 +35,7 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "14/03/2013"
 __status__ = "development"
 
-import logging, sys, types, os
+import logging, sys, types, os, glob
 import threading
 sem = threading.Semaphore()  # global lock for image processing initialization
 import numpy
@@ -618,7 +618,7 @@ def binning(input_img, binsize):
     return out
 
 
-def unBinning(binnedArray, binsize):
+def unBinning(binnedArray, binsize, norm=True):
     """
     @param binnedArray: input ndarray
     @param binsize: 2-tuple representing the size of the binning
@@ -633,7 +633,8 @@ def unBinning(binnedArray, binsize):
     for i in xrange(binsize[0]):
         for j in xrange(binsize[1]):
             out[i::binsize[0], j::binsize[1]] += binnedArray
-    out /= binsize[0] * binsize[1]
+    if norm:
+        out /= binsize[0] * binsize[1]
     return out
 
 
@@ -783,3 +784,20 @@ def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
             return offset, new
         else:
             return offset
+
+
+def expand_args(args):
+    """
+    Takes an argv and expand it (under Windows, cmd does not convert *.tif into a list of files.
+    Keeps only valid files (thanks to glob)
+
+    @param args: list of files or wilcards
+    @return: list of actual args
+    """
+    new = []
+    for afile in  args:
+        if os.path.exists(afile):
+            new.append(afile)
+        else:
+            new += glob.glob(afile)
+    return new

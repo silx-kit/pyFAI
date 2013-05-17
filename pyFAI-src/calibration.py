@@ -49,7 +49,7 @@ import pylab
 from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
 from .peakPicker import PeakPicker
-from .utils import averageImages, measure_offset  # ,timeit
+from .utils import averageImages, measure_offset, expand_args
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import hc
 from . import version
@@ -198,7 +198,7 @@ decrease the value if arcs are mixed together.""", default=None)
             self.flatFiles = [f for f in options.flat.split(",") if os.path.isfile(f)]
         self.reconstruct = options.reconstruct
         if options.mask and os.path.isfile(options.mask):
-            self.mask = fabio.open(options.mask).data
+            self.mask = (fabio.open(options.mask).data != 0)
 
 
         self.pointfile = options.npt
@@ -223,7 +223,7 @@ decrease the value if arcs are mixed together.""", default=None)
         self.polarization_factor = options.polarization_factor
 #        if not self.spacing_file or not os.path.isfile(self.spacing_file):
 #            raise RuntimeError("you must specify the d-spacing file")
-        self.dataFiles = [f for f in args if os.path.isfile(f)]
+        self.dataFiles = expand_args(args)
         if not self.dataFiles:
             raise RuntimeError("Please provide some calibration images ... if you want to analyze them. Try also the --help option to see all options!")
         self.weighted = options.weighted
@@ -360,8 +360,9 @@ decrease the value if arcs are mixed together.""", default=None)
                     sp = fig2.add_subplot(111)
                 else:
                     sp.images.pop()
-                sp.imshow(dsa, origin="lower")
-                # self.fig.canvas.draw()
+                im = sp.imshow(dsa, origin="lower")
+                cbar = fig2.colorbar(im) #Add color bar
+                sp.set_title("Pixels solid-angle (relative to PONI)")
                 fig2.show()
 
             change = raw_input("Modify parameters ?\t ").strip()
@@ -616,8 +617,8 @@ class Recalibration(object):
         if options.rot3 is not None:
             self.ai.rot3 = options.rot3
         if options.mask is not None:
-            self.mask = fabio.open(options.mask).data
-        self.dataFiles = [f for f in args if os.path.isfile(f)]
+            self.mask = (fabio.open(options.mask).data != 0)
+        self.dataFiles = expand_args(args)
         if not self.dataFiles:
             raise RuntimeError("Please provide some calibration images ... if you want to analyze them. Try also the --help option to see all options!")
         self.fixed = []
@@ -812,6 +813,8 @@ class Recalibration(object):
                         else:
                             sp.images.pop()
                         sp.imshow(dsa, origin="lower")
+                        cbar = fig2.colorbar(im) #Add color bar
+                        sp.set_title("Pixels solid-angle (relative to PONI)")
                         fig2.show()
             if not self.interactive:
                 break
@@ -944,7 +947,8 @@ class CheckCalib(object):
             print("Check calibrarion: version %s" % version)
             sys.exit(0)
         if options.mask is not None:
-            self.mask = fabio.open(options.mask).data
+            self.mask = (fabio.open(options.mask).data != 0)
+        args = expand_args(args)
         if len(args) > 0:
             f = args[0]
             if os.path.isfile(f):

@@ -46,7 +46,7 @@ from PyQt4 import QtCore, QtGui, uic
 from PyQt4.QtCore import SIGNAL
 import pyFAI, fabio
 from pyFAI.opencl import ocl
-from pyFAI.utils import float_, int_, str_
+import pyFAI.utils
 from pyFAI.integrate_widget import AIWidget
 UIC = op.join(op.dirname(pyFAI.__file__), "integration.ui")
 
@@ -70,7 +70,7 @@ if __name__ == "__main__":
                           help="switch to verbose/debug mode")
     (options, args) = parser.parse_args()
     # Analyse aruments and options
-    args = [i for i in args if os.path.exists(i)]
+    args = pyFAI.utils.expand_args(args)
 #        if len(args) != 1:
 #            parser.error("incorrect number of arguments")
     if options.verbose:

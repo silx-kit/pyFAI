@@ -42,7 +42,7 @@ import fabio
 import utils
 from .utils import gaussian_filter, binning, unBinning
 from .bilinear import Bilinear
-from .reconstruct            import reconstruct
+from .reconstruct import reconstruct
 logger = logging.getLogger("pyFAI.peakPicker")
 if os.name != "nt":
     WindowsError = RuntimeError
@@ -56,7 +56,7 @@ class PeakPicker(object):
     def __init__(self, strFilename, reconst=False, mask=None, pointfile=None, dSpacing=None, wavelength=None):
         """
         @param: input image filename
-        @param reconst: shall negative values be reconstructed (wipe out problems with pilatus gaps)
+        @param reconst: shall mased part or negative values be reconstructed (wipe out problems with pilatus gaps)
         """
         self.strFilename = strFilename
         self.data = fabio.open(strFilename).data.astype("float32")
@@ -92,7 +92,10 @@ class PeakPicker(object):
         """
         if self.fig is None:
             self.fig = pylab.plt.figure()
-        self.ax = self.fig.add_subplot(111);
+            # add 3 subplots at the same position for debye-sherrer image, contour-plot and massif contour
+            self.ax = self.fig.add_subplot(111)
+            self.ct = self.fig.add_subplot(111)
+            self.msp = self.fig.add_subplot(111)
         if log:
             self.ax.imshow(numpy.log(1.0 + self.data - self.data.min()), origin="lower", interpolation="nearest")
         else:
@@ -240,7 +243,7 @@ class PeakPicker(object):
                                       " 3) Control + Right-click : add a point to a new group",
                                       " 4) Center-click: erase the current group"]))
 
-        raw_input("Please press enter when you are happy; to fill in ring number" + os.linesep)
+        raw_input("Please press enter when you are happy; to fill in ring number. Ring number starts at 0" + os.linesep)
         self.points.readRingNrFromKeyboard()  # readAngleFromKeyboard()
         if filename is not None:
             self.points.save(filename)
@@ -257,24 +260,21 @@ class PeakPicker(object):
         if self.fig is None:
             logging.warning("No diffraction image available => not showing the contour")
         else:
-            if self.msp is not None:
-                if len(self.msp.images) > 1:
-                    self.msp.images.pop()
-                    self.msp = None
-            if self.ct is None:
-                self.ct = self.fig.add_subplot(111)
-            else:
-                while len(self.ct.images) > 1:
-                    self.ct.images.pop()
-                while len(self.ct.collections) > 0:
-                    self.ct.collections.pop()
+            while len(self.msp.images) > 1:
+                self.msp.images.pop()
+            while len(self.ct.images) > 1:
+                self.ct.images.pop()
+            while len(self.ct.collections) > 0:
+                self.ct.collections.pop()
 
             if self.points.dSpacing and  self.points._wavelength:
                 angles = list(2.0 * numpy.arcsin(5e9 * self.points._wavelength / numpy.array(self.points.dSpacing)))
             else:
                 angles = None
             try:
+                xlim, ylim = self.ax.get_xlim(), self.ax.get_ylim()
                 self.ct.contour(data, levels=angles)
+                self.ax.set_xlim(xlim);self.ax.set_ylim(ylim);
             except MemoryError:
                 logging.error("Sorry but your computer does NOT have enough memory to display the 2-theta contour plot")
             self.fig.show()
@@ -294,13 +294,12 @@ class PeakPicker(object):
             mask[:, :, 1] = tmp
             mask[:, :, 2] = tmp
             mask[:, :, 3] = tmp
-            if self.msp is None:
-                self.msp = self.fig.add_subplot(111)
-            else:
-                if len(self.msp.images) > 1:
-                    self.msp.images.pop()
+            while len(self.msp.images) > 1:
+                self.msp.images.pop()
             try:
+                xlim, ylim = self.ax.get_xlim(), self.ax.get_ylim()
                 self.msp.imshow(mask, cmap="gray", origin="lower", interpolation="nearest")
+                self.ax.set_xlim(xlim);self.ax.set_ylim(ylim);
             except MemoryError:
                 logging.error("Sorry but your computer does NOT have enough memory to display the massif plot")
             # self.fig.show()
@@ -869,7 +868,7 @@ class Massif(object):
                     relabeled = utils.relabel(labeled_massif, self.getBinnedData(), self.getBluredData())
                     if logger.getEffectiveLevel() == logging.DEBUG:
                             fabio.edfimage.edfimage(data=relabeled).write("relabeled_massif_small.edf")
-                    self._labeled_massif = utils.unBinning(relabeled, self.binning)
+                    self._labeled_massif = unBinning(relabeled, self.binning, False)
                     if logger.getEffectiveLevel() == logging.DEBUG:
                         fabio.edfimage.edfimage(data=self._labeled_massif).write("labeled_massif.edf")
                     logger.info("Labeling found %s massifs." % self._number_massif)
