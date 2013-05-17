@@ -812,7 +812,7 @@ class Recalibration(object):
                             sp = fig2.add_subplot(111)
                         else:
                             sp.images.pop()
-                        sp.imshow(dsa, origin="lower")
+                        im = sp.imshow(dsa, origin="lower")
                         cbar = fig2.colorbar(im) #Add color bar
                         sp.set_title("Pixels solid-angle (relative to PONI)")
                         fig2.show()
