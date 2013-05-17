@@ -49,7 +49,7 @@ import pylab
 from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
 from .peakPicker import PeakPicker
-from .utils import averageImages, measure_offset  # ,timeit
+from .utils import averageImages, measure_offset, expand_args
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import hc
 from . import version
@@ -223,7 +223,7 @@ decrease the value if arcs are mixed together.""", default=None)
         self.polarization_factor = options.polarization_factor
 #        if not self.spacing_file or not os.path.isfile(self.spacing_file):
 #            raise RuntimeError("you must specify the d-spacing file")
-        self.dataFiles = [f for f in args if os.path.isfile(f)]
+        self.dataFiles = expand_args(args)
         if not self.dataFiles:
             raise RuntimeError("Please provide some calibration images ... if you want to analyze them. Try also the --help option to see all options!")
         self.weighted = options.weighted
@@ -618,7 +618,7 @@ class Recalibration(object):
             self.ai.rot3 = options.rot3
         if options.mask is not None:
             self.mask = (fabio.open(options.mask).data != 0)
-        self.dataFiles = [f for f in args if os.path.isfile(f)]
+        self.dataFiles = expand_args(args)
         if not self.dataFiles:
             raise RuntimeError("Please provide some calibration images ... if you want to analyze them. Try also the --help option to see all options!")
         self.fixed = []
@@ -948,6 +948,7 @@ class CheckCalib(object):
             sys.exit(0)
         if options.mask is not None:
             self.mask = (fabio.open(options.mask).data != 0)
+        args = expand_args(args)
         if len(args) > 0:
             f = args[0]
             if os.path.isfile(f):
