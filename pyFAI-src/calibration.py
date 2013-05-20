@@ -56,24 +56,19 @@ from . import version
 
 matplotlib.interactive(True)
 
+class AbstractCalibration(object):
 
-################################################################################
-# Calibration
-################################################################################
-
-class Calibration(object):
     """
-    class doing the calibration of frames
+    Everything that is commun to Calibration and Recalibration
     """
-    def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None, splineFile=None, detector=None, gaussianWidth=None, spacing_file=None, wavelength=None):
+    def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None, splineFile=None, detector=None, spacing_file=None, wavelength=None):
         """
         """
         self.dataFiles = dataFiles or []
         self.darkFiles = darkFiles or []
         self.flatFiles = flatFiles or []
         self.pointfile = None
-        self.gaussianWidth = gaussianWidth
-        self.labelPattern = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
+
         if type(detector) in types.StringTypes:
             self.detector = detector_factory(detector)
         elif isinstance(detector, Detector):
@@ -84,26 +79,42 @@ class Calibration(object):
         if splineFile and os.path.isfile(splineFile):
             self.detector.splineFile = os.path.abspath(splineFile)
         if pixelSize:
-            if ("__len__" in dir(pixelSize)) and len(pixelSize) >= 2:
+            if "__len__" in dir(pixelSize) and len(pixelSize) >= 2:
                 self.detector.pixel1 = float(pixelSize[0])
                 self.detector.pixel2 = float(pixelSize[1])
             else:
                 self.detector.pixel1 = self.detector.pixel2 = float(pixelSize)
+
         self.cutBackground = None
         self.outfile = "merged.edf"
         self.peakPicker = None
+        self.img = None
+        self.ai = AzimuthalIntegrator(dist=1, detector=self.detector)
+        self.wavelength = wavelength
+        if wavelength:
+            self.ai.wavelength = wavelength
+
         self.data = None
         self.basename = None
         self.geoRef = None
         self.reconstruct = False
-        self.mask = None
-        self.max_iter = 1000
-        self.filter = "mean"
-        self.saturation = 0.1
         self.spacing_file = spacing_file
-        self.wavelength = wavelength
+        self.mask = None
+        self.saturation = 0.1
+        self.fixed = ["wavelength"]  # parameter fixed during optimization
+        self.max_rings = None
+        self.max_iter = 1000
+        self.gui = True
+        self.interactive = True
+        self.filter = "mean"
+        self.basename = None
+        self.saturation = 0.1
         self.weighted = False
-        self.polarization_factor = 0
+        self.polarization_factor = None
+        self.parser = None
+        self.nPt_1D = 1024
+        self.nPt_2D_azim = 360
+        self.nPt_2D_rad = 400
 
     def __repr__(self):
         lst = ["Calibration object:",
@@ -111,67 +122,200 @@ class Calibration(object):
              "dark= " + ", ".join(self.darkFiles),
              "flat= " + ", ".join(self.flatFiles)]
         lst.append(self.detector.__repr__())
-        lst.append("gaussian= %s" % self.gaussianWidth)
         return os.linesep.join(lst)
+
+    def configure_parser(self):
+        "common configuration"
+        self.parser = OptionParser()
+        self.parser.add_option("-V", "--version", dest="version", action="store_true",
+                          help="print version of the program and quit", metavar="FILE", default=False)
+        self.parser.add_option("-o", "--out", dest="outfile",
+                          help="Filename where processed image is saved", metavar="FILE", default="merged.edf")
+        self.parser.add_option("-v", "--verbose",
+                          action="store_true", dest="debug", default=False,
+                          help="switch to debug/verbose mode")
+        self.parser.add_option("-S", "--spacing", dest="spacing", metavar="FILE",
+                      help="file containing d-spacing of the reference sample (MANDATORY)", default=None)
+        self.parser.add_option("-w", "--wavelength", dest="wavelength", type="float",
+                      help="wavelength of the X-Ray beam in Angstrom", default=None)
+        self.parser.add_option("-e", "--energy", dest="energy", type="float",
+                      help="energy of the X-Ray beam in keV (hc=%skeV.A)" % hc, default=None)
+        self.parser.add_option("-P", "--polarization", dest="polarization_factor",
+                      type="float", default=None,
+                      help="polarization factor, from -1 (vertical) to +1 (horizontal), default is None (no correction), synchrotrons are around 0.95")
+        self.parser.add_option("-b", "--background", dest="background",
+                      help="Automatic background subtraction if no value are provided", default=None)
+        self.parser.add_option("-d", "--dark", dest="dark",
+                      help="list of dark images to average and subtract", default=None)
+        self.parser.add_option("-f", "--flat", dest="flat",
+                      help="list of flat images to average and divide", default=None)
+        self.parser.add_option("-r", "--reconstruct", dest="reconstruct",
+                      help="Reconstruct image where data are masked or <0  (for Pilatus detectors or detectors with modules)",
+                      action="store_true", default=False)
+        self.parser.add_option("-s", "--spline", dest="spline",
+                      help="spline file describing the detector distortion", default=None)
+        self.parser.add_option("-D", "--detector", dest="detector_name",
+                      help="Detector name (instead of pixel size+spline)", default=None)
+        self.parser.add_option("-m", "--mask", dest="mask",
+                      help="file containing the mask (for image reconstruction)", default=None)
+        self.parser.add_option("-n", "--npt", dest="npt",
+                      help="file with datapoints saved", default=None)
+        self.parser.add_option("--filter", dest="filter",
+                      help="select the filter, either mean(default), max or median",
+                       default="mean")
+        self.parser.add_option("-l", "--distance", dest="distance", type="float",
+                      help="sample-detector distance in millimeter", default=None)
+        self.parser.add_option("--poni1", dest="poni1", type="float",
+                      help="poni1 coordinate in meter", default=None)
+        self.parser.add_option("--poni2", dest="poni2", type="float",
+                      help="poni2 coordinate in meter", default=None)
+        self.parser.add_option("--rot1", dest="rot1", type="float",
+                      help="rot1 in radians", default=None)
+        self.parser.add_option("--rot2", dest="rot2", type="float",
+                      help="rot2 in radians", default=None)
+        self.parser.add_option("--rot3", dest="rot3", type="float",
+                      help="rot3 in radians", default=None)
+
+        self.parser.add_option("--fix-dist", dest="fix_dist",
+                      help="fix the distance parameter", default=None, action="store_true")
+        self.parser.add_option("--free-dist", dest="fix_dist",
+                      help="free the distance parameter", default=None, action="store_false")
+
+        self.parser.add_option("--fix-poni1", dest="fix_poni1",
+                      help="fix the poni1 parameter", default=None, action="store_true")
+        self.parser.add_option("--free-poni1", dest="fix_poni1",
+                      help="free the poni1 parameter", default=None, action="store_false")
+
+        self.parser.add_option("--fix-poni2", dest="fix_poni2",
+                      help="fix the poni2 parameter", default=None, action="store_true")
+        self.parser.add_option("--free-poni2", dest="fix_poni2",
+                      help="free the poni2 parameter", default=None, action="store_false")
+
+        self.parser.add_option("--fix-rot1", dest="fix_rot1",
+                      help="fix the rot1 parameter", default=None, action="store_true")
+        self.parser.add_option("--free-rot1", dest="fix_rot1",
+                      help="free the rot1 parameter", default=None, action="store_false")
+
+        self.parser.add_option("--fix-rot2", dest="fix_rot2",
+                      help="fix the rot2 parameter", default=None, action="store_true")
+        self.parser.add_option("--free-rot2", dest="fix_rot2",
+                      help="free the rot2 parameter", default=None, action="store_false")
+
+        self.parser.add_option("--fix-rot3", dest="fix_rot3",
+                      help="fix the rot3 parameter", default=None, action="store_true")
+        self.parser.add_option("--free-rot3", dest="fix_rot3",
+                      help="free the rot3 parameter", default=None, action="store_false")
+
+        self.parser.add_option("--fix-wavelength", dest="fix_wavelength",
+                      help="fix the wavelength parameter", default=True, action="store_true")
+        self.parser.add_option("--free-wavelength", dest="fix_wavelength",
+                      help="free the wavelength parameter", default=True, action="store_false")
+
+        self.parser.add_option("--saturation", dest="saturation",
+                      help="consider all pixel>max*(1-saturation) as saturated and reconstruct them",
+                      default=0.1, type="float")
+        self.parser.add_option("--weighted", dest="weighted",
+                      help="weight fit by intensity",
+                       default=False, action="store_true")
+
+    def analyse_options(self, options):
+        "Analyse options"
+        if options.version:
+            print("PyFAI %s version %s" % self.__class__.__name__, version)
+            sys.exit(0)
+        if options.verbose:
+            logger.setLevel(logging.DEBUG)
+        self.outfile = options.outfile
+        if options.dark:
+            self.darkFiles = [f for f in options.dark.split(",") if os.path.isfile(f)]
+        if options.flat:
+            self.flatFiles = [f for f in options.flat.split(",") if os.path.isfile(f)]
+        self.pointfile = options.npt
+        self.spacing_file = options.spacing
+        if not self.spacing_file or not os.path.isfile(self.spacing_file):
+            self.read_dSpacingFile()
+        if options.wavelength:
+            self.ai.wavelength = 1e-10 * options.wavelength
+        elif options.energy:
+            self.ai.wavelength = 1e-10 * hc / options.energy
+        else:
+            self.read_wavelength()
+        if options.distance:
+            self.ai.dist = 1e-3 * options.distance
+        if options.poni1 is not None:
+            self.ai.poni1 = options.poni1
+        if options.poni2 is not None:
+            self.ai.poni2 = options.poni2
+        if options.rot1 is not None:
+            self.ai.rot1 = options.rot1
+        if options.rot2 is not None:
+            self.ai.rot2 = options.rot2
+        if options.rot3 is not None:
+            self.ai.rot3 = options.rot3
+        if options.mask is not None:
+            self.mask = (fabio.open(options.mask).data != 0)
+        self.dataFiles = expand_args(args)
+        if not self.dataFiles:
+            raise RuntimeError("Please provide some calibration images ... if you want to analyze them. Try also the --help option to see all options!")
+        self.fixed = []
+        if options.fix_dist:
+            self.fixed.append("dist")
+        if options.fix_poni1:
+            self.fixed.append("poni1")
+        if options.fix_poni2:
+            self.fixed.append("poni2")
+        if options.fix_rot1:
+            self.fixed.append("rot1")
+        if options.fix_rot2:
+            self.fixed.append("rot2")
+        if options.fix_rot3:
+            self.fixed.append("rot3")
+        if options.fix_wavelength:
+            self.fixed.append("wavelength")
+        self.saturation = options.saturation
+        self.max_rings = options.max_rings
+        self.gui = options.gui
+        self.interactive = options.interactive
+        self.filter = options.filter
+        self.weighted = options.weighted
+        self.polarization_factor = options.polarization_factor
+        self.detector = self.ai.detector
+
+
+################################################################################
+# Calibration
+################################################################################
+
+class Calibration(AbstractCalibration):
+    """
+    class doing the calibration of frames
+    """
+    def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None, splineFile=None, detector=None, gaussianWidth=None, spacing_file=None, wavelength=None):
+        """
+        """
+        AbstractCalibration.__init__(self, dataFiles, darkFiles, flatFiles, pixelSize, splineFile, detector, spacing_file, wavelength)
+        self.gaussianWidth = gaussianWidth
+        self.labelPattern = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
+
+    def __repr__(self):
+        return AbstractCalibration.__repr__(self) + "%sgaussian= %s" % (os.linesep, self.gaussianWidth)
 
     def parse(self):
         """
         parse options from command line
         """
-        parser = OptionParser()
-        parser.add_option("-V", "--version", dest="version", action="store_true",
-                          help="print version of the program and quit", metavar="FILE", default=False)
-        parser.add_option("-o", "--out", dest="outfile",
-                          help="Filename where processed image is saved", metavar="FILE", default="merged.edf")
-        parser.add_option("-v", "--verbose",
-                          action="store_true", dest="debug", default=False,
-                          help="switch to debug/verbose mode")
-        parser.add_option("-g", "--gaussian", dest="gaussian", help="""Size of the gaussian kernel.
+        self.configure_parser()  # common
+        self.parser.add_option("-g", "--gaussian", dest="gaussian", help="""Size of the gaussian kernel.
 Size of the gap (in pixels) between two consecutive rings, by default 100
 Increase the value if the arc is not complete;
 decrease the value if arcs are mixed together.""", default=None)
-        parser.add_option("-c", "--square", dest="square", action="store_true",
+        self.parser.add_option("-c", "--square", dest="square", action="store_true",
                       help="Use square kernel shape for neighbor search instead of diamond shape", default=False)
-        parser.add_option("-S", "--spacing", dest="spacing", metavar="FILE",
-                      help="file containing d-spacing of the reference sample (MANDATORY)", default=None)
-        parser.add_option("-w", "--wavelength", dest="wavelength", type="float",
-                      help="wavelength of the X-Ray beam in Angstrom", default=None)
-        parser.add_option("-e", "--energy", dest="energy", type="float",
-                      help="energy of the X-Ray beam in keV (hc=%skeV.A)" % hc, default=None)
-        parser.add_option("-P", "--polarization", dest="polarization_factor",
-                      type="float", default=0.0,
-                      help="polarization factor, from -1 (vertical) to +1 (horizontal), default is 0, synchrotrons are around 0.95")
-        parser.add_option("-b", "--background", dest="background",
-                      help="Automatic background subtraction if no value are provided", default=None)
-        parser.add_option("-d", "--dark", dest="dark",
-                      help="list of dark images to average and subtract", default=None)
-        parser.add_option("-f", "--flat", dest="flat",
-                      help="list of flat images to average and divide", default=None)
-        parser.add_option("-r", "--reconstruct", dest="reconstruct",
-                      help="Reconstruct image where data are masked or <0  (for Pilatus detectors or detectors with modules)",
-                      action="store_true", default=False)
-        parser.add_option("-s", "--spline", dest="spline",
-                      help="spline file describing the detector distortion", default=None)
-        parser.add_option("-p", "--pixel", dest="pixel",
+        self.parser.add_option("-p", "--pixel", dest="pixel",
                       help="size of the pixel in micron", default=None)
-        parser.add_option("-D", "--detector", dest="detector_name",
-                      help="Detector name (instead of pixel size+spline)", default=None)
-        parser.add_option("-m", "--mask", dest="mask",
-                      help="file containing the mask (for image reconstruction)", default=None)
-        parser.add_option("-n", "--npt", dest="npt",
-                      help="file with datapoints saved", default=None)
-        parser.add_option("--filter", dest="filter",
-                      help="select the filter, either mean(default), max or median",
-                       default="mean")
-        parser.add_option("--saturation", dest="saturation",
-                      help="consider all pixel>max*(1-saturation) as saturated and reconstruct them",
-                      default=0.1, type="float")
-        parser.add_option("--weighted", dest="weighted",
-                      help="weight fit by intensity",
-                       default=False, action="store_true")
 
 
-        (options, args) = parser.parse_args()
+        (options, args) = self.parser.parse_args()
 
         # Analyse aruments and options
         if options.version:
@@ -361,7 +505,7 @@ decrease the value if arcs are mixed together.""", default=None)
                 else:
                     sp.images.pop()
                 im = sp.imshow(dsa, origin="lower")
-                cbar = fig2.colorbar(im) #Add color bar
+                cbar = fig2.colorbar(im)  # Add color bar
                 sp.set_title("Pixels solid-angle (relative to PONI)")
                 fig2.show()
 
@@ -421,183 +565,38 @@ decrease the value if arcs are mixed together.""", default=None)
 # Recalibration
 ################################################################################
 
-class Recalibration(object):
+class Recalibration(AbstractCalibration):
     """
     class doing the re-calibration of frames
     """
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None, splineFile=None, detector=None, spacing_file=None, wavelength=None):
         """
         """
-        self.dataFiles = dataFiles or []
-        self.darkFiles = darkFiles or []
-        self.flatFiles = flatFiles or []
-        self.pointfile = None
-        self.labelPattern = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
+        AbstractCalibration.__init__(self, dataFiles, darkFiles, flatFiles, pixelSize, splineFile, detector, spacing_file, wavelength)
 
-        if type(detector) in types.StringTypes:
-            self.detector = detector_factory(detector)
-        elif isinstance(detector, Detector):
-            self.detector = detector
-        else:
-            self.detector = Detector()
-
-        if splineFile and os.path.isfile(splineFile):
-            self.detector.splineFile = os.path.abspath(splineFile)
-        if pixelSize:
-            if "__len__" in dir(pixelSize) and len(pixelSize) >= 2:
-                self.detector.pixel1 = float(pixelSize[0])
-                self.detector.pixel2 = float(pixelSize[1])
-            else:
-                self.detector.pixel1 = self.detector.pixel2 = float(pixelSize)
-
-        self.cutBackground = None
-        self.outfile = "merged.edf"
-        self.peakPicker = None
-        self.img = None
-        self.ai = AzimuthalIntegrator(dist=1, detector=self.detector)
-        if wavelength:
-            self.ai.wavelength = wavelength
-        self.data = None
-        self.basename = None
-        self.geoRef = None
-        self.reconstruct = False
-        self.spacing_file = spacing_file
-        self.mask = None
-        self.saturation = 0.1
-        self.fixed = ["wavelength"]  # parameter fixed during optimization
-        self.max_rings = None
-        self.max_iter = 1000
-        self.gui = True
-        self.interactive = True
-        self.filter = "mean"
-        self.weighted = False
-        self.polarization_factor = 0
-
-    def __repr__(self):
-        lst = ["Calibration object:",
-             "data= " + ", ".join(self.dataFiles),
-             "dark= " + ", ".join(self.darkFiles),
-             "flat= " + ", ".join(self.flatFiles)]
-        lst.append(self.detector.__repr__())
-        return os.linesep.join(lst)
 
     def parse(self):
         """
         parse options from command line
         """
-        parser = OptionParser()
-        parser.add_option("-V", "--version", dest="version", action="store_true",
-                          help="print version of the program and quit", metavar="FILE", default=False)
-        parser.add_option("-o", "--out", dest="outfile",
-                          help="Filename where processed image is saved", metavar="FILE", default="merged.edf")
-        parser.add_option("-v", "--verbose",
-                          action="store_true", dest="verbose", default=False,
-                          help="switch to debug mode")
-        parser.add_option("-S", "-s", "--spacing", dest="spacing", metavar="FILE",
-                      help="file containing d-spacing of the reference sample (MANDATORY)", default=None)
-        parser.add_option("-r", "--ring", dest="max_rings", type="float",
+        self.parser.add_option("-r", "--ring", dest="max_rings", type="float",
                       help="maximum number of rings to extract", default=None)
-        parser.add_option("-d", "--dark", dest="dark", metavar="FILE",
-                      help="list of dark images to average and subtract", default=None)
-        parser.add_option("-f", "--flat", dest="flat", metavar="FILE",
-                      help="list of flat images to average and divide", default=None)
-        parser.add_option("-m", "--mask", dest="mask", metavar="FILE",
-                      help="file containing the mask", default=None)
-        parser.add_option("-p", "--poni", dest="poni", metavar="FILE",
+        self.parser.add_option("-p", "--poni", dest="poni", metavar="FILE",
                       help="file containing the diffraction parameter (poni-file)", default=None)
-        parser.add_option("-n", "--npt", dest="npt", metavar="FILE",
-                      help="file with datapoints saved", default=None)
-        parser.add_option("-e", "--energy", dest="energy", type="float",
-                      help="energy of the X-Ray beam in keV (hc=%skeV.A)" % hc, default=None)
-        parser.add_option("-w", "--wavelength", dest="wavelength", type="float",
-                      help="wavelength of the X-Ray beam in Angstrom", default=None)
-        parser.add_option("-P", "--polarization", dest="polarization_factor",
-                      type="float", default=0.0,
-                      help="polarization factor, from -1 (vertical) to +1 (horizontal), default is 0, synchrotrons are around 0.95")
-        parser.add_option("-l", "--distance", dest="distance", type="float",
-                      help="sample-detector distance in millimeter", default=None)
-        parser.add_option("--poni1", dest="poni1", type="float",
-                      help="poni1 coordinate in meter", default=None)
-        parser.add_option("--poni2", dest="poni2", type="float",
-                      help="poni2 coordinate in meter", default=None)
-        parser.add_option("--rot1", dest="rot1", type="float",
-                      help="rot1 in radians", default=None)
-        parser.add_option("--rot2", dest="rot2", type="float",
-                      help="rot2 in radians", default=None)
-        parser.add_option("--rot3", dest="rot3", type="float",
-                      help="rot3 in radians", default=None)
-
-        parser.add_option("--fix-dist", dest="fix_dist",
-                      help="fix the distance parameter", default=None, action="store_true")
-        parser.add_option("--free-dist", dest="fix_dist",
-                      help="free the distance parameter", default=None, action="store_false")
-
-        parser.add_option("--fix-poni1", dest="fix_poni1",
-                      help="fix the poni1 parameter", default=None, action="store_true")
-        parser.add_option("--free-poni1", dest="fix_poni1",
-                      help="free the poni1 parameter", default=None, action="store_false")
-
-        parser.add_option("--fix-poni2", dest="fix_poni2",
-                      help="fix the poni2 parameter", default=None, action="store_true")
-        parser.add_option("--free-poni2", dest="fix_poni2",
-                      help="free the poni2 parameter", default=None, action="store_false")
-
-        parser.add_option("--fix-rot1", dest="fix_rot1",
-                      help="fix the rot1 parameter", default=None, action="store_true")
-        parser.add_option("--free-rot1", dest="fix_rot1",
-                      help="free the rot1 parameter", default=None, action="store_false")
-
-        parser.add_option("--fix-rot2", dest="fix_rot2",
-                      help="fix the rot2 parameter", default=None, action="store_true")
-        parser.add_option("--free-rot2", dest="fix_rot2",
-                      help="free the rot2 parameter", default=None, action="store_false")
-
-        parser.add_option("--fix-rot3", dest="fix_rot3",
-                      help="fix the rot3 parameter", default=None, action="store_true")
-        parser.add_option("--free-rot3", dest="fix_rot3",
-                      help="free the rot3 parameter", default=None, action="store_false")
-
-        parser.add_option("--fix-wavelength", dest="fix_wavelength",
-                      help="fix the wavelength parameter", default=True, action="store_true")
-        parser.add_option("--free-wavelength", dest="fix_wavelength",
-                      help="free the wavelength parameter", default=True, action="store_false")
-        parser.add_option("--saturation", dest="saturation",
-                      help="consider all pixel>max*(1-saturation) as saturated and reconstruct them",
-                      default=0.1, type="float")
-        parser.add_option("--no-gui", dest="gui",
+        self.parser.add_option("--no-gui", dest="gui",
                       help="force the program to run without a Graphical interface",
                       default=True, action="store_false")
-        parser.add_option("--no-interactive", dest="interactive",
+        self.parser.add_option("--no-interactive", dest="interactive",
                       help="force the program to run and exit without prompting for refinements",
                       default=True, action="store_false")
-        parser.add_option("--filter", dest="filter",
-                      help="select the filter, either mean(default), max or median",
-                       default="mean")
-        parser.add_option("--weighted", dest="weighted",
-                      help="weight fit by intensity",
-                       default=False, action="store_true")
 
 
         (options, args) = parser.parse_args()
 
         # Analyse aruments and options
-        if options.version:
-            print("pyFAI-recalib version %s" % version)
-            sys.exit(0)
-        if options.verbose:
-            logger.setLevel(logging.DEBUG)
-        self.outfile = options.outfile
-        if options.dark:
-#            print options.dark, type(options.dark)
-            self.darkFiles = [f for f in options.dark.split(",") if os.path.isfile(f)]
-        if options.flat:
-#            print options.flat, type(options.flat)
-            self.flatFiles = [f for f in options.flat.split(",") if os.path.isfile(f)]
-        self.pointfile = options.npt
-        self.spacing_file = options.spacing
-        if not self.spacing_file or not os.path.isfile(self.spacing_file):
-            self.read_dSpacingFile()
+        self.analyse_options(options)
         self.ai = AzimuthalIntegrator.sload(options.poni)
+        self.ai.wavelength = self.wavelength
         if options.wavelength:
             self.ai.wavelength = 1e-10 * options.wavelength
         elif options.energy:
@@ -813,7 +812,7 @@ class Recalibration(object):
                         else:
                             sp.images.pop()
                         sp.imshow(dsa, origin="lower")
-                        cbar = fig2.colorbar(im) #Add color bar
+                        cbar = fig2.colorbar(im)  # Add color bar
                         sp.set_title("Pixels solid-angle (relative to PONI)")
                         fig2.show()
             if not self.interactive:
