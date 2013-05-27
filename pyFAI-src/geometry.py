@@ -748,8 +748,8 @@ class Geometry(object):
         """
         Calulate the solid angle of the current pixels
 
-        @param d1: 1d or 2d set
-        @param d2:
+        @param d1: 1d or 2d set of points
+        @param d2: 1d or 2d set of points (same size&shape as d1
         """
         p1, p2 = self._calcCartesianPositions(d1, d2)
 #        p1 = (0.5 + d1) * self.pixel1 - self._poni1
@@ -772,7 +772,7 @@ class Geometry(object):
             dY = sY[1:, : ] - sY[:-1, :]
             ds = (dX + 1.0) * (dY + 1.0)
 
-        dsa = ds * (self._dist) / sqrt(self._dist ** 2 + p1 ** 2 + p2 ** 2)
+        dsa = ds * (self._dist ** 2) / (self._dist ** 2 + p1 ** 2 + p2 ** 2)
         return dsa
 
     def solidAngleArray(self, shape):
