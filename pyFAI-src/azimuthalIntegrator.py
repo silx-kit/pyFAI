@@ -2804,16 +2804,16 @@ class AzimuthalIntegrator(Geometry):
         if self.splineFile:
             header["spline"] = str(self.splineFile)
 
-        if dark:
+        if dark is not None:
             if self.darkfiles:
                 header["dark"] = self.darkfiles
             else:
-                header["dark"] = 'unknown dark'
-        if flat:
+                header["dark"] = 'unknown dark applied'
+        if flat is not None:
             if self.flatfiles:
                 header["flat"] = self.flatfiles
             else:
-                header["flat"] = 'unknown flat'
+                header["flat"] = 'unknown flat applied'
         f2d = self.getFit2D()
         for key in f2d:
             header["key"] = f2d[key]
