@@ -155,15 +155,16 @@ def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0):
         has_fftw3 = ("fftw3" in sys.modules)
     if has_fftw3:
         try:
-            if mode != "wrap":
-                input_img = expand(input_img, sigma, mode, cval)
-            s0, s1 = input_img.shape
             if isinstance(sigma, (list, tuple)):
-                k0 = int(ceil(float(sigma[0])))
-                k1 = int(ceil(float(sigma[1])))
+                sigma = (float(sigma[0]), float(sigma[1]))
             else:
-                k0 = k1 = int(ceil(float(sigma)))
+                sigma = (float(sigma), float(sigma))
+            k0 = int(ceil(4.0 * float(sigma[0])))
+            k1 = int(ceil(4.0 * float(sigma[1])))
 
+            if mode != "wrap":
+                input_img = expand(input_img, (k0, k1), mode, cval)
+            s0, s1 = input_img.shape
             sum_init = input_img.astype(numpy.float32).sum()
             fftOut = numpy.zeros((s0, s1), dtype=complex)
             fftIn = numpy.zeros((s0, s1), dtype=complex)
@@ -171,8 +172,8 @@ def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0):
                 fft = fftw3.Plan(fftIn, fftOut, direction='forward')
                 ifft = fftw3.Plan(fftOut, fftIn, direction='backward')
 
-            g0 = gaussian(s0, k0)
-            g1 = gaussian(s1, k1)
+            g0 = gaussian(s0, sigma[0])
+            g1 = gaussian(s1, sigma[1])
             g0 = numpy.concatenate((g0[s0 // 2:], g0[:s0 // 2]))  # faster than fftshift
             g1 = numpy.concatenate((g1[s1 // 2:], g1[:s1 // 2]))  # faster than fftshift
             g2 = numpy.outer(g0, g1)
@@ -257,10 +258,10 @@ def dog_filter(input_img, sigma1, sigma2, mode="reflect", cval=0.0):
             input_img = expand(input_img, sigma, mode, cval)
         s0, s1 = input_img.shape
         if isinstance(sigma, (list, tuple)):
-            k0 = int(ceil(float(sigma[0])))
-            k1 = int(ceil(float(sigma[1])))
+            k0 = int(ceil(4.0 * float(sigma[0])))
+            k1 = int(ceil(4.0 * float(sigma[1])))
         else:
-            k0 = k1 = int(ceil(float(sigma)))
+            k0 = k1 = int(ceil(4.0 * float(sigma)))
 
         if fftw3:
             sum_init = input_img.astype(numpy.float32).sum()
@@ -298,9 +299,11 @@ def expand(input_img, sigma, mode="constant", cval=0.0):
     """Expand array a with its reflection on boundaries
 
     @param a: 2D array
-    @param sigma: float or 2-tuple of floats
-    @param mode:"constant","nearest" or "reflect"
+    @param sigma: float or 2-tuple of floats.  
+    @param mode:"constant", "nearest", "reflect" or mirror
     @param cval: filling value used for constant, 0.0 by default
+    
+    Nota: sigma is the half-width of the kernel. For gaussian convolution it is adviced that it is 4*sigma_of_gaussian 
     """
     s0, s1 = input_img.shape
     dtype = input_img.dtype
@@ -313,8 +316,19 @@ def expand(input_img, sigma, mode="constant", cval=0.0):
         raise RuntimeError("Makes little sense to apply a kernel (%i,%i)larger than the image (%i,%i)" % (k0, k1, s0, s1))
     output = numpy.zeros((s0 + 2 * k0, s1 + 2 * k1), dtype=dtype) + float(cval)
     output[k0:k0 + s0, k1:k1 + s1] = input_img
-    if mode in  ["reflect", "mirror"]:
-    # 4 corners
+    if (mode == "mirror"):
+        # 4 corners
+        output[s0 + k0:, s1 + k1:] = input_img[-2:-k0 - 2:-1, -2:-k1 - 2:-1]
+        output[:k0, :k1] = input_img[k0 - 0:0:-1, k1 - 0:0:-1]
+        output[:k0, s1 + k1:] = input_img[k0 - 0:0:-1, s1 - 2: s1 - k1 - 2:-1]
+        output[s0 + k0:, :k1] = input_img[s0 - 2: s0 - k0 - 2:-1, k1 - 0:0:-1]
+        # 4 sides
+        output[k0:k0 + s0, :k1] = input_img[:s0, k1 - 0:0:-1]
+        output[:k0, k1:k1 + s1] = input_img[k0 - 0:0:-1, :s1]
+        output[-k0:, k1:s1 + k1] = input_img[-2:s0 - k0 - 2:-1, :]
+        output[k0:s0 + k0, -k1:] = input_img[:, -2:s1 - k1 - 2:-1]
+    elif mode == "reflect":
+        # 4 corners
         output[s0 + k0:, s1 + k1:] = input_img[-1:-k0 - 1:-1, -1:-k1 - 1:-1]
         output[:k0, :k1] = input_img[k0 - 1::-1, k1 - 1::-1]
         output[:k0, s1 + k1:] = input_img[k0 - 1::-1, s1 - 1: s1 - k1 - 1:-1]
@@ -335,8 +349,24 @@ def expand(input_img, sigma, mode="constant", cval=0.0):
         output[:k0, k1:k1 + s1] = numpy.outer(numpy.ones(k0), input_img[0, :])
         output[-k0:, k1:s1 + k1] = numpy.outer(numpy.ones(k0), input_img[-1, :])
         output[k0:s0 + k0, -k1:] = numpy.outer(input_img[:, -1], numpy.ones(k1))
-    return output
+    elif mode == "wrap":
+        # 4 corners
+        output[s0 + k0:, s1 + k1:] = input_img[:k0, :k1]
+        output[:k0, :k1] = input_img[-k0:, -k1:]
+        output[:k0, s1 + k1:] = input_img[-k0:, :k1]
+        output[s0 + k0:, :k1] = input_img[:k0, -k1:]
+        # 4 sides
+        output[k0:k0 + s0, :k1] = input_img[:, -k1:]
+        output[:k0, k1:k1 + s1] = input_img[-k0:, :]
+        output[-k0:, k1:s1 + k1] = input_img[:k0, :]
+        output[k0:s0 + k0, -k1:] = input_img[:, :k1]
+    elif mode == "constant":
+        #Nothing to do
+        pass
 
+    else:
+        raise RuntimeError("Unknown expand mode: %s" % mode)
+    return output
 
 
 def relabel(label, data, blured, max_size=None):
