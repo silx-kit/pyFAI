@@ -116,29 +116,15 @@ class test_utils(unittest.TestCase):
 
     def test_gaussian_filter(self):
         """
-        obviously there are errors there :(
+        Check gaussian filters applied via FFT
         """
         sigma = 2
-        blurred1 = scipy.ndimage.filters.gaussian_filter(self.dark, sigma, mode="wrap")
-        blurred2 = pyFAI.utils.gaussian_filter(self.dark, sigma, mode="wrap")
-#        print abs(blurred1 - blurred2).max()
-        self.assert_(abs(blurred1 - blurred2).max() < 1e-5, "blur in wrap mode are the same")
-
-        blurred1 = scipy.ndimage.filters.gaussian_filter(self.dark, sigma, mode="reflect")
-        blurred2 = pyFAI.utils.gaussian_filter(self.dark, sigma, mode="reflect")
-        print abs(blurred1 - blurred2).max()
-        # this test fails why?
-#        self.assert_(abs(blurred1 - blurred2).max() < 1e-2, "blur in reflect mode are the same")
-        blurred1 = scipy.ndimage.filters.gaussian_filter(self.dark, sigma, mode="constant")
-        blurred2 = pyFAI.utils.gaussian_filter(self.dark, sigma, mode="constant")
-        print abs(blurred1 - blurred2).max()
-        # this test fails why?
-#        self.assert_(abs(blurred1 - blurred2).max() < 1e-2, "blur in reflect mode are the same")
-        blurred1 = scipy.ndimage.filters.gaussian_filter(self.dark, sigma, mode="nearest")
-        blurred2 = pyFAI.utils.gaussian_filter(self.dark, sigma, mode="nearest")
-        print abs(blurred1 - blurred2).max()
-        # this test fails why?
-#        self.assert_(abs(blurred1 - blurred2).max() < 1e-2, "blur in reflect mode are the same")
+        for mode in ["wrap", "reflect", "constant", "nearest", "mirror" ]:
+            blurred1 = scipy.ndimage.filters.gaussian_filter(self.dark, sigma, mode=mode)
+            blurred2 = pyFAI.utils.gaussian_filter(self.dark, sigma, mode=mode)
+            delta = abs((blurred1 - blurred2) / (blurred1)).max()
+            logger.info("Error for gaussian blur with mode %s is %s" % (mode, delta))
+            self.assert_(delta < 3e-5, "blur in %s mode are the same, got %s" % (mode, delta))
 
 
 def test_suite_all_Utils():
