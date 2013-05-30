@@ -118,13 +118,13 @@ class test_utils(unittest.TestCase):
         """
         Check gaussian filters applied via FFT
         """
-        sigma = 2
-        for mode in ["wrap", "reflect", "constant", "nearest", "mirror" ]:
-            blurred1 = scipy.ndimage.filters.gaussian_filter(self.dark, sigma, mode=mode)
-            blurred2 = pyFAI.utils.gaussian_filter(self.dark, sigma, mode=mode)
-            delta = abs((blurred1 - blurred2) / (blurred1)).max()
-            logger.info("Error for gaussian blur with mode %s is %s" % (mode, delta))
-            self.assert_(delta < 4e-5, "blur in %s mode are the same, got %s" % (mode, delta))
+        for sigma in [2, 9.0 / 8.0]:
+            for mode in ["wrap", "reflect", "constant", "nearest", "mirror" ]:
+                blurred1 = scipy.ndimage.filters.gaussian_filter(self.flat, sigma, mode=mode)
+                blurred2 = pyFAI.utils.gaussian_filter(self.flat, sigma, mode=mode)
+                delta = abs((blurred1 - blurred2) / (blurred1)).max()
+                logger.info("Error for gaussian blur sigma: %s with mode %s is %s" % (sigma, mode, delta))
+                self.assert_(delta < 5e-5, "Gaussian blur sigma: %s  in %s mode are the same, got %s" % (sigma, mode, delta))
 
 
 def test_suite_all_Utils():
