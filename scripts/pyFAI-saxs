@@ -78,8 +78,8 @@ def main():
 #                      type="string", default=None,
 #                      help="name of the file containing the background")
     parser.add_option("-P", "--polarization", dest="polarization_factor",
-                      type="float", default=0.0,
-                      help="Polarization factor, from -1 (vertical) to +1 (horizontal), default is 0, synchrotrons are around 0.95")
+                      type="float", default=None,
+                      help="Polarization factor, from -1 (vertical) to +1 (horizontal), default is None for no correction, synchrotrons are around 0.95")
     parser.add_option("--error-model", dest="error_model",
                       type="string", default=None,
                       help="Error model to use. Currently on 'poisson' is implemented ")
