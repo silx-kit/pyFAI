@@ -63,6 +63,11 @@ class AbstractCalibration(object):
     """
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None, splineFile=None, detector=None, spacing_file=None, wavelength=None):
         """
+        Constructor:
+
+        @param dataFiles: list of filenames containing data images
+        @param darkFiles: list of filenames containing dark current images
+
         """
         self.dataFiles = dataFiles or []
         self.darkFiles = darkFiles or []
@@ -292,6 +297,9 @@ class Calibration(AbstractCalibration):
     """
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None, splineFile=None, detector=None, gaussianWidth=None, spacing_file=None, wavelength=None):
         """
+        Constructor
+
+
         """
         AbstractCalibration.__init__(self, dataFiles, darkFiles, flatFiles, pixelSize, splineFile, detector, spacing_file, wavelength)
         self.gaussianWidth = gaussianWidth
