@@ -69,10 +69,10 @@ def main():
                       help="delta dummy value")
     parser.add_option("-m", "--mask", dest="mask",
                       type="string", default=None,
-                      help="name of the file containing the mask")
+                      help="name of the file containing the mask image")
     parser.add_option("-d", "--dark", dest="dark",
                       type="string", default=None,
-                      help="name of the file containing the dark")
+                      help="name of the file containing the dark current")
     parser.add_option("-f", "--flat", dest="flat",
                       type="string", default=None,
                       help="name of the file containing the flat field")
