@@ -77,8 +77,8 @@ def main():
                       type="string", default=None,
                       help="name of the file containing the flat field")
     parser.add_option("-P", "--polarization", dest="polarization_factor",
-                      type="float", default=0.0,
-                      help="Polarization factor, from -1 (vertical) to +1 (horizontal), default is 0, synchrotrons are around 0.95")
+                      type="float", default=None,
+                      help="Polarization factor, from -1 (vertical) to +1 (horizontal), default is None for no correction, synchrotrons are around 0.95")
 
 #    parser.add_option("-b", "--background", dest="background",
 #                      type="string", default=None,
