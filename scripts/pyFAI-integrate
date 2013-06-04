@@ -66,8 +66,20 @@ if __name__ == "__main__":
     version = "%prog " + pyFAI.version
     parser = OptionParser(usage=usage, version=version)
     parser.add_option("-v", "--verbose",
-                          action="store_true", dest="verbose", default=False,
-                          help="switch to verbose/debug mode")
+                      action="store_true", dest="verbose", default=False,
+                      help="switch to verbose/debug mode")
+    parser.add_option("-o", "--output",
+                      dest="output", default=None,
+                      help="Directory or file where to store the output data")
+    parser.add_option("-f", "--format",
+                      dest="format", default=None,
+                      help="output data format (can be HDF5)")
+    parser.add_option("-s", "--slow-motor",
+                      dest="slow", default=None,
+                      help="Dimension of the scan on the slow direction (makes sense only with HDF5)")
+    parser.add_option("-r", "--fast-motor",
+                      dest="rapid", default=None,
+                      help="Dimension of the scan on the fast direction (makes sense only with HDF5)")
     (options, args) = parser.parse_args()
     # Analyse aruments and options
     args = pyFAI.utils.expand_args(args)
