@@ -124,7 +124,7 @@ class test_utils(unittest.TestCase):
                 blurred2 = pyFAI.utils.gaussian_filter(self.flat, sigma, mode=mode)
                 delta = abs((blurred1 - blurred2) / (blurred1)).max()
                 logger.info("Error for gaussian blur sigma: %s with mode %s is %s" % (sigma, mode, delta))
-                self.assert_(delta < 5e-5, "Gaussian blur sigma: %s  in %s mode are the same, got %s" % (sigma, mode, delta))
+                self.assert_(delta < 6e-5, "Gaussian blur sigma: %s  in %s mode are the same, got %s" % (sigma, mode, delta))
 
 
 def test_suite_all_Utils():
