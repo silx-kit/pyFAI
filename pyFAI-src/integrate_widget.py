@@ -170,7 +170,7 @@ class AIWidget(QtGui.QWidget):
             if self.do_poisson:
                 kwarg["error_model"] = "poisson"
             else:
-                kwarg["error_model"] = "None"
+                kwarg["error_model"] = None
             logger.info("Parameters for integration:%s%s" % (os.linesep,
                             os.linesep.join(["\t%s:\t%s" % (k, v) for k, v in kwarg.items()])))
 
@@ -509,20 +509,12 @@ class AIWidget(QtGui.QWidget):
         dark_files = [i.strip() for i in str(self.dark_current.text()).split(",")
                       if os.path.isfile(i.strip())]
         if dark_files and bool(self.do_dark.isChecked()):
-            d0 = fabio.open(dark_files[0]).data
-            darks = d0.astype(numpy.float32)
-            for  f in dark_files[1:]:
-                darks += fabio.open(f).data
-            self.ai.darkcurrent = darks / len(dark_files)
+            self.ai.set_darkfiles(dark_files)
 
         flat_files = [i.strip() for i in str(self.flat_field.text()).split(",")
                       if os.path.isfile(i.strip())]
         if flat_files and bool(self.do_flat.isChecked()):
-            d0 = fabio.open(flat_files[0]).data
-            flats = d0.astype(numpy.float32)
-            for f in flat_files[1:]:
-                flats += fabio.open(f).data
-            self.ai.darkcurrent = flats / len(flat_files)
+            self.ai.set_flatfiles(flat_files)
         print self.ai
 
     def detector_changed(self):
