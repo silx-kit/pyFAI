@@ -192,7 +192,7 @@ decrease the value if arcs are mixed together.""", default=None)
                 self.cutBackground = True
         if options.dark:
             self.darkFiles = [f for f in options.dark.split(",") if os.path.isfile(f)]
-            print("Dark: "+", ".join(self.darkFiles))
+            print("Dark: " + ", ".join(self.darkFiles))
             if not self.darkFiles: #empty container !!!
                 logger.error("No dark file exists !!!")
                 self.darkFiles = None
@@ -202,7 +202,7 @@ decrease the value if arcs are mixed together.""", default=None)
             if not self.flatFiles: #empty container !!!
                 logger.error("No flat file exists !!!")
                 self.flatFiles = None
-            
+
         self.reconstruct = options.reconstruct
         if options.mask and os.path.isfile(options.mask):
             self.mask = (fabio.open(options.mask).data != 0)
@@ -362,14 +362,16 @@ decrease the value if arcs are mixed together.""", default=None)
                 logger.info("We are under windows, matplotlib is not able to display too many images without crashing, this is why little information is displayed")
             else:
                 self.peakPicker.contour(tth)
+
                 if fig2 is None:
                     fig2 = pylab.plt.figure()
                     sp = fig2.add_subplot(111)
+                    im = sp.imshow(dsa, origin="lower")
+                    cbar = fig2.colorbar(im) #Add color bar
+                    sp.set_title("Pixels solid-angle (relative to PONI)")
                 else:
-                    sp.images.pop()
-                im = sp.imshow(dsa, origin="lower")
-                cbar = fig2.colorbar(im) #Add color bar
-                sp.set_title("Pixels solid-angle (relative to PONI)")
+                    im.set_array(dsa)
+                    im.autoscale()
                 fig2.show()
 
             change = raw_input("Modify parameters ?\t ").strip()
@@ -823,11 +825,12 @@ class Recalibration(object):
                         if fig2 is None:
                             fig2 = pylab.plt.figure()
                             sp = fig2.add_subplot(111)
+                            im = sp.imshow(dsa, origin="lower")
+                            cbar = fig2.colorbar(im) #Add color bar
+                            sp.set_title("Pixels solid-angle (relative to PONI)")
                         else:
-                            sp.images.pop()
-                        im = sp.imshow(dsa, origin="lower")
-                        cbar = fig2.colorbar(im) #Add color bar
-                        sp.set_title("Pixels solid-angle (relative to PONI)")
+                            im.set_array(dsa)
+                            im.autoscale()
                         fig2.show()
             if not self.interactive:
                 break
