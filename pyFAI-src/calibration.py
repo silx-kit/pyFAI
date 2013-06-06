@@ -126,6 +126,7 @@ class AbstractCalibration(object):
         self.nPt_2D_azim = 360
         self.nPt_2D_rad = 400
         self.units = None
+        self.keep = True
 
     def __repr__(self):
         lst = ["Calibration object:",
@@ -140,7 +141,7 @@ class AbstractCalibration(object):
         "common configuration"
         self.parser = OptionParser()
         self.parser.add_option("-V", "--version", dest="version", action="store_true",
-                          help="print version of the program and quit", metavar="FILE",
+                          help="print version of the program and quit",
                           default=False)
         self.parser.add_option("-o", "--out", dest="outfile",
                           help="Filename where processed image is saved", metavar="FILE",
@@ -427,7 +428,9 @@ class AbstractCalibration(object):
         self.peakPicker = PeakPicker(self.outfile, reconst=self.reconstruct, mask=self.mask,
                                      pointfile=self.pointfile, dSpacing=self.spacing_file,
                                      wavelength=self.ai.wavelength)
-
+        if not self.keep:
+            self.peakPicker.points.reset()
+            self.peakPicker.points.wavelength = self.wavelength
         if not self.peakPicker.points.dSpacing:
             self.read_dSpacingFile()
             self.peakPicker.points.load_dSpacing(self.spacing_file)
@@ -736,6 +739,9 @@ class Recalibration(AbstractCalibration):
         self.parser.add_option("-p", "--poni", dest="poni", metavar="FILE",
                       help="file containing the diffraction parameter (poni-file). MANDATORY",
                       default=None)
+        self.parser.add_option("-k", "--keep", dest="keep",
+                      help="Keep existing control point and append new",
+                      default=False, action="store_true")
 
         options, args = self.parser.parse_args()
         # Analyse aruments and options
@@ -747,7 +753,7 @@ class Recalibration(AbstractCalibration):
             self.ai.wavelength = self.wavelength
         self.max_rings = options.max_rings
         self.detector = self.ai.detector
-
+        self.keep = options.keep
         self.analyse_options(options, args)
 
 
