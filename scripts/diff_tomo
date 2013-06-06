@@ -89,15 +89,18 @@ class DiffTomo(object):
         parse options from command line
         """
         from optparse import OptionParser
-        usage = "usage: %prog [options] file1.edf file2.edf ..."
+        usage = "usage: %prog [options] -P prefix -e .edf directory"
         version = "%prog " + pyFAI.version
         parser = OptionParser(usage=usage, version=version)
-        parser.add_option("-o", "--out", dest="outfile",
+        parser.add_option("-o", "--output", dest="outfile",
                           help="HDF5 File where processed sinogram was saved",
                           metavar="FILE", default="diff_tomo.h5")
         parser.add_option("-v", "--verbose",
                           action="store_true", dest="verbose", default=False,
                           help="switch to verbose/debug mode")
+        parser.add_option("-P", "--prefix", dest="prefix",
+                          help="Prefix or common base for all files",
+                          metavar="FILE", default="", type="str")
         parser.add_option("-e", "--extension", dest="extension",
                           help="process all files with this extension",
                           default="edf")
@@ -154,7 +157,7 @@ class DiffTomo(object):
             if os.path.isfile(f) and f.endswith(options.extension):
                 self.inputfiles.append(f)
             elif os.path.isdir(f):
-                self.inputfiles += [os.path.join(f, g) for g in os.listdir(f) if g.endswith(options.extension)]
+                self.inputfiles += [os.path.join(f, g) for g in os.listdir(f) if g.endswith(options.extension) and g.startswith(options.prefix)]
         self.inputfiles.sort()
         if not self.inputfiles:
             raise RuntimeError("No input files to process")
