@@ -166,10 +166,6 @@ class AbstractCalibration(object):
                       help="list of dark images to average and subtract", default=None)
         self.parser.add_option("-f", "--flat", dest="flat",
                       help="list of flat images to average and divide", default=None)
-        self.parser.add_option("-r", "--reconstruct", dest="reconstruct",
-                      help="Reconstruct image where data are masked or <0  (for Pilatus "\
-                      "detectors or detectors with modules)",
-                      action="store_true", default=False)
         self.parser.add_option("-s", "--spline", dest="spline",
                       help="spline file describing the detector distortion", default=None)
         self.parser.add_option("-D", "--detector", dest="detector_name",
@@ -256,20 +252,20 @@ class AbstractCalibration(object):
                       " for refinements", default=True, action="store_false")
 
 
-    def analyse_options(self):
+    def analyse_options(self, options=None, args=None):
         """
         Analyse options and arguments
 
         @return: option,arguments
         """
-        options, args = self.parser.parse_args()
+        if (options is None) and  (args is None):
+            options, args = self.parser.parse_args()
         if options.version:
             print("PyFAI %s version %s" % self.__class__.__name__, version)
             sys.exit(0)
         if options.debug:
             logger.setLevel(logging.DEBUG)
         self.outfile = options.outfile
-        self.reconstruct = options.reconstruct
         if options.dark:
             self.darkFiles = [f for f in options.dark.split(",") if os.path.isfile(f)]
             if not self.darkFiles:
@@ -641,6 +637,11 @@ class Calibration(AbstractCalibration):
         parse options from command line
         """
         self.configure_parser()  # common
+        self.parser.add_option("-r", "--reconstruct", dest="reconstruct",
+              help="Reconstruct image where data are masked or <0  (for Pilatus "\
+              "detectors or detectors with modules)",
+              action="store_true", default=False)
+
         self.parser.add_option("-g", "--gaussian", dest="gaussian",
                                help="""Size of the gaussian kernel.
 Size of the gap (in pixels) between two consecutive rings, by default 100
@@ -655,6 +656,7 @@ decrease the value if arcs are mixed together.""", default=None)
 
         (options, _) = self.analyse_options()
         # Analyse remaining aruments and options
+        self.reconstruct = options.reconstruct
         self.gaussianWidth = options.gaussian
         if options.square:
             self.labelPattern = [[1] * 3] * 3
@@ -728,21 +730,25 @@ class Recalibration(AbstractCalibration):
         """
         parse options from command line
         """
-        self.parser.add_option("-r", "--ring", dest="max_rings", type="float",
-                      help="maximum number of rings to extract", default=None)
+        self.configure_parser()
+        self.parser.add_option("-r", "--ring", dest="max_rings", type="int",
+                      help="maximum number of rings to extract. Default: all accessible", default=None)
         self.parser.add_option("-p", "--poni", dest="poni", metavar="FILE",
-                      help="file containing the diffraction parameter (poni-file)",
+                      help="file containing the diffraction parameter (poni-file). MANDATORY",
                       default=None)
 
-
-        (options, _) = self.analyse_options()
-
+        options, args = self.parser.parse_args()
         # Analyse aruments and options
-        self.analyse_options(options)
-        self.ai = AzimuthalIntegrator.sload(options.poni)
-        self.ai.wavelength = self.wavelength
+        if (not options.poni) or (not os.path.isfile(options.poni)):
+            logger.error("You should provide a PONI file as starting point !!")
+        else:
+            self.ai = AzimuthalIntegrator.sload(options.poni)
+        if self.wavelength:
+            self.ai.wavelength = self.wavelength
         self.max_rings = options.max_rings
         self.detector = self.ai.detector
+
+        self.analyse_options(options, args)
 
 
     def read_dSpacingFile(self):
