@@ -103,8 +103,8 @@ class TestFlat2D(unittest.TestCase):
                   "splitpix":self.eps, 
                   "lut":self.eps, 
                   "lut_ocl":self.eps}
-        test2d_direct = {"xrpd2_numpy":0.2,#histograms are very noisy in 2D
-                  "xrpd2_histogram":0.2,   #histograms are very noisy in 2D
+        test2d_direct = {"xrpd2_numpy":0.3,#histograms are very noisy in 2D
+                  "xrpd2_histogram":0.3,   #histograms are very noisy in 2D
                   "xrpd2_splitBBox":self.eps, 
                   "xrpd2_splitPixel":self.eps}
         for meth in test2d:
@@ -117,7 +117,7 @@ class TestFlat2D(unittest.TestCase):
             I, _, _ = self.ai.__getattribute__(meth)(self.raw, self.bins, self.azim, correctSolidAngle=False, dark=self.dark, flat=self.flat)
             I = I[numpy.where(I > 0)]
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s" % (meth, I.min(), I.max(), I.mean(), I.std()))
-            self.assertAlmostEqual(I.mean(), 1, 1, "Mean should be 1 in %s" % meth)
+            self.assert_(abs(I.mean() - 1) < test2d_direct[meth], "Mean should be 1 in %s" % meth)
             self.assert_(I.max() - I.min() < test2d_direct[meth], "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
 
 def test_suite_all_Flat():
