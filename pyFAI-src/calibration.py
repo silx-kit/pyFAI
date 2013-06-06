@@ -602,7 +602,13 @@ class AbstractCalibration(object):
                                 " * 2D Azimuthal integration   %.3fs" % (t5 - t4)]))
         if self.gui:
             xrpd.plot(a, b)
+            xrpd.set_title("1D integration")
+            xrpd.set_xlabel(self.unit)
+            xrpd.set_ylabel("Intensity")
             xrpd2.imshow(numpy.log(img - img.min() + 1e-3), origin="lower")
+            xrpd2.set_title("2D regrouping")
+            xrpd2.set_xlabel(self.unit)
+            xrpd2.set_ylabel("Azimuthal angle (deg)")
             fig3.show()
 
 ################################################################################
