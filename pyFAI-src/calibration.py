@@ -176,8 +176,8 @@ class AbstractCalibration(object):
                       help="Detector name (instead of pixel size+spline)", default=None)
         self.parser.add_option("-m", "--mask", dest="mask",
                       help="file containing the mask (for image reconstruction)", default=None)
-        self.parser.add_option("-n", "--npt", dest="npt",
-                      help="file with datapoints saved", default=None)
+        self.parser.add_option("-n", "--pt", dest="npt",
+                      help="file with datapoints saved. Default: basename.npt", default=None)
         self.parser.add_option("--filter", dest="filter",
                       help="select the filter, either mean(default), max or median",
                        default="mean")
@@ -237,17 +237,17 @@ class AbstractCalibration(object):
                       help="weight fit by intensity, by default not.",
                        default=False, action="store_true")
         self.parser.add_option("--npt", dest="nPt_1D",
-                      help="Number of point in 1D integrated pattern", type="int",
+                      help="Number of point in 1D integrated pattern, Default: 1024", type="int",
                       default=1024)
         self.parser.add_option("--npt-azim", dest="nPt_2D_azim",
-                      help="Number of azimuthal sectors in 2D integrated images", type="int",
+                      help="Number of azimuthal sectors in 2D integrated images. Default: 360", type="int",
                       default=360)
         self.parser.add_option("--npt-rad", dest="nPt_2D_rad",
-                      help="Number of radial bins in 2D integrated images", type="int",
+                      help="Number of radial bins in 2D integrated images. Default: 400", type="int",
                       default=400)
         self.parser.add_option("--unit", dest="unit",
                       help="Valid units for radial range: 2th_deg, 2th_rad, q_nm^-1,"\
-                      " q_A^-1, r_mm", type="str", default="2th_deg")
+                      " q_A^-1, r_mm. Default: 2th_deg", type="str", default="2th_deg")
         self.parser.add_option("--no-gui", dest="gui",
                       help="force the program to run without a Graphical interface",
                       default=True, action="store_false")
@@ -266,7 +266,7 @@ class AbstractCalibration(object):
         if options.version:
             print("PyFAI %s version %s" % self.__class__.__name__, version)
             sys.exit(0)
-        if options.verbose:
+        if options.debug:
             logger.setLevel(logging.DEBUG)
         self.outfile = options.outfile
         self.reconstruct = options.reconstruct
@@ -280,6 +280,7 @@ class AbstractCalibration(object):
                 logger.error("None of the flat-files you entered exists !!!")
         if options.detector_name:
             self.detector = detector_factory(options.detector_name)
+            self.ai.detector = self.detector
         if options.spline:
             if "Pilatus" in self.detector.name:
                 self.detector.set_splineFile(options.spline)  # is as 2-tuple of path
@@ -289,13 +290,16 @@ class AbstractCalibration(object):
                 logger.error("Unknown spline file %s" % (options.spline))
 
         self.pointfile = options.npt
-        self.spacing_file = options.spacing
-        if not self.spacing_file or not os.path.isfile(self.spacing_file):
+        self.spacing_file = os.path.abspath(options.spacing)
+        if not os.path.isfile(self.spacing_file):
+            logger.error("No such d-Spacing file: %s" % options.spacing)
+            self.spacing_file = None
+        if self.spacing_file is None:
             self.read_dSpacingFile()
         if options.wavelength:
-            self.ai.wavelength = 1e-10 * options.wavelength
+            self.ai.wavelength = self.wavelength = 1e-10 * options.wavelength
         elif options.energy:
-            self.ai.wavelength = 1e-10 * hc / options.energy
+            self.ai.wavelength = self.wavelength = 1e-10 * hc / options.energy
         else:
             self.read_wavelength()
         if options.distance:
@@ -403,7 +407,7 @@ class AbstractCalibration(object):
         while not self.wavelength:
             ans = raw_input("Please enter wavelength in Angstrom:\t").strip()
             try:
-                self.wavelength = 1e-10 * float(ans)
+                self.wavelength = self.ai.wavelength = 1e-10 * float(ans)
             except Exception:
                 self.wavelength = None
 
@@ -454,7 +458,6 @@ class AbstractCalibration(object):
         fig2 = None
         while not finished:
             count = 0
-            print("fixed: " + ", ".join(self.fixed))
             if "wavelength" in self.fixed:
                 while (previous > self.geoRef.chi2()) and (count < self.max_iter):
                     previous = self.geoRef.chi2()
@@ -494,6 +497,7 @@ class AbstractCalibration(object):
                         fig2.show()
             if not self.interactive:
                 break
+            print("Fixed: " + ", ".join(self.fixed))
             change = raw_input("Modify parameters ?\t ").strip().lower()
             if (change == '') or (change[0] == "n"):
                 finished = True
@@ -576,8 +580,8 @@ class AbstractCalibration(object):
         t2b = time.time()
         if self.gui:
             fig3 = pylab.plt.figure()
-            xrpd = fig3.add_subplot(2, 1, 1)
-            xrpd2 = fig3.add_subplot(2, 1, 2)
+            xrpd = fig3.add_subplot(1, 2, 1)
+            xrpd2 = fig3.add_subplot(1, 2, 2)
         t3 = time.time()
         a, b = self.geoRef.integrate1d(self.peakPicker.data, self.nPt_1D,
                                 filename=self.basename + ".xy", unit=self.unit,
@@ -676,9 +680,11 @@ decrease the value if arcs are mixed together.""", default=None)
     def gui_peakPicker(self):
         if self.peakPicker is None:
             self.preprocess()
-        self.peakPicker.gui(True)
+#        self.peakPicker.gui(True)
         if os.path.isfile(self.pointfile):
             self.peakPicker.load(self.pointfile)
+        if self.gui:
+            self.peakPicker.fig.canvas.draw()
         self.data = self.peakPicker.finish(self.pointfile)
         if not self.weighted:
             self.data = numpy.array(self.data)[:, :-1]
@@ -693,7 +699,7 @@ decrease the value if arcs are mixed together.""", default=None)
         paramfile = self.basename + ".poni"
         if os.path.isfile(paramfile):
             self.geoRef.load(paramfile)
-
+        AbstractCalibration.refine(self)
 
 
 ################################################################################

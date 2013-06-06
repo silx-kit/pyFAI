@@ -333,7 +333,7 @@ class AIWidget(QtGui.QWidget):
 
         """
         logger.debug("Restore")
-        if not op..isfile(filename):
+        if not op.isfile(filename):
             logger.error("No such file: %s" % filename)
             return
         data = json.load(open(filename))
@@ -497,7 +497,7 @@ class AIWidget(QtGui.QWidget):
 
     def set_ai(self):
         poni = str(self.poni.text()).strip()
-        if poni and op..isfile(poni):
+        if poni and op.isfile(poni):
             self.ai = pyFAI.load(poni)
         detector = str(self.detector.currentText()).lower().strip() or "detector"
         self.ai.detector = pyFAI.detectors.detector_factory(detector)
