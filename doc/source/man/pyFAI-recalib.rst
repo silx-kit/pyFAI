@@ -1,11 +1,11 @@
-Calibration tool: pyFAI-calib
-=============================
+Calibration tool: pyFAI-recalib
+===============================
 
 Purpose
 -------
 
 Calibrate the diffraction setup geometry based on Debye-Sherrer rings images
-without a priori knowledge of your setup.
+with a priori knowledge of your setup (an input PONI-file).
 You will need a "d-spacing" file containing the spacing of Miller plans in
 Angstrom (in decreasing order).
 If you are using a standart calibrant, look at
@@ -15,13 +15,10 @@ http://rruff.geo.arizona.edu/AMS/amcsd.php
 
 You will need in addition:
  * The radiation energy (in keV) or its wavelength (in A)
- * The description of the detector: it name or it's pixel size or the spline
- file describing its distortion
 
 Many option are available among those:
  * dark-current / flat field corrections
  * Masking of bad regions
- * reconstruction of missing region (module based detectors)
  * Polarization correction
  * Automatic desaturation (time consuming!)
  * Intensity weighted least-squares refinements
@@ -30,16 +27,21 @@ The output of this program is a "PONI" file containing the detector description
 and the 6 refined parameters (distance, center, rotation) and wavelength.
 An 1D and 2D diffraction patterns are also produced. (.dat and .azim files)
 
+The main difference with pyFAI-calib is the way control-point hence Debye-Sherrer
+rings are extracted. While pyFAI-calib relies on the contiguity of a region of peaks
+called massif; pyFAI-recalib knows approximatly the geometry and is able to select
+the region where the ring should be. From this region it selects automatically
+the various peaks; making pyFAI-recalib able to run without graphical interface and
+without human intervention (--no-gui --no-interactive options).
+
 Usage:
 ------
 
-pyFAI-recalib [options] -w 1 -D detector -S calibrant.D imagefile.edf
-
+pyFAI-recalib [options] -w 1 -p imagefile.poni -S calibrant.D imagefile.edf
 
 Options:
 --------
-
-  -h, --help            show the help message and exit
+  -h, --help            show  help message and exit
   -V, --version         print version of the program and quit
   -o FILE, --out=FILE   Filename where processed image is saved
   -v, --verbose         switch to debug/verbose mode
@@ -103,48 +105,17 @@ Options:
   --no-gui              force the program to run without a Graphical interface
   --no-interactive      force the program to run and exit without prompting
                         for refinements
-  -r, --reconstruct     Reconstruct image where data are masked or <0  (for
-                        Pilatus detectors or detectors with modules)
-  -g GAUSSIAN, --gaussian=GAUSSIAN
-                        Size of the gaussian kernel. Size of the gap (in
-                        pixels) between two consecutive rings, by default 100
-                        Increase the value if the arc is not complete;
-                        decrease the value if arcs are mixed together.
-  -c, --square          Use square kernel shape for neighbor search instead of
-                        diamond shape
-  -p PIXEL, --pixel=PIXEL
-                        size of the pixel in micron
+  -r MAX_RINGS, --ring=MAX_RINGS
+                        maximum number of rings to extract. Default: all
+                        accessible
+  -p FILE, --poni=FILE  file containing the diffraction parameter (poni-file).
+                        MANDATORY
+  -k, --keep            Keep existing control point and append new
 
+Tips & Tricks
+-------------
 
-Example of usage:
------------------
+PONI files are ASCII files and each new refinement adds an entry int the file.
+So if you are unhappy with the last step, just edit this file and remove the last
+entry (timestamps will help you).
 
-Pilatus 1M image of Silver Behenate taken at ESRF-BM26:
-.......................................................
-
-::
-	pyFAI-calib -D Pilatus1M -S calibration/AgBh.D -r -w 1.0 test/testimages/Pilatus1M.edf
-
-We use the parameter -r to reconstruct the missing part between the modules of the
-Pilatus detector.
-
-
-Half a FReLoN CCD image of Lantanide hexaboride taken at ESRF-ID11:
-...................................................................
-
-::
-	pyFAI-calib -s test/testimages/halfccd.spline -S calibration/LaB6.D -w 0.3 test/testimages/halfccd.edf -g 250
-
-
-This image is rather spotty. We need to blur a lot to get the continuity of the rings. This is achieved by the -g parameter.
-While the sample is well diffracting and well known, the wavelength has been guessed.
-
-
-
-All those images are part of the test-suite of pyFAI. To download them from internet, run
-
-::
-
-	python setup.py build test
-
-They will be located in tests/testimages

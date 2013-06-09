@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    pyFAI
+   man/scripts
    api/modules
    project
 
