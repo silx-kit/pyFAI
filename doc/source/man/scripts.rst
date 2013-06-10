@@ -29,4 +29,5 @@ Few other scripts are also available, most of them are very specific to one expe
    pyFAI-waxs
    diff_tomo
    MX-calibrate
+   check_calib
 
