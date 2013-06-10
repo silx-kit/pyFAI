@@ -1,0 +1,153 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>&lt;no title&gt; &mdash; pyFAI v0.9.0 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI v0.9.0 documentation" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pyFAI v0.9.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <p>.TH PYFAI-WAXS &#8220;1&#8221; &#8220;June 2013&#8221; &#8220;ESRF&#8221; &#8220;User Commands&#8221;
+.SH NAME
+pyFAI-waxs - azimuthal integration for WAXS users.
+.SH SYNOPSIS
+.B pyFAI-waxs
+[fIoptionsfR] fIfile1.edf file2.edf fR...
+.SH DESCRIPTION
+pyFAI-waxs is the Waxs script of pyFAI that allows data reduction for Wide Angle Scattering,
+producing output in 2-theta range output in radial dimension (and in degrees).
+This tool is deprecated in favor of pyFAI-integrate
+.SH OPTIONS
+.TP
+fB&#8211;versionfR
+show program&#8217;s version number and exit
+.TP
+fB-hfR, fB&#8211;helpfR
+show this help message and exit
+.TP
+fB-pfR PONIFILE
+PyFAI parameter file (.poni)
+.TP
+fB-nfR NPT
+Number of points in radial dimension
+.TP
+fB-wfR WAVELENGTH, fB&#8211;wavelengthfR=fIWAVELENGTHfR
+wavelength of the X-Ray beam in Angstrom
+.TP
+fB-efR ENERGY, fB&#8211;energyfR=fIENERGYfR
+energy of the X-Ray beam in keV (hc=12.398419292keV.A)
+.TP
+fB-ufR DUMMY, fB&#8211;dummyfR=fIDUMMYfR
+dummy value for dead pixels
+.TP
+fB-UfR DELTA_DUMMY, fB&#8211;delta_dummyfR=fIDELTA_DUMMYfR
+delta dummy value
+.TP
+fB-mfR MASK, fB&#8211;maskfR=fIMASKfR
+name of the file containing the mask
+.TP
+fB-dfR DARK, fB&#8211;darkfR=fIDARKfR
+name of the file containing the dark
+.TP
+fB-ffR FLAT, fB&#8211;flatfR=fIFLATfR
+name of the file containing the flat field
+.TP
+fB-PfR POLARIZATION_FACTOR, fB&#8211;polarizationfR=fIPOLARIZATION_FACTORfR
+Polarization factor, from fB-1fR (vertical) to +1
+(horizontal), default is None, synchrotrons are around
+0.95
+.TP
+fB&#8211;error-modelfR=fIERROR_MODELfR
+Error model to use. Currently on &#8216;poisson&#8217; is
+implemented
+.TP
+fB&#8211;unitfR=fIUNITfR
+unit for the radial dimension: can be q_nm^-1, q_A^-1,
+2th_deg, 2th_rad or r_mm
+.TP
+fB&#8211;extfR=fIEXTfR
+extension of the regrouped filename (.xy)</p>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/man/pyFAI-waxs.1.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pyFAI v0.9.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Jerome Kieffer.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+    </div>
+  </body>
+</html>
