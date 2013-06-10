@@ -1,5 +1,9 @@
+General introduction to PyFAI
+=============================
+
 Aim of PyFAI
 ------------
+
 :math:`2D` area detectors like ccd or pixel detectors have become
 popular in the last 15 years for diffraction experiments (e.g. for waxs,
 saxs, single crystal and powder diffraction (xrpd)). These detectors
@@ -205,7 +209,7 @@ Porting pyFAI to GPU would have not been possible without
 the financial support of LinkSCEEM-2 (RI-261600).
 
 References:
-.........--
+...........
 
 - The philosophy of pyFAI is described in the proceedings of SRI2012:
   doi:10.1088/1742-6596/425/20/202012
@@ -216,37 +220,37 @@ References:
   (to be published)
   
 - [FIT2D] Hammersley A. P., Svensson S. O., Hanfland M., Fitch A. N. and Hausermann D. 
-  1996 High Press. Res. vol 14 p 235–248
+  1996 High Press. Res. vol14 p235–248
 
-- [SPD] Bösecke P. 2007 J. Appl. Cryst. vol 40 s 423–s427
+- [SPD] Bösecke P. 2007 J. Appl. Cryst. vol40 s423–s427
 
 - [EDNA] Incardona M. F., Bourenkov G. P., Levik K., Pieritz R. A., Popov A. N. and Svensson O. 
-  2009 J. Synchrotron Rad. vol 16 p 872–879
+  2009 J. Synchrotron Rad. vol16 p872–879
 
 - [PyMca] Solé V. A., Papillon E., Cotte M., Walter P. and Susini J. 
-  2007 Spectrochim. Acta Part B vol vol 62 p 63 – 68
+  2007 Spectrochim. Acta Part B vol vol62 p63 – 68
 
 - [PyNX] Favre-Nicolin V., Coraux J., Richard M. I. and Renevier H. 
-  2011 J. Appl. Cryst. vol 44 p 635–640
+  2011 J. Appl. Cryst. vol44 p635–640
 
 - [iPython] Pérez F and Granger B E 
-  2007 Comput. Sci. Eng. vol 9 p 21–29 URL http://ipython.org
+  2007 Comput. Sci. Eng. vol9 p21–29 URL http://ipython.org
   
-- [NumPy] Oliphant T E 2007 Comput. Sci. Eng. 9 10–20
+- [NumPy] Oliphant T E 2007 Comput. Sci. Eng. vol9 p10–20
 
-- [Cython] Behnel S, Bradshaw R, Citro C, Dalcin L, Seljebotn D and Smith K 2011 Comput. Sci. Eng. 13 31 –39
+- [Cython] Behnel S, Bradshaw R, Citro C, Dalcin L, Seljebotn D and Smith K 2011 Comput. Sci. Eng. vol13 p31 –39
 
 - [OpenCL] Khronos OpenCL Working Group 2010 The OpenCL Specification, version 1.1 URL http://www.khronos.org/registry/cl/specs/opencl-1.1.pdf
 
 - [FabIO] Sorensen H O, Knudsen E, Wright J, Kieffer J et al. 
   2007–2013 FabIO: I/O library for images produced by 2D X-ray detectors URL http://fable.sf.net/
   
-- [Matplotlib] Hunter J D 2007 Comput. Sci. Eng. 9 90–95 ISSN 1521-9615
+- [Matplotlib] Hunter J D 2007 Comput. Sci. Eng. vol9  p90–95 ISSN 1521-9615
 
 - [SciPy] Jones E, Oliphant T, Peterson P et al. 
   2001– SciPy: Open source scientific tools for Python URL
   http://www.scipy.org/
   
 - [FFTw] Frigo M and Johnson S G 
-  2005 Proceedings of the IEEE 93 216–231
+  2005 Proceedings of the IEEE 93 p 216–231
   

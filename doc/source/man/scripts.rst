@@ -25,4 +25,6 @@ Few other scripts are also available, most of them are very specific to one expe
    pyFAI-calib
    pyFAI-recalib
    pyFAI-integrate
+   pyFAI-saxs
+   pyFAI-waxs
 
