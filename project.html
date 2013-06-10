@@ -1,0 +1,380 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Project structure &mdash; pyFAI v0.9.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI v0.9.0 documentation" href="index.html" />
+    <link rel="prev" title="pyFAI Package" href="api/pyFAI.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api/pyFAI.html" title="pyFAI Package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pyFAI v0.9.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <p>PyFAI is a library to deal with diffraction images for data reduction.
+This chapter describes the project from the computer engineering point of view.</p>
+<div class="section" id="project-structure">
+<h1>Project structure<a class="headerlink" href="#project-structure" title="Permalink to this headline">¶</a></h1>
+<p>PyFAI is an open source project licensed under the GPL mainly written in Python (v2.6 or 2.7) and heavily relying on the
+python scientific ecosystem: numpy, scipy and matplotlib. It provides high perfromances image treatement thanks to cython and
+OpenCL... but only a C-compiler is needed to build that.</p>
+<div class="section" id="programming-language">
+<h2>Programming language<a class="headerlink" href="#programming-language" title="Permalink to this headline">¶</a></h2>
+<p>PyFAI is a python project but uses many programming languages:</p>
+<ul class="simple">
+<li>8000 lines of Python (without the tests)</li>
+<li>3500 lines of cython which are converted into</li>
+<li>139055 lines of C</li>
+<li>880 lines of OpenCL kernels</li>
+</ul>
+</div>
+<div class="section" id="repository">
+<h2>Repository:<a class="headerlink" href="#repository" title="Permalink to this headline">¶</a></h2>
+<p>The project is hosted by GitHub:
+<a class="reference external" href="https://github.com/kif/pyFAI">https://github.com/kif/pyFAI</a></p>
+<p>Which provides the issue tracker in addition to Git hosting.
+Collaboration is done via Pull-Requests in github&#8217;s web interface:</p>
+<p>Anybody can fork the project and adapt it to his own needs (people from CEA-saclay or Synchrotron Soleil did it).
+If developments are useful to other, new developments can be merged into the main branch.</p>
+</div>
+<div class="section" id="run-dependencies">
+<h2>Run dependencies<a class="headerlink" href="#run-dependencies" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Python2.6 or python2.7</li>
+<li>NumPy</li>
+<li>SciPy</li>
+<li>Matplotlib</li>
+<li>FabIO</li>
+<li>pyOpencl (optional)</li>
+<li>fftw (optional)</li>
+</ul>
+</div>
+<div class="section" id="build-dependencies">
+<h2>Build dependencies:<a class="headerlink" href="#build-dependencies" title="Permalink to this headline">¶</a></h2>
+<p>In addition to the run dependencies, pyFAI needs a C compiler which supports OpenMP (gcc&gt;=4.2, msvc, ...)</p>
+<p>C files are generated from cython source and distributed. Cython is only needed for developing new binary modules.</p>
+</div>
+<div class="section" id="building-procedure">
+<h2>Building procedure<a class="headerlink" href="#building-procedure" title="Permalink to this headline">¶</a></h2>
+<p>As most of the python projects:
+..</p>
+<blockquote>
+<div>python setup.py build install</div></blockquote>
+</div>
+<div class="section" id="test-suites">
+<h2>Test suites<a class="headerlink" href="#test-suites" title="Permalink to this headline">¶</a></h2>
+<p>To run the test an internet connection is needed as 200MB of test images will be downloaded
+..</p>
+<blockquote>
+<div>python setup.py build test</div></blockquote>
+<p>PyFAI comes with 15 test-suites (98 tests in total) representing a coverage of 65%.
+This ensures both non regression over time and ease the distribution under different platforms:
+pyFAI runs under linux, MacOSX and Windows (in each case in 32 and 64 bits)</p>
+<table border="1" class="docutils">
+<caption>Supported formats</caption>
+<colgroup>
+<col width="68%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Stmts</th>
+<th class="head">Miss</th>
+<th class="head">Cover</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>pyFAI/__init__</td>
+<td>9</td>
+<td>3</td>
+<td>67%</td>
+</tr>
+<tr><td>pyFAI/azimuthalIntegrator</td>
+<td>1097</td>
+<td>329</td>
+<td>70%</td>
+</tr>
+<tr><td>pyFAI/detectors</td>
+<td>271</td>
+<td>105</td>
+<td>61%</td>
+</tr>
+<tr><td>pyFAI/geometry</td>
+<td>672</td>
+<td>166</td>
+<td>75%</td>
+</tr>
+<tr><td>pyFAI/geometryRefinement</td>
+<td>353</td>
+<td>198</td>
+<td>44%</td>
+</tr>
+<tr><td>pyFAI/ocl_azim</td>
+<td>304</td>
+<td>90</td>
+<td>70%</td>
+</tr>
+<tr><td>pyFAI/ocl_azim_lut</td>
+<td>196</td>
+<td>29</td>
+<td>85%</td>
+</tr>
+<tr><td>pyFAI/opencl</td>
+<td>134</td>
+<td>42</td>
+<td>69%</td>
+</tr>
+<tr><td>pyFAI/peakPicker</td>
+<td>609</td>
+<td>388</td>
+<td>36%</td>
+</tr>
+<tr><td>pyFAI/spline</td>
+<td>324</td>
+<td>217</td>
+<td>33%</td>
+</tr>
+<tr><td>pyFAI/units</td>
+<td>36</td>
+<td>2</td>
+<td>94%</td>
+</tr>
+<tr><td>pyFAI/utils</td>
+<td>494</td>
+<td>196</td>
+<td>60%</td>
+</tr>
+<tr><td>testAzimuthalIntegrator</td>
+<td>189</td>
+<td>75</td>
+<td>60%</td>
+</tr>
+<tr><td>testBilinear</td>
+<td>40</td>
+<td>4</td>
+<td>90%</td>
+</tr>
+<tr><td>testDistortion</td>
+<td>47</td>
+<td>3</td>
+<td>94%</td>
+</tr>
+<tr><td>testExport</td>
+<td>69</td>
+<td>7</td>
+<td>90%</td>
+</tr>
+<tr><td>testFlat</td>
+<td>88</td>
+<td>9</td>
+<td>90%</td>
+</tr>
+<tr><td>testGeometry</td>
+<td>50</td>
+<td>4</td>
+<td>92%</td>
+</tr>
+<tr><td>testGeometryRefinement</td>
+<td>53</td>
+<td>3</td>
+<td>94%</td>
+</tr>
+<tr><td>testHistogram</td>
+<td>153</td>
+<td>14</td>
+<td>91%</td>
+</tr>
+<tr><td>testIntegrate</td>
+<td>136</td>
+<td>10</td>
+<td>93%</td>
+</tr>
+<tr><td>testMask</td>
+<td>85</td>
+<td>21</td>
+<td>75%</td>
+</tr>
+<tr><td>testOpenCL</td>
+<td>89</td>
+<td>9</td>
+<td>90%</td>
+</tr>
+<tr><td>testPeakPicking</td>
+<td>70</td>
+<td>6</td>
+<td>91%</td>
+</tr>
+<tr><td>testPolarization</td>
+<td>54</td>
+<td>21</td>
+<td>61%</td>
+</tr>
+<tr><td>testSaxs</td>
+<td>102</td>
+<td>29</td>
+<td>72%</td>
+</tr>
+<tr><td>testUtils</td>
+<td>80</td>
+<td>4</td>
+<td>95%</td>
+</tr>
+<tr><td>test_all</td>
+<td>47</td>
+<td>1</td>
+<td>98%</td>
+</tr>
+<tr><td>utilstest</td>
+<td>139</td>
+<td>88</td>
+<td>37%</td>
+</tr>
+<tr><td>TOTAL</td>
+<td>5990</td>
+<td>2073</td>
+<td>65%</td>
+</tr>
+</tbody>
+</table>
+<p>Continuous integration is made by a home-made scripts which checks out the latest release and builds and runs the test every night.
+Nightly builds are available for debian6-64 bits in:
+<a class="reference external" href="http://www.edna-site.org/pub/debian/binary/">http://www.edna-site.org/pub/debian/binary/</a></p>
+</div>
+<div class="section" id="list-of-contributors">
+<h2>List of contributors<a class="headerlink" href="#list-of-contributors" title="Permalink to this headline">¶</a></h2>
+<p>As of 04/2013 (number of commits in parenthesis):</p>
+<ul class="simple">
+<li>Jérôme Kieffer (656)</li>
+<li>Dimitris Karkoulis (22)</li>
+<li>Frédéric-Emmanuel Picca (21)</li>
+<li>Jonathan Wright (6)</li>
+<li>Amund Hov (1)</li>
+</ul>
+</div>
+<div class="section" id="list-of-other-contributors-ideas-or-code">
+<h2>List of other contributors (ideas or code)<a class="headerlink" href="#list-of-other-contributors-ideas-or-code" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Peter Boesecke (geometry)</li>
+<li>Manuel Sanchez del Rio (histogramming)</li>
+<li>Armando Solé (masking widget + PyMca plugin)</li>
+<li>Sebastien Petitdemange (Lima plugin)</li>
+</ul>
+</div>
+<div class="section" id="list-of-supporters">
+<h2>List of supporters<a class="headerlink" href="#list-of-supporters" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>LinkSCEEM project: initial porting to OpenCL</li>
+<li>ESRF ID11: Provided manpower in 2012 and 2013 and beamtime</li>
+<li>ESRF ID13: Provided manpower in 2012 and 2013 and beamtime</li>
+<li>ESRF ID29: will provide manpower in  2013</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Project structure</a><ul>
+<li><a class="reference internal" href="#programming-language">Programming language</a></li>
+<li><a class="reference internal" href="#repository">Repository:</a></li>
+<li><a class="reference internal" href="#run-dependencies">Run dependencies</a></li>
+<li><a class="reference internal" href="#build-dependencies">Build dependencies:</a></li>
+<li><a class="reference internal" href="#building-procedure">Building procedure</a></li>
+<li><a class="reference internal" href="#test-suites">Test suites</a></li>
+<li><a class="reference internal" href="#list-of-contributors">List of contributors</a></li>
+<li><a class="reference internal" href="#list-of-other-contributors-ideas-or-code">List of other contributors (ideas or code)</a></li>
+<li><a class="reference internal" href="#list-of-supporters">List of supporters</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="api/pyFAI.html"
+                        title="previous chapter">pyFAI Package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/project.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api/pyFAI.html" title="pyFAI Package"
+             >previous</a> |</li>
+        <li><a href="index.html">pyFAI v0.9.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Jerome Kieffer.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+    </div>
+  </body>
+</html>

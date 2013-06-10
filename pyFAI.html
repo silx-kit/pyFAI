@@ -1,0 +1,351 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Aim of PyFAI &mdash; pyFAI v0.9.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI v0.9.0 documentation" href="index.html" />
+    <link rel="next" title="pyFAI scripts manual" href="man/scripts.html" />
+    <link rel="prev" title="Welcome to pyFAI’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="man/scripts.html" title="pyFAI scripts manual"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to pyFAI’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pyFAI v0.9.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="aim-of-pyfai">
+<h1>Aim of PyFAI<a class="headerlink" href="#aim-of-pyfai" title="Permalink to this headline">¶</a></h1>
+<p><span class="math">\(2D\)</span> area detectors like ccd or pixel detectors have become
+popular in the last 15 years for diffraction experiments (e.g. for waxs,
+saxs, single crystal and powder diffraction (xrpd)). These detectors
+have a large sensitive area of millions of pixels with high spatial
+resolution. The software package pyFAI has been designed to reduce saxs,
+waxs and xrpd images taken with those detectors into <span class="math">\(1D\)</span> curves
+(azimuthal integration) usable by other software for in-depth analysis
+such as Rietveld refinement, or <span class="math">\(2D\)</span> images (a radial
+transformation named <em>caking</em>). As a library, the aim of pyFAI is to be
+integrated into other tools like PyMca or edna or LImA with a clean pythonic
+interface. However pyFAI features also command line and graphical tools for batch
+processing, converting data into <em>q-space</em> (q being the momentum
+transfer) or 2<span class="math">\(\theta\)</span>-space (<span class="math">\(\theta\)</span> being the Bragg
+angle) and a calibration graphical interface for optimizing the geometry
+of the experiment using the Debye-Scherrer rings of a reference sample.
+PyFAI shares the geometry definition of spd but can directly import
+geometries determined by the software fit2d. PyFAI has been designed to
+work with any kind of detector and geometry (transmission or reflection)
+and relies on FabIO, a library able to read more than 20 image formats
+produced by detectors from 12 different manufacturers. During the
+transformation from cartesian space <span class="math">\((x,y)\)</span> to polar space
+<span class="math">\((2\theta, \chi )\)</span>, both local and total intensities are conserved
+in order to obtain accurate quantitative results. Technical details on
+how this integration is implemented and how it has been ported to native
+code and parallelized on graphic cards are discussed in this paper.</p>
+</div>
+<div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>With the advent of hyperspectral experiments like diffraction tomography
+in the world of synchrotron radiation, existing software tools for
+azimuthal integration like fit2d and spd reached their performance
+limits owing to the fast data rate needed by such experiments. Even when
+integrated into massively parallel frameworks like edna, such
+stand-alone programs, due to their monolithic nature, cannot keep the
+pace with the data flow of new detectors. Therefore we decided to
+implemente from scratch a novel azimuthal integration tool which is
+designed to take advantage of modern parallel hardware features.</p>
+</div>
+<div class="section" id="python-fast-azimuthal-integration">
+<h1>Python Fast Azimuthal Integration<a class="headerlink" href="#python-fast-azimuthal-integration" title="Permalink to this headline">¶</a></h1>
+<p>PyFAI is implemented in Python programming language, which is open
+source and already very popular for scientific data analysis (PyMca,
+PyNX, …).</p>
+<div class="section" id="geometry-and-calibration">
+<h2>Geometry and calibration<a class="headerlink" href="#geometry-and-calibration" title="Permalink to this headline">¶</a></h2>
+<p>PyFAI and spd share the same 6-parameter geometry definition:
+distance, point of normal incidence (2 coordinates) and 3 rotations
+around the main axis; these parameters are saved in text files usually
+with the <em>.poni</em> extension. The program <em>pyFAI-calib</em> helps calibrating
+the experimental setup using a constrained least squares optimization on
+the Debye-Scherrer rings of a reference sample (<span class="math">\(LaB_6\)</span>, silver
+behenate, …). Alternatively, geometries calibrated using fit2d can be
+imported into pyFAI, including geometric distortions (i.e. optical-fiber
+tapers distortion) described as <em>spline-files</em>.</p>
+</div>
+<div class="section" id="pyfai-executables">
+<h2>PyFAI executables<a class="headerlink" href="#pyfai-executables" title="Permalink to this headline">¶</a></h2>
+<p>PyFAI was designed to be used by scientists needing a simple and
+effective tool for azimuthal integration. Two command line programs
+<em>pyFAI-waxs</em> and <em>pyFAI-saxs</em> are provided with pyFAI for performing the
+integration of one or more images. The waxs version outputs result in
+<span class="math">\(2\theta /I\)</span>, whereas the saxs version outputs result in
+<span class="math">\(q/I(/\sigma)\)</span>. Options for these programs are parameter file (<em>poni-file</em>)
+describing the geometry and the mask file. They can also do some
+pre-processing like dark-noise subtraction and flat-field correction
+(solid-angle correction is done by default).</p>
+<p>A new Grqaphical interface based on Qt is under development</p>
+</div>
+<div class="section" id="python-library">
+<h2>Python library<a class="headerlink" href="#python-library" title="Permalink to this headline">¶</a></h2>
+<p>PyFAI is first and foremost a library: a tool of the scientific toolbox
+built around IPython and NumPy to perform data analysis either
+interactively or via scripts. Figure [notebook] shows an interactive
+session where an integrator is created, and an image loaded and
+integrated before being plotted.</p>
+<div class="figure align-center">
+<img alt="image" src="_images/notebook.png" />
+</div>
+</div>
+</div>
+<div class="section" id="regrouping-mechanism">
+<h1>Regrouping mechanism<a class="headerlink" href="#regrouping-mechanism" title="Permalink to this headline">¶</a></h1>
+<p>In pyFAI, regrouping is performed using a histogram-like algorithm. Each
+pixel of the image is associated to its polar coordinates
+<span class="math">\((2\theta , \chi )\)</span> or <span class="math">\((q, \chi )\)</span>, then a pair of
+histograms versus <span class="math">\(2\theta\)</span> (or <span class="math">\(q\)</span>) are built, one non
+weighted for measuring the number of pixels falling in each bin and
+another weighted by pixel intensities (after dark-current subtraction,
+and corrections for flat-field, solid-angle and polarization). The
+division of the weighted histogram by the number of pixels per bin gives
+the diffraction pattern. <span class="math">\(2D\)</span> regrouping (called <em>caking</em> in
+fit2d) is obtained in the same way using two-dimensional histograms over
+radial (<span class="math">\(2\theta\)</span> or <span class="math">\(q\)</span>) and azimuthal angles
+(<span class="math">\(\chi\)</span>).</p>
+<div class="section" id="pixel-splitting-algorithm">
+<h2>Pixel splitting algorithm<a class="headerlink" href="#pixel-splitting-algorithm" title="Permalink to this headline">¶</a></h2>
+<p>Powder diffraction patterns obtained by histogramming have a major
+weakness where pixel statistics are low. A manifestation of this
+weakness becomes apparent in the <span class="math">\(2D\)</span>-regrouping where most of the
+bins close to the beam-stop are not populated by any pixel. In this figure,
+many pixels are missing in the low <span class="math">\(2\theta\)</span> region, due
+to the arbitrary discretization of the space in pixels as intensities
+were assigned to each pixel center which does not reflect the physical
+reality of the scattering experiment.</p>
+<div class="figure align-center">
+<img alt="image" src="_images/2Dhistogram.png" />
+</div>
+<p>PyFAI solves this problem by pixel
+splitting : in addition to the pixel position, its
+spatial extension is calculated and each pixel is then split and
+distributed over the corresponding bins, the intensity being considered
+as homogeneous within a pixel and spread accordingly.</p>
+<div class="figure align-center">
+<img alt="image" src="_images/2DwithSplit.png" />
+</div>
+</div>
+<div class="section" id="performances-and-migration-to-native-code">
+<h2>Performances and migration to native code<a class="headerlink" href="#performances-and-migration-to-native-code" title="Permalink to this headline">¶</a></h2>
+<p>Originally, regrouping was implemented using the histogram provided by
+NumPy, then re-implemented in Cython with pixel splitting to achieve a
+four-fold speed-up. The computation time scales like O(N) with the size
+of the input image. The number of output bins shows only little
+influence; overall the single threaded Cython implementation has been
+stated at 30 Mpix/s (on a 3.4 GHz Intel core i7-2600).</p>
+</div>
+<div class="section" id="parallel-implementation">
+<h2>Parallel implementation<a class="headerlink" href="#parallel-implementation" title="Permalink to this headline">¶</a></h2>
+<p>The method based on histograms works well on a single processor but runs
+into problems requiring so called &#8220;atomic operations&#8221; when run in parallel.
+Processing pixels in the input data order causes write access conflicts which
+become less efficient with the increase of number of computing units.
+This is the main limit of the method exposed previously;
+especially on GPU where hundreds of threads are executed simultaneously.</p>
+<p>To overcome this limitation; instead of looking at where input pixels GO TO
+in the output image, we instead look at where the output pixels COME FROM
+in the input image.
+The correspondence between pixels and output bins can be stored in a
+look-up table (LUT) together with the pixel weight which make the integration
+look like a simple (if large and sparse) matrix vector product.
+This look-up table size depends on whether pixels are split over multiple
+bins and to exploit the sparse structure, both index and weight of the pixel
+have to be stored.
+We measured that 500 Mb are needed to store the LUT to integrate a 16 megapixel image,
+which fits onto a reasonable quality graphics card nowadays.
+By making this change we switched from a “linear read / random write” forward algorithm
+to a “random read / linear write” backward algorithm which is more suitable for parallelization.
+This algorithm was implemented in Cython-OpenMP and OpenCL.
+When using OpenCL for the GPU we used a compensated, or Kahan summation to reduce
+the error accumulation in the histogram summation (at the cost of more operations to be done).
+This allows accurate results to be obtained on cheap hardware that performs calculations
+in single precision floating-point arithmetic (32 bits) which are available on consumer
+grade graphic cards.
+Double precision operations are currently limited to high price and performance computing dedicated GPUs.
+The additional cost of Kahan summation, 4x more arithmetic operations, is hidden by smaller data types,
+the higher number of single precision units and that the GPU is usually limited by the memory bandwidth anyway.</p>
+<p>The perfomances of the parallel implementation based on a LUT are above 125 MPix/s (on a 3.4 GHz Intel core i7-2600)
+and can reach 200 MPix/s on recent multi-socket, multi-core computer or on high-end GPUs like Tesla cards.</p>
+<div class="figure align-center">
+<img alt="benchmark performed on a 2010 consumer computer" src="_images/benchmark.png" />
+</div>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h1>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h1>
+<p>The library pyFAI was developed with two main goals:</p>
+<ul class="simple">
+<li>Performing azimuthal integration with a clean programming interface.</li>
+<li>No compromise on the quality of the results is accepted: a careful
+management of the geometry and precise pixel splitting ensures total
+and local intensity preservation.</li>
+</ul>
+<p>PyFAI is the first implementation of an azimuthal integration algorithm
+on a gpu as far as we are aware of, and the stated twenty-fold speed up
+opens the door to a new kind of analysis, not even considered before.
+With a good interface close to the camera, we believe PyFAI is able to sustain the data
+streams from the next generation high-speed detectors.</p>
+<div class="section" id="acknowledgments">
+<h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Permalink to this headline">¶</a></h2>
+<p>Porting pyFAI to GPU would have not been possible without
+the financial support of LinkSCEEM-2 (RI-261600).</p>
+<p>References:
+.........&#8211;</p>
+<ul class="simple">
+<li>The philosophy of pyFAI is described in the proceedings of SRI2012:
+doi:10.1088/1742-6596/425/20/202012
+http://iopscience.iop.org/1742-6596/425/20/202012/</li>
+<li>The LUT implementation (ported to GPU) is described in the proceedings
+of EPDIC13:  <a class="reference external" href="http://epdic13.grenoble.cnrs.fr/spip.php?article43">http://epdic13.grenoble.cnrs.fr/spip.php?article43</a>
+(to be published)</li>
+<li>[FIT2D] Hammersley A. P., Svensson S. O., Hanfland M., Fitch A. N. and Hausermann D.
+1996 High Press. Res. vol 14 p 235–248</li>
+<li>[SPD] Bösecke P. 2007 J. Appl. Cryst. vol 40 s 423–s427</li>
+<li>[EDNA] Incardona M. F., Bourenkov G. P., Levik K., Pieritz R. A., Popov A. N. and Svensson O.
+2009 J. Synchrotron Rad. vol 16 p 872–879</li>
+<li>[PyMca] Solé V. A., Papillon E., Cotte M., Walter P. and Susini J.
+2007 Spectrochim. Acta Part B vol vol 62 p 63 – 68</li>
+<li>[PyNX] Favre-Nicolin V., Coraux J., Richard M. I. and Renevier H.
+2011 J. Appl. Cryst. vol 44 p 635–640</li>
+<li>[iPython] Pérez F and Granger B E
+2007 Comput. Sci. Eng. vol 9 p 21–29 URL <a class="reference external" href="http://ipython.org">http://ipython.org</a></li>
+<li>[NumPy] Oliphant T E 2007 Comput. Sci. Eng. 9 10–20</li>
+<li>[Cython] Behnel S, Bradshaw R, Citro C, Dalcin L, Seljebotn D and Smith K 2011 Comput. Sci. Eng. 13 31 –39</li>
+<li>[OpenCL] Khronos OpenCL Working Group 2010 The OpenCL Specification, version 1.1 URL <a class="reference external" href="http://www.khronos.org/registry/cl/specs/opencl-1.1.pdf">http://www.khronos.org/registry/cl/specs/opencl-1.1.pdf</a></li>
+<li>[FabIO] Sorensen H O, Knudsen E, Wright J, Kieffer J et al.
+2007–2013 FabIO: I/O library for images produced by 2D X-ray detectors URL <a class="reference external" href="http://fable.sf.net/">http://fable.sf.net/</a></li>
+<li>[Matplotlib] Hunter J D 2007 Comput. Sci. Eng. 9 90–95 ISSN 1521-9615</li>
+<li>[SciPy] Jones E, Oliphant T, Peterson P et al.
+2001– SciPy: Open source scientific tools for Python URL
+<a class="reference external" href="http://www.scipy.org/">http://www.scipy.org/</a></li>
+<li>[FFTw] Frigo M and Johnson S G
+2005 Proceedings of the IEEE 93 216–231</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Aim of PyFAI</a></li>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#python-fast-azimuthal-integration">Python Fast Azimuthal Integration</a><ul>
+<li><a class="reference internal" href="#geometry-and-calibration">Geometry and calibration</a></li>
+<li><a class="reference internal" href="#pyfai-executables">PyFAI executables</a></li>
+<li><a class="reference internal" href="#python-library">Python library</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#regrouping-mechanism">Regrouping mechanism</a><ul>
+<li><a class="reference internal" href="#pixel-splitting-algorithm">Pixel splitting algorithm</a></li>
+<li><a class="reference internal" href="#performances-and-migration-to-native-code">Performances and migration to native code</a></li>
+<li><a class="reference internal" href="#parallel-implementation">Parallel implementation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#conclusion">Conclusion</a><ul>
+<li><a class="reference internal" href="#acknowledgments">Acknowledgments</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to pyFAI&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="man/scripts.html"
+                        title="next chapter">pyFAI scripts manual</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/pyFAI.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="man/scripts.html" title="pyFAI scripts manual"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to pyFAI’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">pyFAI v0.9.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Jerome Kieffer.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+    </div>
+  </body>
+</html>

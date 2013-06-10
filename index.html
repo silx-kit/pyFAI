@@ -1,67 +1,171 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Pyfai by kif</title>
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="javascripts/scale.fix.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to pyFAI’s documentation! &mdash; pyFAI v0.9.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyFAI v0.9.0 documentation" href="#" />
+    <link rel="next" title="Aim of PyFAI" href="pyFAI.html" /> 
   </head>
   <body>
-    <div class="wrapper">
-      <header>
-        <h1 class="header">Pyfai</h1>
-        <p class="header">Fast Azimuthal Integration in Python</p>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyFAI.html" title="Aim of PyFAI"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">pyFAI v0.9.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
 
-        <ul>
-          <li class="download"><a class="buttons" href="https://github.com/kif/pyFAI/zipball/master">Download ZIP</a></li>
-          <li class="download"><a class="buttons" href="https://github.com/kif/pyFAI/tarball/master">Download TAR</a></li>
-          <li><a class="buttons github" href="https://github.com/kif/pyFAI">View On GitHub</a></li>
-        </ul>
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="welcome-to-pyfai-s-documentation">
+<h1>Welcome to pyFAI&#8217;s documentation!<a class="headerlink" href="#welcome-to-pyfai-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Contents:</p>
+<p>This documentation is starts with a mix of various publication describing pyFAI, what it aims at and how it works (for scientists);
+then the usage of the scripts provided with pyFAI are described (for users) and finally the programming interface is described (for programmer).</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html">Aim of PyFAI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#introduction">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#python-fast-azimuthal-integration">Python Fast Azimuthal Integration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyFAI.html#geometry-and-calibration">Geometry and calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyFAI.html#pyfai-executables">PyFAI executables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyFAI.html#python-library">Python library</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#regrouping-mechanism">Regrouping mechanism</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyFAI.html#pixel-splitting-algorithm">Pixel splitting algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyFAI.html#performances-and-migration-to-native-code">Performances and migration to native code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyFAI.html#parallel-implementation">Parallel implementation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyFAI.html#conclusion">Conclusion</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyFAI.html#acknowledgments">Acknowledgments</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="man/scripts.html">pyFAI scripts manual</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="man/pyFAI-average.html">Preprocessing tool: pyFAI-average</a></li>
+<li class="toctree-l2"><a class="reference internal" href="man/drawMask_pymca.html">Mask generation tool: drawMask_pymca</a></li>
+<li class="toctree-l2"><a class="reference internal" href="man/pyFAI-calib.html">Calibration tool: pyFAI-calib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="man/pyFAI-recalib.html">Calibration tool: pyFAI-recalib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="man/pyFAI-integrate.html">Integration tool: pyFAI-integrate</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/modules.html">pyFAI API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/pyFAI.html">pyFAI Package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project structure</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="project.html#programming-language">Programming language</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#repository">Repository:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#run-dependencies">Run dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#build-dependencies">Build dependencies:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#building-procedure">Building procedure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#test-suites">Test suites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#list-of-contributors">List of contributors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#list-of-other-contributors-ideas-or-code">List of other contributors (ideas or code)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#list-of-supporters">List of supporters</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
 
-        <p class="header">This project is maintained by <a class="header name" href="https://github.com/kif">kif</a></p>
 
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to pyFAI&#8217;s documentation!</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
 
-      </header>
-      <section>
-        <h3>Welcome to GitHub Pages.</h3>
-
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
-
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
-
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
-
-<h3>Designer Templates</h3>
-
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
-
-<h3>Rather Drive Stick?</h3>
-
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
-
-<h3>Authors and Contributors</h3>
-
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
-
-<h3>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
-      </section>
-      <footer>
-        <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
-      </footer>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pyFAI.html"
+                        title="next chapter">Aim of PyFAI</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
     </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-		
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyFAI.html" title="Aim of PyFAI"
+             >next</a> |</li>
+        <li><a href="#">pyFAI v0.9.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Jerome Kieffer.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+    </div>
   </body>
 </html>
