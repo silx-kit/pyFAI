@@ -8,6 +8,10 @@ Welcome to pyFAI's documentation!
 
 Contents:
 
+This documentation is starts with a mix of various publication describing pyFAI, what it aims at and how it works (for scientists); 
+then the usage of the scripts provided with pyFAI are described (for users) and finally the programming interface is described (for programmer).    
+
+
 .. toctree::
    :maxdepth: 2
 
