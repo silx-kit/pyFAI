@@ -46,6 +46,12 @@ class Enum(dict):
             return self[name]
         raise AttributeError
 
+    def __repr__(self, *args, **kwargs):
+        if "REPR" in self:
+            return self["REPR"]
+        else:
+            return dict.__repr__(self, *args, **kwargs)
+
 UNDEFINED = Enum(REPR='?')
 
 TTH_DEG = TTH = Enum(REPR="2th_deg",

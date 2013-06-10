@@ -243,7 +243,8 @@ class PeakPicker(object):
                                       " 3) Control + Right-click : add a point to a new group",
                                       " 4) Center-click: erase the current group"]))
 
-        raw_input("Please press enter when you are happy; to fill in ring number. Ring number starts at 0" + os.linesep)
+        raw_input("Please press enter when you are happy with your selection" + os.linesep)
+        print("Now fill in the ring number. Ring number starts at 0, like point-groups.")
         self.points.readRingNrFromKeyboard()  # readAngleFromKeyboard()
         if filename is not None:
             self.points.save(filename)
@@ -275,6 +276,8 @@ class PeakPicker(object):
                 xlim, ylim = self.ax.get_xlim(), self.ax.get_ylim()
                 self.ct.contour(data, levels=angles)
                 self.ax.set_xlim(xlim);self.ax.set_ylim(ylim);
+                print("Visually check that the curve overlays with the Debye-Sherrer rings of the image")
+                print("Check also for correct indexing of rings")
             except MemoryError:
                 logging.error("Sorry but your computer does NOT have enough memory to display the 2-theta contour plot")
             self.fig.show()
