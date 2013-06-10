@@ -61,8 +61,10 @@ doc/build/fncychap.sty
 doc/build/genindex.html
 doc/build/index.html
 doc/build/objects.inv
+doc/build/project.html
 doc/build/py-modindex.html
 doc/build/pyFAI.aux
+doc/build/pyFAI.html
 doc/build/pyFAI.idx
 doc/build/pyFAI.log
 doc/build/pyFAI.out
@@ -78,9 +80,13 @@ doc/build/sphinxmanual.cls
 doc/build/tabulary.sty
 doc/build/.doctrees/environment.pickle
 doc/build/.doctrees/index.doctree
+doc/build/.doctrees/project.doctree
+doc/build/.doctrees/pyFAI.doctree
 doc/build/.doctrees/api/modules.doctree
 doc/build/.doctrees/api/pyFAI.doctree
 doc/build/_sources/index.txt
+doc/build/_sources/project.txt
+doc/build/_sources/pyFAI.txt
 doc/build/_sources/api/modules.txt
 doc/build/_sources/api/pyFAI.txt
 doc/build/_static/basic.css
@@ -98,6 +104,7 @@ doc/build/api/modules.html
 doc/build/api/pyFAI.html
 doc/source/conf.py
 doc/source/index.rst
+doc/source/project.rst
 doc/source/pyFAI.rst
 doc/source/api/modules.rst
 doc/source/api/pyFAI.rst
@@ -131,6 +138,7 @@ scripts/check_calib
 scripts/diff_tomo
 scripts/drawMask_pymca
 scripts/integrate_exp.py
+scripts/pyFAI-average
 scripts/pyFAI-calib
 scripts/pyFAI-integrate
 scripts/pyFAI-recalib
@@ -138,8 +146,6 @@ scripts/pyFAI-saxs
 scripts/pyFAI-waxs
 scripts/refine_wavelength.py
 scripts/saxs_integrate_exp.py
-scripts/utils.py
-scripts/pyFAI-average
 src/_distortion.c
 src/_distortion.pyx
 src/_geometry.c
@@ -176,6 +182,7 @@ test/testAzimuthalIntegrator.py
 test/testBilinear.py
 test/testDistortion.py
 test/testExport.py
+test/testFlat.py
 test/testGeometry.py
 test/testGeometryRefinement.py
 test/testHistogram.py
@@ -183,7 +190,9 @@ test/testIntegrate.py
 test/testMask.py
 test/testOpenCL.py
 test/testPeakPicking.py
+test/testPolarization.py
 test/testSaxs.py
+test/testUtils.py
 test/test_all.py
 test/test_bilinear.py
 test/test_ocl_lut.py

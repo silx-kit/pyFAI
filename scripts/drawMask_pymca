@@ -1,32 +1,41 @@
 #!/usr/bin/env python
 import sys, os
 import  PyQt4
-
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-
-
-
+import pyFAI
 import PyMca
 from PyMca import MaskImageWidget
 import fabio
 import numpy
 
-assert len(sys.argv) > 1
-filename = sys.argv[1]
-datafiles = sys.argv[1:]
-qapp = QApplication(sys.argv)
-w = PyMca.MaskImageWidget.MaskImageWidget()
-e = fabio.open(filename).data
-w.setImageData(e)
-w.show()
+from optparse import OptionParser
 
-finished = raw_input("Press enter when you are finished")
-m = w.getSelectionMask()
-outfile = os.path.splitext(filename)[0] + "-mask.edf"
-fabio.edfimage.edfimage(data=m).write(outfile)
 
-print("Selected %i datapoints on file %s" % (m.sum(), filename))
-for datafile in datafiles:
-    data = fabio.open(datafile).data[numpy.where(m)]
-    print("On File: %s,\t mean= %s \t std= %s" % (datafile, data.mean(), data.std()))
+def main():
+    usage = "usage: %prog [options] file1.edf file2.edf ..."
+    version = "%prog " + pyFAI.version
+    parser = OptionParser(usage=usage, version=version)
+    (options, args) = parser.parse_args()
+    if len(args) < 1:
+        parser.error("Incorrect number of arguments: please provide an image to draw a mask")
+
+    processFile = pyFAI.utils.expand_args(args)
+
+    qapp = QApplication()
+    w = PyMca.MaskImageWidget.MaskImageWidget()
+    e = fabio.open(processFile[0]).data
+    w.setImageData(e)
+    w.show()
+    outfile = os.path.splitext(processFile[0])[0] + "-mask.edf"
+    finished = raw_input("Press enter when you are finished. You mask-file will ba saved into %s%s" % (outfile, os.linesep))
+    m = w.getSelectionMask()
+
+    fabio.edfimage.edfimage(data=m).write(outfile)
+    print("Selected %i datapoints on file %s" % (m.sum(), processFile[0]))
+    for datafile in processFile:
+        data = fabio.open(datafile).data[numpy.where(m)]
+        print("On File: %s,\t mean= %s \t std= %s" % (datafile, data.mean(), data.std()))
+
+if __name__ == "__main__":
+    main()
