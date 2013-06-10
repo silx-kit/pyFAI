@@ -25,7 +25,18 @@ import sys, os
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
+try:
+    import sphinx.ext.mathjax
+except:
+    print("Not using math extension for sphinx")
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+    import mathjax
+    import sphinx.ext
+    sphinx.ext.mathjax = mathjax
+    sys.modules["sphinx.ext.mathjax"] = mathjax
+
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.mathjax']
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
