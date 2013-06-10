@@ -8,7 +8,10 @@ PyFAI-integrate is a graphical interface (based on python/Qt4 ) to perform azimu
 on a set of files. It exposes most of the important options available within pyFAI and allows you
 to select a GPU (or an openCL platform) to perform the calculation on.
 
-TODO: add an image of the GUI
+.. figure:: ../img/integrate.png
+   :align: center
+   :alt: image
+
 
 Usage
 -----

@@ -6,6 +6,11 @@ Purpose
 
 Draw a mask, i.e. an image containing the list of pixels which are considered invalid (no scintillator, module gap, beam stop shadow, ...).
 
+.. figure:: ../img/drawMask.png
+   :align: center
+   :alt: image
+
+
 This will open a PyMca window and let you draw on the first image (provided) with different tools (brush, rectangle selection, ...).
 When you are finished, come back to the console and press enter.
 The mask image is saved into file1-masked.edf.
