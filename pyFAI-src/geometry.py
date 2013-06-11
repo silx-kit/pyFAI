@@ -968,6 +968,10 @@ class Geometry(object):
         """
         Set the Fit2D-like parameter set: For geometry description see
         HPR 1996 (14) pp-240
+        
+        Warning: Fit2D flips automatically images depending on their file-format.
+        By reverse engineering we noticed this behavour for Tiff and Mar345 images (at least).
+        To obtaine correct result you will have to flip images using numpy.flipud. 
 
         @param direct: direct distance from sample to detector along the incident beam (in millimeter as in fit2d)
         @param tilt: tilt in degrees
