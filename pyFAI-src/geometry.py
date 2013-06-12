@@ -746,10 +746,17 @@ class Geometry(object):
 
     def diffSolidAngle(self, d1, d2):
         """
-        Calulate the solid angle of the current pixels
+        Calulate the solid angle of the current pixels (P) versus the PONI (C)
 
-        @param d1: 1d or 2d set
-        @param d2:
+                  Omega(P)    A cos(a)     SC^2         3       SC^3
+        dOmega = --------- = --------- x --------- = cos (a) = ------
+                  Omega(C)    SP^2        A cos(0)              SP^3
+
+        cos(a) = SC/SP
+
+        @param d1: 1d or 2d set of points
+        @param d2: 1d or 2d set of points (same size&shape as d1)
+        @return: solid angle correction array
         """
         p1, p2 = self._calcCartesianPositions(d1, d2)
 #        p1 = (0.5 + d1) * self.pixel1 - self._poni1
@@ -772,7 +779,8 @@ class Geometry(object):
             dY = sY[1:, : ] - sY[:-1, :]
             ds = (dX + 1.0) * (dY + 1.0)
 
-        dsa = ds * (self._dist) / sqrt(self._dist ** 2 + p1 ** 2 + p2 ** 2)
+        dsa = ds * self._dist ** 3 / (self._dist ** 2 + p1 ** 2 + p2 ** 2) ** 1.5
+
         return dsa
 
     def solidAngleArray(self, shape):

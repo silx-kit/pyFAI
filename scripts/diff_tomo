@@ -45,7 +45,7 @@ import posixpath
 import numpy
 import fabio
 import h5py
-import pyFAI
+import pyFAI, pyFAI.utils
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("diff_tomo")
 
@@ -89,18 +89,22 @@ class DiffTomo(object):
         parse options from command line
         """
         from optparse import OptionParser
-        usage = "usage: %prog [options] file1.edf file2.edf ..."
+        usage = """usage: %prog [options] files
+If the number of files is too large, use double quotes "*.edf" """
         version = "%prog " + pyFAI.version
         parser = OptionParser(usage=usage, version=version)
-        parser.add_option("-o", "--out", dest="outfile",
+        parser.add_option("-o", "--output", dest="outfile",
                           help="HDF5 File where processed sinogram was saved",
                           metavar="FILE", default="diff_tomo.h5")
         parser.add_option("-v", "--verbose",
                           action="store_true", dest="verbose", default=False,
                           help="switch to verbose/debug mode")
+        parser.add_option("-P", "--prefix", dest="prefix",
+                          help="Prefix or common base for all files",
+                          metavar="FILE", default="", type="str")
         parser.add_option("-e", "--extension", dest="extension",
-                          help="process all files with this extension",
-                          default="edf")
+                          help="Process all files with this extension",
+                          default="")
         parser.add_option("-t", "--nTrans", dest="nTrans",
                           help="number of points in translation", default=None)
         parser.add_option("-r", "--nRot", dest="nRot",
@@ -126,35 +130,33 @@ class DiffTomo(object):
         (options, args) = parser.parse_args()
 
         # Analyse aruments and options
-        if len(args) != 1:
-            parser.error("incorrect number of arguments")
+#        if len(args) != 1:
+#            parser.error("incorrect number of arguments")
 
         if options.verbose:
             logger.setLevel(logging.DEBUG)
         self.hdf5 = options.outfile
         if options.dark:
-            darkFiles = [f for f in options.dark.split(",") if os.path.isfile(f)]
-            if darkFiles:
-                self.dark = fabio.open(darkFiles[0]).data.astype(numpy.float32)
-                if len(darkFiles) > 1:
-                    for i in darkFiles[1:]:
-                        self.dark += fabio.open(i).data
-                    self.dark /= len(darkFiles)
+            darkFiles = [os.path.abspath(f) for f in options.dark.split(",") if os.path.isfile(f)]
+            if not darkFiles:
+                raise RuntimeError("No such dark files")
+            else:
+                self.dark = pyFAI.utils.averageDark([fabio.open(i).data for i in darkFiles])
         if options.flat:
-            flatFiles = [f for f in options.flat.split(",") if os.path.isfile(f)]
-            if flatFiles:
-                self.flat = fabio.open(flatFiles[0]).data.astype(numpy.float32)
-                if len(flatFiles) > 1:
-                    for i in flatFiles[1:]:
-                        self.flat += fabio.open(i).data
-                    self.flat /= len(flatFiles)
+            darkFiles = [os.path.abspath(f) for f in options.flat.split(",") if os.path.isfile(f)]
+            if not darkFiles:
+                raise RuntimeError("No such flat files")
+            else:
+                self.flat = pyFAI.utils.averageDark([fabio.open(i).data for i in darkFiles])
         self.use_gpu = options.gpu
         self.inputfiles = []
         for f in args:
             if os.path.isfile(f) and f.endswith(options.extension):
-                self.inputfiles.append(f)
+                self.inputfiles.append(os.path.abspath(f))
             elif os.path.isdir(f):
-                self.inputfiles += [os.path.join(f, g) for g in os.listdir(f) if g.endswith(options.extension)]
+                self.inputfiles += [os.path.abspath(os.path.join(f, g)) for g in os.listdir(f) if g.endswith(options.extension) and g.startswith(options.prefix)]
+            else:
+                self.inputfiles += [os.path.abspath(f) for f in glob.glob(f)]
         self.inputfiles.sort()
         if not self.inputfiles:
             raise RuntimeError("No input files to process")
@@ -166,7 +168,7 @@ class DiffTomo(object):
                 logger.warning("No such poni file %s" % options.poni)
         if options.mask:
             if os.path.isfile(options.poni):
-                self.mask = fabio.open(options.mask).data
+                self.mask = (fabio.open(options.mask).data != 0)
             else:
                 logger.warning("No such mask file %s" % options.poni)
         if options.nTrans is not None:

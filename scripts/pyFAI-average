@@ -53,7 +53,7 @@ def main():
     parser.add_option("-c", "--cutoff", dest="cutoff", type="float",default=None,
                   help="Take the mean of the average +/- cutoff * std_dev.")
     parser.add_option("-f", "--format", dest="format", type="string", default="edf",
-                  help=".")
+                  help="Output file/image format (by default EDF)")
     (options, args) = parser.parse_args()
     fabiomod = fabio.__getattribute__(options.format + "image")
     fabioclass = fabiomod.__getattribute__(options.format + "image")

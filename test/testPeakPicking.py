@@ -114,6 +114,9 @@ class test_peak_picking(unittest.TestCase):
         self.assertAlmostEquals(gr.rot3, 0, 2, "rot3 is OK, got %s, expected 0" % gr.rot3)
 
 #        print self.pp.points
+class test_Massif(unittest.TestCase):
+    """test for ring extraction algorithm with image which needs binning (non regression test)"""
+    calibFile = "1788/moke.tif"
 
 def test_suite_all_PeakPicking():
     testSuite = unittest.TestSuite()

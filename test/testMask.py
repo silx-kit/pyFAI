@@ -74,7 +74,7 @@ class test_mask(unittest.TestCase):
             pylab.show()
             raw_input()
 
-        self.assertAlmostEqual(res1, -10., 2, msg="Without mask the bad pixels are actually at -10 (got %.4f)" % res1)
+        self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
         self.assertAlmostEqual(res2, 0., 4, msg="With mask the bad pixels are actually at 0 (got %.4f)" % res2)
         self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
 
@@ -101,7 +101,7 @@ class test_mask(unittest.TestCase):
             pylab.show()
             raw_input()
 
-        self.assertAlmostEqual(res1, -10., 2, msg="Without mask the bad pixels are actually at -10 (got %.4f)" % res1)
+        self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
         self.assertAlmostEqual(res2, 0., 4, msg="With mask the bad pixels are actually at 0 (got %.4f)" % res2)
         self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
 
@@ -127,7 +127,7 @@ class test_mask(unittest.TestCase):
             pylab.show()
             raw_input()
 
-        self.assertAlmostEqual(res1, -10., 2, msg="Without mask the bad pixels are actually at -10 (got %.4f)" % res1)
+        self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
         self.assertAlmostEqual(res2, 0., 4, msg="With mask the bad pixels are actually at 0 (got %.4f)" % res2)
         self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
 
