@@ -137,12 +137,15 @@ class AbstractCalibration(object):
         lst.append(self.detector.__repr__())
         return os.linesep.join(lst)
 
-    def configure_parser(self):
-        "common configuration"
-        self.parser = OptionParser()
-        self.parser.add_option("-V", "--version", dest="version", action="store_true",
-                          help="print version of the program and quit",
-                          default=False)
+    def configure_parser(self, version="%prog " + version, usage="%prog [options] inputfile.edf",
+                         description=None, epilog=None):
+        """Common configuration for parsers
+        """
+        self.parser = OptionParser(usage=usage, version=version,
+                              description=description, epilog=epilog)
+#        self.parser.add_option("-V", "--version", dest="version", action="store_true",
+#                          help="print version of the program and quit",
+#                          default=False)
         self.parser.add_option("-o", "--out", dest="outfile",
                           help="Filename where processed image is saved", metavar="FILE",
                           default="merged.edf")
@@ -645,7 +648,21 @@ class Calibration(AbstractCalibration):
         """
         parse options from command line
         """
-        self.configure_parser()  # common
+        description = """Calibrate the diffraction setup geometry based on Debye-Sherrer rings images
+without a priori knowledge of your setup.
+You will need a "d-spacing" file containing the spacing of Miller plans in
+Angstrom (in decreasing order).
+If you are using a standart calibrant, look at
+https://github.com/kif/pyFAI/tree/master/calibration
+or search in the American Mineralogist database:
+http://rruff.geo.arizona.edu/AMS/amcsd.php"""
+
+        epilog = """The output of this program is a "PONI" file containing the detector description
+and the 6 refined parameters (distance, center, rotation) and wavelength.
+An 1D and 2D diffraction patterns are also produced. (.dat and .azim files)
+        """
+        usage = "%prog [options] -w 1 -D detector -S calibrant.D imagefile.edf"
+        self.configure_parser(usage=usage,description=description,epilog=epilog)  # common
         self.parser.add_option("-r", "--reconstruct", dest="reconstruct",
               help="Reconstruct image where data are masked or <0  (for Pilatus "\
               "detectors or detectors with modules)",
@@ -739,7 +756,27 @@ class Recalibration(AbstractCalibration):
         """
         parse options from command line
         """
-        self.configure_parser()
+        description = """Calibrate the diffraction setup geometry based on Debye-Sherrer rings images
+with a priori knowledge of your setup (an input PONI-file).
+You will need a "d-spacing" file containing the spacing of Miller plans in
+Angstrom (in decreasing order).
+If you are using a standart calibrant, look at
+https://github.com/kif/pyFAI/tree/master/calibration
+or search in the American Mineralogist database:
+http://rruff.geo.arizona.edu/AMS/amcsd.php
+"""
+
+        epilog = """The main difference with pyFAI-calib is the way control-point hence Debye-Sherrer
+rings are extracted. While pyFAI-calib relies on the contiguity of a region of peaks
+called massif; pyFAI-recalib knows approximatly the geometry and is able to select
+the region where the ring should be. From this region it selects automatically
+the various peaks; making pyFAI-recalib able to run without graphical interface and
+without human intervention (--no-gui --no-interactive options).
+
+        """
+        usage = "%prog [options] -p ponifile -w 1 -S calibrant.D imagefile.edf"
+        self.configure_parser(usage=usage, description=description, epilog=epilog)  # common
+
         self.parser.add_option("-r", "--ring", dest="max_rings", type="int",
                       help="maximum number of rings to extract. Default: all accessible", default=None)
         self.parser.add_option("-p", "--poni", dest="poni", metavar="FILE",
@@ -890,10 +927,15 @@ class CheckCalib(object):
 
     def parse(self):
         logger.debug("in parse")
-        parser = OptionParser()
-        parser.add_option("-V", "--version", dest="version", action="store_true",
-                          help="print version of the program and quit", metavar="FILE",
-                          default=False)
+        usage = "usage: %prog [options] -p param.poni image.edf"
+        description = """Check_calib is a research tool aiming at validating both the geometric
+calibration and everything else like flat-field correction, distortion
+correction. Maybe the future lies over there ...
+        """
+        parser = OptionParser(usage=usage, version="%prog " + version, description=description)
+#        parser.add_option("-V", "--version", dest="version", action="store_true",
+#                          help="print version of the program and quit", metavar="FILE",
+#                          default=False)
         parser.add_option("-v", "--verbose",
                           action="store_true", dest="verbose", default=False,
                           help="switch to debug mode")
@@ -915,9 +957,9 @@ class CheckCalib(object):
         if options.verbose:
             logger.setLevel(logging.DEBUG)
 
-        if options.version:
-            print("Check calibrarion: version %s" % version)
-            sys.exit(0)
+#        if options.version:
+#            print("Check calibrarion: version %s" % version)
+#            sys.exit(0)
         if options.mask is not None:
             self.mask = (fabio.open(options.mask).data != 0)
         args = expand_args(args)

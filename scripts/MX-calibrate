@@ -120,9 +120,20 @@ class MultiCalib(object):
         """
         parse options from command line
         """
-        parser = OptionParser()
-        parser.add_option("-V", "--version", dest="version", action="store_true",
-                          help="print version of the program and quit", metavar="FILE", default=False)
+        usage = "usage: %prog file1.edf file2.edf ..."
+        version = "%prog " + pyFAI.version
+        description = """
+        Calibrate automatically a set of frames taken at various sample-detector distance.
+        """
+        epilog = """This tool has been developed for ESRF MX-beamlines where an acceptable calibration is
+        usually present is the header of the image. PyFAI reads it and does a "recalib" on
+        each of them before exporting a linear regression of all parameters versus this distance.
+        """
+        parser = OptionParser(usage=usage, version=version,
+                              description=description, epilog=epilog)
+
+#        parser.add_option("-V", "--version", dest="version", action="store_true",
+#                          help="print version of the program and quit", metavar="FILE", default=False)
 #        parser.add_option("-o", "--out", dest="outfile",
 #                          help="Filename where processed image is saved", metavar="FILE", default="merged.edf")
         parser.add_option("-v", "--verbose",
@@ -176,7 +187,7 @@ class MultiCalib(object):
                        default=False, action="store_true")
         parser.add_option("-l", "--distance", dest="distance", type="float",
                       help="sample-detector distance in millimeter", default=None)
-        parser.add_option("--no-tilt", dest="tilt", 
+        parser.add_option("--no-tilt", dest="tilt",
                       help="refine the detector tilt", default=True , action="store_false")
         parser.add_option("--poni1", dest="poni1", type="float",
                       help="poni1 coordinate in meter", default=None)

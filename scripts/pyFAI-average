@@ -41,9 +41,19 @@ from optparse import OptionParser
 
 
 def main():
-    usage = "usage: %prog [options] file1.edf file2.edf ..."
+    usage = "usage: %prog [options] [options] -o output.edf file1.edf file2.edf ..."
     version = "%prog " + pyFAI.version
-    parser = OptionParser(usage=usage, version=version)
+    description = """
+    This tool can be used to average out a set of dark current images using
+    mean or median filter (along the image stack). One can also reject outliers
+    be specifying a cutoff (remove cosmic rays / zingers from dark)
+    """
+    epilog = """It can also be used to merge many images from the same sample when using a small beam
+    and reduce the spotty-ness of Debye-Sherrer rings. In this case the "max-filter" is usually
+    recommended.
+    """
+    parser = OptionParser(usage=usage, version=version,
+                          description=description, epilog=epilog)
     parser.add_option("-o", "--output", dest="output",
                       type='string', default=None,
                       help="Output/ destination of average image")
