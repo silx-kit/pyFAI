@@ -15,7 +15,7 @@ recommended.
 Options:
 --------
 
-Usage: pyFAI-average [options] -o option.edf file1.edf file2.edf ...
+Usage: pyFAI-average [options] -o output.edf file1.edf file2.edf ...
 
 Options:
   --version             show program's version number and exit

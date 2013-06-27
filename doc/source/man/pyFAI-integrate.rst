@@ -4,7 +4,7 @@ Integration tool: pyFAI-integrate
 Purpose
 -------
 
-PyFAI-integrate is a graphical interface (based on python/Qt4 ) to perform azimuthal integration
+PyFAI-integrate is a graphical interface (based on Python/Qt4) to perform azimuthal integration
 on a set of files. It exposes most of the important options available within pyFAI and allows you
 to select a GPU (or an openCL platform) to perform the calculation on.
 
