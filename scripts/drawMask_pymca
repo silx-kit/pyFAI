@@ -3,7 +3,7 @@ import sys, os
 import  PyQt4
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-import pyFAI
+import pyFAI, pyFAI.utils
 import PyMca
 from PyMca import MaskImageWidget
 import fabio
@@ -33,7 +33,7 @@ def main():
 
     processFile = pyFAI.utils.expand_args(args)
 
-    qapp = QApplication()
+    qapp = QApplication([])
     w = PyMca.MaskImageWidget.MaskImageWidget()
     e = fabio.open(processFile[0]).data
     w.setImageData(e)

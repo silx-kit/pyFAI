@@ -264,9 +264,6 @@ class AbstractCalibration(object):
         """
         if (options is None) and  (args is None):
             options, args = self.parser.parse_args()
-        if options.version:
-            print("PyFAI %s version %s" % self.__class__.__name__, version)
-            sys.exit(0)
         if options.debug:
             logger.setLevel(logging.DEBUG)
         self.outfile = options.outfile
