@@ -193,6 +193,7 @@ class Geometry(object):
         self._dttha = None
         self._dssa = None
         self._dssa_crc = None  # checksum associated with _dssa
+        self._dssa_order = 1  # by default we correct for 1/cos(2th), fit2d corrects for 1/cos^3(2th)
         self._chia = None
         self._dchia = None
         self._qa = None
@@ -779,18 +780,24 @@ class Geometry(object):
             dY = sY[1:, : ] - sY[:-1, :]
             ds = (dX + 1.0) * (dY + 1.0)
 
-        dsa = ds * self._dist ** 3 / (self._dist ** 2 + p1 ** 2 + p2 ** 2) ** 1.5
+        dsa = ds * self._dist ** self._dssa_order / (self._dist ** 2 + p1 ** 2 + p2 ** 2) ** (self._dssa_order * 0.5)
 
         return dsa
 
-    def solidAngleArray(self, shape):
+    def solidAngleArray(self, shape, order=1):
         """
         Generate an array of the given shape with the solid angle of
         the current element two-theta(i,j) for all elements.
+
+
+
+        @param shape: shape of the array expected
+        @param order:
         """
         if self._dssa is None:
 #            with self._sem:
 #                if self._dssa is None:
+            self._dssa_order = int(order)
             self._dssa = numpy.fromfunction(self.diffSolidAngle,
                                             shape, dtype=numpy.float32)
             self._dssa_crc = crc32(self._dssa)
@@ -968,6 +975,10 @@ class Geometry(object):
         """
         Set the Fit2D-like parameter set: For geometry description see
         HPR 1996 (14) pp-240
+
+        Warning: Fit2D flips automatically images depending on their file-format.
+        By reverse engineering we noticed this behavour for Tiff and Mar345 images (at least).
+        To obtaine correct result you will have to flip images using numpy.flipud.
 
         @param direct: direct distance from sample to detector along the incident beam (in millimeter as in fit2d)
         @param tilt: tilt in degrees

@@ -240,7 +240,7 @@ class AzimuthalIntegrator(Geometry):
             mask = numpy.where(numpy.logical_not(mask))
         return mask
 
-    def xrpd_numpy(self, data, nbPt, filename=None, correctSolidAngle=True,
+    def xrpd_numpy(self, data, nbPt, filename=None, correctSolidAngle=1,
                    tthRange=None, mask=None, dummy=None, delta_dummy=None,
                    polarization_factor=None, dark=None, flat=None):
         """
@@ -258,8 +258,8 @@ class AzimuthalIntegrator(Geometry):
         @type nbPt: integer
         @param filename: file to save data in ascii format 2 column
         @type filename: str
-        @param correctSolidAngle: solid angle correction
-        @type correctSolidAngle: bool
+        @param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
+        @type correctSolidAngle: bool or int
         @param tthRange: The lower and upper range of the 2theta
         @type tthRange: (float, float), optional
         @param mask: array with 1 for masked pixels, and 0 for valid pixels
@@ -347,7 +347,7 @@ class AzimuthalIntegrator(Geometry):
             self.save1D(filename, tthAxis, I, None, "2th_deg", dark, flat, polarization_factor)
         return tthAxis, I
 
-    def xrpd_cython(self, data, nbPt, filename=None, correctSolidAngle=True,
+    def xrpd_cython(self, data, nbPt, filename=None, correctSolidAngle=1,
                     tthRange=None, mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=None, dark=None, flat=None,
                     pixelSize=None):
@@ -405,7 +405,7 @@ class AzimuthalIntegrator(Geometry):
             self.save1D(filename, tthAxis, I, None, "2th_deg", dark, flat, polarization_factor)
         return tthAxis, I
 
-    def xrpd_splitBBox(self, data, nbPt, filename=None, correctSolidAngle=True,
+    def xrpd_splitBBox(self, data, nbPt, filename=None, correctSolidAngle=1,
                        tthRange=None, chiRange=None, mask=None,
                        dummy=None, delta_dummy=None,
                        polarization_factor=None, dark=None, flat=None):
@@ -421,8 +421,8 @@ class AzimuthalIntegrator(Geometry):
         @type nbPt: integer
         @param filename: file to save data in ascii format 2 column
         @type filename: str
-        @param correctSolidAngle: solid angle correction
-        @type correctSolidAngle: boolean
+        @param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
+        @type correctSolidAngle: bool or int
         @param tthRange: The lower and upper range of the 2theta
         @type tthRange: (float, float), optional
         @param chiRange: The lower and upper range of the chi angle.
@@ -552,7 +552,7 @@ class AzimuthalIntegrator(Geometry):
         return tthAxis, I
 
     def xrpd_splitPixel(self, data, nbPt,
-                        filename=None, correctSolidAngle=True,
+                        filename=None, correctSolidAngle=1,
                         tthRange=None, chiRange=None, mask=None,
                         dummy=None, delta_dummy=None,
                         polarization_factor=None, dark=None, flat=None):
@@ -568,8 +568,8 @@ class AzimuthalIntegrator(Geometry):
         @type nbPt: integer
         @param filename: file to save data in ascii format 2 column
         @type filename: str
-        @param correctSolidAngle: solid angle correction
-        @type correctSolidAngle: boolean
+        @param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
+        @type correctSolidAngle: bool or int
         @param tthRange: The lower and upper range of the 2theta
         @type tthRange: (float, float), optional
         @param chiRange: The lower and upper range of the chi angle.
@@ -684,7 +684,7 @@ class AzimuthalIntegrator(Geometry):
     # Default implementation:
     xrpd = xrpd_splitBBox
 
-    def xrpd_OpenCL(self, data, nbPt, filename=None, correctSolidAngle=True,
+    def xrpd_OpenCL(self, data, nbPt, filename=None, correctSolidAngle=1,
                     dark=None, flat=None,
                     tthRange=None, mask=None, dummy=None, delta_dummy=None,
                     devicetype="gpu", useFp64=True,
@@ -704,8 +704,8 @@ class AzimuthalIntegrator(Geometry):
         @type nbPt: integer
         @param filename: file to save data in ascii format 2 column
         @type filename: str
-        @param correctSolidAngle: solid angle correction
-        @type correctSolidAngle: boolean
+        @param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
+        @type correctSolidAngle: bool or int
         @param tthRange: The lower and upper range of the 2theta
         @type tthRange: (float, float), optional
         @param mask: array with 1 for masked pixels, and 0 for valid pixels
@@ -861,7 +861,7 @@ class AzimuthalIntegrator(Geometry):
                         delta_dummy = 1e-6
                     self._ocl_integrator.setDummyValue(dummy, delta_dummy)
                 if (correctSolidAngle and not param["solid_angle"]):
-                    self._ocl_integrator.setSolidAngle(flat * self.solidAngleArray(shape))
+                    self._ocl_integrator.setSolidAngle(flat * self.solidAngleArray(shape, correctSolidAngle))
                 elif (not correctSolidAngle) and param["solid_angle"] and (flat is 1):
                     self._ocl_integrator.unsetSolidAngle()
                 elif not correctSolidAngle and not param["solid_angle"] and (flat is not 1) :
@@ -971,7 +971,7 @@ class AzimuthalIntegrator(Geometry):
                                             allow_pos0_neg=False,
                                             unit=unit)
 
-    def xrpd_LUT(self, data, nbPt, filename=None, correctSolidAngle=True,
+    def xrpd_LUT(self, data, nbPt, filename=None, correctSolidAngle=1,
                  tthRange=None, chiRange=None, mask=None,
                  dummy=None, delta_dummy=None,
                  safe=True):
@@ -986,8 +986,8 @@ class AzimuthalIntegrator(Geometry):
         @type nbPt: integer
         @param filename: file to save data in ascii format 2 column
         @type filename: str
-        @param correctSolidAngle: solid angle correction
-        @type correctSolidAngle: boolean
+        @param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
+        @type correctSolidAngle: bool or int
         @param tthRange: The lower and upper range of the 2theta angle
         @type tthRange: (float, float), optional
         @param chiRange: The lower and upper range of the chi angle.
@@ -1147,7 +1147,7 @@ class AzimuthalIntegrator(Geometry):
                         tthRange=tthRange, mask=mask,
                         dummy=dummy, delta_dummy=delta_dummy)
             if correctSolidAngle:
-                solid_angle_array = self.solidAngleArray(shape)
+                solid_angle_array = self.solidAngleArray(shape, correctSolidAngle)
             else:
                 solid_angle_array = None
             try:
@@ -1169,7 +1169,7 @@ class AzimuthalIntegrator(Geometry):
             self.save1D(filename, tthAxis, I, None, "2th_deg")  # , dark, flat, polarization_factor)
         return tthAxis, I
 
-    def xrpd_LUT_OCL(self, data, nbPt, filename=None, correctSolidAngle=True,
+    def xrpd_LUT_OCL(self, data, nbPt, filename=None, correctSolidAngle=1,
                      tthRange=None, chiRange=None, mask=None,
                      dummy=None, delta_dummy=None,
                      safe=True, devicetype="all",
@@ -1188,8 +1188,8 @@ class AzimuthalIntegrator(Geometry):
         @type nbPt: integer
         @param filename: file to save data in ascii format 2 column
         @type filename: str
-        @param correctSolidAngle: solid angle correction
-        @type correctSolidAngle: boolean
+        @param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
+        @type correctSolidAngle: bool or int
         @param tthRange: The lower and upper range of 2theta
         @type tthRange: (float, float)
         @param chiRange: The lower and upper range of the chi angle in degrees.
@@ -1281,7 +1281,7 @@ class AzimuthalIntegrator(Geometry):
                                        dummy=dummy,
                                        delta_dummy=delta_dummy)
         if correctSolidAngle:
-            solid_angle_array = self.solidAngleArray(shape)
+            solid_angle_array = self.solidAngleArray(shape, correctSolidAngle)
             solid_angle_crc = self._dssa_crc
         else:
             solid_angle_array = None
@@ -1383,7 +1383,7 @@ class AzimuthalIntegrator(Geometry):
         return tthAxis, I
 
     def xrpd2_numpy(self, data, nbPt2Th, nbPtChi=360,
-                    filename=None, correctSolidAngle=True,
+                    filename=None, correctSolidAngle=1,
                     dark=None, flat=None,
                     tthRange=None, chiRange=None,
                     mask=None, dummy=None, delta_dummy=None):
@@ -1401,8 +1401,8 @@ class AzimuthalIntegrator(Geometry):
         @type nbPtChi: int
         @param filename: file to save data in
         @type filename: str
-        @param correctSolidAngle: solid angle correction
-        @type correctSolidAngle: boolean
+        @param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
+        @type correctSolidAngle: bool or int
         @param tthRange: The lower and upper range of 2theta
         @type tthRange: (float, float)
         @param chiRange: The lower and upper range of the chi angle.
@@ -1466,7 +1466,7 @@ class AzimuthalIntegrator(Geometry):
         if flat is not None:
             data /= flat[mask]
         if correctSolidAngle is not None:
-            data /= self.solidAngleArray(shape)[mask]
+            data /= self.solidAngleArray(shape, correctSolidAngle)[mask]
 
         if tthRange is not None:
             tthRange = [deg2rad(tthRange[0]), deg2rad(tthRange[-1])]
@@ -1495,7 +1495,7 @@ class AzimuthalIntegrator(Geometry):
         return I, bins2Th, binsChi
 
     def xrpd2_histogram(self, data, nbPt2Th, nbPtChi=360,
-                        filename=None, correctSolidAngle=True,
+                        filename=None, correctSolidAngle=1,
                         dark=None, flat=None,
                         tthRange=None, chiRange=None, mask=None,
                         dummy=None, delta_dummy=None):
@@ -1513,8 +1513,8 @@ class AzimuthalIntegrator(Geometry):
         @type nbPtChi: int
         @param filename: file to save data in
         @type filename: str
-        @param correctSolidAngle: solid angle correction
-        @type correctSolidAngle: boolean
+        @param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
+        @type correctSolidAngle: bool or int
         @param tthRange: The lower and upper range of 2theta
         @type tthRange: (float, float)
         @param chiRange: The lower and upper range of the chi angle.
@@ -1608,7 +1608,7 @@ class AzimuthalIntegrator(Geometry):
         return I, bins2Th, binsChi
 
     def xrpd2_splitBBox(self, data, nbPt2Th, nbPtChi=360,
-                        filename=None, correctSolidAngle=True,
+                        filename=None, correctSolidAngle=1,
                         tthRange=None, chiRange=None, mask=None,
                         dummy=None, delta_dummy=None,
                         polarization_factor=None, dark=None, flat=None):
@@ -1626,8 +1626,8 @@ class AzimuthalIntegrator(Geometry):
         @type nbPtChi: int
         @param filename: file to save data in
         @type filename: str
-        @param correctSolidAngle: solid angle correction
-        @type correctSolidAngle: boolean
+        @param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
+        @type correctSolidAngle: bool or int
         @param tthRange: The lower and upper range of 2theta
         @type tthRange: (float, float)
         @param chiRange: The lower and upper range of the chi angle.
@@ -1746,7 +1746,7 @@ class AzimuthalIntegrator(Geometry):
         return I, bins2Th, binsChi
 
     def xrpd2_splitPixel(self, data, nbPt2Th, nbPtChi=360,
-                         filename=None, correctSolidAngle=True,
+                         filename=None, correctSolidAngle=1,
                          tthRange=None, chiRange=None, mask=None,
                          dummy=None, delta_dummy=None,
                          polarization_factor=None, dark=None, flat=None):
@@ -1764,8 +1764,8 @@ class AzimuthalIntegrator(Geometry):
         @type nbPtChi: int
         @param filename: file to save data in
         @type filename: str
-        @param correctSolidAngle: solid angle correction
-        @type correctSolidAngle: boolean
+        @param correctSolidAngle: solid angle correction, order 1 or 3 (like fit2d)
+        @type correctSolidAngle: bool or int
         @param tthRange: The lower and upper range of 2theta
         @type tthRange: (float, float)
         @param chiRange: The lower and upper range of the chi angle.
@@ -1904,7 +1904,7 @@ class AzimuthalIntegrator(Geometry):
         return out
 
     def integrate1d(self, data, nbPt, filename=None,
-                    correctSolidAngle=True,
+                    correctSolidAngle=1,
                     variance=None, error_model=None,
                     radial_range=None, azimuth_range=None,
                     mask=None, dummy=None, delta_dummy=None,
@@ -1976,7 +1976,7 @@ class AzimuthalIntegrator(Geometry):
             chi = None
 
         if correctSolidAngle:
-            solidangle = self.solidAngleArray(shape)
+            solidangle = self.solidAngleArray(shape, correctSolidAngle)
         else:
             solidangle = None
         if polarization_factor is None:
@@ -2290,7 +2290,7 @@ class AzimuthalIntegrator(Geometry):
             return qAxis, I
 
     def integrate2d(self, data, nbPt_rad, nbPt_azim=360,
-                    filename=None, correctSolidAngle=True, variance=None,
+                    filename=None, correctSolidAngle=1, variance=None,
                     error_model=None, radial_range=None, azimuth_range=None,
                     mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=None, dark=None, flat=None,
@@ -2359,7 +2359,7 @@ class AzimuthalIntegrator(Geometry):
             azimuth_range = tuple([numpy.deg2rad(i) for i in azimuth_range])
 
         if correctSolidAngle:
-            solidangle = self.solidAngleArray(shape)
+            solidangle = self.solidAngleArray(shape, correctSolidAngle)
         else:
             solidangle = None
         if polarization_factor is None:
@@ -2659,7 +2659,7 @@ class AzimuthalIntegrator(Geometry):
             return I, bins_rad, bins_azim
 
     def saxs(self, data, nbPt, filename=None,
-             correctSolidAngle=True, variance=None,
+             correctSolidAngle=1, variance=None,
              error_model=None, qRange=None, chiRange=None,
              mask=None, dummy=None, delta_dummy=None,
              polarization_factor=None, dark=None, flat=None,

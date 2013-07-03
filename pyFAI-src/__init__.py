@@ -1,5 +1,5 @@
 
-version = "0.9.0-rc4"
+version = "0.9.0-rc6"
 import sys, logging
 logging.basicConfig()
 

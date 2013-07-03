@@ -3,7 +3,7 @@ import sys, os
 import  PyQt4
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-import pyFAI
+import pyFAI, pyFAI.utils
 import PyMca
 from PyMca import MaskImageWidget
 import fabio
@@ -13,16 +13,27 @@ from optparse import OptionParser
 
 
 def main():
-    usage = "usage: %prog [options] file1.edf file2.edf ..."
+    usage = "usage: %prog file1.edf file2.edf ..."
     version = "%prog " + pyFAI.version
-    parser = OptionParser(usage=usage, version=version)
+    description = """
+    Draw a mask, i.e. an image containing the list of pixels which are considered invalid
+    (no scintillator, module gap, beam stop shadow, ...).
+    This will open a PyMca window and let you draw on the first image
+    (provided) with different tools (brush, rectangle selection, ...).
+    When you are finished, come back to the console and press enter.
+    """
+    epilog = """The mask image is saved into file1-masked.edf.
+    Optionally the script will print the number of pixel masked
+    and the intensity masked (as well on other files provided in input)"""
+    parser = OptionParser(usage=usage, version=version,
+                          description=description, epilog=epilog)
     (options, args) = parser.parse_args()
     if len(args) < 1:
         parser.error("Incorrect number of arguments: please provide an image to draw a mask")
 
     processFile = pyFAI.utils.expand_args(args)
 
-    qapp = QApplication()
+    qapp = QApplication([])
     w = PyMca.MaskImageWidget.MaskImageWidget()
     e = fabio.open(processFile[0]).data
     w.setImageData(e)

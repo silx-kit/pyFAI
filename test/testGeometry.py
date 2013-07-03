@@ -17,8 +17,8 @@ import fabio
 
 class TestSolidAngle(unittest.TestCase):
     """
-    Test case for solid angle compared to Fit2D results 
-    
+    Test case for solid angle compared to Fit2D results
+
     Masked region have values set to 0 (not negative) and native mask from pilatus desactivated
     Detector Pilatus6M     PixelSize= 1.720e-04, 1.720e-04 m
     Wavelength= 1.072274e-10m
@@ -49,8 +49,9 @@ class TestSolidAngle(unittest.TestCase):
 
     def testSolidAngle(self):
         """
-        This dataset goes up to 56deg, very good to test the solid angle correction 
-        any error will show off
+        This dataset goes up to 56deg, very good to test the solid angle correction
+        any error will show off.
+        fit2d makes correction in 1/cos^3(2th) (without tilt). pyFAI used to correct in 1/cos(2th)
         """
         tth, I_nogood = self.ai.integrate1d(self.data, 1770, unit="2th_deg", radial_range=[0, 56], method="splitBBox", correctSolidAngle=False)
         delta_tth = abs(tth - self.tth_fit2d).max()
@@ -59,7 +60,7 @@ class TestSolidAngle(unittest.TestCase):
         self.assert_(delta_tth < 1e-5, 'Error on 2th position: %s <1e-5' % delta_tth)
         self.assert_(delta_I > 100, 'Error on (wrong) I are large: %s >100' % delta_I)
         self.assert_(I > 2, 'Error on (wrong) I are large: %s >2' % I)
-        tth, I_good = self.ai.integrate1d(self.data, 1770, unit="2th_deg", radial_range=[0, 56], method="splitBBox", correctSolidAngle=True)
+        tth, I_good = self.ai.integrate1d(self.data, 1770, unit="2th_deg", radial_range=[0, 56], method="splitBBox", correctSolidAngle=3)
         delta_tth = abs(tth - self.tth_fit2d).max()
         delta_I = abs(I_good - self.I_fit2d).max()
         I = abs(I_good - self.I_fit2d).mean()
