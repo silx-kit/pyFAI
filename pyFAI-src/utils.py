@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/03/2013"
+__date__ = "03/07/2013"
 __status__ = "development"
 
 import logging, sys, types, os, glob
@@ -299,11 +299,11 @@ def expand(input_img, sigma, mode="constant", cval=0.0):
     """Expand array a with its reflection on boundaries
 
     @param a: 2D array
-    @param sigma: float or 2-tuple of floats.  
+    @param sigma: float or 2-tuple of floats.
     @param mode:"constant", "nearest", "reflect" or mirror
     @param cval: filling value used for constant, 0.0 by default
-    
-    Nota: sigma is the half-width of the kernel. For gaussian convolution it is adviced that it is 4*sigma_of_gaussian 
+
+    Nota: sigma is the half-width of the kernel. For gaussian convolution it is adviced that it is 4*sigma_of_gaussian
     """
     s0, s1 = input_img.shape
     dtype = input_img.dtype
@@ -361,7 +361,7 @@ def expand(input_img, sigma, mode="constant", cval=0.0):
         output[-k0:, k1:s1 + k1] = input_img[:k0, :]
         output[k0:s0 + k0, -k1:] = input_img[:, :k1]
     elif mode == "constant":
-        #Nothing to do
+        # Nothing to do
         pass
 
     else:
@@ -437,7 +437,8 @@ def averageDark(lstimg, center_method="mean", cutoff=None):
     return output
 
 def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=None,
-                   darks=None, flats=None, filter_="mean", correct_flat_from_dark=False):
+                   darks=None, flats=None, filter_="mean", correct_flat_from_dark=False,
+                   cutoff=None, format="edf"):
     """
     Takes a list of filenames and create an average frame discarding all saturated pixels.
 
@@ -450,9 +451,15 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
     @param flats: list of flat field images for division
     @param filter_: can be maximum, mean or median (default=mean)
     @param correct_flat_from_dark: shall the flat be re-corrected ?
+    @param cutoff: keep all data where (I-center)/std < cutoff
     """
+    if filter_ not in ["min", "max", "median", "mean"]:
+        logger.warning("Filter %s not understood. switch to mean filter")
+        filter_ = "mean"
     ld = len(listImages)
     sumImg = None
+    do_dark = (darks is not None)
+    do_flat = (flats is not None)
     dark = None
     flat = None
     big_img = None
@@ -468,16 +475,14 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
         shape = ds.shape
         if sumImg is None:
             sumImg = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
-        if darks is not None:
+        if do_dark and (dark is None):
             if "ndim" in dir(darks) and darks.ndim == 3:
                 dark = averageDark(darks, center_method="mean", cutoff=4)
             elif ("__len__" in dir(darks)) and (type(darks[0]) in types.StringTypes):
                 dark = averageDark([fabio.open(f).data for f in darks if os.path.exists(f)], center_method="mean", cutoff=4)
             elif ("__len__" in dir(darks)) and ("ndim" in dir(darks[0])) and (darks[0].ndim == 2):
                 dark = averageDark(darks, center_method="mean", cutoff=4)
-        else:
-            dark = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
-        if flats is not None:
+        if do_flat and (flat is  None):
             if "ndim" in dir(flats) and flats.ndim == 3:
                 flat = averageDark(flats, center_method="mean", cutoff=4)
             elif ("__len__" in dir(flats)) and (type(flats[0]) in types.StringTypes):
@@ -489,24 +494,32 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             if correct_flat_from_dark:
                 flat -= dark
             flat[numpy.where(flat <= 0) ] = 1.0
-        else:
-            flat = numpy.ones((shape[0], shape[1]), dtype=numpy.float32)
-        correctedImg = (removeSaturatedPixel(ds.astype(numpy.float32), threshold, minimum, maximum) - dark) / flat
-        if filter_ == "max":
-            sumImg = numpy.maximum(correctedImg, sumImg)
-        elif filter_ == "median":
+        correctedImg = numpy.ascontiguousarray(ds, numpy.float32)
+        if threshold or minimum or maximum:
+            correctedImg = removeSaturatedPixel(correctedImg, threshold, minimum, maximum)
+        if do_dark:
+            correctedImg -= dark
+        if do_flat:
+             correctedImg /= flat
+        if (cutoff or (filter_ == "median")):
             if big_img is None:
-                logger.info("Big array allocation for median filter")
-                big_img = numpy.zeros((correctedImg.shape[0], correctedImg.shape[1], ld), dtype=numpy.float32)
-            big_img[:, :, idx] = correctedImg
-        else:  # mean
+                logger.info("Big array allocation for median filter or cut-off")
+                big_img = numpy.zeros((ld, shape[0], shape[1]), dtype=numpy.float32)
+            big_img[idx, :, :] = correctedImg
+        elif filter_ == "max":
+            sumImg = numpy.maximum(correctedImg, sumImg)
+        elif filter_ == "min":
+            sumImg = numpy.minimum(correctedImg, sumImg)
+        elif filter_ == "mean":
             sumImg += correctedImg
-    if filter_ == "max":
-        datared = numpy.ascontiguousarray(sumImg, dtype=numpy.float32)
-    elif filter_ == "median":
-        datared = numpy.median(big_img, axis= -1)
-    else:  # mean
-        datared = sumImg / numpy.float32(ld)
+    if cutoff or (filter_ == "median"):
+        datared = averageDark(big_img, filter_, cutoff)
+    else:
+        if filter_ in ["max", "min"]:
+            datared = numpy.ascontiguousarray(sumImg, dtype=numpy.float32)
+        elif filter_ == "mean":
+            datared = sumImg / numpy.float32(ld)
+
     if output is None:
         prefix = ""
         for ch in zip(*listImages):
@@ -529,8 +542,15 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
         else:
             output = ("merged%02i-" % ld) + prefix + ".edf"
     logger.debug("Intensity range in merged dataset : %s --> %s", datared.min(), datared.max())
-    fabio.edfimage.edfimage(data=datared,
-                            header={"merged": ", ".join(listImages)}).write(output)
+    if format:
+        fabiomod = fabio.__getattribute__(format + "image")
+        fabioclass = fabiomod.__getattribute__(format + "image")
+        fimg = fabioclass(data=datared,
+                          header={"method":filter_, "nframes":ld, "cutoff":str(cutoff),
+                                  "merged": ",".join(listImages)})
+        fimg.write(output)
+        logger.info("Wrote %s" % output)
+
     return output
 
 

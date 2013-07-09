@@ -17,7 +17,6 @@ datasets = {"Fairchild.poni":utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
             "Mar3450.poni":utilstest.UtilsTest.getimage("2201/LaB6_260210.mar3450")
       }
 b = None
-print pyFAI
 class Bench(object):
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -450,19 +449,43 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1 and sys.argv[1].isdigit():
-        n = int(sys.argv[1])
-    else:
-        n = 10
-    if "--small" in  sys.argv:
+    from optparse import OptionParser
+    description = """Benchmark for Azimuthal integration
+    """
+    epilog = """  """
+    usage = """usage: %prog [options] """
+    version = "%prog " + pyFAI.version
+    parser = OptionParser(usage=usage, version=version,
+                          description=description, epilog=epilog)
+    parser.add_option("-v", "--verbose",
+                          action="store_true", dest="verbose", default=False,
+                          help="switch to verbose/debug mode")
+    parser.add_option("-c", "--cpu",
+                      action="store_true", dest="opencl_cpu", default=False,
+                      help="perform benchmark using OpenCL on the CPU")
+    parser.add_option("-g", "--gpu",
+                      action="store_true", dest="opencl_gpu", default=False,
+                      help="perform benchmark using OpenCL on the GPU")
+    parser.add_option("-s", "--small",
+                      action="store_true", dest="small", default=False,
+                      help="Limit the size of the dataset to 6 Mpixel images (adviced for python 2.6 where there is a memory-leak)" )
+    parser.add_option("-n", "--number",
+                      dest="number", default=10, type="int",
+                      help="Number of repetition of the test, by default 10" )
+    (options, args) = parser.parse_args()
+    if options.small:
         ds_list = ds_list[:4]
-    print("Averaging over %i repetitions (best of 3)." % n)
-    b = Bench(n)
+    if options.verbose:
+            pyFAI.logger.setLevel(logging.DEBUG)
+    print("Averaging over %i repetitions (best of 3)." % options.number)
+    b = Bench(options.number)
     b.init_curve()
     b.bench_cpu1d()
     b.bench_cpu1d_lut()
-    b.bench_cpu1d_ocl_lut("GPU")
-    b.bench_cpu1d_ocl_lut("CPU")
+    if options.opencl_cpu:
+        b.bench_cpu1d_ocl_lut("CPU")
+    if options.opencl_gpu:
+        b.bench_cpu1d_ocl_lut("GPU")
 #    b.bench_cpu1d_ocl_lut("CPU")
 #    b.bench_gpu1d("gpu", True)
 #    b.bench_gpu1d("gpu", False)
@@ -470,8 +493,10 @@ if __name__ == "__main__":
 #    b.bench_gpu1d("cpu", False)
     b.bench_cpu2d()
     b.bench_cpu2d_lut()
-    b.bench_cpu2d_lut_ocl("GPU")
-    b.bench_cpu2d_lut_ocl("CPU")
+    if options.opencl_cpu:
+        b.bench_cpu2d_lut_ocl("CPU")
+    if options.opencl_gpu:
+        b.bench_cpu2d_lut_ocl("GPU")
 
 #    b.bench_cpu2d_lut()
 #    b.bench_cpu2d_lut_ocl()

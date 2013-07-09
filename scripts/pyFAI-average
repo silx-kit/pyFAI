@@ -36,9 +36,11 @@ __status__ = "development"
 import os
 import sys
 import fabio
+import logging
 import pyFAI, pyFAI.utils
 from optparse import OptionParser
-
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("average")
 
 def main():
     usage = "usage: %prog [options] [options] -o output.edf file1.edf file2.edf ..."
@@ -64,10 +66,15 @@ def main():
                   help="Take the mean of the average +/- cutoff * std_dev.")
     parser.add_option("-f", "--format", dest="format", type="string", default="edf",
                   help="Output file/image format (by default EDF)")
+    parser.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False,
+                      help="switch to verbose/debug mode")
     (options, args) = parser.parse_args()
-    fabiomod = fabio.__getattribute__(options.format + "image")
-    fabioclass = fabiomod.__getattribute__(options.format + "image")
-    images = [fabio.open(param).data for param in pyFAI.utils.expand_args(args)]
+    if options.verbose:
+        pyFAI.utils.logger.setLevel(logging.DEBUG)
+    else:
+        pyFAI.utils.logger.setLevel(logging.INFO)
+
+    images = pyFAI.utils.expand_args(args)
     if  options.output:
         output = options.output
     else:
@@ -76,8 +83,7 @@ def main():
             output += "_cutoff_%s_std" % options.cutoff
         output += "_%s_frames.%s" % (len(args), options.format)
     if images:
-        dataout = pyFAI.utils.averageDark(images, options.method, cutoff=options.cutoff)
-        fimg = fabioclass(data=dataout, header={"method":options.method, "nframes":len(args), "cutoff":str(options.cutoff)})
-        fimg.write(output)
+        dataout = pyFAI.utils.averageImages(images, filter_=options.method, cutoff=options.cutoff,
+                                            threshold=0, format=options.format, output=output)
 if __name__ == "__main__":
     main()
