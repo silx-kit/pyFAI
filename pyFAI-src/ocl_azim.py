@@ -745,6 +745,8 @@ class Integrator1d(object):
                 logger.warning("This is a workaround for Apple's OpenCL"
                                " on CPU: enforce BLOCK_SIZE=1")
                 self.BLOCK_SIZE = 1
+                self.tdim = (self.BLOCK_SIZE,)
+
                 if self.nBins:
                     self.wdim_bins = (self.nBins + self.BLOCK_SIZE - 1) & \
                         ~ (self.BLOCK_SIZE - 1),
