@@ -29,3 +29,5 @@ Options:
                         Take the mean of the average +/- cutoff * std_dev.
   -f FORMAT, --format=FORMAT
                         Output file/image format (by default EDF)
+  -v, --verbose         switch to verbose/debug mode
+                        

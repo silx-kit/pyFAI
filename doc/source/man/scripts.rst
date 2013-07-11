@@ -1,8 +1,8 @@
 pyFAI scripts manual
 ====================
 
-While pyFAI is first and foremost a python library to be used by developers, a set of scripts is provided to process
-a full diffraction experiment on the command line without knowing anythong about Python:
+While pyFAI is first and foremost a Python library to be used by developers, a set of scripts is provided to process
+a full diffraction experiment on the command line without knowing anything about Python:
 
  * pyFAI-average to merge a set of files like dark-current files or diffracton images using various filters
  * drawMask_pymca to mask out some region of the detector

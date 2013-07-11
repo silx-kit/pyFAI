@@ -145,10 +145,10 @@ class AzimuthalIntegrator(Geometry):
         #
         # mask and maskfile are properties pointing to self.detector
 
-        self._flatfield = None  # just a placeholder
-        self._darkcurrent = None  # just a placeholder
-        self._flatfield_crc = None  # just a placeholder
-        self._darkcurrent_crc = None  # just a placeholder
+        self._flatfield = None  # just a placeholder, currenty not used
+        self._darkcurrent = None  # just a placeholder, currenty not used
+        self._flatfield_crc = None  # just a placeholder, currenty not used
+        self._darkcurrent_crc = None  # just a placeholder, currenty not used
         self.flatfiles = None
         self.darkfiles = None
 
@@ -1855,6 +1855,10 @@ class AzimuthalIntegrator(Geometry):
             polarization = None
         else:
             polarization = self.polarization(data.shape, polarization_factor)
+        if dark is None:
+            dark = self.darkcurrent
+        if flat is None:
+            flat = self.flatfield
 
         if tthRange is not None:
             tthRange = tuple([numpy.deg2rad(i) for i in tthRange])

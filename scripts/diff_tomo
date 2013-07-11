@@ -79,6 +79,7 @@ class DiffTomo(object):
         self.inputfiles = []
         self.timing = []
         self.use_gpu = False
+        self.unit = "2th_deg"
 
     def __repr__(self):
         return "Diffraction Tomography with r=%s t: %s, d:%s" % \
@@ -263,11 +264,14 @@ If the number of files is too large, use double quotes like "*.edf" """
         elif pos["index"] < 0 or pos["rot"] < 0 or pos["trans"] < 0:
             return
         data = fabio.open(filename).data.astype(numpy.float32)
+
         if self.use_gpu:
-            tth, I = self.ai.xrpd_LUT_OCL(data, self.nDiff, safe=False,
-                                          devicetype="gpu")
+            meth = "lut_ocl_gpu"
         else:
-            tth, I = self.ai.xrpd_LUT(data, self.nDiff, safe=False)
+            meth = "lut"
+        tth, I = self.ai.integrate1d(data, self.nDiff, safe=False,
+                                     method=meth, unit=self.unit)
+
         self.dataset[pos["rot"], pos["trans"], :] = I
         if "2theta" not in self.group:
             self.group["2theta"] = tth
