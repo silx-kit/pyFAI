@@ -22,7 +22,7 @@ tips: If the number of files is too large, use double quotes "*.edf"
 Usage:
 ------
 
-diff_tomo [options] files
+diff_tomo [options] -p ponifile imagefiles*
 
 Options:
 --------
