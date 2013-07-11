@@ -65,8 +65,14 @@ class test_halfccd(unittest.TestCase):
 
         precision at 1e-3 : 90% of pixels
         """
-        self.dis.calc_LUT_size()
-        self.dis.calc_LUT()
+        size = self.dis.calc_LUT_size()
+        mem = size.max() * self.raw.nbytes * 4 / 2.0 ** 20
+        logger.info("Memory expected for LUT: %.3f MBytes", mem)
+        try:
+            self.dis.calc_LUT()
+        except MemoryError as error:
+            logger.warning("test_halfccd.test_vs_fit2d failed because of MemoryError. This test tries to allocate %.3fMBytes and failed with %s", mem, error)
+            return
         cor = self.dis.correct(self.raw)
         delta = abs(cor - self.fit2d)
         mask = numpy.where(self.fit2d == 0)

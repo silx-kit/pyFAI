@@ -25,12 +25,13 @@
 #
 
 __author__ = "Jerome Kieffer"
-__date__ = "20120916"
+__date__ = "20130711"
 
 import cython
 from cython.parallel cimport prange
 import numpy
 cimport numpy
+import sys
 
 from libc.stdlib cimport free, calloc,malloc
 from libc.math cimport floor,fabs
@@ -95,7 +96,9 @@ def histogram(numpy.ndarray pos not None, \
     if nthread is not None:
         if isinstance(nthread, int) and (nthread > 0):
             omp_set_num_threads(< int > nthread)
-
+    #multi-threaded version of this algorithm fails on MacOSX
+    if sys.platform == "darwin":  
+         omp_set_num_threads(< int > 1)
     cdef double * bigCount = < double *> calloc(bins * omp_get_max_threads(), sizeof(double))
     cdef double * bigData = < double *> calloc(bins * omp_get_max_threads(), sizeof(double))
     if pixelSize_in_Pos is None:
