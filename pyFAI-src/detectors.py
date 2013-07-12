@@ -554,19 +554,18 @@ class Xpad_flat(Detector):
         discards the first line and raw form all modules:
         those are 2.5x bigger and often mis - behaving
         """
-        with self._sem:
-            if (self.max_shape[0] or self.max_shape[1]) is None:
-                raise NotImplementedError("Generic Xpad detector does not"
-                                          " know the max size ...")
-            mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
-            # workinng in dim0 = Y
-            for i in range(0, self.max_shape[0], self.MODULE_SIZE[0]):
-                mask[i, :] = 1
-                mask[i + self.MODULE_SIZE[0] - 1, :] = 1
-            # workinng in dim1 = X
-            for i in range(0, self.max_shape[1], self.MODULE_SIZE[1]):
-                mask[:, i ] = 1
-                mask[:, i + self.MODULE_SIZE[1] - 1] = 1
+        if (self.max_shape[0] or self.max_shape[1]) is None:
+            raise NotImplementedError("Generic Xpad detector does not"
+                                      " know the max size ...")
+        mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
+        # workinng in dim0 = Y
+        for i in range(0, self.max_shape[0], self.MODULE_SIZE[0]):
+            mask[i, :] = 1
+            mask[i + self.MODULE_SIZE[0] - 1, :] = 1
+        # workinng in dim1 = X
+        for i in range(0, self.max_shape[1], self.MODULE_SIZE[1]):
+            mask[:, i ] = 1
+            mask[:, i + self.MODULE_SIZE[1] - 1] = 1
         return mask
 
     def calc_cartesian_positions(self, d1=None, d2=None):
