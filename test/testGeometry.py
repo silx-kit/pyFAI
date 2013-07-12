@@ -10,9 +10,9 @@ import unittest, numpy, os, sys, time
 from utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
-#from pyFAI import AzimuthalIntegrator
-import pyFAI.geometry
-geometry = pyFAI.geometry
+
+from pyFAI import geometry
+from pyFAI import AzimuthalIntegrator
 import fabio
 
 class TestSolidAngle(unittest.TestCase):
@@ -36,7 +36,7 @@ class TestSolidAngle(unittest.TestCase):
         self.fit2dFile = UtilsTest.getimage(self.__class__.fit2dFile)
         self.pilatusFile = UtilsTest.getimage(self.__class__.pilatusFile)
         self.tth_fit2d, self.I_fit2d = numpy.loadtxt(self.fit2dFile, unpack=True)
-        self.ai = pyFAI.AzimuthalIntegrator(dist=1.994993e-01,
+        self.ai = AzimuthalIntegrator(dist=1.994993e-01,
                                       poni1=2.143248e-01,
                                       poni2=2.133315e-01,
                                       rot1=0.007823,

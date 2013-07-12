@@ -48,7 +48,8 @@ else:
     skip = False
 
 pyFAI = sys.modules["pyFAI"]
-ocl = pyFAI.opencl.ocl
+from pyFAI.opencl import ocl
+# = sys.modules["pyFAI.opencl"].ocl
 
 class test_mask(unittest.TestCase):
 
