@@ -157,6 +157,10 @@ class UtilsTest(object):
                     p = subprocess.Popen([sys.executable, "setup.py", "build"],
                                      shell=False, cwd=os.path.dirname(cls.test_home))
                     logger.info("subprocess ended with rc= %s" % p.wait())
+                    opencl = os.path.join(os.path.dirname(cls.test_home), "openCL")
+                    for clf in os.listdir(opencl):
+                        if clf.endswith(".cl") and clf not in os.listdir(os.path.join(cls.pyFAI_home, "pyFAI")):
+                            copy(os.path.join(opencl, clf), os.path.join(cls.pyFAI_home, "pyFAI", clf))
                     cls.pyFAI = cls.deep_reload()
 #                    pyFAI = imp.load_module(*((cls.name,) + imp.find_module(cls.name, [cls.pyFAI_home])))
 #                    sys.modules[cls.name] = pyFAI
