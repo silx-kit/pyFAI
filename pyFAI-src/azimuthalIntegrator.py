@@ -41,7 +41,8 @@ import gc
 import numpy
 from numpy import rad2deg, deg2rad, pi
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
-from .geometry import Geometry
+from . import geometry
+Geometry = geometry.Geometry
 from . import units
 import fabio
 error = None
@@ -974,7 +975,7 @@ class AzimuthalIntegrator(Geometry):
     def xrpd_LUT(self, data, nbPt, filename=None, correctSolidAngle=1,
                  tthRange=None, chiRange=None, mask=None,
                  dummy=None, delta_dummy=None,
-                 safe=True):
+                 safe=True, dark=None, flat=None):
         """
         Calculate the powder diffraction pattern from an image.
 
@@ -1065,115 +1066,138 @@ class AzimuthalIntegrator(Geometry):
                                        tthRange=tthRange,
                                        mask=mask,
                                        dummy=dummy,
-                                       delta_dummy=delta_dummy)
-
-        with self._lut_sem:
-            reset = None
-            if self._lut_integrator is None:
-                reset = "init"
-                if tthRange is None:
-                    pos0_range = None
-                else:
-                    pos0_range = [numpy.deg2rad(i) for i in tthRange]
-                if chiRange is None:
-                    pos1_range = None
-                else:
-                    pos1_range = [numpy.deg2rad(i) for i in chiRange]
-
-                if mask is None:
-                    mask = self.detector.mask
-                    # access to private member! no, not provate,
-                    # internal; moreover just a read access on it !!!
-                    mask_crc = self.detector._mask_crc
-                else:
-                    mask_crc = crc32(mask)
-
-            elif safe:
-                if tthRange is None:
-                    pos0_range = None
-                else:
-                    pos0_range = [numpy.deg2rad(i) for i in tthRange]
-                if chiRange is None:
-                    pos1_range = None
-                else:
-                    pos1_range = [numpy.deg2rad(i) for i in chiRange]
-
-                if mask is None:
-                    mask = self.detector.mask
-                    mask_crc = self.detector._mask_crc
-                else:
-                    mask_crc = crc32(mask)
-
-                if (mask is not None) and \
-                        (not self._lut_integrator.check_mask):
-                    reset = "mask but LUT was without mask"
-                elif (mask is None) and (self._lut_integrator.check_mask):
-                    reset = "no mask but LUT has mask"
-                elif (mask is not None) and \
-                        (self._lut_integrator.mask_checksum != mask_crc):
-                    reset = "mask changed"
-                if (pos0_range is None) and \
-                        (self._lut_integrator.pos0Range is not None):
-                    reset = "radial_range was defined in LUT"
-                elif (pos0_range is not None) and \
-                    (self._lut_integrator.pos0Range !=
-                            (min(pos0_range), max(pos0_range) * EPS32)):
-                    reset = ("radial_range is defined"
-                             " but not the same as in LUT")
-                if (pos1_range is None) and\
-                        (self._lut_integrator.pos1Range is not None):
-                    reset = ("azimuth_range not defined"
-                             " and LUT had azimuth_range defined")
-                elif (pos1_range is not None) and \
-                        (self._lut_integrator.pos1Range !=
-                        (min(pos1_range), max(pos1_range) * EPS32)):
-                    reset = ("azimuth_range requested and"
-                             " LUT's azimuth_range don't match")
-            if reset:
-                logger.debug("xrpd_LUT: Resetting integrator because %s" %
-                             reset)
-                try:
-                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask,
-                                       pos0_range, pos1_range,
-                                       mask_checksum=mask_crc)
-                except MemoryError:  # LUT method is hungry...
-                    logger.warning("MemoryError:"
-                                   " falling back on forward implementation")
-                    self._ocl_lut_integr = None
-                    gc.collect()
-                    return self.xrpd_splitBBox(
-                        data=data, nbPt=nbPt, filename=filename,
-                        correctSolidAngle=correctSolidAngle,
-                        tthRange=tthRange, mask=mask,
-                        dummy=dummy, delta_dummy=delta_dummy)
-            if correctSolidAngle:
-                solid_angle_array = self.solidAngleArray(shape, correctSolidAngle)
-            else:
-                solid_angle_array = None
-            try:
-                tthAxis, I, _, _ = self._lut_integrator.integrate(data,
-                                                                solidAngle=solid_angle_array,
-                                                                dummy=dummy, delta_dummy=delta_dummy)
-            except MemoryError:  # LUT method is hungry...
-                logger.warning("MemoryError:"
-                               " falling back on forward implementation")
-                self._ocl_lut_integr = None
-                gc.collect()
-                return self.xrpd_splitBBox(
-                    data=data, nbPt=nbPt, filename=filename,
-                    correctSolidAngle=correctSolidAngle,
-                    tthRange=tthRange, mask=mask,
-                    dummy=dummy, delta_dummy=delta_dummy)
-        tthAxis = 180.0 * self._lut_integrator.outPos / pi
-        if filename:
-            self.save1D(filename, tthAxis, I, None, "2th_deg")  # , dark, flat, polarization_factor)
-        return tthAxis, I
+                                       delta_dummy=delta_dummy,
+                                       flat=flat,
+                                       dark=dark)
+        return self.integrate1d(data,
+                                nbPt,
+                                filename=filename,
+                                correctSolidAngle=correctSolidAngle,
+                                variance=None,
+                                error_model=None,
+                                radial_range=tthRange,
+                                azimuth_range=chiRange,
+                                mask=mask,
+                                dummy=dummy,
+                                delta_dummy=delta_dummy,
+                                polarization_factor=None,
+                                dark=dark,
+                                flat=flat,
+                                method="lut",
+                                unit="2th_deg",
+                                safe=safe)
+#        if flat is None:
+#            flat = self.flatfield
+#        if dark is None:
+#            dark = self.darkcurrent
+#
+#        with self._lut_sem:
+#            reset = None
+#            if self._lut_integrator is None:
+#                reset = "init"
+#                if tthRange is None:
+#                    pos0_range = None
+#                else:
+#                    pos0_range = [numpy.deg2rad(i) for i in tthRange]
+#                if chiRange is None:
+#                    pos1_range = None
+#                else:
+#                    pos1_range = [numpy.deg2rad(i) for i in chiRange]
+#
+#                if mask is None:
+#                    mask = self.detector.mask
+#                    # access to private member! no, not provate,
+#                    # internal; moreover just a read access on it !!!
+#                    mask_crc = self.detector._mask_crc
+#                else:
+#                    mask_crc = crc32(mask)
+#
+#            elif safe:
+#                if tthRange is None:
+#                    pos0_range = None
+#                else:
+#                    pos0_range = [numpy.deg2rad(i) for i in tthRange]
+#                if chiRange is None:
+#                    pos1_range = None
+#                else:
+#                    pos1_range = [numpy.deg2rad(i) for i in chiRange]
+#
+#                if mask is None:
+#                    mask = self.detector.mask
+#                    mask_crc = self.detector._mask_crc
+#                else:
+#                    mask_crc = crc32(mask)
+#
+#                if (mask is not None) and \
+#                        (not self._lut_integrator.check_mask):
+#                    reset = "mask but LUT was without mask"
+#                elif (mask is None) and (self._lut_integrator.check_mask):
+#                    reset = "no mask but LUT has mask"
+#                elif (mask is not None) and \
+#                        (self._lut_integrator.mask_checksum != mask_crc):
+#                    reset = "mask changed"
+#                if (pos0_range is None) and \
+#                        (self._lut_integrator.pos0Range is not None):
+#                    reset = "radial_range was defined in LUT"
+#                elif (pos0_range is not None) and \
+#                    (self._lut_integrator.pos0Range !=
+#                            (min(pos0_range), max(pos0_range) * EPS32)):
+#                    reset = ("radial_range is defined"
+#                             " but not the same as in LUT")
+#                if (pos1_range is None) and\
+#                        (self._lut_integrator.pos1Range is not None):
+#                    reset = ("azimuth_range not defined"
+#                             " and LUT had azimuth_range defined")
+#                elif (pos1_range is not None) and \
+#                        (self._lut_integrator.pos1Range !=
+#                        (min(pos1_range), max(pos1_range) * EPS32)):
+#                    reset = ("azimuth_range requested and"
+#                             " LUT's azimuth_range don't match")
+#            if reset:
+#                logger.debug("xrpd_LUT: Resetting integrator because %s" %
+#                             reset)
+#                try:
+#                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask,
+#                                       pos0_range, pos1_range,
+#                                       mask_checksum=mask_crc)
+#                except MemoryError:  # LUT method is hungry...
+#                    logger.warning("MemoryError:"
+#                                   " falling back on forward implementation")
+#                    self._ocl_lut_integr = None
+#                    gc.collect()
+#                    return self.xrpd_splitBBox(
+#                        data=data, nbPt=nbPt, filename=filename,
+#                        correctSolidAngle=correctSolidAngle,
+#                        tthRange=tthRange, mask=mask,
+#                        dummy=dummy, delta_dummy=delta_dummy)
+#            if correctSolidAngle:
+#                solid_angle_array = self.solidAngleArray(shape, correctSolidAngle)
+#            else:
+#                solid_angle_array = None
+#            try:
+#                tthAxis, I, _, _ = self._lut_integrator.integrate(data,
+#                                                                solidAngle=solid_angle_array,
+#                                                                dummy=dummy, delta_dummy=delta_dummy)
+#            except MemoryError:  # LUT method is hungry...
+#                logger.warning("MemoryError:"
+#                               " falling back on forward implementation")
+#                self._ocl_lut_integr = None
+#                gc.collect()
+#                return self.xrpd_splitBBox(
+#                    data=data, nbPt=nbPt, filename=filename,
+#                    correctSolidAngle=correctSolidAngle,
+#                    tthRange=tthRange, mask=mask,
+#                    dummy=dummy, delta_dummy=delta_dummy)
+#        tthAxis = 180.0 * self._lut_integrator.outPos / pi
+#        if filename:
+#            self.save1D(filename, tthAxis, I, None, "2th_deg")  # , dark, flat, polarization_factor)
+#        return tthAxis, I
 
     def xrpd_LUT_OCL(self, data, nbPt, filename=None, correctSolidAngle=1,
                      tthRange=None, chiRange=None, mask=None,
                      dummy=None, delta_dummy=None,
                      safe=True, devicetype="all",
-                     platformid=None, deviceid=None):
+                     platformid=None, deviceid=None,dark=None,flat=None):
 
         """
         Calculate the powder diffraction pattern from a set of data,
@@ -1280,107 +1304,131 @@ class AzimuthalIntegrator(Geometry):
                                        mask=mask,
                                        dummy=dummy,
                                        delta_dummy=delta_dummy)
-        if correctSolidAngle:
-            solid_angle_array = self.solidAngleArray(shape, correctSolidAngle)
-            solid_angle_crc = self._dssa_crc
-        else:
-            solid_angle_array = None
-            solid_angle_crc = None
-        mask_crc = None
-        with self._lut_sem:
-            reset = None
-            if self._lut_integrator is None:
-                reset = "init"
-                if tthRange is None:
-                    pos0_range = None
-                else:
-                    pos0_range = [numpy.deg2rad(i) for i in tthRange]
-                if chiRange is None:
-                    pos1_range = None
-                else:
-                    pos1_range = [numpy.deg2rad(i) for i in chiRange]
+        meth="lut_ocl"
+        if platformid and deviceid:
+            meth+="_%i,%i"%(platformid,deviceid)
+        elif devicetype != "all":
+            meth += "_" + devicetype
 
-                if mask is None:
-                    mask = self.detector.mask
-                    mask_crc = self.detector._mask_crc
-                else:
-                    mask_crc = crc32(mask)
-            if (not reset) and safe:
-                if tthRange is None:
-                    pos0_range = None
-                else:
-                    pos0_range = [numpy.deg2rad(i) for i in tthRange]
-                if chiRange is None:
-                    pos1_range = None
-                else:
-                    pos1_range = [numpy.deg2rad(i) for i in chiRange]
+        return self.integrate1d(data,
+                                nbPt,
+                                filename=filename,
+                                correctSolidAngle=correctSolidAngle,
+                                variance=None,
+                                error_model=None,
+                                radial_range=tthRange,
+                                azimuth_range=chiRange,
+                                mask=mask,
+                                dummy=dummy,
+                                delta_dummy=delta_dummy,
+                                polarization_factor=None,
+                                dark=dark,
+                                flat=flat,
+                                method=meth,
+                                unit="2th_deg",
+                                safe=safe)
 
-                if mask is None:
-                    mask = self.detector.mask
-                    mask_crc = self.detector._mask_crc
-                else:
-                    mask_crc = crc32(mask)
-
-                if (mask is not None) and\
-                        (not self._lut_integrator.check_mask):
-                    reset = "mask but LUT was without mask"
-                elif (mask is None) and (self._lut_integrator.check_mask):
-                    reset = "no mask but LUT has mask"
-                elif (mask is not None) and\
-                        (self._lut_integrator.mask_checksum != mask_crc):
-                    reset = "mask changed"
-                if (pos0_range is None) and\
-                        (self._lut_integrator.pos0Range is not None):
-                    reset = "radial_range was defined in LUT"
-                elif (pos0_range is not None) and\
-                        (self._lut_integrator.pos0Range !=
-                            (min(pos0_range), max(pos0_range) * EPS32)):
-                    reset = ("radial_range is defined"
-                             " but not the same as in LUT")
-                if (pos1_range is None) and\
-                        (self._lut_integrator.pos1Range is not None):
-                    reset = ("azimuth_range not defined and"
-                             " LUT had azimuth_range defined")
-                elif (pos1_range is not None) and\
-                        (self._lut_integrator.pos1Range !=
-                        (min(pos1_range), max(pos1_range) * EPS32)):
-                    reset = ("azimuth_range requested and"
-                             " LUT's azimuth_range don't match")
-
-            if reset:
-                logger.debug("xrpd_LUT_OCL:"
-                             " Resetting integrator because of %s" % reset)
-                try:
-                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask,
-                                       tthRange, chiRange,
-                                       mask_checksum=mask_crc)
-                except MemoryError:  # LUT method is hungry...
-                    logger.warning("MemoryError:"
-                                   " falling back on forward implementation")
-                    self._ocl_lut_integr = None
-                    gc.collect()
-                    return self.xrpd_splitBBox(
-                        data=data, nbPt=nbPt, filename=filename,
-                        correctSolidAngle=correctSolidAngle,
-                        tthRange=tthRange, mask=mask,
-                        dummy=dummy, delta_dummy=delta_dummy)
-
-            tthAxis = 180.0 * self._lut_integrator.outPos / pi
-            with self._ocl_lut_sem:
-                if (self._ocl_lut_integr is None) or \
-                        (self._ocl_lut_integr.on_device["lut"] != self._lut_integrator.lut_checksum):
-                    self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(
-                        self._lut_integrator.lut,
-                        self._lut_integrator.size,
-                        devicetype, platformid=platformid, deviceid=deviceid,
-                        checksum=self._lut_integrator.lut_checksum)
-                I, _, _ = self._ocl_lut_integr.integrate(
-                    data, solidAngle=solid_angle_array,
-                    solidAngle_checksum=solid_angle_crc,
-                    dummy=dummy, delta_dummy=delta_dummy)
-        if filename:
-            self.save1D(filename, tthAxis, I, None, "2th_deg")  # dark, flat, polarization
-        return tthAxis, I
+#        if correctSolidAngle:
+#            solid_angle_array = self.solidAngleArray(shape, correctSolidAngle)
+#            solid_angle_crc = self._dssa_crc
+#        else:
+#            solid_angle_array = None
+#            solid_angle_crc = None
+#        mask_crc = None
+#        with self._lut_sem:
+#            reset = None
+#            if self._lut_integrator is None:
+#                reset = "init"
+#                if tthRange is None:
+#                    pos0_range = None
+#                else:
+#                    pos0_range = [numpy.deg2rad(i) for i in tthRange]
+#                if chiRange is None:
+#                    pos1_range = None
+#                else:
+#                    pos1_range = [numpy.deg2rad(i) for i in chiRange]
+#
+#                if mask is None:
+#                    mask = self.detector.mask
+#                    mask_crc = self.detector._mask_crc
+#                else:
+#                    mask_crc = crc32(mask)
+#            if (not reset) and safe:
+#                if tthRange is None:
+#                    pos0_range = None
+#                else:
+#                    pos0_range = [numpy.deg2rad(i) for i in tthRange]
+#                if chiRange is None:
+#                    pos1_range = None
+#                else:
+#                    pos1_range = [numpy.deg2rad(i) for i in chiRange]
+#
+#                if mask is None:
+#                    mask = self.detector.mask
+#                    mask_crc = self.detector._mask_crc
+#                else:
+#                    mask_crc = crc32(mask)
+#
+#                if (mask is not None) and\
+#                        (not self._lut_integrator.check_mask):
+#                    reset = "mask but LUT was without mask"
+#                elif (mask is None) and (self._lut_integrator.check_mask):
+#                    reset = "no mask but LUT has mask"
+#                elif (mask is not None) and\
+#                        (self._lut_integrator.mask_checksum != mask_crc):
+#                    reset = "mask changed"
+#                if (pos0_range is None) and\
+#                        (self._lut_integrator.pos0Range is not None):
+#                    reset = "radial_range was defined in LUT"
+#                elif (pos0_range is not None) and\
+#                        (self._lut_integrator.pos0Range !=
+#                            (min(pos0_range), max(pos0_range) * EPS32)):
+#                    reset = ("radial_range is defined"
+#                             " but not the same as in LUT")
+#                if (pos1_range is None) and\
+#                        (self._lut_integrator.pos1Range is not None):
+#                    reset = ("azimuth_range not defined and"
+#                             " LUT had azimuth_range defined")
+#                elif (pos1_range is not None) and\
+#                        (self._lut_integrator.pos1Range !=
+#                        (min(pos1_range), max(pos1_range) * EPS32)):
+#                    reset = ("azimuth_range requested and"
+#                             " LUT's azimuth_range don't match")
+#
+#            if reset:
+#                logger.debug("xrpd_LUT_OCL:"
+#                             " Resetting integrator because of %s" % reset)
+#                try:
+#                    self._lut_integrator = self.setup_LUT(shape, nbPt, mask,
+#                                       tthRange, chiRange,
+#                                       mask_checksum=mask_crc)
+#                except MemoryError:  # LUT method is hungry...
+#                    logger.warning("MemoryError:"
+#                                   " falling back on forward implementation")
+#                    self._ocl_lut_integr = None
+#                    gc.collect()
+#                    return self.xrpd_splitBBox(
+#                        data=data, nbPt=nbPt, filename=filename,
+#                        correctSolidAngle=correctSolidAngle,
+#                        tthRange=tthRange, mask=mask,
+#                        dummy=dummy, delta_dummy=delta_dummy)
+#
+#            tthAxis = 180.0 * self._lut_integrator.outPos / pi
+#            with self._ocl_lut_sem:
+#                if (self._ocl_lut_integr is None) or \
+#                        (self._ocl_lut_integr.on_device["lut"] != self._lut_integrator.lut_checksum):
+#                    self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(
+#                        self._lut_integrator.lut,
+#                        self._lut_integrator.size,
+#                        devicetype, platformid=platformid, deviceid=deviceid,
+#                        checksum=self._lut_integrator.lut_checksum)
+#                I, _, _ = self._ocl_lut_integr.integrate(
+#                    data, solidAngle=solid_angle_array,
+#                    solidAngle_checksum=solid_angle_crc,
+#                    dummy=dummy, delta_dummy=delta_dummy)
+#        if filename:
+#            self.save1D(filename, tthAxis, I, None, "2th_deg")  # dark, flat, polarization
+#        return tthAxis, I
 
     def xrpd2_numpy(self, data, nbPt2Th, nbPtChi=360,
                     filename=None, correctSolidAngle=1,

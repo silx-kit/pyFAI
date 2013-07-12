@@ -45,7 +45,8 @@ pyFAI = sys.modules["pyFAI"]
 # from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 # if logger.getEffectiveLevel() <= logging.INFO:
 #    import pylab
-from pyFAI import bilinear
+#from pyFAI import bilinear
+bilinear = sys.modules["pyFAI.bilinear"]
 
 class test_bilinear(unittest.TestCase):
     """basic maximum search test"""

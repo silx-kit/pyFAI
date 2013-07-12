@@ -41,9 +41,10 @@ import fabio
 from utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
+import pyFAI.peakPicker
+import pyFAI.geometryRefinement
 from pyFAI.peakPicker import PeakPicker
 from pyFAI.geometryRefinement import GeometryRefinement
-
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 

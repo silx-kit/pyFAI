@@ -43,6 +43,7 @@ from utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
+#AzimuthalIntegrator = sys.modules["pyFAI.azimuthalIntegrator"].AzimuthalIntegrator
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 

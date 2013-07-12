@@ -38,7 +38,7 @@ import bz2
 import gzip
 import numpy
 import shutil
-
+logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("pyFAI.utilstest")
 
 def copy(infile, outfile):
@@ -73,6 +73,9 @@ class UtilsTest(object):
         logger.info("pyFAI module was already loaded from  %s" % sys.modules["pyFAI"])
         pyFAI = None
         sys.modules.pop("pyFAI")
+        for key in sys.modules:
+            if key.startswith("pyFAI."):
+                sys.modules.pop(key)
 
     if not os.path.isdir(pyFAI_home):
         with sem:
@@ -86,14 +89,46 @@ class UtilsTest(object):
     for clf in os.listdir(opencl):
         if clf.endswith(".cl") and clf not in os.listdir(os.path.join(pyFAI_home, "pyFAI")):
             copy(os.path.join(opencl, clf), os.path.join(pyFAI_home, "pyFAI", clf))
-    pyFAI = imp.load_module(*((name,) + imp.find_module(name, [pyFAI_home])))
-    sys.modules[name] = pyFAI
-    logger.info("pyFAI loaded from %s" % pyFAI.__file__)
 
+    logger.info("Loading pyFAI")
+    try:
+        pyFAI = imp.load_module(*((name,) + imp.find_module(name, [pyFAI_home])))
+    except Exception as error:
+        logger.warning("Unable to loading pyFAI %s" % error)
+        if "-r" not in sys.argv:
+            logger.warning("Remove build and start from scratch %s" % error)
+            sys.argv.append("-r")
 
 
     @classmethod
-    def forceBuild(cls):
+    def deep_reload(cls):
+        logger.info("Loading pyFAI")
+        cls.pyFAI = imp.load_module(*((cls.name,) + imp.find_module(cls.name, [cls.pyFAI_home])))
+        sys.modules[cls.name] = cls.pyFAI
+        for module_name in [ "_distortion", '_geometry', 'fastcrc', 'histogram',
+                            'splitBBox', 'splitBBoxLUT', 'splitPixel',
+                            'utils', 'ocl_azim', 'ocl_azim_lut', 'opencl',
+                            'units', 'spline', 'detectors', "geometry", 'azimuthalIntegrator',
+                            "geometryRefinement"
+                            ]:
+            try:
+                module = imp.load_module(*(("%s.%s" % (cls.name, module_name),) + imp.find_module(module_name, [os.path.join(cls.pyFAI_home, cls.name)])))
+            except Exception as error:
+                logger.error("Error while hard-loading %s: %s" % (module_name, error))
+            else:
+                sys.modules["%s.%s" % (cls.name, module_name)] = module
+                cls.pyFAI.__setattr__(module_name, module)
+        #last but not least:
+        cls.pyFAI.AzimuthalIntegrator = cls.pyFAI.azimuthalIntegrator.AzimuthalIntegrator
+        cls.pyFAI.load = cls.pyFAI.AzimuthalIntegrator.sload
+#        sys.modules["%s.azimuthalIntegrator" % (cls.name)] = cls.pyFAI.azimuthalIntegrator.geometry
+        sys.modules["%s.geometry" % (cls.name)] = cls.pyFAI.azimuthalIntegrator.geometry
+        logger.info("pyFAI loaded from %s" % cls.pyFAI.__file__)
+        sys.modules[cls.name] = cls.pyFAI
+        return cls.pyFAI
+
+    @classmethod
+    def forceBuild(cls, remove_first=True):
         """
         force the recompilation of pyFAI
         """
@@ -103,15 +138,17 @@ class UtilsTest(object):
                     logger.info("Building pyFAI to %s" % cls.pyFAI_home)
                     if "pyFAI" in sys.modules:
                         logger.info("pyFAI module was already loaded from  %s" % sys.modules["pyFAI"])
-                        pyFAI = None
+                        cls.pyFAI = None
                         sys.modules.pop("pyFAI")
-                    recursive_delete(cls.pyFAI_home)
+                    if remove_first:
+                        recursive_delete(cls.pyFAI_home)
                     p = subprocess.Popen([sys.executable, "setup.py", "build"],
                                      shell=False, cwd=os.path.dirname(cls.test_home))
                     logger.info("subprocess ended with rc= %s" % p.wait())
-                    pyFAI = imp.load_module(*((cls.name,) + imp.find_module(cls.name, [cls.pyFAI_home])))
-                    sys.modules[cls.name] = pyFAI
-                    logger.info("pyFAI loaded from %s" % pyFAI.__file__)
+                    cls.pyFAI = cls.deep_reload()
+#                    pyFAI = imp.load_module(*((cls.name,) + imp.find_module(cls.name, [cls.pyFAI_home])))
+#                    sys.modules[cls.name] = pyFAI
+#                    logger.info("pyFAI loaded from %s" % pyFAI.__file__)
                     cls.recompiled = True
 
     @classmethod
@@ -234,6 +271,7 @@ def getLogger(filename=__file__):
     dirname, basename = os.path.split(os.path.abspath(filename))
     basename = os.path.splitext(basename)[0]
     force_build = False
+    force_remove = False
     level = logging.WARN
     for opts in sys.argv[1:]:
         if opts in ["-d", "--debug"]:
@@ -244,11 +282,16 @@ def getLogger(filename=__file__):
 #            sys.argv.pop(sys.argv.index(opts))
         elif opts in ["-f", "--force"]:
             force_build = True
+        elif opts in ["-r", "--really-force"]:
+            force_remove = True
+            force_build = True
 #            sys.argv.pop(sys.argv.index(opts))
     logger = logging.getLogger(basename)
     logger.setLevel(level)
     logger.debug("tests loaded from file: %s" % basename)
     if force_build:
-        UtilsTest.forceBuild()
+        UtilsTest.forceBuild(force_remove)
+    else:
+        UtilsTest.deep_reload()
     return logger
 

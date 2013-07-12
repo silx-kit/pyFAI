@@ -41,7 +41,9 @@ import fabio
 from utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
-from pyFAI import _distortion, detectors
+#from pyFAI import _distortion, detectors
+_distortion = sys.modules["pyFAI._distortion"]
+detectors = sys.modules["pyFAI.detectors"]
 
 class test_halfccd(unittest.TestCase):
     """basic test"""
