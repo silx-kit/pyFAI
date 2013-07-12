@@ -38,7 +38,8 @@ import logging
 import numpy
 import types
 from math import pi
-from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
+from . import azimuthalIntegrator
+AzimuthalIntegrator = azimuthalIntegrator.AzimuthalIntegrator
 from scipy.optimize import fmin, leastsq, fmin_slsqp, anneal
 
 if os.name != "nt":

@@ -103,26 +103,38 @@ class UtilsTest(object):
     @classmethod
     def deep_reload(cls):
         logger.info("Loading pyFAI")
-        cls.pyFAI = imp.load_module(*((cls.name,) + imp.find_module(cls.name, [cls.pyFAI_home])))
-        sys.modules[cls.name] = cls.pyFAI
-        for module_name in [ "_distortion", '_geometry', 'fastcrc', 'histogram',
-                            'splitBBox', 'splitBBoxLUT', 'splitPixel',
-                            'utils', 'ocl_azim', 'ocl_azim_lut', 'opencl',
-                            'units', 'spline', 'detectors', "geometry", 'azimuthalIntegrator',
-                            "geometryRefinement"
-                            ]:
-            try:
-                module = imp.load_module(*(("%s.%s" % (cls.name, module_name),) + imp.find_module(module_name, [os.path.join(cls.pyFAI_home, cls.name)])))
-            except Exception as error:
-                logger.error("Error while hard-loading %s: %s" % (module_name, error))
-            else:
-                sys.modules["%s.%s" % (cls.name, module_name)] = module
-                cls.pyFAI.__setattr__(module_name, module)
-        #last but not least:
-        cls.pyFAI.AzimuthalIntegrator = cls.pyFAI.azimuthalIntegrator.AzimuthalIntegrator
-        cls.pyFAI.load = cls.pyFAI.AzimuthalIntegrator.sload
-#        sys.modules["%s.azimuthalIntegrator" % (cls.name)] = cls.pyFAI.azimuthalIntegrator.geometry
-        sys.modules["%s.geometry" % (cls.name)] = cls.pyFAI.azimuthalIntegrator.geometry
+        cls.pyFAI = None
+        pyFAI = None
+        sys.path.insert(0, cls.pyFAI_home)
+        for key in sys.modules.copy():
+            if key.startswith("pyFAI"):
+                sys.modules.pop(key)
+
+        import pyFAI
+        cls.pyFAI = pyFAI
+#        cls.pyFAI = imp.load_module(*((cls.name,) + imp.find_module(cls.name, [cls.pyFAI_home])))
+#        sys.modules[cls.name] = cls.pyFAI
+#        for module_name in [ "_distortion", '_geometry', 'fastcrc', 'histogram',
+#                            'splitBBox', 'splitBBoxLUT', 'splitPixel',
+#                            'utils', 'ocl_azim', 'ocl_azim_lut', 'opencl',
+#                            'units', 'spline', 'detectors', "geometry", 'azimuthalIntegrator',
+#                            "geometryRefinement"
+#                            ]:
+#            try:
+#                module = imp.load_module(*(("%s.%s" % (cls.name, module_name),) + imp.find_module(module_name, [os.path.join(cls.pyFAI_home, cls.name)])))
+#            except Exception as error:
+#                logger.error("Error while hard-loading %s: %s" % (module_name, error))
+#            else:
+#                sys.modules["%s.%s" % (cls.name, module_name)] = module
+#                cls.pyFAI.__setattr__(module_name, module)
+#        #last but not least:
+#        sys.modules["%s.azimuthalIntegrator" % (cls.name)] = cls.pyFAI.geometryRefinement.azimuthalIntegrator
+#        cls.pyFAI.__setattr__("azimuthalIntegrator", cls.pyFAI.geometryRefinement.azimuthalIntegrator)
+#        sys.modules["%s.geometry" % (cls.name)] = cls.pyFAI.azimuthalIntegrator.geometry
+#        cls.pyFAI.__setattr__("geometry", cls.pyFAI.azimuthalIntegrator.geometry)
+#        cls.pyFAI.AzimuthalIntegrator = cls.pyFAI.azimuthalIntegrator.AzimuthalIntegrator
+#        cls.pyFAI.load = cls.pyFAI.AzimuthalIntegrator.sload
+
         logger.info("pyFAI loaded from %s" % cls.pyFAI.__file__)
         sys.modules[cls.name] = cls.pyFAI
         return cls.pyFAI
