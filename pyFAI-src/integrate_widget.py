@@ -92,6 +92,7 @@ class AIWidget(QtGui.QWidget):
 
         self.restore()
         self.progressBar.setValue(0)
+        self.hdf5_path = None
 
     def proceed(self):
         with self._sem:
@@ -194,7 +195,9 @@ class AIWidget(QtGui.QWidget):
                         out[i] = self.ai.integrate2d(**kwarg)[0]
 
                 else:
-                    out = numpy.zeros((self.input_data.shape[0], kwarg["nbPt_rad"]), dtype=numpy.float32)
+                    if "nbPt_rad" in kwarg:  # convert nbPt_rad -> nbPt
+                            kwarg["nbPt"] = kwarg.pop("nbPt_rad")
+                    out = numpy.zeros((self.input_data.shape[0], kwarg["nbPt"]), dtype=numpy.float32)
                     for i in range(self.input_data.shape[0]):
                         self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
                         kwarg["data"] = self.input_data[i]
@@ -236,12 +239,10 @@ class AIWidget(QtGui.QWidget):
                         if self.hdf5_path is not None:
                             if self.output_path and op.isdir(self.output_path):
                                 outpath = op.join(self.output_path,op.splitext(op.basename(item))[0])
-                            if kwarg.get("nbPt_azim"):
+                            if "nbPt_azim" in kwarg:
                                 kwarg["filename"] = outpath + ".azim"
                             else:
                                 kwarg["filename"] = outpath + ".dat"
-                                if kwarg.get("nbPt_rad"):
-                                    kwarg["nbPt"] = kwarg.pop("nbPt_rad")
                     else:
                         logger.warning("item is not a file ... guessing it is a numpy array")
                         kwarg["data"] = item
@@ -249,6 +250,8 @@ class AIWidget(QtGui.QWidget):
                     if kwarg.get("nbPt_azim"):
                         res=self.ai.integrate2d(**kwarg)[0]
                     else:
+                        if "nbPt_rad" in kwarg:  # convert nbPt_rad -> nbPt
+                            kwarg["nbPt"] = kwarg.pop("nbPt_rad")
                         res=self.ai.integrate1d(**kwarg)[0]
                     out.append(res)
                     #TODO manage HDF5 stuff !!!
@@ -319,10 +322,13 @@ class AIWidget(QtGui.QWidget):
             to_save["unit"] = "2th_rad"
         elif self.r_mm.isChecked():
             to_save["unit"] = "r_mm"
-
-        with open(filename, "w") as myFile:
-            json.dump(to_save, myFile, indent=4)
-        logger.debug("Saved")
+        try:
+            with open(filename, "w") as myFile:
+                json.dump(to_save, myFile, indent=4)
+        except IOError as error:
+            logger.error("Error while saving config: %s" % error)
+        else:
+            logger.debug("Saved")
 
     def restore(self, filename=".azimint.json"):
         """
