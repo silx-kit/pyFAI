@@ -35,7 +35,11 @@ __date__ = "27/11/2012"
 __status__ = "stable"
 
 
-import os, sys, glob, shutil, ConfigParser, platform
+import os
+import sys
+import glob
+import shutil
+import platform
 from distutils.core import setup, Extension, Command
 from numpy.distutils.misc_util import get_numpy_include_dirs
 from distutils.sysconfig import get_python_lib
@@ -215,10 +219,6 @@ if sys.platform == "win32":
 else:
     script_files = glob.glob("scripts/*")
 print(data_files)
-
-data_files += [(installDir, [os.path.join('openCL', o) for o in [
-      "ocl_azim_kernel_2.cl", "ocl_azim_kernel2d_2.cl", "ocl_azim_LUT.cl"]] +
-                [os.path.join('gui', o) for o in ("integration.ui",)])]
 
 version = [eval(l.split("=")[1]) for l in open(os.path.join(os.path.dirname(
     os.path.abspath(__file__)), "pyFAI-src", "__init__.py"))
