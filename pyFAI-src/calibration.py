@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/06/2013"
+__date__ = "15/07/2013"
 __status__ = "development"
 
 import os, sys, time, logging, types
@@ -51,7 +51,7 @@ from . import units
 from .utils import averageImages, measure_offset, expand_args
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import hc
-from . import version
+from . import version as PyFAI_VERSION
 
 matplotlib.interactive(True)
 
@@ -137,15 +137,13 @@ class AbstractCalibration(object):
         lst.append(self.detector.__repr__())
         return os.linesep.join(lst)
 
-    def configure_parser(self, version="%prog " + version, usage="%prog [options] inputfile.edf",
+    def configure_parser(self, version="%prog from pyFAI version " + PyFAI_VERSION,
+                         usage="%prog [options] inputfile.edf",
                          description=None, epilog=None):
         """Common configuration for parsers
         """
         self.parser = OptionParser(usage=usage, version=version,
                               description=description, epilog=epilog)
-#        self.parser.add_option("-V", "--version", dest="version", action="store_true",
-#                          help="print version of the program and quit",
-#                          default=False)
         self.parser.add_option("-o", "--out", dest="outfile",
                           help="Filename where processed image is saved", metavar="FILE",
                           default="merged.edf")
@@ -932,10 +930,9 @@ class CheckCalib(object):
 calibration and everything else like flat-field correction, distortion
 correction. Maybe the future lies over there ...
         """
-        parser = OptionParser(usage=usage, version="%prog " + version, description=description)
-#        parser.add_option("-V", "--version", dest="version", action="store_true",
-#                          help="print version of the program and quit", metavar="FILE",
-#                          default=False)
+        parser = OptionParser(usage=usage,
+                              version="%prog from pyFAI version " + PyFAI_VERSION,
+                              description=description)
         parser.add_option("-v", "--verbose",
                           action="store_true", dest="verbose", default=False,
                           help="switch to debug mode")
@@ -957,9 +954,6 @@ correction. Maybe the future lies over there ...
         if options.verbose:
             logger.setLevel(logging.DEBUG)
 
-#        if options.version:
-#            print("Check calibrarion: version %s" % version)
-#            sys.exit(0)
         if options.mask is not None:
             self.mask = (fabio.open(options.mask).data != 0)
         args = expand_args(args)
