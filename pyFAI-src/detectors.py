@@ -646,4 +646,8 @@ def detector_factory(name):
     if name in ALL_DETECTORS:
         return ALL_DETECTORS[name]()
     else:
-        raise RuntimeError("Detector %s is unknown !" % (name))
+        msg = ("Detector %s is unknown !, "
+               "please select one from %s" % (name, ALL_DETECTORS.keys()))
+        logger.error(msg)
+        raise RuntimeError(msg)
+

@@ -84,12 +84,7 @@ class AbstractCalibration(object):
         self.flatFiles = flatFiles
         self.pointfile = None
 
-        if type(detector) in types.StringTypes:
-            self.detector = detector_factory(detector)
-        elif isinstance(detector, Detector):
-            self.detector = detector
-        else:
-            self.detector = Detector()
+        self.detector = self.get_detector(detector)
 
         if splineFile and os.path.isfile(splineFile):
             self.detector.splineFile = os.path.abspath(splineFile)
@@ -153,6 +148,17 @@ class AbstractCalibration(object):
             ls.append("fixed= None")
         lst.append(self.detector.__repr__())
         return os.linesep.join(lst)
+
+    def get_detector(self, detector):
+        if type(detector) in types.StringTypes:
+            try:
+                return detector_factory(detector)
+            except RuntimeError:
+                sys.exit(-1)
+        elif isinstance(detector, Detector):
+            return detector
+        else:
+            return Detector()
 
     def configure_parser(self, version="%prog from pyFAI version " + PyFAI_VERSION,
                          usage="%prog [options] inputfile.edf",
@@ -297,7 +303,7 @@ class AbstractCalibration(object):
             self.mask = (fabio.open(options.mask).data != 0)
 
         if options.detector_name:
-            self.detector = detector_factory(options.detector_name)
+            self.detector = self.get_detector(options.detector_name)
             self.ai.detector = self.detector
         if options.spline:
             if "Pilatus" in self.detector.name:
