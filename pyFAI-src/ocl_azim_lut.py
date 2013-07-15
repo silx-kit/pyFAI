@@ -33,14 +33,15 @@ import os, gc, logging
 import threading
 import hashlib
 import numpy
-from opencl import ocl, pyopencl
-from splitBBoxLUT import HistoBBox1d
+from .opencl import ocl, pyopencl
+from .splitBBoxLUT import HistoBBox1d
+from .utils import get_cl_file
 if pyopencl:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
 try:
-    from fastcrc import crc32
+    from .fastcrc import crc32
 except:
     from zlib import crc32
 logger = logging.getLogger("pyFAI.ocl_azim_lut")
@@ -164,10 +165,11 @@ class OCL_LUT_Integrator(object):
             if os.path.isfile(kernel_name):
                 kernel_file = os.path.abspath(kernel_name)
             else:
-                kernel_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), kernel_name)
+                kernel_file = get_cl_file(kernel_name)
         else:
             kernel_file = str(kernel_file)
-        kernel_src = open(kernel_file).read()
+        with open(kernel_file, "r") as kernelFile:
+            kernel_src = kernelFile.read()
 
         compile_options = "-D NBINS=%i  -D NIMAGE=%i -D NLUT=%i -D ON_CPU=%i" % \
                 (self.bins, self.size, self.lut_size, int(self.device_type == "CPU"))

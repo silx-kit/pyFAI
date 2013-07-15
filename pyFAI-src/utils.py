@@ -705,7 +705,7 @@ def shiftFFT(input_img, shift_val, method="fftw"):
         fftw3 = sys.modules.get("fftw3")
     else:
         fftw3 = None
-    print fftw3
+#    print fftw3
     d0, d1 = input_img.shape
     v0, v1 = shift_val
     f0 = numpy.fft.ifftshift(numpy.arange(-d0 // 2, d0 // 2))
@@ -851,3 +851,51 @@ def expand_args(args):
         else:
             new += glob.glob(afile)
     return new
+
+
+def _get_data_path(filename):
+    """
+    @param filename: the name of the requested data file.
+    @type filename: str
+
+    In the future ....
+    This method try to find the requested ui-name following the
+    xfreedesktop recommendations. First the source directory then
+    the system locations
+    
+    For now, just perform a recursive search
+    """
+    # when using bootstrap the file is located under the build directory
+#    real_filename = os.path.abspath(os.path.join(os.path.dirname(__file__),
+#                                                 os.path.pardir,
+#                                                 os.path.pardir,
+#                                                 os.path.pardir,
+#                                                 'data',
+#                                                 filename))
+#    if not os.path.exists(real_filename):
+    resources = [os.path.dirname(__file__)]
+    try:
+        import xdg.BaseDirectory
+        resources += xdg.BaseDirectory.load_data_paths("pyFAI")
+    except ImportError:
+        pass
+
+    for resource in resources:
+        real_filename = os.path.join(resource, filename)
+        if os.path.exists(real_filename):
+            return real_filename
+    else:
+        raise Exception("Can not find the [%s] resource, "
+                        " something went wrong !!!" % (real_filename,))
+#    else:
+#        return real_filename
+
+
+def get_ui_file(filename):
+#    return _get_data_path(os.path.join("gui", filename))
+    return _get_data_path(filename)
+
+
+def get_cl_file(filename):
+#    return _get_data_path(os.path.join("openCL", filename))
+    return _get_data_path(filename)

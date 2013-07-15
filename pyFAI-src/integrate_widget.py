@@ -47,8 +47,8 @@ from PyQt4 import QtCore, QtGui, uic
 from PyQt4.QtCore import SIGNAL
 import pyFAI, fabio
 from pyFAI.opencl import ocl
-from pyFAI.utils import float_, int_, str_
-UIC = op.join(op.dirname(__file__), "integration.ui")
+from pyFAI.utils import float_, int_, str_, get_ui_file
+UIC = get_ui_file("integration.ui")
 
 FROM_PYMCA = "From PyMca"
 
