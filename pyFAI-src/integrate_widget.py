@@ -236,9 +236,11 @@ class AIWidget(QtGui.QWidget):
                     logger.debug("processing %s" % item)
                     if (type(item) in types.StringTypes) and op.exists(item):
                         kwarg["data"] = fabio.open(item).data
-                        if self.hdf5_path is not None:
+                        if self.hdf5_path is None:
                             if self.output_path and op.isdir(self.output_path):
                                 outpath = op.join(self.output_path,op.splitext(op.basename(item))[0])
+                            else:
+                                outpath = op.splitext(item)[0]
                             if "nbPt_azim" in kwarg:
                                 kwarg["filename"] = outpath + ".azim"
                             else:
