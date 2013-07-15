@@ -72,11 +72,16 @@ class AbstractCalibration(object):
 
         @param dataFiles: list of filenames containing data images
         @param darkFiles: list of filenames containing dark current images
-
+        @param flatFiles: list of filenames containing flat images
+        @param pixelSize: size of the pixel in meter as 2 tuple
+        @param splineFile: file containing the distortion of the taper
+        @param detector: Detector name or instance
+        @param spacing_file: file containing the spacing of Miller plans (in decreasing order, in Angstrom, space separated)
+        @param wavelength: radiation wavelength in meter
         """
-        self.dataFiles = dataFiles or []
-        self.darkFiles = darkFiles or []
-        self.flatFiles = flatFiles or []
+        self.dataFiles = dataFiles
+        self.darkFiles = darkFiles
+        self.flatFiles = flatFiles
         self.pointfile = None
 
         if type(detector) in types.StringTypes:
@@ -129,11 +134,23 @@ class AbstractCalibration(object):
         self.keep = True
 
     def __repr__(self):
-        lst = ["Calibration object:",
-             "data= " + ", ".join(self.dataFiles),
-             "dark= " + ", ".join(self.darkFiles),
-             "flat= " + ", ".join(self.flatFiles),
-             "fixed=" + ", ".join(self.fixed)]
+        lst = ["Calibration object:"]
+        if self.dataFiles:
+            lst.append("data= " + ", ".join(self.dataFiles))
+        else:
+            lst.append("data= None")
+        if self.darkFiles:
+            lst.append( "dark= " + ", ".join(self.darkFiles))
+        else:
+            lst.append( "dark= None")
+        if self.flatFiles:
+            lst.append("flat= " + ", ".join(self.flatFiles))
+        else:
+            lst.append("flat= None")
+        if self.fixed:
+            ls.append("fixed=" + ", ".join(self.fixed))
+        else:
+            ls.append("fixed= None")
         lst.append(self.detector.__repr__())
         return os.linesep.join(lst)
 
@@ -352,6 +369,12 @@ class AbstractCalibration(object):
         self.nPt_2D_azim = options.nPt_2D_azim
         self.nPt_2D_rad = options.nPt_2D_rad
         self.unit = units.to_unit(options.unit)
+        if options.background is not None:
+            try:
+                self.cutBackground = float(options.background)
+            except Exception:
+                self.cutBackground = True
+
         return options, args
 
     def get_pixelSize(self, ans):
@@ -686,11 +709,6 @@ decrease the value if arcs are mixed together.""", default=None)
             self.labelPattern = [[1] * 3] * 3
         else:
             self.labelPattern = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
-        if options.background is not None:
-            try:
-                self.cutBackground = float(options.background)
-            except Exception:
-                self.cutBackground = True
 
         if options.pixel is not None:
             self.get_pixelSize(options.pixel)
