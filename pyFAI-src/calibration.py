@@ -293,12 +293,15 @@ class AbstractCalibration(object):
                 logger.error("Unknown spline file %s" % (options.spline))
 
         self.pointfile = options.npt
-        self.spacing_file = os.path.abspath(options.spacing)
-        if not os.path.isfile(self.spacing_file):
+        if (not options.spacing) or (not os.path.isfile(options.spacing)):
             logger.error("No such d-Spacing file: %s" % options.spacing)
             self.spacing_file = None
+        else:
+            self.spacing_file = options.spacing
         if self.spacing_file is None:
-            self.read_dSpacingFile()
+            self.read_dSpacingFile(True)
+        else:
+            self.spacing_file = os.path.abspath(self.spacing_file)
         if options.wavelength:
             self.ai.wavelength = self.wavelength = 1e-10 * options.wavelength
         elif options.energy:
@@ -403,7 +406,7 @@ class AbstractCalibration(object):
             while not os.path.isfile(ans):
                 ans = raw_input("Please enter the name of the file"
                                 " containing the d-spacing:\t").strip()
-            self.spacing_file = ans
+            self.spacing_file = os.path.abspath(ans)
 
     def read_wavelength(self):
         """Read the wavelength"""
