@@ -211,7 +211,7 @@ class PeakPicker(object):
                     logging.info("Removing No group point (non existing?)")
                 else:
                     logging.info("Removing point group #%i (%5.1f %5.1f) containing %i subpoints" % (len(self.points), poped_points[0][0], poped_points[0][1], len(poped_points)))
-
+                self.fig.canvas.draw()
                 sys.stdout.flush()
 
     def readFloatFromKeyboard(self, text, dictVar):
