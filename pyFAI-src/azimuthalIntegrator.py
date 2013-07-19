@@ -44,6 +44,7 @@ EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 from . import geometry
 Geometry = geometry.Geometry
 from . import units
+from . import utils
 import fabio
 error = None
 try:
@@ -2737,7 +2738,7 @@ class AzimuthalIntegrator(Geometry):
             self.set_darkcurrent(fabio.open(files[0]).data.astype(numpy.float32))
             self.darkfiles = files[0]
         else:
-            self.set_darkcurrent(utils.averageDark(files), method)
+            self.set_darkcurrent(utils.averageImages(files, filter_=method, format=None, threshold=0))
             self.darkfiles = "%s(%s)" % (method, ",".join(files))
 
     def set_flatfiles(self, files, method="mean"):
@@ -2760,5 +2761,5 @@ class AzimuthalIntegrator(Geometry):
             self.set_flatfield(fabio.open(files[0]).data.astype(numpy.float32))
             self.flatfiles = files[0]
         else:
-            self.set_flatfield(utils.averageDark(files), method)
+            self.set_flatfield(utils.averageImages(files, filter_=method, format=None, threshold=0))
             self.flatfiles = "%s(%s)" % (method, ",".join(files))

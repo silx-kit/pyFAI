@@ -38,12 +38,11 @@ import numpy
 import logging, time
 import sys
 import fabio
-
+import tempfile
 from utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
-#AzimuthalIntegrator = sys.modules["pyFAI.azimuthalIntegrator"].AzimuthalIntegrator
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 
@@ -253,6 +252,35 @@ class test_saxs(unittest.TestCase):
         assert abs(self.ai.makeMask(data, mask=mask).astype(int) - fabio.open(self.maskRef).data).max() == 0
         assert abs(self.ai.makeMask(data, mask=mask, dummy= -2, delta_dummy=1.1).astype(int) - fabio.open(self.maskDummy).data).max() == 0
 
+class test_setter(unittest.TestCase):
+    def setUp(self):
+        self.ai = AzimuthalIntegrator()
+        shape = (10, 15)
+        self.rnd1 = numpy.random.random(shape).astype(numpy.float32)
+        self.rnd2 = numpy.random.random(shape).astype(numpy.float32)
+        testdir = os.path.join(os.path.dirname(__file__), "tmp")
+        if not os.path.isdir(testdir):
+            os.makedirs(testdir)
+        fd, self.edf1 = tempfile.mkstemp(".edf", "testAI1", testdir)
+        os.close(fd)
+        fd, self.edf2 = tempfile.mkstemp(".edf", "testAI2", testdir)
+        os.close(fd)
+        fabio.edfimage.edfimage(data=self.rnd1).write(self.edf1)
+        fabio.edfimage.edfimage(data=self.rnd2).write(self.edf2)
+    def tearDown(self):
+        if os.path.exists(self.edf1):
+            os.unlink(self.edf1)
+        if os.path.exists(self.edf2):
+            os.unlink(self.edf2)
+    def test_flat(self):
+        self.ai.set_flatfiles((self.edf1,self.edf2), method="mean")
+        self.assert_(self.ai.flatfiles == "%s(%s,%s)" % ("mean", self.edf1, self.edf2), "flatfiles string is OK")
+        self.assert_(abs(self.ai.flatfield-0.5*(self.rnd1+self.rnd2)).max() == 0, "Flat array is OK")
+    def test_dark(self):
+        self.ai.set_darkfiles((self.edf1, self.edf2), method="mean")
+        self.assert_(self.ai.darkfiles == "%s(%s,%s)" % ("mean", self.edf1, self.edf2), "darkfiles string is OK")
+        self.assert_(abs(self.ai.darkcurrent-0.5*(self.rnd1+self.rnd2)).max() == 0, "Dark array is OK")
+
 def test_suite_all_AzimuthalIntegration():
     testSuite = unittest.TestSuite()
     testSuite.addTest(test_azim_halfFrelon("test_cython_vs_fit2d"))
@@ -261,6 +289,8 @@ def test_suite_all_AzimuthalIntegration():
     testSuite.addTest(test_azim_halfFrelon("test_cython_vs_numpy"))
     testSuite.addTest(test_flatimage("test_splitPixel"))
     testSuite.addTest(test_flatimage("test_splitBBox"))
+    testSuite.addTest(test_setter("test_flat"))
+    testSuite.addTest(test_setter("test_dark"))
 # This test is known to be broken ...
 #    testSuite.addTest(test_saxs("test_mask"))
 

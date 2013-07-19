@@ -452,6 +452,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
     @param filter_: can be maximum, mean or median (default=mean)
     @param correct_flat_from_dark: shall the flat be re-corrected ?
     @param cutoff: keep all data where (I-center)/std < cutoff
+    @return: filename with the data or the data ndarray in case format=None
     """
     if filter_ not in ["min", "max", "median", "mean"]:
         logger.warning("Filter %s not understood. switch to mean filter")
@@ -519,40 +520,44 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             datared = numpy.ascontiguousarray(sumImg, dtype=numpy.float32)
         elif filter_ == "mean":
             datared = sumImg / numpy.float32(ld)
-
-    if output is None:
-        prefix = ""
-        for ch in zip(*listImages):
-            c = ch[0]
-            good = True
-            for i in ch:
-                if i != c:
-                    good = False
-                    break
-            if good:
-                prefix += c
-            else:
-                break
-        if filter_ == "max":
-            output = ("maxfilt%02i-" % ld) + prefix + ".edf"
-        elif filter_ == "median":
-            output = ("medfilt%02i-" % ld) + prefix + ".edf"
-        elif filter_ == "median":
-            output = ("meanfilt%02i-" % ld) + prefix + ".edf"
-        else:
-            output = ("merged%02i-" % ld) + prefix + ".edf"
     logger.debug("Intensity range in merged dataset : %s --> %s", datared.min(), datared.max())
-    if format:
-        fabiomod = fabio.__getattribute__(format + "image")
-        fabioclass = fabiomod.__getattribute__(format + "image")
-        fimg = fabioclass(data=datared,
-                          header={"method":filter_, "nframes":ld, "cutoff":str(cutoff),
-                                  "merged": ",".join(listImages)})
-        fimg.write(output)
-        logger.info("Wrote %s" % output)
-
-    return output
-
+    if format is not None:
+        if format.startswith("."):
+            format = format.lstrip(".")
+        if (output is None):
+            prefix = ""
+            for ch in zip(*listImages):
+                c = ch[0]
+                good = True
+                for i in ch:
+                    if i != c:
+                        good = False
+                        break
+                if good:
+                    prefix += c
+                else:
+                    break
+            if filter_ == "max":
+                output = ("maxfilt%02i-" % ld) + prefix + "." + format
+            elif filter_ == "median":
+                output = ("medfilt%02i-" % ld) + prefix + "." + format
+            elif filter_ == "median":
+                output = ("meanfilt%02i-" % ld) + prefix + "." + format
+            else:
+                output = ("merged%02i-" % ld) + prefix + "." + format
+        if format and output:
+            if "." in format: #in case "edf.gz"
+                format = format.split(".")[0]
+            fabiomod = fabio.__getattribute__(format + "image")
+            fabioclass = fabiomod.__getattribute__(format + "image")
+            fimg = fabioclass(data=datared,
+                              header={"method":filter_, "nframes":ld, "cutoff":str(cutoff),
+                                      "merged": ",".join(listImages)})
+            fimg.write(output)
+            logger.info("Wrote %s" % output)
+        return output
+    else:
+        return datared
 
 def boundingBox(img):
     """
