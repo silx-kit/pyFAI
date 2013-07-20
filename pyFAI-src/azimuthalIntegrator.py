@@ -365,9 +365,8 @@ class AzimuthalIntegrator(Geometry):
                                  range=tthRange)
         tthAxis = 90.0 * (b[1:] + b[:-1]) / pi
         I = val / self._nbPixCache[nbPt]
-        if filename:
-            self.save1D(filename, tthAxis, I, None, "2th_deg",
-                        dark, flat, polarization_factor)
+        self.save1D(filename, tthAxis, I, None, "2th_deg",
+                    dark, flat, polarization_factor)
         return tthAxis, I
 
     def xrpd_cython(self, data, nbPt, filename=None, correctSolidAngle=1,
@@ -423,9 +422,8 @@ class AzimuthalIntegrator(Geometry):
                                                pixelSize_in_Pos=pixelSize,
                                                dummy=dummy)
         tthAxis = rad2deg(tthAxis)
-        if filename:
-            self.save1D(filename, tthAxis, I, None, "2th_deg",
-                        dark, flat, polarization_factor)
+        self.save1D(filename, tthAxis, I, None, "2th_deg",
+                    dark, flat, polarization_factor)
         return tthAxis, I
 
     def xrpd_splitBBox(self, data, nbPt, filename=None, correctSolidAngle=1,
@@ -580,8 +578,7 @@ class AzimuthalIntegrator(Geometry):
                                                  polarization=polarization,
                                                  )
         tthAxis = rad2deg(tthAxis)
-        if filename:
-            self.save1D(filename, tthAxis, I, None, "2th_deg", dark, flat, polarization_factor)
+        self.save1D(filename, tthAxis, I, None, "2th_deg", dark, flat, polarization_factor)
         return tthAxis, I
 
     def xrpd_splitPixel(self, data, nbPt,
@@ -717,9 +714,8 @@ class AzimuthalIntegrator(Geometry):
                                                   polarization=polarization,
                                                   )
         tthAxis = rad2deg(tthAxis)
-        if filename:
-            self.save1D(filename, tthAxis, I, None, "2th_deg",
-                        dark, flat, polarization_factor)
+        self.save1D(filename, tthAxis, I, None, "2th_deg",
+                    dark, flat, polarization_factor)
         return tthAxis, I
     # Default implementation:
     xrpd = xrpd_splitBBox
@@ -914,8 +910,7 @@ class AzimuthalIntegrator(Geometry):
                     self._ocl_integrator.unsetMask()
             tthAxis, I, _, = self._ocl_integrator.execute(data)
         tthAxis = rad2deg(tthAxis)
-        if filename:
-            self.save1D(filename, tthAxis, I, None, "2th_deg")  # , dark, flat, polarization_factor)
+        self.save1D(filename, tthAxis, I, None, "2th_deg")  # , dark, flat, polarization_factor)
         return tthAxis, I
 
     def setup_LUT(self, shape, nbPt, mask=None,
@@ -2208,8 +2203,10 @@ class AzimuthalIntegrator(Geometry):
             I = val / count
         if pos0_scale:
             qAxis = qAxis * pos0_scale
-        if filename:
-            self.save1D(filename, qAxis, I, sigma, unit, dark, flat, polarization_factor)
+
+        self.save1D(filename, qAxis, I, sigma, unit,
+                    dark, flat, polarization_factor)
+
         if sigma is not None:
             return qAxis, I, sigma
         else:
