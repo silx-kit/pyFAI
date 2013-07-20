@@ -1374,8 +1374,7 @@ class AzimuthalIntegrator(Geometry):
                                                   weights=data,
                                                   range=[chiRange, tthRange])
         I = val / self._nbPixCache[bins]
-        if filename:
-            self.save2D(filename, I, bins2Th, binsChi)  # , dark, flat, polarization_factor)
+        self.save2D(filename, I, bins2Th, binsChi)  # , dark, flat, polarization_factor)
 
         return I, bins2Th, binsChi
 
@@ -1492,8 +1491,7 @@ class AzimuthalIntegrator(Geometry):
                                       dummy=dummy)
         bins2Th = rad2deg(bins2Th)
         binsChi = rad2deg(binsChi)
-        if filename:
-            self.save2D(filename, I, bins2Th, binsChi)  # , dark, flat, polarization_factor)
+        self.save2D(filename, I, bins2Th, binsChi)  # , dark, flat, polarization_factor)
         return I, bins2Th, binsChi
 
     def xrpd2_splitBBox(self, data, nbPt2Th, nbPtChi=360,
@@ -1636,9 +1634,8 @@ class AzimuthalIntegrator(Geometry):
                                   polarization=polarization)
         bins2Th = rad2deg(bins2Th)
         binsChi = rad2deg(binsChi)
-        if filename:
-            self.save2D(filename, I, bins2Th, binsChi, dark=dark, flat=flat,
-                        polarization_factor=polarization_factor)
+        self.save2D(filename, I, bins2Th, binsChi, dark=dark, flat=flat,
+                    polarization_factor=polarization_factor)
         return I, bins2Th, binsChi
 
     def xrpd2_splitPixel(self, data, nbPt2Th, nbPtChi=360,
@@ -1780,9 +1777,8 @@ class AzimuthalIntegrator(Geometry):
                                    polarization=polarization,)
         bins2Th = rad2deg(bins2Th)
         binsChi = rad2deg(binsChi)
-        if filename:
-            self.save2D(filename, I, bins2Th, binsChi, dark=dark, flat=flat,
-                        polarization_factor=polarization_factor)
+        self.save2D(filename, I, bins2Th, binsChi, dark=dark, flat=flat,
+                    polarization_factor=polarization_factor)
         return I, bins2Th, binsChi
     xrpd2 = xrpd2_splitBBox
 
@@ -2538,8 +2534,8 @@ class AzimuthalIntegrator(Geometry):
         # I know I make copies ....
         bins_rad = bins_rad * pos0_scale
         bins_azim = bins_azim * 180.0 / pi
-        if filename:
-            self.save2D(filename, I, bins_rad, bins_azim, sigma, unit, dark=dark, flat=flat, polarization_factor=polarization_factor)
+        self.save2D(filename, I, bins_rad, bins_azim, sigma, unit,
+                    dark=dark, flat=flat, polarization_factor=polarization_factor)
         if sigma is not None:
             return I, bins_rad, bins_azim, sigma
         else:
@@ -2723,6 +2719,9 @@ class AzimuthalIntegrator(Geometry):
 
         This method save the result of a 2D integration.
         """
+        if not filename:
+            return
+
         dim1_unit = units.to_unit(dim1_unit)
         header_keys = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3",
                        "chi_min", "chi_max",
