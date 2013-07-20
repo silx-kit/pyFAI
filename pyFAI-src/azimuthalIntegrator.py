@@ -99,6 +99,26 @@ except ImportError as error:
 del error  # just to see how clever pylint is !
 
 
+def dark_correction(data, dark, darkcurrent):
+    # we can not use dark or darkcurrent since it does not work with
+    # ndarray objects
+    if dark is None:
+        dark = darkcurrent
+    if dark is not None:
+        data -= dark
+    return data, dark
+
+
+def flat_correction(data, flat, flatfield):
+    # we can not use flat = flat or flatfield since it does not work with
+    # ndarray objects
+    if flat is None:
+        flat = flatfield
+    if flat is not None:
+        data /= flat
+    return data, flat
+
+
 class AzimuthalIntegrator(Geometry):
     """
     This class is an azimuthal integrator based on P. Boesecke's
@@ -318,19 +338,18 @@ class AzimuthalIntegrator(Geometry):
         mask = self.makeMask(data, mask, dummy, delta_dummy, mode="where")
         tth = self.twoThetaArray(data.shape)[mask]
         data = numpy.ascontiguousarray(data, dtype=numpy.float32)
-        if dark is None:
-            dark = self.darkcurrent
-        if dark is not None:
-            data -= dark
-        if flat is None:
-            flat = self.flatfield
-        elif flat is not None:
-            data /= flat
+
+        data, dark = dark_correction(data, dark, self.darkcurrent)
+        data, flat = flat_correction(data, flat, self.flatfield)
+
         if correctSolidAngle:
             data /= self.solidAngleArray(data.shape)
+
         if polarization_factor is not None:
             data /= self.polarization(data.shape, factor=polarization_factor)
+
         data = data[mask]
+
         if tthRange is not None:
             tthRange = (numpy.deg2rad(tthRange[0]),
                         numpy.deg2rad(tthRange[-1]) * EPS32)
@@ -381,19 +400,18 @@ class AzimuthalIntegrator(Geometry):
         mask = self.makeMask(data, mask, dummy, delta_dummy, mode="where")
         tth = self.twoThetaArray(data.shape)[mask]
         data = numpy.ascontiguousarray(data, dtype=numpy.float32)
-        if dark is None:
-            dark = self.darkcurrent
-        if dark is not None:
-            data -= dark
-        if flat is None:
-            flat = self.flatfield
-        if flat is not None:
-            data /= flat
+
+        data, dark = dark_correction(data, dark, self.darkcurrent)
+        data, flat = flat_correction(data, flat, self.flatfield)
+
         if correctSolidAngle:
             data /= self.solidAngleArray(data.shape)
+
         if polarization_factor is not None:
             data /= self.polarization(data.shape, factor=polarization_factor)
+
         data = data[mask]
+
         if tthRange is not None:
             tthRange = tuple([numpy.deg2rad(i) for i in tthRange])
         if dummy is None:
@@ -514,26 +532,36 @@ class AzimuthalIntegrator(Geometry):
         else:
             chi = None
             dchi = None
+
         tth = self.twoThetaArray(data.shape)
         dtth = self.delta2Theta(data.shape)
+
         if tthRange is not None:
             tthRange = tuple([numpy.deg2rad(i) for i in tthRange[:2]])
+
         if chiRange is not None:
             chiRange = tuple([numpy.deg2rad(i) for i in chiRange[:2]])
+
         if flat is None:
             flat = self.flatfield
+
         if dark is None:
             dark = self.darkcurrent
+
         if correctSolidAngle:
             solidangle = self.solidAngleArray(data.shape)
         else:
             solidangle = None
-        if polarization_factor is None :
+
+        if polarization_factor is None:
             polarization = None
         else:
             polarization = self.polarization(data.shape, polarization_factor)
+
+        # ??? what about makeMask like with other methods 
         if mask is None:
             mask = self.mask
+
         # outPos, outMerge, outData, outCount
         tthAxis, I, _, _ = splitBBox.histoBBox1d(weights=data,
                                                  pos0=tth,
@@ -656,10 +684,12 @@ class AzimuthalIntegrator(Geometry):
                                    flat=flat)
 
         pos = self.cornerArray(data.shape)
+
         if correctSolidAngle:
             solidangle = self.solidAngleArray(data.shape)
         else:
             solidangle = None
+
         if polarization_factor is None:
             polarization = None
         else:
@@ -667,8 +697,12 @@ class AzimuthalIntegrator(Geometry):
 
         if tthRange is not None:
             tthRange = tuple([numpy.deg2rad(i) for i in tthRange])
+
         if chiRange is not None:
             chiRange = tuple([numpy.deg2rad(i) for i in chiRange])
+
+        # ??? what about dark and flat computation like with other methods ?
+
         tthAxis, I, _, _ = splitPixel.fullSplit1D(pos=pos,
                                                   weights=data,
                                                   bins=nbPt,
@@ -811,10 +845,12 @@ class AzimuthalIntegrator(Geometry):
             flat = self.flatfield
         if flat is None:
             flat = 1
+
         if dark is None:
             dark = self.darkcurrent
         if dark is not None:
             data = data.astype(numpy.float32) - dark
+
         if self._ocl_integrator is None:
             with self._ocl_sem:
                 if self._ocl_integrator is None:
@@ -1299,14 +1335,25 @@ class AzimuthalIntegrator(Geometry):
         tth = self.twoThetaArray(shape)[mask]
         chi = self.chiArray(shape)[mask]
         data = data.astype(numpy.float32)[mask]
+
+        # ??? here the mask and flat logic is a little bit
+        # different. you apply the mask during the flat and dark
+        # correction, is it possible to use the same logic than for
+        # other methods ?. This way it would be possible to factorise
+        # the code using dark/flat_correction method. At the end I am
+        # wondering if the MaskedArray of numpy should not be a good
+        # candidate to deal with this mask thing.
+
         if dark is None:
             dark = self.darkcurrent
         if dark is not None:
             data -= dark[mask]
+
         if flat is None:
             flat = self.flatfield
         if flat is not None:
             data /= flat[mask]
+
         if correctSolidAngle is not None:
             data /= self.solidAngleArray(shape, correctSolidAngle)[mask]
 
@@ -1314,6 +1361,7 @@ class AzimuthalIntegrator(Geometry):
             tthRange = [deg2rad(tthRange[0]), deg2rad(tthRange[-1])]
         else:
             tthRange = [tth.min(), tth.max() * EPS32]
+
         if chiRange is not None:
             chiRange = [deg2rad(chiRange[0]), deg2rad(chiRange[-1])]
         else:
@@ -1425,16 +1473,21 @@ class AzimuthalIntegrator(Geometry):
         tth = self.twoThetaArray(data.shape)[mask]
         chi = self.chiArray(data.shape)[mask]
         data = data.astype(numpy.float32)[mask]
+
+        # ??? idem here 
         if dark is None:
             dark = self.darkcurrent
         if dark is not None:
             data -= dark[mask]
+
         if flat is None:
             flat = self.flatfield
         if flat is not None:
             data /= flat[mask]
+
         if correctSolidAngle is not None:
             data /= self.solidAngleArray(data.shape)[mask]
+
         if dummy is None:
             dummy = 0.0
             I, binsChi, bins2Th, _, _ = histogram.histogram2d(pos0=chi, pos1=tth,
@@ -1548,18 +1601,24 @@ class AzimuthalIntegrator(Geometry):
         chi = self.chiArray(data.shape)
         dtth = self.delta2Theta(data.shape)
         dchi = self.deltaChi(data.shape)
+
         if tthRange is not None:
             tthRange = tuple([numpy.deg2rad(i) for i in tthRange])
+
         if chiRange is not None:
             chiRange = tuple([numpy.deg2rad(i) for i in chiRange])
+
         if dark is None:
             dark = self.darkcurrent
+
         if flat is None:
             flat = self.flatfield
+
         if correctSolidAngle:
             solidangle = self.solidAngleArray(data.shape)
         else:
             solidangle = None
+
         if polarization_factor is None:
             polarization = None
         else:
@@ -1689,21 +1748,26 @@ class AzimuthalIntegrator(Geometry):
                 flat=flat)
 
         pos = self.cornerArray(data.shape)
+
         if correctSolidAngle:
             solidangle = self.solidAngleArray(data.shape)
         else:
             solidangle = None
+
         if polarization_factor is None:
             polarization = None
         else:
             polarization = self.polarization(data.shape, polarization_factor)
+
         if dark is None:
             dark = self.darkcurrent
+
         if flat is None:
             flat = self.flatfield
 
         if tthRange is not None:
             tthRange = tuple([numpy.deg2rad(i) for i in tthRange])
+
         if chiRange is not None:
             chiRange = tuple([numpy.deg2rad(i) for i in chiRange])
 
@@ -1804,18 +1868,23 @@ class AzimuthalIntegrator(Geometry):
         method = method.lower()
         unit = units.to_unit(unit)
         pos0_scale = 1.0  # nota we need anyway to make a copy !
+
         if mask is None:
             mask = self.mask
+
         shape = data.shape
         pos0_scale = unit.scale
+
         if radial_range:
             radial_range = tuple([i / pos0_scale for i in radial_range])
+
         if variance is not None:
             assert variance.size == data.size
         elif error_model:
             error_model = error_model.lower()
             if error_model == "poisson":
                 variance = numpy.ascontiguousarray(data, numpy.float32)
+
         if azimuth_range is not None:
             azimuth_range = tuple([numpy.deg2rad(i) for i in azimuth_range])
             chi = self.chiArray(shape)
@@ -1826,6 +1895,7 @@ class AzimuthalIntegrator(Geometry):
             solidangle = self.solidAngleArray(shape, correctSolidAngle)
         else:
             solidangle = None
+
         if polarization_factor is None:
             polarization = None
         else:
@@ -1833,6 +1903,7 @@ class AzimuthalIntegrator(Geometry):
 
         if dark is None:
             dark = self.darkcurrent
+
         if flat is None:
             flat = self.flatfield
 
@@ -2062,19 +2133,27 @@ class AzimuthalIntegrator(Geometry):
                     mask *= (chi >= chiMin) * (chi <= chiMax)
                 mask = numpy.where(mask)
                 pos0 = pos0[mask]
+
                 if variance is not None:
                     variance = variance[mask]
+
                 if dark is not None:
                     data -= dark
+
                 if flat is not None:
                     data /= flat
+
                 if polarization is not None:
                     data /= polarization
+
                 if solidangle is not None:
                     data /= solidangle
+
                 data = data[mask]
+
                 if dummy is None:
                     dummy = 0
+
                 qAxis, I, a, b = histogram.histogram(pos=pos0,
                                                      weights=data,
                                                      bins=nbPt,
@@ -2194,14 +2273,17 @@ class AzimuthalIntegrator(Geometry):
         if mask is None:
             mask = self.mask
         shape = data.shape
+
         if radial_range:
-            radial_range = tuple([i / pos0_scale  for i in radial_range])
+            radial_range = tuple([i / pos0_scale for i in radial_range])
+
         if variance is not None:
             assert variance.size == data.size
         elif error_model:
             error_model = error_model.lower()
             if error_model == "poisson":
                 variance = numpy.ascontiguousarray(data, numpy.float32)
+
         if azimuth_range is not None:
             azimuth_range = tuple([numpy.deg2rad(i) for i in azimuth_range])
 
@@ -2209,6 +2291,7 @@ class AzimuthalIntegrator(Geometry):
             solidangle = self.solidAngleArray(shape, correctSolidAngle)
         else:
             solidangle = None
+
         if polarization_factor is None:
             polarization = None
         else:
@@ -2216,6 +2299,7 @@ class AzimuthalIntegrator(Geometry):
 
         if dark is None:
             dark = self.darkcurrent
+
         if flat is None:
             flat = self.flatfield
 
@@ -2376,22 +2460,30 @@ class AzimuthalIntegrator(Geometry):
                                      mode="numpy")
                 pos0 = self.array_from_unit(shape, "center", unit)
                 pos1 = self.chiArray(shape)
+
                 if radial_range is not None:
                     mask *= (pos0 >= min(radial_range))
                     mask *= (pos0 <= min(radial_range))
+
                 if azimuth_range is not None:
                     mask *= (pos1 >= min(azimuth_range))
                     mask *= (pos1 <= max(azimuth_range))
+
                 if variance is not None:
                     variance = variance[mask]
+
                 if dark is not None:
                     data -= dark
+
                 if flat is not None:
                     data /= flat
+
                 if polarization is not None:
                     data /= polarization
+
                 if solidangle is not None:
                     data /= solidangle
+
                 data = data[mask]
                 pos0 = pos0[mask]
                 pos1 = pos1[mask]
@@ -2408,26 +2500,34 @@ class AzimuthalIntegrator(Geometry):
             logger.debug("integrate2d uses Numpy implementation")
             data = numpy.ascontiguousarray(data, dtype=numpy.float32)
             mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
+
             if dark is not None:
                 data -= dark
+
             if flat is not None:
                 data /= flat
+
             if polarization is not None:
                 data /= polarization
+
             if solidangle is not None:
                 data /= solidangle
+
             pos0 = self.array_from_unit(shape, "center", unit)
             pos1 = self.chiArray(shape)
+
             if radial_range is not None:
                 mask *= (pos0 >= min(radial_range))
                 mask *= (pos0 <= min(radial_range))
             else:
                 radial_range = [pos0.min(), pos0.max() * EPS32]
+
             if azimuth_range is not None:
                 mask *= (pos1 >= min(azimuth_range))
                 mask *= (pos1 <= max(azimuth_range))
             else:
                 azimuth_range = [pos1.min(), pos1.max() * EPS32]
+
             data = data[mask]
             pos0 = pos0[mask]
             pos1 = pos1[mask]
