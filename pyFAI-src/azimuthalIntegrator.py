@@ -99,24 +99,6 @@ except ImportError as error:
 del error  # just to see how clever pylint is !
 
 
-def dark_correction(data, dark, darkcurrent):
-    # we can not use dark or darkcurrent since it does not work with
-    # ndarray objects
-    if dark is None:
-        dark = darkcurrent
-    if dark is not None:
-        data -= dark
-    return data, dark
-
-
-def flat_correction(data, flat, flatfield):
-    # we can not use flat = flat or flatfield since it does not work with
-    # ndarray objects
-    if flat is None:
-        flat = flatfield
-    if flat is not None:
-        data /= flat
-    return data, flat
 
 
 class AzimuthalIntegrator(Geometry):
@@ -167,10 +149,10 @@ class AzimuthalIntegrator(Geometry):
         #
         # mask and maskfile are properties pointing to self.detector
 
-        self._flatfield = None  # just a placeholder, currenty not used
-        self._darkcurrent = None  # just a placeholder, currenty not used
-        self._flatfield_crc = None  # just a placeholder, currenty not used
-        self._darkcurrent_crc = None  # just a placeholder, currenty not used
+        self._flatfield = None
+        self._darkcurrent = None
+        self._flatfield_crc = None
+        self._darkcurrent_crc = None
         self.flatfiles = None
         self.darkfiles = None
 
@@ -262,6 +244,39 @@ class AzimuthalIntegrator(Geometry):
             mask = numpy.where(numpy.logical_not(mask))
         return mask
 
+    def dark_correction(self, data, dark=None):
+        """
+        Correct for Dark-current effects. 
+        If dark is not defined, correct for a dark set by "set_darkfiles"
+        
+        @param data: input ndarray with the image
+        @param dark: ndarray with dark noise or None
+        @return: 2tuple: corrected_data, dark_actually used (or None)
+        """
+        if dark is not None:
+            return data - dark, dark
+        elif self._darkcurrent is not None:
+            return data - self._darkcurrent, self._darkcurrent
+        return data, None
+
+
+    def flat_correction(self, data, flat=None):
+        """
+        Correct for flat field. 
+        If flat is not defined, correct for a flat set by "set_flatfiles"
+        
+        @param data: input ndarray with the image
+        @param dark: ndarray with dark noise or None
+        @return: 2tuple: corrected_data, flat_actually used (or None)
+        """
+        if flat is not None:
+            return data / flat, flat
+        if self._flatfield is not None:
+            return data / self._flatfield, self._flatfield
+        else:
+            return data, None
+
+
     def xrpd_numpy(self, data, nbPt, filename=None, correctSolidAngle=1,
                    tthRange=None, mask=None, dummy=None, delta_dummy=None,
                    polarization_factor=None, dark=None, flat=None):
@@ -339,8 +354,8 @@ class AzimuthalIntegrator(Geometry):
         tth = self.twoThetaArray(data.shape)[mask]
         data = numpy.ascontiguousarray(data, dtype=numpy.float32)
 
-        data, dark = dark_correction(data, dark, self.darkcurrent)
-        data, flat = flat_correction(data, flat, self.flatfield)
+        data, dark = self.dark_correction(data, dark)
+        data, flat = self.flat_correction(data, flat)
 
         if correctSolidAngle:
             data /= self.solidAngleArray(data.shape)
@@ -400,8 +415,8 @@ class AzimuthalIntegrator(Geometry):
         tth = self.twoThetaArray(data.shape)[mask]
         data = numpy.ascontiguousarray(data, dtype=numpy.float32)
 
-        data, dark = dark_correction(data, dark, self.darkcurrent)
-        data, flat = flat_correction(data, flat, self.flatfield)
+        data, dark = self.dark_correction(data, dark)
+        data, flat = self.flat_correction(data, flat)
 
         if correctSolidAngle:
             data /= self.solidAngleArray(data.shape)
@@ -556,7 +571,7 @@ class AzimuthalIntegrator(Geometry):
         else:
             polarization = self.polarization(data.shape, polarization_factor)
 
-        # ??? what about makeMask like with other methods 
+        # ??? what about makeMask like with other methods
         if mask is None:
             mask = self.mask
 
@@ -1329,25 +1344,9 @@ class AzimuthalIntegrator(Geometry):
         shape = data.shape
         tth = self.twoThetaArray(shape)[mask]
         chi = self.chiArray(shape)[mask]
+        data, dark = self.dark_correction(data, dark)
+        data, flat = self.flat_correction(data, flat)
         data = data.astype(numpy.float32)[mask]
-
-        # ??? here the mask and flat logic is a little bit
-        # different. you apply the mask during the flat and dark
-        # correction, is it possible to use the same logic than for
-        # other methods ?. This way it would be possible to factorise
-        # the code using dark/flat_correction method. At the end I am
-        # wondering if the MaskedArray of numpy should not be a good
-        # candidate to deal with this mask thing.
-
-        if dark is None:
-            dark = self.darkcurrent
-        if dark is not None:
-            data -= dark[mask]
-
-        if flat is None:
-            flat = self.flatfield
-        if flat is not None:
-            data /= flat[mask]
 
         if correctSolidAngle is not None:
             data /= self.solidAngleArray(shape, correctSolidAngle)[mask]
@@ -1468,7 +1467,7 @@ class AzimuthalIntegrator(Geometry):
         chi = self.chiArray(data.shape)[mask]
         data = data.astype(numpy.float32)[mask]
 
-        # ??? idem here 
+        # ??? idem here
         if dark is None:
             dark = self.darkcurrent
         if dark is not None:
