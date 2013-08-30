@@ -47,8 +47,8 @@ from PyQt4 import QtCore, QtGui, uic
 from PyQt4.QtCore import SIGNAL
 import pyFAI, fabio
 from pyFAI.opencl import ocl
-from pyFAI.utils import float_, int_, str_
-UIC = op.join(op.dirname(__file__), "integration.ui")
+from pyFAI.utils import float_, int_, str_, get_ui_file
+UIC = get_ui_file("integration.ui")
 
 FROM_PYMCA = "From PyMca"
 
@@ -236,9 +236,11 @@ class AIWidget(QtGui.QWidget):
                     logger.debug("processing %s" % item)
                     if (type(item) in types.StringTypes) and op.exists(item):
                         kwarg["data"] = fabio.open(item).data
-                        if self.hdf5_path is not None:
+                        if self.hdf5_path is None:
                             if self.output_path and op.isdir(self.output_path):
                                 outpath = op.join(self.output_path,op.splitext(op.basename(item))[0])
+                            else:
+                                outpath = op.splitext(item)[0]
                             if "nbPt_azim" in kwarg:
                                 kwarg["filename"] = outpath + ".azim"
                             else:

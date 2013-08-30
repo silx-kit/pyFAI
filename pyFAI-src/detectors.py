@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/11/2012"
+__date__ = "29/08/2012"
 __status__ = "stable"
 
 import os
@@ -438,6 +438,42 @@ class Pilatus(Detector):
         p2 = (self._pixel2 * (delta2 + 0.5 + d2))
         return p1, p2
 
+class Pilatus100k(Pilatus):
+    """
+    Pilatus 100k detector
+    """
+    def __init__(self, pixel1=172e-6, pixel2=172e-6):
+        Pilatus.__init__(self, pixel1, pixel2)
+        self.max_shape = (195, 487)
+
+
+class Pilatus200k(Pilatus):
+    """
+    Pilatus 200k detector
+    """
+    def __init__(self, pixel1=172e-6, pixel2=172e-6):
+        Pilatus.__init__(self, pixel1, pixel2)
+        self.max_shape = (407, 487)
+
+
+class Pilatus300k(Pilatus):
+    """
+    Pilatus 300k detector
+    """
+    def __init__(self, pixel1=172e-6, pixel2=172e-6):
+        Pilatus.__init__(self, pixel1, pixel2)
+        self.max_shape = (619, 487)
+
+
+class Pilatus300kw(Pilatus):
+    """
+    Pilatus 300k-wide detector
+    """
+    def __init__(self, pixel1=172e-6, pixel2=172e-6):
+        Pilatus.__init__(self, pixel1, pixel2)
+        self.max_shape = (195, 1475)
+
+
 class Pilatus1M(Pilatus):
     """
     Pilatus 1M detector
@@ -454,7 +490,7 @@ class Pilatus2M(Pilatus):
     force_pixel = True
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         Pilatus.__init__(self, pixel1, pixel2)
-        self.max_shape = (1475, 1679)
+        self.max_shape = (1679, 1475)
 
 
 class Pilatus6M(Pilatus):
@@ -619,7 +655,11 @@ class Perkin(Detector):
         self.max_shape = (2048, 2048)
 
 
-ALL_DETECTORS = {"pilatus1m": Pilatus1M,
+ALL_DETECTORS = {"pilatus100k": Pilatus100k,
+                 "pilatus200k": Pilatus200k,
+                 "pilatus300k": Pilatus300k,
+                 "pilatus300kw": Pilatus300kw,
+                 "pilatus1m": Pilatus1M,
                  "pilatus2m": Pilatus2M,
                  "pilatus6m": Pilatus6M,
                  "condor": Fairchild,
@@ -646,4 +686,8 @@ def detector_factory(name):
     if name in ALL_DETECTORS:
         return ALL_DETECTORS[name]()
     else:
-        raise RuntimeError("Detector %s is unknown !" % (name))
+        msg = ("Detector %s is unknown !, "
+               "please select one from %s" % (name, ALL_DETECTORS.keys()))
+        logger.error(msg)
+        raise RuntimeError(msg)
+

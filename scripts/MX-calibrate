@@ -253,17 +253,8 @@ class MultiCalib(object):
         (options, args) = parser.parse_args()
 
         # Analyse aruments and options
-        if options.version:
-            print("pyFAI-calib version %s" % pyFAI.version)
-            sys.exit(0)
         if options.debug:
             logger.setLevel(logging.DEBUG)
-#        self.outfile = options.outfile
-#        self.gaussianWidth = options.gaussian
-#        if options.square:
-#            self.labelPattern = [[1] * 3] * 3
-#        else:
-#            self.labelPattern = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
         if options.background is not None:
             try:
                 self.cutBackground = float(options.background)
@@ -304,7 +295,7 @@ class MultiCalib(object):
         self.max_rings = options.max_rings
         self.fixed = []
         if not options.tilt:
-            self.fixed+=["rot1", "rot2", "rot3"]
+            self.fixed += ["rot1", "rot2", "rot3"]
         if options.fix_dist:
             self.fixed.append("dist")
         if options.fix_poni1:

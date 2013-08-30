@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/06/2013"
+__date__ = "15/07/2013"
 __status__ = "development"
 
 import os, sys, time, logging, types
@@ -51,7 +51,7 @@ from . import units
 from .utils import averageImages, measure_offset, expand_args
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import hc
-from . import version
+from . import version as PyFAI_VERSION
 
 matplotlib.interactive(True)
 
@@ -72,19 +72,19 @@ class AbstractCalibration(object):
 
         @param dataFiles: list of filenames containing data images
         @param darkFiles: list of filenames containing dark current images
-
+        @param flatFiles: list of filenames containing flat images
+        @param pixelSize: size of the pixel in meter as 2 tuple
+        @param splineFile: file containing the distortion of the taper
+        @param detector: Detector name or instance
+        @param spacing_file: file containing the spacing of Miller plans (in decreasing order, in Angstrom, space separated)
+        @param wavelength: radiation wavelength in meter
         """
-        self.dataFiles = dataFiles or []
-        self.darkFiles = darkFiles or []
-        self.flatFiles = flatFiles or []
+        self.dataFiles = dataFiles
+        self.darkFiles = darkFiles
+        self.flatFiles = flatFiles
         self.pointfile = None
 
-        if type(detector) in types.StringTypes:
-            self.detector = detector_factory(detector)
-        elif isinstance(detector, Detector):
-            self.detector = detector
-        else:
-            self.detector = Detector()
+        self.detector = self.get_detector(detector)
 
         if splineFile and os.path.isfile(splineFile):
             self.detector.splineFile = os.path.abspath(splineFile)
@@ -129,23 +129,44 @@ class AbstractCalibration(object):
         self.keep = True
 
     def __repr__(self):
-        lst = ["Calibration object:",
-             "data= " + ", ".join(self.dataFiles),
-             "dark= " + ", ".join(self.darkFiles),
-             "flat= " + ", ".join(self.flatFiles),
-             "fixed=" + ", ".join(self.fixed)]
+        lst = ["Calibration object:"]
+        if self.dataFiles:
+            lst.append("data= " + ", ".join(self.dataFiles))
+        else:
+            lst.append("data= None")
+        if self.darkFiles:
+            lst.append( "dark= " + ", ".join(self.darkFiles))
+        else:
+            lst.append( "dark= None")
+        if self.flatFiles:
+            lst.append("flat= " + ", ".join(self.flatFiles))
+        else:
+            lst.append("flat= None")
+        if self.fixed:
+            ls.append("fixed=" + ", ".join(self.fixed))
+        else:
+            ls.append("fixed= None")
         lst.append(self.detector.__repr__())
         return os.linesep.join(lst)
 
-    def configure_parser(self, version="%prog " + version, usage="%prog [options] inputfile.edf",
+    def get_detector(self, detector):
+        if type(detector) in types.StringTypes:
+            try:
+                return detector_factory(detector)
+            except RuntimeError:
+                sys.exit(-1)
+        elif isinstance(detector, Detector):
+            return detector
+        else:
+            return Detector()
+
+    def configure_parser(self, version="%prog from pyFAI version " + PyFAI_VERSION,
+                         usage="%prog [options] inputfile.edf",
                          description=None, epilog=None):
         """Common configuration for parsers
         """
         self.parser = OptionParser(usage=usage, version=version,
                               description=description, epilog=epilog)
-#        self.parser.add_option("-V", "--version", dest="version", action="store_true",
-#                          help="print version of the program and quit",
-#                          default=False)
         self.parser.add_option("-o", "--out", dest="outfile",
                           help="Filename where processed image is saved", metavar="FILE",
                           default="merged.edf")
@@ -282,7 +303,7 @@ class AbstractCalibration(object):
             self.mask = (fabio.open(options.mask).data != 0)
 
         if options.detector_name:
-            self.detector = detector_factory(options.detector_name)
+            self.detector = self.get_detector(options.detector_name)
             self.ai.detector = self.detector
         if options.spline:
             if "Pilatus" in self.detector.name:
@@ -293,12 +314,15 @@ class AbstractCalibration(object):
                 logger.error("Unknown spline file %s" % (options.spline))
 
         self.pointfile = options.npt
-        self.spacing_file = os.path.abspath(options.spacing)
-        if not os.path.isfile(self.spacing_file):
+        if (not options.spacing) or (not os.path.isfile(options.spacing)):
             logger.error("No such d-Spacing file: %s" % options.spacing)
             self.spacing_file = None
+        else:
+            self.spacing_file = options.spacing
         if self.spacing_file is None:
-            self.read_dSpacingFile()
+            self.read_dSpacingFile(True)
+        else:
+            self.spacing_file = os.path.abspath(self.spacing_file)
         if options.wavelength:
             self.ai.wavelength = self.wavelength = 1e-10 * options.wavelength
         elif options.energy:
@@ -351,6 +375,12 @@ class AbstractCalibration(object):
         self.nPt_2D_azim = options.nPt_2D_azim
         self.nPt_2D_rad = options.nPt_2D_rad
         self.unit = units.to_unit(options.unit)
+        if options.background is not None:
+            try:
+                self.cutBackground = float(options.background)
+            except Exception:
+                self.cutBackground = True
+
         return options, args
 
     def get_pixelSize(self, ans):
@@ -403,7 +433,7 @@ class AbstractCalibration(object):
             while not os.path.isfile(ans):
                 ans = raw_input("Please enter the name of the file"
                                 " containing the d-spacing:\t").strip()
-            self.spacing_file = ans
+            self.spacing_file = os.path.abspath(ans)
 
     def read_wavelength(self):
         """Read the wavelength"""
@@ -685,11 +715,6 @@ decrease the value if arcs are mixed together.""", default=None)
             self.labelPattern = [[1] * 3] * 3
         else:
             self.labelPattern = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
-        if options.background is not None:
-            try:
-                self.cutBackground = float(options.background)
-            except Exception:
-                self.cutBackground = True
 
         if options.pixel is not None:
             self.get_pixelSize(options.pixel)
@@ -929,10 +954,9 @@ class CheckCalib(object):
 calibration and everything else like flat-field correction, distortion
 correction. Maybe the future lies over there ...
         """
-        parser = OptionParser(usage=usage, version="%prog " + version, description=description)
-#        parser.add_option("-V", "--version", dest="version", action="store_true",
-#                          help="print version of the program and quit", metavar="FILE",
-#                          default=False)
+        parser = OptionParser(usage=usage,
+                              version="%prog from pyFAI version " + PyFAI_VERSION,
+                              description=description)
         parser.add_option("-v", "--verbose",
                           action="store_true", dest="verbose", default=False,
                           help="switch to debug mode")
@@ -954,9 +978,6 @@ correction. Maybe the future lies over there ...
         if options.verbose:
             logger.setLevel(logging.DEBUG)
 
-#        if options.version:
-#            print("Check calibrarion: version %s" % version)
-#            sys.exit(0)
         if options.mask is not None:
             self.mask = (fabio.open(options.mask).data != 0)
         args = expand_args(args)
