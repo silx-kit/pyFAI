@@ -195,9 +195,11 @@ if (os.name != "posix") or ("x86" not in platform.machine()):
 if sys.platform == "win32" and "bdist_msi" in sys.argv:
     if platform_bits == 32:
         win = "bdist.win32"
+        installDir = os.path.join("build", win, "msi", "Lib", "site-packages", "pyFAI")
     else:
-        win = "bdist.win-amd64"
-    installDir = os.path.join("build", win, "msi", "Lib", "site-packages", "pyFAI")
+#        win = "bdist.win-amd64"
+        installDir = os.path.join("Lib", "site-packages", "pyFAI")
+
 else:
     installDir = os.path.join(get_python_lib(), "pyFAI")
 
