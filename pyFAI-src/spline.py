@@ -42,6 +42,7 @@ import logging
 import scipy.optimize
 import scipy.interpolate
 from scipy.interpolate import fitpack
+import traceback
 logger = logging.getLogger("pyFAI.spline")
 
 
@@ -145,54 +146,58 @@ class Spline:
         @type filename: str
         """
         if not os.path.isfile(filename):
-            raise IOError("File does not exist %s" % filename)
+            raise IOError("Spline File does not exist %s" % filename)
         self.filename = filename
         stringSpline = [i.rstrip() for i in open(filename)]
-        indexLine = 0
-        for oneLine in stringSpline:
-            stripedLine = oneLine.strip().upper()
-            if stripedLine == "VALID REGION":
-                data = stringSpline[indexLine + 1]
-                self.xmin = float(data[self.lenStrFloat * 0:self.lenStrFloat * 1])
-                self.ymin = float(data[self.lenStrFloat * 1:self.lenStrFloat * 2])
-                self.xmax = float(data[self.lenStrFloat * 2:self.lenStrFloat * 3])
-                self.ymax = float(data[self.lenStrFloat * 3:self.lenStrFloat * 4])
-            elif stripedLine == "GRID SPACING, X-PIXEL SIZE, Y-PIXEL SIZE":
-                data = stringSpline[indexLine + 1]
-                self.grid = float(data[:self.lenStrFloat])
-                self.pixelSize = \
-                    (float(data[self.lenStrFloat:self.lenStrFloat * 2]),
-                     float(data[self.lenStrFloat * 2:self.lenStrFloat * 3]))
-            elif stripedLine == "X-DISTORTION":
-                data = stringSpline[indexLine + 1]
-                [splineKnotsXLen, splineKnotsYLen] = \
-                    [int(i) for i in data.split()]
-                databloc = []
-                for line in stringSpline[indexLine + 2:]:
-                    if len(line) > 0:
-                        for i in range(len(line) / self.lenStrFloat):
-                            databloc.append(float(line[i * self.lenStrFloat: (i + 1) * self.lenStrFloat]))
-                    else:
-                        break
-                self.xSplineKnotsX = databloc[:splineKnotsXLen]
-                self.xSplineKnotsY = databloc[splineKnotsXLen:splineKnotsXLen + splineKnotsYLen]
-                self.xSplineCoeff = databloc[splineKnotsXLen + splineKnotsYLen:]
-            elif stripedLine == "Y-DISTORTION":
-                data = stringSpline[indexLine + 1]
-                [splineKnotsXLen, splineKnotsYLen] = [int(i) for i in data.split()]
-                databloc = []
-                for line in stringSpline[indexLine + 2:]:
-                    if len(line) > 0:
-                        for i in range(len(line) / self.lenStrFloat):
-                            databloc.append(float(line[i * self.lenStrFloat:(i + 1) * self.lenStrFloat]))
-                    else:
-                        break
-                self.ySplineKnotsX = databloc[:splineKnotsXLen]
-                self.ySplineKnotsY = databloc[splineKnotsXLen:splineKnotsXLen + splineKnotsYLen]
-                self.ySplineCoeff = databloc[ splineKnotsXLen + splineKnotsYLen:]
-# Keep this at the end
-            indexLine += 1
-
+        try:
+            indexLine = 0
+            for oneLine in stringSpline:
+                stripedLine = oneLine.strip().upper()
+                if stripedLine == "VALID REGION":
+                    data = stringSpline[indexLine + 1]
+                    self.xmin = float(data[self.lenStrFloat * 0:self.lenStrFloat * 1])
+                    self.ymin = float(data[self.lenStrFloat * 1:self.lenStrFloat * 2])
+                    self.xmax = float(data[self.lenStrFloat * 2:self.lenStrFloat * 3])
+                    self.ymax = float(data[self.lenStrFloat * 3:self.lenStrFloat * 4])
+                elif stripedLine == "GRID SPACING, X-PIXEL SIZE, Y-PIXEL SIZE":
+                    data = stringSpline[indexLine + 1]
+                    self.grid = float(data[:self.lenStrFloat])
+                    self.pixelSize = \
+                        (float(data[self.lenStrFloat:self.lenStrFloat * 2]),
+                         float(data[self.lenStrFloat * 2:self.lenStrFloat * 3]))
+                elif stripedLine == "X-DISTORTION":
+                    data = stringSpline[indexLine + 1]
+                    [splineKnotsXLen, splineKnotsYLen] = \
+                        [int(i) for i in data.split()]
+                    databloc = []
+                    for line in stringSpline[indexLine + 2:]:
+                        if len(line) > 0:
+                            for i in range(len(line) / self.lenStrFloat):
+                                databloc.append(float(line[i * self.lenStrFloat: (i + 1) * self.lenStrFloat]))
+                        else:
+                            break
+                    self.xSplineKnotsX = databloc[:splineKnotsXLen]
+                    self.xSplineKnotsY = databloc[splineKnotsXLen:splineKnotsXLen + splineKnotsYLen]
+                    self.xSplineCoeff = databloc[splineKnotsXLen + splineKnotsYLen:]
+                elif stripedLine == "Y-DISTORTION":
+                    data = stringSpline[indexLine + 1]
+                    [splineKnotsXLen, splineKnotsYLen] = [int(i) for i in data.split()]
+                    databloc = []
+                    for line in stringSpline[indexLine + 2:]:
+                        if len(line) > 0:
+                            for i in range(len(line) / self.lenStrFloat):
+                                databloc.append(float(line[i * self.lenStrFloat:(i + 1) * self.lenStrFloat]))
+                        else:
+                            break
+                    self.ySplineKnotsX = databloc[:splineKnotsXLen]
+                    self.ySplineKnotsY = databloc[splineKnotsXLen:splineKnotsXLen + splineKnotsYLen]
+                    self.ySplineCoeff = databloc[ splineKnotsXLen + splineKnotsYLen:]
+    # Keep this at the end
+                indexLine += 1
+        except:        
+            traceback.print_exc()
+            raise IOError("Spline File parsing error: %s" % (filename))
+                
     def comparison(self, ref, verbose=False):
         """
         Compares the current spline distortion with a reference
