@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/11/2012"
+__date__ = "04/09/2013"
 __status__ = "stable"
 
 
@@ -40,10 +40,11 @@ import sys
 import glob
 import shutil
 import platform
+import struct
 from distutils.core import setup, Extension, Command
 from numpy.distutils.misc_util import get_numpy_include_dirs
 from distutils.sysconfig import get_python_lib
-
+platform_bits = 8 * struct.calcsize("P")
 # ###############################################################################
 # Check for Cython
 # ###############################################################################
@@ -191,8 +192,14 @@ if (os.name != "posix") or ("x86" not in platform.machine()):
 # ###############################################################################
 # scripts and data installation
 # ###############################################################################
-
-installDir = os.path.join(get_python_lib(), "pyFAI")
+if sys.platform == "win32" and "bdist_msi" in sys.argv:
+    if platform_bits == 32:
+        win = "bdist.win32"
+    else:
+        win = "bdist.win-amd64"
+    installDir = os.path.join("build", win, "msi", "Lib", "site-packages", "pyFAI")
+else:
+    installDir = os.path.join(get_python_lib(), "pyFAI")
 
 data_files = [(installDir, [os.path.join('openCL', o) for o in [
       "ocl_azim_kernel_2.cl", "ocl_azim_kernel2d_2.cl", "ocl_azim_LUT.cl"]] +
