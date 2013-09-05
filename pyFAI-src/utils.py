@@ -539,13 +539,13 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
                 else:
                     break
             if filter_ == "max":
-                output = ("maxfilt%02i-" % ld) + prefix + "." + format
+                output = "maxfilt%02i-%s.%s" % (ld,prefix,format)
             elif filter_ == "median":
-                output = ("medfilt%02i-" % ld) + prefix + "." + format
+                output = "medfilt%02i-%s.%s" % (ld,prefix,format)
             elif filter_ == "median":
-                output = ("meanfilt%02i-" % ld) + prefix + "." + format
+                output = "meanfilt%02i-%s.%s" % (ld, prefix, format)
             else:
-                output = ("merged%02i-" % ld) + prefix + "." + format
+                output = "merged%02i-%s.%s" % (ld, prefix, format)
         if format and output:
             if "." in format:  # in case "edf.gz"
                 format = format.split(".")[0]
