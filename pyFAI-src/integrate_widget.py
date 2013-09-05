@@ -65,7 +65,11 @@ class AIWidget(QtGui.QWidget):
         self.name = None
         self._sem = threading.Semaphore()
         QtGui.QWidget.__init__(self)
-        uic.loadUi(UIC, self)
+        try:
+            uic.loadUi(UIC, self)
+        except AttributeError as error:
+            logger.error("I looks like your installation suffers from this bug: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348")
+            raise RuntimeError("Please upgrade your installation of PyQt (or apply the patch)")
         self.all_detectors = pyFAI.detectors.ALL_DETECTORS.keys()
         self.all_detectors.sort()
         self.detector.addItems([i.capitalize() for i in self.all_detectors])
