@@ -42,7 +42,8 @@ import numpy
 import fabio
 from scipy import ndimage
 from scipy.interpolate import interp1d
-from math import  ceil
+from math import  ceil, sin, cos, atan2, pi
+
 from . import relabel as relabelCython
 from scipy.optimize.optimize import fmin, fminbound
 import scipy.ndimage.filters
@@ -546,7 +547,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             else:
                 output = ("merged%02i-" % ld) + prefix + "." + format
         if format and output:
-            if "." in format: #in case "edf.gz"
+            if "." in format:  # in case "edf.gz"
                 format = format.split(".")[0]
             fabiomod = fabio.__getattribute__(format + "image")
             fabioclass = fabiomod.__getattribute__(format + "image")
@@ -867,7 +868,7 @@ def _get_data_path(filename):
     This method try to find the requested ui-name following the
     xfreedesktop recommendations. First the source directory then
     the system locations
-    
+
     For now, just perform a recursive search
     """
     # when using bootstrap the file is located under the build directory
@@ -904,3 +905,18 @@ def get_ui_file(filename):
 def get_cl_file(filename):
 #    return _get_data_path(os.path.join("openCL", filename))
     return _get_data_path(filename)
+
+def deg2rad(dd):
+    """
+    Convert degrees to radian in the range -pi->pi
+
+    @param dd: angle in degrees
+
+    Nota: depending on the platform it could be 0<2pi
+    A branch is cheaper than a trigo operation
+    """
+    while dd > 180.0:
+        dd -= 360.0
+    while dd <= -180.0:
+        dd += 360.0
+    return dd * pi / 180.

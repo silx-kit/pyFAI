@@ -27,8 +27,8 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/12/2012"
-__status__ = "beta"
+__date__ = "04/09/2013"
+__status__ = "stable"
 __docformat__ = 'restructuredtext'
 
 import os
@@ -39,7 +39,8 @@ import types
 import threading
 import gc
 import numpy
-from numpy import rad2deg, deg2rad, pi
+from math import pi
+from numpy import rad2deg
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 from . import geometry
 Geometry = geometry.Geometry
@@ -246,9 +247,9 @@ class AzimuthalIntegrator(Geometry):
 
     def dark_correction(self, data, dark=None):
         """
-        Correct for Dark-current effects. 
+        Correct for Dark-current effects.
         If dark is not defined, correct for a dark set by "set_darkfiles"
-        
+
         @param data: input ndarray with the image
         @param dark: ndarray with dark noise or None
         @return: 2tuple: corrected_data, dark_actually used (or None)
@@ -262,9 +263,9 @@ class AzimuthalIntegrator(Geometry):
 
     def flat_correction(self, data, flat=None):
         """
-        Correct for flat field. 
+        Correct for flat field.
         If flat is not defined, correct for a flat set by "set_flatfiles"
-        
+
         @param data: input ndarray with the image
         @param dark: ndarray with dark noise or None
         @return: 2tuple: corrected_data, flat_actually used (or None)
@@ -366,8 +367,8 @@ class AzimuthalIntegrator(Geometry):
         data = data[mask]
 
         if tthRange is not None:
-            tthRange = (numpy.deg2rad(tthRange[0]),
-                        numpy.deg2rad(tthRange[-1]) * EPS32)
+            tthRange = (utils.deg2rad(tthRange[0]),
+                        utils.deg2rad(tthRange[-1]) * EPS32)
         else:
             tthRange = (tth.min(), tth.max() * EPS32)
         if nbPt not in self._nbPixCache:
@@ -427,7 +428,7 @@ class AzimuthalIntegrator(Geometry):
         data = data[mask]
 
         if tthRange is not None:
-            tthRange = tuple([numpy.deg2rad(i) for i in tthRange])
+            tthRange = (utils.deg2rad(tthRange[0]),utils.deg2rad(tthRange[-1]))
         if dummy is None:
             dummy = 0.0
         tthAxis, I, _, _ = histogram.histogram(pos=tth,
@@ -550,10 +551,10 @@ class AzimuthalIntegrator(Geometry):
         dtth = self.delta2Theta(data.shape)
 
         if tthRange is not None:
-            tthRange = tuple([numpy.deg2rad(i) for i in tthRange[:2]])
+            tthRange = (utils.deg2rad(tthRange[0]),utils.deg2rad(tthRange[-1]))
 
         if chiRange is not None:
-            chiRange = tuple([numpy.deg2rad(i) for i in chiRange[:2]])
+             chiRange = [utils.deg2rad(chiRange[0]), utils.deg2rad(chiRange[-1])]
 
         if flat is None:
             flat = self.flatfield
@@ -708,10 +709,10 @@ class AzimuthalIntegrator(Geometry):
             polarization = self.polarization(data.shape, polarization_factor)
 
         if tthRange is not None:
-            tthRange = tuple([numpy.deg2rad(i) for i in tthRange])
+            tthRange = (utils.deg2rad(tthRange[0]),utils.deg2rad(tthRange[-1]))
 
         if chiRange is not None:
-            chiRange = tuple([numpy.deg2rad(i) for i in chiRange])
+            chiRange = [utils.deg2rad(chiRange[0]), utils.deg2rad(chiRange[-1])]
 
         # ??? what about dark and flat computation like with other methods ?
 
@@ -893,8 +894,8 @@ class AzimuthalIntegrator(Geometry):
                     pos0 = self.twoThetaArray(shape)
                     delta_pos0 = self.delta2Theta(shape)
                     if tthRange is not None and len(tthRange) > 1:
-                        pos0_min = numpy.deg2rad(min(tthRange))
-                        pos0_maxin = numpy.deg2rad(max(tthRange))
+                        pos0_min = utils.deg2rad(min(tthRange))
+                        pos0_maxin = utils.deg2rad(max(tthRange))
                     else:
                         pos0_min = pos0.min()
                         pos0_maxin = pos0.max()
@@ -1357,7 +1358,7 @@ class AzimuthalIntegrator(Geometry):
             tthRange = [tth.min(), tth.max() * EPS32]
 
         if chiRange is not None:
-            chiRange = [deg2rad(chiRange[0]), deg2rad(chiRange[-1])]
+            chiRange = [utils.deg2rad(chiRange[0]), utils.deg2rad(chiRange[-1])]
         else:
             chiRange = [chi.min(), chi.max() * EPS32]
 
@@ -1595,10 +1596,10 @@ class AzimuthalIntegrator(Geometry):
         dchi = self.deltaChi(data.shape)
 
         if tthRange is not None:
-            tthRange = tuple([numpy.deg2rad(i) for i in tthRange])
+            tthRange = (utils.deg2rad(tthRange[0]), utils.deg2rad(tthRange[-1]))
 
         if chiRange is not None:
-            chiRange = tuple([numpy.deg2rad(i) for i in chiRange])
+            chiRange = [utils.deg2rad(chiRange[0]), utils.deg2rad(chiRange[-1])]
 
         if dark is None:
             dark = self.darkcurrent
@@ -1757,10 +1758,10 @@ class AzimuthalIntegrator(Geometry):
             flat = self.flatfield
 
         if tthRange is not None:
-            tthRange = tuple([numpy.deg2rad(i) for i in tthRange])
+            tthRange = (utils.deg2rad(tthRange[0]), utils.deg2rad(tthRange[-1]))
 
         if chiRange is not None:
-            chiRange = tuple([numpy.deg2rad(i) for i in chiRange])
+            chiRange = [utils.deg2rad(chiRange[0]), utils.deg2rad(chiRange[-1])]
 
         I, bins2Th, binsChi, _, _ = splitPixel.fullSplit2D(pos=pos,
                                    weights=data,
