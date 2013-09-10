@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://forge.epn-campus.eu/projects/azimuthal
+#             https://github.com/kif/pyFAI
 #
-#    File: "$Id$"
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -34,6 +33,7 @@ __docformat__ = 'restructuredtext'
 import os
 import logging
 import types
+from threading import Semaphore
 import fabio
 logger = logging.getLogger("pyFAI.processor")
 from . import azimuthalIntegratory
@@ -60,6 +60,7 @@ class Processor(object):
                 self.config = json.loads(config)
         if self.config:
             self.configure()
+
     def __repr__(self):
         """
         pretty print of myself
@@ -167,8 +168,68 @@ class Processor(object):
         self.reset()
         # For now we do not calculate the LUT as the size of the input image is unknown
 
-    def save_config(self):
-        pass
+    def get_config(self):
+        """
+        retrieves the configuration 
+        """
+        to_save = { "poni": str(self.poni.text()).strip(),
+                    "detector": str(self.detector.currentText()).lower(),
+                    "wavelength":float_(self.wavelength.text()),
+                    "splineFile":str(self.splineFile.text()).strip(),
+                    "pixel1": float_(self.pixel1.text()),
+                    "pixel2":float_(self.pixel2.text()),
+                    "dist":float_(self.dist.text()),
+                    "poni1":float_(self.poni1.text()),
+                    "poni2":float_(self.poni2.text()),
+                    "rot1":float_(self.rot1.text()),
+                    "rot2":float_(self.rot2.text()),
+                    "rot3":float_(self.rot3.text()),
+                    "do_dummy": bool(self.do_dummy.isChecked()),
+                    "do_mask":  bool(self.do_mask.isChecked()),
+                    "do_dark": bool(self.do_dark.isChecked()),
+                    "do_flat": bool(self.do_flat.isChecked()),
+                    "do_polarization":bool(self.do_polarization.isChecked()),
+                    "val_dummy":float_(self.val_dummy.text()),
+                    "delta_dummy":float_(self.delta_dummy.text()),
+                    "mask_file":str(self.mask_file.text()).strip(),
+                    "dark_current":str(self.dark_current.text()).strip(),
+                    "flat_field":str(self.flat_field.text()).strip(),
+                    "polarization_factor":float_(self.polarization_factor.value()),
+                    "rad_pt":int_(self.rad_pt.text()),
+                    "do_2D":bool(self.do_2D.isChecked()),
+                    "azim_pt":int_(self.azim_pt.text()),
+                    "chi_discontinuity_at_0": bool(self.chi_discontinuity_at_0.isChecked()),
+                    "do_solid_angle": bool(self.do_solid_angle.isChecked()),
+                    "do_radial_range": bool(self.do_radial_range.isChecked()),
+                    "do_azimuthal_range": bool(self.do_azimuthal_range.isChecked()),
+                    "do_poisson": bool(self.do_poisson.isChecked()),
+                    "radial_range_min":float_(self.radial_range_min.text()),
+                    "radial_range_max":float_(self.radial_range_max.text()),
+                    "azimuth_range_min":float_(self.azimuth_range_min.text()),
+                    "azimuth_range_max":float_(self.azimuth_range_max.text()),
+                   }
+        if self.q_nm.isChecked():
+            to_save["unit"] = "q_nm^-1"
+        elif self.q_A.isChecked():
+            to_save["unit"] = "q_A^-1"
+        elif self.tth_deg.isChecked():
+            to_save["unit"] = "2th_deg"
+        elif self.tth_rad.isChecked():
+            to_save["unit"] = "2th_rad"
+        elif self.r_mm.isChecked():
+            to_save["unit"] = "r_mm"
+        try:
+            with open(filename, "w") as myFile:
+                json.dump(to_save, myFile, indent=4)
+        except IOError as error:
+            logger.error("Error while saving config: %s" % error)
+        else:
+            logger.debug("Saved")
+
+    def save_config(self, filename=None):
+        if not filename:
+            filename = self.config_file
+
 
     def warmup(self):
         """
