@@ -31,10 +31,12 @@ __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "24/09/2013"
 
-
+import sys
 import unittest
 import numpy
-
+from utilstest import getLogger  # UtilsTest, Rwp, getLogger
+logger = getLogger(__file__)
+pyFAI = sys.modules["pyFAI"]
 from pyFAI.detectors import detector_factory
 
 
@@ -68,5 +70,12 @@ class TestDetector(unittest.TestCase):
         self.assertAlmostEqual(x[1], x[0] + 130e-6)
         self.assertAlmostEqual(x[79], x[78] + 130e-6 * 3.5 / 2.)
 
+def test_suite_all_detectors():
+    testSuite = unittest.TestSuite()
+    testSuite.addTest(TestDetector("test_detector_imxpad_s140"))
+    return testSuite
+
 if __name__ == '__main__':
-    unittest.main()
+    mysuite = test_suite_all_detectors()
+    runner = unittest.TextTestRunner()
+    runner.run(mysuite)
