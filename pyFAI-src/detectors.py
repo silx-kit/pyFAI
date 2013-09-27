@@ -39,6 +39,7 @@ import numpy
 logger = logging.getLogger("pyFAI.detectors")
 
 from pyFAI.spline import Spline
+from pyFAI.utils import lazy_property
 try:
     from pyFAI.fastcrc import crc32
 except ImportError:
@@ -643,6 +644,120 @@ class Xpad_flat(Detector):
         p2 = self.pixel2 * (0.5 + c2)
         return p1, p2
 
+
+def _pixels_compute_center(pixels_size):
+    """
+    given a list of pixel size, this method return the center of each
+    pixels. This method is generic.
+
+    @param pixels_size: the size of the pixels.
+    @type length: ndarray
+
+    @return: the center-coordinates of each pixels 0..length
+    @rtype: ndarray
+    """
+    center = pixels_size.cumsum()
+    tmp = center.copy()
+    center[1:] += tmp[:-1]
+    center /= 2.
+
+    return center
+
+def _pixels_extract_coordinates(coordinates, pixels):
+    """
+    given a list of pixel coordinates, return the correspondig
+    pixels coordinates extracted from the coodinates array.
+
+    @param coodinates: the pixels coordinates
+    @type coordinates: ndarray 1D (pixels -> coordinates)
+    @param pixels: the list of pixels to extract.
+    @type pixels: ndarray 1D(calibration) or 2D(integration)
+
+    @return: the pixels coordinates
+    @rtype: ndarray
+    """
+    return coordinates[pixels] if (pixels is not None) else coordinates
+
+class ImXPadS140(Detector):
+    """
+    ImXPad detector: ImXPad s140 detector with 2x7modules
+    """
+    MODULE_SIZE = (120, 80)  # number of pixels per module (y, x)
+    MAX_SHAPE = (240, 560)  # max size of the detector
+    PIXEL_SIZE = (130e-6, 130e-6)
+    force_pixel = True
+
+    class __metaclass__(type):
+
+        @lazy_property
+        def COORDINATES(cls):
+            """
+            cache used to store the coordinates of the y, x, detector
+            pixels. These array are compute only once for all
+            instances.
+            """
+            return tuple(_pixels_compute_center(cls._pixels_size(n, m, p))
+                         for n, m, p in zip(cls.MAX_SHAPE,
+                                            cls.MODULE_SIZE,
+                                            cls.PIXEL_SIZE))
+
+    @staticmethod
+    def _pixels_size(length, module_size, pixel_size):
+        """
+        given the length (in pixel) of the detector, the size of a
+        module (in pixels) and the pixel_size (in meter). this method
+        return the length of each pixels 0..length.
+
+        @param length: the number of pixel to compute
+        @type length: int
+        @param module_size: the number of pixel of one module
+        @type module_size: int
+        @param pixel_size: the size of one pixels (meter per pixel)
+        @type length: float
+
+        @return: the coordinates of each pixels 0..length
+        @rtype: ndarray
+        """
+        size = numpy.ones(length)
+        n = length // module_size
+        for i in range(1, n):
+            size[i * module_size - 1] = 2.5
+            size[i * module_size] = 2.5
+        return pixel_size * size
+
+    def __init__(self, pixel1=130e-6, pixel2=130e-6):
+        Detector.__init__(self, pixel1, pixel2)
+        self.name = "ImXPad S140"
+        self.max_shape = self.MAX_SHAPE
+
+    def __repr__(self):
+        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
+            (self.name, self.pixel1, self.pixel2)
+
+
+    def calc_cartesian_positions(self, d1=None, d2=None):
+        """
+        Calculate the position of each pixel center in cartesian coordinate
+        and in meter of a couple of coordinates.
+        The half pixel offset is taken into account here !!!
+
+        @param d1: the Y pixel positions (slow dimension)
+        @type d1: ndarray (1D or 2D)
+        @param d2: the X pixel positions (fast dimension)
+        @type d2: ndarray (1D or 2D)
+
+        @return: position in meter of the center of each pixels.
+        @rtype: ndarray
+
+        d1 and d2 must have the same shape, returned array will have
+        the same shape.
+
+        """
+        return tuple(_pixels_extract_coordinates(coordinates, pixels)
+                     for coordinates, pixels in zip(ImXPadS140.COORDINATES,
+                                                    (d1, d2)))
+
+
 class Perkin(Detector):
     """
     Perkin detector
@@ -667,6 +782,7 @@ ALL_DETECTORS = {"pilatus100k": Pilatus100k,
                  "frelon": FReLoN,
                  "xpad": Xpad_flat,
                  "xpad_flat": Xpad_flat,
+                 "imxpad_s140" : ImXPadS140,
                  "basler": Basler,
                  "dexela2923": Dexela2923,
                  "perkin": Perkin,
