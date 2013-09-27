@@ -551,9 +551,20 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
                 format = format.split(".")[0]
             fabiomod = fabio.__getattribute__(format + "image")
             fabioclass = fabiomod.__getattribute__(format + "image")
+            header = {"method":filter_,
+                      "nframes":ld,
+                      "cutoff":str(cutoff)}
+            form = "merged_file_%%0%ii" % len(str(len(listImages)))
+            header_list = ["method", "nframes", "cutoff"]
+            for i, f in enumerate(listImages):
+                name = form % i
+                header[name] = f
+                header_list.append(name)
             fimg = fabioclass(data=datared,
-                              header={"method":filter_, "nframes":ld, "cutoff":str(cutoff),
-                                      "merged": ",".join(listImages)})
+                              header=header)
+#            if "header_keys" in dir(fimg):
+            fimg.header_keys = header_list
+                                      
             fimg.write(output)
             logger.info("Wrote %s" % output)
         return output
