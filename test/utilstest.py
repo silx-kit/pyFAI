@@ -73,7 +73,7 @@ class UtilsTest(object):
         logger.info("pyFAI module was already loaded from  %s" % sys.modules["pyFAI"])
         pyFAI = None
         sys.modules.pop("pyFAI")
-        for key in sys.modules:
+        for key in sys.modules.copy():
             if key.startswith("pyFAI."):
                 sys.modules.pop(key)
 
