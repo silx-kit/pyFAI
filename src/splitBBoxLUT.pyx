@@ -66,27 +66,29 @@ class HistoBBox1d(object):
                  allow_pos0_neg=False,
                  unit="undefined"):
 
-        cdef int i, size
         self.size = pos0.size
         assert delta_pos0.size == self.size
         self.bins = bins
         self.lut_size = 0
+        if  mask is not None:
+            assert mask.size == self.size
+            self.check_mask = True
+            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
+            if mask_checksum:
+                self.mask_checksum = mask_checksum
+            else:
+                self.mask_checksum = crc32(mask)
+        else:
+            self.check_mask = False
+            self.mask_checksum = None
+
         self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=numpy.float32)
         self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=numpy.float32)
-        self.cpos0_sup = self.cpos0 + self.dpos0
-        self.cpos0_inf = self.cpos0 - self.dpos0
+        self.cpos0_sup = numpy.empty_like(self.cpos0) #self.cpos0 + self.dpos0
+        self.cpos0_inf = numpy.empty_like(self.cpos0) #self.cpos0 - self.dpos0
         self.pos0Range = pos0Range
         self.pos1Range = pos1Range
-        if pos0Range is not None and len(pos0Range) > 1:
-            self.pos0_min = min(pos0Range)
-            pos0_maxin = max(pos0Range)
-        else:
-            self.pos0_min = (self.cpos0_inf).min()
-            pos0_maxin = (self.cpos0_sup).max()
-        if (not allow_pos0_neg) and self.pos0_min < 0:
-            self.pos0_min = 0
-        self.pos0_max = pos0_maxin * EPS32
-
+        self.calc_boundaries(pos0Range, allow_pos0_neg)
         if pos1Range is not None and len(pos1Range) > 1:
             assert pos1.size == self.size
             assert delta_pos1.size == self.size
@@ -101,22 +103,57 @@ class HistoBBox1d(object):
             self.cpos1_min = None
             self.pos1_max = None
 
-        if  mask is not None:
-            assert mask.size == self.size
-            self.check_mask = True
-            self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
-            if mask_checksum:
-                self.mask_checksum = mask_checksum
-            else:
-                self.mask_checksum = crc32(mask)
-        else:
-            self.check_mask = False
-            self.mask_checksum = None
         self.delta = (self.pos0_max - self.pos0_min) / bins
         self.lut_max_idx = self.calc_lut()
-        self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, pos0_maxin-0.5*self.delta, self.bins)
+        self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, self.pos0_maxin-0.5*self.delta, self.bins)
         self.lut_checksum = crc32(self.lut)
         self.unit=unit
+        
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    def calc_boundaries(self,pos0Range, bint allow_pos0_neg=False):
+        cdef int size = self.cpos0.size
+        cdef bint check_mask = self.check_mask
+        cdef numpy.int8_t[:] cmask
+        cdef float[:] cpos0, dpos0, cpos0_sup, cpos0_inf, 
+        cdef float upper, lower, pos0_max, pos0_min, c, d
+        cpos0_sup = self.cpos0_sup
+        cpos0_inf = self.cpos0_inf
+        cpos0 = self.cpos0
+        dpos0 = self.dpos0
+        pos0_min=cpos0[0]
+        pos0_max=cpos0[0]
+
+        if check_mask:
+            cmask = self.cmask
+        with nogil:
+            for idx in range(size):
+                c = cpos0[idx]
+                d = dpos0[idx]
+                lower = c - d
+                upper = c + d
+                cpos0_sup[idx] = upper
+                cpos0_inf[idx] = lower
+                if not allow_pos0_neg and lower<0:
+                    lower=0
+                if not (check_mask and cmask[idx]):
+                    if upper>pos0_max:
+                        pos0_max = upper
+                    if lower<pos0_min:
+                        pos0_min = lower
+
+        if pos0Range is not None and len(pos0Range) > 1:
+            self.pos0_min = min(pos0Range)
+            self.pos0_maxin = max(pos0Range)
+        else:
+            self.pos0_min = pos0_min
+            self.pos0_maxin = pos0_max
+        if (not allow_pos0_neg) and self.pos0_min < 0:
+            self.pos0_min = 0
+        self.pos0_max = self.pos0_maxin * EPS32
+        self.cpos0_sup = cpos0_sup
+        self.cpos0_inf = cpos0_inf
+
 
     @cython.cdivision(True)
     @cython.boundscheck(False)

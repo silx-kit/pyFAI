@@ -147,6 +147,8 @@ def histoBBox1d(numpy.ndarray weights not None,
     pos0_max=cpos0[0]
     with nogil:
         for idx in range(size):
+            if (check_mask) and (cmask[idx]):
+                continue
             min0 = cpos0[idx] - dpos0[idx]
             max0 = cpos0[idx] + dpos0[idx]
             cpos0_upper[idx]=max0
@@ -360,6 +362,9 @@ def histoBBox2d(numpy.ndarray weights not None,
 
     with nogil:
         for idx in range(size):
+            if (check_mask) and cmask[idx]:
+                continue
+
             min0 = cpos0[idx] - dpos0[idx]
             max0 = cpos0[idx] + dpos0[idx]
             cpos0_upper[idx]=max0
