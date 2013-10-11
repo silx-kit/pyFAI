@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Form</class>
- <widget class="QWidget" name="Form">
+ <class>Demo_LImA_pyFAI</class>
+ <widget class="QWidget" name="Demo_LImA_pyFAI">
   <property name="geometry">
    <rect>
     <x>0</x>

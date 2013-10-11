@@ -4,7 +4,7 @@ from __future__ import with_statement, print_function
 """
 pyFAI_lima
 
-A graphical tool (based on PyQt4) for performing azimuthal integration of images comming from a camera.
+A graphical tool (based on PyQt4) for performing azimuthal integration of images coming from a camera.
 No data are saved !
 
 """
@@ -21,7 +21,7 @@ import time
 import signal
 import threading
 import numpy
-import pyFAI
+import pyFAI.worker
 import pyopencl
 import os 
 op = os.path
@@ -36,8 +36,10 @@ from PyQt4.QtCore import SIGNAL
 UIC = op.join(op.dirname(__file__), "LimaFAI.ui")
 window = None
 
+
+
 class DoubleView(QtGui.QWidget):
-    def __init__(self, ip="192.168.5.19", fps=30):
+    def __init__(self, ip="192.168.5.19", fps=30, poni=None, json=None):
         QtGui.QWidget.__init__(self)
         try:
             uic.loadUi(UIC, self)
@@ -56,6 +58,19 @@ class DoubleView(QtGui.QWidget):
         self.connect(self.pushButton_play, SIGNAL("clicked()"), self.start_acq)
         self.connect(self.pushButton_stop, SIGNAL("clicked()"), self.stop_acq)
         self.last_frame = None
+        self.timer = QtCore.QTimer()
+        self.connect(self.timer, SIGNAL("timeout()"), self.update_img)
+        if poni:
+            worker = pyFAI.worker.Worker(ai=pyFAI.load(poni))
+        elif json:
+            worker = pyFAI.worker.Worker()
+            worker.setJsonConfig(json)
+        else:
+            worker = None
+        self.processLink = FaiLink(worker)
+        self.extMgr = self.ctrl.externalOperation()
+        self.myOp = extMgr.addOp(Core.USER_LINK_TASK, "pyFAITask", 0)
+        self.myOp.setLinkTask(self.processLink)
 
     def start_acq(self):
         if self.is_playing: return
@@ -69,14 +84,23 @@ class DoubleView(QtGui.QWidget):
             time.sleep(0.1)
         self.last_frame = self.ctrl.getStatus().ImageCounters.LastImageReady
         raw_img = self.ctrl.ReadBaseImage().buffer
+        fai_img = self.ctrl.ReadImage().buffer
         self.RawImg.setImage(raw_img)
+        self.FaiImg.setImage(fai_img)
+
 
     def stop_acq(self):
         if self.is_playing:
             self.is_playing = False
             self.ctrl.stopAcq()
+            self.timer.stop()
     
-    def update_img(self,):
+    def update_img(self):
+        if self.is_playing:
+            raw_img = self.ctrl.ReadBaseImage().buffer
+            fai_img = self.ctrl.ReadImage().buffer
+            self.RawImg.setImage(raw_img)
+            self.FaiImg.setImage(fai_img)
 
 if __name__ == "__main__":
     from optparse import OptionParser
@@ -93,6 +117,9 @@ on a set of files grabbed from a Basler camera using LImA."""
     parser.add_option("-p", "--poni",
                       dest="poni", default=None,
                       help="PONI file containing the setup")
+    parser.add_option("-j", "--json",
+                      dest="json", default=None,
+                      help="json file containing the setup")
     parser.add_option("-f", "--fps",
                       dest="fps", default="30",
                       help="Number of frames per seconds")
@@ -114,6 +141,7 @@ on a set of files grabbed from a Basler camera using LImA."""
         sys.path.insert(0,options.lima)
     try:
         from Lima import Core, Basler
+        from limaFAI import FaiLink
     except ImportError:
         print("Is the PYTHONPATH correctly setup? I did not manage to import Lima")
         sys.exit(1)
@@ -125,5 +153,5 @@ on a set of files grabbed from a Basler camera using LImA."""
         window.show()
         sys.exit(app.exec_())
     else:
-        # TODO
+        raise Exception("No sense!")
         pass
