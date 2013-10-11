@@ -20,7 +20,7 @@ if logger.getEffectiveLevel() > logging.INFO:
     logger.setLevel(logging.INFO)
 import numpy
 from Lima import Core
-from Utils import BasePostProcess
+#from Utils import BasePostProcess
 import pyFAI
 
 class FaiLink(Core.Processlib.LinkTask):
@@ -43,9 +43,33 @@ class FaiLink(Core.Processlib.LinkTask):
                     self._worker.unit = "r_mm"
                     self._worker.nbpt_azim = 500
                     self._worker.nbpt_rad = 360
-                    self._worker.reconfig(shape=shape)
-                    self.output = "numpy"
+                    self._worker.reconfig(shape=shape, sync=True)
+                    self._worker.output = "numpy"
+                    print("Worker updated")
         rData = Core.Processlib.Data()
         rData.frameNumber = data.frameNumber
         rData.buffer = self._worker.process(data.buffer)
         return rData
+
+#FOR SINK
+#        ctControl = _control_ref()
+#        saving = ctControl.saving()
+#        sav_parms = saving.getParameters()
+#        if not self.subdir:
+#            directory = sav_parms.directory
+#        elif self.subdir.startswith("/"):
+#            directory = self.subdir
+#        else:
+#            directory = os.path.join(sav_parms.directory, self.subdir)
+#        if not os.path.exists(directory):
+#            logger.error("Ouput directory does not exist !!!  %s" % directory)
+#            try:
+#                os.makedirs(directory)
+#            except:  # No luck withthreads
+#                pass
+#        directory = sav_parms.directory
+#        prefix = sav_parms.prefix
+#        nextNumber = sav_parms.nextNumber
+#        indexFormat = sav_parms.indexFormat
+#        if self.output is not None:
+#            kwarg["filename"] = os.path.join(directory, prefix + indexFormat % (nextNumber + data.frameNumber))

@@ -23,7 +23,7 @@ import threading
 import numpy
 import pyFAI.worker
 import pyopencl
-import os 
+import os
 op = os.path
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -50,7 +50,7 @@ class DoubleView(QtGui.QWidget):
         self.fps = float(fps)
         self.label_ip.setText(str(ip))
         self.label_fps.setText(str(fps))
-        self.cam = self.iface = self.ctrl = self.acq=None
+        self.cam = self.iface = self.ctrl = self.acq = None
         self.cam = Basler.Camera(self.ip)
         self.iface = Basler.Interface(self.cam)
         self.ctrl = Core.CtControl(self.iface)
@@ -58,8 +58,7 @@ class DoubleView(QtGui.QWidget):
         self.connect(self.pushButton_play, SIGNAL("clicked()"), self.start_acq)
         self.connect(self.pushButton_stop, SIGNAL("clicked()"), self.stop_acq)
         self.last_frame = None
-        self.timer = QtCore.QTimer()
-        self.connect(self.timer, SIGNAL("timeout()"), self.update_img)
+        self.last = time.time()
         if poni:
             worker = pyFAI.worker.Worker(ai=pyFAI.load(poni))
         elif json:
@@ -69,15 +68,17 @@ class DoubleView(QtGui.QWidget):
             worker = None
         self.processLink = FaiLink(worker)
         self.extMgr = self.ctrl.externalOperation()
-        self.myOp = extMgr.addOp(Core.USER_LINK_TASK, "pyFAITask", 0)
+        self.myOp = self.extMgr.addOp(Core.USER_LINK_TASK, "pyFAILink", 0)
         self.myOp.setLinkTask(self.processLink)
+        self.timer = QtCore.QTimer()
+        self.connect(self.timer, SIGNAL("timeout()"), self.update_img)
 
     def start_acq(self):
         if self.is_playing: return
         self.is_playing = True
         self.acq = self.ctrl.acquisition()
         self.acq.setAcqNbFrames(0)
-        self.acq.setAcqExpoTime(1.0/self.fps)
+        self.acq.setAcqExpoTime(1.0 / self.fps)
         self.ctrl.prepareAcq()
         self.ctrl.startAcq()
         while self.ctrl.getStatus().ImageCounters.LastImageReady < 1:
@@ -85,22 +86,30 @@ class DoubleView(QtGui.QWidget):
         self.last_frame = self.ctrl.getStatus().ImageCounters.LastImageReady
         raw_img = self.ctrl.ReadBaseImage().buffer
         fai_img = self.ctrl.ReadImage().buffer
-        self.RawImg.setImage(raw_img)
-        self.FaiImg.setImage(fai_img)
-
+        self.RawImg.setImage(raw_img, autoLevels=False, autoRange=False)
+        self.FaiImg.setImage(fai_img, autoLevels=False, autoRange=False)
+        self.last = time.time()
+        self.timer.start(1000.0 / self.fps)
 
     def stop_acq(self):
         if self.is_playing:
             self.is_playing = False
             self.ctrl.stopAcq()
             self.timer.stop()
-    
+
     def update_img(self):
+        last_frame = self.ctrl.getStatus().ImageCounters.LastImageReady
+        if last_frame == self.last_frame:
+            return
         if self.is_playing:
             raw_img = self.ctrl.ReadBaseImage().buffer
             fai_img = self.ctrl.ReadImage().buffer
-            self.RawImg.setImage(raw_img)
-            self.FaiImg.setImage(fai_img)
+            self.RawImg.setImage(raw_img, autoLevels=False, autoRange=False)
+            self.FaiImg.setImage(fai_img, autoLevels=False, autoRange=False)
+            self.last = time.time()
+
+
+
 
 if __name__ == "__main__":
     from optparse import OptionParser
@@ -138,14 +147,14 @@ on a set of files grabbed from a Basler camera using LImA."""
         logger.info("setLevel: debug")
         logger.setLevel(logging.DEBUG)
     if options.lima:
-        sys.path.insert(0,options.lima)
+        sys.path.insert(0, options.lima)
     try:
         from Lima import Core, Basler
-        from limaFAI import FaiLink
+
     except ImportError:
         print("Is the PYTHONPATH correctly setup? I did not manage to import Lima")
         sys.exit(1)
-
+    from limaFAI import FaiLink
     if options.gui:
         app = QtGui.QApplication([])
         window = DoubleView(ip=options.ip, fps=options.fps)

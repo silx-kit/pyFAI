@@ -46,12 +46,13 @@ __status__ = "development"
 import threading, os
 import logging
 logger = logging.getLogger("pyFAI.worker")
+import numpy
 try:
     import h5py
 except:
     h5py = None
-from .azimuthalIntegrator import AzimuthalIntegrator  
-
+from .azimuthalIntegrator import AzimuthalIntegrator
+from . import units
 
 class Worker(object):
     def __init__(self, azimuthalIntgrator=None, shapeIn=(2048, 2048), shapeOut=(360, 500), unit="r_mm"):
@@ -61,13 +62,13 @@ class Worker(object):
         @param shapeOut: Integrated size: can be (1,2000) for 1D integration
         @param unit: can be "2th_deg, r_mm or q_nm^-1 ...
         """
-        self._sem = threading.semaphore()
+        self._sem = threading.Semaphore()
         if azimuthalIntgrator is None:
             self.ai = pyFAI.AzimuthalIntegrator()
         else:
             self.ai = azimuthalIntgrator
         self.nbpt_azim, self.nbpt_rad = shapeOut
-        self.unit = pyFAI.units.to_unit(unit)
+        self._unit = units.to_unit(unit)
         self.polarization = None
         self.dummy = None
         self.delta_dummy = None
@@ -111,31 +112,36 @@ class Worker(object):
             with self._sem:
                 if self.needs_reset:
                     self.ai.reset()
-                    self.needs_reset=False
+                    self.needs_reset = False
         # print self.__repr__()
 
-    def reconfig(self, shape=(2048, 2048)):
+    def reconfig(self, shape=(2048, 2048), sync=False):
         """
-        this is just to force the integrator to initialize with a given input image shape
+        This is just to force the integrator to initialize with a given input image shape
+        
+        @param shape: shape of the input image
+        @param sync: return only when synchronized
         """
         self.shape = shape
         self.ai.reset()
 
         if self.do_2D():
-            threading.Thread(target=self.ai.integrate2d,
+            t = threading.Thread(target=self.ai.integrate2d,
                                  name="init2d",
                                  args=(numpy.zeros(self.shape, dtype=numpy.float32),
                                         self.nbpt_rad, self.nbpt_azim),
                                  kwargs=dict(method="lut", unit=self.unit)
-                                 ).start()
+                                 )
         else:
-            threading.Thread(target=self.ai.integrate1d,
+            t = threading.Thread(target=self.ai.integrate1d,
                                  name="init1d",
                                  args=(numpy.zeros(self.shape, dtype=numpy.float32),
                                         self.nbpt_rad),
                                  kwargs=dict(method="lut", unit=self.unit)
-                                 ).start()
-
+                                 )
+        t.start()
+        if sync:
+            t.join()
 
     def process(self, data) :
         """
@@ -148,48 +154,29 @@ class Worker(object):
                  "polarization_factor":self.polarization,
                  # "filename": None,
                  "safe": True,
-                 "data": data.buffer,
+                 "data": data,
                  }
-        ctControl = _control_ref()
-        saving = ctControl.saving()
-        sav_parms = saving.getParameters()
-        if not self.subdir:
-            directory = sav_parms.directory
-        elif self.subdir.startswith("/"):
-            directory = self.subdir
-        else:
-            directory = os.path.join(sav_parms.directory, self.subdir)
-        if not os.path.exists(directory):
-            logger.error("Ouput directory does not exist !!!  %s" % directory)
-            try:
-                os.makedirs(directory)
-            except:  # No luck withthreads
-                pass
 
-#        directory = sav_parms.directory
-        prefix = sav_parms.prefix
-        nextNumber = sav_parms.nextNumber
-        indexFormat = sav_parms.indexFormat
-        if self.output is not None:
-            kwarg["filename"] = os.path.join(directory, prefix + indexFormat % (nextNumber + data.frameNumber))
 
         if self.do_2D():
             kwarg["nbPt_rad"] = self.nbpt_rad
             kwarg["nbPt_azim"] = self.nbpt_azim
-            if self.extension:
-                kwarg["filename"] += self.extension
-            else:
-                kwarg["filename"] += ".azim"
+            if "filename" in kwarg:
+                if self.extension:
+                    kwarg["filename"] += self.extension
+                else:
+                    kwarg["filename"] += ".azim"
         else:
             kwarg["nbPt"] = self.nbpt_rad
-            if self.extension:
-                kwarg["filename"] += self.extension
-            else:
-                kwarg["filename"] += ".xy"
+            if "filename" in kwarg:
+                if self.extension:
+                    kwarg["filename"] += self.extension
+                else:
+                    kwarg["filename"] += ".xy"
         if self.do_poisson:
             kwarg["error_model"] = "poisson"
         else:
-            kwarg["error_model"] = "None"
+            kwarg["error_model"] = None
 
         try:
             if self.do_2D():
@@ -302,4 +289,8 @@ class Worker(object):
         self.reset()
         # For now we do not calculate the LUT as the size of the input image is unknown
 
-
+    def set_unit(self, value):
+        self._unit = units.to_unit(value)
+    def get_unit(self):
+        return self._unit
+    unit = property(get_unit, set_unit)
