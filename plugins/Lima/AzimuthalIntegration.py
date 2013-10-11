@@ -58,7 +58,7 @@ class PyFAISink(Core.Processlib.SinkTaskBase):
         self.subdir = ""
         self.extension = None
         self.do_poisson = None
-        self.do
+#        self.do
         try:
             self.shapeIn = (camera.getFrameDim.getHeight(), camera.getFrameDim.getWidth())
         except Exception as error:
