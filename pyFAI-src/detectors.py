@@ -514,6 +514,18 @@ class Fairchild(Detector):
         self.name = "Fairchild Condor 486:90"
         self.max_shape = (4096, 4096)
 
+class Titan(Detector):
+    """
+    Titan CCD detector from Agilent. Mask not handled
+    """
+    force_pixel = True
+    def __init__(self, pixel1=60e-6, pixel2=60e-6):
+        Detector.__init__(self, pixel1, pixel2)
+        self.name = "Titan 2k x 2k"
+        self.max_shape = (2048, 2048)
+
+
+
 
 class Dexela2923(Detector):
     """
@@ -786,6 +798,7 @@ ALL_DETECTORS = {"pilatus100k": Pilatus100k,
                  "basler": Basler,
                  "dexela2923": Dexela2923,
                  "perkin": Perkin,
+                 "titan": Titan,
                  "detector": Detector}
 
 
