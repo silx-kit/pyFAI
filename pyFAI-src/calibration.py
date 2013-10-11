@@ -143,9 +143,9 @@ class AbstractCalibration(object):
         else:
             lst.append("flat= None")
         if self.fixed:
-            ls.append("fixed=" + ", ".join(self.fixed))
+            lst.append("fixed=" + ", ".join(self.fixed))
         else:
-            ls.append("fixed= None")
+            lst.append("fixed= None")
         lst.append(self.detector.__repr__())
         return os.linesep.join(lst)
 
