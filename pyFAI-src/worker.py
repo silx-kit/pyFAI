@@ -79,18 +79,15 @@ class Worker(object):
         self.extension = None
         self.do_poisson = None
         self.needs_reset = True
-        try:
-            self.shapeIn = (camera.getFrameDim.getHeight(), camera.getFrameDim.getWidth())
-        except Exception as error:
-            logger.error("default on shapeIn %s: %s" % (shapeIn, error))
-            self.shapeIn = shapeIn
+        self.output = "numpy" #exports as numpy array by default
+        self.shape = shapeIn
 
     def __repr__(self):
         """
         pretty print of myself
         """
         lstout = ["Azimuthal Integrator:", self.ai.__repr__(),
-                "Input image shape: %s" % list(self.shapeIn),
+                "Input image shape: %s" % list(self.shape),
                 "Number of points in radial direction: %s" % self.nbpt_rad,
                 "Number of points in azimuthal direction: %s" % self.nbpt_azim,
                 "Unit in radial dimension: %s" % self.unit.REPR,
@@ -121,20 +118,20 @@ class Worker(object):
         """
         this is just to force the integrator to initialize with a given input image shape
         """
-        self.shapeIn = shape
+        self.shape = shape
         self.ai.reset()
 
         if self.do_2D():
             threading.Thread(target=self.ai.integrate2d,
                                  name="init2d",
-                                 args=(numpy.zeros(self.shapeIn, dtype=numpy.float32),
+                                 args=(numpy.zeros(self.shape, dtype=numpy.float32),
                                         self.nbpt_rad, self.nbpt_azim),
                                  kwargs=dict(method="lut", unit=self.unit)
                                  ).start()
         else:
             threading.Thread(target=self.ai.integrate1d,
                                  name="init1d",
-                                 args=(numpy.zeros(self.shapeIn, dtype=numpy.float32),
+                                 args=(numpy.zeros(self.shape, dtype=numpy.float32),
                                         self.nbpt_rad),
                                  kwargs=dict(method="lut", unit=self.unit)
                                  ).start()
@@ -173,7 +170,9 @@ class Worker(object):
         prefix = sav_parms.prefix
         nextNumber = sav_parms.nextNumber
         indexFormat = sav_parms.indexFormat
-        kwarg["filename"] = os.path.join(directory, prefix + indexFormat % (nextNumber + data.frameNumber))
+        if self.output is not None:
+            kwarg["filename"] = os.path.join(directory, prefix + indexFormat % (nextNumber + data.frameNumber))
+
         if self.do_2D():
             kwarg["nbPt_rad"] = self.nbpt_rad
             kwarg["nbPt_azim"] = self.nbpt_azim
@@ -194,16 +193,17 @@ class Worker(object):
 
         try:
             if self.do_2D():
-                self.ai.integrate2d(**kwarg)
+                rData = self.ai.integrate2d(**kwarg)[0]
             else:
-                self.ai.integrate1d(**kwarg)
+                rData = self.ai.integrate1d(**kwarg)[1]
         except:
             print(data.buffer.shape, data.buffer.size)
             print(self.ai)
             print(self.ai._lut_integrator)
             print(self.ai._lut_integrator.size)
             raise
-        # return rData
+        if self.output == "numpy":
+            return rData
 
     def setSubdir(self, path):
         """
