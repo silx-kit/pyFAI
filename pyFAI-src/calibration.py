@@ -143,9 +143,9 @@ class AbstractCalibration(object):
         else:
             lst.append("flat= None")
         if self.fixed:
-            ls.append("fixed=" + ", ".join(self.fixed))
+            lst.append("fixed=" + ", ".join(self.fixed))
         else:
-            ls.append("fixed= None")
+            lst.append("fixed= None")
         lst.append(self.detector.__repr__())
         return os.linesep.join(lst)
 
@@ -623,10 +623,10 @@ class AbstractCalibration(object):
                                 polarization_factor=self.polarization_factor,
                                 method="splitbbox")
         t4 = time.time()
-        img = self.geoRef.integrate2d(self.peakPicker.data, self.nPt_2D_rad, self.nPt_2D_azim,
+        img, pos_rad, pos_azim = self.geoRef.integrate2d(self.peakPicker.data, self.nPt_2D_rad, self.nPt_2D_azim,
                                 filename=self.basename + ".azim", unit=self.unit,
                                 polarization_factor=self.polarization_factor,
-                                method="splitbbox")[0]
+                                method="splitbbox")
         t5 = time.time()
         print (os.linesep.join(["Timings:",
                                 " * two theta array generation %.3fs" % (t1 - t0),
@@ -640,7 +640,9 @@ class AbstractCalibration(object):
             xrpd.set_title("1D integration")
             xrpd.set_xlabel(self.unit)
             xrpd.set_ylabel("Intensity")
-            xrpd2.imshow(numpy.log(img - img.min() + 1e-3), origin="lower")
+            xrpd2.imshow(numpy.log(img - img.min() + 1e-3), origin="lower",
+                         extent=[pos_rad.min(), pos_rad.max(), pos_azim.min(), pos_azim.max()],
+                         aspect="auto")
             xrpd2.set_title("2D regrouping")
             xrpd2.set_xlabel(self.unit)
             xrpd2.set_ylabel("Azimuthal angle (deg)")

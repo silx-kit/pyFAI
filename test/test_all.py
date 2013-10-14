@@ -54,6 +54,7 @@ from testDistortion           import test_suite_all_distortion
 from testFlat                 import test_suite_all_Flat
 from testUtils                import test_suite_all_Utils
 from testPolarization         import test_suite_all_Polarization
+from testDetector             import test_suite_all_detectors
 
 def test_suite_all():
     testSuite = unittest.TestSuite()
@@ -71,6 +72,7 @@ def test_suite_all():
     testSuite.addTest(test_suite_all_distortion())
     testSuite.addTest(test_suite_all_Flat())
     testSuite.addTest(test_suite_all_Utils())
+    testSuite.addTest(test_suite_all_detectors())
     return testSuite
 
 if __name__ == '__main__':

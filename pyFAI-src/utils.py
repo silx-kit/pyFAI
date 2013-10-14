@@ -42,7 +42,8 @@ import numpy
 import fabio
 from scipy import ndimage
 from scipy.interpolate import interp1d
-from math import  ceil
+from math import  ceil, sin, cos, atan2, pi
+
 from . import relabel as relabelCython
 from scipy.optimize.optimize import fmin, fminbound
 import scipy.ndimage.filters
@@ -538,21 +539,32 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
                 else:
                     break
             if filter_ == "max":
-                output = ("maxfilt%02i-" % ld) + prefix + "." + format
+                output = "maxfilt%02i-%s.%s" % (ld,prefix,format)
             elif filter_ == "median":
-                output = ("medfilt%02i-" % ld) + prefix + "." + format
+                output = "medfilt%02i-%s.%s" % (ld,prefix,format)
             elif filter_ == "median":
-                output = ("meanfilt%02i-" % ld) + prefix + "." + format
+                output = "meanfilt%02i-%s.%s" % (ld, prefix, format)
             else:
-                output = ("merged%02i-" % ld) + prefix + "." + format
+                output = "merged%02i-%s.%s" % (ld, prefix, format)
         if format and output:
-            if "." in format: #in case "edf.gz"
+            if "." in format:  # in case "edf.gz"
                 format = format.split(".")[0]
             fabiomod = fabio.__getattribute__(format + "image")
             fabioclass = fabiomod.__getattribute__(format + "image")
+            header = {"method":filter_,
+                      "nframes":ld,
+                      "cutoff":str(cutoff)}
+            form = "merged_file_%%0%ii" % len(str(len(listImages)))
+            header_list = ["method", "nframes", "cutoff"]
+            for i, f in enumerate(listImages):
+                name = form % i
+                header[name] = f
+                header_list.append(name)
             fimg = fabioclass(data=datared,
-                              header={"method":filter_, "nframes":ld, "cutoff":str(cutoff),
-                                      "merged": ",".join(listImages)})
+                              header=header)
+#            if "header_keys" in dir(fimg):
+            fimg.header_keys = header_list
+                                      
             fimg.write(output)
             logger.info("Wrote %s" % output)
         return output
@@ -867,7 +879,7 @@ def _get_data_path(filename):
     This method try to find the requested ui-name following the
     xfreedesktop recommendations. First the source directory then
     the system locations
-    
+
     For now, just perform a recursive search
     """
     # when using bootstrap the file is located under the build directory
@@ -904,3 +916,37 @@ def get_ui_file(filename):
 def get_cl_file(filename):
 #    return _get_data_path(os.path.join("openCL", filename))
     return _get_data_path(filename)
+
+def deg2rad(dd):
+    """
+    Convert degrees to radian in the range -pi->pi
+
+    @param dd: angle in degrees
+
+    Nota: depending on the platform it could be 0<2pi
+    A branch is cheaper than a trigo operation
+    """
+    while dd > 180.0:
+        dd -= 360.0
+    while dd <= -180.0:
+        dd += 360.0
+    return dd * pi / 180.
+
+class lazy_property(object):
+    '''
+    meant to be used for lazy evaluation of an object attribute.
+    property should represent non-mutable data, as it replaces itself.
+    '''
+
+    def __init__(self,fget):
+        self.fget = fget
+        self.func_name = fget.__name__
+
+
+    def __get__(self,obj,cls):
+        if obj is None:
+            return None
+        value = self.fget(obj)
+        setattr(obj,self.func_name,value)
+        return value
+
