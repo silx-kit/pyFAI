@@ -41,6 +41,7 @@ class FaiLink(Core.Processlib.LinkTask):
                     worker = pyFAI.worker.Worker(ai)
                     self._worker = worker
                     self._worker.unit = "r_mm"
+                    self._worker.method = "lut_ocl_gpu"
                     self._worker.nbpt_azim = 500
                     self._worker.nbpt_rad = 360
                     self._worker.reconfig(shape=shape, sync=True)
