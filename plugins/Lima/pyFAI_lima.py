@@ -86,8 +86,8 @@ class DoubleView(QtGui.QWidget):
         self.last_frame = self.ctrl.getStatus().ImageCounters.LastImageReady
         raw_img = self.ctrl.ReadBaseImage().buffer
         fai_img = self.ctrl.ReadImage().buffer
-        self.RawImg.setImage(raw_img)#, autoLevels=False, autoRange=False)
-        self.FaiImg.setImage(fai_img)#, autoLevels=False, autoRange=False)
+        self.RawImg.setImage(raw_img.T)#, autoLevels=False, autoRange=False)
+        self.FaiImg.setImage(fai_img.T)#, autoLevels=False, autoRange=False)
         self.last = time.time()
         self.timer.start(1000.0 / self.fps)
 
@@ -104,9 +104,11 @@ class DoubleView(QtGui.QWidget):
         if self.is_playing:
             raw_img = self.ctrl.ReadBaseImage().buffer
             fai_img = self.ctrl.ReadImage().buffer
-            self.RawImg.setImage(raw_img)#, autoLevels=False, autoRange=False)
-            self.FaiImg.setImage(fai_img)#, autoLevels=False, autoRange=False)
+            self.RawImg.setImage(raw_img.T)#, autoLevels=False, autoRange=False)
+            self.FaiImg.setImage(fai_img.T)#, autoLevels=False, autoRange=False)
+            print(1.0 / (time.time() - self.last))
             self.last = time.time()
+             
 
 
 

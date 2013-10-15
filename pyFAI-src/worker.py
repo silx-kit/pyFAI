@@ -82,6 +82,7 @@ class Worker(object):
         self.needs_reset = True
         self.output = "numpy" #exports as numpy array by default
         self.shape = shapeIn
+        self.method = "lut"
 
     def __repr__(self):
         """
@@ -150,7 +151,7 @@ class Worker(object):
         kwarg = {"unit": self.unit,
                  "dummy": self.dummy,
                  "delta_dummy": self.delta_dummy,
-                 "method": "lut",
+                 "method": self.method,
                  "polarization_factor":self.polarization,
                  # "filename": None,
                  "safe": True,
@@ -184,7 +185,7 @@ class Worker(object):
             else:
                 rData = self.ai.integrate1d(**kwarg)[1]
         except:
-            print(data.buffer.shape, data.buffer.size)
+            print(data.shape, data.size)
             print(self.ai)
             print(self.ai._lut_integrator)
             print(self.ai._lut_integrator.size)
