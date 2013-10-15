@@ -295,3 +295,10 @@ class Worker(object):
     def get_unit(self):
         return self._unit
     unit = property(get_unit, set_unit)
+
+    def get_config(self):
+        """return configuration as a dictionnary"""
+        pass #TODO
+    def get_JSONconfig(self):
+        """return configuration as a JSON string"""
+        pass #TODO
