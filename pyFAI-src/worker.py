@@ -34,25 +34,66 @@ additional saving capabilities like
 
 Aims at being integrated into a plugin like LImA or as model for the GUI 
 
+The configuration of this class is mainly done via a dictionary transmitted as a JSON string:
+Here are the valid keys:  
+    "dist",
+    "poni1",
+    "poni2",
+    "rot1"
+    "rot3"
+    "rot2"
+    "pixel1"
+    "pixel2"
+
+    "splineFile"
+    "wavelength"
+
+    "poni" #path of the file
+
+    "chi_discontinuity_at_0"
+    "do_mask"
+    "do_dark"
+    "do_azimuthal_range"
+    "do_flat"
+    "do_2D"
+    "azimuth_range_min"
+    "azimuth_range_max"
+     
+    "polarization_factor"
+    "nbpt_rad"
+    "do_solid_angle"
+    "do_radial_range"
+    "do_poisson"
+    "delta_dummy"
+    "nbpt_azim"
+    "flat_field"
+    "radial_range_min"
+    "dark_current"
+    "do_polarization"
+    "mask_file"
+    "detector"
+    "unit"
+    "radial_range_max"
+    "val_dummy"
+    "do_dummy"
+}
+
 """
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/10/2013"
+__date__ = "15/10/2013"
 __status__ = "development"
 
 import threading, os
 import logging
 logger = logging.getLogger("pyFAI.worker")
 import numpy
-try:
-    import h5py
-except:
-    h5py = None
 from .azimuthalIntegrator import AzimuthalIntegrator
 from . import units
+from .hfd5 import h5py, HDF5Writer
 
 class Worker(object):
     def __init__(self, azimuthalIntgrator=None, shapeIn=(2048, 2048), shapeOut=(360, 500), unit="r_mm"):
@@ -275,11 +316,11 @@ class Worker(object):
         self.dark_current_image = self.ai.darkfiles
         self.flat_field_image = self.ai.flatfiles
         if config.get("do_2D"):
-            self.nbpt_azim = int(config.get("azim_pt"))
+            self.nbpt_azim = int(config.get("nbpt_azim"))
         else:
             self.nbpt_azim = 1
-        if config.get("rad_pt"):
-            self.nbpt_rad = int(config.get("rad_pt"))
+        if config.get("nbpt_rad"):
+            self.nbpt_rad = int(config.get("nbpt_rad"))
         self.unit = pyFAI.units.to_unit(config.get("unit", pyFAI.units.TTH_DEG))
         self.do_poisson = config.get("do_poisson")
         if config.get("do_polarization"):
@@ -297,8 +338,8 @@ class Worker(object):
     unit = property(get_unit, set_unit)
 
     def get_config(self):
-        """return configuration as a dictionnary"""
+        """return configuration as a dictionary"""
         pass #TODO
-    def get_JSONconfig(self):
+    def get_json_config(self):
         """return configuration as a JSON string"""
         pass #TODO

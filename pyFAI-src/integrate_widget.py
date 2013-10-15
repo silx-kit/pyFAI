@@ -142,9 +142,9 @@ class AIWidget(QtGui.QWidget):
             else:
                 kwarg["polarization_factor"] = None
 
-            kwarg["nbPt_rad"] = int(str(self.rad_pt.text()).strip())
+            kwarg["nbPt_rad"] = int(str(self.nbpt_rad.text()).strip())
             if self.do_2D.isChecked():
-                kwarg["nbPt_azim"] = int(str(self.azim_pt.text()).strip())
+                kwarg["nbPt_azim"] = int(str(self.nbpt_azim.text()).strip())
 
             if self.do_OpenCL.isChecked():
                 platform = ocl.get_platform(self.platform.currentText())
@@ -305,9 +305,9 @@ class AIWidget(QtGui.QWidget):
                     "dark_current":str(self.dark_current.text()).strip(),
                     "flat_field":str(self.flat_field.text()).strip(),
                     "polarization_factor":float_(self.polarization_factor.value()),
-                    "rad_pt":int_(self.rad_pt.text()),
+                    "nbpt_rad":int_(self.rad_pt.text()),
                     "do_2D":bool(self.do_2D.isChecked()),
-                    "azim_pt":int_(self.azim_pt.text()),
+                    "nbpt_azim":int_(self.azim_pt.text()),
                     "chi_discontinuity_at_0": bool(self.chi_discontinuity_at_0.isChecked()),
                     "do_solid_angle": bool(self.do_solid_angle.isChecked()),
                     "do_radial_range": bool(self.do_radial_range.isChecked()),
@@ -372,9 +372,9 @@ class AIWidget(QtGui.QWidget):
                         "dark_current":lambda a:self.dark_current.setText(str_(a)),
                         "flat_field":lambda a:self.flat_field.setText(str_(a)),
                         "polarization_factor":self.polarization_factor.setValue,
-                        "rad_pt":lambda a:self.rad_pt.setText(str_(a)),
+                        "nbpt_rad":lambda a:self.rad_pt.setText(str_(a)),
                         "do_2D":self.do_2D.setChecked,
-                        "azim_pt":lambda a:self.azim_pt.setText(str_(a)),
+                        "nbpt_azim":lambda a:self.azim_pt.setText(str_(a)),
                         "chi_discontinuity_at_0": self.chi_discontinuity_at_0.setChecked,
                         "do_radial_range": self.do_radial_range.setChecked,
                         "do_azimuthal_range": self.do_azimuthal_range.setChecked,
