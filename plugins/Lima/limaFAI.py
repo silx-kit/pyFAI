@@ -24,9 +24,12 @@ from Lima import Core
 import pyFAI
 
 class FaiLink(Core.Processlib.LinkTask):
-    def __init__(self, worker=None):
+    def __init__(self, worker=None, writer=None):
         Core.Processlib.LinkTask.__init__(self)
         self._worker = worker
+        self._writer = writer
+        if worker and writer:
+            writer.init(worker.get_config())
         self._sem = threading.Semaphore()
 
     def process(self, data) :
@@ -46,10 +49,14 @@ class FaiLink(Core.Processlib.LinkTask):
                     self._worker.nbpt_rad = 360
                     self._worker.reconfig(shape=shape, sync=True)
                     self._worker.output = "numpy"
+                    if self._writer:
+                        self._writer.init(self._worker.get_config())
                     print("Worker updated")
         rData = Core.Processlib.Data()
         rData.frameNumber = data.frameNumber
         rData.buffer = self._worker.process(data.buffer)
+        if self._writer: #optional HDF5 writer
+            self._writer(rData.buffer, rData.frameNumber)
         return rData
 
 #FOR SINK

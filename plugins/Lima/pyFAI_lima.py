@@ -22,6 +22,7 @@ import signal
 import threading
 import numpy
 import pyFAI.worker
+from pyFAI.hdf5 import HDF5Writer, h5py
 import pyopencl
 import os
 op = os.path
@@ -39,7 +40,7 @@ window = None
 
 
 class DoubleView(QtGui.QWidget):
-    def __init__(self, ip="192.168.5.19", fps=30, poni=None, json=None):
+    def __init__(self, ip="192.168.5.19", fps=30, poni=None, json=None, writer=None):
         QtGui.QWidget.__init__(self)
         try:
             uic.loadUi(UIC, self)
@@ -66,12 +67,13 @@ class DoubleView(QtGui.QWidget):
             worker.setJsonConfig(json)
         else:
             worker = None
-        self.processLink = FaiLink(worker)
+        self.processLink = FaiLink(worker, writer)
         self.extMgr = self.ctrl.externalOperation()
         self.myOp = self.extMgr.addOp(Core.USER_LINK_TASK, "pyFAILink", 0)
         self.myOp.setLinkTask(self.processLink)
         self.timer = QtCore.QTimer()
         self.connect(self.timer, SIGNAL("timeout()"), self.update_img)
+        self.writer = writer
 
     def start_acq(self):
         if self.is_playing: return
@@ -140,11 +142,29 @@ on a set of files grabbed from a Basler camera using LImA."""
     parser.add_option("-l", "--lima",
                       dest="lima", default=None,
                       help="Base installation of LImA")
+    parser.add_option("-s", "--scan",
+                      dest="scan", default=None,
+                      help="Size of scan of the fastest motor")
+
     parser.add_option("--no-gui",
                       dest="gui", default=True, action="store_false",
                       help="Process the dataset without showing the user interface.")
 
     (options, args) = parser.parse_args()
+    if len(args) == 1:
+        hurl = args[0]
+        if hurl.startswith("hdf5:"):
+            hurl = hurl[5:]
+        hsplit = hurl.split(":")
+        hdfpath = hsplit[-1]
+        hdffile = ":".join(hsplit[:-1]) #special windows
+        writer = HDF5Writer(hdffile, hdfpath, options.scan)
+    elif len(args) > 1 :
+        logger.error("Specify the HDF5 output file like hdf5:///home/user/filename.h5:/path/to/group")
+        sys.exit(1)
+    else:
+        writer = None
+
     if options.verbose:
         logger.info("setLevel: debug")
         logger.setLevel(logging.DEBUG)
@@ -159,7 +179,7 @@ on a set of files grabbed from a Basler camera using LImA."""
     from limaFAI import FaiLink
     if options.gui:
         app = QtGui.QApplication([])
-        window = DoubleView(ip=options.ip, fps=options.fps)
+        window = DoubleView(ip=options.ip, fps=options.fps, writer=writer)
         #window.set_input_data(args)
         window.show()
         sys.exit(app.exec_())

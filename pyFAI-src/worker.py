@@ -76,6 +76,7 @@ Here are the valid keys:
     "radial_range_max"
     "val_dummy"
     "do_dummy"
+    "method"
 }
 
 """
@@ -108,6 +109,20 @@ class Worker(object):
             self.ai = pyFAI.AzimuthalIntegrator()
         else:
             self.ai = azimuthalIntgrator
+        self.config = {}
+        self.config_file = "azimInt.json"
+        self.nbpt_azim = 0
+        if type(config) == dict:
+            self.config = config
+        elif type(config) in types.StringTypes:
+            if os.path.isfile(config):
+                self.config = json.load(open(config, "r"))
+                self.config_file(config)
+            else:
+                self.config = json.loads(config)
+        if self.config:
+            self.configure()
+
         self.nbpt_azim, self.nbpt_rad = shapeOut
         self._unit = units.to_unit(unit)
         self.polarization = None
@@ -124,6 +139,8 @@ class Worker(object):
         self.output = "numpy" #exports as numpy array by default
         self.shape = shapeIn
         self.method = "lut"
+        self.radial = None
+        self.azimuthal = None
 
     def __repr__(self):
         """
@@ -166,24 +183,7 @@ class Worker(object):
         """
         self.shape = shape
         self.ai.reset()
-
-        if self.do_2D():
-            t = threading.Thread(target=self.ai.integrate2d,
-                                 name="init2d",
-                                 args=(numpy.zeros(self.shape, dtype=numpy.float32),
-                                        self.nbpt_rad, self.nbpt_azim),
-                                 kwargs=dict(method="lut", unit=self.unit)
-                                 )
-        else:
-            t = threading.Thread(target=self.ai.integrate1d,
-                                 name="init1d",
-                                 args=(numpy.zeros(self.shape, dtype=numpy.float32),
-                                        self.nbpt_rad),
-                                 kwargs=dict(method="lut", unit=self.unit)
-                                 )
-        t.start()
-        if sync:
-            t.join()
+        self.warmup(sync)
 
     def process(self, data) :
         """
@@ -222,9 +222,9 @@ class Worker(object):
 
         try:
             if self.do_2D():
-                rData = self.ai.integrate2d(**kwarg)[0]
+                rData, self.radial, self.azimuthal = self.ai.integrate2d(**kwarg)
             else:
-                rData = self.ai.integrate1d(**kwarg)[1]
+                self.radial, rData = self.ai.integrate1d(**kwarg)
         except:
             print(data.shape, data.size)
             print(self.ai)
@@ -297,6 +297,9 @@ class Worker(object):
 
         if config.get("chi_discontinuity_at_0"):
             self.ai.setChiDiscAtZero()
+        else:
+            self.ai.setChiDiscAtPi()
+
 
         mask_file = config.get("mask_file")
         do_mask = config.get("do_mask")
@@ -343,3 +346,33 @@ class Worker(object):
     def get_json_config(self):
         """return configuration as a JSON string"""
         pass #TODO
+
+    def save_config(self, filename=None):
+        if not filename:
+            filename = self.config_file
+
+
+    def warmup(self, sync=False):
+        """
+        Process a dummy image to ensure everything is initialized
+
+        @param sync: wait for processing to be finished
+
+        """
+        if self.do_2D():
+            t = threading.Thread(target=self.ai.integrate2d,
+                                 name="init2d",
+                                 args=(numpy.zeros(self.shape, dtype=numpy.float32),
+                                        self.nbpt_rad, self.nbpt_azim),
+                                 kwargs=dict(method="lut", unit=self.unit)
+                                 )
+        else:
+            t = threading.Thread(target=self.ai.integrate1d,
+                                 name="init1d",
+                                 args=(numpy.zeros(self.shape, dtype=numpy.float32),
+                                        self.nbpt_rad),
+                                 kwargs=dict(method="lut", unit=self.unit)
+                                 )
+        t.start()
+        if sync:
+            t.join()
