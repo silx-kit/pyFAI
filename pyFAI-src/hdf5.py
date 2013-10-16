@@ -37,15 +37,17 @@ Stand-alone module which tries to offer interface to HDF5 via H5Py.
 
 Can be imported without h5py but completely useless.
 """
+import sys
 import os
 import time
 import threading
 import logging
-logger = logging("pyFAI.hdf5")
+logger = logging.getLogger("pyFAI.hdf5")
 import types
 import numpy
 import posixpath
-
+import json
+#import threading
 try:
     import h5py
 except ImportError:
@@ -69,7 +71,12 @@ class HDF5Writer(object):
         """
         self.filename = filename
         self.hpath = hpath
-        self.fast_scan_width = fast_scan_width
+        self.fast_scan_width = None
+        if fast_scan_width is not None:
+            try:
+                self.fast_scan_width = int(fast_scan_width)
+            except:
+                pass
         self.hdf5 = None
         self.group = None
         self.dataset = None
@@ -79,70 +86,98 @@ class HDF5Writer(object):
         self.chunk = None
         self.shape = None
         self.ndim = None
-    def init(self, config={}):
+        self._sem = threading.Semaphore()
+        self._initialized = False
+        self.config = {}
+
+    def __repr__(self):
+        return "HDF5 writer on file %s:%s %sinitialized" % (self.filename, self.hpath, "" if self._initialized else "un")
+
+    def init(self, config=None):
         """
         Initializes the HDF5 file for writing
-        @param config: the configuration of the worker as a dictionnary
+        @param config: the configuration of the worker as a dictionary
         """
-        dirname = os.path.dirname(self.filename)
-        if not os.path.exists(dirname):
-            os.makedirs(dirname, mode)
-        if h5py:
-            self.hdf5 = h5py.File(self.filename)
-        else:
-            logger.error("No h5py library, no chance")
-            raise RuntimeError("No h5py library, no chance")
-        self.group = self.hdf5.require_group(self.hpath)
-        self.group.attrs["NX_class"] = "NXentry"
-        self.pyFAI_grp = self.hdf5.require_group(posixpath.join(self.hpath, self.CONFIG))
-        self.pyFAI_grp.attrs["desc"] = "PyFAI worker configuration"
-        for key, value in config.items():
-            self.pyFAI_grp[key] = value
-        if config.get("nbpt_azim", 0) > 1:
-            self.azimuthal_values = self.group.require_dataset("chi", config["nbpt_azim"], numpy.float32)
-            self.azimuthal_values.attrs["unit"] = "deg"
-            self.radial_values.attrs["interpretation"] = "scalar"
-            self.radial_values.attrs["long name"] = "Azimuthal angle"
+        if not self._initialized:
+            with self._sem:
+                if not self._initialized:
+                    if not config:
+                        config = self.config
+                    self.config = config
+                    open("config.json", "w").write(json.dumps(config, indent=4))
+                    config["nbpt_rad"] = config.get("nbpt_rad", 1000)
+                    dirname = os.path.dirname(self.filename)
+                    if not os.path.exists(dirname):
+                        os.makedirs(dirname, mode)
+                    if h5py:
+                        try:
+                            self.hdf5 = h5py.File(self.filename)
+                        except IOError: #typically a corrupted HDF5 file !
+                            os.unlink(self.filename)
+                            self.hdf5 = h5py.File(self.filename)
+                    else:
+                        logger.error("No h5py library, no chance")
+                        raise RuntimeError("No h5py library, no chance")
+                    self.group = self.hdf5.require_group(self.hpath)
+                    self.group.attrs["NX_class"] = "NXentry"
+                    self.pyFAI_grp = self.hdf5.require_group(posixpath.join(self.hpath, self.CONFIG))
+                    self.pyFAI_grp.attrs["desc"] = "PyFAI worker configuration"
+                    for key, value in config.items():
+                        if value is None:
+                            continue
+                        try:
+                            self.pyFAI_grp[key] = value
+                        except:
+                            print("Unable to set %s: %s" % (key, value))
+                            self.close()
+                            sys.exit(1)
 
-        rad_name,rad_unit=str(config.get("unit","2th_deg")).split("_",1)
-        self.radial_values = self.group.require_dataset(rad_name, config.get("nbpt_rad", 1000), numpy.float32)
-        self.radial_values.attrs["unit"] = rad_unit
-        self.radial_values.attrs["interpretation"] = "scalar"
-        self.radial_values.attrs["long name"] = "diffraction radial direction"
-        if self.fast_scan_width:
-            self.fast_motor = self.group.require_dataset("fast", self.fast_scan_width , numpy.float32)
-            self.fast_motor.attrs["long name"] = "Fast motor position"
-            self.fast_motor.attrs["interpretation"] = "scalar"
-            self.fast_motor.attrs["axis"] = "1"
-            self.radial_values.attrs["axis"] = "2"
-            if self.azimuthal_values is not None:
-                chunk = 1, self.fast_scan_width, config["nbpt_azim"], config["nbpt_rad"]
-                self.ndim = 4
-                self.azimuthal_values.attrs["axis"] = "3"
-            else:
-                chunk = 1, self.fast_scan_width, config["nbpt_rad"]
-                self.ndim = 3
-        else:
-            self.radial_values.attrs["axis"] = "1"
-            if self.azimuthal_values is not None:
-                chunk = 1, config["nbpt_azim"], config["nbpt_rad"]
-                self.ndim = 3
-                self.azimuthal_values.attrs["axis"] = "2"
-            else:
-                chunk = 1, config["nbpt_rad"]
-                self.ndim = 2
+                    if config.get("nbpt_azim", 0) > 1:
+                        self.azimuthal_values = self.group.require_dataset("chi", (config["nbpt_azim"],), numpy.float32)
+                        self.azimuthal_values.attrs["unit"] = "deg"
+                        self.radial_values.attrs["interpretation"] = "scalar"
+                        self.radial_values.attrs["long name"] = "Azimuthal angle"
 
-        if self.DATA in self.group:
-            del self.group[self.DATA]
-        self.dataset = self.group.require_dataset(self.data, chunk, dtype=numpy.float32, chunks=chunk,
-                                                  maxshape=(None,) + chunk[1:])
-        if config.get("nbpt_azim", 0) > 1:
-            self.dataset.attrs["interpretation"] = "image"
-        else:
-            self.dataset.attrs["interpretation"] = "spectrum"
-        self.dataset.attrs["signal"] = "1"
-        self.chunk = chunk
-        self.shape = chunk
+                    rad_name, rad_unit = str(config.get("unit", "2th_deg")).split("_", 1)
+                    self.radial_values = self.group.require_dataset(rad_name, (config["nbpt_rad"],), numpy.float32)
+                    self.radial_values.attrs["unit"] = rad_unit
+                    self.radial_values.attrs["interpretation"] = "scalar"
+                    self.radial_values.attrs["long name"] = "diffraction radial direction"
+                    if self.fast_scan_width:
+                        self.fast_motor = self.group.require_dataset("fast", (self.fast_scan_width,) , numpy.float32)
+                        self.fast_motor.attrs["long name"] = "Fast motor position"
+                        self.fast_motor.attrs["interpretation"] = "scalar"
+                        self.fast_motor.attrs["axis"] = "1"
+                        self.radial_values.attrs["axis"] = "2"
+                        if self.azimuthal_values is not None:
+                            chunk = 1, self.fast_scan_width, config["nbpt_azim"], config["nbpt_rad"]
+                            self.ndim = 4
+                            self.azimuthal_values.attrs["axis"] = "3"
+                        else:
+                            chunk = 1, self.fast_scan_width, config["nbpt_rad"]
+                            self.ndim = 3
+                    else:
+                        self.radial_values.attrs["axis"] = "1"
+                        if self.azimuthal_values is not None:
+                            chunk = 1, config["nbpt_azim"], config["nbpt_rad"]
+                            self.ndim = 3
+                            self.azimuthal_values.attrs["axis"] = "2"
+                        else:
+                            chunk = 1, config["nbpt_rad"]
+                            self.ndim = 2
+
+                    if self.DATA in self.group:
+                        del self.group[self.DATA]
+                    self.dataset = self.group.require_dataset(self.DATA, chunk, dtype=numpy.float32, chunks=chunk,
+                                                              maxshape=(None,) + chunk[1:])
+                    if config.get("nbpt_azim", 0) > 1:
+                        self.dataset.attrs["interpretation"] = "image"
+                    else:
+                        self.dataset.attrs["interpretation"] = "spectrum"
+                    self.dataset.attrs["signal"] = "1"
+                    self.chunk = chunk
+                    self.shape = chunk
+                    self._initialized = True
 
 
     def flush(self, radial=None, azimuthal=None):
@@ -176,10 +211,12 @@ class HDF5Writer(object):
         """
         Minimalistic method to limit the overhead.
         """
+        if not self._initialized:
+            self.init()
         if self.fast_scan_width:
             index0, index1 = (index // self.fast_scan_width, index % self.fast_scan_width)
-            if index[0] >= self.dataset.shape[0]:
-                self.dataset.resize(index[0] + 1, axis=0)
+            if index0 >= self.dataset.shape[0]:
+                self.dataset.resize(index0 + 1, axis=0)
             self.dataset[index0, index1] = data
         else:
             if index >= self.dataset.shape[0]:

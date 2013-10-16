@@ -23,7 +23,14 @@
 #
 
 from __future__ import with_statement, print_function
-"""
+
+__author__ = "Jerome Kieffer"
+__contact__ = "Jerome.Kieffer@ESRF.eu"
+__license__ = "GPLv3+"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "15/10/2013"
+__status__ = "development"
+__doc__ = """
 
 This module contains the Worker class:
 
@@ -81,20 +88,13 @@ Here are the valid keys:
 
 """
 
-__author__ = "Jerome Kieffer"
-__contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
-__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/10/2013"
-__status__ = "development"
-
 import threading, os
 import logging
 logger = logging.getLogger("pyFAI.worker")
 import numpy
 from .azimuthalIntegrator import AzimuthalIntegrator
 from . import units
-from .hfd5 import h5py, HDF5Writer
+from .hdf5 import h5py, HDF5Writer
 
 class Worker(object):
     def __init__(self, azimuthalIntgrator=None, shapeIn=(2048, 2048), shapeOut=(360, 500), unit="r_mm"):
@@ -109,19 +109,19 @@ class Worker(object):
             self.ai = pyFAI.AzimuthalIntegrator()
         else:
             self.ai = azimuthalIntgrator
-        self.config = {}
-        self.config_file = "azimInt.json"
-        self.nbpt_azim = 0
-        if type(config) == dict:
-            self.config = config
-        elif type(config) in types.StringTypes:
-            if os.path.isfile(config):
-                self.config = json.load(open(config, "r"))
-                self.config_file(config)
-            else:
-                self.config = json.loads(config)
-        if self.config:
-            self.configure()
+#        self.config = {}
+#        self.config_file = "azimInt.json"
+#        self.nbpt_azim = 0
+#        if type(config) == dict:
+#            self.config = config
+#        elif type(config) in types.StringTypes:
+#            if os.path.isfile(config):
+#                self.config = json.load(open(config, "r"))
+#                self.config_file(config)
+#            else:
+#                self.config = json.loads(config)
+#        if self.config:
+#            self.configure()
 
         self.nbpt_azim, self.nbpt_rad = shapeOut
         self._unit = units.to_unit(unit)
@@ -323,7 +323,7 @@ class Worker(object):
         else:
             self.nbpt_azim = 1
         if config.get("nbpt_rad"):
-            self.nbpt_rad = int(config.get("nbpt_rad"))
+            self.nbpt_rad = int(config["nbpt_rad"])
         self.unit = pyFAI.units.to_unit(config.get("unit", pyFAI.units.TTH_DEG))
         self.do_poisson = config.get("do_poisson")
         if config.get("do_polarization"):
@@ -342,7 +342,53 @@ class Worker(object):
 
     def get_config(self):
         """return configuration as a dictionary"""
-        pass #TODO
+        config = {"unit":str(self.unit)}
+        for key in ["dist",    "poni1",    "poni2",    "rot1",    "rot3",    "rot2",    "pixel1",    "pixel2",    "splineFile",    "wavelength"]:
+            try:
+                config[key] = self.ai.__getattribute__(key)
+            except:
+                pass
+        for key in ["nbpt_azim", "nbpt_rad", "polarization", "dummy", "delta_dummy", "correct_solid_angle", "dark_current_image", "flat_field_image", "mask_image",
+                  "do_poisson","shape","method"
+                  ]:
+            try:
+                config[key] = self.__getattribute__(key)
+            except:
+                pass
+            
+        return config
+#
+#    "poni" #path of the file
+#
+#    "chi_discontinuity_at_0"
+#    "do_mask"
+#    "do_dark"
+#    "do_azimuthal_range"
+#    "do_flat"
+#    "do_2D"
+#    "azimuth_range_min"
+#    "azimuth_range_max"
+#
+#    "polarization_factor"
+#    "nbpt_rad"
+#    "do_solid_angle"
+#    "do_radial_range"
+#    "do_poisson"
+#    "delta_dummy"
+#    "nbpt_azim"
+#    "flat_field"
+#    "radial_range_min"
+#    "dark_current"
+#    "do_polarization"
+#    "mask_file"
+#    "detector"
+#    "unit"
+#    "radial_range_max"
+#    "val_dummy"
+#    "do_dummy"
+#    "method"
+#}
+
     def get_json_config(self):
         """return configuration as a JSON string"""
         pass #TODO

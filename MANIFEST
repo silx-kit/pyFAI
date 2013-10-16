@@ -141,6 +141,7 @@ pyFAI-src/spline.py
 pyFAI-src/units.py
 pyFAI-src/utils.py
 pyFAI-src/worker.py
+pyFAI-src/hdf5.py
 scripts/MX-calibrate
 scripts/check_calib
 scripts/diff_tomo

@@ -23,6 +23,30 @@ from Lima import Core
 #from Utils import BasePostProcess
 import pyFAI
 
+
+class StartAcqCallback(Core.SoftCallback):
+    def __init__(self, control, worker, writer):
+        Core.SoftCallback.__init__(self)
+        self._control = control
+        self._worker = worker
+        self._writer = writer
+    def prepare(self):
+        im = self._control.image()
+        imdim = im.getImageDim().getSize()
+        x = imdim.getWidth()
+        y = imdim.getHeight()
+        bin = im.getBin()
+        binX = bin.getX()
+        binY = bin.getY()
+        print("Done")
+        # number of images ...
+        acq = self._control.acquisition()
+        nvimg = acq.getAcqNbFrames() #to check.
+        #getAcqExpoTime
+        #ROI see: https://github.com/esrf-bliss/Lima/blob/master/control/include/CtAcquisition.h
+#        self._worker.init #TODO
+#        self._writer.init() #TODO
+
 class FaiLink(Core.Processlib.LinkTask):
     def __init__(self, worker=None, writer=None):
         Core.Processlib.LinkTask.__init__(self)
@@ -56,7 +80,7 @@ class FaiLink(Core.Processlib.LinkTask):
         rData.frameNumber = data.frameNumber
         rData.buffer = self._worker.process(data.buffer)
         if self._writer: #optional HDF5 writer
-            self._writer(rData.buffer, rData.frameNumber)
+            self._writer.write(rData.buffer, rData.frameNumber)
         return rData
 
 #FOR SINK
