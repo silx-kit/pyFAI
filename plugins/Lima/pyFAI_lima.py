@@ -38,7 +38,6 @@ UIC = op.join(op.dirname(__file__), "LimaFAI.ui")
 window = None
 
 
-
 class DoubleView(QtGui.QWidget):
     def __init__(self, ip="192.168.5.19", fps=30, poni=None, json=None, writer=None):
         QtGui.QWidget.__init__(self)
@@ -71,6 +70,9 @@ class DoubleView(QtGui.QWidget):
         self.extMgr = self.ctrl.externalOperation()
         self.myOp = self.extMgr.addOp(Core.USER_LINK_TASK, "pyFAILink", 0)
         self.myOp.setLinkTask(self.processLink)
+
+        self.callback = StartAcqCallback(self.ctrl, self.processLink)
+        self.myOp.registerCallback(self.callback)
         self.timer = QtCore.QTimer()
         self.connect(self.timer, SIGNAL("timeout()"), self.update_img)
         self.writer = writer
@@ -176,7 +178,7 @@ on a set of files grabbed from a Basler camera using LImA."""
     except ImportError:
         print("Is the PYTHONPATH correctly setup? I did not manage to import Lima")
         sys.exit(1)
-    from limaFAI import FaiLink
+    from limaFAI import FaiLink, StartAcqCallback
     if options.gui:
         app = QtGui.QApplication([])
         window = DoubleView(ip=options.ip, fps=options.fps, writer=writer)

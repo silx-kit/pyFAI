@@ -405,20 +405,9 @@ class Worker(object):
         @param sync: wait for processing to be finished
 
         """
-        if self.do_2D():
-            t = threading.Thread(target=self.ai.integrate2d,
-                                 name="init2d",
-                                 args=(numpy.zeros(self.shape, dtype=numpy.float32),
-                                        self.nbpt_rad, self.nbpt_azim),
-                                 kwargs=dict(method="lut", unit=self.unit)
-                                 )
-        else:
-            t = threading.Thread(target=self.ai.integrate1d,
-                                 name="init1d",
-                                 args=(numpy.zeros(self.shape, dtype=numpy.float32),
-                                        self.nbpt_rad),
-                                 kwargs=dict(method="lut", unit=self.unit)
-                                 )
+        t = threading.Thread(target=self.process,
+                             name="init2d",
+                             args=(numpy.zeros(self.shape, dtype=numpy.float32),))
         t.start()
         if sync:
             t.join()

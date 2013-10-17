@@ -25,57 +25,91 @@ import pyFAI
 
 
 class StartAcqCallback(Core.SoftCallback):
-    def __init__(self, control, worker, writer):
+    """
+    Class managing the connection from a 
+    Lima.Core.CtControl.prepareAcq() to the configuration of the various tasks
+    
+    Example of usage:
+    cam = Basler.Camera(ip)
+    iface = Basler.Interface(cam)
+    ctrl = Core.CtControl(iface)
+    processLink = FaiLink(worker, writer)
+    extMgr = ctrl.externalOperation()
+    myOp = self.extMgr.addOp(Core.USER_LINK_TASK, "pyFAILink", 0)
+    myOp.setLinkTask(processLink)
+    callback = StartAcqCallback(ctrl, processLink)
+    myOp.registerCallback(callback)
+    acq.setAcqNbFrames(0)
+    acq.setAcqExpoTime(1.0)
+    ctrl.prepareAcq() #Configuration called here !!!!
+    ctrl.startAcq()
+
+    """
+    def __init__(self, control, task=None):
+        """
+        
+        @param control: Lima.Core.CtControl instance
+        @param task: The task one wants to parametrize at startup. Can be a  Core.Processlib.LinkTask or a Core.Processlib.SinkTask
+        """
         Core.SoftCallback.__init__(self)
         self._control = control
-        self._worker = worker
-        self._writer = writer
+        self._task = task
+
     def prepare(self):
+        """
+        Called with prepareAcq()
+        """
+
         im = self._control.image()
         imdim = im.getImageDim().getSize()
+
         x = imdim.getWidth()
         y = imdim.getHeight()
         bin = im.getBin()
         binX = bin.getX()
         binY = bin.getY()
-        print("Done")
+
         # number of images ...
         acq = self._control.acquisition()
-        nvimg = acq.getAcqNbFrames() #to check.
-        #getAcqExpoTime
+        nbframe = acq.getAcqNbFrames() #to check.
+        expo = acq.getAcqExpoTime()
         #ROI see: https://github.com/esrf-bliss/Lima/blob/master/control/include/CtAcquisition.h
-#        self._worker.init #TODO
-#        self._writer.init() #TODO
+        lima_cfg = {"dimX":x,
+                    "dimY":y,
+                    "binX":binX,
+                    "binY":binY,
+                    "number_of_frames": nbframe,
+                    "exposure_time":expo}
+        if self._task._worker is None:
+            #Define a default integrator
+            centerX = x // 2
+            centerY = y // 2
+            ai = pyFAI.AzimuthalIntegrator()
+            ai.setFit2D(1000, centerX=centerX, centerY=centerY, pixelX=1, pixelY=1)
+            worker = pyFAI.worker.Worker(ai)
+            worker.unit = "r_mm"
+            worker.method = "lut_ocl_gpu"
+            worker.nbpt_azim = 360
+            worker.nbpt_rad = 500
+            worker.output = "numpy"
+            print("Worker updated")
+            self._task._worker = worker
+        else:
+            worker = self._task._worker
+        worker.reconfig(shape=(y, x), sync=True)
+        if self._task._writer:
+            config = self._task._worker.get_config()
+            self._task._writer.init(config=config, lima_cfg=lima_cfg)
+            self._task._writer.flush(worker.radial, worker.azimuthal)
 
 class FaiLink(Core.Processlib.LinkTask):
     def __init__(self, worker=None, writer=None):
         Core.Processlib.LinkTask.__init__(self)
         self._worker = worker
         self._writer = writer
-        if worker and writer:
-            writer.init(worker.get_config())
         self._sem = threading.Semaphore()
 
     def process(self, data) :
-        if  self._worker is None:
-            with self._sem:
-                if  self._worker is None:
-                    shape = data.buffer.shape
-                    centerX = shape[1] // 2
-                    centerY = shape[0] // 2
-                    ai = pyFAI.AzimuthalIntegrator()
-                    ai.setFit2D(1000, centerX=centerX, centerY=centerY, pixelX=1, pixelY=1)
-                    worker = pyFAI.worker.Worker(ai)
-                    self._worker = worker
-                    self._worker.unit = "r_mm"
-                    self._worker.method = "lut_ocl_gpu"
-                    self._worker.nbpt_azim = 500
-                    self._worker.nbpt_rad = 360
-                    self._worker.reconfig(shape=shape, sync=True)
-                    self._worker.output = "numpy"
-                    if self._writer:
-                        self._writer.init(self._worker.get_config())
-                    print("Worker updated")
         rData = Core.Processlib.Data()
         rData.frameNumber = data.frameNumber
         rData.buffer = self._worker.process(data.buffer)
