@@ -81,7 +81,7 @@ class StartAcqCallback(Core.SoftCallback):
                     "binX":binX,
                     "binY":binY}
         
-        saving = self.control.saving()
+        saving = self._control.saving()
         sav_parms = saving.getParameters()
         lima_cfg["directory"]=sav_parms.directory
         lima_cfg["prefix"] = sav_parms.prefix
@@ -111,7 +111,7 @@ class StartAcqCallback(Core.SoftCallback):
         worker.reconfig(shape=(y, x), sync=True)
         if self._task._writer:
             config = self._task._worker.get_config()
-            self._task._writer.init(config=config, lima_cfg=lima_cfg)
+            self._task._writer.init(fai_cfg=config, lima_cfg=lima_cfg)
             self._task._writer.flush(worker.radial, worker.azimuthal)
 
 class LinkPyFAI(Core.Processlib.LinkTask):

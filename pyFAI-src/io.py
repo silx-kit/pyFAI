@@ -110,12 +110,12 @@ class Writer(object):
                 self.lima_cfg = lima_cfg
             if self.filename is not None:
                 dirname = os.path.dirname(self.filename)
-                if not os.path.exists(path):
+                if not os.path.exists(dirname):
                     try:
                         os.makedirs(dirname)
                     except Exception as err:
                         logger.info("Problem while creating directory %s: %s" % (dirname, err))
-    def flush(self):
+    def flush(self, *arg, **kwarg):
         """
         To be implemented
         """
@@ -263,25 +263,27 @@ class HDF5Writer(Writer):
         @param radial: position in radial direction
         @param  azimuthal: position in azimuthal direction
         """
-        if not self.hdf5:
-            raise RuntimeError('No opened file')
-        if radial is not None:
-            if radial.shape == self.radial_values.shape:
-                self.radial_values[:] = radial
-            else:
-                logger.warning("Unable to assign radial axis position")
-        if azimuthal is not None:
-            if azimuthal.shape == self.azimuthal_values.shape:
-                self.azimuthal_values[:] = azimuthal
-            else:
-                logger.warning("Unable to assign azimuthal axis position")
-        self.hdf5.flush()
+        with self._sem:
+            if not self.hdf5:
+                raise RuntimeError('No opened file')
+            if radial is not None:
+                if radial.shape == self.radial_values.shape:
+                    self.radial_values[:] = radial
+                else:
+                    logger.warning("Unable to assign radial axis position")
+            if azimuthal is not None:
+                if azimuthal.shape == self.azimuthal_values.shape:
+                    self.azimuthal_values[:] = azimuthal
+                else:
+                    logger.warning("Unable to assign azimuthal axis position")
+            self.hdf5.flush()
 
     def close(self):
-        if self.hdf5:
-            self.flush()
-            self.hdf5.close()
-            self.hdf5 = None
+        with self._sem:
+            if self.hdf5:
+                self.flush()
+                self.hdf5.close()
+                self.hdf5 = None
 
     def write(self, data, index=0):
         """

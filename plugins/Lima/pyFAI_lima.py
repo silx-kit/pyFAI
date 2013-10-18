@@ -110,7 +110,7 @@ class DoubleView(QtGui.QWidget):
             fai_img = self.ctrl.ReadImage().buffer
             self.RawImg.setImage(raw_img.T)#, levels=[0, 4096])#, autoLevels=False, autoRange=False)
             self.FaiImg.setImage(fai_img.T)#, levels=[0, 4096])#, autoLevels=False, autoRange=False)
-            print(1.0 / (time.time() - self.last))
+            print("Measured display speed: %5.2f fps" % (1.0 / (time.time() - self.last)))
             self.last = time.time()
              
 
@@ -157,9 +157,13 @@ on a set of files grabbed from a Basler camera using LImA."""
         hurl = args[0]
         if hurl.startswith("hdf5:"):
             hurl = hurl[5:]
-        hsplit = hurl.split(":")
-        hdfpath = hsplit[-1]
-        hdffile = ":".join(hsplit[:-1]) #special windows
+        if ":" in hurl:
+            hsplit = hurl.split(":")
+            hdfpath = hsplit[-1]
+            hdffile = ":".join(hsplit[:-1]) #special windows
+        else:
+            hdfpath = "test_LImA+pyFAI"
+            hdffile = hurl
         writer = HDF5Writer(hdffile, hdfpath, options.scan)
     elif len(args) > 1 :
         logger.error("Specify the HDF5 output file like hdf5:///home/user/filename.h5:/path/to/group")
