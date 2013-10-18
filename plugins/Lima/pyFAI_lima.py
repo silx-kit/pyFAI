@@ -34,7 +34,7 @@ from PyQt4.QtCore import SIGNAL
 
 
 
-UIC = op.join(op.dirname(__file__), "LimaFAI.ui")
+UIC = op.join(op.dirname(__file__), "pyFAI_lima.ui")
 window = None
 
 
