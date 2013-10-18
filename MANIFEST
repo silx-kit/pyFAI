@@ -132,16 +132,17 @@ pyFAI-src/distortion.py
 pyFAI-src/geometry.py
 pyFAI-src/geometryRefinement.py
 pyFAI-src/integrate_widget.py
+pyFAI-src/io.py
 pyFAI-src/ocl_azim.py
 pyFAI-src/ocl_azim_lut.py
 pyFAI-src/opencl.py
 pyFAI-src/peakPicker.py
+pyFAI-src/processor.py
 pyFAI-src/refinment2D.py
 pyFAI-src/spline.py
 pyFAI-src/units.py
 pyFAI-src/utils.py
 pyFAI-src/worker.py
-pyFAI-src/hdf5.py
 scripts/MX-calibrate
 scripts/check_calib
 scripts/diff_tomo
@@ -187,6 +188,7 @@ test/example.sp
 test/moke.poni
 test/testAzimuthalIntegrator.py
 test/testBilinear.py
+test/testDetector.py
 test/testDistortion.py
 test/testExport.py
 test/testFlat.py

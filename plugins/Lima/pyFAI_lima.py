@@ -22,7 +22,7 @@ import signal
 import threading
 import numpy
 import pyFAI.worker
-from pyFAI.hdf5 import HDF5Writer, h5py
+from pyFAI.io import HDF5Writer, h5py
 import pyopencl
 import os
 op = os.path
