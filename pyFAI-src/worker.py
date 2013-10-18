@@ -94,7 +94,7 @@ logger = logging.getLogger("pyFAI.worker")
 import numpy
 from .azimuthalIntegrator import AzimuthalIntegrator
 from . import units
-from .hdf5 import h5py, HDF5Writer
+#from .io import h5py, HDF5Writer
 
 class Worker(object):
     def __init__(self, azimuthalIntgrator=None, shapeIn=(2048, 2048), shapeOut=(360, 500), unit="r_mm"):

@@ -66,7 +66,7 @@ class DoubleView(QtGui.QWidget):
             worker.setJsonConfig(json)
         else:
             worker = None
-        self.processLink = FaiLink(worker, writer)
+        self.processLink = LinkPyFAI(worker, writer)
         self.extMgr = self.ctrl.externalOperation()
         self.myOp = self.extMgr.addOp(Core.USER_LINK_TASK, "pyFAILink", 0)
         self.myOp.setLinkTask(self.processLink)
@@ -178,7 +178,7 @@ on a set of files grabbed from a Basler camera using LImA."""
     except ImportError:
         print("Is the PYTHONPATH correctly setup? I did not manage to import Lima")
         sys.exit(1)
-    from limaFAI import FaiLink, StartAcqCallback
+    from limaFAI import LinkPyFAI, StartAcqCallback
     if options.gui:
         app = QtGui.QApplication([])
         window = DoubleView(ip=options.ip, fps=options.fps, writer=writer)

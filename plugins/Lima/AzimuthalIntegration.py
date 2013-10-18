@@ -14,26 +14,30 @@ __date__ = "05/04/2013"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 
-import os, json, distutils.util
-import sys
+
 import threading
 import logging
 logger = logging.getLogger("lima.tango.pyfai")
 # set loglevel at least at INFO
 if logger.getEffectiveLevel() > logging.INFO:
     logger.setLevel(logging.INFO)
+import sys
+import os, json, distutils.util
 from os.path import dirname
-cwd = dirname(dirname(dirname(os.path.abspath(__file__))))
-sys.path.append(os.path.join(cwd, "build", "lib.%s-%i.%i" % (distutils.util.get_platform(), sys.version_info[0], sys.version_info[1])))
+try:
+    import pyFAI
+except ImportError:
+    cwd = dirname(dirname(dirname(os.path.abspath(__file__))))
+    sys.path.append(os.path.join(cwd, "build", "lib.%s-%i.%i" % (distutils.util.get_platform(), sys.version_info[0], sys.version_info[1])))
+    import pyFAI
 
 import PyTango
 import numpy
 from Lima import Core
 from Utils import BasePostProcess
-import pyFAI
 import fabio
 
-class PyFAISink(Core.Processlib.SinkTaskBase):
+class SinkPyFAI(Core.Processlib.SinkTaskBase):
     def __init__(self, azimuthalIntgrator=None, shapeIn=(2048, 2048), shapeOut=(360, 500), unit="r_mm"):
         """
         @param azimuthalIntgrator: pyFAI.AzimuthalIntegrator instance
@@ -309,7 +313,7 @@ class AzimuthalIntegrationDeviceServer(BasePostProcess) :
                                                          self.AZIMUTHAL_TASK_NAME,
                                                          self._runLevel)
                     if not self.__pyFAISink:
-                        self.__pyFAISink = PyFAISink()
+                        self.__pyFAISink = SinkPyFAI()
                     if self.__jsonConfig:
                         self.__pyFAISink.setJsonConfig(self.__jsonConfig)
                     if self.__extension:
