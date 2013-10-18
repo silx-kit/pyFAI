@@ -29,13 +29,18 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/10/2013"
+__date__ = "17/10/2013"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 __doc__ = """
-Stand-alone module which tries to offer interface to HDF5 via H5Py and capabilities to write EDF or other formats using fabio.
 
-Can be imported without h5py but then limited to fabio formats.
+Module for "high-performance" writing in either 1D with Ascii , or 2D with FabIO 
+or even nD with n varying from  2 to 4 using HDF5 
+
+Stand-alone module which tries to offer interface to HDF5 via H5Py and 
+capabilities to write EDF or other formats using fabio.
+
+Can be imported without h5py but then limited to fabio & ascii formats.
 """
 import sys
 import os
@@ -84,16 +89,25 @@ class Writer(object):
         self.dirname = None
         self.subdir = None
         self.extension = None
+        self.fai_cfg = {}
+        self.lima_cfg = {}
+
 
     def __repr__(self):
         return "Generic writer on file %s" % (self.filename)
 
-    def init(self):
+    def init(self, fai_cfg=None, lima_cfg=None):
         """
         Creates the directory that will host the output file(s) 
-        
+        @param fai_cfg: configuration for worker
+        @param lima_cfg: configuration for acquisition 
         """
+
         with self._sem:
+            if fai_cfg is not None:
+                self.fai_cfg = fai_cfg
+            if lima_cfg is not None:
+                self.lima_cfg = lima_cfg
             if self.filename is not None:
                 dirname = os.path.dirname(self.filename)
                 if not os.path.exists(path):
@@ -112,18 +126,6 @@ class Writer(object):
         To be implemented
         """
         pass
-
-#    def setSubdir(self, path):
-#        """
-#        Set the relative or absolute path for processed data
-#        """
-#        self.subdir = path
-#
-#    def setExtension(self, ext):
-#        """
-#        set the extension of the
-#        """
-#        self.extension = ext
 
 class HDF5Writer(Writer):
     """
@@ -157,23 +159,21 @@ class HDF5Writer(Writer):
         self.chunk = None
         self.shape = None
         self.ndim = None
-        self.config = {}
 
     def __repr__(self):
         return "HDF5 writer on file %s:%s %sinitialized" % (self.filename, self.hpath, "" if self._initialized else "un")
 
-    def init(self, config=None, lima_cfg=None):
+    def init(self, fai_cfg=None, lima_cfg=None):
         """
         Initializes the HDF5 file for writing
-        @param config: the configuration of the worker as a dictionary
+        @param fai_cfg: the configuration of the worker as a dictionary
         """
-        Writer.init(self)
+        Writer.init(self, fai_cfg, lima_cfg)
         with self._sem:
-            if not config:
-                config = self.config
-            self.config = config
-            open("config.json", "w").write(json.dumps(config, indent=4))
-            config["nbpt_rad"] = config.get("nbpt_rad", 1000)
+            #TODO: this is Debug statement
+            open("fai_cfg.json", "w").write(json.dumps(self.fai_cfg, indent=4))
+            open("lima_cfg.json", "w").write(json.dumps(self.lima_cfg, indent=4))
+            self.fai_cfg["nbpt_rad"] = self.fai_cfg.get("nbpt_rad", 1000)
             if h5py:
                 try:
                     self.hdf5 = h5py.File(self.filename)
@@ -187,7 +187,7 @@ class HDF5Writer(Writer):
             self.group.attrs["NX_class"] = "NXentry"
             self.pyFAI_grp = self.hdf5.require_group(posixpath.join(self.hpath, self.CONFIG))
             self.pyFAI_grp.attrs["desc"] = "PyFAI worker configuration"
-            for key, value in config.items():
+            for key, value in self.fai_cfg.items():
                 if value is None:
                     continue
                 try:
@@ -196,10 +196,10 @@ class HDF5Writer(Writer):
                     print("Unable to set %s: %s" % (key, value))
                     self.close()
                     sys.exit(1)
-            rad_name, rad_unit = str(config.get("unit", "2th_deg")).split("_", 1)
-            self.radial_values = self.group.require_dataset(rad_name, (config["nbpt_rad"],), numpy.float32)
-            if config.get("nbpt_azim", 0) > 1:
-                self.azimuthal_values = self.group.require_dataset("chi", (config["nbpt_azim"],), numpy.float32)
+            rad_name, rad_unit = str(self.fai_cfg.get("unit", "2th_deg")).split("_", 1)
+            self.radial_values = self.group.require_dataset(rad_name, (self.fai_cfg["nbpt_rad"],), numpy.float32)
+            if self.fai_cfg.get("nbpt_azim", 0) > 1:
+                self.azimuthal_values = self.group.require_dataset("chi", (self.fai_cfg["nbpt_azim"],), numpy.float32)
                 self.azimuthal_values.attrs["unit"] = "deg"
                 self.radial_values.attrs["interpretation"] = "scalar"
                 self.radial_values.attrs["long name"] = "Azimuthal angle"
@@ -214,27 +214,33 @@ class HDF5Writer(Writer):
                 self.fast_motor.attrs["axis"] = "1"
                 self.radial_values.attrs["axis"] = "2"
                 if self.azimuthal_values is not None:
-                    chunk = 1, self.fast_scan_width, config["nbpt_azim"], config["nbpt_rad"]
+                    chunk = 1, self.fast_scan_width, self.fai_cfg["nbpt_azim"], self.fai_cfg["nbpt_rad"]
                     self.ndim = 4
                     self.azimuthal_values.attrs["axis"] = "3"
                 else:
-                    chunk = 1, self.fast_scan_width, config["nbpt_rad"]
+                    chunk = 1, self.fast_scan_width, self.fai_cfg["nbpt_rad"]
                     self.ndim = 3
             else:
                 self.radial_values.attrs["axis"] = "1"
                 if self.azimuthal_values is not None:
-                    chunk = 1, config["nbpt_azim"], config["nbpt_rad"]
+                    chunk = 1, self.fai_cfg["nbpt_azim"], self.fai_cfg["nbpt_rad"]
                     self.ndim = 3
                     self.azimuthal_values.attrs["axis"] = "2"
                 else:
-                    chunk = 1, config["nbpt_rad"]
+                    chunk = 1, self.fai_cfg["nbpt_rad"]
                     self.ndim = 2
 
             if self.DATA in self.group:
                 del self.group[self.DATA]
-            self.dataset = self.group.require_dataset(self.DATA, chunk, dtype=numpy.float32, chunks=chunk,
+            shape=list(chunk)
+            if self.lima_cfg.get("number_of_frames", 0) > 0:
+                if self.fast_scan_width is not None:
+                    size[0] = 1 + self.lima_cfg["number_of_frames"] // self.fast_scan_width
+                else:
+                    size[0] = self.lima_cfg["number_of_frames"]
+            self.dataset = self.group.require_dataset(self.DATA, shape, dtype=numpy.float32, chunks=chunk,
                                                       maxshape=(None,) + chunk[1:])
-            if config.get("nbpt_azim", 0) > 1:
+            if self.fai_cfg.get("nbpt_azim", 0) > 1:
                 self.dataset.attrs["interpretation"] = "image"
             else:
                 self.dataset.attrs["interpretation"] = "spectrum"
@@ -242,7 +248,7 @@ class HDF5Writer(Writer):
             self.chunk = chunk
             self.shape = chunk
             name = "Mapping " if self.fast_scan_width else "Scanning "
-            name += "2D" if config.get("nbpt_azim", 0) > 1 else "1D"
+            name += "2D" if self.fai_cfg.get("nbpt_azim", 0) > 1 else "1D"
             name += " experiment"
             self.group["title"] = name
             self.group["program"] = "PyFAI"
@@ -285,6 +291,8 @@ class HDF5Writer(Writer):
             if self.dataset is None:
                 logger.warning("Writer not initialized !")
                 return
+            if self.azimuthal_values is None:
+                data = data[:, 1] #take the second column only aka I
             if self.fast_scan_width:
                 index0, index1 = (index // self.fast_scan_width, index % self.fast_scan_width)
                 if index0 >= self.dataset.shape[0]:
@@ -294,3 +302,84 @@ class HDF5Writer(Writer):
                 if index >= self.dataset.shape[0]:
                     self.dataset.resize(index + 1, axis=0)
                 self.dataset[index] = data
+
+class AsciiWriter(Writer):
+    """
+    Ascii file writer (.xy or .dat) 
+    """
+    def __init__(self, filename=None):
+        """
+        
+        """
+        Writer.__init__(self, filename)
+        self.header=None
+        self.directory=None
+        self.prefix = None
+        self.index_format="%04i"
+        self.start_index=0
+
+    def __repr__(self):
+        return "Generic writer on file %s" % (self.filename)
+
+    def init(self, fai_cfg=None, lima_cfg=None):
+        """
+        Creates the directory that will host the output file(s) 
+        
+        """
+        Writer.init(self, fai_cfg, lima_cfg)
+        with self._sem:
+            headerLst = ["","== Detector =="]
+            if "detector" in self.fai_cfg:
+                headerLst.append("Detector: %s" % self.fai_cfg["detector"])
+            if "splineFile" in self.fai_cfg:
+                headerLst.append("SplineFile: %s" % self.fai_cfg["splineFile"])
+            if  "pixel1" in self.fai_cfg:
+                headerLst.append("PixelSize: %.3e, %.3e m" %(self.fai_cfg["pixel1"], self.fai_cfg["pixel2"]))
+            if "mask_file" in self.fai_cfg:
+                headerLst.append("MaskFile: %s" % (self.fai_cfg["mask_file"]))
+
+            headerLst.append("== pyFAI calibration ==")
+            if "poni1" in self.fai_cfg:
+                headerLst.append("PONI: %.3e, %.3e m" % (self.fai_cfg["poni1"], self.fai_cfg["poni2"]))
+            if "dist" in self.fai_cfg:
+                headerLst.append("Distance Sample to Detector: %s m" % self.fai_cfg["dist"])
+            if "rot1" in self.fai_cfg:
+                headerLst.append("Rotations: %.6f %.6f %.6f rad" % (self.fai_cfg["rot1"], self.fai_cfg["rot2"], self.fai_cfg["rot3"]))
+            if "wavelength" in self.fai_cfg:
+                headerLst.append("Wavelength: %s" % self.fai_cfg["wavelength"])
+            if "dark_current" in self.fai_cfg:
+                headerLst.append("Dark current: %s" % self.fai_cfg["dark_current"])
+            if "flat_field" in self.fai_cfg:
+                headerLst.append("Flat field: %s" % self.fai_cfg["flat_field"])
+            if "polarization_factor" in self.fai_cfg:
+                headerLst.append("Polarization factor: %s" % self.fai_cfg["polarization_factor"])
+            headerLst.append("")
+            if "do_poisson" in self.fai_cfg:
+                headerLst.append("%14s %14s %s" % (self.fai_cfg["unit"], "I", "sigma"))
+            else:
+                headerLst.append("%14s %14s" % (self.fai_cfg["unit"], "I"))
+            headerLst.append("")
+            self.header = os.linesep.join(["# " + i for i in headerLst])
+        self.prefix = prefix
+        self.index_format = index_format
+        self.start_index = start_index
+        if not self.subdir:
+            self.directory = directory
+        elif self.subdir.startswith("/"):
+            self.directory = self.subdir
+        else:
+            self.directory = os.path.join(directory, self.subdir)
+        if not os.path.exists(self.directory):
+            logger.warning("Output directory: %s does not exist,creating it" % self.directory)
+            try:
+                os.makedirs(self.directory)
+            except Exception as error:  
+                logger.info("Problem while creating directory %s: %s" % (self.directory, error))
+                
+
+    def write(self,data,index=0):
+        filename = os.path.join(self.directory, self.prefix + (self.index_format % (self.start_index + index)) + self.extension)
+        if filename:
+            with open(filename, "w") as f:
+                f.write("# Processing time: %s%s" % (getIsoTime(), self.header))
+                numpy.savetxt(f, data)

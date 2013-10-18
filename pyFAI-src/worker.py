@@ -224,7 +224,11 @@ class Worker(object):
             if self.do_2D():
                 rData, self.radial, self.azimuthal = self.ai.integrate2d(**kwarg)
             else:
-                self.radial, rData = self.ai.integrate1d(**kwarg)
+
+                rData = self.ai.integrate1d(**kwarg)
+                self.radial = rData[0]
+                rData = numpy.vstack(rData).T
+
         except:
             print(data.shape, data.size)
             print(self.ai)

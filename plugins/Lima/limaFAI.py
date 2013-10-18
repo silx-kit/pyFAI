@@ -76,18 +76,22 @@ class StartAcqCallback(Core.SoftCallback):
         bin = im.getBin()
         binX = bin.getX()
         binY = bin.getY()
-
-        # number of images ...
-        acq = self._control.acquisition()
-        nbframe = acq.getAcqNbFrames() #to check.
-        expo = acq.getAcqExpoTime()
-        #ROI see: https://github.com/esrf-bliss/Lima/blob/master/control/include/CtAcquisition.h
         lima_cfg = {"dimX":x,
                     "dimY":y,
                     "binX":binX,
-                    "binY":binY,
-                    "number_of_frames": nbframe,
-                    "exposure_time":expo}
+                    "binY":binY}
+        
+        saving = self.control.saving()
+        sav_parms = saving.getParameters()
+        lima_cfg["directory"]=sav_parms.directory
+        lima_cfg["prefix"] = sav_parms.prefix
+        lima_cfg["start_index"] = sav_parms.nextNumber
+        lima_cfg["indexFormat"] = sav_parms.indexFormat
+        # number of images ...
+        acq = self._control.acquisition()
+        lima_cfg["number_of_frames"] = acq.getAcqNbFrames() #to check.
+        lima_cfg["exposure_time"] = acq.getAcqExpoTime()
+        #ROI see: https://github.com/esrf-bliss/Lima/blob/master/control/include/CtAcquisition.h
         if self._task._worker is None:
             #Define a default integrator
             centerX = x // 2
@@ -209,58 +213,58 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
         rData.buffer = self._worker.process(data.buffer)
         if self._writer: #optional HDF5 writer
             self._writer.write(rData.buffer, rData.frameNumber)
-
-        ctControl = _control_ref()
-        saving = ctControl.saving()
-        sav_parms = saving.getParameters()
-        if not self.subdir:
-            directory = sav_parms.directory
-        elif self.subdir.startswith("/"):
-            directory = self.subdir
-        else:
-            directory = os.path.join(sav_parms.directory, self.subdir)
-        if not os.path.exists(directory):
-            logger.error("Ouput directory does not exist !!!  %s" % directory)
-            try:
-                os.makedirs(directory)
-            except:  # No luck withthreads
-                pass
-
-#        directory = sav_parms.directory
-        prefix = sav_parms.prefix
-        nextNumber = sav_parms.nextNumber
-        indexFormat = sav_parms.indexFormat
-        kwarg["filename"] = os.path.join(directory, prefix + indexFormat % (nextNumber + data.frameNumber))
-        if self.do_2D():
-            kwarg["nbPt_rad"] = self.nbpt_rad
-            kwarg["nbPt_azim"] = self.nbpt_azim
-            if self.extension:
-                kwarg["filename"] += self.extension
-            else:
-                kwarg["filename"] += ".azim"
-        else:
-            kwarg["nbPt"] = self.nbpt_rad
-            if self.extension:
-                kwarg["filename"] += self.extension
-            else:
-                kwarg["filename"] += ".xy"
-        if self.do_poisson:
-            kwarg["error_model"] = "poisson"
-        else:
-            kwarg["error_model"] = "None"
-
-        try:
-            if self.do_2D():
-                self.ai.integrate2d(**kwarg)
-            else:
-                self.ai.integrate1d(**kwarg)
-        except:
-            print data.buffer.shape, data.buffer.size
-            print self.ai
-            print self.ai._lut_integrator
-            print self.ai._lut_integrator.size
-            raise
-        # return rData
+#
+#        ctControl = _control_ref()
+#        saving = ctControl.saving()
+#        sav_parms = saving.getParameters()
+#        if not self.subdir:
+#            directory = sav_parms.directory
+#        elif self.subdir.startswith("/"):
+#            directory = self.subdir
+#        else:
+#            directory = os.path.join(sav_parms.directory, self.subdir)
+#        if not os.path.exists(directory):
+#            logger.error("Ouput directory does not exist !!!  %s" % directory)
+#            try:
+#                os.makedirs(directory)
+#            except:  # No luck withthreads
+#                pass
+#
+##        directory = sav_parms.directory
+#        prefix = sav_parms.prefix
+#        nextNumber = sav_parms.nextNumber
+#        indexFormat = sav_parms.indexFormat
+#        kwarg["filename"] = os.path.join(directory, prefix + indexFormat % (nextNumber + data.frameNumber))
+#        if self.do_2D():
+#            kwarg["nbPt_rad"] = self.nbpt_rad
+#            kwarg["nbPt_azim"] = self.nbpt_azim
+#            if self.extension:
+#                kwarg["filename"] += self.extension
+#            else:
+#                kwarg["filename"] += ".azim"
+#        else:
+#            kwarg["nbPt"] = self.nbpt_rad
+#            if self.extension:
+#                kwarg["filename"] += self.extension
+#            else:
+#                kwarg["filename"] += ".xy"
+#        if self.do_poisson:
+#            kwarg["error_model"] = "poisson"
+#        else:
+#            kwarg["error_model"] = "None"
+#
+#        try:
+#            if self.do_2D():
+#                self.ai.integrate2d(**kwarg)
+#            else:
+#                self.ai.integrate1d(**kwarg)
+#        except:
+#            print data.buffer.shape, data.buffer.size
+#            print self.ai
+#            print self.ai._lut_integrator
+#            print self.ai._lut_integrator.size
+#            raise
+#        # return rData
 
     def setSubdir(self, path):
         """
