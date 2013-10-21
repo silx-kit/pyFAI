@@ -214,26 +214,26 @@ class AIWidget(QtGui.QWidget):
                     hdf5 = h5py.File(self.output_path)
                     if self.fast_dim:
                         if "nbPt_azim" in kwarg:
-                            ds = hdf5.create_dataset("diffraction",(1,self.fast_dim,kwarg["nbPt_azim"],kwarg["nbPt_rad"]),
-                                                      dtype = numpy.float32,
-                                                      chunks=(1,self.fast_dim,kwarg["nbPt_azim"],kwarg["nbPt_rad"]),
-                                                      maxshape=(None,self.fast_dim,kwarg["nbPt_azim"],kwarg["nbPt_rad"]))
+                            ds = hdf5.create_dataset("diffraction", (1, self.fast_dim, kwarg["nbPt_azim"], kwarg["nbPt_rad"]),
+                                                      dtype=numpy.float32,
+                                                      chunks=(1, self.fast_dim, kwarg["nbPt_azim"], kwarg["nbPt_rad"]),
+                                                      maxshape=(None, self.fast_dim, kwarg["nbPt_azim"], kwarg["nbPt_rad"]))
                         else:
-                            ds = hdf5.create_dataset("diffraction",(1,self.fast_dim,kwarg["nbPt_rad"]),
-                                                      dtype = numpy.float32,
-                                                      chunks=(1,self.fast_dim,kwarg["nbPt_rad"]),
-                                                      maxshape=(None,self.fast_dim,kwarg["nbPt_rad"]))
+                            ds = hdf5.create_dataset("diffraction", (1, self.fast_dim, kwarg["nbPt_rad"]),
+                                                      dtype=numpy.float32,
+                                                      chunks=(1, self.fast_dim, kwarg["nbPt_rad"]),
+                                                      maxshape=(None, self.fast_dim, kwarg["nbPt_rad"]))
                     else:
                         if "nbPt_azim" in kwarg:
-                            ds = hdf5.create_dataset("diffraction",(1,kwarg["nbPt_azim"],kwarg["nbPt_rad"]),
-                                                      dtype = numpy.float32,
-                                                      chunks=(1,kwarg["nbPt_azim"],kwarg["nbPt_rad"]),
-                                                      maxshape=(None,kwarg["nbPt_azim"],kwarg["nbPt_rad"]))
+                            ds = hdf5.create_dataset("diffraction", (1, kwarg["nbPt_azim"], kwarg["nbPt_rad"]),
+                                                      dtype=numpy.float32,
+                                                      chunks=(1, kwarg["nbPt_azim"], kwarg["nbPt_rad"]),
+                                                      maxshape=(None, kwarg["nbPt_azim"], kwarg["nbPt_rad"]))
                         else:
-                            ds = hdf5.create_dataset("diffraction",(1,kwarg["nbPt_rad"]),
-                                                      dtype = numpy.float32,
-                                                      chunks=(1,kwarg["nbPt_rad"]),
-                                                      maxshape=(None,kwarg["nbPt_rad"]))
+                            ds = hdf5.create_dataset("diffraction", (1, kwarg["nbPt_rad"]),
+                                                      dtype=numpy.float32,
+                                                      chunks=(1, kwarg["nbPt_rad"]),
+                                                      maxshape=(None, kwarg["nbPt_rad"]))
 
                 for i, item in enumerate(self.input_data):
                     self.progressBar.setValue(100.0 * i / len(self.input_data))
@@ -242,7 +242,7 @@ class AIWidget(QtGui.QWidget):
                         kwarg["data"] = fabio.open(item).data
                         if self.hdf5_path is None:
                             if self.output_path and op.isdir(self.output_path):
-                                outpath = op.join(self.output_path,op.splitext(op.basename(item))[0])
+                                outpath = op.join(self.output_path, op.splitext(op.basename(item))[0])
                             else:
                                 outpath = op.splitext(item)[0]
                             if "nbPt_azim" in kwarg:
@@ -254,11 +254,11 @@ class AIWidget(QtGui.QWidget):
                         kwarg["data"] = item
                         kwarg["filename"] = None
                     if kwarg.get("nbPt_azim"):
-                        res=self.ai.integrate2d(**kwarg)[0]
+                        res = self.ai.integrate2d(**kwarg)[0]
                     else:
                         if "nbPt_rad" in kwarg:  # convert nbPt_rad -> nbPt
                             kwarg["nbPt"] = kwarg.pop("nbPt_rad")
-                        res=self.ai.integrate1d(**kwarg)[0]
+                        res = self.ai.integrate1d(**kwarg)[0]
                     out.append(res)
                     #TODO manage HDF5 stuff !!!
             logger.info("Processing Done in %.3fs !" % (time.time() - start_time))
@@ -305,9 +305,9 @@ class AIWidget(QtGui.QWidget):
                     "dark_current":str(self.dark_current.text()).strip(),
                     "flat_field":str(self.flat_field.text()).strip(),
                     "polarization_factor":float_(self.polarization_factor.value()),
-                    "nbpt_rad":int_(self.rad_pt.text()),
+                    "nbpt_rad":int_(self.nbpt_rad.text()),
                     "do_2D":bool(self.do_2D.isChecked()),
-                    "nbpt_azim":int_(self.azim_pt.text()),
+                    "nbpt_azim":int_(self.nbpt_azim.text()),
                     "chi_discontinuity_at_0": bool(self.chi_discontinuity_at_0.isChecked()),
                     "do_solid_angle": bool(self.do_solid_angle.isChecked()),
                     "do_radial_range": bool(self.do_radial_range.isChecked()),
@@ -372,9 +372,9 @@ class AIWidget(QtGui.QWidget):
                         "dark_current":lambda a:self.dark_current.setText(str_(a)),
                         "flat_field":lambda a:self.flat_field.setText(str_(a)),
                         "polarization_factor":self.polarization_factor.setValue,
-                        "nbpt_rad":lambda a:self.rad_pt.setText(str_(a)),
+                        "nbpt_rad":lambda a:self.nbpt_rad.setText(str_(a)),
                         "do_2D":self.do_2D.setChecked,
-                        "nbpt_azim":lambda a:self.azim_pt.setText(str_(a)),
+                        "nbpt_azim":lambda a:self.nbpt_azim.setText(str_(a)),
                         "chi_discontinuity_at_0": self.chi_discontinuity_at_0.setChecked,
                         "do_radial_range": self.do_radial_range.setChecked,
                         "do_azimuthal_range": self.do_azimuthal_range.setChecked,
