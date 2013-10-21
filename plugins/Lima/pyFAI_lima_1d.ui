@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>PyFAI live 2D integration</string>
+   <string>PyFAI live 1D integration</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_3">
    <item>
@@ -28,7 +28,7 @@
         <widget class="ImageView" name="RawImg"/>
        </item>
        <item>
-        <widget class="ImageView" name="FaiImg"/>
+        <widget class="PlotWidget" name="FaiPlot"/>
        </item>
       </layout>
      </item>
@@ -85,6 +85,11 @@
  <customwidgets>
   <customwidget>
    <class>ImageView</class>
+   <extends>QGraphicsView</extends>
+   <header>pyqtgraph</header>
+  </customwidget>
+  <customwidget>
+   <class>PlotWidget</class>
    <extends>QGraphicsView</extends>
    <header>pyqtgraph</header>
   </customwidget>
