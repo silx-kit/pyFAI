@@ -679,7 +679,7 @@ class Geometry(object):
                         delta[:, :, 3] = \
                             numpy.minimum(((chi_corner[:-1, 1: ] - chi_center) % twoPi),
                                           ((chi_center - chi_corner[:-1, 1: ]) % twoPi))
-                    self._dchia = delta.max(axis= -1)
+                    self._dchia = delta.max(axis=-1)
         return self._dchia
 
     def deltaQ(self, shape):
@@ -711,7 +711,7 @@ class Geometry(object):
                         delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
                         delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
                         delta[:, :, 3] = abs(q_corner[:-1, 1:] - q_center)
-                    self._dqa = delta.max(axis= -1)
+                    self._dqa = delta.max(axis=-1)
         return self._dqa
 
     def deltaR(self, shape):
@@ -742,7 +742,7 @@ class Geometry(object):
                         delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
                         delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
                         delta[:, :, 3] = abs(q_corner[:-1, 1:] - q_center)
-                    self._dra = delta.max(axis= -1)
+                    self._dra = delta.max(axis=-1)
         return self._dra
 
     def diffSolidAngle(self, d1, d2):
@@ -816,7 +816,7 @@ class Geometry(object):
                          " 2 to the X axis %s") % os.linesep)
                 f.write("# Calibration done at %s%s" % (time.ctime(), os.linesep))
                 if self.detector.name != "Detector":
-                    f.write("Detector: %s%s" % (self.detector.name,
+                    f.write("Detector: %s%s" % (self.detector.__class__.__name__,
                                                 os.linesep))
                 f.write("PixelSize1: %s%s" % (self.pixel1, os.linesep))
                 f.write("PixelSize2: %s%s" % (self.pixel2, os.linesep))
