@@ -193,7 +193,7 @@ class Geometry(object):
         self._dttha = None
         self._dssa = None
         self._dssa_crc = None  # checksum associated with _dssa
-        self._dssa_order = 1  # by default we correct for 1/cos(2th), fit2d corrects for 1/cos^3(2th)
+        self._dssa_order = 3  # by default we correct for 1/cos(2th), fit2d corrects for 1/cos^3(2th)
         self._chia = None
         self._dchia = None
         self._qa = None
@@ -784,7 +784,7 @@ class Geometry(object):
 
         return dsa
 
-    def solidAngleArray(self, shape, order=1):
+    def solidAngleArray(self, shape, order=3):
         """
         Generate an array of the given shape with the solid angle of
         the current element two-theta(i,j) for all elements.
