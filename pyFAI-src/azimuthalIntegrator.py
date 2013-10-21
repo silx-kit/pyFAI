@@ -2654,6 +2654,8 @@ class AzimuthalIntegrator(Geometry):
                     headerLst.append("Flat field: %s" % self.flatfiles)
                 else:
                     headerLst.append("Flat field: Done with unknown file")
+            if polarization_factor is None and self._polarization is not None:
+                polarization_factor = self._polarization_factor
             headerLst.append("Polarization factor: %s" % polarization_factor)
             self.header = os.linesep.join([hdr + " " + i for i in headerLst])
         return self.header

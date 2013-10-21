@@ -102,7 +102,7 @@ class TestIntegrate2D(unittest.TestCase):
     ai = pyFAI.AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0, detector=pyFAI.detectors.Pilatus1M())
     ai.wavelength = 1e-10
     Rmax = 20
-
+    delta_pos_azim_max = 0.28
 
     def testQ(self):
         res = {}
@@ -121,7 +121,7 @@ class TestIntegrate2D(unittest.TestCase):
                 else:
                     logger.info(mesg)
                 self.assertTrue(delta_pos_rad <= 0.01, mesg)
-                self.assertTrue(delta_pos_azim <= 0.2, mesg)
+                self.assertTrue(delta_pos_azim <= self.delta_pos_azim_max, mesg)
                 self.assertTrue(R <= self.Rmax, mesg)
 
     def testR(self):
@@ -140,8 +140,8 @@ class TestIntegrate2D(unittest.TestCase):
                     logger.error(mesg)
                 else:
                     logger.info(mesg)
-                self.assertTrue(delta_pos_rad <= 0.2, mesg)
-                self.assertTrue(delta_pos_azim <= 0.2, mesg)
+                self.assertTrue(delta_pos_rad <= 0.28, mesg)
+                self.assertTrue(delta_pos_azim <= self.delta_pos_azim_max, mesg)
                 self.assertTrue(R <= self.Rmax, mesg)
     def test2th(self):
         res = {}
@@ -162,7 +162,6 @@ class TestIntegrate2D(unittest.TestCase):
                 else:
                     logger.info(mesg)
                 self.assertTrue(delta_pos_rad <= 0.01, mesg)
-                self.assertTrue(delta_pos_azim <= 0.2, mesg)
                 self.assertTrue(R <= self.Rmax, mesg)
 
 

@@ -153,11 +153,11 @@ class Processor(object):
         self.dark_current_image = self.ai.darkfiles
         self.flat_field_image = self.ai.flatfiles
         if config.get("do_2D"):
-            self.nbpt_azim = int(config.get("azim_pt"))
+            self.nbpt_azim = int(config.get("nbpt_azim"))
         else:
             self.nbpt_azim = 1
-        if config.get("rad_pt"):
-            self.nbpt_rad = int(config.get("rad_pt"))
+        if config.get("nbpt_rad"):
+            self.nbpt_rad = int(config.get("nbpt_rad"))
         self.unit = pyFAI.units.to_unit(config.get("unit", pyFAI.units.TTH_DEG))
         self.do_poisson = config.get("do_poisson")
         if config.get("do_polarization"):
@@ -195,9 +195,9 @@ class Processor(object):
                     "dark_current":str(self.dark_current.text()).strip(),
                     "flat_field":str(self.flat_field.text()).strip(),
                     "polarization_factor":float_(self.polarization_factor.value()),
-                    "rad_pt":int_(self.rad_pt.text()),
+                    "nbpt_rad":int_(self.rad_pt.text()),
                     "do_2D":bool(self.do_2D.isChecked()),
-                    "azim_pt":int_(self.azim_pt.text()),
+                    "nbpt_azim":int_(self.azim_pt.text()),
                     "chi_discontinuity_at_0": bool(self.chi_discontinuity_at_0.isChecked()),
                     "do_solid_angle": bool(self.do_solid_angle.isChecked()),
                     "do_radial_range": bool(self.do_radial_range.isChecked()),
