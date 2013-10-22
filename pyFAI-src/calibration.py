@@ -299,8 +299,6 @@ class AbstractCalibration(object):
                 logger.error("No flat file exists !!!")
                 self.flatFiles = None
 
-        if options.mask and os.path.isfile(options.mask):
-            self.mask = (fabio.open(options.mask).data != 0)
 
         if options.detector_name:
             self.detector = self.get_detector(options.detector_name)
@@ -312,6 +310,12 @@ class AbstractCalibration(object):
                 self.detector.set_splineFile(os.path.abspath(options.spline))
             else:
                 logger.error("Unknown spline file %s" % (options.spline))
+
+        if options.mask and os.path.isfile(options.mask):
+            self.mask = (fabio.open(options.mask).data != 0)
+        else: #Use default mask provided by detector
+            self.mask = self.detector.mask
+
 
         self.pointfile = options.npt
         if (not options.spacing) or (not os.path.isfile(options.spacing)):
@@ -341,8 +345,6 @@ class AbstractCalibration(object):
             self.ai.rot2 = options.rot2
         if options.rot3 is not None:
             self.ai.rot3 = options.rot3
-        if options.mask is not None:
-            self.mask = (fabio.open(options.mask).data != 0)
         self.dataFiles = expand_args(args)
         if not self.dataFiles:
             raise RuntimeError("Please provide some calibration images ... "
