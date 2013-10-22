@@ -507,6 +507,7 @@ class AbstractCalibration(object):
                     self.geoRef.refine2_wavelength(1000000, fix=self.fixed)
                     print(self.geoRef)
                     count += 1
+                self.peakPicker.points.setWavelength_change2th(self.geoRef.wavelength)
             self.geoRef.save(self.basename + ".poni")
             self.geoRef.del_ttha()
             self.geoRef.del_dssa()
