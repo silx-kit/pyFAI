@@ -40,8 +40,8 @@ if sys.platform in ["linux2", "posix"]:
 elif sys.platform in ["win32", "nt"]:
     openmp = '/openmp'
 src = {}
-cython_files = ["splitBBox", "paraSplitBBox", "splitBBoxLUT" ]
-#               "histogram", "splitPixel", "splitBBox", "relabel", "bilinear", "_geometry"]
+cython_files = [ "marchingsquares_"]
+#               "splitBBox", "paraSplitBBox", "splitBBoxLUT","histogram", "splitPixel", "splitBBox", "relabel", "bilinear", "_geometry"]
 if build_ext:
     for ext in cython_files:
         src[ext] = os.path.join(".", ext + ".pyx")
@@ -80,22 +80,29 @@ else:
 #rebin_ext = Extension("fastrebin",
 #                        include_dirs=get_numpy_include_dirs(),
 #                        sources=['fastrebin.pyx', "slist.c"])
-
-splitBBox_dic = dict(name="splitBBox",
-                    include_dirs=get_numpy_include_dirs(),
-                    sources=[src['splitBBox']],)
+#
+#splitBBox_dic = dict(name="splitBBox",
+#                    include_dirs=get_numpy_include_dirs(),
+#                    sources=[src['splitBBox']],)
 
 #paraSplitBBox_dic = dict(name="paraSplitBBox",
 #                    include_dirs=get_numpy_include_dirs(),
 #                    sources=[src['paraSplitBBox']],
 #                    extra_compile_args=[openmp],
 #                    extra_link_args=[openmp])
-splitBBoxLUT_dic = dict(name="splitBBoxLUT",
+#splitBBoxLUT_dic = dict(name="splitBBoxLUT",
+#                    include_dirs=get_numpy_include_dirs(),
+#                    sources=[src['splitBBoxLUT']],
+#                    extra_compile_args=[openmp],
+#                    extra_link_args=[openmp]
+#                    )
+marchingsquares_dict = dict(name="marchingsquares_",
                     include_dirs=get_numpy_include_dirs(),
-                    sources=[src['splitBBoxLUT']],
-                    extra_compile_args=[openmp],
-                    extra_link_args=[openmp]
+                    sources=[src['marchingsquares_']],
+                    #extra_compile_args=[openmp],
+#                    extra_link_args=[openmp]
                     )
+
 
 
 setup(name='histogram',
@@ -103,9 +110,10 @@ setup(name='histogram',
       author="Jerome Kieffer",
       author_email="jerome.kieffer@esrf.eu",
       description='test for azim int',
-      ext_modules=[Extension(**splitBBox_dic),
+      ext_modules=[#Extension(**splitBBox_dic),
 #                   Extension(**paraSplitBBox_dic),
-                   Extension(**splitBBoxLUT_dic),
+#                   Extension(**splitBBoxLUT_dic),
+                   Extension(**marchingsquares_dict)
                    ],
       cmdclass={'build_ext': build_ext},
       )
