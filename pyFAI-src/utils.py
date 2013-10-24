@@ -530,6 +530,9 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             for ch in zip(*listImages):
                 c = ch[0]
                 good = True
+                if c in ["*", "?", "[", "{", "("]:
+                    good = False
+                    break
                 for i in ch:
                     if i != c:
                         good = False
