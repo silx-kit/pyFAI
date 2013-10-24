@@ -795,9 +795,10 @@ class Geometry(object):
         @param order:
         """
         if self._dssa is None:
-#            with self._sem:
-#                if self._dssa is None:
-            self._dssa_order = int(order)
+            if order is True:
+                self._dssa_order = 3.0
+            else:
+                self._dssa_order = float(order)
             self._dssa = numpy.fromfunction(self.diffSolidAngle,
                                             shape, dtype=numpy.float32)
             self._dssa_crc = crc32(self._dssa)
