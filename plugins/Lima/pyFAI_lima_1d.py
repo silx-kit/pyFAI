@@ -95,8 +95,11 @@ class DoubleView(QtGui.QWidget):
         self.last_frame = self.ctrl.getStatus().ImageCounters.LastImageReady
         raw_img = self.ctrl.ReadBaseImage().buffer
         fai_img = self.ctrl.ReadImage().buffer
+        for  i in self.FaiPlot.plotItem.items[:]:
+            self.FaiPlot.plotItem.removeItem(i)
         self.RawImg.setImage(raw_img.T)#, levels=[0, 4096])#, autoLevels=False, autoRange=False)
         self.FaiPlot.plot(fai_img[:, 0], fai_img[:, 1])
+
 #        self.FaiPlot.addItem(fai_img.T)#, levels=[0, 4096])#, autoLevels=False, autoRange=False)
         self.last = time.time()
         self.timer.start(1000.0 / self.fps)

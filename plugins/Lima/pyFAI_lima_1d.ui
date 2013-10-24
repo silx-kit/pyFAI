@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>618</width>
-    <height>328</height>
+    <width>567</width>
+    <height>253</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,6 +28,13 @@
         <widget class="ImageView" name="RawImg"/>
        </item>
        <item>
+        <widget class="Line" name="line">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+        </widget>
+       </item>
+       <item>       
         <widget class="PlotWidget" name="FaiPlot"/>
        </item>
       </layout>
