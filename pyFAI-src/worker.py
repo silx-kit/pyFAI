@@ -122,7 +122,7 @@ class Worker(object):
 #                self.config = json.loads(config)
 #        if self.config:
 #            self.configure()
-
+        self._normalization_factor = None #Value of the monitor: divides the intensity by this value for normalization
         self.nbpt_azim, self.nbpt_rad = shapeOut
         self._unit = units.to_unit(unit)
         self.polarization = None
@@ -189,6 +189,8 @@ class Worker(object):
         """
         Process a frame
         """
+        with self._sem:
+            monitor = self._normalization_factor
         kwarg = {"unit": self.unit,
                  "dummy": self.dummy,
                  "delta_dummy": self.delta_dummy,
@@ -197,6 +199,7 @@ class Worker(object):
                  # "filename": None,
                  "safe": True,
                  "data": data,
+                 "normalization_factor":monitor
                  }
 
 
@@ -415,3 +418,7 @@ class Worker(object):
         t.start()
         if sync:
             t.join()
+
+    def set_normalization_factor(self, value):
+        with self._sem:
+            self._normalization_factor = value
