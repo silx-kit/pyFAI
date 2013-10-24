@@ -92,8 +92,10 @@ import threading, os
 import logging
 logger = logging.getLogger("pyFAI.worker")
 import numpy
+from .detectors import detector_factory
 from .azimuthalIntegrator import AzimuthalIntegrator
 from . import units
+import json
 #from .io import h5py, HDF5Writer
 
 class Worker(object):
@@ -106,7 +108,7 @@ class Worker(object):
         """
         self._sem = threading.Semaphore()
         if azimuthalIntgrator is None:
-            self.ai = pyFAI.AzimuthalIntegrator()
+            self.ai = AzimuthalIntegrator()
         else:
             self.ai = azimuthalIntgrator
 #        self.config = {}
@@ -276,7 +278,7 @@ class Worker(object):
                 self.ai = pyFAI.load(poni)
 
         detector = config.get("detector", "detector")
-        self.ai.detector = pyFAI.detectors.detector_factory(detector)
+        self.ai.detector = detector_factory(detector)
 
         if "wavelength" in config:
             wavelength = config["wavelength"]
@@ -331,7 +333,7 @@ class Worker(object):
             self.nbpt_azim = 1
         if config.get("nbpt_rad"):
             self.nbpt_rad = int(config["nbpt_rad"])
-        self.unit = pyFAI.units.to_unit(config.get("unit", pyFAI.units.TTH_DEG))
+        self.unit = units.to_unit(config.get("unit", units.TTH_DEG))
         self.do_poisson = config.get("do_poisson")
         if config.get("do_polarization"):
             self.polarization = config.get("polarization")

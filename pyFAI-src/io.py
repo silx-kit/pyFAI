@@ -52,7 +52,6 @@ import types
 import numpy
 import posixpath
 import json
-#import threading
 try:
     import h5py
 except ImportError:
@@ -60,6 +59,7 @@ except ImportError:
     logger.debug("h5py is missing")
 
 import fabio
+from . import units
 
 def getIsoTime(forceTime=None):
     """
@@ -321,7 +321,7 @@ class AsciiWriter(Writer):
         self.start_index=0
 
     def __repr__(self):
-        return "Generic writer on file %s" % (self.filename)
+        return "Ascii writer on file %s" % (self.filename)
 
     def init(self, fai_cfg=None, lima_cfg=None):
         """
@@ -380,6 +380,97 @@ class AsciiWriter(Writer):
                 
 
     def write(self,data,index=0):
+        filename = os.path.join(self.directory, self.prefix + (self.index_format % (self.start_index + index)) + self.extension)
+        if filename:
+            with open(filename, "w") as f:
+                f.write("# Processing time: %s%s" % (getIsoTime(), self.header))
+                numpy.savetxt(f, data)
+
+class FabioWriter(Writer):
+    """
+    Image file writer based on FabIO 
+    
+    TODO !!!
+    """
+    def __init__(self, filename=None):
+        """
+        
+        """
+        Writer.__init__(self, filename)
+        self.header = None
+        self.directory = None
+        self.prefix = None
+        self.index_format = "%04i"
+        self.start_index = 0
+        self.fabio_class = None
+
+    def __repr__(self):
+        return "Image writer on file %s" % (self.filename)
+
+    def init(self, fai_cfg=None, lima_cfg=None):
+        """
+        Creates the directory that will host the output file(s) 
+        
+        """
+        Writer.init(self, fai_cfg, lima_cfg)
+        with self._sem:
+            dim1_unit = units.to_unit(fai_cfg["unit"])
+            header_keys = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3",
+                           "chi_min", "chi_max",
+                           dim1_unit.REPR + "_min",
+                           dim1_unit.REPR + "_max",
+                           "pixelX", "pixelY",
+                           "dark", "flat", "polarization_factor", "normalization_factor"]
+            header = {"dist": str(fai_cfg.get("dist")),
+                      "poni1": str(fai_cfg.get("poni1")),
+                      "poni2": str(fai_cfg.get("poni2")),
+                      "rot1": str(fai_cfg.get("rot1")),
+                      "rot2": str(fai_cfg.get("rot1")),
+                      "rot3": str(fai_cfg.get("dist")),
+                      "chi_min": str(fai_cfg.get("dist")),
+                      "chi_max": str(fai_cfg.get("dist")),
+                      dim1_unit.REPR + "_min": str(fai_cfg.get("dist")),
+                      dim1_unit.REPR + "_max": str(fai_cfg.get("dist")),
+                      "pixelX": str(fai_cfg.get("dist")),  # this is not a bug ... most people expect dim1 to be X
+                      "pixelY": str(fai_cfg.get("dist")),  # this is not a bug ... most people expect dim2 to be Y
+                      "polarization_factor": str(fai_cfg.get("dist")),
+                      "normalization_factor":str(fai_cfg.get("dist")),
+                      }
+
+            if self.splineFile:
+                header["spline"] = str(self.splineFile)
+
+            if dark is not None:
+                if self.darkfiles:
+                    header["dark"] = self.darkfiles
+                else:
+                    header["dark"] = 'unknown dark applied'
+            if flat is not None:
+                if self.flatfiles:
+                    header["flat"] = self.flatfiles
+                else:
+                    header["flat"] = 'unknown flat applied'
+            f2d = self.getFit2D()
+            for key in f2d:
+                header["key"] = f2d[key]
+        self.prefix = prefix
+        self.index_format = index_format
+        self.start_index = start_index
+        if not self.subdir:
+            self.directory = directory
+        elif self.subdir.startswith("/"):
+            self.directory = self.subdir
+        else:
+            self.directory = os.path.join(directory, self.subdir)
+        if not os.path.exists(self.directory):
+            logger.warning("Output directory: %s does not exist,creating it" % self.directory)
+            try:
+                os.makedirs(self.directory)
+            except Exception as error:
+                logger.info("Problem while creating directory %s: %s" % (self.directory, error))
+
+
+    def write(self, data, index=0):
         filename = os.path.join(self.directory, self.prefix + (self.index_format % (self.start_index + index)) + self.extension)
         if filename:
             with open(filename, "w") as f:

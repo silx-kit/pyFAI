@@ -21,7 +21,7 @@ import time
 import signal
 import threading
 import numpy
-import pyFAI.worker
+import pyFAI, pyFAI.worker
 from pyFAI.io import HDF5Writer, h5py
 import pyopencl
 import os
@@ -67,6 +67,9 @@ class DoubleView(QtGui.QWidget):
             worker.setJsonConfig(json)
         else:
             worker = None
+            worker = pyFAI.worker.Worker()
+            worker.setJsonConfig("fai_cfg.json")
+            worker.nbpt_azim = 1
         self.processLink = LinkPyFAI(worker, writer)
         self.extMgr = self.ctrl.externalOperation()
         self.myOp = self.extMgr.addOp(Core.USER_LINK_TASK, "pyFAILink", 0)
@@ -77,6 +80,7 @@ class DoubleView(QtGui.QWidget):
         self.timer = QtCore.QTimer()
         self.connect(self.timer, SIGNAL("timeout()"), self.update_img)
         self.writer = writer
+        self._sem = threading.Semaphore()
 
     def start_acq(self):
         if self.is_playing: return
@@ -92,8 +96,8 @@ class DoubleView(QtGui.QWidget):
         raw_img = self.ctrl.ReadBaseImage().buffer
         fai_img = self.ctrl.ReadImage().buffer
         self.RawImg.setImage(raw_img.T)#, levels=[0, 4096])#, autoLevels=False, autoRange=False)
-        self.last_plotItem = pg.PlotDataItem(fai_img[:, 0], fai_img[:, 1])
-        self.FaiPlot.addItem(fai_img.T)#, levels=[0, 4096])#, autoLevels=False, autoRange=False)
+        self.FaiPlot.plot(fai_img[:, 0], fai_img[:, 1])
+#        self.FaiPlot.addItem(fai_img.T)#, levels=[0, 4096])#, autoLevels=False, autoRange=False)
         self.last = time.time()
         self.timer.start(1000.0 / self.fps)
 
@@ -111,11 +115,10 @@ class DoubleView(QtGui.QWidget):
             raw_img = self.ctrl.ReadBaseImage().buffer
             fai_img = self.ctrl.ReadImage().buffer
             self.RawImg.setImage(raw_img.T)#, levels=[0, 4096])#, autoLevels=False, autoRange=False)
-#            with self._sem:
-            plotItem = pg.PlotDataItem(fai_img[:, 0], fai_img[:, 1])
-            self.FaiPlot.removeItem(self.last_plotItem)
-            self.FaiPlot.addItem(self.last_plotItem)#, levels=[0, 4096])#, autoLevels=False, autoRange=False)
-            self.last_plotItem = plotItem
+            with self._sem:
+                self.FaiPlot.plotItem.plot(fai_img[:, 0], fai_img[:, 1])
+                self.FaiPlot.plotItem.removeItem(self.FaiPlot.plotItem.items[0])
+#                print(self.FaiPlot.plotItem.items)
 #            self.FaiImg.setImage(fai_img.T)#, levels=[0, 4096])#, autoLevels=False, autoRange=False)
             print("Measured display speed: %5.2f fps" % (1.0 / (time.time() - self.last)))
             self.last = time.time()
