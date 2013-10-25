@@ -2219,7 +2219,8 @@ class AzimuthalIntegrator(Geometry):
                     error_model=None, radial_range=None, azimuth_range=None,
                     mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=None, dark=None, flat=None,
-                    method="bbox", unit=units.Q, safe=True):
+                    method="bbox", unit=units.Q, safe=True,
+                    normalization_factor=None):
         """
         Calculate the azimuthal regrouped 2d image in q(nm^-1)/deg by default
 
@@ -2261,7 +2262,9 @@ class AzimuthalIntegrator(Geometry):
         @type unit: pyFAI.units.Enum
         @param safe: Do some extra checks to ensure LUT is still valid. False is faster.
         @type safe: bool
-
+        @param normalization_factor: Value of a normalization monitor
+        @type normalization_factor: float
+        
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
         @rtype: 3-tuple of ndarrays (2d, 1d, 1d)
         """
@@ -2540,8 +2543,13 @@ class AzimuthalIntegrator(Geometry):
         # I know I make copies ....
         bins_rad = bins_rad * pos0_scale
         bins_azim = bins_azim * 180.0 / pi
+
+        if normalization_factor:
+            I /= normalization_factor
+
         self.save2D(filename, I, bins_rad, bins_azim, sigma, unit,
-                    dark=dark, flat=flat, polarization_factor=polarization_factor)
+                    dark=dark, flat=flat, polarization_factor=polarization_factor,
+                    normalization_factor=normalization_factor)
         if sigma is not None:
             return I, bins_rad, bins_azim, sigma
         else:
