@@ -225,7 +225,8 @@ class Worker(object):
         else:
             kwarg["error_model"] = None
 
-        try:
+#        try:
+        if 1:
             if self.do_2D():
                 rData, self.radial, self.azimuthal = self.ai.integrate2d(**kwarg)
             else:
@@ -234,12 +235,12 @@ class Worker(object):
                 self.radial = rData[0]
                 rData = numpy.vstack(rData).T
 
-        except:
-            print(data.shape, data.size)
-            print(self.ai)
-            print(self.ai._lut_integrator)
-            print(self.ai._lut_integrator.size)
-            raise
+#        except:
+#            print(data.shape, data.size)
+#            print(self.ai)
+#            print(self.ai._lut_integrator)
+#            print(self.ai._lut_integrator.size)
+#            raise
         if self.output == "numpy":
             return rData
 

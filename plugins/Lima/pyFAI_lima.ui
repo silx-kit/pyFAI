@@ -25,10 +25,29 @@
         <enum>QLayout::SetMaximumSize</enum>
        </property>
        <item>
-        <widget class="ImageView" name="RawImg"/>
+        <widget class="QFrame" name="frame_2">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="ImageView" name="RawImg"/>
+          </item>
+         </layout>
+        </widget>
        </item>
        <item>
-        <widget class="ImageView" name="FaiImg"/>
+        <widget class="QFrame" name="frame">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>

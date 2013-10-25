@@ -92,8 +92,8 @@ class StartAcqCallback(Core.SoftCallback):
         lima_cfg["number_of_frames"] = acq.getAcqNbFrames() #to check.
         lima_cfg["exposure_time"] = acq.getAcqExpoTime()
         #ROI see: https://github.com/esrf-bliss/Lima/blob/master/control/include/CtAcquisition.h
-        if self._task._worker is None:
-            #Define a default integrator
+        print("self._task._worker: %s" % self._task._worker)
+        if (self._task._worker) is None :
             centerX = x // 2
             centerY = y // 2
             ai = pyFAI.AzimuthalIntegrator()

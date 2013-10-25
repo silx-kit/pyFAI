@@ -31,7 +31,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI")
 from PyQt4 import QtCore, QtGui, uic
 from PyQt4.QtCore import SIGNAL
-
+import pyqtgraph as pg
 
 
 UIC = op.join(op.dirname(__file__), "pyFAI_lima.ui")
@@ -39,7 +39,7 @@ window = None
 
 
 class DoubleView(QtGui.QWidget):
-    def __init__(self, ip="192.168.5.19", fps=30, poni=None, json=None, writer=None):
+    def __init__(self, ip="192.168.5.19", fps=30, poni=None, json=None, writer=None, cake=None):
         QtGui.QWidget.__init__(self)
         try:
             uic.loadUi(UIC, self)
@@ -55,6 +55,7 @@ class DoubleView(QtGui.QWidget):
         self.iface = Basler.Interface(self.cam)
         self.ctrl = Core.CtControl(self.iface)
         self.is_playing = False
+        self.cake = int(cake)
         self.connect(self.pushButton_play, SIGNAL("clicked()"), self.start_acq)
         self.connect(self.pushButton_stop, SIGNAL("clicked()"), self.stop_acq)
         self.last_frame = None
@@ -66,6 +67,7 @@ class DoubleView(QtGui.QWidget):
             worker.setJsonConfig(json)
         else:
             worker = None
+
         self.processLink = LinkPyFAI(worker, writer)
         self.extMgr = self.ctrl.externalOperation()
         self.myOp = self.extMgr.addOp(Core.USER_LINK_TASK, "pyFAILink", 0)
@@ -76,6 +78,12 @@ class DoubleView(QtGui.QWidget):
         self.timer = QtCore.QTimer()
         self.connect(self.timer, SIGNAL("timeout()"), self.update_img)
         self.writer = writer
+        self.dLayout = QtGui.QHBoxLayout(self.frame)
+        if self.cake <= 1:
+            self.variablePlot = pg.PlotWidget(parent=self.frame)
+        else:
+            self.variablePlot = pg.ImageView(parent=self.frame)
+        self.dLayout.addWidget(self.variablePlot)
 
     def start_acq(self):
         if self.is_playing: return
@@ -84,6 +92,9 @@ class DoubleView(QtGui.QWidget):
         self.acq.setAcqNbFrames(0)
         self.acq.setAcqExpoTime(1.0 / self.fps)
         self.ctrl.prepareAcq()
+        if self.cake != self.processLink._worker.nbpt_azim:
+            self.processLink._worker.nbpt_azim = int(self.cake)
+            self.ctrl.prepareAcq()
         self.ctrl.startAcq()
         while self.ctrl.getStatus().ImageCounters.LastImageReady < 1:
             time.sleep(0.1)
@@ -91,7 +102,13 @@ class DoubleView(QtGui.QWidget):
         raw_img = self.ctrl.ReadBaseImage().buffer
         fai_img = self.ctrl.ReadImage().buffer
         self.RawImg.setImage(raw_img.T)#, levels=[0, 4096])#, autoLevels=False, autoRange=False)
-        self.FaiImg.setImage(fai_img.T)#, levels=[0, 4096])#, autoLevels=False, autoRange=False)
+        if self.cake <= 1:
+            for  i in self.variablePlot.plotItem.items[:]:
+                self.variablePlot.plotItem.removeItem(i)
+            self.variablePlot.plot(fai_img[:, 0], fai_img[:, 1])
+
+        else:
+            self.variablePlot.setImage(fai_img.T)#, levels=[0, 4096])#, autoLevels=False, autoRange=False)
         self.last = time.time()
         self.timer.start(1000.0 / self.fps)
 
@@ -109,10 +126,14 @@ class DoubleView(QtGui.QWidget):
             raw_img = self.ctrl.ReadBaseImage().buffer
             fai_img = self.ctrl.ReadImage().buffer
             self.RawImg.setImage(raw_img.T)#, levels=[0, 4096])#, autoLevels=False, autoRange=False)
-            self.FaiImg.setImage(fai_img.T)#, levels=[0, 4096])#, autoLevels=False, autoRange=False)
+            if self.cake <= 1:
+                self.variablePlot.plotItem.plot(fai_img[:, 0], fai_img[:, 1])
+                self.variablePlot.plotItem.removeItem(self.variablePlot.plotItem.items[0])
+            else:
+                self.variablePlot.setImage(fai_img.T)#, levels=[0, 4096])#, autoLevels=False, autoRange=False)
             print("Measured display speed: %5.2f fps" % (1.0 / (time.time() - self.last)))
             self.last = time.time()
-             
+
 
 
 
@@ -147,6 +168,9 @@ on a set of files grabbed from a Basler camera using LImA."""
     parser.add_option("-s", "--scan",
                       dest="scan", default=None,
                       help="Size of scan of the fastest motor")
+    parser.add_option("-c", "--cake", action="store", type="int",
+                      dest="cake", default=0,
+                      help="Perform 2D caking, in so many slices instead of full integration, a reasonable value is 360")
 
     parser.add_option("--no-gui",
                       dest="gui", default=True, action="store_false",
@@ -185,7 +209,7 @@ on a set of files grabbed from a Basler camera using LImA."""
     from limaFAI import LinkPyFAI, StartAcqCallback
     if options.gui:
         app = QtGui.QApplication([])
-        window = DoubleView(ip=options.ip, fps=options.fps, writer=writer)
+        window = DoubleView(ip=options.ip, fps=options.fps, writer=writer, cake=options.cake)
         #window.set_input_data(args)
         window.show()
         sys.exit(app.exec_())
