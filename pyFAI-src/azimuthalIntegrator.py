@@ -278,7 +278,7 @@ class AzimuthalIntegrator(Geometry):
             return data, None
 
 
-    def xrpd_numpy(self, data, nbPt, filename=None, correctSolidAngle=1,
+    def xrpd_numpy(self, data, nbPt, filename=None, correctSolidAngle=True,
                    tthRange=None, mask=None, dummy=None, delta_dummy=None,
                    polarization_factor=None, dark=None, flat=None):
         """
@@ -385,7 +385,7 @@ class AzimuthalIntegrator(Geometry):
                     dark, flat, polarization_factor)
         return tthAxis, I
 
-    def xrpd_cython(self, data, nbPt, filename=None, correctSolidAngle=1,
+    def xrpd_cython(self, data, nbPt, filename=None, correctSolidAngle=True,
                     tthRange=None, mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=None, dark=None, flat=None,
                     pixelSize=None):
@@ -442,7 +442,7 @@ class AzimuthalIntegrator(Geometry):
                     dark, flat, polarization_factor)
         return tthAxis, I
 
-    def xrpd_splitBBox(self, data, nbPt, filename=None, correctSolidAngle=1,
+    def xrpd_splitBBox(self, data, nbPt, filename=None, correctSolidAngle=True,
                        tthRange=None, chiRange=None, mask=None,
                        dummy=None, delta_dummy=None,
                        polarization_factor=None, dark=None, flat=None):
@@ -598,7 +598,7 @@ class AzimuthalIntegrator(Geometry):
         return tthAxis, I
 
     def xrpd_splitPixel(self, data, nbPt,
-                        filename=None, correctSolidAngle=1,
+                        filename=None, correctSolidAngle=True,
                         tthRange=None, chiRange=None, mask=None,
                         dummy=None, delta_dummy=None,
                         polarization_factor=None, dark=None, flat=None):
@@ -736,7 +736,7 @@ class AzimuthalIntegrator(Geometry):
     # Default implementation:
     xrpd = xrpd_splitBBox
 
-    def xrpd_OpenCL(self, data, nbPt, filename=None, correctSolidAngle=1,
+    def xrpd_OpenCL(self, data, nbPt, filename=None, correctSolidAngle=True,
                     dark=None, flat=None,
                     tthRange=None, mask=None, dummy=None, delta_dummy=None,
                     devicetype="gpu", useFp64=True,
@@ -1024,7 +1024,7 @@ class AzimuthalIntegrator(Geometry):
                                             allow_pos0_neg=False,
                                             unit=unit)
 
-    def xrpd_LUT(self, data, nbPt, filename=None, correctSolidAngle=1,
+    def xrpd_LUT(self, data, nbPt, filename=None, correctSolidAngle=True,
                  tthRange=None, chiRange=None, mask=None,
                  dummy=None, delta_dummy=None,
                  safe=True, dark=None, flat=None):
@@ -1137,7 +1137,7 @@ class AzimuthalIntegrator(Geometry):
                                 unit="2th_deg",
                                 safe=safe)
 
-    def xrpd_LUT_OCL(self, data, nbPt, filename=None, correctSolidAngle=1,
+    def xrpd_LUT_OCL(self, data, nbPt, filename=None, correctSolidAngle=True,
                      tthRange=None, chiRange=None, mask=None,
                      dummy=None, delta_dummy=None,
                      safe=True, devicetype="all",
@@ -1272,7 +1272,7 @@ class AzimuthalIntegrator(Geometry):
                                 safe=safe)
 
     def xrpd2_numpy(self, data, nbPt2Th, nbPtChi=360,
-                    filename=None, correctSolidAngle=1,
+                    filename=None, correctSolidAngle=True,
                     dark=None, flat=None,
                     tthRange=None, chiRange=None,
                     mask=None, dummy=None, delta_dummy=None):
@@ -1379,7 +1379,7 @@ class AzimuthalIntegrator(Geometry):
         return I, bins2Th, binsChi
 
     def xrpd2_histogram(self, data, nbPt2Th, nbPtChi=360,
-                        filename=None, correctSolidAngle=1,
+                        filename=None, correctSolidAngle=True,
                         dark=None, flat=None,
                         tthRange=None, chiRange=None, mask=None,
                         dummy=None, delta_dummy=None):
@@ -1495,7 +1495,7 @@ class AzimuthalIntegrator(Geometry):
         return I, bins2Th, binsChi
 
     def xrpd2_splitBBox(self, data, nbPt2Th, nbPtChi=360,
-                        filename=None, correctSolidAngle=1,
+                        filename=None, correctSolidAngle=True,
                         tthRange=None, chiRange=None, mask=None,
                         dummy=None, delta_dummy=None,
                         polarization_factor=None, dark=None, flat=None):
@@ -1639,7 +1639,7 @@ class AzimuthalIntegrator(Geometry):
         return I, bins2Th, binsChi
 
     def xrpd2_splitPixel(self, data, nbPt2Th, nbPtChi=360,
-                         filename=None, correctSolidAngle=1,
+                         filename=None, correctSolidAngle=True,
                          tthRange=None, chiRange=None, mask=None,
                          dummy=None, delta_dummy=None,
                          polarization_factor=None, dark=None, flat=None):
@@ -1806,7 +1806,7 @@ class AzimuthalIntegrator(Geometry):
         return out
 
     def integrate1d(self, data, nbPt, filename=None,
-                    correctSolidAngle=1,
+                    correctSolidAngle=True,
                     variance=None, error_model=None,
                     radial_range=None, azimuth_range=None,
                     mask=None, dummy=None, delta_dummy=None,
@@ -2215,7 +2215,7 @@ class AzimuthalIntegrator(Geometry):
             return qAxis, I
 
     def integrate2d(self, data, nbPt_rad, nbPt_azim=360,
-                    filename=None, correctSolidAngle=1, variance=None,
+                    filename=None, correctSolidAngle=True, variance=None,
                     error_model=None, radial_range=None, azimuth_range=None,
                     mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=None, dark=None, flat=None,
@@ -2264,7 +2264,7 @@ class AzimuthalIntegrator(Geometry):
         @type safe: bool
         @param normalization_factor: Value of a normalization monitor
         @type normalization_factor: float
-        
+
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
         @rtype: 3-tuple of ndarrays (2d, 1d, 1d)
         """
@@ -2556,7 +2556,7 @@ class AzimuthalIntegrator(Geometry):
             return I, bins_rad, bins_azim
 
     def saxs(self, data, nbPt, filename=None,
-             correctSolidAngle=1, variance=None,
+             correctSolidAngle=True, variance=None,
              error_model=None, qRange=None, chiRange=None,
              mask=None, dummy=None, delta_dummy=None,
              polarization_factor=None, dark=None, flat=None,
