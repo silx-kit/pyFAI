@@ -29,7 +29,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/10/2013"
+__date__ = "04/11/2013"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -83,7 +83,7 @@ class Writer(object):
     """
     Abstract class for writers. 
     """
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, extension=None):
         """
         
         """
@@ -91,7 +91,7 @@ class Writer(object):
         self._sem = threading.Semaphore()
         self.dirname = None
         self.subdir = None
-        self.extension = None
+        self.extension = extension
         self.fai_cfg = {}
         self.lima_cfg = {}
 
@@ -235,7 +235,7 @@ class HDF5Writer(Writer):
 
             if self.DATA in self.group:
                 del self.group[self.DATA]
-            shape=list(chunk)
+            shape = list(chunk)
             if self.lima_cfg.get("number_of_frames", 0) > 0:
                 if self.fast_scan_width is not None:
                     size[0] = 1 + self.lima_cfg["number_of_frames"] // self.fast_scan_width
@@ -312,16 +312,19 @@ class AsciiWriter(Writer):
     """
     Ascii file writer (.xy or .dat) 
     """
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, prefix="fai_", extension=".dat"):
         """
         
         """
-        Writer.__init__(self, filename)
-        self.header=None
-        self.directory=None
-        self.prefix = None
-        self.index_format="%04i"
-        self.start_index=0
+        Writer.__init__(self, filename, extension)
+        self.header = None
+        if os.path.isdir(filename):
+            self.directory = filename
+        else:
+            self.directory = os.path.dirname(filename)
+        self.prefix = prefix
+        self.index_format = "%04i"
+        self.start_index = 0
 
     def __repr__(self):
         return "Ascii writer on file %s" % (self.filename)
@@ -333,13 +336,13 @@ class AsciiWriter(Writer):
         """
         Writer.init(self, fai_cfg, lima_cfg)
         with self._sem:
-            headerLst = ["","== Detector =="]
+            headerLst = ["", "== Detector =="]
             if "detector" in self.fai_cfg:
                 headerLst.append("Detector: %s" % self.fai_cfg["detector"])
             if "splineFile" in self.fai_cfg:
                 headerLst.append("SplineFile: %s" % self.fai_cfg["splineFile"])
             if  "pixel1" in self.fai_cfg:
-                headerLst.append("PixelSize: %.3e, %.3e m" %(self.fai_cfg["pixel1"], self.fai_cfg["pixel2"]))
+                headerLst.append("PixelSize: %.3e, %.3e m" % (self.fai_cfg["pixel1"], self.fai_cfg["pixel2"]))
             if "mask_file" in self.fai_cfg:
                 headerLst.append("MaskFile: %s" % (self.fai_cfg["mask_file"]))
 
@@ -363,26 +366,26 @@ class AsciiWriter(Writer):
                 headerLst.append("%14s %14s %s" % (self.fai_cfg["unit"], "I", "sigma"))
             else:
                 headerLst.append("%14s %14s" % (self.fai_cfg["unit"], "I"))
-            headerLst.append("")
-            self.header = os.linesep.join(["# " + i for i in headerLst])
-        self.prefix = prefix
-        self.index_format = index_format
-        self.start_index = start_index
+#            headerLst.append("")
+            self.header = os.linesep.join([""] + ["# " + i for i in headerLst] + [""])
+        self.prefix = lima_cfg.get("prefix", self.prefix)
+        self.index_format = lima_cfg.get("index_format", self.index_format)
+        self.start_index = lima_cfg.get("start_index", self.start_index)
         if not self.subdir:
-            self.directory = directory
+            self.directory = lima_cfg.get("directory", self.directory)
         elif self.subdir.startswith("/"):
             self.directory = self.subdir
         else:
-            self.directory = os.path.join(directory, self.subdir)
+            self.directory = os.path.join(lima_cfg.get("directory", self.directory), self.subdir)
         if not os.path.exists(self.directory):
             logger.warning("Output directory: %s does not exist,creating it" % self.directory)
             try:
                 os.makedirs(self.directory)
-            except Exception as error:  
+            except Exception as error:
                 logger.info("Problem while creating directory %s: %s" % (self.directory, error))
-                
 
-    def write(self,data,index=0):
+
+    def write(self, data, index=0):
         filename = os.path.join(self.directory, self.prefix + (self.index_format % (self.start_index + index)) + self.extension)
         if filename:
             with open(filename, "w") as f:

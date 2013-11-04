@@ -194,7 +194,7 @@ on a set of files grabbed from a Basler camera using LImA."""
             else:
                 hdfpath = "test_LImA+pyFAI"
                 hdffile = hurl
-            writer = HDF5Writer(hdffile, hdfpath, options.scan)
+            writer = io.HDF5Writer(hdffile, hdfpath, options.scan)
     elif len(args) > 1 :
         logger.error("Specify the HDF5 output file like hdf5:///home/user/filename.h5:/path/to/group")
         sys.exit(1)
