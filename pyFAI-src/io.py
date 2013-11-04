@@ -41,6 +41,9 @@ Stand-alone module which tries to offer interface to HDF5 via H5Py and
 capabilities to write EDF or other formats using fabio.
 
 Can be imported without h5py but then limited to fabio & ascii formats.
+
+TODO:
+* add monitor to HDF5
 """
 import sys
 import os

@@ -22,7 +22,7 @@ import signal
 import threading
 import numpy
 import pyFAI.worker
-from pyFAI.io import HDF5Writer, h5py
+from pyFAI import io
 import pyopencl
 import os
 op = os.path
@@ -179,16 +179,22 @@ on a set of files grabbed from a Basler camera using LImA."""
     (options, args) = parser.parse_args()
     if len(args) == 1:
         hurl = args[0]
-        if hurl.startswith("hdf5:"):
-            hurl = hurl[5:]
-        if ":" in hurl:
-            hsplit = hurl.split(":")
-            hdfpath = hsplit[-1]
-            hdffile = ":".join(hsplit[:-1]) #special windows
+        if os.path.isdir(hurl):
+            #write .dat or .edf files ...
+            if options.cake < 2:
+                writer = io.AsciiWriter(hurl)
+        #Else HDF5
         else:
-            hdfpath = "test_LImA+pyFAI"
-            hdffile = hurl
-        writer = HDF5Writer(hdffile, hdfpath, options.scan)
+            if hurl.startswith("hdf5:"):
+                hurl = hurl[5:]
+            if ":" in hurl:
+                hsplit = hurl.split(":")
+                hdfpath = hsplit[-1]
+                hdffile = ":".join(hsplit[:-1]) #special windows
+            else:
+                hdfpath = "test_LImA+pyFAI"
+                hdffile = hurl
+            writer = HDF5Writer(hdffile, hdfpath, options.scan)
     elif len(args) > 1 :
         logger.error("Specify the HDF5 output file like hdf5:///home/user/filename.h5:/path/to/group")
         sys.exit(1)
