@@ -182,10 +182,10 @@ If the number of files is too large, use double quotes like "*.edf" """
             else:
                 logger.warning("No such poni file %s" % options.poni)
         if options.mask:
-            if os.path.isfile(options.poni):
+            if os.path.isfile(options.mask):
                 self.mask = (fabio.open(options.mask).data != 0)
             else:
-                logger.warning("No such mask file %s" % options.poni)
+                logger.warning("No such mask file %s" % options.mask)
         if options.nTrans is not None:
             self.nTrans = int(options.nTrans)
         if options.nRot is not None:
