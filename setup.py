@@ -31,7 +31,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/09/2013"
+__date__ = "05/11/2013"
 __status__ = "stable"
 
 
@@ -193,29 +193,16 @@ if (os.name != "posix") or ("x86" not in platform.machine()):
 # ###############################################################################
 # scripts and data installation
 # ###############################################################################
-#if sys.platform == "win32" and "bdist_msi" in sys.argv:
-#    if sys.version_info < (2.7):
-#        import struct
-#        platform_bits = 8 * struct.calcsize("P")
-#        if platform_bits == 32:
-#            win = "bdist.win32"
-#        else:
-#            win = "bdist.win-amd64"
-#        installDir = join("build", win, "msi", "Lib", "site-packages", "pyFAI")
-#    else:
-#        installDir = join("Lib", "site-packages", "pyFAI")
-#
-#else:
-installDir = "pyFAI" #join(get_python_lib(), "pyFAI")
+installDir = "pyFAI"
 
-data_files = [(installDir, [join('openCL', o) for o in [
-      "ocl_azim_kernel_2.cl", "ocl_azim_kernel2d_2.cl", "ocl_azim_LUT.cl"]] +
-                [join('gui', o) for o in ("integration.ui",)]),
+data_files = [(installDir, glob.glob("openCL/*.cl")),
+              (join(installDir, "gui"), glob.glob("gui/*.ui")),
               (join(installDir, "calibration"), glob.glob("calibration/*.D"))]
 
 if sys.platform == "win32":
-    # This is for mingw32/gomp?
-    data_files[0][1].append(join("dll", "pthreadGC2.dll"))
+    # This is for mingw32/gomp
+    if tuple.__itemsize__ == 4:
+        data_files[0][1].append(join("dll", "pthreadGC2.dll"))
     root = os.path.dirname(os.path.abspath(__file__))
     tocopy_files = []
     script_files = []
