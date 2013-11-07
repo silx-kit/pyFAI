@@ -2456,7 +2456,7 @@ class AzimuthalIntegrator(Geometry):
 
                 if radial_range is not None:
                     mask *= (pos0 >= min(radial_range))
-                    mask *= (pos0 <= min(radial_range))
+                    mask *= (pos0 <= max(radial_range))
 
                 if azimuth_range is not None:
                     mask *= (pos1 >= min(azimuth_range))
@@ -2511,7 +2511,7 @@ class AzimuthalIntegrator(Geometry):
 
             if radial_range is not None:
                 mask *= (pos0 >= min(radial_range))
-                mask *= (pos0 <= min(radial_range))
+                mask *= (pos0 <= max(radial_range))
             else:
                 radial_range = [pos0.min(), pos0.max() * EPS32]
 
