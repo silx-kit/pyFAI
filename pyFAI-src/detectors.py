@@ -769,8 +769,40 @@ class Perkin(Detector):
         self.name = "Perkin detector"
         self.max_shape = (2048, 2048)
 
+class RayonixMx225(Detector):
+    """
+    Rayonix mx225 2D detector
+    """
+    force_pixel = True
+    def __init__(self):
+        Detector.__init__(self, pixel1=73e-6, pixel2=73e-6)
+        self.max_shape = (3072, 3072)
+        self.name = "Rayonix mx225"
 
-ALL_DETECTORS = {"pilatus100k": Pilatus100k,
+class RayonixMx300(Detector):
+    """
+    Rayonix mx300 2D detector
+    """
+    force_pixel = True
+    def __init__(self):
+        Detector.__init__(self, pixel1=73e-6, pixel2=73e-6)
+        self.max_shape = (4096, 4096)
+        self.name = "Rayonix mx300"
+
+class RayonixMx325(Detector):
+    """
+    Rayonix mx325 2D detector
+    """
+    force_pixel = True
+    def __init__(self):
+        Detector.__init__(self, pixel1=79e-6, pixel2=79e-6)
+        self.max_shape = (4096, 4096)
+        self.name = "Rayonix mx325"
+
+ALL_DETECTORS = {"rayonix_mx225": RayonixMx225,
+                 "rayonix_mx300": RayonixMx300,
+                 "rayonix_mx325": RayonixMx325,
+                 "pilatus100k": Pilatus100k,
                  "pilatus200k": Pilatus200k,
                  "pilatus300k": Pilatus300k,
                  "pilatus300kw": Pilatus300kw,
@@ -787,7 +819,6 @@ ALL_DETECTORS = {"pilatus100k": Pilatus100k,
                  "dexela2923": Dexela2923,
                  "perkin": Perkin,
                  "detector": Detector}
-
 
 def detector_factory(name):
     """
