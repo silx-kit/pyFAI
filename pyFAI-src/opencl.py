@@ -189,7 +189,7 @@ class OpenCL(object):
         @param best: shall we look for the
         """
         if "type" in kwargs:
-            dtype = kwargs["type"].upper
+            dtype = kwargs["type"].upper()
         else:
             dtype = dtype.upper()
         best_found = None
@@ -248,3 +248,4 @@ if pyopencl:
     ocl = OpenCL()
 else:
     ocl = None
+
