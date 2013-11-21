@@ -17,6 +17,15 @@ benchmark/foo.py
 benchmark/frelon.spline
 benchmark/halfccd.poni
 benchmark/halfccd.spline
+calibration/AgBh.D
+calibration/Au.D
+calibration/C14H30O.D
+calibration/CeO2.D
+calibration/Cr2O3.D
+calibration/CrOx.D
+calibration/LaB6.D
+calibration/Si.D
+calibration/alpha_Al2O3.D
 doc/MX-calibrate.1
 doc/MX-calibrate.pdf
 doc/check_calib.1
@@ -169,6 +178,8 @@ src/fastcrc.pyx
 src/fastrebin.pyx
 src/histogram.c
 src/histogram.pyx
+src/marchingsquares_.c
+src/marchingsquares_.pyx
 src/paraSplitBBox.pyx
 src/reconstruct.c
 src/reconstruct.pyx

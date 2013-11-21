@@ -4,6 +4,7 @@ recursive-include src  *.c *.h *.pyx *.pxd
 recursive-include benchmark *.py *.spline *.poni
 recursive-include pyFAI-src *.py 
 recursive-include gui *.ui
+recursive-include calibration *.D
 include stdeb.cfg
 include setup.cfg
 include MANIFEST.in
