@@ -714,6 +714,7 @@ class ImXPadS140(Detector):
     MAX_SHAPE = (240, 560)  # max size of the detector
     PIXEL_SIZE = (130e-6, 130e-6)
     force_pixel = True
+    name = "Imxpad S140"
 
     class __metaclass__(type):
 
