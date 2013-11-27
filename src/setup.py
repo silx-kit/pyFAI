@@ -23,7 +23,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import os, sys
+import os, sys, glob
 try:
     from setuptools import setup
 except ImportError:
@@ -40,7 +40,7 @@ if sys.platform in ["linux2", "posix"]:
 elif sys.platform in ["win32", "nt"]:
     openmp = '/openmp'
 src = {}
-cython_files = [ "marchingsquares_"]
+cython_files = [os.path.splitext(i)[0] for i in glob.glob("*.pyx")]
 #               "splitBBox", "paraSplitBBox", "splitBBoxLUT","histogram", "splitPixel", "splitBBox", "relabel", "bilinear", "_geometry"]
 if build_ext:
     for ext in cython_files:
@@ -49,53 +49,53 @@ else:
     for ext in cython_files:
         src[ext] = os.path.join(".", ext + ".c")
 
-#hist_ext = Extension("histogram",
-#                    include_dirs=get_numpy_include_dirs(),
-#                    sources=['histogram.c'],
-#                    extra_compile_args=['-fopenmp'],
-#                    extra_link_args=['-fopenmp'])
-
-#
-#halfsplit_ext = Extension("halfSplitPixel",
-#                    include_dirs=get_numpy_include_dirs(),
-#                    sources=['halfSplitPixel.c'],
-#                    extra_compile_args=['-fopenmp'],
-#                    extra_link_args=['-fopenmp'])
+hist_ext = Extension("histogram",
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=['histogram.c'],
+                    extra_compile_args=['-fopenmp'],
+                    extra_link_args=['-fopenmp'])
 
 
-#split_ext = Extension("splitPixel",
-#                    include_dirs=get_numpy_include_dirs(),
-#                    sources=['splitPixel.c'],
-#                    extra_compile_args=['-fopenmp'],
-#                    extra_link_args=['-fopenmp'])
+halfsplit_ext = Extension("halfSplitPixel",
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=['halfSplitPixel.c'],
+                    extra_compile_args=['-fopenmp'],
+                    extra_link_args=['-fopenmp'])
 
 
-#relabel_ext = Extension("relabel",
-#                        include_dirs=get_numpy_include_dirs(),
-#                        sources=['relabel.pyx'])
+split_ext = Extension("splitPixel",
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=['splitPixel.c'],
+                    extra_compile_args=['-fopenmp'],
+                    extra_link_args=['-fopenmp'])
 
-#bilinear_ext = Extension("bilinear",
-#                        include_dirs=get_numpy_include_dirs(),
-#                        sources=['bilinear.pyx'])
-#rebin_ext = Extension("fastrebin",
-#                        include_dirs=get_numpy_include_dirs(),
-#                        sources=['fastrebin.pyx', "slist.c"])
-#
-#splitBBox_dic = dict(name="splitBBox",
-#                    include_dirs=get_numpy_include_dirs(),
-#                    sources=[src['splitBBox']],)
 
-#paraSplitBBox_dic = dict(name="paraSplitBBox",
-#                    include_dirs=get_numpy_include_dirs(),
-#                    sources=[src['paraSplitBBox']],
-#                    extra_compile_args=[openmp],
-#                    extra_link_args=[openmp])
-#splitBBoxLUT_dic = dict(name="splitBBoxLUT",
-#                    include_dirs=get_numpy_include_dirs(),
-#                    sources=[src['splitBBoxLUT']],
-#                    extra_compile_args=[openmp],
-#                    extra_link_args=[openmp]
-#                    )
+relabel_ext = Extension("relabel",
+                        include_dirs=get_numpy_include_dirs(),
+                        sources=['relabel.pyx'])
+
+bilinear_ext = Extension("bilinear",
+                        include_dirs=get_numpy_include_dirs(),
+                        sources=['bilinear.pyx'])
+rebin_ext = Extension("fastrebin",
+                        include_dirs=get_numpy_include_dirs(),
+                        sources=['fastrebin.pyx', "slist.c"])
+
+splitBBox_dic = dict(name="splitBBox",
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=[src['splitBBox']],)
+
+paraSplitBBox_dic = dict(name="paraSplitBBox",
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=[src['paraSplitBBox']],
+                    extra_compile_args=[openmp],
+                    extra_link_args=[openmp])
+splitBBoxLUT_dic = dict(name="splitBBoxLUT",
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=[src['splitBBoxLUT']],
+                    extra_compile_args=[openmp],
+                    extra_link_args=[openmp]
+                    )
 marchingsquares_dict = dict(name="marchingsquares_",
                     include_dirs=get_numpy_include_dirs(),
                     sources=[src['marchingsquares_']],
@@ -103,6 +103,12 @@ marchingsquares_dict = dict(name="marchingsquares_",
 #                    extra_link_args=[openmp]
                     )
 
+sparse_csr_dict = dict(name="sparse_csr",
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=[src['sparse_csr']],
+                    #extra_compile_args=[openmp],
+#                    extra_link_args=[openmp]
+                    )
 
 
 setup(name='histogram',
@@ -113,7 +119,8 @@ setup(name='histogram',
       ext_modules=[#Extension(**splitBBox_dic),
 #                   Extension(**paraSplitBBox_dic),
 #                   Extension(**splitBBoxLUT_dic),
-                   Extension(**marchingsquares_dict)
+#                   Extension(**marchingsquares_dict)
+                   Extension(**sparse_csr_dict)
                    ],
       cmdclass={'build_ext': build_ext},
       )
