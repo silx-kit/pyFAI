@@ -833,7 +833,7 @@ ALL_DETECTORS = {}
 local_dict = locals()
 for obj_name in dir():
     obj_class = local_dict.get(obj_name)
-    if obj_class.__class__ == type: #this is actually a class
+    if str(obj_class).startswith("<class "):
         try:
             obj_inst = obj_class()
         except:
