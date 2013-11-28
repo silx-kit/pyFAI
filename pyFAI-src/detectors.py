@@ -55,6 +55,7 @@ class Detector(object):
     Generic class representing a 2D detector
     """
     force_pixel = False
+    isDetector = True #used to recognize detector classes
     def __init__(self, pixel1=None, pixel2=None, splineFile=None):
         """
         @param pixel1: size of the pixel in meter along the slow dimension (often Y)
@@ -64,7 +65,10 @@ class Detector(object):
         @param splineFile: path to file containing the geometric correction.
         @type splineFile: str
         """
-        self.name = self.__class__.__name__
+        try:  
+            self.name = self.__class__.name
+        except:
+            self.name = self.__class__.__name__
         self._pixel1 = None
         self._pixel2 = None
         if pixel1:
@@ -833,7 +837,7 @@ ALL_DETECTORS = {}
 local_dict = locals()
 for obj_name in dir():
     obj_class = local_dict.get(obj_name)
-    if str(obj_class).startswith("<class "):
+    if "isDetector" in dir(obj_class):
         try:
             obj_inst = obj_class()
         except:
