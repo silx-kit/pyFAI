@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/11/2012"
+__date__ = "29/08/2012"
 __status__ = "stable"
 
 import os
@@ -39,6 +39,7 @@ import numpy
 logger = logging.getLogger("pyFAI.detectors")
 
 from pyFAI.spline import Spline
+from pyFAI.utils import lazy_property
 try:
     from pyFAI.fastcrc import crc32
 except ImportError:
@@ -438,6 +439,42 @@ class Pilatus(Detector):
         p2 = (self._pixel2 * (delta2 + 0.5 + d2))
         return p1, p2
 
+class Pilatus100k(Pilatus):
+    """
+    Pilatus 100k detector
+    """
+    def __init__(self, pixel1=172e-6, pixel2=172e-6):
+        Pilatus.__init__(self, pixel1, pixel2)
+        self.max_shape = (195, 487)
+
+
+class Pilatus200k(Pilatus):
+    """
+    Pilatus 200k detector
+    """
+    def __init__(self, pixel1=172e-6, pixel2=172e-6):
+        Pilatus.__init__(self, pixel1, pixel2)
+        self.max_shape = (407, 487)
+
+
+class Pilatus300k(Pilatus):
+    """
+    Pilatus 300k detector
+    """
+    def __init__(self, pixel1=172e-6, pixel2=172e-6):
+        Pilatus.__init__(self, pixel1, pixel2)
+        self.max_shape = (619, 487)
+
+
+class Pilatus300kw(Pilatus):
+    """
+    Pilatus 300k-wide detector
+    """
+    def __init__(self, pixel1=172e-6, pixel2=172e-6):
+        Pilatus.__init__(self, pixel1, pixel2)
+        self.max_shape = (195, 1475)
+
+
 class Pilatus1M(Pilatus):
     """
     Pilatus 1M detector
@@ -454,7 +491,7 @@ class Pilatus2M(Pilatus):
     force_pixel = True
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         Pilatus.__init__(self, pixel1, pixel2)
-        self.max_shape = (1475, 1679)
+        self.max_shape = (1679, 1475)
 
 
 class Pilatus6M(Pilatus):
@@ -554,19 +591,18 @@ class Xpad_flat(Detector):
         discards the first line and raw form all modules:
         those are 2.5x bigger and often mis - behaving
         """
-        with self._sem:
-            if (self.max_shape[0] or self.max_shape[1]) is None:
-                raise NotImplementedError("Generic Xpad detector does not"
-                                          " know the max size ...")
-            mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
-            # workinng in dim0 = Y
-            for i in range(0, self.max_shape[0], self.MODULE_SIZE[0]):
-                mask[i, :] = 1
-                mask[i + self.MODULE_SIZE[0] - 1, :] = 1
-            # workinng in dim1 = X
-            for i in range(0, self.max_shape[1], self.MODULE_SIZE[1]):
-                mask[:, i ] = 1
-                mask[:, i + self.MODULE_SIZE[1] - 1] = 1
+        if (self.max_shape[0] or self.max_shape[1]) is None:
+            raise NotImplementedError("Generic Xpad detector does not"
+                                      " know the max size ...")
+        mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
+        # workinng in dim0 = Y
+        for i in range(0, self.max_shape[0], self.MODULE_SIZE[0]):
+            mask[i, :] = 1
+            mask[i + self.MODULE_SIZE[0] - 1, :] = 1
+        # workinng in dim1 = X
+        for i in range(0, self.max_shape[1], self.MODULE_SIZE[1]):
+            mask[:, i ] = 1
+            mask[:, i + self.MODULE_SIZE[1] - 1] = 1
         return mask
 
     def calc_cartesian_positions(self, d1=None, d2=None):
@@ -608,6 +644,120 @@ class Xpad_flat(Detector):
         p2 = self.pixel2 * (0.5 + c2)
         return p1, p2
 
+
+def _pixels_compute_center(pixels_size):
+    """
+    given a list of pixel size, this method return the center of each
+    pixels. This method is generic.
+
+    @param pixels_size: the size of the pixels.
+    @type length: ndarray
+
+    @return: the center-coordinates of each pixels 0..length
+    @rtype: ndarray
+    """
+    center = pixels_size.cumsum()
+    tmp = center.copy()
+    center[1:] += tmp[:-1]
+    center /= 2.
+
+    return center
+
+def _pixels_extract_coordinates(coordinates, pixels):
+    """
+    given a list of pixel coordinates, return the correspondig
+    pixels coordinates extracted from the coodinates array.
+
+    @param coodinates: the pixels coordinates
+    @type coordinates: ndarray 1D (pixels -> coordinates)
+    @param pixels: the list of pixels to extract.
+    @type pixels: ndarray 1D(calibration) or 2D(integration)
+
+    @return: the pixels coordinates
+    @rtype: ndarray
+    """
+    return coordinates[pixels] if (pixels is not None) else coordinates
+
+class ImXPadS140(Detector):
+    """
+    ImXPad detector: ImXPad s140 detector with 2x7modules
+    """
+    MODULE_SIZE = (120, 80)  # number of pixels per module (y, x)
+    MAX_SHAPE = (240, 560)  # max size of the detector
+    PIXEL_SIZE = (130e-6, 130e-6)
+    force_pixel = True
+
+    class __metaclass__(type):
+
+        @lazy_property
+        def COORDINATES(cls):
+            """
+            cache used to store the coordinates of the y, x, detector
+            pixels. These array are compute only once for all
+            instances.
+            """
+            return tuple(_pixels_compute_center(cls._pixels_size(n, m, p))
+                         for n, m, p in zip(cls.MAX_SHAPE,
+                                            cls.MODULE_SIZE,
+                                            cls.PIXEL_SIZE))
+
+    @staticmethod
+    def _pixels_size(length, module_size, pixel_size):
+        """
+        given the length (in pixel) of the detector, the size of a
+        module (in pixels) and the pixel_size (in meter). this method
+        return the length of each pixels 0..length.
+
+        @param length: the number of pixel to compute
+        @type length: int
+        @param module_size: the number of pixel of one module
+        @type module_size: int
+        @param pixel_size: the size of one pixels (meter per pixel)
+        @type length: float
+
+        @return: the coordinates of each pixels 0..length
+        @rtype: ndarray
+        """
+        size = numpy.ones(length)
+        n = length // module_size
+        for i in range(1, n):
+            size[i * module_size - 1] = 2.5
+            size[i * module_size] = 2.5
+        return pixel_size * size
+
+    def __init__(self, pixel1=130e-6, pixel2=130e-6):
+        Detector.__init__(self, pixel1, pixel2)
+        self.name = "ImXPad S140"
+        self.max_shape = self.MAX_SHAPE
+
+    def __repr__(self):
+        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
+            (self.name, self.pixel1, self.pixel2)
+
+
+    def calc_cartesian_positions(self, d1=None, d2=None):
+        """
+        Calculate the position of each pixel center in cartesian coordinate
+        and in meter of a couple of coordinates.
+        The half pixel offset is taken into account here !!!
+
+        @param d1: the Y pixel positions (slow dimension)
+        @type d1: ndarray (1D or 2D)
+        @param d2: the X pixel positions (fast dimension)
+        @type d2: ndarray (1D or 2D)
+
+        @return: position in meter of the center of each pixels.
+        @rtype: ndarray
+
+        d1 and d2 must have the same shape, returned array will have
+        the same shape.
+
+        """
+        return tuple(_pixels_extract_coordinates(coordinates, pixels)
+                     for coordinates, pixels in zip(ImXPadS140.COORDINATES,
+                                                    (d1, d2)))
+
+
 class Perkin(Detector):
     """
     Perkin detector
@@ -619,8 +769,44 @@ class Perkin(Detector):
         self.name = "Perkin detector"
         self.max_shape = (2048, 2048)
 
+class RayonixMx225(Detector):
+    """
+    Rayonix mx225 2D detector
+    """
+    force_pixel = True
+    def __init__(self):
+        Detector.__init__(self, pixel1=73e-6, pixel2=73e-6)
+        self.max_shape = (3072, 3072)
+        self.name = "Rayonix mx225"
 
-ALL_DETECTORS = {"pilatus1m": Pilatus1M,
+class RayonixMx300(Detector):
+    """
+    Rayonix mx300 2D detector
+    """
+    force_pixel = True
+    def __init__(self):
+        Detector.__init__(self, pixel1=73e-6, pixel2=73e-6)
+        self.max_shape = (4096, 4096)
+        self.name = "Rayonix mx300"
+
+class RayonixMx325(Detector):
+    """
+    Rayonix mx325 2D detector
+    """
+    force_pixel = True
+    def __init__(self):
+        Detector.__init__(self, pixel1=79e-6, pixel2=79e-6)
+        self.max_shape = (4096, 4096)
+        self.name = "Rayonix mx325"
+
+ALL_DETECTORS = {"rayonix_mx225": RayonixMx225,
+                 "rayonix_mx300": RayonixMx300,
+                 "rayonix_mx325": RayonixMx325,
+                 "pilatus100k": Pilatus100k,
+                 "pilatus200k": Pilatus200k,
+                 "pilatus300k": Pilatus300k,
+                 "pilatus300kw": Pilatus300kw,
+                 "pilatus1m": Pilatus1M,
                  "pilatus2m": Pilatus2M,
                  "pilatus6m": Pilatus6M,
                  "condor": Fairchild,
@@ -628,11 +814,11 @@ ALL_DETECTORS = {"pilatus1m": Pilatus1M,
                  "frelon": FReLoN,
                  "xpad": Xpad_flat,
                  "xpad_flat": Xpad_flat,
+                 "imxpad_s140" : ImXPadS140,
                  "basler": Basler,
                  "dexela2923": Dexela2923,
                  "perkin": Perkin,
                  "detector": Detector}
-
 
 def detector_factory(name):
     """
@@ -647,4 +833,8 @@ def detector_factory(name):
     if name in ALL_DETECTORS:
         return ALL_DETECTORS[name]()
     else:
-        raise RuntimeError("Detector %s is unknown !" % (name))
+        msg = ("Detector %s is unknown !, "
+               "please select one from %s" % (name, ALL_DETECTORS.keys()))
+        logger.error(msg)
+        raise RuntimeError(msg)
+

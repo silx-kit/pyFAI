@@ -41,7 +41,8 @@ from utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI.histogram import histogram, histogram2d
-
+#histogram = sys.modules["pyFAI.histogram"].histogram
+#histogram2d = sys.modules["pyFAI.histogram"].histogram2d
 if logger.getEffectiveLevel() == logging.DEBUG:
     import pylab
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)

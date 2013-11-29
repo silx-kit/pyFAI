@@ -31,15 +31,19 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/11/2012"
+__date__ = "04/09/2013"
 __status__ = "stable"
 
 
-import os, sys, glob, shutil, ConfigParser, platform
+import os
+import sys
+import glob
+import shutil
+import platform
+
 from distutils.core import setup, Extension, Command
 from numpy.distutils.misc_util import get_numpy_include_dirs
 from distutils.sysconfig import get_python_lib
-
 # ###############################################################################
 # Check for Cython
 # ###############################################################################
@@ -187,8 +191,20 @@ if (os.name != "posix") or ("x86" not in platform.machine()):
 # ###############################################################################
 # scripts and data installation
 # ###############################################################################
+if sys.platform == "win32" and "bdist_msi" in sys.argv:
+    if sys.version_info < (2.7):
+        import struct
+        platform_bits = 8 * struct.calcsize("P")
+        if platform_bits == 32:
+            win = "bdist.win32"
+        else:
+            win = "bdist.win-amd64"
+        installDir = os.path.join("build", win, "msi", "Lib", "site-packages", "pyFAI")
+    else:
+        installDir = os.path.join("Lib", "site-packages", "pyFAI")
 
-installDir = os.path.join(get_python_lib(), "pyFAI")
+else:
+    installDir = os.path.join(get_python_lib(), "pyFAI")
 
 data_files = [(installDir, [os.path.join('openCL', o) for o in [
       "ocl_azim_kernel_2.cl", "ocl_azim_kernel2d_2.cl", "ocl_azim_LUT.cl"]] +
@@ -215,10 +231,6 @@ if sys.platform == "win32":
 else:
     script_files = glob.glob("scripts/*")
 print(data_files)
-
-data_files += [(installDir, [os.path.join('openCL', o) for o in [
-      "ocl_azim_kernel_2.cl", "ocl_azim_kernel2d_2.cl", "ocl_azim_LUT.cl"]] +
-                [os.path.join('gui', o) for o in ("integration.ui",)])]
 
 version = [eval(l.split("=")[1]) for l in open(os.path.join(os.path.dirname(
     os.path.abspath(__file__)), "pyFAI-src", "__init__.py"))

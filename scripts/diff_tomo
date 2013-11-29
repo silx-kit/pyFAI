@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/11/2012"
+__date__ = "04/11/2013"
 __satus__ = "development"
 
 import logging
@@ -45,7 +45,7 @@ import posixpath
 import numpy
 import fabio
 import h5py
-import pyFAI
+import pyFAI, pyFAI.utils
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("diff_tomo")
 
@@ -79,6 +79,7 @@ class DiffTomo(object):
         self.inputfiles = []
         self.timing = []
         self.use_gpu = False
+        self.unit = "2th_deg"
 
     def __repr__(self):
         return "Diffraction Tomography with r=%s t: %s, d:%s" % \
@@ -89,18 +90,36 @@ class DiffTomo(object):
         parse options from command line
         """
         from optparse import OptionParser
-        usage = "usage: %prog [options] file1.edf file2.edf ..."
+        description = """Azimuthal integration for diffraction tomography.
+
+Diffraction tomography is an experiment where 2D diffraction patterns are recorded
+while performing a 2D scan, one (the slowest) in rotation around the sample center
+and the other (the fastest) along a translation through the sample.
+Diff_tomo is a script (based on pyFAI and h5py) which allows the reduction of this
+4D dataset into a 3D dataset containing the rotations angle (hundreds), the translation step (hundreds)
+and the many diffraction angles (thousands). The resulting dataset can be opened using PyMca roitool
+where the 1d dataset has to be selected as last dimension. This file is not (yet) NeXus compliant.
+
+This tool can be used for mapping experiments if one considers the slow scan direction as the rotation.
+        """
+        epilog = """If the number of files is too large, use double quotes "*.edf" """
+        usage = """usage: %prog [options] -p ponifile imagefiles*
+If the number of files is too large, use double quotes like "*.edf" """
         version = "%prog " + pyFAI.version
-        parser = OptionParser(usage=usage, version=version)
-        parser.add_option("-o", "--out", dest="outfile",
+        parser = OptionParser(usage=usage, version=version,
+                              description=description, epilog=epilog)
+        parser.add_option("-o", "--output", dest="outfile",
                           help="HDF5 File where processed sinogram was saved",
                           metavar="FILE", default="diff_tomo.h5")
         parser.add_option("-v", "--verbose",
                           action="store_true", dest="verbose", default=False,
                           help="switch to verbose/debug mode")
+        parser.add_option("-P", "--prefix", dest="prefix",
+                          help="Prefix or common base for all files",
+                          metavar="FILE", default="", type="str")
         parser.add_option("-e", "--extension", dest="extension",
-                          help="process all files with this extension",
-                          default="edf")
+                          help="Process all files with this extension",
+                          default="")
         parser.add_option("-t", "--nTrans", dest="nTrans",
                           help="number of points in translation", default=None)
         parser.add_option("-r", "--nRot", dest="nRot",
@@ -126,49 +145,49 @@ class DiffTomo(object):
         (options, args) = parser.parse_args()
 
         # Analyse aruments and options
-        if len(args) != 1:
-            parser.error("incorrect number of arguments")
+#        if len(args) != 1:
+#            parser.error("incorrect number of arguments")
 
         if options.verbose:
             logger.setLevel(logging.DEBUG)
         self.hdf5 = options.outfile
         if options.dark:
-            darkFiles = [f for f in options.dark.split(",") if os.path.isfile(f)]
-            if darkFiles:
-                self.dark = fabio.open(darkFiles[0]).data.astype(numpy.float32)
-                if len(darkFiles) > 1:
-                    for i in darkFiles[1:]:
-                        self.dark += fabio.open(i).data
-                    self.dark /= len(darkFiles)
+            darkFiles = [os.path.abspath(f) for f in options.dark.split(",") if os.path.isfile(f)]
+            if not darkFiles:
+                raise RuntimeError("No such dark files")
+            else:
+                self.dark = pyFAI.utils.averageDark([fabio.open(i).data for i in darkFiles])
         if options.flat:
-            flatFiles = [f for f in options.flat.split(",") if os.path.isfile(f)]
-            if flatFiles:
-                self.flat = fabio.open(flatFiles[0]).data.astype(numpy.float32)
-                if len(flatFiles) > 1:
-                    for i in flatFiles[1:]:
-                        self.flat += fabio.open(i).data
-                    self.flat /= len(flatFiles)
+            darkFiles = [os.path.abspath(f) for f in options.flat.split(",") if os.path.isfile(f)]
+            if not darkFiles:
+                raise RuntimeError("No such flat files")
+            else:
+                self.flat = pyFAI.utils.averageDark([fabio.open(i).data for i in darkFiles])
         self.use_gpu = options.gpu
         self.inputfiles = []
         for f in args:
             if os.path.isfile(f) and f.endswith(options.extension):
-                self.inputfiles.append(f)
+                self.inputfiles.append(os.path.abspath(f))
             elif os.path.isdir(f):
-                self.inputfiles += [os.path.join(f, g) for g in os.listdir(f) if g.endswith(options.extension)]
+                self.inputfiles += [os.path.abspath(os.path.join(f, g)) for g in os.listdir(f) if g.endswith(options.extension) and g.startswith(options.prefix)]
+            else:
+                self.inputfiles += [os.path.abspath(f) for f in glob.glob(f)]
         self.inputfiles.sort()
         if not self.inputfiles:
-            raise RuntimeError("No input files to process")
+            raise RuntimeError("No input files to process, try --help")
+        if options.mask:
+            if os.path.isfile(options.mask):
+                logger.info("Reading Mask file from: %s" % options.mask)
+                self.mask = (fabio.open(options.mask).data != 0)
+            else:
+                logger.warning("No such mask file %s" % options.mask)
         if options.poni:
             if os.path.isfile(options.poni):
+                logger.info("Reading PONI file from: %s" % options.poni)
                 self.poni = options.poni
                 self.setup_ai()
             else:
                 logger.warning("No such poni file %s" % options.poni)
-        if options.mask:
-            if os.path.isfile(options.poni):
-                self.mask = fabio.open(options.mask).data
-            else:
-                logger.warning("No such mask file %s" % options.poni)
         if options.nTrans is not None:
             self.nTrans = int(options.nTrans)
         if options.nRot is not None:
@@ -247,11 +266,14 @@ class DiffTomo(object):
         elif pos["index"] < 0 or pos["rot"] < 0 or pos["trans"] < 0:
             return
         data = fabio.open(filename).data.astype(numpy.float32)
+
         if self.use_gpu:
-            tth, I = self.ai.xrpd_LUT_OCL(data, self.nDiff, safe=False,
-                                          devicetype="gpu")
+            meth = "lut_ocl_gpu"
         else:
-            tth, I = self.ai.xrpd_LUT(data, self.nDiff, safe=False)
+            meth = "lut"
+        tth, I = self.ai.integrate1d(data, self.nDiff, safe=False,
+                                     method=meth, unit=self.unit)
+
         self.dataset[pos["rot"], pos["trans"], :] = I
         if "2theta" not in self.group:
             self.group["2theta"] = tth

@@ -8,10 +8,17 @@ Welcome to pyFAI's documentation!
 
 Contents:
 
+This documentation is starts with a mix of various publication describing pyFAI, what it aims at and how it works 
+(for scientists); 
+then the usage of the scripts provided with pyFAI are described (for users)
+before the programming interface is described (for programmer).    
+The last chapter correspond to software project management.
+
 .. toctree::
    :maxdepth: 2
 
    pyFAI
+   man/scripts
    api/modules
    project
 

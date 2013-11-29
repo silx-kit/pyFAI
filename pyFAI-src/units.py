@@ -46,6 +46,12 @@ class Enum(dict):
             return self[name]
         raise AttributeError
 
+    def __repr__(self, *args, **kwargs):
+        if "REPR" in self:
+            return self["REPR"]
+        else:
+            return dict.__repr__(self, *args, **kwargs)
+
 UNDEFINED = Enum(REPR='?')
 
 TTH_DEG = TTH = Enum(REPR="2th_deg",
@@ -87,8 +93,8 @@ def to_unit(obj):
             if one_unit.REPR == obj:
                 rad_unit = one_unit
                 break
-    elif isinstance(obj, Enum):
+    elif obj.__class__.__name__.split(".")[-1] == "Enum":
         rad_unit = obj
     if rad_unit is None:
-        logger.error("Unable to recognize this type unit %s. Valid units are 2th_deg, 2th_rad, q_nm^-1, q_A^-1 and r_mm" % obj)
+        logger.error("Unable to recognize this type unit '%s' of type %s. Valid units are 2th_deg, 2th_rad, q_nm^-1, q_A^-1 and r_mm" % (obj, type(obj)))
     return rad_unit

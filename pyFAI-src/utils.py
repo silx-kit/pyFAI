@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/03/2013"
+__date__ = "03/07/2013"
 __status__ = "development"
 
 import logging, sys, types, os, glob
@@ -42,7 +42,8 @@ import numpy
 import fabio
 from scipy import ndimage
 from scipy.interpolate import interp1d
-from math import  ceil
+from math import  ceil, sin, cos, atan2, pi
+
 from . import relabel as relabelCython
 from scipy.optimize.optimize import fmin, fminbound
 import scipy.ndimage.filters
@@ -155,15 +156,16 @@ def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0):
         has_fftw3 = ("fftw3" in sys.modules)
     if has_fftw3:
         try:
-            if mode != "wrap":
-                input_img = expand(input_img, sigma, mode, cval)
-            s0, s1 = input_img.shape
             if isinstance(sigma, (list, tuple)):
-                k0 = int(ceil(float(sigma[0])))
-                k1 = int(ceil(float(sigma[1])))
+                sigma = (float(sigma[0]), float(sigma[1]))
             else:
-                k0 = k1 = int(ceil(float(sigma)))
+                sigma = (float(sigma), float(sigma))
+            k0 = int(ceil(4.0 * float(sigma[0])))
+            k1 = int(ceil(4.0 * float(sigma[1])))
 
+            if mode != "wrap":
+                input_img = expand(input_img, (k0, k1), mode, cval)
+            s0, s1 = input_img.shape
             sum_init = input_img.astype(numpy.float32).sum()
             fftOut = numpy.zeros((s0, s1), dtype=complex)
             fftIn = numpy.zeros((s0, s1), dtype=complex)
@@ -171,8 +173,8 @@ def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0):
                 fft = fftw3.Plan(fftIn, fftOut, direction='forward')
                 ifft = fftw3.Plan(fftOut, fftIn, direction='backward')
 
-            g0 = gaussian(s0, k0)
-            g1 = gaussian(s1, k1)
+            g0 = gaussian(s0, sigma[0])
+            g1 = gaussian(s1, sigma[1])
             g0 = numpy.concatenate((g0[s0 // 2:], g0[:s0 // 2]))  # faster than fftshift
             g1 = numpy.concatenate((g1[s1 // 2:], g1[:s1 // 2]))  # faster than fftshift
             g2 = numpy.outer(g0, g1)
@@ -257,10 +259,10 @@ def dog_filter(input_img, sigma1, sigma2, mode="reflect", cval=0.0):
             input_img = expand(input_img, sigma, mode, cval)
         s0, s1 = input_img.shape
         if isinstance(sigma, (list, tuple)):
-            k0 = int(ceil(float(sigma[0])))
-            k1 = int(ceil(float(sigma[1])))
+            k0 = int(ceil(4.0 * float(sigma[0])))
+            k1 = int(ceil(4.0 * float(sigma[1])))
         else:
-            k0 = k1 = int(ceil(float(sigma)))
+            k0 = k1 = int(ceil(4.0 * float(sigma)))
 
         if fftw3:
             sum_init = input_img.astype(numpy.float32).sum()
@@ -298,9 +300,11 @@ def expand(input_img, sigma, mode="constant", cval=0.0):
     """Expand array a with its reflection on boundaries
 
     @param a: 2D array
-    @param sigma: float or 2-tuple of floats
-    @param mode:"constant","nearest" or "reflect"
+    @param sigma: float or 2-tuple of floats.
+    @param mode:"constant", "nearest", "reflect" or mirror
     @param cval: filling value used for constant, 0.0 by default
+
+    Nota: sigma is the half-width of the kernel. For gaussian convolution it is adviced that it is 4*sigma_of_gaussian
     """
     s0, s1 = input_img.shape
     dtype = input_img.dtype
@@ -313,8 +317,19 @@ def expand(input_img, sigma, mode="constant", cval=0.0):
         raise RuntimeError("Makes little sense to apply a kernel (%i,%i)larger than the image (%i,%i)" % (k0, k1, s0, s1))
     output = numpy.zeros((s0 + 2 * k0, s1 + 2 * k1), dtype=dtype) + float(cval)
     output[k0:k0 + s0, k1:k1 + s1] = input_img
-    if mode in  ["reflect", "mirror"]:
-    # 4 corners
+    if (mode == "mirror"):
+        # 4 corners
+        output[s0 + k0:, s1 + k1:] = input_img[-2:-k0 - 2:-1, -2:-k1 - 2:-1]
+        output[:k0, :k1] = input_img[k0 - 0:0:-1, k1 - 0:0:-1]
+        output[:k0, s1 + k1:] = input_img[k0 - 0:0:-1, s1 - 2: s1 - k1 - 2:-1]
+        output[s0 + k0:, :k1] = input_img[s0 - 2: s0 - k0 - 2:-1, k1 - 0:0:-1]
+        # 4 sides
+        output[k0:k0 + s0, :k1] = input_img[:s0, k1 - 0:0:-1]
+        output[:k0, k1:k1 + s1] = input_img[k0 - 0:0:-1, :s1]
+        output[-k0:, k1:s1 + k1] = input_img[-2:s0 - k0 - 2:-1, :]
+        output[k0:s0 + k0, -k1:] = input_img[:, -2:s1 - k1 - 2:-1]
+    elif mode == "reflect":
+        # 4 corners
         output[s0 + k0:, s1 + k1:] = input_img[-1:-k0 - 1:-1, -1:-k1 - 1:-1]
         output[:k0, :k1] = input_img[k0 - 1::-1, k1 - 1::-1]
         output[:k0, s1 + k1:] = input_img[k0 - 1::-1, s1 - 1: s1 - k1 - 1:-1]
@@ -335,8 +350,24 @@ def expand(input_img, sigma, mode="constant", cval=0.0):
         output[:k0, k1:k1 + s1] = numpy.outer(numpy.ones(k0), input_img[0, :])
         output[-k0:, k1:s1 + k1] = numpy.outer(numpy.ones(k0), input_img[-1, :])
         output[k0:s0 + k0, -k1:] = numpy.outer(input_img[:, -1], numpy.ones(k1))
-    return output
+    elif mode == "wrap":
+        # 4 corners
+        output[s0 + k0:, s1 + k1:] = input_img[:k0, :k1]
+        output[:k0, :k1] = input_img[-k0:, -k1:]
+        output[:k0, s1 + k1:] = input_img[-k0:, :k1]
+        output[s0 + k0:, :k1] = input_img[:k0, -k1:]
+        # 4 sides
+        output[k0:k0 + s0, :k1] = input_img[:, -k1:]
+        output[:k0, k1:k1 + s1] = input_img[-k0:, :]
+        output[-k0:, k1:s1 + k1] = input_img[:k0, :]
+        output[k0:s0 + k0, -k1:] = input_img[:, :k1]
+    elif mode == "constant":
+        # Nothing to do
+        pass
 
+    else:
+        raise RuntimeError("Unknown expand mode: %s" % mode)
+    return output
 
 
 def relabel(label, data, blured, max_size=None):
@@ -407,7 +438,8 @@ def averageDark(lstimg, center_method="mean", cutoff=None):
     return output
 
 def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=None,
-                   darks=None, flats=None, filter_="mean", correct_flat_from_dark=False):
+                   darks=None, flats=None, filter_="mean", correct_flat_from_dark=False,
+                   cutoff=None, format="edf"):
     """
     Takes a list of filenames and create an average frame discarding all saturated pixels.
 
@@ -420,9 +452,16 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
     @param flats: list of flat field images for division
     @param filter_: can be maximum, mean or median (default=mean)
     @param correct_flat_from_dark: shall the flat be re-corrected ?
+    @param cutoff: keep all data where (I-center)/std < cutoff
+    @return: filename with the data or the data ndarray in case format=None
     """
+    if filter_ not in ["min", "max", "median", "mean"]:
+        logger.warning("Filter %s not understood. switch to mean filter")
+        filter_ = "mean"
     ld = len(listImages)
     sumImg = None
+    do_dark = (darks is not None)
+    do_flat = (flats is not None)
     dark = None
     flat = None
     big_img = None
@@ -438,16 +477,14 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
         shape = ds.shape
         if sumImg is None:
             sumImg = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
-        if darks is not None:
+        if do_dark and (dark is None):
             if "ndim" in dir(darks) and darks.ndim == 3:
                 dark = averageDark(darks, center_method="mean", cutoff=4)
             elif ("__len__" in dir(darks)) and (type(darks[0]) in types.StringTypes):
                 dark = averageDark([fabio.open(f).data for f in darks if os.path.exists(f)], center_method="mean", cutoff=4)
             elif ("__len__" in dir(darks)) and ("ndim" in dir(darks[0])) and (darks[0].ndim == 2):
                 dark = averageDark(darks, center_method="mean", cutoff=4)
-        else:
-            dark = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
-        if flats is not None:
+        if do_flat and (flat is  None):
             if "ndim" in dir(flats) and flats.ndim == 3:
                 flat = averageDark(flats, center_method="mean", cutoff=4)
             elif ("__len__" in dir(flats)) and (type(flats[0]) in types.StringTypes):
@@ -459,50 +496,80 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             if correct_flat_from_dark:
                 flat -= dark
             flat[numpy.where(flat <= 0) ] = 1.0
-        else:
-            flat = numpy.ones((shape[0], shape[1]), dtype=numpy.float32)
-        correctedImg = (removeSaturatedPixel(ds.astype(numpy.float32), threshold, minimum, maximum) - dark) / flat
-        if filter_ == "max":
-            sumImg = numpy.maximum(correctedImg, sumImg)
-        elif filter_ == "median":
+        correctedImg = numpy.ascontiguousarray(ds, numpy.float32)
+        if threshold or minimum or maximum:
+            correctedImg = removeSaturatedPixel(correctedImg, threshold, minimum, maximum)
+        if do_dark:
+            correctedImg -= dark
+        if do_flat:
+             correctedImg /= flat
+        if (cutoff or (filter_ == "median")):
             if big_img is None:
-                logger.info("Big array allocation for median filter")
-                big_img = numpy.zeros((correctedImg.shape[0], correctedImg.shape[1], ld), dtype=numpy.float32)
-            big_img[:, :, idx] = correctedImg
-        else:  # mean
+                logger.info("Big array allocation for median filter or cut-off")
+                big_img = numpy.zeros((ld, shape[0], shape[1]), dtype=numpy.float32)
+            big_img[idx, :, :] = correctedImg
+        elif filter_ == "max":
+            sumImg = numpy.maximum(correctedImg, sumImg)
+        elif filter_ == "min":
+            sumImg = numpy.minimum(correctedImg, sumImg)
+        elif filter_ == "mean":
             sumImg += correctedImg
-    if filter_ == "max":
-        datared = numpy.ascontiguousarray(sumImg, dtype=numpy.float32)
-    elif filter_ == "median":
-        datared = numpy.median(big_img, axis= -1)
-    else:  # mean
-        datared = sumImg / numpy.float32(ld)
-    if output is None:
-        prefix = ""
-        for ch in zip(*listImages):
-            c = ch[0]
-            good = True
-            for i in ch:
-                if i != c:
-                    good = False
-                    break
-            if good:
-                prefix += c
-            else:
-                break
-        if filter_ == "max":
-            output = ("maxfilt%02i-" % ld) + prefix + ".edf"
-        elif filter_ == "median":
-            output = ("medfilt%02i-" % ld) + prefix + ".edf"
-        elif filter_ == "median":
-            output = ("meanfilt%02i-" % ld) + prefix + ".edf"
-        else:
-            output = ("merged%02i-" % ld) + prefix + ".edf"
+    if cutoff or (filter_ == "median"):
+        datared = averageDark(big_img, filter_, cutoff)
+    else:
+        if filter_ in ["max", "min"]:
+            datared = numpy.ascontiguousarray(sumImg, dtype=numpy.float32)
+        elif filter_ == "mean":
+            datared = sumImg / numpy.float32(ld)
     logger.debug("Intensity range in merged dataset : %s --> %s", datared.min(), datared.max())
-    fabio.edfimage.edfimage(data=datared,
-                            header={"merged": ", ".join(listImages)}).write(output)
-    return output
-
+    if format is not None:
+        if format.startswith("."):
+            format = format.lstrip(".")
+        if (output is None):
+            prefix = ""
+            for ch in zip(*listImages):
+                c = ch[0]
+                good = True
+                for i in ch:
+                    if i != c:
+                        good = False
+                        break
+                if good:
+                    prefix += c
+                else:
+                    break
+            if filter_ == "max":
+                output = "maxfilt%02i-%s.%s" % (ld,prefix,format)
+            elif filter_ == "median":
+                output = "medfilt%02i-%s.%s" % (ld,prefix,format)
+            elif filter_ == "median":
+                output = "meanfilt%02i-%s.%s" % (ld, prefix, format)
+            else:
+                output = "merged%02i-%s.%s" % (ld, prefix, format)
+        if format and output:
+            if "." in format:  # in case "edf.gz"
+                format = format.split(".")[0]
+            fabiomod = fabio.__getattribute__(format + "image")
+            fabioclass = fabiomod.__getattribute__(format + "image")
+            header = {"method":filter_,
+                      "nframes":ld,
+                      "cutoff":str(cutoff)}
+            form = "merged_file_%%0%ii" % len(str(len(listImages)))
+            header_list = ["method", "nframes", "cutoff"]
+            for i, f in enumerate(listImages):
+                name = form % i
+                header[name] = f
+                header_list.append(name)
+            fimg = fabioclass(data=datared,
+                              header=header)
+#            if "header_keys" in dir(fimg):
+            fimg.header_keys = header_list
+                                      
+            fimg.write(output)
+            logger.info("Wrote %s" % output)
+        return output
+    else:
+        return datared
 
 def boundingBox(img):
     """
@@ -655,7 +722,7 @@ def shiftFFT(input_img, shift_val, method="fftw"):
         fftw3 = sys.modules.get("fftw3")
     else:
         fftw3 = None
-    print fftw3
+#    print fftw3
     d0, d1 = input_img.shape
     v0, v1 = shift_val
     f0 = numpy.fft.ifftshift(numpy.arange(-d0 // 2, d0 // 2))
@@ -801,3 +868,85 @@ def expand_args(args):
         else:
             new += glob.glob(afile)
     return new
+
+
+def _get_data_path(filename):
+    """
+    @param filename: the name of the requested data file.
+    @type filename: str
+
+    In the future ....
+    This method try to find the requested ui-name following the
+    xfreedesktop recommendations. First the source directory then
+    the system locations
+
+    For now, just perform a recursive search
+    """
+    # when using bootstrap the file is located under the build directory
+#    real_filename = os.path.abspath(os.path.join(os.path.dirname(__file__),
+#                                                 os.path.pardir,
+#                                                 os.path.pardir,
+#                                                 os.path.pardir,
+#                                                 'data',
+#                                                 filename))
+#    if not os.path.exists(real_filename):
+    resources = [os.path.dirname(__file__)]
+    try:
+        import xdg.BaseDirectory
+        resources += xdg.BaseDirectory.load_data_paths("pyFAI")
+    except ImportError:
+        pass
+
+    for resource in resources:
+        real_filename = os.path.join(resource, filename)
+        if os.path.exists(real_filename):
+            return real_filename
+    else:
+        raise Exception("Can not find the [%s] resource, "
+                        " something went wrong !!!" % (real_filename,))
+#    else:
+#        return real_filename
+
+
+def get_ui_file(filename):
+#    return _get_data_path(os.path.join("gui", filename))
+    return _get_data_path(filename)
+
+
+def get_cl_file(filename):
+#    return _get_data_path(os.path.join("openCL", filename))
+    return _get_data_path(filename)
+
+def deg2rad(dd):
+    """
+    Convert degrees to radian in the range -pi->pi
+
+    @param dd: angle in degrees
+
+    Nota: depending on the platform it could be 0<2pi
+    A branch is cheaper than a trigo operation
+    """
+    while dd > 180.0:
+        dd -= 360.0
+    while dd <= -180.0:
+        dd += 360.0
+    return dd * pi / 180.
+
+class lazy_property(object):
+    '''
+    meant to be used for lazy evaluation of an object attribute.
+    property should represent non-mutable data, as it replaces itself.
+    '''
+
+    def __init__(self,fget):
+        self.fget = fget
+        self.func_name = fget.__name__
+
+
+    def __get__(self,obj,cls):
+        if obj is None:
+            return None
+        value = self.fget(obj)
+        setattr(obj,self.func_name,value)
+        return value
+

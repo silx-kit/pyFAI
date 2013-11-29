@@ -105,8 +105,13 @@ class PeakPicker(object):
         if maximize:
             mng = pylab.get_current_fig_manager()
 #            print mng.window.maxsize()
-            event = Event(1920, 1200)  # *mng.window.maxsize())
-            mng.resize(event)
+            # *mng.window.maxsize())
+            win_shape = (1920, 1080)
+            event = Event(*win_shape)
+            try:
+                mng.resize(event)
+            except TypeError:
+                 mng.resize(*win_shape)
             self.fig.canvas.draw()
         self.fig.canvas.mpl_connect('button_press_event', self.onclick)
 
@@ -206,7 +211,7 @@ class PeakPicker(object):
                     logging.info("Removing No group point (non existing?)")
                 else:
                     logging.info("Removing point group #%i (%5.1f %5.1f) containing %i subpoints" % (len(self.points), poped_points[0][0], poped_points[0][1], len(poped_points)))
-
+                self.fig.canvas.draw()
                 sys.stdout.flush()
 
     def readFloatFromKeyboard(self, text, dictVar):
@@ -243,7 +248,8 @@ class PeakPicker(object):
                                       " 3) Control + Right-click : add a point to a new group",
                                       " 4) Center-click: erase the current group"]))
 
-        raw_input("Please press enter when you are happy; to fill in ring number. Ring number starts at 0" + os.linesep)
+        raw_input("Please press enter when you are happy with your selection" + os.linesep)
+        print("Now fill in the ring number. Ring number starts at 0, like point-groups.")
         self.points.readRingNrFromKeyboard()  # readAngleFromKeyboard()
         if filename is not None:
             self.points.save(filename)
@@ -275,6 +281,8 @@ class PeakPicker(object):
                 xlim, ylim = self.ax.get_xlim(), self.ax.get_ylim()
                 self.ct.contour(data, levels=angles)
                 self.ax.set_xlim(xlim);self.ax.set_ylim(ylim);
+                print("Visually check that the curve overlays with the Debye-Sherrer rings of the image")
+                print("Check also for correct indexing of rings")
             except MemoryError:
                 logging.error("Sorry but your computer does NOT have enough memory to display the 2-theta contour plot")
             self.fig.show()

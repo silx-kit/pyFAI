@@ -42,8 +42,6 @@ import os.path as op
 import numpy
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI")
-from PyQt4 import QtCore, QtGui, uic
-from PyQt4.QtCore import SIGNAL
 import pyFAI, fabio
 from pyFAI.opencl import ocl
 import pyFAI.utils
@@ -64,10 +62,36 @@ if __name__ == "__main__":
     from optparse import OptionParser
     usage = "usage: %prog [options] file1.edf file2.edf ..."
     version = "%prog " + pyFAI.version
-    parser = OptionParser(usage=usage, version=version)
+    description = """
+    PyFAI-integrate is a graphical interface (based on Python/Qt4) to perform azimuthal integration
+on a set of files. It exposes most of the important options available within pyFAI and allows you
+to select a GPU (or an openCL platform) to perform the calculation on."""
+    epilog = """PyFAI-integrate saves all parameters in a .azimint.json (hidden) file. This JSON file
+is an ascii file which can be edited and used to configure online data analysis using
+the LImA plugin of pyFAI.
+
+Nota: there is bug in debian6 making the GUI crash (to be fixed inside pyqt)
+http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
+    parser = OptionParser(usage=usage, version=version, description=description, epilog=epilog)
     parser.add_option("-v", "--verbose",
-                          action="store_true", dest="verbose", default=False,
-                          help="switch to verbose/debug mode")
+                      action="store_true", dest="verbose", default=False,
+                      help="switch to verbose/debug mode")
+    parser.add_option("-o", "--output",
+                      dest="output", default=None,
+                      help="Directory or file where to store the output data")
+    parser.add_option("-f", "--format",
+                      dest="format", default=None,
+                      help="output data format (can be HDF5)")
+    parser.add_option("-s", "--slow-motor",
+                      dest="slow", default=None,
+                      help="Dimension of the scan on the slow direction (makes sense only with HDF5)")
+    parser.add_option("-r", "--fast-motor",
+                      dest="rapid", default=None,
+                      help="Dimension of the scan on the fast direction (makes sense only with HDF5)")
+    parser.add_option( "--no-gui",
+                      dest="gui", default=True,action="store_false",
+                      help="Process the dataset without showing the user interface.")
+
     (options, args) = parser.parse_args()
     # Analyse aruments and options
     args = pyFAI.utils.expand_args(args)
@@ -76,8 +100,14 @@ if __name__ == "__main__":
     if options.verbose:
         logger.info("setLevel: debug")
         logger.setLevel(logging.DEBUG)
-    app = QtGui.QApplication([])
-    window = AIWidget()
-    window.set_input_data(args)
-    window.show()
-    sys.exit(app.exec_())
+    if options.gui:
+        from PyQt4 import QtCore, QtGui, uic
+        from PyQt4.QtCore import SIGNAL
+        app = QtGui.QApplication([])
+        window = AIWidget()
+        window.set_input_data(args)
+        window.show()
+        sys.exit(app.exec_())
+    else:
+        # TODO
+        pass

@@ -65,18 +65,18 @@ class TestFlat1D(unittest.TestCase):
             r, I = self.ai.integrate1d(self.raw, self.bins, unit="r_mm", method=meth, correctSolidAngle=False, dark=self.dark, flat=self.flat)
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s" % (meth, I.min(), I.max(), I.mean(), I.std()))
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
-            self.assert_(I.max() - I.min() < self.eps, "deviation should be small")
+            self.assert_(I.max() - I.min() < self.eps, "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
         for meth in ["xrpd_numpy", "xrpd_cython", "xrpd_splitBBox", "xrpd_splitPixel"]:  # , "xrpd_OpenCL" ]: bug with 32 bit GPU and request 64 bit integration
             r, I = self.ai.__getattribute__(meth)(self.raw, self.bins, correctSolidAngle=False, dark=self.dark, flat=self.flat)
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s" % (meth, I.min(), I.max(), I.mean(), I.std()))
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
-            self.assert_(I.max() - I.min() < self.eps, "deviation should be small")
+            self.assert_(I.max() - I.min() < self.eps, "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
         if pyFAI.opencl.ocl and pyFAI.opencl.ocl.select_device("gpu", extensions=["cl_khr_fp64"]):
             meth = "xrpd_OpenCL"
             r, I = self.ai.__getattribute__(meth)(self.raw, self.bins, correctSolidAngle=False, dark=self.dark, flat=self.flat)
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s" % (meth, I.min(), I.max(), I.mean(), I.std()))
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
-            self.assert_(I.max() - I.min() < self.eps, "deviation should be small")
+            self.assert_(I.max() - I.min() < self.eps, "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
 
 class TestFlat2D(unittest.TestCase):
     shape = 640, 480
@@ -94,21 +94,31 @@ class TestFlat2D(unittest.TestCase):
         logger.info("2D Without correction Imin=%s Imax=%s <I>=%s std=%s" % (I.min(), I.max(), I.mean(), I.std()))
 
         self.assertNotAlmostEqual(I.mean(), 1, 2, "Mean should not be 1")
-        self.assertFalse(I.max() - I.min() < self.eps, "deviation shaould be large")
+        self.assertFalse(I.max() - I.min() < self.eps, "deviation should be large")
 
     def test_correct(self):
-        for meth in ["numpy", "cython", "cython", "splitbbox", "splitpix", "lut", "lut_ocl" ]:
+        test2d = {"numpy":self.eps,
+                  "cython":self.eps, 
+                  "splitbbox":self.eps, 
+                  "splitpix":self.eps, 
+                  "lut":self.eps, 
+                  "lut_ocl":self.eps}
+        test2d_direct = {"xrpd2_numpy":0.3,#histograms are very noisy in 2D
+                  "xrpd2_histogram":0.3,   #histograms are very noisy in 2D
+                  "xrpd2_splitBBox":self.eps, 
+                  "xrpd2_splitPixel":self.eps}
+        for meth in test2d:
             I, _, _ = self.ai.integrate2d(self.raw, self.bins, self.azim, unit="r_mm", method=meth, correctSolidAngle=False, dark=self.dark, flat=self.flat)
             I = I[numpy.where(I > 0)]
             logger.info("2D method:%s Imin=%s Imax=%s <I>=%s std=%s" % (meth, I.min(), I.max(), I.mean(), I.std()))
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
-            self.assert_(I.max() - I.min() < self.eps, "deviation should be small")
-        for meth in ["xrpd2_numpy", "xrpd2_histogram", "xrpd2_splitBBox", "xrpd2_splitPixel"]:
+            self.assert_(I.max() - I.min() < test2d[meth], "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
+        for meth in test2d_direct:
             I, _, _ = self.ai.__getattribute__(meth)(self.raw, self.bins, self.azim, correctSolidAngle=False, dark=self.dark, flat=self.flat)
             I = I[numpy.where(I > 0)]
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s" % (meth, I.min(), I.max(), I.mean(), I.std()))
-            self.assertAlmostEqual(I.mean(), 1, 1, "Mean should be 1 in %s" % meth)
-            self.assert_(I.max() - I.min() < 0.1, "deviation should be small")
+            self.assert_(abs(I.mean() - 1) < test2d_direct[meth], "Mean should be 1 in %s" % meth)
+            self.assert_(I.max() - I.min() < test2d_direct[meth], "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
 
 def test_suite_all_Flat():
     testSuite = unittest.TestSuite()

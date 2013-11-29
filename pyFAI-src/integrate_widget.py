@@ -47,8 +47,8 @@ from PyQt4 import QtCore, QtGui, uic
 from PyQt4.QtCore import SIGNAL
 import pyFAI, fabio
 from pyFAI.opencl import ocl
-from pyFAI.utils import float_, int_, str_
-UIC = op.join(op.dirname(__file__), "integration.ui")
+from pyFAI.utils import float_, int_, str_, get_ui_file
+UIC = get_ui_file("integration.ui")
 
 FROM_PYMCA = "From PyMca"
 
@@ -58,10 +58,18 @@ class AIWidget(QtGui.QWidget):
     def __init__(self, input_data=None):
         self.ai = pyFAI.AzimuthalIntegrator()
         self.input_data = input_data
+        self.output_path = None
+        self.output_format = None
+        self.slow_dim = None
+        self.fast_dim = None
         self.name = None
         self._sem = threading.Semaphore()
         QtGui.QWidget.__init__(self)
-        uic.loadUi(UIC, self)
+        try:
+            uic.loadUi(UIC, self)
+        except AttributeError as error:
+            logger.error("I looks like your installation suffers from this bug: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348")
+            raise RuntimeError("Please upgrade your installation of PyQt (or apply the patch)")
         self.all_detectors = pyFAI.detectors.ALL_DETECTORS.keys()
         self.all_detectors.sort()
         self.detector.addItems([i.capitalize() for i in self.all_detectors])
@@ -88,6 +96,7 @@ class AIWidget(QtGui.QWidget):
 
         self.restore()
         self.progressBar.setValue(0)
+        self.hdf5_path = None
 
     def proceed(self):
         with self._sem:
@@ -146,7 +155,7 @@ class AIWidget(QtGui.QWidget):
                 else:
                     kwarg["method"] = "lut_ocl"
 
-            if self.do_radial_range:
+            if self.do_radial_range.isChecked():
                 try:
                     rad_min = float_(self.radial_range_min.text())
                     rad_max = float_(self.radial_range_max.text())
@@ -157,7 +166,7 @@ class AIWidget(QtGui.QWidget):
                 if kwarg["radial_range"] == (None, None):
                     kwarg["radial_range"] = None
 
-            if self.do_azimuthal_range:
+            if self.do_azimuthal_range.isChecked():
                 try:
                     azim_min = float_(self.azimuth_range_min.text())
                     azim_max = float_(self.azimuth_range_max.text())
@@ -167,10 +176,10 @@ class AIWidget(QtGui.QWidget):
                     kwarg["azimuth_range"] = (azim_min, azim_max)
                 if kwarg["azimuth_range"] == (None, None):
                     kwarg["azimuth_range"] = None
-            if self.do_poisson:
+            if self.do_poisson.isChecked():
                 kwarg["error_model"] = "poisson"
             else:
-                kwarg["error_model"] = "None"
+                kwarg["error_model"] = None
             logger.info("Parameters for integration:%s%s" % (os.linesep,
                             os.linesep.join(["\t%s:\t%s" % (k, v) for k, v in kwarg.items()])))
 
@@ -190,7 +199,9 @@ class AIWidget(QtGui.QWidget):
                         out[i] = self.ai.integrate2d(**kwarg)[0]
 
                 else:
-                    out = numpy.zeros((self.input_data.shape[0], kwarg["nbPt_rad"]), dtype=numpy.float32)
+                    if "nbPt_rad" in kwarg:  # convert nbPt_rad -> nbPt
+                            kwarg["nbPt"] = kwarg.pop("nbPt_rad")
+                    out = numpy.zeros((self.input_data.shape[0], kwarg["nbPt"]), dtype=numpy.float32)
                     for i in range(self.input_data.shape[0]):
                         self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
                         kwarg["data"] = self.input_data[i]
@@ -198,26 +209,58 @@ class AIWidget(QtGui.QWidget):
 
             elif "__len__" in dir(self.input_data):
                 out = []
+                if self.hdf5_path:
+                    import h5py
+                    hdf5 = h5py.File(self.output_path)
+                    if self.fast_dim:
+                        if "nbPt_azim" in kwarg:
+                            ds = hdf5.create_dataset("diffraction",(1,self.fast_dim,kwarg["nbPt_azim"],kwarg["nbPt_rad"]),
+                                                      dtype = numpy.float32,
+                                                      chunks=(1,self.fast_dim,kwarg["nbPt_azim"],kwarg["nbPt_rad"]),
+                                                      maxshape=(None,self.fast_dim,kwarg["nbPt_azim"],kwarg["nbPt_rad"]))
+                        else:
+                            ds = hdf5.create_dataset("diffraction",(1,self.fast_dim,kwarg["nbPt_rad"]),
+                                                      dtype = numpy.float32,
+                                                      chunks=(1,self.fast_dim,kwarg["nbPt_rad"]),
+                                                      maxshape=(None,self.fast_dim,kwarg["nbPt_rad"]))
+                    else:
+                        if "nbPt_azim" in kwarg:
+                            ds = hdf5.create_dataset("diffraction",(1,kwarg["nbPt_azim"],kwarg["nbPt_rad"]),
+                                                      dtype = numpy.float32,
+                                                      chunks=(1,kwarg["nbPt_azim"],kwarg["nbPt_rad"]),
+                                                      maxshape=(None,kwarg["nbPt_azim"],kwarg["nbPt_rad"]))
+                        else:
+                            ds = hdf5.create_dataset("diffraction",(1,kwarg["nbPt_rad"]),
+                                                      dtype = numpy.float32,
+                                                      chunks=(1,kwarg["nbPt_rad"]),
+                                                      maxshape=(None,kwarg["nbPt_rad"]))
+
                 for i, item in enumerate(self.input_data):
                     self.progressBar.setValue(100.0 * i / len(self.input_data))
                     logger.debug("processing %s" % item)
                     if (type(item) in types.StringTypes) and op.exists(item):
                         kwarg["data"] = fabio.open(item).data
-                        if kwarg.get("nbPt_azim"):
-                            kwarg["filename"] = op.splitext(item)[0] + ".azim"
-                        else:
-                            kwarg["filename"] = op.splitext(item)[0] + ".dat"
-                            if kwarg.get("nbPt_rad"):
-                                kwarg["nbPt"] = kwarg.pop("nbPt_rad")
+                        if self.hdf5_path is None:
+                            if self.output_path and op.isdir(self.output_path):
+                                outpath = op.join(self.output_path,op.splitext(op.basename(item))[0])
+                            else:
+                                outpath = op.splitext(item)[0]
+                            if "nbPt_azim" in kwarg:
+                                kwarg["filename"] = outpath + ".azim"
+                            else:
+                                kwarg["filename"] = outpath + ".dat"
                     else:
                         logger.warning("item is not a file ... guessing it is a numpy array")
                         kwarg["data"] = item
                         kwarg["filename"] = None
                     if kwarg.get("nbPt_azim"):
-                        out.append(self.ai.integrate2d(**kwarg)[0])
+                        res=self.ai.integrate2d(**kwarg)[0]
                     else:
-                        out.append(self.ai.integrate1d(**kwarg)[0])
-
+                        if "nbPt_rad" in kwarg:  # convert nbPt_rad -> nbPt
+                            kwarg["nbPt"] = kwarg.pop("nbPt_rad")
+                        res=self.ai.integrate1d(**kwarg)[0]
+                    out.append(res)
+                    #TODO manage HDF5 stuff !!!
             logger.info("Processing Done in %.3fs !" % (time.time() - start_time))
             self.progressBar.setValue(100)
         self.die()
@@ -285,10 +328,13 @@ class AIWidget(QtGui.QWidget):
             to_save["unit"] = "2th_rad"
         elif self.r_mm.isChecked():
             to_save["unit"] = "r_mm"
-
-        with open(filename, "w") as myFile:
-            json.dump(to_save, myFile, indent=4)
-        logger.debug("Saved")
+        try:
+            with open(filename, "w") as myFile:
+                json.dump(to_save, myFile, indent=4)
+        except IOError as error:
+            logger.error("Error while saving config: %s" % error)
+        else:
+            logger.debug("Saved")
 
     def restore(self, filename=".azimint.json"):
         """
@@ -299,7 +345,7 @@ class AIWidget(QtGui.QWidget):
 
         """
         logger.debug("Restore")
-        if not os.path.isfile(filename):
+        if not op.isfile(filename):
             logger.error("No such file: %s" % filename)
             return
         data = json.load(open(filename))
@@ -463,7 +509,7 @@ class AIWidget(QtGui.QWidget):
 
     def set_ai(self):
         poni = str(self.poni.text()).strip()
-        if poni and os.path.isfile(poni):
+        if poni and op.isfile(poni):
             self.ai = pyFAI.load(poni)
         detector = str(self.detector.currentText()).lower().strip() or "detector"
         self.ai.detector = pyFAI.detectors.detector_factory(detector)
@@ -480,7 +526,7 @@ class AIWidget(QtGui.QWidget):
                 self.ai.wavelength = fwavelength
 
         splineFile = str(self.splineFile.text()).strip()
-        if splineFile and os.path.isfile(splineFile):
+        if splineFile and op.isfile(splineFile):
             self.ai.detector.splineFile = splineFile
 
         self.ai.pixel1 = self._float("pixel1", 1)
@@ -497,7 +543,7 @@ class AIWidget(QtGui.QWidget):
 
         mask_file = str(self.mask_file.text()).strip()
         if mask_file  and bool(self.do_mask.isChecked()):
-            if os.path.exists(mask_file):
+            if op.exists(mask_file):
                 try:
                     mask = fabio.open(mask_file).data
                 except Exception as error:
@@ -507,22 +553,14 @@ class AIWidget(QtGui.QWidget):
 #            elif mask_file==FROM_PYMCA:
 #                self.ai.mask = mask
         dark_files = [i.strip() for i in str(self.dark_current.text()).split(",")
-                      if os.path.isfile(i.strip())]
+                      if op.isfile(i.strip())]
         if dark_files and bool(self.do_dark.isChecked()):
-            d0 = fabio.open(dark_files[0]).data
-            darks = d0.astype(numpy.float32)
-            for  f in dark_files[1:]:
-                darks += fabio.open(f).data
-            self.ai.darkcurrent = darks / len(dark_files)
+            self.ai.set_darkfiles(dark_files)
 
         flat_files = [i.strip() for i in str(self.flat_field.text()).split(",")
-                      if os.path.isfile(i.strip())]
+                      if op.isfile(i.strip())]
         if flat_files and bool(self.do_flat.isChecked()):
-            d0 = fabio.open(flat_files[0]).data
-            flats = d0.astype(numpy.float32)
-            for f in flat_files[1:]:
-                flats += fabio.open(f).data
-            self.ai.darkcurrent = flats / len(flat_files)
+            self.ai.set_flatfiles(flat_files)
         print self.ai
 
     def detector_changed(self):
@@ -535,7 +573,7 @@ class AIWidget(QtGui.QWidget):
             self.splineFile.setText("")
         elif self.splineFile.text():
             splineFile = str(self.splineFile.text()).strip()
-            if os.path.isfile(splineFile):
+            if op.isfile(splineFile):
                 inst.set_splineFile(splineFile)
                 self.pixel1.setText(str(inst.pixel1))
                 self.pixel2.setText(str(inst.pixel2))

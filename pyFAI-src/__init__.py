@@ -1,4 +1,5 @@
-version = "0.9.0-beta"
+
+version = "0.9.1"
 import sys, logging
 logging.basicConfig()
 
