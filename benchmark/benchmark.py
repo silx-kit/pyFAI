@@ -466,6 +466,9 @@ if __name__ == "__main__":
     parser.add_option("-g", "--gpu",
                       action="store_true", dest="opencl_gpu", default=False,
                       help="perform benchmark using OpenCL on the GPU")
+    parser.add_option("-a", "--acc",
+                      action="store_true", dest="opencl_acc", default=False,
+                      help="perform benchmark using OpenCL on the Accelerator (like XeonPhi/MIC")
     parser.add_option("-s", "--small",
                       action="store_true", dest="small", default=False,
                       help="Limit the size of the dataset to 6 Mpixel images (adviced for python 2.6 where there is a memory-leak)" )
@@ -486,6 +489,9 @@ if __name__ == "__main__":
         b.bench_cpu1d_ocl_lut("CPU")
     if options.opencl_gpu:
         b.bench_cpu1d_ocl_lut("GPU")
+    if options.opencl_gpu:
+        b.bench_cpu1d_ocl_lut("ACC")
+
 #    b.bench_cpu1d_ocl_lut("CPU")
 #    b.bench_gpu1d("gpu", True)
 #    b.bench_gpu1d("gpu", False)
