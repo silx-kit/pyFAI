@@ -97,7 +97,7 @@ class Detector(object):
         Sets the configuration of the detector. This implies:
         - Orientation: integers 
         - Binning
-        - 
+        - ROI
         
         The configuration is either a python dictionnary or a JSON string or a file containing this JSON configuration
         

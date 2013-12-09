@@ -503,6 +503,8 @@ if __name__ == "__main__":
         b.bench_cpu2d_lut_ocl("CPU")
     if options.opencl_gpu:
         b.bench_cpu2d_lut_ocl("GPU")
+    if options.opencl_gpu:
+        b.bench_cpu2d_ocl_lut("ACC")
 
 #    b.bench_cpu2d_lut()
 #    b.bench_cpu2d_lut_ocl()
