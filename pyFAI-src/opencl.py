@@ -41,9 +41,9 @@ except ImportError:
     logger.warning("Unable to import pyOpenCl. Please install it from: http://pypi.python.org/pypi/pyopencl")
     pyopencl = None
 
-FLOP_PER_CORE = {"GPU": 64,  # GPU, Fermi at least perform 64 flops per cycle/multicore, G80 were at 24 or 48 ...
-                  "CPU": 4  # CPU, at least intel's have 4 operation per cycle
-                  }
+FLOP_PER_CORE = { "GPU": 64, # GPU, Fermi at least perform 64 flops per cycle/multicore, G80 were at 24 or 48 ...
+                  "CPU": 4,  # CPU, at least intel's have 4 operation per cycle
+                  "ACC": 8}  # ACC: the Xeon-phi (MIC) appears to be able to process 8 Flops per hyperthreaded-core
 NVIDIA_FLOP_PER_CORE = {(1, 0): 24,  # Guessed !
                          (1, 1): 24,  # Measured on G98 [Quadro NVS 295]
                          (1, 2): 24,  # Guessed !
