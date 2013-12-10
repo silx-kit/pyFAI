@@ -154,7 +154,7 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
         self.new_curve(results, label)
         gc.collect()
 
-    def bench_cpu1d_ocl_lut(self, devicetype="ALL", platformid=None, deviceid=None):
+    def bench_cpu1d_lut_ocl(self, devicetype="ALL", platformid=None, deviceid=None):
         if (ocl is None):
             print("No pyopencl")
             return
@@ -486,11 +486,11 @@ if __name__ == "__main__":
     b.bench_cpu1d()
     b.bench_cpu1d_lut()
     if options.opencl_cpu:
-        b.bench_cpu1d_ocl_lut("CPU")
+        b.bench_cpu1d_lut_ocl("CPU")
     if options.opencl_gpu:
-        b.bench_cpu1d_ocl_lut("GPU")
-    if options.opencl_gpu:
-        b.bench_cpu1d_ocl_lut("ACC")
+        b.bench_cpu1d_lut_ocl("GPU")
+    if options.opencl_acc:
+        b.bench_cpu1d_lut_ocl("ACC")
 
 #    b.bench_cpu1d_ocl_lut("CPU")
 #    b.bench_gpu1d("gpu", True)
@@ -503,8 +503,8 @@ if __name__ == "__main__":
         b.bench_cpu2d_lut_ocl("CPU")
     if options.opencl_gpu:
         b.bench_cpu2d_lut_ocl("GPU")
-    if options.opencl_gpu:
-        b.bench_cpu2d_ocl_lut("ACC")
+    if options.opencl_acc:
+        b.bench_cpu2d_lut_ocl("ACC")
 
 #    b.bench_cpu2d_lut()
 #    b.bench_cpu2d_lut_ocl()
