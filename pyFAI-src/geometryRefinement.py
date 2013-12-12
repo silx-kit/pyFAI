@@ -78,9 +78,9 @@ class GeometryRefinement(AzimuthalIntegrator):
         @param dSpacing: filename or list or array or vector containing the d-spacing (in Angstrom)
 
         """
-        self.data = numpy.array(data, dtype="float64")
+        self.data = numpy.array(data, dtype=numpy.float64)
         assert self.data.ndim == 2
-        assert self.data.shape[1] == 3
+        assert self.data.shape[1] in [ 3, 4] #3 for non weighted, 4 for weighted refinement
         assert self.data.shape[0]>0
 
         if (pixel1 is None) and (pixel2 is None) and (splineFile is None) and (detector is None):
@@ -139,6 +139,7 @@ class GeometryRefinement(AzimuthalIntegrator):
 
     def set_tolerance(self, value=10):
         """
+        Set the tolerance for a refinement of the geometry; in percent of the original value 
 
         @param value: Tolerance as a percentage
 
