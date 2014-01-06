@@ -83,6 +83,7 @@ class Writer(object):
     """
     Abstract class for writers. 
     """
+    CONFIG_ITEMS = ["filename", "dirname", "extension", "subdir", "hpath"]
     def __init__(self, filename=None, extension=None):
         """
         
@@ -130,13 +131,29 @@ class Writer(object):
         """
         pass
 
+    def setJsonConfig(self, json_config=None):
+        """
+        Sets the JSON configuration
+        """
+
+        if type(json_config) in types.StringTypes:
+            if os.path.isfile(json_config):
+                config = json.load(open(json_config, "r"))
+            else:
+                 config = json.loads(json_config)
+        else:
+            config = dict(json_config)
+        for k, v in  config.items():
+            if k in self.CONFIG_ITEMS:
+                self.__setattr__(k, v)
+
 class HDF5Writer(Writer):
     """
     Class allowing to write HDF5 Files.
     
     """
     CONFIG = "pyFAI"
-    DATA = "data"
+    DATASET_NAME = "data"
     def __init__(self, filename, hpath="data", fast_scan_width=None):
         """
         Constructor of an HDF5 writer:
@@ -233,15 +250,15 @@ class HDF5Writer(Writer):
                     chunk = 1, self.fai_cfg["nbpt_rad"]
                     self.ndim = 2
 
-            if self.DATA in self.group:
-                del self.group[self.DATA]
+            if self.DATASET_NAME in self.group:
+                del self.group[self.DATASET_NAME]
             shape = list(chunk)
             if self.lima_cfg.get("number_of_frames", 0) > 0:
                 if self.fast_scan_width is not None:
                     size[0] = 1 + self.lima_cfg["number_of_frames"] // self.fast_scan_width
                 else:
                     size[0] = self.lima_cfg["number_of_frames"]
-            self.dataset = self.group.require_dataset(self.DATA, shape, dtype=numpy.float32, chunks=chunk,
+            self.dataset = self.group.require_dataset(self.DATASET_NAME, shape, dtype=numpy.float32, chunks=chunk,
                                                       maxshape=(None,) + chunk[1:])
             if self.fai_cfg.get("nbpt_azim", 0) > 1:
                 self.dataset.attrs["interpretation"] = "image"
