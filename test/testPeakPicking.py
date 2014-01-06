@@ -68,29 +68,38 @@ class test_peak_picking(unittest.TestCase):
     wavelength = 1e-10
     ds = wavelength * 5e9 / numpy.sin(tth / 2)
     maxiter = 100
-
+    tmp_dir = os.environ.get("PYFAI_TEMPDIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp"))
+    logfile = os.path.join(tmp_dir, "testpeakPicking.log")
+    nptfile = os.path.join(tmp_dir, "testpeakPicking.npt")
     def setUp(self):
         """Download files"""
         self.img = UtilsTest.getimage(self.__class__.calibFile)
         self.pp = PeakPicker(self.img, dSpacing=self.ds, wavelength=self.wavelength)
-        dirname = os.path.dirname(os.path.abspath(__file__))
-        self.tmpdir = os.path.join(dirname, "tmp")
-        if not os.path.isdir(self.tmpdir):
-            os.mkdir(self.tmpdir)
+        if not os.path.isdir(self.tmp_dir):
+            os.makedirs(self.tmp_dir)
+        if os.path.isfile(self.logfile):
+            os.unlink(self.logfile)
+        if os.path.isfile(self.nptfile):
+            os.unlink(self.nptfile)
+    def tearDown(self):
+        """Remove temporary files"""
+        unittest.TestCase.tearDown(self)
+        if os.path.isfile(self.logfile):
+            os.unlink(self.logfile)
+        if os.path.isfile(self.nptfile):
+            os.unlink(self.nptfile)
 
     def test_peakPicking(self):
         """first test peak-picking then checks the geometry found is OK"""
-        logfile = os.path.join(self.tmpdir, "testpeakPicking.log")
-
         for i in self.ctrlPt:
-            pts = self.pp.massif.find_peaks(self.ctrlPt[i], stdout=open(logfile, "a"))
+            pts = self.pp.massif.find_peaks(self.ctrlPt[i], stdout=open(self.logfile, "a"))
             logger.info("point %s at ring #%i (tth=%.1f deg) generated %i points", self.ctrlPt[i], i, self.tth[i], len(pts))
             if len(pts) > 0:
                 self.pp.points.append(pts, angle=self.tth[i], ring=i)
             else:
                 logger.error("point %s caused error (%s) ", i, self.ctrlPt[i])
 
-        self.pp.points.save(os.path.join(self.tmpdir, "testpeakPicking.npt"))
+        self.pp.points.save(self.nptfile)
         lstPeak = self.pp.points.getListRing()
 #        print self.pp.points
 #        print lstPeak
