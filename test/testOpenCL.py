@@ -52,8 +52,10 @@ from pyFAI.opencl import ocl
 # = sys.modules["pyFAI.opencl"].ocl
 
 class test_mask(unittest.TestCase):
+    tmp_dir = os.environ.get("PYFAI_TEMPDIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp"))
 
     def setUp(self):
+
         self.datasets = [{"img":UtilsTest.getimage("1883/Pilatus1M.edf"), "poni":UtilsTest.getimage("1893/Pilatus1M.poni"), "spline": None},
             {"img":UtilsTest.getimage("1882/halfccd.edf"), "poni":UtilsTest.getimage("1895/halfccd.poni"), "spline": UtilsTest.getimage("1461/halfccd.spline")},
             {"img":UtilsTest.getimage("1881/Frelon2k.edf"), "poni":UtilsTest.getimage("1896/Frelon2k.poni"), "spline": UtilsTest.getimage("1900/frelon.spline")},
@@ -71,8 +73,16 @@ class test_mask(unittest.TestCase):
                             data.append("SplineFile: " + ds["spline"])
                         else:
                             data.append(line.strip())
+                ds["poni"] = os.path.join(self.tmp_dir, os.path.basename(ds["poni"]))
                 with open(ds["poni"], "w") as f:
                     f.write(os.linesep.join(data))
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        for ds in self.datasets:
+            if ds["spline"] is not None:
+                if os.path.isfile(ds["poni"]):
+                    os.unlink(ds["poni"])
 
     def test_OpenCL(self):
         logger.info("Testing histogram-based algorithm (forward-integration)")
