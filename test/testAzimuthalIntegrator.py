@@ -64,14 +64,15 @@ class test_azim_halfFrelon(unittest.TestCase):
         self.fit2dFile = UtilsTest.getimage(self.__class__.fit2dFile)
         self.halfFrelon = UtilsTest.getimage(self.__class__.halfFrelon)
         self.splineFile = UtilsTest.getimage(self.__class__.splineFile)
-        self.poniFile = UtilsTest.getimage(self.__class__.poniFile)
-        with open(self.poniFile) as f:
+        poniFile = UtilsTest.getimage(self.__class__.poniFile)
+        with open(poniFile) as f:
             data = []
             for line in f:
                 if line.startswith("SplineFile:"):
                     data.append("SplineFile: " + self.splineFile)
                 else:
                     data.append(line.strip())
+        self.poniFile = os.path.join(self.tmp_dir, os.path.basename(poniFile))
         with open(self.poniFile, "w") as f:
             f.write(os.linesep.join(data))
         self.fit2d = numpy.loadtxt(self.fit2dFile)
@@ -90,7 +91,8 @@ class test_azim_halfFrelon(unittest.TestCase):
         for tmpfile in self.tmpfiles.values():
             if os.path.isfile(tmpfile):
                 os.unlink(tmpfile)
-
+        if os.path.isfile(self.poniFile):
+            os.unlink(self.poniFile)
 
     def test_numpy_vs_fit2d(self):
         """
