@@ -10,7 +10,12 @@ cdef float invert_distance(size_t i0,size_t i1, size_t p0,size_t p1)nogil:
 
 @cython.cdivision(True)
 @cython.boundscheck(False)
-cdef float processPoint(float[:,:] data,bint[:,:] mask,size_t p0,size_t p1,size_t d0,size_t d1)nogil:
+cdef inline float processPoint(float[:,:] data,
+                        numpy.int8_t[:,:] mask,
+                        size_t p0,
+                        size_t p1,
+                        size_t d0,
+                        size_t d1)nogil:
     cdef size_t dist=0, i=0
     cdef float sum=0.0, count=0.0,invdst=0.0
     cdef bint found=0
@@ -72,7 +77,7 @@ def reconstruct(numpy.ndarray data not None, numpy.ndarray mask=None, dummy=None
             mask+=(data==dummy)
         else:
             mask+=(abs(data-dummy)<=delta_dummy)
-    cdef bint[:,:] cmask = mask.astype("int32")
+    cdef numpy.int8_t[:,:] cmask = mask.astype(numpy.int8)
     assert d0==mask.shape[0]
     assert d1==mask.shape[1]
     cdef numpy.ndarray[numpy.float32_t, ndim = 2]out =numpy.zeros_like(data)
