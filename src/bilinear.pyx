@@ -35,6 +35,8 @@ cimport numpy
 
 from libc.math cimport floor,ceil
 
+import logging
+logger = logging.getLogger("pyFAI.bilinear")
 
 cdef class Bilinear:
     """Bilinear interpolator for finding max"""
@@ -166,7 +168,7 @@ cdef class Bilinear:
             d01 = (a00 - a02 - a20 + a22)/4.0
             denom = 2.0*(d00*d11-d01*d01)
             if abs(denom)<1e-10:
-                print("Singular determinant, Hessian undefined")
+                logger.debug("Singular determinant, Hessian undefined")
             else:
                 delta0 = ((a12 - a10)*d01 + (a01 - a21)*d11)/denom
                 delta1 = ((a10 - a12)*d00 + (a21 - a01)*d01)/denom
@@ -174,7 +176,7 @@ cdef class Bilinear:
                 if abs(delta0)<=1.0 and abs(delta1)<=1.0: #Result is OK is nower than 0.5.
                     return (float(current0) + delta0, float(current1) + delta1)
                 else:
-                    print("Failed to find root using second order expansion") 
+                    logger.debug("Failed to find root using second order expansion") 
         #refinement of the position by a simple center of mass of the last valid region used
         for i0 in range(start0, stop0+1):
             for i1 in range(start1, stop1+1):
