@@ -46,7 +46,7 @@ import traceback
 logger = logging.getLogger("pyFAI.spline")
 
 
-class Spline:
+class Spline(object):
     """
     This class is a python representation of the spline file
 

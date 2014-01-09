@@ -23,6 +23,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import with_statement, print_function
 """
 Setup script for python Fast Azimuthal Integration
 """
@@ -46,9 +47,9 @@ from numpy.distutils.misc_util import get_numpy_include_dirs
 from distutils.sysconfig import get_python_lib
 from distutils.command.install_data import install_data
 
-# ###############################################################################
+################################################################################
 # Check for Cython
-# ###############################################################################
+################################################################################
 try:
     from Cython.Distutils import build_ext
     CYTHON = True
@@ -193,6 +194,7 @@ if (os.name != "posix") or ("x86" not in platform.machine()):
 # ###############################################################################
 # scripts and data installation
 # ###############################################################################
+global installDir
 installDir = "pyFAI"
 
 data_files = [(installDir, glob.glob("openCL/*.cl")),
@@ -329,6 +331,8 @@ class smart_install_data(install_data):
 #        self.install_dir = join(getattr(install_cmd,'install_lib'), "data")
         self.install_dir = getattr(install_cmd, 'install_lib')
         print("DATA to be installed in %s" % self.install_dir)
+        global installDir
+        installDir = join(self.install_dir, installDir)
         return install_data.run(self)
 cmdclass['install_data'] = smart_install_data
 
@@ -375,7 +379,8 @@ http://pypi.python.org/pypi/pyopencl
 # check if OpenMP modules, freshly installed can import
 # ###############################################################################
 pyFAI = None
-sys.path.insert(0, installDir)
+sys.path.insert(0, os.path.dirname(installDir))
+#print installDir
 for loc in ["", ".", os.getcwd()]:
     if loc in sys.path:
         sys.path.pop(sys.path.index(loc))
@@ -384,14 +389,12 @@ for mod in sys.modules.copy():
         sys.modules.pop(mod)
 try:
     import pyFAI
-    print pyFAI.__file__
 except ImportError as E:
     print("Unable to import pyFAI: %s" % E)
 else:
     print("PyFAI is installed in %s" % pyFAI.__file__)
     try:
         import pyFAI.histogram
-        print  pyFAI.histogram.__file__
     except ImportError as E:
         print("PyFAI.histogram failed to import. It is likely there is an OpenMP error: %s" % E)
     else:

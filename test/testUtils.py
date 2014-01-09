@@ -27,13 +27,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/04/2013"
+__date__ = "20140106"
 
 
 import unittest
 import numpy
 import logging
 import sys
+import os
 import fabio
 from utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
@@ -63,9 +64,21 @@ class test_utils(unittest.TestCase):
     dark = unbinned.astype("float32")
     flat = 1 + numpy.random.random((64, 32))
     raw = flat + dark
+    tmp_dir = os.environ.get("PYFAI_TEMPDIR",os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp"))
+    tmp_file = os.path.join(tmp_dir, "testUtils_average.edf")
     def setUp(self):
-        """Download files"""
-        pass
+        """Download files & create tmp directory if needed"""
+        if not os.path.isdir(self.tmp_dir):
+            os.makedirs(self.tmp_dir)
+            
+    def tearDown(self):
+        """Remove tmp files if needed"""
+        if os.path.isfile(self.tmp_file):
+            try:
+                os.unlink(self.tmp_file)
+            except OSError as error:
+                logger.error("Unable to remove file %s" % self.tmp_file)
+
     def test_binning(self):
         """
         test the binning and unbinning functions
@@ -98,7 +111,7 @@ class test_utils(unittest.TestCase):
         six = pyFAI.utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark), self.dark, self.dark ], "median", .001)
         self.assert_(abs(self.dark - six).max() < 1e-4, "data are the same: test threshold")
 
-        seven = pyFAI.utils.averageImages([self.raw], darks=[self.dark], flats=[self.flat], threshold=0)
+        seven = pyFAI.utils.averageImages([self.raw], darks=[self.dark], flats=[self.flat], threshold=0, output=self.tmp_file)
         self.assert_(abs(numpy.ones_like(self.dark) - fabio.open(seven).data).mean() < 1e-2, "averageImages")
 
     def test_shift(self):
