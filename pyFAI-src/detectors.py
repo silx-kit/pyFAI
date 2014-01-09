@@ -55,6 +55,7 @@ class Detector(object):
     Generic class representing a 2D detector
     """
     force_pixel = False
+    isDetector = True #used to recognize detector classes
     def __init__(self, pixel1=None, pixel2=None, splineFile=None):
         """
         @param pixel1: size of the pixel in meter along the slow dimension (often Y)
@@ -64,7 +65,10 @@ class Detector(object):
         @param splineFile: path to file containing the geometric correction.
         @type splineFile: str
         """
-        self.name = self.__class__.__name__
+        try:  
+            self.name = self.__class__.name
+        except:
+            self.name = self.__class__.__name__
         self._pixel1 = None
         self._pixel2 = None
         if pixel1:
@@ -816,28 +820,22 @@ class RayonixMx325(Detector):
         self.max_shape = (4096, 4096)
         self.name = "Rayonix mx325"
 
-ALL_DETECTORS = {"rayonix_mx225": RayonixMx225,
-                 "rayonix_mx300": RayonixMx300,
-                 "rayonix_mx325": RayonixMx325,
-                 "pilatus100k": Pilatus100k,
-                 "pilatus200k": Pilatus200k,
-                 "pilatus300k": Pilatus300k,
-                 "pilatus300kw": Pilatus300kw,
-                 "pilatus1m": Pilatus1M,
-                 "pilatus2m": Pilatus2M,
-                 "pilatus6m": Pilatus6M,
-                 "condor": Fairchild,
-                 "fairchild": Fairchild,
-                 "frelon": FReLoN,
-                 "xpad": Xpad_flat,
-                 "xpad_flat": Xpad_flat,
-                 "imxpad_s140" : ImXPadS140,
-                 "basler": Basler,
-                 "dexela2923": Dexela2923,
-                 "perkin": Perkin,
-                 "detector": Detector}
+ALL_DETECTORS = {}
+#Init time creation of the dict of all detectors
+local_dict = locals()
+for obj_name in dir():
+    obj_class = local_dict.get(obj_name)
+    if "isDetector" in dir(obj_class):
+        try:
+            obj_inst = obj_class()
+        except:
+            logger.debug("Unable to instanciate %s" % obj_name)
+            pass
+        else:
+            ALL_DETECTORS[obj_name.lower()] = obj_class
+            ALL_DETECTORS[obj_inst.name.lower().replace(" ", "_")] = obj_class
 
-def detector_factory(name):
+def detector_factory(name, config=None):
     """
     A kind of factory...
     @param name: name of a detector
