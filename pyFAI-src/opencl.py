@@ -136,7 +136,9 @@ class OpenCL(object):
                 extensions = device.extensions
                 if (pypl.vendor == "NVIDIA Corporation") and ('cl_khr_fp64' in extensions):
                                 extensions += ' cl_khr_int64_base_atomics cl_khr_int64_extended_atomics'
-                devtype = pyopencl.device_type.to_string(device.type)
+                devtype = pyopencl.device_type.to_string(device.type).upper()
+                if len(devtype) > 3:
+                    devtype = devtype[:3]
                 if (pypl.vendor == "NVIDIA Corporation") and (devtype == "GPU") and "compute_capability_major_nv" in dir(device):
                     comput_cap = device.compute_capability_major_nv, device.compute_capability_minor_nv
                     flop_core = NVIDIA_FLOP_PER_CORE.get(comput_cap, min(NVIDIA_FLOP_PER_CORE.values()))
@@ -188,7 +190,12 @@ class OpenCL(object):
         @param extensions: list of extensions to be present
         @param best: shall we look for the
         """
-        type = type.upper()
+        if "type" in kwargs:
+            dtype = kwargs["type"].upper()
+        else:
+            dtype = dtype.upper()
+        if len(dtype) > 3:
+            dtype = dtype[:3]
         best_found = None
         for platformid, platform in enumerate(self.platforms):
             for deviceid, device in enumerate(platform.devices):
