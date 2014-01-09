@@ -23,6 +23,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import with_statement, print_function
 """
 Setup script for python Fast Azimuthal Integration
 """
@@ -31,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/09/2013"
+__date__ = "05/11/2013"
 __status__ = "stable"
 
 
@@ -40,13 +41,15 @@ import sys
 import glob
 import shutil
 import platform
-
+from os.path import join
 from distutils.core import setup, Extension, Command
 from numpy.distutils.misc_util import get_numpy_include_dirs
 from distutils.sysconfig import get_python_lib
-# ###############################################################################
+from distutils.command.install_data import install_data
+
+################################################################################
 # Check for Cython
-# ###############################################################################
+################################################################################
 try:
     from Cython.Distutils import build_ext
     CYTHON = True
@@ -75,7 +78,7 @@ def rewriteManifest(with_testimages=False):
     @param with_testimages: include
     """
     base = os.path.dirname(os.path.abspath(__file__))
-    manifest_file = os.path.join(base, "MANIFEST.in")
+    manifest_file = join(base, "MANIFEST.in")
     if not os.path.isfile(manifest_file):
         print("MANIFEST file is missing !!!")
         return
@@ -83,7 +86,7 @@ def rewriteManifest(with_testimages=False):
     changed = False
 
     if with_testimages:
-        testimages = ["test/testimages/" + i for i in os.listdir(os.path.join(base, "test", "testimages"))]
+        testimages = ["test/testimages/" + i for i in os.listdir(join(base, "test", "testimages"))]
         for image in testimages:
             if image not in manifest:
                 manifest.append("include " + image)
@@ -113,7 +116,7 @@ cython_modules = ["histogram", "splitPixel", "splitBBox", "splitBBoxLUT",
                   "relabel", "bilinear", "_geometry", "reconstruct", "fastcrc", "_distortion"]
 src = {}
 for ext in cython_modules:
-    src[ext] = os.path.join("src", ext + cython_c_ext)
+    src[ext] = join("src", ext + cython_c_ext)
 
 _geometry_dic = dict(name="_geometry",
                      include_dirs=get_numpy_include_dirs(),
@@ -167,7 +170,7 @@ bilinear_dic = dict(name="bilinear",
 
 fastcrc_dic = dict(name="fastcrc",
                         include_dirs=get_numpy_include_dirs(),
-                        sources=[src['fastcrc'] , os.path.join("src", "crc32.c")],
+                        sources=[src['fastcrc'] , join("src", "crc32.c")],
 #                        extra_compile_args=['-msse4.2'],
                         )
 _distortion_dic = dict(name="_distortion",
@@ -191,48 +194,36 @@ if (os.name != "posix") or ("x86" not in platform.machine()):
 # ###############################################################################
 # scripts and data installation
 # ###############################################################################
-if sys.platform == "win32" and "bdist_msi" in sys.argv:
-    if sys.version_info < (2.7):
-        import struct
-        platform_bits = 8 * struct.calcsize("P")
-        if platform_bits == 32:
-            win = "bdist.win32"
-        else:
-            win = "bdist.win-amd64"
-        installDir = os.path.join("build", win, "msi", "Lib", "site-packages", "pyFAI")
-    else:
-        installDir = os.path.join("Lib", "site-packages", "pyFAI")
+global installDir
+installDir = "pyFAI"
 
-else:
-    installDir = os.path.join(get_python_lib(), "pyFAI")
-
-data_files = [(installDir, [os.path.join('openCL', o) for o in [
-      "ocl_azim_kernel_2.cl", "ocl_azim_kernel2d_2.cl", "ocl_azim_LUT.cl"]] +
-                [os.path.join('gui', o) for o in ("integration.ui",)])]
+data_files = [(installDir, glob.glob("openCL/*.cl")),
+              (join(installDir, "gui"), glob.glob("gui/*.ui")),
+              (join(installDir, "calibration"), glob.glob("calibration/*.D"))]
 
 if sys.platform == "win32":
-    # This is for mingw32/gomp?
-    data_files[0][1].append(os.path.join("dll", "pthreadGC2.dll"))
+    # This is for mingw32/gomp
+    if tuple.__itemsize__ == 4:
+        data_files[0][1].append(join("dll", "pthreadGC2.dll"))
     root = os.path.dirname(os.path.abspath(__file__))
     tocopy_files = []
     script_files = []
-    for i in os.listdir(os.path.join(root, "scripts")):
-        if os.path.isfile(os.path.join(root, "scripts", i)):
+    for i in os.listdir(join(root, "scripts")):
+        if os.path.isfile(join(root, "scripts", i)):
             if i.endswith(".py"):
-                script_files.append(os.path.join("scripts", i))
+                script_files.append(join("scripts", i))
             else:
-                tocopy_files.append(os.path.join("scripts", i))
+                tocopy_files.append(join("scripts", i))
     for i in tocopy_files:
-        filein = os.path.join(root, i)
+        filein = join(root, i)
         if (filein + ".py") not in script_files:
             shutil.copyfile(filein, filein + ".py")
             script_files.append(filein + ".py")
 
 else:
     script_files = glob.glob("scripts/*")
-print(data_files)
 
-version = [eval(l.split("=")[1]) for l in open(os.path.join(os.path.dirname(
+version = [eval(l.split("=")[1]) for l in open(join(os.path.dirname(
     os.path.abspath(__file__)), "pyFAI-src", "__init__.py"))
     if l.strip().startswith("version")][0]
 
@@ -283,8 +274,8 @@ class build_ext_pyFAI(build_ext):
             # print e.extra_compile_args
             # print e.extra_link_args
         build_ext.build_extensions(self)
-
 cmdclass['build_ext'] = build_ext_pyFAI
+
 class PyTest(Command):
     user_options = []
     def initialize_options(self):
@@ -327,12 +318,24 @@ if sphinx:
             # Build the Users Guide in HTML and TeX format
             for builder in ('html', 'latex'):
                 self.builder = builder
-                self.builder_target_dir = os.path.join(self.build_dir, builder)
+                self.builder_target_dir = join(self.build_dir, builder)
                 self.mkpath(self.builder_target_dir)
                 builder_index = 'index_{0}.txt'.format(builder)
                 BuildDoc.run(self)
             sys.path.pop(0)
     cmdclass['build_doc'] = build_doc
+
+class smart_install_data(install_data):
+    def run(self):
+        install_cmd = self.get_finalized_command('install')
+#        self.install_dir = join(getattr(install_cmd,'install_lib'), "data")
+        self.install_dir = getattr(install_cmd, 'install_lib')
+        print("DATA to be installed in %s" % self.install_dir)
+        global installDir
+        installDir = join(self.install_dir, installDir)
+        return install_data.run(self)
+cmdclass['install_data'] = smart_install_data
+
 
 setup(name='pyFAI',
       version=version,
@@ -376,7 +379,8 @@ http://pypi.python.org/pypi/pyopencl
 # check if OpenMP modules, freshly installed can import
 # ###############################################################################
 pyFAI = None
-sys.path.insert(0, installDir)
+sys.path.insert(0, os.path.dirname(installDir))
+#print installDir
 for loc in ["", ".", os.getcwd()]:
     if loc in sys.path:
         sys.path.pop(sys.path.index(loc))
@@ -385,14 +389,12 @@ for mod in sys.modules.copy():
         sys.modules.pop(mod)
 try:
     import pyFAI
-    print pyFAI.__file__
 except ImportError as E:
     print("Unable to import pyFAI: %s" % E)
 else:
     print("PyFAI is installed in %s" % pyFAI.__file__)
     try:
         import pyFAI.histogram
-        print  pyFAI.histogram.__file__
     except ImportError as E:
         print("PyFAI.histogram failed to import. It is likely there is an OpenMP error: %s" % E)
     else:

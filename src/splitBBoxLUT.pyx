@@ -31,7 +31,8 @@ from cython.parallel import prange
 from libc.string cimport memset
 import numpy
 cimport numpy
-from libc.math cimport fabs
+from libc.math cimport fabs, M_PI
+cdef float pi=<float> M_PI 
 cdef struct lut_point:
     numpy.int32_t idx
     numpy.float32_t coef
@@ -70,6 +71,7 @@ class HistoBBox1d(object):
         assert delta_pos0.size == self.size
         self.bins = bins
         self.lut_size = 0
+        self.allow_pos0_neg =  allow_pos0_neg
         if  mask is not None:
             assert mask.size == self.size
             self.check_mask = True
@@ -88,7 +90,7 @@ class HistoBBox1d(object):
         self.cpos0_inf = numpy.empty_like(self.cpos0) #self.cpos0 - self.dpos0
         self.pos0Range = pos0Range
         self.pos1Range = pos1Range
-        self.calc_boundaries(pos0Range, allow_pos0_neg)
+        self.calc_boundaries(pos0Range)
         if pos1Range is not None and len(pos1Range) > 1:
             assert pos1.size == self.size
             assert delta_pos1.size == self.size
@@ -111,12 +113,14 @@ class HistoBBox1d(object):
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def calc_boundaries(self,pos0Range, bint allow_pos0_neg=False):
+    def calc_boundaries(self,pos0Range):
         cdef int size = self.cpos0.size
         cdef bint check_mask = self.check_mask
         cdef numpy.int8_t[:] cmask
         cdef float[:] cpos0, dpos0, cpos0_sup, cpos0_inf,
         cdef float upper, lower, pos0_max, pos0_min, c, d
+        cdef bint allow_pos0_neg=self.allow_pos0_neg
+
         cpos0_sup = self.cpos0_sup
         cpos0_inf = self.cpos0_inf
         cpos0 = self.cpos0
@@ -433,13 +437,28 @@ class HistoBBox2d(object):
                  mask=None,
                  mask_checksum=None,
                  allow_pos0_neg=False,
-                 unit="undefined"):
-
+                 unit="undefined",
+                 chiDiscAtPi=True
+                 ):
+        """
+        @param pos0: 1D array with pos0: tth or q_vect
+        @param delta_pos0: 1D array with delta pos0: max center-corner distance
+        @param pos1: 1D array with pos1: chi
+        @param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
+        @param bins: number of output bins (tth=100, chi=36 by default)
+        @param pos0Range: minimum and maximum  of the 2th range
+        @param pos1Range: minimum and maximum  of the chi range
+        @param mask: array (of int8) with masked pixels with 1 (0=not masked)
+        @param allow_pos0_neg: enforce the q<0 is usually not possible  
+        @param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
+        """
         cdef int i, size, bin0, bin1
         self.size = pos0.size
         assert delta_pos0.size == self.size
         assert pos1.size == self.size
         assert delta_pos1.size == self.size
+        self.chiDiscAtPi = 1 if chiDiscAtPi else 0
+        self.allow_pos0_neg =  allow_pos0_neg
 
         try:
             bins0, bins1 = tuple(bins)
@@ -474,7 +493,7 @@ class HistoBBox2d(object):
         self.dpos1 = numpy.ascontiguousarray((delta_pos1).ravel(), dtype=numpy.float32)
         self.cpos1_sup = numpy.empty_like(self.cpos1)
         self.cpos1_inf = numpy.empty_like(self.cpos1)
-        self.calc_boundaries(pos0Range, pos1Range, allow_pos0_neg)
+        self.calc_boundaries(pos0Range, pos1Range)
         self.delta0 = (self.pos0_max - self.pos0_min) / float(bins0)
         self.delta1 = (self.pos1_max - self.pos1_min) / float(bins1)
         self.lut_max_idx = self.calc_lut()
@@ -486,7 +505,7 @@ class HistoBBox2d(object):
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def calc_boundaries(self, pos0Range, pos1Range, bint allow_pos0_neg=False):
+    def calc_boundaries(self, pos0Range, pos1Range):
         cdef int size = self.cpos0.size
         cdef bint check_mask = self.check_mask
         cdef numpy.int8_t[:] cmask
@@ -494,6 +513,9 @@ class HistoBBox2d(object):
         cdef float[:] cpos1, dpos1, cpos1_sup, cpos1_inf,
         cdef float upper0, lower0, pos0_max, pos0_min, c0, d0
         cdef float upper1, lower1, pos1_max, pos1_min, c1, d1
+        cdef bint allow_pos0_neg=self.allow_pos0_neg
+        cdef bint chiDiscAtPi = self.chiDiscAtPi
+        
         cpos0_sup = self.cpos0_sup
         cpos0_inf = self.cpos0_inf
         cpos0 = self.cpos0
@@ -515,16 +537,20 @@ class HistoBBox2d(object):
                 d0 = dpos0[idx]
                 lower0 = c0 - d0
                 upper0 = c0 + d0
-                cpos0_sup[idx] = upper0
-                cpos0_inf[idx] = lower0
                 c1 = cpos1[idx]
                 d1 = dpos1[idx]
                 lower1 = c1 - d1
                 upper1 = c1 + d1
-                cpos1_sup[idx] = upper1
-                cpos1_inf[idx] = lower1
                 if not allow_pos0_neg and lower0<0:
                     lower0=0
+                if upper1 > (2-chiDiscAtPi)*pi:
+                    upper1 = (2-chiDiscAtPi)*pi
+                if lower1 < (-chiDiscAtPi)*pi:
+                    lower1 = (-chiDiscAtPi)*pi
+                cpos0_sup[idx] = upper0
+                cpos0_inf[idx] = lower0
+                cpos1_sup[idx] = upper1
+                cpos1_inf[idx] = lower1
                 if not (check_mask and cmask[idx]):
                     if upper0>pos0_max:
                         pos0_max = upper0

@@ -135,9 +135,9 @@ class AbstractCalibration(object):
         else:
             lst.append("data= None")
         if self.darkFiles:
-            lst.append( "dark= " + ", ".join(self.darkFiles))
+            lst.append("dark= " + ", ".join(self.darkFiles))
         else:
-            lst.append( "dark= None")
+            lst.append("dark= None")
         if self.flatFiles:
             lst.append("flat= " + ", ".join(self.flatFiles))
         else:
@@ -299,8 +299,6 @@ class AbstractCalibration(object):
                 logger.error("No flat file exists !!!")
                 self.flatFiles = None
 
-        if options.mask and os.path.isfile(options.mask):
-            self.mask = (fabio.open(options.mask).data != 0)
 
         if options.detector_name:
             self.detector = self.get_detector(options.detector_name)
@@ -312,6 +310,12 @@ class AbstractCalibration(object):
                 self.detector.set_splineFile(os.path.abspath(options.spline))
             else:
                 logger.error("Unknown spline file %s" % (options.spline))
+
+        if options.mask and os.path.isfile(options.mask):
+            self.mask = (fabio.open(options.mask).data != 0)
+        else:  # Use default mask provided by detector
+            self.mask = self.detector.mask
+
 
         self.pointfile = options.npt
         if (not options.spacing) or (not os.path.isfile(options.spacing)):
@@ -327,8 +331,10 @@ class AbstractCalibration(object):
             self.ai.wavelength = self.wavelength = 1e-10 * options.wavelength
         elif options.energy:
             self.ai.wavelength = self.wavelength = 1e-10 * hc / options.energy
-        else:
-            self.read_wavelength()
+#        else:
+            # This should be read from the poni. It it is missing; it is called in preprocess.
+#            self.read_wavelength()
+#            pass
         if options.distance:
             self.ai.dist = 1e-3 * options.distance
         if options.poni1 is not None:
@@ -341,8 +347,6 @@ class AbstractCalibration(object):
             self.ai.rot2 = options.rot2
         if options.rot3 is not None:
             self.ai.rot3 = options.rot3
-        if options.mask is not None:
-            self.mask = (fabio.open(options.mask).data != 0)
         self.dataFiles = expand_args(args)
         if not self.dataFiles:
             raise RuntimeError("Please provide some calibration images ... "
@@ -460,13 +464,15 @@ class AbstractCalibration(object):
 
         self.basename = os.path.splitext(self.outfile)[0]
         self.pointfile = self.basename + ".npt"
-
+#        self.peakPicker.points.wavelength
+        if self.wavelength is None:
+            self.wavelength = self.ai.wavelength
         self.peakPicker = PeakPicker(self.outfile, reconst=self.reconstruct, mask=self.mask,
                                      pointfile=self.pointfile, dSpacing=self.spacing_file,
                                      wavelength=self.ai.wavelength)
         if not self.keep:
             self.peakPicker.points.reset()
-            self.peakPicker.points.wavelength = self.wavelength
+            self.peakPicker.points.wavelength = self.ai.wavelength
         if not self.peakPicker.points.dSpacing:
             self.read_dSpacingFile()
             self.peakPicker.points.load_dSpacing(self.spacing_file)
@@ -505,6 +511,7 @@ class AbstractCalibration(object):
                     self.geoRef.refine2_wavelength(1000000, fix=self.fixed)
                     print(self.geoRef)
                     count += 1
+                self.peakPicker.points.setWavelength_change2th(self.geoRef.wavelength)
             self.geoRef.save(self.basename + ".poni")
             self.geoRef.del_ttha()
             self.geoRef.del_dssa()
@@ -691,7 +698,7 @@ and the 6 refined parameters (distance, center, rotation) and wavelength.
 An 1D and 2D diffraction patterns are also produced. (.dat and .azim files)
         """
         usage = "%prog [options] -w 1 -D detector -S calibrant.D imagefile.edf"
-        self.configure_parser(usage=usage,description=description,epilog=epilog)  # common
+        self.configure_parser(usage=usage, description=description, epilog=epilog)  # common
         self.parser.add_option("-r", "--reconstruct", dest="reconstruct",
               help="Reconstruct image where data are masked or <0  (for Pilatus "\
               "detectors or detectors with modules)",

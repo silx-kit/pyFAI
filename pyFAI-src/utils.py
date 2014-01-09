@@ -530,6 +530,9 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             for ch in zip(*listImages):
                 c = ch[0]
                 good = True
+                if c in ["*", "?", "[", "{", "("]:
+                    good = False
+                    break
                 for i in ch:
                     if i != c:
                         good = False
@@ -909,8 +912,8 @@ def _get_data_path(filename):
 
 
 def get_ui_file(filename):
-#    return _get_data_path(os.path.join("gui", filename))
-    return _get_data_path(filename)
+    return _get_data_path(os.path.join("gui", filename))
+#    return _get_data_path(filename)
 
 
 def get_cl_file(filename):

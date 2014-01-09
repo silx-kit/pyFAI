@@ -193,7 +193,7 @@ class Geometry(object):
         self._dttha = None
         self._dssa = None
         self._dssa_crc = None  # checksum associated with _dssa
-        self._dssa_order = 1  # by default we correct for 1/cos(2th), fit2d corrects for 1/cos^3(2th)
+        self._dssa_order = 3  # by default we correct for 1/cos(2th), fit2d corrects for 1/cos^3(2th)
         self._chia = None
         self._dchia = None
         self._qa = None
@@ -211,6 +211,10 @@ class Geometry(object):
         self._polarization_axis_offset = 0
         self._polarization = None
         self._polarization_crc = None  # checksum associated with _polarization
+        self._cosa = None      #cosine of the incidance angle
+        self._transmission_normal = None
+        self._transmission_corr = None
+        self._transmission_crc = None
 
         if detector:
             if type(detector) in types.StringTypes:
@@ -745,9 +749,19 @@ class Geometry(object):
                     self._dra = delta.max(axis= -1)
         return self._dra
 
+    def cosIncidance(self, d1, d2):
+        """
+        Calculate the incidence angle (alpha) for current pixels (P). 
+        The poni is at incidence angle=1 so cos(alpha) = 1
+        
+        """
+        p1, p2 = self._calcCartesianPositions(d1, d2)
+        cosa = self._dist / numpy.sqrt(self._dist * self._dist + p1 * p1 + p2 * p2)
+        return cosa
+
     def diffSolidAngle(self, d1, d2):
         """
-        Calulate the solid angle of the current pixels (P) versus the PONI (C)
+        Calculate the solid angle of the current pixels (P) versus the PONI (C)
 
                   Omega(P)    A cos(a)     SC^2         3       SC^3
         dOmega = --------- = --------- x --------- = cos (a) = ------
@@ -759,9 +773,6 @@ class Geometry(object):
         @param d2: 1d or 2d set of points (same size&shape as d1)
         @return: solid angle correction array
         """
-        p1, p2 = self._calcCartesianPositions(d1, d2)
-#        p1 = (0.5 + d1) * self.pixel1 - self._poni1
-#        p2 = (0.5 + d2) * self.pixel2 - self._poni2
         ds = 1.0
 
         # #######################################################
@@ -780,11 +791,13 @@ class Geometry(object):
             dY = sY[1:, : ] - sY[:-1, :]
             ds = (dX + 1.0) * (dY + 1.0)
 
-        dsa = ds * self._dist ** self._dssa_order / (self._dist ** 2 + p1 ** 2 + p2 ** 2) ** (self._dssa_order * 0.5)
+        if self._cosa is None:
+            self._cosa = self.cosIncidance(d1, d2)
+        dsa = ds * self._cosa ** self._dssa_order
 
         return dsa
 
-    def solidAngleArray(self, shape, order=1):
+    def solidAngleArray(self, shape, order=3):
         """
         Generate an array of the given shape with the solid angle of
         the current element two-theta(i,j) for all elements.
@@ -795,9 +808,10 @@ class Geometry(object):
         @param order:
         """
         if self._dssa is None:
-#            with self._sem:
-#                if self._dssa is None:
-            self._dssa_order = int(order)
+            if order is True:
+                self._dssa_order = 3.0
+            else:
+                self._dssa_order = float(order)
             self._dssa = numpy.fromfunction(self.diffSolidAngle,
                                             shape, dtype=numpy.float32)
             self._dssa_crc = crc32(self._dssa)
@@ -816,7 +830,7 @@ class Geometry(object):
                          " 2 to the X axis %s") % os.linesep)
                 f.write("# Calibration done at %s%s" % (time.ctime(), os.linesep))
                 if self.detector.name != "Detector":
-                    f.write("Detector: %s%s" % (self.detector.name,
+                    f.write("Detector: %s%s" % (self.detector.__class__.__name__,
                                                 os.linesep))
                 f.write("PixelSize1: %s%s" % (self.pixel1, os.linesep))
                 f.write("PixelSize2: %s%s" % (self.pixel2, os.linesep))
@@ -1097,10 +1111,14 @@ class Geometry(object):
 
         """
         if shape is None:
-            if self._ttha is None:
-                raise RuntimeError(("You should provide a shape if the"
-                                    " geometry is not yet initiallized"))
-            shape = self._ttha.shape
+            for i in ["_ttha", "_dttha", "_dssa", "_chia", "_dchia", "_qa", "_dqa", "_ra", "_dra"]:
+                ary = self.__getattribute__(i)
+                if ary is not None:
+                    shape = ary.shape
+                    break
+        if shape is None:
+            raise RuntimeError(("You should provide a shape if the"
+                                " geometry is not yet initiallized"))
 
 
         if factor is None:
@@ -1125,6 +1143,51 @@ class Geometry(object):
                 self._polarization_crc = crc32(self._polarization)
                 return self._polarization
 
+    def calc_transmission(self, t0, shape=None):
+        """
+        Defines the absorption correction for a phosphor screen or a scintillator
+        from t0, the normal transmission of the screen.
+        
+        Icor = Iobs(1-t0)/(1-exp(ln(t0)/cos(incidence)))
+                 1-exp(ln(t0)/cos(incidence)
+        let t = -----------------------------
+                          1 - t0
+        See reference on:
+        J. Appl. Cryst. (2002). 35, 356–359 G. Wu et al.  CCD phosphor
+        
+        @param t0: value of the normal transmission (from 0 to 1)
+        @param shape: shape of the array
+        @return: actual  
+        """
+        if t0 < 0 or t0 > 1:
+            logger.error("Impossible value for normal transmission: %s" % t0)
+            return
+
+        with self._sem:
+            if (t0 == self._transmission_normal) \
+                and (shape is None \
+                     or (shape == self._transmission_corr.shape)):
+                return self._transmission_corr
+
+        if self._cosa is None:
+            if shape is None:
+                for i in ["_ttha", "_dttha", "_dssa", "_chia", "_dchia", "_qa", "_dqa", "_ra", "_dra"]:
+                    ary = self.__getattribute__(i)
+                    if ary is not None:
+                        shape = ary.shape
+                        break
+            if shape is None:
+                raise RuntimeError(("You should provide a shape if the"
+                                    " geometry is not yet initiallized"))
+
+        with self._sem:
+            self._transmission_normal = t0
+            if self._cosa is None:
+                self._cosa = numpy.fromfunction(self.cosIncidance, shape, dtype=numpy.float32)
+            self._transmission_corr = (1.0 - numpy.exp(numpy.log(t0) / self._cosa)) / (1 - t0)
+            self._transmission_crc = crc32(self._transmission_corr)
+        return self._transmission_corr
+
     def reset(self):
         """
         reset most arrays that are cached: used when a parameter
@@ -1145,7 +1208,12 @@ class Geometry(object):
         self._corner4Dqa = None
         self._corner4Dra = None
         self._polarization = None
-        self._polarization_factor = 0
+        self._polarization_factor = None
+        self._transmission_normal = None
+        self._transmission_corr = None
+        self._transmission_crc = None
+        self._cosa = None
+
 
     def calcfrom1d(self, tth, I, shape=None, mask=None,
                    dim1_unit=units.TTH, correctSolidAngle=True):

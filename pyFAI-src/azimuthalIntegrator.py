@@ -278,7 +278,7 @@ class AzimuthalIntegrator(Geometry):
             return data, None
 
 
-    def xrpd_numpy(self, data, nbPt, filename=None, correctSolidAngle=1,
+    def xrpd_numpy(self, data, nbPt, filename=None, correctSolidAngle=True,
                    tthRange=None, mask=None, dummy=None, delta_dummy=None,
                    polarization_factor=None, dark=None, flat=None):
         """
@@ -385,7 +385,7 @@ class AzimuthalIntegrator(Geometry):
                     dark, flat, polarization_factor)
         return tthAxis, I
 
-    def xrpd_cython(self, data, nbPt, filename=None, correctSolidAngle=1,
+    def xrpd_cython(self, data, nbPt, filename=None, correctSolidAngle=True,
                     tthRange=None, mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=None, dark=None, flat=None,
                     pixelSize=None):
@@ -442,7 +442,7 @@ class AzimuthalIntegrator(Geometry):
                     dark, flat, polarization_factor)
         return tthAxis, I
 
-    def xrpd_splitBBox(self, data, nbPt, filename=None, correctSolidAngle=1,
+    def xrpd_splitBBox(self, data, nbPt, filename=None, correctSolidAngle=True,
                        tthRange=None, chiRange=None, mask=None,
                        dummy=None, delta_dummy=None,
                        polarization_factor=None, dark=None, flat=None):
@@ -598,7 +598,7 @@ class AzimuthalIntegrator(Geometry):
         return tthAxis, I
 
     def xrpd_splitPixel(self, data, nbPt,
-                        filename=None, correctSolidAngle=1,
+                        filename=None, correctSolidAngle=True,
                         tthRange=None, chiRange=None, mask=None,
                         dummy=None, delta_dummy=None,
                         polarization_factor=None, dark=None, flat=None):
@@ -736,7 +736,7 @@ class AzimuthalIntegrator(Geometry):
     # Default implementation:
     xrpd = xrpd_splitBBox
 
-    def xrpd_OpenCL(self, data, nbPt, filename=None, correctSolidAngle=1,
+    def xrpd_OpenCL(self, data, nbPt, filename=None, correctSolidAngle=True,
                     dark=None, flat=None,
                     tthRange=None, mask=None, dummy=None, delta_dummy=None,
                     devicetype="gpu", useFp64=True,
@@ -1024,7 +1024,7 @@ class AzimuthalIntegrator(Geometry):
                                             allow_pos0_neg=False,
                                             unit=unit)
 
-    def xrpd_LUT(self, data, nbPt, filename=None, correctSolidAngle=1,
+    def xrpd_LUT(self, data, nbPt, filename=None, correctSolidAngle=True,
                  tthRange=None, chiRange=None, mask=None,
                  dummy=None, delta_dummy=None,
                  safe=True, dark=None, flat=None):
@@ -1137,7 +1137,7 @@ class AzimuthalIntegrator(Geometry):
                                 unit="2th_deg",
                                 safe=safe)
 
-    def xrpd_LUT_OCL(self, data, nbPt, filename=None, correctSolidAngle=1,
+    def xrpd_LUT_OCL(self, data, nbPt, filename=None, correctSolidAngle=True,
                      tthRange=None, chiRange=None, mask=None,
                      dummy=None, delta_dummy=None,
                      safe=True, devicetype="all",
@@ -1272,7 +1272,7 @@ class AzimuthalIntegrator(Geometry):
                                 safe=safe)
 
     def xrpd2_numpy(self, data, nbPt2Th, nbPtChi=360,
-                    filename=None, correctSolidAngle=1,
+                    filename=None, correctSolidAngle=True,
                     dark=None, flat=None,
                     tthRange=None, chiRange=None,
                     mask=None, dummy=None, delta_dummy=None):
@@ -1379,7 +1379,7 @@ class AzimuthalIntegrator(Geometry):
         return I, bins2Th, binsChi
 
     def xrpd2_histogram(self, data, nbPt2Th, nbPtChi=360,
-                        filename=None, correctSolidAngle=1,
+                        filename=None, correctSolidAngle=True,
                         dark=None, flat=None,
                         tthRange=None, chiRange=None, mask=None,
                         dummy=None, delta_dummy=None):
@@ -1495,7 +1495,7 @@ class AzimuthalIntegrator(Geometry):
         return I, bins2Th, binsChi
 
     def xrpd2_splitBBox(self, data, nbPt2Th, nbPtChi=360,
-                        filename=None, correctSolidAngle=1,
+                        filename=None, correctSolidAngle=True,
                         tthRange=None, chiRange=None, mask=None,
                         dummy=None, delta_dummy=None,
                         polarization_factor=None, dark=None, flat=None):
@@ -1639,7 +1639,7 @@ class AzimuthalIntegrator(Geometry):
         return I, bins2Th, binsChi
 
     def xrpd2_splitPixel(self, data, nbPt2Th, nbPtChi=360,
-                         filename=None, correctSolidAngle=1,
+                         filename=None, correctSolidAngle=True,
                          tthRange=None, chiRange=None, mask=None,
                          dummy=None, delta_dummy=None,
                          polarization_factor=None, dark=None, flat=None):
@@ -1806,12 +1806,12 @@ class AzimuthalIntegrator(Geometry):
         return out
 
     def integrate1d(self, data, nbPt, filename=None,
-                    correctSolidAngle=1,
+                    correctSolidAngle=True,
                     variance=None, error_model=None,
                     radial_range=None, azimuth_range=None,
                     mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=None, dark=None, flat=None,
-                    method="lut", unit=units.Q, safe=True):
+                    method="lut", unit=units.Q, safe=True, normalization_factor=None):
         """
         Calculate the azimuthal integrated Saxs curve in q(nm^-1) by
         default
@@ -1852,6 +1852,8 @@ class AzimuthalIntegrator(Geometry):
         @type unit: pyFAI.units.Enum
         @param safe: Do some extra checks to ensure LUT is still valid. False is faster.
         @type safe: bool
+        @param normalization_factor: Value of a normalization monitor
+        @type normalization_factor: float
 
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
         @rtype: 3-tuple of ndarrays
@@ -2199,9 +2201,13 @@ class AzimuthalIntegrator(Geometry):
             I = val / count
         if pos0_scale:
             qAxis = qAxis * pos0_scale
+        if normalization_factor:
+            I /= normalization_factor
+            if sigma is not None:
+                sigma /= normalization_factor
 
         self.save1D(filename, qAxis, I, sigma, unit,
-                    dark, flat, polarization_factor)
+                    dark, flat, polarization_factor, normalization_factor)
 
         if sigma is not None:
             return qAxis, I, sigma
@@ -2209,11 +2215,12 @@ class AzimuthalIntegrator(Geometry):
             return qAxis, I
 
     def integrate2d(self, data, nbPt_rad, nbPt_azim=360,
-                    filename=None, correctSolidAngle=1, variance=None,
+                    filename=None, correctSolidAngle=True, variance=None,
                     error_model=None, radial_range=None, azimuth_range=None,
                     mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=None, dark=None, flat=None,
-                    method="bbox", unit=units.Q, safe=True):
+                    method="bbox", unit=units.Q, safe=True,
+                    normalization_factor=None):
         """
         Calculate the azimuthal regrouped 2d image in q(nm^-1)/deg by default
 
@@ -2255,6 +2262,8 @@ class AzimuthalIntegrator(Geometry):
         @type unit: pyFAI.units.Enum
         @param safe: Do some extra checks to ensure LUT is still valid. False is faster.
         @type safe: bool
+        @param normalization_factor: Value of a normalization monitor
+        @type normalization_factor: float
 
         @return: azimuthaly regrouped data, 2theta pos. and chi pos.
         @rtype: 3-tuple of ndarrays (2d, 1d, 1d)
@@ -2534,15 +2543,20 @@ class AzimuthalIntegrator(Geometry):
         # I know I make copies ....
         bins_rad = bins_rad * pos0_scale
         bins_azim = bins_azim * 180.0 / pi
+
+        if normalization_factor:
+            I /= normalization_factor
+
         self.save2D(filename, I, bins_rad, bins_azim, sigma, unit,
-                    dark=dark, flat=flat, polarization_factor=polarization_factor)
+                    dark=dark, flat=flat, polarization_factor=polarization_factor,
+                    normalization_factor=normalization_factor)
         if sigma is not None:
             return I, bins_rad, bins_azim, sigma
         else:
             return I, bins_rad, bins_azim
 
     def saxs(self, data, nbPt, filename=None,
-             correctSolidAngle=1, variance=None,
+             correctSolidAngle=True, variance=None,
              error_model=None, qRange=None, chiRange=None,
              mask=None, dummy=None, delta_dummy=None,
              polarization_factor=None, dark=None, flat=None,
@@ -2607,7 +2621,7 @@ class AzimuthalIntegrator(Geometry):
             return out
 
     def makeHeaders(self, hdr="#", dark=None, flat=None,
-                    polarization_factor=None):
+                    polarization_factor=None, normalization_factor=None):
         """
         @param hdr: string used as comment in the header
         @type hdr: str
@@ -2654,12 +2668,15 @@ class AzimuthalIntegrator(Geometry):
                     headerLst.append("Flat field: %s" % self.flatfiles)
                 else:
                     headerLst.append("Flat field: Done with unknown file")
+            if polarization_factor is None and self._polarization is not None:
+                polarization_factor = self._polarization_factor
             headerLst.append("Polarization factor: %s" % polarization_factor)
+            headerLst.append("Normalization factor: %s" % normalization_factor)
             self.header = os.linesep.join([hdr + " " + i for i in headerLst])
         return self.header
 
     def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH,
-               dark=None, flat=None, polarization_factor=None):
+               dark=None, flat=None, polarization_factor=None, normalization_factor=None):
         """
         @param filename: the filename used to save the 1D integration
         @type filename: str
@@ -2677,6 +2694,8 @@ class AzimuthalIntegrator(Geometry):
         @type flat: ???
         @param polarization_factor: the polarization factor
         @type polarization_factor: float
+        @param normalization_factor: the monitor value
+        @type normalization_factor: float
 
         This method save the result of a 1D integration.
         """
@@ -2684,7 +2703,8 @@ class AzimuthalIntegrator(Geometry):
         if filename:
             with open(filename, "w") as f:
                 f.write(self.makeHeaders(dark=dark, flat=flat,
-                                         polarization_factor=polarization_factor))
+                                         polarization_factor=polarization_factor,
+                                         normalization_factor=normalization_factor))
                 f.write("%s# --> %s%s" % (os.linesep, filename, os.linesep))
                 if error is None:
                     f.write("#%14s %14s %s" % (dim1_unit.REPR, "I ", os.linesep))
@@ -2696,7 +2716,7 @@ class AzimuthalIntegrator(Geometry):
                 f.write(os.linesep)
 
     def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH,
-               dark=None, flat=None, polarization_factor=None):
+               dark=None, flat=None, polarization_factor=None, normalization_factor=None):
         """
         @param filename: the filename used to save the 2D histogram
         @type filename: str
@@ -2716,6 +2736,8 @@ class AzimuthalIntegrator(Geometry):
         @type flat: ???
         @param polarization_factor: the polarization factor
         @type polarization_factor: float
+        @param normalization_factor: the monitor value
+        @type normalization_factor: float
 
         This method save the result of a 2D integration.
         """
@@ -2728,7 +2750,7 @@ class AzimuthalIntegrator(Geometry):
                        dim1_unit.REPR + "_min",
                        dim1_unit.REPR + "_max",
                        "pixelX", "pixelY",
-                       "dark", "flat", "polarization"]
+                       "dark", "flat", "polarization_factor", "normalization_factor"]
         header = {"dist": str(self._dist),
                   "poni1": str(self._poni1),
                   "poni2": str(self._poni2),
@@ -2741,7 +2763,9 @@ class AzimuthalIntegrator(Geometry):
                   dim1_unit.REPR + "_max": str(dim1.max()),
                   "pixelX": str(self.pixel2),  # this is not a bug ... most people expect dim1 to be X
                   "pixelY": str(self.pixel1),  # this is not a bug ... most people expect dim2 to be Y
-                  "polarization": str(polarization_factor)}
+                  "polarization_factor": str(polarization_factor),
+                  "normalization_factor":str(normalization_factor)
+                  }
 
         if self.splineFile:
             header["spline"] = str(self.splineFile)

@@ -38,7 +38,7 @@ import numpy
 
 logger = logging.getLogger("pyFAI.detectors")
 
-from pyFAI.spline import Spline
+from pyFAI import spline
 from pyFAI.utils import lazy_property
 try:
     from pyFAI.fastcrc import crc32
@@ -60,7 +60,7 @@ class Detector(object):
         """
         @param pixel1: size of the pixel in meter along the slow dimension (often Y)
         @type pixel1: float
-        @param pixel2: size of the pixel in meter along the fast dimension (ofter x)
+        @param pixel2: size of the pixel in meter along the fast dimension (often X)
         @type pixel2: float
         @param splineFile: path to file containing the geometric correction.
         @type splineFile: str
@@ -92,6 +92,22 @@ class Detector(object):
             return "Undefined detector"
         return "Detector %s\t Spline= %s\t PixelSize= %.3e, %.3e m" % \
             (self.name, self.splineFile, self._pixel1, self._pixel2)
+    def set_config(self, config):
+        """
+        Sets the configuration of the detector. This implies:
+        - Orientation: integers 
+        - Binning
+        - ROI
+        
+        The configuration is either a python dictionnary or a JSON string or a file containing this JSON configuration
+        
+        keys in that dictionnary are :
+        "orientation": integers from 0 to 7
+        "binning": integer or 2-tuple of integers. If only one integer is provided, 
+        "offset": coordinate (in pixels) of the start of the detector 
+        """
+
+        raise NotImplementedError
 
     def set_config(self, config):
         """
@@ -116,7 +132,7 @@ class Detector(object):
     def set_splineFile(self, splineFile):
         if splineFile is not None:
             self._splineFile = os.path.abspath(splineFile)
-            self.spline = Spline(self._splineFile)
+            self.spline = spline.Spline(self._splineFile)
             # NOTA : X is axis 1 and Y is Axis 0
             self._pixel2, self._pixel1 = self.spline.getPixelSize()
             self._splineCache = {}
@@ -535,6 +551,18 @@ class Fairchild(Detector):
         self.name = "Fairchild Condor 486:90"
         self.max_shape = (4096, 4096)
 
+class Titan(Detector):
+    """
+    Titan CCD detector from Agilent. Mask not handled
+    """
+    force_pixel = True
+    def __init__(self, pixel1=60e-6, pixel2=60e-6):
+        Detector.__init__(self, pixel1, pixel2)
+        self.name = "Titan 2k x 2k"
+        self.max_shape = (2048, 2048)
+
+
+
 
 class Dexela2923(Detector):
     """
@@ -707,6 +735,7 @@ class ImXPadS140(Detector):
     MAX_SHAPE = (240, 560)  # max size of the detector
     PIXEL_SIZE = (130e-6, 130e-6)
     force_pixel = True
+    name = "Imxpad S140"
 
     class __metaclass__(type):
 
@@ -840,13 +869,18 @@ def detector_factory(name, config=None):
     A kind of factory...
     @param name: name of a detector
     @type name: str
+    @param config: configuration of the detector
+    @type config: dict or JSON representation of it.
 
-    @return: an instance of the right detector
+    @return: an instance of the right detector, set-up if possible
     @rtype: pyFAI.detectors.Detector
     """
     name = name.lower()
     if name in ALL_DETECTORS:
-        return ALL_DETECTORS[name]()
+        mydet = ALL_DETECTORS[name]()
+        if config is not None:
+            mydet.set_config(config)
+        return mydet
     else:
         msg = ("Detector %s is unknown !, "
                "please select one from %s" % (name, ALL_DETECTORS.keys()))

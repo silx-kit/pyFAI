@@ -43,7 +43,7 @@ import numpy
 from Lima import Core
 from Utils import BasePostProcess
 
-class PyFAISink(Core.Processlib.SinkTaskBase):
+class SinkPyFAI(Core.Processlib.SinkTaskBase):
     """
     This is a processlib Sink: it takes an image as input and writes a file to disk but returns nothing
     """
@@ -265,7 +265,7 @@ class DistortionCorrectionDeviceServer(BasePostProcess) :
                                                          self.DISTORTION_TASK_NAME,
                                                          self._runLevel)
                     if not self.__pyFAISink:
-                        self.__pyFAISink = PyFAISink(splinefile=self.__spline_filename,
+                        self.__pyFAISink = SinkPyFAI(splinefile=self.__spline_filename,
                                                      darkfile=self.__darkcurrent_filename,
                                                      flatfile=self.__flatfield_filename)
                     self.__Task.setSinkTask(self.__pyFAISink)
@@ -324,7 +324,7 @@ class DistortionCorrectionDeviceServer(BasePostProcess) :
         """
         Force the reinitialization
         """
-        self.__pyFAISink = PyFAISink(splinefile=self.__spline_filename,
+        self.__pyFAISink = SinkPyFAI(splinefile=self.__spline_filename,
                                      darkfile=self.__darkcurrent_filename,
                                      flatfile=self.__flatfield_filename)
         self.__Task.setSinkTask(self.__pyFAISink)

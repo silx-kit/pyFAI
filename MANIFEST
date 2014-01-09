@@ -17,6 +17,15 @@ benchmark/foo.py
 benchmark/frelon.spline
 benchmark/halfccd.poni
 benchmark/halfccd.spline
+calibration/AgBh.D
+calibration/Au.D
+calibration/C14H30O.D
+calibration/CeO2.D
+calibration/Cr2O3.D
+calibration/CrOx.D
+calibration/LaB6.D
+calibration/Si.D
+calibration/alpha_Al2O3.D
 doc/MX-calibrate.1
 doc/MX-calibrate.pdf
 doc/check_calib.1
@@ -125,6 +134,7 @@ openCL/ocl_azim_LUT.cl
 openCL/ocl_azim_kernel2d_2.cl
 openCL/ocl_azim_kernel_2.cl
 pyFAI-src/__init__.py
+pyFAI-src/argparse.py
 pyFAI-src/azimuthalIntegrator.py
 pyFAI-src/calibration.py
 pyFAI-src/detectors.py
@@ -132,14 +142,17 @@ pyFAI-src/distortion.py
 pyFAI-src/geometry.py
 pyFAI-src/geometryRefinement.py
 pyFAI-src/integrate_widget.py
+pyFAI-src/io.py
 pyFAI-src/ocl_azim.py
 pyFAI-src/ocl_azim_lut.py
 pyFAI-src/opencl.py
 pyFAI-src/peakPicker.py
+pyFAI-src/processor.py
 pyFAI-src/refinment2D.py
 pyFAI-src/spline.py
 pyFAI-src/units.py
 pyFAI-src/utils.py
+pyFAI-src/worker.py
 scripts/MX-calibrate
 scripts/check_calib
 scripts/diff_tomo
@@ -166,6 +179,8 @@ src/fastcrc.pyx
 src/fastrebin.pyx
 src/histogram.c
 src/histogram.pyx
+src/marchingsquares_.c
+src/marchingsquares_.pyx
 src/paraSplitBBox.pyx
 src/reconstruct.c
 src/reconstruct.pyx
@@ -173,6 +188,8 @@ src/relabel.c
 src/relabel.pyx
 src/slist.h
 src/slist.pxd
+src/sparse_csr.c
+src/sparse_csr.pyx
 src/splitBBox.c
 src/splitBBox.pyx
 src/splitBBoxLUT.c
@@ -185,6 +202,7 @@ test/example.sp
 test/moke.poni
 test/testAzimuthalIntegrator.py
 test/testBilinear.py
+test/testDetector.py
 test/testDistortion.py
 test/testExport.py
 test/testFlat.py

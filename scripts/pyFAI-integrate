@@ -46,7 +46,6 @@ import pyFAI, fabio
 from pyFAI.opencl import ocl
 import pyFAI.utils
 from pyFAI.integrate_widget import AIWidget
-UIC = op.join(op.dirname(pyFAI.__file__), "integration.ui")
 
 try:
     from rfoo.utils import rconsole
@@ -88,8 +87,8 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
     parser.add_option("-r", "--fast-motor",
                       dest="rapid", default=None,
                       help="Dimension of the scan on the fast direction (makes sense only with HDF5)")
-    parser.add_option( "--no-gui",
-                      dest="gui", default=True,action="store_false",
+    parser.add_option("--no-gui",
+                      dest="gui", default=True, action="store_false",
                       help="Process the dataset without showing the user interface.")
 
     (options, args) = parser.parse_args()
