@@ -2106,64 +2106,8 @@ class AzimuthalIntegrator(Geometry):
                                                            )
                     sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
 
-        if (I is None) and ("cython" in method):
-            if histogram is None:
-                logger.warning("pyFAI.histogram is not available,"
-                               " falling back on numpy")
-                method = "numpy"
-            else:
-                logger.debug("integrate1d uses cython implementation")
-                data = numpy.ascontiguousarray(data, dtype=numpy.float32)
-                mask = self.makeMask(data, mask, dummy, delta_dummy,
-                                     mode="numpy")
-                pos0 = self.array_from_unit(shape, "center", unit)
-                if radial_range is not None:
-                    mask *= (pos0 >= min(radial_range))
-                    mask *= (pos0 <= max(radial_range))
-                if azimuth_range is not None:
-                    chiMin, chiMax = azimuth_range
-                    chi = self.chiArray(shape)
-                    mask *= (chi >= chiMin) * (chi <= chiMax)
-                mask = numpy.where(mask)
-                pos0 = pos0[mask]
-
-                if variance is not None:
-                    variance = variance[mask]
-
-                if dark is not None:
-                    data -= dark
-
-                if flat is not None:
-                    data /= flat
-
-                if polarization is not None:
-                    data /= polarization
-
-                if solidangle is not None:
-                    data /= solidangle
-
-                data = data[mask]
-
-                if dummy is None:
-                    dummy = 0
-
-                qAxis, I, a, b = histogram.histogram(pos=pos0,
-                                                     weights=data,
-                                                     bins=nbPt,
-                                                     pixelSize_in_Pos=0,
-                                                     dummy=dummy)
-                if error_model == "azimuthal":
-                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
-                if variance is not None:
-                    _, var1d, a, b = histogram.histogram(pos=pos0,
-                                                         weights=variance,
-                                                         bins=nbPt,
-                                                         pixelSize_in_Pos=1,
-                                                         dummy=dummy)
-                    sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
-
         if I is None:
-            logger.debug("integrate1d uses Numpy implementation")
+            #Common part for  Numpy and Cython
             data = numpy.ascontiguousarray(data, dtype=numpy.float32)
             mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
             pos0 = self.array_from_unit(shape, "center", unit)
@@ -2189,6 +2133,33 @@ class AzimuthalIntegrator(Geometry):
                 variance = variance[mask]
             if radial_range is None:
                 radial_range = (pos0.min(), pos0.max() * EPS32)
+
+            if ("cython" in method):
+                if histogram is not None:
+                    logger.debug("integrate1d uses cython implementation")
+                    if dummy is None:
+                        dummy = 0
+                    qAxis, I, a, b = histogram.histogram(pos=pos0,
+                                                         weights=data,
+                                                         bins=nbPt,
+                                                         pixelSize_in_Pos=0,
+                                                         dummy=dummy)
+                    if error_model == "azimuthal":
+                        variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
+                    if variance is not None:
+                        _, var1d, a, b = histogram.histogram(pos=pos0,
+                                                             weights=variance,
+                                                             bins=nbPt,
+                                                             pixelSize_in_Pos=1,
+                                                             dummy=dummy)
+                        sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
+                else:
+                    logger.warning("pyFAI.histogram is not available,"
+                               " falling back on numpy")
+                    method = "numpy"
+        if I is None:
+            logger.debug("integrate1d uses Numpy implementation")
+            method = "numpy"
             ref, b = numpy.histogram(pos0, nbPt, range=radial_range)
             qAxis = (b[1:] + b[:-1]) / 2.0
             count = numpy.maximum(1, ref)
