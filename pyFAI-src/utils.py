@@ -44,7 +44,10 @@ from scipy import ndimage
 from scipy.interpolate import interp1d
 from math import  ceil, sin, cos, atan2, pi
 
-from . import relabel as relabelCython
+try:
+    from . import relabel as relabelCython
+except:
+    relabelCython = None
 from scipy.optimize.optimize import fmin, fminbound
 import scipy.ndimage.filters
 logger = logging.getLogger("pyFAI.utils")
@@ -381,17 +384,20 @@ def relabel(label, data, blured, max_size=None):
     @param max_size: the max number of label wanted
     @return array like label
     """
-    max_label = label.max()
-    a, b, c, d = relabelCython.countThem(label, data, blured)
-    count = d
-    sortCount = count.argsort()
-    invSortCount = sortCount[-1::-1]
-    invCutInvSortCount = numpy.zeros(max_label + 1, dtype=int)
-    for i, j in enumerate(list(invSortCount[:max_size])):
-        invCutInvSortCount[j] = i
-    f = lambda i:invCutInvSortCount[i]
-    return f(label)
-
+    if relabelCython:
+        max_label = label.max()
+        a, b, c, d = relabelCython.countThem(label, data, blured)
+        count = d
+        sortCount = count.argsort()
+        invSortCount = sortCount[-1::-1]
+        invCutInvSortCount = numpy.zeros(max_label + 1, dtype=int)
+        for i, j in enumerate(list(invSortCount[:max_size])):
+            invCutInvSortCount[j] = i
+        f = lambda i:invCutInvSortCount[i]
+        return f(label)
+    else:
+        logger.warning("relabel Cython module is not available...")
+        return label
 
 def averageDark(lstimg, center_method="mean", cutoff=None):
     """
