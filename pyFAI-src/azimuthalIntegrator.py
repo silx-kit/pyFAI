@@ -2108,7 +2108,7 @@ class AzimuthalIntegrator(Geometry):
 
         if I is None:
             #Common part for  Numpy and Cython
-            data = numpy.ascontiguousarray(data, dtype=numpy.float32)
+            data = data.astype(numpy.float32)
             mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
             pos0 = self.array_from_unit(shape, "center", unit)
             if radial_range is not None:
@@ -2421,58 +2421,22 @@ class AzimuthalIntegrator(Geometry):
                                                                       solidangle=solidangle,
                                                                       polarization=polarization)
 
-        if (I is None) and ("cython" in method):
-            if histogram is None:
-                logger.warning("Cython histogram is not available;"
-                               " falling back on numpy histogram")
-                method = "numpy"
-            else:
-                logger.debug("integrate2d uses cython implementation")
-                data = numpy.ascontiguousarray(data, dtype=numpy.float32)
-                mask = self.makeMask(data, mask, dummy, delta_dummy,
-                                     mode="numpy")
-                pos0 = self.array_from_unit(shape, "center", unit)
-                pos1 = self.chiArray(shape)
+        if (I is None):
+            logger.debug("integrate2d uses cython implementation")
+            data = data.astype(numpy.float32) # it is important to make a copy see issue #88
+            mask = self.makeMask(data, mask, dummy, delta_dummy,
+                                 mode="numpy")
+            pos0 = self.array_from_unit(shape, "center", unit)
+            pos1 = self.chiArray(shape)
 
-                if radial_range is not None:
-                    mask *= (pos0 >= min(radial_range))
-                    mask *= (pos0 <= max(radial_range))
+            if radial_range is not None:
+                mask *= (pos0 >= min(radial_range)) * (pos0 <= max(radial_range))
 
-                if azimuth_range is not None:
-                    mask *= (pos1 >= min(azimuth_range))
-                    mask *= (pos1 <= max(azimuth_range))
+            if azimuth_range is not None:
+                mask *= (pos1 >= min(azimuth_range)) * (pos1 <= max(azimuth_range))
 
-                if variance is not None:
-                    variance = variance[mask]
-
-                if dark is not None:
-                    data -= dark
-
-                if flat is not None:
-                    data /= flat
-
-                if polarization is not None:
-                    data /= polarization
-
-                if solidangle is not None:
-                    data /= solidangle
-
-                data = data[mask]
-                pos0 = pos0[mask]
-                pos1 = pos1[mask]
-                if dummy is None:
-                    dummy = 0
-                I, bins_azim, bins_rad, _a, _b = histogram.histogram2d(pos0=pos1,
-                                                                       pos1=pos0,
-                                                                       weights=data,
-                                                                       bins=(nbPt_azim, nbPt_rad),
-                                                                       split=False,
-                                                                       dummy=dummy)
-
-        if I is None:
-            logger.debug("integrate2d uses Numpy implementation")
-            data = numpy.ascontiguousarray(data, dtype=numpy.float32)
-            mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
+            if variance is not None:
+                variance = variance[mask]
 
             if dark is not None:
                 data -= dark
@@ -2486,24 +2450,26 @@ class AzimuthalIntegrator(Geometry):
             if solidangle is not None:
                 data /= solidangle
 
-            pos0 = self.array_from_unit(shape, "center", unit)
-            pos1 = self.chiArray(shape)
-
-            if radial_range is not None:
-                mask *= (pos0 >= min(radial_range))
-                mask *= (pos0 <= max(radial_range))
-            else:
-                radial_range = [pos0.min(), pos0.max() * EPS32]
-
-            if azimuth_range is not None:
-                mask *= (pos1 >= min(azimuth_range))
-                mask *= (pos1 <= max(azimuth_range))
-            else:
-                azimuth_range = [pos1.min(), pos1.max() * EPS32]
-
             data = data[mask]
             pos0 = pos0[mask]
             pos1 = pos1[mask]
+            if ("cython" in method):
+                if histogram is None:
+                    logger.warning("Cython histogram is not available;"
+                                   " falling back on numpy histogram")
+                    method = "numpy"
+                else:
+                    if dummy is None:
+                        dummy = 0
+                    I, bins_azim, bins_rad, _a, _b = histogram.histogram2d(pos0=pos1,
+                                                                           pos1=pos0,
+                                                                           weights=data,
+                                                                           bins=(nbPt_azim, nbPt_rad),
+                                                                           split=False,
+                                                                           dummy=dummy)
+
+        if I is None:
+            logger.debug("integrate2d uses Numpy implementation")
             ref, b, c = numpy.histogram2d(pos1, pos0, (nbPt_azim, nbPt_rad), range=[azimuth_range, radial_range])
             bins_azim = (b[1:] + b[:-1]) / 2.0
             bins_rad = (c[1:] + c[:-1]) / 2.0
@@ -2525,6 +2491,7 @@ class AzimuthalIntegrator(Geometry):
             return I, bins_rad, bins_azim, sigma
         else:
             return I, bins_rad, bins_azim
+
 
     def saxs(self, data, nbPt, filename=None,
              correctSolidAngle=True, variance=None,
