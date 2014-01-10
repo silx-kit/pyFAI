@@ -2431,9 +2431,13 @@ class AzimuthalIntegrator(Geometry):
 
             if radial_range is not None:
                 mask *= (pos0 >= min(radial_range)) * (pos0 <= max(radial_range))
+            else:
+                radial_range = [pos0.min(), pos0.max() * EPS32]
 
             if azimuth_range is not None:
                 mask *= (pos1 >= min(azimuth_range)) * (pos1 <= max(azimuth_range))
+            else:
+                azimuth_range = [pos1.min(), pos1.max() * EPS32]
 
             if variance is not None:
                 variance = variance[mask]
