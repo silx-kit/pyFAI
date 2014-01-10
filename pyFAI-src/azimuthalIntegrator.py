@@ -52,7 +52,7 @@ try:
     from . import ocl_azim  # IGNORE:F0401
     from . import opencl
 except ImportError as error:  # IGNORE:W0703
-    logger.error("Unable to import pyFAI.ocl_azim")
+    logger.warning("Unable to import pyFAI.ocl_azim")
     ocl_azim = None
     ocl = None
 else:
@@ -61,7 +61,7 @@ else:
 try:
     from . import splitBBoxLUT
 except ImportError as error:  # IGNORE:W0703
-    logger.error("Unable to import pyFAI.splitBBoxLUT for"
+    logger.warning("Unable to import pyFAI.splitBBoxLUT for"
                  " Look-up table based azimuthal integration")
     splitBBoxLUT = None
 

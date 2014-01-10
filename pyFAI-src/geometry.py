@@ -683,7 +683,7 @@ class Geometry(object):
                         delta[:, :, 3] = \
                             numpy.minimum(((chi_corner[:-1, 1: ] - chi_center) % twoPi),
                                           ((chi_center - chi_corner[:-1, 1: ]) % twoPi))
-                    self._dchia = delta.max(axis=-1)
+                    self._dchia = delta.max(axis= -1)
         return self._dchia
 
     def deltaQ(self, shape):
@@ -715,7 +715,7 @@ class Geometry(object):
                         delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
                         delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
                         delta[:, :, 3] = abs(q_corner[:-1, 1:] - q_center)
-                    self._dqa = delta.max(axis=-1)
+                    self._dqa = delta.max(axis= -1)
         return self._dqa
 
     def deltaR(self, shape):
@@ -746,7 +746,7 @@ class Geometry(object):
                         delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
                         delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
                         delta[:, :, 3] = abs(q_corner[:-1, 1:] - q_center)
-                    self._dra = delta.max(axis=-1)
+                    self._dra = delta.max(axis= -1)
         return self._dra
 
     def cosIncidance(self, d1, d2):
@@ -1111,10 +1111,14 @@ class Geometry(object):
 
         """
         if shape is None:
-            if self._ttha is None:
-                raise RuntimeError(("You should provide a shape if the"
-                                    " geometry is not yet initiallized"))
-            shape = self._ttha.shape
+            for i in ["_ttha", "_dttha", "_dssa", "_chia", "_dchia", "_qa", "_dqa", "_ra", "_dra"]:
+                ary = self.__getattribute__(i)
+                if ary is not None:
+                    shape = ary.shape
+                    break
+        if shape is None:
+            raise RuntimeError(("You should provide a shape if the"
+                                " geometry is not yet initiallized"))
 
 
         if factor is None:
@@ -1139,7 +1143,7 @@ class Geometry(object):
                 self._polarization_crc = crc32(self._polarization)
                 return self._polarization
 
-    def calc_transmission(self, t0):
+    def calc_transmission(self, t0, shape=None):
         """
         Defines the absorption correction for a phosphor screen or a scintillator
         from t0, the normal transmission of the screen.
@@ -1152,26 +1156,38 @@ class Geometry(object):
         J. Appl. Cryst. (2002). 35, 356–359 G. Wu et al.  CCD phosphor
         
         @param t0: value of the normal transmission (from 0 to 1)
+        @param shape: shape of the array
         @return: actual  
         """
-        if t0<0 or t0>1: 
+        if t0 < 0 or t0 > 1:
             logger.error("Impossible value for normal transmission: %s" % t0)
             return
+
         with self._sem:
-            if self._cosa is None:
-                shape = (1, 1)
+            if (t0 == self._transmission_normal) \
+                and (shape is None \
+                     or (shape == self._transmission_corr.shape)):
+                return self._transmission_corr
+
+        if self._cosa is None:
+            if shape is None:
                 for i in ["_ttha", "_dttha", "_dssa", "_chia", "_dchia", "_qa", "_dqa", "_ra", "_dra"]:
                     ary = self.__getattribute__(i)
                     if ary is not None:
                         shape = ary.shape
                         break
-                self._cosa = numpy.fromfunction(self.cosIncidance, shape, dtype=numpy.float32)
+            if shape is None:
+                raise RuntimeError(("You should provide a shape if the"
+                                    " geometry is not yet initiallized"))
+
+        with self._sem:
             self._transmission_normal = t0
-#            cosa = numpy.fromfunction(self.cosIncidance, shape, dtype=numpy.float32)
+            if self._cosa is None:
+                self._cosa = numpy.fromfunction(self.cosIncidance, shape, dtype=numpy.float32)
             self._transmission_corr = (1.0 - numpy.exp(numpy.log(t0) / self._cosa)) / (1 - t0)
             self._transmission_crc = crc32(self._transmission_corr)
         return self._transmission_corr
-        
+
     def reset(self):
         """
         reset most arrays that are cached: used when a parameter

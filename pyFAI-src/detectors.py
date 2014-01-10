@@ -109,6 +109,23 @@ class Detector(object):
 
         raise NotImplementedError
 
+    def set_config(self, config):
+        """
+        Sets the configuration of the detector. This implies:
+        - Orientation: integers 
+        - Binning
+        - ROI
+        
+        The configuration is either a python dictionnary or a JSON string or a file containing this JSON configuration
+        
+        keys in that dictionnary are :
+        "orientation": integers from 0 to 7
+        "binning": integer or 2-tuple of integers. If only one integer is provided, 
+        "offset": coordinate (in pixels) of the start of the detector 
+        """
+
+        raise NotImplementedError
+
     def get_splineFile(self):
         return self._splineFile
 

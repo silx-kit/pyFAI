@@ -47,9 +47,9 @@ from numpy.distutils.misc_util import get_numpy_include_dirs
 from distutils.sysconfig import get_python_lib
 from distutils.command.install_data import install_data
 
-# ###############################################################################
+################################################################################
 # Check for Cython
-# ###############################################################################
+################################################################################
 try:
     from Cython.Distutils import build_ext
     CYTHON = True

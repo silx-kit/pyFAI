@@ -188,6 +188,8 @@ src/relabel.c
 src/relabel.pyx
 src/slist.h
 src/slist.pxd
+src/sparse_csr.c
+src/sparse_csr.pyx
 src/splitBBox.c
 src/splitBBox.pyx
 src/splitBBoxLUT.c
