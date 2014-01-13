@@ -58,13 +58,18 @@ As most of the python projects:
 Test suites
 -----------
 
-To run the test an internet connection is needed as 200MB of test images will be downloaded
+To run the test an internet connection is needed as 200MB of test images will be downloaded. 
 ..
 
     python setup.py build test
 
+Setting the environment variable http_proxy can be necessary (depending on your network):
 
-PyFAI comes with 15 test-suites (98 tests in total) representing a coverage of 65%.
+.. 
+ 
+   export http_proxy=http://proxy.site.org/3128
+   
+PyFAI comes with 19 test-suites (109 tests in total) representing a coverage of 65%.
 This ensures both non regression over time and ease the distribution under different platforms:
 pyFAI runs under linux, MacOSX and Windows (in each case in 32 and 64 bits)
 
@@ -72,36 +77,36 @@ pyFAI runs under linux, MacOSX and Windows (in each case in 32 and 64 bits)
    :header: "Name", "Stmts", "Exec", "Cover"
    :widths: 50, 8, 8, 8
 
-   "pyFAI/__init__            ",    " 10",   "   7",    "70%" 
-   "pyFAI/azimuthalIntegrator ",    "934",   " 687",    "73%"
-   "pyFAI/detectors           ",    "441",   " 289",    "65%"
-   "pyFAI/geometry            ",    "718",   " 529",    "73%"
-   "pyFAI/geometryRefinement  ",    "361",   " 162",    "44%"
-   "pyFAI/ocl_azim            ",    "306",   " 215",    "70%"
-   "pyFAI/ocl_azim_lut        ",    "197",   " 166",    "84%"
-   "pyFAI/opencl              ",    "140",   " 102",    "72%"
-   "pyFAI/peakPicker          ",    "615",   " 221",    "35%"
-   "pyFAI/spline              ",    "327",   " 108",    "33%"
-   "pyFAI/units               ",    " 40",   "  35",    "87%"
-   "pyFAI/utils               ",    "596",   " 363",    "60%"
-   "testAzimuthalIntegrator   ",    "233",   " 156",    "66%"
-   "testBilinear              ",    " 39",   "  35",    "89%"
-   "testDetector              ",    " 35",   "  32",    "91%"
-   "testDistortion            ",    " 52",   "  46",    "88%"
-   "testExport                ",    " 68",   "  61",    "89%"
-   "testFlat                  ",    " 89",   "  85",    "95%"
-   "testGeometry              ",    " 86",   "  82",    "95%"
-   "testGeometryRefinement    ",    " 53",   "  50",    "94%"
-   "testHistogram             ",    "152",   " 138",    "90%"
-   "testIntegrate             ",    "135",   " 125",    "92%"
-   "testMask                  ",    "133",   " 106",    "79%"
-   "testOpenCL                ",    " 96",   "  83",    "86%"
-   "testPeakPicking           ",    " 83",   "  75",    "90%"
-   "testPolarization          ",    " 53",   "  32",    "60%"
-   "testSaxs                  ",    "101",   "  72",    "71%"
-   "testUtils                 ",    " 83",   "  76",    "91%"
-   "test_all                  ",    " 48",   "  47",    "97%"
-   "utilstest                 ",    "168",   "  84",    "50%"
+   "pyFAI/__init__            ",    "10",   "7",    "70%" 
+   "pyFAI/azimuthalIntegrator ",    "934",   "687",    "73%"
+   "pyFAI/detectors           ",    "441",   "289",    "65%"
+   "pyFAI/geometry            ",    "718",   "529",    "73%"
+   "pyFAI/geometryRefinement  ",    "361",   "162",    "44%"
+   "pyFAI/ocl_azim            ",    "306",   "215",    "70%"
+   "pyFAI/ocl_azim_lut        ",    "197",   "166",    "84%"
+   "pyFAI/opencl              ",    "140",   "102",    "72%"
+   "pyFAI/peakPicker          ",    "615",   "221",    "35%"
+   "pyFAI/spline              ",    "327",   "108",    "33%"
+   "pyFAI/units               ",    "40",   "35",    "87%"
+   "pyFAI/utils               ",    "596",   "363",    "60%"
+   "testAzimuthalIntegrator   ",    "233",   "156",    "66%"
+   "testBilinear              ",    "39",   "35",    "89%"
+   "testDetector              ",    "35",   "32",    "91%"
+   "testDistortion            ",    "52",   "46",    "88%"
+   "testExport                ",    "68",   "61",    "89%"
+   "testFlat                  ",    "89",   "85",    "95%"
+   "testGeometry              ",    "86",   "82",    "95%"
+   "testGeometryRefinement    ",    "53",   "50",    "94%"
+   "testHistogram             ",    "152",   "138",    "90%"
+   "testIntegrate             ",    "135",   "125",    "92%"
+   "testMask                  ",    "133",   "106",    "79%"
+   "testOpenCL                ",    "96",   "83",    "86%"
+   "testPeakPicking           ",    "83",   "75",    "90%"
+   "testPolarization          ",    "53",   "32",    "60%"
+   "testSaxs                  ",    "101",   "72",    "71%"
+   "testUtils                 ",    "83",   "76",    "91%"
+   "test_all                  ",    "48",   "47",    "97%"
+   "utilstest                 ",    "168",   "84",    "50%"
    "TOTAL                     ",   "6392",   "4269",    "66%"
 
 
@@ -113,13 +118,15 @@ http://www.edna-site.org/pub/debian/binary/
 List of contributors
 --------------------
 
-As of 04/2013 (number of commits in parenthesis):
-
-* Jérôme Kieffer (656)
-* Dimitris Karkoulis (22)
-* Frédéric-Emmanuel Picca (21)
-* Jonathan Wright (6)
-* Amund Hov (1)
+As of 01/2014:
+ * Jérôme Kieffer (ESRF)
+ * Dimitris Karkoulis (ESRF)
+ * Jon Wright (ESF)
+ * Frédéric-Emmanuel Picca (Soleil)
+ * Amund Hov (ESRF)
+ * Dodogerstlin @github
+ * Gunthard Benecke (Desy)
+ * Gero Flucke (Desy)
 
 List of other contributors (ideas or code)
 ------------------------------------------
