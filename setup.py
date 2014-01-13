@@ -63,7 +63,11 @@ if CYTHON:
     else:
         if Cython.Compiler.Version.version < "0.17":
             CYTHON = False
-#CYTHON=False
+if ("--no-cython" in sys.argv):
+    CYTHON = False
+    sys.argv.remove("--no-cython")
+        
+
 if CYTHON:
     cython_c_ext = ".pyx"
 else:
