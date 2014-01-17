@@ -449,36 +449,39 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
 
 
 if __name__ == "__main__":
-    from optparse import OptionParser
+    try:
+        from argparse import ArgumentParser
+    except:
+        from pyFAI.argparse import ArgumentParser
     description = """Benchmark for Azimuthal integration
     """
     epilog = """  """
-    usage = """usage: %prog [options] """
-    version = "%prog " + pyFAI.version
-    parser = OptionParser(usage=usage, version=version,
-                          description=description, epilog=epilog)
-    parser.add_option("-v", "--verbose",
-                          action="store_true", dest="verbose", default=False,
+    usage = """benchmark [options] """
+    version = "pyFAI benchmark version " + pyFAI.version
+    parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
+    parser.add_argument("-v", action='version', version=version)
+    parser.add_argument("-d", "--debug",
+                          action="store_true", dest="debug", default=False,
                           help="switch to verbose/debug mode")
-    parser.add_option("-c", "--cpu",
+    parser.add_argument("-c", "--cpu",
                       action="store_true", dest="opencl_cpu", default=False,
                       help="perform benchmark using OpenCL on the CPU")
-    parser.add_option("-g", "--gpu",
+    parser.add_argument("-g", "--gpu",
                       action="store_true", dest="opencl_gpu", default=False,
                       help="perform benchmark using OpenCL on the GPU")
-    parser.add_option("-a", "--acc",
+    parser.add_argument("-a", "--acc",
                       action="store_true", dest="opencl_acc", default=False,
-                      help="perform benchmark using OpenCL on the Accelerator (like XeonPhi/MIC")
-    parser.add_option("-s", "--small",
+                      help="perform benchmark using OpenCL on the Accelerator (like XeonPhi/MIC)")
+    parser.add_argument("-s", "--small",
                       action="store_true", dest="small", default=False,
                       help="Limit the size of the dataset to 6 Mpixel images (adviced for python 2.6 where there is a memory-leak)" )
-    parser.add_option("-n", "--number",
-                      dest="number", default=10, type="int",
+    parser.add_argument("-n", "--number",
+                      dest="number", default=10, type=int,
                       help="Number of repetition of the test, by default 10" )
-    (options, args) = parser.parse_args()
+    options = parser.parse_args()
     if options.small:
         ds_list = ds_list[:4]
-    if options.verbose:
+    if options.debug:
             pyFAI.logger.setLevel(logging.DEBUG)
     print("Averaging over %i repetitions (best of 3)." % options.number)
     b = Bench(options.number)
