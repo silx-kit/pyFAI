@@ -300,9 +300,11 @@ class HistoBBox1d(object):
         self.lut_max_idx = outMax
         #Related to memory-leak under python 2.6: 
         # see https://github.com/kif/pyFAI/issues/89
-        cdef numpy.ndarray[numpy.uint8_t, ndim=1] tmp_str = numpy.empty(lut_nbytes, dtype=numpy.uint8)
-        memcpy(&tmp_str[0], &lut[0,0], lut_nbytes)
-        self.lut = numpy.core.records.fromstring(tmp_str.tostring(), shape=(bins, lut_size),dtype=[("idx",numpy.int32),("coef",numpy.float32)])
+        cdef numpy.ndarray[numpy.uint8_t, ndim=2] tmp_str = numpy.empty(shape=(bins, lut_size*sizeof(lut_point)), dtype=numpy.uint8)
+        memcpy(&tmp_str[0,0], &lut[0,0], lut_nbytes)
+        self.lut = numpy.core.records.array(tmp_str.view(dtype=[("idx",numpy.int32),("coef",numpy.float32)]),
+                                            shape=(bins, lut_size),dtype=[("idx",numpy.int32),("coef",numpy.float32)],
+                                            copy=True)
 
         
         
