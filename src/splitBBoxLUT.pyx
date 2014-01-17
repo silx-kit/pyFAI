@@ -27,8 +27,12 @@
 #
 import cython
 import os
+#import sys
+#import time
 from cython.parallel import prange
-from libc.string cimport memset
+from libc.string cimport memset,memcpy
+#from libc.stdlib cimport malloc, free 
+from cython cimport view
 import numpy
 cimport numpy
 from libc.math cimport fabs, M_PI
@@ -43,7 +47,7 @@ except:
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
 @cython.cdivision(True)
-cdef float getBinNr( float x0, float pos0_min, float delta) nogil:
+cdef inline float getBinNr( float x0, float pos0_min, float delta) nogil:
     """
     calculate the bin number for any point
     param x0: current position
@@ -104,9 +108,11 @@ class HistoBBox1d(object):
             self.check_pos1 = False
             self.cpos1_min = None
             self.pos1_max = None
-
+            
         self.delta = (self.pos0_max - self.pos0_min) / bins
-        self.lut_max_idx = self.calc_lut()
+        self.lut=None
+        self.lut_max_idx = None
+        self.calc_lut()        
         self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, self.pos0_maxin-0.5*self.delta, self.bins)
         self.lut_checksum = crc32(self.lut)
         self.unit=unit
@@ -114,7 +120,7 @@ class HistoBBox1d(object):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def calc_boundaries(self,pos0Range):
-        cdef int size = self.cpos0.size
+        cdef numpy.int32_t size = self.cpos0.size
         cdef bint check_mask = self.check_mask
         cdef numpy.int8_t[:] cmask
         cdef float[:] cpos0, dpos0, cpos0_sup, cpos0_inf,
@@ -163,14 +169,15 @@ class HistoBBox1d(object):
     def calc_lut(self):
         'calculate the max number of elements in the LUT and populate it'
         cdef float delta=self.delta, pos0_min=self.pos0_min, pos1_min, pos1_max, min0, max0, fbin0_min, fbin0_max, deltaL, deltaR, deltaA
-        cdef int bin0_min, bin0_max, bins = self.bins, lut_size, i, size
-        cdef numpy.int32_t k,idx #same as numpy.int32
+        cdef numpy.int32_t k,idx, bin0_min, bin0_max, bins = self.bins, lut_size, i, size
         cdef bint check_mask, check_pos1
         cdef numpy.ndarray[numpy.int32_t, ndim = 1] outMax = numpy.zeros(bins, dtype=numpy.int32)
         cdef float[:] cpos0_sup = self.cpos0_sup
         cdef float[:] cpos0_inf = self.cpos0_inf
         cdef float[:] cpos1_min, cpos1_max
-        cdef numpy.ndarray[lut_point, ndim = 2] lut
+#        cdef numpy.float32_t[:,:] lutcoef
+#        cdef int[:,:] lutidx 
+        cdef lut_point[:,:] lut
         cdef numpy.int8_t[:] cmask
         size = self.size
         if self.check_mask:
@@ -201,8 +208,8 @@ class HistoBBox1d(object):
 
                 fbin0_min = getBinNr(min0, pos0_min, delta)
                 fbin0_max = getBinNr(max0, pos0_min, delta)
-                bin0_min = < int > fbin0_min
-                bin0_max = < int > fbin0_max
+                bin0_min = < numpy.int32_t > fbin0_min
+                bin0_max = < numpy.int32_t > fbin0_max
 
                 if (bin0_max < 0) or (bin0_min >= bins):
                     continue
@@ -232,8 +239,11 @@ class HistoBBox1d(object):
             if memsize <  lut_nbytes:
                 raise MemoryError("Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %s"%(bins,lut_size,lut_nbytes,memsize))
         #else hope we have enough memory
-        lut = numpy.recarray(shape=(bins, lut_size),dtype=[("idx",numpy.int32),("coef",numpy.float32)])
-        memset(&lut[0,0], 0, bins*lut_size*sizeof(lut_point))
+        lut = view.array(shape=(bins, lut_size),itemsize=sizeof(lut_point), format="if")
+#        lut = numpy.zeros(shape=(bins, lut_size),dtype=[("idx",numpy.int32),("coef",numpy.float32)])
+#        lut = < lut_point *>malloc(lut_nbytes)
+        memset(&lut[0,0], 0, lut_nbytes)
+
         #NOGIL
         with nogil:
             for idx in range(size):
@@ -248,8 +258,8 @@ class HistoBBox1d(object):
 
                 fbin0_min = getBinNr(min0, pos0_min, delta)
                 fbin0_max = getBinNr(max0, pos0_min, delta)
-                bin0_min = < int > fbin0_min
-                bin0_max = < int > fbin0_max
+                bin0_min = < numpy.int32_t > fbin0_min
+                bin0_max = < numpy.int32_t > fbin0_max
 
                 if (bin0_max < 0) or (bin0_min >= bins):
                     continue
@@ -263,7 +273,7 @@ class HistoBBox1d(object):
                     k = outMax[bin0_min]
                     lut[bin0_min, k].idx = idx
                     lut[bin0_min, k].coef = 1.0
-                    outMax[bin0_min] = k + 1
+                    outMax[bin0_min] += 1
                 else: #we have pixel splitting.
                     deltaA = 1.0 / (fbin0_max - fbin0_min)
 
@@ -273,21 +283,29 @@ class HistoBBox1d(object):
                     k = outMax[bin0_min]
                     lut[bin0_min, k].idx = idx
                     lut[bin0_min, k].coef = (deltaA * deltaL)
-                    outMax[bin0_min] = k + 1
+                    outMax[bin0_min] += 1
 
                     k = outMax[bin0_max]
                     lut[bin0_max, k].idx = idx
                     lut[bin0_max, k].coef = (deltaA * deltaR)
-                    outMax[bin0_max] = k + 1
+                    outMax[bin0_max] += 1
 
                     if bin0_min + 1 < bin0_max:
                         for i in range(bin0_min + 1, bin0_max):
                             k = outMax[i]
                             lut[i, k].idx = idx
                             lut[i, k].coef = (deltaA)
-                            outMax[i] = k + 1
-        self.lut = lut
-        return outMax
+                            outMax[i] += 1
+        
+        self.lut_max_idx = outMax
+        #Related to memory-leak under python 2.6: 
+        # see https://github.com/kif/pyFAI/issues/89
+        cdef numpy.ndarray[numpy.uint8_t, ndim=1] tmp_str = numpy.empty(lut_nbytes, dtype=numpy.uint8)
+        memcpy(&tmp_str[0], &lut[0,0], lut_nbytes)
+        self.lut = numpy.core.records.fromstring(tmp_str.tostring(), shape=(bins, lut_size),dtype=[("idx",numpy.int32),("coef",numpy.float32)])
+
+        
+        
 
 
     @cython.cdivision(True)
@@ -315,7 +333,7 @@ class HistoBBox1d(object):
         @rtype: 4-tuple of ndarrays
 
         """
-        cdef int i=0, j=0, idx=0, bins=self.bins, lut_size=self.lut_size, size=self.size
+        cdef numpy.int32_t i=0, j=0, idx=0, bins=self.bins, lut_size=self.lut_size, size=self.size
         cdef double sum_data=0, sum_count=0, epsilon=1e-10
         cdef float data=0, coef=0, cdummy=0, cddummy=0
         cdef bint do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
@@ -403,7 +421,7 @@ class HistoBBox1d(object):
                 idx = lut[i, j].idx
                 coef = lut[i, j].coef
                 if idx <= 0 and coef <= 0.0:
-                    break
+                    continue
                 data = cdata[idx]
                 if do_dummy and data==cdummy:
                     continue
@@ -452,7 +470,7 @@ class HistoBBox2d(object):
         @param allow_pos0_neg: enforce the q<0 is usually not possible  
         @param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
         """
-        cdef int i, size, bin0, bin1
+        cdef numpy.int32_t i, size, bin0, bin1
         self.size = pos0.size
         assert delta_pos0.size == self.size
         assert pos1.size == self.size
@@ -506,7 +524,7 @@ class HistoBBox2d(object):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def calc_boundaries(self, pos0Range, pos1Range):
-        cdef int size = self.cpos0.size
+        cdef numpy.int32_t size = self.cpos0.size
         cdef bint check_mask = self.check_mask
         cdef numpy.int8_t[:] cmask
         cdef float[:] cpos0, dpos0, cpos0_sup, cpos0_inf
@@ -593,8 +611,8 @@ class HistoBBox2d(object):
         'calculate the max number of elements in the LUT and populate it'
         cdef float delta0=self.delta0, pos0_min=self.pos0_min, min0, max0, fbin0_min, fbin0_max
         cdef float delta1=self.delta1, pos1_min=self.pos1_min, min1, max1, fbin1_min, fbin1_max
-        cdef int bin0_min, bin0_max, bins0 = self.bins[0]
-        cdef int bin1_min, bin1_max, bins1 = self.bins[1]
+        cdef numpy.int32_t bin0_min, bin0_max, bins0 = self.bins[0]
+        cdef numpy.int32_t bin1_min, bin1_max, bins1 = self.bins[1]
         cdef numpy.int32_t k, idx, lut_size, i, j, size=self.size
         cdef bint check_mask
         cdef float[:] cpos0_sup = self.cpos0_sup
@@ -621,11 +639,11 @@ class HistoBBox2d(object):
                 min1 = cpos1_inf[idx]
                 max1 = cpos1_sup[idx]
 
-                bin0_min = < int > getBinNr(min0, pos0_min, delta0)
-                bin0_max = < int > getBinNr(max0, pos0_min, delta0)
+                bin0_min = < numpy.int32_t > getBinNr(min0, pos0_min, delta0)
+                bin0_max = < numpy.int32_t > getBinNr(max0, pos0_min, delta0)
 
-                bin1_min = < int > getBinNr(min1, pos1_min, delta1)
-                bin1_max = < int > getBinNr(max1, pos1_min, delta1)
+                bin1_min = < numpy.int32_t > getBinNr(min1, pos1_min, delta1)
+                bin1_max = < numpy.int32_t > getBinNr(max1, pos1_min, delta1)
 
                 if (bin0_max < 0) or (bin0_min >= bins0) or (bin1_max < 0) or (bin1_min >= bins1):
                     continue
@@ -705,18 +723,18 @@ class HistoBBox2d(object):
                         k = outMax[bin0_min, bin1_min]
                         lut[bin0_min, bin1_min, k].idx = idx
                         lut[bin0_min, bin1_min, k].coef =  deltaA * deltaD
-                        outMax[bin0_min, bin1_min] = k + 1
+                        outMax[bin0_min, bin1_min] += 1
 
                         k = outMax[bin0_min, bin1_max]
                         lut[bin0_min, bin1_max, k].idx = idx
                         lut[bin0_min, bin1_max, k].coef =  deltaA * deltaU
-                        outMax[bin0_min, bin1_max] = k + 1
+                        outMax[bin0_min, bin1_max] += 1
 
                         for j in range(bin1_min + 1, bin1_max):
                             k = outMax[bin0_min, j]
                             lut[bin0_min, j, k].idx = idx
                             lut[bin0_min, j, k].coef =  deltaA
-                            outMax[bin0_min, j] = k + 1
+                            outMax[bin0_min, j] += 1
 
                 else: #spread on more than 2 bins in dim 0
                     if bin1_min == bin1_max:
@@ -734,13 +752,13 @@ class HistoBBox2d(object):
                         k = outMax[bin0_max, bin1_min]
                         lut[bin0_max, bin1_min, k].idx = idx
                         lut[bin0_max, bin1_min, k].coef =  deltaA * deltaR
-                        outMax[bin0_max, bin1_min] = k + 1
+                        outMax[bin0_max, bin1_min] += 1
 
                         for i in range(bin0_min + 1, bin0_max):
                             k = outMax[i, bin1_min]
                             lut[i, bin1_min ,k].idx = idx
                             lut[i, bin1_min, k].coef =  deltaA
-                            outMax[i, bin1_min] = k + 1
+                            outMax[i, bin1_min] += 1
 
                     else:
                         #spread on n pix in dim0 and m pixel in dim1:
@@ -753,50 +771,50 @@ class HistoBBox2d(object):
                         k = outMax[bin0_min, bin1_min]
                         lut[bin0_min, bin1_min ,k].idx = idx
                         lut[bin0_min, bin1_min, k].coef =  deltaA * deltaL * deltaD
-                        outMax[bin0_min, bin1_min] = k + 1
+                        outMax[bin0_min, bin1_min] += 1
 
                         k = outMax[bin0_min, bin1_max]
                         lut[bin0_min, bin1_max, k].idx = idx
                         lut[bin0_min, bin1_max, k].coef =  deltaA * deltaL * deltaU
-                        outMax[bin0_min, bin1_max] = k + 1
+                        outMax[bin0_min, bin1_max] += 1
 
                         k = outMax[bin0_max, bin1_min]
                         lut[bin0_max, bin1_min, k].idx = idx
                         lut[bin0_max, bin1_min, k].coef =  deltaA * deltaR * deltaD
-                        outMax[bin0_max, bin1_min] = k + 1
+                        outMax[bin0_max, bin1_min] += 1
 
                         k = outMax[bin0_max, bin1_max]
                         lut[bin0_max, bin1_max, k].idx = idx
                         lut[bin0_max, bin1_max, k].coef =  deltaA * deltaR * deltaU
-                        outMax[bin0_max, bin1_max] = k + 1
+                        outMax[bin0_max, bin1_max] += 1
 
                         for i in range(bin0_min + 1, bin0_max):
                             k = outMax[i, bin1_min]
                             lut[i, bin1_min, k].idx = idx
                             lut[i, bin1_min, k].coef =  deltaA * deltaD
-                            outMax[i, bin1_min] = k + 1
+                            outMax[i, bin1_min] += 1
 
                             for j in range(bin1_min + 1, bin1_max):
                                 k = outMax[i, j]
                                 lut[i, j, k].idx = idx
                                 lut[i, j, k].coef =  deltaA
-                                outMax[i, j] = k + 1
+                                outMax[i, j] += 1
 
                             k = outMax[i, bin1_max]
                             lut[i, bin1_max, k].idx = idx
                             lut[i, bin1_max, k].coef =  deltaA * deltaU
-                            outMax[i, bin1_max] = k + 1
+                            outMax[i, bin1_max] += 1
 
                         for j in range(bin1_min + 1, bin1_max):
                             k = outMax[bin0_min, j]
                             lut[bin0_min, j, k].idx = idx
                             lut[bin0_min, j, k].coef =  deltaA * deltaL
-                            outMax[bin0_min, j] = k + 1
+                            outMax[bin0_min, j] += 1
 
                             k = outMax[bin0_max, j]
                             lut[bin0_max, j, k].idx = idx
                             lut[bin0_max, j, k].coef =  deltaA * deltaR
-                            outMax[bin0_max, j] = k + 1
+                            outMax[bin0_max, j] += 1
 
         self.lut=lut
         return outMax
