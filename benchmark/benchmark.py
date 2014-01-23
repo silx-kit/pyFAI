@@ -187,7 +187,8 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
                 return
             platformid, deviceid = platdev
         print("Working on device: %s platform: %s device: %s" % (devicetype, ocl.platforms[platformid], ocl.platforms[platformid].devices[deviceid]))
-
+        label = "1D_%s_parallel_OpenCL" % devicetype
+        first = True
         results = {}
         for param in ds_list:
             ref = self.get_ref(param)
@@ -219,17 +220,24 @@ out=ai.xrpd_LUT_OCL(data,N,devicetype=r"%s",platformid=%s,deviceid=%s)""" % (par
             R = utilstest.Rwp(res, ref)
             print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
             if R < self.LIMIT:
-                results[size / 1e6] = tmin * 1000.0
-        label = "1D_%s_parallel_OpenCL" % devicetype
+                size /= 1e6
+                tmin *= 1000.0
+                results[size] = tmin
+                if first:
+                    self.new_curve(results, label)
+                    first = False
+                else:
+                    self.new_point(size, tmin)
+
         self.print_sep()
         self.meth.append(label)
         self.results[label] = results
-        self.new_curve(results, label)
 
 
     def bench_cpu2d(self):
         print("Working on processor: %s" % self.get_cpu())
         results = {}
+        label = "2D_CPU_serial"
         for param in ds_list:
             fn = datasets[param]
             ai = pyFAI.load(param)
@@ -254,15 +262,23 @@ out=ai.xrpd2(data,%s,%s)""" % (param, fn, N[0], N[1])
             self.print_exec(tmin)
             print("")
             if 1:  # R < self.LIMIT:
-                results[size / 1e6] = tmin * 1000.0
+                size /= 1e6
+                tmin *= 1000.0
+                results[size] = tmin
+                if first:
+                    self.new_curve(results, label)
+                    first = False
+                else:
+                    self.new_point(size, tmin)
+
         self.print_sep()
-        label = "2D_CPU_serial"
         self.meth.append(label)
         self.results[label] = results
-        self.new_curve(results, label)
 
     def bench_cpu2d_lut(self):
         print("Working on processor: %s" % self.get_cpu())
+        label = "2D_CPU_parallel_OpenMP"
+        first = True
         results = {}
         for param in ds_list:
             fn = datasets[param]
@@ -276,7 +292,6 @@ out=ai.xrpd2(data,%s,%s)""" % (param, fn, N[0], N[1])
             t1 = time.time()
             self.print_init(t1 - t0)
             print("Size of the LUT: %.3fMByte" % (ai._lut_integrator.lut.nbytes / 1e6))
-            del ai, data
 
             setup = """
 import pyFAI,fabio
@@ -285,17 +300,21 @@ data = fabio.open(r"%s").data
 out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut")""" % (param, fn, N[0], N[1])
             t = timeit.Timer("out=ai.integrate2d(data,%s,%s,unit='2th_deg', method='lut')" % N, setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
-            del t
 
             self.print_exec(tmin)
             print("")
             if 1:  # R < self.LIMIT:
-                results[size / 1e6] = tmin * 1000.0
+                size /= 1e6
+                tmin *= 1000.0
+                results[size] = tmin
+                if first:
+                    self.new_curve(results, label)
+                    first = False
+                else:
+                    self.new_point(size, tmin)
         self.print_sep()
-        label = "2D_CPU_parallel_OpenMP"
         self.meth.append(label)
         self.results[label] = results
-        self.new_curve(results, label)
 
     def bench_cpu2d_lut_ocl(self, devicetype="ALL", platformid=None, deviceid=None):
         if (ocl is None):
@@ -309,6 +328,8 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut")""" % (param, fn, N[0
             platformid, deviceid = platdev
         print("Working on device: %s platform: %s device: %s" % (devicetype, ocl.platforms[platformid], ocl.platforms[platformid].devices[deviceid]))
         results = {}
+        label = "2D_%s_parallel_OpenCL" % devicetype.upper()
+        first = True
         for param in ds_list:
             fn = datasets[param]
             ai = pyFAI.load(param)
@@ -339,12 +360,17 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut_ocl_%i,%i")""" % (para
             self.print_exec(tmin)
             print("")
             if 1:  # R < self.LIMIT:
-                results[size / 1e6] = tmin * 1000.0
+                size /= 1e6
+                tmin *= 1000.0
+                results[size] = tmin
+                if first:
+                    self.new_curve(results, label)
+                    first = False
+                else:
+                    self.new_point(size, tmin)
         self.print_sep()
-        label = "2D_%s_parallel_OpenCL" % devicetype.upper()
         self.meth.append(label)
         self.results[label] = results
-        self.new_curve(results, label)
 
 
     def bench_gpu1d(self, devicetype="gpu", useFp64=True, platformid=None, deviceid=None):
@@ -353,6 +379,8 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut_ocl_%i,%i")""" % (para
             print("No pyopencl or no such device: skipping benchmark")
             return
         results = {}
+        label = "Forward_OpenCL_%s_%s_bits" % (devicetype , ("64" if useFp64 else"32"))
+        first = True
         for param in ds_list:
             fn = datasets[param]
             ai = pyFAI.load(param)
@@ -372,7 +400,6 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut_ocl_%i,%i")""" % (para
             ref = ai.xrpd(data, N)
             R = utilstest.Rwp(res, ref)
             print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
-            del ai, data
             setup = """
 import pyFAI,fabio
 ai=pyFAI.load(r"%s")
@@ -385,12 +412,17 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
             self.print_exec(tmin)
             print("")
             if R < self.LIMIT:
-                results[size / 1e6] = tmin * 1000.0
+                size /= 1e6
+                tmin *= 1000.0
+                results[size] = tmin
+                if first:
+                    self.new_curve(results, label)
+                    first = False
+                else:
+                    self.new_point(size, tmin)
         self.print_sep()
-        label = "Forward_OpenCL_%s_%s_bits" % (devicetype , ("64" if useFp64 else"32"))
         self.meth.append(label)
         self.results[label] = results
-        self.new_curve(results, label)
 
     def save(self, filename="benchmark.json"):
         import json
