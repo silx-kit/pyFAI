@@ -174,7 +174,7 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
         self.print_sep()
         self.meth.append(label)
         self.results[label] = results
-        self.new_curve(results, label)
+        #self.new_curve(results, label)
 
     def bench_cpu1d_lut_ocl(self, devicetype="ALL", platformid=None, deviceid=None):
         if (ocl is None):
