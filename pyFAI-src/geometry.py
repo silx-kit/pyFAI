@@ -40,15 +40,15 @@ import types
 import numpy
 
 from numpy import radians, degrees, arccos, arctan2, sin, cos, sqrt
-from pyFAI import detectors
+from . import detectors
 
 try:
-    from pyFAI import _geometry
+    from . import _geometry
 except ImportError:
     _geometry = None
 logger = logging.getLogger("pyFAI.geometry")
 try:
-    from pyFAI.fastcrc import crc32
+    from .fastcrc import crc32
 except ImportError:
     from zlib import crc32
 from . import units
