@@ -57,6 +57,13 @@ cdef inline float getBinNr( float x0, float pos0_min, float delta) nogil:
     return (x0 - pos0_min) / delta
 
 class HistoBBox1d(object):
+    """
+    1D histogramming with pixel splitting based on a Look-up table
+    
+    The initialization of the class can take quite a while (operation are not parallelized)
+    but each integrate is parallelized and quite efficient. 
+    """
+
     @cython.boundscheck(False)
     def __init__(self,
                  pos0,
@@ -70,6 +77,18 @@ class HistoBBox1d(object):
                  mask_checksum=None,
                  allow_pos0_neg=False,
                  unit="undefined"):
+        """
+        @param pos0: 1D array with pos0: tth or q_vect or r ...
+        @param delta_pos0: 1D array with delta pos0: max center-corner distance
+        @param pos1: 1D array with pos1: chi
+        @param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
+        @param bins: number of output bins, 100 by default
+        @param pos0Range: minimum and maximum  of the 2th range
+        @param pos1Range: minimum and maximum  of the chi range
+        @param mask: array (of int8) with masked pixels with 1 (0=not masked)
+        @param allow_pos0_neg: enforce the q<0 is usually not possible  
+        @param unit: can be 2th_deg or r_nm^-1 ...
+        """
 
         self.size = pos0.size
         assert delta_pos0.size == self.size
@@ -120,6 +139,9 @@ class HistoBBox1d(object):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def calc_boundaries(self,pos0Range):
+        """
+        Called by constructor to calculate the boundaries and the bin position 
+        """
         cdef numpy.int32_t size = self.cpos0.size
         cdef bint check_mask = self.check_mask
         cdef numpy.int8_t[:] cmask
@@ -415,8 +437,8 @@ class HistoBBox1d(object):
                         cdata[i]+=cdummy
             else:
                 cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-
-        for i in prange(bins, nogil=True, schedule="guided"):
+        #TODO: what is the best: static or guided ?
+        for i in prange(bins, nogil=True, schedule="static"):
             sum_data = 0.0
             sum_count = 0.0
             for j in range(lut_size):
@@ -445,6 +467,12 @@ class HistoBBox1d(object):
 ################################################################################
 
 class HistoBBox2d(object):
+    """
+    2D histogramming with pixel splitting based on a look-up table
+    
+    The initialization of the class can take quite a while (operation are not parallelized)
+    but each integrate is parallelized and quite efficient. 
+    """
     @cython.boundscheck(False)
     def __init__(self,
                  pos0,
@@ -471,6 +499,7 @@ class HistoBBox2d(object):
         @param mask: array (of int8) with masked pixels with 1 (0=not masked)
         @param allow_pos0_neg: enforce the q<0 is usually not possible  
         @param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
+        @param unit: can be 2th_deg or r_nm^-1 ...
         """
         cdef numpy.int32_t i, size, bin0, bin1
         self.size = pos0.size
@@ -516,7 +545,9 @@ class HistoBBox2d(object):
         self.calc_boundaries(pos0Range, pos1Range)
         self.delta0 = (self.pos0_max - self.pos0_min) / float(bins0)
         self.delta1 = (self.pos1_max - self.pos1_min) / float(bins1)
-        self.lut_max_idx = self.calc_lut()
+        self.lut_max_idx = None 
+        self.lut = None
+        self.calc_lut()
         self.outPos0 = numpy.linspace(self.pos0_min+0.5*self.delta0, self.pos0_maxin-0.5*self.delta0, bins0)
         self.outPos1 = numpy.linspace(self.pos1_min+0.5*self.delta1, self.pos1_maxin-0.5*self.delta1, bins1)
         self.unit=unit
@@ -526,6 +557,10 @@ class HistoBBox2d(object):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def calc_boundaries(self, pos0Range, pos1Range):
+        """
+        Called by constructor to calculate the boundaries and the bin position 
+        """
+
         cdef numpy.int32_t size = self.cpos0.size
         cdef bint check_mask = self.check_mask
         cdef numpy.int8_t[:] cmask
@@ -622,7 +657,8 @@ class HistoBBox2d(object):
         cdef float[:] cpos1_inf = self.cpos1_inf
         cdef float[:] cpos1_sup = self.cpos1_sup
         cdef numpy.ndarray[numpy.int32_t, ndim = 2] outMax = numpy.zeros((bins0,bins1), dtype=numpy.int32)
-        cdef numpy.ndarray[lut_point, ndim = 3] lut
+#        cdef numpy.ndarray[lut_point, ndim = 3] lut
+        cdef lut_point[:,:,:] lut
         cdef numpy.int8_t[:] cmask
         if self.check_mask:
             cmask = self.cmask
@@ -674,8 +710,11 @@ class HistoBBox2d(object):
             if memsize <  lut_nbytes:
                 raise MemoryError("Lookup-table (%i, %i, %i) is %.3fGB whereas the memory of the system is only %s"%(bins0, bins1, lut_size, lut_nbytes, memsize))
         #else hope we have enough memory
-        lut = numpy.recarray(shape=(bins0, bins1, lut_size),dtype=[("idx",numpy.int32),("coef",numpy.float32)])
+        lut = view.array(shape=(bins0,bins1, lut_size),itemsize=sizeof(lut_point), format="if")
+#        lut = numpy.recarray(shape=(bins0, bins1, lut_size),dtype=[("idx",numpy.int32),("coef",numpy.float32)])
         memset(&lut[0,0,0], 0, lut_nbytes)
+        
+        #NOGIL
         with nogil:
             for idx in range(size):
                 if (check_mask) and cmask[idx]:
@@ -818,8 +857,14 @@ class HistoBBox2d(object):
                             lut[bin0_max, j, k].coef =  deltaA * deltaR
                             outMax[bin0_max, j] += 1
 
-        self.lut=lut
-        return outMax
+        self.lut_max_idx = outMax
+        #Related to memory-leak under python 2.6: 
+        # see https://github.com/kif/pyFAI/issues/89
+        cdef numpy.ndarray[numpy.uint8_t, ndim=3] tmp_str = numpy.empty(shape=(bins0, bins1, lut_size*sizeof(lut_point)), dtype=numpy.uint8)
+        memcpy(&tmp_str[0,0,0], &lut[0,0,0], lut_nbytes)
+        self.lut = numpy.core.records.array(tmp_str.view(dtype=[("idx",numpy.int32),("coef",numpy.float32)]),
+                                            shape=(bins0, bins1, lut_size),dtype=[("idx",numpy.int32),("coef",numpy.float32)],
+                                            copy=True)
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
@@ -846,7 +891,7 @@ class HistoBBox2d(object):
         @rtype: 5-tuple of ndarrays
 
         """
-        cdef int i=0, j=0, idx=0, bins0=self.bins[0], bins1=self.bins[1], bins=bins0*bins1, lut_size=self.lut_size, size=self.size
+        cdef numpy.int32_t i=0, j=0, idx=0, bins0=self.bins[0], bins1=self.bins[1], bins=bins0*bins1, lut_size=self.lut_size, size=self.size
         cdef double sum_data=0, sum_count=0, epsilon=1e-10
         cdef float data=0, coef=0, cdummy=0, cddummy=0
         cdef bint do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
@@ -930,15 +975,15 @@ class HistoBBox2d(object):
                         cdata[i]+=cdummy
             else:
                 cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-
-        for i in prange(bins, nogil=True, schedule="guided"):
+        #TODO: what is the best: static or guided ?
+        for i in prange(bins, nogil=True, schedule="static"):
             sum_data = 0.0
             sum_count = 0.0
             for j in range(lut_size):
                 idx = lut[i, j].idx
                 coef = lut[i, j].coef
                 if idx <= 0 and coef <= 0.0:
-                    break
+                    continue
                 data = cdata[idx]
                 if do_dummy and data==cdummy:
                     continue
