@@ -116,7 +116,7 @@ if ("sdist" in sys.argv):
 # ###############################################################################
 # pyFAI extensions
 # ###############################################################################
-cython_modules = ["histogram", "splitPixel", "splitBBox", "splitBBoxLUT",
+cython_modules = ["histogram", "splitPixel", "splitBBox", "splitBBoxLUT", "splitBBoxCSR",
                   "relabel", "bilinear", "_geometry", "reconstruct", "fastcrc", "_distortion"]
 src = {}
 for ext in cython_modules:
@@ -164,6 +164,14 @@ splitBBoxLUT_dic = dict(name="splitBBoxLUT",
                         extra_link_args=['openmp'],
                         )
 
+splitBBoxCSR_dic = dict(name="splitBBoxCSR",
+                        include_dirs=get_numpy_include_dirs(),
+                        sources=[src['splitBBoxCSR']],
+#                       extra_compile_args=['-g'],
+                        extra_compile_args=['openmp'],
+                        extra_link_args=['openmp'],
+                        )
+
 relabel_dic = dict(name="relabel",
                    include_dirs=get_numpy_include_dirs(),
                    sources=[src['relabel']])
@@ -187,7 +195,7 @@ _distortion_dic = dict(name="_distortion",
                         )
 
 
-ext_modules = [histogram_dic, splitPixel_dic, splitBBox_dic, splitBBoxLUT_dic, relabel_dic,
+ext_modules = [histogram_dic, splitPixel_dic, splitBBox_dic, splitBBoxLUT_dic, splitBBoxCSR_dic, relabel_dic,
                _geometry_dic, reconstruct_dic, bilinear_dic, fastcrc_dic, _distortion_dic]
 
 
