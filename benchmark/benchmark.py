@@ -238,6 +238,7 @@ out=ai.xrpd_LUT_OCL(data,N,devicetype=r"%s",platformid=%s,deviceid=%s)""" % (par
         print("Working on processor: %s" % self.get_cpu())
         results = {}
         label = "2D_CPU_serial"
+        first = False
         for param in ds_list:
             fn = datasets[param]
             ai = pyFAI.load(param)
