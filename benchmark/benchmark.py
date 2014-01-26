@@ -78,7 +78,7 @@ class Bench(object):
         if os.path.exists("/proc/%i/status" % pid):
             for l in open("/proc/%i/status" % pid):
                 if l.startswith("VmRSS"):
-                    mem = int(l.split(":", 1)[1].split()[0]) / 1024
+                    mem = int(l.split(":", 1)[1].split()[0]) / 1024.
         else:
             mem = 0
         return mem
