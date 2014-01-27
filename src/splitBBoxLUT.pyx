@@ -27,8 +27,9 @@
 #
 import cython
 import os
-#import sys
+import sys
 #import time
+from cpython.ref cimport PyObject, Py_XDECREF
 from cython.parallel import prange
 from libc.string cimport memset,memcpy
 #from libc.stdlib cimport malloc, free 
@@ -40,6 +41,7 @@ cdef float pi=<float> M_PI
 cdef struct lut_point:
     numpy.int32_t idx
     numpy.float32_t coef
+dtype_lut=numpy.dtype([("idx",numpy.int32),("coef",numpy.float32)])
 try:
     from fastcrc import crc32
 except:
@@ -135,6 +137,7 @@ class HistoBBox1d(object):
         self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, self.pos0_maxin-0.5*self.delta, self.bins)
         self.lut_checksum = crc32(self.lut)
         self.unit=unit
+        self.need_decref = sys.version_info<(2,7)
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -262,7 +265,7 @@ class HistoBBox1d(object):
                 raise MemoryError("Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %s"%(bins,lut_size,lut_nbytes,memsize))
         #else hope we have enough memory
         lut = view.array(shape=(bins, lut_size),itemsize=sizeof(lut_point), format="if")
-#        lut = numpy.zeros(shape=(bins, lut_size),dtype=[("idx",numpy.int32),("coef",numpy.float32)])
+#        lut = numpy.zeros(shape=(bins, lut_size),dtype=dtype_lut)
 #        lut = < lut_point *>malloc(lut_nbytes)
         memset(&lut[0,0], 0, lut_nbytes)
 
@@ -322,11 +325,15 @@ class HistoBBox1d(object):
         self.lut_max_idx = outMax
         #Related to memory-leak under python 2.6: 
         # see https://github.com/kif/pyFAI/issues/89
-        cdef numpy.ndarray[numpy.uint8_t, ndim=2] tmp_str = numpy.empty(shape=(bins, lut_size*sizeof(lut_point)), dtype=numpy.uint8)
-        memcpy(&tmp_str[0,0], &lut[0,0], lut_nbytes)
-        self.lut = numpy.core.records.array(tmp_str.view(dtype=[("idx",numpy.int32),("coef",numpy.float32)]),
-                                            shape=(bins, lut_size),dtype=[("idx",numpy.int32),("coef",numpy.float32)],
-                                            copy=True)
+        cdef numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary = numpy.empty(shape=(bins, lut_size), dtype=numpy.float64)
+        memcpy(&tmp_ary[0,0], &lut[0,0], lut_nbytes)
+        self.lut = tmp_ary.view(dtype=dtype_lut)
+        
+#        self.lut = numpy.asarray(lut)
+#        print self.lut.dtype, self.lut.shape
+#        self.lut = numpy.core.records.array(tmp_str.view(dtype=[("idx",numpy.int32),("coef",numpy.float32)]),
+#                                            shape=(bins, lut_size),dtype=[("idx",numpy.int32),("coef",numpy.float32)],
+#                                            copy=True)
 
         
         
@@ -364,8 +371,16 @@ class HistoBBox1d(object):
         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
-        cdef lut_point[:,:] lut = self.lut
         cdef float[:] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
+
+        #Ugly hack against bug #89: https://github.com/kif/pyFAI/issues/89
+        cdef int rc_before, rc_after
+        cdef bint need_decref = False
+        rc_before = sys.getrefcount(self.lut)
+        cdef lut_point[:,:] lut = self.lut
+        rc_after = sys.getrefcount(self.lut)
+        need_decref = self.need_decref &  ((rc_after-rc_before)>=2)
+
 
         assert size == weights.size
 
@@ -458,6 +473,10 @@ class HistoBBox1d(object):
                 outMerge[i] += sum_data / sum_count
             else:
                 outMerge[i] += cdummy
+        
+        #Ugly against bug#89
+        if need_decref:
+            Py_XDECREF(<PyObject *> self.lut)
         return  self.outPos, outMerge, outData, outCount
 
 
@@ -551,8 +570,10 @@ class HistoBBox2d(object):
         self.outPos0 = numpy.linspace(self.pos0_min+0.5*self.delta0, self.pos0_maxin-0.5*self.delta0, bins0)
         self.outPos1 = numpy.linspace(self.pos1_min+0.5*self.delta1, self.pos1_maxin-0.5*self.delta1, bins1)
         self.unit=unit
-        self.lut.shape = -1, self.lut_size #this makes integration look like a 1D integration
+#        self.lut.shape = -1, self.lut_size #this makes integration look like a 1D integration
         self.lut_checksum = crc32(self.lut)
+        self.need_decref = sys.version_info<(2,7)
+
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -860,11 +881,15 @@ class HistoBBox2d(object):
         self.lut_max_idx = outMax
         #Related to memory-leak under python 2.6: 
         # see https://github.com/kif/pyFAI/issues/89
-        cdef numpy.ndarray[numpy.uint8_t, ndim=3] tmp_str = numpy.empty(shape=(bins0, bins1, lut_size*sizeof(lut_point)), dtype=numpy.uint8)
-        memcpy(&tmp_str[0,0,0], &lut[0,0,0], lut_nbytes)
-        self.lut = numpy.core.records.array(tmp_str.view(dtype=[("idx",numpy.int32),("coef",numpy.float32)]),
-                                            shape=(bins0, bins1, lut_size),dtype=[("idx",numpy.int32),("coef",numpy.float32)],
-                                            copy=True)
+        cdef numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary = numpy.empty(shape=(bins0*bins1, lut_size), dtype=numpy.float64)
+        memcpy(&tmp_ary[0,0], &lut[0,0,0], lut_nbytes)
+        self.lut = tmp_ary.view(dtype=dtype_lut) #Makes 2D integration look like a 1D one
+#        self.lut = numpy.core.records.array(tmp_str.view(dtype=[("idx",numpy.int32),("coef",numpy.float32)]),
+#                                            shape=(bins0, bins1, lut_size),dtype=[("idx",numpy.int32),("coef",numpy.float32)],
+#                                            copy=True)
+#        self.lut = numpy.array(tmp_str,dtype=dtype_lut,shape=(bins0, bins1, lut_size), order="C", copy=False)
+#        self.lut = lut tmp_str.view(dtype = dtype_lut).reshape((bins0,bins1, lut_size))
+#        self.lut = lut 
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
@@ -901,8 +926,16 @@ class HistoBBox2d(object):
         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData_1d = outData.ravel()
         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount_1d = outCount.ravel()
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] outMerge_1d = outMerge.ravel()
-
+        
+        #Ugly hack against bug #89
+        cdef int rc_before, rc_after
+        cdef bint need_decref = False
+        rc_before = sys.getrefcount(self.lut)
         cdef lut_point[:,:] lut = self.lut
+        rc_after = sys.getrefcount(self.lut)
+        need_decref = self.need_decref &  ((rc_after-rc_before)>=2)
+
+        
         cdef float[:] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
 
         assert size == weights.size
@@ -995,6 +1028,10 @@ class HistoBBox2d(object):
             if sum_count > epsilon:
                 outMerge_1d[i] += sum_data / sum_count
             else:
-                outMerge_1d[i] += cdummy
+                outMerge_1d[i] += cdummy        
+        
+        #Ugly against bug #89
+        if need_decref:
+            Py_XDECREF(<PyObject *> self.lut)
         return  outMerge.T, self.outPos0, self.outPos1, outData.T, outCount.T
 
