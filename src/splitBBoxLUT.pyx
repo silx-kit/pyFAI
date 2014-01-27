@@ -46,8 +46,8 @@ try:
     from fastcrc import crc32
 except:
     from zlib import crc32
-EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
-
+cdef double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
+cdef bint NEED_DECREF = sys.version_info<(2,7) and numpy.version.version<"1.5"
 @cython.cdivision(True)
 cdef inline float getBinNr( float x0, float pos0_min, float delta) nogil:
     """
@@ -137,7 +137,7 @@ class HistoBBox1d(object):
         self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, self.pos0_maxin-0.5*self.delta, self.bins)
         self.lut_checksum = crc32(self.lut)
         self.unit=unit
-        self.need_decref = sys.version_info<(2,7)
+        
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -375,11 +375,10 @@ class HistoBBox1d(object):
 
         #Ugly hack against bug #89: https://github.com/kif/pyFAI/issues/89
         cdef int rc_before, rc_after
-        cdef bint need_decref = False
         rc_before = sys.getrefcount(self.lut)
         cdef lut_point[:,:] lut = self.lut
         rc_after = sys.getrefcount(self.lut)
-        need_decref = self.need_decref &  ((rc_after-rc_before)>=2)
+        cdef bint need_decref = NEED_DECREF & ((rc_after-rc_before)>=2)
 
 
         assert size == weights.size
@@ -475,7 +474,7 @@ class HistoBBox1d(object):
                 outMerge[i] += cdummy
         
         #Ugly against bug#89
-        if need_decref:
+        if need_decref and (sys.getrefcount(self.lut)>=rc_before+2):
             Py_XDECREF(<PyObject *> self.lut)
         return  self.outPos, outMerge, outData, outCount
 
@@ -572,7 +571,6 @@ class HistoBBox2d(object):
         self.unit=unit
 #        self.lut.shape = -1, self.lut_size #this makes integration look like a 1D integration
         self.lut_checksum = crc32(self.lut)
-        self.need_decref = sys.version_info<(2,7)
 
 
     @cython.boundscheck(False)
@@ -929,11 +927,10 @@ class HistoBBox2d(object):
         
         #Ugly hack against bug #89
         cdef int rc_before, rc_after
-        cdef bint need_decref = False
         rc_before = sys.getrefcount(self.lut)
         cdef lut_point[:,:] lut = self.lut
         rc_after = sys.getrefcount(self.lut)
-        need_decref = self.need_decref &  ((rc_after-rc_before)>=2)
+        cdef bint need_decref = NEED_DECREF and ((rc_after-rc_before)>=2)
 
         
         cdef float[:] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
@@ -1031,7 +1028,7 @@ class HistoBBox2d(object):
                 outMerge_1d[i] += cdummy        
         
         #Ugly against bug #89
-        if need_decref:
+        if need_decref and (sys.getrefcount(self.lut)>=rc_before+2):
             Py_XDECREF(<PyObject *> self.lut)
         return  outMerge.T, self.outPos0, self.outPos1, outData.T, outCount.T
 
