@@ -131,11 +131,11 @@ class HistoBBox1d(object):
             self.pos1_max = None
             
         self.delta = (self.pos0_max - self.pos0_min) / bins
-        self.lut=None
+        self._lut=None
         self.lut_max_idx = None
         self.calc_lut()        
         self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, self.pos0_maxin-0.5*self.delta, self.bins)
-        self.lut_checksum = crc32(self.lut)
+        self.lut_checksum = None
         self.unit=unit
         
 
@@ -323,19 +323,30 @@ class HistoBBox1d(object):
                             outMax[i] += 1
         
         self.lut_max_idx = outMax
-        #Related to memory-leak under python 2.6: 
-        # see https://github.com/kif/pyFAI/issues/89
-        cdef numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary = numpy.empty(shape=(bins, lut_size), dtype=numpy.float64)
-        memcpy(&tmp_ary[0,0], &lut[0,0], lut_nbytes)
-        self.lut = tmp_ary.view(dtype=dtype_lut)
+        self._lut = lut 
         
-#        self.lut = numpy.asarray(lut)
-#        print self.lut.dtype, self.lut.shape
-#        self.lut = numpy.core.records.array(tmp_str.view(dtype=[("idx",numpy.int32),("coef",numpy.float32)]),
-#                                            shape=(bins, lut_size),dtype=[("idx",numpy.int32),("coef",numpy.float32)],
-#                                            copy=True)
+    def get_lut(self):
+        """Getter for the LUT as actual numpy array""" 
+        cdef int rc_before, rc_after
+        rc_before = sys.getrefcount(self._lut)
+        cdef lut_point[:,:] lut = self._lut
+        rc_after = sys.getrefcount(self._lut)
+        cdef bint need_decref = NEED_DECREF and ((rc_after-rc_before)>=2)
+        cdef numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary = numpy.empty(shape=self._lut.shape, dtype=numpy.float64)
+        memcpy(&tmp_ary[0,0], &lut[0,0], self._lut.nbytes)
+        self.lut_checksum = crc32(tmp_ary)
 
-        
+        #Ugly against bug#89
+        if need_decref and (sys.getrefcount(self._lut)>=rc_before+2):
+            print("Decref needed")
+            Py_XDECREF(<PyObject *> self._lut)
+
+#        return tmp_ary.view(dtype=dtype_lut)
+        return numpy.core.records.array(tmp_ary.view(dtype=dtype_lut),
+                                        shape=self._lut.shape,dtype=dtype_lut,
+                                        copy=True)
+
+    lut = property(get_lut)         
         
 
 
@@ -375,9 +386,9 @@ class HistoBBox1d(object):
 
         #Ugly hack against bug #89: https://github.com/kif/pyFAI/issues/89
         cdef int rc_before, rc_after
-        rc_before = sys.getrefcount(self.lut)
-        cdef lut_point[:,:] lut = self.lut
-        rc_after = sys.getrefcount(self.lut)
+        rc_before = sys.getrefcount(self._lut)
+        cdef lut_point[:,:] lut = self._lut
+        rc_after = sys.getrefcount(self._lut)
         cdef bint need_decref = NEED_DECREF & ((rc_after-rc_before)>=2)
 
 
@@ -452,7 +463,7 @@ class HistoBBox1d(object):
             else:
                 cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
         #TODO: what is the best: static or guided ?
-        for i in prange(bins, nogil=True, schedule="static"):
+        for i in prange(bins, nogil=True, schedule="guided"):
             sum_data = 0.0
             sum_count = 0.0
             for j in range(lut_size):
@@ -474,8 +485,9 @@ class HistoBBox1d(object):
                 outMerge[i] += cdummy
         
         #Ugly against bug#89
-        if need_decref and (sys.getrefcount(self.lut)>=rc_before+2):
-            Py_XDECREF(<PyObject *> self.lut)
+        if need_decref and (sys.getrefcount(self._lut)>=rc_before+2):
+            print("Decref needed")
+            Py_XDECREF(<PyObject *> self._lut)
         return  self.outPos, outMerge, outData, outCount
 
 
@@ -564,13 +576,12 @@ class HistoBBox2d(object):
         self.delta0 = (self.pos0_max - self.pos0_min) / float(bins0)
         self.delta1 = (self.pos1_max - self.pos1_min) / float(bins1)
         self.lut_max_idx = None 
-        self.lut = None
+        self._lut = None
         self.calc_lut()
         self.outPos0 = numpy.linspace(self.pos0_min+0.5*self.delta0, self.pos0_maxin-0.5*self.delta0, bins0)
         self.outPos1 = numpy.linspace(self.pos1_min+0.5*self.delta1, self.pos1_maxin-0.5*self.delta1, bins1)
         self.unit=unit
-#        self.lut.shape = -1, self.lut_size #this makes integration look like a 1D integration
-        self.lut_checksum = crc32(self.lut)
+        self._lut_checksum = None #Calculated at export time to python
 
 
     @cython.boundscheck(False)
@@ -729,7 +740,7 @@ class HistoBBox2d(object):
             if memsize <  lut_nbytes:
                 raise MemoryError("Lookup-table (%i, %i, %i) is %.3fGB whereas the memory of the system is only %s"%(bins0, bins1, lut_size, lut_nbytes, memsize))
         #else hope we have enough memory
-        lut = view.array(shape=(bins0,bins1, lut_size),itemsize=sizeof(lut_point), format="if")
+        lut = view.array(shape=(bins0, bins1, lut_size),itemsize=sizeof(lut_point), format="if")
 #        lut = numpy.recarray(shape=(bins0, bins1, lut_size),dtype=[("idx",numpy.int32),("coef",numpy.float32)])
         memset(&lut[0,0,0], 0, lut_nbytes)
         
@@ -877,17 +888,31 @@ class HistoBBox2d(object):
                             outMax[bin0_max, j] += 1
 
         self.lut_max_idx = outMax
-        #Related to memory-leak under python 2.6: 
-        # see https://github.com/kif/pyFAI/issues/89
-        cdef numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary = numpy.empty(shape=(bins0*bins1, lut_size), dtype=numpy.float64)
-        memcpy(&tmp_ary[0,0], &lut[0,0,0], lut_nbytes)
-        self.lut = tmp_ary.view(dtype=dtype_lut) #Makes 2D integration look like a 1D one
-#        self.lut = numpy.core.records.array(tmp_str.view(dtype=[("idx",numpy.int32),("coef",numpy.float32)]),
-#                                            shape=(bins0, bins1, lut_size),dtype=[("idx",numpy.int32),("coef",numpy.float32)],
-#                                            copy=True)
-#        self.lut = numpy.array(tmp_str,dtype=dtype_lut,shape=(bins0, bins1, lut_size), order="C", copy=False)
-#        self.lut = lut tmp_str.view(dtype = dtype_lut).reshape((bins0,bins1, lut_size))
-#        self.lut = lut 
+        self._lut = lut
+
+    def get_lut(self):
+        """Getter for the LUT as actual numpy array""" 
+        cdef int rc_before, rc_after
+        rc_before = sys.getrefcount(self._lut)
+        cdef lut_point[:,:,:] lut = self._lut
+        rc_after = sys.getrefcount(self._lut)
+        cdef bint need_decref = NEED_DECREF and ((rc_after-rc_before)>=2)
+        shape = (self._lut.shape[0]*self._lut.shape[1], self._lut.shape[2])
+        cdef numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary = numpy.empty(shape=shape, dtype=numpy.float64)
+        memcpy(&tmp_ary[0,0], &lut[0,0,0], self._lut.nbytes)
+        self.lut_checksum = crc32(tmp_ary)
+
+        #Ugly against bug#89
+        if need_decref and (sys.getrefcount(self._lut)>=rc_before+2):
+            print("Warning: Decref needed")
+            Py_XDECREF(<PyObject *> self._lut)
+
+#        return tmp_ary.view(dtype=dtype_lut)
+        return numpy.core.records.array(tmp_ary.view(dtype=dtype_lut),
+                                        shape=shape,dtype=dtype_lut,
+                                        copy=True)
+
+    lut = property(get_lut)         
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
@@ -914,22 +939,19 @@ class HistoBBox2d(object):
         @rtype: 5-tuple of ndarrays
 
         """
-        cdef numpy.int32_t i=0, j=0, idx=0, bins0=self.bins[0], bins1=self.bins[1], bins=bins0*bins1, lut_size=self.lut_size, size=self.size
+        cdef numpy.int32_t i=0, j=0, idx=0, bins0=self.bins[0], bins1=self.bins[1], bins=bins0*bins1, lut_size=self.lut_size, size=self.size, i0=0, i1=0
         cdef double sum_data=0, sum_count=0, epsilon=1e-10
         cdef float data=0, coef=0, cdummy=0, cddummy=0
         cdef bint do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
         cdef numpy.ndarray[numpy.float64_t, ndim = 2] outData = numpy.zeros(self.bins, dtype=numpy.float64)
         cdef numpy.ndarray[numpy.float64_t, ndim = 2] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
         cdef numpy.ndarray[numpy.float32_t, ndim = 2] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
-        cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData_1d = outData.ravel()
-        cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount_1d = outCount.ravel()
-        cdef numpy.ndarray[numpy.float32_t, ndim = 1] outMerge_1d = outMerge.ravel()
         
         #Ugly hack against bug #89
         cdef int rc_before, rc_after
-        rc_before = sys.getrefcount(self.lut)
-        cdef lut_point[:,:] lut = self.lut
-        rc_after = sys.getrefcount(self.lut)
+        rc_before = sys.getrefcount(self._lut)
+        cdef lut_point[:,:,:] lut = self._lut
+        rc_after = sys.getrefcount(self._lut)
         cdef bint need_decref = NEED_DECREF and ((rc_after-rc_before)>=2)
 
         
@@ -1006,29 +1028,30 @@ class HistoBBox2d(object):
             else:
                 cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
         #TODO: what is the best: static or guided ?
-        for i in prange(bins, nogil=True, schedule="static"):
-            sum_data = 0.0
-            sum_count = 0.0
-            for j in range(lut_size):
-                idx = lut[i, j].idx
-                coef = lut[i, j].coef
-                if idx <= 0 and coef <= 0.0:
-                    continue
-                data = cdata[idx]
-                if do_dummy and data==cdummy:
-                    continue
-
-                sum_data = sum_data + coef * data
-                sum_count = sum_count + coef
-            outData_1d[i] += sum_data
-            outCount_1d[i] += sum_count
-            if sum_count > epsilon:
-                outMerge_1d[i] += sum_data / sum_count
-            else:
-                outMerge_1d[i] += cdummy        
+        for i0 in prange(bins0, nogil=True, schedule="guided"):
+            for i1 in range(bins1):
+                sum_data = 0.0
+                sum_count = 0.0
+                for j in range(lut_size):
+                    idx = lut[i0, i1, j].idx
+                    coef = lut[i0, i1, j].coef
+                    if idx <= 0 and coef <= 0.0:
+                        continue
+                    data = cdata[idx]
+                    if do_dummy and data==cdummy:
+                        continue
+    
+                    sum_data = sum_data + coef * data
+                    sum_count = sum_count + coef
+                outData[i0, i1] += sum_data
+                outCount[i0, i1] += sum_count
+                if sum_count > epsilon:
+                    outMerge[i0, i1] += sum_data / sum_count
+                else:
+                    outMerge[i0, i1] += cdummy        
         
         #Ugly against bug #89
-        if need_decref and (sys.getrefcount(self.lut)>=rc_before+2):
-            Py_XDECREF(<PyObject *> self.lut)
+        if need_decref and (sys.getrefcount(self._lut)>=rc_before+2):
+            Py_XDECREF(<PyObject *> self._lut)
         return  outMerge.T, self.outPos0, self.outPos1, outData.T, outCount.T
 
