@@ -764,6 +764,21 @@ decrease the value if arcs are mixed together.""", default=None)
         paramfile = self.basename + ".poni"
         if os.path.isfile(paramfile):
             self.geoRef.load(paramfile)
+            if self.wavelength:
+                try:
+                    old_wl = self.geoRef.wavelength
+                except:
+                    pass
+                else:
+                    logger.warning("Overwriting wavelength from PONI file (%s) with the one from command line (%s)" % (old_wl, self.wavelength))
+                self.geoRef.wavelength = self.wavelength
+            if self.detector:
+                gr_det = str(self.geoRef.detector)
+                nw_det = str(self.detector)
+                if gr_det != nw_det:
+                    logger.warning("Overwriting detector from PONI file: %s%s with the one from command line %s%s" % (os.linesep, gr_det, os.linesep, nw_det))
+                    self.geoRef.detector = self.detector
+
         AbstractCalibration.refine(self)
 
 
