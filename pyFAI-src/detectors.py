@@ -832,6 +832,16 @@ class RayonixMx325(Detector):
         self.max_shape = (4096, 4096)
         self.name = "Rayonix mx325"
 
+class RayonixSx165(Detector):
+    """
+    Rayonix sx165 2d Detector
+    """
+    force_pixel = True
+    def __init__(self):
+        Detector.__init__(self, pixel1=40e-6, pixel2=40e-6)
+        self.max_shape = (4096, 4096)
+        self.name = "Rayonix sx165"
+                          
 ALL_DETECTORS = {}
 #Init time creation of the dict of all detectors
 local_dict = locals()
