@@ -121,7 +121,7 @@ List of contributors
 As of 01/2014:
  * Jérôme Kieffer (ESRF)
  * Dimitris Karkoulis (ESRF)
- * Jon Wright (ESF)
+ * Jon Wright (ESRF)
  * Frédéric-Emmanuel Picca (Soleil)
  * Amund Hov (ESRF)
  * Dodogerstlin @github
