@@ -54,8 +54,8 @@ class Detector(object):
     """
     Generic class representing a 2D detector
     """
-    force_pixel = False
-    isDetector = True #used to recognize detector classes
+    force_pixel = False     #Used to specify pixel size should be defined by the class itself.
+    isDetector = True       #used to recognize detector classes
     def __init__(self, pixel1=None, pixel2=None, splineFile=None):
         """
         @param pixel1: size of the pixel in meter along the slow dimension (often Y)
@@ -802,45 +802,158 @@ class Perkin(Detector):
         self.name = "Perkin detector"
         self.max_shape = (2048, 2048)
 
-class RayonixMx225(Detector):
+class Rayonix(Detector):
+    force_pixel = True
+    #pixel size is dependent on the binning (obviously they are fidling with the data internally @Rayonix!!!)
+    BINNED_PIXEL_SIZE = {1:40e-6,
+                         2:79e-6,
+                         3:119e-6,
+                         4:158e-6,
+                         }
+    MAX_SHAPE = (8192 , 8192)
+
+    def get_binning(self):
+        return self._binning
+
+    def set_binning(self, bin_size=(1, 1)):
+        """
+        Set the "binning" of the detector,
+
+        @param bin_size: binning as integer or tuple of integers.
+        @type bin_size: (int, int)
+        """
+        if "__len__" in dir(bin_size) and len(bin_size) >= 2:
+            bin_size = int(round(float(bin_size[0]))), int(round(float(bin_size[1])))
+        else:
+            b = int(round(float(bin_size)))
+            bin_size = (b, b)
+        if bin_size != self._binning:
+            if (bin_size[0] in self.BINNED_PIXEL_SIZE) and (bin_size[1] in self.BINNED_PIXEL_SIZE):
+                self._pixel1 = self.BINNED_PIXEL_SIZE[bin_size[0]]
+                self._pixel2 = self.BINNED_PIXEL_SIZE[bin_size[1]]
+            else:
+                logger.warning("Binning factor (%sx%s) is not an official value for Rayonix detectors" % (bin_size[0], bin_size[1]))
+                self._pixel1 = self.BINNED_PIXEL_SIZE[1] / float(bin_size[0])
+                self._pixel1 = self.BINNED_PIXEL_SIZE[1] / float(bin_size[0])
+            self._binning = bin_size
+            self.max_shape = (self.MAX_SHAPE[0] // bin_size[0], self.MAX_SHAPE[1] // bin_size[1])
+    binning = property(get_binning, set_binning)
+
+class RayonixMx225(Rayonix):
     """
     Rayonix mx225 2D detector
     """
     force_pixel = True
+    BINNED_PIXEL_SIZE = {1:37e-6,
+                         2:73e-6,
+                         3:110e-6,
+                         4:146e-6,
+                         }
+    MAX_SHAPE = (6144 , 6144)
     def __init__(self):
         Detector.__init__(self, pixel1=73e-6, pixel2=73e-6)
         self.max_shape = (3072, 3072)
+        self._binning = (2, 2)
         self.name = "Rayonix mx225"
 
-class RayonixMx300(Detector):
+class RayonixMx300(Rayonix):
     """
     Rayonix mx300 2D detector
     """
     force_pixel = True
+    BINNED_PIXEL_SIZE = {1:37e-6,
+                         2:73e-6,
+                         3:110e-6,
+                         4:146e-6,
+                         }
+    MAX_SHAPE = (8192 , 8192)
+
     def __init__(self):
         Detector.__init__(self, pixel1=73e-6, pixel2=73e-6)
         self.max_shape = (4096, 4096)
         self.name = "Rayonix mx300"
+        self._binning = (2, 2)
 
-class RayonixMx325(Detector):
+class RayonixMx325(Rayonix):
     """
     Rayonix mx325 2D detector
     """
-    force_pixel = True
+    BINNED_PIXEL_SIZE = {1:40e-6,
+                         2:79e-6,
+                         3:119e-6,
+                         4:158e-6,
+                         }
+    MAX_SHAPE = (8192 , 8192)
     def __init__(self):
         Detector.__init__(self, pixel1=79e-6, pixel2=79e-6)
         self.max_shape = (4096, 4096)
+        self._binning = (2, 2)
         self.name = "Rayonix mx325"
 
-class RayonixSx165(Detector):
+
+class RayonixSx165(Rayonix):
     """
     Rayonix sx165 2d Detector
     """
+    BINNED_PIXEL_SIZE = {1:39e-6,
+                         2:80e-6,
+                         4:160e-6,
+                         8:320e-6,
+                         }
+    MAX_SHAPE = (4096 , 4096)
+
     force_pixel = True
     def __init__(self):
         Detector.__init__(self, pixel1=40e-6, pixel2=40e-6)
         self.max_shape = (4096, 4096)
         self.name = "Rayonix sx165"
+        self._binning = (1, 1)
+
+
+class RayonixLx170(Rayonix):
+    """
+    Rayonix sx165 2d Detector
+    """
+    BINNED_PIXEL_SIZE = {1:44e-6,
+                         2:89e-6,
+                         3:133e-6,
+                         4:177e-6,
+                         5:220e-6,
+                         6:266e-6,
+                         8:354e-6,
+                         10:440e-6
+                         }
+    MAX_SHAPE = (1920, 3840)
+
+    force_pixel = True
+    def __init__(self):
+        Detector.__init__(self, pixel1=44e-6, pixel2=44e-6)
+        self.max_shape = (1920, 3840)
+        self.name = "Rayonix lx170"
+        self._binning = (1, 1)
+
+class RayonixLx225(Rayonix):
+    """
+    Rayonix sx165 2d Detector
+    """
+    BINNED_PIXEL_SIZE = {1:44e-6,
+                         2:89e-6,
+                         3:133e-6,
+                         4:177e-6,
+                         5:220e-6,
+                         6:266e-6,
+                         8:354e-6,
+                         10:440e-6
+                         }
+    MAX_SHAPE = (1920 , 5760)
+
+    force_pixel = True
+    def __init__(self):
+        Detector.__init__(self, pixel1=44e-6, pixel2=44e-6)
+        self.max_shape = (1920, 5760)
+        self.name = "Rayonix lx225"
+        self._binning = (1, 1)
+
                           
 ALL_DETECTORS = {}
 #Init time creation of the dict of all detectors
