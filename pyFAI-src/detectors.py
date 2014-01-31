@@ -96,16 +96,16 @@ class Detector(object):
     def set_config(self, config):
         """
         Sets the configuration of the detector. This implies:
-        - Orientation: integers 
+        - Orientation: integers
         - Binning
         - ROI
-        
+
         The configuration is either a python dictionnary or a JSON string or a file containing this JSON configuration
-        
+
         keys in that dictionnary are :
         "orientation": integers from 0 to 7
-        "binning": integer or 2-tuple of integers. If only one integer is provided, 
-        "offset": coordinate (in pixels) of the start of the detector 
+        "binning": integer or 2-tuple of integers. If only one integer is provided,
+        "offset": coordinate (in pixels) of the start of the detector
         """
         raise NotImplementedError
 
@@ -330,8 +330,9 @@ class Pilatus(Detector):
     MODULE_SIZE = (195, 487)
     MODULE_GAP = (17, 7)
     force_pixel = True
+
     def __init__(self, pixel1=172e-6, pixel2=172e-6, x_offset_file=None, y_offset_file=None):
-        Detector.__init__(self, pixel1, pixel2)
+        super(Pilatus, self).__init__(pixel1=pixel1, pixel2=pixel2)
         self.x_offset_file = x_offset_file
         self.y_offset_file = y_offset_file
         if self.x_offset_file and self.y_offset_file:
@@ -459,12 +460,13 @@ class Pilatus(Detector):
         p2 = (self._pixel2 * (delta2 + 0.5 + d2))
         return p1, p2
 
+
 class Pilatus100k(Pilatus):
     """
     Pilatus 100k detector
     """
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
-        Pilatus.__init__(self, pixel1, pixel2)
+        super(Pilatus100k, self).__init__(pixel1=pixel1, pixel2=pixel2)
         self.max_shape = (195, 487)
 
 
@@ -473,7 +475,7 @@ class Pilatus200k(Pilatus):
     Pilatus 200k detector
     """
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
-        Pilatus.__init__(self, pixel1, pixel2)
+        super(Pilatus200k, self).__init__(pixel1=pixel1, pixel2=pixel2)
         self.max_shape = (407, 487)
 
 
@@ -482,7 +484,7 @@ class Pilatus300k(Pilatus):
     Pilatus 300k detector
     """
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
-        Pilatus.__init__(self, pixel1, pixel2)
+        super(Pilatus300k, self).__init__(pixel1=pixel1, pixel2=pixel2)
         self.max_shape = (619, 487)
 
 
@@ -491,7 +493,7 @@ class Pilatus300kw(Pilatus):
     Pilatus 300k-wide detector
     """
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
-        Pilatus.__init__(self, pixel1, pixel2)
+        super(Pilatus300kw, self).__init__(pixel1=pixel1, pixel2=pixel2)
         self.max_shape = (195, 1475)
 
 
@@ -500,7 +502,7 @@ class Pilatus1M(Pilatus):
     Pilatus 1M detector
     """
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
-        Pilatus.__init__(self, pixel1, pixel2)
+        super(Pilatus1M, self).__init__(pixel1=pixel1, pixel2=pixel2)
         self.max_shape = (1043, 981)
 
 
@@ -510,7 +512,7 @@ class Pilatus2M(Pilatus):
     """
     force_pixel = True
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
-        Pilatus.__init__(self, pixel1, pixel2)
+        super(Pilatus2M, self).__init__(pixel1=pixel1, pixel2=pixel2)
         self.max_shape = (1679, 1475)
 
 
@@ -520,7 +522,7 @@ class Pilatus6M(Pilatus):
     """
     force_pixel = True
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
-        Pilatus.__init__(self, pixel1, pixel2)
+        super(Pilatus6M, self).__init__(pixel1=pixel1, pixel2=pixel2)
         self.max_shape = (2527, 2463)
 
 
@@ -530,9 +532,10 @@ class Fairchild(Detector):
     """
     force_pixel = True
     def __init__(self, pixel1=15e-6, pixel2=15e-6):
-        Detector.__init__(self, pixel1, pixel2)
+        super(Fairchild, self).__init__(pixel1=pixel1, pixel2=pixel2)
         self.name = "Fairchild Condor 486:90"
         self.max_shape = (4096, 4096)
+
 
 class Titan(Detector):
     """
@@ -540,11 +543,9 @@ class Titan(Detector):
     """
     force_pixel = True
     def __init__(self, pixel1=60e-6, pixel2=60e-6):
-        Detector.__init__(self, pixel1, pixel2)
+        super(Titan, self).__init__(pixel1=pixel1, pixel2=pixel2)
         self.name = "Titan 2k x 2k"
         self.max_shape = (2048, 2048)
-
-
 
 
 class Dexela2923(Detector):
@@ -553,7 +554,7 @@ class Dexela2923(Detector):
     """
     force_pixel = True
     def __init__(self, pixel1=75e-6, pixel2=75e-6):
-        Detector.__init__(self, pixel1, pixel2)
+        super(Dexela2923, self).__init__(pixel1=pixel1, pixel2=pixel2)
         self.name = "Dexela 2923"
         self.max_shape = (3888, 3072)
 
@@ -566,7 +567,7 @@ class FReLoN(Detector):
     TODO: create automatically a mask that removes pixels out of the "valid reagion"
     """
     def __init__(self, splineFile=None):
-        Detector.__init__(self, splineFile=splineFile)
+        super(FReLoN, self).__init__(splineFile=splineFile)
         if splineFile:
             self.max_shape = (int(self.spline.ymax - self.spline.ymin),
                               int(self.spline.xmax - self.spline.xmin))
@@ -590,6 +591,7 @@ class FReLoN(Detector):
         mask = numpy.logical_or(below_min, above_max)
         return mask
 
+
 class Basler(Detector):
     """
     Basler camera are simple CCD camara over GigaE
@@ -597,7 +599,7 @@ class Basler(Detector):
     """
     force_pixel = True
     def __init__(self, pixel=3.75e-6):
-        Detector.__init__(self, pixel1=pixel, pixel2=pixel)
+        super(Basler, self).__init__(pixel1=pixel, pixel2=pixel)
         self.max_shape = (966, 1296)
 
 
@@ -610,7 +612,7 @@ class Xpad_flat(Detector):
     MODULE_GAP = (3 + 3.57 * 1000 / 130, 3)  # in pixels
     force_pixel = True
     def __init__(self, pixel1=130e-6, pixel2=130e-6):
-        Detector.__init__(self, pixel1, pixel2)
+        super(Xpad_flat, self).__init__(pixel1=pixel1, pixel2=pixel2)
         self.max_shape = (960, 560)
 
     def __repr__(self):
@@ -695,6 +697,7 @@ def _pixels_compute_center(pixels_size):
 
     return center
 
+
 def _pixels_extract_coordinates(coordinates, pixels):
     """
     given a list of pixel coordinates, return the correspondig
@@ -709,6 +712,7 @@ def _pixels_extract_coordinates(coordinates, pixels):
     @rtype: ndarray
     """
     return coordinates[pixels] if (pixels is not None) else coordinates
+
 
 class ImXPadS140(Detector):
     """
@@ -759,7 +763,7 @@ class ImXPadS140(Detector):
         return pixel_size * size
 
     def __init__(self, pixel1=130e-6, pixel2=130e-6):
-        Detector.__init__(self, pixel1, pixel2)
+        super(ImXPadS140, self).__init__(pixel1=pixel1, pixel2=pixel2)
         self.name = "ImXPad S140"
         self.max_shape = self.MAX_SHAPE
 
@@ -798,19 +802,24 @@ class Perkin(Detector):
     """
     force_pixel = True
     def __init__(self, pixel=200e-6):
-        Detector.__init__(self, pixel, pixel)
+        super(Perkin, self).__init__(pixel1=pixel, pixel2=pixel)
         self.name = "Perkin detector"
         self.max_shape = (2048, 2048)
 
+
 class Rayonix(Detector):
     force_pixel = True
-    #pixel size is dependent on the binning (obviously they are fidling with the data internally @Rayonix!!!)
+    # pixel size is dependent on the binning (obviously they are
+    # fidling with the data internally @Rayonix!!!)
     BINNED_PIXEL_SIZE = {1:40e-6,
                          2:79e-6,
                          3:119e-6,
                          4:158e-6,
                          }
     MAX_SHAPE = (8192 , 8192)
+
+    def __init__(self, pixel1=None, pixel2=None):
+        super(Rayonix, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
     def get_binning(self):
         return self._binning
@@ -819,8 +828,8 @@ class Rayonix(Detector):
         """
         Set the "binning" of the detector,
 
-        @param bin_size: binning as integer or tuple of integers.
-        @type bin_size: (int, int)
+        @param bin_size: set the binning of the detector
+        @type bin_size: int or (int, int)
         """
         if "__len__" in dir(bin_size) and len(bin_size) >= 2:
             bin_size = int(round(float(bin_size[0]))), int(round(float(bin_size[1])))
@@ -834,10 +843,11 @@ class Rayonix(Detector):
             else:
                 logger.warning("Binning factor (%sx%s) is not an official value for Rayonix detectors" % (bin_size[0], bin_size[1]))
                 self._pixel1 = self.BINNED_PIXEL_SIZE[1] / float(bin_size[0])
-                self._pixel1 = self.BINNED_PIXEL_SIZE[1] / float(bin_size[0])
+                self._pixel2 = self.BINNED_PIXEL_SIZE[1] / float(bin_size[1])
             self._binning = bin_size
             self.max_shape = (self.MAX_SHAPE[0] // bin_size[0], self.MAX_SHAPE[1] // bin_size[1])
     binning = property(get_binning, set_binning)
+
 
 class RayonixMx225(Rayonix):
     """
@@ -851,10 +861,11 @@ class RayonixMx225(Rayonix):
                          }
     MAX_SHAPE = (6144 , 6144)
     def __init__(self):
-        Detector.__init__(self, pixel1=73e-6, pixel2=73e-6)
+        super(RayonixMx225, self).__init__(pixel1=73e-6, pixel2=73e-6)
         self.max_shape = (3072, 3072)
         self._binning = (2, 2)
         self.name = "Rayonix mx225"
+
 
 class RayonixMx300(Rayonix):
     """
@@ -869,10 +880,11 @@ class RayonixMx300(Rayonix):
     MAX_SHAPE = (8192 , 8192)
 
     def __init__(self):
-        Detector.__init__(self, pixel1=73e-6, pixel2=73e-6)
+        super(RayonixMx300, self).__init__(pixel1=73e-6, pixel2=73e-6)
         self.max_shape = (4096, 4096)
         self.name = "Rayonix mx300"
         self._binning = (2, 2)
+
 
 class RayonixMx325(Rayonix):
     """
@@ -885,7 +897,7 @@ class RayonixMx325(Rayonix):
                          }
     MAX_SHAPE = (8192 , 8192)
     def __init__(self):
-        Detector.__init__(self, pixel1=79e-6, pixel2=79e-6)
+        super(RayonixMx325, self).__init__(pixel1=73e-6, pixel2=73e-6)
         self.max_shape = (4096, 4096)
         self._binning = (2, 2)
         self.name = "Rayonix mx325"
@@ -904,7 +916,7 @@ class RayonixSx165(Rayonix):
 
     force_pixel = True
     def __init__(self):
-        Detector.__init__(self, pixel1=40e-6, pixel2=40e-6)
+        super(RayonixSx165, self).__init__(pixel1=39e-6, pixel2=39e-6)
         self.max_shape = (4096, 4096)
         self.name = "Rayonix sx165"
         self._binning = (1, 1)
@@ -927,10 +939,11 @@ class RayonixLx170(Rayonix):
 
     force_pixel = True
     def __init__(self):
-        Detector.__init__(self, pixel1=44e-6, pixel2=44e-6)
+        super(RayonixLx170, self).__init__(pixel1=44e-6, pixel2=44e-6)
         self.max_shape = (1920, 3840)
         self.name = "Rayonix lx170"
         self._binning = (1, 1)
+
 
 class RayonixLx225(Rayonix):
     """
@@ -949,12 +962,12 @@ class RayonixLx225(Rayonix):
 
     force_pixel = True
     def __init__(self):
-        Detector.__init__(self, pixel1=44e-6, pixel2=44e-6)
+        super(RayonixLx225, self).__init__(pixel1=44e-6, pixel2=44e-6)
         self.max_shape = (1920, 5760)
         self.name = "Rayonix lx225"
         self._binning = (1, 1)
 
-                          
+
 ALL_DETECTORS = {}
 #Init time creation of the dict of all detectors
 local_dict = locals()
@@ -969,6 +982,7 @@ for obj_name in dir():
         else:
             ALL_DETECTORS[obj_name.lower()] = obj_class
             ALL_DETECTORS[obj_inst.name.lower().replace(" ", "_")] = obj_class
+
 
 def detector_factory(name, config=None):
     """

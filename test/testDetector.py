@@ -37,10 +37,17 @@ import numpy
 from utilstest import getLogger  # UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
-from pyFAI.detectors import detector_factory
+from pyFAI.detectors import detector_factory, ALL_DETECTORS
 
 
 class TestDetector(unittest.TestCase):
+
+    def test_detector_instanciate(self):
+        """
+        this method try to instanciate all the detectors
+        """
+        for k, v in ALL_DETECTORS.iteritems():
+            v()
 
     def test_detector_imxpad_s140(self):
         """
@@ -70,9 +77,52 @@ class TestDetector(unittest.TestCase):
         self.assertAlmostEqual(x[1], x[0] + 130e-6)
         self.assertAlmostEqual(x[79], x[78] + 130e-6 * 3.5 / 2.)
 
+    def test_detector_rayonix_sx165(self):
+        """
+        rayonix detectors have different pixel size depending on the binning.
+        Check that the set_binning method works for the sx_165
+        """
+        sx165 = detector_factory("rayonix_sx165")
+
+        # check the default pixels size and the default binning
+        self.assertAlmostEqual(sx165.pixel1, 39e-6)
+        self.assertAlmostEqual(sx165.pixel2, 39e-6)
+        self.assertEqual(sx165.binning, (1, 1))
+
+        # check binning 1
+        sx165.binning = 1
+        self.assertAlmostEqual(sx165.pixel1, 39e-6)
+        self.assertAlmostEqual(sx165.pixel2, 39e-6)
+        self.assertEqual(sx165.binning, (1, 1))
+
+        # check binning 2
+        sx165.binning = 2
+        self.assertAlmostEqual(sx165.pixel1, 80e-6)
+        self.assertAlmostEqual(sx165.pixel2, 80e-6)
+        self.assertEqual(sx165.binning, (2, 2))
+
+        # check binning 4
+        sx165.binning = 4
+        self.assertAlmostEqual(sx165.pixel1, 160e-6)
+        self.assertAlmostEqual(sx165.pixel2, 160e-6)
+        self.assertEqual(sx165.binning, (4, 4))
+
+        # check binning 8
+        sx165.binning = 8
+        self.assertAlmostEqual(sx165.pixel1, 320e-6)
+        self.assertAlmostEqual(sx165.pixel2, 320e-6)
+        self.assertEqual(sx165.binning, (8, 8))
+
+        # check a non standard binning
+        sx165.binning = 10
+        self.assertAlmostEqual(sx165.pixel1, sx165.pixel2)
+
+
 def test_suite_all_detectors():
     testSuite = unittest.TestSuite()
+    testSuite.addTest(TestDetector("test_detector_instanciate"))
     testSuite.addTest(TestDetector("test_detector_imxpad_s140"))
+    testSuite.addTest(TestDetector("test_detector_rayonix_sx165"))
     return testSuite
 
 if __name__ == '__main__':
