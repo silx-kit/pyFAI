@@ -301,6 +301,8 @@ class Detector(object):
     def get_pixel1(self):
         return self._pixel1
     def set_pixel1(self, value):
+        if self.force_pixel:
+            logger.warning("enforcing pixel size 1 for a detector %s" % self.__class__.__name__)
         if isinstance(value, float):
             self._pixel1 = value
         elif isinstance(value, (tuple, list)):
@@ -312,6 +314,8 @@ class Detector(object):
     def get_pixel2(self):
         return self._pixel2
     def set_pixel2(self, value):
+        if self.force_pixel:
+            logger.warning("enforcing pixel size 2 for a detector %s" % self.__class__.__name__)
         if isinstance(value, float):
             self._pixel2 = value
         elif isinstance(value, (tuple, list)):
@@ -819,7 +823,7 @@ class Rayonix(Detector):
     MAX_SHAPE = (8192 , 8192)
 
     def __init__(self, pixel1=None, pixel2=None):
-        super(Rayonix, self).__init__(pixel1=pixel1, pixel2=pixel2)
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
     def get_binning(self):
         return self._binning
@@ -851,36 +855,66 @@ class Rayonix(Detector):
 
 class RayonixMx225(Rayonix):
     """
-    Rayonix mx225 2D detector
+    Rayonix mx225 2D CCD detector detector
+    
+    Nota: this is the same definition for mx225he
+    Personnal communication from M. Blum
     """
     force_pixel = True
-    BINNED_PIXEL_SIZE = {1:37e-6,
-                         2:73e-6,
-                         3:110e-6,
-                         4:146e-6,
+    BINNED_PIXEL_SIZE = {1: 36.621e-6,
+                         2: 73.242e-6,
+                         3: 109.971e-6,
+                         4: 146.484e-6,
+                         8: 292.969e-6
                          }
     MAX_SHAPE = (6144 , 6144)
     def __init__(self):
-        super(RayonixMx225, self).__init__(pixel1=73e-6, pixel2=73e-6)
+        Rayonix.__init__(self, pixel1=73e-6, pixel2=73e-6)
         self.max_shape = (3072, 3072)
         self._binning = (2, 2)
         self.name = "Rayonix mx225"
+
+class RayonixMx225hs(Rayonix):
+    """
+    Rayonix mx225hs 2D CCD detector detector
+    
+    Pixel size from a personnal communication from M. Blum    
+    """
+    force_pixel = True
+    BINNED_PIXEL_SIZE = {1: 39.0625e-6,
+                         2: 78.125e-6,
+                         3: 117.1875e-6,
+                         4: 156.25e-6,
+                         5: 195.3125e-6,
+                         6: 234.3750e-6,
+                         8: 312.5e-6,
+                         10: 390.625e-6,
+                         }
+    MAX_SHAPE = (5760 , 5760)
+    def __init__(self):
+        Rayonix.__init__(self, pixel1=78.125e-6, pixel2=78.125e-6)
+        self.max_shape = (2880 , 2880)
+        self._binning = (2, 2)
+        self.name = "Rayonix mx225hs"
 
 
 class RayonixMx300(Rayonix):
     """
     Rayonix mx300 2D detector
+    
+    Pixel size from a personnal communication from M. Blum
     """
     force_pixel = True
-    BINNED_PIXEL_SIZE = {1:37e-6,
-                         2:73e-6,
-                         3:110e-6,
-                         4:146e-6,
+    BINNED_PIXEL_SIZE = {1: 36.621e-6,
+                         2: 73.242e-6,
+                         3: 109.971e-6,
+                         4: 146.484e-6,
+                         8: 292.969e-6
                          }
     MAX_SHAPE = (8192 , 8192)
 
     def __init__(self):
-        super(RayonixMx300, self).__init__(pixel1=73e-6, pixel2=73e-6)
+        Rayonix.__init__(self, pixel1=73e-6, pixel2=73e-6)
         self.max_shape = (4096, 4096)
         self.name = "Rayonix mx300"
         self._binning = (2, 2)
@@ -907,39 +941,63 @@ class RayonixSx165(Rayonix):
     """
     Rayonix sx165 2d Detector
     """
-    BINNED_PIXEL_SIZE = {1:39e-6,
-                         2:80e-6,
-                         4:160e-6,
-                         8:320e-6,
+    BINNED_PIXEL_SIZE = {1: 39.5e-6,
+                         2: 79e-6,
+                         3: 118.616e-6, #image shape is then 1364 not 1365 !
+                         4: 158e-6,
+                         8: 316e-6,
                          }
     MAX_SHAPE = (4096 , 4096)
 
     force_pixel = True
     def __init__(self):
-        super(RayonixSx165, self).__init__(pixel1=39e-6, pixel2=39e-6)
+        Rayonix.__init__(self, pixel1=39.5e-6, pixel2=39.5e-6)
         self.max_shape = (4096, 4096)
         self.name = "Rayonix sx165"
+        self._binning = (1, 1)
+
+class RayonixSx200(Rayonix):
+    """
+    Rayonix sx200 2d CCD Detector.
+    
+    Pixel size are personnal communication from M. Blum. 
+    """
+    BINNED_PIXEL_SIZE = {1: 48e-6,
+                         2: 96e-6,
+                         3: 144e-6,
+                         4: 192e-6,
+                         8: 384e-6,
+                         }
+    MAX_SHAPE = (4096 , 4096)
+
+    force_pixel = True
+    def __init__(self):
+        Rayonix.__init__(self, pixel1=48e-6, pixel2=48e-6)
+        self.max_shape = (4096, 4096)
+        self.name = "Rayonix sx200"
         self._binning = (1, 1)
 
 
 class RayonixLx170(Rayonix):
     """
-    Rayonix sx165 2d Detector
+    Rayonix lx170 2d CCD Detector. 
+    
+    Nota: this is the same for lx170hs and mx170hs
     """
-    BINNED_PIXEL_SIZE = {1:44e-6,
-                         2:89e-6,
-                         3:133e-6,
-                         4:177e-6,
-                         5:220e-6,
-                         6:266e-6,
-                         8:354e-6,
-                         10:440e-6
+    BINNED_PIXEL_SIZE = {1:44.2708e-6,
+                         2:88.5417e-6,
+                         3:132.8125e-6,
+                         4:177.0833e-6,
+                         5:221.3542e-6,
+                         6:265.625e-6,
+                         8:354.1667e-6,
+                         10:442.7083e-6
                          }
     MAX_SHAPE = (1920, 3840)
 
     force_pixel = True
     def __init__(self):
-        super(RayonixLx170, self).__init__(pixel1=44e-6, pixel2=44e-6)
+        Rayonix.__init__(pixel1=44e-6, pixel2=44e-6)
         self.max_shape = (1920, 3840)
         self.name = "Rayonix lx170"
         self._binning = (1, 1)
@@ -947,22 +1005,24 @@ class RayonixLx170(Rayonix):
 
 class RayonixLx225(Rayonix):
     """
-    Rayonix sx165 2d Detector
+    Rayonix lx225 2d Detector
+    
+    Nota: this detector is also called lx225hs
     """
-    BINNED_PIXEL_SIZE = {1:44e-6,
-                         2:89e-6,
-                         3:133e-6,
-                         4:177e-6,
-                         5:220e-6,
-                         6:266e-6,
-                         8:354e-6,
-                         10:440e-6
+    BINNED_PIXEL_SIZE = {1:44.2708e-6,
+                         2:88.5417e-6,
+                         3:132.8125e-6,
+                         4:177.0833e-6,
+                         5:221.3542e-6,
+                         6:265.625e-6,
+                         8:354.1667e-6,
+                         10:442.7083e-6
                          }
     MAX_SHAPE = (1920 , 5760)
 
     force_pixel = True
     def __init__(self):
-        super(RayonixLx225, self).__init__(pixel1=44e-6, pixel2=44e-6)
+        Rayonix.__init__(pixel1=44e-6, pixel2=44e-6)
         self.max_shape = (1920, 5760)
         self.name = "Rayonix lx225"
         self._binning = (1, 1)
