@@ -81,36 +81,45 @@ class TestDetector(unittest.TestCase):
         """
         rayonix detectors have different pixel size depending on the binning.
         Check that the set_binning method works for the sx_165
+
+        #personal communication of M. Blum:
+
+     self.desired_pixelsizes[4096]        = 39.500
+     self.desired_pixelsizes[2048]        = 79.000
+     self.desired_pixelsizes[1364]        = 118.616
+     self.desired_pixelsizes[1024]        = 158.000
+     self.desired_pixelsizes[512]        = 316.000
+
         """
         sx165 = detector_factory("rayonix_sx165")
 
         # check the default pixels size and the default binning
-        self.assertAlmostEqual(sx165.pixel1, 39e-6)
-        self.assertAlmostEqual(sx165.pixel2, 39e-6)
+        self.assertAlmostEqual(sx165.pixel1, 395e-7)
+        self.assertAlmostEqual(sx165.pixel2, 395e-7)
         self.assertEqual(sx165.binning, (1, 1))
 
         # check binning 1
         sx165.binning = 1
-        self.assertAlmostEqual(sx165.pixel1, 39e-6)
-        self.assertAlmostEqual(sx165.pixel2, 39e-6)
+        self.assertAlmostEqual(sx165.pixel1, 395e-7)
+        self.assertAlmostEqual(sx165.pixel2, 395e-7)
         self.assertEqual(sx165.binning, (1, 1))
 
         # check binning 2
         sx165.binning = 2
-        self.assertAlmostEqual(sx165.pixel1, 80e-6)
-        self.assertAlmostEqual(sx165.pixel2, 80e-6)
+        self.assertAlmostEqual(sx165.pixel1, 79e-6)
+        self.assertAlmostEqual(sx165.pixel2, 79e-6)
         self.assertEqual(sx165.binning, (2, 2))
 
         # check binning 4
         sx165.binning = 4
-        self.assertAlmostEqual(sx165.pixel1, 160e-6)
-        self.assertAlmostEqual(sx165.pixel2, 160e-6)
+        self.assertAlmostEqual(sx165.pixel1, 158e-6)
+        self.assertAlmostEqual(sx165.pixel2, 158e-6)
         self.assertEqual(sx165.binning, (4, 4))
 
         # check binning 8
         sx165.binning = 8
-        self.assertAlmostEqual(sx165.pixel1, 320e-6)
-        self.assertAlmostEqual(sx165.pixel2, 320e-6)
+        self.assertAlmostEqual(sx165.pixel1, 316e-6)
+        self.assertAlmostEqual(sx165.pixel2, 316e-6)
         self.assertEqual(sx165.binning, (8, 8))
 
         # check a non standard binning
