@@ -72,9 +72,9 @@ class Detector(object):
         self._pixel1 = None
         self._pixel2 = None
         if pixel1:
-            self.pixel1 = pixel1
+            self._pixel1 = float(pixel1)
         if pixel2:
-            self.pixel2 = pixel2
+            self._pixel2 = float(pixel2)
         self.max_shape = (None, None)
         self._binning = (1, 1)
         self._mask = False
