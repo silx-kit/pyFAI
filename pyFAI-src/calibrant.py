@@ -70,11 +70,20 @@ class Calibrant(object):
         self._dSpacing = list(numpy.loadtxt(self._filename))
         self._dSpacing.sort(reverse=True)
 
-    @property
-    def dSpacing(self):
+
+    def get_dSpacing(self):
         if not self._dSpacing and self._filename:
             self.load_file()
         return self._dSpacing
+
+    def set_dSpacing(self, lst):
+        self._dSpacing = lst
+        self._filename = "Modified"
+    dSpacing = property(get_dSpacing, set_dSpacing)
+
+# Todo: add reset method,
+# add wavelength move from pp.ctrlpt the mathods related to angle generation
+# add a calibrant name, modified flag
 
 CALIBRANT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "calibration")
 if os.path.isdir(CALIBRANT_DIR):

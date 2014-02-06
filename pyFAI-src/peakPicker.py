@@ -54,7 +54,7 @@ TARGET_SIZE = 1024
 # PeakPicker
 ################################################################################
 class PeakPicker(object):
-    def __init__(self, strFilename, reconst=False, mask=None, pointfile=None, dSpacing=None, wavelength=None):
+    def __init__(self, strFilename, reconst=False, mask=None, pointfile=None, calibrant=None, wavelength=None):
         """
         @param: input image filename
         @param reconst: shall mased part or negative values be reconstructed (wipe out problems with pilatus gaps)
@@ -69,7 +69,7 @@ class PeakPicker(object):
             view[numpy.where(flat_mask)] = min_valid
 
         self.shape = self.data.shape
-        self.points = ControlPoints(pointfile, dSpacing=dSpacing, wavelength=wavelength)
+        self.points = ControlPoints(pointfile, calibrant=calibrant, wavelength=wavelength)
 #        self.lstPoints = []
         self.fig = None
         self.fig2 = None
@@ -274,8 +274,8 @@ class PeakPicker(object):
             while len(self.ct.collections) > 0:
                 self.ct.collections.pop()
 
-            if self.points.dSpacing and  self.points._wavelength:
-                angles = list(2.0 * numpy.arcsin(5e9 * self.points._wavelength / numpy.array(self.points.dSpacing)))
+            if self.points.calibrant and self.points.calibrant.dSpacing and  self.points._wavelength:
+                angles = list(2.0 * numpy.arcsin(5e9 * self.points._wavelength / numpy.array(self.points.calibrant.dSpacing)))
             else:
                 angles = None
             try:
@@ -327,8 +327,8 @@ class ControlPoints(object):
     """
     This class contains a set of control points with (optionally) their ring number hence d-spacing and diffraction  2Theta angle ...
     """
-    def __init__(self, filename=None, dSpacing=None, wavelength=None):
-        self.dSpacing = []
+    def __init__(self, filename=None, calibrant=None, wavelength=None):
+#        self.dSpacing = []
         self._sem = threading.Semaphore()
         self._angles = []  # angles are enforced in radians, conversion from degrees or q-space nm-1 are done on the fly
         self._points = []
@@ -670,7 +670,7 @@ class ControlPoints(object):
                 for i in d:
                     if i not in ds:
                         ds.append(i)
-                ds.sort()
+                ds.sort(reverse=True)
                 self.dSpacing = ds
                 self._ring = [self.dSpacing.index(i) for i in d]
 
@@ -686,9 +686,22 @@ class ControlPoints(object):
                         logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
             else:
                 logger.warning("Forbidden to change the wavelength once it is fixed !!!!")
+
     def getWavelength(self):
         return self._wavelength
     wavelength = property(getWavelength, setWavelength)
+
+    def get_dSpacing(self):
+        if self.calibrant:
+            return self.calibrant.dSpacing
+        else:
+            return []
+
+    def set_dSpacing(self, lst):
+        if not self.calibrant:
+            self.calibrant = Calibrant()
+        self.calibrant.dSpacing = lst
+    dSpacing = property(get_dSpacing, set_dSpacing)
 
 ################################################################################
 # Massif

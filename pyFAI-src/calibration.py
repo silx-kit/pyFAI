@@ -52,7 +52,7 @@ from .utils import averageImages, measure_offset, expand_args
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import hc
 from . import version as PyFAI_VERSION
-
+from .calibrant import Calibrant, ALL_CALIBRANTS
 matplotlib.interactive(True)
 
 class AbstractCalibration(object):
@@ -66,7 +66,7 @@ class AbstractCalibration(object):
                          " is why the window showing the diffraction image"\
                          " is closed"
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None,
-                 splineFile=None, detector=None, spacing_file=None, wavelength=None):
+                 splineFile=None, detector=None, wavelength=None, calibrant=None):
         """
         Constructor:
 
@@ -76,8 +76,8 @@ class AbstractCalibration(object):
         @param pixelSize: size of the pixel in meter as 2 tuple
         @param splineFile: file containing the distortion of the taper
         @param detector: Detector name or instance
-        @param spacing_file: file containing the spacing of Miller plans (in decreasing order, in Angstrom, space separated)
         @param wavelength: radiation wavelength in meter
+        @param calibrant: Calibrant instance
         """
         self.dataFiles = dataFiles
         self.darkFiles = darkFiles
@@ -108,7 +108,14 @@ class AbstractCalibration(object):
         self.basename = None
         self.geoRef = None
         self.reconstruct = False
-        self.spacing_file = spacing_file
+        if calibrant:
+            if calibrant in ALL_CALIBRANTS:
+                self.calibrant = ALL_CALIBRANTS[calibrant]
+            elif os.path.isfile(calibrant):
+                self.calibrant = Calibrant(calibrant)
+            self.calibrant = calibrant
+        else:
+            self.calibrant = None
         self.mask = None
         self.saturation = 0.1
         self.fixed = ["wavelength"]  # parameter fixed during optimization
@@ -174,7 +181,7 @@ class AbstractCalibration(object):
                           action="store_true", dest="debug", default=False,
                           help="switch to debug/verbose mode")
         self.parser.add_option("-S", "--spacing", dest="spacing", metavar="FILE",
-                      help="file containing d-spacing of the reference sample (MANDATORY)",
+                      help="Calibrant name or file containing d-spacing of the reference sample (MANDATORY)",
                       default=None)
         self.parser.add_option("-w", "--wavelength", dest="wavelength", type="float",
                       help="wavelength of the X-Ray beam in Angstrom", default=None)
@@ -318,15 +325,17 @@ class AbstractCalibration(object):
 
 
         self.pointfile = options.npt
-        if (not options.spacing) or (not os.path.isfile(options.spacing)):
-            logger.error("No such d-Spacing file: %s" % options.spacing)
-            self.spacing_file = None
-        else:
-            self.spacing_file = options.spacing
-        if self.spacing_file is None:
+        if options.spacing:
+            if options.spacing in ALL_CALIBRANTS:
+                self.calibrant = ALL_CALIBRANTS[options.spacing]
+            elif os.path.isfile(options.spacing):
+                self.calibrant = Calibrant(options.spacing)
+            else:
+                logger.error("No such Calibrant / d-Spacing file: %s" % options.spacing)
+
+        if self.calibrant is None:
             self.read_dSpacingFile(True)
-        else:
-            self.spacing_file = os.path.abspath(self.spacing_file)
+
         if options.wavelength:
             self.ai.wavelength = self.wavelength = 1e-10 * options.wavelength
         elif options.energy:
@@ -421,11 +430,11 @@ class AbstractCalibration(object):
                 self.get_pixelSize(ans)
 
     def read_dSpacingFile(self, verbose=True):
-        """Read the name of the file with d-spacing"""
-        if (self.spacing_file is None):
+        """Read the name of the calibrant / file with d-spacing"""
+        if (self.calibrant is None):
             comments = ["pyFAI calib has changed !!!",
                         "Instead of entering the 2theta value, which was tedious,"
-                        "the program takes a d-spacing file in input "
+                        "the program takes a calibrant name or a d-spacing file in input "
                         "(just a serie of number representing the inter-planar "
                         "distance in Angstrom)",
                         "and an associated wavelength",
@@ -433,11 +442,16 @@ class AbstractCalibration(object):
                         " which is usually a simpler than the 2theta value."]
             if verbose:
                 print(os.linesep.join(comments))
-            ans = ""
-            while not os.path.isfile(ans):
-                ans = raw_input("Please enter the name of the file"
+            valid = False
+            while valid:
+                ans = raw_input("Please enter the calibrant name or the file"
                                 " containing the d-spacing:\t").strip()
-            self.spacing_file = os.path.abspath(ans)
+                if ans in ALL_CALIBRANTS:
+                    self.calibrant = ALL_CALIBRANTS[ans]
+                    valid = True
+                elif os.path.isfile(ans):
+                    self.calibrant = Calibrant(ans)
+                    valid = True
 
     def read_wavelength(self):
         """Read the wavelength"""
@@ -852,7 +866,7 @@ without human intervention (--no-gui --no-interactive options).
 
 
     def extract_cpt(self):
-        d = numpy.loadtxt(self.spacing_file)
+        d = numpy.array(self.calibrant.dSpacing)
         tth = 2.0 * numpy.arcsin(self.ai.wavelength / (2.0e-10 * d))
         tth.sort()
         tth = tth[numpy.where(numpy.isnan(tth) - 1)]
