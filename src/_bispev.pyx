@@ -8,8 +8,9 @@ import numpy
 cimport numpy
 import cython
 cimport cython
-#from cython cimport view
-
+from cython cimport view
+#from libc.stdlib cimport malloc, free
+from cython.parallel import prange
 
 #copied bisplev function from fitpack.bisplev
 def bisplev(x,y,tck,dx=0,dy=0):
@@ -80,29 +81,34 @@ def bisplev(x,y,tck,dx=0,dy=0):
     cy_y = numpy.ascontiguousarray(y, dtype=numpy.float32)
 
     z = cy_bispev(tx, ty, c, kx, ky, cy_x, cy_y)
-    z.shape = len(x),len(y)
-    return z
+    z.shape = len(y),len(x)
+    return z.T #this is a trick as we transpose again afterwards to retrieve a memory-contiguous object
 #    if len(z)>1:
 #        return z
 #    elif len(z[0])>1:
 #        return z[0]
 #    else:
 #        return z[0][0]
-
-def fpbspl(float[:]t,
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+cdef fpbspl(float[:]t,
             int n,
             int k,
             float x,
             int l,
-            float[:] h):
+            float[:] h,
+            float[:] hh):
     """
     subroutine fpbspl evaluates the (k+1) non-zero b-splines of
     degree k at t(l) <= x < t(l+1) using the stable recurrence
     relation of de boor and cox.
     """
+    cdef int i, j, li, lj
+    cdef float f
 
     h[0] = 1.00
-    cdef float[:] hh = numpy.zeros(5, numpy.float32)
+#    cdef float[:] hh = view.array(shape=(5,), itemsize=sizeof(float), format="f")
     for j in range(1,k+1):  #adding +1 in index
         for i in range(1,j+1):  #adding +1 in index
             #print "h[", i-1 ,"] =",h[i-1]
@@ -118,47 +124,10 @@ def fpbspl(float[:]t,
             h[i] = f*(x-t[lj-1])        #adding -1 in index
     return h
 
-#    h[0] = 1.00
-#    cdef float[:] hh = numpy.zeros(5,dtype=numpy.float32)
-#    cdef int i, j, li, lj
-#    cdef float f
-#    #hh =
-#    for j in range(,k):
-#        for i in range(j):
-#            hh[i] = h[i+1]
-#
-#        h[0] = 0.00
-#        for i in range(j):
-#            li = l+j
-#            lj = li-j+1
-#            f = hh[i]/(t[li]-t[lj])
-#            h[i] = h[i-1] + f*(t[li]-x)
-#            h[i+1] = f*(x-t[lj])
-
-#    one = 1.f;
-#    h__[1] = one;
-#    i__1 = *k;
-#    for (j = 1; j <= i__1; ++j) {
-#        i__2 = j;
-#        for (i__ = 1; i__ <= i__2; ++i__) {
-#            hh[i__ - 1] = h__[i__];
-#/* L10: */
-#        }
-#        h__[1] = 0.f;
-#        i__2 = j;
-#        for (i__ = 1; i__ <= i__2; ++i__) {
-#            li = *l + i__;
-#            lj = li - j;
-#            f = hh[i__ - 1] / (t[li] - t[lj]);
-#            h__[i__] += f * (t[li] - *x);
-#            h__[i__ + 1] = f * (*x - t[lj]);
-#/* L20: */
-#        }
-#    }
-#    return 0;
-
-
-def cy_bispev(float[:] tx,
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+cdef cy_bispev(float[:] tx,
                         float[:] ty,
                         float[:] c,
                         int kx,
@@ -182,72 +151,81 @@ def cy_bispev(float[:] tx,
 
 
     #initializing scratch space
-    cdef float[:,:] wx = numpy.zeros((mx,kx1), numpy.float32)
-    cdef float[:,:] wy = numpy.zeros((my,ky1), numpy.float32)
+    #cdef int[::1] b = view.array(shape=(N,), itemsize=sizeof(int), format="i")
+    cdef float[:,:] wx = view.array(shape=(mx,kx1), itemsize=sizeof(float), format="f")
+    cdef float[:,:] wy = view.array(shape=(my,ky1), itemsize=sizeof(float), format="f")
 
-    cdef numpy.int32_t[:] lx = numpy.zeros(mx, numpy.int32)
-    cdef numpy.int32_t[:] ly = numpy.zeros(my, numpy.int32)
+    cdef numpy.int32_t[:] lx = view.array(shape=(mx,), itemsize=sizeof(numpy.int32_t), format="i")
+    cdef numpy.int32_t[:] ly = view.array(shape=(my,), itemsize=sizeof(numpy.int32_t), format="i")
 
-    cdef int i, j, m, i1, nky1, l2, size_z = mx*my
+    cdef int i, j, m, i1, nky1, l2, j1, size_z = mx*my
 
     # initializing z and h
     cdef numpy.ndarray[numpy.float32_t, ndim=1] z = numpy.zeros(size_z, numpy.float32)
-    cdef float[:] h = numpy.zeros(6, numpy.float32)
-    cdef float arg
+    cdef float[:] h = view.array(shape=(6,), itemsize=sizeof(float), format="f")
+    cdef float[:] hh = view.array(shape=(5,), itemsize=sizeof(float), format="f")
+    cdef float arg, sp
 
-    for i in range(mx):
-        arg = x[i]
+    kx1 = kx+1
+    ky1 = ky+1
+
+    nkx1 = nx-kx1
+    tb = tx[kx1-1]  #adding -1 in index
+    te = tx[nkx1]   #adding -1 in index
+
+    l = kx1
+    l1 = l+1
+
+    for i in range(1,mx+1): #adding +1 in index
+        arg = x[i-1]        #adding -1 in index
         if arg < tb: arg = tb
         if arg > te: arg = te
-        while not( arg < tx[l1-1] or l == nkx1):
+        while not( arg < tx[l1-1] or l == nkx1):    #adding -1 in index
             l = l1
             l1 = l + 1
 
-        h = fpbspl(tx,nx,kx,arg,l,h)
+        fpbspl(tx, nx, kx, arg, l, h, hh)
 
-        lx[i] = l - kx1
-        for j in range(kx1):
-            wx[i,j] = h[j]
+        lx[i-1] = l - kx1
+        for j in range(1,kx1+1):    #adding +1 in index
+            wx[i-1,j-1] = h[j-1]
 
     ky1 = ky + 1
     nky1 = ny - ky1
-    tb = ty[ky1]
-    te = ty[nky1]
+    tb = ty[ky1-1]  #adding -1 in index
+    te = ty[nky1]   #adding -1 in index
     l = ky1
     l1 = l+1
 
-    for i in range(my):
-        arg = y[i]
+    for i in range(1,my+1):
+        arg = y[i-1]
         if arg < tb: arg = tb
         if arg > te: arg = te
-        while not( arg < ty[l] or l == nky1):
-            l += 1
+        while not( arg < ty[l1-1] or l == nky1): #adding -1 in index
+            l = l1
+            l1 = l + 1
 
-        h = fpbspl(ty,ny,ky,arg,l,h)
+        fpbspl(ty, ny, ky, arg, l, h, hh)
 
-        ly[i] = l - ky1
-        for j in range(ky1):
-            wy[i,j] = h[j]
+        ly[i-1] = l - ky1   #adding -1 in index
+        for j in range(1,ky1+1):  #adding +1 in index
+            wy[i-1,j-1] = h[j-1]
 
-
-
-    m = -1
-    for i in range(mx):
-        l = lx[i] * nky1
-        for i1 in range(kx1):
-            h[i1] = wx[i,i1]
-        for j in range(my):
-            l1 = l + ly[j]
-            sp = 0
-            for i1 in range(kx1):
-                l2 = l1
-                for j1 in range(ky1):
-                    l2 += 1
-                    sp = sp + c[l2-1] * h[i1] * wy[j,j1]
-                l1 = l1 + nky1
-            m += 1
-            z[m] = sp
-
+    with nogil:
+        for i in range(1,mx+1): #adding +1 in index
+            l = lx[i-1] * nky1    #adding -1 in index
+            for i1 in range(1,kx1+1):   #adding +1 in index
+                h[i1-1] = wx[i-1,i1-1]  #adding -1 in index
+            for j in range(1,my+1): #adding +1 in index
+                l1 = l + ly[j-1]
+                sp = 0.0
+                for i1 in range(1,kx1+1):   #adding +1 in index
+                    l2 = l1
+                    for j1 in range(1,ky1+1):   #adding +1 in index
+                        l2 = l2 + 1
+                        sp = sp + c[l2-1] * h[i1-1] * wy[j-1,j1-1]    #adding -1 in index
+                    l1 = l1 + nky1
+                m = (j-1)*mx+(i-1)
+                z[m] += sp
     return z
-
 

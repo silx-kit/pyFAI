@@ -85,17 +85,19 @@ class TestBispev(unittest.TestCase):
                 )
         t2 = time.time()
         print("Scipy timings: %.3fs\t cython timings: %.3fs" % (t1 - t0, t2 - t1))
-        print dx_ref.shape, dx_loc.shape
-        print dx_ref
-        print dx_loc
-        fig = pylab.figure()
-        ax1 = fig.add_subplot(121)
-        ax2 = fig.add_subplot(122)
-        ax1.imshow(dx_ref)
-        ax2.imshow(dx_loc)
-        fig.show()
-        raw_input()
-
+        print(dx_ref.shape, dx_loc.shape)
+        print(dx_ref)
+        print(dx_loc)
+        print(abs(dx_loc - dx_ref).max())
+        if logger.getEffectiveLevel() == logging.DEBUG:
+            fig = pylab.figure()
+            ax1 = fig.add_subplot(121)
+            ax2 = fig.add_subplot(122)
+            ax1.imshow(dx_ref)
+            ax2.imshow(dx_loc)
+            fig.show()
+            raw_input()
+        self.assert_(abs(dx_loc - dx_ref).max() < 2e-5, "Result are similar")
 
 
 def test_suite_all_bispev():
