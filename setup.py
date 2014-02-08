@@ -66,7 +66,7 @@ if CYTHON:
 if ("--no-cython" in sys.argv):
     CYTHON = False
     sys.argv.remove("--no-cython")
-        
+
 
 if CYTHON:
     cython_c_ext = ".pyx"
@@ -117,23 +117,20 @@ if ("sdist" in sys.argv):
 # pyFAI extensions
 # ###############################################################################
 cython_modules = ["histogram", "splitPixel", "splitBBox", "splitBBoxLUT", "splitBBoxCSR",
-                  "relabel", "bilinear", "_geometry", "reconstruct", "fastcrc", "_distortion"]
-src = {}
-for ext in cython_modules:
-    src[ext] = join("src", ext + cython_c_ext)
+                  "relabel", "bilinear", "_geometry", "reconstruct", "fastcrc", "_distortion",
+                  "_bispev"]
+src = dict([(ext, join("src", ext + cython_c_ext)) for ext in cython_modules])
 
 _geometry_dic = dict(name="_geometry",
                      include_dirs=get_numpy_include_dirs(),
                      sources=[src['_geometry']],
                      extra_compile_args=['openmp'],
-#                    extra_compile_args=['-g'],
                      extra_link_args=['openmp'])
 
 reconstruct_dic = dict(name="reconstruct",
                        include_dirs=get_numpy_include_dirs(),
                        sources=[src['reconstruct']],
                        extra_compile_args=['openmp'],
-#                      extra_compile_args=['-g'],
                        extra_link_args=['openmp'])
 
 histogram_dic = dict(name="histogram",
@@ -146,20 +143,15 @@ histogram_dic = dict(name="histogram",
 splitPixel_dic = dict(name="splitPixel",
                  include_dirs=get_numpy_include_dirs(),
                  sources=[src['splitPixel']],
-#                extra_compile_args=['-fopenmp'],
-#                extra_link_args=['-fopenmp'],
                  )
 
 splitBBox_dic = dict(name="splitBBox",
                      include_dirs=get_numpy_include_dirs(),
                      sources=[src['splitBBox']],
-#                    extra_compile_args=['-g'],
-#                    extra_link_args=['-fopenmp'])
                      )
 splitBBoxLUT_dic = dict(name="splitBBoxLUT",
                         include_dirs=get_numpy_include_dirs(),
                         sources=[src['splitBBoxLUT']],
-#                       extra_compile_args=['-g'],
                         extra_compile_args=['openmp'],
                         extra_link_args=['openmp'],
                         )
@@ -167,7 +159,6 @@ splitBBoxLUT_dic = dict(name="splitBBoxLUT",
 splitBBoxCSR_dic = dict(name="splitBBoxCSR",
                         include_dirs=get_numpy_include_dirs(),
                         sources=[src['splitBBoxCSR']],
-#                       extra_compile_args=['-g'],
                         extra_compile_args=['openmp'],
                         extra_link_args=['openmp'],
                         )
@@ -183,20 +174,24 @@ bilinear_dic = dict(name="bilinear",
 fastcrc_dic = dict(name="fastcrc",
                         include_dirs=get_numpy_include_dirs(),
                         sources=[src['fastcrc'] , join("src", "crc32.c")],
-#                        extra_compile_args=['-msse4.2'],
                         )
 _distortion_dic = dict(name="_distortion",
                         include_dirs=get_numpy_include_dirs(),
                         sources=[src['_distortion'] ],
-#                        extra_compile_args=['-msse4.2'],
+                        extra_compile_args=['openmp'],
+                        extra_link_args=['openmp'],
+
+                        )
+_bispev_dic = dict(name="_bispev",
+                        include_dirs=get_numpy_include_dirs(),
+                        sources=[src['_bispev'] ],
                         extra_compile_args=['openmp'],
                         extra_link_args=['openmp'],
 
                         )
 
 
-ext_modules = [histogram_dic, splitPixel_dic, splitBBox_dic, splitBBoxLUT_dic, splitBBoxCSR_dic, relabel_dic,
-               _geometry_dic, reconstruct_dic, bilinear_dic, fastcrc_dic, _distortion_dic]
+ext_modules = [globals()[i + "_dic"] for i in cython_modules]
 
 
 if (os.name != "posix") or ("x86" not in platform.machine()):
@@ -392,7 +387,7 @@ http://pypi.python.org/pypi/pyopencl
 # ###############################################################################
 pyFAI = None
 sys.path.insert(0, os.path.dirname(installDir))
-#print installDir
+# print installDir
 for loc in ["", ".", os.getcwd()]:
     if loc in sys.path:
         sys.path.pop(sys.path.index(loc))
