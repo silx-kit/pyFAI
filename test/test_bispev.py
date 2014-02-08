@@ -83,7 +83,20 @@ class TestBispev(unittest.TestCase):
                                          self.spline.splineOrder,
                                          self.spline.splineOrder],
                 )
+        t2 = time.time()
         print("Scipy timings: %.3fs\t cython timings: %.3fs" % (t1 - t0, t2 - t1))
+        print dx_ref.shape, dx_loc.shape
+        print dx_ref
+        print dx_loc
+        fig = pylab.figure()
+        ax1 = fig.add_subplot(121)
+        ax2 = fig.add_subplot(122)
+        ax1.imshow(dx_ref)
+        ax2.imshow(dx_loc)
+        fig.show()
+        raw_input()
+
+
 
 def test_suite_all_bispev():
     testSuite = unittest.TestSuite()

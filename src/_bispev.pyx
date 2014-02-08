@@ -100,22 +100,40 @@ def fpbspl(float[:]t,
     degree k at t(l) <= x < t(l+1) using the stable recurrence
     relation of de boor and cox.
     """
-    h[0] = 1.00
-    cdef float[:] hh = numpy.zeros(5,dtype=numpy.float32)
-    cdef int i, j, li, lj
-    cdef float f
-    #hh =
-    for j in range(,k):
-        for i in range(j):
-            hh[i] = h[i+1]
 
+    h[0] = 1.00
+    cdef float[:] hh = numpy.zeros(5, numpy.float32)
+    for j in range(1,k+1):  #adding +1 in index
+        for i in range(1,j+1):  #adding +1 in index
+            #print "h[", i-1 ,"] =",h[i-1]
+            hh[i-1] = h[i-1]    #adding -1 in index
+
+        #print "------------"
         h[0] = 0.00
-        for i in range(j):
-            li = l+j
-            lj = li-j+1
-            f = hh[i]/(t[li]-t[lj])
-            h[i] = h[i-1] + f*(t[li]-x)
-            h[i+1] = f*(x-t[lj])
+        for i in range(1,j+1):  #adding +1 in index
+            li = l+i
+            lj = li-j
+            f = hh[i-1]/(t[li-1]-t[lj-1]) #adding -1 in index
+            h[i-1] = h[i-1] + f*(t[li-1]-x)   #adding -1 in index
+            h[i] = f*(x-t[lj-1])        #adding -1 in index
+    return h
+
+#    h[0] = 1.00
+#    cdef float[:] hh = numpy.zeros(5,dtype=numpy.float32)
+#    cdef int i, j, li, lj
+#    cdef float f
+#    #hh =
+#    for j in range(,k):
+#        for i in range(j):
+#            hh[i] = h[i+1]
+#
+#        h[0] = 0.00
+#        for i in range(j):
+#            li = l+j
+#            lj = li-j+1
+#            f = hh[i]/(t[li]-t[lj])
+#            h[i] = h[i-1] + f*(t[li]-x)
+#            h[i+1] = f*(x-t[lj])
 
 #    one = 1.f;
 #    h__[1] = one;
@@ -173,7 +191,7 @@ def cy_bispev(float[:] tx,
     cdef int i, j, m, i1, nky1, l2, size_z = mx*my
 
     # initializing z and h
-    cdef float[:] z = numpy.zeros(size_z, numpy.float32)
+    cdef numpy.ndarray[numpy.float32_t, ndim=1] z = numpy.zeros(size_z, numpy.float32)
     cdef float[:] h = numpy.zeros(6, numpy.float32)
     cdef float arg
 
