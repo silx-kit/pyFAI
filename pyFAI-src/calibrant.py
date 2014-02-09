@@ -46,17 +46,20 @@ class Calibrant(object):
     A calibrant is a reference compound where the d-spacing (interplanar distances)
     are known. They are expressed in Angstrom (in the file)
     """
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, dSpacing=None):
         object.__init__(self)
         self._filename = filename
-        self._dSpacing = None
+        if dSpacing is None:
+            self._dSpacing = []
+        else:
+            self._dSpacing = list(dSpacing)
 
     def __repr__(self):
         name = "undefined"
         if self._filename:
             name = os.path.splitext(os.path.basename(self._filename))[0]
         name += " Calibrant "
-        if self._dSpacing:
+        if len(self._dSpacing):
             name += "with %i reflections" % len(self._dSpacing)
         return name
 
@@ -77,7 +80,7 @@ class Calibrant(object):
         return self._dSpacing
 
     def set_dSpacing(self, lst):
-        self._dSpacing = lst
+        self._dSpacing = list(lst)
         self._filename = "Modified"
     dSpacing = property(get_dSpacing, set_dSpacing)
 

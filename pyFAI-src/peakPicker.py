@@ -334,24 +334,27 @@ class ControlPoints(object):
         self._points = []
         self._ring = []  # ring number ...
         self._wavelength = wavelength
-        self.calibrant = None
+        self.calibrant = Calibrant()
         if filename is not None:
             self.load(filename)
         have_spacing = False
         for i in self.dSpacing :
             have_spacing = have_spacing or i
-        if (not have_spacing) and (dSpacing is not None):
-            if isinstance(dSpacing, numpy.ndarray):
-                self.dSpacing = list(dSpacing)
-                self.dSpacing.sort(reverse=True)
-            elif dSpacing in ALL_CALIBRANTS:
-                self.calibrant = ALL_CALIBRANTS[dSpacing]
-                self.dSpacing = self.calibrant.dSpacing
-            elif type(dSpacing) in types.StringTypes:
-                self.calibrant = Calibrant(dSpacing)
-                self.dSpacing = self.calibrant.dSpacing
+        if (not have_spacing) and (calibrant is not None):
+            if isinstance(calibrant, Calibrant):
+                self.calibrant = calibrant
+            elif type(calibrant) in types.StringTypes:
+                if calibrant in ALL_CALIBRANTS:
+                    self.calibrant = ALL_CALIBRANTS[calibrant]
+                elif os.path.isfile(calibrant):
+                    self.calibrant = Calibrant(calibrant)
+                else:
+                    logger.error("Unable to handle such calibrant: %s" % calibrant)
+            elif isinstance(dSpacing, (numpy.ndarray, list, tuple, array)):
+                self.calibrant = Calibrant(dSpacing=list(calibrant))
             else:
-                logger.error("Uname to handle such dSpacing: %s" % dSpacing)
+                logger.error("Unable to handle such calibrant: %s" % calibrant)
+
 
 
     def __repr__(self):
