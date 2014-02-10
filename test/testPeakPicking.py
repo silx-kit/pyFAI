@@ -44,6 +44,7 @@ pyFAI = sys.modules["pyFAI"]
 import pyFAI.peakPicker
 import pyFAI.geometryRefinement
 from pyFAI.peakPicker import PeakPicker
+from pyFAI.calibrant import Calibrant
 from pyFAI.geometryRefinement import GeometryRefinement
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
@@ -67,6 +68,7 @@ class test_peak_picking(unittest.TestCase):
     tth = numpy.radians(numpy.arange(4, 13))
     wavelength = 1e-10
     ds = wavelength * 5e9 / numpy.sin(tth / 2)
+    calibrant = Calibrant(dSpacing=ds)
     maxiter = 100
     tmp_dir = os.environ.get("PYFAI_TEMPDIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp"))
     logfile = os.path.join(tmp_dir, "testpeakPicking.log")
@@ -74,7 +76,7 @@ class test_peak_picking(unittest.TestCase):
     def setUp(self):
         """Download files"""
         self.img = UtilsTest.getimage(self.__class__.calibFile)
-        self.pp = PeakPicker(self.img, dSpacing=self.ds, wavelength=self.wavelength)
+        self.pp = PeakPicker(self.img, calibrant=self.calibrant, wavelength=self.wavelength)
         if not os.path.isdir(self.tmp_dir):
             os.makedirs(self.tmp_dir)
         if os.path.isfile(self.logfile):

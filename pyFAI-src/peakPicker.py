@@ -32,6 +32,7 @@ __date__ = "18/03/2013"
 __status__ = "development"
 
 import os, sys, threading, logging, gc, types
+import collections
 from math                   import ceil, sqrt, pi
 import numpy
 from scipy.optimize         import fmin
@@ -39,10 +40,10 @@ from scipy.ndimage.filters  import median_filter
 from scipy.ndimage          import label
 import pylab
 import fabio
-import utils
-from .utils import gaussian_filter, binning, unBinning
+from .utils import gaussian_filter, binning, unBinning, deprecated, relabel
 from .bilinear import Bilinear
 from .reconstruct import reconstruct
+from .calibrant import Calibrant, ALL_CALIBRANTS
 logger = logging.getLogger("pyFAI.peakPicker")
 if os.name != "nt":
     WindowsError = RuntimeError
@@ -53,7 +54,7 @@ TARGET_SIZE = 1024
 # PeakPicker
 ################################################################################
 class PeakPicker(object):
-    def __init__(self, strFilename, reconst=False, mask=None, pointfile=None, dSpacing=None, wavelength=None):
+    def __init__(self, strFilename, reconst=False, mask=None, pointfile=None, calibrant=None, wavelength=None):
         """
         @param: input image filename
         @param reconst: shall mased part or negative values be reconstructed (wipe out problems with pilatus gaps)
@@ -68,7 +69,7 @@ class PeakPicker(object):
             view[numpy.where(flat_mask)] = min_valid
 
         self.shape = self.data.shape
-        self.points = ControlPoints(pointfile, dSpacing=dSpacing, wavelength=wavelength)
+        self.points = ControlPoints(pointfile, calibrant=calibrant, wavelength=wavelength)
 #        self.lstPoints = []
         self.fig = None
         self.fig2 = None
@@ -273,8 +274,8 @@ class PeakPicker(object):
             while len(self.ct.collections) > 0:
                 self.ct.collections.pop()
 
-            if self.points.dSpacing and  self.points._wavelength:
-                angles = list(2.0 * numpy.arcsin(5e9 * self.points._wavelength / numpy.array(self.points.dSpacing)))
+            if self.points.calibrant and self.points.calibrant.dSpacing and  self.points._wavelength:
+                angles = list(2.0 * numpy.arcsin(5e9 * self.points._wavelength / numpy.array(self.points.calibrant.dSpacing)))
             else:
                 angles = None
             try:
@@ -326,24 +327,35 @@ class ControlPoints(object):
     """
     This class contains a set of control points with (optionally) their ring number hence d-spacing and diffraction  2Theta angle ...
     """
-    def __init__(self, filename=None, dSpacing=None, wavelength=None):
-        self.dSpacing = []
+    def __init__(self, filename=None, calibrant=None, wavelength=None):
+#        self.dSpacing = []
         self._sem = threading.Semaphore()
         self._angles = []  # angles are enforced in radians, conversion from degrees or q-space nm-1 are done on the fly
         self._points = []
         self._ring = []  # ring number ...
         self._wavelength = wavelength
-
+        self.calibrant = Calibrant()
         if filename is not None:
             self.load(filename)
         have_spacing = False
         for i in self.dSpacing :
             have_spacing = have_spacing or i
-        if (not have_spacing) and (dSpacing is not None):
-            if type(dSpacing) in types.StringTypes:
-                self.dSpacing = self.load_dSpacing(dSpacing)
+        if (not have_spacing) and (calibrant is not None):
+            if isinstance(calibrant, Calibrant):
+                self.calibrant = calibrant
+            elif type(calibrant) in types.StringTypes:
+                if calibrant in ALL_CALIBRANTS:
+                    self.calibrant = ALL_CALIBRANTS[calibrant]
+                elif os.path.isfile(calibrant):
+                    self.calibrant = Calibrant(calibrant)
+                else:
+                    logger.error("Unable to handle such calibrant: %s" % calibrant)
+            elif isinstance(dSpacing, (numpy.ndarray, list, tuple, array)):
+                self.calibrant = Calibrant(dSpacing=list(calibrant))
             else:
-                self.dSpacing = list(dSpacing)
+                logger.error("Unable to handle such calibrant: %s" % calibrant)
+
+
 
     def __repr__(self):
         self.check()
@@ -536,19 +548,24 @@ class ControlPoints(object):
             self._points.append(points)
             self._ring.append(ring)
 
+    @deprecated
     def load_dSpacing(self, filename):
         """
         Load a d-spacing file containing the inter-reticular plan distance in Angstrom
+
+        DEPRECATED: use a calibrant object
         """
         if not os.path.isfile(filename):
             logger.error("ControlPoint.load_dSpacing: No such file %s", filename)
             return
         self.dSpacing = list(numpy.loadtxt(filename))
         return self.dSpacing
-
+    @deprecated
     def save_dSpacing(self, filename):
         """
         save the d-spacing to a file
+
+        DEPRECATED: use a calibrant object
         """
         with open(filename) as f:
             for i in self.dSpacing:
@@ -656,7 +673,7 @@ class ControlPoints(object):
                 for i in d:
                     if i not in ds:
                         ds.append(i)
-                ds.sort()
+                ds.sort(reverse=True)
                 self.dSpacing = ds
                 self._ring = [self.dSpacing.index(i) for i in d]
 
@@ -672,9 +689,22 @@ class ControlPoints(object):
                         logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
             else:
                 logger.warning("Forbidden to change the wavelength once it is fixed !!!!")
+
     def getWavelength(self):
         return self._wavelength
     wavelength = property(getWavelength, setWavelength)
+
+    def get_dSpacing(self):
+        if self.calibrant:
+            return self.calibrant.dSpacing
+        else:
+            return []
+
+    def set_dSpacing(self, lst):
+        if not self.calibrant:
+            self.calibrant = Calibrant()
+        self.calibrant.dSpacing = lst
+    dSpacing = property(get_dSpacing, set_dSpacing)
 
 ################################################################################
 # Massif
@@ -840,7 +870,7 @@ class Massif(object):
                                 self.binning.append(1)
 #                    self.binning = max([max(1, i // TARGET_SIZE) for i in self.data.shape])
                     logger.info("Binning size is %s", self.binning)
-                    self._binned_data = utils.binning(self.data, self.binning)
+                    self._binned_data = binning(self.data, self.binning)
         return self._binned_data
 
     def getMedianData(self):
@@ -873,7 +903,7 @@ class Massif(object):
                     logger.info("Labeling found %s massifs." % self._number_massif)
                     if logger.getEffectiveLevel() == logging.DEBUG:
                         fabio.edfimage.edfimage(data=labeled_massif).write("labeled_massif_small.edf")
-                    relabeled = utils.relabel(labeled_massif, self.getBinnedData(), self.getBluredData())
+                    relabeled = relabel(labeled_massif, self.getBinnedData(), self.getBluredData())
                     if logger.getEffectiveLevel() == logging.DEBUG:
                             fabio.edfimage.edfimage(data=relabeled).write("relabeled_massif_small.edf")
                     self._labeled_massif = unBinning(relabeled, self.binning, False)
