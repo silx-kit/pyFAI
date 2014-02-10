@@ -65,6 +65,7 @@ class test_azim_halfFrelon(unittest.TestCase):
         self.halfFrelon = UtilsTest.getimage(self.__class__.halfFrelon)
         self.splineFile = UtilsTest.getimage(self.__class__.splineFile)
         poniFile = UtilsTest.getimage(self.__class__.poniFile)
+
         with open(poniFile) as f:
             data = []
             for line in f:
@@ -73,14 +74,15 @@ class test_azim_halfFrelon(unittest.TestCase):
                 else:
                     data.append(line.strip())
         self.poniFile = os.path.join(self.tmp_dir, os.path.basename(poniFile))
+        if not os.path.isdir(self.tmp_dir):
+            os.makedirs(self.tmp_dir)
+
         with open(self.poniFile, "w") as f:
             f.write(os.linesep.join(data))
         self.fit2d = numpy.loadtxt(self.fit2dFile)
         self.ai = AzimuthalIntegrator()
         self.ai.load(self.poniFile)
         self.data = fabio.open(self.halfFrelon).data
-        if not os.path.isdir(self.tmp_dir):
-            os.makedirs(self.tmp_dir)
         for tmpfile in self.tmpfiles.values():
             if os.path.isfile(tmpfile):
                 os.unlink(tmpfile)
