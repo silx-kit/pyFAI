@@ -142,7 +142,7 @@ class Calibrant(object):
                 self._calc_dSpacing()
                 self._ring = [self.dSpacing.index(i) for i in d]
 
-    def setWavelength(self, value=None):
+    def set_wavelength(self, value=None):
         with self._sem:
             if self._wavelength is None:
                 if value:
@@ -153,9 +153,9 @@ class Calibrant(object):
             else:
                 logger.warning("Forbidden to change the wavelength once it is fixed !!!!")
 
-    def getWavelength(self):
+    def get_wavelength(self):
         return self._wavelength
-    wavelength = property(getWavelength, setWavelength)
+    wavelength = property(get_wavelength, set_wavelength)
 
     def _calc_2th(self):
         if self._wavelength is None:

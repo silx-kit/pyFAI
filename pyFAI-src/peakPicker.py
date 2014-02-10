@@ -274,8 +274,8 @@ class PeakPicker(object):
             while len(self.ct.collections) > 0:
                 self.ct.collections.pop()
 
-            if self.points.calibrant and self.points.calibrant.dSpacing and  self.points._wavelength:
-                angles = list(2.0 * numpy.arcsin(5e9 * self.points._wavelength / numpy.array(self.points.calibrant.dSpacing)))
+            if self.points.calibrant:
+                angles = self.points.calibrant.get_2th()
             else:
                 angles = None
             try:
@@ -354,7 +354,7 @@ class ControlPoints(object):
             else:
                 logger.error("Unable to handle such calibrant: %s" % calibrant)
         if not self.calibrant.wavelength:
-            self.calibrant.setWavelength(wavelength)
+            self.calibrant.set_wavelength(wavelength)
 
 
     def __repr__(self):
@@ -640,7 +640,7 @@ class ControlPoints(object):
             if self.calibrant is None:
                 self.calibrant = Calibrant()
             self.calibrant.setWavelength_change2th(value)
-            self._angles = self.calibrant.get_2th()[self._ring]
+            self._angles = [self.calibrant.get_2th()[i] for i in self._ring]
 
     def setWavelength_changeDs(self, value=None):
         """
@@ -652,15 +652,14 @@ class ControlPoints(object):
                     self.calibrant = Calibrant()
                 self.calibrant.setWavelength_changeDs(value)
 
-    def setWavelength(self, value=None):
+    def set_wavelength(self, value=None):
         with self._sem:
-            if self._wavelength is None:
-                if value:
-                    self.calibrant.set_wavelength(value)
+            if value:
+                self.calibrant.set_wavelength(value)
 
-    def getWavelength(self):
+    def get_wavelength(self):
         return self.calibrant._wavelength
-    wavelength = property(getWavelength, setWavelength)
+    wavelength = property(get_wavelength, set_wavelength)
 
     def get_dSpacing(self):
         if self.calibrant:
