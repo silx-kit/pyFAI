@@ -115,8 +115,12 @@ Continuous integration is made by a home-made scripts which checks out the lates
 Nightly builds are available for debian6-64 bits in:
 http://www.edna-site.org/pub/debian/binary/
 
-List of contributors
---------------------
+List of contributors in code
+----------------------------
+
+::
+
+    $ git log  --pretty='%aN##%s' | grep -v 'Merge pull' | grep -Po '^[^#]+' | sort | uniq -c | sort -rn 
 
 As of 01/2014:
  * Jérôme Kieffer (ESRF)
