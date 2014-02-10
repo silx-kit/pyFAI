@@ -606,20 +606,22 @@ class Basler(Detector):
         super(Basler, self).__init__(pixel1=pixel, pixel2=pixel)
         self.max_shape = (966, 1296)
 
-class Mar3450(Detector):
+class Mar345(Detector):
 
     """
-    Mar3450 
+    Mar345 Imaging plate detector 
 
     """
-    force_pixel = True
+    force_pixel = False
     def __init__(self, pixel1=100e-6, pixel2=100e-6):
         Detector.__init__(self, pixel1, pixel2)
-        self.max_shape = (3450, 3450)
+        self.max_shape = (int(3450 * 100e-6 / self.pixel1),
+                          int(3450 * 100e-6 / self.pixel2))
+        self.name = "Mar3450"
 
     def calc_mask(self):
         c = [i//2 for i in self.max_shape]
-        x,y = numpy.ogrid[0:self.max_shape[0],0:self.max_shape[1]]
+        x, y = numpy.ogrid[:self.max_shape[0], :self.max_shape[1]]
         mask= ((x+0.5-c[0])**2+(y+0.5-c[1])**2) > (c[0])**2
         return mask
 
@@ -1216,7 +1218,6 @@ for obj_name in dir():
             ALL_DETECTORS[obj_name.lower()] = obj_class
             ALL_DETECTORS[obj_inst.name.lower().replace(" ", "_")] = obj_class
 
-def detector_factory(name, config=None):
 def detector_factory(name, config=None):
     """
     A kind of factory...
