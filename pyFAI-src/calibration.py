@@ -481,8 +481,10 @@ class AbstractCalibration(object):
 #        self.peakPicker.points.wavelength
         if self.wavelength is None:
             self.wavelength = self.ai.wavelength
+
+        # TODO: update this part to fit with calibrants. ...
         self.peakPicker = PeakPicker(self.outfile, reconst=self.reconstruct, mask=self.mask,
-                                     pointfile=self.pointfile, dSpacing=self.spacing_file,
+                                     pointfile=self.pointfile, calibrant=self.calibrant,
                                      wavelength=self.ai.wavelength)
         if not self.keep:
             self.peakPicker.points.reset()
@@ -493,6 +495,7 @@ class AbstractCalibration(object):
         if not self.peakPicker.points.wavelength:
             self.read_wavelength()
             self.peakPicker.points.wavelength = self.wavelength
+        # end todo
 
         if self.gui:
             self.peakPicker.gui(log=True, maximize=True)

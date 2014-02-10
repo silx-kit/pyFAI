@@ -333,8 +333,7 @@ class ControlPoints(object):
         self._angles = []  # angles are enforced in radians, conversion from degrees or q-space nm-1 are done on the fly
         self._points = []
         self._ring = []  # ring number ...
-        self._wavelength = wavelength
-        self.calibrant = Calibrant()
+        self.calibrant = Calibrant(wavelength=wavelength)
         if filename is not None:
             self.load(filename)
         have_spacing = False
@@ -354,15 +353,15 @@ class ControlPoints(object):
                 self.calibrant = Calibrant(dSpacing=list(calibrant))
             else:
                 logger.error("Unable to handle such calibrant: %s" % calibrant)
-
+        if not self.calibrant.wavelength:
+            self.calibrant.setWavelength(wavelength)
 
 
     def __repr__(self):
         self.check()
         lstOut = ["ControlPoints instance containing %i group of point:" % len(self)]
-        if self._wavelength is not None:
-            lstOut.append("wavelength: %s" % self._wavelength)
-        lstOut.append("dSpacing (A): " + ", ".join(["%.3f" % i for i in self.dSpacing]))
+        if self.calibrant:
+            lstOut.append(self.calibrant.__repr__())
         for ring, angle, points in zip(self._ring, self._angles, self._points):
             lstOut.append("%s %s: %s" % (ring, angle, points))
         return os.linesep.join(lstOut)
@@ -382,7 +381,7 @@ class ControlPoints(object):
         remove all stored values and resets them to default
         """
         with self._sem:
-            self._wavelength = None
+            self.calibrant = Calibrant()
             self._angles = []  # angles are enforced in radians, conversion from degrees or q-space nm-1 are done on the fly
             self._points = []
             self._ring = []
@@ -397,16 +396,14 @@ class ControlPoints(object):
             self._angles.append(angle)
             self._points.append(points)
             if ring is None:
-                if angle in self.dSpacing:
-                    self._ring.append(self.dSpacing.index(angle))
+                if angle in self.calibrant.get_2th():
+                    self._ring.append(self.calibrant.get_2th().index(angle))
                 else:
-                    if angle and (angle not in self.dSpacing):
-                        self.dSpacing.append(angle)
-                    if angle in self.dSpacing:
-                        idx = self.dSpacing.index(angle)
+                    if angle and (angle not in self.calibrant.get_2th()):
+                        self.calibrant.append_2th(angle)
+                        self.rings = [self.calibrant.get_2th_index(a) for a in self._angles]
                     else:
-                        idx = None
-                    self._ring.append(idx)
+                        self._ring.append(None)
             else:
                 self._ring.append(ring)
 
@@ -415,17 +412,10 @@ class ControlPoints(object):
         @param point: list of points
         @param angle: 2-theta angle in degrees
         """
-        with self._sem:
-            self._angles.append(pi * angle / 180.)
-            self._points.append(points)
-            if ring is None:
-                if angle in self.dSpacing:
-                    self._ring.append(self.dSpacing.index(angle))
-                else:
-                    self.dSpacing.append(angle)
-                    self._ring.append(self.dSpacing.index(angle))
-            else:
-                self._ring.append(ring)
+        if angle:
+            self.append(points, numpy.deg2rad(angle), ring)
+        else:
+            self.append(points, None, ring)
 
     def pop(self, idx=None):
         """
@@ -458,9 +448,9 @@ class ControlPoints(object):
             lstOut = ["# set of control point used by pyFAI to calibrate the geometry of a scattering experiment",
                       "#angles are in radians, wavelength in meter and positions in pixels"]
 
-            if self._wavelength is not None:
-                lstOut.append("wavelength: %s" % self._wavelength)
-            lstOut.append("dspacing:" + " ".join([str(i) for i in self.dSpacing]))
+            if self.calibrant.wavelength is not None:
+                lstOut.append("wavelength: %s" % self.calibrant.wavelength)
+            lstOut.append("dspacing:" + " ".join([str(i) for i in self.calibrant.dSpacing]))
             for idx, angle, points, ring in zip(range(self.__len__()), self._angles, self._points, self._ring):
                 lstOut.append("")
                 lstOut.append("New group of points: %i" % idx)
@@ -491,17 +481,17 @@ class ControlPoints(object):
                 key = key.strip().lower()
                 if key == "wavelength":
                     try:
-                        self._wavelength = float(value)
-                    except:
-                        logger.error("ControlPoints.load: unable to convert to float %s (wavelength)", value)
+                        self.calibrant.set_wavelength(value)
+                    except Exception as error:
+                        logger.error("ControlPoints.load: unable to convert to float %s (wavelength): %s", value, error)
                 elif key == "2theta":
                     if value.lower() == "none":
                         tth = None
                     else:
                         try:
                             tth = float(value)
-                        except:
-                            logger.error("ControlPoints.load: unable to convert to float %s (2theta)", value)
+                        except Exception as error:
+                            logger.error("ControlPoints.load: unable to convert to float %s (2theta): %s", value, error)
                 elif key == "dspacing":
                     self.dSpacing = []
                     for val in value.split():
@@ -509,15 +499,15 @@ class ControlPoints(object):
                             fval = float(val)
                         except Exception:
                             fval = None
-                        self.dSpacing.append(fval)
+                        self.calibrant.append_dSpacing(fval)
                 elif key == "ring":
                     if value.lower() == "none":
                         ring = None
                     else:
                         try:
                             ring = int(value)
-                        except:
-                            logger.error("ControlPoints.load: unable to convert to int %s (ring)", value)
+                        except Exception as error:
+                            logger.error("ControlPoints.load: unable to convert to int %s (ring): %s", value, error)
                 elif key == "point":
                     vx = None
                     vy = None
@@ -529,8 +519,8 @@ class ControlPoints(object):
                         try:
                             x = float(vx)
                             y = float(vy)
-                        except:
-                            logger.error("ControlPoints.load: unable to convert to float %s (point)", value)
+                        except Exception as error:
+                            logger.error("ControlPoints.load: unable to convert to float %s (point)", value, error)
                         else:
                             points.append([y, x])
                 elif key.startswith("new"):
@@ -555,11 +545,8 @@ class ControlPoints(object):
 
         DEPRECATED: use a calibrant object
         """
-        if not os.path.isfile(filename):
-            logger.error("ControlPoint.load_dSpacing: No such file %s", filename)
-            return
-        self.dSpacing = list(numpy.loadtxt(filename))
-        return self.dSpacing
+        self.calibrant.load_file(filename)
+        return self.calibrant.dSpacing
     @deprecated
     def save_dSpacing(self, filename):
         """
@@ -567,9 +554,7 @@ class ControlPoints(object):
 
         DEPRECATED: use a calibrant object
         """
-        with open(filename) as f:
-            for i in self.dSpacing:
-                f.write("%s%s" % (i, os.linesep))
+        self.calibrant.save_dSpacing(filename)
 
     def getList2theta(self):
         """
@@ -642,21 +627,20 @@ class ControlPoints(object):
                 except (ValueError, TypeError):
                     logging.error("I did not understand the ring number you entered")
                 else:
-                    if ring >= 0 and ring < len(self.dSpacing):
+                    if ring >= 0 and ring < len(self.calibrant.dSpacing):
                         lastRing = ring
                         self._ring[idx] = ring
 #                        print ring, self.dSpacing[ring]
-                        self._angles[idx] = 2.0 * numpy.arcsin(5e9 * self.wavelength / self.dSpacing[ring])
+                        self._angles[idx] = self.calibrant.get_2th()[ring]
                         bOk = True
 
 
     def setWavelength_change2th(self, value=None):
         with self._sem:
-            if value:
-                self._wavelength = float(value)
-                if self._wavelength < 0 or self._wavelength > 1e-6:
-                    logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
-                self._angles = list(2.0 * numpy.arcsin(5e9 * self._wavelength / numpy.array(self.dSpacing)[self._ring]))
+            if self.calibrant is None:
+                self.calibrant = Calibrant()
+            self.calibrant.setWavelength_change2th(value)
+            self._angles = self.calibrant.get_2th()[self._ring]
 
     def setWavelength_changeDs(self, value=None):
         """
@@ -664,34 +648,18 @@ class ControlPoints(object):
         """
         with self._sem:
             if value :
-                self._wavelength = float(value)
-                if self._wavelength < 0 or self._wavelength > 1e-6:
-                    logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
-
-                ds = []
-                d = 5e9 * self.wavelength / numpy.sin(self.angles / 2.0)
-                for i in d:
-                    if i not in ds:
-                        ds.append(i)
-                ds.sort(reverse=True)
-                self.dSpacing = ds
-                self._ring = [self.dSpacing.index(i) for i in d]
-
-
-
+                if self.calibrant is None:
+                    self.calibrant = Calibrant()
+                self.calibrant.setWavelength_changeDs(value)
 
     def setWavelength(self, value=None):
         with self._sem:
             if self._wavelength is None:
                 if value:
-                    self._wavelength = float(value)
-                    if self._wavelength < 0 or self._wavelength > 1e-6:
-                        logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
-            else:
-                logger.warning("Forbidden to change the wavelength once it is fixed !!!!")
+                    self.calibrant.set_wavelength(value)
 
     def getWavelength(self):
-        return self._wavelength
+        return self.calibrant._wavelength
     wavelength = property(getWavelength, setWavelength)
 
     def get_dSpacing(self):
