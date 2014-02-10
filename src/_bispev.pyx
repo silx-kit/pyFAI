@@ -212,20 +212,14 @@ cdef cy_bispev(float[:] tx,
             wy[i-1,j-1] = h[j-1]
 
     with nogil:
-        for i in range(1,mx+1): #adding +1 in index
-            l = lx[i-1] * nky1    #adding -1 in index
-            for i1 in range(1,kx1+1):   #adding +1 in index
-                h[i1-1] = wx[i-1,i1-1]  #adding -1 in index
-            for j in range(1,my+1): #adding +1 in index
-                l1 = l + ly[j-1]
+        for j in prange(my):
+            for i in range(mx):
                 sp = 0.0
-                for i1 in range(1,kx1+1):   #adding +1 in index
-                    l2 = l1
-                    for j1 in range(1,ky1+1):   #adding +1 in index
-                        l2 = l2 + 1
-                        sp = sp + c[l2-1] * h[i1-1] * wy[j-1,j1-1]    #adding -1 in index
-                    l1 = l1 + nky1
-                m = (j-1)*mx+(i-1)
+                for i1 in range(kx1):
+                    for j1 in range(ky1):
+                        l2 = lx[i] * nky1 + ly[j] + i1 * nky1 + j1
+                        sp = sp + c[l2] * wx[i,i1] * wy[j,j1]
+                m = j*mx + i
                 z[m] += sp
     return z
 
