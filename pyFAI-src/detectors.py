@@ -947,7 +947,7 @@ class RayonixLx170(Rayonix):
     MAX_SHAPE = (1920, 3840)
     force_pixel = True
     def __init__(self):
-        Rayonix.__init__(pixel1=44.2708e-6, pixel2=44.2708e-6)
+        Rayonix.__init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6)
         self.max_shape = (1920, 3840)
         self.name = "Rayonix lx170"
         self._binning = (1, 1)
@@ -970,7 +970,7 @@ class RayonixMx170(Rayonix):
     MAX_SHAPE = (3840, 3840)
     force_pixel = True
     def __init__(self):
-        Rayonix.__init__(pixel1=44.2708e-6, pixel2=44.2708e-6)
+        Rayonix.__init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6)
         self.max_shape = (3840, 3840)
         self.name = "Rayonix mx170"
         self._binning = (1, 1)
@@ -994,7 +994,7 @@ class RayonixLx255(Rayonix):
     MAX_SHAPE = (1920 , 5760)
     force_pixel = True
     def __init__(self):
-        Rayonix.__init__(pixel1=44.2708e-6, pixel2=44.2708e-6)
+        Rayonix.__init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6)
         self.max_shape = (1920, 5760)
         self.name = "Rayonix lx225"
         self._binning = (1, 1)
