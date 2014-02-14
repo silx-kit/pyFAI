@@ -39,6 +39,8 @@ __status__ = "development"
 import os
 import logging
 import numpy
+from math import sin, asin
+import threading
 logger = logging.getLogger("pyFAI.calibrant")
 
 class Calibrant(object):
@@ -46,9 +48,12 @@ class Calibrant(object):
     A calibrant is a reference compound where the d-spacing (interplanar distances)
     are known. They are expressed in Angstrom (in the file)
     """
-    def __init__(self, filename=None, dSpacing=None):
+    def __init__(self, filename=None, dSpacing=None, wavelength=None):
         object.__init__(self)
         self._filename = filename
+        self._wavelength = wavelength
+        self._sem = threading.Semaphore()
+        self._2th = []
         if dSpacing is None:
             self._dSpacing = []
         else:
@@ -60,19 +65,37 @@ class Calibrant(object):
             name = os.path.splitext(os.path.basename(self._filename))[0]
         name += " Calibrant "
         if len(self._dSpacing):
-            name += "with %i reflections" % len(self._dSpacing)
+            name += "with %i reflections " % len(self._dSpacing)
+        if self._wavelength:
+            name += "at wavelength %s" % self._wavelength
         return name
 
     def load_file(self, filename=None):
-        if filename:
-            self._filename = filename
-        if not os.path.isfile(self._filename):
-            logger.error("No such calibrant file: %s" % self._filename)
-            return
-        self._filename = os.path.abspath(self._filename)
-        self._dSpacing = list(numpy.loadtxt(self._filename))
-        self._dSpacing.sort(reverse=True)
+        with self._sem:
+            if filename:
+                self._filename = filename
+            if not os.path.isfile(self._filename):
+                logger.error("No such calibrant file: %s" % self._filename)
+                return
+            self._filename = os.path.abspath(self._filename)
+            self._dSpacing = list(numpy.loadtxt(self._filename))
+            self._dSpacing.sort(reverse=True)
+            if self._wavelength:
+                self._calc_2th()
 
+    def save_dSpacing(self, filename=None):
+        """
+        save the d-spacing to a file
+
+        """
+        if filename==None and self._filename is not None:
+            filename = self._filename
+        else:
+            return
+        with open(filename) as f:
+            f.write("# %s Calibrant" % filename)
+            for i in self.dSpacing:
+                f.write("%s%s" % (i, os.linesep))
 
     def get_dSpacing(self):
         if not self._dSpacing and self._filename:
@@ -82,11 +105,84 @@ class Calibrant(object):
     def set_dSpacing(self, lst):
         self._dSpacing = list(lst)
         self._filename = "Modified"
+        if self._wavelength:
+            self._calc_2th()
     dSpacing = property(get_dSpacing, set_dSpacing)
 
-# Todo: add reset method,
-# add wavelength move from pp.ctrlpt the mathods related to angle generation
-# add a calibrant name, modified flag
+    def append_dSpacing(self, value):
+        with self._sem:
+            if value not in self._dSpacing:
+                self._dSpacing.append(value)
+                self._dSpacing.sort(reverse=True)
+                self._calc_2th()
+    def append_2th(self, value):
+        with self._sem:
+            if value not in self._2th:
+                self._2th.append(value)
+                self._2th.sort()
+                self._calc_dSpacing()
+
+    def setWavelength_change2th(self, value=None):
+        with self._sem:
+            if value:
+                self._wavelength = float(value)
+                if self._wavelength < 0 or self._wavelength > 1e-6:
+                    logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
+                self._calc_2th()
+
+    def setWavelength_changeDs(self, value=None):
+        """
+        This is probably not a good idea, but who knows !
+        """
+        with self._sem:
+            if value :
+                self._wavelength = float(value)
+                if self._wavelength < 0 or self._wavelength > 1e-6:
+                    logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
+                self._calc_dSpacing()
+                self._ring = [self.dSpacing.index(i) for i in d]
+
+    def set_wavelength(self, value=None):
+        with self._sem:
+            if self._wavelength is None:
+                if value:
+                    self._wavelength = float(value)
+                    if self._wavelength < 0 or self._wavelength > 1e-6:
+                        logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
+                    self._calc_2th()
+            else:
+                logger.warning("Forbidden to change the wavelength once it is fixed !!!!")
+
+    def get_wavelength(self):
+        return self._wavelength
+    wavelength = property(get_wavelength, set_wavelength)
+
+    def _calc_2th(self):
+        if self._wavelength is None:
+            logger.error("Cannot calculate 2theta angle without knowing wavelength")
+            return
+        self._2th = [2.0 * asin(5.0e9 * self._wavelength / ds) for ds in self._dSpacing]
+
+    def _calc_dSpacing(self):
+        if self._wavelength is None:
+            logger.error("Cannot calculate 2theta angle without knowing wavelength")
+            return
+        self._dSpacing = [5.0e9 * self._wavelength / sin(tth / 2.0) for tth in self._2th]
+
+    def get_2th(self):
+        return self._2th
+
+    def get_2th_index(self, angle):
+        """
+        return the index in the 2theta angle index
+        """
+        idx = None
+        if angle:
+            idx = self._2th.find(angle)
+        if idx == -1:
+            idx = None
+        return idx
+
 
 CALIBRANT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "calibration")
 if os.path.isdir(CALIBRANT_DIR):

@@ -481,18 +481,22 @@ class AbstractCalibration(object):
 #        self.peakPicker.points.wavelength
         if self.wavelength is None:
             self.wavelength = self.ai.wavelength
+
         self.peakPicker = PeakPicker(self.outfile, reconst=self.reconstruct, mask=self.mask,
-                                     pointfile=self.pointfile, dSpacing=self.spacing_file,
+                                     pointfile=self.pointfile, calibrant=self.calibrant,
                                      wavelength=self.ai.wavelength)
         if not self.keep:
             self.peakPicker.points.reset()
             self.peakPicker.points.wavelength = self.ai.wavelength
-        if not self.peakPicker.points.dSpacing:
+        if not self.peakPicker.points.calibrant.dSpacing:
+            wl = self.peakPicker.points.calibrant.wavelength
             self.read_dSpacingFile()
-            self.peakPicker.points.load_dSpacing(self.spacing_file)
+            if wl:
+                self.peakPicker.points.calibrant.wavelength = wl
         if not self.peakPicker.points.wavelength:
             self.read_wavelength()
             self.peakPicker.points.wavelength = self.wavelength
+        # end todo
 
         if self.gui:
             self.peakPicker.gui(log=True, maximize=True)
@@ -950,7 +954,7 @@ without human intervention (--no-gui --no-interactive options).
         self.geoRef = GeometryRefinement(self.data, dist=self.ai.dist, poni1=self.ai.poni1,
                                          poni2=self.ai.poni2, rot1=self.ai.rot1,
                                          rot2=self.ai.rot2, rot3=self.ai.rot3,
-                                         detector=self.ai.detector, dSpacing=self.spacing_file,
+                                         detector=self.ai.detector, dSpacing=self.peakPicker.points.dSpacing,
                                          wavelength=self.ai._wavelength)
         self.ai = self.geoRef
         self.geoRef.set_tolerance(10)
