@@ -32,6 +32,7 @@ __date__ = "18/03/2013"
 __status__ = "development"
 
 import os, sys, threading, logging, gc, types
+import operator
 from math                   import ceil, sqrt, pi
 import numpy
 from scipy.optimize         import fmin
@@ -84,6 +85,7 @@ class PeakPicker(object):
             self.massif = Massif(self.data)
         self._sem = threading.Semaphore()
         self._semGui = threading.Semaphore()
+        self.mpl_connectId = None
         self.defaultNbPoints = 100
 
     def gui(self, log=False, maximize=False):
@@ -97,10 +99,19 @@ class PeakPicker(object):
             self.ct = self.fig.add_subplot(111)
             self.msp = self.fig.add_subplot(111)
         if log:
-            self.ax.imshow(numpy.log(1.0 + self.data - self.data.min()), origin="lower", interpolation="nearest")
+            showData = numpy.log1p(self.data - self.data.min())
+            self.ax.set_title('Log colour scale (skipping lowest/highest per mille)')
         else:
-            self.ax.imshow(self.data, origin="lower", interpolation="nearest")
+            showData = self.data
+            self.ax.set_title('Linear colour scale (skipping lowest/highest per mille)')
+
+        # skip lowest and highest per mille of image values via vmin/vmax
+        showMin =  numpy.percentile(showData, .1)
+        showMax =  numpy.percentile(showData, 99.9)
+        im = self.ax.imshow(showData, vmin=showMin, vmax=showMax, origin="lower", interpolation="nearest")
+
         self.ax.autoscale_view(False, False, False)
+        self.fig.colorbar(im)
         self.fig.show()
         if maximize:
             mng = pylab.get_current_fig_manager()
@@ -113,7 +124,7 @@ class PeakPicker(object):
             except TypeError:
                  mng.resize(*win_shape)
             self.fig.canvas.draw()
-        self.fig.canvas.mpl_connect('button_press_event', self.onclick)
+        self.mpl_connectId = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
 
     def load(self, filename):
         """
@@ -122,9 +133,15 @@ class PeakPicker(object):
         self.points.load(filename)
         self.display_points()
 
-    def display_points(self):
+    def display_points(self, minIndex=0):
+        """
+        display all points and their ring annotations
+        @param minIndex: ring index to start with
+        """
         if self.ax is not None:
             for idx, points in enumerate(self.points._points):
+                if idx < minIndex:
+                    continue
                 if len(points) > 0:
                     pt0x = points[0][1]
                     pt0y = points[0][0]
@@ -149,24 +166,26 @@ class PeakPicker(object):
                 self.fig.canvas.draw()
 
         with self._sem:
-            if event.button == 3:  # right click
-                x0 = event.xdata
-                y0 = event.ydata
-                logger.debug("Key modifier: %s" % event.key)
+            x0 = event.xdata
+            y0 = event.ydata
+            if event.button == 3:  # right click: add points (1 or many) to new or existing group
+                logger.debug("Button: %i, Key modifier: %s" % (event.button, event.key))
                 if event.key == 'shift':  # if 'shift' pressed add nearest maximum to the current group
                     points = self.points.pop() or []
-                    if len(self.ax.texts) > 0:
-                        self.ax.texts.pop()
+                    # no, keep annotation! if len(self.ax.texts) > 0: self.ax.texts.pop()
                     if len(self.ax.lines) > 0:
                         self.ax.lines.pop()
 
                     self.fig.show()
                     newpeak = self.massif.nearest_peak([y0, x0])
                     if newpeak:
+                        if not points: 
+                            # if new group, need annotation (before points.append!)
+                            annontate(newpeak, [y0, x0])
                         points.append(newpeak)
-                        annontate(newpeak, [y0, x0])
+                        logger.info("x=%5.1f, y=%5.1f added to group #%i" % (newpeak[1], newpeak[0], len(self.points)))
                     else:
-                        logging.warning("No peak found !!!")
+                        logger.warning("No peak found !!!")
 
                 elif event.key == 'control':  # if 'control' pressed add nearest maximum to a new group
                     points = []
@@ -174,43 +193,64 @@ class PeakPicker(object):
                     if newpeak:
                         points.append(newpeak)
                         annontate(newpeak, [y0, x0])
+                        logger.info("Create group #%i with single point x=%5.1f, y=%5.1f" % (len(self.points), newpeak[1], newpeak[0]))
                     else:
-                        logging.warning("No peak found !!!")
+                        logger.warning("No peak found !!!")
                 elif event.key == 'm':  # if 'm' pressed add new group to current  group ...  ?
                     points = self.points.pop() or []
-                    if len(self.ax.texts) > 0:
-                        self.ax.texts.pop()
+                    # no, keep annotation! if len(self.ax.texts) > 0: self.ax.texts.pop()
                     if len(self.ax.lines) > 0:
                         self.ax.lines.pop()
                     self.fig.show()
-                    listpeak = self.massif.find_peaks([y0, x0], self.defaultNbPoints, annontate, self.massif_contour)
+                    # need to annotate only if a new group:
+                    localAnn = None if points else annontate
+                    listpeak = self.massif.find_peaks([y0, x0], self.defaultNbPoints, localAnn, self.massif_contour)
                     if len(listpeak) == 0:
-                        logging.warning("No peak found !!!")
+                        logger.warning("No peak found !!!")
                     else:
                         points += listpeak
+                        logger.info("Added %i points to group #%i (now %i points)" % (len(listpeak), len(self.points), len(points)))
                 else:  # create new group
                     points = self.massif.find_peaks([y0, x0], self.defaultNbPoints, annontate, self.massif_contour)
                     if not points:
-                        logging.warning("No peak found !!!")
+                        logger.warning("No peak found !!!")
+                    else:
+                        logger.info("Created group #%i with %i points" % (len(self.points), len(points)))
                 if not points:
                     return
                 self.points.append(points)
                 npl = numpy.array(points)
-                logging.info("x=%f, y=%f added to group #%i" % (x0, y0, len(self.points)))
                 self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
                 self.fig.show()
                 sys.stdout.flush()
-            elif event.button == 2:  # center click
-                poped_points = self.points.pop()
+            elif event.button == 2:  # center click: remove 1 or all points from current group
+                logger.debug("Button: %i, Key modifier: %s" % (event.button, event.key))
+                poped_points = self.points.pop() or []
+                # in case not the full group is removed, would like to keep annotation
+                # _except_ if the annotation is close to the removed point... too complicated!
                 if len(self.ax.texts) > 0:
                     self.ax.texts.pop()
                 if len(self.ax.lines) > 0:
                     self.ax.lines.pop()
-                self.fig.show()
-                if poped_points is None:
-                    logging.info("Removing No group point (non existing?)")
+                if event.key == '1' and len(poped_points) > 1: # if '1' pressed AND > 1 point left: 
+                    # delete single closest point from current group
+                    dists = [sqrt((p[1]-x0)**2 + (p[0]-y0)**2) for p in poped_points] # p[1],p[0]!
+                    # index and distance of smallest distance:
+                    indexMin = min(enumerate(dists), key=operator.itemgetter(1))
+                    removedPt = poped_points.pop(indexMin[0])
+                    logger.info("x=%5.1f, y=%5.1f removed from group #%i (%i points left)" % (removedPt[1], removedPt[0], len(self.points), len(poped_points)))
+                    # annotate (new?) 1st point and add remaining points back
+                    pt = (poped_points[0][0], poped_points[0][1])
+                    annontate(pt, (pt[0]+10, pt[1]+10))
+                    self.points.append(poped_points)
+                    npl = numpy.array(poped_points)
+                    self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
+                elif len(poped_points) > 0: # not '1' pressed or only 1 point left: remove complete group
+                    logger.info("Removing group #%i containing %i points" % (len(self.points), len(poped_points)))
                 else:
-                    logging.info("Removing point group #%i (%5.1f %5.1f) containing %i subpoints" % (len(self.points), poped_points[0][0], poped_points[0][1], len(poped_points)))
+                    logger.info("No groups to remove")
+
+                self.fig.show()
                 self.fig.canvas.draw()
                 sys.stdout.flush()
 
@@ -243,12 +283,17 @@ class PeakPicker(object):
         @param filename: file with the point coordinates saved
         """
         logging.info(os.linesep.join(["Please use the GUI and:",
-                                      " 1) Right-click: try an auto find for a ring",
-                                      " 2) Shift + Right-click: add one point to the current group",
-                                      " 3) Control + Right-click : add a point to a new group",
-                                      " 4) Center-click: erase the current group"]))
+                                      " 1) Right-click:         try an auto find for a ring",
+                                      " 2) Right-click + Ctrl:  create new group with one point",
+                                      " 3) Right-click + Shift: add one point to current group",
+                                      " 4) Right-click + m:     find more points for current group",
+                                      " 5) Center-click:     erase current group",
+                                      " 6) Center-click + 1: erase closest point from current group"]))
 
         raw_input("Please press enter when you are happy with your selection" + os.linesep)
+        # need to disconnect 'button_press_event':
+        self.fig.canvas.mpl_disconnect(self.mpl_connectId)
+        self.mpl_connectId = None
         print("Now fill in the ring number. Ring number starts at 0, like point-groups.")
         self.points.readRingNrFromKeyboard()  # readAngleFromKeyboard()
         if filename is not None:
@@ -615,22 +660,28 @@ class ControlPoints(object):
         for idx, ring, point in zip(range(self.__len__()), self._ring, self._points):
             bOk = False
             while not bOk:
+                defaultRing = 0
                 if ring is not None:
-                    lastRing = ring
-                res = raw_input("Point group #%2i (%i points)\t (%6.1f,%6.1f) \t [default=%s] Ring# " % (idx, len(point), point[0][1], point[0][0], lastRing)).strip()
+                    defaultRing = ring
+                elif lastRing is not None:
+                    defaultRing = lastRing + 1
+                res = raw_input("Point group #%2i (%i points)\t (%6.1f,%6.1f) \t [default=%s] Ring# " % (idx, len(point), point[0][1], point[0][0], defaultRing)).strip()
                 if res == "":
-                    res = lastRing
+                    res = defaultRing
                 try:
-                    ring = int(res)
+                    inputRing = int(res)
                 except (ValueError, TypeError):
                     logging.error("I did not understand the ring number you entered")
                 else:
-                    if ring >= 0 and ring < len(self.dSpacing):
-                        lastRing = ring
-                        self._ring[idx] = ring
+                    if inputRing >= 0 and inputRing < len(self.dSpacing):
+                        lastRing = inputRing
+                        self._ring[idx] = inputRing
 #                        print ring, self.dSpacing[ring]
-                        self._angles[idx] = 2.0 * numpy.arcsin(5e9 * self.wavelength / self.dSpacing[ring])
+                        self._angles[idx] = 2.0 * numpy.arcsin(5e9 * self.wavelength / self.dSpacing[inputRing])
                         bOk = True
+                    else:
+                        logging.error("Invalid ring number %i (range 0 -> %2i)" % (inputRing, len(self.dSpacing)-1))
+                        
 
 
     def setWavelength_change2th(self, value=None):
