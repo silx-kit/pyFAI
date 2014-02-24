@@ -24,6 +24,7 @@ calibration/CeO2.D
 calibration/Cr2O3.D
 calibration/CrOx.D
 calibration/LaB6.D
+calibration/PBBA.D
 calibration/Si.D
 calibration/alpha_Al2O3.D
 doc/MX-calibrate.1
@@ -163,9 +164,11 @@ gui/refine-6param.ui
 openCL/ocl_azim_LUT.cl
 openCL/ocl_azim_kernel2d_2.cl
 openCL/ocl_azim_kernel_2.cl
+openCL/spline.cl
 pyFAI-src/__init__.py
 pyFAI-src/argparse.py
 pyFAI-src/azimuthalIntegrator.py
+pyFAI-src/calibrant.py
 pyFAI-src/calibration.py
 pyFAI-src/detectors.py
 pyFAI-src/distortion.py
@@ -194,6 +197,8 @@ scripts/pyFAI-recalib
 scripts/pyFAI-saxs
 scripts/pyFAI-waxs
 scripts/refine_wavelength
+src/_bispev.c
+src/_bispev.pyx
 src/_distortion.c
 src/_distortion.pyx
 src/_geometry.c
@@ -204,6 +209,8 @@ src/cqueue.pxd
 src/crc32.c
 src/crc32.h
 src/crc32.pxd
+src/demo_memleak.c
+src/demo_memleak.pyx
 src/fastcrc.c
 src/fastcrc.pyx
 src/fastrebin.pyx
@@ -250,5 +257,6 @@ test/testSaxs.py
 test/testUtils.py
 test/test_all.py
 test/test_bilinear.py
+test/test_bispev.py
 test/test_ocl_lut.py
 test/utilstest.py
