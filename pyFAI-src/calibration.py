@@ -77,7 +77,7 @@ class AbstractCalibration(object):
         @param splineFile: file containing the distortion of the taper
         @param detector: Detector name or instance
         @param wavelength: radiation wavelength in meter
-        @param calibrant: Calibrant instance
+        @param calibrant: pyFAI.calibrant.Calibrant instance
         """
         self.dataFiles = dataFiles
         self.darkFiles = darkFiles
@@ -478,7 +478,6 @@ class AbstractCalibration(object):
 
         self.basename = os.path.splitext(self.outfile)[0]
         self.pointfile = self.basename + ".npt"
-#        self.peakPicker.points.wavelength
         if self.wavelength is None:
             self.wavelength = self.ai.wavelength
 
@@ -487,16 +486,18 @@ class AbstractCalibration(object):
                                      wavelength=self.ai.wavelength)
         if not self.keep:
             self.peakPicker.points.reset()
-            self.peakPicker.points.wavelength = self.ai.wavelength
+            if not self.peakPicker.points.calibrant.wavelength:
+                self.peakPicker.points.calibrant.wavelength = self.ai.wavelength
+            elif self.ai.wavelength != self.peakPicker.points.calibrant.wavelength:
+                self.peakPicker.points.calibrant.setWavelength_change2th(self.ai.wavelength)
         if not self.peakPicker.points.calibrant.dSpacing:
             wl = self.peakPicker.points.calibrant.wavelength
             self.read_dSpacingFile()
             if wl:
                 self.peakPicker.points.calibrant.wavelength = wl
-        if not self.peakPicker.points.wavelength:
+        if not self.peakPicker.points.calibrant.wavelength:
             self.read_wavelength()
-            self.peakPicker.points.wavelength = self.wavelength
-        # end todo
+            self.peakPicker.points.calibrant.wavelength = self.wavelength
 
         if self.gui:
             self.peakPicker.gui(log=True, maximize=True)
@@ -682,15 +683,29 @@ class Calibration(AbstractCalibration):
     class doing the calibration of frames
     """
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None,
-                 splineFile=None, detector=None, gaussianWidth=None, spacing_file=None,
-                 wavelength=None):
+                 splineFile=None, detector=None, gaussianWidth=None,
+                 wavelength=None, calibrant=None):
         """
-        Constructor
+        Constructor for calibration:       
 
-
+        @param dataFiles: list of filenames containing data images
+        @param darkFiles: list of filenames containing dark current images
+        @param flatFiles: list of filenames containing flat images
+        @param pixelSize: size of the pixel in meter as 2 tuple
+        @param splineFile: file containing the distortion of the taper
+        @param detector: Detector name or instance
+        @param wavelength: radiation wavelength in meter
+        @param calibrant: pyFAI.calibrant.Calibrant instance
+ 
         """
-        AbstractCalibration.__init__(self, dataFiles, darkFiles, flatFiles, pixelSize,
-                                     splineFile, detector, spacing_file, wavelength)
+        AbstractCalibration.__init__(self, dataFiles=dataFiles,
+                                     darkFiles=darkFiles,
+                                     flatFiles=flatFiles,
+                                     pixelSize=pixelSize,
+                                     splineFile=splineFile,
+                                     detector=detector,
+                                     calibrant=calibrant,
+                                     wavelength=wavelength)
         self.gaussianWidth = gaussianWidth
         self.labelPattern = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
 
@@ -809,12 +824,27 @@ class Recalibration(AbstractCalibration):
     class doing the re-calibration of frames
     """
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None,
-                 splineFile=None, detector=None, spacing_file=None, wavelength=None):
-        """
-        """
-        AbstractCalibration.__init__(self, dataFiles, darkFiles, flatFiles, pixelSize,
-                                     splineFile, detector, spacing_file, wavelength)
+                 splineFile=None, detector=None, wavelength=None, calibrant=None):
+        """        
+        Constructor for Recalibration:       
 
+        @param dataFiles: list of filenames containing data images
+        @param darkFiles: list of filenames containing dark current images
+        @param flatFiles: list of filenames containing flat images
+        @param pixelSize: size of the pixel in meter as 2 tuple
+        @param splineFile: file containing the distortion of the taper
+        @param detector: Detector name or instance
+        @param wavelength: radiation wavelength in meter
+        @param calibrant: pyFAI.calibrant.Calibrant instance       
+        """
+        AbstractCalibration.__init__(self, dataFiles=dataFiles,
+                                     darkFiles=darkFiles,
+                                     flatFiles=flatFiles,
+                                     pixelSize=pixelSize,
+                                     splineFile=splineFile,
+                                     detector=detector,
+                                     wavelength=wavelength,
+                                     calibrant=calibrant)
 
     def parse(self):
         """

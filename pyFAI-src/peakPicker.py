@@ -381,7 +381,7 @@ class ControlPoints(object):
         remove all stored values and resets them to default
         """
         with self._sem:
-            self.calibrant = Calibrant()
+#            self.calibrant = Calibrant()
             self._angles = []  # angles are enforced in radians, conversion from degrees or q-space nm-1 are done on the fly
             self._points = []
             self._ring = []

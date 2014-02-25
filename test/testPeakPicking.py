@@ -106,7 +106,7 @@ class test_peak_picking(unittest.TestCase):
 #        print self.pp.points
 #        print lstPeak
         logger.info("After peak-picking, we have %s points generated from %s groups ", len(lstPeak), len(self.ctrlPt))
-        gr = GeometryRefinement(lstPeak, dist=0.01, pixel1=1e-4, pixel2=1e-4, wavelength=self.wavelength, dSpacing=self.ds)
+        gr = GeometryRefinement(lstPeak, dist=0.01, pixel1=1e-4, pixel2=1e-4, wavelength=self.wavelength, calibrant=self.calibrant)
         gr.guess_poni()
         logger.info(gr.__repr__())
         last = sys.maxint
