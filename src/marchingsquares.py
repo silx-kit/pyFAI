@@ -89,5 +89,10 @@ if __name__ == "__main__":
     import numpy
     x, y = numpy.ogrid[-10:10:0.1, -10:10:0.1]
     r = numpy.sqrt(x * x + y * y)
-    print (isocontour(r, 5))
-    print len(isocontour(r, 5))
+    c = isocontour(r, 5)
+    print (c)
+    print len(c)
+    import pylab
+    pylab.imshow(r)
+    pylab.plot(c[:,1],c[:,0],",")
+    pylab.show()

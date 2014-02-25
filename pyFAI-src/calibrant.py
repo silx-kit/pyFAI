@@ -58,6 +58,8 @@ class Calibrant(object):
             self._dSpacing = []
         else:
             self._dSpacing = list(dSpacing)
+        if self._dSpacing and self._wavelength:
+            self._calc_2th()
 
     def __repr__(self):
         name = "undefined"
@@ -150,8 +152,11 @@ class Calibrant(object):
                     if self._wavelength < 0 or self._wavelength > 1e-6:
                         logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
                     self._calc_2th()
-            else:
+            elif self._wavelength != value:
                 logger.warning("Forbidden to change the wavelength once it is fixed !!!!")
+                logger.warning("%s != %s" % (self._wavelength, value))
+#                import traceback
+#                traceback.print_stack()
 
     def get_wavelength(self):
         return self._wavelength
@@ -161,7 +166,13 @@ class Calibrant(object):
         if self._wavelength is None:
             logger.error("Cannot calculate 2theta angle without knowing wavelength")
             return
-        self._2th = [2.0 * asin(5.0e9 * self._wavelength / ds) for ds in self._dSpacing]
+        self._2th = []
+        for ds in self._dSpacing:
+            try:
+                tth = 2.0 * asin(5.0e9 * self._wavelength / ds)
+            except ValueError:
+                tth = None
+            self._2th.append(tth)
 
     def _calc_dSpacing(self):
         if self._wavelength is None:

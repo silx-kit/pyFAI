@@ -119,7 +119,7 @@ setup(name='histogram',
       ext_modules=[#Extension(**splitBBox_dic),
 #                   Extension(**paraSplitBBox_dic),
 #                   Extension(**splitBBoxLUT_dic),
-#                   Extension(**marchingsquares_dict)
+                   Extension(**marchingsquares_dict),
                    Extension(**sparse_csr_dict)
                    ],
       cmdclass={'build_ext': build_ext},

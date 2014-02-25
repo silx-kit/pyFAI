@@ -778,7 +778,7 @@ decrease the value if arcs are mixed together.""", default=None)
         """
         self.geoRef = GeometryRefinement(self.data, dist=0.1, detector=self.detector,
                                          wavelength=self.wavelength,
-                                         dSpacing=self.peakPicker.points.dSpacing)
+                                         calibrant=self.calibrant)
         paramfile = self.basename + ".poni"
         if os.path.isfile(paramfile):
             self.geoRef.load(paramfile)
@@ -954,7 +954,7 @@ without human intervention (--no-gui --no-interactive options).
         self.geoRef = GeometryRefinement(self.data, dist=self.ai.dist, poni1=self.ai.poni1,
                                          poni2=self.ai.poni2, rot1=self.ai.rot1,
                                          rot2=self.ai.rot2, rot3=self.ai.rot3,
-                                         detector=self.ai.detector, dSpacing=self.peakPicker.points.dSpacing,
+                                         detector=self.ai.detector, calibrant=self.calibrant,
                                          wavelength=self.ai._wavelength)
         self.ai = self.geoRef
         self.geoRef.set_tolerance(10)
