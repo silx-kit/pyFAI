@@ -125,14 +125,14 @@ class AbstractCalibration(object):
         self.interactive = True
         self.filter = "mean"
         self.basename = None
-        self.saturation = 0.1
+        # GF already defined above: self.saturation = 0.1
         self.weighted = False
         self.polarization_factor = None
         self.parser = None
         self.nPt_1D = 1024
         self.nPt_2D_azim = 360
         self.nPt_2D_rad = 400
-        self.units = None
+        self.units = None # GF: never used - should be self.unit ?
         self.keep = True
 
     def __repr__(self):
@@ -468,6 +468,7 @@ class AbstractCalibration(object):
         do dark, flat correction thresholding, ...
         and read missing data from keyboard if needed
         """
+        # GF: self.saturation ignored if none of the other options active...
         if len(self.dataFiles) > 1 or self.cutBackground or self.darkFiles or self.flatFiles:
             self.outfile = averageImages(self.dataFiles, self.outfile,
                                          threshold=self.saturation, minimum=self.cutBackground,
@@ -663,6 +664,30 @@ class AbstractCalibration(object):
                                 " * 2D Azimuthal integration   %.3fs" % (t5 - t4)]))
         if self.gui:
             xrpd.plot(a, b)
+            # GF: Add vertical line for each used calibration ring:
+            xValues = None
+            # FIXME: Probably should not access private self._XXX...
+            twoTheta = numpy.array(self.peakPicker.points._angles) # in radian
+            if self.unit == units.TTH_DEG:
+                xValues = numpy.rad2deg(twoTheta)
+            elif self.unit == units.TTH_RAD:
+                xValues = twoTheta
+            elif self.unit == units.Q_A:
+                xValues = (4.e-10*numpy.pi/self.wavelength) * numpy.sin(.5*twoTheta)
+            elif self.unit == units.Q_NM:
+                xValues = (4.e-9*numpy.pi/self.wavelength) * numpy.sin(.5*twoTheta)
+            elif self.unit == units.R_MM:
+                # GF: correct formula?
+                dBeamCentre = self.geoRef.getFit2D()["directDist"] # in mm!!
+                xValues = dBeamCentre * numpy.tan(twoTheta)
+            else:
+                logger.warning('Unknown unit %s, do not plot calibration rings' % str(self.unit))
+            if xValues is not None:
+                for x in xValues:
+                    line = matplotlib.lines.Line2D([x, x], xrpd.axis()[2:4],
+                                                   color='red', linestyle='--')
+                    xrpd.add_line(line)
+            # end GF
             xrpd.set_title("1D integration")
             xrpd.set_xlabel(self.unit)
             xrpd.set_ylabel("Intensity")
@@ -966,7 +991,8 @@ without human intervention (--no-gui --no-interactive options).
 
                 self.peakPicker.points.append(res, tth[i], i)
                 if self.gui:
-                    self.peakPicker.display_points()
+                    # minIndex: skip redrawing of previous rings
+                    self.peakPicker.display_points(minIndex=i)
                     self.peakPicker.fig.canvas.draw()
 
         self.peakPicker.points.save(self.basename + ".npt")
