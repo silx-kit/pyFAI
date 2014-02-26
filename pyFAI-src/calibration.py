@@ -125,14 +125,13 @@ class AbstractCalibration(object):
         self.interactive = True
         self.filter = "mean"
         self.basename = None
-        # GF already defined above: self.saturation = 0.1
         self.weighted = False
         self.polarization_factor = None
         self.parser = None
         self.nPt_1D = 1024
         self.nPt_2D_azim = 360
         self.nPt_2D_rad = 400
-        self.units = None # GF: never used - should be self.unit ?
+        self.unit = None
         self.keep = True
 
     def __repr__(self):
@@ -666,8 +665,7 @@ class AbstractCalibration(object):
             xrpd.plot(a, b)
             # GF: Add vertical line for each used calibration ring:
             xValues = None
-            # FIXME: Probably should not access private self._XXX...
-            twoTheta = numpy.array(self.peakPicker.points._angles) # in radian
+            twoTheta = numpy.array(self.peakPicker.points.calibrant.get_2th())  # in radian
             if self.unit == units.TTH_DEG:
                 xValues = numpy.rad2deg(twoTheta)
             elif self.unit == units.TTH_RAD:
@@ -687,7 +685,6 @@ class AbstractCalibration(object):
                     line = matplotlib.lines.Line2D([x, x], xrpd.axis()[2:4],
                                                    color='red', linestyle='--')
                     xrpd.add_line(line)
-            # end GF
             xrpd.set_title("1D integration")
             xrpd.set_xlabel(self.unit)
             xrpd.set_ylabel("Intensity")
@@ -711,7 +708,7 @@ class Calibration(AbstractCalibration):
                  splineFile=None, detector=None, gaussianWidth=None,
                  wavelength=None, calibrant=None):
         """
-        Constructor for calibration:       
+        Constructor for calibration:
 
         @param dataFiles: list of filenames containing data images
         @param darkFiles: list of filenames containing dark current images
@@ -721,7 +718,7 @@ class Calibration(AbstractCalibration):
         @param detector: Detector name or instance
         @param wavelength: radiation wavelength in meter
         @param calibrant: pyFAI.calibrant.Calibrant instance
- 
+
         """
         AbstractCalibration.__init__(self, dataFiles=dataFiles,
                                      darkFiles=darkFiles,
@@ -850,8 +847,8 @@ class Recalibration(AbstractCalibration):
     """
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None,
                  splineFile=None, detector=None, wavelength=None, calibrant=None):
-        """        
-        Constructor for Recalibration:       
+        """
+        Constructor for Recalibration:
 
         @param dataFiles: list of filenames containing data images
         @param darkFiles: list of filenames containing dark current images
@@ -860,7 +857,7 @@ class Recalibration(AbstractCalibration):
         @param splineFile: file containing the distortion of the taper
         @param detector: Detector name or instance
         @param wavelength: radiation wavelength in meter
-        @param calibrant: pyFAI.calibrant.Calibrant instance       
+        @param calibrant: pyFAI.calibrant.Calibrant instance
         """
         AbstractCalibration.__init__(self, dataFiles=dataFiles,
                                      darkFiles=darkFiles,
