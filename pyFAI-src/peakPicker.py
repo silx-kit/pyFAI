@@ -29,7 +29,7 @@ __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "18/03/2013"
-__status__ = "development"
+__status__ = "production"
 
 import os, sys, threading, logging, gc, types
 import operator
@@ -524,7 +524,7 @@ class ControlPoints(object):
                 key = key.strip().lower()
                 if key == "wavelength":
                     try:
-                        self.calibrant.set_wavelength(value)
+                        self.calibrant.set_wavelength(float(value))
                     except Exception as error:
                         logger.error("ControlPoints.load: unable to convert to float %s (wavelength): %s", value, error)
                 elif key == "2theta":

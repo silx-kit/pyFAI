@@ -33,8 +33,8 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/02/2014"
-__status__ = "development"
+__date__ = "27/02/2014"
+__status__ = "production"
 
 import os
 import logging
@@ -42,6 +42,7 @@ import numpy
 from math import sin, asin
 import threading
 logger = logging.getLogger("pyFAI.calibrant")
+epsilon = 1.0e-6 # for floating point comparison
 
 class Calibrant(object):
     """
@@ -90,7 +91,7 @@ class Calibrant(object):
         save the d-spacing to a file
 
         """
-        if filename==None and self._filename is not None:
+        if filename == None and self._filename is not None:
             filename = self._filename
         else:
             return
@@ -113,7 +114,8 @@ class Calibrant(object):
 
     def append_dSpacing(self, value):
         with self._sem:
-            if value not in self._dSpacing:
+            delta = [abs(value - v) / v for v in self._dSpacing if v is not None]
+            if not delta or min(delta) > epsilon:
                 self._dSpacing.append(value)
                 self._dSpacing.sort(reverse=True)
                 self._calc_2th()
@@ -128,7 +130,7 @@ class Calibrant(object):
         with self._sem:
             if value:
                 self._wavelength = float(value)
-                if self._wavelength < 0 or self._wavelength > 1e-6:
+                if self._wavelength < 1e-15 or self._wavelength > 1e-6:
                     logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
                 self._calc_2th()
 
@@ -139,7 +141,7 @@ class Calibrant(object):
         with self._sem:
             if value :
                 self._wavelength = float(value)
-                if self._wavelength < 0 or self._wavelength > 1e-6:
+                if self._wavelength < 1e-15 or self._wavelength > 1e-6:
                     logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
                 self._calc_dSpacing()
                 self._ring = [self.dSpacing.index(i) for i in d]
@@ -152,7 +154,7 @@ class Calibrant(object):
                     if (self._wavelength < 1e-15) or (self._wavelength > 1e-6):
                         logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
                     self._calc_2th()
-            elif abs(self._wavelength - value) / self._wavelength > 1e-6:
+            elif abs(self._wavelength - value) / self._wavelength > epsilon:
                 logger.warning("Forbidden to change the wavelength once it is fixed !!!!")
                 logger.warning("%s != %s, delta= %s" % (self._wavelength, value, self._wavelength - value))
 

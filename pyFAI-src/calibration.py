@@ -33,8 +33,8 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/07/2013"
-__status__ = "development"
+__date__ = "27/02/2014"
+__status__ = "production"
 
 import os, sys, time, logging, types
 from optparse import OptionParser
