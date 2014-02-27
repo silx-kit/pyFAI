@@ -40,7 +40,7 @@ from scipy.ndimage.filters  import median_filter
 from scipy.ndimage          import label
 import pylab
 import fabio
-from .utils import gaussian_filter, binning, unBinning, deprecated, relabel
+from .utils import gaussian_filter, binning, unBinning, deprecated, relabel, percentile
 from .bilinear import Bilinear
 from .reconstruct import reconstruct
 from .calibrant import Calibrant, ALL_CALIBRANTS
@@ -106,8 +106,8 @@ class PeakPicker(object):
             self.ax.set_title('Linear colour scale (skipping lowest/highest per mille)')
 
         # skip lowest and highest per mille of image values via vmin/vmax
-        showMin = numpy.percentile(showData, .1)
-        showMax = numpy.percentile(showData, 99.9)
+        showMin = percentile(showData, .1)
+        showMax = percentile(showData, 99.9)
         im = self.ax.imshow(showData, vmin=showMin, vmax=showMax, origin="lower", interpolation="nearest")
 
         self.ax.autoscale_view(False, False, False)
@@ -115,8 +115,7 @@ class PeakPicker(object):
         self.fig.show()
         if maximize:
             mng = pylab.get_current_fig_manager()
-#            print mng.window.maxsize()
-            # *mng.window.maxsize())
+            # attempt to maximize the figure ... lost hopes.
             win_shape = (1920, 1080)
             event = Event(*win_shape)
             try:
@@ -674,13 +673,13 @@ class ControlPoints(object):
                 except (ValueError, TypeError):
                     logging.error("I did not understand the ring number you entered")
                 else:
-                    if ring >= 0 and ring < len(self.calibrant.dSpacing):
+                    if inputRing >= 0 and inputRing < len(self.calibrant.dSpacing):
                         lastRing = ring
                         self._ring[idx] = inputRing
                         self._angles[idx] = self.calibrant.get_2th()[inputRing]
                         bOk = True
                     else:
-                        logging.error("Invalid ring number %i (range 0 -> %2i)" % (inputRing, len(self.dSpacing) - 1))
+                        logging.error("Invalid ring number %i (range 0 -> %2i)" % (inputRing, len(self.calibrant.dSpacing) - 1))
 
 
 
