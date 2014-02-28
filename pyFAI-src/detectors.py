@@ -48,7 +48,7 @@ try:
     import fabio
 except ImportError:
     fabio = None
-
+epsilon = 1e-6
 
 class Detector(object):
     """
@@ -301,27 +301,33 @@ class Detector(object):
     def get_pixel1(self):
         return self._pixel1
     def set_pixel1(self, value):
-        if self.force_pixel:
-            logger.warning("enforcing pixel size 1 for a detector %s" % self.__class__.__name__)
         if isinstance(value, float):
-            self._pixel1 = value
+            value = value
         elif isinstance(value, (tuple, list)):
-            self._pixel1 = float(value[0])
+            value = float(value[0])
         else:
-            self._pixel1 = float(value)
+            value = float(value)
+        err = abs(value - self._pixel1) / self._pixel1
+        if self.force_pixel and  (err > epsilon):
+            logger.warning("enforcing pixel size 2 for a detector %s" %
+                           self.__class__.__name__)
+        self._pixel1 = value
     pixel1 = property(get_pixel1, set_pixel1)
 
     def get_pixel2(self):
         return self._pixel2
     def set_pixel2(self, value):
-        if self.force_pixel:
-            logger.warning("enforcing pixel size 2 for a detector %s" % self.__class__.__name__)
         if isinstance(value, float):
-            self._pixel2 = value
+            value = value
         elif isinstance(value, (tuple, list)):
-            self._pixel2 = float(value[0])
+            value = float(value[0])
         else:
-            self._pixel2 = float(value)
+            value = float(value)
+        err = abs(value - self._pixel2) / self._pixel2
+        if self.force_pixel and  (err > epsilon):
+            logger.warning("enforcing pixel size 2 for a detector %s" %
+                           self.__class__.__name__)
+        self._pixel2 = value
     pixel2 = property(get_pixel2, set_pixel2)
 
 
