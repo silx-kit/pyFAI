@@ -620,7 +620,7 @@ class Eiger(Detector):
                     delta1 = delta1 / 100.0  # Offsets are in percent of pixel
                     delta2 = delta2 / 100.0  # former arrays were integers
                 else:
-                    logger.warning("Surprizing situation !!! please investigate: offset has shape %s and input array have %s" % (self.offset1.shape, d1, shape))
+                    logger.warning("Surprising situation !!! please investigate: offset has shape %s and input array have %s" % (self.offset1.shape, d1, shape))
                     delta1 = delta2 = 0.
         # For pilatus,
         p1 = (self._pixel1 * (delta1 + 0.5 + d1))
