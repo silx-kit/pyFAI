@@ -333,94 +333,6 @@ class Detector(object):
     pixel2 = property(get_pixel2, set_pixel2)
 
 
-class Eiger(Detector):
-    """
-    Eiger detector: generic description containing mask algorithm
-    """
-    MODULE_SIZE = (1065, 1030)
-    MODULE_GAP = (37, 10)
-    force_pixel = True
-
-    def __init__(self, pixel1=75e-6, pixel2=75e-6):
-        Eiger.__init__(self, pixel1=pixel1, pixel2=pixel2)
-
-    def calc_mask(self):
-        """
-        Returns a generic mask for Pilatus detectors...
-        """
-        if (self.max_shape[0] or self.max_shape[1]) is None:
-            raise NotImplementedError("Generic Pilatus detector does not know"
-                                      "the max size ...")
-        mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
-        # workinng in dim0 = Y
-        for i in range(self.MODULE_SIZE[0], self.max_shape[0],
-                       self.MODULE_SIZE[0] + self.MODULE_GAP[0]):
-            mask[i: i + self.MODULE_GAP[0], :] = 1
-        # workinng in dim1 = X
-        for i in range(self.MODULE_SIZE[1], self.max_shape[1],
-                       self.MODULE_SIZE[1] + self.MODULE_GAP[1]):
-            mask[:, i: i + self.MODULE_GAP[1]] = 1
-        return mask
-
-    def calc_cartesian_positions(self, d1=None, d2=None):
-        """
-        Calculate the position of each pixel center in cartesian coordinate
-        and in meter of a couple of coordinates.
-        The half pixel offset is taken into account here !!!
-
-        @param d1: the Y pixel positions (slow dimension)
-        @type d1: ndarray (1D or 2D)
-        @param d2: the X pixel positions (fast dimension)
-        @type d2: ndarray (1D or 2D)
-
-        @return: position in meter of the center of each pixels.
-        @rtype: ndarray
-
-        d1 and d2 must have the same shape, returned array will have
-        the same shape.
-        """
-        if (d1 is None):
-            d1 = numpy.outer(numpy.arange(self.max_shape[0]), numpy.ones(self.max_shape[1]))
-
-        if (d2 is None):
-            d2 = numpy.outer(numpy.ones(self.max_shape[0]), numpy.arange(self.max_shape[1]))
-
-        if self.offset1 is None or self.offset2 is None:
-            delta1 = delta2 = 0.
-        else:
-            if d2.ndim == 1:
-                d1n = d1.astype(numpy.int32)
-                d2n = d2.astype(numpy.int32)
-                delta1 = self.offset1[d1n, d2n] / 100.0  # Offsets are in percent of pixel
-                delta2 = self.offset2[d1n, d2n] / 100.0
-            else:
-                if d1.shape == self.offset1.shape:
-                    delta1 = self.offset1 / 100.0  # Offsets are in percent of pixel
-                    delta2 = self.offset2 / 100.0
-                elif d1.shape[0] > self.offset1.shape[0]:  # probably working with corners
-                    s0, s1 = self.offset1.shape
-                    delta1 = numpy.zeros(d1.shape, dtype=numpy.int32)  # this is the natural type for pilatus CBF
-                    delta2 = numpy.zeros(d2.shape, dtype=numpy.int32)
-                    delta1[:s0, :s1] = self.offset1
-                    delta2[:s0, :s1] = self.offset2
-                    mask = numpy.where(delta1[-s0:, :s1] == 0)
-                    delta1[-s0:, :s1][mask] = self.offset1[mask]
-                    delta2[-s0:, :s1][mask] = self.offset2[mask]
-                    mask = numpy.where(delta1[-s0:, -s1:] == 0)
-                    delta1[-s0:, -s1:][mask] = self.offset1[mask]
-                    delta2[-s0:, -s1:][mask] = self.offset2[mask]
-                    mask = numpy.where(delta1[:s0, -s1:] == 0)
-                    delta1[:s0, -s1:][mask] = self.offset1[mask]
-                    delta2[:s0, -s1:][mask] = self.offset2[mask]
-                    delta1 = delta1 / 100.0  # Offsets are in percent of pixel
-                    delta2 = delta2 / 100.0  # former arrays were integers
-                else:
-                    logger.warning("Surprizing situation !!! please investigate: offset has shape %s and input array have %s" % (self.offset1.shape, d1, shape))
-                    delta1 = delta2 = 0.
-        # For pilatus,
-        p1 = (self._pixel1 * (delta1 + 0.5 + d1))
-        p2 = (self._pixel2 * (delta2 + 0.5 + d2))
-        return p1, p2
 
 class Pilatus(Detector):
     """
@@ -625,6 +537,127 @@ class Pilatus6M(Pilatus):
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         super(Pilatus6M, self).__init__(pixel1=pixel1, pixel2=pixel2)
         self.max_shape = (2527, 2463)
+
+class Eiger(Detector):
+    """
+    Eiger detector: generic description containing mask algorithm
+    """
+    MODULE_SIZE = (1065, 1030)
+    MODULE_GAP = (37, 10)
+    force_pixel = True
+
+    def __init__(self, pixel1=75e-6, pixel2=75e-6):
+        Eiger.__init__(self, pixel1=pixel1, pixel2=pixel2)
+
+    def calc_mask(self):
+        """
+        Returns a generic mask for Pilatus detectors...
+        """
+        if (self.max_shape[0] or self.max_shape[1]) is None:
+            raise NotImplementedError("Generic Pilatus detector does not know"
+                                      "the max size ...")
+        mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
+        # workinng in dim0 = Y
+        for i in range(self.MODULE_SIZE[0], self.max_shape[0],
+                       self.MODULE_SIZE[0] + self.MODULE_GAP[0]):
+            mask[i: i + self.MODULE_GAP[0], :] = 1
+        # workinng in dim1 = X
+        for i in range(self.MODULE_SIZE[1], self.max_shape[1],
+                       self.MODULE_SIZE[1] + self.MODULE_GAP[1]):
+            mask[:, i: i + self.MODULE_GAP[1]] = 1
+        return mask
+
+    def calc_cartesian_positions(self, d1=None, d2=None):
+        """
+        Calculate the position of each pixel center in cartesian coordinate
+        and in meter of a couple of coordinates.
+        The half pixel offset is taken into account here !!!
+
+        @param d1: the Y pixel positions (slow dimension)
+        @type d1: ndarray (1D or 2D)
+        @param d2: the X pixel positions (fast dimension)
+        @type d2: ndarray (1D or 2D)
+
+        @return: position in meter of the center of each pixels.
+        @rtype: ndarray
+
+        d1 and d2 must have the same shape, returned array will have
+        the same shape.
+        """
+        if (d1 is None):
+            d1 = numpy.outer(numpy.arange(self.max_shape[0]), numpy.ones(self.max_shape[1]))
+
+        if (d2 is None):
+            d2 = numpy.outer(numpy.ones(self.max_shape[0]), numpy.arange(self.max_shape[1]))
+
+        if self.offset1 is None or self.offset2 is None:
+            delta1 = delta2 = 0.
+        else:
+            if d2.ndim == 1:
+                d1n = d1.astype(numpy.int32)
+                d2n = d2.astype(numpy.int32)
+                delta1 = self.offset1[d1n, d2n] / 100.0  # Offsets are in percent of pixel
+                delta2 = self.offset2[d1n, d2n] / 100.0
+            else:
+                if d1.shape == self.offset1.shape:
+                    delta1 = self.offset1 / 100.0  # Offsets are in percent of pixel
+                    delta2 = self.offset2 / 100.0
+                elif d1.shape[0] > self.offset1.shape[0]:  # probably working with corners
+                    s0, s1 = self.offset1.shape
+                    delta1 = numpy.zeros(d1.shape, dtype=numpy.int32)  # this is the natural type for pilatus CBF
+                    delta2 = numpy.zeros(d2.shape, dtype=numpy.int32)
+                    delta1[:s0, :s1] = self.offset1
+                    delta2[:s0, :s1] = self.offset2
+                    mask = numpy.where(delta1[-s0:, :s1] == 0)
+                    delta1[-s0:, :s1][mask] = self.offset1[mask]
+                    delta2[-s0:, :s1][mask] = self.offset2[mask]
+                    mask = numpy.where(delta1[-s0:, -s1:] == 0)
+                    delta1[-s0:, -s1:][mask] = self.offset1[mask]
+                    delta2[-s0:, -s1:][mask] = self.offset2[mask]
+                    mask = numpy.where(delta1[:s0, -s1:] == 0)
+                    delta1[:s0, -s1:][mask] = self.offset1[mask]
+                    delta2[:s0, -s1:][mask] = self.offset2[mask]
+                    delta1 = delta1 / 100.0  # Offsets are in percent of pixel
+                    delta2 = delta2 / 100.0  # former arrays were integers
+                else:
+                    logger.warning("Surprizing situation !!! please investigate: offset has shape %s and input array have %s" % (self.offset1.shape, d1, shape))
+                    delta1 = delta2 = 0.
+        # For pilatus,
+        p1 = (self._pixel1 * (delta1 + 0.5 + d1))
+        p2 = (self._pixel2 * (delta2 + 0.5 + d2))
+        return p1, p2
+
+class Eiger1M(Eiger):
+    """
+    Eiger 1M detector
+    """
+    def __init__(self, pixel1=75e-6, pixel2=75e-6):
+        Eiger.__init__(pixel1=pixel1, pixel2=pixel2)
+        self.max_shape = (1065, 1030)
+
+class Eiger4M(Eiger):
+    """
+    Eiger 4M detector
+    """
+    def __init__(self, pixel1=75e-6, pixel2=75e-6):
+        Eiger.__init__(pixel1=pixel1, pixel2=pixel2)
+        self.max_shape = (2167, 2070)
+
+class Eiger9M(Eiger):
+    """
+    Eiger 9M detector
+    """
+    def __init__(self, pixel1=75e-6, pixel2=75e-6):
+        Eiger.__init__(pixel1=pixel1, pixel2=pixel2)
+        self.max_shape = (3269, 3110)
+
+class Eiger16M(Eiger):
+    """
+    Eiger 16M detector
+    """
+    def __init__(self, pixel1=75e-6, pixel2=75e-6):
+        Eiger.__init__(pixel1=pixel1, pixel2=pixel2)
+        self.max_shape = (4371, 4150)
 
 
 class Fairchild(Detector):
