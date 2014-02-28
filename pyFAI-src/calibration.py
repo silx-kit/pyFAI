@@ -109,11 +109,15 @@ class AbstractCalibration(object):
         self.geoRef = None
         self.reconstruct = False
         if calibrant:
-            if calibrant in ALL_CALIBRANTS:
+            if isinstance(calibrant, Calibrant):
+                self.calibrant = calibrant
+            elif calibrant in ALL_CALIBRANTS:
                 self.calibrant = ALL_CALIBRANTS[calibrant]
-            elif os.path.isfile(calibrant):
+            elif os.path.isfile(celibrant) and os.path.isfile(calibrant):
                 self.calibrant = Calibrant(calibrant)
-            self.calibrant = calibrant
+            else:
+                logger.error("Unable to handle such calibrant %s" % calibrant)
+                self.calibrant = None
         else:
             self.calibrant = None
         self.mask = None
