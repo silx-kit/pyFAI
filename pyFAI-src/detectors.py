@@ -307,10 +307,11 @@ class Detector(object):
             value = float(value[0])
         else:
             value = float(value)
-        err = abs(value - self._pixel1) / self._pixel1
-        if self.force_pixel and  (err > epsilon):
-            logger.warning("enforcing pixel size 2 for a detector %s" %
-                           self.__class__.__name__)
+        if self._pixel1:
+            err = abs(value - self._pixel1) / self._pixel1
+            if self.force_pixel and  (err > epsilon):
+                logger.warning("enforcing pixel size 2 for a detector %s" %
+                               self.__class__.__name__)
         self._pixel1 = value
     pixel1 = property(get_pixel1, set_pixel1)
 
@@ -323,10 +324,11 @@ class Detector(object):
             value = float(value[0])
         else:
             value = float(value)
-        err = abs(value - self._pixel2) / self._pixel2
-        if self.force_pixel and  (err > epsilon):
-            logger.warning("enforcing pixel size 2 for a detector %s" %
-                           self.__class__.__name__)
+        if self._pixel2:
+            err = abs(value - self._pixel2) / self._pixel2
+            if self.force_pixel and  (err > epsilon):
+                logger.warning("enforcing pixel size 2 for a detector %s" %
+                               self.__class__.__name__)
         self._pixel2 = value
     pixel2 = property(get_pixel2, set_pixel2)
 
