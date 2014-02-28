@@ -1083,7 +1083,7 @@ except ImportError: #backport percentile from numpy 1.6.2
         i = int(index)
         if i == index:
             indexer[axis] = slice(i, i + 1)
-            weights = array(1)
+            weights = np.array(1)
             sumval = 1.0
         else:
             indexer[axis] = slice(i, i + 2)
