@@ -45,12 +45,16 @@ __satus__ = "development"
 
 import os, types
 import pyFAI, pyFAI.calibration
+from pyFAI.calibrant import Calibrant, ALL_CALIBRANTS
 import numpy
 import pylab
 import fabio
 import logging
-from optparse import OptionParser
-logger = logging.getLogger("MX-calibrate")
+try:
+    from argparse import ArgumentParser
+except ImportError:
+    from pyFAI.argparse import ArgumentParser
+logger = logging.getLogger(__file__)
 from pyFAI.units import hc
 from pyFAI.detectors import Detector, detector_factory
 try:
@@ -94,7 +98,7 @@ class MultiCalib(object):
         self.max_iter = 1000
         self.filter = "mean"
         self.saturation = 0.1
-        self.spacing_file = None
+        self.calibrant = None
         self.wavelength = None
         self.weighted = False
         self.polarization_factor = 0
@@ -120,166 +124,154 @@ class MultiCalib(object):
         """
         parse options from command line
         """
-        usage = "usage: %prog file1.edf file2.edf ..."
-        version = "%prog " + pyFAI.version
+        usage = "usage: MX-Calibrate -w 1.54 -c CeO2 file1.cbf file2.cbf ..."
+        version = "MX-Calibrate from pyFAI version %s: %s" % (pyFAI.version, pyFAI.date)
         description = """
         Calibrate automatically a set of frames taken at various sample-detector distance.
+        Return the linear regression of the fit in funtion of the sample-setector distance.
         """
         epilog = """This tool has been developed for ESRF MX-beamlines where an acceptable calibration is
         usually present is the header of the image. PyFAI reads it and does a "recalib" on
         each of them before exporting a linear regression of all parameters versus this distance.
         """
-        parser = OptionParser(usage=usage, version=version,
-                              description=description, epilog=epilog)
-
-#        parser.add_option("-V", "--version", dest="version", action="store_true",
+        parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
+        parser.add_argument("-V", "--version", action='version', version=version)
+        parser.add_argument("args", metavar="FILE", help="List of files to calibrate", nargs='+')
+#        parser.add_argument("-V", "--version", dest="version", action="store_true",
 #                          help="print version of the program and quit", metavar="FILE", default=False)
-#        parser.add_option("-o", "--out", dest="outfile",
+#        parser.add_argument("-o", "--out", dest="outfile",
 #                          help="Filename where processed image is saved", metavar="FILE", default="merged.edf")
-        parser.add_option("-v", "--verbose",
+        parser.add_argument("-v", "--verbose",
                           action="store_true", dest="debug", default=False,
                           help="switch to debug/verbose mode")
-#        parser.add_option("-g", "--gaussian", dest="gaussian", help="""Size of the gaussian kernel.
+#        parser.add_argument("-g", "--gaussian", dest="gaussian", help="""Size of the gaussian kernel.
 #Size of the gap (in pixels) between two consecutive rings, by default 100
 #Increase the value if the arc is not complete;
 #decrease the value if arcs are mixed together.""", default=None)
-#        parser.add_option("-c", "--square", dest="square", action="store_true",
+#        parser.add_argument("-c", "--square", dest="square", action="store_true",
 #                      help="Use square kernel shape for neighbor search instead of diamond shape", default=False)
-        parser.add_option("-S", "--spacing", dest="spacing", metavar="FILE",
-                      help="file containing d-spacing of the reference sample (MANDATORY)", default=None)
-        parser.add_option("-w", "--wavelength", dest="wavelength", type="float",
+        parser.add_argument("-c", "--calibrant", dest="calibrant", metavar="FILE",
+                      help="file containing d-spacing of the calibrant reference sample (MANDATORY)", default=None)
+        parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
                       help="wavelength of the X-Ray beam in Angstrom", default=None)
-        parser.add_option("-e", "--energy", dest="energy", type="float",
+        parser.add_argument("-e", "--energy", dest="energy", type=float,
                       help="energy of the X-Ray beam in keV (hc=%skeV.A)" % hc, default=None)
-        parser.add_option("-P", "--polarization", dest="polarization_factor",
-                      type="float", default=0.0,
+        parser.add_argument("-P", "--polarization", dest="polarization_factor",
+                      type=float, default=0.0,
                       help="polarization factor, from -1 (vertical) to +1 (horizontal), default is 0, synchrotrons are around 0.95")
-        parser.add_option("-b", "--background", dest="background",
+        parser.add_argument("-b", "--background", dest="background",
                       help="Automatic background subtraction if no value are provided", default=None)
-        parser.add_option("-d", "--dark", dest="dark",
+        parser.add_argument("-d", "--dark", dest="dark",
                       help="list of dark images to average and subtract", default=None)
-        parser.add_option("-f", "--flat", dest="flat",
+        parser.add_argument("-f", "--flat", dest="flat",
                       help="list of flat images to average and divide", default=None)
-#        parser.add_option("-r", "--reconstruct", dest="reconstruct",
+#        parser.add_argument("-r", "--reconstruct", dest="reconstruct",
 #                      help="Reconstruct image where data are masked or <0  (for Pilatus detectors or detectors with modules)",
 #                      action="store_true", default=False)
-        parser.add_option("-s", "--spline", dest="spline",
+        parser.add_argument("-s", "--spline", dest="spline",
                       help="spline file describing the detector distortion", default=None)
-        parser.add_option("-p", "--pixel", dest="pixel",
+        parser.add_argument("-p", "--pixel", dest="pixel",
                       help="size of the pixel in micron", default=None)
-        parser.add_option("-D", "--detector", dest="detector_name",
+        parser.add_argument("-D", "--detector", dest="detector_name",
                       help="Detector name (instead of pixel size+spline)", default=None)
-        parser.add_option("-m", "--mask", dest="mask",
+        parser.add_argument("-m", "--mask", dest="mask",
                       help="file containing the mask (for image reconstruction)", default=None)
-#        parser.add_option("-n", "--npt", dest="npt",
+#        parser.add_argument("-n", "--npt", dest="npt",
 #                      help="file with datapoints saved", default=None)
-        parser.add_option("--filter", dest="filter",
+        parser.add_argument("--filter", dest="filter",
                       help="select the filter, either mean(default), max or median",
                        default="mean")
-        parser.add_option("--saturation", dest="saturation",
+        parser.add_argument("--saturation", dest="saturation",
                       help="consider all pixel>max*(1-saturation) as saturated and reconstruct them",
-                      default=0.1, type="float")
-        parser.add_option("-r", "--ring", dest="max_rings", type="float",
+                      default=0.1, type=float)
+        parser.add_argument("-r", "--ring", dest="max_rings", type=float,
                       help="maximum number of rings to extract", default=None)
 
-        parser.add_option("--weighted", dest="weighted",
+        parser.add_argument("--weighted", dest="weighted",
                       help="weight fit by intensity",
                        default=False, action="store_true")
-        parser.add_option("-l", "--distance", dest="distance", type="float",
+        parser.add_argument("-l", "--distance", dest="distance", type=float,
                       help="sample-detector distance in millimeter", default=None)
-        parser.add_option("--no-tilt", dest="tilt",
+        parser.add_argument("--no-tilt", dest="tilt",
                       help="refine the detector tilt", default=True , action="store_false")
-        parser.add_option("--poni1", dest="poni1", type="float",
+        parser.add_argument("--poni1", dest="poni1", type=float,
                       help="poni1 coordinate in meter", default=None)
-        parser.add_option("--poni2", dest="poni2", type="float",
+        parser.add_argument("--poni2", dest="poni2", type=float,
                       help="poni2 coordinate in meter", default=None)
-        parser.add_option("--rot1", dest="rot1", type="float",
+        parser.add_argument("--rot1", dest="rot1", type=float,
                       help="rot1 in radians", default=None)
-        parser.add_option("--rot2", dest="rot2", type="float",
+        parser.add_argument("--rot2", dest="rot2", type=float,
                       help="rot2 in radians", default=None)
-        parser.add_option("--rot3", dest="rot3", type="float",
+        parser.add_argument("--rot3", dest="rot3", type=float,
                       help="rot3 in radians", default=None)
 
-        parser.add_option("--fix-dist", dest="fix_dist",
+        parser.add_argument("--fix-dist", dest="fix_dist",
                       help="fix the distance parameter", default=None, action="store_true")
-        parser.add_option("--free-dist", dest="fix_dist",
+        parser.add_argument("--free-dist", dest="fix_dist",
                       help="free the distance parameter", default=None, action="store_false")
 
-        parser.add_option("--fix-poni1", dest="fix_poni1",
+        parser.add_argument("--fix-poni1", dest="fix_poni1",
                       help="fix the poni1 parameter", default=None, action="store_true")
-        parser.add_option("--free-poni1", dest="fix_poni1",
+        parser.add_argument("--free-poni1", dest="fix_poni1",
                       help="free the poni1 parameter", default=None, action="store_false")
 
-        parser.add_option("--fix-poni2", dest="fix_poni2",
+        parser.add_argument("--fix-poni2", dest="fix_poni2",
                       help="fix the poni2 parameter", default=None, action="store_true")
-        parser.add_option("--free-poni2", dest="fix_poni2",
+        parser.add_argument("--free-poni2", dest="fix_poni2",
                       help="free the poni2 parameter", default=None, action="store_false")
 
-        parser.add_option("--fix-rot1", dest="fix_rot1",
+        parser.add_argument("--fix-rot1", dest="fix_rot1",
                       help="fix the rot1 parameter", default=None, action="store_true")
-        parser.add_option("--free-rot1", dest="fix_rot1",
+        parser.add_argument("--free-rot1", dest="fix_rot1",
                       help="free the rot1 parameter", default=None, action="store_false")
 
-        parser.add_option("--fix-rot2", dest="fix_rot2",
+        parser.add_argument("--fix-rot2", dest="fix_rot2",
                       help="fix the rot2 parameter", default=None, action="store_true")
-        parser.add_option("--free-rot2", dest="fix_rot2",
+        parser.add_argument("--free-rot2", dest="fix_rot2",
                       help="free the rot2 parameter", default=None, action="store_false")
 
-        parser.add_option("--fix-rot3", dest="fix_rot3",
+        parser.add_argument("--fix-rot3", dest="fix_rot3",
                       help="fix the rot3 parameter", default=None, action="store_true")
-        parser.add_option("--free-rot3", dest="fix_rot3",
+        parser.add_argument("--free-rot3", dest="fix_rot3",
                       help="free the rot3 parameter", default=None, action="store_false")
 
-        parser.add_option("--fix-wavelength", dest="fix_wavelength",
+        parser.add_argument("--fix-wavelength", dest="fix_wavelength",
                       help="fix the wavelength parameter", default=True, action="store_true")
-        parser.add_option("--free-wavelength", dest="fix_wavelength",
+        parser.add_argument("--free-wavelength", dest="fix_wavelength",
                       help="free the wavelength parameter", default=True, action="store_false")
 
 
-        parser.add_option("--no-gui", dest="gui",
+        parser.add_argument("--no-gui", dest="gui",
                       help="force the program to run without a Graphical interface",
                       default=True, action="store_false")
-        parser.add_option("--gui", dest="gui",
+        parser.add_argument("--gui", dest="gui",
                       help="force the program to run with a Graphical interface",
                       default=True, action="store_true")
 
-        parser.add_option("--no-interactive", dest="interactive",
+        parser.add_argument("--no-interactive", dest="interactive",
                       help="force the program to run and exit without prompting for refinements",
                       default=True, action="store_false")
-        parser.add_option("--interactive", dest="interactive",
+        parser.add_argument("--interactive", dest="interactive",
                       help="force the program to prompt for refinements",
                       default=True, action="store_true")
 
-        (options, args) = parser.parse_args()
+        options = parser.parse_args()
 
         # Analyse aruments and options
-        if options.version:
-            print("pyFAI-calib version %s" % pyFAI.version)
-            sys.exit(0)
         if options.debug:
             logger.setLevel(logging.DEBUG)
-#        self.outfile = options.outfile
-#        self.gaussianWidth = options.gaussian
-#        if options.square:
-#            self.labelPattern = [[1] * 3] * 3
-#        else:
-#            self.labelPattern = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
         if options.background is not None:
             try:
                 self.cutBackground = float(options.background)
             except Exception:
                 self.cutBackground = True
         if options.dark:
-#            print options.dark, type(options.dark)
             self.darkFiles = [f for f in options.dark.split(",") if os.path.isfile(f)]
         if options.flat:
-#            print options.flat, type(options.flat)
             self.flatFiles = [f for f in options.flat.split(",") if os.path.isfile(f)]
-#        self.reconstruct = options.reconstruct
         if options.mask and os.path.isfile(options.mask):
             self.mask = fabio.open(options.mask).data
 
-#        self.pointfile = options.npt
         if options.detector_name:
             self.detector = detector_factory(options.detector_name)
         if options.spline:
@@ -295,16 +287,14 @@ class MultiCalib(object):
             self.wavelength = 1e-10 * options.wavelength
         elif options.energy:
             self.wavelength = 1e-10 * hc / options.energy
-        self.spacing_file = options.spacing
+        self.calibrant = options.calibrant
         self.polarization_factor = options.polarization_factor
-#        if not self.spacing_file or not os.path.isfile(self.spacing_file):
-#            raise RuntimeError("you must specify the d-spacing file")
         self.gui = options.gui
         self.interactive = options.interactive
         self.max_rings = options.max_rings
         self.fixed = []
         if not options.tilt:
-            self.fixed+=["rot1", "rot2", "rot3"]
+            self.fixed += ["rot1", "rot2", "rot3"]
         if options.fix_dist:
             self.fixed.append("dist")
         if options.fix_poni1:
@@ -320,9 +310,10 @@ class MultiCalib(object):
         if options.fix_wavelength:
             self.fixed.append("wavelength")
 
-        self.dataFiles = [f for f in args if os.path.isfile(f)]
+        self.dataFiles = [f for f in options.args if os.path.isfile(f)]
         if not self.dataFiles:
-            raise RuntimeError("Please provide some calibration images ... if you want to analyze them. Try also the --help option to see all options!")
+            raise RuntimeError("Please provide some calibration images ... "
+                               "if you want to analyze them. Try also the --help option to see all options!")
         self.weighted = options.weighted
 
     def get_pixelSize(self, ans):
@@ -351,25 +342,39 @@ class MultiCalib(object):
         """Read the pixel size from prompt if not available"""
         if (self.detector.pixel1 is None) and (self.detector.splineFile is None):
             pixelSize = [15, 15]
-            ans = raw_input("Please enter the pixel size (in micron, comma separated X, Y , i.e. %.2e,%.2e) or a spline file: " % tuple(pixelSize)).strip()
+            ans = raw_input("Please enter the pixel size (in micron, comma separated X, Y "
+                            "i.e. %.2e,%.2e) or a spline file: " % tuple(pixelSize)).strip()
             if os.path.isfile(ans):
                 self.detector.splineFile = ans
             else:
                 self.get_pixelSize(ans)
 
+
     def read_dSpacingFile(self):
-        """Read the name of the file with d-spacing"""
-        if (self.spacing_file is None):
-            comments = ["pyFAI calib has changed !!!",
+        """Read the name of the calibrant or the file with d-spacing"""
+        if self.calibrant in ALL_CALIBRANTS:
+            self.calibrant = ALL_CALIBRANTS[self.calibrant]
+        elif os.path.isfile(self.calibrant):
+            self.calibrant = Calibrant(filename=self.calibrant)
+        else:
+            comments = ["MX-calibrate has changed !!!",
                         "Instead of entering the 2theta value, which was tedious,"
-                        "the program takes a d-spacing file in input (just a serie of number representing the inter planar distance in Angstrom)",
+                        "the program takes a calibrant as in input "
+                        "(either a reference one like Ceo2, either a "
+                        "d-spacing file with inter planar distance in Angstrom)",
                         "and an associated wavelength", ""
-                        "You will be asked to enter the ring number, which is usually a simpler than the 2theta value."]
+                        "You will be asked to enter the ring number, "
+                        "which is usually a simpler than the 2theta value."]
             print(os.linesep.join(comments))
             ans = ""
-            while not os.path.isfile(ans):
-                ans = raw_input("Please enter the name of the file containing the d-spacing:\t").strip()
-            self.spacing_file = ans
+            while not self.calibrant:
+                ans = raw_input("Please enter the name of the calibrant"
+                                " or the file containing the d-spacing:\t").strip()
+                if ans in ALL_CALIBRANTS:
+                    self.calibrant = ALL_CALIBRANTS[ans]
+                elif os.path.isfile(ans):
+                    self.calibrant = Calibrant(filename=ans)
+
 
     def read_wavelength(self):
         """Read the wavelength"""
@@ -416,7 +421,7 @@ class MultiCalib(object):
                 centerY = fabimg.data.shape[0] // 2
             self.results[fn] = {"wavelength":wavelength, "dist":dist}
             rec = pyFAI.calibration.Recalibration(dataFiles=[fn], darkFiles=self.darkFiles, flatFiles=self.flatFiles,
-                                                  detector=self.detector, spacing_file=self.spacing_file, wavelength=wavelength)
+                                                  detector=self.detector, calibrant=self.calibrant, wavelength=wavelength)
             rec.outfile = os.path.splitext(fn)[0] + ".proc.edf"
             rec.interactive = self.interactive
             rec.gui = self.gui

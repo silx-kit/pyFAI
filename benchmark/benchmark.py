@@ -1,12 +1,14 @@
 #!/usr/bin/python
-import fabio, sys, time, timeit, os, platform, subprocess, gc
+import json, sys, time, timeit, os, platform, subprocess
+import numpy
+import fabio
 import os.path as op
-
 sys.path.append(op.join(op.dirname(op.dirname(op.abspath(__file__))), "test"))
 import utilstest
 pyFAI = utilstest.UtilsTest.pyFAI
 ocl = pyFAI.opencl.ocl
 from matplotlib import pyplot as plt
+plt.ion()
 
 ds_list = ["Pilatus1M.poni", "halfccd.poni", "Frelon2k.poni", "Pilatus6M.poni", "Mar3450.poni", "Fairchild.poni"]
 datasets = {"Fairchild.poni":utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
@@ -24,7 +26,7 @@ class Bench(object):
     WARNING = '\033[93m'
     FAIL = '\033[91m'
     ENDC = '\033[0m'
-    def __init__(self, nbr=10):
+    def __init__(self, nbr=10, memprofile=False):
         self.reference_1d = {}
         self.LIMIT = 8
         self.repeat = 1
@@ -34,6 +36,16 @@ class Bench(object):
         self._cpu = None
         self.fig = None
         self.ax = None
+        self.starttime = time.time()
+        self.plot = None
+        self.plot_x = []
+        self.plot_y = []
+        self.do_memprofile = memprofile
+        self.fig_mp = None
+        self.ax_mp = None
+        self.plot_mp = None
+        self.memory_profile = ([], [])
+
 
     def get_cpu(self):
         if self._cpu is None:
@@ -58,16 +70,33 @@ class Bench(object):
         ctx = ocl.create_context(devicetype, useFp64, platformid, deviceid)
         return ctx.devices[0].name
 
+    def get_mem(self):
+        """
+        Returns the occupied memory for memory-leak hunting in MByte
+        """
+        pid = os.getpid()
+        if os.path.exists("/proc/%i/status" % pid):
+            for l in open("/proc/%i/status" % pid):
+                if l.startswith("VmRSS"):
+                    mem = int(l.split(":", 1)[1].split()[0]) / 1024.
+        else:
+            mem = 0
+        return mem
+
+
     def print_init(self, t):
         print(" * Initialization time: %.1f ms" % (1000.0 * t))
+        self.update_mp()
 
 
     def print_exec(self, t):
         print(" * Execution time rep : %.1f ms" % (1000.0 * t))
+        self.update_mp()
 
 
     def print_sep(self):
         print("*"*80)
+        self.update_mp()
 
     def get_ref(self, param):
         if param not in self.reference_1d:
@@ -81,9 +110,13 @@ class Bench(object):
         return self.reference_1d[param]
 
     def bench_cpu1d(self):
+        self.update_mp()
         print("Working on processor: %s" % self.get_cpu())
         results = {}
+        label = "1D_CPU_serial"
+        first = True
         for param in ds_list:
+            self.update_mp()
             ref = self.get_ref(param)
             fn = datasets[param]
             ai = pyFAI.load(param)
@@ -95,8 +128,10 @@ class Bench(object):
             res = ai.xrpd(data, N)
             t1 = time.time()
             self.print_init(t1 - t0)
+            self.update_mp()
+            del ai, data
+            self.update_mp()
             setup = """
-#gc.enable()
 import pyFAI,fabio
 ai=pyFAI.load(r"%s")
 data = fabio.open(r"%s").data
@@ -104,22 +139,29 @@ N=min(data.shape)
 out=ai.xrpd(data,N)""" % (param, fn)
             t = timeit.Timer("ai.xrpd(data,N)", setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
+            self.update_mp()
             self.print_exec(tmin)
-#            R = utilstest.Rwp(res, ref)
-#            print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
-#            if R < self.LIMIT:
-            results[size / 1e6] = tmin * 1000.0
-        gc.collect()
+            size /= 1e6
+            tmin *= 1000.0
+            results[size ] = tmin
+            if first:
+                self.new_curve(results, label)
+                first = False
+            else:
+                self.new_point(size, tmin)
         self.print_sep()
-        label = "1D_CPU_serial"
         self.meth.append(label)
         self.results[label] = results
-        self.new_curve(results, label)
+        self.update_mp()
 
     def bench_cpu1d_lut(self):
+        self.update_mp()
         print("Working on processor: %s" % self.get_cpu())
+        label = "1D_CPU_parallel_OpenMP"
         results = {}
+        self.new_curve(results, label)
         for param in ds_list:
+            self.update_mp()
             ref = self.get_ref(param)
             fn = datasets[param]
             ai = pyFAI.load(param)
@@ -132,9 +174,10 @@ out=ai.xrpd(data,N)""" % (param, fn)
             t1 = time.time()
             self.print_init(t1 - t0)
             print "lut.shape=", ai._lut_integrator.lut.shape, "lut.nbytes (MB)", ai._lut_integrator.size * 8 / 1e6
+            self.update_mp()
             del ai, data
+            self.update_mp()
             setup = """
-#gc.enable()
 import pyFAI,fabio
 ai=pyFAI.load(r"%s")
 data = fabio.open(r"%s").data
@@ -145,16 +188,20 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
             self.print_exec(tmin)
             R = utilstest.Rwp(res, ref)
             print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
+            self.update_mp()
             if R < self.LIMIT:
-                results[size / 1e6] = tmin * 1000.0
+                size /= 1e6
+                tmin *= 1000.0
+                results[size ] = tmin
+                self.new_point(size, tmin)
+            self.update_mp()
         self.print_sep()
-        label = "1D_CPU_parallel_OpenMP"
         self.meth.append(label)
         self.results[label] = results
-        self.new_curve(results, label)
-        gc.collect()
+        self.update_mp()
 
-    def bench_cpu1d_ocl_lut(self, devicetype="ALL", platformid=None, deviceid=None):
+    def bench_cpu1d_lut_ocl(self, devicetype="ALL", platformid=None, deviceid=None):
+        self.update_mp()
         if (ocl is None):
             print("No pyopencl")
             return
@@ -165,9 +212,11 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
                 return
             platformid, deviceid = platdev
         print("Working on device: %s platform: %s device: %s" % (devicetype, ocl.platforms[platformid], ocl.platforms[platformid].devices[deviceid]))
-
+        label = "1D_%s_parallel_OpenCL" % devicetype
+        first = True
         results = {}
         for param in ds_list:
+            self.update_mp()
             ref = self.get_ref(param)
             fn = datasets[param]
             ai = pyFAI.load(param)
@@ -183,9 +232,11 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
                 break
             t1 = time.time()
             self.print_init(t1 - t0)
+            self.update_mp()
+            ai.reset()
             del ai, data
+            self.update_mp()
             setup = """
-#gc.enable()
 import pyFAI,fabio
 ai=pyFAI.load(r"%s")
 data = fabio.open(r"%s").data
@@ -193,24 +244,36 @@ N=min(data.shape)
 out=ai.xrpd_LUT_OCL(data,N,devicetype=r"%s",platformid=%s,deviceid=%s)""" % (param, fn, devicetype, platformid, deviceid)
             t = timeit.Timer("ai.xrpd_LUT_OCL(data,N,safe=False)", setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
+            self.update_mp()
             del t
+            self.update_mp()
             self.print_exec(tmin)
             R = utilstest.Rwp(res, ref)
             print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
             if R < self.LIMIT:
-                results[size / 1e6] = tmin * 1000.0
-            gc.collect()
-        label = "1D_%s_parallel_OpenCL" % devicetype
+                size /= 1e6
+                tmin *= 1000.0
+                results[size] = tmin
+                if first:
+                    self.new_curve(results, label)
+                    first = False
+                else:
+                    self.new_point(size, tmin)
+            self.update_mp()
         self.print_sep()
         self.meth.append(label)
         self.results[label] = results
-        self.new_curve(results, label)
+        self.update_mp()
 
 
     def bench_cpu2d(self):
+        self.update_mp()
         print("Working on processor: %s" % self.get_cpu())
         results = {}
+        label = "2D_CPU_serial"
+        first = True
         for param in ds_list:
+            self.update_mp()
             fn = datasets[param]
             ai = pyFAI.load(param)
             data = fabio.open(fn).data
@@ -221,30 +284,41 @@ out=ai.xrpd_LUT_OCL(data,N,devicetype=r"%s",platformid=%s,deviceid=%s)""" % (par
             _ = ai.xrpd2(data, N[0], N[1])
             t1 = time.time()
             self.print_init(t1 - t0)
+            self.update_mp()
+            ai.reset()
             del ai, data
+            self.update_mp()
             setup = """
-#gc.enable()
 import pyFAI,fabio
 ai=pyFAI.load(r"%s")
 data = fabio.open(r"%s").data
 out=ai.xrpd2(data,%s,%s)""" % (param, fn, N[0], N[1])
             t = timeit.Timer("ai.xrpd2(data,%s,%s)" % N, setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
+            self.update_mp()
             del t
-
+            self.update_mp()
             self.print_exec(tmin)
             print("")
             if 1:  # R < self.LIMIT:
-                results[size / 1e6] = tmin * 1000.0
-            gc.collect()
+                size /= 1e6
+                tmin *= 1000.0
+                results[size] = tmin
+                if first:
+                    self.new_curve(results, label)
+                    first = False
+                else:
+                    self.new_point(size, tmin)
+            self.update_mp()
         self.print_sep()
-        label = "2D_CPU_serial"
         self.meth.append(label)
         self.results[label] = results
-        self.new_curve(results, label)
+        self.update_mp()
 
     def bench_cpu2d_lut(self):
         print("Working on processor: %s" % self.get_cpu())
+        label = "2D_CPU_parallel_OpenMP"
+        first = True
         results = {}
         for param in ds_list:
             fn = datasets[param]
@@ -258,30 +332,39 @@ out=ai.xrpd2(data,%s,%s)""" % (param, fn, N[0], N[1])
             t1 = time.time()
             self.print_init(t1 - t0)
             print("Size of the LUT: %.3fMByte" % (ai._lut_integrator.lut.nbytes / 1e6))
+            self.update_mp()
+            ai.reset()
             del ai, data
-
+            self.update_mp()
             setup = """
-#gc.enable()
 import pyFAI,fabio
 ai=pyFAI.load(r"%s")
 data = fabio.open(r"%s").data
 out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut")""" % (param, fn, N[0], N[1])
             t = timeit.Timer("out=ai.integrate2d(data,%s,%s,unit='2th_deg', method='lut')" % N, setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
+            self.update_mp()
             del t
-
+            self.update_mp()
             self.print_exec(tmin)
             print("")
             if 1:  # R < self.LIMIT:
-                results[size / 1e6] = tmin * 1000.0
-            gc.collect()
+                size /= 1e6
+                tmin *= 1000.0
+                results[size] = tmin
+                if first:
+                    self.new_curve(results, label)
+                    first = False
+                else:
+                    self.new_point(size, tmin)
+                self.update_mp()
         self.print_sep()
-        label = "2D_CPU_parallel_OpenMP"
         self.meth.append(label)
         self.results[label] = results
-        self.new_curve(results, label)
+        self.update_mp()
 
     def bench_cpu2d_lut_ocl(self, devicetype="ALL", platformid=None, deviceid=None):
+        self.update_mp()
         if (ocl is None):
             print("No pyopencl")
             return
@@ -293,7 +376,10 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut")""" % (param, fn, N[0
             platformid, deviceid = platdev
         print("Working on device: %s platform: %s device: %s" % (devicetype, ocl.platforms[platformid], ocl.platforms[platformid].devices[deviceid]))
         results = {}
+        label = "2D_%s_parallel_OpenCL" % devicetype.upper()
+        first = True
         for param in ds_list:
+            self.update_mp()
             fn = datasets[param]
             ai = pyFAI.load(param)
             data = fabio.open(fn).data
@@ -309,37 +395,49 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut")""" % (param, fn, N[0
             t1 = time.time()
             self.print_init(t1 - t0)
             print("Size of the LUT: %.3fMByte" % (ai._lut_integrator.lut.nbytes / 1e6))
+            self.update_mp()
+            ai.reset()
             del ai, data
-
+            self.update_mp()
             setup = """
-#gc.enable()
 import pyFAI,fabio
 ai=pyFAI.load(r"%s")
 data = fabio.open(r"%s").data
 out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut_ocl_%i,%i")""" % (param, fn, N[0], N[1], platformid, deviceid)
             t = timeit.Timer("out=ai.integrate2d(data,%s,%s,unit='2th_deg', method='lut_ocl')" % N, setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
+            self.update_mp()
             del t
-
+            self.update_mp()
             self.print_exec(tmin)
             print("")
             if 1:  # R < self.LIMIT:
-                results[size / 1e6] = tmin * 1000.0
-            gc.collect()
+                size /= 1e6
+                tmin *= 1000.0
+                results[size] = tmin
+                if first:
+                    self.new_curve(results, label)
+                    first = False
+                else:
+                    self.new_point(size, tmin)
+                self.update_mp()
         self.print_sep()
-        label = "2D_%s_parallel_OpenCL" % devicetype.upper()
         self.meth.append(label)
         self.results[label] = results
-        self.new_curve(results, label)
+        self.update_mp()
 
 
     def bench_gpu1d(self, devicetype="gpu", useFp64=True, platformid=None, deviceid=None):
+        self.update_mp()
         print("Working on %s, in " % devicetype + ("64 bits mode" if useFp64 else"32 bits mode") + "(%s.%s)" % (platformid, deviceid))
         if ocl is None or not ocl.select_device(devicetype):
             print("No pyopencl or no such device: skipping benchmark")
             return
         results = {}
+        label = "Forward_OpenCL_%s_%s_bits" % (devicetype , ("64" if useFp64 else"32"))
+        first = True
         for param in ds_list:
+            self.update_mp()
             fn = datasets[param]
             ai = pyFAI.load(param)
             data = fabio.open(fn).data
@@ -355,12 +453,11 @@ out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut_ocl_%i,%i")""" % (para
                 print("Failed to find an OpenCL GPU (useFp64:%s) %s" % (useFp64, error))
                 continue
             self.print_init(t1 - t0)
+            self.update_mp()
             ref = ai.xrpd(data, N)
             R = utilstest.Rwp(res, ref)
             print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
-            del ai, data
             setup = """
-#gc.enable()
 import pyFAI,fabio
 ai=pyFAI.load(r"%s")
 data = fabio.open(r"%s").data
@@ -369,29 +466,37 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
             t = timeit.Timer("ai.xrpd_OpenCL(data,N,safe=False)", setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
             del t
-            gc.collect()
+            self.update_mp()
             self.print_exec(tmin)
             print("")
             if R < self.LIMIT:
-                results[size / 1e6] = tmin * 1000.0
+                size /= 1e6
+                tmin *= 1000.0
+                results[size] = tmin
+                if first:
+                    self.new_curve(results, label)
+                    first = False
+                else:
+                    self.new_point(size, tmin)
+                self.update_mp()
         self.print_sep()
-        label = "Forward_OpenCL_%s_%s_bits" % (devicetype , ("64" if useFp64 else"32"))
         self.meth.append(label)
         self.results[label] = results
-        self.new_curve(results, label)
+        self.update_mp()
 
     def save(self, filename="benchmark.json"):
-        import json
+        self.update_mp()
         json.dump(self.results, open(filename, "w"))
 
     def print_res(self):
-
+        self.update_mp()
         print("Summary: execution time in milliseconds")
         print "Size/Meth\t" + "\t".join(b.meth)
         for i in self.size:
             print "%7.2f\t\t" % i + "\t\t".join("%.2f" % (b.results[j].get(i, 0)) for j in b.meth)
 
     def init_curve(self):
+        self.update_mp()
         if self.fig:
             print("Already initialized")
             return
@@ -399,29 +504,46 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
             plt.ion()
             self.fig = plt.figure()
             self.ax = self.fig.add_subplot(1, 1, 1)
+            self.ax.set_autoscale_on(False)
             self.ax.set_xlabel("Image size in Mega-Pixels")
             self.ax.set_ylabel("Frames processed per second")
             self.ax.set_yscale("log", basey=2)
             t = [1, 2, 5, 10, 20, 50, 100, 200]
             self.ax.set_yticks([float(i) for i in t])
             self.ax.set_yticklabels([str(i)for i in t])
+            self.ax.set_xlim(0.5, 20)
+            self.ax.set_ylim(0.5, 200)
             self.ax.set_title(self.get_cpu() + " / " + self.get_gpu())
+
             if self.fig.canvas:
                 self.fig.canvas.draw()
 #            plt.show()
 
     def new_curve(self, results, label):
+        self.update_mp()
         if not self.fig:
             return
-        s = []
-        p = []
-        for i in self.size:
-            if i in results:
-                s.append(i)
-                p.append(1000.0 / results[i])
-        self.ax.plot(s, p, label=label)
-
+        self.plot_x = list(results.keys())
+        self.plot_x.sort()
+        self.plot_y = [1000.0 / results[i] for i in self.plot_x]
+        self.plot = self.ax.plot(self.plot_x, self.plot_y, "o-", label=label)[0]
         self.ax.legend()
+        if self.fig.canvas:
+            self.fig.canvas.draw()
+
+    def new_point(self, size, exec_time):
+        """
+        Add new point to current curve
+        @param size: of the system
+        @parm exec_time: execution time in ms
+        """
+        self.update_mp()
+        if not self.plot:
+            return
+
+        self.plot_x.append(size)
+        self.plot_y.append(1000.0 / exec_time)
+        self.plot.set_data(self.plot_x, self.plot_y)
         if self.fig.canvas:
             self.fig.canvas.draw()
 
@@ -434,6 +556,34 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
         self.fig.savefig("benchmark.png")
         self.fig.show()
 #        plt.ion()
+
+
+    def update_mp(self):
+        if not self.do_memprofile:
+            return
+        self.memory_profile[0].append(time.time() - self.starttime)
+        self.memory_profile[1].append(self.get_mem())
+        if not self.fig_mp:
+            self.fig_mp = plt.figure()
+            self.ax_mp = self.fig_mp.add_subplot(1, 1, 1)
+            self.ax_mp.set_autoscale_on(False)
+            self.ax_mp.set_xlabel("Run time (s)")
+            self.ax_mp.set_xlim(0, 100)
+            self.ax_mp.set_ylim(0, 2 ** 10)
+            self.ax_mp.set_ylabel("Memory occupancy (MB)")
+            self.ax_mp.set_title("Memory leak hunter")
+            self.plot_mp = self.ax_mp.plot(*self.memory_profile)[0]
+        else:
+            self.plot_mp.set_data(*self.memory_profile)
+            tmax = self.memory_profile[0][-1]
+            mmax = max(self.memory_profile[1])
+            if tmax > self.ax_mp.get_xlim()[-1]:
+                self.ax_mp.set_xlim(0, tmax)
+            if mmax > self.ax_mp.get_ylim()[-1]:
+                self.ax_mp.set_ylim(0, mmax)
+
+        if self.fig_mp.canvas:
+            self.fig_mp.canvas.draw()
 
     def get_size(self):
         if len(self.meth) == 0:
@@ -449,60 +599,81 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
 
 
 if __name__ == "__main__":
-    from optparse import OptionParser
+    try:
+        from argparse import ArgumentParser
+    except:
+        from pyFAI.argparse import ArgumentParser
     description = """Benchmark for Azimuthal integration
     """
     epilog = """  """
-    usage = """usage: %prog [options] """
-    version = "%prog " + pyFAI.version
-    parser = OptionParser(usage=usage, version=version,
-                          description=description, epilog=epilog)
-    parser.add_option("-v", "--verbose",
-                          action="store_true", dest="verbose", default=False,
+    usage = """benchmark [options] """
+    version = "pyFAI benchmark version " + pyFAI.version
+    parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
+    parser.add_argument("-v", action='version', version=version)
+    parser.add_argument("-d", "--debug",
+                          action="store_true", dest="debug", default=False,
                           help="switch to verbose/debug mode")
-    parser.add_option("-c", "--cpu",
+    parser.add_argument("-c", "--cpu",
                       action="store_true", dest="opencl_cpu", default=False,
                       help="perform benchmark using OpenCL on the CPU")
-    parser.add_option("-g", "--gpu",
+    parser.add_argument("-g", "--gpu",
                       action="store_true", dest="opencl_gpu", default=False,
                       help="perform benchmark using OpenCL on the GPU")
-    parser.add_option("-s", "--small",
+    parser.add_argument("-a", "--acc",
+                      action="store_true", dest="opencl_acc", default=False,
+                      help="perform benchmark using OpenCL on the Accelerator (like XeonPhi/MIC)")
+    parser.add_argument("-s", "--small",
                       action="store_true", dest="small", default=False,
-                      help="Limit the size of the dataset to 6 Mpixel images (adviced for python 2.6 where there is a memory-leak)" )
-    parser.add_option("-n", "--number",
-                      dest="number", default=10, type="int",
-                      help="Number of repetition of the test, by default 10" )
-    (options, args) = parser.parse_args()
+                      help="Limit the size of the dataset to 6 Mpixel images (for computer with limited memory)")
+    parser.add_argument("-n", "--number",
+                      dest="number", default=10, type=int,
+                      help="Number of repetition of the test, by default 10")
+    parser.add_argument("-2d", "--2dimentions",
+                      action="store_true", dest="twodim", default=False,
+                      help="Benchmark also algorithm for 2D-regrouping")
+    parser.add_argument("-m", "--memprof",
+                      action="store_true", dest="memprof", default=False,
+                      help="Perfrom memory profiling (Linux only)")
+
+    options = parser.parse_args()
     if options.small:
         ds_list = ds_list[:4]
-    if options.verbose:
+    if options.debug:
             pyFAI.logger.setLevel(logging.DEBUG)
     print("Averaging over %i repetitions (best of 3)." % options.number)
-    b = Bench(options.number)
+    b = Bench(options.number, options.memprof)
     b.init_curve()
     b.bench_cpu1d()
     b.bench_cpu1d_lut()
     if options.opencl_cpu:
-        b.bench_cpu1d_ocl_lut("CPU")
+        b.bench_cpu1d_lut_ocl("CPU")
     if options.opencl_gpu:
-        b.bench_cpu1d_ocl_lut("GPU")
+        b.bench_cpu1d_lut_ocl("GPU")
+    if options.opencl_acc:
+        b.bench_cpu1d_lut_ocl("ACC")
+
 #    b.bench_cpu1d_ocl_lut("CPU")
 #    b.bench_gpu1d("gpu", True)
 #    b.bench_gpu1d("gpu", False)
 #    b.bench_gpu1d("cpu", True)
 #    b.bench_gpu1d("cpu", False)
-    b.bench_cpu2d()
-    b.bench_cpu2d_lut()
-    if options.opencl_cpu:
-        b.bench_cpu2d_lut_ocl("CPU")
-    if options.opencl_gpu:
-        b.bench_cpu2d_lut_ocl("GPU")
+    if options.twodim:
+        b.bench_cpu2d()
+        b.bench_cpu2d_lut()
+        if options.opencl_cpu:
+            b.bench_cpu2d_lut_ocl("CPU")
+        if options.opencl_gpu:
+            b.bench_cpu2d_lut_ocl("GPU")
+        if options.opencl_acc:
+            b.bench_cpu2d_lut_ocl("ACC")
 
 #    b.bench_cpu2d_lut()
 #    b.bench_cpu2d_lut_ocl()
     b.save()
     b.print_res()
 #    b.display_all()
+    b.update_mp()
+
     b.ax.set_ylim(1, 200)
     # plt.show()
     plt.ion()

@@ -583,10 +583,10 @@
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_9">
             <item>
-             <widget class="QLineEdit" name="rad_pt"/>
+             <widget class="QLineEdit" name="nbpt_rad"/>
             </item>
             <item>
-             <widget class="QLineEdit" name="azim_pt"/>
+             <widget class="QLineEdit" name="nbpt_azim"/>
             </item>
            </layout>
           </item>

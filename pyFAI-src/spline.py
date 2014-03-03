@@ -42,10 +42,11 @@ import logging
 import scipy.optimize
 import scipy.interpolate
 from scipy.interpolate import fitpack
+import traceback
 logger = logging.getLogger("pyFAI.spline")
 
 
-class Spline:
+class Spline(object):
     """
     This class is a python representation of the spline file
 
@@ -145,53 +146,57 @@ class Spline:
         @type filename: str
         """
         if not os.path.isfile(filename):
-            raise IOError("File does not exist %s" % filename)
+            raise IOError("Spline File does not exist %s" % filename)
         self.filename = filename
         stringSpline = [i.rstrip() for i in open(filename)]
-        indexLine = 0
-        for oneLine in stringSpline:
-            stripedLine = oneLine.strip().upper()
-            if stripedLine == "VALID REGION":
-                data = stringSpline[indexLine + 1]
-                self.xmin = float(data[self.lenStrFloat * 0:self.lenStrFloat * 1])
-                self.ymin = float(data[self.lenStrFloat * 1:self.lenStrFloat * 2])
-                self.xmax = float(data[self.lenStrFloat * 2:self.lenStrFloat * 3])
-                self.ymax = float(data[self.lenStrFloat * 3:self.lenStrFloat * 4])
-            elif stripedLine == "GRID SPACING, X-PIXEL SIZE, Y-PIXEL SIZE":
-                data = stringSpline[indexLine + 1]
-                self.grid = float(data[:self.lenStrFloat])
-                self.pixelSize = \
-                    (float(data[self.lenStrFloat:self.lenStrFloat * 2]),
-                     float(data[self.lenStrFloat * 2:self.lenStrFloat * 3]))
-            elif stripedLine == "X-DISTORTION":
-                data = stringSpline[indexLine + 1]
-                [splineKnotsXLen, splineKnotsYLen] = \
-                    [int(i) for i in data.split()]
-                databloc = []
-                for line in stringSpline[indexLine + 2:]:
-                    if len(line) > 0:
-                        for i in range(len(line) / self.lenStrFloat):
-                            databloc.append(float(line[i * self.lenStrFloat: (i + 1) * self.lenStrFloat]))
-                    else:
-                        break
-                self.xSplineKnotsX = databloc[:splineKnotsXLen]
-                self.xSplineKnotsY = databloc[splineKnotsXLen:splineKnotsXLen + splineKnotsYLen]
-                self.xSplineCoeff = databloc[splineKnotsXLen + splineKnotsYLen:]
-            elif stripedLine == "Y-DISTORTION":
-                data = stringSpline[indexLine + 1]
-                [splineKnotsXLen, splineKnotsYLen] = [int(i) for i in data.split()]
-                databloc = []
-                for line in stringSpline[indexLine + 2:]:
-                    if len(line) > 0:
-                        for i in range(len(line) / self.lenStrFloat):
-                            databloc.append(float(line[i * self.lenStrFloat:(i + 1) * self.lenStrFloat]))
-                    else:
-                        break
-                self.ySplineKnotsX = databloc[:splineKnotsXLen]
-                self.ySplineKnotsY = databloc[splineKnotsXLen:splineKnotsXLen + splineKnotsYLen]
-                self.ySplineCoeff = databloc[ splineKnotsXLen + splineKnotsYLen:]
-# Keep this at the end
-            indexLine += 1
+        try:
+            indexLine = 0
+            for oneLine in stringSpline:
+                stripedLine = oneLine.strip().upper()
+                if stripedLine == "VALID REGION":
+                    data = stringSpline[indexLine + 1]
+                    self.xmin = float(data[self.lenStrFloat * 0:self.lenStrFloat * 1])
+                    self.ymin = float(data[self.lenStrFloat * 1:self.lenStrFloat * 2])
+                    self.xmax = float(data[self.lenStrFloat * 2:self.lenStrFloat * 3])
+                    self.ymax = float(data[self.lenStrFloat * 3:self.lenStrFloat * 4])
+                elif stripedLine == "GRID SPACING, X-PIXEL SIZE, Y-PIXEL SIZE":
+                    data = stringSpline[indexLine + 1]
+                    self.grid = float(data[:self.lenStrFloat])
+                    self.pixelSize = \
+                        (float(data[self.lenStrFloat:self.lenStrFloat * 2]),
+                         float(data[self.lenStrFloat * 2:self.lenStrFloat * 3]))
+                elif stripedLine == "X-DISTORTION":
+                    data = stringSpline[indexLine + 1]
+                    [splineKnotsXLen, splineKnotsYLen] = \
+                        [int(i) for i in data.split()]
+                    databloc = []
+                    for line in stringSpline[indexLine + 2:]:
+                        if len(line) > 0:
+                            for i in range(len(line) / self.lenStrFloat):
+                                databloc.append(float(line[i * self.lenStrFloat: (i + 1) * self.lenStrFloat]))
+                        else:
+                            break
+                    self.xSplineKnotsX = numpy.array(databloc[:splineKnotsXLen], dtype=numpy.float32)
+                    self.xSplineKnotsY = numpy.array(databloc[splineKnotsXLen:splineKnotsXLen + splineKnotsYLen], dtype=numpy.float32)
+                    self.xSplineCoeff = numpy.array(databloc[splineKnotsXLen + splineKnotsYLen:], dtype=numpy.float32)
+                elif stripedLine == "Y-DISTORTION":
+                    data = stringSpline[indexLine + 1]
+                    [splineKnotsXLen, splineKnotsYLen] = [int(i) for i in data.split()]
+                    databloc = []
+                    for line in stringSpline[indexLine + 2:]:
+                        if len(line) > 0:
+                            for i in range(len(line) / self.lenStrFloat):
+                                databloc.append(float(line[i * self.lenStrFloat:(i + 1) * self.lenStrFloat]))
+                        else:
+                            break
+                    self.ySplineKnotsX = numpy.array(databloc[:splineKnotsXLen], dtype=numpy.float32)
+                    self.ySplineKnotsY = numpy.array(databloc[splineKnotsXLen:splineKnotsXLen + splineKnotsYLen], dtype=numpy.float32)
+                    self.ySplineCoeff = numpy.array(databloc[ splineKnotsXLen + splineKnotsYLen:], dtype=numpy.float32)
+    # Keep this at the end
+                indexLine += 1
+        except:
+            traceback.print_exc()
+            raise IOError("Spline File parsing error: %s" % (filename))
 
     def comparison(self, ref, verbose=False):
         """
@@ -586,15 +591,15 @@ class Spline:
             binX, binY = float(binning[0]), float(binning[1])
         else:
             binX = binY = float(binning)
-        self.xSplineKnotsX = [i / binX for i in self.xSplineKnotsX]
-        self.xSplineKnotsY = [i / binY for i in self.xSplineKnotsY]
-        self.ySplineKnotsX = [i / binX for i in self.ySplineKnotsX]
-        self.ySplineKnotsY = [i / binY for i in self.ySplineKnotsY]
+        self.xSplineKnotsX /= binX
+        self.xSplineKnotsY /= binY
+        self.ySplineKnotsX /= binX
+        self.ySplineKnotsY /= binY
         self.pixelSize = (binX * self.pixelSize[0], binY * self.pixelSize[1])
         self.xmax = self.xmax / binX
         self.ymax = self.ymax / binY
-        self.xSplineCoeff = [i / binX for i in self.xSplineCoeff]
-        self.ySplineCoeff = [i / binY for i in self.ySplineCoeff]
+        self.xSplineCoeff /= binX
+        self.ySplineCoeff /= binY
         self.xDispArray = None
         self.yDispArray = None
 

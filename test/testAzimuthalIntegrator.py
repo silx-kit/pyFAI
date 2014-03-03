@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/10/2011"
+__date__ = "20140106"
 
 
 import unittest
@@ -38,7 +38,7 @@ import numpy
 import logging, time
 import sys
 import fabio
-
+import tempfile
 from utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
@@ -54,28 +54,47 @@ class test_azim_halfFrelon(unittest.TestCase):
     poniFile = "1463/LaB6.poni"
     ai = None
     fit2d = None
+    tmp_dir = os.environ.get("PYFAI_TEMPDIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp"))
+    tmpfiles = {"cython":os.path.join(tmp_dir, "cython.dat"),
+               "cythonSP":os.path.join(tmp_dir, "cythonSP.dat"),
+               "numpy": os.path.join(tmp_dir, "numpy.dat")}
 
     def setUp(self):
         """Download files"""
         self.fit2dFile = UtilsTest.getimage(self.__class__.fit2dFile)
         self.halfFrelon = UtilsTest.getimage(self.__class__.halfFrelon)
         self.splineFile = UtilsTest.getimage(self.__class__.splineFile)
-        self.poniFile = UtilsTest.getimage(self.__class__.poniFile)
-        with open(self.poniFile) as f:
+        poniFile = UtilsTest.getimage(self.__class__.poniFile)
+
+        with open(poniFile) as f:
             data = []
             for line in f:
                 if line.startswith("SplineFile:"):
                     data.append("SplineFile: " + self.splineFile)
                 else:
                     data.append(line.strip())
+        self.poniFile = os.path.join(self.tmp_dir, os.path.basename(poniFile))
+        if not os.path.isdir(self.tmp_dir):
+            os.makedirs(self.tmp_dir)
+
         with open(self.poniFile, "w") as f:
             f.write(os.linesep.join(data))
         self.fit2d = numpy.loadtxt(self.fit2dFile)
         self.ai = AzimuthalIntegrator()
         self.ai.load(self.poniFile)
         self.data = fabio.open(self.halfFrelon).data
-        if not os.path.isdir("tmp"):
-            os.mkdir("tmp")
+        for tmpfile in self.tmpfiles.values():
+            if os.path.isfile(tmpfile):
+                os.unlink(tmpfile)
+
+    def tearDown(self):
+        """Remove temporary files"""
+        unittest.TestCase.tearDown(self)
+        for tmpfile in self.tmpfiles.values():
+            if os.path.isfile(tmpfile):
+                os.unlink(tmpfile)
+        if os.path.isfile(self.poniFile):
+            os.unlink(self.poniFile)
 
     def test_numpy_vs_fit2d(self):
         """
@@ -83,7 +102,7 @@ class test_azim_halfFrelon(unittest.TestCase):
         """
 #        logger.info(self.ai.__repr__())
         tth, I = self.ai.xrpd_numpy(self.data,
-                                     len(self.fit2d), "tmp/numpy.dat", correctSolidAngle=False)
+                                     len(self.fit2d), self.tmpfiles["numpy"], correctSolidAngle=False)
         rwp = Rwp((tth, I), self.fit2d.T)
         logger.info("Rwp numpy/fit2d = %.3f" % rwp)
         if logger.getEffectiveLevel() == logging.DEBUG:
@@ -133,7 +152,7 @@ class test_azim_halfFrelon(unittest.TestCase):
         logger.info("in test_cythonSP_vs_fit2d Before SP")
 
         tth, I = self.ai.xrpd_splitPixel(self.data,
-                                     len(self.fit2d), "tmp/cythonSP.dat", correctSolidAngle=False)
+                                     len(self.fit2d), self.tmpfiles["cythonSP"], correctSolidAngle=False)
         logger.info("in test_cythonSP_vs_fit2d Before")
         t1 = time.time() - t0
 #        logger.info(tth)
@@ -232,6 +251,7 @@ class test_saxs(unittest.TestCase):
     maskDummy = "1488/bioSaxsMaskDummy.edf"
     poniFile = "1489/bioSaxs.poni"
     ai = None
+    tmp_dir = os.environ.get("PYFAI_TEMPDIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp"))
 
     def setUp(self):
         self.edfPilatus = UtilsTest.getimage(self.__class__.saxsPilatus)
@@ -241,8 +261,8 @@ class test_saxs(unittest.TestCase):
         self.maskDummy = UtilsTest.getimage(self.__class__.maskDummy)
         self.ai = AzimuthalIntegrator()
         self.ai.load(self.poniFile)
-        if not os.path.isdir("tmp"):
-            os.mkdir("tmp")
+        if not os.path.isdir(self.tmp_dir):
+            os.mkdir(self.tmp_dir)
 
     def test_mask(self):
         """test the generation of mask"""
@@ -252,6 +272,37 @@ class test_saxs(unittest.TestCase):
         assert abs(self.ai.makeMask(data, mask=mask).astype(int) - fabio.open(self.maskRef).data).max() == 0
         assert abs(self.ai.makeMask(data, mask=mask, dummy= -2, delta_dummy=1.1).astype(int) - fabio.open(self.maskDummy).data).max() == 0
 
+class test_setter(unittest.TestCase):
+    tmp_dir = os.environ.get("PYFAI_TEMPDIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp"))
+
+    def setUp(self):
+        self.ai = AzimuthalIntegrator()
+        shape = (10, 15)
+        self.rnd1 = numpy.random.random(shape).astype(numpy.float32)
+        self.rnd2 = numpy.random.random(shape).astype(numpy.float32)
+        if not os.path.isdir(self.tmp_dir):
+            os.mkdir(self.tmp_dir)
+
+        fd, self.edf1 = tempfile.mkstemp(".edf", "testAI1", self.tmp_dir)
+        os.close(fd)
+        fd, self.edf2 = tempfile.mkstemp(".edf", "testAI2", self.tmp_dir)
+        os.close(fd)
+        fabio.edfimage.edfimage(data=self.rnd1).write(self.edf1)
+        fabio.edfimage.edfimage(data=self.rnd2).write(self.edf2)
+    def tearDown(self):
+        if os.path.exists(self.edf1):
+            os.unlink(self.edf1)
+        if os.path.exists(self.edf2):
+            os.unlink(self.edf2)
+    def test_flat(self):
+        self.ai.set_flatfiles((self.edf1,self.edf2), method="mean")
+        self.assert_(self.ai.flatfiles == "%s(%s,%s)" % ("mean", self.edf1, self.edf2), "flatfiles string is OK")
+        self.assert_(abs(self.ai.flatfield-0.5*(self.rnd1+self.rnd2)).max() == 0, "Flat array is OK")
+    def test_dark(self):
+        self.ai.set_darkfiles((self.edf1, self.edf2), method="mean")
+        self.assert_(self.ai.darkfiles == "%s(%s,%s)" % ("mean", self.edf1, self.edf2), "darkfiles string is OK")
+        self.assert_(abs(self.ai.darkcurrent-0.5*(self.rnd1+self.rnd2)).max() == 0, "Dark array is OK")
+
 def test_suite_all_AzimuthalIntegration():
     testSuite = unittest.TestSuite()
     testSuite.addTest(test_azim_halfFrelon("test_cython_vs_fit2d"))
@@ -260,6 +311,8 @@ def test_suite_all_AzimuthalIntegration():
     testSuite.addTest(test_azim_halfFrelon("test_cython_vs_numpy"))
     testSuite.addTest(test_flatimage("test_splitPixel"))
     testSuite.addTest(test_flatimage("test_splitBBox"))
+    testSuite.addTest(test_setter("test_flat"))
+    testSuite.addTest(test_setter("test_dark"))
 # This test is known to be broken ...
 #    testSuite.addTest(test_saxs("test_mask"))
 

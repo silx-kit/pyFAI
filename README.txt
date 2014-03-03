@@ -20,19 +20,23 @@ tarball. Download either one and unpack it.
 Developement is done on Github: https://github.com/kif/pyFAI
 
 e.g.
-tar xvzf pyFAI-0.8.0.tar.gz
+tar xvzf pyFAI-0.9.2.tar.gz
 or
-unzip pyFAI-0.8.0.zip
+unzip pyFAI-0.9.2.zip
 
-all files are unpacked into the directory pyFAI-0.8.0. To install these do
+All files are unpacked into the directory pyFAI-0.9.2.
 
-cd pyFAI-0.8.0
+cd pyFAI-0.9.2
+
+Build it & test it. For test pyFAI downloads test images (you may have to setup a proxy configuration like export http_proxy=http://proxy.site.org:3128):
+
+python setup.py build test
 
 and install pyFAI with
 
 python setup.py install
 
-most likely you will need to do this with root privileges (e.g. put sudo
+Most likely you will need to do this with root privileges (e.g. put sudo
 in front of the command).
 
 
@@ -79,27 +83,28 @@ The extra ubuntu packages needed are:
     * python-scipy
     * python-matplotlib
     * python-dev
-
-Only Fabio has to be downloaded separatly and installed
-    * python-fabio (from http://sourceforge.net/projects/fable/files/fabio/)
+    * python-fabio
 
 using apt-get these can be installed as:
 
-sudo apt-get install python-numpy python-scipy python-matplotlib  python-dev
-wget http://sourceforge.net/projects/fable/files/fabio/0.0.7/squeeze/python-fabio_0.0.7-1_amd64.deb/download
-sudo dpkg -i python-fabio_0.0.7-1_amd64.deb
+sudo apt-get install python-numpy python-scipy python-matplotlib  python-dev python-fabio
 
 
 Contributors
 ============
- * Jérôme Kieffer
- * Dimitris Karkoulis
- * Jon Wright
- * Frédéric-Emmanuel Picca
-
+ * Jérôme Kieffer (ESRF)
+ * Dimitris Karkoulis (ESRF)
+ * Jon Wright (ESF)
+ * Frédéric-Emmanuel Picca (Soleil)
+ * Amund Hov (ESRF)
+ * Dodogerstlin @github
+ * Gunthard Benecke (Desy)
+ * Gero Flucke (Desy)
+ 
 Indirect contributors (ideas, ...):
 -----------------------------------
  * Peter Boesecke
  * Manuel Sánchez del Río
  * Vicente Armando Solé
-
+ * Brian Pauw
+ * Veijo Honkimaki 

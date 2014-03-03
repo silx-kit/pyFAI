@@ -46,7 +46,8 @@ import os
 import logging
 import threading
 import numpy
-from pyFAI.opencl import ocl, pyopencl
+from .utils import get_cl_file
+from .opencl import ocl, pyopencl
 if pyopencl:
     mf = pyopencl.mem_flags
 else:
@@ -280,22 +281,24 @@ class Integrator1d(object):
 
     def _compile_kernels(self, kernel_file=None):
         """
-
+        Compile the kernel
+        
+        @param kernel_file: filename of the kernel (to test other kernels)
         """
         kernel_name = "ocl_azim_kernel_2.cl"
         if kernel_file is None:
             if os.path.isfile(kernel_name):
                 kernel_file = os.path.abspath(kernel_name)
             else:
-                kernel_file = \
-                    os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                 kernel_name)
+                kernel_file = get_cl_file(kernel_name)
         else:
             kernel_file = str(kernel_file)
-        kernel_src = open(kernel_file).read()
+
+        with open(kernel_file, "r") as kernelFile:
+            kernel_src = kernelFile.read()
 
         compile_options = "-D BLOCK_SIZE=%i  -D BINS=%i -D NN=%i" % \
-            (self.BLOCK_SIZE, self.nBins, self.nData)
+                            (self.BLOCK_SIZE, self.nBins, self.nData)
         if self.useFp64:
             compile_options += " -D ENABLE_FP64"
 
@@ -745,6 +748,8 @@ class Integrator1d(object):
                 logger.warning("This is a workaround for Apple's OpenCL"
                                " on CPU: enforce BLOCK_SIZE=1")
                 self.BLOCK_SIZE = 1
+                self.tdim = (self.BLOCK_SIZE,)
+
                 if self.nBins:
                     self.wdim_bins = (self.nBins + self.BLOCK_SIZE - 1) & \
                         ~ (self.BLOCK_SIZE - 1),

@@ -28,8 +28,8 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/01/2013"
-__status__ = "beta"
+__date__ = "21/11/2013"
+__status__ = "stable"
 
 import os, logging
 logger = logging.getLogger("pyFAI.opencl")
@@ -38,12 +38,12 @@ try:
     import pyopencl
 #    from pyFAI.opencl import ocl
 except ImportError:
-    logger.error("Unable to import pyOpenCl. Please install it from: http://pypi.python.org/pypi/pyopencl")
+    logger.warning("Unable to import pyOpenCl. Please install it from: http://pypi.python.org/pypi/pyopencl")
     pyopencl = None
 
-FLOP_PER_CORE = {"GPU": 64,  # GPU, Fermi at least perform 64 flops per cycle/multicore, G80 were at 24 or 48 ...
-                  "CPU": 4  # CPU, at least intel's have 4 operation per cycle
-                  }
+FLOP_PER_CORE = { "GPU": 64, # GPU, Fermi at least perform 64 flops per cycle/multicore, G80 were at 24 or 48 ...
+                  "CPU": 4,  # CPU, at least intel's have 4 operation per cycle
+                  "ACC": 8}  # ACC: the Xeon-phi (MIC) appears to be able to process 8 Flops per hyperthreaded-core
 NVIDIA_FLOP_PER_CORE = {(1, 0): 24,  # Guessed !
                          (1, 1): 24,  # Measured on G98 [Quadro NVS 295]
                          (1, 2): 24,  # Guessed !
@@ -58,11 +58,11 @@ class Device(object):
     """
     Simple class that contains the structure of an OpenCL device
     """
-    def __init__(self, name="None", type=None, version=None, driver_version=None,
+    def __init__(self, name="None", dtype=None, version=None, driver_version=None,
                  extensions="", memory=None, available=None,
-                 cores=None, frequency=None, flop_core=None, id=0):
+                 cores=None, frequency=None, flop_core=None, idx=0):
         self.name = name.strip()
-        self.type = type
+        self.type = dtype
         self.version = version
         self.driver_version = driver_version
         self.extensions = extensions.split()
@@ -70,9 +70,9 @@ class Device(object):
         self.available = available
         self.cores = cores
         self.frequency = frequency
-        self.id = id
+        self.id = idx
         if not flop_core:
-            flop_core = FLOP_PER_CORE.get(type, 1)
+            flop_core = FLOP_PER_CORE.get(dtype, 1)
         if cores and frequency:
             self.flops = cores * frequency * flop_core
         else:
@@ -86,13 +86,13 @@ class Platform(object):
     """
     Simple class that contains the structure of an OpenCL platform
     """
-    def __init__(self, name="None", vendor="None", version=None, extensions=None, id=0):
+    def __init__(self, name="None", vendor="None", version=None, extensions=None, idx=0):
         self.name = name.strip()
         self.vendor = vendor.strip()
         self.version = version
         self.extensions = extensions.split()
         self.devices = []
-        self.id = id
+        self.id = idx
 
     def __repr__(self):
         return "%s" % self.name
@@ -126,8 +126,8 @@ class OpenCL(object):
     """
     platforms = []
     if pyopencl:
-        for id, platform in enumerate(pyopencl.get_platforms()):
-            pypl = Platform(platform.name, platform.vendor, platform.version, platform.extensions, id)
+        for idx, platform in enumerate(pyopencl.get_platforms()):
+            pypl = Platform(platform.name, platform.vendor, platform.version, platform.extensions, idx)
             for idd, device in enumerate(platform.get_devices()):
                 ####################################################
                 # Nvidia does not report int64 atomics (we are using) ...
@@ -136,7 +136,9 @@ class OpenCL(object):
                 extensions = device.extensions
                 if (pypl.vendor == "NVIDIA Corporation") and ('cl_khr_fp64' in extensions):
                                 extensions += ' cl_khr_int64_base_atomics cl_khr_int64_extended_atomics'
-                devtype = pyopencl.device_type.to_string(device.type)
+                devtype = pyopencl.device_type.to_string(device.type).upper()
+                if len(devtype) > 3:
+                    devtype = devtype[:3]
                 if (pypl.vendor == "NVIDIA Corporation") and (devtype == "GPU") and "compute_capability_major_nv" in dir(device):
                     comput_cap = device.compute_capability_major_nv, device.compute_capability_minor_nv
                     flop_core = NVIDIA_FLOP_PER_CORE.get(comput_cap, min(NVIDIA_FLOP_PER_CORE.values()))
@@ -179,7 +181,7 @@ class OpenCL(object):
                 out = self.platforms[platid]
         return out
 
-    def select_device(self, type="ALL", memory=None, extensions=[], best=True):
+    def select_device(self, dtype="ALL", memory=None, extensions=[], best=True, **kwargs):
         """
         Select a device based on few parameters (at the end, keep the one with most memory)
 
@@ -188,11 +190,16 @@ class OpenCL(object):
         @param extensions: list of extensions to be present
         @param best: shall we look for the
         """
-        type = type.upper()
+        if "type" in kwargs:
+            dtype = kwargs["type"].upper()
+        else:
+            dtype = dtype.upper()
+        if len(dtype) > 3:
+            dtype = dtype[:3]
         best_found = None
         for platformid, platform in enumerate(self.platforms):
             for deviceid, device in enumerate(platform.devices):
-                if (type in ["ALL", "DEF"]) or (device.type == type):
+                if (dtype in ["ALL", "DEF"]) or (device.type == dtype):
                     if (memory is None) or (memory <= device.memory):
                         found = True
                         for ext in extensions:
@@ -230,7 +237,7 @@ class OpenCL(object):
             if useFp64:
                 ids = ocl.select_device(type=devicetype, extensions=["cl_khr_int64_base_atomics"])
             else:
-                ids = ocl.select_device(type=devicetype)
+                ids = ocl.select_device(dtype=devicetype)
             if ids:
                 platformid = ids[0]
                 deviceid = ids[1]
@@ -245,3 +252,4 @@ if pyopencl:
     ocl = OpenCL()
 else:
     ocl = None
+

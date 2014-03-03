@@ -69,14 +69,18 @@ PyFAI executables
 PyFAI was designed to be used by scientists needing a simple and
 effective tool for azimuthal integration. Two command line programs
 *pyFAI-waxs* and *pyFAI-saxs* are provided with pyFAI for performing the
-integration of one or more images. The waxs version outputs result in
+integration of one or more images on the command line. 
+The waxs version outputs result in
 :math:`2\theta /I`, whereas the saxs version outputs result in
-:math:`q/I(/\sigma)`. Options for these programs are parameter file (*poni-file*)
+:math:`q/I(/\sigma)`. Options for these programs are parameter file 
+(*poni-file*)
 describing the geometry and the mask file. They can also do some
 pre-processing like dark-noise subtraction and flat-field correction
 (solid-angle correction is done by default).
 
-A new Grqaphical interface based on Qt is under development
+A new Graphical interface based on Qt is under development:  *pyFAI-integrate*
+offers all options possible for azimuthal integration (dark/flat/polarization, 
+....) in addition to a finer tuning for the computing device selection (CPU/GPU).
 
 Python library
 ..............

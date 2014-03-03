@@ -33,8 +33,8 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/06/2013"
-__status__ = "development"
+__date__ = "27/02/2014"
+__status__ = "production"
 
 import os, sys, time, logging, types
 from optparse import OptionParser
@@ -51,8 +51,8 @@ from . import units
 from .utils import averageImages, measure_offset, expand_args
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import hc
-from . import version
-
+from . import version as PyFAI_VERSION
+from .calibrant import Calibrant, ALL_CALIBRANTS
 matplotlib.interactive(True)
 
 class AbstractCalibration(object):
@@ -66,25 +66,25 @@ class AbstractCalibration(object):
                          " is why the window showing the diffraction image"\
                          " is closed"
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None,
-                 splineFile=None, detector=None, spacing_file=None, wavelength=None):
+                 splineFile=None, detector=None, wavelength=None, calibrant=None):
         """
         Constructor:
 
         @param dataFiles: list of filenames containing data images
         @param darkFiles: list of filenames containing dark current images
-
+        @param flatFiles: list of filenames containing flat images
+        @param pixelSize: size of the pixel in meter as 2 tuple
+        @param splineFile: file containing the distortion of the taper
+        @param detector: Detector name or instance
+        @param wavelength: radiation wavelength in meter
+        @param calibrant: pyFAI.calibrant.Calibrant instance
         """
-        self.dataFiles = dataFiles or []
-        self.darkFiles = darkFiles or []
-        self.flatFiles = flatFiles or []
+        self.dataFiles = dataFiles
+        self.darkFiles = darkFiles
+        self.flatFiles = flatFiles
         self.pointfile = None
 
-        if type(detector) in types.StringTypes:
-            self.detector = detector_factory(detector)
-        elif isinstance(detector, Detector):
-            self.detector = detector
-        else:
-            self.detector = Detector()
+        self.detector = self.get_detector(detector)
 
         if splineFile and os.path.isfile(splineFile):
             self.detector.splineFile = os.path.abspath(splineFile)
@@ -108,7 +108,18 @@ class AbstractCalibration(object):
         self.basename = None
         self.geoRef = None
         self.reconstruct = False
-        self.spacing_file = spacing_file
+        if calibrant:
+            if isinstance(calibrant, Calibrant):
+                self.calibrant = calibrant
+            elif calibrant in ALL_CALIBRANTS:
+                self.calibrant = ALL_CALIBRANTS[calibrant]
+            elif os.path.isfile(celibrant) and os.path.isfile(calibrant):
+                self.calibrant = Calibrant(calibrant)
+            else:
+                logger.error("Unable to handle such calibrant %s" % calibrant)
+                self.calibrant = None
+        else:
+            self.calibrant = None
         self.mask = None
         self.saturation = 0.1
         self.fixed = ["wavelength"]  # parameter fixed during optimization
@@ -118,34 +129,54 @@ class AbstractCalibration(object):
         self.interactive = True
         self.filter = "mean"
         self.basename = None
-        self.saturation = 0.1
         self.weighted = False
         self.polarization_factor = None
         self.parser = None
         self.nPt_1D = 1024
         self.nPt_2D_azim = 360
         self.nPt_2D_rad = 400
-        self.units = None
+        self.unit = None
         self.keep = True
 
     def __repr__(self):
-        lst = ["Calibration object:",
-             "data= " + ", ".join(self.dataFiles),
-             "dark= " + ", ".join(self.darkFiles),
-             "flat= " + ", ".join(self.flatFiles),
-             "fixed=" + ", ".join(self.fixed)]
+        lst = ["Calibration object:"]
+        if self.dataFiles:
+            lst.append("data= " + ", ".join(self.dataFiles))
+        else:
+            lst.append("data= None")
+        if self.darkFiles:
+            lst.append("dark= " + ", ".join(self.darkFiles))
+        else:
+            lst.append("dark= None")
+        if self.flatFiles:
+            lst.append("flat= " + ", ".join(self.flatFiles))
+        else:
+            lst.append("flat= None")
+        if self.fixed:
+            lst.append("fixed=" + ", ".join(self.fixed))
+        else:
+            lst.append("fixed= None")
         lst.append(self.detector.__repr__())
         return os.linesep.join(lst)
 
-    def configure_parser(self, version="%prog " + version, usage="%prog [options] inputfile.edf",
+    def get_detector(self, detector):
+        if type(detector) in types.StringTypes:
+            try:
+                return detector_factory(detector)
+            except RuntimeError:
+                sys.exit(-1)
+        elif isinstance(detector, Detector):
+            return detector
+        else:
+            return Detector()
+
+    def configure_parser(self, version="%prog from pyFAI version " + PyFAI_VERSION,
+                         usage="%prog [options] inputfile.edf",
                          description=None, epilog=None):
         """Common configuration for parsers
         """
         self.parser = OptionParser(usage=usage, version=version,
                               description=description, epilog=epilog)
-#        self.parser.add_option("-V", "--version", dest="version", action="store_true",
-#                          help="print version of the program and quit",
-#                          default=False)
         self.parser.add_option("-o", "--out", dest="outfile",
                           help="Filename where processed image is saved", metavar="FILE",
                           default="merged.edf")
@@ -153,7 +184,7 @@ class AbstractCalibration(object):
                           action="store_true", dest="debug", default=False,
                           help="switch to debug/verbose mode")
         self.parser.add_option("-S", "--spacing", dest="spacing", metavar="FILE",
-                      help="file containing d-spacing of the reference sample (MANDATORY)",
+                      help="Calibrant name or file containing d-spacing of the reference sample (MANDATORY)",
                       default=None)
         self.parser.add_option("-w", "--wavelength", dest="wavelength", type="float",
                       help="wavelength of the X-Ray beam in Angstrom", default=None)
@@ -278,11 +309,9 @@ class AbstractCalibration(object):
                 logger.error("No flat file exists !!!")
                 self.flatFiles = None
 
-        if options.mask and os.path.isfile(options.mask):
-            self.mask = (fabio.open(options.mask).data != 0)
 
         if options.detector_name:
-            self.detector = detector_factory(options.detector_name)
+            self.detector = self.get_detector(options.detector_name)
             self.ai.detector = self.detector
         if options.spline:
             if "Pilatus" in self.detector.name:
@@ -292,19 +321,32 @@ class AbstractCalibration(object):
             else:
                 logger.error("Unknown spline file %s" % (options.spline))
 
+        if options.mask and os.path.isfile(options.mask):
+            self.mask = (fabio.open(options.mask).data != 0)
+        else:  # Use default mask provided by detector
+            self.mask = self.detector.mask
+
+
         self.pointfile = options.npt
-        self.spacing_file = os.path.abspath(options.spacing)
-        if not os.path.isfile(self.spacing_file):
-            logger.error("No such d-Spacing file: %s" % options.spacing)
-            self.spacing_file = None
-        if self.spacing_file is None:
-            self.read_dSpacingFile()
+        if options.spacing:
+            if options.spacing in ALL_CALIBRANTS:
+                self.calibrant = ALL_CALIBRANTS[options.spacing]
+            elif os.path.isfile(options.spacing):
+                self.calibrant = Calibrant(options.spacing)
+            else:
+                logger.error("No such Calibrant / d-Spacing file: %s" % options.spacing)
+
+        if self.calibrant is None:
+            self.read_dSpacingFile(True)
+
         if options.wavelength:
             self.ai.wavelength = self.wavelength = 1e-10 * options.wavelength
         elif options.energy:
             self.ai.wavelength = self.wavelength = 1e-10 * hc / options.energy
-        else:
-            self.read_wavelength()
+#        else:
+            # This should be read from the poni. It it is missing; it is called in preprocess.
+#            self.read_wavelength()
+#            pass
         if options.distance:
             self.ai.dist = 1e-3 * options.distance
         if options.poni1 is not None:
@@ -317,8 +359,6 @@ class AbstractCalibration(object):
             self.ai.rot2 = options.rot2
         if options.rot3 is not None:
             self.ai.rot3 = options.rot3
-        if options.mask is not None:
-            self.mask = (fabio.open(options.mask).data != 0)
         self.dataFiles = expand_args(args)
         if not self.dataFiles:
             raise RuntimeError("Please provide some calibration images ... "
@@ -351,6 +391,12 @@ class AbstractCalibration(object):
         self.nPt_2D_azim = options.nPt_2D_azim
         self.nPt_2D_rad = options.nPt_2D_rad
         self.unit = units.to_unit(options.unit)
+        if options.background is not None:
+            try:
+                self.cutBackground = float(options.background)
+            except Exception:
+                self.cutBackground = True
+
         return options, args
 
     def get_pixelSize(self, ans):
@@ -387,11 +433,11 @@ class AbstractCalibration(object):
                 self.get_pixelSize(ans)
 
     def read_dSpacingFile(self, verbose=True):
-        """Read the name of the file with d-spacing"""
-        if (self.spacing_file is None):
+        """Read the name of the calibrant / file with d-spacing"""
+        if (self.calibrant is None):
             comments = ["pyFAI calib has changed !!!",
                         "Instead of entering the 2theta value, which was tedious,"
-                        "the program takes a d-spacing file in input "
+                        "the program takes a calibrant name or a d-spacing file in input "
                         "(just a serie of number representing the inter-planar "
                         "distance in Angstrom)",
                         "and an associated wavelength",
@@ -399,11 +445,16 @@ class AbstractCalibration(object):
                         " which is usually a simpler than the 2theta value."]
             if verbose:
                 print(os.linesep.join(comments))
-            ans = ""
-            while not os.path.isfile(ans):
-                ans = raw_input("Please enter the name of the file"
+            valid = False
+            while valid:
+                ans = raw_input("Please enter the calibrant name or the file"
                                 " containing the d-spacing:\t").strip()
-            self.spacing_file = ans
+                if ans in ALL_CALIBRANTS:
+                    self.calibrant = ALL_CALIBRANTS[ans]
+                    valid = True
+                elif os.path.isfile(ans):
+                    self.calibrant = Calibrant(ans)
+                    valid = True
 
     def read_wavelength(self):
         """Read the wavelength"""
@@ -420,6 +471,7 @@ class AbstractCalibration(object):
         do dark, flat correction thresholding, ...
         and read missing data from keyboard if needed
         """
+        # GF: self.saturation ignored if none of the other options active...
         if len(self.dataFiles) > 1 or self.cutBackground or self.darkFiles or self.flatFiles:
             self.outfile = averageImages(self.dataFiles, self.outfile,
                                          threshold=self.saturation, minimum=self.cutBackground,
@@ -430,19 +482,26 @@ class AbstractCalibration(object):
 
         self.basename = os.path.splitext(self.outfile)[0]
         self.pointfile = self.basename + ".npt"
+        if self.wavelength is None:
+            self.wavelength = self.ai.wavelength
 
         self.peakPicker = PeakPicker(self.outfile, reconst=self.reconstruct, mask=self.mask,
-                                     pointfile=self.pointfile, dSpacing=self.spacing_file,
+                                     pointfile=self.pointfile, calibrant=self.calibrant,
                                      wavelength=self.ai.wavelength)
         if not self.keep:
             self.peakPicker.points.reset()
-            self.peakPicker.points.wavelength = self.wavelength
-        if not self.peakPicker.points.dSpacing:
+            if not self.peakPicker.points.calibrant.wavelength:
+                self.peakPicker.points.calibrant.wavelength = self.ai.wavelength
+            elif self.ai.wavelength != self.peakPicker.points.calibrant.wavelength:
+                self.peakPicker.points.calibrant.setWavelength_change2th(self.ai.wavelength)
+        if not self.peakPicker.points.calibrant.dSpacing:
+            wl = self.peakPicker.points.calibrant.wavelength
             self.read_dSpacingFile()
-            self.peakPicker.points.load_dSpacing(self.spacing_file)
-        if not self.peakPicker.points.wavelength:
+            if wl:
+                self.peakPicker.points.calibrant.wavelength = wl
+        if not self.peakPicker.points.calibrant.wavelength:
             self.read_wavelength()
-            self.peakPicker.points.wavelength = self.wavelength
+            self.peakPicker.points.calibrant.wavelength = self.wavelength
 
         if self.gui:
             self.peakPicker.gui(log=True, maximize=True)
@@ -475,6 +534,7 @@ class AbstractCalibration(object):
                     self.geoRef.refine2_wavelength(1000000, fix=self.fixed)
                     print(self.geoRef)
                     count += 1
+                self.peakPicker.points.setWavelength_change2th(self.geoRef.wavelength)
             self.geoRef.save(self.basename + ".poni")
             self.geoRef.del_ttha()
             self.geoRef.del_dssa()
@@ -593,10 +653,10 @@ class AbstractCalibration(object):
                                 polarization_factor=self.polarization_factor,
                                 method="splitbbox")
         t4 = time.time()
-        img = self.geoRef.integrate2d(self.peakPicker.data, self.nPt_2D_rad, self.nPt_2D_azim,
+        img, pos_rad, pos_azim = self.geoRef.integrate2d(self.peakPicker.data, self.nPt_2D_rad, self.nPt_2D_azim,
                                 filename=self.basename + ".azim", unit=self.unit,
                                 polarization_factor=self.polarization_factor,
-                                method="splitbbox")[0]
+                                method="splitbbox")
         t5 = time.time()
         print (os.linesep.join(["Timings:",
                                 " * two theta array generation %.3fs" % (t1 - t0),
@@ -607,10 +667,34 @@ class AbstractCalibration(object):
                                 " * 2D Azimuthal integration   %.3fs" % (t5 - t4)]))
         if self.gui:
             xrpd.plot(a, b)
+            # GF: Add vertical line for each used calibration ring:
+            xValues = None
+            twoTheta = numpy.array(self.peakPicker.points.calibrant.get_2th())  # in radian
+            if self.unit == units.TTH_DEG:
+                xValues = numpy.rad2deg(twoTheta)
+            elif self.unit == units.TTH_RAD:
+                xValues = twoTheta
+            elif self.unit == units.Q_A:
+                xValues = (4.e-10*numpy.pi/self.wavelength) * numpy.sin(.5*twoTheta)
+            elif self.unit == units.Q_NM:
+                xValues = (4.e-9*numpy.pi/self.wavelength) * numpy.sin(.5*twoTheta)
+            elif self.unit == units.R_MM:
+                # GF: correct formula?
+                dBeamCentre = self.geoRef.getFit2D()["directDist"] # in mm!!
+                xValues = dBeamCentre * numpy.tan(twoTheta)
+            else:
+                logger.warning('Unknown unit %s, do not plot calibration rings' % str(self.unit))
+            if xValues is not None:
+                for x in xValues:
+                    line = matplotlib.lines.Line2D([x, x], xrpd.axis()[2:4],
+                                                   color='red', linestyle='--')
+                    xrpd.add_line(line)
             xrpd.set_title("1D integration")
             xrpd.set_xlabel(self.unit)
             xrpd.set_ylabel("Intensity")
-            xrpd2.imshow(numpy.log(img - img.min() + 1e-3), origin="lower")
+            xrpd2.imshow(numpy.log(img - img.min() + 1e-3), origin="lower",
+                         extent=[pos_rad.min(), pos_rad.max(), pos_azim.min(), pos_azim.max()],
+                         aspect="auto")
             xrpd2.set_title("2D regrouping")
             xrpd2.set_xlabel(self.unit)
             xrpd2.set_ylabel("Azimuthal angle (deg)")
@@ -625,15 +709,29 @@ class Calibration(AbstractCalibration):
     class doing the calibration of frames
     """
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None,
-                 splineFile=None, detector=None, gaussianWidth=None, spacing_file=None,
-                 wavelength=None):
+                 splineFile=None, detector=None, gaussianWidth=None,
+                 wavelength=None, calibrant=None):
         """
-        Constructor
+        Constructor for calibration:
 
+        @param dataFiles: list of filenames containing data images
+        @param darkFiles: list of filenames containing dark current images
+        @param flatFiles: list of filenames containing flat images
+        @param pixelSize: size of the pixel in meter as 2 tuple
+        @param splineFile: file containing the distortion of the taper
+        @param detector: Detector name or instance
+        @param wavelength: radiation wavelength in meter
+        @param calibrant: pyFAI.calibrant.Calibrant instance
 
         """
-        AbstractCalibration.__init__(self, dataFiles, darkFiles, flatFiles, pixelSize,
-                                     splineFile, detector, spacing_file, wavelength)
+        AbstractCalibration.__init__(self, dataFiles=dataFiles,
+                                     darkFiles=darkFiles,
+                                     flatFiles=flatFiles,
+                                     pixelSize=pixelSize,
+                                     splineFile=splineFile,
+                                     detector=detector,
+                                     calibrant=calibrant,
+                                     wavelength=wavelength)
         self.gaussianWidth = gaussianWidth
         self.labelPattern = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
 
@@ -659,7 +757,7 @@ and the 6 refined parameters (distance, center, rotation) and wavelength.
 An 1D and 2D diffraction patterns are also produced. (.dat and .azim files)
         """
         usage = "%prog [options] -w 1 -D detector -S calibrant.D imagefile.edf"
-        self.configure_parser(usage=usage,description=description,epilog=epilog)  # common
+        self.configure_parser(usage=usage, description=description, epilog=epilog)  # common
         self.parser.add_option("-r", "--reconstruct", dest="reconstruct",
               help="Reconstruct image where data are masked or <0  (for Pilatus "\
               "detectors or detectors with modules)",
@@ -685,11 +783,6 @@ decrease the value if arcs are mixed together.""", default=None)
             self.labelPattern = [[1] * 3] * 3
         else:
             self.labelPattern = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
-        if options.background is not None:
-            try:
-                self.cutBackground = float(options.background)
-            except Exception:
-                self.cutBackground = True
 
         if options.pixel is not None:
             self.get_pixelSize(options.pixel)
@@ -726,10 +819,25 @@ decrease the value if arcs are mixed together.""", default=None)
         """
         self.geoRef = GeometryRefinement(self.data, dist=0.1, detector=self.detector,
                                          wavelength=self.wavelength,
-                                         dSpacing=self.peakPicker.points.dSpacing)
+                                         calibrant=self.calibrant)
         paramfile = self.basename + ".poni"
         if os.path.isfile(paramfile):
             self.geoRef.load(paramfile)
+            if self.wavelength:
+                try:
+                    old_wl = self.geoRef.wavelength
+                except:
+                    pass
+                else:
+                    logger.warning("Overwriting wavelength from PONI file (%s) with the one from command line (%s)" % (old_wl, self.wavelength))
+                self.geoRef.wavelength = self.wavelength
+            if self.detector:
+                gr_det = str(self.geoRef.detector)
+                nw_det = str(self.detector)
+                if gr_det != nw_det:
+                    logger.warning("Overwriting detector from PONI file: %s%s with the one from command line %s%s" % (os.linesep, gr_det, os.linesep, nw_det))
+                    self.geoRef.detector = self.detector
+
         AbstractCalibration.refine(self)
 
 
@@ -742,12 +850,27 @@ class Recalibration(AbstractCalibration):
     class doing the re-calibration of frames
     """
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None,
-                 splineFile=None, detector=None, spacing_file=None, wavelength=None):
+                 splineFile=None, detector=None, wavelength=None, calibrant=None):
         """
-        """
-        AbstractCalibration.__init__(self, dataFiles, darkFiles, flatFiles, pixelSize,
-                                     splineFile, detector, spacing_file, wavelength)
+        Constructor for Recalibration:
 
+        @param dataFiles: list of filenames containing data images
+        @param darkFiles: list of filenames containing dark current images
+        @param flatFiles: list of filenames containing flat images
+        @param pixelSize: size of the pixel in meter as 2 tuple
+        @param splineFile: file containing the distortion of the taper
+        @param detector: Detector name or instance
+        @param wavelength: radiation wavelength in meter
+        @param calibrant: pyFAI.calibrant.Calibrant instance
+        """
+        AbstractCalibration.__init__(self, dataFiles=dataFiles,
+                                     darkFiles=darkFiles,
+                                     flatFiles=flatFiles,
+                                     pixelSize=pixelSize,
+                                     splineFile=splineFile,
+                                     detector=detector,
+                                     wavelength=wavelength,
+                                     calibrant=calibrant)
 
     def parse(self):
         """
@@ -803,7 +926,7 @@ without human intervention (--no-gui --no-interactive options).
 
 
     def extract_cpt(self):
-        d = numpy.loadtxt(self.spacing_file)
+        d = numpy.array(self.calibrant.dSpacing)
         tth = 2.0 * numpy.arcsin(self.ai.wavelength / (2.0e-10 * d))
         tth.sort()
         tth = tth[numpy.where(numpy.isnan(tth) - 1)]
@@ -869,7 +992,8 @@ without human intervention (--no-gui --no-interactive options).
 
                 self.peakPicker.points.append(res, tth[i], i)
                 if self.gui:
-                    self.peakPicker.display_points()
+                    # minIndex: skip redrawing of previous rings
+                    self.peakPicker.display_points(minIndex=i)
                     self.peakPicker.fig.canvas.draw()
 
         self.peakPicker.points.save(self.basename + ".npt")
@@ -887,7 +1011,7 @@ without human intervention (--no-gui --no-interactive options).
         self.geoRef = GeometryRefinement(self.data, dist=self.ai.dist, poni1=self.ai.poni1,
                                          poni2=self.ai.poni2, rot1=self.ai.rot1,
                                          rot2=self.ai.rot2, rot3=self.ai.rot3,
-                                         detector=self.ai.detector, dSpacing=self.spacing_file,
+                                         detector=self.ai.detector, calibrant=self.calibrant,
                                          wavelength=self.ai._wavelength)
         self.ai = self.geoRef
         self.geoRef.set_tolerance(10)
@@ -929,10 +1053,9 @@ class CheckCalib(object):
 calibration and everything else like flat-field correction, distortion
 correction. Maybe the future lies over there ...
         """
-        parser = OptionParser(usage=usage, version="%prog " + version, description=description)
-#        parser.add_option("-V", "--version", dest="version", action="store_true",
-#                          help="print version of the program and quit", metavar="FILE",
-#                          default=False)
+        parser = OptionParser(usage=usage,
+                              version="%prog from pyFAI version " + PyFAI_VERSION,
+                              description=description)
         parser.add_option("-v", "--verbose",
                           action="store_true", dest="verbose", default=False,
                           help="switch to debug mode")
@@ -954,9 +1077,6 @@ correction. Maybe the future lies over there ...
         if options.verbose:
             logger.setLevel(logging.DEBUG)
 
-#        if options.version:
-#            print("Check calibrarion: version %s" % version)
-#            sys.exit(0)
         if options.mask is not None:
             self.mask = (fabio.open(options.mask).data != 0)
         args = expand_args(args)

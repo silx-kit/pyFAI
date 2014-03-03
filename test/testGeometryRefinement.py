@@ -40,7 +40,8 @@ import sys
 from utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
-from pyFAI.geometryRefinement import GeometryRefinement
+from pyFAI import geometryRefinement
+GeometryRefinement = geometryRefinement.GeometryRefinement
 class test_geometryRefinement(unittest.TestCase):
     """ tests geometric refinements with or without spline"""
 
@@ -101,37 +102,35 @@ class test_geometryRefinement(unittest.TestCase):
 [2598.0000021676074, 386.99999979901884, 0.94195419730133967],
 [2959.9998766657627, 410.00000323183838, 0.94195419730133967],
 ]
-        data = numpy.array(data)
+        data = numpy.array(data, dtype=numpy.float64)
 #        tth = data[:,2]
         ring = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3,
                 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5,
                 5, 5, 5, 5, 5]
-        ds = [ 4.15695   ,  2.93940753,  2.4000162 ,  2.078475  ,  1.85904456,
-        1.69706773,  1.46970377,  1.38565   ,  1.31454301,  1.25336758,
-        1.2000081 ,  1.15293049,  1.11099162,  1.0392375 ,  1.00820847,
-        0.97980251,  0.95366973,  0.92952228,  0.90712086,  0.88626472,
-        0.84853387,  0.83139   ,  0.81524497,  0.8000054 ,  0.77192624,
-        0.75895176,  0.73485188,  0.72363211,  0.71291104,  0.7026528 ,
-        0.692825  ,  0.68339837,  0.67434634,  0.65727151,  0.64920652,
-        0.64143131,  0.63392893,  0.62668379,  0.61968152,  0.61290884,
-        0.60000405,  0.59385   ,  0.58788151,  0.58208943,  0.57646525,
-        0.571001  ,  0.56568924,  0.55549581,  0.55060148,  0.54583428,
-        0.54118879,  0.53224291,  0.52793318,  0.52372647,  0.51961875,
-        0.51560619,  0.51168517,  0.50785227,  0.50410423,  0.50043797,
+        ds = [ 4.15695   , 2.93940753, 2.4000162 , 2.078475  , 1.85904456,
+        1.69706773, 1.46970377, 1.38565   , 1.31454301, 1.25336758,
+        1.2000081 , 1.15293049, 1.11099162, 1.0392375 , 1.00820847,
+        0.97980251, 0.95366973, 0.92952228, 0.90712086, 0.88626472,
+        0.84853387, 0.83139   , 0.81524497, 0.8000054 , 0.77192624,
+        0.75895176, 0.73485188, 0.72363211, 0.71291104, 0.7026528 ,
+        0.692825  , 0.68339837, 0.67434634, 0.65727151, 0.64920652,
+        0.64143131, 0.63392893, 0.62668379, 0.61968152, 0.61290884,
+        0.60000405, 0.59385   , 0.58788151, 0.58208943, 0.57646525,
+        0.571001  , 0.56568924, 0.55549581, 0.55060148, 0.54583428,
+        0.54118879, 0.53224291, 0.52793318, 0.52372647, 0.51961875,
+        0.51560619, 0.51168517, 0.50785227, 0.50410423, 0.50043797,
         0.49685056]#LaB6
-
+        wavelength = 1.54e-10
+        calibrant = pyFAI.calibrant.Calibrant(dSpacing=ds, wavelength=wavelength)
+        #calibrant = pyFAI.calibrant.ALL_CALIBRANTS["LaB6"]
         data[:, 2] = ring
 
-        r = GeometryRefinement(data, pixel1=pixelSize[0], pixel2=pixelSize[1], 
-                               wavelength=1.54e-10, dSpacing=ds)
+        r = GeometryRefinement(data, pixel1=pixelSize[0], pixel2=pixelSize[1],
+                               wavelength=wavelength, calibrant=calibrant)
         r.refine2(10000000)
 
-        ref = numpy.array([0.089652, 0.030970, 0.027668, -0.699407, 0.010067, 0.000001])
+#        ref = numpy.array([0.089652, 0.030970, 0.027668, -0.699407, 0.010067, 0.000001])
         ref = numpy.array([0.089750, 0.030897, 0.027172, -0.704730, 0.010649, 3.51e-06])
-#        print "Réference:"
-#        print Geometry(*ref, pixel1=15e-6, pixel2=15e-6)
-#        print "Obtained:"
-#        print r
         self.assertAlmostEqual(abs(numpy.array(r.param) - ref).max(), 0.0, 3, "ref=%s obt=%s delta=%s" % (list(ref), r.param, abs(numpy.array(r.param) - ref)))
 
 
@@ -196,8 +195,9 @@ class test_geometryRefinement(unittest.TestCase):
         # data[:, 2] = ring
         wl = 2e-10 * numpy.sin(tth / 2.0)
         ds = [1.0]
+        calibrant = pyFAI.calibrant.Calibrant(dSpacing=ds, wavelength=wl)
 #        print tth, wl, ds, 2 * ds[0] * numpy.sin(tth / 2)
-        r2 = GeometryRefinement(data, dist=0.1, splineFile=splineFine, wavelength=wl, dSpacing=ds)
+        r2 = GeometryRefinement(data, dist=0.1, splineFile=splineFine, wavelength=wl, calibrant=calibrant)
 #        r2.poni1 = 5e-2
 #        r2.poni2 = 5e-2
         r2.rot1_max = 0

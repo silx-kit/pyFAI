@@ -38,7 +38,9 @@ import logging
 import numpy
 import types
 from math import pi
-from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
+from . import azimuthalIntegrator
+from .calibrant import Calibrant, ALL_CALIBRANTS
+AzimuthalIntegrator = azimuthalIntegrator.AzimuthalIntegrator
 from scipy.optimize import fmin, leastsq, fmin_slsqp, anneal
 
 if os.name != "nt":
@@ -57,12 +59,12 @@ class GeometryRefinement(AzimuthalIntegrator):
     def __init__(self, data, dist=1, poni1=None, poni2=None,
                  rot1=0, rot2=0, rot3=0,
                  pixel1=None, pixel2=None, splineFile=None, detector=None,
-                 wavelength=None, dSpacing=None):
+                 wavelength=None, calibrant=None):
         """
         @param data: ndarray float64 shape = n, 3
             col0: pos in dim0 (in pixels)
             col1: pos in dim1 (in pixels)
-            col2: ring index in dSpacing file
+            col2: ring index in calibrant object
         @param dist: guessed sample-detector distance (optional, in m)
         @param poni1: guessed PONI coordinate along the Y axis (optional, in m)
         @param poni2: guessed PONI coordinate along the X axis (optional, in m)
@@ -74,12 +76,12 @@ class GeometryRefinement(AzimuthalIntegrator):
         @param splineFile: file describing the detector as 2 cubic splines. Replaces pixel1 & pixel2
         @param detector: name of the detector or Detector instance. Replaces splineFile, pixel1 & pixel2
         @param wavelength: wavelength in m (1.54e-10)
-        @param dSpacing: filename or list or array or vector containing the d-spacing (in Angstrom)
+        @param calibrant: instance of pyFAI.calibrant.Calibrant containing the d-Spacing 
 
         """
-        self.data = numpy.array(data, dtype="float64")
+        self.data = numpy.array(data, dtype=numpy.float64)
         assert self.data.ndim == 2
-        assert self.data.shape[1] == 3
+        assert self.data.shape[1] in [ 3, 4] #3 for non weighted, 4 for weighted refinement
         assert self.data.shape[0]>0
 
         if (pixel1 is None) and (pixel2 is None) and (splineFile is None) and (detector is None):
@@ -87,6 +89,21 @@ class GeometryRefinement(AzimuthalIntegrator):
         AzimuthalIntegrator.__init__(self, dist, 0, 0,
                                      rot1, rot2, rot3,
                                      pixel1, pixel2, splineFile, detector, wavelength=wavelength)
+
+        if calibrant is None:
+            self.calibrant = Calibrant()
+        else:
+            if isinstance(calibrant, Calibrant):
+                self.calibrant = calibrant
+            elif type(calibrant) in types.StringTypes:
+                if calibrant in ALL_CALIBRANTS:
+                    self.calibrant = ALL_CALIBRANTS[calibrant]
+                else:
+                     self.calibrant = Calibrant(filename=calibrant)
+            else:
+                self.calibrant = Calibrant(calibrant)
+
+        self.calibrant.wavelength = self.wavelength
 
         if (poni1 is None) or (poni2 is None):
             self.guess_poni()
@@ -107,21 +124,16 @@ class GeometryRefinement(AzimuthalIntegrator):
         self._rot3_max = pi
         self._wavelength_min = 1e-15
         self._wavelength_max = 100.e-10
-        if dSpacing is not None:
-            if type(dSpacing) in types.StringTypes:
-                self.dSpacing = numpy.loadtxt(dSpacing)
-            else:
-                self.dSpacing = numpy.array(dSpacing, dtype=numpy.float64)
-        else:
-            self.dSpacing = numpy.array([])
 
 
     def guess_poni(self):
         """
         Poni can be guessed by the centroid of the ring with lowest 2Theta
         """
-        if "dSpacing" in dir(self):
-            tth = self.calc_2th(self.data[:, 2], self.wavelength)
+
+        if len(self.calibrant.dSpacing):
+#            logger.warning(self.calibrant.__repr__())s
+            tth = self.calc_2th(self.data[:, 2])
         else:  # assume rings are in decreasing dSpacing in the file
             tth = self.data[:, 2]
         asrt = tth.argsort()
@@ -138,6 +150,7 @@ class GeometryRefinement(AzimuthalIntegrator):
 
     def set_tolerance(self, value=10):
         """
+        Set the tolerance for a refinement of the geometry; in percent of the original value 
 
         @param value: Tolerance as a percentage
 
@@ -180,13 +193,17 @@ class GeometryRefinement(AzimuthalIntegrator):
         self.wavelength_max = hi * self.wavelength
 
 
-    def calc_2th(self, rings, wavelength):
+    def calc_2th(self, rings, wavelength=None):
         """
         @param rings: indices of the rings. starts at 0 and self.dSpacing should be long enough !!!
         @param wavelength: wavelength in meter
         """
+        if wavelength is None:
+            wavelength = self.wavelength
         rings = numpy.ascontiguousarray(rings, dtype=numpy.int32)
-        return 2.0 * numpy.arcsin(wavelength / (2.0e-10 * self.dSpacing[rings]))
+        if wavelength != self.calibrant.wavelength:
+            self.calibrant.setWavelength_change2th(wavelength)       
+        return numpy.array(self.calibrant.get_2th(), dtype=numpy.float64)[rings]
 
     def residu1(self, param, d1, d2, rings):
         return self.tth(d1, d2, param) - self.calc_2th(rings, self.wavelength)

@@ -42,8 +42,12 @@ import numpy
 import fabio
 from scipy import ndimage
 from scipy.interpolate import interp1d
-from math import  ceil
-from . import relabel as relabelCython
+from math import  ceil, sin, cos, atan2, pi
+
+try:
+    from . import relabel as relabelCython
+except:
+    relabelCython = None
 from scipy.optimize.optimize import fmin, fminbound
 import scipy.ndimage.filters
 logger = logging.getLogger("pyFAI.utils")
@@ -380,17 +384,20 @@ def relabel(label, data, blured, max_size=None):
     @param max_size: the max number of label wanted
     @return array like label
     """
-    max_label = label.max()
-    a, b, c, d = relabelCython.countThem(label, data, blured)
-    count = d
-    sortCount = count.argsort()
-    invSortCount = sortCount[-1::-1]
-    invCutInvSortCount = numpy.zeros(max_label + 1, dtype=int)
-    for i, j in enumerate(list(invSortCount[:max_size])):
-        invCutInvSortCount[j] = i
-    f = lambda i:invCutInvSortCount[i]
-    return f(label)
-
+    if relabelCython:
+        max_label = label.max()
+        a, b, c, d = relabelCython.countThem(label, data, blured)
+        count = d
+        sortCount = count.argsort()
+        invSortCount = sortCount[-1::-1]
+        invCutInvSortCount = numpy.zeros(max_label + 1, dtype=int)
+        for i, j in enumerate(list(invSortCount[:max_size])):
+            invCutInvSortCount[j] = i
+        f = lambda i:invCutInvSortCount[i]
+        return f(label)
+    else:
+        logger.warning("relabel Cython module is not available...")
+        return label
 
 def averageDark(lstimg, center_method="mean", cutoff=None):
     """
@@ -452,6 +459,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
     @param filter_: can be maximum, mean or median (default=mean)
     @param correct_flat_from_dark: shall the flat be re-corrected ?
     @param cutoff: keep all data where (I-center)/std < cutoff
+    @return: filename with the data or the data ndarray in case format=None
     """
     if filter_ not in ["min", "max", "median", "mean"]:
         logger.warning("Filter %s not understood. switch to mean filter")
@@ -519,40 +527,58 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             datared = numpy.ascontiguousarray(sumImg, dtype=numpy.float32)
         elif filter_ == "mean":
             datared = sumImg / numpy.float32(ld)
-
-    if output is None:
-        prefix = ""
-        for ch in zip(*listImages):
-            c = ch[0]
-            good = True
-            for i in ch:
-                if i != c:
+    logger.debug("Intensity range in merged dataset : %s --> %s", datared.min(), datared.max())
+    if format is not None:
+        if format.startswith("."):
+            format = format.lstrip(".")
+        if (output is None):
+            prefix = ""
+            for ch in zip(*listImages):
+                c = ch[0]
+                good = True
+                if c in ["*", "?", "[", "{", "("]:
                     good = False
                     break
-            if good:
-                prefix += c
+                for i in ch:
+                    if i != c:
+                        good = False
+                        break
+                if good:
+                    prefix += c
+                else:
+                    break
+            if filter_ == "max":
+                output = "maxfilt%02i-%s.%s" % (ld,prefix,format)
+            elif filter_ == "median":
+                output = "medfilt%02i-%s.%s" % (ld,prefix,format)
+            elif filter_ == "median":
+                output = "meanfilt%02i-%s.%s" % (ld, prefix, format)
             else:
-                break
-        if filter_ == "max":
-            output = ("maxfilt%02i-" % ld) + prefix + ".edf"
-        elif filter_ == "median":
-            output = ("medfilt%02i-" % ld) + prefix + ".edf"
-        elif filter_ == "median":
-            output = ("meanfilt%02i-" % ld) + prefix + ".edf"
-        else:
-            output = ("merged%02i-" % ld) + prefix + ".edf"
-    logger.debug("Intensity range in merged dataset : %s --> %s", datared.min(), datared.max())
-    if format:
-        fabiomod = fabio.__getattribute__(format + "image")
-        fabioclass = fabiomod.__getattribute__(format + "image")
-        fimg = fabioclass(data=datared,
-                          header={"method":filter_, "nframes":ld, "cutoff":str(cutoff),
-                                  "merged": ",".join(listImages)})
-        fimg.write(output)
-        logger.info("Wrote %s" % output)
-
-    return output
-
+                output = "merged%02i-%s.%s" % (ld, prefix, format)
+        if format and output:
+            if "." in format:  # in case "edf.gz"
+                format = format.split(".")[0]
+            fabiomod = fabio.__getattribute__(format + "image")
+            fabioclass = fabiomod.__getattribute__(format + "image")
+            header = {"method":filter_,
+                      "nframes":ld,
+                      "cutoff":str(cutoff)}
+            form = "merged_file_%%0%ii" % len(str(len(listImages)))
+            header_list = ["method", "nframes", "cutoff"]
+            for i, f in enumerate(listImages):
+                name = form % i
+                header[name] = f
+                header_list.append(name)
+            fimg = fabioclass(data=datared,
+                              header=header)
+#            if "header_keys" in dir(fimg):
+            fimg.header_keys = header_list
+                                      
+            fimg.write(output)
+            logger.info("Wrote %s" % output)
+        return output
+    else:
+        return datared
 
 def boundingBox(img):
     """
@@ -705,7 +731,7 @@ def shiftFFT(input_img, shift_val, method="fftw"):
         fftw3 = sys.modules.get("fftw3")
     else:
         fftw3 = None
-    print fftw3
+#    print fftw3
     d0, d1 = input_img.shape
     v0, v1 = shift_val
     f0 = numpy.fft.ifftshift(numpy.arange(-d0 // 2, d0 // 2))
@@ -851,3 +877,223 @@ def expand_args(args):
         else:
             new += glob.glob(afile)
     return new
+
+
+def _get_data_path(filename):
+    """
+    @param filename: the name of the requested data file.
+    @type filename: str
+
+    In the future ....
+    This method try to find the requested ui-name following the
+    xfreedesktop recommendations. First the source directory then
+    the system locations
+
+    For now, just perform a recursive search
+    """
+    # when using bootstrap the file is located under the build directory
+#    real_filename = os.path.abspath(os.path.join(os.path.dirname(__file__),
+#                                                 os.path.pardir,
+#                                                 os.path.pardir,
+#                                                 os.path.pardir,
+#                                                 'data',
+#                                                 filename))
+#    if not os.path.exists(real_filename):
+    resources = [os.path.dirname(__file__)]
+    try:
+        import xdg.BaseDirectory
+        resources += xdg.BaseDirectory.load_data_paths("pyFAI")
+    except ImportError:
+        pass
+
+    for resource in resources:
+        real_filename = os.path.join(resource, filename)
+        if os.path.exists(real_filename):
+            return real_filename
+    else:
+        raise Exception("Can not find the [%s] resource, "
+                        " something went wrong !!!" % (real_filename,))
+#    else:
+#        return real_filename
+
+
+def get_ui_file(filename):
+    return _get_data_path(os.path.join("gui", filename))
+#    return _get_data_path(filename)
+
+
+def get_cl_file(filename):
+#    return _get_data_path(os.path.join("openCL", filename))
+    return _get_data_path(filename)
+
+def deg2rad(dd):
+    """
+    Convert degrees to radian in the range -pi->pi
+
+    @param dd: angle in degrees
+
+    Nota: depending on the platform it could be 0<2pi
+    A branch is cheaper than a trigo operation
+    """
+    while dd > 180.0:
+        dd -= 360.0
+    while dd <= -180.0:
+        dd += 360.0
+    return dd * pi / 180.
+
+class lazy_property(object):
+    '''
+    meant to be used for lazy evaluation of an object attribute.
+    property should represent non-mutable data, as it replaces itself.
+    '''
+
+    def __init__(self,fget):
+        self.fget = fget
+        self.func_name = fget.__name__
+
+
+    def __get__(self,obj,cls):
+        if obj is None:
+            return None
+        value = self.fget(obj)
+        setattr(obj,self.func_name,value)
+        return value
+
+try:
+    from numpy import percentile
+except ImportError: #backport percentile from numpy 1.6.2
+    np = numpy
+    def percentile(a, q, axis=None, out=None, overwrite_input=False):
+        """
+        Compute the qth percentile of the data along the specified axis.
+    
+        Returns the qth percentile of the array elements.
+    
+        Parameters
+        ----------
+        a : array_like
+            Input array or object that can be converted to an array.
+        q : float in range of [0,100] (or sequence of floats)
+            Percentile to compute which must be between 0 and 100 inclusive.
+        axis : int, optional
+            Axis along which the percentiles are computed. The default (None)
+            is to compute the median along a flattened version of the array.
+        out : ndarray, optional
+            Alternative output array in which to place the result. It must
+            have the same shape and buffer length as the expected output,
+            but the type (of the output) will be cast if necessary.
+        overwrite_input : bool, optional
+           If True, then allow use of memory of input array `a` for
+           calculations. The input array will be modified by the call to
+           median. This will save memory when you do not need to preserve
+           the contents of the input array. Treat the input as undefined,
+           but it will probably be fully or partially sorted.
+           Default is False. Note that, if `overwrite_input` is True and the
+           input is not already an array, an error will be raised.
+    
+        Returns
+        -------
+        pcntile : ndarray
+            A new array holding the result (unless `out` is specified, in
+            which case that array is returned instead).  If the input contains
+            integers, or floats of smaller precision than 64, then the output
+            data-type is float64.  Otherwise, the output data-type is the same
+            as that of the input.
+    
+        See Also
+        --------
+        mean, median
+    
+        Notes
+        -----
+        Given a vector V of length N, the qth percentile of V is the qth ranked
+        value in a sorted copy of V.  A weighted average of the two nearest
+        neighbors is used if the normalized ranking does not match q exactly.
+        The same as the median if ``q=0.5``, the same as the minimum if ``q=0``
+        and the same as the maximum if ``q=1``.
+    
+        Examples
+        --------
+        >>> a = np.array([[10, 7, 4], [3, 2, 1]])
+        >>> a
+        array([[10,  7,  4],
+               [ 3,  2,  1]])
+        >>> np.percentile(a, 50)
+        3.5
+        >>> np.percentile(a, 0.5, axis=0)
+        array([ 6.5,  4.5,  2.5])
+        >>> np.percentile(a, 50, axis=1)
+        array([ 7.,  2.])
+    
+        >>> m = np.percentile(a, 50, axis=0)
+        >>> out = np.zeros_like(m)
+        >>> np.percentile(a, 50, axis=0, out=m)
+        array([ 6.5,  4.5,  2.5])
+        >>> m
+        array([ 6.5,  4.5,  2.5])
+    
+        >>> b = a.copy()
+        >>> np.percentile(b, 50, axis=1, overwrite_input=True)
+        array([ 7.,  2.])
+        >>> assert not np.all(a==b)
+        >>> b = a.copy()
+        >>> np.percentile(b, 50, axis=None, overwrite_input=True)
+        3.5
+    
+        """
+        a = np.asarray(a)
+
+        if q == 0:
+            return a.min(axis=axis, out=out)
+        elif q == 100:
+            return a.max(axis=axis, out=out)
+
+        if overwrite_input:
+            if axis is None:
+                sorted = a.ravel()
+                sorted.sort()
+            else:
+                a.sort(axis=axis)
+                sorted = a
+        else:
+            sorted = np.sort(a, axis=axis)
+        if axis is None:
+            axis = 0
+
+        return _compute_qth_percentile(sorted, q, axis, out)
+
+    # handle sequence of q's without calling sort multiple times
+    def _compute_qth_percentile(sorted, q, axis, out):
+        if not np.isscalar(q):
+            p = [_compute_qth_percentile(sorted, qi, axis, None)
+                 for qi in q]
+
+            if out is not None:
+                out.flat = p
+
+            return p
+
+        q = q / 100.0
+        if (q < 0) or (q > 1):
+            raise ValueError, "percentile must be either in the range [0,100]"
+
+        indexer = [slice(None)] * sorted.ndim
+        Nx = sorted.shape[axis]
+        index = q * (Nx - 1)
+        i = int(index)
+        if i == index:
+            indexer[axis] = slice(i, i + 1)
+            weights = np.array(1)
+            sumval = 1.0
+        else:
+            indexer[axis] = slice(i, i + 2)
+            j = i + 1
+            weights = np.array([(j - index), (index - i)], float)
+            wshape = [1] * sorted.ndim
+            wshape[axis] = 2
+            weights.shape = wshape
+            sumval = weights.sum()
+
+        # Use add.reduce in both cases to coerce data type as well as
+        #   check and use out array.
+        return np.add.reduce(sorted[indexer] * weights, axis=axis, out=out) / sumval

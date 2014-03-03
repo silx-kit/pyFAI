@@ -28,7 +28,8 @@
 import cython
 cimport numpy
 import numpy
-from libc.math cimport fabs
+from libc.math cimport fabs, M_PI
+cdef float pi=<float> M_PI 
 
 EPS32 = (1 + numpy.finfo(numpy.float32).eps)
 
@@ -147,6 +148,8 @@ def histoBBox1d(numpy.ndarray weights not None,
     pos0_max=cpos0[0]
     with nogil:
         for idx in range(size):
+            if (check_mask) and (cmask[idx]):
+                continue
             min0 = cpos0[idx] - dpos0[idx]
             max0 = cpos0[idx] + dpos0[idx]
             cpos0_upper[idx]=max0
@@ -264,7 +267,9 @@ def histoBBox2d(numpy.ndarray weights not None,
                 dark=None,
                 flat=None,
                 solidangle=None,
-                polarization=None):
+                polarization=None,
+                bint allow_pos0_neg=0,
+                bint chiDiscAtPi=1):
     """
     Calculate 2D histogram of pos0(tth),pos1(chi) weighted by weights
 
@@ -284,9 +289,10 @@ def histoBBox2d(numpy.ndarray weights not None,
     @param mask: array (of int8) with masked pixels with 1 (0=not masked)
     @param dark: array (of float32) with dark noise to be subtracted (or None)
     @param flat: array (of float32) with flat-field image
-    @param polarization: array (of float32) with polarization corrections
     @param solidangle: array (of float32) with solid angle corrections
-
+    @param polarization: array (of float32) with polarization corrections
+    @param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[  
+    
     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
 
@@ -311,10 +317,13 @@ def histoBBox2d(numpy.ndarray weights not None,
     cdef numpy.ndarray[numpy.float32_t, ndim = 1] dpos1 = numpy.ascontiguousarray(delta_pos1.ravel(),dtype=numpy.float32)
     cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos0_upper = numpy.empty(size,dtype=numpy.float32)
     cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos0_lower = numpy.empty(size,dtype=numpy.float32)
+    cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos1_upper = numpy.empty(size,dtype=numpy.float32)
+    cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos1_lower = numpy.empty(size,dtype=numpy.float32)
     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outData = numpy.zeros((bins0, bins1), dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outCount = numpy.zeros((bins0, bins1), dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float32_t, ndim = 2] outMerge = numpy.zeros((bins0, bins1), dtype=numpy.float32)
 
+    cdef float c0, c1, d0, d1
     cdef float min0, max0, min1, max1, deltaR, deltaL, deltaU, deltaD, deltaA, tmp, delta0, delta1
     cdef float pos0_min, pos0_max, pos1_min, pos1_max, pos0_maxin, pos1_maxin
     cdef float fbin0_min, fbin0_max, fbin1_min, fbin1_max, data, epsilon = 1e-10, cdummy, ddummy
@@ -354,43 +363,70 @@ def histoBBox2d(numpy.ndarray weights not None,
         assert solidangle.size == size
         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float32)
 
-
     pos0_min=cpos0[0]
     pos0_max=cpos0[0]
+    pos1_min=cpos1[0]
+    pos1_max=cpos1[0]
 
     with nogil:
         for idx in range(size):
-            min0 = cpos0[idx] - dpos0[idx]
-            max0 = cpos0[idx] + dpos0[idx]
-            cpos0_upper[idx]=max0
-            cpos0_lower[idx]=min0
+            if (check_mask and cmask[idx]):
+                continue
+            c0 = cpos0[idx]
+            d0 = dpos0[idx]
+            min0 = c0 - d0
+            max0 = c0 + d0
+            c1 = cpos1[idx]
+            d1 = dpos1[idx]
+            min1 = c1 - d1
+            max1 = c1 + d1
+            if not allow_pos0_neg and lower0<0:
+                lower0=0
+            if max1 > (2-chiDiscAtPi)*pi:
+                max1 = (2-chiDiscAtPi)*pi
+            if min1 < (-chiDiscAtPi)*pi:
+                min1 = (-chiDiscAtPi)*pi
+            cpos0_upper[idx] = max0
+            cpos0_lower[idx] = min0
+            cpos1_upper[idx] = max1
+            cpos1_lower[idx] = min1
             if max0>pos0_max:
-                pos0_max=max0
+                pos0_max = max0
             if min0<pos0_min:
-                pos0_min=min0
+                pos0_min = min0
+            if max1>pos1_max:
+                pos1_max = max1
+            if min1<pos1_min:
+                pos1_min = min1
 
-    if (pos0Range is not None) and (len(pos0Range) == 2):
+    if pos0Range is not None and len(pos0Range) > 1:
         pos0_min = min(pos0Range)
         pos0_maxin = max(pos0Range)
     else:
-#        pos0_min = pos0_min
         pos0_maxin = pos0_max
-    if pos0_min<0:
-        pos0_min=0
-    pos0_max = pos0_maxin * EPS32
 
-    if (pos1Range is not None) and (len(pos1Range) == 2):
+
+    if pos1Range is not None and len(pos1Range) > 1:
         pos1_min = min(pos1Range)
         pos1_maxin = max(pos1Range)
     else:
-        pos1_min = cpos1.min()
-        pos1_maxin = cpos1.max()
+        pos1_maxin = pos1_max
+
+    if (not allow_pos0_neg) and pos0_min < 0:
+        pos0_min = 0
+
+    pos0_max = pos0_maxin * EPS32
     pos1_max = pos1_maxin * EPS32
 
     delta0 = (pos0_max - pos0_min) / (< float > (bins0))
     delta1 = (pos1_max - pos1_min) / (< float > (bins1))
+    
     edges0 = numpy.linspace(pos0_min+0.5*delta0, pos0_maxin-0.5*delta0, bins0)
     edges1 = numpy.linspace(pos1_min+0.5*delta1, pos1_maxin-0.5*delta1, bins1)
+
+    
+    
+    
     with nogil:
         for idx in range(size):
             if (check_mask) and cmask[idx]:

@@ -29,9 +29,10 @@ __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "18/03/2013"
-__status__ = "development"
+__status__ = "production"
 
 import os, sys, threading, logging, gc, types
+import operator
 from math                   import ceil, sqrt, pi
 import numpy
 from scipy.optimize         import fmin
@@ -39,10 +40,10 @@ from scipy.ndimage.filters  import median_filter
 from scipy.ndimage          import label
 import pylab
 import fabio
-import utils
-from .utils import gaussian_filter, binning, unBinning
+from .utils import gaussian_filter, binning, unBinning, deprecated, relabel, percentile
 from .bilinear import Bilinear
 from .reconstruct import reconstruct
+from .calibrant import Calibrant, ALL_CALIBRANTS
 logger = logging.getLogger("pyFAI.peakPicker")
 if os.name != "nt":
     WindowsError = RuntimeError
@@ -53,7 +54,7 @@ TARGET_SIZE = 1024
 # PeakPicker
 ################################################################################
 class PeakPicker(object):
-    def __init__(self, strFilename, reconst=False, mask=None, pointfile=None, dSpacing=None, wavelength=None):
+    def __init__(self, strFilename, reconst=False, mask=None, pointfile=None, calibrant=None, wavelength=None):
         """
         @param: input image filename
         @param reconst: shall mased part or negative values be reconstructed (wipe out problems with pilatus gaps)
@@ -68,7 +69,7 @@ class PeakPicker(object):
             view[numpy.where(flat_mask)] = min_valid
 
         self.shape = self.data.shape
-        self.points = ControlPoints(pointfile, dSpacing=dSpacing, wavelength=wavelength)
+        self.points = ControlPoints(pointfile, calibrant=calibrant, wavelength=wavelength)
 #        self.lstPoints = []
         self.fig = None
         self.fig2 = None
@@ -84,6 +85,7 @@ class PeakPicker(object):
             self.massif = Massif(self.data)
         self._sem = threading.Semaphore()
         self._semGui = threading.Semaphore()
+        self.mpl_connectId = None
         self.defaultNbPoints = 100
 
     def gui(self, log=False, maximize=False):
@@ -97,18 +99,31 @@ class PeakPicker(object):
             self.ct = self.fig.add_subplot(111)
             self.msp = self.fig.add_subplot(111)
         if log:
-            self.ax.imshow(numpy.log(1.0 + self.data - self.data.min()), origin="lower", interpolation="nearest")
+            showData = numpy.log1p(self.data - self.data.min())
+            self.ax.set_title('Log colour scale (skipping lowest/highest per mille)')
         else:
-            self.ax.imshow(self.data, origin="lower", interpolation="nearest")
+            showData = self.data
+            self.ax.set_title('Linear colour scale (skipping lowest/highest per mille)')
+
+        # skip lowest and highest per mille of image values via vmin/vmax
+        showMin = percentile(showData, .1)
+        showMax = percentile(showData, 99.9)
+        im = self.ax.imshow(showData, vmin=showMin, vmax=showMax, origin="lower", interpolation="nearest")
+
         self.ax.autoscale_view(False, False, False)
+        self.fig.colorbar(im)
         self.fig.show()
         if maximize:
             mng = pylab.get_current_fig_manager()
-#            print mng.window.maxsize()
-            event = Event(1920, 1200)  # *mng.window.maxsize())
-            mng.resize(event)
+            # attempt to maximize the figure ... lost hopes.
+            win_shape = (1920, 1080)
+            event = Event(*win_shape)
+            try:
+                mng.resize(event)
+            except TypeError:
+                 mng.resize(*win_shape)
             self.fig.canvas.draw()
-        self.fig.canvas.mpl_connect('button_press_event', self.onclick)
+        self.mpl_connectId = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
 
     def load(self, filename):
         """
@@ -117,9 +132,15 @@ class PeakPicker(object):
         self.points.load(filename)
         self.display_points()
 
-    def display_points(self):
+    def display_points(self, minIndex=0):
+        """
+        display all points and their ring annotations
+        @param minIndex: ring index to start with
+        """
         if self.ax is not None:
             for idx, points in enumerate(self.points._points):
+                if idx < minIndex:
+                    continue
                 if len(points) > 0:
                     pt0x = points[0][1]
                     pt0y = points[0][0]
@@ -144,24 +165,26 @@ class PeakPicker(object):
                 self.fig.canvas.draw()
 
         with self._sem:
-            if event.button == 3:  # right click
-                x0 = event.xdata
-                y0 = event.ydata
-                logger.debug("Key modifier: %s" % event.key)
+            x0 = event.xdata
+            y0 = event.ydata
+            if event.button == 3:  # right click: add points (1 or many) to new or existing group
+                logger.debug("Button: %i, Key modifier: %s" % (event.button, event.key))
                 if event.key == 'shift':  # if 'shift' pressed add nearest maximum to the current group
                     points = self.points.pop() or []
-                    if len(self.ax.texts) > 0:
-                        self.ax.texts.pop()
+                    # no, keep annotation! if len(self.ax.texts) > 0: self.ax.texts.pop()
                     if len(self.ax.lines) > 0:
                         self.ax.lines.pop()
 
                     self.fig.show()
                     newpeak = self.massif.nearest_peak([y0, x0])
                     if newpeak:
+                        if not points:
+                            # if new group, need annotation (before points.append!)
+                            annontate(newpeak, [y0, x0])
                         points.append(newpeak)
-                        annontate(newpeak, [y0, x0])
+                        logger.info("x=%5.1f, y=%5.1f added to group #%i" % (newpeak[1], newpeak[0], len(self.points)))
                     else:
-                        logging.warning("No peak found !!!")
+                        logger.warning("No peak found !!!")
 
                 elif event.key == 'control':  # if 'control' pressed add nearest maximum to a new group
                     points = []
@@ -169,44 +192,65 @@ class PeakPicker(object):
                     if newpeak:
                         points.append(newpeak)
                         annontate(newpeak, [y0, x0])
+                        logger.info("Create group #%i with single point x=%5.1f, y=%5.1f" % (len(self.points), newpeak[1], newpeak[0]))
                     else:
-                        logging.warning("No peak found !!!")
+                        logger.warning("No peak found !!!")
                 elif event.key == 'm':  # if 'm' pressed add new group to current  group ...  ?
                     points = self.points.pop() or []
-                    if len(self.ax.texts) > 0:
-                        self.ax.texts.pop()
+                    # no, keep annotation! if len(self.ax.texts) > 0: self.ax.texts.pop()
                     if len(self.ax.lines) > 0:
                         self.ax.lines.pop()
                     self.fig.show()
-                    listpeak = self.massif.find_peaks([y0, x0], self.defaultNbPoints, annontate, self.massif_contour)
+                    # need to annotate only if a new group:
+                    localAnn = None if points else annontate
+                    listpeak = self.massif.find_peaks([y0, x0], self.defaultNbPoints, localAnn, self.massif_contour)
                     if len(listpeak) == 0:
-                        logging.warning("No peak found !!!")
+                        logger.warning("No peak found !!!")
                     else:
                         points += listpeak
+                        logger.info("Added %i points to group #%i (now %i points)" % (len(listpeak), len(self.points), len(points)))
                 else:  # create new group
                     points = self.massif.find_peaks([y0, x0], self.defaultNbPoints, annontate, self.massif_contour)
                     if not points:
-                        logging.warning("No peak found !!!")
+                        logger.warning("No peak found !!!")
+                    else:
+                        logger.info("Created group #%i with %i points" % (len(self.points), len(points)))
                 if not points:
                     return
                 self.points.append(points)
                 npl = numpy.array(points)
-                logging.info("x=%f, y=%f added to group #%i" % (x0, y0, len(self.points)))
                 self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
                 self.fig.show()
                 sys.stdout.flush()
-            elif event.button == 2:  # center click
-                poped_points = self.points.pop()
+            elif event.button == 2:  # center click: remove 1 or all points from current group
+                logger.debug("Button: %i, Key modifier: %s" % (event.button, event.key))
+                poped_points = self.points.pop() or []
+                # in case not the full group is removed, would like to keep annotation
+                # _except_ if the annotation is close to the removed point... too complicated!
                 if len(self.ax.texts) > 0:
                     self.ax.texts.pop()
                 if len(self.ax.lines) > 0:
                     self.ax.lines.pop()
-                self.fig.show()
-                if poped_points is None:
-                    logging.info("Removing No group point (non existing?)")
+                if event.key == '1' and len(poped_points) > 1:  # if '1' pressed AND > 1 point left:
+                    # delete single closest point from current group
+                    dists = [sqrt((p[1] - x0) ** 2 + (p[0] - y0) ** 2) for p in poped_points]  # p[1],p[0]!
+                    # index and distance of smallest distance:
+                    indexMin = min(enumerate(dists), key=operator.itemgetter(1))
+                    removedPt = poped_points.pop(indexMin[0])
+                    logger.info("x=%5.1f, y=%5.1f removed from group #%i (%i points left)" % (removedPt[1], removedPt[0], len(self.points), len(poped_points)))
+                    # annotate (new?) 1st point and add remaining points back
+                    pt = (poped_points[0][0], poped_points[0][1])
+                    annontate(pt, (pt[0] + 10, pt[1] + 10))
+                    self.points.append(poped_points)
+                    npl = numpy.array(poped_points)
+                    self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
+                elif len(poped_points) > 0:  # not '1' pressed or only 1 point left: remove complete group
+                    logger.info("Removing group #%i containing %i points" % (len(self.points), len(poped_points)))
                 else:
-                    logging.info("Removing point group #%i (%5.1f %5.1f) containing %i subpoints" % (len(self.points), poped_points[0][0], poped_points[0][1], len(poped_points)))
+                    logger.info("No groups to remove")
 
+                self.fig.show()
+                self.fig.canvas.draw()
                 sys.stdout.flush()
 
     def readFloatFromKeyboard(self, text, dictVar):
@@ -238,12 +282,17 @@ class PeakPicker(object):
         @param filename: file with the point coordinates saved
         """
         logging.info(os.linesep.join(["Please use the GUI and:",
-                                      " 1) Right-click: try an auto find for a ring",
-                                      " 2) Shift + Right-click: add one point to the current group",
-                                      " 3) Control + Right-click : add a point to a new group",
-                                      " 4) Center-click: erase the current group"]))
+                                      " 1) Right-click:         try an auto find for a ring",
+                                      " 2) Right-click + Ctrl:  create new group with one point",
+                                      " 3) Right-click + Shift: add one point to current group",
+                                      " 4) Right-click + m:     find more points for current group",
+                                      " 5) Center-click:     erase current group",
+                                      " 6) Center-click + 1: erase closest point from current group"]))
 
         raw_input("Please press enter when you are happy with your selection" + os.linesep)
+        # need to disconnect 'button_press_event':
+        self.fig.canvas.mpl_disconnect(self.mpl_connectId)
+        self.mpl_connectId = None
         print("Now fill in the ring number. Ring number starts at 0, like point-groups.")
         self.points.readRingNrFromKeyboard()  # readAngleFromKeyboard()
         if filename is not None:
@@ -268,8 +317,8 @@ class PeakPicker(object):
             while len(self.ct.collections) > 0:
                 self.ct.collections.pop()
 
-            if self.points.dSpacing and  self.points._wavelength:
-                angles = list(2.0 * numpy.arcsin(5e9 * self.points._wavelength / numpy.array(self.points.dSpacing)))
+            if self.points.calibrant:
+                angles = self.points.calibrant.get_2th()
             else:
                 angles = None
             try:
@@ -321,31 +370,41 @@ class ControlPoints(object):
     """
     This class contains a set of control points with (optionally) their ring number hence d-spacing and diffraction  2Theta angle ...
     """
-    def __init__(self, filename=None, dSpacing=None, wavelength=None):
-        self.dSpacing = []
+    def __init__(self, filename=None, calibrant=None, wavelength=None):
+#        self.dSpacing = []
         self._sem = threading.Semaphore()
         self._angles = []  # angles are enforced in radians, conversion from degrees or q-space nm-1 are done on the fly
         self._points = []
         self._ring = []  # ring number ...
-        self._wavelength = wavelength
-
+        self.calibrant = Calibrant(wavelength=wavelength)
         if filename is not None:
             self.load(filename)
         have_spacing = False
         for i in self.dSpacing :
             have_spacing = have_spacing or i
-        if (not have_spacing) and (dSpacing is not None):
-            if type(dSpacing) in types.StringTypes:
-                self.dSpacing = self.load_dSpacing(dSpacing)
+        if (not have_spacing) and (calibrant is not None):
+            if isinstance(calibrant, Calibrant):
+                self.calibrant = calibrant
+            elif type(calibrant) in types.StringTypes:
+                if calibrant in ALL_CALIBRANTS:
+                    self.calibrant = ALL_CALIBRANTS[calibrant]
+                elif os.path.isfile(calibrant):
+                    self.calibrant = Calibrant(calibrant)
+                else:
+                    logger.error("Unable to handle such calibrant: %s" % calibrant)
+            elif isinstance(dSpacing, (numpy.ndarray, list, tuple, array)):
+                self.calibrant = Calibrant(dSpacing=list(calibrant))
             else:
-                self.dSpacing = list(dSpacing)
+                logger.error("Unable to handle such calibrant: %s" % calibrant)
+        if not self.calibrant.wavelength:
+            self.calibrant.set_wavelength(wavelength)
+
 
     def __repr__(self):
         self.check()
         lstOut = ["ControlPoints instance containing %i group of point:" % len(self)]
-        if self._wavelength is not None:
-            lstOut.append("wavelength: %s" % self._wavelength)
-        lstOut.append("dSpacing (A): " + ", ".join(["%.3f" % i for i in self.dSpacing]))
+        if self.calibrant:
+            lstOut.append(self.calibrant.__repr__())
         for ring, angle, points in zip(self._ring, self._angles, self._points):
             lstOut.append("%s %s: %s" % (ring, angle, points))
         return os.linesep.join(lstOut)
@@ -365,7 +424,7 @@ class ControlPoints(object):
         remove all stored values and resets them to default
         """
         with self._sem:
-            self._wavelength = None
+#            self.calibrant = Calibrant()
             self._angles = []  # angles are enforced in radians, conversion from degrees or q-space nm-1 are done on the fly
             self._points = []
             self._ring = []
@@ -380,16 +439,14 @@ class ControlPoints(object):
             self._angles.append(angle)
             self._points.append(points)
             if ring is None:
-                if angle in self.dSpacing:
-                    self._ring.append(self.dSpacing.index(angle))
+                if angle in self.calibrant.get_2th():
+                    self._ring.append(self.calibrant.get_2th().index(angle))
                 else:
-                    if angle and (angle not in self.dSpacing):
-                        self.dSpacing.append(angle)
-                    if angle in self.dSpacing:
-                        idx = self.dSpacing.index(angle)
+                    if angle and (angle not in self.calibrant.get_2th()):
+                        self.calibrant.append_2th(angle)
+                        self.rings = [self.calibrant.get_2th_index(a) for a in self._angles]
                     else:
-                        idx = None
-                    self._ring.append(idx)
+                        self._ring.append(None)
             else:
                 self._ring.append(ring)
 
@@ -398,17 +455,10 @@ class ControlPoints(object):
         @param point: list of points
         @param angle: 2-theta angle in degrees
         """
-        with self._sem:
-            self._angles.append(pi * angle / 180.)
-            self._points.append(points)
-            if ring is None:
-                if angle in self.dSpacing:
-                    self._ring.append(self.dSpacing.index(angle))
-                else:
-                    self.dSpacing.append(angle)
-                    self._ring.append(self.dSpacing.index(angle))
-            else:
-                self._ring.append(ring)
+        if angle:
+            self.append(points, numpy.deg2rad(angle), ring)
+        else:
+            self.append(points, None, ring)
 
     def pop(self, idx=None):
         """
@@ -441,9 +491,9 @@ class ControlPoints(object):
             lstOut = ["# set of control point used by pyFAI to calibrate the geometry of a scattering experiment",
                       "#angles are in radians, wavelength in meter and positions in pixels"]
 
-            if self._wavelength is not None:
-                lstOut.append("wavelength: %s" % self._wavelength)
-            lstOut.append("dspacing:" + " ".join([str(i) for i in self.dSpacing]))
+            if self.calibrant.wavelength is not None:
+                lstOut.append("wavelength: %s" % self.calibrant.wavelength)
+            lstOut.append("dspacing:" + " ".join([str(i) for i in self.calibrant.dSpacing]))
             for idx, angle, points, ring in zip(range(self.__len__()), self._angles, self._points, self._ring):
                 lstOut.append("")
                 lstOut.append("New group of points: %i" % idx)
@@ -474,17 +524,17 @@ class ControlPoints(object):
                 key = key.strip().lower()
                 if key == "wavelength":
                     try:
-                        self._wavelength = float(value)
-                    except:
-                        logger.error("ControlPoints.load: unable to convert to float %s (wavelength)", value)
+                        self.calibrant.set_wavelength(float(value))
+                    except Exception as error:
+                        logger.error("ControlPoints.load: unable to convert to float %s (wavelength): %s", value, error)
                 elif key == "2theta":
                     if value.lower() == "none":
                         tth = None
                     else:
                         try:
                             tth = float(value)
-                        except:
-                            logger.error("ControlPoints.load: unable to convert to float %s (2theta)", value)
+                        except Exception as error:
+                            logger.error("ControlPoints.load: unable to convert to float %s (2theta): %s", value, error)
                 elif key == "dspacing":
                     self.dSpacing = []
                     for val in value.split():
@@ -492,15 +542,15 @@ class ControlPoints(object):
                             fval = float(val)
                         except Exception:
                             fval = None
-                        self.dSpacing.append(fval)
+                        self.calibrant.append_dSpacing(fval)
                 elif key == "ring":
                     if value.lower() == "none":
                         ring = None
                     else:
                         try:
                             ring = int(value)
-                        except:
-                            logger.error("ControlPoints.load: unable to convert to int %s (ring)", value)
+                        except Exception as error:
+                            logger.error("ControlPoints.load: unable to convert to int %s (ring): %s", value, error)
                 elif key == "point":
                     vx = None
                     vy = None
@@ -512,8 +562,8 @@ class ControlPoints(object):
                         try:
                             x = float(vx)
                             y = float(vy)
-                        except:
-                            logger.error("ControlPoints.load: unable to convert to float %s (point)", value)
+                        except Exception as error:
+                            logger.error("ControlPoints.load: unable to convert to float %s (point)", value, error)
                         else:
                             points.append([y, x])
                 elif key.startswith("new"):
@@ -531,23 +581,23 @@ class ControlPoints(object):
             self._points.append(points)
             self._ring.append(ring)
 
+    @deprecated
     def load_dSpacing(self, filename):
         """
         Load a d-spacing file containing the inter-reticular plan distance in Angstrom
-        """
-        if not os.path.isfile(filename):
-            logger.error("ControlPoint.load_dSpacing: No such file %s", filename)
-            return
-        self.dSpacing = list(numpy.loadtxt(filename))
-        return self.dSpacing
 
+        DEPRECATED: use a calibrant object
+        """
+        self.calibrant.load_file(filename)
+        return self.calibrant.dSpacing
+    @deprecated
     def save_dSpacing(self, filename):
         """
         save the d-spacing to a file
+
+        DEPRECATED: use a calibrant object
         """
-        with open(filename) as f:
-            for i in self.dSpacing:
-                f.write("%s%s" % (i, os.linesep))
+        self.calibrant.save_dSpacing(filename)
 
     def getList2theta(self):
         """
@@ -610,31 +660,35 @@ class ControlPoints(object):
         for idx, ring, point in zip(range(self.__len__()), self._ring, self._points):
             bOk = False
             while not bOk:
+                defaultRing = 0
                 if ring is not None:
-                    lastRing = ring
-                res = raw_input("Point group #%2i (%i points)\t (%6.1f,%6.1f) \t [default=%s] Ring# " % (idx, len(point), point[0][1], point[0][0], lastRing)).strip()
+                    defaultRing = ring
+                elif lastRing is not None:
+                    defaultRing = lastRing + 1
+                res = raw_input("Point group #%2i (%i points)\t (%6.1f,%6.1f) \t [default=%s] Ring# " % (idx, len(point), point[0][1], point[0][0], defaultRing)).strip()
                 if res == "":
-                    res = lastRing
+                    res = defaultRing
                 try:
-                    ring = int(res)
+                    inputRing = int(res)
                 except (ValueError, TypeError):
                     logging.error("I did not understand the ring number you entered")
                 else:
-                    if ring >= 0 and ring < len(self.dSpacing):
+                    if inputRing >= 0 and inputRing < len(self.calibrant.dSpacing):
                         lastRing = ring
-                        self._ring[idx] = ring
-#                        print ring, self.dSpacing[ring]
-                        self._angles[idx] = 2.0 * numpy.arcsin(5e9 * self.wavelength / self.dSpacing[ring])
+                        self._ring[idx] = inputRing
+                        self._angles[idx] = self.calibrant.get_2th()[inputRing]
                         bOk = True
+                    else:
+                        logging.error("Invalid ring number %i (range 0 -> %2i)" % (inputRing, len(self.calibrant.dSpacing) - 1))
+
 
 
     def setWavelength_change2th(self, value=None):
         with self._sem:
-            if value:
-                self._wavelength = float(value)
-                if self._wavelength < 0 or self._wavelength > 1e-6:
-                    logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
-                self._angles = list(2.0 * numpy.arcsin(5e9 * self._wavelength / numpy.array(self.dSpacing)[self._ring]))
+            if self.calibrant is None:
+                self.calibrant = Calibrant()
+            self.calibrant.setWavelength_change2th(value)
+            self._angles = [self.calibrant.get_2th()[i] for i in self._ring]
 
     def setWavelength_changeDs(self, value=None):
         """
@@ -642,34 +696,30 @@ class ControlPoints(object):
         """
         with self._sem:
             if value :
-                self._wavelength = float(value)
-                if self._wavelength < 0 or self._wavelength > 1e-6:
-                    logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
+                if self.calibrant is None:
+                    self.calibrant = Calibrant()
+                self.calibrant.setWavelength_changeDs(value)
 
-                ds = []
-                d = 5e9 * self.wavelength / numpy.sin(self.angles / 2.0)
-                for i in d:
-                    if i not in ds:
-                        ds.append(i)
-                ds.sort()
-                self.dSpacing = ds
-                self._ring = [self.dSpacing.index(i) for i in d]
-
-
-
-
-    def setWavelength(self, value=None):
+    def set_wavelength(self, value=None):
         with self._sem:
-            if self._wavelength is None:
-                if value:
-                    self._wavelength = float(value)
-                    if self._wavelength < 0 or self._wavelength > 1e-6:
-                        logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
-            else:
-                logger.warning("Forbidden to change the wavelength once it is fixed !!!!")
-    def getWavelength(self):
-        return self._wavelength
-    wavelength = property(getWavelength, setWavelength)
+            if value:
+                self.calibrant.set_wavelength(value)
+
+    def get_wavelength(self):
+        return self.calibrant._wavelength
+    wavelength = property(get_wavelength, set_wavelength)
+
+    def get_dSpacing(self):
+        if self.calibrant:
+            return self.calibrant.dSpacing
+        else:
+            return []
+
+    def set_dSpacing(self, lst):
+        if not self.calibrant:
+            self.calibrant = Calibrant()
+        self.calibrant.dSpacing = lst
+    dSpacing = property(get_dSpacing, set_dSpacing)
 
 ################################################################################
 # Massif
@@ -835,7 +885,7 @@ class Massif(object):
                                 self.binning.append(1)
 #                    self.binning = max([max(1, i // TARGET_SIZE) for i in self.data.shape])
                     logger.info("Binning size is %s", self.binning)
-                    self._binned_data = utils.binning(self.data, self.binning)
+                    self._binned_data = binning(self.data, self.binning)
         return self._binned_data
 
     def getMedianData(self):
@@ -868,7 +918,7 @@ class Massif(object):
                     logger.info("Labeling found %s massifs." % self._number_massif)
                     if logger.getEffectiveLevel() == logging.DEBUG:
                         fabio.edfimage.edfimage(data=labeled_massif).write("labeled_massif_small.edf")
-                    relabeled = utils.relabel(labeled_massif, self.getBinnedData(), self.getBluredData())
+                    relabeled = relabel(labeled_massif, self.getBinnedData(), self.getBluredData())
                     if logger.getEffectiveLevel() == logging.DEBUG:
                             fabio.edfimage.edfimage(data=relabeled).write("relabeled_massif_small.edf")
                     self._labeled_massif = unBinning(relabeled, self.binning, False)

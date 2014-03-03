@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/02/2013"
+__date__ = "20140106"
 
 
 import unittest
@@ -41,9 +41,11 @@ import fabio
 from utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
+import pyFAI.peakPicker
+import pyFAI.geometryRefinement
 from pyFAI.peakPicker import PeakPicker
+from pyFAI.calibrant import Calibrant
 from pyFAI.geometryRefinement import GeometryRefinement
-
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 
@@ -66,35 +68,45 @@ class test_peak_picking(unittest.TestCase):
     tth = numpy.radians(numpy.arange(4, 13))
     wavelength = 1e-10
     ds = wavelength * 5e9 / numpy.sin(tth / 2)
+    calibrant = Calibrant(dSpacing=ds)
     maxiter = 100
-
+    tmp_dir = os.environ.get("PYFAI_TEMPDIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp"))
+    logfile = os.path.join(tmp_dir, "testpeakPicking.log")
+    nptfile = os.path.join(tmp_dir, "testpeakPicking.npt")
     def setUp(self):
         """Download files"""
         self.img = UtilsTest.getimage(self.__class__.calibFile)
-        self.pp = PeakPicker(self.img, dSpacing=self.ds, wavelength=self.wavelength)
-        dirname = os.path.dirname(os.path.abspath(__file__))
-        self.tmpdir = os.path.join(dirname, "tmp")
-        if not os.path.isdir(self.tmpdir):
-            os.mkdir(self.tmpdir)
+        self.pp = PeakPicker(self.img, calibrant=self.calibrant, wavelength=self.wavelength)
+        if not os.path.isdir(self.tmp_dir):
+            os.makedirs(self.tmp_dir)
+        if os.path.isfile(self.logfile):
+            os.unlink(self.logfile)
+        if os.path.isfile(self.nptfile):
+            os.unlink(self.nptfile)
+    def tearDown(self):
+        """Remove temporary files"""
+        unittest.TestCase.tearDown(self)
+        if os.path.isfile(self.logfile):
+            os.unlink(self.logfile)
+        if os.path.isfile(self.nptfile):
+            os.unlink(self.nptfile)
 
     def test_peakPicking(self):
         """first test peak-picking then checks the geometry found is OK"""
-        logfile = os.path.join(self.tmpdir, "testpeakPicking.log")
-
         for i in self.ctrlPt:
-            pts = self.pp.massif.find_peaks(self.ctrlPt[i], stdout=open(logfile, "a"))
+            pts = self.pp.massif.find_peaks(self.ctrlPt[i], stdout=open(self.logfile, "a"))
             logger.info("point %s at ring #%i (tth=%.1f deg) generated %i points", self.ctrlPt[i], i, self.tth[i], len(pts))
             if len(pts) > 0:
                 self.pp.points.append(pts, angle=self.tth[i], ring=i)
             else:
                 logger.error("point %s caused error (%s) ", i, self.ctrlPt[i])
 
-        self.pp.points.save(os.path.join(self.tmpdir, "testpeakPicking.npt"))
+        self.pp.points.save(self.nptfile)
         lstPeak = self.pp.points.getListRing()
 #        print self.pp.points
 #        print lstPeak
         logger.info("After peak-picking, we have %s points generated from %s groups ", len(lstPeak), len(self.ctrlPt))
-        gr = GeometryRefinement(lstPeak, dist=0.01, pixel1=1e-4, pixel2=1e-4, wavelength=self.wavelength, dSpacing=self.ds)
+        gr = GeometryRefinement(lstPeak, dist=0.01, pixel1=1e-4, pixel2=1e-4, wavelength=self.wavelength, calibrant=self.calibrant)
         gr.guess_poni()
         logger.info(gr.__repr__())
         last = sys.maxint

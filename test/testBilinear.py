@@ -42,10 +42,12 @@ import sys
 from utilstest import getLogger  # UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
+from pyFAI import bilinear
 # from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 # if logger.getEffectiveLevel() <= logging.INFO:
 #    import pylab
-from pyFAI import bilinear
+#from pyFAI import bilinear
+#bilinear = sys.modules["pyFAI.bilinear"]
 
 class test_bilinear(unittest.TestCase):
     """basic maximum search test"""

@@ -93,9 +93,9 @@ class AIWidget(QtGui.QWidget):
             if bool(self.do_polarization.isChecked()):
                 kwarg["polarization_factor"] = float(self.polarization_factor.value())
 
-            kwarg["nbPt_rad"] = int(str(self.rad_pt.text()).strip())
+            kwarg["nbPt_rad"] = int(str(self.nbpt_rad.text()).strip())
             if self.do_2D.isChecked():
-                kwarg["nbPt_azim"] = int(str(self.rad_pt.text()).strip())
+                kwarg["nbPt_azim"] = int(str(self.nbpt_rad.text()).strip())
 
             if self.do_OpenCL.isChecked():
                 platform = ocl.get_platform(self.platform.currentText())
@@ -213,9 +213,9 @@ class AIWidget(QtGui.QWidget):
                     "dark_current":str(self.dark_current.text()).strip(),
                     "flat_field":str(self.flat_field.text()).strip(),
                     "polarization_factor":float_(self.polarization_factor.value()),
-                    "rad_pt":int_(self.rad_pt.text()),
+                    "nbpt_rad":int_(self.rad_pt.text()),
                     "do_2D":bool(self.do_2D.isChecked()),
-                    "azim_pt":int_(self.rad_pt.text()),
+                    "nbpt_azim":int_(self.nbpt_rad.text()),
                     "chi_discontinuity_at_0": bool(self.chi_discontinuity_at_0.isChecked()),
                     "do_radial_range": bool(self.do_radial_range.isChecked()),
                     "do_azimuthal_range": bool(self.do_azimuthal_range.isChecked()),
@@ -270,9 +270,9 @@ class AIWidget(QtGui.QWidget):
                         "dark_current":self.dark_current.setText,
                         "flat_field":self.flat_field.setText,
                         "polarization_factor":self.polarization_factor.setValue,
-                        "rad_pt":self.rad_pt.setText,
+                        "nbpt_rad":self.rad_pt.setText,
                         "do_2D":self.do_2D.setChecked,
-                        "azim_pt":self.azim_pt.setText,
+                        "nbpt_azim":self.azim_pt.setText,
                         "chi_discontinuity_at_0": self.chi_discontinuity_at_0.setChecked,
                         "do_radial_range": self.do_radial_range.setChecked,
                         "do_azimuthal_range": self.do_azimuthal_range.setChecked,
