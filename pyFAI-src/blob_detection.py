@@ -1,4 +1,5 @@
-
+import numpy
+import _convolution, scipy.misc, scipy.ndimage
 def gaussian(sigma, width=None):
     """
     Return a Gaussian window of length "width" with standard-deviation "sigma".
@@ -19,3 +20,10 @@ def gaussian(sigma, width=None):
     x = numpy.arange(width) - (width - 1) / 2.0
     g = numpy.exp(-(x / sigma) ** 2 / 2.0)
     return g / g.sum()
+
+if __name__ == "__main__":
+    g1 = gaussian(1).astype("float32")
+    l = scipy.misc.lena().astype("float32")
+    ref = scipy.ndimage.filters.convolve1d(l, g1, axis= -1)
+    obt = _convolution.horizontal_convolution(l, g1)
+    print abs(ref - obt).max()

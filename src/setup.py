@@ -41,7 +41,6 @@ elif sys.platform in ["win32", "nt"]:
     openmp = '/openmp'
 src = {}
 cython_files = [os.path.splitext(i)[0] for i in glob.glob("*.pyx")]
-#               "splitBBox", "paraSplitBBox", "splitBBoxLUT","histogram", "splitPixel", "splitBBox", "relabel", "bilinear", "_geometry"]
 if build_ext:
     for ext in cython_files:
         src[ext] = os.path.join(".", ext + ".pyx")
@@ -109,7 +108,12 @@ sparse_csr_dict = dict(name="sparse_csr",
                     #extra_compile_args=[openmp],
 #                    extra_link_args=[openmp]
                     )
-
+_convolution_dict = dict(name="_convolution",
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=[src['_convolution']],
+                    extra_compile_args=[openmp],
+                    extra_link_args=[openmp]
+                    )
 
 setup(name='histogram',
       version="0.3.0",
@@ -120,7 +124,8 @@ setup(name='histogram',
 #                   Extension(**paraSplitBBox_dic),
 #                   Extension(**splitBBoxLUT_dic),
                    Extension(**marchingsquares_dict),
-                   Extension(**sparse_csr_dict)
+                   Extension(**sparse_csr_dict),
+                   Extension(**_convolution_dict)
                    ],
       cmdclass={'build_ext': build_ext},
       )
