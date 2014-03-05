@@ -59,7 +59,7 @@ try:
     import h5py
 except ImportError:
     h5py = None
-    logger.debug("h5py is missing")
+    logger.error("h5py is missing")
 
 import fabio
 from . import units
@@ -114,7 +114,7 @@ class Writer(object):
                 self.lima_cfg = lima_cfg
             if self.filename is not None:
                 dirname = os.path.dirname(self.filename)
-                if not os.path.exists(dirname):
+                if dirname and not os.path.exists(dirname):
                     try:
                         os.makedirs(dirname)
                     except Exception as err:
@@ -188,6 +188,7 @@ class HDF5Writer(Writer):
         Initializes the HDF5 file for writing
         @param fai_cfg: the configuration of the worker as a dictionary
         """
+        logger.debug("in init")
         Writer.init(self, fai_cfg, lima_cfg)
         with self._sem:
             #TODO: this is Debug statement
@@ -299,9 +300,10 @@ class HDF5Writer(Writer):
             self.hdf5.flush()
 
     def close(self):
-        with self._sem:
-            if self.hdf5:
-                self.flush()
+        logger.debug("In close")
+        if self.hdf5:
+            self.flush()
+            with self._sem:
                 self.hdf5.close()
                 self.hdf5 = None
 
@@ -309,12 +311,14 @@ class HDF5Writer(Writer):
         """
         Minimalistic method to limit the overhead.
         """
+        logger.debug("In write, index %s" % index)
         with self._sem:
             if self.dataset is None:
                 logger.warning("Writer not initialized !")
                 return
             if self.azimuthal_values is None:
-                data = data[:, 1] #take the second column only aka I
+                if data.ndim == 2:
+                    data = data[:, 1] #take the second column only aka I
             if self.fast_scan_width:
                 index0, index1 = (index // self.fast_scan_width, index % self.fast_scan_width)
                 if index0 >= self.dataset.shape[0]:

@@ -45,9 +45,11 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI.integrate_widget")
 from PyQt4 import QtCore, QtGui, uic
 from PyQt4.QtCore import SIGNAL
-import pyFAI, fabio
-from pyFAI.opencl import ocl
-from pyFAI.utils import float_, int_, str_, get_ui_file
+import pyFAI
+import fabio
+from .opencl import ocl
+from .utils import float_, int_, str_, get_ui_file
+from .io import HDF5Writer
 UIC = get_ui_file("integration.ui")
 
 FROM_PYMCA = "From PyMca"
@@ -101,7 +103,7 @@ class AIWidget(QtGui.QWidget):
     def proceed(self):
         with self._sem:
             out = None
-            self.dump()
+            config = self.dump()
             logger.debug("Let's work a bit")
             self.set_ai()
 
@@ -239,13 +241,15 @@ class AIWidget(QtGui.QWidget):
                     self.progressBar.setValue(100.0 * i / len(self.input_data))
                     logger.debug("processing %s" % item)
                     if (type(item) in types.StringTypes) and op.exists(item):
-                        kwarg["data"] = fabio.open(item).data
+                        fab_img = fabio.open(item)
+                        multiframe = (fab_img.nframes > 1)
+                        kwarg["data"] = fab_img.data
                         if self.hdf5_path is None:
                             if self.output_path and op.isdir(self.output_path):
                                 outpath = op.join(self.output_path, op.splitext(op.basename(item))[0])
                             else:
                                 outpath = op.splitext(item)[0]
-                            if "nbPt_azim" in kwarg:
+                            if "nbPt_azim" in kwarg and not multiframe:
                                 kwarg["filename"] = outpath + ".azim"
                             else:
                                 kwarg["filename"] = outpath + ".dat"
@@ -253,13 +257,37 @@ class AIWidget(QtGui.QWidget):
                         logger.warning("item is not a file ... guessing it is a numpy array")
                         kwarg["data"] = item
                         kwarg["filename"] = None
-                    if kwarg.get("nbPt_azim"):
-                        res = self.ai.integrate2d(**kwarg)[0]
+                        multiframe = False
+                    if multiframe:
+                        if kwarg["filename"]:
+                            outpath = op.splitext(kwarg["filename"])[0]
+                        kwarg["filename"] = None
+                        writer = HDF5Writer(outpath + "_pyFAI.h5")
+                        writer.init(config)
+                        for i in range(fab_img.nframes):
+                            kwarg["data"] = fab_img.getframe(i).data
+                            if kwarg.get("nbPt_azim"):
+                                res = self.ai.integrate2d(**kwarg)
+                            else:
+                                if "nbPt_rad" in kwarg:  # convert nbPt_rad -> nbPt
+                                    kwarg["nbPt"] = kwarg.pop("nbPt_rad")
+                                res = self.ai.integrate1d(**kwarg)
+                                #TODO: finish the work: 2th and chi are not saved.checl it is the right I saved
+#                                tosave =
+                            writer.write(res[0], index=i)
+                        writer.set_radial()
+                        if kwarg.get("nbPt_azim"):
+                            writer.set_azim()
+                        writer.close()
                     else:
-                        if "nbPt_rad" in kwarg:  # convert nbPt_rad -> nbPt
-                            kwarg["nbPt"] = kwarg.pop("nbPt_rad")
-                        res = self.ai.integrate1d(**kwarg)[0]
+                        if kwarg.get("nbPt_azim"):
+                            res = self.ai.integrate2d(**kwarg)
+                        else:
+                            if "nbPt_rad" in kwarg:  # convert nbPt_rad -> nbPt
+                                kwarg["nbPt"] = kwarg.pop("nbPt_rad")
+                            res = self.ai.integrate1d(**kwarg)
                     out.append(res)
+
                     #TODO manage HDF5 stuff !!!
             logger.info("Processing Done in %.3fs !" % (time.time() - start_time))
             self.progressBar.setValue(100)
@@ -335,6 +363,7 @@ class AIWidget(QtGui.QWidget):
             logger.error("Error while saving config: %s" % error)
         else:
             logger.debug("Saved")
+        return to_save
 
     def restore(self, filename=".azimint.json"):
         """
