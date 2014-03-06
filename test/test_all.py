@@ -55,6 +55,7 @@ from testFlat                 import test_suite_all_Flat
 from testUtils                import test_suite_all_Utils
 from testPolarization         import test_suite_all_Polarization
 from testDetector             import test_suite_all_detectors
+from test_convolution         import test_suite_all_convolution
 
 def test_suite_all():
     testSuite = unittest.TestSuite()
