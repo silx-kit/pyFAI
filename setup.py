@@ -116,9 +116,11 @@ if ("sdist" in sys.argv):
 # ###############################################################################
 # pyFAI extensions
 # ###############################################################################
-cython_modules = ["histogram", "splitPixel", "splitBBox", "splitBBoxLUT", "splitBBoxCSR",
-                  "relabel", "bilinear", "_geometry", "reconstruct", "fastcrc", "_distortion",
-                  "_bispev"]
+#cython_modules = ["histogram", "splitPixel", "splitBBox", "splitBBoxLUT", "splitBBoxCSR",
+#                  "relabel", "bilinear", "_geometry", "reconstruct", "fastcrc", "_distortion",
+#                  "_bispev"]
+cython_modules = [os.path.splitext(os.path.basename(i))[0] for i in glob.glob("src/*.pyx")]
+
 src = dict([(ext, join("src", ext + cython_c_ext)) for ext in cython_modules])
 
 _geometry_dic = dict(name="_geometry",
@@ -187,11 +189,16 @@ _bispev_dic = dict(name="_bispev",
                         sources=[src['_bispev'] ],
                         extra_compile_args=['openmp'],
                         extra_link_args=['openmp'],
-
                         )
 
+_convolution_dict = dict(name="_convolution",
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=[src['_convolution']],
+                    extra_compile_args=["openmp"],
+                    extra_link_args=["openmp"]
+                    )
 
-ext_modules = [globals()[i + "_dic"] for i in cython_modules]
+ext_modules = [globals()[i + "_dic"] for i in cython_modules if i + "_dic" in dir()]
 
 
 if (os.name != "posix") or ("x86" not in platform.machine()):
