@@ -266,18 +266,15 @@ class AIWidget(QtGui.QWidget):
                         writer.init(config)
                         for i in range(fab_img.nframes):
                             kwarg["data"] = fab_img.getframe(i).data
-                            if kwarg.get("nbPt_azim"):
+                            radial = None
+                            azimuthal = None
+                            if "nbPt_azim" in kwarg:
                                 res = self.ai.integrate2d(**kwarg)
                             else:
                                 if "nbPt_rad" in kwarg:  # convert nbPt_rad -> nbPt
                                     kwarg["nbPt"] = kwarg.pop("nbPt_rad")
                                 res = self.ai.integrate1d(**kwarg)
-                                #TODO: finish the work: 2th and chi are not saved.checl it is the right I saved
-#                                tosave =
-                            writer.write(res[0], index=i)
-                        writer.set_radial()
-                        if kwarg.get("nbPt_azim"):
-                            writer.set_azim()
+                            writer.write(res, index=i)
                         writer.close()
                     else:
                         if kwarg.get("nbPt_azim"):
