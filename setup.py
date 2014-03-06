@@ -191,7 +191,7 @@ _bispev_dic = dict(name="_bispev",
                         extra_link_args=['openmp'],
                         )
 
-_convolution_dict = dict(name="_convolution",
+_convolution_dic = dict(name="_convolution",
                     include_dirs=get_numpy_include_dirs(),
                     sources=[src['_convolution']],
                     extra_compile_args=["openmp"],
