@@ -112,24 +112,28 @@ class BlobDetection(object):
         if not self.sigmas:
             self._calc_sigma()
         previous = self.data
+        blurs = []
+        dogs = []
         for sigma_abs, sigma_rel in self.sigmas:
             if  sigma_rel == 0:
-                self.blurs.append(previous)
+                blurs.append(previous)
             else:
                 new_blur = gaussian_filter(previous, sigma_rel)
-                self.blurs.append(new_blur)
-                self.dogs.append(previous - new_blur)
+                blurs.append(new_blur)
+                dogs.append(previous - new_blur)
                 previous = new_blur
         for i in range(1, self.scale_per_octave + 1):
             sigma = self.sigmas[i][0]
-            self.keypoints.append(local_max_min(self.dogs[i - 1], self.dogs[i], self.dogs[i + 1], sigma=sigma))
+            self.keypoints.append(local_max_min(dogs[i - 1], dogs[i], dogs[i + 1], sigma=sigma))
         #shrink data so that
-        self.data = binning(self.blurs[self.scale_per_octave], 2)
+        self.blurs += blurs
+        self.dogs += dogs
+        self.data = binning(blurs[self.scale_per_octave], 2) / 4.0
 
 if __name__ == "__main__":
 #    import scipy.misc
     import fabio
     img = fabio.open("../test/testimages/halfccd.edf").data
-    bd = BlobDetection(img)
+    bd = BlobDetection(img, init_sigma=0.25)
     bd._one_octave()
     print bd.sigmas

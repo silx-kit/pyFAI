@@ -24,7 +24,8 @@
 
 #
 import cython
-import os, sys
+import os 
+import sys
 from cython.parallel import prange
 from libc.string cimport memset
 import numpy
@@ -36,11 +37,8 @@ try:
     from fastcrc import crc32
 except:
     from zlib import crc32
+
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
-#TODO: remove
-cdef struct lut_point:
-    numpy.int32_t idx
-    numpy.float32_t coe
 
 @cython.cdivision(True)
 cdef inline float getBinNr( float x0, float pos0_min, float delta) nogil:
@@ -75,6 +73,18 @@ class HistoBBox1d(object):
                  mask_checksum=None,
                  allow_pos0_neg=False,
                  unit="undefined"):
+        """
+        @param pos0: 1D array with pos0: tth or q_vect or r ...
+        @param delta_pos0: 1D array with delta pos0: max center-corner distance
+        @param pos1: 1D array with pos1: chi
+        @param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
+        @param bins: number of output bins, 100 by default
+        @param pos0Range: minimum and maximum  of the 2th range
+        @param pos1Range: minimum and maximum  of the chi range
+        @param mask: array (of int8) with masked pixels with 1 (0=not masked)
+        @param allow_pos0_neg: enforce the q<0 is usually not possible  
+        @param unit: can be 2th_deg or r_nm^-1 ...
+        """
 
         self.size = pos0.size
         assert delta_pos0.size == self.size
@@ -120,14 +130,7 @@ class HistoBBox1d(object):
         self.lut_checksum = crc32(self.data)
         self.unit=unit
 
-    def __del__(self):
-        print("destructor called")
-        import sys
-        for i in ("cpos0","dpos0","data","indices"):
-            if i in dir(self):
-                print("ref count for %s: %s"%(i,sys.getrefcount(self.__getattribute__(i))))
-                self.__setattr__(i,None) 
-                      
+
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def calc_boundaries(self,pos0Range):
@@ -183,14 +186,14 @@ class HistoBBox1d(object):
         
         '''
         cdef float delta=self.delta, pos0_min=self.pos0_min, pos1_min, pos1_max, min0, max0, fbin0_min, fbin0_max, deltaL, deltaR, deltaA
-        cdef numpy.int32_t k,idx, i, bin0_min, bin0_max, bins = self.bins, size #same as numpy.uint32
+        cdef numpy.int32_t k,idx, i, bin0_min, bin0_max, bins = self.bins, size
         cdef bint check_mask, check_pos1
         cdef numpy.ndarray[numpy.int32_t, ndim = 1] outMax = numpy.zeros(bins, dtype=numpy.int32)
         cdef numpy.ndarray[numpy.int32_t, ndim = 1] indptr = numpy.zeros(bins+1, dtype=numpy.int32)
         cdef numpy.ndarray[numpy.int32_t, ndim = 1] indices 
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] data
-        cdef float[:] cpos0_sup = self.cpos0_sup, cpos0_inf = self.cpos0_inf, cpos1_min, cpos1_max,
-                      
+        cdef float[:] cpos0_sup = self.cpos0_sup, cpos0_inf = self.cpos0_inf, cpos1_min, cpos1_max
+
         cdef numpy.int8_t[:] cmask
         size = self.size
         if self.check_mask:
