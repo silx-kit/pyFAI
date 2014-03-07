@@ -235,7 +235,7 @@ class OCL_LUT_Integrator(object):
                 copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image"], numpy.ascontiguousarray(data, dtype=numpy.float32))
                 events+=[("copy image",copy_image)]
             memset = self._program.memset_out(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["memset_out"])
-            events+=[("memset",memset)]
+            events.append(("memset", memset))
             if dummy is not None:
                 do_dummy = numpy.int32(1)
                 dummy = numpy.float32(dummy)
@@ -259,7 +259,7 @@ class OCL_LUT_Integrator(object):
                     dark_checksum = crc32(dark)
                 if dark_checksum != self.on_device["dark"]:
                     ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["dark"], numpy.ascontiguousarray(dark, dtype=numpy.float32))
-                    events.append("copy dark",ev)
+                    events.append(("copy dark", ev))
                     self.on_device["dark"] = dark_checksum
             else:
                 do_dark = numpy.int32(0)
@@ -270,7 +270,7 @@ class OCL_LUT_Integrator(object):
                     flat_checksum = crc32(flat)
                 if self.on_device["flat"] != flat_checksum:
                     ev=pyopencl.enqueue_copy(self._queue, self._cl_mem["flat"], numpy.ascontiguousarray(flat, dtype=numpy.float32))
-                    events.append("copy flat",ev)
+                    events.append(("copy flat", ev))
                     self.on_device["flat"] = flat_checksum
             else:
                 do_flat = numpy.int32(0)
@@ -282,7 +282,7 @@ class OCL_LUT_Integrator(object):
                     solidAngle_checksum = crc32(solidAngle)
                 if solidAngle_checksum != self.on_device["solidangle"]:
                     ev=pyopencl.enqueue_copy(self._queue, self._cl_mem["solidangle"], numpy.ascontiguousarray(solidAngle, dtype=numpy.float32))
-                events.append(("copy solidangle",ev))
+                    events.append(("copy solidangle", ev))
                 self.on_device["solidangle"] = solidAngle_checksum
             else:
                 do_solidAngle = numpy.int32(0)
