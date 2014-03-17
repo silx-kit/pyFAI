@@ -133,10 +133,16 @@ class HistoBBox1d(object):
         self.delta = (self.pos0_max - self.pos0_min) / bins
         self._lut=None
         self.lut_max_idx = None
-        self.calc_lut()        
+        self.calc_lut()   
         self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, self.pos0_maxin-0.5*self.delta, self.bins)
         self.lut_checksum = None
         self.unit=unit
+        self.csr_data = None
+        self.csr_indices = None
+        self.csr_indptr = None
+#        self.generate_csr()
+ #       self.generate_csr_padded()
+#        self.generate_lut_csr()
         
 
     @cython.boundscheck(False)
@@ -347,6 +353,92 @@ class HistoBBox1d(object):
                                         copy=True)
 
     lut = property(get_lut)         
+
+    
+    @cython.boundscheck(True)  # For testing
+    def generate_csr(self):
+        cdef int nnz = self.lut_max_idx.sum()
+        cdef lut_point tmp
+        cdef int i, j, running_index
+        
+        data = numpy.empty(shape=nnz, dtype=numpy.float32)
+        indices = numpy.empty(shape=nnz, dtype=numpy.int32)
+        indptr = numpy.empty(shape=self.bins+1, dtype=numpy.int32)
+
+        running_index = 0
+        for i in range(self.bins):
+            indptr[i] = running_index
+            for j in range(self.lut_max_idx[i]):
+                tmp = self._lut[i, j]
+                data[running_index] = tmp.coef
+                indices[running_index] = tmp.idx
+                running_index += 1
+        indptr[-1] = nnz
+        self.csr_data = data
+        self.csr_indices = indices
+        self.csr_indptr = indptr
+
+
+    @cython.boundscheck(True)  # For testing
+    def generate_csr_padded(self, workgroup_size):
+        cdef int nnz=0
+        cdef lut_point tmp
+        cdef int i, j, running_index
+        
+        
+        lut_max_idx_padded = numpy.empty(shape=self.bins, dtype=numpy.int32)
+        for i in range(self.bins):
+            lut_max_idx_padded[i] = (self.lut_max_idx[i] + workgroup_size - 1) & ~(workgroup_size - 1)
+        nnz = lut_max_idx_padded.sum()
+        
+        data = numpy.empty(shape=nnz, dtype=numpy.float32)
+        indices = numpy.empty(shape=nnz, dtype=numpy.int32)
+        indptr = numpy.empty(shape=self.bins+1, dtype=numpy.int32)
+
+        running_index = 0
+        for i in range(self.bins):
+            indptr[i] = running_index
+            for j in range(lut_max_idx_padded[i]):
+                if j < self.lut_max_idx[i]:
+                    tmp = self._lut[i, j]
+                    data[running_index] = tmp.coef
+                    indices[running_index] = tmp.idx
+                    running_index += 1
+                else:
+                    data[running_index] = 0
+                    indices[running_index] = tmp.idx
+                    running_index += 1
+        indptr[-1] = nnz
+        self.csr_padded_data = data
+        self.csr_padded_indices = indices
+        self.csr_padded_indptr = indptr
+        max_width = lut_max_idx_padded.max()
+        return max_width
+
+        
+        
+    def generate_lut_csr(self):
+        cdef int nnz = self.bins * self.lut_max_idx.max()
+        cdef lut_point tmp
+        cdef int i, j, running_index
+        
+        data = numpy.empty(shape=nnz, dtype=numpy.float32)
+        indices = numpy.empty(shape=nnz, dtype=numpy.int32)
+        indptr = numpy.empty(shape=self.bins+1, dtype=numpy.int32)
+
+        running_index = 0
+        for i in range(self.bins):
+            indptr[i] = running_index
+            for j in range(self.lut_max_idx.max()):
+                tmp = self._lut[i, j]
+                data[running_index] = tmp.coef
+                indices[running_index] = tmp.idx
+                running_index += 1
+        indptr[-1] = nnz
+        self.lut_csr_data = data
+        self.lut_csr_indices = indices
+        self.lut_csr_indptr = indptr
+
         
 
 
