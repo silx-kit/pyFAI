@@ -236,6 +236,7 @@ class OCL_LUT_Integrator(object):
                 events+=[("copy image",copy_image)]
             memset = self._program.memset_out(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["memset_out"])
             events.append(("memset", memset))
+
             if dummy is not None:
                 do_dummy = numpy.int32(1)
                 dummy = numpy.float32(dummy)
