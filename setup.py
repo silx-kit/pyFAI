@@ -388,10 +388,10 @@ This python module can be found on:
 http://pypi.python.org/pypi/pyopencl
 """)
 
-
-# ###############################################################################
+"""
+################################################################################
 # check if OpenMP modules, freshly installed can import
-# ###############################################################################
+################################################################################
 pyFAI = None
 sys.path.insert(0, os.path.dirname(installDir))
 # print installDir
@@ -404,7 +404,7 @@ for mod in sys.modules.copy():
 try:
     import pyFAI
 except ImportError as E:
-    print("Unable to import pyFAI: %s" % E)
+    print("Unable to import pyFAI from system: %s" % E)
 else:
     print("PyFAI is installed in %s" % pyFAI.__file__)
     try:
@@ -414,3 +414,4 @@ else:
     else:
         print("OpenMP libraries were found and pyFAI.histogram was successfully imported")
 
+"""
