@@ -1015,10 +1015,10 @@ class Rayonix133(Rayonix):
                          }
     MAX_SHAPE = (2048 , 2048)
     def __init__(self):
-        Rayonix.__init__(self, pixel1=e-6, pixel2=e-6)
-        self.max_shape = ( 2048, 2048)
+        Rayonix.__init__(self, pixel1=64e-6, pixel2=64e-6)
+        self.max_shape = (2048, 2048)
         self._binning = (2, 2)
-        self.name = "Rayonix 133"
+        self.name = "MAR133"
 
 class RayonixSx165(Rayonix):
     """
@@ -1036,7 +1036,7 @@ class RayonixSx165(Rayonix):
     def __init__(self):
         Rayonix.__init__(self, pixel1=39.5e-6, pixel2=39.5e-6)
         self.max_shape = (4096, 4096)
-        self.name = "Rayonix sx165"
+        self.name = "MAR165"
         self._binning = (1, 1)
 
 class RayonixSx200(Rayonix):
