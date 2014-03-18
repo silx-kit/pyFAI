@@ -1001,28 +1001,40 @@ class Rayonix(Detector):
 
 class Rayonix133(Rayonix):
     """
-    Rayonix 133 2D CCD detector detector
+    Rayonix 133 2D CCD detector detector also known as mar133
 
     Personnal communication from M. Blum
 
     What should be the default binning factor for those cameras ?
 
+    Circular detector
     """
     force_pixel = True
-    BINNED_PIXEL_SIZE = {1: 64e-6,
-                         2: 128e-6,
-                         4: 256e-6,
+    BINNED_PIXEL_SIZE = {1: 32e-6,
+                         2: 64e-6,
+                         4: 128e-6,
+                         8: 256e-6,
                          }
-    MAX_SHAPE = (2048 , 2048)
+    MAX_SHAPE = (4096 , 4096)
     def __init__(self):
         Rayonix.__init__(self, pixel1=64e-6, pixel2=64e-6)
         self.max_shape = (2048, 2048)
         self._binning = (2, 2)
         self.name = "MAR133"
 
+    def calc_mask(self):
+        """Circular mask"""
+        c = [i // 2 for i in self.max_shape]
+        x, y = numpy.ogrid[:self.max_shape[0], :self.max_shape[1]]
+        mask = ((x + 0.5 - c[0]) ** 2 + (y + 0.5 - c[1]) ** 2) > (c[0]) ** 2
+        return mask
+
+
 class RayonixSx165(Rayonix):
     """
-    Rayonix sx165 2d Detector
+    Rayonix sx165 2d Detector also known as MAR165.
+    
+    Circular detector
     """
     BINNED_PIXEL_SIZE = {1: 39.5e-6,
                          2: 79e-6,
@@ -1038,6 +1050,13 @@ class RayonixSx165(Rayonix):
         self.max_shape = (4096, 4096)
         self.name = "MAR165"
         self._binning = (1, 1)
+    def calc_mask(self):
+        """Circular mask"""
+        c = [i // 2 for i in self.max_shape]
+        x, y = numpy.ogrid[:self.max_shape[0], :self.max_shape[1]]
+        mask = ((x + 0.5 - c[0]) ** 2 + (y + 0.5 - c[1]) ** 2) > (c[0]) ** 2
+        return mask
+
 
 class RayonixSx200(Rayonix):
     """
