@@ -739,7 +739,7 @@ class Basler(Detector):
 class Mar345(Detector):
 
     """
-    Mar345 Imaging plate detector 
+    Mar345 Imaging plate detector
 
     """
     force_pixel = False
@@ -1033,7 +1033,7 @@ class Rayonix133(Rayonix):
 class RayonixSx165(Rayonix):
     """
     Rayonix sx165 2d Detector also known as MAR165.
-    
+
     Circular detector
     """
     BINNED_PIXEL_SIZE = {1: 39.5e-6,
@@ -1045,11 +1045,14 @@ class RayonixSx165(Rayonix):
     MAX_SHAPE = (4096 , 4096)
 
     force_pixel = True
+
     def __init__(self):
         Rayonix.__init__(self, pixel1=39.5e-6, pixel2=39.5e-6)
         self.max_shape = (4096, 4096)
         self.name = "MAR165"
+        self.aliases = "Rayonix Sx165"
         self._binning = (1, 1)
+
     def calc_mask(self):
         """Circular mask"""
         c = [i // 2 for i in self.max_shape]
