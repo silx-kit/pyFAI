@@ -23,13 +23,16 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-
+from __future__ import print_function
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "02/02/2014"
 __status__ = "stable"
+__doc__ = """
+Module containing the description of all detectors with a factory to instanciate them
+"""
 
 import os
 import logging
@@ -38,10 +41,10 @@ import numpy
 
 logger = logging.getLogger("pyFAI.detectors")
 
-from pyFAI import spline
-from pyFAI.utils import lazy_property
+from . import spline
+from .utils import lazy_property
 try:
-    from pyFAI.fastcrc import crc32
+    from .fastcrc import crc32
 except ImportError:
     from zlib import crc32
 try:
@@ -50,12 +53,57 @@ except ImportError:
     fabio = None
 epsilon = 1e-6
 
+
+class DetectorMeta(type):
+    """
+    Metaclass used to register all detector classes inheriting from Detector
+    """
+    # we use __init__ rather than __new__ here because we want
+    # to modify attributes of the class *after* they have been
+    # created
+    def __init__(cls, name, bases, dct):
+        cls.registry[name.lower()] = cls
+        if hasattr(cls, "aliases"):
+            for alias in cls.aliases:
+                cls.registry[alias.lower().replace(" ", "_")] = cls
+                cls.registry[alias.lower().replace(" ", "")] = cls
+        super(DetectorMeta, cls).__init__(name, bases, dct)
+
+
 class Detector(object):
     """
     Generic class representing a 2D detector
     """
-    force_pixel = False     #Used to specify pixel size should be defined by the class itself.
-    isDetector = True       #used to recognize detector classes
+    __metaclass__ = DetectorMeta
+    force_pixel = False     # Used to specify pixel size should be defined by the class itself.
+    aliases = []            # list of alternative names
+    registry = {}           # list of  detectors ...
+
+    @classmethod
+    def factory(cls, name, config=None):
+        """
+        A kind of factory...
+
+        @param name: name of a detector
+        @type name: str
+        @param config: configuration of the detector
+        @type config: dict or JSON representation of it.
+    
+        @return: an instance of the right detector, set-up if possible
+        @rtype: pyFAI.detectors.Detector
+        """
+        name = name.lower()
+        if name in cls.registry:
+            mydet = cls.registry[name]()
+            if config is not None:
+                mydet.set_config(config)
+            return mydet
+        else:
+            msg = ("Detector %s is unknown !, "
+                   "please select one from %s" % (name, cls.registry.keys()))
+            logger.error(msg)
+            raise RuntimeError(msg)
+
     def __init__(self, pixel1=None, pixel2=None, splineFile=None):
         """
         @param pixel1: size of the pixel in meter along the slow dimension (often Y)
@@ -65,10 +113,6 @@ class Detector(object):
         @param splineFile: path to file containing the geometric correction.
         @type splineFile: str
         """
-        try:
-            self.name = self.__class__.name
-        except:
-            self.name = self.__class__.__name__
         self._pixel1 = None
         self._pixel2 = None
         if pixel1:
@@ -86,6 +130,8 @@ class Detector(object):
         self._sem = threading.Semaphore()
         if splineFile:
             self.set_splineFile(splineFile)
+
+
 
     def __repr__(self):
         if (self._pixel1 is None) or (self._pixel2 is None):
@@ -332,7 +378,16 @@ class Detector(object):
         self._pixel2 = value
     pixel2 = property(get_pixel2, set_pixel2)
 
-
+    def get_name(self):
+        """
+        Get a meaningful name for detector
+        """
+        if self.aliases:
+            name = self.aliases[0]
+        else:
+            name = self.__class__.__name__
+        return name
+    name = property(get_name)
 
 class Pilatus(Detector):
     """
@@ -478,65 +533,71 @@ class Pilatus100k(Pilatus):
     """
     Pilatus 100k detector
     """
+    MAX_SHAPE = 195, 487
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         super(Pilatus100k, self).__init__(pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = (195, 487)
+        self.max_shape = self.MAX_SHAPE
 
 
 class Pilatus200k(Pilatus):
     """
     Pilatus 200k detector
     """
+    MAX_SHAPE = (407, 487)
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         super(Pilatus200k, self).__init__(pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = (407, 487)
+        self.max_shape = self.MAX_SHAPE
 
 
 class Pilatus300k(Pilatus):
     """
     Pilatus 300k detector
     """
+    MAX_SHAPE = (619, 487)
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         super(Pilatus300k, self).__init__(pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = (619, 487)
+        self.max_shape = self.MAX_SHAPE
 
 
 class Pilatus300kw(Pilatus):
     """
     Pilatus 300k-wide detector
     """
+    MAX_SHAPE = (195, 1475)
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         super(Pilatus300kw, self).__init__(pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = (195, 1475)
+        self.max_shape = self.MAX_SHAPE
 
 
 class Pilatus1M(Pilatus):
     """
     Pilatus 1M detector
     """
+    MAX_SHAPE = (1043, 981)
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         super(Pilatus1M, self).__init__(pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = (1043, 981)
+        self.max_shape = self.MAX_SHAPE
 
 
 class Pilatus2M(Pilatus):
     """
     Pilatus 2M detector
     """
-    force_pixel = True
+
+    MAX_SHAPE = 1679, 1475
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         super(Pilatus2M, self).__init__(pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = (1679, 1475)
+        self.max_shape = self.MAX_SHAPE
 
 
 class Pilatus6M(Pilatus):
     """
     Pilatus 6M detector
     """
-    force_pixel = True
+    MAX_SHAPE = (2527, 2463)
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         super(Pilatus6M, self).__init__(pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = (2527, 2463)
+        self.max_shape = self.MAX_SHAPE
 
 class Eiger(Detector):
     """
@@ -547,7 +608,7 @@ class Eiger(Detector):
     force_pixel = True
 
     def __init__(self, pixel1=75e-6, pixel2=75e-6):
-        Eiger.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
     def calc_mask(self):
         """
@@ -631,33 +692,37 @@ class Eiger1M(Eiger):
     """
     Eiger 1M detector
     """
+    MAX_SHAPE = (1065, 1030)
     def __init__(self, pixel1=75e-6, pixel2=75e-6):
-        Eiger.__init__(pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = (1065, 1030)
+        Eiger.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        self.max_shape = self.MAX_SHAPE
 
 class Eiger4M(Eiger):
     """
     Eiger 4M detector
     """
+    MAX_SHAPE = (2167, 2070)
     def __init__(self, pixel1=75e-6, pixel2=75e-6):
-        Eiger.__init__(pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = (2167, 2070)
+        Eiger.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        self.max_shape = self.MAX_SHAPE
 
 class Eiger9M(Eiger):
     """
     Eiger 9M detector
     """
+    MAX_SHAPE = (3269, 3110)
     def __init__(self, pixel1=75e-6, pixel2=75e-6):
-        Eiger.__init__(pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = (3269, 3110)
+        Eiger.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        self.max_shape = self.MAX_SHAPE
 
 class Eiger16M(Eiger):
     """
     Eiger 16M detector
     """
+    MAX_SHAPE = (4371, 4150)
     def __init__(self, pixel1=75e-6, pixel2=75e-6):
-        Eiger.__init__(pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = (4371, 4150)
+        Eiger.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        self.max_shape = self.MAX_SHAPE
 
 
 class Fairchild(Detector):
@@ -665,10 +730,11 @@ class Fairchild(Detector):
     Fairchild Condor 486:90 detector
     """
     force_pixel = True
+    aliases = ["Fairchild Condor 486:90"]
+    MAX_SHAPE = (4096, 4096)
     def __init__(self, pixel1=15e-6, pixel2=15e-6):
-        super(Fairchild, self).__init__(pixel1=pixel1, pixel2=pixel2)
-        self.name = "Fairchild Condor 486:90"
-        self.max_shape = (4096, 4096)
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        self.max_shape = self.MAX_SHAPE
 
 
 class Titan(Detector):
@@ -676,10 +742,11 @@ class Titan(Detector):
     Titan CCD detector from Agilent. Mask not handled
     """
     force_pixel = True
+    MAX_SHAPE = (2048, 2048)
+    aliases = ["Titan 2k x 2k"]
     def __init__(self, pixel1=60e-6, pixel2=60e-6):
-        super(Titan, self).__init__(pixel1=pixel1, pixel2=pixel2)
-        self.name = "Titan 2k x 2k"
-        self.max_shape = (2048, 2048)
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        self.max_shape = self.MAX_SHAPE
 
 
 class Dexela2923(Detector):
@@ -687,10 +754,11 @@ class Dexela2923(Detector):
     Dexela CMOS family detector
     """
     force_pixel = True
+    aliases = ["Dexela 2923"]
+    MAX_SHAPE = (3888, 3072)
     def __init__(self, pixel1=75e-6, pixel2=75e-6):
         super(Dexela2923, self).__init__(pixel1=pixel1, pixel2=pixel2)
-        self.name = "Dexela 2923"
-        self.max_shape = (3888, 3072)
+        self.max_shape = self.MAX_SHAPE
 
 
 class FReLoN(Detector):
@@ -732,9 +800,11 @@ class Basler(Detector):
 
     """
     force_pixel = True
+    aliases = ["aca1300"]
+    MAX_SHAPE = (966, 1296)
     def __init__(self, pixel=3.75e-6):
         super(Basler, self).__init__(pixel1=pixel, pixel2=pixel)
-        self.max_shape = (966, 1296)
+        self.max_shape = self.MAX_SHAPE
 
 class Mar345(Detector):
 
@@ -743,17 +813,20 @@ class Mar345(Detector):
 
     """
     force_pixel = False
+    MAX_SHAPE = (3450, 3450)
+    aliases = ["MAR 345", "Mar3450"]
     def __init__(self, pixel1=100e-6, pixel2=100e-6):
         Detector.__init__(self, pixel1, pixel2)
-        self.max_shape = (int(3450 * 100e-6 / self.pixel1),
-                          int(3450 * 100e-6 / self.pixel2))
-        self.name = "Mar3450"
+        self.max_shape = (int(self.MAX_SHAPE[0] * 100e-6 / self.pixel1),
+                          int(self.MAX_SHAPE[1] * 100e-6 / self.pixel2))
+#        self.mode = 1
 
     def calc_mask(self):
-        c = [i//2 for i in self.max_shape]
+        c = [i // 2 for i in self.max_shape]
         x, y = numpy.ogrid[:self.max_shape[0], :self.max_shape[1]]
-        mask= ((x+0.5-c[0])**2+(y+0.5-c[1])**2) > (c[0])**2
+        mask = ((x + 0.5 - c[0]) ** 2 + (y + 0.5 - c[1]) ** 2) > (c[0]) ** 2
         return mask
+
 
 class Xpad_flat(Detector):
     """
@@ -763,9 +836,10 @@ class Xpad_flat(Detector):
     MODULE_SIZE = (120, 80)
     MODULE_GAP = (3 + 3.57 * 1000 / 130, 3)  # in pixels
     force_pixel = True
+    MAX_SHAPE = (960, 560)
     def __init__(self, pixel1=130e-6, pixel2=130e-6):
         super(Xpad_flat, self).__init__(pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = (960, 560)
+        self.max_shape = self.MAX_SHAPE
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -874,9 +948,9 @@ class ImXPadS140(Detector):
     MAX_SHAPE = (240, 560)  # max size of the detector
     PIXEL_SIZE = (130e-6, 130e-6)
     force_pixel = True
-    name = "Imxpad S140"
+    aliases = ["Imxpad S140"]
 
-    class __metaclass__(type):
+    class __metaclass__(DetectorMeta):
 
         @lazy_property
         def COORDINATES(cls):
@@ -916,7 +990,7 @@ class ImXPadS140(Detector):
 
     def __init__(self, pixel1=130e-6, pixel2=130e-6):
         super(ImXPadS140, self).__init__(pixel1=pixel1, pixel2=pixel2)
-        self.name = "ImXPad S140"
+
         self.max_shape = self.MAX_SHAPE
 
     def __repr__(self):
@@ -952,21 +1026,16 @@ class Perkin(Detector):
     Perkin detector
 
     """
+    aliases = ["Perkin detector"]
     force_pixel = True
+    MAX_SHAPE = (2048, 2048)
     def __init__(self, pixel=200e-6):
         super(Perkin, self).__init__(pixel1=pixel, pixel2=pixel)
-        self.name = "Perkin detector"
-        self.max_shape = (2048, 2048)
 
 
 class Rayonix(Detector):
     force_pixel = True
-    BINNED_PIXEL_SIZE = {1:40e-6,
-                         2:79e-6,
-                         3:119e-6,
-                         4:158e-6,
-                         }
-    MAX_SHAPE = (8192 , 8192)
+    BINNED_PIXEL_SIZE = {}
 
     def __init__(self, pixel1=None, pixel2=None):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -995,7 +1064,8 @@ class Rayonix(Detector):
                 self._pixel1 = self.BINNED_PIXEL_SIZE[1] / float(bin_size[0])
                 self._pixel2 = self.BINNED_PIXEL_SIZE[1] / float(bin_size[1])
             self._binning = bin_size
-            self.max_shape = (self.MAX_SHAPE[0] // bin_size[0], self.MAX_SHAPE[1] // bin_size[1])
+            self.max_shape = (self.MAX_SHAPE[0] // bin_size[0],
+                              self.MAX_SHAPE[1] // bin_size[1])
     binning = property(get_binning, set_binning)
 
 
@@ -1016,11 +1086,12 @@ class Rayonix133(Rayonix):
                          8: 256e-6,
                          }
     MAX_SHAPE = (4096 , 4096)
+    aliases = ["MAR133"]
+
     def __init__(self):
         Rayonix.__init__(self, pixel1=64e-6, pixel2=64e-6)
         self.max_shape = (2048, 2048)
         self._binning = (2, 2)
-        self.name = "MAR133"
 
     def calc_mask(self):
         """Circular mask"""
@@ -1043,14 +1114,12 @@ class RayonixSx165(Rayonix):
                          8: 316e-6,
                          }
     MAX_SHAPE = (4096 , 4096)
-
+    aliases = ["MAR165", "Rayonix Sx165"]
     force_pixel = True
 
     def __init__(self):
         Rayonix.__init__(self, pixel1=39.5e-6, pixel2=39.5e-6)
-        self.max_shape = (4096, 4096)
-        self.name = "MAR165"
-        self.aliases = "Rayonix Sx165"
+        self.max_shape = self.MAX_SHAPE
         self._binning = (1, 1)
 
     def calc_mask(self):
@@ -1074,12 +1143,13 @@ class RayonixSx200(Rayonix):
                          8: 384e-6,
                          }
     MAX_SHAPE = (4096 , 4096)
-    force_pixel = True
+    aliases = ["Rayonix sx200"]
+
     def __init__(self):
         Rayonix.__init__(self, pixel1=48e-6, pixel2=48e-6)
-        self.max_shape = (4096, 4096)
-        self.name = "Rayonix sx200"
+        self.max_shape = self.MAX_SHAPE
         self._binning = (1, 1)
+
 
 class RayonixLx170(Rayonix):
     """
@@ -1098,11 +1168,13 @@ class RayonixLx170(Rayonix):
                          }
     MAX_SHAPE = (1920, 3840)
     force_pixel = True
+    aliases = ["Rayonix lx170"]
+
     def __init__(self):
         Rayonix.__init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6)
-        self.max_shape = (1920, 3840)
-        self.name = "Rayonix lx170"
+        self.max_shape = self.MAX_SHAPE
         self._binning = (1, 1)
+
 
 class RayonixMx170(Rayonix):
     """
@@ -1120,11 +1192,11 @@ class RayonixMx170(Rayonix):
                          10:442.7083e-6
                          }
     MAX_SHAPE = (3840, 3840)
-    force_pixel = True
+    aliases = ["Rayonix mx170"]
+
     def __init__(self):
         Rayonix.__init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6)
-        self.max_shape = (3840, 3840)
-        self.name = "Rayonix mx170"
+        self.max_shape = self.MAX_SHAPE
         self._binning = (1, 1)
 
 
@@ -1144,13 +1216,12 @@ class RayonixLx255(Rayonix):
                          10:442.7083e-6
                          }
     MAX_SHAPE = (1920 , 5760)
-    force_pixel = True
+    aliases = [ "Rayonix lx225"]
+
     def __init__(self):
         Rayonix.__init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6)
-        self.max_shape = (1920, 5760)
-        self.name = "Rayonix lx225"
+        self.max_shape = self.MAX_SHAPE
         self._binning = (1, 1)
-
 
 
 class RayonixMx225(Rayonix):
@@ -1167,12 +1238,14 @@ class RayonixMx225(Rayonix):
                          4: 146.484e-6,
                          8: 292.969e-6
                          }
-    MAX_SHAPE = (6144 , 6144)
+    MAX_SHAPE = (6144, 6144)
+    aliases = ["Rayonix mx225"]
+
     def __init__(self):
         Rayonix.__init__(self, pixel1=73.242e-6, pixel2=73.242e-6)
         self.max_shape = (3072, 3072)
         self._binning = (2, 2)
-        self.name = "Rayonix mx225"
+
 
 class RayonixMx225hs(Rayonix):
     """
@@ -1191,11 +1264,11 @@ class RayonixMx225hs(Rayonix):
                          10:390.625e-6,
                          }
     MAX_SHAPE = (5760 , 5760)
+    aliases = ["Rayonix mx225hs"]
     def __init__(self):
         Rayonix.__init__(self, pixel1=78.125e-6, pixel2=78.125e-6)
-        self.max_shape = (2880 , 2880)
+        self.max_shape = (2880, 2880)
         self._binning = (2, 2)
-        self.name = "Rayonix mx225hs"
 
 
 class RayonixMx300(Rayonix):
@@ -1211,12 +1284,12 @@ class RayonixMx300(Rayonix):
                          4: 146.484e-6,
                          8: 292.969e-6
                          }
-    MAX_SHAPE = (8192 , 8192)
+    MAX_SHAPE = (8192, 8192)
+    aliases = ["Rayonix mx300"]
 
     def __init__(self):
         Rayonix.__init__(self, pixel1=73.242e-6, pixel2=73.242e-6)
         self.max_shape = (4096, 4096)
-        self.name = "Rayonix mx300"
         self._binning = (2, 2)
 
 
@@ -1236,13 +1309,14 @@ class RayonixMx300hs(Rayonix):
                          8:  312.5e-6,
                          10: 390.625e-6
                          }
-    MAX_SHAPE = (7680 , 7680)
+    MAX_SHAPE = (7680, 7680)
+    aliases = ["Rayonix mx300hs"]
 
     def __init__(self):
         Rayonix.__init__(self, pixel1=78.125e-6, pixel2=78.125e-6)
         self.max_shape = (3840, 3840)
-        self.name = "Rayonix mx300hs"
         self._binning = (2, 2)
+
 
 class RayonixMx340hs(Rayonix):
     """
@@ -1261,10 +1335,11 @@ class RayonixMx340hs(Rayonix):
                          10: 442.7083e-6
                          }
     MAX_SHAPE = (7680 , 7680)
+    aliases = ["Rayonix mx340hs"]
+
     def __init__(self):
         Rayonix.__init__(self, pixel1=88.5417e-6, pixel2=88.5417e-6)
         self.max_shape = (3840, 3840)
-        self.name = "Rayonix mx340hs"
         self._binning = (2, 2)
 
 class RayonixSx30hs(Rayonix):
@@ -1283,11 +1358,13 @@ class RayonixSx30hs(Rayonix):
                          10:156.25e-6
                          }
     MAX_SHAPE = (1920 , 1920)
+    aliases = ["Rayonix Sx30hs"]
+
     def __init__(self):
         Rayonix.__init__(self, pixel1=15.625e-6, pixel2=15.625e-6)
-        self.max_shape = (1920, 1920)
+        self.max_shape = self.MAX_SHAPE
         self._binning = (1, 1)
-        self.name = "Rayonix Sx30hs"
+
 
 class RayonixSx85hs(Rayonix):
     """
@@ -1305,11 +1382,11 @@ class RayonixSx85hs(Rayonix):
                          10:  442.7083e-6
                          }
     MAX_SHAPE = (1920 , 1920)
+    aliases = ["Rayonix Sx85hs"]
     def __init__(self):
         Rayonix.__init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6)
-        self.max_shape = (1920, 1920)
+        self.max_shape = self.MAX_SHAPE
         self._binning = (1, 1)
-        self.name = "Rayonix Sx85hs"
 
 class RayonixMx425hs(Rayonix):
     """
@@ -1327,11 +1404,12 @@ class RayonixMx425hs(Rayonix):
                          10:  442.7083e-6
                          }
     MAX_SHAPE = (9600 , 9600)
+    aliases = ["Rayonix mx425hs"]
     def __init__(self):
         Rayonix.__init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6)
-        self.max_shape = (9600, 9600)
+        self.max_shape = self.MAX_SHAPE
         self._binning = (1, 1)
-        self.name = "Rayonix mx425hs"
+
 
 class RayonixMx325(Rayonix):
     """
@@ -1346,50 +1424,17 @@ class RayonixMx325(Rayonix):
                          8: 317.383e-6
                          }
     MAX_SHAPE = (8192 , 8192)
+    aliases = ["Rayonix mx325"]
     def __init__(self):
         Rayonix.__init__(self, pixel1=79.346e-6, pixel2=79.346e-6)
         self.max_shape = (4096, 4096)
         self._binning = (2, 2)
-        self.name = "Rayonix mx325"
 
 
 
 
-ALL_DETECTORS = {}
-#Init time creation of the dict of all detectors
-local_dict = locals()
-for obj_name in dir():
-    obj_class = local_dict.get(obj_name)
-    if "isDetector" in dir(obj_class):
-        try:
-            obj_inst = obj_class()
-        except:
-            logger.debug("Unable to instanciate %s" % obj_name)
-            pass
-        else:
-            ALL_DETECTORS[obj_name.lower()] = obj_class
-            ALL_DETECTORS[obj_inst.name.lower().replace(" ", "_")] = obj_class
 
-def detector_factory(name, config=None):
-    """
-    A kind of factory...
-    @param name: name of a detector
-    @type name: str
-    @param config: configuration of the detector
-    @type config: dict or JSON representation of it.
+ALL_DETECTORS = Detector.registry
+detector_factory = Detector.factory
 
-    @return: an instance of the right detector, set-up if possible
-    @rtype: pyFAI.detectors.Detector
-    """
-    name = name.lower()
-    if name in ALL_DETECTORS:
-        mydet = ALL_DETECTORS[name]()
-        if config is not None:
-            mydet.set_config(config)
-        return mydet
-    else:
-        msg = ("Detector %s is unknown !, "
-               "please select one from %s" % (name, ALL_DETECTORS.keys()))
-        logger.error(msg)
-        raise RuntimeError(msg)
 
