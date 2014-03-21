@@ -26,7 +26,12 @@ logger.debug("check LUT basics: %s"%abs(obt[1] - ref[1]).max())
 assert numpy.allclose(ref,obt)
 
 
-workgroup_size = 64
+workgroup_size = 128
+print "Workgroup size = ", workgroup_size
+
+
+out_cyt_bb = pyFAI.splitBBox.histoBBox1d(data, ai._ttha, ai._dttha, bins=1000)[1]
+
 
 t0 = time.time()                
 cyt_lut = pyFAI.splitBBoxLUT.HistoBBox1d(
@@ -71,7 +76,6 @@ print "Time to create cython CSR_Padded: ", t1-t0
 
 
 
-
 out_cyt_lut = cyt_lut.integrate(data)[1]
 
 
@@ -82,10 +86,10 @@ print "OpenCL LUT on: ", ocl_lut.device
 ocl_lut.log_profile()
 print ""
 print "================================================================================"
-ocl_lut.__del__
+ocl_lut.__del__()
 
 
-ocl_csr = ocl_azim_csr.OCL_CSR_Integrator(cyt_csr.data, cyt_csr.indices, cyt_csr.indptr, data.size, "GPU",profile=True, block_size=workgroup_size)
+ocl_csr = ocl_azim_csr.OCL_CSR_Integrator(cyt_csr.lut, data.size, "GPU",profile=True, block_size=workgroup_size)
 out_ocl_csr = ocl_csr.integrate(data)[0]
 print ""
 print "ÖpenCL CSR on: ", ocl_csr.device
@@ -95,7 +99,7 @@ print "=========================================================================
 ocl_csr.__del__
 
 
-ocl_csr_padded = ocl_azim_csr.OCL_CSR_Integrator(cyt_csr.data, cyt_csr.indices, cyt_csr.indptr, data.size, "GPU",profile=True, padded=True, block_size=workgroup_size)
+ocl_csr_padded = ocl_azim_csr.OCL_CSR_Integrator(cyt_csr_padded.lut, data.size, "GPU",profile=True, padded=True, block_size=workgroup_size)
 out_ocl_csr_padded = ocl_csr_padded.integrate(data)[0]
 print ""
 print "ÖpenCL CSR padded: ", ocl_csr_padded.device
@@ -105,6 +109,11 @@ print "=========================================================================
 ocl_csr_padded.__del__
 
 
+#assert numpy.allclose(out_ocl_csr_padded,out_cyt_bb)
+
+
+
+plot(out_cyt_bb, label="cyt_bb" )
 plot(out_cyt_lut, label="cyt_lut" )
 plot(out_ocl_lut, label="ocl_lut")
 plot(out_ocl_csr, label="ocl_csr")
