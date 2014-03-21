@@ -47,7 +47,7 @@ except:
 logger = logging.getLogger("pyFAI.ocl_azim_lut")
 
 class OCL_CSR_Integrator(object):
-    def __init__(self, data, indices, indptr, image_size, devicetype="all",
+    def __init__(self, lut, image_size, devicetype="all",
                  padded=False, block_size=32,
                  platformid=None, deviceid=None, 
                  checksum=None, profile=False):
@@ -67,13 +67,13 @@ class OCL_CSR_Integrator(object):
         self.BLOCK_SIZE = block_size  # query for warp size
         self.padded = padded
         self._sem = threading.Semaphore()
-        self._data = data
-        self._indice = indices
-        self._indptr = indptr
-        self.bins = indptr.shape[0] - 1
-        if data.shape[0] != indices.shape[0]:
+        self._data = lut[0]
+        self._indices = lut[1]
+        self._indptr = lut[2]
+        self.bins = self._indptr.shape[0] - 1
+        if self._data.shape[0] != self._indices.shape[0]:
             raise RuntimeError("data.shape[0] != indices.shape[0]")
-        self.data_size = data.shape[0]  
+        self.data_size = self._data.shape[0]  
         self.size = image_size
         self.profile = profile
         if not checksum:
@@ -113,11 +113,11 @@ class OCL_CSR_Integrator(object):
 #            ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indices"], indices)
 #            ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indptr"], indptr)
 #        else:
-        ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["data"], data)
+        ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["data"], self._data)
         if self.profile: self.events.append(("copy Coefficient data",ev))
-        ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indices"], indices)
+        ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indices"], self._indices)
         if self.profile: self.events.append(("copy Row Index data",ev))
-        ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indptr"], indptr)
+        ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indptr"], self._indptr)
         if self.profile: self.events.append(("copy Column Pointer data",ev))
         
     def __del__(self):

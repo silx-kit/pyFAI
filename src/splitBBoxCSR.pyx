@@ -75,12 +75,9 @@ class HistoBBox1d(object):
                  mask_checksum=None,
                  allow_pos0_neg=False,
                  unit="undefined",
-                 padding=None):
+                 padding=1):
 
-        if padding is None:
-            self.padding = 1
-        else:
-            self.padding = padding
+        self.padding = padding
         self.size = pos0.size
         assert delta_pos0.size == self.size
         self.bins = bins
@@ -124,6 +121,8 @@ class HistoBBox1d(object):
         self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, self.pos0_maxin-0.5*self.delta, self.bins)
         self.lut_checksum = crc32(self.data)
         self.unit=unit
+        self.lut=(self.data,self.indices,self.indptr)
+        
 
     def __del__(self):
         print("destructor called")
@@ -317,7 +316,7 @@ class HistoBBox1d(object):
                     if bin0_min + 1 < bin0_max:
                         for i in range(bin0_min + 1, bin0_max):
                             k = outMax[i]
-                            indices[indptr[bin0_max]+k] = idx
+                            indices[indptr[i]+k] = idx
                             data[indptr[i]+k] = (deltaA)
                             outMax[i] += 1
                             
