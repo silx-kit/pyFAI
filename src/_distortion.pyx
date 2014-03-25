@@ -754,7 +754,7 @@ class Distortion(object):
     @timeit
     def uncorrect(self, image):
         """
-        Take an image which has been corrected and transform it into it's raw (with loose of information)
+        Take an image which has been corrected and transform it into it's raw (with loss of information)
 
         @param image: 2D-array with the image
         @return: uncorrected 2D image and a mask (pixels in raw image
