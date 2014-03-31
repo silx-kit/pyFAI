@@ -44,7 +44,7 @@ try:
     from .fastcrc import crc32
 except:
     from zlib import crc32
-logger = logging.getLogger("pyFAI.ocl_azim_lut")
+logger = logging.getLogger("pyFAI.ocl_azim_csr")
 
 class OCL_CSR_Integrator(object):
     def __init__(self, lut, image_size, devicetype="all",

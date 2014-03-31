@@ -30,6 +30,7 @@
  */
 
 //OpenCL extensions are silently defined by opencl compiler at compile-time:
+
 #ifdef cl_amd_printf
   #pragma OPENCL EXTENSION cl_amd_printf : enable
   //#define printf(...)
@@ -228,6 +229,7 @@ csr_integrate(	const 	__global	float	*weights,
 //    bin_bounds = (int2) *(col_ptr+bin_num);  // cool stuff!
     bin_bounds.x = col_ptr[bin_num];
     bin_bounds.y = col_ptr[bin_num+1];
+    int bin_size = bin_bounds.y-bin_bounds.x;
 	float sum_data = 0.0f;
 	float sum_count = 0.0f;
 	float cd = 0.0f;
@@ -269,97 +271,32 @@ csr_integrate(	const 	__global	float	*weights,
 // REMEMBER TO PASS WORKGROUP_SIZE AS A CPP DEF
     __local float super_sum_data[WORKGROUP_SIZE];
     __local float super_sum_count[WORKGROUP_SIZE];
-    super_sum_data[thread_id_loc] = sum_data;
-    super_sum_count[thread_id_loc] = sum_count;
-    
-    int index, active_threads = SET_SIZE;   // deff-ed as 16
-    int thread_id_set = WORKGROUP_SIZE % SET_SIZE;
-    int num_of_sets = WORKGROUP_SIZE / SET_SIZE;
-    float super_sum_temp;
-    cd = 0;
-    cc = 0;
-    while (active_threads != 1)
-    {
-        active_threads /= 2;
-        if (thread_id_set < active_threads)
-        {
-            index = thread_id_loc+active_threads;
 
-            super_sum_temp = super_sum_data[thread_id_loc];
-            y = super_sum_data[index] - cd;
-            t = super_sum_temp + y;
-            cd = (t - super_sum_temp) - y;
-            super_sum_data[thread_id_loc] = t;
-
-            super_sum_temp = super_sum_count[thread_id_loc];
-            y = super_sum_count[index] - cc;
-            t = super_sum_temp + y;
-            cc = (t - super_sum_temp) - y;
-            super_sum_count[thread_id_loc] = t;
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-    }
-//    if (num_of_sets <= 4)
-//    {
-    if (thread_id_loc == 0)
-    {
-        for (j=0; j<WORKGROUP_SIZE; j+=SET_SIZE)
-        {
-            outData[bin_num] += super_sum_data[j];
-            outCount[bin_num] += super_sum_count[j];
-        }
-        if (outCount[bin_num] > epsilon)
-            outMerge[bin_num] =  outData[bin_num] / outCount[bin_num];
-        else
-            outMerge[bin_num] = dummy;
-    }/*
-    } else {
-        active_threads = num_of_sets;
-        if (thread_id_loc < active_threads)
-        {
-            super_sum_data[thread_id_loc] = super_sum_data[thread_id_loc*SET_SIZE];
-            while (active_threads != 1)
-            {
-                active_threads /= 2;
-                if (thread_id_loc < active_threads)
-                {
-                    index = thread_id_loc+active_threads;
-                    
-                    super_sum_temp = super_sum_data[thread_id_loc];
-                    y = super_sum_data[index] - cd;
-                    t = super_sum_temp + y;
-                    cd = (t - super_sum_temp) - y;
-                    super_sum_data[thread_id_loc] = t;
-                    
-                    super_sum_temp = super_sum_count[thread_id_loc];
-                    y = super_sum_count[index] - cc;
-                    t = super_sum_temp + y;
-                    cc = (t - super_sum_temp) - y;
-                    super_sum_count[thread_id_loc] = t;
-                }
-                barrier(CLK_LOCAL_MEM_FENCE);
-            }
-            if (thread_id_loc == 0)
-            {
-                outData[bin_num] = super_sum_data[0];
-                outCount[bin_num] = super_sum_count[0];
-                if (outCount[bin_num] > epsilon)
-                    outMerge[bin_num] =  outData[bin_num] / outCount[bin_num];
-                else
-                    outMerge[bin_num] = dummy;
-            }
-        }
-    }    */
-    /*
-    __local float super_sum_data[WORKGROUP_SIZE];
-    __local float super_sum_count[WORKGROUP_SIZE];
-    super_sum_data[thread_id_loc] = sum_data;
-    super_sum_count[thread_id_loc] = sum_count;
-    
+    float super_sum_temp = 0.0f;
     int index, active_threads = WORKGROUP_SIZE;
-    float super_sum_temp;
     cd = 0;
     cc = 0;
+    
+    if (bin_size < WORKGROUP_SIZE)
+    {
+        if (thread_id_loc < bin_size)
+        {
+            super_sum_data[thread_id_loc] = sum_data;
+            super_sum_count[thread_id_loc] = sum_count;
+        }
+        else
+        {
+            super_sum_data[thread_id_loc] = 0.0f;
+            super_sum_count[thread_id_loc] = 0.0f;
+        }
+    }
+    else
+    {
+        super_sum_data[thread_id_loc] = sum_data;
+        super_sum_count[thread_id_loc] = sum_count;
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+    
     while (active_threads != 1)
     {
         active_threads /= 2;
@@ -372,7 +309,7 @@ csr_integrate(	const 	__global	float	*weights,
             t = super_sum_temp + y;
             cd = (t - super_sum_temp) - y;
             super_sum_data[thread_id_loc] = t;
-
+            
             super_sum_temp = super_sum_count[thread_id_loc];
             y = super_sum_count[index] - cc;
             t = super_sum_temp + y;
@@ -384,14 +321,13 @@ csr_integrate(	const 	__global	float	*weights,
 
     if (thread_id_loc == 0)
     {
-        outData[bin_num] += super_sum_data[0];
-        outCount[bin_num] += super_sum_count[0];
+        outData[bin_num] = super_sum_data[0];
+        outCount[bin_num] = super_sum_count[0];
         if (outCount[bin_num] > epsilon)
             outMerge[bin_num] =  outData[bin_num] / outCount[bin_num];
         else
             outMerge[bin_num] = dummy;
     }
-    */
 };//end kernel
 
 /**
@@ -477,98 +413,13 @@ csr_integrate_padded(	const 	__global	float	*weights,
     __local float super_sum_count[WORKGROUP_SIZE];
     super_sum_data[thread_id_loc] = sum_data;
     super_sum_count[thread_id_loc] = sum_count;
-    
-    int index, active_threads = SET_SIZE;
-    int thread_id_set = WORKGROUP_SIZE % SET_SIZE;
-    int num_of_sets = WORKGROUP_SIZE / SET_SIZE;
-    float super_sum_temp;
-    cd = 0;
-    cc = 0;
-    while (active_threads != 1)
-    {
-        active_threads /= 2;
-        if (thread_id_set < active_threads)
-        {
-            index = thread_id_loc+active_threads;
+    barrier(CLK_LOCAL_MEM_FENCE);
 
-            super_sum_temp = super_sum_data[thread_id_loc];
-            y = super_sum_data[index] - cd;
-            t = super_sum_temp + y;
-            cd = (t - super_sum_temp) - y;
-            super_sum_data[thread_id_loc] = t;
-
-            super_sum_temp = super_sum_count[thread_id_loc];
-            y = super_sum_count[index] - cc;
-            t = super_sum_temp + y;
-            cc = (t - super_sum_temp) - y;
-            super_sum_count[thread_id_loc] = t;
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-    }
-//    if (num_of_sets <= 4)
- //   {
-    if (thread_id_loc == 0)
-    {
-        for (j=0; j<WORKGROUP_SIZE; j+=SET_SIZE)
-        {
-            outData[bin_num] += super_sum_data[j];
-            outCount[bin_num] += super_sum_count[j];
-        }
-        if (outCount[bin_num] > epsilon)
-            outMerge[bin_num] =  outData[bin_num] / outCount[bin_num];
-        else
-            outMerge[bin_num] = dummy;
-    } /*
-    } else {
-        active_threads = num_of_sets;
-        if (thread_id_loc < active_threads)
-        {
-            super_sum_data[thread_id_loc] = super_sum_data[thread_id_loc*SET_SIZE];
-            while (active_threads != 1)
-            {
-                active_threads /= 2;
-                if (thread_id_loc < active_threads)
-                {
-                    index = thread_id_loc+active_threads;
-                    
-                    super_sum_temp = super_sum_data[thread_id_loc];
-                    y = super_sum_data[index] - cd;
-                    t = super_sum_temp + y;
-                    cd = (t - super_sum_temp) - y;
-                    super_sum_data[thread_id_loc] = t;
-                    
-                    super_sum_temp = super_sum_count[thread_id_loc];
-                    y = super_sum_count[index] - cc;
-                    t = super_sum_temp + y;
-                    cc = (t - super_sum_temp) - y;
-                    super_sum_count[thread_id_loc] = t;
-                }
-                barrier(CLK_LOCAL_MEM_FENCE);
-            }
-            if (thread_id_loc == 0)
-            {
-                outData[bin_num] = super_sum_data[0];
-                outCount[bin_num] = super_sum_count[0];
-                if (outCount[bin_num] > epsilon)
-                    outMerge[bin_num] =  outData[bin_num] / outCount[bin_num];
-                else
-                    outMerge[bin_num] = dummy;
-            }
-        }
-    }
-
-        */
-    
-    /*
-    __local float super_sum_data[WORKGROUP_SIZE];
-    __local float super_sum_count[WORKGROUP_SIZE];
-    super_sum_data[thread_id_loc] = sum_data;
-    super_sum_count[thread_id_loc] = sum_count;
-    
+    float super_sum_temp = 0.0f;
     int index, active_threads = WORKGROUP_SIZE;
-    float super_sum_temp;
     cd = 0;
     cc = 0;
+    
     while (active_threads != 1)
     {
         active_threads /= 2;
@@ -581,7 +432,7 @@ csr_integrate_padded(	const 	__global	float	*weights,
             t = super_sum_temp + y;
             cd = (t - super_sum_temp) - y;
             super_sum_data[thread_id_loc] = t;
-
+            
             super_sum_temp = super_sum_count[thread_id_loc];
             y = super_sum_count[index] - cc;
             t = super_sum_temp + y;
@@ -593,219 +444,113 @@ csr_integrate_padded(	const 	__global	float	*weights,
 
     if (thread_id_loc == 0)
     {
-        outData[bin_num] += super_sum_data[0];
-        outCount[bin_num] += super_sum_count[0];
+        outData[bin_num] = super_sum_data[0];
+        outCount[bin_num] = super_sum_count[0];
         if (outCount[bin_num] > epsilon)
             outMerge[bin_num] =  outData[bin_num] / outCount[bin_num];
         else
             outMerge[bin_num] = dummy;
     }
-    */
+
 };//end kernel
 
 
+__kernel void
+csr_integrate_dis(  const   __global    float   *weights,
+                const   __global    float   *coefs,
+                const   __global    int     *row_ind,
+                const   __global    int     *col_ptr,
+                const               int     do_dummy,
+                const               float   dummy,
+                        __global    float   *outData,
+                        __global    float   *outCount,
+                        __global    float   *outMerge
+                )
+{
+    int thread_id_loc = get_local_id(0);
+    int bin_num = get_group_id(0); // each workgroup of size=warp is assinged to 1 bin
+    int2 bin_bounds;
+//    bin_bounds = (int2) *(col_ptr+bin_num);  // cool stuff!
+    bin_bounds.x = col_ptr[bin_num];
+    bin_bounds.y = col_ptr[bin_num+1];
+    int bin_size = bin_bounds.y-bin_bounds.x;
+    float sum_data = 0.0f;
+    float cd = 0.0f;
+    float t, y;
+    float coef, data;
+    int idx, k, j;
+
+    for (j=bin_bounds.x;j<bin_bounds.y;j+=WORKGROUP_SIZE)
+    {
+        k = j+thread_id_loc;
+        if (k < bin_bounds.y)     // I don't like conditionals!!
+        {
+            coef = coefs[k];
+            idx = row_ind[k];
+            data = weights[idx];
+            if( (!do_dummy) || (data!=dummy) )
+            {
+                //sum_data +=  coef * data;
+                //sum_count += coef;
+                //Kahan summation allows single precision arithmetics with error compensation
+                //http://en.wikipedia.org/wiki/Kahan_summation_algorithm
+                y = coef*data - cd;
+                t = sum_data + y;
+                cd = (t - sum_data) - y;
+                sum_data = t;
+             };//end if dummy
+       } //end if k < bin_bounds.y
+    };//for j
 /*
-
-__kernel void
-csr_integrate_padded_loc1(	const 	__global	float	*weights,
-                const   __global    float   *coefs,
-                const   __global    int     *row_ind,
-                const   __global    int     *col_ptr,
-				const				int   	do_dummy,
-				const			 	float 	dummy,
-						__global 	float	*outData,
-						__global 	float	*outCount,
-						__global 	float	*outMerge
-		        )
-{
-    int thread_id_loc = get_local_id(0);
-    int bin_num = get_group_id(0); // each workgroup of size=warp is assinged to 1 bin
-    int2 bin_bounds;
-//    bin_bounds = (int2) *(col_ptr+bin_num);  // cool stuff!
-    bin_bounds.x = col_ptr[bin_num];
-    bin_bounds.y = col_ptr[bin_num+1];
-	float sum_data = 0.0f;
-	float sum_count = 0.0f;
-	float cd = 0.0f;
-	float cc = 0.0f;
-	float t, y;
-	const float epsilon = 1e-10f;
-	float coef, data;
-	int k, k2, j;
-
-    __local float coefs_loc[MAX_WIDTH];
-    __local int   row_ind_loc[MAX_WIDTH];
-    __local float data_loc[MAX_WIDTH];
-
-	for (j=bin_bounds.x;j<bin_bounds.y;j+=WORKGROUP_SIZE)
-	{
-		k  = j+thread_id_loc;
-        k2 = k-bin_bounds.x;
-        coefs_loc[k2] = coefs[k];
-        row_ind_loc[k2]  = row_ind[k];
-        data_loc[k2] = weights[row_ind_loc[k2]];
-
-    }
-
-
-	for (j=0;j<bin_bounds.y-bin_bounds.x;j+=WORKGROUP_SIZE)
-	{
-		k = j+thread_id_loc;
-   		coef = coefs_loc[k];
-   		if( (!do_dummy) || (data!=dummy) )
-   		{
-   			//sum_data +=  coef * data;
-   			//sum_count += coef;
-   			//Kahan summation allows single precision arithmetics with error compensation
-   			//http://en.wikipedia.org/wiki/Kahan_summation_algorithm
-   			y = coef*data_loc[k] - cd;
-   			t = sum_data + y;
-   			cd = (t - sum_data) - y;
-    		sum_data = t;
-    		y = coef - cc;
-    		t = sum_count + y;
-    		cc = (t - sum_count) - y;
-    		sum_count = t;
-    	};//end if dummy
-    };//for j
-
-    
+ * parallel reduction
+ */
 
 // REMEMBER TO PASS WORKGROUP_SIZE AS A CPP DEF
     __local float super_sum_data[WORKGROUP_SIZE];
-    __local float super_sum_count[WORKGROUP_SIZE];
-    super_sum_data[thread_id_loc] = sum_data;
-    super_sum_count[thread_id_loc] = sum_count;
-
-    int active_threads = WORKGROUP_SIZE;
-
+    float super_sum_temp = 0.0f;
+    int index, active_threads = WORKGROUP_SIZE;
+    cd = 0;
+    
+    
+    
+    if (bin_size < WORKGROUP_SIZE)
+    {
+        if (thread_id_loc < bin_size)
+        {
+            super_sum_data[thread_id_loc] = sum_data;
+        }
+        else
+        {
+            super_sum_data[thread_id_loc] = 0.0f;
+        }
+    }
+    else
+    {
+        super_sum_data[thread_id_loc] = sum_data;
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+   
     while (active_threads != 1)
     {
         active_threads /= 2;
-        if (thread_id_loc >= active_threads)
+        if (thread_id_loc < active_threads)
         {
-            super_sum_data[thread_id_loc-active_threads] += super_sum_data[thread_id_loc];
-            super_sum_count[thread_id_loc-active_threads] += super_sum_count[thread_id_loc];
+            index = thread_id_loc+active_threads;
+
+            super_sum_temp = super_sum_data[thread_id_loc];
+            y = super_sum_data[index] - cd;
+            t = super_sum_temp + y;
+            cd = (t - super_sum_temp) - y;
+            super_sum_data[thread_id_loc] = t;
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
 
     if (thread_id_loc == 0)
     {
-    	outData[bin_num] = super_sum_data[0];
-    	outCount[bin_num] = super_sum_count[0];
-    	if (outCount[bin_num] > epsilon)
-    		outMerge[bin_num] =  outData[bin_num] / outCount[bin_num];
-    	else
-    		outMerge[bin_num] = dummy;
+        outData[bin_num] = super_sum_data[0];
     }
-};//end kernel
-
-
-__kernel void
-csr_integrate_padded_loc2(	const 	__global	float	*weights,
-                const   __global    float   *coefs,
-                const   __global    int     *row_ind,
-                const   __global    int     *col_ptr,
-				const				int   	do_dummy,
-				const			 	float 	dummy,
-						__global 	float	*outData,
-						__global 	float	*outCount,
-						__global 	float	*outMerge
-		        )
-{
-    int thread_id_loc = get_local_id(0);
-    int bin_num = get_group_id(0); // each workgroup of size=warp is assinged to 1 bin
-    int2 bin_bounds;
-//    bin_bounds = (int2) *(col_ptr+bin_num);  // cool stuff!
-    bin_bounds.x = col_ptr[bin_num];
-    bin_bounds.y = col_ptr[bin_num+1];
-	float sum_data = 0.0f;
-	float sum_count = 0.0f;
-	float cd = 0.0f;
-	float cc = 0.0f;
-	float t, y;
-	const float epsilon = 1e-10f;
-	float coef, data;
-	int  k, k2, j;
-
-    __local float coefs_loc[MAX_WIDTH];
-    __local int   row_ind_loc[MAX_WIDTH];
-    __local float data_loc[MAX_WIDTH];
-
-	for (j=bin_bounds.x;j<bin_bounds.y;j+=WORKGROUP_SIZE)
-	{
-		k  = j+thread_id_loc;
-        k2 = k-bin_bounds.x;
-        coefs_loc[k2] = coefs[k];
-    }
-	for (j=bin_bounds.x;j<bin_bounds.y;j+=WORKGROUP_SIZE)
-	{
-		k  = j+thread_id_loc;
-        k2 = k-bin_bounds.x;
-        row_ind_loc[k2]  = row_ind[k];
-
-    }
-	for (j=bin_bounds.x;j<bin_bounds.y;j+=WORKGROUP_SIZE)
-	{
-		k  = j+thread_id_loc;
-        k2 = k-bin_bounds.x;
-        data_loc[k2] = weights[row_ind_loc[k2]];
-
-    }
-
-
-	for (j=0;j<bin_bounds.y-bin_bounds.x;j+=WORKGROUP_SIZE)
-	{
-		k = j+thread_id_loc;
-   		coef = coefs_loc[k];
-   		if( (!do_dummy) || (data!=dummy) )
-   		{
-   			//sum_data +=  coef * data;
-   			//sum_count += coef;
-   			//Kahan summation allows single precision arithmetics with error compensation
-   			//http://en.wikipedia.org/wiki/Kahan_summation_algorithm
-   			y = coef*data_loc[k] - cd;
-   			t = sum_data + y;
-   			cd = (t - sum_data) - y;
-    		sum_data = t;
-    		y = coef - cc;
-    		t = sum_count + y;
-    		cc = (t - sum_count) - y;
-    		sum_count = t;
-    	};//end if dummy
-    };//for j
-
     
 
-// REMEMBER TO PASS WORKGROUP_SIZE AS A CPP DEF
-    __local float super_sum_data[WORKGROUP_SIZE];
-    __local float super_sum_count[WORKGROUP_SIZE];
-    super_sum_data[thread_id_loc] = sum_data;
-    super_sum_count[thread_id_loc] = sum_count;
-
-    int active_threads = WORKGROUP_SIZE;
-
-    while (active_threads != 1)
-    {
-        active_threads /= 2;
-        if (thread_id_loc >= active_threads)
-        {
-            super_sum_data[thread_id_loc-active_threads] += super_sum_data[thread_id_loc];
-            super_sum_count[thread_id_loc-active_threads] += super_sum_count[thread_id_loc];
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-    }
-
-    if (thread_id_loc == 0)
-    {
-    	outData[bin_num] = super_sum_data[0];
-    	outCount[bin_num] = super_sum_count[0];
-    	if (outCount[bin_num] > epsilon)
-    		outMerge[bin_num] =  outData[bin_num] / outCount[bin_num];
-    	else
-    		outMerge[bin_num] = dummy;
-    }
 };//end kernel
 
-*/

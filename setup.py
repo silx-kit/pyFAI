@@ -118,7 +118,7 @@ if ("sdist" in sys.argv):
 # ###############################################################################
 cython_modules = ["histogram", "splitPixel", "splitBBox", "splitBBoxLUT", "splitBBoxCSR",
                   "relabel", "bilinear", "_geometry", "reconstruct", "fastcrc", "_distortion",
-                  "_bispev"]
+                  "_distortionCSR", "_bispev"]
 src = dict([(ext, join("src", ext + cython_c_ext)) for ext in cython_modules])
 
 _geometry_dic = dict(name="_geometry",
@@ -178,6 +178,13 @@ fastcrc_dic = dict(name="fastcrc",
 _distortion_dic = dict(name="_distortion",
                         include_dirs=get_numpy_include_dirs(),
                         sources=[src['_distortion'] ],
+                        extra_compile_args=['openmp'],
+                        extra_link_args=['openmp'],
+
+                        )
+_distortionCSR_dic = dict(name="_distortionCSR",
+                        include_dirs=get_numpy_include_dirs(),
+                        sources=[src['_distortionCSR'] ],
                         extra_compile_args=['openmp'],
                         extra_link_args=['openmp'],
 
