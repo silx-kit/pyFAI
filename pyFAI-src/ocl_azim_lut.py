@@ -284,7 +284,7 @@ class OCL_LUT_Integrator(object):
                 if solidAngle_checksum != self.on_device["solidangle"]:
                     ev=pyopencl.enqueue_copy(self._queue, self._cl_mem["solidangle"], numpy.ascontiguousarray(solidAngle, dtype=numpy.float32))
                     events.append(("copy solidangle", ev))
-                self.on_device["solidangle"] = solidAngle_checksum
+                    self.on_device["solidangle"] = solidAngle_checksum
             else:
                 do_solidAngle = numpy.int32(0)
             self._cl_kernel_args["corrections"][5] = do_solidAngle
