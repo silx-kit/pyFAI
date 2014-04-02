@@ -308,7 +308,7 @@ ai=pyFAI.load(r"%s")
 data = fabio.open(r"%s").data
 N=min(data.shape)
 out=ai.xrpd_CSR_OCL(data,N,devicetype=r"%s",platformid=%s,deviceid=%s,padded=%s,block_size=%s)""" % (param, fn, devicetype, platformid, deviceid, padded, block_size)
-            t = timeit.Timer("ai.xrpd_LUT_OCL(data,N,safe=False,padded=%s,block_size=%s)", setup, padded, block_size)
+            t = timeit.Timer("ai.xrpd_LUT_OCL(data,N,safe=False,padded=%s,block_size=%s)" % (padded, block_size), setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
             self.update_mp()
             del t
