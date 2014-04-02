@@ -1,10 +1,17 @@
 #!/usr/bin/python
+
+#Benchmark for Azimuthal integration of PyFAI
+
+from __future__ import print_function, division
+
 import json, sys, time, timeit, os, platform, subprocess
 import numpy
 import fabio
 import os.path as op
 sys.path.append(op.join(op.dirname(op.dirname(op.abspath(__file__))), "test"))
 import utilstest
+
+#We use the locally build version of PyFAI
 pyFAI = utilstest.UtilsTest.pyFAI
 ocl = pyFAI.opencl.ocl
 from matplotlib import pyplot as plt
@@ -17,8 +24,12 @@ datasets = {"Fairchild.poni":utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
             "Pilatus6M.poni":utilstest.UtilsTest.getimage("1884/Pilatus6M.cbf"),
             "Pilatus1M.poni":utilstest.UtilsTest.getimage("1883/Pilatus1M.edf"),
             "Mar3450.poni":utilstest.UtilsTest.getimage("2201/LaB6_260210.mar3450")
-      }
-b = None
+            }
+
+#Handle to the Bench instance: allows debugging from outside if needed
+bench = None
+
+
 class Bench(object):
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -26,10 +37,10 @@ class Bench(object):
     WARNING = '\033[93m'
     FAIL = '\033[91m'
     ENDC = '\033[0m'
-    def __init__(self, nbr=10, memprofile=False):
+    def __init__(self, nbr=10, repeat=1, memprofile=False, unit="2th_deg"):
         self.reference_1d = {}
         self.LIMIT = 8
-        self.repeat = 1
+        self.repeat = repeat
         self.nbr = nbr
         self.results = {}
         self.meth = []
@@ -45,6 +56,15 @@ class Bench(object):
         self.ax_mp = None
         self.plot_mp = None
         self.memory_profile = ([], [])
+        self.unit = unit
+        self.setup = """import pyFAI,fabio
+ai=pyFAI.load(r"%s")
+data = fabio.open(r"%s").data
+N=min(data.shape)
+"""
+        self.stmt_1d = "ai.integrate1d(data, N, safe=False, unit='" + self.unit + "', method='%s')"
+        self.stmt_2d = "ai.integrate2d(data, %i, %i, unit='" + self.unit + "', method='%s')"
+
 
 
     def get_cpu(self):
@@ -101,15 +121,15 @@ class Bench(object):
     def get_ref(self, param):
         if param not in self.reference_1d:
             fn = datasets[param]
-            ai = pyFAI.load(param)
-            data = fabio.open(fn).data
-            N = min(data.shape)
-            res = ai.xrpd(data, N)
+            setup = self.setup % (param, fn)
+            exec setup
+            res = eval(self.stmt_1d % ("splitBBox"))
             self.reference_1d[param] = res
             del ai, data
         return self.reference_1d[param]
 
     def bench_cpu1d(self):
+        method = "splitBBox"
         self.update_mp()
         print("Working on processor: %s" % self.get_cpu())
         results = {}
@@ -119,29 +139,21 @@ class Bench(object):
             self.update_mp()
             ref = self.get_ref(param)
             fn = datasets[param]
-            ai = pyFAI.load(param)
-            data = fabio.open(fn).data
-            size = data.size
-            N = min(data.shape)
-            print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), size / 1e6, N))
+            setup = self.setup % (param, fn)
+            exec setup
+            size = data.size / 1.0e6
+            print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), size, N))
             t0 = time.time()
-            res = ai.xrpd(data, N)
-            t1 = time.time()
-            self.print_init(t1 - t0)
+            res = eval(self.stmt_1d % method)
+            self.print_init(time.time() - t0)
             self.update_mp()
             del ai, data
             self.update_mp()
-            setup = """
-import pyFAI,fabio
-ai=pyFAI.load(r"%s")
-data = fabio.open(r"%s").data
-N=min(data.shape)
-out=ai.xrpd(data,N)""" % (param, fn)
-            t = timeit.Timer("ai.xrpd(data,N)", setup)
+            stmt = self.stmt_1d % method
+            t = timeit.Timer(stmt, setup + stmt)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
             self.update_mp()
             self.print_exec(tmin)
-            size /= 1e6
             tmin *= 1000.0
             results[size ] = tmin
             if first:
@@ -155,6 +167,7 @@ out=ai.xrpd(data,N)""" % (param, fn)
         self.update_mp()
 
     def bench_cpu1d_lut(self):
+        method = "lut"
         self.update_mp()
         print("Working on processor: %s" % self.get_cpu())
         label = "1D_CPU_parallel_OpenMP"
@@ -170,10 +183,10 @@ out=ai.xrpd(data,N)""" % (param, fn)
             N = min(data.shape)
             print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), size / 1e6, N))
             t0 = time.time()
-            res = ai.xrpd_LUT(data, N)
+            res = ai.integrate1d(data, N, unit=self.unit, method="lut")
             t1 = time.time()
             self.print_init(t1 - t0)
-            print "lut.shape=", ai._lut_integrator.lut.shape, "lut.nbytes (MB)", ai._lut_integrator.size * 8 / 1e6
+            print("lut.shape= %s \t lut.nbytes %.3f MB " % (ai._lut_integrator.lut.shape, ai._lut_integrator.size * 8.0 / 1e6))
             self.update_mp()
             del ai, data
             self.update_mp()
@@ -182,8 +195,8 @@ import pyFAI,fabio
 ai=pyFAI.load(r"%s")
 data = fabio.open(r"%s").data
 N=min(data.shape)
-out=ai.xrpd_LUT(data,N)""" % (param, fn)
-            t = timeit.Timer("ai.xrpd_LUT(data,N,safe=False)", setup)
+out=ai.integrate1d(data,N,unit="2th_deg", method="lut")""" % (param, fn)
+            t = timeit.Timer("ai.integrate1d(data,N,safe=False,unit='2th_deg', method='lut')", setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
             self.print_exec(tmin)
             R = utilstest.Rwp(res, ref)
@@ -225,8 +238,9 @@ out=ai.xrpd_LUT(data,N)""" % (param, fn)
             N = min(data.shape)
             print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), size / 1e6, N))
             t0 = time.time()
+            method = "ocl_lut_%i,%i" % (platformid, deviceid)
             try:
-                res = ai.xrpd_LUT_OCL(data, N, devicetype=devicetype, platformid=platformid, deviceid=deviceid)
+                res = ai.integrate1d(data, N, unit="2th_deg", method=method)
             except MemoryError as error:
                 print(error)
                 break
@@ -241,8 +255,8 @@ import pyFAI,fabio
 ai=pyFAI.load(r"%s")
 data = fabio.open(r"%s").data
 N=min(data.shape)
-out=ai.xrpd_LUT_OCL(data,N,devicetype=r"%s",platformid=%s,deviceid=%s)""" % (param, fn, devicetype, platformid, deviceid)
-            t = timeit.Timer("ai.xrpd_LUT_OCL(data,N,safe=False)", setup)
+out=ai.integrate1d(data,N, unit="2th_deg", method=%s)""" % (param, fn, method)
+            t = timeit.Timer("ai.integrate1d(data, N, safe=False, unit='2th_deg', method=%s))" % method, setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
             self.update_mp()
             del t
@@ -281,7 +295,7 @@ out=ai.xrpd_LUT_OCL(data,N,devicetype=r"%s",platformid=%s,deviceid=%s)""" % (par
             N = (500, 360)
             print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), size / 1e6, N))
             t0 = time.time()
-            _ = ai.xrpd2(data, N[0], N[1])
+            _ = ai.integrate2d(data, N[0], N[1],)
             t1 = time.time()
             self.print_init(t1 - t0)
             self.update_mp()
@@ -491,9 +505,9 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
     def print_res(self):
         self.update_mp()
         print("Summary: execution time in milliseconds")
-        print "Size/Meth\t" + "\t".join(b.meth)
+        print("Size/Meth\t" + "\t".join(self.meth))
         for i in self.size:
-            print "%7.2f\t\t" % i + "\t\t".join("%.2f" % (b.results[j].get(i, 0)) for j in b.meth)
+            print("%7.2f\t\t" % i + "\t\t".join("%.2f" % (self.results[j].get(i, 0)) for j in self.meth))
 
     def init_curve(self):
         self.update_mp()
@@ -634,47 +648,50 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--memprof",
                       action="store_true", dest="memprof", default=False,
                       help="Perfrom memory profiling (Linux only)")
+    parser.add_argument("-r", "--repeat",
+                      dest="repeat", default=1,
+                      help="Repeat each benchmark x times to take the best")
 
     options = parser.parse_args()
     if options.small:
         ds_list = ds_list[:4]
     if options.debug:
             pyFAI.logger.setLevel(logging.DEBUG)
-    print("Averaging over %i repetitions (best of 3)." % options.number)
-    b = Bench(options.number, options.memprof)
-    b.init_curve()
-    b.bench_cpu1d()
-    b.bench_cpu1d_lut()
+    print("Averaging over %i repetitions (best of %s)." % (options.number, options.repeat))
+    bench = Bench(options.number, options.repeat, options.memprof)
+    bench.init_curve()
+    bench.bench_cpu1d()
+    bench.bench_cpu1d_lut()
     if options.opencl_cpu:
-        b.bench_cpu1d_lut_ocl("CPU")
+        bench.bench_cpu1d_lut_ocl("CPU")
     if options.opencl_gpu:
-        b.bench_cpu1d_lut_ocl("GPU")
+        bench.bench_cpu1d_lut_ocl("GPU")
     if options.opencl_acc:
-        b.bench_cpu1d_lut_ocl("ACC")
+        bench.bench_cpu1d_lut_ocl("ACC")
 
-#    b.bench_cpu1d_ocl_lut("CPU")
-#    b.bench_gpu1d("gpu", True)
-#    b.bench_gpu1d("gpu", False)
-#    b.bench_gpu1d("cpu", True)
-#    b.bench_gpu1d("cpu", False)
+#    bench.bench_cpu1d_ocl_lut("CPU")
+#    bench.bench_gpu1d("gpu", True)
+#    bench.bench_gpu1d("gpu", False)
+#    bench.bench_gpu1d("cpu", True)
+#    bench.bench_gpu1d("cpu", False)
     if options.twodim:
-        b.bench_cpu2d()
-        b.bench_cpu2d_lut()
+        bench.bench_cpu2d()
+        bench.bench_cpu2d_lut()
         if options.opencl_cpu:
-            b.bench_cpu2d_lut_ocl("CPU")
+            bench.bench_cpu2d_lut_ocl("CPU")
         if options.opencl_gpu:
-            b.bench_cpu2d_lut_ocl("GPU")
+            bench.bench_cpu2d_lut_ocl("GPU")
         if options.opencl_acc:
-            b.bench_cpu2d_lut_ocl("ACC")
+            bench.bench_cpu2d_lut_ocl("ACC")
 
-#    b.bench_cpu2d_lut()
-#    b.bench_cpu2d_lut_ocl()
-    b.save()
-    b.print_res()
-#    b.display_all()
-    b.update_mp()
+#    bench.bench_cpu2d_lut()
+#    bench.bench_cpu2d_lut_ocl()
+    bench.save()
+    bench.print_res()
+#    bench.display_all()
+    bench.update_mp()
 
-    b.ax.set_ylim(1, 200)
+    bench.ax.set_ylim(1, 200)
     # plt.show()
     plt.ion()
     raw_input("Enter to quit")
