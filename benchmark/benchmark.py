@@ -278,7 +278,7 @@ out=ai.xrpd_LUT_OCL(data,N,devicetype=r"%s",platformid=%s,deviceid=%s)""" % (par
                 return
             platformid, deviceid = platdev
         print("Working on device: %s platform: %s device: %s padding: %s block_size= %s" % (devicetype, ocl.platforms[platformid], ocl.platforms[platformid].devices[deviceid], padded, block_size))
-        label = "1D_%s_parallel_OpenCL, padded=%s, block_size=%s" % devicetype, padded, block_size
+        label = "1D_%s_parallel_OpenCL, padded=%s, block_size=%s" % (devicetype, padded, block_size)
         first = True
         results = {}
         for param in ds_list:
@@ -709,8 +709,8 @@ if __name__ == "__main__":
     print("Averaging over %i repetitions (best of 3)." % options.number)
     b = Bench(options.number, options.memprof)
     b.init_curve()
-    b.bench_cpu1d()
-    b.bench_cpu1d_lut()
+#    b.bench_cpu1d()
+#    b.bench_cpu1d_lut()
     if options.opencl_cpu:
         b.bench_cpu1d_lut_ocl("CPU")
     if options.opencl_gpu:

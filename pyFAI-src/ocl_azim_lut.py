@@ -140,8 +140,6 @@ class OCL_LUT_Integrator(object):
         if ualloc >= memory:
             raise MemoryError("Fatal error in _allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))
         # now actually allocate:
-        foo = (size_of_float + size_of_int) * self.bins * self.lut_size
-        print "AAAAAAAAAAAAAAAAA ", foo
         try:
             self._cl_mem["lut"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, (size_of_float + size_of_int) * self.bins * self.lut_size)
             self._cl_mem["outData"] = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, size_of_float * self.bins)
