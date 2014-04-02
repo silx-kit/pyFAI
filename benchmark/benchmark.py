@@ -266,6 +266,72 @@ out=ai.xrpd_LUT_OCL(data,N,devicetype=r"%s",platformid=%s,deviceid=%s)""" % (par
         self.update_mp()
 
 
+    def bench_cpu1d_csr_ocl(self, devicetype="GPU", platformid=None, deviceid=None, padded=False, block_size=32):
+        self.update_mp()
+        if (ocl is None):
+            print("No pyopencl")
+            return
+        if (platformid is None) or (deviceid is None):
+            platdev = ocl.select_device(devicetype)
+            if not platdev:
+                print("No such OpenCL device: skipping benchmark")
+                return
+            platformid, deviceid = platdev
+        print("Working on device: %s platform: %s device: %s padding: %s block_size= %s" % (devicetype, ocl.platforms[platformid], ocl.platforms[platformid].devices[deviceid], padded, block_size))
+        label = "1D_%s_parallel_OpenCL, padded=%s, block_size=%s" % devicetype, padded, block_size
+        first = True
+        results = {}
+        for param in ds_list:
+            self.update_mp()
+            ref = self.get_ref(param)
+            fn = datasets[param]
+            ai = pyFAI.load(param)
+            data = fabio.open(fn).data
+            size = data.size
+            N = min(data.shape)
+            print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), size / 1e6, N))
+            t0 = time.time()
+            try:
+                res = ai.xrpd_CSR_OCL(data, N, devicetype=devicetype, platformid=platformid, deviceid=deviceid, padded=padded, block_size=block_size)
+            except MemoryError as error:
+                print(error)
+                break
+            t1 = time.time()
+            self.print_init(t1 - t0)
+            self.update_mp()
+            ai.reset()
+            del ai, data
+            self.update_mp()
+            setup = """
+import pyFAI,fabio
+ai=pyFAI.load(r"%s")
+data = fabio.open(r"%s").data
+N=min(data.shape)
+out=ai.xrpd_CSR_OCL(data,N,devicetype=r"%s",platformid=%s,deviceid=%s,padded=%s,block_size=%s)""" % (param, fn, devicetype, platformid, deviceid, padded, block_size)
+            t = timeit.Timer("ai.xrpd_LUT_OCL(data,N,safe=False,padded=%s,block_size=%s)", setup, padded, block_size)
+            tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
+            self.update_mp()
+            del t
+            self.update_mp()
+            self.print_exec(tmin)
+            R = utilstest.Rwp(res, ref)
+            print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
+            if R < self.LIMIT:
+                size /= 1e6
+                tmin *= 1000.0
+                results[size] = tmin
+                if first:
+                    self.new_curve(results, label)
+                    first = False
+                else:
+                    self.new_point(size, tmin)
+            self.update_mp()
+        self.print_sep()
+        self.meth.append(label)
+        self.results[label] = results
+        self.update_mp()
+
+
     def bench_cpu2d(self):
         self.update_mp()
         print("Working on processor: %s" % self.get_cpu())
@@ -649,8 +715,11 @@ if __name__ == "__main__":
         b.bench_cpu1d_lut_ocl("CPU")
     if options.opencl_gpu:
         b.bench_cpu1d_lut_ocl("GPU")
+        b.bench_cpu1d_csr_ocl("GPU",padded=False)
+        b.bench_cpu1d_csr_ocl("GPU",padded=True)
     if options.opencl_acc:
         b.bench_cpu1d_lut_ocl("ACC")
+        b.bench_cpu1d_csr_ocl("ACC",padded=False)
 
 #    b.bench_cpu1d_ocl_lut("CPU")
 #    b.bench_gpu1d("gpu", True)
