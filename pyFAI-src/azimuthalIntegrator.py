@@ -161,7 +161,9 @@ class AzimuthalIntegrator(Geometry):
 
         self._ocl_integrator = None
         self._ocl_lut_integr = None
+        self._ocl_csr_integr = None
         self._lut_integrator = None
+        self._csr_integrator = None
         self._ocl_sem = threading.Semaphore()
         self._lut_sem = threading.Semaphore()
         self._ocl_lut_sem = threading.Semaphore()
@@ -173,8 +175,10 @@ class AzimuthalIntegrator(Geometry):
         Geometry.reset(self)
         with self._ocl_sem:
             self._ocl_integrator = None
+            self._ocl_csr_integr = None
         with self._lut_sem:
             self._lut_integrator = None
+            self._csr_integrator = None
 
     def makeMask(self, data, mask=None,
                  dummy=None, delta_dummy=None, mode="normal"):
