@@ -308,7 +308,7 @@ ai=pyFAI.load(r"%s")
 data = fabio.open(r"%s").data
 N=min(data.shape)
 out=ai.xrpd_CSR_OCL(data,N,devicetype=r"%s",platformid=%s,deviceid=%s,padded=%s,block_size=%s)""" % (param, fn, devicetype, platformid, deviceid, padded, block_size)
-            t = timeit.Timer("ai.xrpd_LUT_OCL(data,N,safe=False,padded=%s,block_size=%s)" % (padded, block_size), setup)
+            t = timeit.Timer("ai.xrpd_CSR_OCL(data,N,safe=False,padded=%s,block_size=%s)" % (padded, block_size), setup)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
             self.update_mp()
             del t
@@ -574,11 +574,11 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
             self.ax.set_xlabel("Image size in Mega-Pixels")
             self.ax.set_ylabel("Frames processed per second")
             self.ax.set_yscale("log", basey=2)
-            t = [1, 2, 5, 10, 20, 50, 100, 200]
+            t = [1, 2, 5, 10, 20, 50, 100, 200, 400, 500]
             self.ax.set_yticks([float(i) for i in t])
             self.ax.set_yticklabels([str(i)for i in t])
             self.ax.set_xlim(0.5, 20)
-            self.ax.set_ylim(0.5, 200)
+            self.ax.set_ylim(0.5, 500)
             self.ax.set_title(self.get_cpu() + " / " + self.get_gpu())
 
             if self.fig.canvas:
@@ -709,14 +709,16 @@ if __name__ == "__main__":
     print("Averaging over %i repetitions (best of 3)." % options.number)
     b = Bench(options.number, options.memprof)
     b.init_curve()
-#    b.bench_cpu1d()
-#    b.bench_cpu1d_lut()
+    b.bench_cpu1d()
+    b.bench_cpu1d_lut()
     if options.opencl_cpu:
         b.bench_cpu1d_lut_ocl("CPU")
     if options.opencl_gpu:
         b.bench_cpu1d_lut_ocl("GPU")
         b.bench_cpu1d_csr_ocl("GPU",padded=False)
         b.bench_cpu1d_csr_ocl("GPU",padded=True)
+        b.bench_cpu1d_csr_ocl("GPU",padded=False,block_size=64)
+        b.bench_cpu1d_csr_ocl("GPU",padded=True,block_size=64)
     if options.opencl_acc:
         b.bench_cpu1d_lut_ocl("ACC")
         b.bench_cpu1d_csr_ocl("ACC",padded=False)
