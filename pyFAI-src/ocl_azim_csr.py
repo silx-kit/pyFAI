@@ -44,7 +44,7 @@ try:
     from .fastcrc import crc32
 except:
     from zlib import crc32
-logger = logging.getLogger("pyFAI.ocl_azim_lut")
+logger = logging.getLogger("pyFAI.ocl_azim_csr")
 
 class OCL_CSR_Integrator(object):
     def __init__(self, lut, image_size, devicetype="all",
@@ -302,8 +302,8 @@ class OCL_CSR_Integrator(object):
                     solidAngle_checksum = crc32(solidAngle)
                 if solidAngle_checksum != self.on_device["solidangle"]:
                     ev=pyopencl.enqueue_copy(self._queue, self._cl_mem["solidangle"], numpy.ascontiguousarray(solidAngle, dtype=numpy.float32))
-                events.append(("copy solidangle",ev))
-                self.on_device["solidangle"] = solidAngle_checksum
+	            events.append(("copy solidangle",ev))
+                    self.on_device["solidangle"] = solidAngle_checksum
             else:
                 do_solidAngle = numpy.int32(0)
             self._cl_kernel_args["corrections"][5] = do_solidAngle

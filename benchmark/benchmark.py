@@ -343,11 +343,11 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
             self.ax.set_xlabel("Image size in Mega-Pixels")
             self.ax.set_ylabel("Frames processed per second")
             self.ax.set_yscale("log", basey=2)
-            t = [1, 2, 5, 10, 20, 50, 100, 200]
+            t = [1, 2, 5, 10, 20, 50, 100, 200, 400, 500]
             self.ax.set_yticks([float(i) for i in t])
             self.ax.set_yticklabels([str(i)for i in t])
             self.ax.set_xlim(0.5, 20)
-            self.ax.set_ylim(0.5, 200)
+            self.ax.set_ylim(0.5, 500)
             self.ax.set_title(self.get_cpu() + " / " + self.get_gpu())
 
             if self.fig.canvas:
@@ -488,12 +488,16 @@ if __name__ == "__main__":
     if options.onedim:
         bench.bench_1d("splitBBox")
         bench.bench_1d("lut", True)
+        bench.bench_1d("csr", True)
         if options.opencl_cpu:
+            bench.bench_1d("csr_ocl", True, {"devicetype":"CPU"})
             bench.bench_1d("lut_ocl", True, {"devicetype":"CPU"})
         if options.opencl_gpu:
             bench.bench_1d("lut_ocl", True, {"devicetype":"GPU"})
+            bench.bench_1d("csr_ocl", True, {"devicetype":"GPU"})
         if options.opencl_acc:
             bench.bench_1d("lut_ocl", True, {"devicetype":"ACC"})
+            bench.bench_1d("csr_ocl", True, {"devicetype":"ACC"})
 
     if options.twodim:
         bench.bench_2d("splitBBox")

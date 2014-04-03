@@ -123,9 +123,6 @@ if ("sdist" in sys.argv):
 # ###############################################################################
 # pyFAI extensions
 # ###############################################################################
-#cython_modules = ["histogram", "splitPixel", "splitBBox", "splitBBoxLUT", "splitBBoxCSR",
-#                  "relabel", "bilinear", "_geometry", "reconstruct", "fastcrc", "_distortion",
-#                  "_bispev"]
 cython_modules = [os.path.splitext(os.path.basename(i))[0] for i in glob.glob("src/*.pyx")]
 
 src = dict([(ext, join("src", ext + cython_c_ext)) for ext in cython_modules])
@@ -187,6 +184,13 @@ fastcrc_dic = dict(name="fastcrc",
 _distortion_dic = dict(name="_distortion",
                         include_dirs=get_numpy_include_dirs(),
                         sources=[src['_distortion'] ],
+                        extra_compile_args=['openmp'],
+                        extra_link_args=['openmp'],
+
+                        )
+_distortionCSR_dic = dict(name="_distortionCSR",
+                        include_dirs=get_numpy_include_dirs(),
+                        sources=[src['_distortionCSR'] ],
                         extra_compile_args=['openmp'],
                         extra_link_args=['openmp'],
 
