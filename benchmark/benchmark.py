@@ -26,6 +26,8 @@ datasets = {"Fairchild.poni":utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
             "Mar3450.poni":utilstest.UtilsTest.getimage("2201/LaB6_260210.mar3450")
             }
 
+
+
 #Handle to the Bench instance: allows debugging from outside if needed
 bench = None
 
@@ -37,6 +39,11 @@ class Bench(object):
     WARNING = '\033[93m'
     FAIL = '\033[91m'
     ENDC = '\033[0m'
+    LABELS = {"splitBBox": "CPU_serial",
+          "lut": "CPU_LUT_OpenMP",
+          "lut_ocl": "%s_LUT_OpenCL",
+          }
+
     def __init__(self, nbr=10, repeat=1, memprofile=False, unit="2th_deg"):
         self.reference_1d = {}
         self.LIMIT = 8
@@ -57,13 +64,15 @@ class Bench(object):
         self.plot_mp = None
         self.memory_profile = ([], [])
         self.unit = unit
+        self.out_2d = (500, 360)
         self.setup = """import pyFAI,fabio
 ai=pyFAI.load(r"%s")
 data = fabio.open(r"%s").data
-N=min(data.shape)
 """
+        self.setup_1d = self.setup + "N=min(data.shape)" + os.linesep
+        self.setup_2d = self.setup + "N=(%i,%i)%s" % (self.out_2d[0], self.out_2d[0], os.linesep)
         self.stmt_1d = "ai.integrate1d(data, N, safe=False, unit='" + self.unit + "', method='%s')"
-        self.stmt_2d = "ai.integrate2d(data, %i, %i, unit='" + self.unit + "', method='%s')"
+        self.stmt_2d = ("ai.integrate2d(data, %i, %i, unit='" % self.out_2d) + self.unit + "', method='%s')"
 
 
 
@@ -121,41 +130,71 @@ N=min(data.shape)
     def get_ref(self, param):
         if param not in self.reference_1d:
             fn = datasets[param]
-            setup = self.setup % (param, fn)
+            setup = self.setup_1d % (param, fn)
             exec setup
             res = eval(self.stmt_1d % ("splitBBox"))
             self.reference_1d[param] = res
             del ai, data
         return self.reference_1d[param]
 
-    def bench_cpu1d(self):
-        method = "splitBBox"
+    def bench_1d(self, method="splitBBox", check=False, opencl=None):
+        """
+        @param method: method to be bechmarked
+        @param check: check results vs ref if method is LUT based
+        @param opencl: dict containing platformid, deviceid and devicetype
+        """
         self.update_mp()
-        print("Working on processor: %s" % self.get_cpu())
+        if opencl:
+            if (ocl is None):
+                print("No pyopencl")
+                return
+            if (opencl.get("platformid") is None) or (opencl.get("deviceid") is None):
+                platdev = ocl.select_device(opencl.get("devicetype"))
+                if not platdev:
+                    print("No such OpenCL device: skipping benchmark")
+                    return
+                platformid, deviceid = opencl["platformid"], opencl["deviceid"] = platdev
+            devicetype = opencl["devicetype"] = ocl.platforms[platformid].devices[deviceid].type
+            print("Working on device: %s platform: %s device: %s" % (devicetype, ocl.platforms[platformid], ocl.platforms[platformid].devices[deviceid]))
+            method += "_%i,%i" % (opencl["platformid"], opencl["deviceid"])
+            label = "1D_%s_parallel_OpenCL" % devicetype
+        else:
+            print("Working on processor: %s" % self.get_cpu())
+            label = "1D_" + self.LABELS[method]
         results = {}
-        label = "1D_CPU_serial"
         first = True
         for param in ds_list:
             self.update_mp()
-            ref = self.get_ref(param)
             fn = datasets[param]
-            setup = self.setup % (param, fn)
+            setup = self.setup_1d % (param, fn)
+            stmt = self.stmt_1d % method
             exec setup
             size = data.size / 1.0e6
             print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), size, N))
             t0 = time.time()
-            res = eval(self.stmt_1d % method)
+            res = eval(stmt)
             self.print_init(time.time() - t0)
             self.update_mp()
+            if check:
+                print("lut.shape= %s \t lut.nbytes %.3f MB " % (ai._lut_integrator.lut.shape, ai._lut_integrator.size * 8.0 / 1e6))
             del ai, data
             self.update_mp()
-            stmt = self.stmt_1d % method
+
             t = timeit.Timer(stmt, setup + stmt)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
             self.update_mp()
             self.print_exec(tmin)
             tmin *= 1000.0
-            results[size ] = tmin
+            if check:
+                ref = self.get_ref(param)
+                R = utilstest.Rwp(res, ref)
+                print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
+                self.update_mp()
+                if R < self.LIMIT:
+                    results[size ] = tmin
+                    self.update_mp()
+            else:
+                results[size ] = tmin
             if first:
                 self.new_curve(results, label)
                 first = False
@@ -166,275 +205,57 @@ N=min(data.shape)
         self.results[label] = results
         self.update_mp()
 
-    def bench_cpu1d_lut(self):
-        method = "lut"
+    def bench_2d(self, method="splitBBox", check=False, opencl=None):
         self.update_mp()
-        print("Working on processor: %s" % self.get_cpu())
-        label = "1D_CPU_parallel_OpenMP"
+        if opencl:
+            if (ocl is None):
+                print("No pyopencl")
+                return
+            if (opencl.get("platformid") is None) or (opencl.get("deviceid") is None):
+                platdev = ocl.select_device(opencl.get("devicetype"))
+                if not platdev:
+                    print("No such OpenCL device: skipping benchmark")
+                    return
+                platformid, deviceid = opencl["platformid"], opencl["deviceid"] = platdev
+            devicetype = opencl["devicetype"] = ocl.platforms[platformid].devices[deviceid].type
+            print("Working on device: %s platform: %s device: %s" % (devicetype, ocl.platforms[platformid], ocl.platforms[platformid].devices[deviceid]))
+            method += "_%i,%i" % (opencl["platformid"], opencl["deviceid"])
+            label = "2D_%s_parallel_OpenCL" % devicetype
+        else:
+            print("Working on processor: %s" % self.get_cpu())
+            label = "2D_" + self.LABELS[method]
         results = {}
-        self.new_curve(results, label)
+        first = True
         for param in ds_list:
             self.update_mp()
-            ref = self.get_ref(param)
             fn = datasets[param]
-            ai = pyFAI.load(param)
-            data = fabio.open(fn).data
-            size = data.size
-            N = min(data.shape)
-            print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), size / 1e6, N))
+            setup = self.setup_2d % (param, fn)
+            stmt = self.stmt_2d % method
+            exec setup
+            size = data.size / 1.0e6
+            print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), size , N))
             t0 = time.time()
-            res = ai.integrate1d(data, N, unit=self.unit, method="lut")
-            t1 = time.time()
-            self.print_init(t1 - t0)
-            print("lut.shape= %s \t lut.nbytes %.3f MB " % (ai._lut_integrator.lut.shape, ai._lut_integrator.size * 8.0 / 1e6))
+            res = eval(stmt)
+            self.print_init(time.time() - t0)
             self.update_mp()
+            if check:
+                print("lut.shape= %s \t lut.nbytes %.3f MB " % (ai._lut_integrator.lut.shape, ai._lut_integrator.size * 8.0 / 1e6))
+            ai.reset()
             del ai, data
-            self.update_mp()
-            setup = """
-import pyFAI,fabio
-ai=pyFAI.load(r"%s")
-data = fabio.open(r"%s").data
-N=min(data.shape)
-out=ai.integrate1d(data,N,unit="2th_deg", method="lut")""" % (param, fn)
-            t = timeit.Timer("ai.integrate1d(data,N,safe=False,unit='2th_deg', method='lut')", setup)
+            t = timeit.Timer(stmt, setup + stmt)
             tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
-            self.print_exec(tmin)
-            R = utilstest.Rwp(res, ref)
-            print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
             self.update_mp()
-            if R < self.LIMIT:
-                size /= 1e6
-                tmin *= 1000.0
-                results[size ] = tmin
+            del t
+            self.update_mp()
+            self.print_exec(tmin)
+            tmin *= 1000.0
+            results[size] = tmin
+            if first:
+                self.new_curve(results, label)
+                first = False
+            else:
                 self.new_point(size, tmin)
             self.update_mp()
-        self.print_sep()
-        self.meth.append(label)
-        self.results[label] = results
-        self.update_mp()
-
-    def bench_cpu1d_lut_ocl(self, devicetype="ALL", platformid=None, deviceid=None):
-        self.update_mp()
-        if (ocl is None):
-            print("No pyopencl")
-            return
-        if (platformid is None) or (deviceid is None):
-            platdev = ocl.select_device(devicetype)
-            if not platdev:
-                print("No such OpenCL device: skipping benchmark")
-                return
-            platformid, deviceid = platdev
-        print("Working on device: %s platform: %s device: %s" % (devicetype, ocl.platforms[platformid], ocl.platforms[platformid].devices[deviceid]))
-        label = "1D_%s_parallel_OpenCL" % devicetype
-        first = True
-        results = {}
-        for param in ds_list:
-            self.update_mp()
-            ref = self.get_ref(param)
-            fn = datasets[param]
-            ai = pyFAI.load(param)
-            data = fabio.open(fn).data
-            size = data.size
-            N = min(data.shape)
-            print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), size / 1e6, N))
-            t0 = time.time()
-            method = "ocl_lut_%i,%i" % (platformid, deviceid)
-            try:
-                res = ai.integrate1d(data, N, unit="2th_deg", method=method)
-            except MemoryError as error:
-                print(error)
-                break
-            t1 = time.time()
-            self.print_init(t1 - t0)
-            self.update_mp()
-            ai.reset()
-            del ai, data
-            self.update_mp()
-            setup = """
-import pyFAI,fabio
-ai=pyFAI.load(r"%s")
-data = fabio.open(r"%s").data
-N=min(data.shape)
-out=ai.integrate1d(data,N, unit="2th_deg", method=%s)""" % (param, fn, method)
-            t = timeit.Timer("ai.integrate1d(data, N, safe=False, unit='2th_deg', method=%s))" % method, setup)
-            tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
-            self.update_mp()
-            del t
-            self.update_mp()
-            self.print_exec(tmin)
-            R = utilstest.Rwp(res, ref)
-            print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
-            if R < self.LIMIT:
-                size /= 1e6
-                tmin *= 1000.0
-                results[size] = tmin
-                if first:
-                    self.new_curve(results, label)
-                    first = False
-                else:
-                    self.new_point(size, tmin)
-            self.update_mp()
-        self.print_sep()
-        self.meth.append(label)
-        self.results[label] = results
-        self.update_mp()
-
-
-    def bench_cpu2d(self):
-        self.update_mp()
-        print("Working on processor: %s" % self.get_cpu())
-        results = {}
-        label = "2D_CPU_serial"
-        first = True
-        for param in ds_list:
-            self.update_mp()
-            fn = datasets[param]
-            ai = pyFAI.load(param)
-            data = fabio.open(fn).data
-            size = data.size
-            N = (500, 360)
-            print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), size / 1e6, N))
-            t0 = time.time()
-            _ = ai.integrate2d(data, N[0], N[1],)
-            t1 = time.time()
-            self.print_init(t1 - t0)
-            self.update_mp()
-            ai.reset()
-            del ai, data
-            self.update_mp()
-            setup = """
-import pyFAI,fabio
-ai=pyFAI.load(r"%s")
-data = fabio.open(r"%s").data
-out=ai.xrpd2(data,%s,%s)""" % (param, fn, N[0], N[1])
-            t = timeit.Timer("ai.xrpd2(data,%s,%s)" % N, setup)
-            tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
-            self.update_mp()
-            del t
-            self.update_mp()
-            self.print_exec(tmin)
-            print("")
-            if 1:  # R < self.LIMIT:
-                size /= 1e6
-                tmin *= 1000.0
-                results[size] = tmin
-                if first:
-                    self.new_curve(results, label)
-                    first = False
-                else:
-                    self.new_point(size, tmin)
-            self.update_mp()
-        self.print_sep()
-        self.meth.append(label)
-        self.results[label] = results
-        self.update_mp()
-
-    def bench_cpu2d_lut(self):
-        print("Working on processor: %s" % self.get_cpu())
-        label = "2D_CPU_parallel_OpenMP"
-        first = True
-        results = {}
-        for param in ds_list:
-            fn = datasets[param]
-            ai = pyFAI.load(param)
-            data = fabio.open(fn).data
-            size = data.size
-            N = (500, 360)
-            print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), size / 1e6, N))
-            t0 = time.time()
-            _ = ai.integrate2d(data, N[0], N[1], unit="2th_deg", method="lut")
-            t1 = time.time()
-            self.print_init(t1 - t0)
-            print("Size of the LUT: %.3fMByte" % (ai._lut_integrator.lut.nbytes / 1e6))
-            self.update_mp()
-            ai.reset()
-            del ai, data
-            self.update_mp()
-            setup = """
-import pyFAI,fabio
-ai=pyFAI.load(r"%s")
-data = fabio.open(r"%s").data
-out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut")""" % (param, fn, N[0], N[1])
-            t = timeit.Timer("out=ai.integrate2d(data,%s,%s,unit='2th_deg', method='lut')" % N, setup)
-            tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
-            self.update_mp()
-            del t
-            self.update_mp()
-            self.print_exec(tmin)
-            print("")
-            if 1:  # R < self.LIMIT:
-                size /= 1e6
-                tmin *= 1000.0
-                results[size] = tmin
-                if first:
-                    self.new_curve(results, label)
-                    first = False
-                else:
-                    self.new_point(size, tmin)
-                self.update_mp()
-        self.print_sep()
-        self.meth.append(label)
-        self.results[label] = results
-        self.update_mp()
-
-    def bench_cpu2d_lut_ocl(self, devicetype="ALL", platformid=None, deviceid=None):
-        self.update_mp()
-        if (ocl is None):
-            print("No pyopencl")
-            return
-        if (platformid is None) or (deviceid is None):
-            platdev = ocl.select_device(devicetype)
-            if not platdev:
-                print("No such OpenCL device: skipping benchmark")
-                return
-            platformid, deviceid = platdev
-        print("Working on device: %s platform: %s device: %s" % (devicetype, ocl.platforms[platformid], ocl.platforms[platformid].devices[deviceid]))
-        results = {}
-        label = "2D_%s_parallel_OpenCL" % devicetype.upper()
-        first = True
-        for param in ds_list:
-            self.update_mp()
-            fn = datasets[param]
-            ai = pyFAI.load(param)
-            data = fabio.open(fn).data
-            size = data.size
-            N = (500, 360)
-            print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), size / 1e6, N))
-            t0 = time.time()
-            try:
-                _ = ai.integrate2d(data, N[0], N[1], unit="2th_deg", method="lut_ocl_%i,%i" % (platformid, deviceid))
-            except MemoryError as error:
-                print(error)
-                break
-            t1 = time.time()
-            self.print_init(t1 - t0)
-            print("Size of the LUT: %.3fMByte" % (ai._lut_integrator.lut.nbytes / 1e6))
-            self.update_mp()
-            ai.reset()
-            del ai, data
-            self.update_mp()
-            setup = """
-import pyFAI,fabio
-ai=pyFAI.load(r"%s")
-data = fabio.open(r"%s").data
-out=ai.integrate2d(data,%s,%s,unit="2th_deg", method="lut_ocl_%i,%i")""" % (param, fn, N[0], N[1], platformid, deviceid)
-            t = timeit.Timer("out=ai.integrate2d(data,%s,%s,unit='2th_deg', method='lut_ocl')" % N, setup)
-            tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
-            self.update_mp()
-            del t
-            self.update_mp()
-            self.print_exec(tmin)
-            print("")
-            if 1:  # R < self.LIMIT:
-                size /= 1e6
-                tmin *= 1000.0
-                results[size] = tmin
-                if first:
-                    self.new_curve(results, label)
-                    first = False
-                else:
-                    self.new_point(size, tmin)
-                self.update_mp()
         self.print_sep()
         self.meth.append(label)
         self.results[label] = results
@@ -623,7 +444,7 @@ if __name__ == "__main__":
     usage = """benchmark [options] """
     version = "pyFAI benchmark version " + pyFAI.version
     parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
-    parser.add_argument("-v", action='version', version=version)
+    parser.add_argument("-v", "--version", action='version', version=version)
     parser.add_argument("-d", "--debug",
                           action="store_true", dest="debug", default=False,
                           help="switch to verbose/debug mode")
@@ -642,14 +463,18 @@ if __name__ == "__main__":
     parser.add_argument("-n", "--number",
                       dest="number", default=10, type=int,
                       help="Number of repetition of the test, by default 10")
-    parser.add_argument("-2d", "--2dimentions",
+    parser.add_argument("-2d", "--2dimention",
                       action="store_true", dest="twodim", default=False,
                       help="Benchmark also algorithm for 2D-regrouping")
+    parser.add_argument("--no-1dimention",
+                      action="store_false", dest="onedim", default=True,
+                      help="Do not benchmark algorithms for 1D-regrouping")
+
     parser.add_argument("-m", "--memprof",
                       action="store_true", dest="memprof", default=False,
                       help="Perfrom memory profiling (Linux only)")
     parser.add_argument("-r", "--repeat",
-                      dest="repeat", default=1,
+                      dest="repeat", default=1, type=int,
                       help="Repeat each benchmark x times to take the best")
 
     options = parser.parse_args()
@@ -660,35 +485,28 @@ if __name__ == "__main__":
     print("Averaging over %i repetitions (best of %s)." % (options.number, options.repeat))
     bench = Bench(options.number, options.repeat, options.memprof)
     bench.init_curve()
-    bench.bench_cpu1d()
-    bench.bench_cpu1d_lut()
-    if options.opencl_cpu:
-        bench.bench_cpu1d_lut_ocl("CPU")
-    if options.opencl_gpu:
-        bench.bench_cpu1d_lut_ocl("GPU")
-    if options.opencl_acc:
-        bench.bench_cpu1d_lut_ocl("ACC")
-
-#    bench.bench_cpu1d_ocl_lut("CPU")
-#    bench.bench_gpu1d("gpu", True)
-#    bench.bench_gpu1d("gpu", False)
-#    bench.bench_gpu1d("cpu", True)
-#    bench.bench_gpu1d("cpu", False)
-    if options.twodim:
-        bench.bench_cpu2d()
-        bench.bench_cpu2d_lut()
+    if options.onedim:
+        bench.bench_1d("splitBBox")
+        bench.bench_1d("lut", True)
         if options.opencl_cpu:
-            bench.bench_cpu2d_lut_ocl("CPU")
+            bench.bench_1d("lut_ocl", True, {"devicetype":"CPU"})
         if options.opencl_gpu:
-            bench.bench_cpu2d_lut_ocl("GPU")
+            bench.bench_1d("lut_ocl", True, {"devicetype":"GPU"})
         if options.opencl_acc:
-            bench.bench_cpu2d_lut_ocl("ACC")
+            bench.bench_1d("lut_ocl", True, {"devicetype":"ACC"})
 
-#    bench.bench_cpu2d_lut()
-#    bench.bench_cpu2d_lut_ocl()
+    if options.twodim:
+        bench.bench_2d("splitBBox")
+        bench.bench_2d("lut", True)
+        if options.opencl_cpu:
+            bench.bench_2d("lut_ocl", True, {"devicetype":"CPU"})
+        if options.opencl_gpu:
+            bench.bench_2d("lut_ocl", True, {"devicetype":"GPU"})
+        if options.opencl_acc:
+            bench.bench_2d("lut_ocl", True, {"devicetype":"ACC"})
+
     bench.save()
     bench.print_res()
-#    bench.display_all()
     bench.update_mp()
 
     bench.ax.set_ylim(1, 200)
