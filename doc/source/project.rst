@@ -67,13 +67,13 @@ Setting the environment variable http_proxy can be necessary (depending on your 
 
 .. 
  
-   export http_proxy=http://proxy.site.org/3128
+   export http_proxy=http://proxy.site.org:3128
    
 PyFAI comes with 19 test-suites (109 tests in total) representing a coverage of 65%.
 This ensures both non regression over time and ease the distribution under different platforms:
 pyFAI runs under linux, MacOSX and Windows (in each case in 32 and 64 bits)
 
-.. csv-table:: Supported formats
+.. csv-table:: Test suite coverage
    :header: "Name", "Stmts", "Exec", "Cover"
    :widths: 50, 8, 8, 8
 
