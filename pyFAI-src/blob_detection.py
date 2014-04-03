@@ -116,7 +116,7 @@ class BlobDetection(object):
     """
     
     """
-    def __init__(self, img, cur_sigma=0.25, init_sigma=0.25, dest_sigma=2.0, scale_per_octave=3):
+    def __init__(self, img, cur_sigma=0.25, init_sigma=0.5, dest_sigma=2, scale_per_octave=3):
         """
         Performs a blob detection:
         http://en.wikipedia.org/wiki/Blob_detection
@@ -335,6 +335,7 @@ if __name__ == "__main__":
     import fabio,pylab
 #     img = fabio.open("../test/testimages/LaB6_0003.mar3450").data
     img = fabio.open("../test/testimages/halfccd.edf").data
+    img = numpy.log1p(img)
 #     img = img[img.shape[0]/2-256:img.shape[0]/2+256,img.shape[1]/2-256:img.shape[1]/2+256]
 #     img = image_test()
     bd = BlobDetection(img)
