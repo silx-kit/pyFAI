@@ -41,11 +41,18 @@ import sys
 import glob
 import shutil
 import platform
+import os.path as op
 from os.path import join
 from distutils.core import setup, Extension, Command
 from numpy.distutils.misc_util import get_numpy_include_dirs
 from distutils.sysconfig import get_python_lib
 from distutils.command.install_data import install_data
+
+################################################################################
+# Remove MANIFEST file ... it needs to be re-generated on the fly
+################################################################################
+if op.isfile("MANIFEST"):
+    os.unlink("MANIFEST")
 
 ################################################################################
 # Check for Cython
@@ -233,7 +240,6 @@ if sys.platform == "win32":
         if (filein + ".py") not in script_files:
             shutil.copyfile(filein, filein + ".py")
             script_files.append(filein + ".py")
-
 else:
     script_files = glob.glob("scripts/*")
 
