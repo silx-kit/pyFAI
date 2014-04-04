@@ -2369,7 +2369,7 @@ class AzimuthalIntegrator(Geometry):
                                                                                        platformid=platformid,
                                                                                        deviceid=deviceid,
                                                                                        checksum=self._csr_integrator.lut_checksum,
-                                                                                       padded=padded, block_size=block_size)
+                                                                                       padded=False)
                             I, _, _ = self._ocl_csr_integr.integrate(data, dark=dark, flat=flat,
                                                                      solidAngle=solidangle,
                                                                      solidAngle_checksum=self._dssa_crc,
