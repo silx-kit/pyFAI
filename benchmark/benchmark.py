@@ -15,7 +15,7 @@ try:
     from rfoo.utils import rconsole
     rconsole.spawn_server()
 except ImportError:
-    logger.debug("No socket opened for debugging -> please install rfoo")
+    print("No socket opened for debugging -> please install rfoo")
 
 #We use the locally build version of PyFAI
 pyFAI = utilstest.UtilsTest.pyFAI
