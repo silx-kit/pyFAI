@@ -358,7 +358,7 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
             self.ax.set_yticks([float(i) for i in t])
             self.ax.set_yticklabels([str(i)for i in t])
             self.ax.set_xlim(0.5, 17)
-            self.ax.set_ylim(0.5, 700)
+            self.ax.set_ylim(0.5, 500)
             self.ax.set_title(self.get_cpu() + " / " + self.get_gpu())
 
             if self.fig.canvas:
@@ -501,8 +501,8 @@ if __name__ == "__main__":
         bench.bench_1d("lut", True)
         bench.bench_1d("csr", True)
         if options.opencl_cpu:
-            bench.bench_1d("csr_ocl", True, {"devicetype":"CPU"})
             bench.bench_1d("lut_ocl", True, {"devicetype":"CPU"})
+            bench.bench_1d("csr_ocl", True, {"devicetype":"CPU"})
         if options.opencl_gpu:
             bench.bench_1d("lut_ocl", True, {"devicetype":"GPU"})
             bench.bench_1d("csr_ocl", True, {"devicetype":"GPU"})
@@ -524,7 +524,7 @@ if __name__ == "__main__":
     bench.print_res()
     bench.update_mp()
 
-    bench.ax.set_ylim(1, 200)
+    bench.ax.set_ylim(0.5, 500)
     # plt.show()
     plt.ion()
     raw_input("Enter to quit")
