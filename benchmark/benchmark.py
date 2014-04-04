@@ -42,6 +42,8 @@ class Bench(object):
     LABELS = {"splitBBox": "CPU_serial",
           "lut": "CPU_LUT_OpenMP",
           "lut_ocl": "%s_LUT_OpenCL",
+          "csr": "CPU_CSR_OpenMP",
+          "csr_ocl": "%s_CSR_OpenCL",
           }
 
     def __init__(self, nbr=10, repeat=1, memprofile=False, unit="2th_deg"):
@@ -176,7 +178,10 @@ data = fabio.open(r"%s").data
             self.print_init(time.time() - t0)
             self.update_mp()
             if check:
-                print("lut.shape= %s \t lut.nbytes %.3f MB " % (ai._lut_integrator.lut.shape, ai._lut_integrator.size * 8.0 / 1e6))
+                if "lut" in method:
+                    print("lut: shape= %s \t nbytes %.3f MB " % (ai._lut_integrator.lut.shape, ai._lut_integrator.lut_nbytes / 2 ** 20))
+                elif "csr" in method:
+                    print("csr: size= %s \t nbytes %.3f MB " % (ai._csr_integrator.data.size, ai._csr_integrator.lut_nbytes / 2 ** 20))
             del ai, data
             self.update_mp()
 

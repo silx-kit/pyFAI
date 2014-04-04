@@ -2208,21 +2208,20 @@ class AzimuthalIntegrator(Geometry):
                              (min(azimuth_range), max(azimuth_range) * EPS32)):
                         reset = ("azimuth_range requested and"
                                  " LUT's azimuth_range don't match")
-                error = False
                 if reset:
                     logger.info("AI.integrate1d: Resetting integrator because %s" % reset)
                     try:
                         self._lut_integrator = self.setup_LUT(shape, nbPt, mask,
                                                               radial_range, azimuth_range,
                                                               mask_checksum=mask_crc, unit=unit)
-                        error = False
                     except MemoryError:  # LUT method is hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
+                        self._lut_integrator = None
                         self._ocl_lut_integr = None
                         gc.collect()
                         method = "splitbbox"
-                        error = True
-                if not error:
+
+                if self._lut_integrator:
                     if ("ocl" in method) and ocl_azim_lut:
                         with self._ocl_lut_sem:
                             if "," in method:
@@ -2330,27 +2329,19 @@ class AzimuthalIntegrator(Geometry):
                              (min(azimuth_range), max(azimuth_range) * EPS32)):
                         reset = ("azimuth_range requested and"
                                  " CSR's azimuth_range don't match")
-                error = False
                 if reset:
                     logger.info("AI.integrate1d: Resetting integrator because %s" % reset)
                     try:
-                        if padded is True:
-                            self._csr_integrator = self.setup_CSR(shape, nbPt, mask,
-                                                                  radial_range, azimuth_range,
-                                                                  mask_checksum=mask_crc, unit=unit,
-                                                                  padding = workgroup_size)
-                        else:
-                            self._csr_integrator = self.setup_CSR(shape, nbPt, mask,
-                                                                  radial_range, azimuth_range,
-                                                                  mask_checksum=mask_crc, unit=unit)
-                        error = False
+                        self._csr_integrator = self.setup_CSR(shape, nbPt, mask,
+                                                              radial_range, azimuth_range,
+                                                              mask_checksum=mask_crc, unit=unit)
                     except MemoryError:  # LUT method is hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
                         self._ocl_csr_integr = None
+                        self._csr_integrator = None
                         gc.collect()
-                        method = "ocl_lut"
-                        error = True
-                if not error:
+                        method = "splitbbox"
+                if self._csr_integrator:
                     if ("ocl" in method) and ocl_azim_csr:
                         with self._ocl_csr_sem:
                             if "," in method:
@@ -2416,7 +2407,7 @@ class AzimuthalIntegrator(Geometry):
             if splitPixel is None:
                 logger.warning("SplitPixel is not available,"
                                " falling back on splitbbox histogram !")
-                method = "bbox"
+                method = "splitbbox"
             else:
                 logger.debug("integrate1d uses SplitPixel implementation")
                 pos = self.array_from_unit(shape, "corner", unit)

@@ -52,7 +52,7 @@ class OCL_LUT_Integrator(object):
                  checksum=None, profile=False):
         """
         @param lut: array of int32 - float32 with shape (nbins, lut_size) with indexes and coefficients
-        @param image_size: 
+        @param image_size: Expected image size: image.shape.prod()
         @param devicetype: can be "cpu","gpu","acc" or "all"
         @param platformid: number of the platform as given by clinfo
         @type platformid: int
@@ -64,6 +64,7 @@ class OCL_LUT_Integrator(object):
         self.BLOCK_SIZE = 16
         self._sem = threading.Semaphore()
         self._lut = lut
+        self.nbytes = lut.nbytes
         self.bins, self.lut_size = lut.shape
         self.size = image_size
         self.profile = profile
