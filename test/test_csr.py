@@ -14,6 +14,7 @@ pyFAI = sys.modules["pyFAI"]
 from pyFAI import splitBBox
 from pyFAI import splitBBoxCSR
 from pyFAI import ocl_azim_csr
+from pyFAI import opencl
 import fabio
 
 
@@ -46,28 +47,34 @@ class ParameterisedTestCase(unittest.TestCase):
             suite.addTest(testcase_klass(name, param=param))
         return suite
 
-class TestCSR(ParameterisedTestCase):
+class TestOpenclCSR(ParameterisedTestCase):
         
-    def testCSR(self):
+    def test_csr(self):
         workgroup_size, padded = self.param        
-
-        out_ref = pyFAI.splitBBox.histoBBox1d(data, ai._ttha, ai._dttha, bins=1000)[1]
-        
+        N = 1000
+        out_ref = pyFAI.splitBBox.histoBBox1d(data, ai._ttha, ai._dttha, bins=N)
         if padded:
-            csr = pyFAI.splitBBoxCSR.HistoBBox1d(ai._ttha, ai._dttha, bins=1000, unit="2th_deg", padding=workgroup_size)
+            csr = pyFAI.splitBBoxCSR.HistoBBox1d(ai._ttha, ai._dttha, bins=N, unit="2th_deg", padding=workgroup_size)
         else:
-            csr = pyFAI.splitBBoxCSR.HistoBBox1d(ai._ttha, ai._dttha, bins=1000, unit="2th_deg")
+            csr = pyFAI.splitBBoxCSR.HistoBBox1d(ai._ttha, ai._dttha, bins=N, unit="2th_deg")
 
-        ocl_csr = ocl_azim_csr.OCL_CSR_Integrator(csr.lut, data.size, "GPU",profile=True, padded=padded, block_size=workgroup_size)
-        out_ocl_csr = ocl_csr.integrate(data)[0]
-        print "Testing olc_csr with workgroup_size=", workgroup_size, " and padded=", padded
-        self.assertTrue(numpy.allclose(out_ref, out_ocl_csr),"Test Failed at workgroup_size=" + str(workgroup_size)+" and padded="+str(padded))
+        ocl_csr = ocl_azim_csr.OCL_CSR_Integrator(csr.lut, data.size, "ALL",profile=True, padded=padded, block_size=workgroup_size)
+        out_ocl_csr = ocl_csr.integrate(data)
+        out_cyt_csr = csr.integrate(data)
+        cmt = "Testing ocl_csr with workgroup_size= %s  and padded= %s" % (workgroup_size, padded)
+        logger.debug(cmt)
+        for ref, ocl, cyth in zip(out_ref[1:], out_ocl_csr, out_cyt_csr[1:]):
+            self.assertTrue(numpy.allclose(ref, ocl), cmt + ": hist vs ocl_csr")
+            self.assertTrue(numpy.allclose(ref, cyth), cmt + ": hist vs csr")
+            self.assertTrue(numpy.allclose(cyth, ocl), cmt + ": csr vs ocl_csr")
         csr=None
         ocl_csr=None
         out_ocl_csr=None
         out_ref=None
 
 TESTCASES = [
+ (8, False),
+ (8, True),
  (16, False),
  (16, True),
  (32, False),
@@ -81,17 +88,19 @@ TESTCASES = [
  ]
 
 
-def test_suite_all_CSR():
-    testSuite = unittest.TestSuite()
-    for param in TESTCASES:
-        testSuite.addTest(ParameterisedTestCase.parameterise(
-                TestCSR, param))
+def test_suite_all_OpenCL_CSR():
 
+    testSuite = unittest.TestSuite()
+    if opencl.ocl:
+        for param in TESTCASES:
+            testSuite.addTest(ParameterisedTestCase.parameterise(
+                    TestOpenclCSR, param))
+    #if no opencl: no test
     return testSuite
 
 
 
 if __name__ == '__main__':
-    mysuite = test_suite_all_CSR()
+    mysuite = test_suite_all_OpenCL_CSR()
     runner = unittest.TextTestRunner()
     runner.run(mysuite)

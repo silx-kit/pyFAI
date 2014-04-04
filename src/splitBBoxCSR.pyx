@@ -252,6 +252,7 @@ class HistoBBox1d(object):
             self.nnz_actual = outMax.sum()
         else:
             self.nnz = self.nnz_actual = outMax.sum()
+            outMax_padded = outMax
         indptr[1:] = outMax_padded.cumsum(dtype=numpy.int32)
         self.indptr = indptr
 

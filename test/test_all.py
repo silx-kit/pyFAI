@@ -56,7 +56,8 @@ from test_utils                import test_suite_all_Utils
 from test_polarization         import test_suite_all_Polarization
 from test_detector             import test_suite_all_detectors
 from test_convolution          import test_suite_all_convolution
-
+from test_sparse               import test_suite_all_sparse
+from test_csr                  import test_suite_all_OpenCL_CSR
 def test_suite_all():
     testSuite = unittest.TestSuite()
     testSuite.addTest(test_suite_all_Histogram())
@@ -75,6 +76,8 @@ def test_suite_all():
     testSuite.addTest(test_suite_all_Utils())
     testSuite.addTest(test_suite_all_detectors())
     testSuite.addTest(test_suite_all_convolution())
+    testSuite.addTest(test_suite_all_sparse())
+    testSuite.addTest(test_suite_all_OpenCL_CSR())
     return testSuite
 
 if __name__ == '__main__':
