@@ -11,6 +11,12 @@ import os.path as op
 sys.path.append(op.join(op.dirname(op.dirname(op.abspath(__file__))), "test"))
 import utilstest
 
+try:
+    from rfoo.utils import rconsole
+    rconsole.spawn_server()
+except ImportError:
+    logger.debug("No socket opened for debugging -> please install rfoo")
+
 #We use the locally build version of PyFAI
 pyFAI = utilstest.UtilsTest.pyFAI
 ocl = pyFAI.opencl.ocl
@@ -158,8 +164,8 @@ data = fabio.open(r"%s").data
                 platformid, deviceid = opencl["platformid"], opencl["deviceid"] = platdev
             devicetype = opencl["devicetype"] = ocl.platforms[platformid].devices[deviceid].type
             print("Working on device: %s platform: %s device: %s" % (devicetype, ocl.platforms[platformid], ocl.platforms[platformid].devices[deviceid]))
+            label = "1D_" + (self.LABELS[method] % devicetype)
             method += "_%i,%i" % (opencl["platformid"], opencl["deviceid"])
-            label = "1D_%s_parallel_OpenCL" % devicetype
         else:
             print("Working on processor: %s" % self.get_cpu())
             label = "1D_" + self.LABELS[method]
@@ -351,8 +357,8 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
             t = [1, 2, 5, 10, 20, 50, 100, 200, 400, 500]
             self.ax.set_yticks([float(i) for i in t])
             self.ax.set_yticklabels([str(i)for i in t])
-            self.ax.set_xlim(0.5, 20)
-            self.ax.set_ylim(0.5, 500)
+            self.ax.set_xlim(0.5, 17)
+            self.ax.set_ylim(0.5, 700)
             self.ax.set_title(self.get_cpu() + " / " + self.get_gpu())
 
             if self.fig.canvas:
