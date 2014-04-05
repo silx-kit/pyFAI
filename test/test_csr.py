@@ -48,25 +48,34 @@ class ParameterisedTestCase(unittest.TestCase):
         return suite
 
 class TestOpenclCSR(ParameterisedTestCase):
-        
+
     def test_csr(self):
-        workgroup_size, padded = self.param        
+        workgroup_size, padded = self.param
         N = 1000
         out_ref = pyFAI.splitBBox.histoBBox1d(data, ai._ttha, ai._dttha, bins=N)
         if padded:
             csr = pyFAI.splitBBoxCSR.HistoBBox1d(ai._ttha, ai._dttha, bins=N, unit="2th_deg", padding=workgroup_size)
         else:
             csr = pyFAI.splitBBoxCSR.HistoBBox1d(ai._ttha, ai._dttha, bins=N, unit="2th_deg")
-
-        ocl_csr = ocl_azim_csr.OCL_CSR_Integrator(csr.lut, data.size, "ALL",profile=True, padded=padded, block_size=workgroup_size)
-        out_ocl_csr = ocl_csr.integrate(data)
+        try:
+            ocl_csr = ocl_azim_csr.OCL_CSR_Integrator(csr.lut, data.size, "ALL",profile=True, padded=padded, block_size=workgroup_size)
+            out_ocl_csr = ocl_csr.integrate(data)
+        except (opencl.pyopencl.MemoryError, MemoryError):
+            logger.warning("Skipping test due to memory error on device")
+            skip = True
+        else:
+            skip = False
         out_cyt_csr = csr.integrate(data)
         cmt = "Testing ocl_csr with workgroup_size= %s  and padded= %s" % (workgroup_size, padded)
         logger.debug(cmt)
-        for ref, ocl, cyth in zip(out_ref[1:], out_ocl_csr, out_cyt_csr[1:]):
-            self.assertTrue(numpy.allclose(ref, ocl), cmt + ": hist vs ocl_csr")
-            self.assertTrue(numpy.allclose(ref, cyth), cmt + ": hist vs csr")
-            self.assertTrue(numpy.allclose(cyth, ocl), cmt + ": csr vs ocl_csr")
+        if skip:
+            for ref, cyth in zip(out_ref, out_cyt_csr):
+                self.assertTrue(numpy.allclose(ref, cyth), cmt + ": hist vs csr")
+        else:
+            for ref, ocl, cyth in zip(out_ref[1:], out_ocl_csr, out_cyt_csr[1:]):
+                self.assertTrue(numpy.allclose(ref, ocl), cmt + ": hist vs ocl_csr")
+                self.assertTrue(numpy.allclose(ref, cyth), cmt + ": hist vs csr")
+                self.assertTrue(numpy.allclose(cyth, ocl), cmt + ": csr vs ocl_csr")
         csr=None
         ocl_csr=None
         out_ocl_csr=None

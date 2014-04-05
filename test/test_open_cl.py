@@ -122,7 +122,7 @@ class test_mask(unittest.TestCase):
                 data = fabio.open(ds["img"]).data
                 try:
                     res = ai.xrpd_LUT_OCL(data, 1000, devicetype="all", platformid=ids[0], deviceid=ids[1])
-                except MemoryError as error:
+                except (pyFAI.opencl.pyopencl.MemoryError, MemoryError) as error:
                     logger.warning("Memory Error on %s dataset %s: %s%s. Converted into warnining: device may not have enough memory." % (devtype, os.path.basename(ds["img"]), os.linesep, error))
                 else:
                     t0 = time.time()
