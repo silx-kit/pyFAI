@@ -10,11 +10,13 @@ import unittest, numpy, os, sys, time
 from utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
+from pyFAI import opencl
 
 from pyFAI import splitBBox
 from pyFAI import splitBBoxCSR
-from pyFAI import ocl_azim_csr
-from pyFAI import opencl
+if opencl.ocl:
+    from pyFAI import ocl_azim_csr
+
 import fabio
 
 
@@ -58,15 +60,20 @@ class TestOpenclCSR(ParameterisedTestCase):
         else:
             csr = pyFAI.splitBBoxCSR.HistoBBox1d(ai._ttha, ai._dttha, bins=N, unit="2th_deg")
 
-        ocl_csr = ocl_azim_csr.OCL_CSR_Integrator(csr.lut, data.size, "ALL",profile=True, padded=padded, block_size=workgroup_size)
-        out_ocl_csr = ocl_csr.integrate(data)
+        if opencl.ocl:
+            ocl_csr = ocl_azim_csr.OCL_CSR_Integrator(csr.lut, data.size, "ALL", profile=True, padded=padded, block_size=workgroup_size)
+            out_ocl_csr = ocl_csr.integrate(data)
         out_cyt_csr = csr.integrate(data)
         cmt = "Testing ocl_csr with workgroup_size= %s  and padded= %s" % (workgroup_size, padded)
         logger.debug(cmt)
-        for ref, ocl, cyth in zip(out_ref[1:], out_ocl_csr, out_cyt_csr[1:]):
-            self.assertTrue(numpy.allclose(ref, ocl), cmt + ": hist vs ocl_csr")
-            self.assertTrue(numpy.allclose(ref, cyth), cmt + ": hist vs csr")
-            self.assertTrue(numpy.allclose(cyth, ocl), cmt + ": csr vs ocl_csr")
+        if opencl.ocl:
+            for ref, ocl, cyth in zip(out_ref[1:], out_ocl_csr, out_cyt_csr[1:]):
+                self.assertTrue(numpy.allclose(ref, ocl), cmt + ": hist vs ocl_csr")
+                self.assertTrue(numpy.allclose(ref, cyth), cmt + ": hist vs csr")
+                self.assertTrue(numpy.allclose(cyth, ocl), cmt + ": csr vs ocl_csr")
+        else:
+            for ref, cyth in zip(out_ref, out_cyt_csr):
+                self.assertTrue(numpy.allclose(ref, cyth), cmt + ": hist vs csr")
         csr=None
         ocl_csr=None
         out_ocl_csr=None
