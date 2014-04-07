@@ -68,8 +68,11 @@ class UtilsTest(object):
     platform = distutils.util.get_platform()
     architecture = "lib.%s-%i.%i" % (platform,
                                     sys.version_info[0], sys.version_info[1])
-    pyFAI_home = os.path.join(os.path.dirname(test_home),
-                                        "build", architecture)
+    if os.environ.get("BUILDPYTHONPATH"):
+        pyFAI_home = os.path.abspath(os.environ.get("BUILDPYTHONPATH", ""))
+    else:
+        pyFAI_home = os.path.join(os.path.dirname(test_home),
+                                                    "build", architecture)
     logger.info("pyFAI Home is: " + pyFAI_home)
     if "pyFAI" in sys.modules:
         logger.info("pyFAI module was already loaded from  %s" % sys.modules["pyFAI"])
