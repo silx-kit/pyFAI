@@ -162,6 +162,8 @@ data = fabio.open(r"%s").data
                     print("No such OpenCL device: skipping benchmark")
                     return
                 platformid, deviceid = opencl["platformid"], opencl["deviceid"] = platdev
+            else:
+                platformid, deviceid = opencl["platformid"], opencl["deviceid"]
             devicetype = opencl["devicetype"] = ocl.platforms[platformid].devices[deviceid].type
             print("Working on device: %s platform: %s device: %s" % (devicetype, ocl.platforms[platformid], ocl.platforms[platformid].devices[deviceid]))
             label = "1D_" + (self.LABELS[method] % devicetype)
