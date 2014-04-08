@@ -10,11 +10,13 @@ import unittest, numpy, os, sys, time
 from utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
+from pyFAI import opencl
 
 from pyFAI import splitBBox
 from pyFAI import splitBBoxCSR
-from pyFAI import ocl_azim_csr
-from pyFAI import opencl
+if opencl.ocl:
+    from pyFAI import ocl_azim_csr
+
 import fabio
 
 
@@ -48,23 +50,26 @@ class ParameterisedTestCase(unittest.TestCase):
         return suite
 
 class TestOpenclCSR(ParameterisedTestCase):
-
+        
     def test_csr(self):
-        workgroup_size, padded = self.param
+        workgroup_size, padded = self.param        
         N = 1000
         out_ref = pyFAI.splitBBox.histoBBox1d(data, ai._ttha, ai._dttha, bins=N)
         if padded:
             csr = pyFAI.splitBBoxCSR.HistoBBox1d(ai._ttha, ai._dttha, bins=N, unit="2th_deg", padding=workgroup_size)
         else:
             csr = pyFAI.splitBBoxCSR.HistoBBox1d(ai._ttha, ai._dttha, bins=N, unit="2th_deg")
-        try:
-            ocl_csr = ocl_azim_csr.OCL_CSR_Integrator(csr.lut, data.size, "ALL",profile=True, padded=padded, block_size=workgroup_size)
-            out_ocl_csr = ocl_csr.integrate(data)
-        except (opencl.pyopencl.MemoryError, MemoryError):
-            logger.warning("Skipping test due to memory error on device")
-            skip = True
+        if not opencl.ocl:
+           skip=True
         else:
-            skip = False
+            try:
+                ocl_csr = ocl_azim_csr.OCL_CSR_Integrator(csr.lut, data.size, "ALL",profile=True, padded=padded, block_size=workgroup_size)
+                out_ocl_csr = ocl_csr.integrate(data)
+            except (opencl.pyopencl.MemoryError, MemoryError):
+                logger.warning("Skipping test due to memory error on device")
+                skip = True
+            else:
+                skip = False
         out_cyt_csr = csr.integrate(data)
         cmt = "Testing ocl_csr with workgroup_size= %s  and padded= %s" % (workgroup_size, padded)
         logger.debug(cmt)
