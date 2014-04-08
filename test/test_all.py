@@ -31,21 +31,21 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__data__ = "2014-03-06"
+__data__ = "2014-03-08"
 
 import sys
 import unittest
 
 from utilstest import UtilsTest, getLogger
-logger = getLogger(__file__)
+logger = getLogger("test_all")
 
-from test_geometry_refinement   import test_suite_all_GeometryRefinement
+from test_geometry_refinement  import test_suite_all_GeometryRefinement
 from test_azimuthal_integrator import test_suite_all_AzimuthalIntegration
 from test_histogram            import test_suite_all_Histogram
 from test_peak_picking         import test_suite_all_PeakPicking
 from test_geometry             import test_suite_all_Geometry
 from test_mask                 import test_suite_all_Mask
-from test_open_cl              import test_suite_all_OpenCL
+from test_openCL               import test_suite_all_OpenCL
 from test_export               import test_suite_all_Export
 from test_saxs                 import test_suite_all_Saxs
 from test_integrate            import test_suite_all_Integrate1d
@@ -58,6 +58,7 @@ from test_detector             import test_suite_all_detectors
 from test_convolution          import test_suite_all_convolution
 from test_sparse               import test_suite_all_sparse
 from test_csr                  import test_suite_all_OpenCL_CSR
+
 def test_suite_all():
     testSuite = unittest.TestSuite()
     testSuite.addTest(test_suite_all_Histogram())
