@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/11/2012"
+__date__ = "08/04/2014"
 
 
 import unittest
@@ -37,6 +37,7 @@ import os
 import time
 import sys
 import fabio
+import gc
 from utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 try:
@@ -53,7 +54,7 @@ from pyFAI.opencl import ocl
 
 class test_mask(unittest.TestCase):
     tmp_dir = os.environ.get("PYFAI_TEMPDIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp"))
-
+    N = 1000
     def setUp(self):
 
         self.datasets = [{"img":UtilsTest.getimage("1883/Pilatus1M.edf"), "poni":UtilsTest.getimage("1893/Pilatus1M.poni"), "spline": None},
@@ -97,15 +98,13 @@ class test_mask(unittest.TestCase):
             for ds in self.datasets:
                 ai = pyFAI.load(ds["poni"])
                 data = fabio.open(ds["img"]).data
-                res = ai.xrpd_OpenCL(data, 1000, devicetype="all", platformid=ids[0], deviceid=ids[1], useFp64=True)
-                t0 = time.time()
-                ref = ai.xrpd(data, 1000)
-                t1 = time.time()
-                res = ai.xrpd_OpenCL(data, 1000, safe=False)
-                t2 = time.time()
-                logger.info("For image %15s;\tspeed up is %.3fx;\trate is %.3f Hz" % (os.path.basename(ds["img"]), ((t1 - t0) / (t2 - t1)), 1. / (t2 - t1)))
+                res = ai.xrpd_OpenCL(data, self.N, devicetype="all", platformid=ids[0], deviceid=ids[1], useFp64=True)
+                ref = ai.integrate1d(data, self.N, method="splitBBox", unit="2th_deg")
                 r = Rwp(ref, res)
-                self.assertTrue(r < 10, "Rwp=%.3f for OpenCL processing of %s" % (r, ds))
+                logger.info("OpenCL histogram vs histogram SplitBBox has R= %.3f for dataset %s" % (r, ds))
+                self.assertTrue(r < 6, "Rwp=%.3f for OpenCL histogram processing of %s" % (r, ds))
+                del ai, data
+                gc.collect()
 
     def test_OpenCL_LUT(self):
         logger.info("Testing LUT-based algorithm (backward-integration)")
@@ -120,20 +119,45 @@ class test_mask(unittest.TestCase):
             for ds in self.datasets:
                 ai = pyFAI.load(ds["poni"])
                 data = fabio.open(ds["img"]).data
+                ref = ai.integrate1d(data, self.N, method="splitBBox", unit="2th_deg")
                 try:
-                    res = ai.xrpd_LUT_OCL(data, 1000, devicetype="all", platformid=ids[0], deviceid=ids[1])
-                except (pyFAI.opencl.pyopencl.MemoryError, MemoryError) as error:
-                    logger.warning("Memory Error on %s dataset %s: %s%s. Converted into warnining: device may not have enough memory." % (devtype, os.path.basename(ds["img"]), os.linesep, error))
+                    res = ai.integrate1d(data, self.N, method="ocl_lut_%i,%i" % (ids[0], ids[1]), unit="2th_deg")
+                except (pyFAI.opencl.pyopencl.MemoryError, MemoryError, pyFAI.opencl.pyopencl.RuntimeError, RuntimeError) as error:
+                    logger.warning("Memory error on %s dataset %s: %s%s. Converted into warnining: device may not have enough memory." % (devtype, os.path.basename(ds["img"]), os.linesep, error))
+                    break
                 else:
-                    t0 = time.time()
-                    ref = ai.xrpd(data, 1000)
-                    t1 = time.time()
-                    res = ai.xrpd_LUT_OCL(data, 1000, safe=False)
-                    t2 = time.time()
-                    logger.info("For image %15s;\tspeed up is %.3fx;\trate is %.3f Hz" % (os.path.basename(ds["img"]), ((t1 - t0) / (t2 - t1)), 1. / (t2 - t1)))
+                    ref = ai.xrpd(data, self.N)
                     r = Rwp(ref, res)
-                    self.assertTrue(r < 10, "Rwp=%.3f for OpenCL processing of %s" % (r, ds))
+                    logger.info("OpenCL CSR vs histogram SplitBBox has R= %.3f for dataset %s" % (r, ds))
+                    self.assertTrue(r < 3, "Rwp=%.3f for OpenCL LUT processing of %s" % (r, ds))
+                del ai, data
+                gc.collect()
 
+    def test_OpenCL_CSR(self):
+        logger.info("Testing CSR-based algorithm (backward-integration)")
+        for devtype in ("GPU", "CPU"):
+            ids = ocl.select_device(devtype, best=True)
+            if ids is None:
+                logger.error("No suitable %s OpenCL device found" % devtype)
+                continue
+            else:
+                logger.info("I found a suitable device %s %s: %s %s " % (devtype, ids, ocl.platforms[ids[0]], ocl.platforms[ids[0]].devices[ids[1]]))
+
+            for ds in self.datasets:
+                ai = pyFAI.load(ds["poni"])
+                data = fabio.open(ds["img"]).data
+                ref = ai.integrate1d(data, self.N, method="splitBBox", unit="2th_deg")
+                try:
+                    res = ai.integrate1d(data, self.N, method="ocl_csr_%i,%i" % (ids[0], ids[1]), unit="2th_deg")
+                except (pyFAI.opencl.pyopencl.MemoryError, MemoryError, pyFAI.opencl.pyopencl.RuntimeError, RuntimeError) as error:
+                    logger.warning("Memory error on %s dataset %s: %s%s. Converted into Warning: device may not have enough memory." % (devtype, os.path.basename(ds["img"]), os.linesep, error))
+                    break
+                else:
+                    r = Rwp(ref, res)
+                    logger.info("OpenCL CSR vs histogram SplitBBox has R= %.3f for dataset %s" % (r, ds))
+                    self.assertTrue(r < 3, "Rwp=%.3f for OpenCL CSR processing of %s" % (r, ds))
+                del ai, data
+                gc.collect()
 
 def test_suite_all_OpenCL():
     testSuite = unittest.TestSuite()
@@ -142,7 +166,7 @@ def test_suite_all_OpenCL():
     else:
         testSuite.addTest(test_mask("test_OpenCL"))
         testSuite.addTest(test_mask("test_OpenCL_LUT"))
-
+        testSuite.addTest(test_mask("test_OpenCL_CSR"))
     return testSuite
 
 if __name__ == '__main__':

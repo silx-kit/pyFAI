@@ -168,9 +168,11 @@ data = fabio.open(r"%s").data
             print("Working on device: %s platform: %s device: %s" % (devicetype, ocl.platforms[platformid], ocl.platforms[platformid].devices[deviceid]))
             label = "1D_" + (self.LABELS[method] % devicetype)
             method += "_%i,%i" % (opencl["platformid"], opencl["deviceid"])
+            memory_error = (pyFAI.opencl.pyopencl.MemoryError, MemoryError, pyFAI.opencl.pyopencl.RuntimeError, RuntimeError)
         else:
             print("Working on processor: %s" % self.get_cpu())
             label = "1D_" + self.LABELS[method]
+            memory_error = (MemoryError, RuntimeError)
         results = {}
         first = True
         for param in ds_list:
@@ -181,9 +183,13 @@ data = fabio.open(r"%s").data
             exec setup
             size = data.size / 1.0e6
             print("1D integration of %s %.1f Mpixel -> %i bins" % (op.basename(fn), size, N))
-            t0 = time.time()
-            res = eval(stmt)
-            self.print_init(time.time() - t0)
+            try:
+                t0 = time.time()
+                res = eval(stmt)
+                self.print_init(time.time() - t0)
+            except memory_error as error:
+                print(error)
+                break
             self.update_mp()
             if check:
                 if "lut" in method:
@@ -192,9 +198,12 @@ data = fabio.open(r"%s").data
                     print("csr: size= %s \t nbytes %.3f MB " % (ai._csr_integrator.data.size, ai._csr_integrator.lut_nbytes / 2 ** 20))
             del ai, data
             self.update_mp()
-
-            t = timeit.Timer(stmt, setup + stmt)
-            tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
+            try:
+                t = timeit.Timer(stmt, setup + stmt)
+                tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
+            except memory_error as error:
+                print(error)
+                break
             self.update_mp()
             self.print_exec(tmin)
             tmin *= 1000.0
@@ -234,9 +243,13 @@ data = fabio.open(r"%s").data
             print("Working on device: %s platform: %s device: %s" % (devicetype, ocl.platforms[platformid], ocl.platforms[platformid].devices[deviceid]))
             method += "_%i,%i" % (opencl["platformid"], opencl["deviceid"])
             label = "2D_%s_parallel_OpenCL" % devicetype
+            memory_error = (pyFAI.opencl.pyopencl.MemoryError, MemoryError, pyFAI.opencl.pyopencl.RuntimeError, RuntimeError)
+
         else:
             print("Working on processor: %s" % self.get_cpu())
             label = "2D_" + self.LABELS[method]
+            memory_error = (MemoryError, RuntimeError)
+
         results = {}
         first = True
         for param in ds_list:
@@ -247,16 +260,24 @@ data = fabio.open(r"%s").data
             exec setup
             size = data.size / 1.0e6
             print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), size , N))
-            t0 = time.time()
-            res = eval(stmt)
-            self.print_init(time.time() - t0)
+            try:
+                t0 = time.time()
+                res = eval(stmt)
+                self.print_init(time.time() - t0)
+            except memory_error as error:
+                print(error)
+                break
             self.update_mp()
             if check:
                 print("lut.shape= %s \t lut.nbytes %.3f MB " % (ai._lut_integrator.lut.shape, ai._lut_integrator.size * 8.0 / 1e6))
             ai.reset()
             del ai, data
-            t = timeit.Timer(stmt, setup + stmt)
-            tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
+            try:
+                t = timeit.Timer(stmt, setup + stmt)
+                tmin = min([i / self.nbr for i in t.repeat(repeat=self.repeat, number=self.nbr)])
+            except memory_error as error:
+                print(error)
+                break
             self.update_mp()
             del t
             self.update_mp()
