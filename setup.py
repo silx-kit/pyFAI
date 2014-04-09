@@ -41,11 +41,18 @@ import sys
 import glob
 import shutil
 import platform
+import os.path as op
 from os.path import join
 from distutils.core import setup, Extension, Command
 from numpy.distutils.misc_util import get_numpy_include_dirs
 from distutils.sysconfig import get_python_lib
 from distutils.command.install_data import install_data
+
+################################################################################
+# Remove MANIFEST file ... it needs to be re-generated on the fly
+################################################################################
+if op.isfile("MANIFEST"):
+    os.unlink("MANIFEST")
 
 ################################################################################
 # Check for Cython
@@ -116,9 +123,6 @@ if ("sdist" in sys.argv):
 # ###############################################################################
 # pyFAI extensions
 # ###############################################################################
-#cython_modules = ["histogram", "splitPixel", "splitBBox", "splitBBoxLUT", "splitBBoxCSR",
-#                  "relabel", "bilinear", "_geometry", "reconstruct", "fastcrc", "_distortion",
-#                  "_bispev"]
 cython_modules = [os.path.splitext(os.path.basename(i))[0] for i in glob.glob("src/*.pyx")]
 
 src = dict([(ext, join("src", ext + cython_c_ext)) for ext in cython_modules])
@@ -184,6 +188,13 @@ _distortion_dic = dict(name="_distortion",
                         extra_link_args=['openmp'],
 
                         )
+_distortionCSR_dic = dict(name="_distortionCSR",
+                        include_dirs=get_numpy_include_dirs(),
+                        sources=[src['_distortionCSR'] ],
+                        extra_compile_args=['openmp'],
+                        extra_link_args=['openmp'],
+
+                        )
 _bispev_dic = dict(name="_bispev",
                         include_dirs=get_numpy_include_dirs(),
                         sources=[src['_bispev'] ],
@@ -233,7 +244,6 @@ if sys.platform == "win32":
         if (filein + ".py") not in script_files:
             shutil.copyfile(filein, filein + ".py")
             script_files.append(filein + ".py")
-
 else:
     script_files = glob.glob("scripts/*")
 
@@ -388,10 +398,10 @@ This python module can be found on:
 http://pypi.python.org/pypi/pyopencl
 """)
 
-
-# ###############################################################################
+"""
+################################################################################
 # check if OpenMP modules, freshly installed can import
-# ###############################################################################
+################################################################################
 pyFAI = None
 sys.path.insert(0, os.path.dirname(installDir))
 # print installDir
@@ -404,7 +414,7 @@ for mod in sys.modules.copy():
 try:
     import pyFAI
 except ImportError as E:
-    print("Unable to import pyFAI: %s" % E)
+    print("Unable to import pyFAI from system: %s" % E)
 else:
     print("PyFAI is installed in %s" % pyFAI.__file__)
     try:
@@ -414,3 +424,4 @@ else:
     else:
         print("OpenMP libraries were found and pyFAI.histogram was successfully imported")
 
+"""

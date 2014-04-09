@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://forge.epn-campus.eu/projects/azimuthal
-#
-#    File: "$Id$"
+#             https://github.com/kif/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -32,12 +30,11 @@ import sys
 from cpython.ref cimport PyObject, Py_XDECREF
 from cython.parallel import prange
 from libc.string cimport memset,memcpy
-#from libc.stdlib cimport malloc, free 
 from cython cimport view
 import numpy
 cimport numpy
 from libc.math cimport fabs, M_PI
-cdef float pi=<float> M_PI 
+cdef float pi = <float> M_PI 
 cdef struct lut_point:
     numpy.int32_t idx
     numpy.float32_t coef
@@ -133,10 +130,11 @@ class HistoBBox1d(object):
         self.delta = (self.pos0_max - self.pos0_min) / bins
         self._lut=None
         self.lut_max_idx = None
-        self.calc_lut()        
+        self.calc_lut()   
         self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, self.pos0_maxin-0.5*self.delta, self.bins)
         self.lut_checksum = None
         self.unit=unit
+        self.lut_nbytes = self._lut.nbytes
         
 
     @cython.boundscheck(False)
@@ -145,7 +143,7 @@ class HistoBBox1d(object):
         """
         Called by constructor to calculate the boundaries and the bin position 
         """
-        cdef numpy.int32_t size = self.cpos0.size
+        cdef int size = self.cpos0.size
         cdef bint check_mask = self.check_mask
         cdef numpy.int8_t[:] cmask
         cdef float[:] cpos0, dpos0, cpos0_sup, cpos0_inf,
@@ -192,7 +190,10 @@ class HistoBBox1d(object):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def calc_lut(self):
-        'calculate the max number of elements in the LUT and populate it'
+        """
+        calculate the max number of elements in the LUT and populate it
+        
+        """
         cdef float delta=self.delta, pos0_min=self.pos0_min, pos1_min, pos1_max, min0, max0, fbin0_min, fbin0_max, deltaL, deltaR, deltaA
         cdef numpy.int32_t k,idx, bin0_min, bin0_max, bins = self.bins, lut_size, i, size
         cdef bint check_mask, check_pos1
@@ -200,9 +201,8 @@ class HistoBBox1d(object):
         cdef float[:] cpos0_sup = self.cpos0_sup
         cdef float[:] cpos0_inf = self.cpos0_inf
         cdef float[:] cpos1_min, cpos1_max
-#        cdef numpy.float32_t[:,:] lutcoef
-#        cdef int[:,:] lutidx 
         cdef lut_point[:,:] lut
+
         cdef numpy.int8_t[:] cmask
         size = self.size
         if self.check_mask:
@@ -346,8 +346,8 @@ class HistoBBox1d(object):
                                         shape=self._lut.shape,dtype=dtype_lut,
                                         copy=True)
 
+
     lut = property(get_lut)         
-        
 
 
     @cython.cdivision(True)
@@ -390,7 +390,6 @@ class HistoBBox1d(object):
         cdef lut_point[:,:] lut = self._lut
         rc_after = sys.getrefcount(self._lut)
         cdef bint need_decref = NEED_DECREF & ((rc_after-rc_before)>=2)
-
 
         assert size == weights.size
 

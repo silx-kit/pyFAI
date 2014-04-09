@@ -91,7 +91,7 @@ class TestDetector(unittest.TestCase):
      self.desired_pixelsizes[512]        = 316.000
 
         """
-        sx165 = detector_factory("rayonix_sx165")
+        sx165 = detector_factory("rayonixsx165")
 
         # check the default pixels size and the default binning
         self.assertAlmostEqual(sx165.pixel1, 395e-7)

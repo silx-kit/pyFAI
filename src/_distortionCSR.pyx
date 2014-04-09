@@ -26,7 +26,7 @@
 import cython
 cimport numpy
 import numpy
-from cython.parallel import prange
+from cython.parallel import prange  #, threadlocal
 from libc.math cimport floor,ceil, fabs
 from libc.string cimport memset
 import logging, threading
@@ -35,6 +35,8 @@ logger = logging.getLogger("pyFAI._distortion")
 from .detectors import detector_factory
 from .utils import timeit
 import fabio
+pyFAI = sys.modules["pyFAI"]
+from pyFAI import ocl_azim_csr_dis
 
 cdef struct lut_point:
     numpy.int32_t idx
@@ -62,14 +64,10 @@ cdef inline float max4f(float a, float b, float c, float d) nogil:
     else:
         return d
 
-
 cpdef inline float calc_area(float I1, float I2, float slope, float intercept) nogil:
     "Calculate the area between I1 and I2 of a line with a given slope & intercept"
     return 0.5 * (I2 - I1) * (slope * (I2 + I1) + 2 * intercept)
 
-@cython.wraparound(False)
-@cython.boundscheck(False)
-@cython.cdivision(True)
 cdef inline void integrate(float[:,:] box, float start, float stop, float slope, float intercept) nogil:
     "Integrate in a box a line between start and stop, line defined by its slope & intercept "
     cdef int i, h = 0
@@ -203,323 +201,6 @@ cdef inline void integrate(float[:,:] box, float start, float stop, float slope,
                         AA -= dA
                         h += 1
 
-cdef class Quad:
-    """
-    Basic quadrilatere object
-
-                                     |
-                                     |
-                                     |                       xxxxxA
-                                     |      xxxxxxxI'xxxxxxxx     x
-                             xxxxxxxxIxxxxxx       |               x
-                Bxxxxxxxxxxxx        |             |               x
-                x                    |             |               x
-                x                    |             |               x
-                 x                   |             |                x
-                 x                   |             |                x
-                 x                   |             |                x
-                 x                   |             |                x
-                 x                   |             |                x
-                  x                  |             |                 x
-                  x                  |             |                 x
-                  x                  |             |                 x
-                  x                 O|             P              A'  x
- -----------------J------------------+--------------------------------L-----------------------
-                  x                  |                                 x
-                  x                  |                                  x
-                  x                  |                                  x
-                   x                 |     xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxD
-                   CxxxxxxxxxxxxxxxxxKxxxxx
-                                     |
-                                     |
-                                     |
-                                     |
-        """
-    cdef float[:,:] box
-    cdef float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area
-    cdef int offset0, offset1, box_size0, box_size1
-    cdef bint has_area, has_slope
-
-    def __cinit__(self, float[:,:] buffer):
-        self.box = buffer
-        self.A0 = self.A1 = 0
-        self.B0 = self.B1 = 0
-        self.C0 = self.C1 = 0
-        self.D0 = self.D1 = 0
-        self.offset0 = self.offset1 = 0
-        self.box_size0 = self.box_size1 = 0
-        self.pAB = self.pBC = self.pCD = self.pDA = 0
-        self.cAB = self.cBC = self.cCD = self.cDA = 0
-        self.area = 0
-        self.has_area=0
-        self.has_slope=0
-
-
-    def reinit(self, A0, A1, B0, B1, C0, C1, D0, D1):
-        self.box[:, :] = 0.0
-        self.A0 = A0
-        self.A1 = A1
-        self.B0 = B0
-        self.B1 = B1
-        self.C0 = C0
-        self.C1 = C1
-        self.D0 = D0
-        self.D1 = D1
-        self.offset0 = (<int> floor(min(self.A0, self.B0, self.C0, self.D0)))
-        self.offset1 = (<int> floor(min(self.A1, self.B1, self.C1, self.D1)))
-        self.box_size0 = (<int> ceil(max(self.A0, self.B0, self.C0, self.D0))) - self.offset0
-        self.box_size1 = (<int> ceil(max(self.A1, self.B1, self.C1, self.D1))) - self.offset1
-        self.A0 -= self.offset0
-        self.A1 -= self.offset1
-        self.B0 -= self.offset0
-        self.B1 -= self.offset1
-        self.C0 -= self.offset0
-        self.C1 -= self.offset1
-        self.D0 -= self.offset0
-        self.D1 -= self.offset1
-        self.pAB = self.pBC = self.pCD = self.pDA = 0
-        self.cAB = self.cBC = self.cCD = self.cDA = 0
-        self.area = 0
-        self.has_area = 0
-        self.has_slope = 0
-
-    def __repr__(self):
-        res = ["offset %i,%i size %i, %i" % (self.offset0, self.offset1, self.box_size0, self.box_size1), "box:"]
-        for i in range(self.box_size0):
-            line=""
-            for j in range(self.box_size1):
-                line+="\t%.3f"%self.box[i,j]
-            res.append(line)
-        return os.linesep.join(res)
-
-    cpdef float get_box(self, int i, int j):
-        return self.box[i,j]
-    cpdef int get_offset0(self):
-        return self.offset0
-    cpdef int  get_offset1(self):
-        return self.offset1
-    cpdef int  get_box_size0(self):
-        return self.box_size0
-    cpdef int  get_box_size1(self):
-        return self.box_size1
-
-    cpdef init_slope(self):
-        if not self.has_slope:
-            if self.B0 != self.A0:
-                self.pAB = (self.B1 - self.A1) / (self.B0 - self.A0)
-                self.cAB = self.A1 - self.pAB * self.A0
-            if self.C0 != self.B0:
-                self.pBC = (self.C1 - self.B1) / (self.C0 - self.B0)
-                self.cBC = self.B1 - self.pBC * self.B0
-            if self.D0 != self.C0:
-                self.pCD = (self.D1 - self.C1) / (self.D0 - self.C0)
-                self.cCD = self.C1 - self.pCD * self.C0
-            if self.A0 != self.D0:
-                self.pDA = (self.A1 - self.D1) / (self.A0 - self.D0)
-                self.cDA = self.D1 - self.pDA * self.D0
-            self.has_slope = 1
-
-    cpdef float calc_area_AB(self, float I1,float I2):
-        if self.B0 != self.A0:
-            return 0.5 * (I2 - I1) * (self.pAB * (I2 + I1) + 2 * self.cAB)
-        else:
-            return 0.0
-
-    cpdef float calc_area_BC(self, float J1, float J2):
-        if self.B0 != self.C0:
-            return 0.5 * (J2 - J1) * (self.pBC * (J1 + J2) + 2 * self.cBC)
-        else:
-            return 0.0
-
-    cpdef float calc_area_CD(self, float K1, float K2):
-        if self.C0 != self.D0:
-            return 0.5 * (K2 - K1) * (self.pCD * (K2 + K1) + 2 * self.cCD)
-        else:
-            return 0.0
-
-    cpdef float calc_area_DA(self,float L1,float L2):
-        if self.D0 != self.A0:
-            return 0.5 * (L2 - L1) * (self.pDA * (L1 + L2) + 2 * self.cDA)
-        else:
-            return 0.0
-
-
-
-    cpdef float calc_area(self):
-        if not self.has_area:
-            self.area = 0.5*((self.C0 - self.A0)*(self.D1 - self.B1)-(self.C1 - self.A1)*(self.D0 - self.B0))
-            self.has_area = 1
-        return self.area
-
-    def populate_box(self):
-        cdef int i0, i1
-        cdef float area,value
-        if not self.has_slope:
-            self.init_slope()
-        integrate(self.box, self.B0, self.A0, self.pAB, self.cAB)
-        integrate(self.box, self.A0, self.D0, self.pDA, self.cDA)
-        integrate(self.box, self.D0, self.C0, self.pCD, self.cCD)
-        integrate(self.box, self.C0, self.B0, self.pBC, self.cBC)
-        area = self.calc_area()
-        for i0 in range(self.box_size0):
-            for i1 in range(self.box_size1):
-                value = self.box[i0,i1] / area
-                self.box[i0,i1] = value
-                if value < 0.0:
-                    print self.box
-                    self.box[:, :] = 0
-                    print "AB"
-                    self.integrate(self.B0, self.A0, self.pAB, self.cAB)
-                    print self.box
-                    self.box[:, :] = 0
-                    print "DA"
-                    self.integrate(self.A0, self.D0, self.pDA, self.cDA)
-                    print self.box
-                    self.box[:, :] = 0
-                    print "CD"
-                    self.integrate(self.D0, self.C0, self.pCD, self.cCD)
-                    print self.box
-                    self.box[:, :] = 0
-                    print "BC"
-                    self.integrate(self.C0, self.B0, self.pBC, self.cBC)
-                    print self.box
-                    print self
-                    raise RuntimeError()
-
-    def integrate(self, float start, float stop, float slope, float intercept):
-        cdef int i, h = 0
-        cdef float P,dP, A, AA, dA, sign
-#        print start, stop, calc_area(start, stop)
-        if start < stop:  # positive contribution
-            P = ceil(start)
-            dP = P - start
-#            print "Integrate", start, P, stop, calc_area(start, stop)
-            if P > stop:  # start and stop are in the same unit
-                A = calc_area(start, stop, slope, intercept)
-                if A != 0:
-                    AA = fabs(A)
-                    sign = A / AA
-                    dA = (stop - start)  # always positive
-#                    print AA, sign, dA
-                    h = 0
-                    while AA > 0:
-                        if dA > AA:
-                            dA = AA
-                            AA = -1
-                        self.box[(<int> floor(start)), h] += sign * dA
-                        AA -= dA
-                        h += 1
-            else:
-                if dP > 0:
-                    A = calc_area(start, P, slope, intercept)
-                    if A != 0:
-                        AA = fabs(A)
-                        sign = A / AA
-                        h = 0
-                        dA = dP
-                        while AA > 0:
-                            if dA > AA:
-                                dA = AA
-                                AA = -1
-                            self.box[(<int> floor(P)) - 1, h] += sign * dA
-                            AA -= dA
-                            h += 1
-                # subsection P1->Pn
-                for i in range((<int> floor(P)), (<int> floor(stop))):
-                    A = calc_area(i, i + 1, slope, intercept)
-                    if A != 0:
-                        AA = fabs(A)
-                        sign = A / AA
-
-                        h = 0
-                        dA = 1.0
-                        while AA > 0:
-                            if dA > AA:
-                                dA = AA
-                                AA = -1
-                            self.box[i , h] += sign * dA
-                            AA -= dA
-                            h += 1
-                # Section Pn->B
-                P = floor(stop)
-                dP = stop - P
-                if dP > 0:
-                    A = calc_area(P, stop, slope, intercept)
-                    if A != 0:
-                        AA = fabs(A)
-                        sign = A / AA
-                        h = 0
-                        dA = fabs(dP)
-                        while AA > 0:
-                            if dA > AA:
-                                dA = AA
-                                AA = -1
-                            self.box[(<int> floor(P)), h] += sign * dA
-                            AA -= dA
-                            h += 1
-        elif    start > stop:  # negative contribution. Nota is start=stop: no contribution
-            P = floor(start)
-            if stop > P:  # start and stop are in the same unit
-                A = calc_area(start, stop, slope, intercept)
-                if A != 0:
-                    AA = fabs(A)
-                    sign = A / AA
-                    dA = (start - stop)  # always positive
-                    h = 0
-                    while AA > 0:
-                        if dA > AA:
-                            dA = AA
-                            AA = -1
-                        self.box[(<int> floor(start)), h] += sign * dA
-                        AA -= dA
-                        h += 1
-            else:
-                dP = P - start
-                if dP < 0:
-                    A = calc_area(start, P, slope, intercept)
-                    if A != 0:
-                        AA = fabs(A)
-                        sign = A / AA
-                        h = 0
-                        dA = fabs(dP)
-                        while AA > 0:
-                            if dA > AA:
-                                dA = AA
-                                AA = -1
-                            self.box[(<int> floor(P)) , h] += sign * dA
-                            AA -= dA
-                            h += 1
-                # subsection P1->Pn
-                for i in range((<int> start), (<int> ceil(stop)), -1):
-                    A = calc_area(i, i - 1, slope, intercept)
-                    if A != 0:
-                        AA = fabs(A)
-                        sign = A / AA
-                        h = 0
-                        dA = 1
-                        while AA > 0:
-                            if dA > AA:
-                                dA = AA
-                                AA = -1
-                            self.box[i - 1 , h] += sign * dA
-                            AA -= dA
-                            h += 1
-                # Section Pn->B
-                P = ceil(stop)
-                dP = stop - P
-                if dP < 0:
-                    A = calc_area(P, stop, slope, intercept)
-                    if A != 0:
-                        AA = fabs(A)
-                        sign = A / AA
-                        h = 0
-                        dA = fabs(dP)
-                        while AA > 0:
-                            if dA > AA:
-                                dA = AA; AA = -1
-                            self.box[(<int> floor(stop)), h] += sign * dA
-                            AA -= dA
-                            h += 1
 
 class Distortion(object):
     """
@@ -529,7 +210,7 @@ class Distortion(object):
     It is also able to apply an inversion of the correction.
 
     """
-    def __init__(self, detector="detector", shape=None):
+    def __init__(self, detector="detector", shape=None, compute_device="Host", foo=32): # padding=1):
         """
         @param detector: detector instance or detector name
         """
@@ -537,21 +218,29 @@ class Distortion(object):
             self.detector = detector_factory(detector)
         else:  # we assume it is a Detector instance
             self.detector = detector
-        if shape:
-            self.shape = shape
-        elif "max_shape" in dir(self.detector):
+        if "max_shape" in dir(self.detector):
             self.shape = self.detector.max_shape
+        else:
+            self.shsizeape = shape
         self.shape = tuple([int(i) for i in self.shape])
+        self.bins = self.shape[0] * self.shape[1]
         self._sem = threading.Semaphore()
+        self.bin_size = None
         self.lut_size = None
         self.pos = None
         self.LUT = None
         self.delta0 = self.delta1 = None  # max size of an pixel on a regular grid ...
+        self.integrator = None
+        self.compute_device = compute_device
+        self.workgroup_size = foo
+#        self.padding = padding
 
 
     def __repr__(self):
         return os.linesep.join(["Distortion correction for detector:",
                                 self.detector.__repr__()])
+
+
     def calc_pos(self):
         if self.pos is None:
             with self._sem:
@@ -607,7 +296,14 @@ class Distortion(object):
                                 for k in range(pos0min[i, j],pos0max[i, j]):
                                     for l in range(pos1min[i, j],pos1max[i, j]):
                                         lut_size[k,l] += 1
-                    self.lut_size = lut_size.max()
+                    self.bin_size = lut_size.ravel()
+                    #self.bin_size_padded = numpy.empty(shape=self.bin_size.shape, dtype=numpy.int32)
+                    #for i in range(self.bins):
+                        #self.bin_size_padded[i] = (self.bin_size[i] + self.padding - 1) & ~(self.padding - 1)
+
+                    
+                    #self.lut_size = self.bin_size_padded.sum()
+                    self.lut_size = self.bin_size.sum()
                     return lut_size
 
     @cython.wraparound(False)
@@ -615,16 +311,26 @@ class Distortion(object):
     @cython.cdivision(True)
     def calc_LUT(self):
         cdef int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1, size
-        cdef int offset0, offset1, box_size0, box_size1
+        cdef int offset0, offset1, box_size0, box_size1, bins, tmp_index  #, index_tmp_index
         cdef numpy.int32_t k, idx=0
         cdef float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area, value
 #        cdef numpy.ndarray[numpy.float32_t, ndim = 3]  pos
         cdef float[:,:,:,:] pos
-        cdef numpy.ndarray[lut_point, ndim = 3] lut
+#        cdef numpy.ndarray[lut_point, ndim = 3] lut
         cdef numpy.ndarray[numpy.int32_t, ndim = 2] outMax = numpy.zeros(self.shape, dtype=numpy.int32)
         cdef  float[:,:] buffer
+        cdef numpy.ndarray[numpy.int32_t, ndim = 1] indptr
+        cdef numpy.ndarray[numpy.int32_t, ndim = 1] indices 
+        cdef numpy.ndarray[numpy.float32_t, ndim = 1] data
+        cdef numpy.ndarray[numpy.int32_t, ndim = 1] bin_size
+#        cdef numpy.ndarray[numpy.int32_t, ndim = 1] bin_size_padded
+        
+
         #cdef float[:,:,:] pos
         shape0, shape1 = self.shape
+ 
+        bin_size = self.bin_size
+#        bin_size_padded = self.bin_size_padded
 
         if self.lut_size is None:
             self.calc_LUT_size()
@@ -632,15 +338,25 @@ class Distortion(object):
             with self._sem:
                 if self.LUT is None:
                     pos = self.pos#.reshape(shape0,shape1,4*sizeof(float))
-                    lut = numpy.recarray(shape=(self.shape[0] , self.shape[1], self.lut_size), dtype=[("idx", numpy.int32), ("coef", numpy.float32)])
-                    size = self.shape[0]*self.shape[1]*self.lut_size*sizeof(lut_point)
-                    memset(&lut[0,0,0], 0, size)
-                    logger.info("LUT shape: (%i,%i,%i) %.3f MByte"%(lut.shape[0], lut.shape[1],lut.shape[2],size/1.0e6))
+                    
+                    indices = numpy.zeros(shape=self.lut_size, dtype=numpy.int32)
+                    data = numpy.zeros(shape=self.lut_size, dtype=numpy.float32)
+                    
+                    bins = shape0*shape1
+                    indptr = numpy.zeros(bins+1, dtype=numpy.int32)
+                    #indptr[1:] = self.bin_size_padded.cumsum(dtype=numpy.int32)
+                    indptr[1:] = bin_size.cumsum(dtype=numpy.int32)
+                    
+                    indices_size = self.lut_size*sizeof(numpy.int32)
+                    data_size = self.lut_size*sizeof(numpy.float32)
+                    indptr_size = bins*sizeof(numpy.int32)
+                    
+                    logger.info("CSR matrix: %.3f MByte"%((indices_size+data_size+indptr_size)/1.0e6))
                     buffer = numpy.empty((self.delta0, self.delta1),dtype=numpy.float32)
                     buffer_size = self.delta0 * self.delta1 * sizeof(float)
                     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i"%(buffer.shape[1],buffer.shape[0], self.lut_size))
                     with nogil:
-                        # i,j, idx are indexes of the raw image uncorrected
+                        # i,j, idx are indices of the raw image uncorrected
                         for i in range(shape0):
                             for j in range(shape1):
                                 #reinit of buffer
@@ -702,31 +418,39 @@ class Distortion(object):
                                         value = buffer[ms, ns] / area
                                         if value <= 0:
                                             continue
-                                        k = outMax[ml, nl]
-                                        lut[ml, nl, k].idx = idx
-                                        lut[ml, nl, k].coef = value
-                                        outMax[ml, nl] = k + 1
+                                        k = outMax[ml,nl]
+                                        tmp_index = indptr[ml*shape1+nl]
+                                        indices[tmp_index+k] = idx
+                                        data[tmp_index+k] = value
+                                        outMax[ml,nl] = k + 1
                                 idx += 1
-                    self.LUT = lut.reshape(self.shape[0] * self.shape[1], self.lut_size)
+                        #for i in range(bins):
+                            #tmp_index = indptr[i]
+                            #index_tmp_index = indices[tmp_index + bin_size[i] - 1]
+                            #for j in range(tmp_index + bin_size[i], tmp_index + bin_size_padded[i]):
+                                #indices[j] = index_tmp_index
+                    self.LUT = (data, indices, indptr)
 
     @cython.wraparound(False)
     @cython.boundscheck(False)
-    def correct(self, image):
+    def correctHost(self, image):
         """
         Correct an image based on the look-up table calculated ...
+        Caclulation takes place on the Host
 
         @param image: 2D-array with the image
         @return: corrected 2D image
         """
-        cdef int i,j, lshape0, lshape1, idx, size
-        cdef float coef
-        cdef lut_point[:,:] LUT
-        cdef float[:] lout, lin
+        cdef int i,j, idx, size, bins
+        cdef float coef, tmp
+        cdef float[:] lout, lin, data
+        cdef int[:] indices, indptr
         if self.LUT is None:
             self.calc_LUT()
-        LUT = self.LUT
-        lshape0 = LUT.shape[0]
-        lshape1 = LUT.shape[1]
+        data = self.LUT[0]
+        indices = self.LUT[1]
+        indptr = self.LUT[2]
+        bins = self.bins
         img_shape = image.shape
         if (img_shape[0]<self.shape[0]) or (img_shape[1]<self.shape[1]):
             new_image = numpy.zeros(self.shape, dtype=numpy.float32)
@@ -738,19 +462,69 @@ class Distortion(object):
         lout = out.ravel()
         lin = numpy.ascontiguousarray(image.ravel(),dtype=numpy.float32)
         size = lin.size
-        for i in prange(lshape0, nogil=True, schedule="static"):
-            for j in range(lshape1):
-                idx = LUT[i,j].idx
-                coef = LUT[i,j].coef
+        
+#        cdef threadlocal(int) j = 0
+ #       cdef threadlocal(int) idx = 0
+  #      cdef threadlocal(float) coef = 0.0
+   #     cdef threadlocal(float) tmp = 0.0
+        
+        for i in prange(bins, nogil=True, schedule="static"):
+            for j in range(indptr[i],indptr[i+1]):
+                idx = indices[j]
+                coef = data[j]
                 if coef<=0:
                     continue
                 if idx>=size:
                     with gil:
                         logger.warning("Accessing %i >= %i !!!"%(idx,size))
                         continue
-                lout[i] += lin[idx] * coef
+                tmp = lout[i] + lin[idx] * coef
+                lout[i] = tmp 
         return out[:img_shape[0],:img_shape[1]]
 
+    @cython.wraparound(False)
+    @cython.boundscheck(False)
+    def correctDevice(self, image):
+        """
+        Correct an image based on the look-up table calculated ...
+        Calculation takes place on the device
+
+        @param image: 2D-array with the image
+        @return: corrected 2D image
+        """
+        if self.integrator is None:
+            if self.LUT is None:
+                self.calc_LUT()
+            self.integrator = ocl_azim_csr_dis.OCL_CSR_Integrator(self.LUT, self.bins, "GPU", block_size=self.workgroup_size)
+        img_shape = image.shape
+        if (img_shape[0]<self.shape[0]) or (img_shape[1]<self.shape[1]):
+            new_image = numpy.zeros(self.shape, dtype=numpy.float32)
+            new_image[:img_shape[0],:img_shape[1]] = image
+            image = new_image
+            logger.warning("Patching image as image is %ix%i and spline is %ix%i"%(img_shape[1],img_shape[0],self.shape[1],self.shape[0]))
+
+        out = self.integrator.integrate(image)
+        out[1].shape = self.shape
+        return out[1][:img_shape[0],:img_shape[1]]
+    
+    @cython.wraparound(False)
+    @cython.boundscheck(False)
+    def correct(self, image):
+        if self.compute_device == "Host":
+            out = self.correctHost(image)
+        elif self.compute_device == "Device":
+            out = self.correctDevice(image)
+        else:
+            logger.warning("Please select a compute device (Host or Device)")
+        return out
+        
+        
+    def setHost(self):
+        self.compute_device = "Host"
+        
+    def setDevice(self):
+        self.compute_device = "Device"
+                
     @timeit
     def uncorrect(self, image):
         """
@@ -759,6 +533,8 @@ class Distortion(object):
         @param image: 2D-array with the image
         @return: uncorrected 2D image and a mask (pixels in raw image
         """
+        cdef int[:] indices, indptr
+        cdef float[:] data
         if self.LUT is None:
             with self._sem:
                 if self.LUT is None:
@@ -768,12 +544,18 @@ class Distortion(object):
         lmask = mask.ravel()
         lout = out.ravel()
         lin = image.ravel()
-        tot = self.LUT.coef.sum(axis= -1)
-        for idx in range(self.LUT.shape[0]):
-            t = tot[idx]
-            if t <= 0:
+        
+        data = self.LUT[0]
+        indices = self.LUT[1]
+        indptr = self.LUT[2]
+        bins = self.bins
+        for idx in range(bins):
+            idx1 = indptr[idx]
+            idx2 = indptr[idx+1]
+            if idx1 == idx2:
                 lmask[idx] = 1
                 continue
-            val = lin[idx]/t
-            lout[self.LUT[idx].idx] += val * self.LUT[idx].coef
+            val = lin[idx]/data[idx1:idx2].sum()
+            lout[indices[idx1:idx2]] += val * data[idx1:idx2]
+                               
         return out, mask

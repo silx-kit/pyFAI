@@ -114,6 +114,12 @@ _convolution_dict = dict(name="_convolution",
                     extra_compile_args=[openmp],
                     extra_link_args=[openmp]
                     )
+morphology_dict = dict(name="morphology",
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=[src['morphology']],
+#                    extra_compile_args=[openmp],
+#                    extra_link_args=[openmp]
+                    )
 
 setup(name='histogram',
       version="0.3.0",
@@ -125,7 +131,8 @@ setup(name='histogram',
 #                   Extension(**splitBBoxLUT_dic),
                    Extension(**marchingsquares_dict),
                    Extension(**sparse_csr_dict),
-                   Extension(**_convolution_dict)
+                   Extension(**_convolution_dict),
+                   Extension(**morphology_dict)
                    ],
       cmdclass={'build_ext': build_ext},
       )
