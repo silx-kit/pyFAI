@@ -31,7 +31,7 @@ def make_gaussian(im,sigma,xc,yc):
     return im
 
 @timeit
-def local_max_min(img,prev_dog, cur_dog, next_dog, sigma, mask=None, n_5=True ):
+def local_max_min(prev_dog, cur_dog, next_dog, sigma, mask=None, n_5=True ):
     """
     @param prev_dog, cur_dog, next_dog: 3 subsequent Difference of gaussian
     @param sigma: value of sigma for cur_dog 
@@ -104,11 +104,13 @@ def local_max_min(img,prev_dog, cur_dog, next_dog, sigma, mask=None, n_5=True ):
             
     kpy, kpx = numpy.where(valid_point)
     l = kpx.size
-    keypoints = numpy.empty((l,4),dtype=numpy.float32)
-    keypoints[:, 0] = kpx
-    keypoints[:, 1] = kpy
-    keypoints[:, 2] = sigma
-    keypoints[:, 3] = cur_dog[(kpy, kpx)]
+    dtype = numpy.dtype([('x', numpy.float32), ('y', numpy.float32), ('sigma', numpy.float32), ('I', numpy.float32)])
+    keypoints = numpy.recarray((l,), dtype=dtype)
+    keypoints[:].x = kpx
+    keypoints[:].y = kpy
+    keypoints[:].sigma = sigma
+    keypoints[:].I = cur_dog[(kpy, kpx)]
+    print keypoints
     return keypoints
 
 
@@ -116,7 +118,7 @@ class BlobDetection(object):
     """
     
     """
-    def __init__(self, img, cur_sigma=0.25, init_sigma = 0.25, dest_sigma = 8, scale_per_octave = 6):
+    def __init__(self, img, cur_sigma=0.25, init_sigma=0.25, dest_sigma=8, scale_per_octave=6, mask=None):
         """
         Performs a blob detection:
         http://en.wikipedia.org/wiki/Blob_detection
@@ -127,12 +129,19 @@ class BlobDetection(object):
         @param init_sigma: start searching at this scale (sigma=0.5: 10% interaction with first neighbor)
         @param dest_sigma: sigma at which the resolution is lowered (change of octave)
         @param scale_per_octave: Number of scale to be performed per octave
+        @param mask: mask where pixel are not valid
         """
-        self.raw = numpy.ascontiguousarray(img, dtype=numpy.float32)
+        self.raw = numpy.log(img).astype(numpy.float32)
         self.cur_sigma = float(cur_sigma)
         self.init_sigma = float(init_sigma)
         self.dest_sigma = float(dest_sigma)
         self.scale_per_octave = int(scale_per_octave)
+        if mask:
+            self.mask = mask
+        else:
+            self.mask = (img <= 0).astype(numpy.int8)
+        self.raw[mask] = 0
+
         self.data = None    # current image
         self.sigmas = None  # contains pairs of absolute sigma and relative ones...
         self.blurs = []     # different blurred images
@@ -167,12 +176,17 @@ class BlobDetection(object):
             previous = sigma_abs
 
     @timeit
-    def _one_octave(self):
+    def _one_octave(self, shrink=True, do_SG4=True):
         """
-        Return the blob coordinates for an octave 
+        Return the blob coordinates for an octave
+        
+        @param shrink: perform the image shrinking after the octave processing
+        @param   do_SG4: perform Savitsky-Gollay 4th order fit. 
         """
         x=[]
         y=[]
+        dx=[]
+        dy=[]
         sigmas=[]
         if not self.sigmas:
             self._calc_sigma()
@@ -190,17 +204,33 @@ class BlobDetection(object):
                 
         for i in range(1, self.scale_per_octave + 1):
             sigma = self.sigmas[i][0]
-            self.keypoints.append(local_max_min(img,self.dogs[i - 1], self.dogs[i], self.dogs[i + 1], sigma=sigma, n_5=False))
-            kx = numpy.transpose(self.keypoints[i-1])[0]
-            ky = numpy.transpose(self.keypoints[i-1])[1]
-            kx,ky,sigma,dx,dy = self.refine_SG4(i,kx,ky,sigma)
+            loc_keypoint = local_max_min(self.dogs[i - 1], self.dogs[i], self.dogs[i + 1], sigma=sigma, n_5=False)
+            self.keypoints.append(loc_keypoint)
+
+            if do_SG4:
+                kx, ky, sigma, dlx, dly = self.refine_SG4(i, loc_keypoint[:].x, loc_keypoint[:].y, loc_keypoint[:].sigma)
+            else:
+                kx = loc_keypoint[:].x
+                ky = loc_keypoint[:].y
+                sigma = loc_keypoint[:].sigma
+                dlx = numpy.zeros_like(kx)
+                dly = numpy.zeros_like(ky)
             x.append(kx)
             y.append(ky)
-            sigmas.extend(sigma)
-            print kx.__len__(), ky.__len__(),sigma.__len__()
-        #shrink data so that
-        self.data = binning(self.blurs[self.scale_per_octave], 2)
-        return x,y,dx,dy,sigmas
+            dx.append(dlx)
+            dy.append(dly)
+            sigmas.append(sigma)
+            print(kx.__len__(), ky.__len__(), sigma.__len__())
+
+        if shrink:
+        #shrink data so that they can be treated by next octave
+            self.data = binning(self.blurs[self.scale_per_octave], 2)
+        self.keypoints = numpy.concatenate(self.keypoints)
+        return numpy.concatenate(x), \
+               numpy.concatenate(y), \
+               numpy.concatenate(dx), \
+               numpy.concatenate(dy), \
+               numpy.concatenate(sigmas)
     
   
     def refine_SG4(self,j,kx,ky,sigma):
@@ -269,7 +299,7 @@ class BlobDetection(object):
         return k2x,k2y,sigmas,deltax,deltay
                       
                 
-
+        
 if __name__ == "__main__":
     
     kx=[]
