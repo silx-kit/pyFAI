@@ -209,6 +209,21 @@ _convolution_dic = dict(name="_convolution",
                     extra_link_args=["openmp"]
                     )
 
+_blob_dic = dict(name="_blob",
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=[src['_blob']],
+#                    extra_compile_args=["openmp"],
+#                    extra_link_args=["openmp"]
+                    )
+
+morphology_dic = dict(name="morphology",
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=[src['morphology']],
+#                    extra_compile_args=["openmp"],
+#                    extra_link_args=["openmp"]
+                    )
+
+
 ext_modules = [globals()[i + "_dic"] for i in cython_modules if i + "_dic" in dir()]
 
 

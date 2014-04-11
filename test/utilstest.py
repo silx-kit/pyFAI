@@ -240,6 +240,7 @@ class UtilsTest(object):
             parser.add_argument("-r", "--really-force", dest="remove",
                               help="remove existing build and force the build of the library",
                               default=False, action="store_true")
+            parser.add_argument(dest="args", type=str, nargs='*')
             cls.options = parser.parse_args()
         return cls.options
 
