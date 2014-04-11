@@ -85,8 +85,8 @@ def vertical_convolution(float[:,:] img, float[:] filter):
                 newpos = y + fIndex - HALF_FILTER_SIZE
                 if newpos < 0:
                     newpos = - newpos - 1
-                elif newpos >= IMAGE_W:
-                    newpos = 2*IMAGE_W - newpos - 1
+                elif newpos >= IMAGE_H:
+                    newpos = 2*IMAGE_H - newpos - 1
                 #sum += img[y,newpos] * filter[fIndex]
                 #implement Kahan summation
                 val = img[newpos,x] * filter[fIndex] - err
