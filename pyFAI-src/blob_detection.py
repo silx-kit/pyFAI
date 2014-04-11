@@ -96,8 +96,8 @@ def local_max_min(img,prev_dog, cur_dog, next_dog, sigma, mask=None, n_5=True ):
     else: 
         target=14
            
-    if mask is not None:
-        not_mask = numpy.logical_not(mask[1:-1, 1:-1])
+    if mask is not None: # les points a 1 dans le masque ne seront pas pris en compte
+        not_mask = numpy.logical_not(mask)
         valid_point = numpy.logical_and(not_mask, kpm >= target)
     else:
         valid_point = (kpm >= target)
@@ -116,7 +116,7 @@ class BlobDetection(object):
     """
     
     """
-    def __init__(self, img, cur_sigma=0.25, init_sigma = 0.25, dest_sigma = 8, scale_per_octave = 6):
+    def __init__(self, img, cur_sigma=0.25, init_sigma = 0.5, dest_sigma = 8, scale_per_octave = 8):
         """
         Performs a blob detection:
         http://en.wikipedia.org/wiki/Blob_detection
@@ -140,6 +140,8 @@ class BlobDetection(object):
         self.border_size = 5# size of the border
         self.keypoints = []
         self.delta = []
+#         self.mask = numpy.zeros(self.data.shape)
+#         self.mask[0:100,0:100] = 1
 
     def _initial_blur(self):
         """
@@ -174,11 +176,12 @@ class BlobDetection(object):
         x=[]
         y=[]
         sigmas=[]
+        
         if not self.sigmas:
             self._calc_sigma()
             
         previous = self.data
-        
+
         for sigma_abs, sigma_rel in self.sigmas:
             if  sigma_rel == 0:
                 self.blurs.append(previous)
@@ -195,17 +198,20 @@ class BlobDetection(object):
             ky = numpy.transpose(self.keypoints[i-1])[1]
             kx,ky,sigma,dx,dy = self.refine_SG4(i,kx,ky,sigma)
             x.append(kx)
+            
             y.append(ky)
-            sigmas.extend(sigma)
+            sigmas.append(sigma)
             print kx.__len__(), ky.__len__(),sigma.__len__()
+            
         #shrink data so that
         self.data = binning(self.blurs[self.scale_per_octave], 2)
+#         self.mask = binning(self.mask,2)
         return x,y,dx,dy,sigmas
     
   
     def refine_SG4(self,j,kx,ky,sigma):
         """ Savitzky Golay algorithm to check if a point is really the maximum """
-        print j
+        print j, sigma
         delta=[]
         deltax=[]
         deltay=[]
@@ -217,6 +223,7 @@ class BlobDetection(object):
         prev_dog = self.dogs[j-1]
         curr_dog = self.dogs[j]
         next_dog = self.dogs[j+1]
+        
         #savitsky golay ordre 4 patch 5
         SGX0Y0 = [0.04163265,-0.08081633,0.07836735,-0.08081633,0.04163265,-0.08081633,-0.01959184,0.20081633,-0.01959184,-0.08081633,0.07836735,0.20081633,0.44163265,0.20081633,0.07836735,-0.08081633,-0.01959184,0.20081633,-0.01959184,-0.08081633,0.04163265,-0.08081633,0.07836735,-0.08081633,0.04163265]
         SGX1Y0 = [0.07380952,-0.10476190,0.00000000,0.10476190,-0.07380952,-0.01190476,-0.14761905,0.00000000,0.14761905,0.01190476,-0.04047619,-0.16190476,0.00000000,0.16190476,0.04047619,-0.01190476,-0.14761905,0.00000000,0.14761905,0.01190476,0.07380952,-0.10476190,0.00000000,0.10476190,-0.07380952]
@@ -259,7 +266,7 @@ class BlobDetection(object):
                 delta = (numpy.dot(numpy.linalg.inv(lap),[dy,dx,ds]))
                 err = numpy.linalg.norm(delta[:-1])
            
-                if  err < numpy.sqrt(2) and numpy.abs(dx) < 1 and numpy.abs(dy) < 1 :
+                if  err < numpy.sqrt(2.0) and abs(delta[0]) < 1 and abs(delta[1]) < 1 :
                     k2x.append(x-delta[1])
                     k2y.append(y-delta[0])
                     sigmas.append(sigma-delta[2])
@@ -268,7 +275,41 @@ class BlobDetection(object):
                     
         return k2x,k2y,sigmas,deltax,deltay
                       
-                
+    def Otsu(self,sigma):
+        
+            #building histogram with the corrected sigmas
+        sigma = numpy.asarray(sigma)
+        pylab.figure(2)
+        pylab.clf()
+        pylab.hist(sigma, bins = 1000)
+        pylab.show()
+         
+        h = pylab.hist(sigma, bins = 1000)
+        n = h[0].__len__()
+        Proba = h[0]/float(numpy.sum(h[0]))
+        
+        max = 0.0
+        
+        for cpt in range( n ):
+            Proba1 = Proba[: cpt]
+            Proba2 = Proba[cpt :]        
+            P1 = numpy.sum(Proba1)
+            P2 = numpy.sum(Proba2)
+            
+            n1 = numpy.arange(cpt)
+            n2 = numpy.arange(cpt,n)        
+            Moy1 = sum( n1 * Proba1)/P1
+            Moy2 = sum( n2 * Proba2)/P2
+            
+            VarInterC = P1*P2*(Moy1-Moy2)**2
+            
+            if VarInterC > max : 
+                max = VarInterC
+                index = cpt
+               
+        print 'sigma pour la separation'
+        print h[1][index]
+        return h[1][index]
 
 if __name__ == "__main__":
     
@@ -281,59 +322,18 @@ if __name__ == "__main__":
     
 
     import fabio,pylab
-#     img = fabio.open("../test/testimages/LaB6_0003.mar3450").data
-#     img = fabio.open("../test/testimages/grid2k0000.edf").data
-    img = fabio.open("../test/testimages/halfccd.edf").data
-    img = numpy.log1p(img)
-#     img = img[img.shape[0]/2-256:img.shape[0]/2+256,img.shape[1]/2-256:img.shape[1]/2+256]
+#     img = fabio.open("../../testimages/LaB6_0003.mar3450").data
+#     img = fabio.open("../../testimages/grid2k0000.edf").data
+    img = fabio.open("../../testimages/halfccd.edf").data
+#     img = numpy.log1p(img)
+#     img = img[img.shape[0]/2-400:img.shape[0]/2+400,img.shape[1]/2-400:img.shape[1]/2+400]
 #     img = image_test()
 
     bd = BlobDetection(img)
     kx,ky,dx,dy,sigma = bd._one_octave()
+    sigma = numpy.concatenate(sigma)
     print bd.sigmas
     
-    #building histogram with the corrected sigmas
-    sigma = numpy.asarray(sigma)
-    pylab.figure(2)
-    pylab.clf()
-    pylab.hist(sigma, bins = 500)
-    pylab.show()
-    
-    
-    h = pylab.hist(sigma, bins = 500)
-    n = h[0].__len__()
-    Proba = h[0]/float(numpy.sum(h[0]))
-#     print Proba.size,numpy.max(Proba)
-    
-    max = 0.0
-#     print n
-    
-    for cpt in range( n ):
-#         print cpt
-        Proba1 = Proba[: cpt]
-        Proba2 = Proba[cpt :]        
-        P1 = numpy.sum(Proba1)
-        P2 = numpy.sum(Proba2)
-#         print P1,P2
-        
-        n1 = numpy.arange(cpt)
-        n2 = numpy.arange(cpt,n)        
-        Moy1 = sum( n1 * Proba1)/P1
-        Moy2 = sum( n2 * Proba2)/P2
-#         print "Moyennes"
-#         print Moy1,Moy2
-        
-        VarInterC = P1*P2*(Moy1-Moy2)**2
-#         print "Variance IC"
-#         print VarInterC
-        
-        if VarInterC > max : 
-            max = VarInterC
-            index = cpt
-           
-#     print max,cpt
-    print 'sigma pour la separation'
-    print h[1][index]
 #  building arrays x and y containing all the coordinates of the keypoints, only for vizualisation
     x=[]
     y=[]
@@ -344,11 +344,31 @@ if __name__ == "__main__":
         y.extend(numpy.transpose(k)[1])
          
      
-    print x.__len__(), y.__len__(), kx.__len__(), ky.__len__()
+    print x.__len__(), y.__len__()
+    
+    sigma_lim = bd.Otsu(sigma)
     
     pylab.figure(1)
     pylab.clf()
-    pylab.imshow((img),interpolation='nearest')
+    pylab.imshow(numpy.log(img),interpolation='nearest')
     pylab.plot(x,y,'or')
     pylab.show()
-     
+    
+    
+    pylab.figure(3)
+    pylab.clf()
+    pylab.imshow(numpy.log(img),interpolation='nearest')
+    x2=numpy.concatenate(kx)
+    y2=numpy.concatenate(ky)
+    print x2.__len__(), y2.__len__()
+    pylab.plot(x2,y2,'or')
+    pylab.show()
+    
+    
+    pylab.figure(4)
+    pylab.clf()
+    pylab.imshow(numpy.log(img),interpolation='nearest')
+    mask = numpy.where(sigma>sigma_lim)
+    print x2[mask].__len__(), y2[mask].__len__()
+    pylab.plot(x2[mask],y2[mask],'or')
+    pylab.show()    
