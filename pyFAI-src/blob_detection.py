@@ -265,12 +265,14 @@ class BlobDetection(object):
         if shrink:
             #shrink data so that they can be treated by next octave
             print("In shrink")
+            
             self.data = binning(self.blurs[self.scale_per_octave], 2) / 4.0
             self.sigma_octave *= 2
             if self.do_mask:
                 self.cur_mask = binning(self.cur_mask, 2).astype(numpy.int8) / 4
                 self.cur_mask = morphology.binary_dilation(self.cur_mask, self.grow)
-
+        print keypoints
+        print self.keypoints
         self.keypoints = numpy.concatenate((self.keypoints, keypoints))
 #        return numpy.concatenate(x), \
 #               numpy.concatenate(y), \
