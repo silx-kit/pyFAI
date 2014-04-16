@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/09/2013"
+__date__ = "04/04/2014"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -129,7 +129,10 @@ class AzimuthalIntegrator(Geometry):
         >>> regrouped = ai.integrate2d(data, nbPt_rad, nbPt_azim, unit="q_nm^-1")[0]
     """
 
-    def __init__(self, dist=1, poni1=0, poni2=0, rot1=0, rot2=0, rot3=0, pixel1=None, pixel2=None, splineFile=None, detector=None, wavelength=None):
+    def __init__(self, dist=1, poni1=0, poni2=0,
+                 rot1=0, rot2=0, rot3=0,
+                 pixel1=None, pixel2=None,
+                 splineFile=None, detector=None, wavelength=None):
         """
         @param dist: distance sample - detector plan (orthogonal distance, not along the beam), in meter.
         @type dist: float
@@ -187,10 +190,13 @@ class AzimuthalIntegrator(Geometry):
         Geometry.reset(self)
         with self._ocl_sem:
             self._ocl_integrator = None
+            self._ocl_csr_integr = None
         with self._lut_sem:
             self._lut_integrator = None
+            self._csr_integrator = None
 
-    def makeMask(self, data, mask=None, dummy=None, delta_dummy=None, mode="normal"):
+    def makeMask(self, data, mask=None,
+                 dummy=None, delta_dummy=None, mode="normal"):
         """
         Combines various masks into another one.
 
@@ -291,7 +297,9 @@ class AzimuthalIntegrator(Geometry):
             return data, None
 
 
-    def xrpd_numpy(self, data, nbPt, filename=None, correctSolidAngle=True, tthRange=None, mask=None, dummy=None, delta_dummy=None, polarization_factor=None, dark=None, flat=None):
+    def xrpd_numpy(self, data, nbPt, filename=None, correctSolidAngle=True,
+                   tthRange=None, mask=None, dummy=None, delta_dummy=None,
+                   polarization_factor=None, dark=None, flat=None):
         """
         Calculate the powder diffraction pattern from a set of data,
         an image.
@@ -396,7 +404,10 @@ class AzimuthalIntegrator(Geometry):
                     dark, flat, polarization_factor)
         return tthAxis, I
 
-    def xrpd_cython(self, data, nbPt, filename=None, correctSolidAngle=True, tthRange=None, mask=None, dummy=None, delta_dummy=None, polarization_factor=None, dark=None, flat=None, pixelSize=None):
+    def xrpd_cython(self, data, nbPt, filename=None, correctSolidAngle=True,
+                    tthRange=None, mask=None, dummy=None, delta_dummy=None,
+                    polarization_factor=None, dark=None, flat=None,
+                    pixelSize=None):
         """
         Calculate the powder diffraction pattern from a set of data,
         an image.
@@ -450,7 +461,10 @@ class AzimuthalIntegrator(Geometry):
                     dark, flat, polarization_factor)
         return tthAxis, I
 
-    def xrpd_splitBBox(self, data, nbPt, filename=None, correctSolidAngle=True, tthRange=None, mask=None, dummy=None, delta_dummy=None, polarization_factor=None, dark=None, flat=None, chiRange=None):
+    def xrpd_splitBBox(self, data, nbPt, filename=None, correctSolidAngle=True,
+                       tthRange=None, chiRange=None, mask=None,
+                       dummy=None, delta_dummy=None,
+                       polarization_factor=None, dark=None, flat=None):
         """
         Calculate the powder diffraction pattern from a set of data,
         an image.
@@ -602,7 +616,11 @@ class AzimuthalIntegrator(Geometry):
         self.save1D(filename, tthAxis, I, None, "2th_deg", dark, flat, polarization_factor)
         return tthAxis, I
 
-    def xrpd_splitPixel(self, data, nbPt, filename=None, correctSolidAngle=True, tthRange=None, mask=None, dummy=None, delta_dummy=None, polarization_factor=None, dark=None, flat=None, chiRange=None):
+    def xrpd_splitPixel(self, data, nbPt,
+                        filename=None, correctSolidAngle=True,
+                        tthRange=None, chiRange=None, mask=None,
+                        dummy=None, delta_dummy=None,
+                        polarization_factor=None, dark=None, flat=None):
         """
         Calculate the powder diffraction pattern from a set of data,
         an image.
@@ -738,7 +756,11 @@ class AzimuthalIntegrator(Geometry):
     # Default implementation:
     xrpd = xrpd_splitBBox
 
-    def xrpd_OpenCL(self, data, nbPt, filename=None, correctSolidAngle=True, tthRange=None, mask=None, dummy=None, delta_dummy=None, dark=None, flat=None, devicetype="gpu", useFp64=True, platformid=None, deviceid=None, safe=True):
+    def xrpd_OpenCL(self, data, nbPt, filename=None, correctSolidAngle=True,
+                    dark=None, flat=None,
+                    tthRange=None, mask=None, dummy=None, delta_dummy=None,
+                    devicetype="gpu", useFp64=True,
+                    platformid=None, deviceid=None, safe=True):
         """
         Calculate the powder diffraction pattern from a set of data,
         an image.
@@ -927,7 +949,9 @@ class AzimuthalIntegrator(Geometry):
         self.save1D(filename, tthAxis, I, None, "2th_deg")  # , dark, flat, polarization_factor)
         return tthAxis, I
 
-    def setup_LUT(self, shape, nbPt, mask=None,pos0_range=None, pos1_range=None, mask_checksum=None, unit=units.TTH):
+    def setup_LUT(self, shape, nbPt, mask=None,
+                  pos0_range=None, pos1_range=None, mask_checksum=None,
+                  unit=units.TTH):
         """
         Prepare a look-up-table
 
@@ -1114,7 +1138,10 @@ class AzimuthalIntegrator(Geometry):
                                             unit=unit,
                                             padding=padding)
 
-    def xrpd_LUT(self, data, nbPt, filename=None, correctSolidAngle=True, tthRange=None, mask=None, dummy=None, delta_dummy=None, dark=None, flat=None, chiRange=None, safe=True):
+    def xrpd_LUT(self, data, nbPt, filename=None, correctSolidAngle=True,
+                 tthRange=None, chiRange=None, mask=None,
+                 dummy=None, delta_dummy=None,
+                 safe=True, dark=None, flat=None):
         """
         Calculate the powder diffraction pattern from an image.
 
@@ -1224,7 +1251,12 @@ class AzimuthalIntegrator(Geometry):
                                 unit="2th_deg",
                                 safe=safe)
 
-    def xrpd_LUT_OCL(self, data, nbPt, filename=None, correctSolidAngle=True, tthRange=None, mask=None, dummy=None, delta_dummy=None, dark=None, flat=None, chiRange=None, safe=True, devicetype="all", platformid=None, deviceid=None):
+    def xrpd_LUT_OCL(self, data, nbPt, filename=None, correctSolidAngle=True,
+                     tthRange=None, chiRange=None, mask=None,
+                     dummy=None, delta_dummy=None,
+                     safe=True, devicetype="all",
+                     platformid=None, deviceid=None, dark=None, flat=None):
+
         """
         Calculate the powder diffraction pattern from a set of data,
         an image.
@@ -1491,7 +1523,11 @@ class AzimuthalIntegrator(Geometry):
                                 block_size=32,
                                 padded=False)
 
-    def xrpd2_numpy(self, data, nbPt2Th, nbPtChi=360, filename=None, correctSolidAngle=True, dark=None, flat=None, tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None):
+    def xrpd2_numpy(self, data, nbPt2Th, nbPtChi=360,
+                    filename=None, correctSolidAngle=True,
+                    dark=None, flat=None,
+                    tthRange=None, chiRange=None,
+                    mask=None, dummy=None, delta_dummy=None):
         """
         Calculate the 2D powder diffraction pattern (2Theta, Chi) from
         a set of data, an image
@@ -1594,7 +1630,11 @@ class AzimuthalIntegrator(Geometry):
 
         return I, bins2Th, binsChi
 
-    def xrpd2_histogram(self, data, nbPt2Th, nbPtChi=360, filename=None, correctSolidAngle=True, dark=None, flat=None, tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None):
+    def xrpd2_histogram(self, data, nbPt2Th, nbPtChi=360,
+                        filename=None, correctSolidAngle=True,
+                        dark=None, flat=None,
+                        tthRange=None, chiRange=None, mask=None,
+                        dummy=None, delta_dummy=None):
         """
         Calculate the 2D powder diffraction pattern (2Theta,Chi) from
         a set of data, an image
@@ -1706,7 +1746,11 @@ class AzimuthalIntegrator(Geometry):
         self.save2D(filename, I, bins2Th, binsChi)  # , dark, flat, polarization_factor)
         return I, bins2Th, binsChi
 
-    def xrpd2_splitBBox(self, data, nbPt2Th, nbPtChi=360, filename=None, correctSolidAngle=True, tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None, polarization_factor=None, dark=None, flat=None):
+    def xrpd2_splitBBox(self, data, nbPt2Th, nbPtChi=360,
+                        filename=None, correctSolidAngle=True,
+                        tthRange=None, chiRange=None, mask=None,
+                        dummy=None, delta_dummy=None,
+                        polarization_factor=None, dark=None, flat=None):
         """
         Calculate the 2D powder diffraction pattern (2Theta,Chi) from
         a set of data, an image
@@ -1846,7 +1890,11 @@ class AzimuthalIntegrator(Geometry):
                     polarization_factor=polarization_factor)
         return I, bins2Th, binsChi
 
-    def xrpd2_splitPixel(self, data, nbPt2Th, nbPtChi=360, filename=None, correctSolidAngle=True, tthRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None, polarization_factor=None, dark=None, flat=None):
+    def xrpd2_splitPixel(self, data, nbPt2Th, nbPtChi=360,
+                         filename=None, correctSolidAngle=True,
+                         tthRange=None, chiRange=None, mask=None,
+                         dummy=None, delta_dummy=None,
+                         polarization_factor=None, dark=None, flat=None):
         """
         Calculate the 2D powder diffraction pattern (2Theta,Chi) from
         a set of data, an image
@@ -2010,7 +2058,14 @@ class AzimuthalIntegrator(Geometry):
         out = Geometry.__dict__[unit[typ]](self, shape)
         return out
 
-    def integrate1d(self, data, nbPt, filename=None, correctSolidAngle=True, variance=None, error_model=None, radial_range=None, azimuth_range=None, mask=None, dummy=None, delta_dummy=None, polarization_factor=None, dark=None, flat=None, method="lut", unit=units.Q, safe=True, normalization_factor=None, block_size=32, padded=False):
+    def integrate1d(self, data, nbPt, filename=None,
+                    correctSolidAngle=True,
+                    variance=None, error_model=None,
+                    radial_range=None, azimuth_range=None,
+                    mask=None, dummy=None, delta_dummy=None,
+                    polarization_factor=None, dark=None, flat=None,
+                    method="lut", unit=units.Q, safe=True, normalization_factor=None, block_size=32,
+                    profile=False):
         """
         Calculate the azimuthal integrated Saxs curve in q(nm^-1) by
         default
@@ -2154,21 +2209,20 @@ class AzimuthalIntegrator(Geometry):
                              (min(azimuth_range), max(azimuth_range) * EPS32)):
                         reset = ("azimuth_range requested and"
                                  " LUT's azimuth_range don't match")
-                error = False
                 if reset:
                     logger.info("AI.integrate1d: Resetting integrator because %s" % reset)
                     try:
                         self._lut_integrator = self.setup_LUT(shape, nbPt, mask,
                                                               radial_range, azimuth_range,
                                                               mask_checksum=mask_crc, unit=unit)
-                        error = False
                     except MemoryError:  # LUT method is hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
+                        self._lut_integrator = None
                         self._ocl_lut_integr = None
                         gc.collect()
                         method = "splitbbox"
-                        error = True
-                if not error:
+
+                if self._lut_integrator:
                     if ("ocl" in method) and ocl_azim_lut:
                         with self._ocl_lut_sem:
                             if "," in method:
@@ -2276,27 +2330,19 @@ class AzimuthalIntegrator(Geometry):
                              (min(azimuth_range), max(azimuth_range) * EPS32)):
                         reset = ("azimuth_range requested and"
                                  " CSR's azimuth_range don't match")
-                error = False
                 if reset:
                     logger.info("AI.integrate1d: Resetting integrator because %s" % reset)
                     try:
-                        if padded is True:
-                            self._csr_integrator = self.setup_CSR(shape, nbPt, mask,
-                                                                  radial_range, azimuth_range,
-                                                                  mask_checksum=mask_crc, unit=unit,
-                                                                  padding = workgroup_size)
-                        else:
-                            self._csr_integrator = self.setup_CSR(shape, nbPt, mask,
-                                                                  radial_range, azimuth_range,
-                                                                  mask_checksum=mask_crc, unit=unit)
-                        error = False
+                        self._csr_integrator = self.setup_CSR(shape, nbPt, mask,
+                                                              radial_range, azimuth_range,
+                                                              mask_checksum=mask_crc, unit=unit)
                     except MemoryError:  # LUT method is hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
                         self._ocl_csr_integr = None
+                        self._csr_integrator = None
                         gc.collect()
-                        method = "ocl_lut"
-                        error = True
-                if not error:
+                        method = "splitbbox"
+                if self._csr_integrator:
                     if ("ocl" in method) and ocl_azim_csr:
                         with self._ocl_csr_sem:
                             if "," in method:
@@ -2324,7 +2370,8 @@ class AzimuthalIntegrator(Geometry):
                                                                                        platformid=platformid,
                                                                                        deviceid=deviceid,
                                                                                        checksum=self._csr_integrator.lut_checksum,
-                                                                                       padded=padded, block_size=block_size)
+                                                                                       padded=False,block_size=block_size,
+                                                                                       profile=profile)
                             I, _, _ = self._ocl_csr_integr.integrate(data, dark=dark, flat=flat,
                                                                      solidAngle=solidangle,
                                                                      solidAngle_checksum=self._dssa_crc,
@@ -2362,7 +2409,7 @@ class AzimuthalIntegrator(Geometry):
             if splitPixel is None:
                 logger.warning("SplitPixel is not available,"
                                " falling back on splitbbox histogram !")
-                method = "bbox"
+                method = "splitbbox"
             else:
                 logger.debug("integrate1d uses SplitPixel implementation")
                 pos = self.array_from_unit(shape, "corner", unit)
@@ -2439,7 +2486,8 @@ class AzimuthalIntegrator(Geometry):
                                                            )
                     sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
 
-        if I is None: #Common part for  Numpy and Cython
+        if I is None:
+            #Common part for  Numpy and Cython
             data = data.astype(numpy.float32)
             mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
             pos0 = self.array_from_unit(shape, "center", unit)
@@ -2512,14 +2560,21 @@ class AzimuthalIntegrator(Geometry):
             if sigma is not None:
                 sigma /= normalization_factor
 
-        self.save1D(filename, qAxis, I, sigma, unit, dark, flat, polarization_factor, normalization_factor)
+        self.save1D(filename, qAxis, I, sigma, unit,
+                    dark, flat, polarization_factor, normalization_factor)
 
         if sigma is not None:
             return qAxis, I, sigma
         else:
             return qAxis, I
 
-    def integrate2d(self, data, nbPt_rad, nbPt_azim=360, filename=None, correctSolidAngle=True, variance=None, error_model=None, radial_range=None, azimuth_range=None, mask=None, dummy=None, delta_dummy=None, polarization_factor=None, dark=None, flat=None, method="bbox", unit=units.Q, safe=True, normalization_factor=None):
+    def integrate2d(self, data, nbPt_rad, nbPt_azim=360,
+                    filename=None, correctSolidAngle=True, variance=None,
+                    error_model=None, radial_range=None, azimuth_range=None,
+                    mask=None, dummy=None, delta_dummy=None,
+                    polarization_factor=None, dark=None, flat=None,
+                    method="bbox", unit=units.Q, safe=True,
+                    normalization_factor=None):
         """
         Calculate the azimuthal regrouped 2d image in q(nm^-1)/deg by default
 
@@ -2825,7 +2880,12 @@ class AzimuthalIntegrator(Geometry):
             return I, bins_rad, bins_azim
 
 
-    def saxs(self, data, nbPt, filename=None, correctSolidAngle=True, variance=None, error_model=None, qRange=None, chiRange=None, mask=None, dummy=None, delta_dummy=None, polarization_factor=None, dark=None, flat=None, method="bbox", unit=units.Q):
+    def saxs(self, data, nbPt, filename=None,
+             correctSolidAngle=True, variance=None,
+             error_model=None, qRange=None, chiRange=None,
+             mask=None, dummy=None, delta_dummy=None,
+             polarization_factor=None, dark=None, flat=None,
+             method="bbox", unit=units.Q):
         """
         Calculate the azimuthal integrated Saxs curve in q in nm^-1.
 
@@ -2885,7 +2945,8 @@ class AzimuthalIntegrator(Geometry):
         else:
             return out
 
-    def makeHeaders(self, hdr="#", dark=None, flat=None, polarization_factor=None, normalization_factor=None):
+    def makeHeaders(self, hdr="#", dark=None, flat=None,
+                    polarization_factor=None, normalization_factor=None):
         """
         @param hdr: string used as comment in the header
         @type hdr: str
@@ -2939,7 +3000,8 @@ class AzimuthalIntegrator(Geometry):
             self.header = os.linesep.join([hdr + " " + i for i in headerLst])
         return self.header
 
-    def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH, dark=None, flat=None, polarization_factor=None, normalization_factor=None):
+    def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH,
+               dark=None, flat=None, polarization_factor=None, normalization_factor=None):
         """
         @param filename: the filename used to save the 1D integration
         @type filename: str
@@ -2978,7 +3040,8 @@ class AzimuthalIntegrator(Geometry):
                     f.write(os.linesep.join(["%14.6e  %14.6e %14.6e" % (t, i, s) for t, i, s in zip(dim1, I, error)]))
                 f.write(os.linesep)
 
-    def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH, dark=None, flat=None, polarization_factor=None, normalization_factor=None):
+    def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH,
+               dark=None, flat=None, polarization_factor=None, normalization_factor=None):
         """
         @param filename: the filename used to save the 2D histogram
         @type filename: str

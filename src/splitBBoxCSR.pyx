@@ -122,7 +122,7 @@ class HistoBBox1d(object):
         self.lut_checksum = crc32(self.data)
         self.unit=unit
         self.lut=(self.data,self.indices,self.indptr)
-        
+        self.lut_nbytes = sum([i.nbytes for i in self.lut])
 
     def __del__(self):
         print("destructor called")
