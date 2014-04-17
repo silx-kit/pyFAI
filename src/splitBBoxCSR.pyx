@@ -701,7 +701,7 @@ class HistoBBox2d(object):
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
             memsize =  os.sysconf("SC_PAGE_SIZE")*os.sysconf("SC_PHYS_PAGES")
             if memsize <  lut_nbytes:
-                raise MemoryError("Lookup-table (%i, %i, %i) is %.3fGB whereas the memory of the system is only %s"%(bins0, bins1, lut_size, lut_nbytes, memsize))
+                raise MemoryError("CSR Matrix is %.3fGB whereas the memory of the system is only %s"%(lut_nbytes, memsize))
         #else hope we have enough memory
         data = numpy.zeros(self.nnz,dtype=numpy.float32)
         indices = numpy.zeros(self.nnz,dtype=numpy.int32)
@@ -756,7 +756,6 @@ class HistoBBox2d(object):
                         deltaA = 1.0 / (fbin1_max - fbin1_min)
 
                         k = outMax[bin0_min, bin1_min]
-                        
                         indices[indptr[bin0_min*bins1+bin1_min]+k] = idx
                         data[indptr[bin0_min*bins1+bin1_min]+k] = deltaA * deltaD
 #                        lut[bin0_min, bin1_min, k].idx = idx
@@ -765,7 +764,7 @@ class HistoBBox2d(object):
 
                         k = outMax[bin0_min, bin1_max]
                         indices[indptr[bin0_min*bins1+bin1_max]+k] = idx
-                        data[indptr[bin0_min*bins1+bin1_max]+k] = deltaA * deltaD
+                        data[indptr[bin0_min*bins1+bin1_max]+k] = deltaA * deltaU
 #                        lut[bin0_min, bin1_max, k].idx = idx
 #                        lut[bin0_min, bin1_max, k].coef =  deltaA * deltaU
                         outMax[bin0_min, bin1_max] = k + 1
@@ -786,7 +785,7 @@ class HistoBBox2d(object):
 
                         k = outMax[bin0_min, bin1_min]
                         indices[indptr[bin0_min*bins1+bin1_min]+k] = idx
-                        data[indptr[bin0_min*bins1+bin1_min]+k] = deltaA * deltaD
+                        data[indptr[bin0_min*bins1+bin1_min]+k] = deltaA * deltaL
 #                        lut[bin0_min, bin1_min, k].idx = idx
 #                        lut[bin0_min, bin1_min, k].coef =  deltaA * deltaL
                         outMax[bin0_min, bin1_min] = k+1
@@ -795,7 +794,7 @@ class HistoBBox2d(object):
 
                         k = outMax[bin0_max, bin1_min]
                         indices[indptr[bin0_max*bins1+bin1_min]+k] = idx
-                        data[indptr[bin0_max*bins1+bin1_min]+k] = deltaA * deltaD
+                        data[indptr[bin0_max*bins1+bin1_min]+k] = deltaA * deltaR
 #                        lut[bin0_max, bin1_min, k].idx = idx
 #                        lut[bin0_max, bin1_min, k].coef =  deltaA * deltaR
                         outMax[bin0_max, bin1_min] = k + 1
