@@ -2064,7 +2064,8 @@ class AzimuthalIntegrator(Geometry):
                     radial_range=None, azimuth_range=None,
                     mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=None, dark=None, flat=None,
-                    method="lut", unit=units.Q, safe=True, normalization_factor=None):
+                    method="lut", unit=units.Q, safe=True, normalization_factor=None, block_size=32,
+                    profile=False):
         """
         Calculate the azimuthal integrated Saxs curve in q(nm^-1) by
         default
@@ -2369,7 +2370,8 @@ class AzimuthalIntegrator(Geometry):
                                                                                        platformid=platformid,
                                                                                        deviceid=deviceid,
                                                                                        checksum=self._csr_integrator.lut_checksum,
-                                                                                       padded=False)
+                                                                                       padded=False,block_size=block_size,
+                                                                                       profile=profile)
                             I, _, _ = self._ocl_csr_integr.integrate(data, dark=dark, flat=flat,
                                                                      solidAngle=solidangle,
                                                                      solidAngle_checksum=self._dssa_crc,
@@ -2750,6 +2752,101 @@ class AzimuthalIntegrator(Geometry):
                             bins_azim = self._lut_integrator.outPos1
                     else:
                         I, bins_rad, bins_azim, _, _ = self._lut_integrator.integrate(data, dark=dark, flat=flat,
+                                                                                      solidAngle=solidangle,
+                                                                                      dummy=dummy,
+                                                                                      delta_dummy=delta_dummy,
+                                                                                      polarization=polarization)
+
+        if (I is None) and ("csr" in method):
+            logger.debug("in csr")
+            mask_crc = None
+            with self._lut_sem:
+                reset = None
+                if self._csr_integrator is None:
+                    reset = "init"
+                    if mask is None:
+                        mask = self.detector.mask
+                        mask_crc = self.detector._mask_crc
+                    else:
+                        mask_crc = crc32(mask)
+                if (not reset) and safe:
+                    if mask is None:
+                        mask = self.detector.mask
+                        mask_crc = self.detector._mask_crc
+                    else:
+                        mask_crc = crc32(mask)
+                    if self._csr_integrator.unit != unit:
+                        reset = "unit changed"
+                    if self._csr_integrator.bins != nbPt:
+                        reset = "number of points changed"
+                    if self._csr_integrator.size != data.size:
+                        reset = "input image size changed"
+                    if (mask is not None) and (not self._csr_integrator.check_mask):
+                        reset = "mask but CSR was without mask"
+                    elif (mask is None) and (self._csr_integrator.check_mask):
+                        reset = "no mask but CSR has mask"
+                    elif (mask is not None) and (self._csr_integrator.mask_checksum != mask_crc):
+                        reset = "mask changed"
+                    if (radial_range is None) and (self._csr_integrator.pos0Range is not None):
+                        reset = "radial_range was defined in CSR"
+                    elif (radial_range is not None) and self._csr_integrator.pos0Range != (min(radial_range), max(radial_range) * EPS32):
+                        reset = "radial_range is defined but not the same as in CSR"
+                    if (azimuth_range is None) and (self._csr_integrator.pos1Range is not None):
+                        reset = "azimuth_range not defined and CSR had azimuth_range defined"
+                    elif (azimuth_range is not None) and self._csr_integrator.pos1Range != (min(azimuth_range), max(azimuth_range) * EPS32):
+                        reset = "azimuth_range requested and CSR's azimuth_range don't match"
+                error = False
+                if reset:
+                    logger.info("AI.integrate2d: Resetting integrator because %s" % reset)
+                    try:
+                        self._csr_integrator = self.setup_CSR(shape, nbPt, mask, radial_range, azimuth_range, mask_checksum=mask_crc, unit=unit)
+                        error = False
+                    except MemoryError: 
+                        logger.warning("MemoryError: falling back on forward implementation")
+                        self._ocl_csr_integr = None
+                        gc.collect()
+                        method = "splitbbox"
+                        error = True
+                if not error:  # not yet implemented...
+                    if  ("ocl" in method) and ocl_azim_lut:
+                        with self._ocl_lut_sem:
+                            if "," in method:
+                                c = method.index(",")
+                                platformid = int(method[c - 1])
+                                deviceid = int(method[c + 1])
+                                devicetype = "all"
+                            elif "gpu" in method:
+                                platformid = None
+                                deviceid = None
+                                devicetype = "gpu"
+                            elif "cpu" in method:
+                                platformid = None
+                                deviceid = None
+                                devicetype = "cpu"
+                            else:
+                                platformid = None
+                                deviceid = None
+                                devicetype = "all"
+                            if (self._ocl_csr_integr is None) or (self._ocl_csr_integr.on_device["data"] != self._csr_integrator.lut_checksum):
+                                self._ocl_csr_integr = ocl_azim_csr.OCL_CSR_Integrator(self._csr_integrator.lut,
+                                                                                       self._csr_integrator.size,
+                                                                                       devicetype=devicetype,
+                                                                                       platformid=platformid,
+                                                                                       deviceid=deviceid,
+                                                                                       checksum=self._csr_integrator.lut_checksum)
+                            I, _, _ = self._ocl_csr_integr.integrate(data, dark=dark, flat=flat,
+                                                                     solidAngle=solidangle,
+                                                                     solidAngle_checksum=self._dssa_crc,
+                                                                     dummy=dummy,
+                                                                     delta_dummy=delta_dummy,
+                                                                     polarization=polarization,
+                                                                     polarization_checksum=self._polarization_crc)
+                            I.shape = nbPt
+                            I = I.T
+                            bins_rad = self._csr_integrator.outPos0  # this will be copied later
+                            bins_azim = self._csr_integrator.outPos1
+                    else:
+                        I, bins_rad, bins_azim, _, _ = self._csr_integrator.integrate(data, dark=dark, flat=flat,
                                                                                       solidAngle=solidangle,
                                                                                       dummy=dummy,
                                                                                       delta_dummy=delta_dummy,

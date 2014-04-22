@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/kif/pyFAI
+#             https://forge.epn-campus.eu/projects/azimuthal
+#
+#    File: "$Id$"
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -24,21 +26,30 @@
 
 #
 import cython
-import os, sys
+import os
+import sys
+#import time
+from cpython.ref cimport PyObject, Py_XDECREF
 from cython.parallel import prange
-from libc.string cimport memset
+from libc.string cimport memset,memcpy
+#from libc.stdlib cimport malloc, free 
+from cython cimport view
 import numpy
 cimport numpy
 from libc.math cimport fabs, M_PI
-cdef float pi = <float> M_PI 
-cdef float onef = <float> 1.0
+from libcpp.vector cimport vector
+
+cdef float pi=<float> M_PI 
+cdef struct lut_point:
+    numpy.int32_t idx
+    numpy.float32_t coef
+dtype_lut=numpy.dtype([("idx",numpy.int32),("coef",numpy.float32)])
 try:
     from fastcrc import crc32
 except:
     from zlib import crc32
-EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
-
-
+cdef double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
+cdef bint NEED_DECREF = sys.version_info<(2,7) and numpy.version.version<"1.5"
 @cython.cdivision(True)
 cdef inline float getBinNr( float x0, float pos0_min, float delta) nogil:
     """
@@ -51,14 +62,12 @@ cdef inline float getBinNr( float x0, float pos0_min, float delta) nogil:
 
 class HistoBBox1d(object):
     """
-    Now uses CSR (Compressed Sparse raw) with main attributes:
-    * nnz: number of non zero elements
-    * data: coefficient of the matrix in a 1D vector of float32
-    * indices: Column index position for the data (same size as  
-    * indptr: row pointer indicates the start of a given row. len nrow+1
+    1D histogramming with pixel splitting based on a Look-up table
     
-    Nota: nnz = indptr[-1]
+    The initialization of the class can take quite a while (operation are not parallelized)
+    but each integrate is parallelized and quite efficient. 
     """
+
     @cython.boundscheck(False)
     def __init__(self,
                  pos0,
@@ -71,8 +80,7 @@ class HistoBBox1d(object):
                  mask=None,
                  mask_checksum=None,
                  allow_pos0_neg=False,
-                 unit="undefined",
-                 padding=False):
+                 unit="undefined"):
         """
         @param pos0: 1D array with pos0: tth or q_vect or r ...
         @param delta_pos0: 1D array with delta pos0: max center-corner distance
@@ -84,10 +92,8 @@ class HistoBBox1d(object):
         @param mask: array (of int8) with masked pixels with 1 (0=not masked)
         @param allow_pos0_neg: enforce the q<0 is usually not possible  
         @param unit: can be 2th_deg or r_nm^-1 ...
-        @param padding: pad CSR array to a given multiple of given number (16,32, ...)
         """
 
-        self.padding = int(padding)
         self.size = pos0.size
         assert delta_pos0.size == self.size
         self.bins = bins
@@ -104,7 +110,7 @@ class HistoBBox1d(object):
         else:
             self.check_mask = False
             self.mask_checksum = None
-        self.data = self.nnz = self.indices = self.indptr = None
+
         self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=numpy.float32)
         self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=numpy.float32)
         self.cpos0_sup = numpy.empty_like(self.cpos0) #self.cpos0 + self.dpos0
@@ -125,19 +131,29 @@ class HistoBBox1d(object):
             self.check_pos1 = False
             self.cpos1_min = None
             self.pos1_max = None
-
+            
         self.delta = (self.pos0_max - self.pos0_min) / bins
-        self.calc_lut()
+        self._lut=None
+        self.lut_max_idx = None
+        self.calc_lut()   
         self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, self.pos0_maxin-0.5*self.delta, self.bins)
-        self.lut_checksum = crc32(self.data)
+        self.lut_checksum = None
         self.unit=unit
-        self.lut=(self.data,self.indices,self.indptr)
-        self.lut_nbytes = sum([i.nbytes for i in self.lut])
-                   
+        self.csr_data = None
+        self.csr_indices = None
+        self.csr_indptr = None
+#        self.generate_csr()
+ #       self.generate_csr_padded()
+#        self.generate_lut_csr()
+        
+
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def calc_boundaries(self,pos0Range):
-        cdef int size = self.cpos0.size
+        """
+        Called by constructor to calculate the boundaries and the bin position 
+        """
+        cdef numpy.int32_t size = self.cpos0.size
         cdef bint check_mask = self.check_mask
         cdef numpy.int8_t[:] cmask
         cdef float[:] cpos0, dpos0, cpos0_sup, cpos0_inf,
@@ -184,19 +200,20 @@ class HistoBBox1d(object):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def calc_lut(self):
-        '''
-        calculate the max number of elements in the LUT and populate it
-        
-        '''
+        'calculate the max number of elements in the LUT and populate it'
         cdef float delta=self.delta, pos0_min=self.pos0_min, pos1_min, pos1_max, min0, max0, fbin0_min, fbin0_max, deltaL, deltaR, deltaA
-        cdef numpy.int32_t k,idx, i, j, tmp_index, index_tmp_index, bin0_min, bin0_max, bins = self.bins, size #same as numpy.uint32
+        cdef numpy.int32_t k,idx, bin0_min, bin0_max, bins = self.bins, lut_size, i, size
         cdef bint check_mask, check_pos1
         cdef numpy.ndarray[numpy.int32_t, ndim = 1] outMax = numpy.zeros(bins, dtype=numpy.int32)
-        cdef numpy.ndarray[numpy.int32_t, ndim = 1] indptr = numpy.zeros(bins+1, dtype=numpy.int32)
-        cdef numpy.ndarray[numpy.int32_t, ndim = 1] indices 
-        cdef numpy.ndarray[numpy.float32_t, ndim = 1] data
-        cdef float[:] cpos0_sup = self.cpos0_sup, cpos0_inf = self.cpos0_inf, cpos1_min, cpos1_max,
-                      
+        cdef float[:] cpos0_sup = self.cpos0_sup
+        cdef float[:] cpos0_inf = self.cpos0_inf
+        cdef float[:] cpos1_min, cpos1_max
+#        cdef numpy.float32_t[:,:] lutcoef
+#        cdef int[:,:] lutidx 
+        cdef vector[vector[lut_point]] lut
+        lut.resize(bins)
+        cdef lut_point tmp
+        #cdef lut_point[:,:] lut
         cdef numpy.int8_t[:] cmask
         size = self.size
         if self.check_mask:
@@ -223,68 +240,12 @@ class HistoBBox1d(object):
                 max0 = cpos0_sup[idx]
 
                 if check_pos1 and ((cpos1_max[idx] < pos1_min) or (cpos1_min[idx] > pos1_max)):
-                    continue
-
-                fbin0_min = getBinNr(min0, pos0_min, delta)
-                fbin0_max = getBinNr(max0, pos0_min, delta)
-                bin0_min = < int > fbin0_min
-                bin0_max = < int > fbin0_max
-
-                if (bin0_max < 0) or (bin0_min >= bins):
-                    continue
-                if bin0_max >= bins :
-                    bin0_max = bins - 1
-                if  bin0_min < 0:
-                    bin0_min = 0
-
-                if bin0_min == bin0_max:
-                    #All pixel is within a single bin
-                    outMax[bin0_min] += 1
-
-                else: #we have pixel splitting.
-                    for i in range(bin0_min, bin0_max + 1):
-                        outMax[i] += 1
-                        
-
-        if self.padding:
-            outMax_padded = self.padding*((outMax + (self.padding - 1))//(self.padding))
-            self.nnz = outMax_padded.sum()
-            self.nnz_actual = outMax.sum()
-        else:
-            self.nnz = self.nnz_actual = outMax.sum()
-            outMax_padded = outMax
-        indptr[1:] = outMax_padded.cumsum(dtype=numpy.int32)
-        self.indptr = indptr
-
-
-        #just recycle the outMax array
-        memset(&outMax[0], 0, bins * sizeof(numpy.int32_t))
-
-        lut_nbytes = indptr[bins]*(sizeof(numpy.int32_t)+sizeof(numpy.float32_t))
-        if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
-            memsize =  os.sysconf("SC_PAGE_SIZE")*os.sysconf("SC_PHYS_PAGES")
-            if memsize <  lut_nbytes:
-                raise MemoryError("CSR Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %.3fGB"%(bins,self.nnz,1.0*lut_nbytes/2**30,1.0*memsize/2**30))
-        #else hope we have enough memory
-        data = numpy.empty(indptr[bins],dtype=numpy.float32)
-        indices = numpy.empty(indptr[bins],dtype=numpy.int32)
-
-        #NOGIL
-        with nogil:
-            for idx in range(size):
-                if (check_mask) and (cmask[idx]):
-                    continue
-
-                min0 = cpos0_inf[idx]
-                max0 = cpos0_sup[idx]
-
-                if check_pos1 and ((cpos1_max[idx] < pos1_min) or (cpos1_min[idx] > pos1_max)):
                         continue
 
                 fbin0_min = getBinNr(min0, pos0_min, delta)
                 fbin0_max = getBinNr(max0, pos0_min, delta)
-                bin0_min = < int > fbin0_min
-                bin0_max = < int > fbin0_max
+                bin0_min = < numpy.int32_t > fbin0_min
+                bin0_max = < numpy.int32_t > fbin0_max
 
                 if (bin0_max < 0) or (bin0_min >= bins):
                     continue
@@ -296,9 +257,10 @@ class HistoBBox1d(object):
                 if bin0_min == bin0_max:
                     #All pixel is within a single bin
                     k = outMax[bin0_min]
-                    indices[indptr[bin0_min]+k] = idx
-                    data[indptr[bin0_min]+k] = onef
-                    outMax[bin0_min] += 1 #k+1
+                    tmp.idx = idx
+                    tmp.coef = 1.0
+                    lut[bin0_min].push_back(tmp)
+                    outMax[bin0_min] += 1
                 else: #we have pixel splitting.
                     deltaA = 1.0 / (fbin0_max - fbin0_min)
 
@@ -306,36 +268,137 @@ class HistoBBox1d(object):
                     deltaR = fbin0_max - (bin0_max)
 
                     k = outMax[bin0_min]
-                    indices[indptr[bin0_min]+k] = idx
-                    data[indptr[bin0_min]+k] = (deltaA * deltaL)
+                    tmp.idx = idx
+                    tmp.coef = deltaA * deltaL
+                    lut[bin0_min].push_back(tmp)
                     outMax[bin0_min] += 1
 
                     k = outMax[bin0_max]
-                    indices[indptr[bin0_max]+k] = idx
-                    data[indptr[bin0_max]+k] = (deltaA * deltaR)                    
+                    tmp.idx = idx
+                    tmp.coef = deltaA * deltaR
+                    lut[bin0_max].push_back(tmp)
                     outMax[bin0_max] += 1
 
                     if bin0_min + 1 < bin0_max:
                         for i in range(bin0_min + 1, bin0_max):
                             k = outMax[i]
-                            indices[indptr[i]+k] = idx
-                            data[indptr[i]+k] = (deltaA)
+                            tmp.idx = idx
+                            tmp.coef = deltaA
+                            lut[i].push_back(tmp)
                             outMax[i] += 1
-                            
-                            
-# At this point i could have stopped, but I continue to fill the padding in the indices 
-# array with the last nz value, so that when the kernel is called, no extra "bad" memory 
-# accesses will take place on the image array...
-        if self.padding:
-            for i in range(bins):
-                tmp_index = indptr[i]
-                index_tmp_index = indices[tmp_index + outMax[i] - 1]
-                for j in range(tmp_index + outMax[i], tmp_index + outMax_padded[i]):
-                    indices[j] = index_tmp_index
-                    data[j] = 0.0
-                    
-        self.data = data
-        self.indices = indices
+        
+        self.lut_max_idx = outMax
+        self._lut = lut 
+        
+    def get_lut(self):
+        """Getter for the LUT as actual numpy array""" 
+        cdef int rc_before, rc_after
+        rc_before = sys.getrefcount(self._lut)
+        cdef lut_point[:,:] lut = self._lut
+        rc_after = sys.getrefcount(self._lut)
+        cdef bint need_decref = NEED_DECREF and ((rc_after-rc_before)>=2)
+        cdef numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary = numpy.empty(shape=self._lut.shape, dtype=numpy.float64)
+        memcpy(&tmp_ary[0,0], &lut[0,0], self._lut.nbytes)
+        self.lut_checksum = crc32(tmp_ary)
+
+        #Ugly against bug#89
+        if need_decref and (sys.getrefcount(self._lut)>=rc_before+2):
+            print("Decref needed")
+            Py_XDECREF(<PyObject *> self._lut)
+
+#        return tmp_ary.view(dtype=dtype_lut)
+        return numpy.core.records.array(tmp_ary.view(dtype=dtype_lut),
+                                        shape=self._lut.shape,dtype=dtype_lut,
+                                        copy=True)
+
+    lut = property(get_lut)         
+
+    
+    #@cython.boundscheck(True)  # For testing
+    #def generate_csr(self):
+        #cdef int nnz = self.lut_max_idx.sum()
+        #cdef lut_point tmp
+        #cdef int i, j, running_index
+        
+        #data = numpy.empty(shape=nnz, dtype=numpy.float32)
+        #indices = numpy.empty(shape=nnz, dtype=numpy.int32)
+        #indptr = numpy.empty(shape=self.bins+1, dtype=numpy.int32)
+
+        #running_index = 0
+        #for i in range(self.bins):
+            #indptr[i] = running_index
+            #for j in range(self.lut_max_idx[i]):
+                #tmp = self._lut[i, j]
+                #data[running_index] = tmp.coef
+                #indices[running_index] = tmp.idx
+                #running_index += 1
+        #indptr[-1] = nnz
+        #self.csr_data = data
+        #self.csr_indices = indices
+        #self.csr_indptr = indptr
+
+
+    #@cython.boundscheck(True)  # For testing
+    #def generate_csr_padded(self, workgroup_size):
+        #cdef int nnz=0
+        #cdef lut_point tmp
+        #cdef int i, j, running_index
+        
+        
+        #lut_max_idx_padded = numpy.empty(shape=self.bins, dtype=numpy.int32)
+        #for i in range(self.bins):
+            #lut_max_idx_padded[i] = (self.lut_max_idx[i] + workgroup_size - 1) & ~(workgroup_size - 1)
+        #nnz = lut_max_idx_padded.sum()
+        
+        #data = numpy.empty(shape=nnz, dtype=numpy.float32)
+        #indices = numpy.empty(shape=nnz, dtype=numpy.int32)
+        #indptr = numpy.empty(shape=self.bins+1, dtype=numpy.int32)
+
+        #running_index = 0
+        #for i in range(self.bins):
+            #indptr[i] = running_index
+            #for j in range(lut_max_idx_padded[i]):
+                #if j < self.lut_max_idx[i]:
+                    #tmp = self._lut[i, j]
+                    #data[running_index] = tmp.coef
+                    #indices[running_index] = tmp.idx
+                    #running_index += 1
+                #else:
+                    #data[running_index] = 0
+                    #indices[running_index] = tmp.idx
+                    #running_index += 1
+        #indptr[-1] = nnz
+        #self.csr_padded_data = data
+        #self.csr_padded_indices = indices
+        #self.csr_padded_indptr = indptr
+        #max_width = lut_max_idx_padded.max()
+        #return max_width
+
+        
+        
+    #def generate_lut_csr(self):
+        #cdef int nnz = self.bins * self.lut_max_idx.max()
+        #cdef lut_point tmp
+        #cdef int i, j, running_index
+        
+        #data = numpy.empty(shape=nnz, dtype=numpy.float32)
+        #indices = numpy.empty(shape=nnz, dtype=numpy.int32)
+        #indptr = numpy.empty(shape=self.bins+1, dtype=numpy.int32)
+
+        #running_index = 0
+        #for i in range(self.bins):
+            #indptr[i] = running_index
+            #for j in range(self.lut_max_idx.max()):
+                #tmp = self._lut[i, j]
+                #data[running_index] = tmp.coef
+                #indices[running_index] = tmp.idx
+                #running_index += 1
+        #indptr[-1] = nnz
+        #self.lut_csr_data = data
+        #self.lut_csr_indices = indices
+        #self.lut_csr_indptr = indptr
+
+        
 
 
     @cython.cdivision(True)
@@ -363,18 +426,25 @@ class HistoBBox1d(object):
         @rtype: 4-tuple of ndarrays
 
         """
-        cdef numpy.int32_t i=0, j=0, idx=0, bins=self.bins, size=self.size
-        cdef double sum_data=0.0, sum_count=0.0, epsilon=1e-10
+        cdef numpy.int32_t i=0, j=0, idx=0, bins=self.bins, lut_size=self.lut_size, size=self.size
+        cdef double sum_data=0, sum_count=0, epsilon=1e-10
         cdef float data=0, coef=0, cdummy=0, cddummy=0
         cdef bint do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
-        cdef float[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-                      
-        cdef numpy.int32_t[:] indices = self.indices, indptr = self.indptr
+        cdef float[:] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
+
+        #Ugly hack against bug #89: https://github.com/kif/pyFAI/issues/89
+        cdef int rc_before, rc_after
+        rc_before = sys.getrefcount(self._lut)
+        cdef vector[ vector[lut_point] ] lut = self._lut
+        rc_after = sys.getrefcount(self._lut)
+        cdef bint need_decref = NEED_DECREF & ((rc_after-rc_before)>=2)
+
+
         assert size == weights.size
-        
+
         if dummy is not None:
             do_dummy = True
             cdummy =  <float>float(dummy)
@@ -443,18 +513,19 @@ class HistoBBox1d(object):
                         cdata[i]+=cdummy
             else:
                 cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-        
+        #TODO: what is the best: static or guided ?
         for i in prange(bins, nogil=True, schedule="guided"):
             sum_data = 0.0
             sum_count = 0.0
-            for j in range(indptr[i],indptr[i+1]):
-                idx = indices[j]
-                coef = ccoef[j]
-                if coef == 0.0:
+            for j in range(lut[i].size()):
+                idx = lut[i][j].idx
+                coef = lut[i][j].coef
+                if idx <= 0 and coef <= 0.0:
                     continue
                 data = cdata[idx]
                 if do_dummy and data==cdummy:
                     continue
+
                 sum_data = sum_data + coef * data
                 sum_count = sum_count + coef
             outData[i] += sum_data
@@ -463,6 +534,11 @@ class HistoBBox1d(object):
                 outMerge[i] += sum_data / sum_count
             else:
                 outMerge[i] += cdummy
+        
+        #Ugly against bug#89
+        if need_decref and (sys.getrefcount(self._lut)>=rc_before+2):
+            print("Decref needed")
+            Py_XDECREF(<PyObject *> self._lut)
         return  self.outPos, outMerge, outData, outCount
 
 
@@ -472,21 +548,27 @@ class HistoBBox1d(object):
 ################################################################################
 
 class HistoBBox2d(object):
+    """
+    2D histogramming with pixel splitting based on a look-up table
+    
+    The initialization of the class can take quite a while (operation are not parallelized)
+    but each integrate is parallelized and quite efficient. 
+    """
     @cython.boundscheck(False)
     def __init__(self,
-                    pos0,
-                    delta_pos0,
-                    pos1,
-                    delta_pos1,
-                    bins=(100,36),
-                    pos0Range=None,
-                    pos1Range=None,
-                    mask=None,
-                    mask_checksum=None,
-                    allow_pos0_neg=False,
-                    unit="undefined",
-                    chiDiscAtPi=True
-                    ):
+                 pos0,
+                 delta_pos0,
+                 pos1,
+                 delta_pos1,
+                 bins=(100,36),
+                 pos0Range=None,
+                 pos1Range=None,
+                 mask=None,
+                 mask_checksum=None,
+                 allow_pos0_neg=False,
+                 unit="undefined",
+                 chiDiscAtPi=True
+                 ):
         """
         @param pos0: 1D array with pos0: tth or q_vect
         @param delta_pos0: 1D array with delta pos0: max center-corner distance
@@ -498,8 +580,9 @@ class HistoBBox2d(object):
         @param mask: array (of int8) with masked pixels with 1 (0=not masked)
         @param allow_pos0_neg: enforce the q<0 is usually not possible  
         @param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
+        @param unit: can be 2th_deg or r_nm^-1 ...
         """
-        cdef int i, size, bin0, bin1
+        cdef numpy.int32_t i, size, bin0, bin1
         self.size = pos0.size
         assert delta_pos0.size == self.size
         assert pos1.size == self.size
@@ -528,8 +611,7 @@ class HistoBBox2d(object):
         else:
             self.check_mask = False
             self.mask_checksum = None
-            
-        self.data = self.nnz = self.indices = self.indptr = None
+
         self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=numpy.float32)
         self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=numpy.float32)
         self.cpos0_sup = numpy.empty_like(self.cpos0)
@@ -544,17 +626,23 @@ class HistoBBox2d(object):
         self.calc_boundaries(pos0Range, pos1Range)
         self.delta0 = (self.pos0_max - self.pos0_min) / float(bins0)
         self.delta1 = (self.pos1_max - self.pos1_min) / float(bins1)
-        self.lut_max_idx = self.calc_lut()
+        self.lut_max_idx = None 
+        self._lut = None
+        self.calc_lut()
         self.outPos0 = numpy.linspace(self.pos0_min+0.5*self.delta0, self.pos0_maxin-0.5*self.delta0, bins0)
         self.outPos1 = numpy.linspace(self.pos1_min+0.5*self.delta1, self.pos1_maxin-0.5*self.delta1, bins1)
         self.unit=unit
-        self.lut=(self.data,self.indices,self.indptr)
-        self.lut_checksum = crc32(self.data)
+        self._lut_checksum = None #Calculated at export time to python
+
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def calc_boundaries(self, pos0Range, pos1Range):
-        cdef int size = self.cpos0.size
+        """
+        Called by constructor to calculate the boundaries and the bin position 
+        """
+
+        cdef numpy.int32_t size = self.cpos0.size
         cdef bint check_mask = self.check_mask
         cdef numpy.int8_t[:] cmask
         cdef float[:] cpos0, dpos0, cpos0_sup, cpos0_inf
@@ -641,8 +729,8 @@ class HistoBBox2d(object):
         'calculate the max number of elements in the LUT and populate it'
         cdef float delta0=self.delta0, pos0_min=self.pos0_min, min0, max0, fbin0_min, fbin0_max
         cdef float delta1=self.delta1, pos1_min=self.pos1_min, min1, max1, fbin1_min, fbin1_max
-        cdef int bin0_min, bin0_max, bins0 = self.bins[0]
-        cdef int bin1_min, bin1_max, bins1 = self.bins[1]
+        cdef numpy.int32_t bin0_min, bin0_max, bins0 = self.bins[0]
+        cdef numpy.int32_t bin1_min, bin1_max, bins1 = self.bins[1]
         cdef numpy.int32_t k, idx, lut_size, i, j, size=self.size
         cdef bint check_mask
         cdef float[:] cpos0_sup = self.cpos0_sup
@@ -650,9 +738,8 @@ class HistoBBox2d(object):
         cdef float[:] cpos1_inf = self.cpos1_inf
         cdef float[:] cpos1_sup = self.cpos1_sup
         cdef numpy.ndarray[numpy.int32_t, ndim = 2] outMax = numpy.zeros((bins0,bins1), dtype=numpy.int32)
-        cdef numpy.ndarray[numpy.int32_t, ndim = 1] indptr = numpy.zeros((bins0*bins1)+1, dtype=numpy.int32)
-        cdef numpy.ndarray[numpy.int32_t, ndim = 1] indices 
-        cdef numpy.ndarray[numpy.float32_t, ndim = 1] data
+#        cdef numpy.ndarray[lut_point, ndim = 3] lut
+        cdef lut_point[:,:,:] lut
         cdef numpy.int8_t[:] cmask
         if self.check_mask:
             cmask = self.cmask
@@ -660,7 +747,7 @@ class HistoBBox2d(object):
         else:
             check_mask = False
 
-    #NOGIL
+#NOGIL
         with nogil:
             for idx in range(size):
                 if (check_mask) and (cmask[idx]):
@@ -671,11 +758,11 @@ class HistoBBox2d(object):
                 min1 = cpos1_inf[idx]
                 max1 = cpos1_sup[idx]
 
-                bin0_min = < int > getBinNr(min0, pos0_min, delta0)
-                bin0_max = < int > getBinNr(max0, pos0_min, delta0)
+                bin0_min = < numpy.int32_t > getBinNr(min0, pos0_min, delta0)
+                bin0_max = < numpy.int32_t > getBinNr(max0, pos0_min, delta0)
 
-                bin1_min = < int > getBinNr(min1, pos1_min, delta1)
-                bin1_max = < int > getBinNr(max1, pos1_min, delta1)
+                bin1_min = < numpy.int32_t > getBinNr(min1, pos1_min, delta1)
+                bin1_max = < numpy.int32_t > getBinNr(max1, pos1_min, delta1)
 
                 if (bin0_max < 0) or (bin0_min >= bins0) or (bin1_max < 0) or (bin1_min >= bins1):
                     continue
@@ -693,24 +780,22 @@ class HistoBBox2d(object):
                     for j in range(bin1_min , bin1_max+1):
                         outMax[i, j] +=  1
 
-        self.nnz = outMax.sum()
-        indptr[1:] = outMax.cumsum()
-        self.indptr = indptr
-#        self.lut_size = lut_size = outMax.max()
+        self.lut_size = lut_size = outMax.max()
         #just recycle the outMax array
         #outMax = numpy.zeros((bins0,bins1), dtype=numpy.int32)
         memset(&outMax[0,0], 0, bins0*bins1*sizeof(numpy.int32_t))
 
-        lut_nbytes = self.nnz * (sizeof(numpy.float32_t)+sizeof(numpy.int32_t)) + bins0*bins1*sizeof(numpy.int32_t)
+        lut_nbytes = bins0 * bins1 * lut_size * sizeof(lut_point)
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
             memsize =  os.sysconf("SC_PAGE_SIZE")*os.sysconf("SC_PHYS_PAGES")
             if memsize <  lut_nbytes:
-                raise MemoryError("CSR Matrix is %.3fGB whereas the memory of the system is only %s"%(lut_nbytes, memsize))
+                raise MemoryError("Lookup-table (%i, %i, %i) is %.3fGB whereas the memory of the system is only %s"%(bins0, bins1, lut_size, lut_nbytes, memsize))
         #else hope we have enough memory
-        data = numpy.zeros(self.nnz,dtype=numpy.float32)
-        indices = numpy.zeros(self.nnz,dtype=numpy.int32)
+        lut = view.array(shape=(bins0, bins1, lut_size),itemsize=sizeof(lut_point), format="if")
 #        lut = numpy.recarray(shape=(bins0, bins1, lut_size),dtype=[("idx",numpy.int32),("coef",numpy.float32)])
-#        memset(&lut[0,0,0], 0, lut_nbytes)
+        memset(&lut[0,0,0], 0, lut_nbytes)
+        
+        #NOGIL
         with nogil:
             for idx in range(size):
                 if (check_mask) and cmask[idx]:
@@ -747,10 +832,8 @@ class HistoBBox2d(object):
                     if bin1_min == bin1_max:
                         #All pixel is within a single bin
                         k = outMax[bin0_min, bin1_min]
-                        indices[indptr[bin0_min*bins1+bin1_min]+k] = idx
-                        data[indptr[bin0_min*bins1+bin1_min]+k] = onef
-#                        lut[bin0_min, bin1_min, k].idx = idx
-#                        lut[bin0_min, bin1_min, k].coef = onef
+                        lut[bin0_min, bin1_min, k].idx = idx
+                        lut[bin0_min, bin1_min, k].coef = 1.0
                         outMax[bin0_min, bin1_min]= k+1
 
                     else:
@@ -760,26 +843,20 @@ class HistoBBox2d(object):
                         deltaA = 1.0 / (fbin1_max - fbin1_min)
 
                         k = outMax[bin0_min, bin1_min]
-                        indices[indptr[bin0_min*bins1+bin1_min]+k] = idx
-                        data[indptr[bin0_min*bins1+bin1_min]+k] = deltaA * deltaD
-#                        lut[bin0_min, bin1_min, k].idx = idx
-#                        lut[bin0_min, bin1_min, k].coef =  deltaA * deltaD
-                        outMax[bin0_min, bin1_min] = k + 1
+                        lut[bin0_min, bin1_min, k].idx = idx
+                        lut[bin0_min, bin1_min, k].coef =  deltaA * deltaD
+                        outMax[bin0_min, bin1_min] += 1
 
                         k = outMax[bin0_min, bin1_max]
-                        indices[indptr[bin0_min*bins1+bin1_max]+k] = idx
-                        data[indptr[bin0_min*bins1+bin1_max]+k] = deltaA * deltaU
-#                        lut[bin0_min, bin1_max, k].idx = idx
-#                        lut[bin0_min, bin1_max, k].coef =  deltaA * deltaU
-                        outMax[bin0_min, bin1_max] = k + 1
+                        lut[bin0_min, bin1_max, k].idx = idx
+                        lut[bin0_min, bin1_max, k].coef =  deltaA * deltaU
+                        outMax[bin0_min, bin1_max] += 1
 
                         for j in range(bin1_min + 1, bin1_max):
                             k = outMax[bin0_min, j]
-                            indices[indptr[bin0_min*bins1+j]+k] = idx
-                            data[indptr[bin0_min*bins1+j]+k] = deltaA
-#                            lut[bin0_min, j, k].idx = idx
-#                            lut[bin0_min, j, k].coef =  deltaA
-                            outMax[bin0_min, j] = k + 1
+                            lut[bin0_min, j, k].idx = idx
+                            lut[bin0_min, j, k].coef =  deltaA
+                            outMax[bin0_min, j] += 1
 
                 else: #spread on more than 2 bins in dim 0
                     if bin1_min == bin1_max:
@@ -788,28 +865,22 @@ class HistoBBox2d(object):
                         deltaL = (< float > (bin0_min + 1)) - fbin0_min
 
                         k = outMax[bin0_min, bin1_min]
-                        indices[indptr[bin0_min*bins1+bin1_min]+k] = idx
-                        data[indptr[bin0_min*bins1+bin1_min]+k] = deltaA * deltaL
-#                        lut[bin0_min, bin1_min, k].idx = idx
-#                        lut[bin0_min, bin1_min, k].coef =  deltaA * deltaL
+                        lut[bin0_min, bin1_min, k].idx = idx
+                        lut[bin0_min, bin1_min, k].coef =  deltaA * deltaL
                         outMax[bin0_min, bin1_min] = k+1
 
                         deltaR = fbin0_max - (< float > bin0_max)
 
                         k = outMax[bin0_max, bin1_min]
-                        indices[indptr[bin0_max*bins1+bin1_min]+k] = idx
-                        data[indptr[bin0_max*bins1+bin1_min]+k] = deltaA * deltaR
-#                        lut[bin0_max, bin1_min, k].idx = idx
-#                        lut[bin0_max, bin1_min, k].coef =  deltaA * deltaR
-                        outMax[bin0_max, bin1_min] = k + 1
+                        lut[bin0_max, bin1_min, k].idx = idx
+                        lut[bin0_max, bin1_min, k].coef =  deltaA * deltaR
+                        outMax[bin0_max, bin1_min] += 1
 
                         for i in range(bin0_min + 1, bin0_max):
                             k = outMax[i, bin1_min]
-                            indices[indptr[i*bins1+bin1_min]+k] = idx
-                            data[indptr[i*bins1+bin1_min]+k] = deltaA
-#                            lut[i, bin1_min ,k].idx = idx
-#                            lut[i, bin1_min, k].coef =  deltaA
-                            outMax[i, bin1_min] = k + 1
+                            lut[i, bin1_min ,k].idx = idx
+                            lut[i, bin1_min, k].coef =  deltaA
+                            outMax[i, bin1_min] += 1
 
                     else:
                         #spread on n pix in dim0 and m pixel in dim1:
@@ -820,74 +891,79 @@ class HistoBBox2d(object):
                         deltaA = 1.0 / ((fbin0_max - fbin0_min) * (fbin1_max - fbin1_min))
 
                         k = outMax[bin0_min, bin1_min]
-                        indices[indptr[bin0_min*bins1+bin1_min]+k] = idx
-                        data[indptr[bin0_min*bins1+bin1_min]+k] = deltaA * deltaL * deltaD
-#                        lut[bin0_min, bin1_min ,k].idx = idx
-#                        lut[bin0_min, bin1_min, k].coef =  deltaA * deltaL * deltaD
-                        outMax[bin0_min, bin1_min] = k + 1
+                        lut[bin0_min, bin1_min ,k].idx = idx
+                        lut[bin0_min, bin1_min, k].coef =  deltaA * deltaL * deltaD
+                        outMax[bin0_min, bin1_min] += 1
 
                         k = outMax[bin0_min, bin1_max]
-                        indices[indptr[bin0_min*bins1+bin1_max]+k] = idx
-                        data[indptr[bin0_min*bins1+bin1_max]+k] = deltaA * deltaL * deltaU
-#                        lut[bin0_min, bin1_max, k].idx = idx
-#                        lut[bin0_min, bin1_max, k].coef =  deltaA * deltaL * deltaU
-                        outMax[bin0_min, bin1_max] = k + 1
+                        lut[bin0_min, bin1_max, k].idx = idx
+                        lut[bin0_min, bin1_max, k].coef =  deltaA * deltaL * deltaU
+                        outMax[bin0_min, bin1_max] += 1
 
                         k = outMax[bin0_max, bin1_min]
-                        indices[indptr[bin0_max*bins1+bin1_min]+k] = idx
-                        data[indptr[bin0_max*bins1+bin1_min]+k] = deltaA * deltaR * deltaD
-#                        lut[bin0_max, bin1_min, k].idx = idx
-#                        lut[bin0_max, bin1_min, k].coef =  deltaA * deltaR * deltaD
-                        outMax[bin0_max, bin1_min] = k + 1
+                        lut[bin0_max, bin1_min, k].idx = idx
+                        lut[bin0_max, bin1_min, k].coef =  deltaA * deltaR * deltaD
+                        outMax[bin0_max, bin1_min] += 1
 
                         k = outMax[bin0_max, bin1_max]
-                        indices[indptr[bin0_max*bins1+bin1_max]+k] = idx
-                        data[indptr[bin0_max*bins1+bin1_max]+k] = deltaA * deltaR * deltaU
-#                        lut[bin0_max, bin1_max, k].idx = idx
-#                        lut[bin0_max, bin1_max, k].coef =  deltaA * deltaR * deltaU
-                        outMax[bin0_max, bin1_max] = k + 1
+                        lut[bin0_max, bin1_max, k].idx = idx
+                        lut[bin0_max, bin1_max, k].coef =  deltaA * deltaR * deltaU
+                        outMax[bin0_max, bin1_max] += 1
 
                         for i in range(bin0_min + 1, bin0_max):
                             k = outMax[i, bin1_min]
-                            indices[indptr[i*bins1+bin1_min]+k] = idx
-                            data[indptr[i*bins1+bin1_min]+k] = deltaA * deltaD
-#                            lut[i, bin1_min, k].idx = idx
-#                            lut[i, bin1_min, k].coef =  deltaA * deltaD
-                            outMax[i, bin1_min] = k + 1
+                            lut[i, bin1_min, k].idx = idx
+                            lut[i, bin1_min, k].coef =  deltaA * deltaD
+                            outMax[i, bin1_min] += 1
 
                             for j in range(bin1_min + 1, bin1_max):
                                 k = outMax[i, j]
-                                indices[indptr[i*bins1+j]+k] = idx
-                                data[indptr[i*bins1+j]+k] = deltaA
-#                                lut[i, j, k].idx = idx
-#                                lut[i, j, k].coef =  deltaA
-                                outMax[i, j] = k + 1
+                                lut[i, j, k].idx = idx
+                                lut[i, j, k].coef =  deltaA
+                                outMax[i, j] += 1
 
                             k = outMax[i, bin1_max]
-                            indices[indptr[i*bins1+bin1_max]+k] = idx
-                            data[indptr[i*bins1+bin1_max]+k] = deltaA * deltaU
-#                            lut[i, bin1_max, k].idx = idx
-#                            lut[i, bin1_max, k].coef =  deltaA * deltaU
-                            outMax[i, bin1_max] = k + 1
+                            lut[i, bin1_max, k].idx = idx
+                            lut[i, bin1_max, k].coef =  deltaA * deltaU
+                            outMax[i, bin1_max] += 1
 
                         for j in range(bin1_min + 1, bin1_max):
                             k = outMax[bin0_min, j]
-                            indices[indptr[bin0_min*bins1+j]+k] = idx
-                            data[indptr[bin0_min*bins1+j]+k] = deltaA * deltaL
-#                            lut[bin0_min, j, k].idx = idx
-#                            lut[bin0_min, j, k].coef =  deltaA * deltaL
-                            outMax[bin0_min, j] = k + 1
+                            lut[bin0_min, j, k].idx = idx
+                            lut[bin0_min, j, k].coef =  deltaA * deltaL
+                            outMax[bin0_min, j] += 1
 
                             k = outMax[bin0_max, j]
-                            indices[indptr[bin0_max*bins1+j]+k] = idx
-                            data[indptr[bin0_max*bins1+j]+k] = deltaA * deltaR
-#                            lut[bin0_max, j, k].idx = idx
-#                            lut[bin0_max, j, k].coef =  deltaA * deltaR
-                            outMax[bin0_max, j] = k + 1
+                            lut[bin0_max, j, k].idx = idx
+                            lut[bin0_max, j, k].coef =  deltaA * deltaR
+                            outMax[bin0_max, j] += 1
 
-        self.data = data
-        self.indices = indices
-        return outMax
+        self.lut_max_idx = outMax
+        self._lut = lut
+
+    def get_lut(self):
+        """Getter for the LUT as actual numpy array""" 
+        cdef int rc_before, rc_after
+        rc_before = sys.getrefcount(self._lut)
+        cdef lut_point[:,:,:] lut = self._lut
+        rc_after = sys.getrefcount(self._lut)
+        cdef bint need_decref = NEED_DECREF and ((rc_after-rc_before)>=2)
+        shape = (self._lut.shape[0]*self._lut.shape[1], self._lut.shape[2])
+        cdef numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary = numpy.empty(shape=shape, dtype=numpy.float64)
+        memcpy(&tmp_ary[0,0], &lut[0,0,0], self._lut.nbytes)
+        self.lut_checksum = crc32(tmp_ary)
+
+        #Ugly against bug#89
+        if need_decref and (sys.getrefcount(self._lut)>=rc_before+2):
+            print("Warning: Decref needed")
+            Py_XDECREF(<PyObject *> self._lut)
+
+#        return tmp_ary.view(dtype=dtype_lut)
+        return numpy.core.records.array(tmp_ary.view(dtype=dtype_lut),
+                                        shape=shape,dtype=dtype_lut,
+                                        copy=True)
+
+    lut = property(get_lut)         
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
@@ -914,19 +990,23 @@ class HistoBBox2d(object):
         @rtype: 5-tuple of ndarrays
 
         """
-        cdef int i=0, j=0, idx=0, bins0=self.bins[0], bins1=self.bins[1], bins=bins0*bins1, size=self.size
-        cdef double sum_data=0.0, sum_count=0.0, epsilon=1e-10
+        cdef numpy.int32_t i=0, j=0, idx=0, bins0=self.bins[0], bins1=self.bins[1], bins=bins0*bins1, lut_size=self.lut_size, size=self.size, i0=0, i1=0
+        cdef double sum_data=0, sum_count=0, epsilon=1e-10
         cdef float data=0, coef=0, cdummy=0, cddummy=0
         cdef bint do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
         cdef numpy.ndarray[numpy.float64_t, ndim = 2] outData = numpy.zeros(self.bins, dtype=numpy.float64)
         cdef numpy.ndarray[numpy.float64_t, ndim = 2] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
         cdef numpy.ndarray[numpy.float32_t, ndim = 2] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
-        cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData_1d = outData.ravel()
-        cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount_1d = outCount.ravel()
-        cdef numpy.ndarray[numpy.float32_t, ndim = 1] outMerge_1d = outMerge.ravel()
+        
+        #Ugly hack against bug #89
+        cdef int rc_before, rc_after
+        rc_before = sys.getrefcount(self._lut)
+        cdef lut_point[:,:,:] lut = self._lut
+        rc_after = sys.getrefcount(self._lut)
+        cdef bint need_decref = NEED_DECREF and ((rc_after-rc_before)>=2)
 
-        cdef float[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-        cdef numpy.int32_t[:] indices = self.indices, indptr = self.indptr
+        
+        cdef float[:] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
 
         assert size == weights.size
 
@@ -998,24 +1078,31 @@ class HistoBBox2d(object):
                         cdata[i]+=cdummy
             else:
                 cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-
-        for i in prange(bins, nogil=True, schedule="guided"):
-            sum_data = 0.0
-            sum_count = 0.0
-            for j in range(indptr[i],indptr[i+1]):
-                idx = indices[j]
-                coef = ccoef[j]
-                data = cdata[idx]
-                if do_dummy and data==cdummy:
-                    continue
-
-                sum_data = sum_data + coef * data
-                sum_count = sum_count + coef
-            outData_1d[i] += sum_data
-            outCount_1d[i] += sum_count
-            if sum_count > epsilon:
-                outMerge_1d[i] += sum_data / sum_count
-            else:
-                outMerge_1d[i] += cdummy
+        #TODO: what is the best: static or guided ?
+        for i0 in prange(bins0, nogil=True, schedule="guided"):
+            for i1 in range(bins1):
+                sum_data = 0.0
+                sum_count = 0.0
+                for j in range(lut_size):
+                    idx = lut[i0, i1, j].idx
+                    coef = lut[i0, i1, j].coef
+                    if idx <= 0 and coef <= 0.0:
+                        continue
+                    data = cdata[idx]
+                    if do_dummy and data==cdummy:
+                        continue
+    
+                    sum_data = sum_data + coef * data
+                    sum_count = sum_count + coef
+                outData[i0, i1] += sum_data
+                outCount[i0, i1] += sum_count
+                if sum_count > epsilon:
+                    outMerge[i0, i1] += sum_data / sum_count
+                else:
+                    outMerge[i0, i1] += cdummy        
+        
+        #Ugly against bug #89
+        if need_decref and (sys.getrefcount(self._lut)>=rc_before+2):
+            Py_XDECREF(<PyObject *> self._lut)
         return  outMerge.T, self.outPos0, self.outPos1, outData.T, outCount.T
 
