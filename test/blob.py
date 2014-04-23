@@ -10,6 +10,7 @@ import pyFAI.blob_detection
 
 # data = fabio.open(UtilsTest.options.args[0]).data
 # msk = fabio.open(UtilsTest.options.args[1]).data
+
 data = fabio.open("../../testimages/halfccd.edf").data
 msk = fabio.open("../../testimages/halfccd_8_mask.tiff").data
 bd = pyFAI.blob_detection.BlobDetection(data, mask=msk)
@@ -18,14 +19,24 @@ import pylab
 pylab.ion()
 f=pylab.figure()
 ax = f.add_subplot(111)
-ax.imshow(bd.raw)
-bd._one_octave(True, False, False)
-# print("Octave #%i total kp: %i" % (i, bd.keypoints.size))
-#for kp  in bd.keypoints:
-#    ds = sqrt(kp.scale)
-#    ax.annotate("", xy=(kp.x, kp.y), xytext=(kp.x + ds, kp.y + ds),
-#                arrowprops=dict(facecolor='blue', shrink=0.05),)
-ax.plot(bd.keypoints[:].x, bd.keypoints[:].y, ".g")
+ax.imshow(bd.raw, interpolation = 'nearest')
+
+for i in range(2):
+    bd._one_octave(True, True, False)
+    print("Octave #%i total kp: %i" % (i, bd.keypoints.size))
+    
+# bd._one_octave(False, True ,False)
+    
+print 'Final shape of keypoints'
+print bd.keypoints.shape
+
+for kp  in bd.keypoints:
+    ds = sqrt(kp.scale)
+#     ax.plot(kp.x, kp.y, "og")
+    ax.annotate("", xy=(kp.x, kp.y), xytext=(kp.x + ds, kp.y + ds),
+                arrowprops=dict(facecolor='blue', shrink=0.05),)
+# print bd.keypoints
+# ax.plot(bd.keypoints[:].x, bd.keypoints[:].y, ".g")
 n3kp = bd.keypoints
 
 #bd._one_octave(False, False, True)
