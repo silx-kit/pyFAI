@@ -165,7 +165,6 @@ class BlobDetection(object):
         self.sigmas = None  # contains pairs of absolute sigma and relative ones...
         self.blurs = []     # different blurred images
         self.dogs = []      # different difference of gaussians
-        self.dogs_init = []
         self.border_size = 5# size of the border
         self.keypoints = []
         self.delta = []
@@ -212,14 +211,18 @@ class BlobDetection(object):
         
         @param shrink: perform the image shrinking after the octave processing
         @param   do_SG4: perform Savitsky-Golay 4th order fit. 
+        
         """
+        print 'sigma'
+        print self.sigma_octave
         x=[]
         y=[]
         dx=[]
         dy=[]
         if not self.sigmas:
             self._calc_sigma()
-
+        print(self.sigmas)
+        
         previous = self.data
         dog_shape = (len(self.sigmas) - 1,) + self.data.shape
         self.dogs = numpy.zeros(dog_shape, dtype=numpy.float32)
@@ -244,39 +247,28 @@ class BlobDetection(object):
         else:
             valid_points = local_max(self.dogs, self.cur_mask, n_5)
         kps, kpy, kpx = numpy.where(valid_points)
+        
         l = kpx.size
         
+        if do_SG4:
+
+            print ('Before refinement : %i keypoints' % l)
+            kpx,kpy,kps = self.refine_SG4(kpx,kpy,kps)       
+            l = kpx.size
+            print ('After refinement : %i keypoints' % l)  
 #         print 'shape of dogs'
 #         print self.dogs.shape
         
         dtype = numpy.dtype([('x', numpy.float32), ('y', numpy.float32), ('scale', numpy.float32), ('I', numpy.float32)])
         keypoints = numpy.recarray((l,), dtype=dtype)
         sigmas = numpy.array([s[0] for s in self.sigmas])
+
         
         keypoints[:].x = kpx * self.sigma_octave
         keypoints[:].y = kpy * self.sigma_octave
         keypoints[:].scale = (self.sigma_octave * sigmas.take(kps)) ** 2 #scale = sigma^2
-        keypoints[:].I = self.dogs[(kps, kpy, kpx)]
-
-        print keypoints[:].scale
-
-        if do_SG4:
-            print keypoints.shape
-            keypoints = self.refine_SG4(keypoints)
-#                kx, ky, sigma, dlx, dly = self.refine_SG4(i, loc_keypoint[:].x, loc_keypoint[:].y, loc_keypoint[:].sigma)
-#            else:
-#                kx = loc_keypoint[:].x
-#                ky = loc_keypoint[:].y
-#                sigma = loc_keypoint[:].sigma
-#                dlx = numpy.zeros_like(kx)
-#                dly = numpy.zeros_like(ky)
-#            x.append(kx)
-#            y.append(ky)
-#            dx.append(dlx)
-#            dy.append(dly)
-#            sigmas.append(sigma)
-#            print(kx.__len__(), ky.__len__(), sigma.__len__())
-
+        keypoints[:].I = self.dogs[(kps, numpy.around(kpy).astype(int), numpy.around(kpx).astype(int))]
+        
         if shrink:
             #shrink data so that they can be treated by next octave
             print("In shrink")
@@ -289,32 +281,23 @@ class BlobDetection(object):
                 
         if self.keypoints == [] : self.keypoints = keypoints 
         else: self.keypoints = numpy.concatenate((self.keypoints, keypoints))
-#         self.keypoints = keypoints 
+        self.keypoints = keypoints 
 #        return numpy.concatenate(x), \
 #               numpy.concatenate(y), \
 #               numpy.concatenate(dx), \
 #               numpy.concatenate(dy), \
-#               numpy.concatenate(sigmas)
-    
+#               numpy.concatenate(sigmas)  
   
-    def refine_SG4(self,keypoints):
+    def refine_SG4(self,kpx,kpy,kps):
         """ Savitzky Golay algorithm to check if a point is really the maximum """
 
-#         deltax=[]
-#         deltay=[]
-#         k2x=[]
-#         k2y=[]
-#         sigmas=[]
+        deltax=[]
+        deltay=[]
+        k2x=[]
+        k2y=[]
+        sigmas=[]
         i=0
-        l = keypoints[:].x.shape[0]
-        print 'Before refinement'
-        print l
-        dtype = numpy.dtype([('x', numpy.float32), ('y', numpy.float32), ('scale', numpy.float32), ('I', numpy.float32),('valid',numpy.bool)])
-        kps = numpy.recarray((l,), dtype=dtype)
-        kps[:].x = keypoints[:].x
-        kps[:].y = keypoints[:].y
-        kps[:].I = keypoints[:].I
-        kps[:].valid = False
+
         
         #savitsky golay ordre 4 patch 5
         SGX0Y0 = [0.04163265,-0.08081633,0.07836735,-0.08081633,0.04163265,-0.08081633,-0.01959184,0.20081633,-0.01959184,-0.08081633,0.07836735,0.20081633,0.44163265,0.20081633,0.07836735,-0.08081633,-0.01959184,0.20081633,-0.01959184,-0.08081633,0.04163265,-0.08081633,0.07836735,-0.08081633,0.04163265]
@@ -324,16 +307,15 @@ class BlobDetection(object):
         SGX1Y1 = [-0.07333333,0.10500000,0.00000000,-0.10500000,0.07333333,0.10500000,0.12333333,0.00000000,-0.12333333,-0.10500000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,-0.10500000,-0.12333333,0.00000000,0.12333333,0.10500000,0.07333333,-0.10500000,0.00000000,0.10500000,-0.07333333]
         SGX0Y2 = [-0.04914966,0.01207483,0.03248299,0.01207483,-0.04914966,0.15374150,0.12312925,0.11292517,0.12312925,0.15374150,-0.20918367,-0.27040816,-0.29081633,-0.27040816,-0.20918367,0.15374150,0.12312925,0.11292517,0.12312925,0.15374150,-0.04914966,0.01207483,0.03248299,0.01207483,-0.04914966]
 
-        for y,x in itertools.izip(keypoints[:].y,keypoints[:].x):
-            scale = keypoints[i].scale
+        for y,x,sigma in itertools.izip(kpy,kpx,kps):
+            
 #             print scale,self.sigmas[0][0],self.sigmas[self.scale_per_octave+2][0]
-            j = round(numpy.log(numpy.sqrt(scale)/self.sigmas[0][0])/numpy.log(2)*self.scale_per_octave)
+            j = round(numpy.log(sigma/self.sigmas[0][0])/numpy.log(2)*self.scale_per_octave)
 #             print j,self.scale_per_octave
             if j > 0 and j < self.scale_per_octave+1:
-#                 print 'ici'
-                curr_dog = self.dogs_init[j]
-                prev_dog = self.dogs_init[j-1]
-                next_dog = self.dogs_init[j+1]
+                curr_dog = self.dogs[j]
+                prev_dog = self.dogs[j-1]
+                next_dog = self.dogs[j+1]
 
                 if (x > 1 and x < curr_dog.shape[1]-2 and y > 1 and y < curr_dog.shape[0]-2):
                 
@@ -368,26 +350,27 @@ class BlobDetection(object):
     
                     delta = (numpy.dot(numpy.linalg.inv(lap),[dy,dx,ds]))
                     err = numpy.linalg.norm(delta[:-1])
-                    if  err < numpy.sqrt(2) and numpy.abs(dx) < 1 and numpy.abs(dy) < 1 :
+                    if  err < numpy.sqrt(8) and numpy.abs(dx) <= 2.0 and numpy.abs(dy) <= 2.0 :
+                        
 #                         print delta
-#                         k2x.append(x-delta[1])
-#                         k2y.append(y-delta[0])
-#                         sigmas.append(sigma-delta[2])
-#                         deltax.append(-delta[1])
-#                         deltay.append(-delta[0])
-                        kps[i].x = keypoints[i].x-delta[1]
-                        kps[i].y =  keypoints[i].y-delta[0]
-                        kps[i].scale = (numpy.sqrt(keypoints[i].scale)-delta[2]) ** 2
-                        kps[i].I = keypoints[i].I
-                        kps[i].valid = True
+                        k2x.append(x-delta[1])
+                        k2y.append(y-delta[0])
+                        sigmas.append(sigma)
+                        deltax.append(-delta[1])
+                        deltay.append(-delta[0])
+#                         kps[i].x = keypoints[i].x-delta[1]
+#                         kps[i].y =  keypoints[i].y-delta[0]
+#                         kps[i].scale = (numpy.sqrt(keypoints[i].scale)-delta[2]) ** 2
+#                         kps[i].I = keypoints[i].I
+#                         kps[i].valid = True
                     
                     i = i + 1
-        
-#         return k2x,k2y,sigmas,deltax,deltay
-        res = numpy.where(kps[:].valid == True)
-        print 'After SG refinement'
-        print kps[res].shape
-        return kps[res]                     
+#         print k2x            
+        return numpy.asarray(k2x),numpy.asarray(k2y),numpy.asarray(sigmas)
+#         res = numpy.where(kps[:].valid == True)
+#         print 'After SG refinement'
+#         print kps[res].shape
+#         return kps[res]                     
                 
         
 if __name__ == "__main__":
