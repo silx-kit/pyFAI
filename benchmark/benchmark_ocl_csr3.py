@@ -6,6 +6,7 @@ from __future__ import print_function, division
 
 import json, sys, time, timeit, os, platform, subprocess
 import numpy
+from numpy import log2
 import fabio
 import os.path as op
 sys.path.append(op.join(op.dirname(op.dirname(op.abspath(__file__))), "test"))
@@ -58,6 +59,8 @@ class Bench(object):
         self.repeat = repeat
         self.nbr = nbr
         self.results = {}
+        self.flops = {}
+        self.mem_band = {}
         self.meth = []
         self._cpu = None
         self.fig = None
@@ -172,8 +175,10 @@ data = fabio.open(r"%s").data
             print("Working on processor: %s" % self.get_cpu())
             label = "1D_" + self.LABELS[method]
         results = {}
+        flops = {}
+        mem_band = {}
         first = True
-        param = "Frelon2k.poni"
+        param = "Pilatus1M.poni"
         block_size_list = [1,2,4,8,16,32,64,128,256]
         for block_size in block_size_list:
             self.update_mp()
@@ -190,6 +195,14 @@ data = fabio.open(r"%s").data
             if check:
                 if "csr" in method:
                     print("csr: size= %s \t nbytes %.3f MB " % (ai._csr_integrator.data.size, ai._csr_integrator.lut_nbytes / 2 ** 20))
+            
+            bins = ai._csr_integrator.bins
+            nnz = ai._csr_integrator.nnz
+            parallel_reduction = sum([2**i for i in range(1,int(log2(block_size)))])
+            
+            FLOPs = 9*nnz + 11*parallel_reduction + 1*bins
+            mem_access = (2*block_size*bins + 5*nnz + 7*bins)*4
+            
             del ai, data
             self.update_mp()
             
@@ -216,9 +229,13 @@ data = fabio.open(r"%s").data
                 self.update_mp()
                 if R < self.LIMIT:
                     results[block_size ] = tmin
+                    flops[block_size ] = (FLOPs/tmin)*1e-6
+                    mem_band[block_size ] = (mem_access/tmin)*1e-6
                     self.update_mp()
             else:
                 results[block_size ] = tmin
+                flops[block_size ] = FLOPs/tmin
+                mem_band[block_size ] = mem_access/tmin
             if first:
                 self.new_curve(results, label)
                 first = False
@@ -227,6 +244,8 @@ data = fabio.open(r"%s").data
         self.print_sep()
         self.meth.append(label)
         self.results[label] = results
+        self.flops[label] = flops
+        self.mem_band[label] = mem_band
         self.update_mp()
 
 
@@ -234,12 +253,12 @@ data = fabio.open(r"%s").data
         self.update_mp()
         json.dump(self.results, open(filename, "w"))
 
-    def print_res(self):
+    def print_res(self,summary,results):
         self.update_mp()
-        print("Summary: execution time in milliseconds")
+        print(summary)
         print("Size/Meth\t" + "\t".join(self.meth))
         for i in self.size:
-            print("%7.2f\t\t" % i + "\t\t".join("%.2f" % (self.results[j].get(i, 0)) for j in self.meth))
+            print("%7.2f\t\t" % i + "\t\t".join("%.2f" % (results[j].get(i, 0)) for j in self.meth))
 
     def init_curve(self):
         self.update_mp()
@@ -394,10 +413,16 @@ if __name__ == "__main__":
             bench.bench_1d_ocl_csr(True, {"devicetype":"ACC"})
 
     bench.save()
-    bench.print_res()
+    results = bench.results
+    flops = bench.flops
+    mem_band = bench.mem_band
+
+    bench.print_res("Summary: Execution time in milliseconds", results)
+    bench.print_res("Summary: MFLOPS",flops)
+    bench.print_res("Summary: Memory Bandwidth in MB/s",mem_band)
     bench.update_mp()
 
     bench.ax.set_ylim(1, 200)
     # plt.show()
     plt.ion()
-    raw_input("Enter to quit")
+#    raw_input("Enter to quit")
