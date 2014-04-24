@@ -8,11 +8,12 @@ logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 import pyFAI.blob_detection
 
-# data = fabio.open(UtilsTest.options.args[0]).data
-# msk = fabio.open(UtilsTest.options.args[1]).data
-
-data = fabio.open("../../testimages/halfccd.edf").data
-msk = fabio.open("../../testimages/halfccd_8_mask.tiff").data
+if len(UtilsTest.options.args) > 1:
+     data = fabio.open(UtilsTest.options.args[0]).data
+     msk = fabio.open(UtilsTest.options.args[1]).data
+else:
+    data = fabio.open("testimages/halfccd.edf").data
+    msk = fabio.open("testimages/halfccd_8_mask.tiff").data
 bd = pyFAI.blob_detection.BlobDetection(data, mask=msk)
 
 import pylab
