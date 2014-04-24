@@ -143,6 +143,11 @@ class BlobDetection(object):
             self.mask = (mask != 0).astype(numpy.int8)
         else:
             self.mask = (img <= 0).astype(numpy.int8)
+        #mask out the border of the image
+        self.mask[0, :] = 1
+        self.mask[-1, :] = 1
+        self.mask[:, 0] = 1
+        self.mask[:-1] = 1
         to_mask = numpy.where(self.mask)
         self.do_mask = to_mask[0].size > 0
         if self.do_mask:
@@ -166,7 +171,7 @@ class BlobDetection(object):
         self.blurs = []     # different blurred images
         self.dogs = []      # different difference of gaussians
         self.dogs_init = []
-        self.border_size = 5# size of the border
+        self.border_size = 5# size of the border, unused: prefer mask
         self.keypoints = []
         self.delta = []
         self.sigma_octave = 1.0
@@ -197,13 +202,6 @@ class BlobDetection(object):
             previous = sigma_abs
         print(self.sigmas)
 
-    @timeit
-    def grow_mask(self):
-        """
-        Grow the mask according to the given sigma_destination
-        
-        At each octave, one deeds to re-grow the mask by half the size 
-        """
 
     @timeit
     def _one_octave(self, shrink=True, do_SG4=True, n_5=False):
