@@ -166,9 +166,11 @@ class BlobDetection(object):
         self.blurs = []     # different blurred images
         self.dogs = []      # different difference of gaussians
         self.border_size = 5# size of the border
-        self.keypoints = []
-        self.delta = []
-        self.sigma_octave = 1.0
+        self.keypoints = [] # resultant keypoints
+#         self.delta = []    
+        self.curr_reduction = 1.0 # current coefficient of reduction of the initial data
+        self.octave = 0     # number of the current octave
+
 
     def _initial_blur(self):
         """
@@ -213,8 +215,9 @@ class BlobDetection(object):
         @param   do_SG4: perform Savitsky-Golay 4th order fit. 
         
         """
+        print self.octave
         print 'sigma'
-        print self.sigma_octave
+        print self.curr_reduction
         x=[]
         y=[]
         dx=[]
@@ -253,65 +256,68 @@ class BlobDetection(object):
         if do_SG4:
 
             print ('Before refinement : %i keypoints' % l)
-            kpx,kpy,kps = self.refine_SG4(kpx,kpy,kps)       
+            kpx,kpy,kps,delta_s = self.refine_Hessian(kpx,kpy,kps)  
             l = kpx.size
             print ('After refinement : %i keypoints' % l)  
-#         print 'shape of dogs'
-#         print self.dogs.shape
+
         
         dtype = numpy.dtype([('x', numpy.float32), ('y', numpy.float32), ('scale', numpy.float32), ('I', numpy.float32)])
         keypoints = numpy.recarray((l,), dtype=dtype)
         sigmas = numpy.array([s[0] for s in self.sigmas])
 
         
-        keypoints[:].x = kpx * self.sigma_octave
-        keypoints[:].y = kpy * self.sigma_octave
-        keypoints[:].scale = (self.sigma_octave * sigmas.take(kps)) ** 2 #scale = sigma^2
+        keypoints[:].x = kpx * self.curr_reduction
+        keypoints[:].y = kpy * self.curr_reduction
+        keypoints[:].scale = (kps + delta_s ** 2)  #scale = sigma^2
         keypoints[:].I = self.dogs[(kps, numpy.around(kpy).astype(int), numpy.around(kpx).astype(int))]
         
         if shrink:
             #shrink data so that they can be treated by next octave
             print("In shrink")
             self.data = binning(self.blurs[self.scale_per_octave], 2) / 4.0
-            self.sigma_octave *= 2
+            self.curr_reduction *= 2
             self.blurs = []
             if self.do_mask:
                 self.cur_mask = binning(self.cur_mask, 2).astype(numpy.int8) / 4
                 self.cur_mask = morphology.binary_dilation(self.cur_mask, self.grow)
+            self.octave += 1    
                 
-        if self.keypoints == [] : self.keypoints = keypoints 
-        else: self.keypoints = numpy.concatenate((self.keypoints, keypoints))
-        self.keypoints = keypoints 
-#        return numpy.concatenate(x), \
-#               numpy.concatenate(y), \
-#               numpy.concatenate(dx), \
-#               numpy.concatenate(dy), \
-#               numpy.concatenate(sigmas)  
+        if len(self.keypoints) == 0 : 
+            self.keypoints = keypoints 
+        else:
+            old_size = self.keypoints.size
+            new_size = old_size + l
+            self.keypoints.resize(new_size)
+            self.keypoints[old_size:] = keypoints  
+            
+#             self.keypoints = numpy.concatenate((self.keypoints, keypoints))
+#         self.keypoints = keypoints 
+
   
-    def refine_SG4(self,kpx,kpy,kps):
+    def refine_Hessian(self,kpx,kpy,kps):
         """ Savitzky Golay algorithm to check if a point is really the maximum """
 
-        deltax=[]
-        deltay=[]
+
+        deltas = []
         k2x=[]
         k2y=[]
         sigmas=[]
         i=0
 
         
-        #savitsky golay ordre 4 patch 5
-        SGX0Y0 = [0.04163265,-0.08081633,0.07836735,-0.08081633,0.04163265,-0.08081633,-0.01959184,0.20081633,-0.01959184,-0.08081633,0.07836735,0.20081633,0.44163265,0.20081633,0.07836735,-0.08081633,-0.01959184,0.20081633,-0.01959184,-0.08081633,0.04163265,-0.08081633,0.07836735,-0.08081633,0.04163265]
-        SGX1Y0 = [0.07380952,-0.10476190,0.00000000,0.10476190,-0.07380952,-0.01190476,-0.14761905,0.00000000,0.14761905,0.01190476,-0.04047619,-0.16190476,0.00000000,0.16190476,0.04047619,-0.01190476,-0.14761905,0.00000000,0.14761905,0.01190476,0.07380952,-0.10476190,0.00000000,0.10476190,-0.07380952]
-        SGX2Y0 = [-0.04914966,0.15374150,-0.20918367,0.15374150,-0.04914966,0.01207483,0.12312925,-0.27040816,0.12312925,0.01207483,0.03248299,0.11292517,-0.29081633,0.11292517,0.03248299,0.01207483,0.12312925,-0.27040816,0.12312925,0.01207483,-0.04914966,0.15374150,-0.20918367,0.15374150,-0.04914966]
-        SGX0Y1 = [0.07380952,-0.01190476,-0.04047619,-0.01190476,0.07380952,-0.10476190,-0.14761905,-0.16190476,-0.14761905,-0.10476190,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.10476190,0.14761905,0.16190476,0.14761905,0.10476190,-0.07380952,0.01190476,0.04047619,0.01190476,-0.07380952]
-        SGX1Y1 = [-0.07333333,0.10500000,0.00000000,-0.10500000,0.07333333,0.10500000,0.12333333,0.00000000,-0.12333333,-0.10500000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,-0.10500000,-0.12333333,0.00000000,0.12333333,0.10500000,0.07333333,-0.10500000,0.00000000,0.10500000,-0.07333333]
-        SGX0Y2 = [-0.04914966,0.01207483,0.03248299,0.01207483,-0.04914966,0.15374150,0.12312925,0.11292517,0.12312925,0.15374150,-0.20918367,-0.27040816,-0.29081633,-0.27040816,-0.20918367,0.15374150,0.12312925,0.11292517,0.12312925,0.15374150,-0.04914966,0.01207483,0.03248299,0.01207483,-0.04914966]
+        #Hessian patch 3
+        SGX0Y0   =  [-0.11111111 ,0.22222222 ,-0.11111111 ,0.22222222 ,0.55555556 ,0.22222222 ,-0.11111111 ,0.22222222 ,-0.11111111]
+        SGX1Y0   =  [-0.16666667 ,0.00000000 ,0.16666667 ,-0.16666667 ,0.00000000 ,0.16666667 ,-0.16666667 ,0.00000000 ,0.16666667 ]
+        SGX2Y0   =  [0.16666667 ,-0.33333333 ,0.16666667 ,0.16666667 ,-0.33333333 ,0.16666667 ,0.16666667,-0.33333333,0.16666667 ]
+        SGX0Y1   =  [-0.16666667,-0.16666667,-0.16666667,0.00000000,0.00000000,0.00000000,0.16666667,0.16666667,0.16666667]
+        SGX1Y1   =  [0.25000000,0.00000000,-0.25000000,0.00000000,0.00000000,0.00000000,-0.25000000,0.00000000,0.25000000]
+        SGX0Y2   =  [0.16666667 ,0.16666667 ,0.16666667 ,-0.33333333 ,-0.33333333 ,-0.33333333 ,0.16666667 ,0.16666667 ,0.16666667]
 
         for y,x,sigma in itertools.izip(kpy,kpx,kps):
             
-#             print scale,self.sigmas[0][0],self.sigmas[self.scale_per_octave+2][0]
+
             j = round(numpy.log(sigma/self.sigmas[0][0])/numpy.log(2)*self.scale_per_octave)
-#             print j,self.scale_per_octave
+
             if j > 0 and j < self.scale_per_octave+1:
                 curr_dog = self.dogs[j]
                 prev_dog = self.dogs[j-1]
@@ -320,28 +326,27 @@ class BlobDetection(object):
                 if (x > 1 and x < curr_dog.shape[1]-2 and y > 1 and y < curr_dog.shape[0]-2):
                 
                     
-                    patch5 = curr_dog[y-2:y+3,x-2:x+3]
-                    patch5_prev = prev_dog[y-2:y+3,x-2:x+3]
-                    patch5_next = next_dog[y-2:y+3,x-2:x+3]
+                    patch3 = curr_dog[y-1:y+2,x-1:x+2]
+                    patch3_prev = prev_dog[y-1:y+2,x-1:x+2]
+                    patch3_next = next_dog[y-1:y+2,x-1:x+2]
     
-    #                 print curr_dog.shape[1]-3,x,y,patch5
-                    dx = (SGX1Y0*patch5.ravel()).sum()
-                    dy = (SGX0Y1*patch5.ravel()).sum()
-                    d2x = (SGX2Y0*patch5.ravel()).sum()
-                    d2y = (SGX0Y2*patch5.ravel()).sum()
-                    dxy = (SGX1Y1*patch5.ravel()).sum()
+                    dx = (SGX1Y0*patch3.ravel()).sum()
+                    dy = (SGX0Y1*patch3.ravel()).sum()
+                    d2x = (SGX2Y0*patch3.ravel()).sum()
+                    d2y = (SGX0Y2*patch3.ravel()).sum()
+                    dxy = (SGX1Y1*patch3.ravel()).sum()
     
-                    s_next = (SGX0Y0*patch5_next.ravel()).sum()
-                    s = (SGX0Y0*patch5.ravel()).sum()
-                    s_prev = (SGX0Y0*patch5_prev.ravel()).sum()
+                    s_next = (SGX0Y0*patch3_next.ravel()).sum()
+                    s = (SGX0Y0*patch3.ravel()).sum()
+                    s_prev = (SGX0Y0*patch3_prev.ravel()).sum()
                     d2s = (s_next + s_prev - 2.0*s) /4.0
                     ds = (s_next - s_prev) /2.0
                     
-                    dx_next = (SGX1Y0*patch5_next.ravel()).sum()
-                    dx_prev = (SGX1Y0*patch5_prev.ravel()).sum()
+                    dx_next = (SGX1Y0*patch3_next.ravel()).sum()
+                    dx_prev = (SGX1Y0*patch3_prev.ravel()).sum()
                     
-                    dy_next = (SGX0Y1*patch5_next.ravel()).sum()
-                    dy_prev = (SGX0Y1*patch5_prev.ravel()).sum()
+                    dy_next = (SGX0Y1*patch3_next.ravel()).sum()
+                    dy_prev = (SGX0Y1*patch3_prev.ravel()).sum()
                     
                     dxs = (dx_next - dx_prev)/2.0
                     dys = (dy_next - dy_prev)/2.0                
@@ -350,27 +355,17 @@ class BlobDetection(object):
     
                     delta = (numpy.dot(numpy.linalg.inv(lap),[dy,dx,ds]))
                     err = numpy.linalg.norm(delta[:-1])
-                    if  err < numpy.sqrt(8) and numpy.abs(dx) <= 2.0 and numpy.abs(dy) <= 2.0 :
-                        
-#                         print delta
+                    
+                    if  err < numpy.sqrt(2) and numpy.abs(delta[0]) <= 1.0 and numpy.abs(delta[1]) <= 1.0 and numpy.abs(sigma+delta[2] <= 8) :
                         k2x.append(x-delta[1])
                         k2y.append(y-delta[0])
                         sigmas.append(sigma)
-                        deltax.append(-delta[1])
-                        deltay.append(-delta[0])
-#                         kps[i].x = keypoints[i].x-delta[1]
-#                         kps[i].y =  keypoints[i].y-delta[0]
-#                         kps[i].scale = (numpy.sqrt(keypoints[i].scale)-delta[2]) ** 2
-#                         kps[i].I = keypoints[i].I
-#                         kps[i].valid = True
-                    
+                        deltas.append(delta[2])
+
                     i = i + 1
-#         print k2x            
-        return numpy.asarray(k2x),numpy.asarray(k2y),numpy.asarray(sigmas)
-#         res = numpy.where(kps[:].valid == True)
-#         print 'After SG refinement'
-#         print kps[res].shape
-#         return kps[res]                     
+          
+        return numpy.asarray(k2x),numpy.asarray(k2y),numpy.asarray(sigmas),numpy.asarray(deltas)
+                 
                 
         
 if __name__ == "__main__":
