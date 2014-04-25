@@ -32,6 +32,8 @@ from libc.math cimport fabs
 
 EPS32 = (1 + numpy.finfo(numpy.float32).eps)
 
+cdef int BUFFER_SIZE = 128 #over how many bins a pixels can be split
+
 cdef float area3(float a0,
                  float a1,
                  float b0,
@@ -46,9 +48,9 @@ cdef float area3(float a0,
     
     @return: area, i.e. 1/2 * (B-A)^(C-A)
     """
-    return 0.5 * abs(((b0 - a0) * (c1 - a1)) - ((b1 - a1) * (c0 - a0)))
+    return 0.5 * (((b0 - a0) * (c1 - a1)) - ((b1 - a1) * (c0 - a0)))
 
-cdef  float area4(float a0,
+cdef inline float area4(float a0,
                   float a1,
                   float b0,
                   float b1,
@@ -64,10 +66,10 @@ cdef  float area4(float a0,
     D(d0,d1)
     @return: area, i.e. 1/2 * (AC ^ BD)
     """
-    return 0.5 * abs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
+    return 0.5 * (((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
 
 @cython.cdivision(True)
-cdef  float  getBinNr( float x0,  float pos0_min,  float dpos) nogil:
+cdef inline float  getBinNr( float x0,  float pos0_min,  float dpos) nogil:
     """
     calculate the bin number for any point
     param x0: current position
@@ -76,7 +78,10 @@ cdef  float  getBinNr( float x0,  float pos0_min,  float dpos) nogil:
     """
     return (x0 - pos0_min) / dpos
 
-cdef  float min4f( float a,  float b,  float c,  float d) nogil:
+cdef inline float min4f( float a,  float b,  float c,  float d) nogil:
+    """
+    Minimum over 4 float
+    """
     if (a <= b) and (a <= c) and (a <= d):
         return a
     if (b <= a) and (b <= c) and (b <= d):
@@ -86,7 +91,7 @@ cdef  float min4f( float a,  float b,  float c,  float d) nogil:
     else:
         return d
 
-cdef  float max4f( float a,  float b,  float c,  float d) nogil:
+cdef inline float max4f( float a,  float b,  float c,  float d) nogil:
     """Calculates the max of 4  float numbers"""
     if (a >= b) and (a >= c) and (a >= d):
         return a
@@ -96,6 +101,10 @@ cdef  float max4f( float a,  float b,  float c,  float d) nogil:
         return c
     else:
         return d
+
+cdef inline float calc_area(float I1, float I2, float slope, float intercept) nogil:
+    "Calculate the area between I1 and I2 of a line with a given slope & intercept"
+    return 0.5 * (I2 - I1) * (slope * (I2 + I1) + 2 * intercept)
 
 @cython.cdivision(True)
 @cython.boundscheck(False)
@@ -274,21 +283,22 @@ def fullSplit1D(numpy.ndarray pos not None,
                 aeraPixel = area4(a0,a1,b0,b1,c0,c1,d0)
                 deltaA = 1.0 / aeraPixel
 
-                deltaL = <double>(bin0_min) + 1.0 - fbin0_min
-                deltaR = fbin0_max - <double>(bin0_max)
-
-                tmp = deltaA * deltaL
-                outCount[bin0_min] += tmp
-                outData[bin0_min] += data * tmp
-
-                tmp = deltaA * deltaR
-                outCount[bin0_max] += tmp
-                outData[bin0_max] += data * tmp
-
-                if bin0_min + 1 != bin0_max:
-                    for i in range(bin0_min + 1, bin0_max):
-                        outCount[i] += deltaA
-                        outData[i] += data * deltaA
+                for i in 
+#                deltaL = <double>(bin0_min) + 1.0 - fbin0_min
+#                deltaR = fbin0_max - <double>(bin0_max)
+#
+#                tmp = deltaA * deltaL
+#                outCount[bin0_min] += tmp
+#                outData[bin0_min] += data * tmp
+#
+#                tmp = deltaA * deltaR
+#                outCount[bin0_max] += tmp
+#                outData[bin0_max] += data * tmp
+#
+#                if bin0_min + 1 != bin0_max:
+#                    for i in range(bin0_min + 1, bin0_max):
+#                        outCount[i] += deltaA
+#                        outData[i] += data * deltaA
 
 
         for i in range(bins):
