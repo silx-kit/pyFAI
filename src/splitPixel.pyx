@@ -29,9 +29,10 @@ import cython
 cimport numpy
 import numpy
 from libc.math cimport fabs
+from libc.string cimport memset
+from cython cimport view
 
-EPS32 = (1 + numpy.finfo(numpy.float32).eps)
-
+cdef float EPS32 = (1 + numpy.finfo(numpy.float32).eps)
 cdef int BUFFER_SIZE = 128 #over how many bins a pixels can be split
 
 cdef float area3(float a0,
@@ -158,7 +159,8 @@ def fullSplit1D(numpy.ndarray pos not None,
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outMerge = numpy.zeros(bins, dtype=numpy.float64)
     cdef numpy.int8_t[:] cmask
-    cdef  float[:] cflat, cdark, cpolarization, csolidangle
+    cdef float[:] cflat, cdark, cpolarization, csolidangle, buffer
+    
 
     cdef  float cdummy=0, cddummy=0, data=0
     cdef  float deltaR=0, deltaL=0, deltaA=0
@@ -169,6 +171,7 @@ def fullSplit1D(numpy.ndarray pos not None,
 
     cdef bint check_pos1=False, check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
     cdef size_t i=0, idx=0, bin=0, bin0_max=0, bin0_min=0
+    buffer = view.array(shape=(BUFFER_SIZE,),itemsize=sizeof(float), format="f") 
 
     if pos0Range is not None and len(pos0Range) > 1:
         pos0_min = min(pos0Range)
@@ -246,6 +249,11 @@ def fullSplit1D(numpy.ndarray pos not None,
             d1 = <  float > cpos[idx, 3, 1]
             min0 = min4f(a0, b0, c0, d0)
             max0 = max4f(a0, b0, c0, d0)
+            if (max0-min0)> BUFFER_SIZE:
+                print("Buffer too small: increase size")
+                BUFFER_SIZE = max0-min0+1
+                buffer = view.array(shape=(BUFFER_SIZE,),itemsize=sizeof(float), format="f")
+
             if (max0<0) or (min0 >=bins):
                 continue
             if check_pos1:
@@ -272,7 +280,7 @@ def fullSplit1D(numpy.ndarray pos not None,
 #            fbin0_max = getBinNr(max0, pos0_min, dpos)
             bin0_min = < size_t > fbin0_min
             bin0_max = < size_t > fbin0_max
-
+            
             if bin0_min == bin0_max:
                 #All pixel is within a single bin
                 outCount[bin0_min] += 1.0
@@ -280,10 +288,11 @@ def fullSplit1D(numpy.ndarray pos not None,
 
     #        else we have pixel spliting.
             else:
+                memset(&buffer[0], 0, sizeof(float)*BUFFER_SIZE)
                 aeraPixel = area4(a0,a1,b0,b1,c0,c1,d0)
                 deltaA = 1.0 / aeraPixel
 
-                for i in 
+#                for i in 
 #                deltaL = <double>(bin0_min) + 1.0 - fbin0_min
 #                deltaR = fbin0_max - <double>(bin0_max)
 #
