@@ -2484,7 +2484,8 @@ class AzimuthalIntegrator(Geometry):
                                                            delta_dummy=delta_dummy,
                                                            mask=mask,
                                                            )
-                    sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
+                    b[b == 0] = 1
+                    sigma = numpy.sqrt(a) / b
 
         if I is None:
             #Common part for  Numpy and Cython
