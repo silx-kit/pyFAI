@@ -30,42 +30,44 @@ cimport numpy
 import numpy
 from libc.math cimport fabs
 
-#cdef double areaTriangle(double a0,
-#                         double a1,
-#                         double b0,
-#                         double b1,
-#                         double c0,
-#                         double c1):
-#    """
-#    Calculate the area of the ABC triangle with corners:
-#    A(a0,a1)
-#    B(b0,b1)
-#    C(c0,c1)
-#    @return: area, i.e. 1/2 * (B-A)^(C-A)
-#    """
-#    return 0.5 * abs(((b0 - a0) * (c1 - a1)) - ((b1 - a1) * (c0 - a0)))
-#
-#cdef double areaQuad(double a0,
-#                     double a1,
-#                     double b0,
-#                     double b1,
-#                     double c0,
-#                     double c1,
-#                     double d0,
-#                     double d1
-#                     ):
-#    """
-#    Calculate the area of the ABCD quadrilataire  with corners:
-#    A(a0,a1)
-#    B(b0,b1)
-#    C(c0,c1)
-#    D(d0,d1)
-#    @return: area, i.e. 1/2 * (AC ^ BD)
-#    """
-#    return 0.5 * abs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
+EPS32 = (1 + numpy.finfo(numpy.float32).eps)
+
+cdef float area3(float a0,
+                 float a1,
+                 float b0,
+                 float b1,
+                 float c0,
+                 float c1):
+    """
+    Calculate the area of the ABC triangle with corners:
+    A(a0,a1)
+    B(b0,b1)
+    C(c0,c1)
+    
+    @return: area, i.e. 1/2 * (B-A)^(C-A)
+    """
+    return 0.5 * abs(((b0 - a0) * (c1 - a1)) - ((b1 - a1) * (c0 - a0)))
+
+cdef  float area4(float a0,
+                  float a1,
+                  float b0,
+                  float b1,
+                  float c0,
+                  float c1,
+                  float d0,
+                  float d1):
+    """
+    Calculate the area of the ABCD polygon with 4 with corners:
+    A(a0,a1)
+    B(b0,b1)
+    C(c0,c1)
+    D(d0,d1)
+    @return: area, i.e. 1/2 * (AC ^ BD)
+    """
+    return 0.5 * abs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
 
 @cython.cdivision(True)
-cdef double  getBinNr(double x0, double pos0_min, double dpos) nogil:
+cdef  float  getBinNr( float x0,  float pos0_min,  float dpos) nogil:
     """
     calculate the bin number for any point
     param x0: current position
@@ -74,7 +76,7 @@ cdef double  getBinNr(double x0, double pos0_min, double dpos) nogil:
     """
     return (x0 - pos0_min) / dpos
 
-cdef double min4f(double a, double b, double c, double d) nogil:
+cdef  float min4f( float a,  float b,  float c,  float d) nogil:
     if (a <= b) and (a <= c) and (a <= d):
         return a
     if (b <= a) and (b <= c) and (b <= d):
@@ -84,8 +86,8 @@ cdef double min4f(double a, double b, double c, double d) nogil:
     else:
         return d
 
-cdef double max4f(double a, double b, double c, double d) nogil:
-    """Calculates the max of 4 double numbers"""
+cdef  float max4f( float a,  float b,  float c,  float d) nogil:
+    """Calculates the max of 4  float numbers"""
     if (a >= b) and (a >= c) and (a >= d):
         return a
     if (b >= a) and (b >= c) and (b >= d):
@@ -147,14 +149,14 @@ def fullSplit1D(numpy.ndarray pos not None,
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype=numpy.float64)
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outMerge = numpy.zeros(bins, dtype=numpy.float64)
     cdef numpy.int8_t[:] cmask
-    cdef double[:] cflat, cdark, cpolarization, csolidangle
+    cdef  float[:] cflat, cdark, cpolarization, csolidangle
 
-    cdef double cdummy=0, cddummy=0, data=0
-    cdef double deltaR=0, deltaL=0, deltaA=0
-    cdef double pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0
-    cdef double aeraPixel=0, dpos=0, fbin0_min=0, fbin0_max=0#, fbin1_min, fbin1_max 
-    cdef double a0=0, b0=0, c0=0, d0=0, max0=0, min0=0, a1=0, b1=0, c1=0, d1=0, max1=0, min1=0
-    cdef double epsilon=1e-10
+    cdef  float cdummy=0, cddummy=0, data=0
+    cdef  float deltaR=0, deltaL=0, deltaA=0
+    cdef  float pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0
+    cdef  float aeraPixel=0, dpos=0, fbin0_min=0, fbin0_max=0#, fbin1_min, fbin1_max 
+    cdef  float a0=0, b0=0, c0=0, d0=0, max0=0, min0=0, a1=0, b1=0, c1=0, d1=0, max1=0, min1=0
+    cdef  float epsilon=1e-10
 
     cdef bint check_pos1=False, check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
     cdef size_t i=0, idx=0, bin=0, bin0_max=0, bin0_min=0
@@ -174,7 +176,7 @@ def fullSplit1D(numpy.ndarray pos not None,
         pos1_min = pos[:, :, 1].min()
         pos1_maxin = pos[:, :, 1].max()
     pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
-    dpos = (pos0_max - pos0_min) / (< double > (bins))
+    dpos = (pos0_max - pos0_min) / (<  float > (bins))
 
 
     outPos = numpy.linspace(pos0_min+0.5*dpos, pos0_maxin-0.5*dpos, bins)
@@ -223,27 +225,30 @@ def fullSplit1D(numpy.ndarray pos not None,
             if check_dummy and ( (cddummy==0.0 and data==cdummy) or (cddummy!=0.0 and fabs(data-cdummy)<=cddummy)):
                 continue
 
-            a0 = < double > cpos[idx, 0, 0]
-            a1 = < double > cpos[idx, 0, 1]
-            b0 = < double > cpos[idx, 1, 0]
-            b1 = < double > cpos[idx, 1, 1]
-            c0 = < double > cpos[idx, 2, 0]
-            c1 = < double > cpos[idx, 2, 1]
-            d0 = < double > cpos[idx, 3, 0]
-            d1 = < double > cpos[idx, 3, 1]
+            # a0, b0, c0 and d0 are in bin number (2theta, q or r)
+            # a1, b1, c1 and d1 are in Chi angle in radians ...
+            a0 = getBinNr(cpos[idx, 0, 0], pos0_min, dpos)
+            a1 = <  float > cpos[idx, 0, 1]
+            b0 = getBinNr(cpos[idx, 1, 0], pos0_min, dpos)
+            b1 = <  float > cpos[idx, 1, 1]
+            c0 = getBinNr(cpos[idx, 2, 0], pos0_min, dpos)
+            c1 = <  float > cpos[idx, 2, 1]
+            d0 = getBinNr(cpos[idx, 3, 0], pos0_min, dpos)
+            d1 = <  float > cpos[idx, 3, 1]
             min0 = min4f(a0, b0, c0, d0)
             max0 = max4f(a0, b0, c0, d0)
-            if (max0<pos0_min) or (min0 > pos0_maxin):
+            if (max0<0) or (min0 >=bins):
                 continue
             if check_pos1:
                 min1 = min4f(a1, b1, c1, d1)
                 max1 = max4f(a1, b1, c1, d1)
                 if (max1<pos1_min) or (min1 > pos1_maxin):
                     continue
-            if min0<pos0_min:
-                min0=pos0_min
-            if max0>pos0_maxin:
-                max0=pos0_maxin
+             #needs to be addressed in another way   
+#            if min0 < 0:
+#                min0 = 0
+#            if max0 >= bins:
+#                max0 = bins
 
             if do_dark:
                 data -= cdark[idx]
@@ -254,8 +259,8 @@ def fullSplit1D(numpy.ndarray pos not None,
             if do_solidangle:
                 data /= csolidangle[idx]
 
-            fbin0_min = getBinNr(min0, pos0_min, dpos)
-            fbin0_max = getBinNr(max0, pos0_min, dpos)
+#            fbin0_min = getBinNr(min0, pos0_min, dpos)
+#            fbin0_max = getBinNr(max0, pos0_min, dpos)
             bin0_min = < size_t > fbin0_min
             bin0_max = < size_t > fbin0_max
 
@@ -266,7 +271,7 @@ def fullSplit1D(numpy.ndarray pos not None,
 
     #        else we have pixel spliting.
             else:
-                aeraPixel = fbin0_max - fbin0_min
+                aeraPixel = area4(a0,a1,b0,b1,c0,c1,d0)
                 deltaA = 1.0 / aeraPixel
 
                 deltaL = <double>(bin0_min) + 1.0 - fbin0_min
