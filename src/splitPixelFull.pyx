@@ -46,7 +46,7 @@ from cython.view cimport array as cvarray
 #    """
 #    return 0.5 * abs(((b0 - a0) * (c1 - a1)) - ((b1 - a1) * (c0 - a0)))
 #
-cdef double area4(double a0, double a1, double b0, double b1, double c0, double c1, double d0, double d1):
+cdef double area4(double a0, double a1, double b0, double b1, double c0, double c1, double d0, double d1) nogil:
     """
     Calculate the area of the ABCD quadrilataire  with corners:
     A(a0,a1)
@@ -55,7 +55,7 @@ cdef double area4(double a0, double a1, double b0, double b1, double c0, double 
     D(d0,d1)
     @return: area, i.e. 1/2 * (AC ^ BD)
     """
-    return 0.5 * abs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
+    return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
 
 # cdef double area4(point2D *pixel):
     # """
@@ -83,7 +83,7 @@ cdef class Function:
     
     def __cinit__(self, double A0=0.0, double A1=0.0, double B0=1.0, double B1=0.0):
         self._slope = (B1-A1)/(B0-A0)
-        self._intersect = A.1 - self._slope*A0
+        self._intersect = A1 - self._slope*A0
 
     def __cinit__(self):
         self._slope = 0.0
@@ -92,20 +92,20 @@ cdef class Function:
     cdef double f(self, double x):
         return self._slope*x + self._intersect
     
-    cdef double integrate(self, double A0, double B0):
+    cdef double integrate(self, double A0, double B0) nogil:
         if A0==B0:
             return 0.0
         else:
             return self._slope*(B0*B0 - A0*A0)*0.5 + self._intersect*(B0-A0)
     
-    cdef void reset(self, double A0, double A1, double B0, double B1):
+    cdef void reset(self, double A0, double A1, double B0, double B1) nogil:
         self._slope = (B1-A1)/(B0-A0)
-        self._intersect = A.1 - self._slope*A0
+        self._intersect = A1 - self._slope*A0
         
         
     
 @cython.cdivision(True)
-cdef double  getBinNr(double x0, double pos0_min, double dpos) nogil:
+cdef double getBinNr(double x0, double pos0_min, double dpos) nogil:
     """
     calculate the bin number for any point
     param x0: current position
@@ -274,7 +274,7 @@ def fullSplit1D(numpy.ndarray pos not None,
     cdef double A_lim=0, B_lim=0, C_lim=0, D_lim=0
     cdef double oneOverArea=0, partialArea=0, tmp=0
     # cdef min_max max0, min0, max1, min1
-    cdef point2D[:] pixel
+    #cdef point2D[:] pixel
     cdef Function AB, BC, CD, DA
     cdef double epsilon=1e-10
 
@@ -371,7 +371,7 @@ def fullSplit1D(numpy.ndarray pos not None,
 
             min0 = min4f(a0, b0, c0, d0)
             max0 = max4f(a0, b0, c0, d0)
-             if (max0<0) or (min0 >=bins):
+            if (max0<0) or (min0 >=bins):
                 continue
             if check_pos1:
                 min1 = min4f(a1, b1, c1, d1)
@@ -398,15 +398,15 @@ def fullSplit1D(numpy.ndarray pos not None,
 
     #        else we have pixel spliting.
             else:
-                AB.reset(A0 A1, B0, B1)
-                BC.reset(B0 B1, C0, C1)
-                CD.reset(C0 C1, D0, D1)
-                DA.reset(D0 D1, A0, A1)
+                AB.reset(A0, A1, B0, B1)
+                BC.reset(B0, B1, C0, C1)
+                CD.reset(C0, C1, D0, D1)
+                DA.reset(D0, D1, A0, A1)
                              
-                areaPixel = area4(&pixel)
+                areaPixel = area4(a0, a1, b0, b1, c0, c1, d0, d1)
                 oneOverPixelArea = 1.0 / areaPixel
 
-                for bin in range(bin0_min, bin1_max+1):
+                for bin in range(bin0_min, bin0_max+1):
                     A_lim = (bin<=A0)*((bin+1)<=A0)*bin + (bin<=A0)*((bin+1)>A0)*A0 + (bin>A0)*((bin+1)>A0)*(bin+1)
                     B_lim = (bin<=B0)*((bin+1)<=B0)*bin + (bin<=B0)*((bin+1)>B0)*B0 + (bin>B0)*((bin+1)>B0)*(bin+1)
                     C_lim = (bin<=C0)*((bin+1)<=C0)*bin + (bin<=C0)*((bin+1)>C0)*C0 + (bin>C0)*((bin+1)>C0)*(bin+1)
