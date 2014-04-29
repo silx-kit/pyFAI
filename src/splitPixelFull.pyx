@@ -28,7 +28,8 @@
 import cython
 cimport numpy
 import numpy
-from libc.math cimport fabs
+from libc.math cimport fabs, floor
+from libc.stdio cimport printf
 from cython.view cimport array as cvarray
 
 #cdef double areaTriangle(double a0,
@@ -76,33 +77,41 @@ cdef double area4(double a0, double a1, double b0, double b1, double c0, double 
     # numpy.float64_t pos
     # numpy.int32_t point
     
-cdef class Function:
+cdef struct Function:
+    double slope
+    double intersect
     
-    cdef double _slope
-    cdef double _intersect
+#cdef class Function:
     
-    def __cinit__(self, double A0=0.0, double A1=0.0, double B0=1.0, double B1=0.0):
-        self._slope = (B1-A1)/(B0-A0)
-        self._intersect = A1 - self._slope*A0
+    #cdef double _slope
+    #cdef double _intersect
+    
+    #def __cinit__(self, double A0=0.0, double A1=0.0, double B0=1.0, double B1=0.0):
+        #self._slope = (B1-A1)/(B0-A0)
+        #self._intersect = A1 - self._slope*A0
 
-    def __cinit__(self):
-        self._slope = 0.0
-        self._intersect = 0.0
+    #def __cinit__(self):
+        #self._slope = 0.0
+        #self._intersect = 0.0
         
-    cdef double f(self, double x):
-        return self._slope*x + self._intersect
+    #cdef double f(self, double x):
+        #return self._slope*x + self._intersect
     
-    cdef double integrate(self, double A0, double B0) nogil:
-        if A0==B0:
-            return 0.0
-        else:
-            return self._slope*(B0*B0 - A0*A0)*0.5 + self._intersect*(B0-A0)
+    #cdef double integrate(self, double A0, double B0) nogil:
+        #if A0==B0:
+            #return 0.0
+        #else:
+            #return self._slope*(B0*B0 - A0*A0)*0.5 + self._intersect*(B0-A0)
     
-    cdef void reset(self, double A0, double A1, double B0, double B1) nogil:
-        self._slope = (B1-A1)/(B0-A0)
-        self._intersect = A1 - self._slope*A0
+    #cdef void reset(self, double A0, double A1, double B0, double B1) nogil:
+        #self._slope = (B1-A1)/(B0-A0)
+        #self._intersect = A1 - self._slope*A0
         
-        
+cdef double integrate( double A0, double B0, Function AB) nogil:
+    if A0==B0:
+        return 0.0
+    else:
+        return AB.slope*(B0*B0 - A0*A0)*0.5 + AB.intersect*(B0-A0)
     
 @cython.cdivision(True)
 cdef double getBinNr(double x0, double pos0_min, double dpos) nogil:
@@ -279,7 +288,7 @@ def fullSplit1D(numpy.ndarray pos not None,
     cdef double epsilon=1e-10
 
     cdef bint check_pos1=False, check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
-    cdef size_t i=0, idx=0, bin=0, bin0_max=0, bin0_min=0, pixel_bins=0, cur_bin
+    cdef int i=0, idx=0, bin=0, bin0_max=0, bin0_min=0, pixel_bins=0, cur_bin
 
     if pos0Range is not None and len(pos0Range) > 1:
         pos0_min = min(pos0Range)
@@ -336,10 +345,10 @@ def fullSplit1D(numpy.ndarray pos not None,
         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)
 
     #pixel = cvarray(shape=4, itemsize=sizeof(point2D))
-    AB = Function()
-    BC = Function()
-    CD = Function()
-    DA = Function()
+    #AB = Function()
+    #BC = Function()
+    #CD = Function()
+    #DA = Function()
         
     with nogil:
         for idx in range(size):
@@ -360,22 +369,22 @@ def fullSplit1D(numpy.ndarray pos not None,
             # pixel[3].x = getBinNr(< double > cpos[idx, 3, 0], pos0_min, dpos)
             # pixel[3].y = < double > cpos[idx, 3, 1]
 
-            a0 = getBinNr(< double > cpos[idx, 0, 0], pos0_min, dpos)
-            a1 = < double > cpos[idx, 0, 1]
-            b0 = getBinNr(< double > cpos[idx, 1, 0], pos0_min, dpos)
-            b1 = < double > cpos[idx, 1, 1]
-            c0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, dpos)
-            c1 = < double > cpos[idx, 2, 1]
-            d0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, dpos)
-            d1 = < double > cpos[idx, 3, 1]
+            A0 = getBinNr(< double > cpos[idx, 0, 0], pos0_min, dpos)
+            A1 = < double > cpos[idx, 0, 1]
+            B0 = getBinNr(< double > cpos[idx, 1, 0], pos0_min, dpos)
+            B1 = < double > cpos[idx, 1, 1]
+            C0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, dpos)
+            C1 = < double > cpos[idx, 2, 1]
+            D0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, dpos)
+            D1 = < double > cpos[idx, 3, 1]
 
-            min0 = min4f(a0, b0, c0, d0)
-            max0 = max4f(a0, b0, c0, d0)
+            min0 = min(A0, B0, C0, D0)
+            max0 = max(A0, B0, C0, D0)
             if (max0<0) or (min0 >=bins):
                 continue
             if check_pos1:
-                min1 = min4f(a1, b1, c1, d1)
-                max1 = max4f(a1, b1, c1, d1)
+                min1 = min(A1, B1, C1, D1)
+                max1 = max(A1, B1, C1, D1)
                 if (max1<pos1_min) or (min1 > pos1_maxin):
                     continue
 
@@ -388,9 +397,10 @@ def fullSplit1D(numpy.ndarray pos not None,
             if do_solidangle:
                 data /= csolidangle[idx]
 
-            bin0_min = < size_t > min0
-            bin0_max = < size_t > max0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+            bin0_min = < int > floor(min0)
+            bin0_max = < int > floor(max0)
 
+            #printf("%d - [(%f %f) (%f %f) (%f %f) (%f %f)] (%f %f) (%d %d)\n",idx, A0, A1, B0, B1, C0, C1, D0, D1, min0, max0, bin0_min, bin0_max)
             if bin0_min == bin0_max:
                 #All pixel is within a single bin
                 outCount[bin0_min] += 1
@@ -398,27 +408,34 @@ def fullSplit1D(numpy.ndarray pos not None,
 
     #        else we have pixel spliting.
             else:
-                AB.reset(A0, A1, B0, B1)
-                BC.reset(B0, B1, C0, C1)
-                CD.reset(C0, C1, D0, D1)
-                DA.reset(D0, D1, A0, A1)
-                             
-                areaPixel = area4(a0, a1, b0, b1, c0, c1, d0, d1)
+                AB.slope=(B1-A1)/(B0-A0)
+                AB.intersect= A1 - AB.slope*A0
+                BC.slope=(C1-B1)/(C0-B0)
+                BC.intersect= B1 - BC.slope*B0
+                CD.slope=(D1-C1)/(D0-C0)
+                CD.intersect= C1 - CD.slope*C0
+                DA.slope=(A1-D1)/(A0-D0)
+                DA.intersect= D1 - DA.slope*D0
+                areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
                 oneOverPixelArea = 1.0 / areaPixel
-
+                partialArea2 = 0.0
                 for bin in range(bin0_min, bin0_max+1):
-                    A_lim = (bin<=A0)*((bin+1)<=A0)*bin + (bin<=A0)*((bin+1)>A0)*A0 + (bin>A0)*((bin+1)>A0)*(bin+1)
-                    B_lim = (bin<=B0)*((bin+1)<=B0)*bin + (bin<=B0)*((bin+1)>B0)*B0 + (bin>B0)*((bin+1)>B0)*(bin+1)
-                    C_lim = (bin<=C0)*((bin+1)<=C0)*bin + (bin<=C0)*((bin+1)>C0)*C0 + (bin>C0)*((bin+1)>C0)*(bin+1)
-                    D_lim = (bin<=D0)*((bin+1)<=D0)*bin + (bin<=D0)*((bin+1)>D0)*D0 + (bin>D0)*((bin+1)>D0)*(bin+1)
-                    partialArea  = AB.integrate(A_lim, B_lim)
-                    partialArea += BC.integrate(B_lim, C_lim)
-                    partialArea += CD.integrate(C_lim, D_lim)
-                    partialArea += DA.integrate(D_lim, A_lim)
-                    tmp = partialArea * oneOverPixelArea
+                    A_lim = (A0<=bin)*(A0<=(bin+1))*bin + (A0>bin)*(A0<=(bin+1))*A0 + (A0>bin)*(A0>(bin+1))*(bin+1)
+                    B_lim = (B0<=bin)*(B0<=(bin+1))*bin + (B0>bin)*(B0<=(bin+1))*B0 + (B0>bin)*(B0>(bin+1))*(bin+1)
+                    C_lim = (C0<=bin)*(C0<=(bin+1))*bin + (C0>bin)*(C0<=(bin+1))*C0 + (C0>bin)*(C0>(bin+1))*(bin+1)
+                    D_lim = (D0<=bin)*(D0<=(bin+1))*bin + (D0>bin)*(D0<=(bin+1))*D0 + (D0>bin)*(D0>(bin+1))*(bin+1)
+                    partialArea  = integrate(A_lim, B_lim, AB)
+                    partialArea += integrate(B_lim, C_lim, BC)
+                    partialArea += integrate(C_lim, D_lim, CD)
+                    partialArea += integrate(D_lim, A_lim, DA)
+                    tmp = fabs(partialArea) * oneOverPixelArea
+                    partialArea2 += partialArea
                     outCount[bin] += tmp
                     outData[bin] += data * tmp
+                if fabs(partialArea2-areaPixel) > epsilon:
+                    printf("%d -  %f %f\n",idx,partialArea2,areaPixel)
                 
+
         for i in range(bins):
             if outCount[i] > epsilon:
                 outMerge[i] = outData[i] / outCount[i]
