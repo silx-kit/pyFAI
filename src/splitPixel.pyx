@@ -66,7 +66,7 @@ cdef inline double area4(double a0,
     D(d0,d1)
     @return: area, i.e. 1/2 * (AC ^ BD)
     """
-    return 0.5 * (((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
+    return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
 
 @cython.cdivision(True)
 cdef inline double  getBinNr( double x0,  double pos0_min,  double dpos) nogil:
@@ -78,37 +78,16 @@ cdef inline double  getBinNr( double x0,  double pos0_min,  double dpos) nogil:
     """
     return (x0 - pos0_min) / dpos
 
-cdef inline double min4f( double a,  double b,  double c,  double d) nogil:
-    """
-    Minimum over 4 double
-    """
-    if (a <= b) and (a <= c) and (a <= d):
-        return a
-    if (b <= a) and (b <= c) and (b <= d):
-        return b
-    if (c <= a) and (c <= b) and (c <= d):
-        return c
-    else:
-        return d
-
-cdef inline double max4f( double a,  double b,  double c,  double d) nogil:
-    """Calculates the max of 4  double numbers"""
-    if (a >= b) and (a >= c) and (a >= d):
-        return a
-    if (b >= a) and (b >= c) and (b >= d):
-        return b
-    if (c >= a) and (c >= b) and (c >= d):
-        return c
-    else:
-        return d
     
-def calc_area(double I1, double I2, double slope, double intercept):
-#cdef inline double calc_area(double I1, double I2, double slope, double intercept) nogil:
+#def calc_area(double I1, double I2, double slope, double intercept):
+cdef inline double calc_area(double I1, double I2, double slope, double intercept) nogil:
     "Calculate the area between I1 and I2 of a line with a given slope & intercept"
-    return 0.5 * (I2 - I1) * (slope * (I2 + I1) + 2 * intercept)
+    return 0.5 * ((I2 - I1) * (slope * (I2 + I1) + 2 * intercept))
 
-def integrate(double[:] buffer, int buffer_size, double start0, double start1, double stop0, double stop1):
-#cdef inline void integrate(double[:] buffer, int buffer_size, double start0, double start1, double stop0, double stop1) nogil:
+@cython.boundscheck(False)
+@cython.wraparound(False)
+#def integrate(double[:] buffer, int buffer_size, double start0, double start1, double stop0, double stop1):
+cdef inline void integrate(double[:] buffer, int buffer_size, double start0, double start1, double stop0, double stop1) nogil:
     "Integrate in a box a line between start and stop"
     
     if stop0 == start0:
@@ -118,30 +97,30 @@ def integrate(double[:] buffer, int buffer_size, double start0, double start1, d
     cdef int i, istart0 = <int> floor(start0), istop0 = <int> floor(stop0)
     slope = (stop1 - start1) / (stop0 - start0)
     intercept = start1 - slope * start0
-    if istop0 == istart0 >=0:
-        buffer[istart0] = calc_area(start0, stop0, slope, intercept)
+    if buffer_size > istop0 == istart0 >= 0:
+        buffer[istart0] += calc_area(start0, stop0, slope, intercept)
     else:
         if stop0 > start0:
-                if istart0>=0:
-                    buffer[istart0] = calc_area(start0, ceil(start0), slope, intercept)
+                if 0 <= start0 < buffer_size:
+                    buffer[istart0] += calc_area(start0, floor(start0+1), slope, intercept)
                 for i in range(max(istart0+1, 0), min(istop0, buffer_size)):
-                    buffer[i] = calc_area(i, i+1, slope, intercept)
-                if stop0<buffer_size:
-                    buffer[istop0] = calc_area(istop0, stop0, slope, intercept)
+                    buffer[i] += calc_area(i, i+1, slope, intercept)
+                if buffer_size > stop0 >= 0:
+                    buffer[istop0] += calc_area(istop0, stop0, slope, intercept)
         else:
-            if start0<buffer_size:
-                buffer[istart0] = calc_area(start0, istart0, slope, intercept)
-            for i in range(min(istart0, buffer_size)-1, max(<int> ceil(stop0), 0), -1):
-                buffer[i] = calc_area(i+1, i, slope, intercept)
-            if stop0>=0:
-                buffer[istop0] = calc_area(ceil(stop0), stop0, slope, intercept)
+            if 0 <= start0 < buffer_size:
+                buffer[istart0] += calc_area(start0, istart0, slope, intercept)
+            for i in range(min(istart0, buffer_size)-1, max(<int> floor(stop0), -1), -1):
+                buffer[i] += calc_area(i+1, i, slope, intercept)
+            if buffer_size > stop0 >= 0:
+                buffer[istop0] += calc_area(floor(stop0+1), stop0, slope, intercept)
                        
-#@cython.cdivision(True)
-#@cython.boundscheck(False)
-#@cython.wraparound(False)
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def fullSplit1D(numpy.ndarray pos not None,
                 numpy.ndarray weights not None,
-                size_t bins=100,
+                int bins=100,
                 pos0Range=None,
                 pos1Range=None,
                 dummy=None,
@@ -173,7 +152,7 @@ def fullSplit1D(numpy.ndarray pos not None,
     @param solidangle: array (of float64) with flat image
     @return 2theta, I, weighted histogram, unweighted histogram
     """
-    cdef size_t  size = weights.size
+    cdef int  size = weights.size
     if pos.ndim>3: #create a view
         pos = pos.reshape((-1,4,2))
     assert pos.shape[0] == size
@@ -199,7 +178,7 @@ def fullSplit1D(numpy.ndarray pos not None,
     cdef  double epsilon=1e-10
 
     cdef bint check_pos1=False, check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
-    cdef size_t i=0, b=0, idx=0, bin=0, bin0_max=0, bin0_min=0
+    cdef int i=0, b=0, idx=0, bin=0, bin0_max=0, bin0_min=0
     buffer = view.array(shape=(bins,),itemsize=sizeof(double), format="d") 
     memset(&buffer[0], 0, sizeof(double)*bins)
 
@@ -256,8 +235,8 @@ def fullSplit1D(numpy.ndarray pos not None,
         assert solidangle.size == size
         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)
 
-#    with nogil:
-    for idx in range(size):
+    with nogil:
+        for idx in range(size):
 
             if (check_mask) and (cmask[idx]):
                 continue
@@ -276,14 +255,14 @@ def fullSplit1D(numpy.ndarray pos not None,
             c1 = <  double > cpos[idx, 2, 1]
             d0 = getBinNr(cpos[idx, 3, 0], pos0_min, dpos)
             d1 = <  double > cpos[idx, 3, 1]
-            min0 = min4f(a0, b0, c0, d0)
-            max0 = max4f(a0, b0, c0, d0)
+            min0 = min(a0, b0, c0, d0)
+            max0 = max(a0, b0, c0, d0)
 
             if (max0<0) or (min0 >=bins):
                 continue
             if check_pos1:
-                min1 = min4f(a1, b1, c1, d1)
-                max1 = max4f(a1, b1, c1, d1)
+                min1 = min(a1, b1, c1, d1)
+                max1 = max(a1, b1, c1, d1)
                 if (max1<pos1_min) or (min1 > pos1_maxin):
                     continue
              #needs to be addressed in another way   
@@ -301,8 +280,8 @@ def fullSplit1D(numpy.ndarray pos not None,
             if do_solidangle:
                 data /= csolidangle[idx]
 
-            bin0_min = < size_t > min0
-            bin0_max = < size_t > max0
+            bin0_min = < int > floor(min0)
+            bin0_max = < int > floor(max0)
             
             if bin0_min == bin0_max:
                 #All pixel is within a single bin
@@ -311,44 +290,45 @@ def fullSplit1D(numpy.ndarray pos not None,
 
     #        else we have pixel spliting.
             else:
+                bin0_min = max(0,bin0_min)
+                bin0_max = min(bins,bin0_max+1)
                 aera_pixel = area4(a0,a1,b0,b1,c0,c1,d0,d1)
                 one_over_area = 1.0 / aera_pixel
-                print("Error on pixel %i"%idx)
-                print(a0,b0,c0,d0)
-                print(a1,b1,c1,d1)
+#                log_err = ["Error on pixel %i: %s %i-%i/ %i"%(idx,range(bin0_min,bin0_max),bin0_min,bin0_max, bins),
+#                           (a0,b0,c0,d0), (a1,b1,c1,d1)]
 
                 #TODO: split pixel
                 integrate(buffer, bins, a0, a1, b0, b1) #A-B
 #                with gil:
-                print("AB:",[buffer[i] for i in range(max(0,bin0_min),min(bins,bin0_max+1))])
+#                log_err.append("AB: %s"%[buffer[i] for i in range(bin0_min,bin0_max)])
                 integrate(buffer, bins, b0, b1, c0, c1) #B-C
                 #with gil:
-                print("BC:",[buffer[i] for i in range(max(0,bin0_min),min(bins,bin0_max+1))])
+#                log_err.append("BC %s:"%[buffer[i] for i in range(bin0_min,bin0_max)])
                 integrate(buffer, bins, c0, c1, d0, d1) #C-D
                 #with gil:
-                print("CD:",[buffer[i] for i in range(max(0,bin0_min),min(bins,bin0_max+1))])
+#                log_err.append("CD: %s"%[buffer[i] for i in range(bin0_min,bin0_max)])
                 integrate(buffer, bins, d0, d1, a0, a1) #D-A
 #                with gil:
-                print("DA:",[buffer[i] for i in range(max(0,bin0_min),min(bins,bin0_max+1))])
+#                log_err.append("DA: %s"%[buffer[i] for i in range(bin0_min,bin0_max)])
 
                 #Distribute pixel area
                 sum_area = 0.0 
-                for i in range(max(0,bin0_min),min(bins,bin0_max+1)):
-                    sub_area = buffer[i]
+                for i in range(bin0_min,bin0_max):
+                    sub_area = fabs(buffer[i])
                     sum_area += sub_area
                     sub_area = sub_area * one_over_area
                     outCount[i] += sub_area
                     outData[i] += sub_area * data 
                     
                 #check the total area:
-                if bin0_min>=0 and bin0_max<bins and sum_area!=aera_pixel:
+                if fabs(sum_area-aera_pixel)/aera_pixel>1e-6 and bin0_min!=0 and bin0_max!=bins:
 #                if sum_area!=aera_pixel:
-#                    with gil:
-                    
-                    
-                    print("area_pixel=%s area_sum=%s"%(aera_pixel,sum_area))
-                memset(&buffer[0], 0, sizeof(double)*bins)
-    for i in range(bins):
+                    with gil:
+                        print("area_pixel=%s area_sum=%s, Error= %s"%(aera_pixel,sum_area,(aera_pixel-sum_area)/aera_pixel))
+#                    for line in log_err:
+#                        print(line)
+                memset(&buffer[bin0_min], 0, sizeof(double)*(bin0_max-bin0_min))
+        for i in range(bins):
             if outCount[i] > epsilon:
                 outMerge[i] = outData[i] / outCount[i]
             else:
@@ -397,7 +377,7 @@ def fullSplit2D(numpy.ndarray pos not None,
     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
 
-    cdef size_t  bins0=0, bins1=0, size = weights.size
+    cdef int  bins0=0, bins1=0, size = weights.size
     if pos.ndim>3: #create a view
         pos = pos.reshape((-1,4,2))
 
@@ -408,7 +388,7 @@ def fullSplit2D(numpy.ndarray pos not None,
     try:
         bins0, bins1 = tuple(bins)
     except:
-        bins0 = bins1 = < size_t > bins
+        bins0 = bins1 = < int > bins
     if bins0 <= 0:
         bins0 = 1
     if bins1 <= 0:
@@ -433,7 +413,7 @@ def fullSplit2D(numpy.ndarray pos not None,
     cdef double a0=0, a1=0, b0=0, b1=0, c0=0, c1=0, d0=0, d1=0
     cdef double epsilon = 1e-10
 
-    cdef size_t bin0_max=0, bin0_min=0, bin1_max=0, bin1_min=0, i=0, j=0, idx=0
+    cdef int bin0_max=0, bin0_min=0, bin1_max=0, bin1_min=0, i=0, j=0, idx=0
 
     if pos0Range is not None and len(pos0Range) == 2:
         pos0_min = min(pos0Range)
@@ -509,10 +489,10 @@ def fullSplit2D(numpy.ndarray pos not None,
             d0 =  cpos[idx, 3, 0]
             d1 =  cpos[idx, 3, 1]
 
-            min0 = min4f(a0, b0, c0, d0)
-            max0 = max4f(a0, b0, c0, d0)
-            min1 = min4f(a1, b1, c1, d1)
-            max1 = max4f(a1, b1, c1, d1)
+            min0 = min(a0, b0, c0, d0)
+            max0 = max(a0, b0, c0, d0)
+            min1 = min(a1, b1, c1, d1)
+            max1 = max(a1, b1, c1, d1)
 
             if (max0<pos0_min) or (min0 > pos0_maxin) or (max1<pos1_min) or (min1 > pos1_maxin):
                     continue
@@ -554,10 +534,10 @@ def fullSplit2D(numpy.ndarray pos not None,
             fbin1_min = getBinNr(min1, pos1_min, dpos1)
             fbin1_max = getBinNr(max1, pos1_min, dpos1)
 
-            bin0_min = < size_t > fbin0_min
-            bin0_max = < size_t > fbin0_max
-            bin1_min = < size_t > fbin1_min
-            bin1_max = < size_t > fbin1_max
+            bin0_min = < int > fbin0_min
+            bin0_max = < int > fbin0_max
+            bin1_min = < int > fbin1_min
+            bin1_max = < int > fbin1_max
 
 
             if bin0_min == bin0_max:
