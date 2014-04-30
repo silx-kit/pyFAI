@@ -116,9 +116,9 @@ if ("sdist" in sys.argv):
 # ###############################################################################
 # pyFAI extensions
 # ###############################################################################
-cython_modules = ["histogram", "splitPixel", "splitBBox", "splitBBoxLUT", "splitBBoxCSR",
+cython_modules = ["histogram", "splitPixel", "splitPixelFull", "splitBBox", "splitBBoxLUT", "splitBBoxCSR",
                   "relabel", "bilinear", "_geometry", "reconstruct", "fastcrc", "_distortion",
-                  "_distortionCSR", "_bispev"]
+                  "_distortionCSR", "_bispev"] # ,"splitBBoxLUT_vector"
 src = dict([(ext, join("src", ext + cython_c_ext)) for ext in cython_modules])
 
 _geometry_dic = dict(name="_geometry",
@@ -145,6 +145,11 @@ splitPixel_dic = dict(name="splitPixel",
                  sources=[src['splitPixel']],
                  )
 
+splitPixelFull_dic = dict(name="splitPixelFull",
+                 include_dirs=get_numpy_include_dirs(),
+                 sources=[src['splitPixelFull']],
+                 )
+
 splitBBox_dic = dict(name="splitBBox",
                      include_dirs=get_numpy_include_dirs(),
                      sources=[src['splitBBox']],
@@ -155,6 +160,13 @@ splitBBoxLUT_dic = dict(name="splitBBoxLUT",
                         extra_compile_args=['openmp'],
                         extra_link_args=['openmp'],
                         )
+
+#splitBBoxLUT_vector_dic = dict(name="splitBBoxLUT_vector",
+                        #include_dirs=get_numpy_include_dirs(),
+                        #sources=[src['splitBBoxLUT_vector']],
+                        #extra_compile_args=['openmp','-lstdc++'],
+                        #extra_link_args=['openmp','-lstdc++'],
+                        #)
 
 splitBBoxCSR_dic = dict(name="splitBBoxCSR",
                         include_dirs=get_numpy_include_dirs(),
