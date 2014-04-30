@@ -21,7 +21,7 @@ ai = pyFAI.AzimuthalIntegrator(detector="Pilatus1M")
 images = glob.glob("/data/bm29/inhouse/opd29/20140430/raw/water_008_*.edf")
 images.sort()
 img = images[0]
-xml = etree.parse(os.path.splitext(img) + ".xml")
+xml = etree.parse(os.path.splitext(img)[0] + ".xml")
 wl = float(xml.xpath("//wavelength")[0].getchildren()[0].text)
 centerX = float(xml.xpath("//beamCenter_1")[0].getchildren()[0].text)
 centerY = float(xml.xpath("//beamCenter_2")[0].getchildren()[0].text)
@@ -34,7 +34,7 @@ ai.wavelength = wl
 I_splitBB = [];sigma_splitBB = [];I_splitFull = [];sigma_splitFull = [];I_nosplit = [];sigma_nosplit = []
 for fn in images[:]:
     img = fabio.open(fn).data
-    xml = etree.parse(os.path.splitext(fn) + ".xml")
+    xml = etree.parse(os.path.splitext(fn)[0] + ".xml")
     monitor = float(xml.xpath("//beamStopDiode")[0].getchildren()[0].text)
     print(fn, monitor);
     variance = numpy.maximum(img, 1)
