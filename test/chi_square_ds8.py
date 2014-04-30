@@ -4,6 +4,7 @@
 #tests if the distribution of Chi2 is centered around 1:
 # Needs a large dataset (thousands of images)
 
+import os
 import sys
 import glob
 import pylab
