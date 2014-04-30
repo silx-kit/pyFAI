@@ -68,6 +68,24 @@ class TestSolidAngle(unittest.TestCase):
         self.assert_(delta_I < 5, 'Error on (good) I are small: %s <5' % delta_I)
         self.assert_(I < 0.05, 'Error on (good) I are small: %s <0.05' % I)
 
+class TestBug88SolidAngle(unittest.TestCase):
+    """
+    Test case for solid angle where data got modified inplace.
+    
+    https://github.com/kif/pyFAI/issues/88
+    """
+
+
+    def testSolidAngle(self):
+        img = numpy.ones((1000, 1000), dtype=numpy.float32)
+        ai = pyFAI.AzimuthalIntegrator(dist=0.01, detector="Titan", wavelength=1e-10)
+        t = ai.integrate1d(img, 1000, method="numpy")[1].max()
+        f = ai.integrate1d(img, 1000, method="numpy", correctSolidAngle=False)[1].max()
+        self.assertAlmostEqual(f, 1, 5, "uncorrected flat data are unchanged")
+        self.assertNotAlmostEqual(f, t, 1, "corrected and uncorrected flat data are different")
+
+
+
 class ParameterisedTestCase(unittest.TestCase):
     """ TestCase classes that want to be parameterised should
         inherit from this class.
@@ -182,6 +200,7 @@ TESTCASES = [
 def test_suite_all_Geometry():
     testSuite = unittest.TestSuite()
     testSuite.addTest(TestSolidAngle("testSolidAngle"))
+    testSuite.addTest(TestBug88SolidAngle("testSolidAngle"))
     for param in TESTCASES:
         testSuite.addTest(ParameterisedTestCase.parameterise(
                 TestGeometry, param))

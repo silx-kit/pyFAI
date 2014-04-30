@@ -44,7 +44,10 @@ from scipy import ndimage
 from scipy.interpolate import interp1d
 from math import  ceil, sin, cos, atan2, pi
 
-from . import relabel as relabelCython
+try:
+    from . import relabel as relabelCython
+except:
+    relabelCython = None
 from scipy.optimize.optimize import fmin, fminbound
 import scipy.ndimage.filters
 logger = logging.getLogger("pyFAI.utils")
@@ -381,17 +384,20 @@ def relabel(label, data, blured, max_size=None):
     @param max_size: the max number of label wanted
     @return array like label
     """
-    max_label = label.max()
-    a, b, c, d = relabelCython.countThem(label, data, blured)
-    count = d
-    sortCount = count.argsort()
-    invSortCount = sortCount[-1::-1]
-    invCutInvSortCount = numpy.zeros(max_label + 1, dtype=int)
-    for i, j in enumerate(list(invSortCount[:max_size])):
-        invCutInvSortCount[j] = i
-    f = lambda i:invCutInvSortCount[i]
-    return f(label)
-
+    if relabelCython:
+        max_label = label.max()
+        a, b, c, d = relabelCython.countThem(label, data, blured)
+        count = d
+        sortCount = count.argsort()
+        invSortCount = sortCount[-1::-1]
+        invCutInvSortCount = numpy.zeros(max_label + 1, dtype=int)
+        for i, j in enumerate(list(invSortCount[:max_size])):
+            invCutInvSortCount[j] = i
+        f = lambda i:invCutInvSortCount[i]
+        return f(label)
+    else:
+        logger.warning("relabel Cython module is not available...")
+        return label
 
 def averageDark(lstimg, center_method="mean", cutoff=None):
     """
@@ -530,6 +536,9 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             for ch in zip(*listImages):
                 c = ch[0]
                 good = True
+                if c in ["*", "?", "[", "{", "("]:
+                    good = False
+                    break
                 for i in ch:
                     if i != c:
                         good = False
@@ -909,8 +918,8 @@ def _get_data_path(filename):
 
 
 def get_ui_file(filename):
-#    return _get_data_path(os.path.join("gui", filename))
-    return _get_data_path(filename)
+    return _get_data_path(os.path.join("gui", filename))
+#    return _get_data_path(filename)
 
 
 def get_cl_file(filename):
@@ -950,3 +959,149 @@ class lazy_property(object):
         setattr(obj,self.func_name,value)
         return value
 
+try:
+    from numpy import percentile
+except ImportError: #backport percentile from numpy 1.6.2
+    np = numpy
+    def percentile(a, q, axis=None, out=None, overwrite_input=False):
+        """
+        Compute the qth percentile of the data along the specified axis.
+    
+        Returns the qth percentile of the array elements.
+    
+        Parameters
+        ----------
+        a : array_like
+            Input array or object that can be converted to an array.
+        q : float in range of [0,100] (or sequence of floats)
+            Percentile to compute which must be between 0 and 100 inclusive.
+        axis : int, optional
+            Axis along which the percentiles are computed. The default (None)
+            is to compute the median along a flattened version of the array.
+        out : ndarray, optional
+            Alternative output array in which to place the result. It must
+            have the same shape and buffer length as the expected output,
+            but the type (of the output) will be cast if necessary.
+        overwrite_input : bool, optional
+           If True, then allow use of memory of input array `a` for
+           calculations. The input array will be modified by the call to
+           median. This will save memory when you do not need to preserve
+           the contents of the input array. Treat the input as undefined,
+           but it will probably be fully or partially sorted.
+           Default is False. Note that, if `overwrite_input` is True and the
+           input is not already an array, an error will be raised.
+    
+        Returns
+        -------
+        pcntile : ndarray
+            A new array holding the result (unless `out` is specified, in
+            which case that array is returned instead).  If the input contains
+            integers, or floats of smaller precision than 64, then the output
+            data-type is float64.  Otherwise, the output data-type is the same
+            as that of the input.
+    
+        See Also
+        --------
+        mean, median
+    
+        Notes
+        -----
+        Given a vector V of length N, the qth percentile of V is the qth ranked
+        value in a sorted copy of V.  A weighted average of the two nearest
+        neighbors is used if the normalized ranking does not match q exactly.
+        The same as the median if ``q=0.5``, the same as the minimum if ``q=0``
+        and the same as the maximum if ``q=1``.
+    
+        Examples
+        --------
+        >>> a = np.array([[10, 7, 4], [3, 2, 1]])
+        >>> a
+        array([[10,  7,  4],
+               [ 3,  2,  1]])
+        >>> np.percentile(a, 50)
+        3.5
+        >>> np.percentile(a, 0.5, axis=0)
+        array([ 6.5,  4.5,  2.5])
+        >>> np.percentile(a, 50, axis=1)
+        array([ 7.,  2.])
+    
+        >>> m = np.percentile(a, 50, axis=0)
+        >>> out = np.zeros_like(m)
+        >>> np.percentile(a, 50, axis=0, out=m)
+        array([ 6.5,  4.5,  2.5])
+        >>> m
+        array([ 6.5,  4.5,  2.5])
+    
+        >>> b = a.copy()
+        >>> np.percentile(b, 50, axis=1, overwrite_input=True)
+        array([ 7.,  2.])
+        >>> assert not np.all(a==b)
+        >>> b = a.copy()
+        >>> np.percentile(b, 50, axis=None, overwrite_input=True)
+        3.5
+    
+        """
+        a = np.asarray(a)
+
+        if q == 0:
+            return a.min(axis=axis, out=out)
+        elif q == 100:
+            return a.max(axis=axis, out=out)
+
+        if overwrite_input:
+            if axis is None:
+                sorted = a.ravel()
+                sorted.sort()
+            else:
+                a.sort(axis=axis)
+                sorted = a
+        else:
+            sorted = np.sort(a, axis=axis)
+        if axis is None:
+            axis = 0
+
+        return _compute_qth_percentile(sorted, q, axis, out)
+
+    # handle sequence of q's without calling sort multiple times
+    def _compute_qth_percentile(sorted, q, axis, out):
+        if not np.isscalar(q):
+            p = [_compute_qth_percentile(sorted, qi, axis, None)
+                 for qi in q]
+
+            if out is not None:
+                out.flat = p
+
+            return p
+
+        q = q / 100.0
+        if (q < 0) or (q > 1):
+            raise ValueError, "percentile must be either in the range [0,100]"
+
+        indexer = [slice(None)] * sorted.ndim
+        Nx = sorted.shape[axis]
+        index = q * (Nx - 1)
+        i = int(index)
+        if i == index:
+            indexer[axis] = slice(i, i + 1)
+            weights = np.array(1)
+            sumval = 1.0
+        else:
+            indexer[axis] = slice(i, i + 2)
+            j = i + 1
+            weights = np.array([(j - index), (index - i)], float)
+            wshape = [1] * sorted.ndim
+            wshape[axis] = 2
+            weights.shape = wshape
+            sumval = weights.sum()
+
+        # Use add.reduce in both cases to coerce data type as well as
+        #   check and use out array.
+        return np.add.reduce(sorted[indexer] * weights, axis=axis, out=out) / sumval
+
+def convert_CamelCase(name):
+    """
+    convert a function name in CamelCase into camel_case
+    """
+    import re
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()

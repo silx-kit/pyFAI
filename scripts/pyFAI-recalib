@@ -57,11 +57,7 @@ if __name__ == "__main__":
     c = Recalibration()
     c.parse()
     c.preprocess()
-#    time.sleep(2)
-#    raw_input("resize and press enter")
     c.extract_cpt()
-#    print c.peakPicker.points
-#    c.gui_peakPicker()
     c.refine()
     c.postProcess()
     if c.interactive:

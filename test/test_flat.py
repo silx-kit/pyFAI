@@ -98,17 +98,21 @@ class TestFlat2D(unittest.TestCase):
 
     def test_correct(self):
         test2d = {"numpy":self.eps,
-                  "cython":self.eps, 
-                  "splitbbox":self.eps, 
-                  "splitpix":self.eps, 
-                  "lut":self.eps, 
+                  "cython":self.eps,
+                  "splitbbox":self.eps,
+                  "splitpix":self.eps,
+                  "lut":self.eps,
                   "lut_ocl":self.eps}
         test2d_direct = {"xrpd2_numpy":0.3,#histograms are very noisy in 2D
                   "xrpd2_histogram":0.3,   #histograms are very noisy in 2D
-                  "xrpd2_splitBBox":self.eps, 
+                  "xrpd2_splitBBox":self.eps,
                   "xrpd2_splitPixel":self.eps}
         for meth in test2d:
-            I, _, _ = self.ai.integrate2d(self.raw, self.bins, self.azim, unit="r_mm", method=meth, correctSolidAngle=False, dark=self.dark, flat=self.flat)
+            try:
+                 I, _, _ = self.ai.integrate2d(self.raw, self.bins, self.azim, unit="r_mm", method=meth, correctSolidAngle=False, dark=self.dark, flat=self.flat)
+            except (MemoryError, pyFAI.opencl.pyopencl.MemoryError):
+                 logger.warning("Got MemoryError from OpenCL device")
+                 continue
             I = I[numpy.where(I > 0)]
             logger.info("2D method:%s Imin=%s Imax=%s <I>=%s std=%s" % (meth, I.min(), I.max(), I.mean(), I.std()))
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)

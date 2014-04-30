@@ -46,7 +46,7 @@ import traceback
 logger = logging.getLogger("pyFAI.spline")
 
 
-class Spline:
+class Spline(object):
     """
     This class is a python representation of the spline file
 
@@ -176,9 +176,9 @@ class Spline:
                                 databloc.append(float(line[i * self.lenStrFloat: (i + 1) * self.lenStrFloat]))
                         else:
                             break
-                    self.xSplineKnotsX = databloc[:splineKnotsXLen]
-                    self.xSplineKnotsY = databloc[splineKnotsXLen:splineKnotsXLen + splineKnotsYLen]
-                    self.xSplineCoeff = databloc[splineKnotsXLen + splineKnotsYLen:]
+                    self.xSplineKnotsX = numpy.array(databloc[:splineKnotsXLen], dtype=numpy.float32)
+                    self.xSplineKnotsY = numpy.array(databloc[splineKnotsXLen:splineKnotsXLen + splineKnotsYLen], dtype=numpy.float32)
+                    self.xSplineCoeff = numpy.array(databloc[splineKnotsXLen + splineKnotsYLen:], dtype=numpy.float32)
                 elif stripedLine == "Y-DISTORTION":
                     data = stringSpline[indexLine + 1]
                     [splineKnotsXLen, splineKnotsYLen] = [int(i) for i in data.split()]
@@ -189,15 +189,15 @@ class Spline:
                                 databloc.append(float(line[i * self.lenStrFloat:(i + 1) * self.lenStrFloat]))
                         else:
                             break
-                    self.ySplineKnotsX = databloc[:splineKnotsXLen]
-                    self.ySplineKnotsY = databloc[splineKnotsXLen:splineKnotsXLen + splineKnotsYLen]
-                    self.ySplineCoeff = databloc[ splineKnotsXLen + splineKnotsYLen:]
+                    self.ySplineKnotsX = numpy.array(databloc[:splineKnotsXLen], dtype=numpy.float32)
+                    self.ySplineKnotsY = numpy.array(databloc[splineKnotsXLen:splineKnotsXLen + splineKnotsYLen], dtype=numpy.float32)
+                    self.ySplineCoeff = numpy.array(databloc[ splineKnotsXLen + splineKnotsYLen:], dtype=numpy.float32)
     # Keep this at the end
                 indexLine += 1
-        except:        
+        except:
             traceback.print_exc()
             raise IOError("Spline File parsing error: %s" % (filename))
-                
+
     def comparison(self, ref, verbose=False):
         """
         Compares the current spline distortion with a reference
@@ -591,15 +591,15 @@ class Spline:
             binX, binY = float(binning[0]), float(binning[1])
         else:
             binX = binY = float(binning)
-        self.xSplineKnotsX = [i / binX for i in self.xSplineKnotsX]
-        self.xSplineKnotsY = [i / binY for i in self.xSplineKnotsY]
-        self.ySplineKnotsX = [i / binX for i in self.ySplineKnotsX]
-        self.ySplineKnotsY = [i / binY for i in self.ySplineKnotsY]
+        self.xSplineKnotsX /= binX
+        self.xSplineKnotsY /= binY
+        self.ySplineKnotsX /= binX
+        self.ySplineKnotsY /= binY
         self.pixelSize = (binX * self.pixelSize[0], binY * self.pixelSize[1])
         self.xmax = self.xmax / binX
         self.ymax = self.ymax / binY
-        self.xSplineCoeff = [i / binX for i in self.xSplineCoeff]
-        self.ySplineCoeff = [i / binY for i in self.ySplineCoeff]
+        self.xSplineCoeff /= binX
+        self.ySplineCoeff /= binY
         self.xDispArray = None
         self.yDispArray = None
 

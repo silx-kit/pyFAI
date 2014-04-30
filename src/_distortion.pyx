@@ -537,10 +537,10 @@ class Distortion(object):
             self.detector = detector_factory(detector)
         else:  # we assume it is a Detector instance
             self.detector = detector
-        if "max_shape" in dir(self.detector):
-            self.shape = self.detector.max_shape
-        else:
+        if shape:
             self.shape = shape
+        elif "max_shape" in dir(self.detector):
+            self.shape = self.detector.max_shape
         self.shape = tuple([int(i) for i in self.shape])
         self._sem = threading.Semaphore()
         self.lut_size = None
@@ -754,7 +754,7 @@ class Distortion(object):
     @timeit
     def uncorrect(self, image):
         """
-        Take an image which has been corrected and transform it into it's raw (with loose of information)
+        Take an image which has been corrected and transform it into it's raw (with loss of information)
 
         @param image: 2D-array with the image
         @return: uncorrected 2D image and a mask (pixels in raw image

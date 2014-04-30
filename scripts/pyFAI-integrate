@@ -35,8 +35,8 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/03/2013"
-__satus__ = "development"
+__date__ = "05/03/2014"
+__satus__ = "production"
 import sys, logging, json, os, time, types, threading
 import os.path as op
 import numpy
@@ -46,7 +46,10 @@ import pyFAI, fabio
 from pyFAI.opencl import ocl
 import pyFAI.utils
 from pyFAI.integrate_widget import AIWidget
-UIC = op.join(op.dirname(pyFAI.__file__), "integration.ui")
+try:
+    from argparse import ArgumentParser
+except ImportError:
+    from pyFAI.argparse import  ArgumentParser
 
 try:
     from rfoo.utils import rconsole
@@ -59,8 +62,7 @@ except ImportError:
 window = None
 
 if __name__ == "__main__":
-    from optparse import OptionParser
-    usage = "usage: %prog [options] file1.edf file2.edf ..."
+    usage = "usage: pyFAI-integrate [options] file1.edf file2.edf ..."
     version = "%prog " + pyFAI.version
     description = """
     PyFAI-integrate is a graphical interface (based on Python/Qt4) to perform azimuthal integration
@@ -72,29 +74,32 @@ the LImA plugin of pyFAI.
 
 Nota: there is bug in debian6 making the GUI crash (to be fixed inside pyqt)
 http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
-    parser = OptionParser(usage=usage, version=version, description=description, epilog=epilog)
-    parser.add_option("-v", "--verbose",
+    parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
+    parser.add_argument("-V", "--version", action='version', version=version)
+    parser.add_argument("-v", "--verbose",
                       action="store_true", dest="verbose", default=False,
                       help="switch to verbose/debug mode")
-    parser.add_option("-o", "--output",
+    parser.add_argument("-o", "--output",
                       dest="output", default=None,
                       help="Directory or file where to store the output data")
-    parser.add_option("-f", "--format",
+    parser.add_argument("-f", "--format",
                       dest="format", default=None,
                       help="output data format (can be HDF5)")
-    parser.add_option("-s", "--slow-motor",
+    parser.add_argument("-s", "--slow-motor",
                       dest="slow", default=None,
                       help="Dimension of the scan on the slow direction (makes sense only with HDF5)")
-    parser.add_option("-r", "--fast-motor",
+    parser.add_argument("-r", "--fast-motor",
                       dest="rapid", default=None,
                       help="Dimension of the scan on the fast direction (makes sense only with HDF5)")
-    parser.add_option( "--no-gui",
-                      dest="gui", default=True,action="store_false",
+    parser.add_argument("--no-gui",
+                      dest="gui", default=True, action="store_false",
                       help="Process the dataset without showing the user interface.")
+    parser.add_argument("args", metavar='FILE', type=str, nargs='+',
+                        help="Files to be processed")
+    options = parser.parse_args()
 
-    (options, args) = parser.parse_args()
     # Analyse aruments and options
-    args = pyFAI.utils.expand_args(args)
+    args = pyFAI.utils.expand_args(options.args)
 #        if len(args) != 1:
 #            parser.error("incorrect number of arguments")
     if options.verbose:
