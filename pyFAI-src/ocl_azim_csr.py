@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://forge.epn-campus.eu/projects/azimuthal
+#             https://github.com/kif/pyFAI
 #
-#    File: "$Id$"
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
+#                            Giannis Ashiotis
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -23,10 +23,10 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-__author__ = "Jerome Kieffer"
+__authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "GPLv3"
-__date__ = "18/10/2012"
-__copyright__ = "2012, ESRF, Grenoble"
+__date__ = "04/04/2014"
+__copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import os, gc, logging
@@ -52,10 +52,11 @@ class OCL_CSR_Integrator(object):
                  platformid=None, deviceid=None, 
                  checksum=None, profile=False):
         """
-        @param data: coefficient of the matrix in a 1D vector of float32 - size of nnz
-        @param indices: Column index position for the data (same size as data) 
-        @param indptr: row pointer indicates the start of a given row. len nbin+1
-        @param image_size: 
+        @param lut: 3-tuple of arrays 
+            data: coefficient of the matrix in a 1D vector of float32 - size of nnz
+            indices: Column index position for the data (same size as data) 
+            indptr: row pointer indicates the start of a given row. len nbin+1
+        @param image_size: size of the image (for pre-processing)
         @param devicetype: can be "cpu","gpu","acc" or "all"
         @param platformid: number of the platform as given by clinfo
         @type platformid: int
@@ -71,6 +72,7 @@ class OCL_CSR_Integrator(object):
         self._indices = lut[1]
         self._indptr = lut[2]
         self.bins = self._indptr.shape[0] - 1
+        self.nbytes = self._data.nbytes + self._indices.nbytes + self._indptr.nbytes
         if self._data.shape[0] != self._indices.shape[0]:
             raise RuntimeError("data.shape[0] != indices.shape[0]")
         self.data_size = self._data.shape[0]  
@@ -108,11 +110,6 @@ class OCL_CSR_Integrator(object):
             self._set_kernel_arguments()
         except pyopencl.MemoryError as error:
             raise MemoryError(error)
-#        if self.device_type == "CPU":
-#            ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["data"], data)
-#            ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indices"], indices)
-#            ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indptr"], indptr)
-#        else:
         ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["data"], self._data)
         if self.profile: self.events.append(("copy Coefficient data",ev))
         ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indices"], self._indices)

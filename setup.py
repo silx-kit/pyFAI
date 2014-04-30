@@ -41,6 +41,7 @@ import sys
 import glob
 import shutil
 import platform
+import os.path as op
 from os.path import join
 from distutils.core import setup, Extension, Command
 from numpy.distutils.misc_util import get_numpy_include_dirs
@@ -50,6 +51,8 @@ from distutils.command.install_data import install_data
 ################################################################################
 # Check for Cython
 ################################################################################
+if op.isfile("MANIFEST"):
+    os.unlink("MANIFEST")
 try:
     from Cython.Distutils import build_ext
     CYTHON = True
@@ -116,9 +119,7 @@ if ("sdist" in sys.argv):
 # ###############################################################################
 # pyFAI extensions
 # ###############################################################################
-cython_modules = ["histogram", "splitPixel", "splitPixelFull", "splitBBox", "splitBBoxLUT", "splitBBoxCSR",
-                  "relabel", "bilinear", "_geometry", "reconstruct", "fastcrc", "_distortion",
-                  "_distortionCSR", "_bispev"] # ,"splitBBoxLUT_vector"
+cython_modules = [os.path.splitext(os.path.basename(i))[0] for i in glob.glob("src/*.pyx")]
 src = dict([(ext, join("src", ext + cython_c_ext)) for ext in cython_modules])
 
 _geometry_dic = dict(name="_geometry",
@@ -161,13 +162,6 @@ splitBBoxLUT_dic = dict(name="splitBBoxLUT",
                         extra_link_args=['openmp'],
                         )
 
-#splitBBoxLUT_vector_dic = dict(name="splitBBoxLUT_vector",
-                        #include_dirs=get_numpy_include_dirs(),
-                        #sources=[src['splitBBoxLUT_vector']],
-                        #extra_compile_args=['openmp','-lstdc++'],
-                        #extra_link_args=['openmp','-lstdc++'],
-                        #)
-
 splitBBoxCSR_dic = dict(name="splitBBoxCSR",
                         include_dirs=get_numpy_include_dirs(),
                         sources=[src['splitBBoxCSR']],
@@ -209,8 +203,29 @@ _bispev_dic = dict(name="_bispev",
 
                         )
 
+_convolution_dic = dict(name="_convolution",
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=[src['_convolution']],
+                    extra_compile_args=["openmp"],
+                    extra_link_args=["openmp"]
+                    )
 
-ext_modules = [globals()[i + "_dic"] for i in cython_modules]
+_blob_dic = dict(name="_blob",
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=[src['_blob']],
+#                    extra_compile_args=["openmp"],
+#                    extra_link_args=["openmp"]
+                    )
+
+morphology_dic = dict(name="morphology",
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=[src['morphology']],
+#                    extra_compile_args=["openmp"],
+#                    extra_link_args=["openmp"]
+                    )
+
+
+ext_modules = [globals()[i + "_dic"] for i in cython_modules if i + "_dic" in dir()]
 
 
 if (os.name != "posix") or ("x86" not in platform.machine()):
@@ -401,6 +416,7 @@ http://pypi.python.org/pypi/pyopencl
 """)
 
 
+"""
 # ###############################################################################
 # check if OpenMP modules, freshly installed can import
 # ###############################################################################

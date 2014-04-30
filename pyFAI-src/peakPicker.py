@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/03/2013"
+__date__ = "30/04/2014"
 __status__ = "production"
 
 import os, sys, threading, logging, gc, types
@@ -54,10 +54,11 @@ TARGET_SIZE = 1024
 # PeakPicker
 ################################################################################
 class PeakPicker(object):
-    def __init__(self, strFilename, reconst=False, mask=None, pointfile=None, calibrant=None, wavelength=None):
+    def __init__(self, strFilename, reconst=False, mask=None,
+                 pointfile=None, calibrant=None, wavelength=None):
         """
         @param: input image filename
-        @param reconst: shall mased part or negative values be reconstructed (wipe out problems with pilatus gaps)
+        @param reconst: shall masked part or negative values be reconstructed (wipe out problems with pilatus gaps)
         """
         self.strFilename = strFilename
         self.data = fabio.open(strFilename).data.astype("float32")
@@ -318,7 +319,8 @@ class PeakPicker(object):
                 self.ct.collections.pop()
 
             if self.points.calibrant:
-                angles = self.points.calibrant.get_2th()
+                angles = [ i for i in self.points.calibrant.get_2th()
+                          if i is not None]
             else:
                 angles = None
             try:

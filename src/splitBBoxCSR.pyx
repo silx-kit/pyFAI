@@ -37,10 +37,7 @@ try:
 except:
     from zlib import crc32
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
-#TODO: remove
-cdef struct lut_point:
-    numpy.int32_t idx
-    numpy.float32_t coe
+
 
 @cython.cdivision(True)
 cdef inline float getBinNr( float x0, float pos0_min, float delta) nogil:
@@ -75,9 +72,22 @@ class HistoBBox1d(object):
                  mask_checksum=None,
                  allow_pos0_neg=False,
                  unit="undefined",
-                 padding=1):
+                 padding=False):
+        """
+        @param pos0: 1D array with pos0: tth or q_vect or r ...
+        @param delta_pos0: 1D array with delta pos0: max center-corner distance
+        @param pos1: 1D array with pos1: chi
+        @param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
+        @param bins: number of output bins, 100 by default
+        @param pos0Range: minimum and maximum  of the 2th range
+        @param pos1Range: minimum and maximum  of the chi range
+        @param mask: array (of int8) with masked pixels with 1 (0=not masked)
+        @param allow_pos0_neg: enforce the q<0 is usually not possible  
+        @param unit: can be 2th_deg or r_nm^-1 ...
+        @param padding: pad CSR array to a given multiple of given number (16,32, ...)
+        """
 
-        self.padding = padding
+        self.padding = int(padding)
         self.size = pos0.size
         assert delta_pos0.size == self.size
         self.bins = bins
@@ -123,15 +133,7 @@ class HistoBBox1d(object):
         self.unit=unit
         self.lut=(self.data,self.indices,self.indptr)
         self.lut_nbytes = sum([i.nbytes for i in self.lut])
-
-    def __del__(self):
-        print("destructor called")
-        import sys
-        for i in ("cpos0","dpos0","data","indices"):
-            if i in dir(self):
-                print("ref count for %s: %s"%(i,sys.getrefcount(self.__getattribute__(i))))
-                self.__setattr__(i,None) 
-                      
+                   
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def calc_boundaries(self,pos0Range):
@@ -244,13 +246,13 @@ class HistoBBox1d(object):
                         outMax[i] += 1
                         
 
-
-        outMax_padded = numpy.empty(shape=bins, dtype=numpy.int32)
-        for i in range(self.bins):
-            outMax_padded[i] = (outMax[i] + self.padding - 1) & ~(self.padding - 1)
-            
-        self.nnz = outMax_padded.sum()
-        self.nnz_actual = outMax.sum()
+        if self.padding:
+            outMax_padded = self.padding*((outMax + (self.padding - 1))//(self.padding))
+            self.nnz = outMax_padded.sum()
+            self.nnz_actual = outMax.sum()
+        else:
+            self.nnz = self.nnz_actual = outMax.sum()
+            outMax_padded = outMax
         indptr[1:] = outMax_padded.cumsum(dtype=numpy.int32)
         self.indptr = indptr
 
@@ -264,8 +266,8 @@ class HistoBBox1d(object):
             if memsize <  lut_nbytes:
                 raise MemoryError("CSR Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %.3fGB"%(bins,self.nnz,1.0*lut_nbytes/2**30,1.0*memsize/2**30))
         #else hope we have enough memory
-        data = numpy.zeros(indptr[bins],dtype=numpy.float32)
-        indices = numpy.zeros(indptr[bins],dtype=numpy.int32)
+        data = numpy.empty(indptr[bins],dtype=numpy.float32)
+        indices = numpy.empty(indptr[bins],dtype=numpy.int32)
 
         #NOGIL
         with nogil:
@@ -320,16 +322,17 @@ class HistoBBox1d(object):
                             data[indptr[i]+k] = (deltaA)
                             outMax[i] += 1
                             
+                            
 # At this point i could have stopped, but I continue to fill the padding in the indices 
 # array with the last nz value, so that when the kernel is called, no extra "bad" memory 
 # accesses will take place on the image array...
-                            
-#        for i in prange(bins, nogil=True):
-        for i in range(bins):
-            tmp_index = indptr[i]
-            index_tmp_index = indices[tmp_index + outMax[i] - 1]
-            for j in range(tmp_index + outMax[i], tmp_index + outMax_padded[i]):
-                indices[j] = index_tmp_index
+        if self.padding:
+            for i in range(bins):
+                tmp_index = indptr[i]
+                index_tmp_index = indices[tmp_index + outMax[i] - 1]
+                for j in range(tmp_index + outMax[i], tmp_index + outMax_padded[i]):
+                    indices[j] = index_tmp_index
+                    data[j] = 0.0
                     
         self.data = data
         self.indices = indices
@@ -371,7 +374,7 @@ class HistoBBox1d(object):
                       
         cdef numpy.int32_t[:] indices = self.indices, indptr = self.indptr
         assert size == weights.size
-
+        
         if dummy is not None:
             do_dummy = True
             cdummy =  <float>float(dummy)
@@ -440,17 +443,18 @@ class HistoBBox1d(object):
                         cdata[i]+=cdummy
             else:
                 cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-
+        
         for i in prange(bins, nogil=True, schedule="guided"):
             sum_data = 0.0
             sum_count = 0.0
             for j in range(indptr[i],indptr[i+1]):
                 idx = indices[j]
                 coef = ccoef[j]
+                if coef == 0.0:
+                    continue
                 data = cdata[idx]
                 if do_dummy and data==cdummy:
                     continue
-
                 sum_data = sum_data + coef * data
                 sum_count = sum_count + coef
             outData[i] += sum_data

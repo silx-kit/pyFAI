@@ -9,16 +9,17 @@ from cython.parallel import prange
 @cython.wraparound(False)
 def horizontal_convolution(float[:,:] img, float[:] filter):
     """
-    Implements a 1D horizontal convolution with a filter
+    Implements a 1D horizontal convolution with a filter.
+    The only implemented mode is "reflect" (default in scipy.ndimage.filter)
 
     @param img: input image
-    @param filter: 1D array with the coeficients of the array
+    @param filter: 1D array with the coefficients of the array
     @return: array of the same shape as image with
     """
     cdef int FILTER_SIZE, HALF_FILTER_SIZE
     cdef int IMAGE_H,IMAGE_W,
-    cdef int x, y, pos, fIndex, newpos, c
-    cdef float sum
+    cdef int x, y, pos, fIndex, newpos, c 
+    cdef float sum, err, val, tmp
 
 
     FILTER_SIZE =  filter.shape[0]
@@ -32,65 +33,99 @@ def horizontal_convolution(float[:,:] img, float[:] filter):
     cdef numpy.ndarray[numpy.float32_t, ndim=2] output = numpy.zeros((IMAGE_H,IMAGE_W), dtype=numpy.float32)
     for y in prange(IMAGE_H, nogil=True):
         for x in range(IMAGE_W):
-            fIndex = 0
             sum = 0.0
-            for c in range(-HALF_FILTER_SIZE, FILTER_SIZE-HALF_FILTER_SIZE):
-                newpos = x + c
+            err = 0.0
+            for fIndex in range(FILTER_SIZE):
+                newpos = x + fIndex - HALF_FILTER_SIZE
                 if newpos < 0:
                     newpos = - newpos - 1
                 elif newpos >= IMAGE_W:
                     newpos = 2*IMAGE_W - newpos - 1
-                sum += img[y,newpos] * filter[fIndex]
-                fIndex += 1;
+                #sum += img[y,newpos] * filter[fIndex]
+                #implement Kahan summation
+                val = img[y,newpos] * filter[fIndex] - err
+                tmp = sum + val
+                err = (tmp - sum) - val 
+                sum = tmp  
             output[y,x]+=sum
     return output
 
+@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def vertical_convolution(float[:,:] img, float[:] filter):
+    """
+    Implements a 1D vertical convolution with a filter.
+    The only implemented mode is "reflect" (default in scipy.ndimage.filter)
+
+    @param img: input image
+    @param filter: 1D array with the coefficients of the array
+    @return: array of the same shape as image with
+    """
+    cdef int FILTER_SIZE, HALF_FILTER_SIZE
+    cdef int IMAGE_H,IMAGE_W,
+    cdef int x, y, pos, fIndex, newpos, c 
+    cdef float sum, err, val, tmp
 
 
-"""
+    FILTER_SIZE =  filter.shape[0]
+    if FILTER_SIZE % 2 == 1:
+        HALF_FILTER_SIZE = (FILTER_SIZE)/2
+    else:
+        HALF_FILTER_SIZE = (FILTER_SIZE+1)/2
 
+    IMAGE_H = img.shape[0]
+    IMAGE_W = img.shape[1]
+    cdef numpy.ndarray[numpy.float32_t, ndim=2] output = numpy.zeros((IMAGE_H,IMAGE_W), dtype=numpy.float32)
+    for y in prange(IMAGE_H, nogil=True):
+        for x in range(IMAGE_W):
+            sum = 0.0
+            err = 0.0
+            for fIndex in range(FILTER_SIZE):
+                newpos = y + fIndex - HALF_FILTER_SIZE
+                if newpos < 0:
+                    newpos = - newpos - 1
+                elif newpos >= IMAGE_H:
+                    newpos = 2*IMAGE_H - newpos - 1
+                #sum += img[y,newpos] * filter[fIndex]
+                #implement Kahan summation
+                val = img[newpos,x] * filter[fIndex] - err
+                tmp = sum + val
+                err = (tmp - sum) - val 
+                sum = tmp  
+            output[y,x]+=sum
+    return output
 
-__kernel void vertical_convolution(
-    const __global float * input,
-    __global float * output,
-    __constant float * filter __attribute__((max_constant_size(MAX_CONST_SIZE))),
-    int FILTER_SIZE,
-    int IMAGE_W,
-    int IMAGE_H
-)
-{
+def gaussian(sigma, width=None):
+    """
+    Return a Gaussian window of length "width" with standard-deviation "sigma".
 
-    int gid1 = (int) get_global_id(1);
-    int gid0 = (int) get_global_id(0);
+    @param sigma: standard deviation sigma
+    @param width: length of the windows (int) By default 8*sigma+1,
 
+    Width should be odd.
 
-    if (gid1 < IMAGE_H && gid0 < IMAGE_W) {
+    The FWHM is 2*sqrt(2 * pi)*sigma
 
-        int HALF_FILTER_SIZE = (FILTER_SIZE % 2 == 1 ? (FILTER_SIZE)/2 : (FILTER_SIZE+1)/2);
+    """
+    if width is None:
+        width = int(8 * sigma + 1)
+        if width % 2 == 0:
+            width += 1
+    sigma = float(sigma)
+    x = numpy.arange(width) - (width - 1) / 2.0
+    g = numpy.exp(-(x / sigma) ** 2 / 2.0)
+    #Normalization is done at the end to cope for numerical precision
+    return g / g.sum()
 
-//        int pos = gid0 * IMAGE_W + gid1;
-        int pos = gid1 * IMAGE_W + gid0;
-        int fIndex = 0;
-        float sum = 0.0f;
-        int r = 0,newpos=0;
-        int debug=0;
-
-        for (r = -HALF_FILTER_SIZE ; r < FILTER_SIZE-HALF_FILTER_SIZE ; r++) {
-            newpos = pos + r * (IMAGE_W);
-
-            if (gid1+r < 0) {
-                newpos = gid0 -(r+1)*IMAGE_W - gid1*IMAGE_W;
-                //debug=1;
-            }
-            else if (gid1+r > IMAGE_H -1) {
-                newpos= (IMAGE_H-1)*IMAGE_W + gid0 + (IMAGE_H - r)*IMAGE_W - gid1*IMAGE_W;
-            }
-            sum += input[ newpos ] * filter[ fIndex   ];
-            fIndex += 1;
-
-        }
-        output[pos]=sum;
-        if (debug == 1) output[pos]=0;
-    }
-}
-"""
+def gaussian_filter(img, sigma):
+    """
+    Performs a gaussian bluring using a gaussian kernel.
+    
+    @param img: input image
+    @param sigma: 
+    """
+    raw = numpy.ascontiguousarray(img, dtype=numpy.float32)
+    gauss = gaussian(sigma).astype(numpy.float32)
+    res = vertical_convolution(horizontal_convolution(raw, gauss),gauss)
+    return res

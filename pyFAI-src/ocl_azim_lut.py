@@ -47,12 +47,12 @@ except:
 logger = logging.getLogger("pyFAI.ocl_azim_lut")
 
 class OCL_LUT_Integrator(object):
-    def __init__(self, lut, image_size, devicetype="all", 
-                 platformid=None, deviceid=None, 
+    def __init__(self, lut, image_size, devicetype="all",
+                 platformid=None, deviceid=None,
                  checksum=None, profile=False):
         """
         @param lut: array of int32 - float32 with shape (nbins, lut_size) with indexes and coefficients
-        @param image_size: 
+        @param image_size: Expected image size: image.shape.prod()
         @param devicetype: can be "cpu","gpu","acc" or "all"
         @param platformid: number of the platform as given by clinfo
         @type platformid: int
@@ -64,6 +64,7 @@ class OCL_LUT_Integrator(object):
         self.BLOCK_SIZE = 16
         self._sem = threading.Semaphore()
         self._lut = lut
+        self.nbytes = lut.nbytes
         self.bins, self.lut_size = lut.shape
         self.size = image_size
         self.profile = profile
@@ -90,7 +91,7 @@ class OCL_LUT_Integrator(object):
         self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
         try:
             self._ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
-            if self.profile:         
+            if self.profile:
                 self._queue = pyopencl.CommandQueue(self._ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
             else:
                 self._queue = pyopencl.CommandQueue(self._ctx)
@@ -103,8 +104,8 @@ class OCL_LUT_Integrator(object):
             ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["lut"], lut)
         else:
             ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["lut"], lut.T.copy())
-        if self.profile: self.events.append(("copy LUT",ev))
-        
+        if self.profile: self.events.append(("copy LUT", ev))
+
     def __del__(self):
         """
         Destructor: release all buffers
@@ -226,16 +227,17 @@ class OCL_LUT_Integrator(object):
             if data.dtype == numpy.uint16:
                 copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image_u16"], numpy.ascontiguousarray(data))
                 cast_u16_to_float = self._program.u16_to_float(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["u16_to_float"])
-                events+=[("copy image",copy_image),("cast", cast_u16_to_float)]
+                events += [("copy image", copy_image), ("cast", cast_u16_to_float)]
             elif data.dtype == numpy.int32:
                 copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image"], numpy.ascontiguousarray(data))
                 cast_s32_to_float = self._program.s32_to_float(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["s32_to_float"])
-                events+=[("copy image",copy_image),("cast", cast_s32_to_float)]
+                events += [("copy image", copy_image), ("cast", cast_s32_to_float)]
             else:
                 copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image"], numpy.ascontiguousarray(data, dtype=numpy.float32))
-                events+=[("copy image",copy_image)]
+                events += [("copy image", copy_image)]
             memset = self._program.memset_out(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["memset_out"])
-            events+=[("memset",memset)]
+            events.append(("memset", memset))
+
             if dummy is not None:
                 do_dummy = numpy.int32(1)
                 dummy = numpy.float32(dummy)
@@ -259,7 +261,7 @@ class OCL_LUT_Integrator(object):
                     dark_checksum = crc32(dark)
                 if dark_checksum != self.on_device["dark"]:
                     ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["dark"], numpy.ascontiguousarray(dark, dtype=numpy.float32))
-                    events.append("copy dark",ev)
+                    events.append(("copy dark", ev))
                     self.on_device["dark"] = dark_checksum
             else:
                 do_dark = numpy.int32(0)
@@ -269,8 +271,8 @@ class OCL_LUT_Integrator(object):
                 if not flat_checksum:
                     flat_checksum = crc32(flat)
                 if self.on_device["flat"] != flat_checksum:
-                    ev=pyopencl.enqueue_copy(self._queue, self._cl_mem["flat"], numpy.ascontiguousarray(flat, dtype=numpy.float32))
-                    events.append("copy flat",ev)
+                    ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["flat"], numpy.ascontiguousarray(flat, dtype=numpy.float32))
+                    events.append(("copy flat", ev))
                     self.on_device["flat"] = flat_checksum
             else:
                 do_flat = numpy.int32(0)
@@ -281,8 +283,8 @@ class OCL_LUT_Integrator(object):
                 if not solidAngle_checksum:
                     solidAngle_checksum = crc32(solidAngle)
                 if solidAngle_checksum != self.on_device["solidangle"]:
-                    ev=pyopencl.enqueue_copy(self._queue, self._cl_mem["solidangle"], numpy.ascontiguousarray(solidAngle, dtype=numpy.float32))
-                    events.append(("copy solidangle",ev))
+                    ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["solidangle"], numpy.ascontiguousarray(solidAngle, dtype=numpy.float32))
+                    events.append(("copy solidangle", ev))
                     self.on_device["solidangle"] = solidAngle_checksum
             else:
                 do_solidAngle = numpy.int32(0)
@@ -293,8 +295,8 @@ class OCL_LUT_Integrator(object):
                 if not polarization_checksum:
                     polarization_checksum = crc32(polarization)
                 if polarization_checksum != self.on_device["polarization"]:
-                    ev=pyopencl.enqueue_copy(self._queue, self._cl_mem["polarization"], numpy.ascontiguousarray(polarization, dtype=numpy.float32))
-                    events.append(("copy polarization",ev))
+                    ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["polarization"], numpy.ascontiguousarray(polarization, dtype=numpy.float32))
+                    events.append(("copy polarization", ev))
                     self.on_device["polarization"] = polarization_checksum
             else:
                 do_polarization = numpy.int32(0)
@@ -302,21 +304,21 @@ class OCL_LUT_Integrator(object):
             copy_image.wait()
             if do_dummy + do_polarization + do_solidAngle + do_flat + do_dark > 0:
                 ev = self._program.corrections(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["corrections"])
-                events.append(("corrections",ev))
+                events.append(("corrections", ev))
             integrate = self._program.lut_integrate(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["lut_integrate"])
-            events.append(("integrate",integrate))
+            events.append(("integrate", integrate))
             outMerge = numpy.empty(self.bins, dtype=numpy.float32)
             outData = numpy.empty(self.bins, dtype=numpy.float32)
             outCount = numpy.empty(self.bins, dtype=numpy.float32)
-            ev=pyopencl.enqueue_copy(self._queue, outMerge, self._cl_mem["outMerge"])
-            events.append(("copy D->H outMerge",ev))
-            ev=pyopencl.enqueue_copy(self._queue, outData, self._cl_mem["outData"])
-            events.append(("copy D->H outData",ev))
-            ev=pyopencl.enqueue_copy(self._queue, outCount, self._cl_mem["outCount"])
-            events.append(("copy D->H outCount",ev))
+            ev = pyopencl.enqueue_copy(self._queue, outMerge, self._cl_mem["outMerge"])
+            events.append(("copy D->H outMerge", ev))
+            ev = pyopencl.enqueue_copy(self._queue, outData, self._cl_mem["outData"])
+            events.append(("copy D->H outData", ev))
+            ev = pyopencl.enqueue_copy(self._queue, outCount, self._cl_mem["outCount"])
+            events.append(("copy D->H outCount", ev))
             ev.wait()
-        if self.profile: 
-            self.events+=events        
+        if self.profile:
+            self.events += events
         return outMerge, outData, outCount
 
     def log_profile(self):

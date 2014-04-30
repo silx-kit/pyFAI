@@ -1097,3 +1097,11 @@ except ImportError: #backport percentile from numpy 1.6.2
         # Use add.reduce in both cases to coerce data type as well as
         #   check and use out array.
         return np.add.reduce(sorted[indexer] * weights, axis=axis, out=out) / sumval
+
+def convert_CamelCase(name):
+    """
+    convert a function name in CamelCase into camel_case
+    """
+    import re
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()

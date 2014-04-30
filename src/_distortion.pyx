@@ -537,10 +537,10 @@ class Distortion(object):
             self.detector = detector_factory(detector)
         else:  # we assume it is a Detector instance
             self.detector = detector
-        if "max_shape" in dir(self.detector):
-            self.shape = self.detector.max_shape
-        else:
+        if shape:
             self.shape = shape
+        elif "max_shape" in dir(self.detector):
+            self.shape = self.detector.max_shape
         self.shape = tuple([int(i) for i in self.shape])
         self._sem = threading.Semaphore()
         self.lut_size = None

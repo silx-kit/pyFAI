@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# coding: utf8
+# coding: utf-8
 """
 Tango device server for setting up pyFAI azimuthal integrator in a LImA ProcessLib.
 

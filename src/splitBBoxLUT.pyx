@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://forge.epn-campus.eu/projects/azimuthal
-#
-#    File: "$Id$"
+#             https://github.com/kif/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -32,12 +30,11 @@ import sys
 from cpython.ref cimport PyObject, Py_XDECREF
 from cython.parallel import prange
 from libc.string cimport memset,memcpy
-#from libc.stdlib cimport malloc, free 
 from cython cimport view
 import numpy
 cimport numpy
 from libc.math cimport fabs, M_PI
-cdef float pi=<float> M_PI 
+cdef float pi = <float> M_PI 
 cdef struct lut_point:
     numpy.int32_t idx
     numpy.float32_t coef
@@ -137,12 +134,7 @@ class HistoBBox1d(object):
         self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, self.pos0_maxin-0.5*self.delta, self.bins)
         self.lut_checksum = None
         self.unit=unit
-        self.csr_data = None
-        self.csr_indices = None
-        self.csr_indptr = None
-#        self.generate_csr()
- #       self.generate_csr_padded()
-#        self.generate_lut_csr()
+        self.lut_nbytes = self._lut.nbytes
         
 
     @cython.boundscheck(False)
@@ -151,7 +143,7 @@ class HistoBBox1d(object):
         """
         Called by constructor to calculate the boundaries and the bin position 
         """
-        cdef numpy.int32_t size = self.cpos0.size
+        cdef int size = self.cpos0.size
         cdef bint check_mask = self.check_mask
         cdef numpy.int8_t[:] cmask
         cdef float[:] cpos0, dpos0, cpos0_sup, cpos0_inf,
@@ -198,7 +190,10 @@ class HistoBBox1d(object):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def calc_lut(self):
-        'calculate the max number of elements in the LUT and populate it'
+        """
+        calculate the max number of elements in the LUT and populate it
+        
+        """
         cdef float delta=self.delta, pos0_min=self.pos0_min, pos1_min, pos1_max, min0, max0, fbin0_min, fbin0_max, deltaL, deltaR, deltaA
         cdef numpy.int32_t k,idx, bin0_min, bin0_max, bins = self.bins, lut_size, i, size
         cdef bint check_mask, check_pos1
@@ -206,9 +201,8 @@ class HistoBBox1d(object):
         cdef float[:] cpos0_sup = self.cpos0_sup
         cdef float[:] cpos0_inf = self.cpos0_inf
         cdef float[:] cpos1_min, cpos1_max
-#        cdef numpy.float32_t[:,:] lutcoef
-#        cdef int[:,:] lutidx 
         cdef lut_point[:,:] lut
+
         cdef numpy.int8_t[:] cmask
         size = self.size
         if self.check_mask:
@@ -352,94 +346,8 @@ class HistoBBox1d(object):
                                         shape=self._lut.shape,dtype=dtype_lut,
                                         copy=True)
 
+
     lut = property(get_lut)         
-
-    
-    @cython.boundscheck(True)  # For testing
-    def generate_csr(self):
-        cdef int nnz = self.lut_max_idx.sum()
-        cdef lut_point tmp
-        cdef int i, j, running_index
-        
-        data = numpy.empty(shape=nnz, dtype=numpy.float32)
-        indices = numpy.empty(shape=nnz, dtype=numpy.int32)
-        indptr = numpy.empty(shape=self.bins+1, dtype=numpy.int32)
-
-        running_index = 0
-        for i in range(self.bins):
-            indptr[i] = running_index
-            for j in range(self.lut_max_idx[i]):
-                tmp = self._lut[i, j]
-                data[running_index] = tmp.coef
-                indices[running_index] = tmp.idx
-                running_index += 1
-        indptr[-1] = nnz
-        self.csr_data = data
-        self.csr_indices = indices
-        self.csr_indptr = indptr
-
-
-    @cython.boundscheck(True)  # For testing
-    def generate_csr_padded(self, workgroup_size):
-        cdef int nnz=0
-        cdef lut_point tmp
-        cdef int i, j, running_index
-        
-        
-        lut_max_idx_padded = numpy.empty(shape=self.bins, dtype=numpy.int32)
-        for i in range(self.bins):
-            lut_max_idx_padded[i] = (self.lut_max_idx[i] + workgroup_size - 1) & ~(workgroup_size - 1)
-        nnz = lut_max_idx_padded.sum()
-        
-        data = numpy.empty(shape=nnz, dtype=numpy.float32)
-        indices = numpy.empty(shape=nnz, dtype=numpy.int32)
-        indptr = numpy.empty(shape=self.bins+1, dtype=numpy.int32)
-
-        running_index = 0
-        for i in range(self.bins):
-            indptr[i] = running_index
-            for j in range(lut_max_idx_padded[i]):
-                if j < self.lut_max_idx[i]:
-                    tmp = self._lut[i, j]
-                    data[running_index] = tmp.coef
-                    indices[running_index] = tmp.idx
-                    running_index += 1
-                else:
-                    data[running_index] = 0
-                    indices[running_index] = tmp.idx
-                    running_index += 1
-        indptr[-1] = nnz
-        self.csr_padded_data = data
-        self.csr_padded_indices = indices
-        self.csr_padded_indptr = indptr
-        max_width = lut_max_idx_padded.max()
-        return max_width
-
-        
-        
-    def generate_lut_csr(self):
-        cdef int nnz = self.bins * self.lut_max_idx.max()
-        cdef lut_point tmp
-        cdef int i, j, running_index
-        
-        data = numpy.empty(shape=nnz, dtype=numpy.float32)
-        indices = numpy.empty(shape=nnz, dtype=numpy.int32)
-        indptr = numpy.empty(shape=self.bins+1, dtype=numpy.int32)
-
-        running_index = 0
-        for i in range(self.bins):
-            indptr[i] = running_index
-            for j in range(self.lut_max_idx.max()):
-                tmp = self._lut[i, j]
-                data[running_index] = tmp.coef
-                indices[running_index] = tmp.idx
-                running_index += 1
-        indptr[-1] = nnz
-        self.lut_csr_data = data
-        self.lut_csr_indices = indices
-        self.lut_csr_indptr = indptr
-
-        
 
 
     @cython.cdivision(True)
@@ -482,7 +390,6 @@ class HistoBBox1d(object):
         cdef lut_point[:,:] lut = self._lut
         rc_after = sys.getrefcount(self._lut)
         cdef bint need_decref = NEED_DECREF & ((rc_after-rc_before)>=2)
-
 
         assert size == weights.size
 

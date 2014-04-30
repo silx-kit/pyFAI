@@ -59,7 +59,7 @@ try:
     import h5py
 except ImportError:
     h5py = None
-    logger.debug("h5py is missing")
+    logger.error("h5py is missing")
 
 import fabio
 from . import units
@@ -89,6 +89,8 @@ class Writer(object):
         
         """
         self.filename = filename
+        if os.path.exists(filename):
+            logger.warning("Destination file %s exists" % filename)
         self._sem = threading.Semaphore()
         self.dirname = None
         self.subdir = None
@@ -114,7 +116,7 @@ class Writer(object):
                 self.lima_cfg = lima_cfg
             if self.filename is not None:
                 dirname = os.path.dirname(self.filename)
-                if not os.path.exists(dirname):
+                if dirname and not os.path.exists(dirname):
                     try:
                         os.makedirs(dirname)
                     except Exception as err:
@@ -176,6 +178,10 @@ class HDF5Writer(Writer):
         self.pyFAI_grp = None
         self.radial_values = None
         self.azimuthal_values = None
+        self.error_values = None
+        self.has_radial_values = False
+        self.has_azimuthal_values = False
+        self.has_error_values = False
         self.chunk = None
         self.shape = None
         self.ndim = None
@@ -188,6 +194,7 @@ class HDF5Writer(Writer):
         Initializes the HDF5 file for writing
         @param fai_cfg: the configuration of the worker as a dictionary
         """
+        logger.debug("in init")
         Writer.init(self, fai_cfg, lima_cfg)
         with self._sem:
             #TODO: this is Debug statement
@@ -221,8 +228,8 @@ class HDF5Writer(Writer):
             if self.fai_cfg.get("nbpt_azim", 0) > 1:
                 self.azimuthal_values = self.group.require_dataset("chi", (self.fai_cfg["nbpt_azim"],), numpy.float32)
                 self.azimuthal_values.attrs["unit"] = "deg"
-                self.radial_values.attrs["interpretation"] = "scalar"
-                self.radial_values.attrs["long name"] = "Azimuthal angle"
+                self.azimuthal_values.attrs["interpretation"] = "scalar"
+                self.azimuthal_values.attrs["long name"] = "Azimuthal angle"
 
             self.radial_values.attrs["unit"] = rad_unit
             self.radial_values.attrs["interpretation"] = "scalar"
@@ -274,8 +281,6 @@ class HDF5Writer(Writer):
             self.group["program"] = "PyFAI"
             self.group["start_time"] = getIsoTime()
 
-
-
     def flush(self, radial=None, azimuthal=None):
         """
         Update some data like axis units and so on.
@@ -299,22 +304,37 @@ class HDF5Writer(Writer):
             self.hdf5.flush()
 
     def close(self):
-        with self._sem:
-            if self.hdf5:
-                self.flush()
+        logger.debug("In close")
+        if self.hdf5:
+            self.flush()
+            with self._sem:
                 self.hdf5.close()
                 self.hdf5 = None
 
     def write(self, data, index=0):
         """
         Minimalistic method to limit the overhead.
+        @param data: array with intensities or tuple (2th,I) or (I,2th,chi)
         """
+        logger.debug("In write, index %s" % index)
+        radial = None
+        azimuthal = None
+        error = None
+        if isinstance(data, numpy.ndarray):
+            I = data
+        elif isinstance(data, (list, tuple)):
+            n = len(data)
+            if n == 2:
+                radial, I = data
+            elif n == 3:
+                if data[0].ndim == 2:
+                    I, radial, azimuthal = data
+                else:
+                    radial, I, error = data
         with self._sem:
             if self.dataset is None:
                 logger.warning("Writer not initialized !")
                 return
-            if self.azimuthal_values is None:
-                data = data[:, 1] #take the second column only aka I
             if self.fast_scan_width:
                 index0, index1 = (index // self.fast_scan_width, index % self.fast_scan_width)
                 if index0 >= self.dataset.shape[0]:
@@ -323,7 +343,21 @@ class HDF5Writer(Writer):
             else:
                 if index >= self.dataset.shape[0]:
                     self.dataset.resize(index + 1, axis=0)
-                self.dataset[index] = data
+                self.dataset[index] = I
+            if (not self.has_azimuthal_values) and \
+               (azimuthal is not None) and \
+               self.azimuthal_values is not None:
+                self.azimuthal_values[:] = azimuthal
+            if (not self.has_azimuthal_values) and \
+               (azimuthal is not None) and \
+               self.azimuthal_values is not None:
+                self.azimuthal_values[:] = azimuthal
+                self.has_azimuthal_values = True
+            if (not self.has_radial_values) and \
+               (radial is not None) and \
+               self.radial_values is not None:
+                self.radial_values[:] = radial
+                self.has_radial_values = True
 
 class AsciiWriter(Writer):
     """

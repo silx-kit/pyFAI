@@ -481,7 +481,11 @@ class AbstractCalibration(object):
             self.outfile = self.dataFiles[0]
 
         self.basename = os.path.splitext(self.outfile)[0]
-        self.pointfile = self.basename + ".npt"
+        if isinstance(self, Recalibration):
+            self.keep = False
+            self.pointfile = None
+        else:
+            self.pointfile = self.basename + ".npt"
         if self.wavelength is None:
             self.wavelength = self.ai.wavelength
 
@@ -627,7 +631,8 @@ class AbstractCalibration(object):
         """
         if self.geoRef is None:
             self.refine()
-        self.peakPicker.points.setWavelength_change2th(self.geoRef.wavelength)
+        if "wavelength" not in self.fixed:
+            self.peakPicker.points.setWavelength_change2th(self.geoRef.wavelength)
         self.peakPicker.points.save(self.basename + ".npt")
         self.geoRef.save(self.basename + ".poni")
         self.geoRef.mask = self.mask

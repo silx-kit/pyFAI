@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# coding: utf8
+# coding: utf-8
 from __future__ import with_statement, print_function
 """
 LImA ProcessLib example of pyFAI azimuthal integrator Link and Sink 

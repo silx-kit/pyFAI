@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#coding: utf8
+#coding: utf-8
 #Class defining the link task for azimuthal regrouping in process lib for Lima
 #
 import logging

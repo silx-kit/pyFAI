@@ -124,7 +124,7 @@ class test_azim_halfFrelon(unittest.TestCase):
         """
 #        logger.info(self.ai.__repr__())
         tth, I = self.ai.xrpd_cython(self.data,
-                                     len(self.fit2d), "tmp/cython.dat", correctSolidAngle=False, pixelSize=None)
+                                     len(self.fit2d), self.tmpfiles["cython"], correctSolidAngle=False, pixelSize=None)
 #        logger.info(tth)
 #        logger.info(I)
         rwp = Rwp((tth, I), self.fit2d.T)
