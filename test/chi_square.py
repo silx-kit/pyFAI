@@ -48,9 +48,9 @@ Iavg_splitBB = I_splitBB.mean(axis=0)
 Iavg_nosplit = I_nosplit.mean(axis=0)
 
 for i in range(I_splitBB.shape[0]):
-    Chi2_splitBB.append((((I_splitBB[i] - Iavg_splitFull) / sigma_splitBB[i]) ** 2).mean())
+    Chi2_splitBB.append((((I_splitBB[i] - Iavg_splitBB) / sigma_splitBB[i]) ** 2).mean())
     Chi2_splitFull.append((((I_splitFull[i] - Iavg_splitFull) / sigma_splitFull[i]) ** 2).mean())
-    Chi2_nosplit.append((((I_nosplit[i] - Iavg_splitFull) / sigma_nosplit[i]) ** 2).mean())
+    Chi2_nosplit.append((((I_nosplit[i] - Iavg_nosplit) / sigma_nosplit[i]) ** 2).mean())
 pylab.hist(Chi2_splitBB, 50, label="splitBB")
 pylab.hist(Chi2_splitFull, 50, label="splitFull")
 pylab.hist(Chi2_nosplit, 50, label="no_split")

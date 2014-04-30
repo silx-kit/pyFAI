@@ -17,7 +17,7 @@ pyFAI = sys.modules["pyFAI"]
 from lxml import etree
 
 ai = pyFAI.AzimuthalIntegrator(detector="Pilatus1M")
-images = glob.glob("/data/bm29/inhouse/opd29/20140430/water_008_*.edf")
+images = glob.glob("/data/bm29/inhouse/opd29/20140430/raw/water_008_*.edf")
 images.sort()
 img = images[0]
 xml = etree.parse(os.path.splitext(img) + ".xml")
