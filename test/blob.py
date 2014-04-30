@@ -17,14 +17,13 @@ bd = pyFAI.blob_detection.BlobDetection(data, mask=msk)
 
 import pylab
 pylab.ion()
-f=pylab.figure(1)
+f=pylab.figure(3)
 ax = f.add_subplot(111)
-ax.imshow(bd.raw, interpolation = 'nearest')
+ax.imshow(numpy.log1p(data), interpolation = 'nearest')
 
-for i in range(3):
+for i in range(4):
     print ('Octave #%i' %i)
     bd._one_octave(True, True , False)
-
     print("Octave #%i Total kp: %i" % (i, bd.keypoints.size))
     print     
     
@@ -35,19 +34,21 @@ print ('Final size of keypoints : %i'% bd.keypoints.size)
 i = 0
 # for kp  in bd.keypoints:
 #     ds = kp.scale
-#     ax.annotate("", xy=(kp.x, kp.y), xytext=(kp.x + ds, kp.y + ds),
+#     ax.annotate("", xy=(kp.x, kp.y), xytext=(kp.x+ds, kp.y+ds),
 #                 arrowprops=dict(facecolor='blue', shrink=0.05),)
 
-ax.plot(bd.keypoints.x, bd.keypoints.y, "og")
+# ax.plot(bd.keypoints.x, bd.keypoints.y, "og")
 
 scales = bd.keypoints.scale
 
-h = pylab.figure(2)
-x,y,o = pylab.hist(numpy.sqrt(scales), bins = 1000)
+h = pylab.figure(4)
+x,y,o = pylab.hist(numpy.sqrt(scales), bins = 100)
 h.show()
 
-mask = numpy.where(numpy.sqrt(scales) == y[x == x.max()])
+index = numpy.where(x == x.max())
+kp = bd.keypoints[bd.keypoints.scale > y[index]]
 
+ax.plot(kp.x,kp.y,'og')
 # n3kp = bd.keypoints
 #bd._one_octave(False, False, True)
 #ax.plot(bd.keypoints[:].x, bd.keypoints[:].y, ".r")
@@ -55,6 +56,8 @@ mask = numpy.where(numpy.sqrt(scales) == y[x == x.max()])
 #print(len(n3kp), len(n5kp))
 #same = [i for i in n3kp if i not in n5kp]
 #print(len(same))
+
+
 
 f.show()
 raw_input()

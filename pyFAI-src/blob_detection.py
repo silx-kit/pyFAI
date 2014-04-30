@@ -1,4 +1,4 @@
-import numpy, itertools,scipy
+import numpy, itertools,scipy,matplotlib
 try:
     from _convolution import gaussian_filter
 except ImportError:
@@ -252,7 +252,8 @@ class BlobDetection(object):
         kps, kpy, kpx = numpy.where(valid_points)
         
         l = kpx.size
-        
+        delta_s = numpy.zeros(l)
+                
         if do_SG4:
 
             print ('Before refinement : %i keypoints' % l)
@@ -263,12 +264,11 @@ class BlobDetection(object):
         
         dtype = numpy.dtype([('x', numpy.float32), ('y', numpy.float32), ('scale', numpy.float32), ('I', numpy.float32)])
         keypoints = numpy.recarray((l,), dtype=dtype)
-        sigmas = numpy.array([s[0] for s in self.sigmas])
-
-        
+        sigmas = numpy.array([s[0] for s in self.sigmas])  
+       
         keypoints[:].x = kpx * self.curr_reduction
         keypoints[:].y = kpy * self.curr_reduction
-        keypoints[:].scale = (kps + delta_s ** 2)  #scale = sigma^2
+        keypoints[:].scale = (self.curr_reduction * sigmas.take(kps) + delta_s) ** 2  #scale = sigma^2
         keypoints[:].I = self.dogs[(kps, numpy.around(kpy).astype(int), numpy.around(kpx).astype(int))]
         
         if shrink:
@@ -298,13 +298,15 @@ class BlobDetection(object):
         """ Savitzky Golay algorithm to check if a point is really the maximum """
 
 
-        deltas = []
+        
         k2x=[]
         k2y=[]
         sigmas=[]
         i=0
+        kds = []
+        kdx = []
+        kdy = []
 
-        
         #Hessian patch 3
         SGX0Y0   =  [-0.11111111 ,0.22222222 ,-0.11111111 ,0.22222222 ,0.55555556 ,0.22222222 ,-0.11111111 ,0.22222222 ,-0.11111111]
         SGX1Y0   =  [-0.16666667 ,0.00000000 ,0.16666667 ,-0.16666667 ,0.00000000 ,0.16666667 ,-0.16666667 ,0.00000000 ,0.16666667 ]
@@ -352,20 +354,21 @@ class BlobDetection(object):
                     dys = (dy_next - dy_prev)/2.0                
                                     
                     lap = numpy.array([[d2y,dxy,dys],[dxy,d2x,dxs],[dys,dxs,d2s]])
-    
-                    delta = (numpy.dot(numpy.linalg.inv(lap),[dy,dx,ds]))
+                    delta = - (numpy.dot(numpy.linalg.inv(lap),[dy,dx,ds]))
+#                     print delta
                     err = numpy.linalg.norm(delta[:-1])
-                    
-                    if  err < numpy.sqrt(2) and numpy.abs(delta[0]) <= 1.0 and numpy.abs(delta[1]) <= 1.0 and numpy.abs(sigma+delta[2] <= 8) :
-                        k2x.append(x-delta[1])
-                        k2y.append(y-delta[0])
+                    print self.sigmas[-1][0]
+                    if  err < numpy.sqrt(4) and numpy.abs(delta[0]) <= 2.0 and numpy.abs(delta[1]) <= 2.0 and numpy.abs(delta[2]) <= self.sigmas[-1][0]:
+                        k2x.append(x+delta[1])  
+                        k2y.append(y+delta[0])
                         sigmas.append(sigma)
-                        deltas.append(delta[2])
-
-                    i = i + 1
-          
-        return numpy.asarray(k2x),numpy.asarray(k2y),numpy.asarray(sigmas),numpy.asarray(deltas)
-                 
+                        kds.append(delta[2])       
+                        kdx.append(delta[1]) 
+                        kdy.append(delta[0])
+                        
+        return numpy.asarray(k2x),numpy.asarray(k2y),numpy.asarray(sigmas),numpy.asarray(kds)
+        
+        
                 
         
 if __name__ == "__main__":
