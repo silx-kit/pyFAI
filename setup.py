@@ -441,4 +441,4 @@ else:
         print("PyFAI.histogram failed to import. It is likely there is an OpenMP error: %s" % E)
     else:
         print("OpenMP libraries were found and pyFAI.histogram was successfully imported")
-
+"""
