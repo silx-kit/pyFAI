@@ -289,7 +289,7 @@ def Rwp(obt, ref, comment="Rwp"):
     """
     ref0, ref1 = ref
     obt0, obt1 = obt
-    big0 = (list(obt0) + list(ref0))
+    big0 = numpy.concatenate((obt0, ref0))
     big0.sort()
     big0 = numpy.unique(big0)
     big_ref = numpy.interp(big0, ref0, ref1, 0.0, 0.0)
