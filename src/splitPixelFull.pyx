@@ -432,8 +432,8 @@ def fullSplit1D(numpy.ndarray pos not None,
                     partialArea2 += partialArea
                     outCount[bin] += tmp
                     outData[bin] += data * tmp
-                if fabs(partialArea2-areaPixel) > epsilon:
-                    printf("%d -  %f %f\n",idx,partialArea2,areaPixel)
+                #if fabs(partialArea2-areaPixel) > epsilon:
+                    #printf("%d -  %f \n",idx,(partialArea2-areaPixel)/areaPixel)
                 
 
         for i in range(bins):
