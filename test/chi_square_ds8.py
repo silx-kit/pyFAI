@@ -32,7 +32,7 @@ ai.setFit2D(directDist=directDist, centerX=centerX, centerY=centerY)
 ai.wavelength = wl
 
 I_splitBB = [];sigma_splitBB = [];I_splitFull = [];sigma_splitFull = [];I_nosplit = [];sigma_nosplit = []
-for fn in images[:]:
+for fn in images[:10]:
     img = fabio.open(fn).data
     xml = etree.parse(os.path.splitext(fn)[0] + ".xml")
     monitor = float(xml.xpath("//beamStopDiode")[0].getchildren()[0].text)
