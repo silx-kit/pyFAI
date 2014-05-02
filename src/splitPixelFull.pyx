@@ -282,7 +282,7 @@ def fullSplit1D(numpy.ndarray pos not None,
     cdef double A0=0, B0=0, C0=0, D0=0, A1=0, B1=0, C1=0, D1=0
     cdef double A_lim=0, B_lim=0, C_lim=0, D_lim=0
     cdef double oneOverArea=0, partialArea=0, tmp=0
-    # cdef min_max max0, min0, max1, min1
+    cdef double max0, min0
     #cdef point2D[:] pixel
     cdef Function AB, BC, CD, DA
     cdef double epsilon=1e-10
