@@ -73,7 +73,7 @@ cdef double integrate( double A0, double B0, Function AB) nogil:
     else:
         return AB.slope*(B0*B0 - A0*A0)*0.5 + AB.intersect*(B0-A0)
     
-
+    
 class HistoLUT1dFullSplit(object):
     """
     Now uses CSR (Compressed Sparse raw) with main attributes:
@@ -153,7 +153,7 @@ class HistoLUT1dFullSplit(object):
         cdef numpy.ndarray[numpy.int32_t, ndim = 1] indptr = numpy.zeros(self.bins+1, dtype=numpy.int32)
         cdef double pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0
         cdef double max0, min0
-        cdef double areaPixel=0, dpos=0
+        cdef double areaPixel=0, delta=0
         cdef double A0=0, B0=0, C0=0, D0=0, A1=0, B1=0, C1=0, D1=0
         cdef double A_lim=0, B_lim=0, C_lim=0, D_lim=0
         cdef double oneOverArea=0, partialArea=0, tmp=0
@@ -164,26 +164,27 @@ class HistoLUT1dFullSplit(object):
         bins = self.bins
         if self.pos0Range is not None and len(self.pos0Range) > 1:
             self.pos0_min = min(self.pos0Range)
-            pos0_maxin = max(self.pos0Range)
+            self.pos0_maxin = max(self.pos0Range)
         else:
             self.pos0_min = self.pos[:, :, 0].min()
-            pos0_maxin = self.pos[:, :, 0].max()
-        self.pos0_max = pos0_maxin * (1 + numpy.finfo(numpy.float32).eps)
+            self.pos0_maxin = self.pos[:, :, 0].max()
+        self.pos0_max = self.pos0_maxin * (1 + numpy.finfo(numpy.float32).eps)
         if self.pos1Range is not None and len(self.pos1Range) > 1:
             self.pos1_min = min(self.pos1Range)
-            pos1_maxin = max(self.pos1Range)
+            self.pos1_maxin = max(self.pos1Range)
             self.check_pos1 = True
         else:
             self.pos1_min = self.pos[:, :, 1].min()
-            pos1_maxin = self.pos[:, :, 1].max()
-        self.pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
-        self.delta = (pos0_max - pos0_min) / (< double > (bins))
+            self.pos1_maxin = self.pos[:, :, 1].max()
+        self.pos1_max = self.pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
+
+        self.delta = (self.pos0_max - self.pos0_min) / (< double > (bins))
         
         pos0_min = self.pos0_min
         pos0_max = self.pos0_max
         pos1_min = self.pos1_min
         pos1_max = self.pos1_max
-        dpos = self.delta
+        delta = self.delta
         
         size = self.size
         check_mask = self.check_mask
@@ -196,13 +197,13 @@ class HistoLUT1dFullSplit(object):
                 if (check_mask) and (cmask[idx]):
                     continue
 
-                A0 = getBinNr(< double > cpos[idx, 0, 0], pos0_min, dpos)
+                A0 = getBinNr(< double > cpos[idx, 0, 0], pos0_min, delta)
                 A1 = < double > cpos[idx, 0, 1]
-                B0 = getBinNr(< double > cpos[idx, 1, 0], pos0_min, dpos)
+                B0 = getBinNr(< double > cpos[idx, 1, 0], pos0_min, delta)
                 B1 = < double > cpos[idx, 1, 1]
-                C0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, dpos)
+                C0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, delta)
                 C1 = < double > cpos[idx, 2, 1]
-                D0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, dpos)
+                D0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, delta)
                 D1 = < double > cpos[idx, 3, 1]
 
                 min0 = min(A0, B0, C0, D0)
@@ -218,12 +219,12 @@ class HistoLUT1dFullSplit(object):
 
                 for bin in range(bin0_min, bin0_max+1):
                     outMax[bin] += 1
-        
+    
         indptr[1:] = outMax.cumsum()
         self.indptr = indptr
         
         cdef numpy.ndarray[numpy.int32_t, ndim = 1] indices = numpy.zeros(indptr[bins], dtype=numpy.int32)
-        cdef numpy.ndarray[numpy.float64_t, ndim = 1] data = numpy.zeros(indptr[bins], dtype=numpy.float64)
+        cdef numpy.ndarray[numpy.float32_t, ndim = 1] data = numpy.zeros(indptr[bins], dtype=numpy.float32)
         
         #just recycle the outMax array
         memset(&outMax[0], 0, bins * sizeof(numpy.int32_t))
@@ -234,13 +235,13 @@ class HistoLUT1dFullSplit(object):
                 if (check_mask) and (cmask[idx]):
                     continue
 
-                A0 = getBinNr(< double > cpos[idx, 0, 0], pos0_min, dpos)
+                A0 = getBinNr(< double > cpos[idx, 0, 0], pos0_min, delta)
                 A1 = < double > cpos[idx, 0, 1]
-                B0 = getBinNr(< double > cpos[idx, 1, 0], pos0_min, dpos)
+                B0 = getBinNr(< double > cpos[idx, 1, 0], pos0_min, delta)
                 B1 = < double > cpos[idx, 1, 1]
-                C0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, dpos)
+                C0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, delta)
                 C1 = < double > cpos[idx, 2, 1]
-                D0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, dpos)
+                D0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, delta)
                 D1 = < double > cpos[idx, 3, 1]
 
                 min0 = min(A0, B0, C0, D0)
