@@ -182,20 +182,59 @@ def fullSplit1D(numpy.ndarray pos not None,
     buffer = view.array(shape=(bins,),itemsize=sizeof(double), format="d") 
     memset(&buffer[0], 0, sizeof(double)*bins)
 
+    if mask is not None:
+        check_mask = True
+        assert mask.size == size
+        cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
+
+
     if pos0Range is not None and len(pos0Range) > 1:
         pos0_min = min(pos0Range)
         pos0_maxin = max(pos0Range)
     else:
-        pos0_min = pos[:, :, 0].min()
-        pos0_maxin = pos[:, :, 0].max()
+        with nogil:
+            for idx in range(size):
+                if (check_mask) and (cmask[idx]):
+                    pos0_max = pos0_min = cpos[idx, 0, 0]
+                    pos1_max = pos1_min = cpos[idx, 0, 1]
+                    break
+            for idx in range(size):
+                if (check_mask) and (cmask[idx]):
+                    continue
+                a0 = cpos[idx, 0, 0]
+                a1 = cpos[idx, 0, 1]
+                b0 = cpos[idx, 1, 0]
+                b1 = cpos[idx, 1, 1]
+                c0 = cpos[idx, 2, 0]
+                c1 = cpos[idx, 2, 1]
+                d0 = cpos[idx, 3, 0]
+                d1 = cpos[idx, 3, 1]
+                min0 = min(a0, b0, c0, d0)
+                max0 = max(a0, b0, c0, d0)
+                if max0>pos0_max:
+                    pos0_max = max0
+                if min0<pos0_min:
+                    pos0_min = min0
+                min1 = min(a1, b1, c1, d1)
+                max1 = max(a1, b1, c1, d1)
+                if max1>pos1_max:
+                    pos1_max = max1
+                if min1<pos1_min:
+                    pos1_min = min1
+
+            pos0_maxin = pos0_max
+    if pos0_min<0: 
+        pos0_min=0
     pos0_max = pos0_maxin * EPS32
+
     if pos1Range is not None and len(pos1Range) > 1:
         pos1_min = min(pos1Range)
         pos1_maxin = max(pos1Range)
         do_pos1 = True
     else:
-        pos1_min = pos[:, :, 1].min()
-        pos1_maxin = pos[:, :, 1].max()
+        if min1==max1==0:
+            pos1_min = pos[:, :, 1].min()
+            pos1_maxin = pos[:, :, 1].max()
     pos1_max = pos1_maxin * EPS32
     dpos = (pos0_max - pos0_min) / (<  double > (bins))
 
@@ -214,10 +253,6 @@ def fullSplit1D(numpy.ndarray pos not None,
         cdummy = 0.0
         cddummy = 0.0
 
-    if mask is not None:
-        check_mask = True
-        assert mask.size == size
-        cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
     if dark is not None:
         do_dark = True
         assert dark.size == size

@@ -215,13 +215,18 @@ data = fabio.open(r"%s").data
                 if R < self.LIMIT:
                     results[size ] = tmin
                     self.update_mp()
+                    if first:
+                        self.new_curve(results, label)
+                        first = False
+                    else:
+                        self.new_point(size, tmin)
             else:
                 results[size ] = tmin
-            if first:
-                self.new_curve(results, label)
-                first = False
-            else:
-                self.new_point(size, tmin)
+                if first:
+                    self.new_curve(results, label)
+                    first = False
+                else:
+                    self.new_point(size, tmin)
         self.print_sep()
         self.meth.append(label)
         self.results[label] = results
