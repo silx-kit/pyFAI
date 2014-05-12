@@ -1,4 +1,4 @@
-import numpy, itertools,scipy,matplotlib
+import numpy, itertools,scipy,pylab
 try:
     from _convolution import gaussian_filter
 except ImportError:
@@ -36,7 +36,7 @@ def make_gaussian(im,sigma,xc,yc):
     if size%2 == 0 :
            size += 1
     x = numpy.arange(0, size, 1, float)
-    y = x[:,numpy.newaxis]
+    y = x[:,numpy.newaxis]*4
     x0 = y0 = size // 2
     gaus = numpy.exp(-4*numpy.log(2) * ((x-x0)**2 + (y-y0)**2) / sigma**2)
     im[xc-size/2:xc+size/2+1,yc-size/2:yc+size/2+1] = gaus
@@ -143,8 +143,11 @@ class BlobDetection(object):
             self.mask = (mask != 0).astype(numpy.int8)
         else:
             self.mask = (img <= 0).astype(numpy.int8)
+            self.mask[0,:] = self.mask[:,0] = self.mask[-1,:] = self.mask[:,-1]= 1
+        print self.mask
         to_mask = numpy.where(self.mask)
         self.do_mask = to_mask[0].size > 0
+        print self.do_mask
         if self.do_mask:
             self.raw[to_mask] = 0
 
@@ -199,12 +202,7 @@ class BlobDetection(object):
         print(self.sigmas)
 
     @timeit
-    def grow_mask(self):
-        """
-        Grow the mask according to the given sigma_destination
-        
-        At each octave, one deeds to re-grow the mask by half the size 
-        """
+
 
     @timeit
     def _one_octave(self, shrink=True, do_SG4=True, n_5=False):
@@ -261,15 +259,16 @@ class BlobDetection(object):
             l = kpx.size
             print ('After refinement : %i keypoints' % l)  
 
-        
+
         dtype = numpy.dtype([('x', numpy.float32), ('y', numpy.float32), ('scale', numpy.float32), ('I', numpy.float32)])
         keypoints = numpy.recarray((l,), dtype=dtype)
         sigmas = numpy.array([s[0] for s in self.sigmas])  
-       
-        keypoints[:].x = kpx * self.curr_reduction
-        keypoints[:].y = kpy * self.curr_reduction
-        keypoints[:].scale = (self.curr_reduction * sigmas.take(kps) + delta_s) ** 2  #scale = sigma^2
-        keypoints[:].I = self.dogs[(kps, numpy.around(kpy).astype(int), numpy.around(kpx).astype(int))]
+        
+        if l != 0:    
+            keypoints[:].x = kpx * self.curr_reduction
+            keypoints[:].y = kpy * self.curr_reduction
+            keypoints[:].scale = (self.curr_reduction * sigmas.take(kps) + delta_s) ** 2  #scale = sigma^2
+            keypoints[:].I = self.dogs[(kps, numpy.around(kpy).astype(int), numpy.around(kpx).astype(int))]
         
         if shrink:
             #shrink data so that they can be treated by next octave
@@ -319,7 +318,7 @@ class BlobDetection(object):
             
 
             j = round(numpy.log(sigma/self.sigmas[0][0])/numpy.log(2)*self.scale_per_octave)
-
+            
             if j > 0 and j < self.scale_per_octave+1:
                 curr_dog = self.dogs[j]
                 prev_dog = self.dogs[j-1]
@@ -357,7 +356,6 @@ class BlobDetection(object):
                     delta = - (numpy.dot(numpy.linalg.inv(lap),[dy,dx,ds]))
 #                     print delta
                     err = numpy.linalg.norm(delta[:-1])
-                    print self.sigmas[-1][0]
                     if  err < numpy.sqrt(4) and numpy.abs(delta[0]) <= 2.0 and numpy.abs(delta[1]) <= 2.0 and numpy.abs(delta[2]) <= self.sigmas[-1][0]:
                         k2x.append(x+delta[1])  
                         k2y.append(y+delta[0])
@@ -365,12 +363,62 @@ class BlobDetection(object):
                         kds.append(delta[2])       
                         kdx.append(delta[1]) 
                         kdy.append(delta[0])
-                        
+                                      
         return numpy.asarray(k2x),numpy.asarray(k2y),numpy.asarray(sigmas),numpy.asarray(kds)
         
         
+    def Direction(self):
+        i = 0
+        kpx = self.keypoints.x
+        kpy = self.keypoints.y
+        scale = self.keypoints.scale
+        img = self.raw
+        pylab.figure()
+        pylab.imshow(img, interpolation ='nearest')
                 
-        
+        for y,x,s in itertools.izip(kpy,kpx, scale):
+            s_patch = numpy.trunc(s * 2)
+            
+            if s_patch%2 == 0 :
+                s_patch += 1
+                
+            if s_patch < 3 : s_patch = 3  
+            
+            if (x > s_patch/2 and x < img.shape[1]-s_patch/2-1 and y > s_patch/2 and y < img.shape[0]-s_patch/2):
+                
+                patch = img[y-(s_patch-1)/2:y+(s_patch-1)/2+1,x-(s_patch-1)/2:x+(s_patch-1)/2+1]
+                x_patch = numpy.arange(s_patch)
+                Gx = numpy.exp(-4*numpy.log(2) * (x_patch-numpy.median(x_patch))**2  / s)
+                Gy = Gx[:,numpy.newaxis]
+                dGx = - Gx * 4 * numpy.log(2) / s * 2 * (x_patch-numpy.median(x_patch)) 
+                dGy = dGx[:,numpy.newaxis]
+                d2Gx = -8 * numpy.log(2) / s * ((x_patch-numpy.median(x_patch))* dGx + Gx)
+                d2Gy = d2Gx[:,numpy.newaxis]
+                
+                Hxx = d2Gx * Gy
+                Hyy = d2Gy * Gx
+                Hxy = dGx * dGy
+  
+                d2x = (Hxx.ravel()*patch.ravel()).sum()
+                d2y = (Hyy.ravel()*patch.ravel()).sum()
+                dxy = (Hxy.ravel()*patch.ravel()).sum()
+                H = numpy.array([[d2y,dxy],[dxy,d2x]])
+                val,vect = numpy.linalg.eig(H)
+                print 'new point'
+                print x,y
+                print val
+                print vect
+                e = numpy.abs(val[0]-val[1])/numpy.abs(val[0]+val[1])
+                print e
+                pylab.plot(x,y,'og')
+                
+#                 if val[0] < val[1]:
+                pylab.annotate("", xy=(x+vect[0][0]*val[0],y+vect[0][1]*val[0]), xytext=(x, y),
+                                   arrowprops=dict(facecolor='red', shrink=0.05),)
+#                 else:
+                pylab.annotate("", xy=(x+vect[1][0]*val[1],y+vect[1][1]*val[1]), xytext=(x, y),
+                    arrowprops=dict(facecolor='red', shrink=0.05),)
+                        
 if __name__ == "__main__":
     
     kx=[]
