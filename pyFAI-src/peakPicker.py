@@ -91,11 +91,18 @@ class PeakPicker(object):
 
     def reset(self):
         """
-        reset control point and graph (if needed)
+        Reset control point and graph (if needed)
         """
         self.points.reset()
         if self.fig and self.ax:
-            self.display_points()
+            #empty annotation and plots
+            if len(self.ax.texts) > 0:
+               self.ax.texts = []
+            if len(self.ax.lines) > 0:
+               self.ax.lines = []
+            #Redraw the image
+            self.fig.show()
+            self.fig.canvas.draw()
 
     def gui(self, log=False, maximize=False):
         """
