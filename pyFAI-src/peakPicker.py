@@ -89,6 +89,14 @@ class PeakPicker(object):
         self.mpl_connectId = None
         self.defaultNbPoints = 100
 
+    def reset(self):
+        """
+        reset control point and graph (if needed)
+        """
+        self.points.reset()
+        if self.fig and self.ax:
+            self.display_points()
+
     def gui(self, log=False, maximize=False):
         """
         @param log: show z in log scale
