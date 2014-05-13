@@ -54,8 +54,9 @@ TARGET_SIZE = 1024
 # PeakPicker
 ################################################################################
 class PeakPicker(object):
+    VALID_METHODS = ["massif","blob"]
     def __init__(self, strFilename, reconst=False, mask=None,
-                 pointfile=None, calibrant=None, wavelength=None):
+                 pointfile=None, calibrant=None, wavelength=None, method="massif"):
         """
         @param: input image filename
         @param reconst: shall masked part or negative values be reconstructed (wipe out problems with pilatus gaps)
@@ -71,23 +72,55 @@ class PeakPicker(object):
 
         self.shape = self.data.shape
         self.points = ControlPoints(pointfile, calibrant=calibrant, wavelength=wavelength)
-#        self.lstPoints = []
         self.fig = None
         self.fig2 = None
         self.fig2sp = None
         self.ax = None
         self.ct = None
         self.msp = None
-        if reconstruct and (reconst is not False):
-            if mask is None:
-                mask = self.data < 0
-            self.massif = Massif(reconstruct(self.data, mask))
-        else:
-            self.massif = Massif(self.data)
+        self.reconstruct = reconst
+        self.mask = mask
+        self.massif = None  #used for massif detection
+        self.blob = None    #used for blob   detection
         self._sem = threading.Semaphore()
         self._semGui = threading.Semaphore()
         self.mpl_connectId = None
         self.defaultNbPoints = 100
+        if method in self.VALID_METHODS:
+            self.method =  method
+        else:
+            logger.error("Not a valid peak-picker method: %s should be part of %s"%(method, self.VALID_METHODS))
+            self.method = self.VALID_METHODS[0]
+        
+        if self.method == "massif":
+            self.init_massif()
+        elif self.method == "blob":
+            self.init_blob()
+
+
+    def init_massif(self):
+        """
+        Initialize PeakPicker for massif based detection
+        """
+        if self.reconstruct and (self.reconst is not False):
+            if self.mask is None:
+                mask = self.data < 0
+            else:
+                mask = self.mask
+            self.massif = Massif(reconstruct(self.data, mask))
+        else:
+            self.massif = Massif(self.data)
+        self.method = "massif"
+
+    def init_blob(self):
+        """
+        Initialize PeakPicker for blob based detection
+        """
+        if self.mask is not None:
+            self.blob = BlobDetection(self.data, mask=self.mask)
+        else:
+            self.blob = BlobDetection(self.data)
+        self.method = "blob"
 
     def reset(self):
         """

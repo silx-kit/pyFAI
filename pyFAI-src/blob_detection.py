@@ -1,4 +1,37 @@
-import numpy, itertools, scipy
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+#    Project: Azimuthal integration
+#             https://github.com/kif/pyFAI
+#
+#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#
+#    Principal author:       Aurore Deschildre
+#                            Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+from __future__ import division
+__authors__ = ["Aurore Deschildre", "Jérôme Kieffer"]
+__contact__ = "Jerome.Kieffer@ESRF.eu"
+__license__ = "GPLv3+"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "13/05/2014"
+__status__ = "development"
+__docformat__ = 'restructuredtext'
+import os, itertools
+import numpy
 try:
     from _convolution import gaussian_filter
 except ImportError:
@@ -36,7 +69,7 @@ def make_gaussian(im, sigma, xc, yc):
     if size % 2 == 0 :
            size += 1
     x = numpy.arange(0, size, 1, float)
-    y = x[:, numpy.newaxis]
+    y = x[:, numpy.newaxis] * 4
     x0 = y0 = size // 2
     gaus = numpy.exp(-4 * numpy.log(2) * ((x - x0) ** 2 + (y - y0) ** 2) / sigma ** 2)
     im[xc - size / 2:xc + size / 2 + 1, yc - size / 2:yc + size / 2 + 1] = gaus
@@ -119,6 +152,9 @@ def local_max(dogs, mask=None, n_5=True):
 
 class BlobDetection(object):
     """
+        Performs a blob detection:
+        http://en.wikipedia.org/wiki/Blob_detection
+        using a Difference of Gaussian + Pyramid of Gaussians
     
     """
     def __init__(self, img, cur_sigma=0.25, init_sigma=0.50, dest_sigma=1, scale_per_octave=2, mask=None):
@@ -174,7 +210,15 @@ class BlobDetection(object):
         self.border_size = 5# size of the border, unused: prefer mask
         self.keypoints = []
         self.delta = []
-        self.sigma_octave = 1.0
+        self.curr_reduction = 1.0
+        self.detection_started = False
+        self.octave = 0
+
+    def __repr__(self):
+        lststr = ["Blob detection, shape=%s, processed=%s." % (self.raw.shape, self.detection_started)]
+        lststr.append("Sigmas: input=%.3f \t init=%.3f, dest=%.3f over %i blurs/octave" % (self.cur_sigma, self.init_sigma, self.dest_sigma, self.scale_per_octave))
+        lststr.append("found %s keypoint up to now, we are at reduction %s" % (len(self.keypoints), self.curr_reduction))
+        return os.linesep.join(lststr)
 
     def _initial_blur(self):
         """
@@ -202,7 +246,6 @@ class BlobDetection(object):
             previous = sigma_abs
         print(self.sigmas)
 
-
     @timeit
     def _one_octave(self, shrink=True, do_SG4=True, n_5=False):
         """
@@ -219,7 +262,7 @@ class BlobDetection(object):
         if not self.sigmas:
             self._calc_sigma()
         print(self.sigmas)
-        
+
         previous = self.data
         dog_shape = (len(self.sigmas) - 1,) + self.data.shape
         self.dogs = numpy.zeros(dog_shape, dtype=numpy.float32)
@@ -244,27 +287,29 @@ class BlobDetection(object):
         else:
             valid_points = local_max(self.dogs, self.cur_mask, n_5)
         kps, kpy, kpx = numpy.where(valid_points)
-        
+
         l = kpx.size
-        
+        delta_s = numpy.zeros(l)
+
+        print ('Before refinement : %i keypoints' % l)
         if do_SG4:
-
-            print ('Before refinement : %i keypoints' % l)
-            kpx,kpy,kps,delta_s = self.refine_Hessian(kpx,kpy,kps)  
+            kpx, kpy, kps, delta_s = self.refine_Hessian_SG(kpx, kpy, kps)
             l = kpx.size
-            print ('After refinement : %i keypoints' % l)  
+        else:
+            kpx, kpy, kps, delta_s = self.refine_Hessian(kpx, kpy, kps)
+            
+        print ('After refinement : %i keypoints' % l)
 
-        
         dtype = numpy.dtype([('x', numpy.float32), ('y', numpy.float32), ('scale', numpy.float32), ('I', numpy.float32)])
         keypoints = numpy.recarray((l,), dtype=dtype)
         sigmas = numpy.array([s[0] for s in self.sigmas])
 
-        
-        keypoints[:].x = kpx * self.curr_reduction
-        keypoints[:].y = kpy * self.curr_reduction
-        keypoints[:].scale = (kps + delta_s ** 2)  #scale = sigma^2
-        keypoints[:].I = self.dogs[(kps, numpy.around(kpy).astype(int), numpy.around(kpx).astype(int))]
-        
+        if l != 0:
+            keypoints[:].x = kpx * self.curr_reduction
+            keypoints[:].y = kpy * self.curr_reduction
+            keypoints[:].scale = (self.curr_reduction * sigmas.take(kps) + delta_s) ** 2  #scale = sigma^2
+            keypoints[:].I = self.dogs[(kps, numpy.around(kpy).astype(int), numpy.around(kpx).astype(int))]
+
         if shrink:
             #shrink data so that they can be treated by next octave
             print("In shrink")
@@ -274,94 +319,172 @@ class BlobDetection(object):
             if self.do_mask:
                 self.cur_mask = (binning(self.cur_mask, 2) > 0).astype(numpy.int8)
                 self.cur_mask = morphology.binary_dilation(self.cur_mask, self.grow)
-            self.octave += 1    
-                
-        if len(self.keypoints) == 0 : 
-            self.keypoints = keypoints 
+            self.octave += 1
+
+        if len(self.keypoints) == 0 :
+            self.keypoints = keypoints
         else:
             old_size = self.keypoints.size
             new_size = old_size + l
-            self.keypoints.resize(new_size)
-            self.keypoints[old_size:] = keypoints  
-            
-#             self.keypoints = numpy.concatenate((self.keypoints, keypoints))
-#         self.keypoints = keypoints 
+            new_keypoints = numpy.recarray(new_size, dtype=self.keypoints.dtype)
+            new_keypoints[:old_size] = self.keypoints
+            new_keypoints[old_size:] = keypoints
+            self.keypoints = new_keypoints
 
-  
-    def refine_Hessian(self,kpx,kpy,kps):
+    def refine_Hessian(self, kpx, kpy, kps):
+        """
+        
+        Refine the keypoint location based on a 3 point derivative
+        
+        @param kpx:x_pos of keypoint
+        @param kpy: y_pos of keypoint
+        @param kps: sigma of keypoint 
+        """
+        j = numpy.round( numpy.log2(sigma / self.sigmas[0][0]) * self.scale_per_octave).astype(numpy.int32)+1
+        curr = self.dogs.take((j, kpy, kpx))
+        nx = self.dogs.take((j, kpy, kpx+1))
+        px = self.dogs.take((j, kpy, kpx-1))
+        ny = self.dogs.take((j,kpy+1,kpx))
+        py = self.dogs.take((j,kpy-1,kpx))
+        ns = self.dogs.take((j+1,kpy,kpx))
+        ps = self.dogs.take((j-1,kpy,kpx))
+        dx = (nx - px)/2.0
+        dy = (ny - py)/2.0
+        ds = (ns - ps)/2.0
+        dxx = (nx - 2.0*curr +px)
+        dyy = (ny - 2.0*curr +py)
+        dss = (ns - 2.0*curr +ps)
+        dxy = 1#todo
+        dxs = 1#todo
+        dys = 1#todo
+        
+    def refine_Hessian_SG(self, kpx, kpy, kps):
         """ Savitzky Golay algorithm to check if a point is really the maximum """
 
 
-        deltas = []
-        k2x=[]
-        k2y=[]
-        sigmas=[]
-        i=0
 
-        
+        k2x = []
+        k2y = []
+        sigmas = []
+        i = 0
+        kds = []
+        kdx = []
+        kdy = []
+
         #Hessian patch 3
-        SGX0Y0   =  [-0.11111111 ,0.22222222 ,-0.11111111 ,0.22222222 ,0.55555556 ,0.22222222 ,-0.11111111 ,0.22222222 ,-0.11111111]
-        SGX1Y0   =  [-0.16666667 ,0.00000000 ,0.16666667 ,-0.16666667 ,0.00000000 ,0.16666667 ,-0.16666667 ,0.00000000 ,0.16666667 ]
-        SGX2Y0   =  [0.16666667 ,-0.33333333 ,0.16666667 ,0.16666667 ,-0.33333333 ,0.16666667 ,0.16666667,-0.33333333,0.16666667 ]
-        SGX0Y1   =  [-0.16666667,-0.16666667,-0.16666667,0.00000000,0.00000000,0.00000000,0.16666667,0.16666667,0.16666667]
-        SGX1Y1   =  [0.25000000,0.00000000,-0.25000000,0.00000000,0.00000000,0.00000000,-0.25000000,0.00000000,0.25000000]
-        SGX0Y2   =  [0.16666667 ,0.16666667 ,0.16666667 ,-0.33333333 ,-0.33333333 ,-0.33333333 ,0.16666667 ,0.16666667 ,0.16666667]
+        SGX0Y0 = [-0.11111111 , 0.22222222 , -0.11111111 , 0.22222222 , 0.55555556 , 0.22222222 , -0.11111111 , 0.22222222 , -0.11111111]
+        SGX1Y0 = [-0.16666667 , 0.00000000 , 0.16666667 , -0.16666667 , 0.00000000 , 0.16666667 , -0.16666667 , 0.00000000 , 0.16666667 ]
+        SGX2Y0 = [0.16666667 , -0.33333333 , 0.16666667 , 0.16666667 , -0.33333333 , 0.16666667 , 0.16666667, -0.33333333, 0.16666667 ]
+        SGX0Y1 = [-0.16666667, -0.16666667, -0.16666667, 0.00000000, 0.00000000, 0.00000000, 0.16666667, 0.16666667, 0.16666667]
+        SGX1Y1 = [0.25000000, 0.00000000, -0.25000000, 0.00000000, 0.00000000, 0.00000000, -0.25000000, 0.00000000, 0.25000000]
+        SGX0Y2 = [0.16666667 , 0.16666667 , 0.16666667 , -0.33333333 , -0.33333333 , -0.33333333 , 0.16666667 , 0.16666667 , 0.16666667]
 
-        for y,x,sigma in itertools.izip(kpy,kpx,kps):
-            
+        for y, x, sigma in itertools.izip(kpy, kpx, kps):
 
-            j = round(numpy.log(sigma/self.sigmas[0][0])/numpy.log(2)*self.scale_per_octave)
 
-            if j > 0 and j < self.scale_per_octave+1:
+            j = round(numpy.log(sigma / self.sigmas[0][0]) / numpy.log(2) * self.scale_per_octave)
+
+            if j > 0 and j < self.scale_per_octave + 1:
                 curr_dog = self.dogs[j]
-                prev_dog = self.dogs[j-1]
-                next_dog = self.dogs[j+1]
+                prev_dog = self.dogs[j - 1]
+                next_dog = self.dogs[j + 1]
 
-                if (x > 1 and x < curr_dog.shape[1]-2 and y > 1 and y < curr_dog.shape[0]-2):
-                
-                    
-                    patch3 = curr_dog[y-1:y+2,x-1:x+2]
-                    patch3_prev = prev_dog[y-1:y+2,x-1:x+2]
-                    patch3_next = next_dog[y-1:y+2,x-1:x+2]
-    
-                    dx = (SGX1Y0*patch3.ravel()).sum()
-                    dy = (SGX0Y1*patch3.ravel()).sum()
-                    d2x = (SGX2Y0*patch3.ravel()).sum()
-                    d2y = (SGX0Y2*patch3.ravel()).sum()
-                    dxy = (SGX1Y1*patch3.ravel()).sum()
-    
-                    s_next = (SGX0Y0*patch3_next.ravel()).sum()
-                    s = (SGX0Y0*patch3.ravel()).sum()
-                    s_prev = (SGX0Y0*patch3_prev.ravel()).sum()
-                    d2s = (s_next + s_prev - 2.0*s) /4.0
-                    ds = (s_next - s_prev) /2.0
-                    
-                    dx_next = (SGX1Y0*patch3_next.ravel()).sum()
-                    dx_prev = (SGX1Y0*patch3_prev.ravel()).sum()
-                    
-                    dy_next = (SGX0Y1*patch3_next.ravel()).sum()
-                    dy_prev = (SGX0Y1*patch3_prev.ravel()).sum()
-                    
-                    dxs = (dx_next - dx_prev)/2.0
-                    dys = (dy_next - dy_prev)/2.0                
-                                    
-                    lap = numpy.array([[d2y,dxy,dys],[dxy,d2x,dxs],[dys,dxs,d2s]])
-    
-                    delta = (numpy.dot(numpy.linalg.inv(lap),[dy,dx,ds]))
+                if (x > 1 and x < curr_dog.shape[1] - 2 and y > 1 and y < curr_dog.shape[0] - 2):
+
+
+                    patch3 = curr_dog[y - 1:y + 2, x - 1:x + 2]
+                    patch3_prev = prev_dog[y - 1:y + 2, x - 1:x + 2]
+                    patch3_next = next_dog[y - 1:y + 2, x - 1:x + 2]
+
+                    dx = (SGX1Y0 * patch3.ravel()).sum()
+                    dy = (SGX0Y1 * patch3.ravel()).sum()
+                    d2x = (SGX2Y0 * patch3.ravel()).sum()
+                    d2y = (SGX0Y2 * patch3.ravel()).sum()
+                    dxy = (SGX1Y1 * patch3.ravel()).sum()
+
+                    s_next = (SGX0Y0 * patch3_next.ravel()).sum()
+                    s = (SGX0Y0 * patch3.ravel()).sum()
+                    s_prev = (SGX0Y0 * patch3_prev.ravel()).sum()
+                    d2s = (s_next + s_prev - 2.0 * s) / 4.0
+                    ds = (s_next - s_prev) / 2.0
+
+                    dx_next = (SGX1Y0 * patch3_next.ravel()).sum()
+                    dx_prev = (SGX1Y0 * patch3_prev.ravel()).sum()
+
+                    dy_next = (SGX0Y1 * patch3_next.ravel()).sum()
+                    dy_prev = (SGX0Y1 * patch3_prev.ravel()).sum()
+
+                    dxs = (dx_next - dx_prev) / 2.0
+                    dys = (dy_next - dy_prev) / 2.0
+
+                    lap = numpy.array([[d2y, dxy, dys], [dxy, d2x, dxs], [dys, dxs, d2s]])
+                    delta = -(numpy.dot(numpy.linalg.inv(lap), [dy, dx, ds]))
+#                     print delta
                     err = numpy.linalg.norm(delta[:-1])
-                    
-                    if  err < numpy.sqrt(2) and numpy.abs(delta[0]) <= 1.0 and numpy.abs(delta[1]) <= 1.0 and numpy.abs(sigma+delta[2] <= 8) :
-                        k2x.append(x-delta[1])
-                        k2y.append(y-delta[0])
+                    if  err < numpy.sqrt(4) and numpy.abs(delta[0]) <= 2.0 and numpy.abs(delta[1]) <= 2.0 and numpy.abs(delta[2]) <= self.sigmas[-1][0]:
+                        k2x.append(x + delta[1])
+                        k2y.append(y + delta[0])
                         sigmas.append(sigma)
-                        deltas.append(delta[2])
+                        kds.append(delta[2])
+                        kdx.append(delta[1])
+                        kdy.append(delta[0])
 
-                    i = i + 1
-          
-        return numpy.asarray(k2x),numpy.asarray(k2y),numpy.asarray(sigmas),numpy.asarray(deltas)
-                 
-                
-        
+        return numpy.asarray(k2x), numpy.asarray(k2y), numpy.asarray(sigmas), numpy.asarray(kds)
+
+
+    def Direction(self):
+        import pylab
+        i = 0
+        kpx = self.keypoints.x
+        kpy = self.keypoints.y
+        scale = self.keypoints.scale
+        img = self.raw
+        pylab.figure()
+        pylab.imshow(img, interpolation='nearest')
+
+        for y, x, s in itertools.izip(kpy, kpx, scale):
+            s_patch = numpy.trunc(s * 2)
+
+            if s_patch % 2 == 0 :
+                s_patch += 1
+
+            if s_patch < 3 : s_patch = 3
+
+            if (x > s_patch / 2 and x < img.shape[1] - s_patch / 2 - 1 and y > s_patch / 2 and y < img.shape[0] - s_patch / 2):
+
+                patch = img[y - (s_patch - 1) / 2:y + (s_patch - 1) / 2 + 1, x - (s_patch - 1) / 2:x + (s_patch - 1) / 2 + 1]
+                x_patch = numpy.arange(s_patch)
+                Gx = numpy.exp(-4 * numpy.log(2) * (x_patch - numpy.median(x_patch)) ** 2 / s)
+                Gy = Gx[:, numpy.newaxis]
+                dGx = -Gx * 4 * numpy.log(2) / s * 2 * (x_patch - numpy.median(x_patch))
+                dGy = dGx[:, numpy.newaxis]
+                d2Gx = -8 * numpy.log(2) / s * ((x_patch - numpy.median(x_patch)) * dGx + Gx)
+                d2Gy = d2Gx[:, numpy.newaxis]
+
+                Hxx = d2Gx * Gy
+                Hyy = d2Gy * Gx
+                Hxy = dGx * dGy
+
+                d2x = (Hxx.ravel() * patch.ravel()).sum()
+                d2y = (Hyy.ravel() * patch.ravel()).sum()
+                dxy = (Hxy.ravel() * patch.ravel()).sum()
+                H = numpy.array([[d2y, dxy], [dxy, d2x]])
+                val, vect = numpy.linalg.eig(H)
+                print 'new point'
+                print x, y
+                print val
+                print vect
+                e = numpy.abs(val[0] - val[1]) / numpy.abs(val[0] + val[1])
+                print e
+                pylab.plot(x, y, 'og')
+
+#                 if val[0] < val[1]:
+                pylab.annotate("", xy=(x + vect[0][0] * val[0], y + vect[0][1] * val[0]), xytext=(x, y),
+                                   arrowprops=dict(facecolor='red', shrink=0.05),)
+#                 else:
+                pylab.annotate("", xy=(x + vect[1][0] * val[1], y + vect[1][1] * val[1]), xytext=(x, y),
+                    arrowprops=dict(facecolor='red', shrink=0.05),)
+
 if __name__ == "__main__":
 
     kx = []
