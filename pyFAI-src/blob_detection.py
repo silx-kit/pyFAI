@@ -261,7 +261,9 @@ class BlobDetection(object):
         dy = []
         if not self.sigmas:
             self._calc_sigma()
-        print(self.sigmas)
+#        print(self.sigmas)
+        if (1 - self.cur_mask).sum() == 0:
+            return
 
         previous = self.data
         dog_shape = (len(self.sigmas) - 1,) + self.data.shape
@@ -288,32 +290,49 @@ class BlobDetection(object):
             valid_points = local_max(self.dogs, self.cur_mask, n_5)
         kps, kpy, kpx = numpy.where(valid_points)
 
-        l = kpx.size
-        delta_s = numpy.zeros(l)
-
-        print ('Before refinement : %i keypoints' % l)
+        print ('Before refinement : %i keypoints' % kpx.size)
         if do_SG4:
             kpx, kpy, kps, delta_s = self.refine_Hessian_SG(kpx, kpy, kps)
             l = kpx.size
+            peak_val = self.dogs[(numpy.around(kps).astype(int),
+                                  numpy.around(kpy).astype(int),
+                                  numpy.around(kpx).astype(int))]
+            valid = numpy.ones(l, dtype=int)
         else:
-            kpx, kpy, kps, delta_s = self.refine_Hessian(kpx, kpy, kps)
-            
+            kpx, kpy, kps, peak_val, valid = self.refine_Hessian(kpx, kpy, kps)
+            l = valid.sum()
+
         print ('After refinement : %i keypoints' % l)
 
-        dtype = numpy.dtype([('x', numpy.float32), ('y', numpy.float32), ('scale', numpy.float32), ('I', numpy.float32)])
+        dtype = numpy.dtype([('x', numpy.float32), ('y', numpy.float32), ('sigma', numpy.float32), ('I', numpy.float32)])
         keypoints = numpy.recarray((l,), dtype=dtype)
-        sigmas = numpy.array([s[0] for s in self.sigmas])
+#        sigmas = numpy.array([s[0] for s in self.sigmas])
+
 
         if l != 0:
-            keypoints[:].x = kpx * self.curr_reduction
-            keypoints[:].y = kpy * self.curr_reduction
-            keypoints[:].scale = (self.curr_reduction * sigmas.take(kps) + delta_s) ** 2  #scale = sigma^2
-            keypoints[:].I = self.dogs[(kps, numpy.around(kpy).astype(int), numpy.around(kpx).astype(int))]
+            keypoints[:].x = kpx[valid] * self.curr_reduction
+            keypoints[:].y = kpy[valid] * self.curr_reduction
+            sigmas = self.init_sigma * (self.dest_sigma / self.init_sigma) ** (kps[valid] / (self.scale_per_octave))
+            keypoints[:].sigma = (self.curr_reduction * sigmas)
+            keypoints[:].I = peak_val[valid]
 
         if shrink:
             #shrink data so that they can be treated by next octave
             print("In shrink")
-            self.data = binning(self.blurs[self.scale_per_octave], 2) / 4.0
+            last = self.blurs[self.scale_per_octave]
+            ty, tx = last.shape
+            if ty % 2 != 0 or tx % 2 != 0:
+                new_tx = 2 * ((tx + 1) // 2)
+                new_ty = 2 * ((ty + 1) // 2)
+                new_last = numpy.zeros((new_ty, new_tx), last.dtype)
+                new_last[:ty, :tx] = last
+                last = new_last
+                if self.do_mask:
+                    new_msk = numpy.ones((new_ty, new_tx), numpy.int8)
+                    new_msk[:ty, :tx] = self.cur_mask
+                    self.cur_mask = new_msk
+#            print last.shape, tx, ty
+            self.data = binning(last, 2) / 4.0
             self.curr_reduction *= 2
             self.blurs = []
             if self.do_mask:
@@ -336,28 +355,65 @@ class BlobDetection(object):
         
         Refine the keypoint location based on a 3 point derivative
         
-        @param kpx:x_pos of keypoint
+        @param kpx: x_pos of keypoint
         @param kpy: y_pos of keypoint
-        @param kps: sigma of keypoint 
+        @param kps: s_pos of keypoint
+        @return  
         """
-        j = numpy.round( numpy.log2(sigma / self.sigmas[0][0]) * self.scale_per_octave).astype(numpy.int32)+1
-        curr = self.dogs.take((j, kpy, kpx))
-        nx = self.dogs.take((j, kpy, kpx+1))
-        px = self.dogs.take((j, kpy, kpx-1))
-        ny = self.dogs.take((j,kpy+1,kpx))
-        py = self.dogs.take((j,kpy-1,kpx))
-        ns = self.dogs.take((j+1,kpy,kpx))
-        ps = self.dogs.take((j-1,kpy,kpx))
-        dx = (nx - px)/2.0
-        dy = (ny - py)/2.0
-        ds = (ns - ps)/2.0
-        dxx = (nx - 2.0*curr +px)
-        dyy = (ny - 2.0*curr +py)
-        dss = (ns - 2.0*curr +ps)
-        dxy = 1#todo
-        dxs = 1#todo
-        dys = 1#todo
-        
+        tresh = 0.6
+#        j = numpy.round( numpy.log2(sigma / self.sigmas[0][0]) * self.scale_per_octave).astype(numpy.int32)+1
+#        print kpx, kpy, kps
+        curr = self.dogs[(kps, kpy, kpx)]
+#        print curr
+        nx = self.dogs[(kps, kpy, kpx + 1)]
+        px = self.dogs[(kps, kpy, kpx - 1)]
+        ny = self.dogs[(kps, kpy + 1, kpx)]
+        py = self.dogs[(kps, kpy - 1, kpx)]
+        ns = self.dogs[(kps + 1, kpy, kpx)]
+        ps = self.dogs[(kps - 1, kpy, kpx)]
+
+        nxny = self.dogs[(kps, kpy + 1, kpx + 1)]
+        nxpy = self.dogs[(kps, kpy - 1, kpx + 1)]
+        pxny = self.dogs[(kps, kpy + 1, kpx - 1)]
+        pxpy = self.dogs[(kps, kpy - 1, kpx - 1)]
+
+        nsny = self.dogs[(kps + 1, kpy + 1, kpx)]
+        nspy = self.dogs[(kps + 1, kpy - 1, kpx)]
+        psny = self.dogs[(kps - 1, kpy + 1, kpx)]
+        pspy = self.dogs[(kps - 1, kpy - 1, kpx)]
+
+        nxns = self.dogs[(kps + 1, kpy, kpx + 1)]
+        nxps = self.dogs[(kps - 1, kpy, kpx + 1)]
+        pxns = self.dogs[(kps + 1, kpy, kpx - 1)]
+        pxps = self.dogs[(kps - 1, kpy, kpx - 1)]
+
+        dx = (nx - px) / 2.0
+        dy = (ny - py) / 2.0
+        ds = (ns - ps) / 2.0
+        dxx = (nx - 2.0 * curr + px)
+        dyy = (ny - 2.0 * curr + py)
+        dss = (ns - 2.0 * curr + ps)
+        dxy = (nxny - nxpy - pxny + pxpy) / 4.0
+        dxs = (nxns - nxps - pxns + pxps) / 4.0
+        dsy = (nsny - nspy - psny + pspy) / 4.0
+        det = -(dxs * dyy * dxs) + dsy * dxy * dxs + dxs * dsy * dxy - dss * dxy * dxy - dsy * dsy * dxx + dss * dyy * dxx
+        K00 = dyy * dxx - dxy * dxy
+        K01 = dxs * dxy - dsy * dxx
+        K02 = dsy * dxy - dxs * dyy
+        K10 = dxy * dxs - dsy * dxx
+        K11 = dss * dxx - dxs * dxs
+        K12 = dxs * dsy - dss * dxy
+        K20 = dsy * dxy - dyy * dxs
+        K21 = dsy * dxs - dss * dxy
+        K22 = dss * dyy - dsy * dsy
+
+        delta_s = -(ds * K00 + dy * K01 + dx * K02) / det
+        delta_y = -(ds * K10 + dy * K11 + dx * K12) / det
+        delta_x = -(ds * K20 + dy * K21 + dx * K22) / det
+        peakval = curr + 0.5 * (delta_s * ds + delta_y * dy + delta_x * dx)
+        mask = numpy.logical_and(abs(delta_x < tresh), abs(delta_y < tresh), abs(delta_s < tresh))
+        return kpx + delta_x, kpy + delta_y, kps + delta_s, peakval, mask
+
     def refine_Hessian_SG(self, kpx, kpy, kps):
         """ Savitzky Golay algorithm to check if a point is really the maximum """
 
@@ -437,12 +493,12 @@ class BlobDetection(object):
         i = 0
         kpx = self.keypoints.x
         kpy = self.keypoints.y
-        scale = self.keypoints.scale
+        sigma = self.keypoints.sigma
         img = self.raw
         pylab.figure()
         pylab.imshow(img, interpolation='nearest')
 
-        for y, x, s in itertools.izip(kpy, kpx, scale):
+        for y, x, s in itertools.izip(kpy, kpx, sigma):
             s_patch = numpy.trunc(s * 2)
 
             if s_patch % 2 == 0 :
