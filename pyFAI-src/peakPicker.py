@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/03/2013"
+__date__ = "30/04/2014"
 __status__ = "production"
 
 import os, sys, threading, logging, gc, types
@@ -54,10 +54,12 @@ TARGET_SIZE = 1024
 # PeakPicker
 ################################################################################
 class PeakPicker(object):
-    def __init__(self, strFilename, reconst=False, mask=None, pointfile=None, calibrant=None, wavelength=None):
+    VALID_METHODS = ["massif","blob"]
+    def __init__(self, strFilename, reconst=False, mask=None,
+                 pointfile=None, calibrant=None, wavelength=None, method="massif"):
         """
         @param: input image filename
-        @param reconst: shall mased part or negative values be reconstructed (wipe out problems with pilatus gaps)
+        @param reconst: shall masked part or negative values be reconstructed (wipe out problems with pilatus gaps)
         """
         self.strFilename = strFilename
         self.data = fabio.open(strFilename).data.astype("float32")
@@ -70,23 +72,70 @@ class PeakPicker(object):
 
         self.shape = self.data.shape
         self.points = ControlPoints(pointfile, calibrant=calibrant, wavelength=wavelength)
-#        self.lstPoints = []
         self.fig = None
         self.fig2 = None
         self.fig2sp = None
         self.ax = None
         self.ct = None
         self.msp = None
-        if reconstruct and (reconst is not False):
-            if mask is None:
-                mask = self.data < 0
-            self.massif = Massif(reconstruct(self.data, mask))
-        else:
-            self.massif = Massif(self.data)
+        self.reconstruct = reconst
+        self.mask = mask
+        self.massif = None  #used for massif detection
+        self.blob = None    #used for blob   detection
         self._sem = threading.Semaphore()
         self._semGui = threading.Semaphore()
         self.mpl_connectId = None
         self.defaultNbPoints = 100
+        if method in self.VALID_METHODS:
+            self.method =  method
+        else:
+            logger.error("Not a valid peak-picker method: %s should be part of %s"%(method, self.VALID_METHODS))
+            self.method = self.VALID_METHODS[0]
+        
+        if self.method == "massif":
+            self.init_massif()
+        elif self.method == "blob":
+            self.init_blob()
+
+
+    def init_massif(self):
+        """
+        Initialize PeakPicker for massif based detection
+        """
+        if self.reconstruct and (self.reconst is not False):
+            if self.mask is None:
+                mask = self.data < 0
+            else:
+                mask = self.mask
+            self.massif = Massif(reconstruct(self.data, mask))
+        else:
+            self.massif = Massif(self.data)
+        self.method = "massif"
+
+    def init_blob(self):
+        """
+        Initialize PeakPicker for blob based detection
+        """
+        if self.mask is not None:
+            self.blob = BlobDetection(self.data, mask=self.mask)
+        else:
+            self.blob = BlobDetection(self.data)
+        self.method = "blob"
+
+    def reset(self):
+        """
+        Reset control point and graph (if needed)
+        """
+        self.points.reset()
+        if self.fig and self.ax:
+            #empty annotation and plots
+            if len(self.ax.texts) > 0:
+               self.ax.texts = []
+            if len(self.ax.lines) > 0:
+               self.ax.lines = []
+            #Redraw the image
+            self.fig.show()
+            self.fig.canvas.draw()
 
     def gui(self, log=False, maximize=False):
         """
@@ -318,7 +367,8 @@ class PeakPicker(object):
                 self.ct.collections.pop()
 
             if self.points.calibrant:
-                angles = self.points.calibrant.get_2th()
+                angles = [ i for i in self.points.calibrant.get_2th()
+                          if i is not None]
             else:
                 angles = None
             try:

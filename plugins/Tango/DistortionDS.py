@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#coding: utf8
+#coding: utf-8
 
 from __future__ import division, print_function, with_statement
 

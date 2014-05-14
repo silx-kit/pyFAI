@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# coding: utf8
+# coding: utf-8
 """
 PyMca plugin for pyFAI azimuthal integrator in a LImA ProcessLib.
 

@@ -481,7 +481,11 @@ class AbstractCalibration(object):
             self.outfile = self.dataFiles[0]
 
         self.basename = os.path.splitext(self.outfile)[0]
-        self.pointfile = self.basename + ".npt"
+        if isinstance(self, Recalibration):
+            self.keep = False
+            self.pointfile = None
+        else:
+            self.pointfile = self.basename + ".npt"
         if self.wavelength is None:
             self.wavelength = self.ai.wavelength
 
@@ -506,6 +510,89 @@ class AbstractCalibration(object):
         if self.gui:
             self.peakPicker.gui(log=True, maximize=True)
             self.peakPicker.fig.canvas.draw()
+
+    def extract_cpt(self):
+        """
+        Performs an automatic keypoint extraction:
+        Can be used in recalib or in calib after a first calibration has been performed
+        """
+        assert self.ai
+        assert self.calibrant
+        assert self.peakPicker
+        self.peakPicker.reset()
+        if self.geoRef:
+            self.ai.setPyFAI(**self.geoRef.getPyFAI())
+        tth = numpy.array([ i for i in self.calibrant.get_2th() if i is not None])
+        tth.sort()
+        dtth = numpy.zeros((tth.size, 2))
+        delta = tth[1:] - tth[:-1]
+        dtth[:-1, 0] = delta
+        dtth[-1, 0] = delta[-1]
+        dtth[1:, 1] = delta
+        dtth[0, 1] = delta[0]
+        dtth = dtth.min(axis= -1)
+        ttha = self.ai.twoThetaArray(self.peakPicker.data.shape)
+        rings = 0
+        if self.max_rings is None:
+            self.max_rings = tth.size
+        for i in range(tth.size):
+            mask = abs(ttha - tth[i]) <= (dtth[i] / 4.0)
+            if self.mask is not None:
+                mask = mask & (1 - self.mask)
+            size = mask.sum(dtype=int)
+            if (size > 0) and (rings < self.max_rings):
+                rings += 1
+                self.peakPicker.massif_contour(mask)
+                if self.gui:
+                    self.peakPicker.fig.canvas.draw()
+                sub_data = self.peakPicker.data.ravel()[numpy.where(mask.ravel())]
+                mean = sub_data.mean(dtype=numpy.float64)
+                std = sub_data.std(dtype=numpy.float64)
+                mask2 = (self.peakPicker.data > (mean + std)) & mask
+                all_points = numpy.vstack(numpy.where(mask2)).T
+                size2 = all_points.shape[0]
+                if size2 < 1000:
+                    mask2 = (self.peakPicker.data > mean) & mask
+                    all_points = numpy.vstack(numpy.where(mask2)).T
+                    size2 = all_points.shape[0]
+                    upper_limit = mean
+                else:
+                    upper_limit = mean + std
+                keep = int(numpy.ceil(numpy.sqrt(size2)))
+                res = []
+                cnt = 0
+                logger.info("Extracting datapoint for ring %s (2theta = %.2f deg); "\
+                            "searching for %i pts out of %i with I>%.1f" %
+                            (i, numpy.degrees(tth[i]), keep, size2, upper_limit))
+                numpy.random.shuffle(all_points)
+                for idx in all_points:
+                    out = self.peakPicker.massif.nearest_peak(idx)
+                    if out is not None:
+                        print("[ %3i, %3i ] -> [ %.1f, %.1f ]" %
+                              (idx[1], idx[0], out[1], out[0]))
+                        p0, p1 = out
+                        if mask[p0, p1]:
+                            if (out not in res) and\
+                                (self.peakPicker.data[p0, p1] > upper_limit):
+                                res.append(out)
+                                cnt = 0
+                    if len(res) >= keep or cnt > keep:
+                        print len(res), cnt
+                        break
+                    else:
+                        cnt += 1
+
+                self.peakPicker.points.append(res, tth[i], i)
+                if self.gui:
+                    # minIndex: skip redrawing of previous rings
+                    self.peakPicker.display_points(minIndex=i)
+                    self.peakPicker.fig.canvas.draw()
+
+        self.peakPicker.points.save(self.basename + ".npt")
+        if self.weighted:
+            self.data = self.peakPicker.points.getWeightedList(self.peakPicker.data)
+        else:
+            self.data = self.peakPicker.points.getList()
 
 
     def refine(self):
@@ -567,10 +654,23 @@ class AbstractCalibration(object):
             if (change == '') or (change[0] == "n"):
                 finished = True
             elif change.startswith("help"):
-                print("Type simple sentences like set wavelength 1e-10")
+                print("Type simple sentences like 'set wavelength 1e-10'")
                 print("The valid actions are: fix, set and free")
                 print("The valid variables are dist, poni1, poni2, "
                       "rot1, rot2, rot3 and wavelength")
+                print("'recalib n' will extract a set of n rings and re-perform the calibration.")
+            elif change.startswith("recalib"):
+                print("#EXPERIMENTAL")
+                max_rings = None
+                lststr = change.split()
+                if len(lststr) == 2:
+                    try:
+                       max_rings = int(lststr[1])
+                    except Exception:
+                         max_rings = None
+                    else:
+                        self.max_rings = max_rings
+                self.extract_cpt()
             elif change.startswith("free"):
                 what = change.split()[-1]
                 if what in self.fixed:
@@ -627,7 +727,8 @@ class AbstractCalibration(object):
         """
         if self.geoRef is None:
             self.refine()
-        self.peakPicker.points.setWavelength_change2th(self.geoRef.wavelength)
+        if "wavelength" not in self.fixed:
+            self.peakPicker.points.setWavelength_change2th(self.geoRef.wavelength)
         self.peakPicker.points.save(self.basename + ".npt")
         self.geoRef.save(self.basename + ".poni")
         self.geoRef.mask = self.mask
@@ -675,9 +776,9 @@ class AbstractCalibration(object):
             elif self.unit == units.TTH_RAD:
                 xValues = twoTheta
             elif self.unit == units.Q_A:
-                xValues = (4.e-10*numpy.pi/self.wavelength) * numpy.sin(.5*twoTheta)
+                xValues = (4.e-10 * numpy.pi / self.wavelength) * numpy.sin(.5 * twoTheta)
             elif self.unit == units.Q_NM:
-                xValues = (4.e-9*numpy.pi/self.wavelength) * numpy.sin(.5*twoTheta)
+                xValues = (4.e-9 * numpy.pi / self.wavelength) * numpy.sin(.5 * twoTheta)
             elif self.unit == units.R_MM:
                 # GF: correct formula?
                 dBeamCentre = self.geoRef.getFit2D()["directDist"] # in mm!!
@@ -925,82 +1026,6 @@ without human intervention (--no-gui --no-interactive options).
         AbstractCalibration.read_dSpacingFile(self, verbose=False)
 
 
-    def extract_cpt(self):
-        d = numpy.array(self.calibrant.dSpacing)
-        tth = 2.0 * numpy.arcsin(self.ai.wavelength / (2.0e-10 * d))
-        tth.sort()
-        tth = tth[numpy.where(numpy.isnan(tth) - 1)]
-        dtth = numpy.zeros((tth.size, 2))
-        delta = tth[1:] - tth[:-1]
-        dtth[:-1, 0] = delta
-        dtth[-1, 0] = delta[-1]
-        dtth[1:, 1] = delta
-        dtth[0, 1] = delta[0]
-        dtth = dtth.min(axis= -1)
-        ttha = self.ai.twoThetaArray(self.peakPicker.data.shape)
-#        self.peakPicker.points.wavelength = self.ai.wavelength
-#        self.peakPicker.points.dSpacing = d
-        rings = 0
-        if self.max_rings is None:
-            self.max_rings = tth.size
-        for i in range(tth.size):
-            mask = abs(ttha - tth[i]) <= (dtth[i] / 4.0)
-            if self.mask is not None:
-                mask = mask & (1 - self.mask)
-            size = mask.sum(dtype=int)
-            if (size > 0) and (rings < self.max_rings):
-                rings += 1
-                self.peakPicker.massif_contour(mask)
-                if self.gui:
-                    self.peakPicker.fig.canvas.draw()
-                sub_data = self.peakPicker.data.ravel()[numpy.where(mask.ravel())]
-                mean = sub_data.mean(dtype=numpy.float64)
-                std = sub_data.std(dtype=numpy.float64)
-                mask2 = (self.peakPicker.data > (mean + std)) & mask
-                all_points = numpy.vstack(numpy.where(mask2)).T
-                size2 = all_points.shape[0]
-                if size2 < 1000:
-                    mask2 = (self.peakPicker.data > mean) & mask
-                    all_points = numpy.vstack(numpy.where(mask2)).T
-                    size2 = all_points.shape[0]
-                    upper_limit = mean
-                else:
-                    upper_limit = mean + std
-                keep = int(numpy.ceil(numpy.sqrt(size2)))
-                res = []
-                cnt = 0
-                logger.info("Extracting datapoint for ring %s (2theta = %.2f deg); "\
-                            "searching for %i pts out of %i with I>%.1f" %
-                            (i, numpy.degrees(tth[i]), keep, size2, upper_limit))
-                numpy.random.shuffle(all_points)
-                for idx in all_points:
-                    out = self.peakPicker.massif.nearest_peak(idx)
-                    if out is not None:
-                        print("[ %3i, %3i ] -> [ %.1f, %.1f ]" %
-                              (idx[1], idx[0], out[1], out[0]))
-                        p0, p1 = out
-                        if mask[p0, p1]:
-                            if (out not in res) and\
-                                (self.peakPicker.data[p0, p1] > upper_limit):
-                                res.append(out)
-                                cnt = 0
-                    if len(res) >= keep or cnt > keep:
-                        print len(res), cnt
-                        break
-                    else:
-                        cnt += 1
-
-                self.peakPicker.points.append(res, tth[i], i)
-                if self.gui:
-                    # minIndex: skip redrawing of previous rings
-                    self.peakPicker.display_points(minIndex=i)
-                    self.peakPicker.fig.canvas.draw()
-
-        self.peakPicker.points.save(self.basename + ".npt")
-        if self.weighted:
-            self.data = self.peakPicker.points.getWeightedList(self.peakPicker.data)
-        else:
-            self.data = self.peakPicker.points.getList()
 
 
     def refine(self):
