@@ -157,7 +157,7 @@ class BlobDetection(object):
         using a Difference of Gaussian + Pyramid of Gaussians
     
     """
-    tresh = 1.5
+    tresh = 0.6
     def __init__(self, img, cur_sigma=0.25, init_sigma=0.50, dest_sigma=1, scale_per_octave=2, mask=None):
         """
         Performs a blob detection:
@@ -171,7 +171,8 @@ class BlobDetection(object):
         @param scale_per_octave: Number of scale to be performed per octave
         @param mask: mask where pixel are not valid
         """
-        self.raw = numpy.log(img.astype(numpy.float32))
+#        self.raw = numpy.log(img.astype(numpy.float32))
+        self.raw = img.astype(numpy.float32)
         self.cur_sigma = float(cur_sigma)
         self.init_sigma = float(init_sigma)
         self.dest_sigma = float(dest_sigma)
@@ -214,6 +215,8 @@ class BlobDetection(object):
         self.curr_reduction = 1.0
         self.detection_started = False
         self.octave = 0
+        self.raw_kp = []
+        self.ref_kp = []
 
     def __repr__(self):
         lststr = ["Blob detection, shape=%s, processed=%s." % (self.raw.shape, self.detection_started)]
@@ -289,7 +292,8 @@ class BlobDetection(object):
             valid_points = _blob.local_max(self.dogs, self.cur_mask, n_5)
         else:
             valid_points = local_max(self.dogs, self.cur_mask, n_5)
-        self.init_kp = kps, kpy, kpx = numpy.where(valid_points)
+        kps, kpy, kpx = numpy.where(valid_points)
+        self.raw_kp.append((kps, kpy, kpx))
 
         print ('Before refinement : %i keypoints' % kpx.size)
         if do_SG4:
@@ -302,6 +306,7 @@ class BlobDetection(object):
         else:
             kpx, kpy, kps, peak_val, valid = self.refine_Hessian(kpx, kpy, kps)
             l = valid.sum()
+            self.ref_kp.append((kps, kpy, kpx))
 
         print ('After refinement : %i keypoints' % l)
 
@@ -335,11 +340,12 @@ class BlobDetection(object):
 #            print last.shape, tx, ty
             self.data = binning(last, 2) / 4.0
             self.curr_reduction *= 2
+            self.octave += 1
             self.blurs = []
             if self.do_mask:
                 self.cur_mask = (binning(self.cur_mask, 2) > 0).astype(numpy.int8)
                 self.cur_mask = morphology.binary_dilation(self.cur_mask, self.grow)
-            self.octave += 1
+
 
         if len(self.keypoints) == 0 :
             self.keypoints = keypoints
@@ -408,7 +414,7 @@ class BlobDetection(object):
         delta_y = -(ds * K10 + dy * K11 + dx * K12) / det
         delta_x = -(ds * K20 + dy * K21 + dx * K22) / det
         peakval = curr + 0.5 * (delta_s * ds + delta_y * dy + delta_x * dx)
-        mask = numpy.logical_and(abs(delta_x < self.tresh), abs(delta_y < self.tresh), abs(delta_s < self.tresh))
+        mask = numpy.logical_and(numpy.logical_and(abs(delta_x) < self.tresh, abs(delta_y) < self.tresh), abs(delta_s) < self.tresh)
         return kpx + delta_x, kpy + delta_y, kps + delta_s, peakval, mask
 
     def refine_Hessian_SG(self, kpx, kpy, kps):
