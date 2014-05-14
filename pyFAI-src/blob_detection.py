@@ -144,10 +144,8 @@ class BlobDetection(object):
         else:
             self.mask = (img <= 0).astype(numpy.int8)
             self.mask[0,:] = self.mask[:,0] = self.mask[-1,:] = self.mask[:,-1]= 1
-        print self.mask
         to_mask = numpy.where(self.mask)
         self.do_mask = to_mask[0].size > 0
-        print self.do_mask
         if self.do_mask:
             self.raw[to_mask] = 0
 
@@ -264,7 +262,7 @@ class BlobDetection(object):
         keypoints = numpy.recarray((l,), dtype=dtype)
         sigmas = numpy.array([s[0] for s in self.sigmas])  
         
-        if l != 0:    
+        if l != 0 :    
             keypoints[:].x = kpx * self.curr_reduction
             keypoints[:].y = kpy * self.curr_reduction
             keypoints[:].scale = (self.curr_reduction * sigmas.take(kps) + delta_s) ** 2  #scale = sigma^2
@@ -316,53 +314,53 @@ class BlobDetection(object):
 
         for y,x,sigma in itertools.izip(kpy,kpx,kps):
             
-
-            j = round(numpy.log(sigma/self.sigmas[0][0])/numpy.log(2)*self.scale_per_octave)
+#             print sigma
+#             j = round(numpy.log(sigma/self.sigmas[0][0])/numpy.log(2)*self.scale_per_octave)
             
-            if j > 0 and j < self.scale_per_octave+1:
-                curr_dog = self.dogs[j]
-                prev_dog = self.dogs[j-1]
-                next_dog = self.dogs[j+1]
+#             if j > 0 and j < self.scale_per_octave+1:
+            curr_dog = self.dogs[sigma]
+            prev_dog = self.dogs[sigma-1]
+            next_dog = self.dogs[sigma+1]
 
-                if (x > 1 and x < curr_dog.shape[1]-2 and y > 1 and y < curr_dog.shape[0]-2):
+            if (x > 1 and x < curr_dog.shape[1]-2 and y > 1 and y < curr_dog.shape[0]-2):
+            
                 
-                    
-                    patch3 = curr_dog[y-1:y+2,x-1:x+2]
-                    patch3_prev = prev_dog[y-1:y+2,x-1:x+2]
-                    patch3_next = next_dog[y-1:y+2,x-1:x+2]
-    
-                    dx = (SGX1Y0*patch3.ravel()).sum()
-                    dy = (SGX0Y1*patch3.ravel()).sum()
-                    d2x = (SGX2Y0*patch3.ravel()).sum()
-                    d2y = (SGX0Y2*patch3.ravel()).sum()
-                    dxy = (SGX1Y1*patch3.ravel()).sum()
-    
-                    s_next = (SGX0Y0*patch3_next.ravel()).sum()
-                    s = (SGX0Y0*patch3.ravel()).sum()
-                    s_prev = (SGX0Y0*patch3_prev.ravel()).sum()
-                    d2s = (s_next + s_prev - 2.0*s) /4.0
-                    ds = (s_next - s_prev) /2.0
-                    
-                    dx_next = (SGX1Y0*patch3_next.ravel()).sum()
-                    dx_prev = (SGX1Y0*patch3_prev.ravel()).sum()
-                    
-                    dy_next = (SGX0Y1*patch3_next.ravel()).sum()
-                    dy_prev = (SGX0Y1*patch3_prev.ravel()).sum()
-                    
-                    dxs = (dx_next - dx_prev)/2.0
-                    dys = (dy_next - dy_prev)/2.0                
-                                    
-                    lap = numpy.array([[d2y,dxy,dys],[dxy,d2x,dxs],[dys,dxs,d2s]])
-                    delta = - (numpy.dot(numpy.linalg.inv(lap),[dy,dx,ds]))
-#                     print delta
-                    err = numpy.linalg.norm(delta[:-1])
-                    if  err < numpy.sqrt(4) and numpy.abs(delta[0]) <= 2.0 and numpy.abs(delta[1]) <= 2.0 and numpy.abs(delta[2]) <= self.sigmas[-1][0]:
-                        k2x.append(x+delta[1])  
-                        k2y.append(y+delta[0])
-                        sigmas.append(sigma)
-                        kds.append(delta[2])       
-                        kdx.append(delta[1]) 
-                        kdy.append(delta[0])
+                patch3 = curr_dog[y-1:y+2,x-1:x+2]
+                patch3_prev = prev_dog[y-1:y+2,x-1:x+2]
+                patch3_next = next_dog[y-1:y+2,x-1:x+2]
+
+                dx = (SGX1Y0*patch3.ravel()).sum()
+                dy = (SGX0Y1*patch3.ravel()).sum()
+                d2x = (SGX2Y0*patch3.ravel()).sum()
+                d2y = (SGX0Y2*patch3.ravel()).sum()
+                dxy = (SGX1Y1*patch3.ravel()).sum()
+
+                s_next = (SGX0Y0*patch3_next.ravel()).sum()
+                s = (SGX0Y0*patch3.ravel()).sum()
+                s_prev = (SGX0Y0*patch3_prev.ravel()).sum()
+                d2s = (s_next + s_prev - 2.0*s) /4.0
+                ds = (s_next - s_prev) /2.0
+                
+                dx_next = (SGX1Y0*patch3_next.ravel()).sum()
+                dx_prev = (SGX1Y0*patch3_prev.ravel()).sum()
+                
+                dy_next = (SGX0Y1*patch3_next.ravel()).sum()
+                dy_prev = (SGX0Y1*patch3_prev.ravel()).sum()
+                
+                dxs = (dx_next - dx_prev)/2.0
+                dys = (dy_next - dy_prev)/2.0                
+                                
+                lap = numpy.array([[d2y,dxy,dys],[dxy,d2x,dxs],[dys,dxs,d2s]])
+                delta = - (numpy.dot(numpy.linalg.inv(lap),[dy,dx,ds]))
+                err = numpy.linalg.norm(delta[:-1])
+#                 if  numpy.sqrt(delta[0]**2+delta[1]**2) < numpy.sqrt(4) and numpy.abs(delta[0]) <= 2.0 and numpy.abs(delta[1]) <= 2.0 and numpy.abs(delta[2]) <= self.sigmas[-1][0]*self.curr_reduction:
+                if  numpy.sqrt(delta[0]**2+delta[1]**2) < numpy.sqrt(2) and numpy.abs(delta[0]) <= 1.0 and numpy.abs(delta[1]) <= 1.0 and numpy.abs(delta[2]) <= 1.0:
+                    k2x.append(x+delta[1])  
+                    k2y.append(y+delta[0])
+                    sigmas.append(sigma)
+                    kds.append(delta[2])       
+                    kdx.append(delta[1]) 
+                    kdy.append(delta[0])
                                       
         return numpy.asarray(k2x),numpy.asarray(k2y),numpy.asarray(sigmas),numpy.asarray(kds)
         
@@ -404,21 +402,26 @@ class BlobDetection(object):
                 dxy = (Hxy.ravel()*patch.ravel()).sum()
                 H = numpy.array([[d2y,dxy],[dxy,d2x]])
                 val,vect = numpy.linalg.eig(H)
-                print 'new point'
-                print x,y
-                print val
-                print vect
+#                 print 'new point'
+#                 print x,y
+#                 print val
+#                 print vect
                 e = numpy.abs(val[0]-val[1])/numpy.abs(val[0]+val[1])
-                print e
+#                 print e
                 pylab.plot(x,y,'og')
                 
-#                 if val[0] < val[1]:
-                pylab.annotate("", xy=(x+vect[0][0]*val[0],y+vect[0][1]*val[0]), xytext=(x, y),
-                                   arrowprops=dict(facecolor='red', shrink=0.05),)
-#                 else:
-                pylab.annotate("", xy=(x+vect[1][0]*val[1],y+vect[1][1]*val[1]), xytext=(x, y),
-                    arrowprops=dict(facecolor='red', shrink=0.05),)
-                        
+                if e > 0.015:
+                    i = i+1
+                    if val[0]< val[1]:
+                        pylab.annotate("", xy=(x+vect[0][0]*val[0],y+vect[0][1]*val[0]), xytext=(x, y),
+                                       arrowprops=dict(facecolor='red', shrink=0.05),)
+                    else:
+                        pylab.annotate("", xy=(x+vect[1][0]*val[1],y+vect[1][1]*val[1]), xytext=(x, y),
+                        arrowprops=dict(facecolor='red', shrink=0.05),)
+                else: print e
+                
+        print i 
+                            
 if __name__ == "__main__":
     
     kx=[]

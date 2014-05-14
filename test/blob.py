@@ -21,7 +21,7 @@ def image_test():
     return img
 
 def make_gaussian(im,sigma,xc,yc):
-    e = 0.75
+    e = 0.5
     angle = 0
     sx = sigma * (1+e)
     sy = sigma * (1-e)
@@ -30,7 +30,7 @@ def make_gaussian(im,sigma,xc,yc):
         size += 1
     x = numpy.arange(0, size, 1, float)
     y = x[:,numpy.newaxis]
-#     x = x * 2
+
     x0 = y0 = size // 2
     gausx = numpy.exp(-4*numpy.log(2) * (x-x0)**2 / sx**2)
     gausy = numpy.exp(-4*numpy.log(2) * (y-y0)**2 / sy**2)
@@ -43,9 +43,9 @@ def make_gaussian(im,sigma,xc,yc):
 # data = fabio.open(UtilsTest.options.args[0]).data
 # msk = fabio.open(UtilsTest.options.args[1]).data
 
-# data = fabio.open("../../testimages/halfccd.edf").data
+data = fabio.open("../../testimages/Pilatus6M.cbf").data
 # msk = fabio.open("../../testimages/halfccd_8_mask.tiff").data
-data = image_test()
+# data = image_test()
 
 bd = pyFAI.blob_detection.BlobDetection(data)
 
@@ -54,9 +54,9 @@ f=pylab.figure(1)
 ax = f.add_subplot(111)
 ax.imshow(numpy.log1p(data), interpolation = 'nearest')
 
-for i in range(4):
+for i in range(6):
     print ('Octave #%i' %i)
-    bd._one_octave(True, False , False)
+    bd._one_octave(True, True , False)
     print("Octave #%i Total kp: %i" % (i, bd.keypoints.size))
     print     
     
@@ -65,6 +65,7 @@ for i in range(4):
 print ('Final size of keypoints : %i'% bd.keypoints.size)
 
 i = 0
+
 # for kp  in bd.keypoints:
 #     ds = kp.scale
 #     ax.annotate("", xy=(kp.x, kp.y), xytext=(kp.x+ds, kp.y+ds),
@@ -72,15 +73,15 @@ i = 0
 
 ax.plot(bd.keypoints.x, bd.keypoints.y, "og")
 
-scales = bd.keypoints.scale
-if scales.size > 0:
-    h = pylab.figure(2)
-    x,y,o = pylab.hist(numpy.sqrt(scales), bins = 100)
-    h.show()
-      
-    index = numpy.where(x == x.max())
-    kp = bd.keypoints[bd.keypoints.scale > y[index]]
-else : kp = bd.keypoints
+# scales = bd.keypoints.scale
+# if scales.size > 0:
+#     h = pylab.figure(2)
+#     x,y,o = pylab.hist(numpy.sqrt(scales), bins = 100)
+#     h.show()
+#       
+#     index = numpy.where(x == x.max())
+#     kp = bd.keypoints[bd.keypoints.scale > y[index]]
+# else : kp = bd.keypoints
 
 # pylab.figure()
 # pylab.imshow(numpy.log1p(data), interpolation = 'nearest')
