@@ -157,6 +157,7 @@ class BlobDetection(object):
         using a Difference of Gaussian + Pyramid of Gaussians
     
     """
+    tresh = 1.5
     def __init__(self, img, cur_sigma=0.25, init_sigma=0.50, dest_sigma=1, scale_per_octave=2, mask=None):
         """
         Performs a blob detection:
@@ -288,7 +289,7 @@ class BlobDetection(object):
             valid_points = _blob.local_max(self.dogs, self.cur_mask, n_5)
         else:
             valid_points = local_max(self.dogs, self.cur_mask, n_5)
-        kps, kpy, kpx = numpy.where(valid_points)
+        self.init_kp = kps, kpy, kpx = numpy.where(valid_points)
 
         print ('Before refinement : %i keypoints' % kpx.size)
         if do_SG4:
@@ -360,11 +361,7 @@ class BlobDetection(object):
         @param kps: s_pos of keypoint
         @return  
         """
-        tresh = 0.6
-#        j = numpy.round( numpy.log2(sigma / self.sigmas[0][0]) * self.scale_per_octave).astype(numpy.int32)+1
-#        print kpx, kpy, kps
         curr = self.dogs[(kps, kpy, kpx)]
-#        print curr
         nx = self.dogs[(kps, kpy, kpx + 1)]
         px = self.dogs[(kps, kpy, kpx - 1)]
         ny = self.dogs[(kps, kpy + 1, kpx)]
@@ -411,7 +408,7 @@ class BlobDetection(object):
         delta_y = -(ds * K10 + dy * K11 + dx * K12) / det
         delta_x = -(ds * K20 + dy * K21 + dx * K22) / det
         peakval = curr + 0.5 * (delta_s * ds + delta_y * dy + delta_x * dx)
-        mask = numpy.logical_and(abs(delta_x < tresh), abs(delta_y < tresh), abs(delta_s < tresh))
+        mask = numpy.logical_and(abs(delta_x < self.tresh), abs(delta_y < self.tresh), abs(delta_s < self.tresh))
         return kpx + delta_x, kpy + delta_y, kps + delta_s, peakval, mask
 
     def refine_Hessian_SG(self, kpx, kpy, kps):
