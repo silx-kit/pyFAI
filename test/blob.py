@@ -6,7 +6,11 @@ import fabio,numpy
 from utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
-import pyFAI.blob_detection
+from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
+from pyFAI.blob_detection import BlobDetection
+from pyFAI.detectors import detector_factory
+
+
 
 
 def image_test():
@@ -19,6 +23,24 @@ def image_test():
         img = make_gaussian(img,sigma,xc[cpt],yc[cpt])
         cpt = cpt + 1
     return img
+
+def image_test_rings():
+    rings = 10
+    mod = 50
+    detector = detector_factory("Titan")
+    sigma = detector.pixel1 * 4
+    shape = detector.max_shape
+    ai = AzimuthalIntegrator(detector=detector)
+    ai.setFit2D(1000, 1000, 1000)
+    r = ai.rArray(shape)
+    r_max = r.max()
+    chi = ai.chiArray(shape)
+    img = numpy.zeros(shape)
+    for radius in numpy.linspace(0, r_max, rings):
+        img += numpy.exp(-(r - radius) ** 2 / (2 * (sigma * sigma))) * (1 + numpy.sin(r + chi * mod))
+    return img
+
+
 
 def make_gaussian(im,sigma,xc,yc):
     e = 0.75
@@ -45,11 +67,11 @@ if len(UtilsTest.options.args) > 0:
      else:
          msk = None
 else:
-    data = image_test()
+    data = image_test_rings()
     msk = None
 
 
-bd = pyFAI.blob_detection.BlobDetection(data, mask=msk)
+bd = BlobDetection(data, mask=msk)
 
 pylab.ion()
 f=pylab.figure(1)
