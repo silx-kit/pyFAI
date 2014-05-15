@@ -32,7 +32,7 @@ def local_max(float[:,:,:] dogs, mask=None, bint n_5=False):
 
     cdef numpy.ndarray[numpy.int8_t, ndim=3] is_max = numpy.zeros((ns,ny,nx), dtype=numpy.int8)
     if ns<3 or ny<3 or nx<3:
-        return mask
+        return is_max
     for s in range(1,ns-1):
         for y in range(1,ny-1):
             for x in range(1,nx-1):
@@ -44,7 +44,7 @@ def local_max(float[:,:,:] dogs, mask=None, bint n_5=False):
                         (c>dogs[s,y-1,x]) and (c>dogs[s,y+1,x]) and\
                         (c>dogs[s,y-1,x-1]) and (c>dogs[s,y-1,x+1]) and\
                         (c>dogs[s,y+1,x-1]) and (c>dogs[s,y+1,x+1]) and\
-                        (c>dogs[s-1,y,x]) and (c>dogs[s+1,y,x]) and\
+                        (c>dogs[s-1,y,x]) and (c>dogs[s-1,y,x]) and\
                         (c>dogs[s-1,y,x-1]) and (c>dogs[s-1,y,x+1]) and\
                         (c>dogs[s-1,y-1,x]) and (c>dogs[s-1,y+1,x]) and\
                         (c>dogs[s-1,y-1,x-1]) and (c>dogs[s-1,y-1,x+1]) and\
@@ -53,22 +53,35 @@ def local_max(float[:,:,:] dogs, mask=None, bint n_5=False):
                         (c>dogs[s+1,y-1,x]) and (c>dogs[s+1,y+1,x]) and\
                         (c>dogs[s+1,y-1,x-1]) and (c>dogs[s+1,y-1,x+1]) and\
                         (c>dogs[s+1,y+1,x-1]) and (c>dogs[s+1,y+1,x+1])
+                    if not m:
+                        continue
                     if n_5:
                         if x>1:
-                            m = m and (c>dogs[s,y,x-2]) and (c>dogs[s,y-1,x-2]) and (c>dogs[s,y+1,x-2])\
+                            m = m and (c>dogs[s  ,y,x-2]) and (c>dogs[s  ,y-1,x-2]) and (c>dogs[s  ,y+1,x-2])\
                                   and (c>dogs[s-1,y,x-2]) and (c>dogs[s-1,y-1,x-2]) and (c>dogs[s-1,y+1,x-2])\
                                   and (c>dogs[s+1,y,x-2]) and (c>dogs[s+1,y-1,x-2]) and (c>dogs[s+1,y+1,x-2])
+                            if y>1:
+                                m = m and (c>dogs[s,y-2,x-2])and (c>dogs[s-1,y-2,x-2]) and (c>dogs[s,y-2,x-2])
+                            if y<ny-2:
+                                m = m and (c>dogs[s,y+2,x-2])and (c>dogs[s-1,y+2,x-2]) and (c>dogs[s,y+2,x-2])
                         if x<nx-2:
-                            m = m and (c>dogs[s,y,x+2]) and (c>dogs[s,y-1,x+2]) and (c>dogs[s,y+1,x+2])\
+                            m = m and (c>dogs[s  ,y,x+2]) and (c>dogs[s  ,y-1,x+2]) and (c>dogs[s  ,y+1,x+2])\
                                   and (c>dogs[s-1,y,x+2]) and (c>dogs[s-1,y-1,x+2]) and (c>dogs[s-1,y+1,x+2])\
                                   and (c>dogs[s+1,y,x+2]) and (c>dogs[s+1,y-1,x+2]) and (c>dogs[s+1,y+1,x+2])
+                            if y>1:
+                                m = m and (c>dogs[s,y-2,x+2])and (c>dogs[s-1,y-2,x+2]) and (c>dogs[s,y-2,x+2])
+                            if y<ny-2:
+                                m = m and (c>dogs[s,y+2,x+2])and (c>dogs[s-1,y+2,x+2]) and (c>dogs[s,y+2,x+2])
+
                         if y>1:
-                            m = m and (c>dogs[s,y-2,x]) and (c>dogs[s,y-2,x-1]) and (c>dogs[s,y-2,x+1])\
+                            m = m and (c>dogs[s  ,y-2,x]) and (c>dogs[s  ,y-2,x-1]) and (c>dogs[s  ,y-2,x+1])\
                                   and (c>dogs[s-1,y-2,x]) and (c>dogs[s-1,y-2,x-1]) and (c>dogs[s-1,y-2,x+1])\
                                   and (c>dogs[s+1,y-2,x]) and (c>dogs[s+1,y-2,x-1]) and (c>dogs[s+1,y+2,x+1])
+                            
                         if y<ny-2:
-                            m = m and (c>dogs[s,y+2,x]) and (c>dogs[s,y+2,x-1]) and (c>dogs[s,y+2,x+1])\
+                            m = m and (c>dogs[s  ,y+2,x]) and (c>dogs[s  ,y+2,x-1]) and (c>dogs[s  ,y+2,x+1])\
                                   and (c>dogs[s-1,y+2,x]) and (c>dogs[s-1,y+2,x-1]) and (c>dogs[s-1,y+2,x+1])\
                                   and (c>dogs[s+1,y+2,x]) and (c>dogs[s+1,y+2,x-1]) and (c>dogs[s+1,y+2,x+1])
+                        
                 is_max[s,y,x] = m
     return is_max 

@@ -36,8 +36,9 @@ def image_test_rings():
     r_max = r.max()
     chi = ai.chiArray(shape)
     img = numpy.zeros(shape)
+    modulation = (1 + numpy.sin(5 * r + chi * mod))
     for radius in numpy.linspace(0, r_max, rings):
-        img += numpy.exp(-(r - radius) ** 2 / (2 * (sigma * sigma))) * (1 + numpy.sin(r + chi * mod))
+        img += numpy.exp(-(r - radius) ** 2 / (2 * (sigma * sigma))) * modulation
     return img
 
 
@@ -78,11 +79,10 @@ f=pylab.figure(1)
 ax = f.add_subplot(111)
 ax.imshow(numpy.log1p(data), interpolation = 'nearest')
 
-for i in range(10):
+for i in range(1):
     print ('Octave #%i' %i)
-    bd._one_octave(True, False , False)
+    bd._one_octave(shrink=False, refine=False, n_5=False)
     print("Octave #%i Total kp: %i" % (i, bd.keypoints.size))
-    print     
     
 # bd._one_octave(False, True ,False)
     

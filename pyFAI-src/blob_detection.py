@@ -109,7 +109,6 @@ def local_max(dogs, mask=None, n_5=True):
         kpm[1:-1, 1:-1] += (slic > prev_dog[2:, :-2]) * (slic > prev_dog[:-2, 2:])
         kpm[1:-1, 1:-1] += (slic >= prev_dog[1:-1, 1:-1])
 
-
         if n_5:
             target = 38
             slic = cur_dog[2:-2, 2:-2]
@@ -142,12 +141,13 @@ def local_max(dogs, mask=None, n_5=True):
             kpm[2:-2, 2:-2] += (slic > prev_dog[1:-3, :-4]) * (slic > prev_dog[1:-3, 4:])
             kpm[2:-2, 2:-2] += (slic > prev_dog[3:-1, :-4]) * (slic > prev_dog[3:-1, 4:])
             kpm[2:-2, 2:-2] += (slic > prev_dog[4:, 3:-1]) * (slic > prev_dog[:-4, 3:-1])
-
         else:
             target = 14
+
         if mask is not None:
-            kpm += mask
-    return kpms == target
+            kpm -= mask
+
+    return kpma == target
 
 
 class BlobDetection(object):
@@ -251,12 +251,12 @@ class BlobDetection(object):
         print(self.sigmas)
 
     @timeit
-    def _one_octave(self, shrink=True, do_SG4=True, n_5=False):
+    def _one_octave(self, shrink=True, refine=True, n_5=False):
         """
         Return the blob coordinates for an octave
         
         @param shrink: perform the image shrinking after the octave processing
-        @param   do_SG4: perform Savitsky-Golay 4th order fit. 
+        @param refine: can be None, True, "SG2" and "SG4" do_SG4: perform 3point hessian calcualation or Savitsky-Golay 2nd or 4th order fit. 
         
         """
         x = []
@@ -296,19 +296,23 @@ class BlobDetection(object):
         self.raw_kp.append((kps, kpy, kpx))
 
         print ('Before refinement : %i keypoints' % kpx.size)
-        if do_SG4:
-            kpx, kpy, kps, delta_s = self.refine_Hessian_SG(kpx, kpy, kps)
-            l = kpx.size
-            peak_val = self.dogs[(numpy.around(kps).astype(int),
-                                  numpy.around(kpy).astype(int),
-                                  numpy.around(kpx).astype(int))]
-            valid = numpy.ones(l, dtype=int)
+        if refine:
+            if "startswith" in dir(refine) and refine.startswith("SG"):
+                kpx, kpy, kps, delta_s = self.refine_Hessian_SG(kpx, kpy, kps)
+                l = kpx.size
+                peak_val = self.dogs[(numpy.around(kps).astype(int),
+                                      numpy.around(kpy).astype(int),
+                                      numpy.around(kpx).astype(int))]
+                valid = numpy.ones(l, dtype=numpy.int8)
+            else:
+                kpx, kpy, kps, peak_val, valid = self.refine_Hessian(kpx, kpy, kps)
+                l = valid.sum()
+                self.ref_kp.append((kps, kpy, kpx))
+            print ('After refinement : %i keypoints' % l)
         else:
-            kpx, kpy, kps, peak_val, valid = self.refine_Hessian(kpx, kpy, kps)
-            l = valid.sum()
-            self.ref_kp.append((kps, kpy, kpx))
-
-        print ('After refinement : %i keypoints' % l)
+            peak_val = self.dogs[kps, kpy, kpx]
+            l = kpx.size
+            valid = numpy.ones(l, numpy.int8)
 
         dtype = numpy.dtype([('x', numpy.float32), ('y', numpy.float32), ('sigma', numpy.float32), ('I', numpy.float32)])
         keypoints = numpy.recarray((l,), dtype=dtype)
