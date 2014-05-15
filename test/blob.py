@@ -40,17 +40,6 @@ def image_test():
 #         cpt = cpt + 1
 
 
-def image_test():
-    img = numpy.zeros((128*4,128*4))
-    a = numpy.linspace(0.5, 8, 16)
-    xc = [64,64,64,64,192,192,192,192,320,320,320,320,448,448,448,448]
-    yc = [64,192,320,448,64,192,320,448,64,192,320,448,64,192,320,448]
-    cpt = 0
-    for sigma in a:
-        img = make_gaussian(img,sigma,xc[cpt],yc[cpt])
-        cpt = cpt + 1
-    return img
-
 def image_test_rings():
     rings = 10
     mod = 50
@@ -108,7 +97,7 @@ ax.imshow(numpy.log1p(data), interpolation = 'nearest')
 
 for i in range(1):
     print ('Octave #%i' %i)
-    bd._one_octave(shrink=True, refine=False, n_5=False)
+    bd._one_octave(shrink=True, refine=True, n_5=False)
     print("Octave #%i Total kp: %i" % (i, bd.keypoints.size))
     print     
     
