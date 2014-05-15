@@ -11,34 +11,18 @@ from pyFAI.blob_detection import BlobDetection
 from pyFAI.detectors import detector_factory
 
 
-def image_test():
-    
-    shape = 1000,1000
-    xc,yc = 500,500
-    rings = range(0,500,50)
-    y,x = numpy.ogrid[:shape[0],:shape[1]]
-    x -= xc
-    y -= yc
-    r = numpy.sqrt(x**2+y**2)
-    img = numpy.zeros(shape)
-    for radius in rings:
-        img += numpy.exp(-((r-radius)/2)**2)
-        
-    y,x = numpy.ogrid[:shape[0],:shape[1]]    
-    sin = (numpy.sin(((x-x.size/2)/4)**8))**4 * (numpy.sin(((y-y.size/2)/4)**8))**4      
-    img = img * sin
-    img = scipy.ndimage.gaussian_filter(img, 1)
-    
-    
-#     img = numpy.zeros((128*4,128*4))
-#     a = numpy.linspace(0.5, 8, 16)
-#     xc = [64,64,64,64,192,192,192,192,320,320,320,320,448,448,448,448]
-#     yc = [64,192,320,448,64,192,320,448,64,192,320,448,64,192,320,448]
-#     cpt = 0
-#     for sigma in a:
-#         img = make_gaussian(img,sigma,xc[cpt],yc[cpt])
-#         cpt = cpt + 1
 
+
+def image_test():
+    img = numpy.zeros((128*4,128*4))
+    a = numpy.linspace(0.5, 8, 16)
+    xc = [64,64,64,64,192,192,192,192,320,320,320,320,448,448,448,448]
+    yc = [64,192,320,448,64,192,320,448,64,192,320,448,64,192,320,448]
+    cpt = 0
+    for sigma in a:
+        img = make_gaussian(img,sigma,xc[cpt],yc[cpt])
+        cpt = cpt + 1
+    return img
 
 def image_test_rings():
     rings = 10
@@ -88,18 +72,17 @@ else:
     msk = None
 
 
-bd = BlobDetection(data, mask=msk, cur_sigma=0.25, init_sigma=0.50, dest_sigma=8, scale_per_octave=8)
+bd = BlobDetection(data, mask=msk)#, cur_sigma=0.25, init_sigma=0.50, dest_sigma=8, scale_per_octave=8)
 
 pylab.ion()
 f=pylab.figure(1)
 ax = f.add_subplot(111)
 ax.imshow(numpy.log1p(data), interpolation = 'nearest')
 
-for i in range(1):
+for i in range(10):
     print ('Octave #%i' %i)
-    bd._one_octave(shrink=True, refine=True, n_5=False)
+    bd._one_octave(shrink=True, refine=True, n_5=True)
     print("Octave #%i Total kp: %i" % (i, bd.keypoints.size))
-    print     
     
 # bd._one_octave(False, True ,False)
     

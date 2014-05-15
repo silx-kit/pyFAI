@@ -537,6 +537,7 @@ class Distortion(object):
         """
         cdef int[:] indices, indptr
         cdef float[:] data
+        cdef int idx, bins
         if self.LUT is None:
             with self._sem:
                 if self.LUT is None:
