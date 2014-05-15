@@ -68,6 +68,8 @@ cpdef inline float calc_area(float I1, float I2, float slope, float intercept) n
     "Calculate the area between I1 and I2 of a line with a given slope & intercept"
     return 0.5 * (I2 - I1) * (slope * (I2 + I1) + 2 * intercept)
 
+@cython.cdivision(True)
+@cython.boundscheck(False)
 cdef inline void integrate(float[:,:] box, float start, float stop, float slope, float intercept) nogil:
     "Integrate in a box a line between start and stop, line defined by its slope & intercept "
     cdef int i, h = 0

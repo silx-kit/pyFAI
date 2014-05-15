@@ -58,6 +58,7 @@ from test_detector             import test_suite_all_detectors
 from test_convolution          import test_suite_all_convolution
 from test_sparse               import test_suite_all_sparse
 from test_csr                  import test_suite_all_OpenCL_CSR
+from test_blob_detection       import test_suite_all_blob_detection
 
 def test_suite_all():
     testSuite = unittest.TestSuite()
@@ -79,6 +80,7 @@ def test_suite_all():
     testSuite.addTest(test_suite_all_convolution())
     testSuite.addTest(test_suite_all_sparse())
     testSuite.addTest(test_suite_all_OpenCL_CSR())
+    testSuite.addTest(test_suite_all_blob_detection())
     return testSuite
 
 if __name__ == '__main__':

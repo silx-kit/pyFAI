@@ -303,16 +303,20 @@ class BlobDetection(object):
                 peak_val = self.dogs[(numpy.around(kps).astype(int),
                                       numpy.around(kpy).astype(int),
                                       numpy.around(kpx).astype(int))]
-                valid = numpy.ones(l, dtype=numpy.int8)
+                valid = numpy.ones(l, dtype=bool)
             else:
                 kpx, kpy, kps, peak_val, valid = self.refine_Hessian(kpx, kpy, kps)
                 l = valid.sum()
                 self.ref_kp.append((kps, kpy, kpx))
             print ('After refinement : %i keypoints' % l)
         else:
+            print kpx
+            print kpy
+            print kps
             peak_val = self.dogs[kps, kpy, kpx]
+            print peak_val
             l = kpx.size
-            valid = numpy.ones(l, numpy.int8)
+            valid = numpy.ones(l, bool)
 
         dtype = numpy.dtype([('x', numpy.float32), ('y', numpy.float32), ('sigma', numpy.float32), ('I', numpy.float32)])
         keypoints = numpy.recarray((l,), dtype=dtype)
