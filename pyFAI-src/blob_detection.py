@@ -145,9 +145,11 @@ def local_max(dogs, mask=None, n_5=True):
 
         else:
             target = 14
+
         if mask is not None:
-            kpm += mask
-    return kpms == target
+            kpm -= mask
+
+    return kpma == target
 
 
 class BlobDetection(object):
@@ -157,7 +159,7 @@ class BlobDetection(object):
         using a Difference of Gaussian + Pyramid of Gaussians
     
     """
-    tresh = 1.5
+    tresh = 0.6
     def __init__(self, img, cur_sigma=0.25, init_sigma=0.50, dest_sigma=1, scale_per_octave=2, mask=None):
         """
         Performs a blob detection:
@@ -171,6 +173,7 @@ class BlobDetection(object):
         @param scale_per_octave: Number of scale to be performed per octave
         @param mask: mask where pixel are not valid
         """
+#        self.raw = numpy.log(img.astype(numpy.float32))
         self.raw = img.astype(numpy.float32)
         self.cur_sigma = float(cur_sigma)
         self.init_sigma = float(init_sigma)
@@ -187,7 +190,6 @@ class BlobDetection(object):
         self.mask[:, -1] = 1
         to_mask = numpy.where(self.mask)
         self.do_mask = to_mask[0].size > 0
-        print self.do_mask
         if self.do_mask:
             self.raw[to_mask] = 0
 
@@ -215,6 +217,8 @@ class BlobDetection(object):
         self.curr_reduction = 1.0
         self.detection_started = False
         self.octave = 0
+        self.raw_kp = []
+        self.ref_kp = []
 
     def __repr__(self):
         lststr = ["Blob detection, shape=%s, processed=%s." % (self.raw.shape, self.detection_started)]
@@ -249,15 +253,12 @@ class BlobDetection(object):
         print(self.sigmas)
 
     @timeit
-
-
-    @timeit
-    def _one_octave(self, shrink=True, do_SG4=True, n_5=False):
+    def _one_octave(self, shrink=True, refine=True, n_5=False):
         """
         Return the blob coordinates for an octave
         
         @param shrink: perform the image shrinking after the octave processing
-        @param   do_SG4: perform Savitsky-Golay 4th order fit. 
+        @param refine: can be None, True, "SG2" and "SG4" do_SG4: perform 3point hessian calcualation or Savitsky-Golay 2nd or 4th order fit. 
         
         """
         x = []
@@ -293,21 +294,31 @@ class BlobDetection(object):
             valid_points = _blob.local_max(self.dogs, self.cur_mask, n_5)
         else:
             valid_points = local_max(self.dogs, self.cur_mask, n_5)
-        self.init_kp = kps, kpy, kpx = numpy.where(valid_points)
+        kps, kpy, kpx = numpy.where(valid_points)
+        self.raw_kp.append((kps, kpy, kpx))
 
         print ('Before refinement : %i keypoints' % kpx.size)
-        if do_SG4:
-            kpx, kpy, kps, delta_s = self.refine_Hessian_SG(kpx, kpy, kps)
-            l = kpx.size
-            peak_val = self.dogs[(numpy.around(kps).astype(int),
-                                  numpy.around(kpy).astype(int),
-                                  numpy.around(kpx).astype(int))]
-            valid = numpy.ones(l, dtype=int)
+        if refine:
+            if "startswith" in dir(refine) and refine.startswith("SG"):
+                kpx, kpy, kps, delta_s = self.refine_Hessian_SG(kpx, kpy, kps)
+                l = kpx.size
+                peak_val = self.dogs[(numpy.around(kps).astype(int),
+                                      numpy.around(kpy).astype(int),
+                                      numpy.around(kpx).astype(int))]
+                valid = numpy.ones(l, dtype=bool)
+            else:
+                kpx, kpy, kps, peak_val, valid = self.refine_Hessian(kpx, kpy, kps)
+                l = valid.sum()
+                self.ref_kp.append((kps, kpy, kpx))
+            print ('After refinement : %i keypoints' % l)
         else:
-            kpx, kpy, kps, peak_val, valid = self.refine_Hessian(kpx, kpy, kps)
-            l = valid.sum()
-
-        print ('After refinement : %i keypoints' % l)
+            print kpx
+            print kpy
+            print kps
+            peak_val = self.dogs[kps, kpy, kpx]
+            print peak_val
+            l = kpx.size
+            valid = numpy.ones(l, bool)
 
         dtype = numpy.dtype([('x', numpy.float32), ('y', numpy.float32), ('sigma', numpy.float32), ('I', numpy.float32)])
         keypoints = numpy.recarray((l,), dtype=dtype)
@@ -339,11 +350,12 @@ class BlobDetection(object):
 #            print last.shape, tx, ty
             self.data = binning(last, 2) / 4.0
             self.curr_reduction *= 2
+            self.octave += 1
             self.blurs = []
             if self.do_mask:
                 self.cur_mask = (binning(self.cur_mask, 2) > 0).astype(numpy.int8)
                 self.cur_mask = morphology.binary_dilation(self.cur_mask, self.grow)
-            self.octave += 1
+
 
         if len(self.keypoints) == 0 :
             self.keypoints = keypoints
@@ -411,15 +423,14 @@ class BlobDetection(object):
         delta_s = -(ds * K00 + dy * K01 + dx * K02) / det
         delta_y = -(ds * K10 + dy * K11 + dx * K12) / det
         delta_x = -(ds * K20 + dy * K21 + dx * K22) / det
-
         peakval = curr + 0.5 * (delta_s * ds + delta_y * dy + delta_x * dx)
-        mask = numpy.logical_and(abs(delta_x) < self.tresh, abs(delta_y) < self.tresh, abs(delta_s) < self.tresh)
-
-        return kpx - delta_x, kpy - delta_y, kps - delta_s, peakval, mask
-
+        mask = numpy.logical_and(numpy.logical_and(abs(delta_x) < self.tresh, abs(delta_y) < self.tresh), abs(delta_s) < self.tresh)
+        return kpx + delta_x, kpy + delta_y, kps + delta_s, peakval, mask
 
     def refine_Hessian_SG(self, kpx, kpy, kps):
         """ Savitzky Golay algorithm to check if a point is really the maximum """
+
+
 
         k2x = []
         k2y = []
@@ -438,50 +449,54 @@ class BlobDetection(object):
         SGX0Y2 = [0.16666667 , 0.16666667 , 0.16666667 , -0.33333333 , -0.33333333 , -0.33333333 , 0.16666667 , 0.16666667 , 0.16666667]
 
         for y, x, sigma in itertools.izip(kpy, kpx, kps):
-   
-            curr_dog = self.dogs[sigma]
-            prev_dog = self.dogs[sigma - 1]
-            next_dog = self.dogs[sigma + 1]
-
-            if (x > 1 and x < curr_dog.shape[1] - 2 and y > 1 and y < curr_dog.shape[0] - 2):
 
 
-                patch3 = curr_dog[y - 1:y + 2, x - 1:x + 2]
-                patch3_prev = prev_dog[y - 1:y + 2, x - 1:x + 2]
-                patch3_next = next_dog[y - 1:y + 2, x - 1:x + 2]
+            j = round(numpy.log(sigma / self.sigmas[0][0]) / numpy.log(2) * self.scale_per_octave)
 
-                dx = (SGX1Y0 * patch3.ravel()).sum()
-                dy = (SGX0Y1 * patch3.ravel()).sum()
-                d2x = (SGX2Y0 * patch3.ravel()).sum()
-                d2y = (SGX0Y2 * patch3.ravel()).sum()
-                dxy = (SGX1Y1 * patch3.ravel()).sum()
+            if j > 0 and j < self.scale_per_octave + 1:
+                curr_dog = self.dogs[j]
+                prev_dog = self.dogs[j - 1]
+                next_dog = self.dogs[j + 1]
 
-                s_next = (SGX0Y0 * patch3_next.ravel()).sum()
-                s = (SGX0Y0 * patch3.ravel()).sum()
-                s_prev = (SGX0Y0 * patch3_prev.ravel()).sum()
-                d2s = (s_next + s_prev - 2.0 * s) / 4.0
-                ds = (s_next - s_prev) / 2.0
+                if (x > 1 and x < curr_dog.shape[1] - 2 and y > 1 and y < curr_dog.shape[0] - 2):
 
-                dx_next = (SGX1Y0 * patch3_next.ravel()).sum()
-                dx_prev = (SGX1Y0 * patch3_prev.ravel()).sum()
 
-                dy_next = (SGX0Y1 * patch3_next.ravel()).sum()
-                dy_prev = (SGX0Y1 * patch3_prev.ravel()).sum()
+                    patch3 = curr_dog[y - 1:y + 2, x - 1:x + 2]
+                    patch3_prev = prev_dog[y - 1:y + 2, x - 1:x + 2]
+                    patch3_next = next_dog[y - 1:y + 2, x - 1:x + 2]
 
-                dxs = (dx_next - dx_prev) / 2.0
-                dys = (dy_next - dy_prev) / 2.0
+                    dx = (SGX1Y0 * patch3.ravel()).sum()
+                    dy = (SGX0Y1 * patch3.ravel()).sum()
+                    d2x = (SGX2Y0 * patch3.ravel()).sum()
+                    d2y = (SGX0Y2 * patch3.ravel()).sum()
+                    dxy = (SGX1Y1 * patch3.ravel()).sum()
 
-                lap = numpy.array([[d2y, dxy, dys], [dxy, d2x, dxs], [dys, dxs, d2s]])
-                delta = -(numpy.dot(numpy.linalg.inv(lap), [dy, dx, ds]))
-#                 print delta, y,x
-                err = numpy.linalg.norm(delta[:-1])
-                if  numpy.abs(delta[0]) <= self.tresh and numpy.abs(delta[1]) <= self.tresh and numpy.abs(delta[2]) <= self.tresh:
-                    k2x.append(x + delta[1])
-                    k2y.append(y + delta[0])
-                    sigmas.append(sigma)
-                    kds.append(delta[2])
-                    kdx.append(delta[1])
-                    kdy.append(delta[0])
+                    s_next = (SGX0Y0 * patch3_next.ravel()).sum()
+                    s = (SGX0Y0 * patch3.ravel()).sum()
+                    s_prev = (SGX0Y0 * patch3_prev.ravel()).sum()
+                    d2s = (s_next + s_prev - 2.0 * s) / 4.0
+                    ds = (s_next - s_prev) / 2.0
+
+                    dx_next = (SGX1Y0 * patch3_next.ravel()).sum()
+                    dx_prev = (SGX1Y0 * patch3_prev.ravel()).sum()
+
+                    dy_next = (SGX0Y1 * patch3_next.ravel()).sum()
+                    dy_prev = (SGX0Y1 * patch3_prev.ravel()).sum()
+
+                    dxs = (dx_next - dx_prev) / 2.0
+                    dys = (dy_next - dy_prev) / 2.0
+
+                    lap = numpy.array([[d2y, dxy, dys], [dxy, d2x, dxs], [dys, dxs, d2s]])
+                    delta = -(numpy.dot(numpy.linalg.inv(lap), [dy, dx, ds]))
+#                     print delta
+                    err = numpy.linalg.norm(delta[:-1])
+                    if  err < numpy.sqrt(4) and numpy.abs(delta[0]) <= 2.0 and numpy.abs(delta[1]) <= 2.0 and numpy.abs(delta[2]) <= self.sigmas[-1][0]:
+                        k2x.append(x + delta[1])
+                        k2y.append(y + delta[0])
+                        sigmas.append(sigma)
+                        kds.append(delta[2])
+                        kdx.append(delta[1])
+                        kdy.append(delta[0])
 
         return numpy.asarray(k2x), numpy.asarray(k2y), numpy.asarray(sigmas), numpy.asarray(kds)
 
@@ -540,14 +555,6 @@ class BlobDetection(object):
                     arrowprops=dict(facecolor='red', shrink=0.05),)
 
 if __name__ == "__main__":
-    
-    kx=[]
-    ky=[]
-    k2x=[]
-    k2y=[]
-    dx=[]
-    dy=[]
-    
 
     kx = []
     ky = []
