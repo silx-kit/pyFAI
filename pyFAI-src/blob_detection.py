@@ -80,7 +80,7 @@ def make_gaussian(im, sigma, xc, yc):
 @timeit
 def local_max(dogs, mask=None, n_5=True):
     """
-    @param dogs: 3d array with (sigma,y,x) containing difference of gaussians 
+    @param dogs: 3d array with (sigma,y,x) containing difference of gaussians
     @parm mask: mask out keypoint next to the mask (or inside the mask)
     @param n_5: look for a larger neighborhood
     """
@@ -159,7 +159,7 @@ class BlobDetection(object):
         Performs a blob detection:
         http://en.wikipedia.org/wiki/Blob_detection
         using a Difference of Gaussian + Pyramid of Gaussians
-    
+
     """
     tresh = 0.6
     def __init__(self, img, cur_sigma=0.25, init_sigma=0.5, dest_sigma=1, scale_per_octave=2, mask=None):
@@ -167,7 +167,7 @@ class BlobDetection(object):
         Performs a blob detection:
         http://en.wikipedia.org/wiki/Blob_detection
         using a Difference of Gaussian + Pyramid of Gaussians
-        
+
         @param img: input image
         @param cur_sigma: estimated smoothing of the input image. 0.25 correspond to no interaction between pixels.
         @param init_sigma: start searching at this scale (sigma=0.5: 10% interaction with first neighbor)
@@ -260,10 +260,10 @@ class BlobDetection(object):
     def _one_octave(self, shrink=True, refine=True, n_5=False):
         """
         Return the blob coordinates for an octave
-        
+
         @param shrink: perform the image shrinking after the octave processing
-        @param refine: can be None, True, "SG2" and "SG4" do_SG4: perform 3point hessian calcualation or Savitsky-Golay 2nd or 4th order fit. 
-        
+        @param refine: can be None, True, "SG2" and "SG4" do_SG4: perform 3point hessian calcualation or Savitsky-Golay 2nd or 4th order fit.
+
         """
         x = []
         y = []
@@ -327,14 +327,14 @@ class BlobDetection(object):
         keypoints = numpy.recarray((l,), dtype=self.dtype)
 #        sigmas = numpy.array([s[0] for s in self.sigmas])
 
-        
+
         if l != 0:
             keypoints[:].x = (kpx[valid]+0.5) * self.curr_reduction
             keypoints[:].y = (kpy[valid]+0.5) * self.curr_reduction
             sigmas = self.init_sigma * (self.dest_sigma / self.init_sigma) ** ((kps[valid]+0.5) / (self.scale_per_octave))
             keypoints[:].sigma = (self.curr_reduction * sigmas)
             keypoints[:].I = peak_val[valid]
-            
+
 
         if shrink:
             #shrink data so that they can be treated by next octave
@@ -373,13 +373,13 @@ class BlobDetection(object):
 
     def refine_Hessian(self, kpx, kpy, kps):
         """
-        
+
         Refine the keypoint location based on a 3 point derivative
-        
+
         @param kpx: x_pos of keypoint
         @param kpy: y_pos of keypoint
         @param kps: s_pos of keypoint
-        @return  
+        @return
         """
         curr = self.dogs[(kps, kpy, kpx)]
         nx = self.dogs[(kps, kpy, kpx + 1)]
@@ -574,10 +574,10 @@ class BlobDetection(object):
         def nearest_peak(p, refine=True, Imin=None):
             """
             Return the nearest peak from a position
-            
+
             @param p: input position (y,x) 2-tuple of float
             @param refine: shall the position be refined on the raw data
-            @param Imin: minimum of intenity above the background 
+            @param Imin: minimum of intenity above the background
             """
             if Imin:
                 valid = self.keypoints.I >= Imin
@@ -586,11 +586,11 @@ class BlobDetection(object):
                 kp = self.keypoints
             r2 = kp.x*kp.x+kp.y*kp.y
             best_pos = r2.argmin()
-            best = kp[best_pos].y, kp[best_pos].x
+            best = [kp[best_pos].y, kp[best_pos].x]
             if refine:
                 if self.bilinear is None:
                     self.bilinear = Bilinear(self.raw)
-                best = self.bilinear.local_maxi(best)
+                best = [i + 0.5 for i in self.bilinear.local_maxi(best)]
             return best
 
 
