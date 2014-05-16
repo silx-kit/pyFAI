@@ -79,7 +79,7 @@ f=pylab.figure(1)
 ax = f.add_subplot(111)
 ax.imshow(numpy.log1p(data), interpolation = 'nearest')
 
-for i in range(10):
+for i in range(3):
     print ('Octave #%i' %i)
     bd._one_octave(shrink=True, refine=True, n_5=True)
     print("Octave #%i Total kp: %i" % (i, bd.keypoints.size))
@@ -97,7 +97,7 @@ sigma = bd.keypoints.sigma
 for i,c in enumerate("bgrcmykw"):
 #    j = 2 ** i
     m = numpy.logical_and(sigma >= i, sigma < (i + 1))
-    ax.plot(bd.keypoints[m].x, bd.keypoints[m].y, "." + c, label=str(i))
+    ax.plot(bd.keypoints[m].x-0.5, bd.keypoints[m].y-0.5, "." + c, label=str(i))
 ax.legend()
 
 if sigma.size > 0:

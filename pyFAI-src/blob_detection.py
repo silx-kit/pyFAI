@@ -160,7 +160,7 @@ class BlobDetection(object):
     
     """
     tresh = 0.6
-    def __init__(self, img, cur_sigma=0.25, init_sigma=0.50, dest_sigma=1, scale_per_octave=2, mask=None):
+    def __init__(self, img, cur_sigma=0.25, init_sigma=0.5, dest_sigma=1, scale_per_octave=2, mask=None):
         """
         Performs a blob detection:
         http://en.wikipedia.org/wiki/Blob_detection
@@ -324,13 +324,14 @@ class BlobDetection(object):
         keypoints = numpy.recarray((l,), dtype=dtype)
 #        sigmas = numpy.array([s[0] for s in self.sigmas])
 
-
+        
         if l != 0:
-            keypoints[:].x = kpx[valid] * self.curr_reduction
-            keypoints[:].y = kpy[valid] * self.curr_reduction
-            sigmas = self.init_sigma * (self.dest_sigma / self.init_sigma) ** (kps[valid] / (self.scale_per_octave))
+            keypoints[:].x = (kpx[valid]+0.5) * self.curr_reduction
+            keypoints[:].y = (kpy[valid]+0.5) * self.curr_reduction
+            sigmas = self.init_sigma * (self.dest_sigma / self.init_sigma) ** ((kps[valid]+0.5) / (self.scale_per_octave))
             keypoints[:].sigma = (self.curr_reduction * sigmas)
             keypoints[:].I = peak_val[valid]
+            
 
         if shrink:
             #shrink data so that they can be treated by next octave
@@ -349,7 +350,7 @@ class BlobDetection(object):
                     self.cur_mask = new_msk
 #            print last.shape, tx, ty
             self.data = binning(last, 2) / 4.0
-            self.curr_reduction *= 2
+            self.curr_reduction *= 2.0
             self.octave += 1
             self.blurs = []
             if self.do_mask:
