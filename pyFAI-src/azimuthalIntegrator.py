@@ -2067,10 +2067,11 @@ class AzimuthalIntegrator(Geometry):
                     method="lut", unit=units.Q, safe=True, normalization_factor=None, block_size=32,
                     profile=False):
         """
-        Calculate the azimuthal integrated Saxs curve in q(nm^-1) by
-        default
+        Calculate the azimuthal integrated Saxs curve in q(nm^-1) by default
 
-        Multi algorithm implementation (tries to be bullet proof)
+        Multi algorithm implementation (tries to be bullet proof), suitable for SAXS, WAXS, ... and much more
+        
+        
 
         @param data: 2D array from the Detector/CCD camera
         @type data: ndarray
@@ -2094,23 +2095,23 @@ class AzimuthalIntegrator(Geometry):
         @type dummy: float
         @param delta_dummy: precision for dummy value
         @type delta_dummy: float
-        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction
+        @param polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal). 0 for circular polarization or random, None for no correction
         @type polarization_factor: float
         @param dark: dark noise image
         @type dark: ndarray
         @param flat: flat field image
         @type flat: ndarray
-        @param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "lut_ocl" if you want to go on GPU, ....
+        @param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr; "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"  
         @type method: str
-        @param unit: can be Q, TTh, R for now
+        @param unit: Output units, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
         @type unit: pyFAI.units.Enum
-        @param safe: Do some extra checks to ensure LUT is still valid. False is faster.
+        @param safe: Do some extra checks to ensure LUT/CSR is still valid. False is faster.
         @type safe: bool
         @param normalization_factor: Value of a normalization monitor
         @type normalization_factor: float
 
-        @return: azimuthaly regrouped data, 2theta pos. and chi pos.
-        @rtype: 3-tuple of ndarrays
+        @return: q/2th/r bins center positions and regrouped intensity (and error array if variance or variance model provided).
+        @rtype: 2 or 3-tuple of ndarrays
         """
         method = method.lower()
         unit = units.to_unit(unit)
@@ -2577,7 +2578,7 @@ class AzimuthalIntegrator(Geometry):
                     method="bbox", unit=units.Q, safe=True,
                     normalization_factor=None):
         """
-        Calculate the azimuthal regrouped 2d image in q(nm^-1)/deg by default
+        Calculate the azimuthal regrouped 2d image in q(nm^-1)/chi(deg) by default
 
         Multi algorithm implementation (tries to be bullet proof)
 
@@ -2605,22 +2606,22 @@ class AzimuthalIntegrator(Geometry):
         @type dummy: float
         @param delta_dummy: precision for dummy value
         @type delta_dummy: float
-        @param polarization_factor: polarization factor between -1 and +1. 0 for no correction
+        @param polarization_factor: polarization factor between -1 (vertical) and +1 (horizontal). 0 for circular polarization or random, None for no correction
         @type polarization_factor: float
         @param dark: dark noise image
         @type dark: ndarray
         @param flat: flat field image
         @type flat: ndarray
-        @param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "lut_ocl" if you want to go on GPU, ....
+        @param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr; "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"  
         @type method: str
-        @param unit: can be Q, TTH, R for now
+        @param unit: Output units, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
         @type unit: pyFAI.units.Enum
         @param safe: Do some extra checks to ensure LUT is still valid. False is faster.
         @type safe: bool
         @param normalization_factor: Value of a normalization monitor
         @type normalization_factor: float
 
-        @return: azimuthaly regrouped data, 2theta pos. and chi pos.
+        @return: azimuthaly regrouped intensity, q/2theta/r pos. and chi pos.
         @rtype: 3-tuple of ndarrays (2d, 1d, 1d)
         """
         method = method.lower()

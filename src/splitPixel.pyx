@@ -86,7 +86,7 @@ cdef inline double calc_area(double I1, double I2, double slope, double intercep
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-#def integrate(double[:] buffer, int buffer_size, double start0, double start1, double stop0, double stop1):
+@cython.cdivision(True)
 cdef inline void integrate(double[:] buffer, int buffer_size, double start0, double start1, double stop0, double stop1) nogil:
     "Integrate in a box a line between start and stop"
     
