@@ -93,11 +93,13 @@ class Detector(object):
         @rtype: pyFAI.detectors.Detector
         """
         name = name.lower()
-        if name in cls.registry:
-            mydet = cls.registry[name]()
-            if config is not None:
-                mydet.set_config(config)
-            return mydet
+        names = [name, name.replace(" ", "_")]
+        for name in names:
+            if name in cls.registry:
+                mydet = cls.registry[name]()
+                if config is not None:
+                    mydet.set_config(config)
+                return mydet
         else:
             msg = ("Detector %s is unknown !, "
                    "please select one from %s" % (name, cls.registry.keys()))
@@ -730,7 +732,7 @@ class Fairchild(Detector):
     Fairchild Condor 486:90 detector
     """
     force_pixel = True
-    aliases = ["Fairchild Condor 486:90"]
+    aliases = ["Condor", "Fairchild Condor 486:90"]
     MAX_SHAPE = (4096, 4096)
     def __init__(self, pixel1=15e-6, pixel2=15e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
