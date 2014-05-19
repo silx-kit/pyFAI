@@ -304,7 +304,7 @@ class BlobDetection(object):
         print ('Before refinement : %i keypoints' % kpx.size)
         if refine:
             if "startswith" in dir(refine) and refine.startswith("SG"):
-                kpx, kpy, kps, delta_s = self.refine_Hessian_SG(kpx, kpy, kps)
+                kpx, kpy, kps = self.refine_Hessian_SG(kpx, kpy, kps)
                 l = kpx.size
                 peak_val = self.dogs[(numpy.around(kps).astype(int),
                                       numpy.around(kpy).astype(int),
@@ -434,8 +434,6 @@ class BlobDetection(object):
     def refine_Hessian_SG(self, kpx, kpy, kps):
         """ Savitzky Golay algorithm to check if a point is really the maximum """
 
-
-
         k2x = []
         k2y = []
         sigmas = []
@@ -444,7 +442,7 @@ class BlobDetection(object):
         kdx = []
         kdy = []
 
-        #Hessian patch 3
+        #Hessian patch 3 ordre 2
         SGX0Y0 = [-0.11111111 , 0.22222222 , -0.11111111 , 0.22222222 , 0.55555556 , 0.22222222 , -0.11111111 , 0.22222222 , -0.11111111]
         SGX1Y0 = [-0.16666667 , 0.00000000 , 0.16666667 , -0.16666667 , 0.00000000 , 0.16666667 , -0.16666667 , 0.00000000 , 0.16666667 ]
         SGX2Y0 = [0.16666667 , -0.33333333 , 0.16666667 , 0.16666667 , -0.33333333 , 0.16666667 , 0.16666667, -0.33333333, 0.16666667 ]
@@ -454,55 +452,51 @@ class BlobDetection(object):
 
         for y, x, sigma in itertools.izip(kpy, kpx, kps):
 
+            curr_dog = self.dogs[sigma]
+            prev_dog = self.dogs[sigma - 1]
+            next_dog = self.dogs[sigma + 1]
 
-            j = round(numpy.log(sigma / self.sigmas[0][0]) / numpy.log(2) * self.scale_per_octave)
-
-            if j > 0 and j < self.scale_per_octave + 1:
-                curr_dog = self.dogs[j]
-                prev_dog = self.dogs[j - 1]
-                next_dog = self.dogs[j + 1]
-
-                if (x > 1 and x < curr_dog.shape[1] - 2 and y > 1 and y < curr_dog.shape[0] - 2):
+#             if (x > 1 and x < curr_dog.shape[1] - 2 and y > 1 and y < curr_dog.shape[0] - 2):
 
 
-                    patch3 = curr_dog[y - 1:y + 2, x - 1:x + 2]
-                    patch3_prev = prev_dog[y - 1:y + 2, x - 1:x + 2]
-                    patch3_next = next_dog[y - 1:y + 2, x - 1:x + 2]
+            patch3 = curr_dog[y - 1:y + 2, x - 1:x + 2]
+            patch3_prev = prev_dog[y - 1:y + 2, x - 1:x + 2]
+            patch3_next = next_dog[y - 1:y + 2, x - 1:x + 2]
 
-                    dx = (SGX1Y0 * patch3.ravel()).sum()
-                    dy = (SGX0Y1 * patch3.ravel()).sum()
-                    d2x = (SGX2Y0 * patch3.ravel()).sum()
-                    d2y = (SGX0Y2 * patch3.ravel()).sum()
-                    dxy = (SGX1Y1 * patch3.ravel()).sum()
+            dx = (SGX1Y0 * patch3.ravel()).sum()
+            dy = (SGX0Y1 * patch3.ravel()).sum()
+            d2x = (SGX2Y0 * patch3.ravel()).sum()
+            d2y = (SGX0Y2 * patch3.ravel()).sum()
+            dxy = (SGX1Y1 * patch3.ravel()).sum()
 
-                    s_next = (SGX0Y0 * patch3_next.ravel()).sum()
-                    s = (SGX0Y0 * patch3.ravel()).sum()
-                    s_prev = (SGX0Y0 * patch3_prev.ravel()).sum()
-                    d2s = (s_next + s_prev - 2.0 * s) / 4.0
-                    ds = (s_next - s_prev) / 2.0
+            s_next = (SGX0Y0 * patch3_next.ravel()).sum()
+            s = (SGX0Y0 * patch3.ravel()).sum()
+            s_prev = (SGX0Y0 * patch3_prev.ravel()).sum()
+            d2s = (s_next + s_prev - 2.0 * s) / 4.0
+            ds = (s_next - s_prev) / 2.0
 
-                    dx_next = (SGX1Y0 * patch3_next.ravel()).sum()
-                    dx_prev = (SGX1Y0 * patch3_prev.ravel()).sum()
+            dx_next = (SGX1Y0 * patch3_next.ravel()).sum()
+            dx_prev = (SGX1Y0 * patch3_prev.ravel()).sum()
 
-                    dy_next = (SGX0Y1 * patch3_next.ravel()).sum()
-                    dy_prev = (SGX0Y1 * patch3_prev.ravel()).sum()
+            dy_next = (SGX0Y1 * patch3_next.ravel()).sum()
+            dy_prev = (SGX0Y1 * patch3_prev.ravel()).sum()
 
-                    dxs = (dx_next - dx_prev) / 2.0
-                    dys = (dy_next - dy_prev) / 2.0
+            dxs = (dx_next - dx_prev) / 2.0
+            dys = (dy_next - dy_prev) / 2.0
 
-                    lap = numpy.array([[d2y, dxy, dys], [dxy, d2x, dxs], [dys, dxs, d2s]])
-                    delta = -(numpy.dot(numpy.linalg.inv(lap), [dy, dx, ds]))
-#                     print delta
-                    err = numpy.linalg.norm(delta[:-1])
-                    if  err < numpy.sqrt(4) and numpy.abs(delta[0]) <= 2.0 and numpy.abs(delta[1]) <= 2.0 and numpy.abs(delta[2]) <= self.sigmas[-1][0]:
-                        k2x.append(x + delta[1])
-                        k2y.append(y + delta[0])
-                        sigmas.append(sigma)
-                        kds.append(delta[2])
-                        kdx.append(delta[1])
-                        kdy.append(delta[0])
+            lap = numpy.array([[d2y, dxy, dys], [dxy, d2x, dxs], [dys, dxs, d2s]])
+            delta = -(numpy.dot(numpy.linalg.inv(lap), [dy, dx, ds]))
+#             print delta
+#                 err = numpy.linalg.norm(delta[:-1])
+            if  numpy.abs(delta[0]) <= self.tresh and numpy.abs(delta[1]) <= self.tresh and numpy.abs(delta[2]) <= self.tresh:
+                k2x.append(x + delta[1])
+                k2y.append(y + delta[0])
+                sigmas.append(sigma+delta[2])
+#                         kds.append(delta[2])
+#                         kdx.append(delta[1])
+#                         kdy.append(delta[0])
 
-        return numpy.asarray(k2x), numpy.asarray(k2y), numpy.asarray(sigmas), numpy.asarray(kds)
+        return numpy.asarray(k2x), numpy.asarray(k2y), numpy.asarray(sigmas)#, numpy.asarray(kds)
 
     def direction(self):
         import pylab
@@ -557,43 +551,49 @@ class BlobDetection(object):
                 pylab.annotate("", xy=(x + vect[1][0] * val[1], y + vect[1][1] * val[1]), xytext=(x, y),
                     arrowprops=dict(facecolor='red', shrink=0.05),)
 
-        def process(max_octave=None):
-            """
-            Perform the keypoint extraction for max_octave cycles or until all octaves have been processed.
-            """
-            octave = 0
-            finished = False
-            while not finished:
-                self._one_octave(shrink=True, refine=True, n_5=True)
-                octave += 1
-                if max_octave and octave > max_octave:
-                    finished = True
-                else:
-                    finished = (1 - self.cur_mask).sum() == 0
-
-        def nearest_peak(p, refine=True, Imin=None):
-            """
-            Return the nearest peak from a position
-            
-            @param p: input position (y,x) 2-tuple of float
-            @param refine: shall the position be refined on the raw data
-            @param Imin: minimum of intenity above the background 
-            """
-            if Imin:
-                valid = self.keypoints.I >= Imin
-                kp = self.keypoints[self.keypoints.I >= Imin]
+    def process(self,max_octave=None):
+        """
+        Perform the keypoint extraction for max_octave cycles or until all octaves have been processed.
+        """
+        octave = 0
+        finished = False
+        while not finished:
+            self._one_octave(shrink=True, refine=True, n_5=True)
+            octave += 1
+            if max_octave and octave > max_octave:
+                finished = True
             else:
-                kp = self.keypoints
-            r2 = kp.x*kp.x+kp.y*kp.y
-            best_pos = r2.argmin()
-            best = kp[best_pos].y, kp[best_pos].x
-            if refine:
-                if self.bilinear is None:
-                    self.bilinear = Bilinear(self.raw)
-                best = self.bilinear.local_maxi(best)
-            return best
+                finished = (1 - self.cur_mask).sum() == 0
 
+    def nearest_peak(self, p, refine=True, Imin=None):
+        """
+        Return the nearest peak from a position
+        
+        @param p: input position (y,x) 2-tuple of float
+        @param refine: shall the position be refined on the raw data
+        @param Imin: minimum of intensity above the background 
+        """
+        if Imin:
+            valid = self.keypoints.I >= Imin
+            kp = self.keypoints[valid]
+        else:
+            kp = self.keypoints
+        r2 = (kp.x-p[1])*(kp.x-p[1])+(kp.y-p[0])*(kp.y-p[0])
+        best_pos = r2.argmin()
+        best = kp[best_pos].y, kp[best_pos].x
+        if refine:
+            if self.bilinear is None:
+                self.bilinear = Bilinear(self.raw)
+            best = self.bilinear.local_maxi(best)
+        return best
 
+    def Cluster(self):
+        import pylab
+        pylab.figure()
+        pylab.plot(self.keypoints.sigma,self.keypoints.I,'.r')
+        pylab.show()
+        
+                
 
 if __name__ == "__main__":
 
