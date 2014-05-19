@@ -670,6 +670,8 @@ class AbstractCalibration(object):
                          max_rings = None
                     else:
                         self.max_rings = max_rings
+                else:
+                    self.max_rings = None
                 self.extract_cpt()
             elif change.startswith("free"):
                 what = change.split()[-1]
