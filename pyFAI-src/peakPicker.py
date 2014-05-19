@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/04/2014"
+__date__ = "16/05/2014"
 __status__ = "production"
 
 import os, sys, threading, logging, gc, types
@@ -83,7 +83,7 @@ class PeakPicker(object):
         self.massif = None  #used for massif detection
         self.blob = None    #used for blob   detection
         self._sem = threading.Semaphore()
-        self._semGui = threading.Semaphore()
+#        self._semGui = threading.Semaphore()
         self.mpl_connectId = None
         self.defaultNbPoints = 100
         if method in self.VALID_METHODS:
@@ -112,7 +112,7 @@ class PeakPicker(object):
             self.massif = Massif(self.data)
         self.method = "massif"
 
-    def init_blob(self):
+    def init_blob(self,sync=True):
         """
         Initialize PeakPicker for blob based detection
         """
@@ -121,6 +121,10 @@ class PeakPicker(object):
         else:
             self.blob = BlobDetection(self.data)
         self.method = "blob"
+        t = threading.Thread(target=self.blob.process, name="blob_process").start()
+        if sync:
+            t.join()
+                             
 
     def reset(self):
         """

@@ -172,9 +172,8 @@ cdef class Bilinear:
             else:
                 delta0 = ((a12 - a10)*d01 + (a01 - a21)*d11)/denom
                 delta1 = ((a10 - a12)*d00 + (a21 - a01)*d01)/denom
-    #            print(delta0,delta1)
-                if abs(delta0)<=1.0 and abs(delta1)<=1.0: #Result is OK is nower than 0.5.
-                    return (float(current0) + delta0, float(current1) + delta1)
+                if abs(delta0)<=1.0 and abs(delta1)<=1.0: #Result is OK if lower than 0.5.
+                    return (delta0 + 0.5 + float(current0), delta1 + 0.5 + float(current1))
                 else:
                     logger.debug("Failed to find root using second order expansion") 
         #refinement of the position by a simple center of mass of the last valid region used
