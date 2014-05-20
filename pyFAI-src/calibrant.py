@@ -147,16 +147,19 @@ class Calibrant(object):
                 self._ring = [self.dSpacing.index(i) for i in d]
 
     def set_wavelength(self, value=None):
+        updated = False
         with self._sem:
             if self._wavelength is None:
                 if value:
                     self._wavelength = float(value)
                     if (self._wavelength < 1e-15) or (self._wavelength > 1e-6):
                         logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
-                    self._calc_2th()
+                    updated = True
             elif abs(self._wavelength - value) / self._wavelength > epsilon:
                 logger.warning("Forbidden to change the wavelength once it is fixed !!!!")
                 logger.warning("%s != %s, delta= %s" % (self._wavelength, value, self._wavelength - value))
+        if updated:
+            self._calc_2th()
 
     def get_wavelength(self):
         return self._wavelength
@@ -167,7 +170,7 @@ class Calibrant(object):
             logger.error("Cannot calculate 2theta angle without knowing wavelength")
             return
         self._2th = []
-        for ds in self._dSpacing:
+        for ds in self.dSpacing:
             try:
                 tth = 2.0 * asin(5.0e9 * self._wavelength / ds)
             except ValueError:
@@ -181,6 +184,8 @@ class Calibrant(object):
         self._dSpacing = [5.0e9 * self._wavelength / sin(tth / 2.0) for tth in self._2th]
 
     def get_2th(self):
+        if not self._2th:
+            self._calc_2th()
         return self._2th
 
     def get_2th_index(self, angle):
@@ -193,6 +198,34 @@ class Calibrant(object):
         if idx == -1:
             idx = None
         return idx
+
+    def fake_calibration_image(self, ai, Imax=1.0, U=0, V=0, W=0.0001):
+        """
+        Generates a fake calibration image from an azimuthal integrator
+        
+        @param ai: azimuthal integrator
+        @param Imax: maximum intensity of rings
+        @param U, V, W: width of the peak (FWHM = Utan(th)^2 + Vtan(th) + W)  
+        
+        """
+        shape = ai.detector.max_shape
+        tth = ai.twoThetaArray(shape)
+        tth_min = tth.min()
+        tth_max = tth.max()
+        dim = int(numpy.sqrt(shape[0] * shape[0] + shape[1] * shape[1]))
+        tth_1d = numpy.linspace(tth_min, tth_max, dim)
+        tanth = numpy.tan(tth_1d / 2.0)
+        fwhm = U * tanth ** 2 + V * tanth + W
+        sigma2 = 8.0 * numpy.log(2.0) * fwhm * fwhm
+        signal = numpy.zeros_like(sigma2)
+        for t in self.get_2th():
+            if t >= tth_max:
+                break
+            else:
+                signal += Imax * numpy.exp(-(tth_1d - t) ** 2 / (2 * sigma2))
+        res = ai.calcfrom1d(tth_1d, signal, shape=shape, mask=ai.mask,
+                   dim1_unit='2th_rad', correctSolidAngle=True)
+        return res
 
 
 CALIBRANT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "calibration")
