@@ -40,8 +40,8 @@ def image_test_rings():
     img = numpy.zeros(shape)
     modulation = (1 + numpy.sin(5 * r + chi * mod))
     for radius in numpy.linspace(0, r_max, rings):
-        img += numpy.exp(-(r - radius) ** 2 / (2 * (sigma * sigma))) * modulation
-    return img
+        img += numpy.exp(-(r - radius) ** 2 / (2 * (sigma * sigma)))
+    return img * modulation
 
 class TestBlobDetection(unittest.TestCase):
     img = None

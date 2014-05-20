@@ -51,20 +51,42 @@ from pyFAI import bilinear
 
 class test_bilinear(unittest.TestCase):
     """basic maximum search test"""
-    a = numpy.arange(100) - 40.
-    b = numpy.arange(100) - 60.
-    ga = numpy.exp(-a * a / 4000)
-    gb = numpy.exp(-b * b / 6000)
-    gg = numpy.outer(ga, gb)
-    b = bilinear.Bilinear(gg)
     N = 10000
-    def test_max_search(self):
-        """test maximum search using random points"""
+    def test_max_search_round(self):
+        """test maximum search using random points: maximum is at the pixel center"""
+        a = numpy.arange(100) - 40.
+        b = numpy.arange(100) - 60.
+        ga = numpy.exp(-a * a / 4000)
+        gb = numpy.exp(-b * b / 6000)
+        gg = numpy.outer(ga, gb)
+        b = bilinear.Bilinear(gg)
+
+
         ok = 0
         for s in range(self.N):
             i, j = numpy.random.randint(100), numpy.random.randint(100)
-            k, l = self.b.local_maxi((i, j), 1)
+            k, l = b.local_maxi((i, j), 1)
             if abs(k - 40) > 1e-4 or abs(l - 60) > 1e-4:
+                logger.warning("Wrong guess maximum (%i,%i) -> (%.1f,%.1f)" % (i, j, k, l))
+            else:
+                logger.debug("Good guess maximum (%i,%i) -> (%.1f,%.1f)" % (i, j, k, l))
+                ok += 1
+        logger.info("Success rate: %.1f" % (100.*ok / self.N))
+        self.assertEqual(ok, self.N, "Maximum is always found")
+
+    def test_max_search_half(self):
+        """test maximum search using random points: maximum is at a pixel edge"""
+        a = numpy.arange(100) - 40.5
+        b = numpy.arange(100) - 60.5
+        ga = numpy.exp(-a * a / 4000)
+        gb = numpy.exp(-b * b / 6000)
+        gg = numpy.outer(ga, gb)
+        b = bilinear.Bilinear(gg)
+        ok = 0
+        for s in range(self.N):
+            i, j = numpy.random.randint(100), numpy.random.randint(100)
+            k, l = b.local_maxi((i, j), 1)
+            if abs(k - 40.5) > 0.5 or abs(l - 60.5) > 0.5:
                 logger.warning("Wrong guess maximum (%i,%i) -> (%.1f,%.1f)" % (i, j, k, l))
             else:
                 logger.debug("Good guess maximum (%i,%i) -> (%.1f,%.1f)" % (i, j, k, l))
@@ -75,7 +97,8 @@ class test_bilinear(unittest.TestCase):
 
 def test_suite_all_bilinear():
     testSuite = unittest.TestSuite()
-    testSuite.addTest(test_bilinear("test_max_search"))
+    testSuite.addTest(test_bilinear("test_max_search_round"))
+    testSuite.addTest(test_bilinear("test_max_search_half"))
 #    testSuite.addTest(test_azim_halfFrelon("test_numpy_vs_fit2d"))
 #    testSuite.addTest(test_azim_halfFrelon("test_cythonSP_vs_fit2d"))
 #    testSuite.addTest(test_azim_halfFrelon("test_cython_vs_numpy"))

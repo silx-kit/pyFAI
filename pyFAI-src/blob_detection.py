@@ -33,7 +33,7 @@ __docformat__ = 'restructuredtext'
 import os, itertools
 import numpy
 try:
-    from _convolution import gaussian_filter
+    from ._convolution import gaussian_filter
 except ImportError:
     from scipy.ndimage.filters import gaussian_filter
 try:
@@ -48,6 +48,8 @@ except ImportError:
     pyFAI_morphology = False
 else:
     pyFAI_morphology = True
+
+from .bilinear import Bilinear
 
 from math import sqrt
 
@@ -78,7 +80,7 @@ def make_gaussian(im, sigma, xc, yc):
 @timeit
 def local_max(dogs, mask=None, n_5=True):
     """
-    @param dogs: 3d array with (sigma,y,x) containing difference of gaussians 
+    @param dogs: 3d array with (sigma,y,x) containing difference of gaussians
     @parm mask: mask out keypoint next to the mask (or inside the mask)
     @param n_5: look for a larger neighborhood
     """
@@ -108,6 +110,7 @@ def local_max(dogs, mask=None, n_5=True):
         kpm[1:-1, 1:-1] += (slic > prev_dog[:-2, :-2]) * (slic > prev_dog[2:, 2:])
         kpm[1:-1, 1:-1] += (slic > prev_dog[2:, :-2]) * (slic > prev_dog[:-2, 2:])
         kpm[1:-1, 1:-1] += (slic >= prev_dog[1:-1, 1:-1])
+
 
         if n_5:
             target = 38
@@ -141,6 +144,7 @@ def local_max(dogs, mask=None, n_5=True):
             kpm[2:-2, 2:-2] += (slic > prev_dog[1:-3, :-4]) * (slic > prev_dog[1:-3, 4:])
             kpm[2:-2, 2:-2] += (slic > prev_dog[3:-1, :-4]) * (slic > prev_dog[3:-1, 4:])
             kpm[2:-2, 2:-2] += (slic > prev_dog[4:, 3:-1]) * (slic > prev_dog[:-4, 3:-1])
+
         else:
             target = 14
 
@@ -155,15 +159,15 @@ class BlobDetection(object):
         Performs a blob detection:
         http://en.wikipedia.org/wiki/Blob_detection
         using a Difference of Gaussian + Pyramid of Gaussians
-    
+
     """
     tresh = 0.6
-    def __init__(self, img, cur_sigma=0.25, init_sigma=0.50, dest_sigma=1, scale_per_octave=2, mask=None):
+    def __init__(self, img, cur_sigma=0.25, init_sigma=0.5, dest_sigma=1, scale_per_octave=2, mask=None):
         """
         Performs a blob detection:
         http://en.wikipedia.org/wiki/Blob_detection
         using a Difference of Gaussian + Pyramid of Gaussians
-        
+
         @param img: input image
         @param cur_sigma: estimated smoothing of the input image. 0.25 correspond to no interaction between pixels.
         @param init_sigma: start searching at this scale (sigma=0.5: 10% interaction with first neighbor)
@@ -217,6 +221,8 @@ class BlobDetection(object):
         self.octave = 0
         self.raw_kp = []
         self.ref_kp = []
+        self.dtype = numpy.dtype([('x', numpy.float32), ('y', numpy.float32), ('sigma', numpy.float32), ('I', numpy.float32)])
+        self.bilinear = None
 
     def __repr__(self):
         lststr = ["Blob detection, shape=%s, processed=%s." % (self.raw.shape, self.detection_started)]
@@ -254,10 +260,10 @@ class BlobDetection(object):
     def _one_octave(self, shrink=True, refine=True, n_5=False):
         """
         Return the blob coordinates for an octave
-        
+
         @param shrink: perform the image shrinking after the octave processing
-        @param refine: can be None, True, "SG2" and "SG4" do_SG4: perform 3point hessian calcualation or Savitsky-Golay 2nd or 4th order fit. 
-        
+        @param refine: can be None, True, "SG2" and "SG4" do_SG4: perform 3point hessian calcualation or Savitsky-Golay 2nd or 4th order fit.
+
         """
         x = []
         y = []
@@ -318,17 +324,17 @@ class BlobDetection(object):
             l = kpx.size
             valid = numpy.ones(l, bool)
 
-        dtype = numpy.dtype([('x', numpy.float32), ('y', numpy.float32), ('sigma', numpy.float32), ('I', numpy.float32)])
-        keypoints = numpy.recarray((l,), dtype=dtype)
+        keypoints = numpy.recarray((l,), dtype=self.dtype)
 #        sigmas = numpy.array([s[0] for s in self.sigmas])
 
 
         if l != 0:
-            keypoints[:].x = kpx[valid] * self.curr_reduction
-            keypoints[:].y = kpy[valid] * self.curr_reduction
-            sigmas = self.init_sigma * (self.dest_sigma / self.init_sigma) ** (kps[valid] / (self.scale_per_octave))
+            keypoints[:].x = (kpx[valid]+0.5) * self.curr_reduction
+            keypoints[:].y = (kpy[valid]+0.5) * self.curr_reduction
+            sigmas = self.init_sigma * (self.dest_sigma / self.init_sigma) ** ((kps[valid]+0.5) / (self.scale_per_octave))
             keypoints[:].sigma = (self.curr_reduction * sigmas)
             keypoints[:].I = peak_val[valid]
+
 
         if shrink:
             #shrink data so that they can be treated by next octave
@@ -347,7 +353,7 @@ class BlobDetection(object):
                     self.cur_mask = new_msk
 #            print last.shape, tx, ty
             self.data = binning(last, 2) / 4.0
-            self.curr_reduction *= 2
+            self.curr_reduction *= 2.0
             self.octave += 1
             self.blurs = []
             if self.do_mask:
@@ -360,20 +366,20 @@ class BlobDetection(object):
         else:
             old_size = self.keypoints.size
             new_size = old_size + l
-            new_keypoints = numpy.recarray(new_size, dtype=self.keypoints.dtype)
+            new_keypoints = numpy.recarray(new_size, dtype=self.dtype)
             new_keypoints[:old_size] = self.keypoints
             new_keypoints[old_size:] = keypoints
             self.keypoints = new_keypoints
 
     def refine_Hessian(self, kpx, kpy, kps):
         """
-        
+
         Refine the keypoint location based on a 3 point derivative
-        
+
         @param kpx: x_pos of keypoint
         @param kpy: y_pos of keypoint
         @param kps: s_pos of keypoint
-        @return  
+        @return
         """
         curr = self.dogs[(kps, kpy, kpx)]
         nx = self.dogs[(kps, kpy, kpx + 1)]
@@ -498,8 +504,7 @@ class BlobDetection(object):
 
         return numpy.asarray(k2x), numpy.asarray(k2y), numpy.asarray(sigmas), numpy.asarray(kds)
 
-
-    def Direction(self):
+    def direction(self):
         import pylab
         i = 0
         kpx = self.keypoints.x
@@ -551,6 +556,44 @@ class BlobDetection(object):
 #                 else:
                 pylab.annotate("", xy=(x + vect[1][0] * val[1], y + vect[1][1] * val[1]), xytext=(x, y),
                     arrowprops=dict(facecolor='red', shrink=0.05),)
+
+        def process(max_octave=None):
+            """
+            Perform the keypoint extraction for max_octave cycles or until all octaves have been processed.
+            """
+            octave = 0
+            finished = False
+            while not finished:
+                self._one_octave(shrink=True, refine=True, n_5=True)
+                octave += 1
+                if max_octave and octave > max_octave:
+                    finished = True
+                else:
+                    finished = (1 - self.cur_mask).sum() == 0
+
+        def nearest_peak(p, refine=True, Imin=None):
+            """
+            Return the nearest peak from a position
+
+            @param p: input position (y,x) 2-tuple of float
+            @param refine: shall the position be refined on the raw data
+            @param Imin: minimum of intenity above the background
+            """
+            if Imin:
+                valid = self.keypoints.I >= Imin
+                kp = self.keypoints[self.keypoints.I >= Imin]
+            else:
+                kp = self.keypoints
+            r2 = kp.x*kp.x+kp.y*kp.y
+            best_pos = r2.argmin()
+            best = [kp[best_pos].y, kp[best_pos].x]
+            if refine:
+                if self.bilinear is None:
+                    self.bilinear = Bilinear(self.raw)
+                best = [i + 0.5 for i in self.bilinear.local_maxi(best)]
+            return best
+
+
 
 if __name__ == "__main__":
 

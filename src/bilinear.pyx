@@ -102,14 +102,14 @@ cdef class Bilinear:
     def local_maxi(self, x, int w=1):
         """
         Return the local maximum ... with sub-pixel refinement
-        
+
         @param x: 2-tuple of int
         @param w: half with of the window: 1 or 2 are adviced
         @return: 2-tuple of int with the nearest local maximum
 
         Sub-pixel refinement:
         Second order taylor expansion of the function; first derivative is nul
-        delta = x-i = -Inverse[Hessian].gradient 
+        delta = x-i = -Inverse[Hessian].gradient
         """
         cdef int current0 = x[0]
         cdef int current1 = x[1]
@@ -172,11 +172,10 @@ cdef class Bilinear:
             else:
                 delta0 = ((a12 - a10)*d01 + (a01 - a21)*d11)/denom
                 delta1 = ((a10 - a12)*d00 + (a21 - a01)*d01)/denom
-    #            print(delta0,delta1)
-                if abs(delta0)<=1.0 and abs(delta1)<=1.0: #Result is OK is nower than 0.5.
-                    return (float(current0) + delta0, float(current1) + delta1)
+                if abs(delta0)<=1.0 and abs(delta1)<=1.0: #Result is OK if lower than 0.5.
+                    return (delta0 + float(current0), delta1 + float(current1))
                 else:
-                    logger.debug("Failed to find root using second order expansion") 
+                    logger.debug("Failed to find root using second order expansion")
         #refinement of the position by a simple center of mass of the last valid region used
         for i0 in range(start0, stop0+1):
             for i1 in range(start1, stop1+1):
