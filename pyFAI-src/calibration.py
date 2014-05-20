@@ -58,13 +58,25 @@ matplotlib.interactive(True)
 class AbstractCalibration(object):
 
     """
-    Everything that is commun to Calibration and Recalibration
+    Everything that is common to Calibration and Recalibration
     """
 
     win_error = "We are under windows, matplotlib is not able to"\
                          " display too many images without crashing, this"\
                          " is why the window showing the diffraction image"\
                          " is closed"
+    HELP = {"help": "Available commands are set, fix, free, recalib, refine, ..."
+            "The valid parameter are dist, poni1, poni2, "
+                            "rot1, rot2, rot3 and wavelength.",
+            "parameters":"The valid parameter are dist, poni1, poni2, "
+                            "rot1, rot2, rot3 and wavelength.",
+            "set": "set the value of a parameter to the given value, i.e 'set wavelength 1e-10'",
+            'fix': "fixes the value of a parameter so that its value will not be optimized, i.e. 'fix wavelength'",
+            'free': "frees the parameter so that the value can be optimized, i.e. 'free wavelength'",
+            'refine': "performs a new cycle of refinement",
+            'recalib': "extract a new set of rings and re-perform the calibration. One can specify how many rings to extract",
+            'done': "finishes the processing, performs an integration and quits"
+            }
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None,
                  splineFile=None, detector=None, wavelength=None, calibrant=None):
         """
@@ -548,40 +560,21 @@ class AbstractCalibration(object):
                 sub_data = self.peakPicker.data.ravel()[numpy.where(mask.ravel())]
                 mean = sub_data.mean(dtype=numpy.float64)
                 std = sub_data.std(dtype=numpy.float64)
-                mask2 = (self.peakPicker.data > (mean + std)) & mask
-                all_points = numpy.vstack(numpy.where(mask2)).T
-                size2 = all_points.shape[0]
+                upper_limit = mean + std
+                mask2 = numpy.logical_and(self.peakPicker.data > upper_limit, mask)
+                size2 = mask2.sum()
                 if size2 < 1000:
-                    mask2 = (self.peakPicker.data > mean) & mask
-                    all_points = numpy.vstack(numpy.where(mask2)).T
-                    size2 = all_points.shape[0]
                     upper_limit = mean
-                else:
-                    upper_limit = mean + std
+                    mask2 = numpy.logical_and(self.peakPicker.data > upper_limit, mask)
+                    size2 = mask2.sum()
                 keep = int(numpy.ceil(numpy.sqrt(size2)))
-                res = []
-                cnt = 0
+
+
                 logger.info("Extracting datapoint for ring %s (2theta = %.2f deg); "\
                             "searching for %i pts out of %i with I>%.1f" %
                             (i, numpy.degrees(tth[i]), keep, size2, upper_limit))
-                numpy.random.shuffle(all_points)
-                for idx in all_points:
-                    out = self.peakPicker.massif.nearest_peak(idx)
-                    if out is not None:
-                        print("[ %3i, %3i ] -> [ %.1f, %.1f ]" %
-                              (idx[1], idx[0], out[1], out[0]))
-                        p0, p1 = out
-                        if mask[p0, p1]:
-                            if (out not in res) and\
-                                (self.peakPicker.data[p0, p1] > upper_limit):
-                                res.append(out)
-                                cnt = 0
-                    if len(res) >= keep or cnt > keep:
-                        print len(res), cnt
-                        break
-                    else:
-                        cnt += 1
-
+                
+                res = self.peakPicker.peaks_from_area(mask2, Imin=upper_limit, keep=keep, method="massif")
                 self.peakPicker.points.append(res, tth[i], i)
                 if self.gui:
                     # minIndex: skip redrawing of previous rings
@@ -610,6 +603,7 @@ class AbstractCalibration(object):
         while not finished:
             count = 0
             if "wavelength" in self.fixed:
+#                print self.geoRef.calibrant
                 while (previous > self.geoRef.chi2()) and (count < self.max_iter):
                     previous = self.geoRef.chi2()
                     self.geoRef.refine2(1000000, fix=self.fixed)
@@ -660,7 +654,6 @@ class AbstractCalibration(object):
                       "rot1, rot2, rot3 and wavelength")
                 print("'recalib n' will extract a set of n rings and re-perform the calibration.")
             elif change.startswith("recalib"):
-                print("#EXPERIMENTAL")
                 max_rings = None
                 lststr = change.split()
                 if len(lststr) == 2:
@@ -923,6 +916,7 @@ decrease the value if arcs are mixed together.""", default=None)
         self.geoRef = GeometryRefinement(self.data, dist=0.1, detector=self.detector,
                                          wavelength=self.wavelength,
                                          calibrant=self.calibrant)
+#        print self.calibrant
         paramfile = self.basename + ".poni"
         if os.path.isfile(paramfile):
             self.geoRef.load(paramfile)

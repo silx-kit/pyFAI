@@ -329,8 +329,8 @@ class BlobDetection(object):
 
 
         if l != 0:
-            keypoints[:].x = (kpx[valid]+0.5) * self.curr_reduction
-            keypoints[:].y = (kpy[valid]+0.5) * self.curr_reduction
+            keypoints[:].x = (kpx[valid] + 0.5) * self.curr_reduction - 0.5 # Place ourselves at the center of the pixel, and back
+            keypoints[:].y = (kpy[valid] + 0.5) * self.curr_reduction - 0.5 # Place ourselves at the center of the pixel, and back
             sigmas = self.init_sigma * (self.dest_sigma / self.init_sigma) ** ((kps[valid]+0.5) / (self.scale_per_octave))
             keypoints[:].sigma = (self.curr_reduction * sigmas)
             keypoints[:].I = peak_val[valid]
@@ -338,7 +338,7 @@ class BlobDetection(object):
 
         if shrink:
             #shrink data so that they can be treated by next octave
-            print("In shrink")
+            logger.debug("In shrink")
             last = self.blurs[self.scale_per_octave]
             ty, tx = last.shape
             if ty % 2 != 0 or tx % 2 != 0:
@@ -557,7 +557,7 @@ class BlobDetection(object):
                 pylab.annotate("", xy=(x + vect[1][0] * val[1], y + vect[1][1] * val[1]), xytext=(x, y),
                     arrowprops=dict(facecolor='red', shrink=0.05),)
 
-        def process(max_octave=None):
+        def process(self, max_octave=None):
             """
             Perform the keypoint extraction for max_octave cycles or until all octaves have been processed.
             """
@@ -571,7 +571,7 @@ class BlobDetection(object):
                 else:
                     finished = (1 - self.cur_mask).sum() == 0
 
-        def nearest_peak(p, refine=True, Imin=None):
+        def nearest_peak(self, p, refine=True, Imin=None):
             """
             Return the nearest peak from a position
 
@@ -580,20 +580,46 @@ class BlobDetection(object):
             @param Imin: minimum of intenity above the background
             """
             if Imin:
-                valid = self.keypoints.I >= Imin
-                kp = self.keypoints[self.keypoints.I >= Imin]
+                valid = (self.keypoints.I >= Imin)
+                kp = self.keypoints[valid]
             else:
                 kp = self.keypoints
-            r2 = kp.x*kp.x+kp.y*kp.y
+            dy = kp.y - p[0]
+            dx = kp.x - p[1]
+            r2 = dx*dx + dy*dy
             best_pos = r2.argmin()
             best = [kp[best_pos].y, kp[best_pos].x]
             if refine:
                 if self.bilinear is None:
                     self.bilinear = Bilinear(self.raw)
-                best = [i + 0.5 for i in self.bilinear.local_maxi(best)]
+                best = self.bilinear.local_maxi(best)
             return best
 
+        def peaks_from_area(self, mask, refine=True, Imin=None, **kwargs):
+            """
+            Return the list of peaks within an area
 
+            @param mask: 2d array with mask. 
+            @param refine: shall the position be refined on the raw data
+            @param Imin: minimum of intensity above the background
+            @param kwarg: ignored parameters
+            @return: list of peacks [y,x], [y,x], ...]
+            """
+            if Imin:
+                valid = (self.keypoints.I >= Imin)
+                kp = self.keypoints[valid]
+            else:
+                kp = self.keypoints
+            y = numpy.round(kp.y).astype(int)
+            x = numpy.round(kp.x).astype(int)
+            is_inside = (mask[y,x]).astype(bool)
+            good_kp = kp[is_inside]
+            if refine:
+                if self.bilinear is None:
+                    self.bilinear = Bilinear(self.raw)
+                return [self.bilinear.local_maxi((i.y, i.y)) for i in kp[is_inside]]
+            else:
+                return [(i.y,i.y) for i in kp[is_inside]]
 
 if __name__ == "__main__":
 

@@ -54,7 +54,7 @@ TARGET_SIZE = 1024
 # PeakPicker
 ################################################################################
 class PeakPicker(object):
-    VALID_METHODS = ["massif","blob"]
+    VALID_METHODS = ["massif", "blob"]
     def __init__(self, strFilename, reconst=False, mask=None,
                  pointfile=None, calibrant=None, wavelength=None, method="massif"):
         """
@@ -87,18 +87,18 @@ class PeakPicker(object):
         self.mpl_connectId = None
         self.defaultNbPoints = 100
         if method in self.VALID_METHODS:
-            self.method =  method
+            self.method = method
         else:
-            logger.error("Not a valid peak-picker method: %s should be part of %s"%(method, self.VALID_METHODS))
+            logger.error("Not a valid peak-picker method: %s should be part of %s" % (method, self.VALID_METHODS))
             self.method = self.VALID_METHODS[0]
-        
+
         if self.method == "massif":
-            self.init_massif()
+            self.init_massif(False)
         elif self.method == "blob":
-            self.init_blob()
+            self.init_blob(False)
 
 
-    def init_massif(self):
+    def init_massif(self, sync=True):
         """
         Initialize PeakPicker for massif based detection
         """
@@ -110,9 +110,14 @@ class PeakPicker(object):
             self.massif = Massif(reconstruct(self.data, mask))
         else:
             self.massif = Massif(self.data)
+        t = threading.Thread(target=self.massif.getLabeledMassif, name="massif_process")
+        t.start()
         self.method = "massif"
+        if sync:
+            t.join()
 
-    def init_blob(self,sync=True):
+
+    def init_blob(self, sync=True):
         """
         Initialize PeakPicker for blob based detection
         """
@@ -121,10 +126,28 @@ class PeakPicker(object):
         else:
             self.blob = BlobDetection(self.data)
         self.method = "blob"
-        t = threading.Thread(target=self.blob.process, name="blob_process").start()
+        t = threading.Thread(target=self.blob.process, name="blob_process")
+        t.start()
         if sync:
             t.join()
-                             
+
+    def peaks_from_area(self, mask, Imin, keep=1000, refine=True, method=None):
+        """
+        Return the list of peaks within an area
+
+        @param mask: 2d array with mask. 
+        @param Imin: minimum of intensity above the background to keep the point
+        @param keep: maximum number of points to keep
+        @param method: enforce the use of detection using "massif" or "blob" 
+        @return: list of peaks [y,x], [y,x], ...]
+        """
+        if not method:
+            method = self.method
+        assert method in ["blob", "massif"]
+        if method != self.method:
+            self.__getattribute__("init_" + method)()
+        obj = self.__getattribute__(method)
+        return obj.peaks_from_area(mask, Imin, keep=keep, refine=refine)
 
     def reset(self):
         """
@@ -896,6 +919,36 @@ class Massif(object):
                 break
         return listpeaks
 
+    def peaks_from_area(self, mask, Imin=None, keep=1000, **kwarg):
+        """
+        Return the list of peaks within an area
+
+        @param mask: 2d array with mask. 
+        @param Imin: minimum of intensity above the background to keep the point
+        @param keep: maximum number of points to keep
+        @param kwarg: ignored parameters
+        @return: list of peacks [y,x], [y,x], ...]
+        """
+        all_points = numpy.vstack(numpy.where(mask)).T
+        res = []
+        cnt = 0
+        numpy.random.shuffle(all_points)
+        for idx in all_points:
+            out = self.nearest_peak(idx)
+            if out is not None:
+                print("[ %3i, %3i ] -> [ %.1f, %.1f ]" %
+                      (idx[1], idx[0], out[1], out[0]))
+                p0, p1 = int(out[0]), int(out[1])
+                if mask[p0, p1]:
+                    if (out not in res) and\
+                        (self.data[p0, p1] > Imin):
+                        res.append(out)
+                        cnt = 0
+            if len(res) >= keep or cnt > keep:
+                break
+            else:
+                cnt += 1
+        return res
 
     def initValleySize(self):
         if self._valley_size is None:
@@ -981,8 +1034,9 @@ class Massif(object):
                     logger.info("Labeling found %s massifs." % self._number_massif)
         return self._labeled_massif
 
+
 class Event(object):
-    "Dummy class for dumm things"
+    "Dummy class for dummy things"
     def __init__(self, width, height):
         self.width = width
         self.height = height
