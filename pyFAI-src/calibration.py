@@ -528,14 +528,17 @@ class AbstractCalibration(object):
         Performs an automatic keypoint extraction:
         Can be used in recalib or in calib after a first calibration has been performed
         """
+        print("in extract_cpt")
+        method = "massif"
         assert self.ai
         assert self.calibrant
         assert self.peakPicker
         self.peakPicker.reset()
+        self.peakPicker.init(method, False)
         if self.geoRef:
             self.ai.setPyFAI(**self.geoRef.getPyFAI())
         tth = numpy.array([ i for i in self.calibrant.get_2th() if i is not None])
-        tth.sort()
+        tth = numpy.unique(tth)
         dtth = numpy.zeros((tth.size, 2))
         delta = tth[1:] - tth[:-1]
         dtth[:-1, 0] = delta
@@ -548,11 +551,13 @@ class AbstractCalibration(object):
         if self.max_rings is None:
             self.max_rings = tth.size
         for i in range(tth.size):
+            if rings >= self.max_rings:
+                break
             mask = abs(ttha - tth[i]) <= (dtth[i] / 4.0)
             if self.mask is not None:
-                mask = mask & (1 - self.mask)
+                mask = numpy.logical_and(mask, numpy.logical_not(self.mask))
             size = mask.sum(dtype=int)
-            if (size > 0) and (rings < self.max_rings):
+            if (size > 0):
                 rings += 1
                 self.peakPicker.massif_contour(mask)
                 if self.gui:
@@ -562,19 +567,19 @@ class AbstractCalibration(object):
                 std = sub_data.std(dtype=numpy.float64)
                 upper_limit = mean + std
                 mask2 = numpy.logical_and(self.peakPicker.data > upper_limit, mask)
-                size2 = mask2.sum()
+                size2 = mask2.sum(dtype=int)
                 if size2 < 1000:
                     upper_limit = mean
                     mask2 = numpy.logical_and(self.peakPicker.data > upper_limit, mask)
                     size2 = mask2.sum()
                 keep = int(numpy.ceil(numpy.sqrt(size2)))
 
-
                 logger.info("Extracting datapoint for ring %s (2theta = %.2f deg); "\
                             "searching for %i pts out of %i with I>%.1f" %
                             (i, numpy.degrees(tth[i]), keep, size2, upper_limit))
-                
-                res = self.peakPicker.peaks_from_area(mask2, Imin=upper_limit, keep=keep, method="massif")
+
+                res = self.peakPicker.peaks_from_area(mask2, Imin=upper_limit, keep=keep, method=method)
+                print i, tth[i], res
                 self.peakPicker.points.append(res, tth[i], i)
                 if self.gui:
                     # minIndex: skip redrawing of previous rings

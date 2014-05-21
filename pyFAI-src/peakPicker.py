@@ -86,6 +86,7 @@ class PeakPicker(object):
 #        self._semGui = threading.Semaphore()
         self.mpl_connectId = None
         self.defaultNbPoints = 100
+        self._init_thread = None
         if method in self.VALID_METHODS:
             self.method = method
         else:
@@ -96,6 +97,19 @@ class PeakPicker(object):
             self.init_massif(False)
         elif self.method == "blob":
             self.init_blob(False)
+
+    def init(self, method, sync=True):
+        """
+        Unified initializer
+        """
+        assert method in ["blob", "massif"]
+        if method != self.method:
+            self.__getattribute__("init_" + method)(sync)
+
+    def sync_init(self):
+        if self._init_thread:
+            self._init_thread.join()
+
 
 
     def init_massif(self, sync=True):
@@ -110,11 +124,11 @@ class PeakPicker(object):
             self.massif = Massif(reconstruct(self.data, mask))
         else:
             self.massif = Massif(self.data)
-        t = threading.Thread(target=self.massif.getLabeledMassif, name="massif_process")
-        t.start()
+        self._init_thread = threading.Thread(target=self.massif.getLabeledMassif, name="massif_process")
+        self._init_thread.start()
         self.method = "massif"
         if sync:
-            t.join()
+            self._init_thread.join()
 
 
     def init_blob(self, sync=True):
@@ -126,10 +140,10 @@ class PeakPicker(object):
         else:
             self.blob = BlobDetection(self.data)
         self.method = "blob"
-        t = threading.Thread(target=self.blob.process, name="blob_process")
-        t.start()
+        self._init_thread = threading.Thread(target=self.blob.process, name="blob_process")
+        self._init_thread.start()
         if sync:
-            t.join()
+            self._init_thread.join()
 
     def peaks_from_area(self, mask, Imin, keep=1000, refine=True, method=None):
         """
@@ -143,9 +157,7 @@ class PeakPicker(object):
         """
         if not method:
             method = self.method
-        assert method in ["blob", "massif"]
-        if method != self.method:
-            self.__getattribute__("init_" + method)()
+        self.init(method)
         obj = self.__getattribute__(method)
         return obj.peaks_from_area(mask, Imin, keep=keep, refine=refine)
 

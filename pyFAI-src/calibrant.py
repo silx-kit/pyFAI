@@ -81,8 +81,9 @@ class Calibrant(object):
                 logger.error("No such calibrant file: %s" % self._filename)
                 return
             self._filename = os.path.abspath(self._filename)
-            self._dSpacing = list(numpy.loadtxt(self._filename))
-            self._dSpacing.sort(reverse=True)
+            self._dSpacing = numpy.unique(numpy.loadtxt(self._filename))
+            self._dSpacing = list(self._dSpacing[-1::-1]) #reverse order
+#            self._dSpacing.sort(reverse=True)
             if self._wavelength:
                 self._calc_2th()
 
@@ -185,7 +186,10 @@ class Calibrant(object):
 
     def get_2th(self):
         if not self._2th:
-            self._calc_2th()
+            ds = self.dSpacing #forces the file reading if not done
+            with self._sem:
+                if not self._2th:
+                    self._calc_2th()
         return self._2th
 
     def get_2th_index(self, angle):
