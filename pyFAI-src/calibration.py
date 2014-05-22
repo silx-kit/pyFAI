@@ -621,13 +621,19 @@ class AbstractCalibration(object):
             if "wavelength" in self.fixed:
 #                print self.geoRef.calibrant
                 while (previous > self.geoRef.chi2()) and (count < self.max_iter):
-                    previous = self.geoRef.chi2()
+                    if (count == 0):
+                        previous = sys.maxint
+                    else:
+                        previous = self.geoRef.chi2()
                     self.geoRef.refine2(1000000, fix=self.fixed)
                     print(self.geoRef)
                     count += 1
             else:
-                while (previous > self.geoRef.chi2_wavelength()) and (count < self.max_iter):
-                    previous = self.geoRef.chi2_wavelength()
+                while previous > self.geoRef.chi2_wavelength() and (count < self.max_iter):
+                    if (count == 0):
+                        previous = sys.maxint
+                    else:
+                        previous = self.geoRef.chi2()
                     self.geoRef.refine2_wavelength(1000000, fix=self.fixed)
                     print(self.geoRef)
                     count += 1
@@ -638,8 +644,8 @@ class AbstractCalibration(object):
             self.geoRef.del_chia()
             tth = self.geoRef.twoThetaArray(self.peakPicker.shape)
             dsa = self.geoRef.solidAngleArray(self.peakPicker.shape)
-            self.geoRef.chiArray(self.peakPicker.shape)
-            self.geoRef.cornerArray(self.peakPicker.shape)
+#            self.geoRef.chiArray(self.peakPicker.shape)
+#            self.geoRef.cornerArray(self.peakPicker.shape)
             if os.name == "nt":
                 logger.info(self.win_error)
             else:
@@ -677,6 +683,9 @@ class AbstractCalibration(object):
             ans = raw_input("Modify parameters (or ? for help)?\t ").strip().lower()
             if "?" in ans:
                 help=True
+            if not ans:
+                print("'done' to continue")
+                continue
             words = ans.split()
             action = words[0]
             if action in [ "help", "?"]:
@@ -701,12 +710,13 @@ class AbstractCalibration(object):
 
             elif action=="set": #set wavelength 1e-10
                 if (len(words)==3) and  words[1] in self.PARAMETERS:
+                    param = words[1]
                     try:
                         value = float(words[2])
                     except:
                         logger.warning("invalid value")
                     else:
-                        setattr(self.geoRef, parameter, val)
+                        setattr(self.geoRef, param, value)
                 else:
                     print(self.HELP[action])
             elif action=="fix": #fix wavelength
@@ -738,6 +748,7 @@ class AbstractCalibration(object):
                     self.extract_cpt("massif")
                 else:
                     self.extract_cpt("blob")
+                self.geoRef.data = numpy.array(self.data, dtype=numpy.float64)
                 return False
             elif action=="bound": #bound dist
                 if len(words) >= 2 and  words[1] in self.PARAMETERS:
@@ -760,7 +771,7 @@ class AbstractCalibration(object):
                         except:
                             logger.warning("invalid value")
                         else:
-                            self.geoRef.__getattribute__("set_"+param)(value)
+                            self.geoRef.__getattribute__("set_%s" % param)(value)
                     elif len(words) == 4:
                         try:
                             value_min = float(words[2])
@@ -768,8 +779,8 @@ class AbstractCalibration(object):
                         except:
                             logger.warning("invalid value")
                         else:
-                            self.geoRef.__getattribute__("set_%s_min"+param)(value_min)
-                            self.geoRef.__getattribute__("set_%s_max"+param)(value_max)
+                            self.geoRef.__getattribute__("set_%s_min" % param)(value_min)
+                            self.geoRef.__getattribute__("set_%s_max" % param)(value_max)
                     elif len(words) == 5:
                         try:
                             value_min = float(words[2])
@@ -778,9 +789,9 @@ class AbstractCalibration(object):
                         except:
                             logger.warning("invalid value")
                         else:
-                            self.geoRef.__getattribute__("set_%s_min"+param)(value_min)
-                            self.geoRef.__getattribute__("set_" + param)(value)
-                            self.geoRef.__getattribute__("set_%s_max"+param)(value_max)
+                            self.geoRef.__getattribute__("set_%s_min" % param)(value_min)
+                            self.geoRef.__getattribute__("set_%s" % param)(value)
+                            self.geoRef.__getattribute__("set_%s_max" % param)(value_max)
                     else:
                         print(self.HELP[action])
                 else:

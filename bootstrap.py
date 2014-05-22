@@ -84,7 +84,7 @@ if __name__ == "__main__":
         print("Available scripts : %s\n" %
               _get_available_scripts(SCRIPTSPATH))
         sys.exit(1)
-
+    os.system("cd %s;python setup.py build; cd -" % home)
     print("Executing %s from source checkout" % (sys.argv[1]))
 
     sys.path.insert(0, LIBPATH)

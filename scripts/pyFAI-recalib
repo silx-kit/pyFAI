@@ -57,7 +57,7 @@ if __name__ == "__main__":
     c = Recalibration()
     c.parse()
     c.preprocess()
-    c.extract_cpt()
+    c.extract_cpt("blob")
     c.refine()
     c.postProcess()
     if c.interactive:
