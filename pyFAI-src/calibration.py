@@ -48,7 +48,7 @@ from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
 from .peakPicker import PeakPicker
 from . import units
-from .utils import averageImages, measure_offset, expand_args
+from .utils import averageImages, measure_offset, expand_args, readFloatFromKeyboard
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import hc
 from . import version as PyFAI_VERSION
@@ -65,18 +65,23 @@ class AbstractCalibration(object):
                          " display too many images without crashing, this"\
                          " is why the window showing the diffraction image"\
                          " is closed"
-    HELP = {"help": "Available commands are set, fix, free, recalib, refine, ..."
-            "The valid parameter are dist, poni1, poni2, "
-                            "rot1, rot2, rot3 and wavelength.",
-            "parameters":"The valid parameter are dist, poni1, poni2, "
-                            "rot1, rot2, rot3 and wavelength.",
+    HELP = {"help": "Try to get the help of a given action. Use done when finished. "
+            "Most command are composed of 'action parameter value' like 'set wavelength 1e-10'.",
+            "get": "print he value of a parameter",
             "set": "set the value of a parameter to the given value, i.e 'set wavelength 1e-10'",
             'fix': "fixes the value of a parameter so that its value will not be optimized, i.e. 'fix wavelength'",
             'free': "frees the parameter so that the value can be optimized, i.e. 'free wavelength'",
+            'bound': "sets the upper and lower bound of a parameter: 'bound dist 0.1 0.2'",
+            'bounds': "sets the upper and lower bound of all parameters",
             'refine': "performs a new cycle of refinement",
             'recalib': "extract a new set of rings and re-perform the calibration. One can specify how many rings to extract",
             'done': "finishes the processing, performs an integration and quits"
+
             }
+    PARAMETERS = ["dist","poni1","poni2","rot1","rot2","rot3","wavelength"]
+    UNITS = {"dist":"meter", "poni1":"meter", "poni2":"meter", "rot1":"radian",
+             "rot2":"radian", "rot3":"radian", "wavelength":"meter"}
+    
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None,
                  splineFile=None, detector=None, wavelength=None, calibrant=None):
         """
@@ -523,13 +528,12 @@ class AbstractCalibration(object):
             self.peakPicker.gui(log=True, maximize=True)
             self.peakPicker.fig.canvas.draw()
 
-    def extract_cpt(self):
+    def extract_cpt(self, method="massif"):
         """
         Performs an automatic keypoint extraction:
         Can be used in recalib or in calib after a first calibration has been performed
         """
-        print("in extract_cpt")
-        method = "massif"
+        print("in extract_cpt with method %s" % method)
         assert self.ai
         assert self.calibrant
         assert self.peakPicker
@@ -548,6 +552,7 @@ class AbstractCalibration(object):
         dtth = dtth.min(axis= -1)
         ttha = self.ai.twoThetaArray(self.peakPicker.data.shape)
         rings = 0
+        self.peakPicker.sync_init()
         if self.max_rings is None:
             self.max_rings = tth.size
         for i in range(tth.size):
@@ -579,7 +584,6 @@ class AbstractCalibration(object):
                             (i, numpy.degrees(tth[i]), keep, size2, upper_limit))
 
                 res = self.peakPicker.peaks_from_area(mask2, Imin=upper_limit, keep=keep, method=method)
-                print i, tth[i], res
                 self.peakPicker.points.append(res, tth[i], i)
                 if self.gui:
                     # minIndex: skip redrawing of previous rings
@@ -646,80 +650,171 @@ class AbstractCalibration(object):
                             im.autoscale()
 
                         fig2.show()
-            if not self.interactive:
-                break
-            print("Fixed: " + ", ".join(self.fixed))
-            change = raw_input("Modify parameters ?\t ").strip().lower()
-            if (change == '') or (change[0] == "n"):
+            if self.interactive:
+                finished = self.prompt()
+            else:
                 finished = True
-            elif change.startswith("help"):
-                print("Type simple sentences like 'set wavelength 1e-10'")
-                print("The valid actions are: fix, set and free")
-                print("The valid variables are dist, poni1, poni2, "
-                      "rot1, rot2, rot3 and wavelength")
-                print("'recalib n' will extract a set of n rings and re-perform the calibration.")
-            elif change.startswith("recalib"):
-                max_rings = None
-                lststr = change.split()
-                if len(lststr) == 2:
+            if not finished:
+                previous = sys.maxint
+                
+    def prompt(self):
+        """
+        prompt for commands to guide the calibration process
+        
+        @return: True when the user is happy with what he has, False to request another refinement 
+        """ 
+        
+        while True:
+            print("Fixed: " + ", ".join(self.fixed))
+            ans = raw_input("Modify parameters (or ? for help)?\t ").strip().lower()
+            if "?" in ans:
+                help=True
+            else:
+                help = False
+            words = ans.split()
+            action = words[0]
+            if action == "help":
+                help == True
+            if help:
+                for what in self.HELP:
+                    if action.startswith(what):
+                        print("Help on %s" % what)
+                        print(self.HELP[what])
+                        break
+                else:
+                    print("Help on commands")
+                    print(self.HELP["help"])
+                    print("Valid actions: " + ", ".join(self.HELP.keys()))
+                    print("Valid parameters: " + ", ".join(self.PARAMETERS))
+            elif action == "get": #get wavelength
+                if (len(words) == 2) and  words[1] in self.PARAMETERS:
+                    param = words[1]
+                    print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
+                else:
+                    print(self.HELP[action])
+
+            elif action=="set": #set wavelength 1e-10
+                if (len(words)==3) and  words[1] in self.PARAMETERS:
                     try:
-                       max_rings = int(lststr[1])
+                        value = float(words[2])
+                    except:
+                        logger.warning("invalid value")
+                    else:
+                        setattr(self.geoRef, parameter, val)
+                else:
+                    print(self.HELP[action])
+            elif action=="fix": #fix wavelength
+                if (len(words) == 2) and  (words[1] in self.PARAMETERS) and (words[1] not in self.fixed):
+                    param = words[1]
+                    print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
+                    self.fixed.append(param)
+                else:
+                    print(self.HELP[action])
+            elif action=="free": #free wavelength
+                if (len(words) == 2) and  (words[1] in self.PARAMETERS) and (words[1] in self.fixed):
+                    param = words[1]
+                    print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
+                    self.fixed.remove(param)
+            elif action == "recalib":
+                max_rings = None
+                method = "blob"
+                if len(words) > 2:
+                    try:
+                       max_rings = int(words[1])
                     except Exception:
-                         max_rings = None
+                        logger.warning("specify the number of rings to extract")
+                        max_rings = None
                     else:
                         self.max_rings = max_rings
                 else:
                     self.max_rings = None
-                self.extract_cpt()
-            elif change.startswith("free"):
-                what = change.split()[-1]
-                if what in self.fixed:
-                    self.fixed.remove(what)
-            elif change.startswith("fix"):
-                what = change.split()[-1]
-                if what not in self.fixed:
-                    self.fixed.append(what)
-            elif change.startswith("set"):
-                words = change.split()
-                if len(words) == 3:
-                    what = words[1]
-                    val = words[2]
-                    if what in dir(self.geoRef):
-                        setattr(self.geoRef, what, val)
+                if len(words) == 3 and words[2] == "massif":
+                    self.extract_cpt("massif")
                 else:
-                    print("example: set wavelength 1e-10")
-            else:
-                self.peakPicker.readFloatFromKeyboard("Enter Distance in meter "
+                    self.extract_cpt("blob")
+                return False
+            elif action=="bound": #bound dist
+                if len(words) >= 2 and  words[1] in self.PARAMETERS:
+                    param = words[1]
+                    if len(words) == 2:
+                        readFloatFromKeyboard("Enter %s in %s "
+                             "(or %s_min[%.3f] %s[%.3f] %s_max[%.3f]):\t " %
+                             (param, self.UNITS[param], 
+                              self.geoRef.__getattribute__(param+"_min"), 
+                              self.geoRef.__getattribute__(param),
+                              self.geoRef.__getattribute__(param+"_max")),
+                             {1:[self.geoRef.__getattribute__("set_"+param)],
+                              2:[self.geoRef.__getattribute__("set_%s_min"%param),
+                                 self.geoRef.__getattribute__("set_%s_max"%param)],
+                              3:[self.geoRef.__getattribute__("set_%s_min"%param),
+                                 self.geoRef.__getattribute__("set_"+param),
+                                 self.geoRef.__getattribute__("set_%s_max"%param)]})
+                    elif len(words) == 3:
+                        try:
+                            value = float(words[2])
+                        except:
+                            logger.warning("invalid value")
+                        else:
+                            self.geoRef.__getattribute__("set_"+param)(value)
+                    elif len(words) == 4:
+                        try:
+                            value_min = float(words[2])
+                            value_max = float(words[3])
+                        except:
+                            logger.warning("invalid value")
+                        else:
+                            self.geoRef.__getattribute__("set_%s_min"+param)(value_min)
+                            self.geoRef.__getattribute__("set_%s_max"+param)(value_max)
+                    elif len(words) == 5:
+                        try:
+                            value_min = float(words[2])
+                            value = float(words[3])
+                            value_max = float(words[4])
+                        except:
+                            logger.warning("invalid value")
+                        else:
+                            self.geoRef.__getattribute__("set_%s_min"+param)(value_min)
+                            self.geoRef.__getattribute__("set_" + param)(value)
+                            self.geoRef.__getattribute__("set_%s_max"+param)(value_max)
+                    else:
+                        print(self.HELP[action])
+                else:
+                    print(self.HELP[action])
+            elif action == "bounds":
+                readFloatFromKeyboard("Enter Distance in meter "
                              "(or dist_min[%.3f] dist[%.3f] dist_max[%.3f]):\t " %
                              (self.geoRef.dist_min, self.geoRef.dist, self.geoRef.dist_max),
-                             {1:[self.geoRef.set_dist],
+                             {1:[self.geoRef.set_dist], 2:[ self.geoRef.set_dist_min, self.geoRef.set_dist_max],
                               3:[ self.geoRef.set_dist_min, self.geoRef.set_dist, self.geoRef.set_dist_max]})
-                self.peakPicker.readFloatFromKeyboard("Enter Poni1 in meter "
+                readFloatFromKeyboard("Enter Poni1 in meter "
                               "(or poni1_min[%.3f] poni1[%.3f] poni1_max[%.3f]):\t " %
                               (self.geoRef.poni1_min, self.geoRef.poni1, self.geoRef.poni1_max),
-                               {1:[self.geoRef.set_poni1],
+                               {1:[self.geoRef.set_poni1], 2:[ self.geoRef.set_poni1_min, self.geoRef.set_poni1_max],
                                 3:[ self.geoRef.set_poni1_min, self.geoRef.set_poni1, self.geoRef.set_poni1_max]})
-                self.peakPicker.readFloatFromKeyboard("Enter Poni2 in meter "
+                readFloatFromKeyboard("Enter Poni2 in meter "
                               "(or poni2_min[%.3f] poni2[%.3f] poni2_max[%.3f]):\t " %
                               (self.geoRef.poni2_min, self.geoRef.poni2, self.geoRef.poni2_max),
-                              {1:[self.geoRef.set_poni2],
+                              {1:[self.geoRef.set_poni2], 2:[ self.geoRef.set_poni2_min, self.geoRef.set_poni2_max],
                                3:[ self.geoRef.set_poni2_min, self.geoRef.set_poni2, self.geoRef.set_poni2_max]})
-                self.peakPicker.readFloatFromKeyboard("Enter Rot1 in rad "
+                readFloatFromKeyboard("Enter Rot1 in rad "
                               "(or rot1_min[%.3f] rot1[%.3f] rot1_max[%.3f]):\t " %
                               (self.geoRef.rot1_min, self.geoRef.rot1, self.geoRef.rot1_max),
-                              {1:[self.geoRef.set_rot1],
+                              {1:[self.geoRef.set_rot1], 2:[ self.geoRef.set_rot1_min, self.geoRef.set_rot1_max],
                                3:[ self.geoRef.set_rot1_min, self.geoRef.set_rot1, self.geoRef.set_rot1_max]})
-                self.peakPicker.readFloatFromKeyboard("Enter Rot2 in rad "
+                readFloatFromKeyboard("Enter Rot2 in rad "
                               "(or rot2_min[%.3f] rot2[%.3f] rot2_max[%.3f]):\t " %
                               (self.geoRef.rot2_min, self.geoRef.rot2, self.geoRef.rot2_max),
-                              {1:[self.geoRef.set_rot2],
+                              {1:[self.geoRef.set_rot2], 2:[ self.geoRef.set_rot2_min, self.geoRef.set_rot2_max],
                                3:[ self.geoRef.set_rot2_min, self.geoRef.set_rot2, self.geoRef.set_rot2_max]})
-                self.peakPicker.readFloatFromKeyboard("Enter Rot3 in rad "
+                readFloatFromKeyboard("Enter Rot3 in rad "
                               "(or rot3_min[%.3f] rot3[%.3f] rot3_max[%.3f]):\t " %
                               (self.geoRef.rot3_min, self.geoRef.rot3, self.geoRef.rot3_max),
-                              {1:[self.geoRef.set_rot3],
+                              {1:[self.geoRef.set_rot3], 2:[ self.geoRef.set_rot3_min, self.geoRef.set_rot3_max],
                                3:[ self.geoRef.set_rot3_min, self.geoRef.set_rot3, self.geoRef.set_rot3_max]})
-            previous = sys.maxint
+            elif action == "done":
+                return True
+            elif action == "refine":
+                return False
 
     def postProcess(self):
         """

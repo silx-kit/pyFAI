@@ -44,6 +44,7 @@ from .utils import gaussian_filter, binning, unBinning, deprecated, relabel, per
 from .bilinear import Bilinear
 from .reconstruct import reconstruct
 from .calibrant import Calibrant, ALL_CALIBRANTS
+from .blob_detection import BlobDetection
 logger = logging.getLogger("pyFAI.peakPicker")
 if os.name != "nt":
     WindowsError = RuntimeError
@@ -54,7 +55,9 @@ TARGET_SIZE = 1024
 # PeakPicker
 ################################################################################
 class PeakPicker(object):
+
     VALID_METHODS = ["massif", "blob"]
+
     def __init__(self, strFilename, reconst=False, mask=None,
                  pointfile=None, calibrant=None, wavelength=None, method="massif"):
         """
@@ -157,9 +160,12 @@ class PeakPicker(object):
         """
         if not method:
             method = self.method
-        self.init(method)
+        else:
+            self.init(method, True)
+
         obj = self.__getattribute__(method)
-        return obj.peaks_from_area(mask, Imin, keep=keep, refine=refine)
+
+        return obj.peaks_from_area(mask, Imin=Imin, keep=keep, refine=refine)
 
     def reset(self):
         """
@@ -340,28 +346,6 @@ class PeakPicker(object):
                 self.fig.show()
                 self.fig.canvas.draw()
                 sys.stdout.flush()
-
-    def readFloatFromKeyboard(self, text, dictVar):
-        """
-        Read float from the keyboard ....
-        @param text: string to be displayed
-        @param dictVar: dict of this type: {1: [set_dist_min],3: [set_dist_min, set_dist_guess, set_dist_max]}
-        """
-        fromkb = raw_input(text).strip()
-        try:
-            vals = [float(i) for i in fromkb.split()]
-        except:
-            logging.error("Error in parsing values")
-        else:
-            found = False
-            for i in dictVar:
-                if len(vals) == i:
-                    found = True
-                    for j in range(i):
-                        dictVar[i][j](vals[j])
-            if not found:
-                logging.error("You should provide the good number of floats")
-
 
     def finish(self, filename=None,):
         """

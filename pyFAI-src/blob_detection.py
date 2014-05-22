@@ -30,7 +30,8 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "13/05/2014"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
-import os, itertools
+import os, itertools, logging
+logger = logging.getLogger("pyFAI.blob_detection")
 import numpy
 try:
     from ._convolution import gaussian_filter
@@ -181,33 +182,11 @@ class BlobDetection(object):
         self.init_sigma = float(init_sigma)
         self.dest_sigma = float(dest_sigma)
         self.scale_per_octave = int(scale_per_octave)
-        if mask is not None:
-            self.mask = (mask != 0).astype(numpy.int8)
-        else:
-            self.mask = (img <= 0).astype(numpy.int8)
-        #mask out the border of the image
-        self.mask[0, :] = 1
-        self.mask[-1, :] = 1
-        self.mask[:, 0] = 1
-        self.mask[:, -1] = 1
-        to_mask = numpy.where(self.mask)
-        self.do_mask = to_mask[0].size > 0
-        if self.do_mask:
-            self.raw[to_mask] = 0
-
-            #initial grow of 4*sigma_dest ... subsequent re-grow of half
-            grow = int(4.0 * self.dest_sigma)
-            if not pyFAI_morphology:
-                my, mx = numpy.ogrid[-grow:grow + 1, -grow:grow + 1]
-                grow = (mx * mx + my * my) <= grow * grow
-            self.cur_mask = morphology.binary_dilation(self.mask, grow)
-            #subsequent grow
-            grow = int(2.0 * self.dest_sigma)
-            if not pyFAI_morphology:
-                my, mx = numpy.ogrid[-grow:grow + 1, -grow:grow + 1]
-                grow = (mx * mx + my * my) <= grow * grow
-            self.grow = grow
-
+        self.raw_mask = mask
+        self.cur_mask = None
+        self.do_mask = True
+        self.mask = None
+        self.grow = None
         self.data = None    # current image
         self.sigmas = None  # contains pairs of absolute sigma and relative ones...
         self.blurs = []     # different blurred images
@@ -230,6 +209,39 @@ class BlobDetection(object):
         lststr.append("found %s keypoint up to now, we are at reduction %s" % (len(self.keypoints), self.curr_reduction))
         return os.linesep.join(lststr)
 
+    def _init_mask(self):
+        """
+        Initialize the mask
+        """
+        if self.raw_mask is not None:
+            self.mask = (self.raw_mask != 0).astype(numpy.int8)
+        else:
+            self.mask = (self.raw < 0).astype(numpy.int8)
+        #mask out the border of the image
+        self.mask[0, :] = 1
+        self.mask[-1, :] = 1
+        self.mask[:, 0] = 1
+        self.mask[:, -1] = 1
+        to_mask = numpy.where(self.mask)
+        #always use a mask!!
+        self.do_mask = True #to_mask[0].size > 0
+        if self.do_mask:
+            self.raw[to_mask] = 0
+
+            #initial grow of 4*sigma_dest ... subsequent re-grow of half
+            grow = int(round(4.0 * self.dest_sigma))
+            if not pyFAI_morphology:
+                my, mx = numpy.ogrid[-grow:grow + 1, -grow:grow + 1]
+                grow = (mx * mx + my * my) <= grow * grow
+            self.cur_mask = morphology.binary_dilation(self.mask, grow)
+            #subsequent grow
+            grow = int(2.0 * self.dest_sigma)
+            if not pyFAI_morphology:
+                my, mx = numpy.ogrid[-grow:grow + 1, -grow:grow + 1]
+                grow = (mx * mx + my * my) <= grow * grow
+            self.grow = grow
+
+
     def _initial_blur(self):
         """
         Blur the original image to achieve the requested level of blur init_sigma
@@ -244,7 +256,7 @@ class BlobDetection(object):
         """
         Calculate all sigma to blur an image within an octave
         """
-        if not self.data:
+        if self.data is None:
             self._initial_blur()
         previous = self.init_sigma
         incr = 0
@@ -271,8 +283,9 @@ class BlobDetection(object):
         dy = []
         if not self.sigmas:
             self._calc_sigma()
-#        print(self.sigmas)
-        if (1 - self.cur_mask).sum() == 0:
+        if self.do_mask and (self.cur_mask is None):
+            self._init_mask()
+        if self.do_mask and (numpy.logical_not(self.cur_mask).sum(dtype=int) == 0):
             return
 
         previous = self.data
@@ -556,70 +569,90 @@ class BlobDetection(object):
 #                 else:
                 pylab.annotate("", xy=(x + vect[1][0] * val[1], y + vect[1][1] * val[1]), xytext=(x, y),
                     arrowprops=dict(facecolor='red', shrink=0.05),)
-
-        def process(self, max_octave=None):
-            """
-            Perform the keypoint extraction for max_octave cycles or until all octaves have been processed.
-            """
-            octave = 0
-            finished = False
-            while not finished:
-                self._one_octave(shrink=True, refine=True, n_5=True)
-                octave += 1
-                if max_octave and octave > max_octave:
-                    finished = True
-                else:
-                    finished = (1 - self.cur_mask).sum() == 0
-
-        def nearest_peak(self, p, refine=True, Imin=None):
-            """
-            Return the nearest peak from a position
-
-            @param p: input position (y,x) 2-tuple of float
-            @param refine: shall the position be refined on the raw data
-            @param Imin: minimum of intenity above the background
-            """
-            if Imin:
-                valid = (self.keypoints.I >= Imin)
-                kp = self.keypoints[valid]
+    @timeit
+    def process(self, max_octave=None):
+        """
+        Perform the keypoint extraction for max_octave cycles or until all octaves have been processed.
+        """
+        finished = False
+        if self.cur_mask is None:
+            self._init_mask()
+        if self.data is None:
+            self._initial_blur()
+        if self.sigmas is None:
+            self._calc_sigma()
+        while not finished:
+            self._one_octave(shrink=True, refine=True, n_5=True)
+            if max_octave and self.octave >= max_octave:
+                finished = True
             else:
-                kp = self.keypoints
-            dy = kp.y - p[0]
-            dx = kp.x - p[1]
-            r2 = dx*dx + dy*dy
-            best_pos = r2.argmin()
-            best = [kp[best_pos].y, kp[best_pos].x]
-            if refine:
-                if self.bilinear is None:
-                    self.bilinear = Bilinear(self.raw)
-                best = self.bilinear.local_maxi(best)
-            return best
+                finished = (numpy.logical_not(self.cur_mask).sum(dtype=int) == 0)
 
-        def peaks_from_area(self, mask, refine=True, Imin=None, **kwargs):
-            """
-            Return the list of peaks within an area
+    def nearest_peak(self, p, refine=True, Imin=None):
+        """
+        Return the nearest peak from a position
 
-            @param mask: 2d array with mask. 
-            @param refine: shall the position be refined on the raw data
-            @param Imin: minimum of intensity above the background
-            @param kwarg: ignored parameters
-            @return: list of peacks [y,x], [y,x], ...]
-            """
-            if Imin:
-                valid = (self.keypoints.I >= Imin)
-                kp = self.keypoints[valid]
-            else:
-                kp = self.keypoints
-            y = numpy.round(kp.y).astype(int)
-            x = numpy.round(kp.x).astype(int)
-            is_inside = (mask[y,x]).astype(bool)
-            good_kp = kp[is_inside]
-            if refine:
-                if self.bilinear is None:
-                    self.bilinear = Bilinear(self.raw)
-                return [self.bilinear.local_maxi((i.y, i.y)) for i in kp[is_inside]]
-            else:
-                return [(i.y,i.y) for i in kp[is_inside]]
+        @param p: input position (y,x) 2-tuple of float
+        @param refine: shall the position be refined on the raw data
+        @param Imin: minimum of intenity above the background
+        """
+        if Imin:
+            valid = (self.keypoints.I >= Imin)
+            kp = self.keypoints[valid]
+        else:
+            kp = self.keypoints
+        dy = kp.y - p[0]
+        dx = kp.x - p[1]
+        r2 = dx * dx + dy * dy
+        best_pos = r2.argmin()
+        best = [kp[best_pos].y, kp[best_pos].x]
+        if refine:
+            if self.bilinear is None:
+                self.bilinear = Bilinear(self.raw)
+            best = self.bilinear.local_maxi(best)
+        return best
+
+    def peaks_from_area(self, mask, refine=True, Imin=None, **kwargs):
+        """
+        Return the list of peaks within an area
+
+        @param mask: 2d array with mask. 
+        @param refine: shall the position be refined on the raw data
+        @param Imin: minimum of intensity above the background
+        @param kwarg: ignored parameters
+        @return: list of peacks [y,x], [y,x], ...]
+        """
+        if Imin:
+            valid = (self.keypoints.I >= Imin)
+            kp = self.keypoints[valid]
+        else:
+            kp = self.keypoints
+        y = numpy.round(kp.y).astype(int)
+        x = numpy.round(kp.x).astype(int)
+        is_inside = (mask[y, x]).astype(bool)
+        good_kp = kp[is_inside]
+        if refine:
+            if self.bilinear is None:
+                self.bilinear = Bilinear(self.raw)
+            return [self.bilinear.local_maxi((i.y, i.x)) for i in kp[is_inside]]
+        else:
+            return [(i.y, i.x) for i in kp[is_inside]]
+
+    def show_stats(self):
+        """
+        Shows a window with the repartition of keypoint in function of scale/intensity
+        """
+        if len(self.keypoints)==0:
+            logger.warning("No keypoints yet: running process before display")
+            self.process()
+        import pylab
+        f = pylab.figure()
+        ax = f.add_subplot(1,1,1)
+        ax.plot(self.keypoints.sigma, self.keypoints.I, '.r')
+        ax.set_xlabel("Sigma")
+        ax.set_xlabel("Intensity")
+        ax.set_title("Peak repartition")
+        f.show()
 
 if __name__ == "__main__":
 
