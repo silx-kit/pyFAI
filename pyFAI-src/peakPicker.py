@@ -55,7 +55,11 @@ TARGET_SIZE = 1024
 # PeakPicker
 ################################################################################
 class PeakPicker(object):
-
+    """
+    
+    This class is in charge of peak picking, i.e. find bragg spots in the image
+    
+    """
     VALID_METHODS = ["massif", "blob"]
 
     def __init__(self, strFilename, reconst=False, mask=None,
@@ -119,14 +123,13 @@ class PeakPicker(object):
         """
         Initialize PeakPicker for massif based detection
         """
-        if self.reconstruct and (self.reconst is not False):
+        if self.reconstruct:
             if self.mask is None:
-                mask = self.data < 0
-            else:
-                mask = self.mask
-            self.massif = Massif(reconstruct(self.data, mask))
+                self.mask = self.data < 0
+            data = reconstruct(self.data, self.mask)
         else:
-            self.massif = Massif(self.data)
+            data = self.data
+        self.massif = Massif(data)
         self._init_thread = threading.Thread(target=self.massif.getLabeledMassif, name="massif_process")
         self._init_thread.start()
         self.method = "massif"
@@ -141,7 +144,7 @@ class PeakPicker(object):
         if self.mask is not None:
             self.blob = BlobDetection(self.data, mask=self.mask)
         else:
-            self.blob = BlobDetection(self.data)
+            self.blob = BlobDetection(self.data, mask=(self.data < 0))
         self.method = "blob"
         self._init_thread = threading.Thread(target=self.blob.process, name="blob_process")
         self._init_thread.start()
@@ -406,13 +409,15 @@ class PeakPicker(object):
 
     def massif_contour(self, data):
         """
-        @param data:
+        Overlays a mask over a diffraction image
+        
+        @param data: mask to be overlaid
         """
 
         if self.fig is None:
             logging.error("No diffraction image available => not showing the contour")
         else:
-            tmp = 100 * (1 - data.astype("uint8"))
+            tmp = 100 * numpy.logical_not(data)
             mask = numpy.zeros((data.shape[0], data.shape[1], 4), dtype="uint8")
 
             mask[:, :, 0] = tmp

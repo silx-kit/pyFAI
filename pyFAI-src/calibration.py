@@ -65,7 +65,7 @@ class AbstractCalibration(object):
                          " display too many images without crashing, this"\
                          " is why the window showing the diffraction image"\
                          " is closed"
-    HELP = {"help": "Try to get the help of a given action. Use done when finished. "
+    HELP = {"help": "Try to get the help of a given action, like 'refine?'. Use done when finished. "
             "Most command are composed of 'action parameter value' like 'set wavelength 1e-10'.",
             "get": "print he value of a parameter",
             "set": "set the value of a parameter to the given value, i.e 'set wavelength 1e-10'",
@@ -74,7 +74,7 @@ class AbstractCalibration(object):
             'bound': "sets the upper and lower bound of a parameter: 'bound dist 0.1 0.2'",
             'bounds': "sets the upper and lower bound of all parameters",
             'refine': "performs a new cycle of refinement",
-            'recalib': "extract a new set of rings and re-perform the calibration. One can specify how many rings to extract",
+            'recalib': "extract a new set of rings and re-perform the calibration. One can specify how many rings to extract and the algorithm to use (blob or massif)",
             'done': "finishes the processing, performs an integration and quits"
 
             }
@@ -550,7 +550,14 @@ class AbstractCalibration(object):
         dtth[1:, 1] = delta
         dtth[0, 1] = delta[0]
         dtth = dtth.min(axis= -1)
-        ttha = self.ai.twoThetaArray(self.peakPicker.data.shape)
+        if self.geoRef:
+            ary = self.geoRef.get_ttha()
+            if (ary is not None) and (ary.shape == self.peakPicker.data.shape):
+                ttha = ary
+            else:
+                ttha = self.geoRef.twoThetaArray()
+        else:
+            ttha = self.ai.twoThetaArray(self.peakPicker.data.shape)
         rings = 0
         self.peakPicker.sync_init()
         if self.max_rings is None:
@@ -665,18 +672,17 @@ class AbstractCalibration(object):
         """ 
         
         while True:
+            help = False
             print("Fixed: " + ", ".join(self.fixed))
             ans = raw_input("Modify parameters (or ? for help)?\t ").strip().lower()
             if "?" in ans:
                 help=True
-            else:
-                help = False
             words = ans.split()
             action = words[0]
-            if action == "help":
+            if action in [ "help", "?"]:
                 help == True
             if help:
-                for what in self.HELP:
+                for what in self.HELP.keys():
                     if action.startswith(what):
                         print("Help on %s" % what)
                         print(self.HELP[what])
@@ -718,7 +724,7 @@ class AbstractCalibration(object):
             elif action == "recalib":
                 max_rings = None
                 method = "blob"
-                if len(words) > 2:
+                if len(words) >= 2:
                     try:
                        max_rings = int(words[1])
                     except Exception:
@@ -737,17 +743,16 @@ class AbstractCalibration(object):
                 if len(words) >= 2 and  words[1] in self.PARAMETERS:
                     param = words[1]
                     if len(words) == 2:
-                        readFloatFromKeyboard("Enter %s in %s "
-                             "(or %s_min[%.3f] %s[%.3f] %s_max[%.3f]):\t " %
-                             (param, self.UNITS[param], 
-                              self.geoRef.__getattribute__(param+"_min"), 
-                              self.geoRef.__getattribute__(param),
-                              self.geoRef.__getattribute__(param+"_max")),
-                             {1:[self.geoRef.__getattribute__("set_"+param)],
+                        readFloatFromKeyboard("Enter %s in %s " % (param, self.UNITS[param]) +
+                             "(or %s_min[%.3f] %s[%.3f] %s_max[%.3f]):\t " %(
+                              param, self.geoRef.__getattribute__("get_%s_min" % param)(),
+                              param, self.geoRef.__getattribute__("get_%s" % param)(),
+                              param, self.geoRef.__getattribute__("get_%s_max" % param)()),
+                             {1:[self.geoRef.__getattribute__("set_%s"%param)],
                               2:[self.geoRef.__getattribute__("set_%s_min"%param),
                                  self.geoRef.__getattribute__("set_%s_max"%param)],
                               3:[self.geoRef.__getattribute__("set_%s_min"%param),
-                                 self.geoRef.__getattribute__("set_"+param),
+                                 self.geoRef.__getattribute__("set_%s"%param),
                                  self.geoRef.__getattribute__("set_%s_max"%param)]})
                     elif len(words) == 3:
                         try:
@@ -813,7 +818,11 @@ class AbstractCalibration(object):
                                3:[ self.geoRef.set_rot3_min, self.geoRef.set_rot3, self.geoRef.set_rot3_max]})
             elif action == "done":
                 return True
+            elif action == "quit":
+                return True
             elif action == "refine":
+                return False
+            elif action == "fit":
                 return False
 
     def postProcess(self):
