@@ -344,7 +344,7 @@ class BlobDetection(object):
         if l != 0:
             keypoints[:].x = (kpx[valid] + 0.5) * self.curr_reduction - 0.5 # Place ourselves at the center of the pixel, and back
             keypoints[:].y = (kpy[valid] + 0.5) * self.curr_reduction - 0.5 # Place ourselves at the center of the pixel, and back
-            sigmas = self.init_sigma * (self.dest_sigma / self.init_sigma) ** ((kps[valid]+0.5) / (self.scale_per_octave))
+            sigmas = self.init_sigma * (self.dest_sigma / self.init_sigma) ** ((kps[valid] + 0.5) / (self.scale_per_octave))
             keypoints[:].sigma = (self.curr_reduction * sigmas)
             keypoints[:].I = peak_val[valid]
 
@@ -587,6 +587,7 @@ class BlobDetection(object):
                 finished = True
             else:
                 finished = (numpy.logical_not(self.cur_mask).sum(dtype=int) == 0)
+        logger.warning("Blob detection found %i keypoints" % len(self.keypoints))
 
     def nearest_peak(self, p, refine=True, Imin=None):
         """
@@ -612,7 +613,7 @@ class BlobDetection(object):
             best = self.bilinear.local_maxi(best)
         return best
 
-    def peaks_from_area(self, mask, refine=True, Imin=None, **kwargs):
+    def peaks_from_area(self, mask, keep=None, refine=True, Imin=None, **kwargs):
         """
         Return the list of peaks within an area
 
@@ -622,32 +623,44 @@ class BlobDetection(object):
         @param kwarg: ignored parameters
         @return: list of peacks [y,x], [y,x], ...]
         """
-        if Imin:
-            valid = (self.keypoints.I >= Imin)
-            kp = self.keypoints[valid]
-        else:
-            kp = self.keypoints
-        y = numpy.round(kp.y).astype(int)
-        x = numpy.round(kp.x).astype(int)
+        y = numpy.round(self.keypoints.y).astype(int)
+        x = numpy.round(self.keypoints.x).astype(int)
         is_inside = (mask[y, x]).astype(bool)
-        good_kp = kp[is_inside]
+        if is_inside.sum() == 0:
+            logger.error("No keypoint that region")
+            return []
+        kp = self.keypoints[is_inside]
+        if Imin:
+            valid = kp.I >= Imin
+            if valid.sum() == 0:
+                logger.error("no keypoint match Intensity criteria in the region")
+                valid2 = self.raw[y, x] >= Imin
+                good_kp = self.keypoints[numpy.logical_and(valid2, is_inside)]
+            else:
+                good_kp = kp[valid]
+        else:
+            good_kp = kp
+        if keep and len(good_kp) > keep:
+            order = numpy.argsort(good_kp.I)
+            order = order[-1::-1][:keep] #keep only the most intense
+            good_kp = good_kp[order]
         if refine:
             if self.bilinear is None:
                 self.bilinear = Bilinear(self.raw)
-            return [self.bilinear.local_maxi((i.y, i.x)) for i in kp[is_inside]]
+            return [self.bilinear.local_maxi((i.y, i.x)) for i in good_kp]
         else:
-            return [(i.y, i.x) for i in kp[is_inside]]
+            return [(i.y, i.x) for i in good_kp]
 
     def show_stats(self):
         """
         Shows a window with the repartition of keypoint in function of scale/intensity
         """
-        if len(self.keypoints)==0:
+        if len(self.keypoints) == 0:
             logger.warning("No keypoints yet: running process before display")
             self.process()
         import pylab
         f = pylab.figure()
-        ax = f.add_subplot(1,1,1)
+        ax = f.add_subplot(1, 1, 1)
         ax.plot(self.keypoints.sigma, self.keypoints.I, '.r')
         ax.set_xlabel("Sigma")
         ax.set_xlabel("Intensity")
