@@ -44,6 +44,7 @@ from .utils import gaussian_filter, binning, unBinning, deprecated, relabel, per
 from .bilinear import Bilinear
 from .reconstruct import reconstruct
 from .calibrant import Calibrant, ALL_CALIBRANTS
+from .blob_detection import BlobDetection
 logger = logging.getLogger("pyFAI.peakPicker")
 if os.name != "nt":
     WindowsError = RuntimeError
@@ -54,7 +55,13 @@ TARGET_SIZE = 1024
 # PeakPicker
 ################################################################################
 class PeakPicker(object):
-    VALID_METHODS = ["massif","blob"]
+    """
+    
+    This class is in charge of peak picking, i.e. find bragg spots in the image
+    
+    """
+    VALID_METHODS = ["massif", "blob"]
+
     def __init__(self, strFilename, reconst=False, mask=None,
                  pointfile=None, calibrant=None, wavelength=None, method="massif"):
         """
@@ -86,45 +93,82 @@ class PeakPicker(object):
 #        self._semGui = threading.Semaphore()
         self.mpl_connectId = None
         self.defaultNbPoints = 100
+        self._init_thread = None
         if method in self.VALID_METHODS:
-            self.method =  method
+            self.method = method
         else:
-            logger.error("Not a valid peak-picker method: %s should be part of %s"%(method, self.VALID_METHODS))
+            logger.error("Not a valid peak-picker method: %s should be part of %s" % (method, self.VALID_METHODS))
             self.method = self.VALID_METHODS[0]
-        
+
         if self.method == "massif":
-            self.init_massif()
+            self.init_massif(False)
         elif self.method == "blob":
-            self.init_blob()
+            self.init_blob(False)
+
+    def init(self, method, sync=True):
+        """
+        Unified initializer
+        """
+        assert method in ["blob", "massif"]
+        if method != self.method:
+            self.__getattribute__("init_" + method)(sync)
+
+    def sync_init(self):
+        if self._init_thread:
+            self._init_thread.join()
 
 
-    def init_massif(self):
+
+    def init_massif(self, sync=True):
         """
         Initialize PeakPicker for massif based detection
         """
-        if self.reconstruct and (self.reconst is not False):
+        if self.reconstruct:
             if self.mask is None:
-                mask = self.data < 0
-            else:
-                mask = self.mask
-            self.massif = Massif(reconstruct(self.data, mask))
+                self.mask = self.data < 0
+            data = reconstruct(self.data, self.mask)
         else:
-            self.massif = Massif(self.data)
+            data = self.data
+        self.massif = Massif(data)
+        self._init_thread = threading.Thread(target=self.massif.getLabeledMassif, name="massif_process")
+        self._init_thread.start()
         self.method = "massif"
+        if sync:
+            self._init_thread.join()
 
-    def init_blob(self,sync=True):
+
+    def init_blob(self, sync=True):
         """
         Initialize PeakPicker for blob based detection
         """
         if self.mask is not None:
             self.blob = BlobDetection(self.data, mask=self.mask)
         else:
-            self.blob = BlobDetection(self.data)
+            self.blob = BlobDetection(self.data, mask=(self.data < 0))
         self.method = "blob"
-        t = threading.Thread(target=self.blob.process, name="blob_process").start()
+        self._init_thread = threading.Thread(target=self.blob.process, name="blob_process")
+        self._init_thread.start()
         if sync:
-            t.join()
-                             
+            self._init_thread.join()
+
+    def peaks_from_area(self, mask, Imin, keep=1000, refine=True, method=None):
+        """
+        Return the list of peaks within an area
+
+        @param mask: 2d array with mask. 
+        @param Imin: minimum of intensity above the background to keep the point
+        @param keep: maximum number of points to keep
+        @param method: enforce the use of detection using "massif" or "blob" 
+        @return: list of peaks [y,x], [y,x], ...]
+        """
+        if not method:
+            method = self.method
+        else:
+            self.init(method, True)
+
+        obj = self.__getattribute__(method)
+
+        return obj.peaks_from_area(mask, Imin=Imin, keep=keep, refine=refine)
 
     def reset(self):
         """
@@ -306,28 +350,6 @@ class PeakPicker(object):
                 self.fig.canvas.draw()
                 sys.stdout.flush()
 
-    def readFloatFromKeyboard(self, text, dictVar):
-        """
-        Read float from the keyboard ....
-        @param text: string to be displayed
-        @param dictVar: dict of this type: {1: [set_dist_min],3: [set_dist_min, set_dist_guess, set_dist_max]}
-        """
-        fromkb = raw_input(text).strip()
-        try:
-            vals = [float(i) for i in fromkb.split()]
-        except:
-            logging.error("Error in parsing values")
-        else:
-            found = False
-            for i in dictVar:
-                if len(vals) == i:
-                    found = True
-                    for j in range(i):
-                        dictVar[i][j](vals[j])
-            if not found:
-                logging.error("You should provide the good number of floats")
-
-
     def finish(self, filename=None,):
         """
         Ask the ring number for the given points
@@ -387,13 +409,15 @@ class PeakPicker(object):
 
     def massif_contour(self, data):
         """
-        @param data:
+        Overlays a mask over a diffraction image
+        
+        @param data: mask to be overlaid
         """
 
         if self.fig is None:
             logging.error("No diffraction image available => not showing the contour")
         else:
-            tmp = 100 * (1 - data.astype("uint8"))
+            tmp = 100 * numpy.logical_not(data)
             mask = numpy.zeros((data.shape[0], data.shape[1], 4), dtype="uint8")
 
             mask[:, :, 0] = tmp
@@ -896,6 +920,36 @@ class Massif(object):
                 break
         return listpeaks
 
+    def peaks_from_area(self, mask, Imin=None, keep=1000, **kwarg):
+        """
+        Return the list of peaks within an area
+
+        @param mask: 2d array with mask. 
+        @param Imin: minimum of intensity above the background to keep the point
+        @param keep: maximum number of points to keep
+        @param kwarg: ignored parameters
+        @return: list of peacks [y,x], [y,x], ...]
+        """
+        all_points = numpy.vstack(numpy.where(mask)).T
+        res = []
+        cnt = 0
+        numpy.random.shuffle(all_points)
+        for idx in all_points:
+            out = self.nearest_peak(idx)
+            if out is not None:
+                print("[ %3i, %3i ] -> [ %.1f, %.1f ]" %
+                      (idx[1], idx[0], out[1], out[0]))
+                p0, p1 = int(out[0]), int(out[1])
+                if mask[p0, p1]:
+                    if (out not in res) and\
+                        (self.data[p0, p1] > Imin):
+                        res.append(out)
+                        cnt = 0
+            if len(res) >= keep or cnt > keep:
+                break
+            else:
+                cnt += 1
+        return res
 
     def initValleySize(self):
         if self._valley_size is None:
@@ -981,8 +1035,9 @@ class Massif(object):
                     logger.info("Labeling found %s massifs." % self._number_massif)
         return self._labeled_massif
 
+
 class Event(object):
-    "Dummy class for dumm things"
+    "Dummy class for dummy things"
     def __init__(self, width, height):
         self.width = width
         self.height = height

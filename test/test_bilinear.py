@@ -66,7 +66,7 @@ class test_bilinear(unittest.TestCase):
         for s in range(self.N):
             i, j = numpy.random.randint(100), numpy.random.randint(100)
             k, l = b.local_maxi((i, j), 1)
-            if abs(k - 40.5) > 1e-4 or abs(l - 60.5) > 1e-4:
+            if abs(k - 40) > 1e-4 or abs(l - 60) > 1e-4:
                 logger.warning("Wrong guess maximum (%i,%i) -> (%.1f,%.1f)" % (i, j, k, l))
             else:
                 logger.debug("Good guess maximum (%i,%i) -> (%.1f,%.1f)" % (i, j, k, l))
@@ -86,7 +86,7 @@ class test_bilinear(unittest.TestCase):
         for s in range(self.N):
             i, j = numpy.random.randint(100), numpy.random.randint(100)
             k, l = b.local_maxi((i, j), 1)
-            if abs(k - 41) > 1e-4 or abs(l - 61) > 1e-4:
+            if abs(k - 40.5) > 0.5 or abs(l - 60.5) > 0.5:
                 logger.warning("Wrong guess maximum (%i,%i) -> (%.1f,%.1f)" % (i, j, k, l))
             else:
                 logger.debug("Good guess maximum (%i,%i) -> (%.1f,%.1f)" % (i, j, k, l))
@@ -98,7 +98,7 @@ class test_bilinear(unittest.TestCase):
 def test_suite_all_bilinear():
     testSuite = unittest.TestSuite()
     testSuite.addTest(test_bilinear("test_max_search_round"))
-#    testSuite.addTest(test_bilinear("test_max_search_half"))
+    testSuite.addTest(test_bilinear("test_max_search_half"))
 #    testSuite.addTest(test_azim_halfFrelon("test_numpy_vs_fit2d"))
 #    testSuite.addTest(test_azim_halfFrelon("test_cythonSP_vs_fit2d"))
 #    testSuite.addTest(test_azim_halfFrelon("test_cython_vs_numpy"))

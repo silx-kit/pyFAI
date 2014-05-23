@@ -62,7 +62,7 @@ try:
     import fftw3
     has_fftw3 = True
 except (ImportError, WindowsError) as err:
-    logging.warn("Exception %s: FFTw3 not available. Falling back on Scipy", err)
+    logger.warn("Exception %s: FFTw3 not available. Falling back on Scipy", err)
     has_fftw3 = False
 
 import traceback
@@ -1105,3 +1105,25 @@ def convert_CamelCase(name):
     import re
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+def readFloatFromKeyboard(text, dictVar):
+    """
+    Read float from the keyboard ....
+    
+    @param text: string to be displayed
+    @param dictVar: dict of this type: {1: [set_dist_min],3: [set_dist_min, set_dist_guess, set_dist_max]}
+    """
+    fromkb = raw_input(text).strip()
+    try:
+        vals = [float(i) for i in fromkb.split()]
+    except:
+        logging.error("Error in parsing values")
+    else:
+        found = False
+        for i in dictVar:
+            if len(vals) == i:
+                found = True
+                for j in range(i):
+                    dictVar[i][j](vals[j])
+        if not found:
+            logger.error("You should provide the good number of floats")
