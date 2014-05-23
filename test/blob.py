@@ -79,7 +79,7 @@ f=pylab.figure(1)
 ax = f.add_subplot(111)
 ax.imshow(numpy.log1p(data), interpolation = 'nearest')
 
-for i in range(3):
+for i in range(1):
     print ('Octave #%i' %i)
     bd._one_octave(shrink=True, refine = True, n_5=True)
     print("Octave #%i Total kp: %i" % (i, bd.keypoints.size))

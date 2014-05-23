@@ -329,8 +329,8 @@ class BlobDetection(object):
 
         
         if l != 0:
-            keypoints[:].x = (kpx[valid]+0.5) * self.curr_reduction
-            keypoints[:].y = (kpy[valid]+0.5) * self.curr_reduction
+            keypoints[:].x = (kpx[valid]+0.5) * self.curr_reduction - 0.5
+            keypoints[:].y = (kpy[valid]+0.5) * self.curr_reduction - 0.5
             sigmas = self.init_sigma * (self.dest_sigma / self.init_sigma) ** ((kps[valid]+0.5) / (self.scale_per_octave))
             keypoints[:].sigma = (self.curr_reduction * sigmas)
             keypoints[:].I = peak_val[valid]
@@ -403,7 +403,7 @@ class BlobDetection(object):
         nxps = self.dogs[(kps - 1, kpy, kpx + 1)]
         pxns = self.dogs[(kps + 1, kpy, kpx - 1)]
         pxps = self.dogs[(kps - 1, kpy, kpx - 1)]
-
+        
         dx = (nx - px) / 2.0
         dy = (ny - py) / 2.0
         ds = (ns - ps) / 2.0
@@ -413,6 +413,8 @@ class BlobDetection(object):
         dxy = (nxny - nxpy - pxny + pxpy) / 4.0
         dxs = (nxns - nxps - pxns + pxps) / 4.0
         dsy = (nsny - nspy - psny + pspy) / 4.0
+        print dx,dy,ds
+        print dxx,dyy,dss,dxy,dxs,dsy
         det = -(dxs * dyy * dxs) + dsy * dxy * dxs + dxs * dsy * dxy - dss * dxy * dxy - dsy * dsy * dxx + dss * dyy * dxx
         K00 = dyy * dxx - dxy * dxy
         K01 = dxs * dxy - dsy * dxx
@@ -429,6 +431,8 @@ class BlobDetection(object):
         delta_x = -(ds * K20 + dy * K21 + dx * K22) / det
         peakval = curr + 0.5 * (delta_s * ds + delta_y * dy + delta_x * dx)
         mask = numpy.logical_and(numpy.logical_and(abs(delta_x) < self.tresh, abs(delta_y) < self.tresh), abs(delta_s) < self.tresh)
+        print delta_y, kpy
+        print delta_x, kpx
         return kpx + delta_x, kpy + delta_y, kps + delta_s, peakval, mask
 
     def refine_Hessian_SG(self, kpx, kpy, kps):
@@ -449,6 +453,15 @@ class BlobDetection(object):
         SGX0Y1 = [-0.16666667, -0.16666667, -0.16666667, 0.00000000, 0.00000000, 0.00000000, 0.16666667, 0.16666667, 0.16666667]
         SGX1Y1 = [0.25000000, 0.00000000, -0.25000000, 0.00000000, 0.00000000, 0.00000000, -0.25000000, 0.00000000, 0.25000000]
         SGX0Y2 = [0.16666667 , 0.16666667 , 0.16666667 , -0.33333333 , -0.33333333 , -0.33333333 , 0.16666667 , 0.16666667 , 0.16666667]
+
+#         SGX0Y0 = [0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0]
+#         SGX1Y0 = [0.0,0.0,0.0,-0.5,0.0,0.5,0.0,0.0,0.0]
+#         SGX2Y0 = [0.0,0.0,0.0,0.33333333,-0.66666667,0.33333333,0.0,0.0,0.0]
+#         SGX0Y1 = [0.0,-0.5,0.0,0.0,0.0,0.0,0.0,0.5,0.0]
+#         SGX0Y2 = [0.0, 0.33333333 , 0.0 , 0.0 , -0.66666667,0.0, 0.0 , 0.33333333 , 0.0]
+
+#         SGX0Y2 = 3*numpy.asarray(SGX0Y2)
+#         SGX2Y0 = 3*numpy.asarray(SGX2Y0)
 
         for y, x, sigma in itertools.izip(kpy, kpx, kps):
 
@@ -472,7 +485,7 @@ class BlobDetection(object):
             s_next = (SGX0Y0 * patch3_next.ravel()).sum()
             s = (SGX0Y0 * patch3.ravel()).sum()
             s_prev = (SGX0Y0 * patch3_prev.ravel()).sum()
-            d2s = (s_next + s_prev - 2.0 * s) / 4.0
+            d2s = (s_next + s_prev - 2.0 * s)
             ds = (s_next - s_prev) / 2.0
 
             dx_next = (SGX1Y0 * patch3_next.ravel()).sum()
@@ -483,10 +496,14 @@ class BlobDetection(object):
 
             dxs = (dx_next - dx_prev) / 2.0
             dys = (dy_next - dy_prev) / 2.0
-
+                    
+            print dx,dy,ds
+            print d2x,d2y,d2s,dxy,dxs,dys
+            
             lap = numpy.array([[d2y, dxy, dys], [dxy, d2x, dxs], [dys, dxs, d2s]])
             delta = -(numpy.dot(numpy.linalg.inv(lap), [dy, dx, ds]))
-#             print delta
+            print y,x
+            print delta
 #                 err = numpy.linalg.norm(delta[:-1])
             if  numpy.abs(delta[0]) <= self.tresh and numpy.abs(delta[1]) <= self.tresh and numpy.abs(delta[2]) <= self.tresh:
                 k2x.append(x + delta[1])
@@ -536,12 +553,12 @@ class BlobDetection(object):
                 dxy = (Hxy.ravel() * patch.ravel()).sum()
                 H = numpy.array([[d2y, dxy], [dxy, d2x]])
                 val, vect = numpy.linalg.eig(H)
-                print 'new point'
-                print x, y
-                print val
-                print vect
+#                 print 'new point'
+#                 print x, y
+#                 print val
+#                 print vect
                 e = numpy.abs(val[0] - val[1]) / numpy.abs(val[0] + val[1])
-                print e
+#                 print e
                 pylab.plot(x, y, 'og')
 
 #                 if val[0] < val[1]:
@@ -587,7 +604,7 @@ class BlobDetection(object):
             best = self.bilinear.local_maxi(best)
         return best
 
-    def Cluster(self):
+    def cluster(self):
         import pylab
         pylab.figure()
         pylab.plot(self.keypoints.sigma,self.keypoints.I,'.r')
