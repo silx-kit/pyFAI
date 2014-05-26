@@ -40,7 +40,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/04/2012"
+__date__ = "26/05/2014"
 __satus__ = "development"
 
 import os, types
@@ -90,7 +90,7 @@ class MultiCalib(object):
                 self.detector.pixel1 = self.detector.pixel2 = float(pixelSize)
         self.cutBackground = None
         self.outfile = "merged.edf"
-        self.peakPicker = None
+        self.peakPicker = "blob"
         self.basename = None
         self.geoRef = None
 #        self.reconstruct = False
@@ -110,6 +110,7 @@ class MultiCalib(object):
         self.distance = None
         self.fixed = []
         self.max_rings = None
+
 
     def __repr__(self):
         lst = ["Multi-Calibration object:",
@@ -254,7 +255,9 @@ class MultiCalib(object):
         parser.add_argument("--interactive", dest="interactive",
                       help="force the program to prompt for refinements",
                       default=True, action="store_true")
-
+        parser.add_argument("--peak-picker", dest="peakPicker",
+                      help="Uses the 'massif' or the 'blob' peak-picker algorithm (default: blob)",
+                      default="blob", type=str)
         options = parser.parse_args()
 
         # Analyse aruments and options
@@ -287,6 +290,8 @@ class MultiCalib(object):
             self.wavelength = 1e-10 * options.wavelength
         elif options.energy:
             self.wavelength = 1e-10 * hc / options.energy
+        if not options.calibrant:
+            logger.error("The calibrant is mandatory: please use the -c option")
         self.calibrant = options.calibrant
         self.polarization_factor = options.polarization_factor
         self.gui = options.gui
@@ -315,6 +320,8 @@ class MultiCalib(object):
             raise RuntimeError("Please provide some calibration images ... "
                                "if you want to analyze them. Try also the --help option to see all options!")
         self.weighted = options.weighted
+        if options.peakPicker.lower() in ["blob", "massif"]:
+            self.peakPicker = options.peakPicker.lower()
 
     def get_pixelSize(self, ans):
         """convert a comma separated sting into pixel size"""
@@ -439,7 +446,7 @@ class MultiCalib(object):
             if dist:
                 rec.ai.dist = dist
             rec.preprocess()
-            rec.extract_cpt()
+            rec.extract_cpt(method=self.peakPicker)
             rec.refine()
             self.results[fn]["ai"] = rec.ai
 
