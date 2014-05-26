@@ -241,21 +241,6 @@ class BlobDetection(object):
                 grow = (mx * mx + my * my) <= grow * grow
             self.grow = grow
 
-        self.data = None    # current image
-        self.sigmas = None  # contains pairs of absolute sigma and relative ones...
-        self.blurs = []     # different blurred images
-        self.dogs = []      # different difference of gaussians
-        self.dogs_init = []
-        self.border_size = 5# size of the border, unused: prefer mask
-        self.keypoints = []
-        self.delta = []
-        self.curr_reduction = 1.0
-        self.detection_started = False
-        self.octave = 0
-        self.raw_kp = []
-        self.ref_kp = []
-        self.dtype = numpy.dtype([('x', numpy.float32), ('y', numpy.float32), ('sigma', numpy.float32), ('I', numpy.float32)])
-        self.bilinear = None
 
     def __repr__(self):
         lststr = ["Blob detection, shape=%s, processed=%s." % (self.raw.shape, self.detection_started)]
@@ -295,7 +280,7 @@ class BlobDetection(object):
         Return the blob coordinates for an octave
 
         @param shrink: perform the image shrinking after the octave processing
-        @param refine: can be None, True, "SG2" and "SG4" do_SG4: perform 3point hessian calcualation or Savitsky-Golay 2nd or 4th order fit.
+        @param refine: can be None, True, "SG2" and "SG4" do_SG4: perform 3point hessian calculation or Savitsky-Golay 2nd or 4th order fit.
 
         """
         x = []
@@ -543,18 +528,6 @@ class BlobDetection(object):
 #                         kdx.append(delta[1])
 #                         kdy.append(delta[0])
 
-                    lap = numpy.array([[d2y, dxy, dys], [dxy, d2x, dxs], [dys, dxs, d2s]])
-                    delta = -(numpy.dot(numpy.linalg.inv(lap), [dy, dx, ds]))
-#                     print delta
-                    err = numpy.linalg.norm(delta[:-1])
-                    if  err < numpy.sqrt(4) and numpy.abs(delta[0]) <= 2.0 and numpy.abs(delta[1]) <= 2.0 and numpy.abs(delta[2]) <= self.sigmas[-1][0]:
-                        k2x.append(x + delta[1])
-                        k2y.append(y + delta[0])
-                        sigmas.append(sigma)
-                        kds.append(delta[2])
-                        kdx.append(delta[1])
-                        kdy.append(delta[0])
-
         return numpy.asarray(k2x), numpy.asarray(k2y), numpy.asarray(sigmas), numpy.asarray(kds)
 
     def direction(self):
@@ -604,7 +577,7 @@ class BlobDetection(object):
                 pylab.plot(x, y, 'og')
 
 #                 if val[0] < val[1]:
-                pylab.annotate("", xy=(x + vect[0][0] * val[0], y + vect[0][1] * val[0]), xytext=(x, y),
+                pylab.annotate("", xy=(x + vect[0][0] * val[0]*10, y + vect[0][1] * val[1]*10), xytext=(x, y),
                                    arrowprops=dict(facecolor='red', shrink=0.05),)
 #                 else:
                 pylab.annotate("", xy=(x + vect[1][0] * val[1], y + vect[1][1] * val[1]), xytext=(x, y),
@@ -690,7 +663,7 @@ class BlobDetection(object):
         ax = f.add_subplot(1,1,1)
         ax.plot(self.keypoints.sigma, self.keypoints.I, '.r')
         ax.set_xlabel("Sigma")
-        ax.set_xlabel("Intensity")
+        ax.set_ylabel("Intensity")
         ax.set_title("Peak repartition")
         f.show()
 
