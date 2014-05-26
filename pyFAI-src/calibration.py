@@ -1263,7 +1263,8 @@ correction. Maybe the future lies over there ...
         logger.debug("in rebuild")
         if self.r is None:
             self.integrate()
-        self.resynth = self.ai.calcfrom1d(self.r, self.I, mask=self.mask,
+
+        self.resynth = self.ai.calcfrom1d(self.r, self.I, shape=self.img.shape, mask=self.mask,
                    dim1_unit=self.unit, correctSolidAngle=True)
         if self.mask is not None:
             self.img[numpy.where(self.mask)] = 0
