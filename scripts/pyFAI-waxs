@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/02/2012"
+__date__ = "26/05/2014"
 __status__ = "production"
 
 import os
@@ -44,68 +44,84 @@ import fabio
 import pyFAI, pyFAI.units, pyFAI.utils
 hc = pyFAI.units.hc
 
-from optparse import OptionParser
+try:
+    from argparse import ArgumentParser
+except ImportError:
+    from pyFAI.argparse import  ArgumentParser
+
 
 
 def main():
-    usage = "usage: %prog [options] -p ponifile file1.edf file2.edf ..."
-    version = "%prog " + pyFAI.version
+    usage = "usage: pyFAI-waxs [options] -p ponifile file1.edf file2.edf ..."
+    version = pyFAI.version
     description = "Azimuthal integration for WAXS users."
     epilog = """pyFAI-waxs is the script of pyFAI that allows data reduction
     (azimuthal integration) for Wide Angle Scattering to produce X-Ray Powder
     Diffraction Pattern with output axis in 2-theta space.
     """
-    parser = OptionParser(usage=usage, version=version)
-    parser.add_option("-p", dest="ponifile",
-                      type='string', default=None,
+    parser = ArgumentParser(usage=usage)
+    parser.add_argument("-v", "--version", action='version', version=version)
+    parser.add_argument("-p", dest="ponifile",
+                      type=str, default=None,
                       help="PyFAI parameter file (.poni)")
-    parser.add_option("-n", dest="npt",
-                      type='int', default=None,
+    parser.add_argument("-n", dest="npt",
+                      type=int, default=None,
                       help="Number of points in radial dimension")
-    parser.add_option("-w", "--wavelength", dest="wavelength", type="float",
+    parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
                   help="wavelength of the X-Ray beam in Angstrom", default=None)
-    parser.add_option("-e", "--energy", dest="energy", type="float",
+    parser.add_argument("-e", "--energy", dest="energy", type=float,
                   help="energy of the X-Ray beam in keV (hc=%skeV.A)" % hc,
                   default=None)
-    parser.add_option("-u", "--dummy", dest="dummy",
-                      type="float", default=None,
+    parser.add_argument("-u", "--dummy", dest="dummy",
+                      type=float, default=None,
                       help="dummy value for dead pixels")
-    parser.add_option("-U", "--delta_dummy", dest="delta_dummy",
-                      type="float", default=None,
+    parser.add_argument("-U", "--delta_dummy", dest="delta_dummy",
+                      type=float, default=None,
                       help="delta dummy value")
-    parser.add_option("-m", "--mask", dest="mask",
-                      type="string", default=None,
+    parser.add_argument("-m", "--mask", dest="mask",
+                      type=str, default=None,
                       help="name of the file containing the mask image")
-    parser.add_option("-d", "--dark", dest="dark",
-                      type="string", default=None,
+    parser.add_argument("-d", "--dark", dest="dark",
+                      type=str, default=None,
                       help="name of the file containing the dark current")
-    parser.add_option("-f", "--flat", dest="flat",
-                      type="string", default=None,
+    parser.add_argument("-f", "--flat", dest="flat",
+                      type=str, default=None,
                       help="name of the file containing the flat field")
-    parser.add_option("-P", "--polarization", dest="polarization_factor",
-                      type="float", default=None,
+    parser.add_argument("-P", "--polarization", dest="polarization_factor",
+                      type=float, default=None,
                       help="Polarization factor, from -1 (vertical) to +1 (horizontal), \
                       default is None for no correction, synchrotrons are around 0.95")
 
-#    parser.add_option("-b", "--background", dest="background",
-#                      type="string", default=None,
+#    parser.add_argument("-b", "--background", dest="background",
+#                      type=str, default=None,
 #                      help="name of the file containing the background")
-    parser.add_option("--error-model", dest="error_model",
-                      type="string", default=None,
+    parser.add_argument("--error-model", dest="error_model",
+                      type=str, default=None,
                       help="Error model to use. Currently on 'poisson' is implemented ")
-    parser.add_option("--unit", dest="unit",
-                      type="string", default="2th_deg",
+    parser.add_argument("--unit", dest="unit",
+                      type=str, default="2th_deg",
                       help="unit for the radial dimension: can be q_nm^-1, q_A^-1, 2th_deg, \
                       2th_rad or r_mm")
-    parser.add_option("--ext", dest="ext",
-                      type="string", default=".xy",
+    parser.add_argument("--ext", dest="ext",
+                      type=str, default=".xy",
                       help="extension of the regrouped filename (.xy) ")
+    parser.add_argument("--multi", dest="multiframe", #type=bool,
+                        default=False, action="store_true",
+                        help="Average out all frame in a file before integrating")
+    parser.add_argument("--average", dest="average", type=str,
+                        default="mean",
+                        help="Method for averaging out: can be 'mean' (default), 'min', 'max' or 'median")
+    parser.add_argument("--do-2D", dest="do_2d",
+                        default=False, action="store_true",
+                        help="Perform 2D integration in addition to 1D")
 
-    (options, args) = parser.parse_args()
-    if len(args) < 1:
-        parser.error("incorrect number of arguments")
+    parser.add_argument("args", metavar='FILE', type=str, nargs='+',
+                        help="Files to be processed")
+    options = parser.parse_args()
+    if len(options.args) < 1:
+        logger.error("incorrect number of arguments")
 
-    processFile = pyFAI.utils.expand_args(args)
+    processFile = pyFAI.utils.expand_args(options.args)
 
     if options.ponifile and processFile:
         integrator = pyFAI.load(options.ponifile)
@@ -121,18 +137,23 @@ def main():
             integrator.flatfield = fabio.open(options.flat).data
 
         if len(processFile) > 5:
-            method = "lut"
+            method = "csr"
         else:
-            method = "BBox"
+            method = "splitpixel"
         print(integrator)
         print("Mask: %s\tMethod: %s" % (integrator.maskfile, method))
         for oneFile in processFile:
             sys.stdout.write("Integrating %s --> " % oneFile)
             outFile = os.path.splitext(oneFile)[0] + options.ext
             azimFile = os.path.splitext(oneFile)[0] + ".azim"
-            fabioFile = fabio.open(oneFile)
             t0 = time.time()
-            integrator.integrate1d(data=fabioFile.data,
+            fabioFile = fabio.open(oneFile)
+            if options.multiframe:
+                data = pyFAI.utils.averageDark([fabioFile.getframe(i).data for i in range(fabioFile.nframes)], center_method=options.average)
+            else:
+                data=fabioFile.data
+            t1 = time.time()
+            integrator.integrate1d(data,
                                    nbPt=options.npt or min(fabioFile.data.shape),
                                    filename=outFile,
                                    dummy=options.dummy,
@@ -142,21 +163,23 @@ def main():
                                    error_model=options.error_model,
                                    polarization_factor=options.polarization_factor
                                    )
-
-            t1 = time.time()
-            integrator.integrate2d(fabioFile.data,
-                                   options.npt or min(fabioFile.data.shape),
-                                   360,
-                                   filename=azimFile,
-                                   dummy=options.dummy,
-                                   delta_dummy=options.delta_dummy,
-                                   method=method,
-                                   unit=options.unit,
-                                   error_model=options.error_model,
-                                   polarization_factor=options.polarization_factor
-                                   )
-            print("%s\t 1D took  %.3fs, 2D took %.3fs" %
-                  (outFile, t1 - t0, time.time() - t1))
-
+            t2 = time.time()
+            if options.do_2d:
+                integrator.integrate2d(data,
+                                       options.npt or min(fabioFile.data.shape),
+                                       360,
+                                       filename=azimFile,
+                                       dummy=options.dummy,
+                                       delta_dummy=options.delta_dummy,
+                                       method=method,
+                                       unit=options.unit,
+                                       error_model=options.error_model,
+                                       polarization_factor=options.polarization_factor
+                                       )
+                print("%s\t reading: %.3fs\t 1D integration: %.3fs,\t 2D integration %.3fs." %
+                      (outFile, t1 - t0, t2 - t1, time.time() - t2))
+            else:
+                print("%s\t reading: %.3fs\t 1D integration: %.3fs." %
+                      (outFile, t1 - t0, t2 - t1))
 if __name__ == "__main__":
     main()
