@@ -2,32 +2,38 @@ pyFAI scripts manual
 ====================
 
 While pyFAI is first and foremost a Python library to be used by developers, a set of scripts is provided to process
-a full diffraction experiment on the command line without knowing anything about Python:
+a full diffraction experiment on the command line without knowing anything about Python. 
+Those scipts can be divided into 3 categories: pre-processing tools which prepare the dataset for the calibration tool.
+The calibration is the determination of the geometry of the experimental setup using Debye-Scherrer rings of a reference compound (or calibrant).
+Finally a full dataset can be integrated using different tools targeted at different experiments. 
 
- * pyFAI-average to merge a set of files like dark-current files or diffracton images using various filters
- * drawMask_pymca to mask out some region of the detector
- * pyFAI-calib to select the rings and refine the geometry
- * pyFAI-recalib with an automatic ring extraction followed by the refinement.
- * pyFAI-integrate offers a graphical interface to configure the integration of an experiment
- * pyFAI-waxs text interface for integration of an experiment in 2theta
- * pyFAI-saxs text interface for integration of an experiment in q-space
+Pre-processing tools:
+ * drawMask_pymca: tool for drawing a mask on top of an image
+ * pyFAI-average: tool for averaging/median/... filtering images (i.e. for dark current)
 
-Few other scripts are also available, most of them are very specific to one experiment or are highly experimental.
- * diff_tomo is a tool to generate a 3D sinogram as an HDF5 dataset for a diffracton tomography experiment
- * check-calib is an experimental tool to validate a full calibration of the complete image (not only on the peaks)
- * MX-calibrate refines the calibration from a set of images and exports the parameters interpolated as function of the detector distance
+Calibration tools:
+ * pyFAI-calib: manually select the rings and refine the geometry
+ * pyFAI-recalib: automatic ring extraction to refine the geometry
+ * MX-calibrate: Calibrate automatically a set of images taken at various detector distances
+ * check_calib: checks the calibration of an image at the sub-pixel level
 
+Azimuthal integration tools:
+ * pyFAI-integrate: the only graphical interface for integration
+ * pyFAI-saxs: command line interface for small-angle scattering
+ * pyFAI-waxs: command line interface for powder difration
+ * diff_tomo: diffraction mapping&tomography tool
+ 
 .. toctree::
    :maxdepth: 4
 
    pyFAI-average
    drawMask_pymca
+   MX-calibrate
+   check_calib
    pyFAI-calib
    pyFAI-recalib
    pyFAI-integrate
    pyFAI-saxs
    pyFAI-waxs
    diff_tomo
-   MX-calibrate
-   check_calib
 
