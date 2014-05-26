@@ -13,10 +13,10 @@ Programming language
 
 PyFAI is a Python project but uses many programming languages:
 
-* 10200 lines of Python (without the tests)
-* 3500 lines of cython which are converted into
-* 252000 lines of C
-* 880 lines of OpenCL kernels
+* 12000 lines of Python (plus 3000 for the test)
+* 8000 lines of Cython which are converted into ...
+* 400000 lines of C
+* 2000 lines of OpenCL kernels
 
 Repository:
 -----------
@@ -44,8 +44,11 @@ Run dependencies
 Build dependencies:
 -------------------
 In addition to the run dependencies, pyFAI needs a C compiler which supports OpenMP (gcc>=4.2, msvc, ...)
+There is an issue with MacOSX (v10.8 and newer) where the default compiler switched from gcc 4.2 to clang which 
+dropped the support for OpenMP. The best solution looks like to install any recent gcc and use it for compiling pyFAI.
 
 C files are generated from cython source and distributed. Cython is only needed for developing new binary modules.
+If you want to generate your own C files, make sure your local cython version supports memory-views (available from Cython v0.17 and newer).
 
 Building procedure
 ------------------
@@ -69,7 +72,7 @@ Setting the environment variable http_proxy can be necessary (depending on your 
  
    export http_proxy=http://proxy.site.org:3128
    
-PyFAI comes with 19 test-suites (109 tests in total) representing a coverage of 65%.
+PyFAI comes with 23 test-suites (132 tests in total) representing a coverage of 65%.
 This ensures both non regression over time and ease the distribution under different platforms:
 pyFAI runs under linux, MacOSX and Windows (in each case in 32 and 64 bits)
 
@@ -77,38 +80,33 @@ pyFAI runs under linux, MacOSX and Windows (in each case in 32 and 64 bits)
    :header: "Name", "Stmts", "Exec", "Cover"
    :widths: 50, 8, 8, 8
 
-   "pyFAI/__init__            ",    "10",   "7",    "70%" 
-   "pyFAI/azimuthalIntegrator ",    "934",   "687",    "73%"
-   "pyFAI/detectors           ",    "441",   "289",    "65%"
-   "pyFAI/geometry            ",    "718",   "529",    "73%"
-   "pyFAI/geometryRefinement  ",    "361",   "162",    "44%"
-   "pyFAI/ocl_azim            ",    "306",   "215",    "70%"
-   "pyFAI/ocl_azim_lut        ",    "197",   "166",    "84%"
-   "pyFAI/opencl              ",    "140",   "102",    "72%"
-   "pyFAI/peakPicker          ",    "615",   "221",    "35%"
-   "pyFAI/spline              ",    "327",   "108",    "33%"
-   "pyFAI/units               ",    "40",   "35",    "87%"
-   "pyFAI/utils               ",    "596",   "363",    "60%"
-   "testAzimuthalIntegrator   ",    "233",   "156",    "66%"
-   "testBilinear              ",    "39",   "35",    "89%"
-   "testDetector              ",    "35",   "32",    "91%"
-   "testDistortion            ",    "52",   "46",    "88%"
-   "testExport                ",    "68",   "61",    "89%"
-   "testFlat                  ",    "89",   "85",    "95%"
-   "testGeometry              ",    "86",   "82",    "95%"
-   "testGeometryRefinement    ",    "53",   "50",    "94%"
-   "testHistogram             ",    "152",   "138",    "90%"
-   "testIntegrate             ",    "135",   "125",    "92%"
-   "testMask                  ",    "133",   "106",    "79%"
-   "testOpenCL                ",    "96",   "83",    "86%"
-   "testPeakPicking           ",    "83",   "75",    "90%"
-   "testPolarization          ",    "53",   "32",    "60%"
-   "testSaxs                  ",    "101",   "72",    "71%"
-   "testUtils                 ",    "83",   "76",    "91%"
-   "test_all                  ",    "48",   "47",    "97%"
-   "utilstest                 ",    "168",   "84",    "50%"
-   "TOTAL                     ",   "6392",   "4269",    "66%"
+   "pyFAI/__init__            ",    "10",   "7",      "70%" 
+   "pyFAI/azimuthalIntegrator ",    "1140", "879",    "77%"
+   "pyFAI/detectors           ",    "441",  "289",    "65%"
+   "pyFAI/blob_detection      ",    "510",  "194",    "38%"
+   "pyFAI/calibrant           ",    "161",  "69",     "42%"
+   "pyFAI/calibration         ",    "770",  "0",      "0%"
+   "pyFAI/detectors           ",    "694",  "548",    "78%"
+   "pyFAI/distortion          ",    "454",  "0",      "0%"
+   "pyFAI/geometry            ",    "707",   "545",   "77%"
+   "pyFAI/geometryRefinement  ",    "371",   "221",   "59%"
+   "pyFAI/integrate_widget    ",    "402",   "0",     "0%"
+   "pyFAI/io                  ",    "344",   "0",     "0%"
+   "pyFAI/ocl_azim            ",    "306",   "215",   "70%"
+   "pyFAI/ocl_azim_csr        ",    "242",   "171",   "70%"
+   "pyFAI/ocl_azim_csr_dis    ",    "239",   "0",     "0%"
+   "pyFAI/ocl_azim_lut        ",    "228",   "198",   "86%"
+   "pyFAI/opencl              ",    "140",   "102",   "72%"
+   "pyFAI/peakPicker          ",    "694",   "322",   "46%"
+   "pyFAI/spline              ",    "327",   "108",   "33%"
+   "pyFAI/units               ",    "40",   "35",     "87%"
+   "pyFAI/utils               ",    "658",   "377",   "57%"
+   "pyFAI/worker              ",    "183",   "0",     "0%"
+   "pyFAI                     ",   "9061",   "4280",  "47%"
+   "tests                     ",   "1890",   "1563",  "83"
+   "TOTAL                     ",   "10951",   "5843", "53%"
 
+Note that the test coverage tool does not count lines of Cython. 
 
 
 Continuous integration is made by a home-made scripts which checks out the latest release and builds and runs the test every night.
@@ -122,15 +120,19 @@ List of contributors in code
 
     $ git log  --pretty='%aN##%s' | grep -v 'Merge pull' | grep -Po '^[^#]+' | sort | uniq -c | sort -rn 
 
-As of 01/2014:
+As of 06/2014:
  * Jérôme Kieffer (ESRF)
- * Dimitris Karkoulis (ESRF)
- * Jon Wright (ESRF)
  * Frédéric-Emmanuel Picca (Soleil)
+ * Dimitris Karkoulis (ESRF)
+ * Aurore Deschildre (ESRF)
+ * Giannis Ashiotis (ESRF)
+ * Zubair Nawaz (Sesame)
+ * Jon Wright (ESRF)
  * Amund Hov (ESRF)
  * Dodogerstlin @github
  * Gunthard Benecke (Desy)
  * Gero Flucke (Desy)
+
 
 List of other contributors (ideas or code)
 ------------------------------------------
@@ -143,8 +145,8 @@ List of other contributors (ideas or code)
 List of supporters
 ------------------
 
-* LinkSCEEM project: initial porting to OpenCL
+* LinkSCEEM project: porting to OpenCL
 * ESRF ID11: Provided manpower in 2012 and 2013 and beamtime
-* ESRF ID13: Provided manpower in 2012 and 2013 and beamtime
+* ESRF ID13: Provided manpower in 2012, 2013, 2014 and beamtime
 * ESRF ID29: provided manpower in 2013 (MX-calibrate)
-* ESRF ID02: 2014
+* ESRF ID02: provide manpower 2014
