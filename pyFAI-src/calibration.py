@@ -33,11 +33,10 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/05/2014"
+__date__ = "27/05/2014"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
-from optparse import OptionParser
 try:
     from argparse import ArgumentParser
 except ImportError:
