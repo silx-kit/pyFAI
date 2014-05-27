@@ -66,6 +66,6 @@ if __name__ == "__main__":
     ax4 = fig.add_subplot(2, 2, 4)
     ax4.plot(cc.r, cc.I)
     ax4.set_title("powder pattern")
-    ax4.set_xlabel("2$\theta$ ($^o$)")
+    ax4.set_xlabel(r"2$\theta$ ($^o$)")
     ax4.set_ylabel("Intensity")
     raw_input("enter to quit")
