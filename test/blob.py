@@ -44,7 +44,7 @@ def image_test_rings():
 
 
 def make_gaussian(im,sigma,xc,yc):
-    e = 0.75
+    e = 0.5
     angle = 0
     sx = sigma * (1+e)
     sy = sigma * (1-e)
@@ -81,7 +81,7 @@ ax.imshow(numpy.log1p(data), interpolation = 'nearest')
 
 for i in range(3):
     print ('Octave #%i' %i)
-    bd._one_octave(shrink=True, refine = 'SG', n_5=True)
+    bd._one_octave(shrink=True, refine = True, n_5=True)
     print("Octave #%i Total kp: %i" % (i, bd.keypoints.size))
     
 # bd._one_octave(False, True ,False)
@@ -97,7 +97,7 @@ sigma = bd.keypoints.sigma
 for i,c in enumerate("bgrcmykw"):
 #    j = 2 ** i
     m = numpy.logical_and(sigma >= i, sigma < (i + 1))
-    ax.plot(bd.keypoints[m].x-0.5, bd.keypoints[m].y-0.5, "." + c, label=str(i))
+    ax.plot(bd.keypoints[m].x, bd.keypoints[m].y, "." + c, label=str(i))
 ax.legend()
 
 if sigma.size > 0:
