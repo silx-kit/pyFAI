@@ -200,7 +200,7 @@ class AbstractCalibration(object):
         self.parser.add_option("-v", "--verbose",
                           action="store_true", dest="debug", default=False,
                           help="switch to debug/verbose mode")
-        self.parser.add_option("-S", "--spacing", dest="spacing", metavar="FILE",
+        self.parser.add_option("-c", "--calibrant", dest="spacing", metavar="FILE",
                       help="Calibrant name or file containing d-spacing of the reference sample (MANDATORY)",
                       default=None)
         self.parser.add_option("-w", "--wavelength", dest="wavelength", type="float",
@@ -972,7 +972,7 @@ http://rruff.geo.arizona.edu/AMS/amcsd.php"""
 and the 6 refined parameters (distance, center, rotation) and wavelength.
 An 1D and 2D diffraction patterns are also produced. (.dat and .azim files)
         """
-        usage = "%prog [options] -w 1 -D detector -S calibrant.D imagefile.edf"
+        usage = "%prog [options] -w 1 -D detector -c calibrant.D imagefile.edf"
         self.configure_parser(usage=usage, description=description, epilog=epilog)  # common
         self.parser.add_option("-r", "--reconstruct", dest="reconstruct",
               help="Reconstruct image where data are masked or <0  (for Pilatus "\
@@ -984,7 +984,7 @@ An 1D and 2D diffraction patterns are also produced. (.dat and .azim files)
 Size of the gap (in pixels) between two consecutive rings, by default 100
 Increase the value if the arc is not complete;
 decrease the value if arcs are mixed together.""", default=None)
-        self.parser.add_option("-c", "--square", dest="square", action="store_true",
+        self.parser.add_option("--square", dest="square", action="store_true",
             help="Use square kernel shape for neighbor search instead of diamond shape",
             default=False)
         self.parser.add_option("-p", "--pixel", dest="pixel",
@@ -1111,7 +1111,7 @@ the various peaks; making pyFAI-recalib able to run without graphical interface 
 without human intervention (--no-gui --no-interactive options).
 
         """
-        usage = "%prog [options] -p ponifile -w 1 -S calibrant.D imagefile.edf"
+        usage = "%prog [options] -p ponifile -w 1 -c calibrant.D imagefile.edf"
         self.configure_parser(usage=usage, description=description, epilog=epilog)  # common
 
         self.parser.add_option("-r", "--ring", dest="max_rings", type="int",
@@ -1263,7 +1263,8 @@ correction. Maybe the future lies over there ...
         logger.debug("in rebuild")
         if self.r is None:
             self.integrate()
-        self.resynth = self.ai.calcfrom1d(self.r, self.I, mask=self.mask,
+
+        self.resynth = self.ai.calcfrom1d(self.r, self.I, shape=self.img.shape, mask=self.mask,
                    dim1_unit=self.unit, correctSolidAngle=True)
         if self.mask is not None:
             self.img[numpy.where(self.mask)] = 0
