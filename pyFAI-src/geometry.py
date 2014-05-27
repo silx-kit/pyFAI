@@ -1226,7 +1226,7 @@ class Geometry(object):
 
         """
         dim1_unit = units.to_unit(dim1_unit)
-        tth /= dim1_unit.scale
+        tth = tth.copy() / dim1_unit.scale
 
         if shape is None:
             shape = self.detector.max_shape
