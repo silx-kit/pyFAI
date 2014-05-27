@@ -574,7 +574,7 @@ class AbstractCalibration(object):
             if (ary is not None) and (ary.shape == self.peakPicker.data.shape):
                 ttha = ary
             else:
-                ttha = self.geoRef.twoThetaArray()
+                ttha = self.geoRef.twoThetaArray(self.peakPicker.data.shape)
         else:
             ttha = self.ai.twoThetaArray(self.peakPicker.data.shape)
         rings = 0
@@ -904,7 +904,7 @@ class AbstractCalibration(object):
             xrpd.plot(a, b)
             # GF: Add vertical line for each used calibration ring:
             xValues = None
-            twoTheta = numpy.array(self.peakPicker.points.calibrant.get_2th())  # in radian
+            twoTheta = numpy.array([i for i in self.peakPicker.points.calibrant.get_2th() if i])  # in radian
             if self.unit == units.TTH_DEG:
                 xValues = numpy.rad2deg(twoTheta)
             elif self.unit == units.TTH_RAD:
