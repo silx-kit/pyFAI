@@ -1636,10 +1636,10 @@ class CheckCalib(object):
 
     def parse(self):
         logger.debug("in parse")
-        usage = "usage: %prog [options] -p param.poni image.edf"
+        usage = "usage: check_calib [options] -p param.poni image.edf"
         description = """Check_calib is a research tool aiming at validating both the geometric
 calibration and everything else like flat-field correction, distortion
-correction. Maybe the future lies over there ...
+correction, at a sub-pixel level.
         """
         version = "check_calib from pyFAI version " + PyFAI_VERSION,
         parser = ArgumentParser(usage=usage,
