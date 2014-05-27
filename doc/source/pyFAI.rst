@@ -131,7 +131,12 @@ PyFAI solves this problem by pixel
 splitting : in addition to the pixel position, its
 spatial extension is calculated and each pixel is then split and
 distributed over the corresponding bins, the intensity being considered
-as homogeneous within a pixel and spread accordingly.
+as homogeneous within a pixel and spread accordingly. To simplify 
+calculations, this was initially done by abstracting the pixel shape 
+with a bounding box that circumscribes the pixel. In an effort to better
+the quality of the results this method was dropped in favour of a full 
+pixel splitting scheme that actually uses the actual pixel geometry 
+for its calculations.
 
 .. figure:: img/2DwithSplit.png
    :align: center
@@ -171,6 +176,11 @@ We measured that 500 Mb are needed to store the LUT to integrate a 16 megapixel 
 which fits onto a reasonable quality graphics card nowadays.
 By making this change we switched from a “linear read / random write” forward algorithm
 to a “random read / linear write” backward algorithm which is more suitable for parallelization.
+As a farther improvement on the algorithm, the use of compressed sparse row (CSR) format was 
+introduced, to store the LUT data. This reduced its size even more, giving this way the 
+opportunity of working with bigger images on the same hardware, when memory space is of concern, 
+as well as making the code better suited to be run on GPUs or accelerators, as transferring 
+data to the device is one of the most important bottlenecks of such computations.
 This algorithm was implemented in Cython-OpenMP and OpenCL.
 When using OpenCL for the GPU we used a compensated, or Kahan summation to reduce
 the error accumulation in the histogram summation (at the cost of more operations to be done).
@@ -181,8 +191,8 @@ Double precision operations are currently limited to high price and performance 
 The additional cost of Kahan summation, 4x more arithmetic operations, is hidden by smaller data types,
 the higher number of single precision units and that the GPU is usually limited by the memory bandwidth anyway.
 
-The perfomances of the parallel implementation based on a LUT are above 125 MPix/s (on a 3.4 GHz Intel core i7-2600)
-and can reach 200 MPix/s on recent multi-socket, multi-core computer or on high-end GPUs like Tesla cards.
+The perfomances of the parallel implementation based on a LUT, stored in CSR format, can reach 750 MPix/s 
+on recent multi-socket, multi-core computer or on high-end GPUs like Tesla cards.
 
 .. figure:: img/benchmark.png
    :align: center
