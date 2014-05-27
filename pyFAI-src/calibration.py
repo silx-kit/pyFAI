@@ -980,12 +980,11 @@ class Calibration(AbstractCalibration):
         """
         description = """Calibrate the diffraction setup geometry based on Debye-Sherrer rings images
 without a priori knowledge of your setup.
-You will need a "d-spacing" file containing the spacing of Miller plans in
-Angstrom (in decreasing order).
-If you are using a standart calibrant, look at
-https://github.com/kif/pyFAI/tree/master/calibration
-or search in the American Mineralogist database:
-http://rruff.geo.arizona.edu/AMS/amcsd.php"""
+Most standard calibrants are directly installed together with pyFAI. 
+If you prefer using your own, you can provide a "d-spacing" file
+containing the spacing of Miller plans in Angstrom (in decreasing order). 
+Most crystal powders used for calibration are available in the American
+Mineralogist database: http://rruff.geo.arizona.edu/AMS/amcsd.php"""
 
         epilog = """The output of this program is a "PONI" file containing the detector description
 and the 6 refined parameters (distance, center, rotation) and wavelength.
