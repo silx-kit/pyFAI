@@ -4,39 +4,38 @@ float integrate_line( float A0, float B0, float2 AB)
 }
 
 
-float getBinNr(float x0, float pos0_min, float dpos)
+float getBinNr(float x0, float delta, float pos0_min)
 {
-    return (x0 - pos0_min) / dpos;
+    return (x0 - pos0_min) / delta;
 }
 
 
 float min4f(float a, float b, float c, float d)
 {
-    float tmp1 = a <= b ? a : b;
-    float tmp2 = c <= d ? c : d;
-    return tmp1 <= tmp2 ? tmp1 : tmp2;
+    return fmin(fmin(a,b),fmin(c,d));
 }
 
 
 float max4f(float a, float b, float c, float d)
 {
-    float tmp1 = a >= b ? a : b;
-    float tmp2 = c >= d ? c : d;
-    return tmp1 >= tmp2 ? tmp1 : tmp2;
+    return fmax(fmax(a,b),fmax(c,d));
 }
 
 
-float2 minmax(float a, float b, float c, float d)
+void AtomicAdd(volatile __global float *source, const float operand) 
 {
-    float2 tmp0, tmp1, tmp2;
-    tmp0.s0 = a <= b ? a : b;
-    tmp0.s1 = a >= b ? a : b;
-    tmp1.s0 = c <= d ? c : d;
-    tmp1.s1 = c >= d ? c : d;
-    
-    tmp2.s0 = tmp0.s0 <= tmp1.s0 ? tmp0.s0 : tmp1.s0;
-    tmp2.s1 = tmp0.s1 <= tmp1.s1 ? tmp0.s1 : tmp1.s1;
-    return tmp2;
+    union {
+        unsigned int intVal;
+        float floatVal;
+    } newVal;
+    union {
+        unsigned int intVal;
+        float floatVal;
+    } prevVal;
+    do {
+        prevVal.floatVal = *source;
+        newVal.floatVal = prevVal.floatVal + operand;
+    } while (atomic_cmpxchg((volatile __global unsigned int *)source, prevVal.intVal, newVal.intVal) != prevVal.intVal);
 }
 
 
@@ -209,22 +208,68 @@ void integrate(__global float8* pos,
   //             __global int*    mask,
   //             __const  int     check_mask,
                __global float4* minmax,
-               __const  int     length,
+               const    int     length,
                         float2  pos0Range,
-                        float2  pos1Range)
+                        float2  pos1Range,
+               const    int     do_dummy,
+               const    float   dummy,
+               __global float*  outData,
+               __global float*  outCount,
+               __global float*  outMerge)
 {
-    float pos0_min, pos0_max;
-    {
-        float tmp = fmin(pos0Range.x,pos0Range.y);
-        pos0_min  = (tmp > minmax.s0) ? tmp : minmax.s0;
-        tmp = fmax(pos0Range.x,pos0Range.y);
-        pos0_max  = (tmp < minmax.s1) ? tmp : minmax.s1;
-        pos0_max *= 1 + EPS;
-    }
-    float delta = (pos0_max - pos0_min) / BINS;
-
-    int local_index  = get_local_id(0);
     int global_index = get_global_id(0);
-
-    
+    if (global_index < length)
+    {
+        float pos0_min, pos0_max;
+        float pos0_min = fmax(fmin(pos0Range.x,pos0Range.y),minmax.s0);
+        float pos0_max = fmin(fmax(pos0Range.x,pos0Range.y),minmax.s1);
+        pos0_max *= 1 + EPS;
+        
+        float delta = (pos0_max - pos0_min) / BINS;
+        
+        int local_index  = get_local_id(0);
+        
+        float8 pixel = pos[global_index];
+        float  data  = image[global_index];
+        
+        pixel.s0 = getBinNr(pixel.s0, delta, pos0_min);
+        pixel.s2 = getBinNr(pixel.s2, delta, pos0_min);
+        pixel.s4 = getBinNr(pixel.s4, delta, pos0_min);
+        pixel.s6 = getBinNr(pixel.s6, delta, pos0_min);
+        
+        float min0 = min4f(pixel.s0, pixel.s2, pixel.s4, pixel.s6);
+        float max0 = max4f(pixel.s0, pixel.s2, pixel.s4, pixel.s6);
+        
+        int bin0_min = floor(min0);
+        int bin0_max = floor(max0);
+        
+        float2 AB, BC, CD, DA;
+        
+        AB.x=(pixel.s3-pixel.s1)/(pixel.s2-pixel.s0);
+        AB.y= pixel.s1 - AB.x*pixel.s0;
+        BC.x=(pixel.s5-pixel.s3)/(pixel.s4-pixel.s2);
+        BC.y= pixel.s3 - BC.x*pixel.s2;
+        CD.x=(pixel.s7-pixel.s5)/(pixel.s6-pixel.s4);
+        CD.y= pixel.s5 - CD.x*pixel.s4;
+        DA.x=(pixel.s1-pixel.s7)/(pixel.s0-pixel.s6);
+        DA.y= pixel.s7 - DA.x*pixel.s6;
+        
+        float areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1);
+        float oneOverPixelArea = 1.0 / areaPixel;
+        for (int bin=bin0_min; bin < bin0_max+1; bin++)
+        {
+            float A_lim = (pixel.s0<=bin)*(pixel.s0<=(bin+1))*bin + (pixel.s0>bin)*(pixel.s0<=(bin+1))*pixel.s0 + (pixel.s0>bin)*(pixel.s0>(bin+1))*(bin+1);
+            float B_lim = (pixel.s2<=bin)*(pixel.s2<=(bin+1))*bin + (pixel.s2>bin)*(pixel.s2<=(bin+1))*pixel.s2 + (pixel.s2>bin)*(pixel.s2>(bin+1))*(bin+1);
+            float C_lim = (pixel.s4<=bin)*(pixel.s4<=(bin+1))*bin + (pixel.s4>bin)*(pixel.s4<=(bin+1))*pixel.s4 + (pixel.s4>bin)*(pixel.s4>(bin+1))*(bin+1);
+            float D_lim = (pixel.s6<=bin)*(pixel.s6<=(bin+1))*bin + (pixel.s6>bin)*(pixel.s6<=(bin+1))*pixel.s6 + (pixel.s6>bin)*(pixel.s6>(bin+1))*(bin+1);
+            float partialArea  = integrate(A_lim, B_lim, AB);
+            partialArea += integrate(B_lim, C_lim, BC);
+            partialArea += integrate(C_lim, D_lim, CD);
+            partialArea += integrate(D_lim, A_lim, DA);
+            float tmp = fabs(partialArea) * oneOverPixelArea;
+            AtomicAdd(&outCount[bin], tmp); 
+            AtomicAdd(&outData[bin], data*tmp);
+            
+        }
+    }
 }
