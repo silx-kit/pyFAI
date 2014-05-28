@@ -35,8 +35,8 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2013"
-__satus__ = "development"
+__date__ = "28/05/2014"
+__satus__ = "Production"
 
 import logging
 import time
@@ -48,6 +48,12 @@ import h5py
 import pyFAI, pyFAI.utils
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("diff_tomo")
+from pyFAI import version as PyFAI_VERSION
+from pyFAI import date as PyFAI_DATE
+try:
+    from argparse import ArgumentParser
+except ImportError:
+    from pyFAI.argparse import ArgumentParser
 
 
 class DiffTomo(object):
@@ -89,7 +95,6 @@ class DiffTomo(object):
         """
         parse options from command line
         """
-        from optparse import OptionParser
         description = """Azimuthal integration for diffraction tomography.
 
 Diffraction tomography is an experiment where 2D diffraction patterns are recorded
@@ -103,50 +108,48 @@ where the 1d dataset has to be selected as last dimension. This file is not (yet
 This tool can be used for mapping experiments if one considers the slow scan direction as the rotation.
         """
         epilog = """If the number of files is too large, use double quotes "*.edf" """
-        usage = """usage: %prog [options] -p ponifile imagefiles*
+        usage = """usage: diff_tomo [options] -p ponifile imagefiles*
 If the number of files is too large, use double quotes like "*.edf" """
-        version = "%prog " + pyFAI.version
-        parser = OptionParser(usage=usage, version=version,
-                              description=description, epilog=epilog)
-        parser.add_option("-o", "--output", dest="outfile",
+        version = "diff_tomo from pyFAI  version %s: %s" % (PyFAI_VERSION, PyFAI_DATE)
+        parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
+        parser.add_argument("-V", "--version", action='version', version=version)
+        parser.add_argument("args", metavar="FILE", help="List of files to calibrate", nargs='+')
+        parser.add_argument("-o", "--output", dest="outfile",
                           help="HDF5 File where processed sinogram was saved",
                           metavar="FILE", default="diff_tomo.h5")
-        parser.add_option("-v", "--verbose",
+        parser.add_argument("-v", "--verbose",
                           action="store_true", dest="verbose", default=False,
                           help="switch to verbose/debug mode")
-        parser.add_option("-P", "--prefix", dest="prefix",
+        parser.add_argument("-P", "--prefix", dest="prefix",
                           help="Prefix or common base for all files",
-                          metavar="FILE", default="", type="str")
-        parser.add_option("-e", "--extension", dest="extension",
+                          metavar="FILE", default="", type=str)
+        parser.add_argument("-e", "--extension", dest="extension",
                           help="Process all files with this extension",
                           default="")
-        parser.add_option("-t", "--nTrans", dest="nTrans",
+        parser.add_argument("-t", "--nTrans", dest="nTrans",
                           help="number of points in translation", default=None)
-        parser.add_option("-r", "--nRot", dest="nRot",
+        parser.add_argument("-r", "--nRot", dest="nRot",
                           help="number of points in rotation", default=None)
-        parser.add_option("-c", "--nDiff", dest="nDiff",
+        parser.add_argument("-c", "--nDiff", dest="nDiff",
                           help="number of points in diffraction powder pattern",
                           default=None)
-        parser.add_option("-d", "--dark", dest="dark", metavar="FILE",
+        parser.add_argument("-d", "--dark", dest="dark", metavar="FILE",
                           help="list of dark images to average and subtract",
                           default=None)
-        parser.add_option("-f", "--flat", dest="flat", metavar="FILE",
+        parser.add_argument("-f", "--flat", dest="flat", metavar="FILE",
                           help="list of flat images to average and divide",
                           default=None)
-        parser.add_option("-m", "--mask", dest="mask", metavar="FILE",
+        parser.add_argument("-m", "--mask", dest="mask", metavar="FILE",
                           help="file containing the mask", default=None)
-        parser.add_option("-p", "--poni", dest="poni", metavar="FILE",
+        parser.add_argument("-p", "--poni", dest="poni", metavar="FILE",
                           help="file containing the diffraction parameter (poni-file)",
                           default=None)
-        parser.add_option("-O", "--offset", dest="offset",
+        parser.add_argument("-O", "--offset", dest="offset",
                           help="do not process the first files", default=None)
-        parser.add_option("-g", "--gpu", dest="gpu", action="store_true",
+        parser.add_argument("-g", "--gpu", dest="gpu", action="store_true",
                           help="process using OpenCL on GPU ", default=False)
-        (options, args) = parser.parse_args()
-
-        # Analyse aruments and options
-#        if len(args) != 1:
-#            parser.error("incorrect number of arguments")
+        options = parser.parse_args()
+        args = options.args
 
         if options.verbose:
             logger.setLevel(logging.DEBUG)
