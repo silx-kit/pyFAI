@@ -992,7 +992,7 @@ Mineralogist database: http://rruff.geo.arizona.edu/AMS/amcsd.php"""
 and the 6 refined parameters (distance, center, rotation) and wavelength.
 An 1D and 2D diffraction patterns are also produced. (.dat and .azim files)
         """
-        usage = "%prog [options] -w 1 -D detector -c calibrant.D imagefile.edf"
+        usage = "pyFAI-calib [options] -w 1 -D detector -c calibrant.D imagefile.edf"
         self.configure_parser(usage=usage, description=description, epilog=epilog)  # common
         self.parser.add_argument("-r", "--reconstruct", dest="reconstruct",
               help="Reconstruct image where data are masked or <0  (for Pilatus "\
