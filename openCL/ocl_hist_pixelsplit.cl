@@ -1,3 +1,13 @@
+//#pragma OPENCL EXTENSION cl_amd_printf : enable
+#pragma OPENCL EXTENSION cl_intel_printf : enable
+
+
+float area4(float a0, float a1, float b0, float b1, float c0, float c1, float d0, float d1)
+{
+    return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)));
+}
+
+
 float integrate_line( float A0, float B0, float2 AB)
 {
     return (A0==B0) ? 0.0 : AB.s0*(B0*B0 - A0*A0)*0.5 + AB.s1*(B0-A0);
@@ -39,6 +49,69 @@ void AtomicAdd(volatile __global float *source, const float operand)
 }
 
 
+/**
+ * \brief cast values of an array of uint16 into a float output array.
+ *
+ * @param array_u16: Pointer to global memory with the input data as unsigned16 array
+ * @param array_float:  Pointer to global memory with the output data as float array
+ */
+__kernel void
+u16_to_float(__global unsigned short  *array_u16,
+             __global float *array_float
+)
+{
+  int i = get_global_id(0);
+  //Global memory guard for padding
+  if(i < NIMAGE)
+    array_float[i]=(float)array_u16[i];
+}
+
+
+/**
+ * \brief convert values of an array of int32 into a float output array.
+ *
+ * @param array_int:  Pointer to global memory with the data in int
+ * @param array_float:  Pointer to global memory with the data in float
+ */
+__kernel void
+s32_to_float(   __global int  *array_int,
+                __global float  *array_float
+        )
+{
+  int i = get_global_id(0);
+  //Global memory guard for padding
+  if(i < NIMAGE)
+    array_float[i] = (float)(array_int[i]);
+}
+
+
+
+/**
+ * \brief Sets the values of 3 float output arrays to zero.
+ *
+ * Gridsize = size of arrays + padding.
+ *
+ * @param array0: float Pointer to global memory with the outMerge array
+ * @param array1: float Pointer to global memory with the outCount array
+ * @param array2: float Pointer to global memory with the outData array
+ */
+__kernel void
+memset_out(__global float *array0,
+           __global float *array1,
+           __global float *array2
+)
+{
+  int i = get_global_id(0);
+  //Global memory guard for padding
+  if(i < BINS)
+  {
+    array0[i]=0.0f;
+    array1[i]=0.0f;
+    array2[i]=0.0f;
+  }
+}
+
+
 __kernel
 void reduce1(__global float2* buffer,
              __const int length,
@@ -47,6 +120,7 @@ void reduce1(__global float2* buffer,
     
     int global_index = get_global_id(0);
     int global_size  = get_global_size(0);
+    printf("fooo");
     float4 accumulator;
     accumulator.x = INFINITY;
     accumulator.y = -INFINITY;
@@ -203,26 +277,24 @@ corrections(        __global float  *image,
 
 
 __kernel
-void integrate(__global float8* pos,
-               __global float*  image,
-  //             __global int*    mask,
-  //             __const  int     check_mask,
-               __global float4* minmax,
-               const    int     length,
-                        float2  pos0Range,
-                        float2  pos1Range,
-               const    int     do_dummy,
-               const    float   dummy,
-               __global float*  outData,
-               __global float*  outCount,
-               __global float*  outMerge)
+void integrate1(__global float8* pos,
+                __global float*  image,
+    //             __global int*    mask,
+    //             __const  int     check_mask,
+                __global float4* minmax,
+                const    int     length,
+                         float2  pos0Range,
+                         float2  pos1Range,
+                const    int     do_dummy,
+                const    float   dummy,
+                __global float*  outData,
+                __global float*  outCount)
 {
     int global_index = get_global_id(0);
     if (global_index < length)
     {
-        float pos0_min, pos0_max;
-        float pos0_min = fmax(fmin(pos0Range.x,pos0Range.y),minmax.s0);
-        float pos0_max = fmin(fmax(pos0Range.x,pos0Range.y),minmax.s1);
+        float pos0_min = fmax(fmin(pos0Range.x,pos0Range.y),minmax[0].s0);
+        float pos0_max = fmin(fmax(pos0Range.x,pos0Range.y),minmax[0].s1);
         pos0_max *= 1 + EPS;
         
         float delta = (pos0_max - pos0_min) / BINS;
@@ -254,7 +326,7 @@ void integrate(__global float8* pos,
         DA.x=(pixel.s1-pixel.s7)/(pixel.s0-pixel.s6);
         DA.y= pixel.s7 - DA.x*pixel.s6;
         
-        float areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1);
+        float areaPixel = area4(pixel.s0, pixel.s1, pixel.s2, pixel.s3, pixel.s4, pixel.s5, pixel.s6, pixel.s7);
         float oneOverPixelArea = 1.0 / areaPixel;
         for (int bin=bin0_min; bin < bin0_max+1; bin++)
         {
@@ -262,14 +334,25 @@ void integrate(__global float8* pos,
             float B_lim = (pixel.s2<=bin)*(pixel.s2<=(bin+1))*bin + (pixel.s2>bin)*(pixel.s2<=(bin+1))*pixel.s2 + (pixel.s2>bin)*(pixel.s2>(bin+1))*(bin+1);
             float C_lim = (pixel.s4<=bin)*(pixel.s4<=(bin+1))*bin + (pixel.s4>bin)*(pixel.s4<=(bin+1))*pixel.s4 + (pixel.s4>bin)*(pixel.s4>(bin+1))*(bin+1);
             float D_lim = (pixel.s6<=bin)*(pixel.s6<=(bin+1))*bin + (pixel.s6>bin)*(pixel.s6<=(bin+1))*pixel.s6 + (pixel.s6>bin)*(pixel.s6>(bin+1))*(bin+1);
-            float partialArea  = integrate(A_lim, B_lim, AB);
-            partialArea += integrate(B_lim, C_lim, BC);
-            partialArea += integrate(C_lim, D_lim, CD);
-            partialArea += integrate(D_lim, A_lim, DA);
+            float partialArea  = integrate_line(A_lim, B_lim, AB);
+            partialArea += integrate_line(B_lim, C_lim, BC);
+            partialArea += integrate_line(C_lim, D_lim, CD);
+            partialArea += integrate_line(D_lim, A_lim, DA);
             float tmp = fabs(partialArea) * oneOverPixelArea;
             AtomicAdd(&outCount[bin], tmp); 
             AtomicAdd(&outData[bin], data*tmp);
             
         }
     }
+}
+
+
+__kernel
+void integrate2(__global float*  outData,
+                __global float*  outCount,
+                __global float*  outMerge)
+{
+    int global_index = get_global_id(0);
+    if (global_index < BINS)
+        outMerge[global_index] = outData[global_index]/outCount[global_index];
 }
