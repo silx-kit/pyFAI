@@ -127,6 +127,22 @@ class OCL_Hist_Pixelsplit(object):
             raise MemoryError(error)
         ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["pos"], self.pos)
         if self.profile: self.events.append(("copy pos data",ev))
+        reduction_wg_size = 256
+        reduce1 = self._program.reduce1(self._queue, (reduction_wg_size*reduction_wg_size,), (reduction_wg_size,), *self._cl_kernel_args["reduce1"])
+        self.events.append(("reduce1",reduce1))
+        reduce2 = self._program.reduce2(self._queue, (reduction_wg_size,), (reduction_wg_size,), *self._cl_kernel_args["reduce2"])
+        self.events.append(("reduce2",reduce2))
+        
+        result = numpy.ndarray(4,dtype=numpy.float32)
+        pyopencl.enqueue_copy(self._queue,result, self._cl_mem["minmax"])
+        print result
+        min0 = pos[:, :, 0].min()
+        max0 = pos[:, :, 0].max()
+        min1 = pos[:, :, 1].min()
+        max1 = pos[:, :, 1].max()
+        minmax=(min0,max0,min1,max1)
+
+        print minmax
        
     def __del__(self):
         """
@@ -234,7 +250,7 @@ class OCL_Hist_Pixelsplit(object):
         When setRange is called it replaces that argument with tthRange low and upper bounds. When unsetRange is called, the argument slot
         is reset to tth_min_max.
         """
-        self._cl_kernel_args["reduce1"] = [self._cl_mem["pos"], numpy.int32(0), self._cl_mem["preresult"]]
+        self._cl_kernel_args["reduce1"] = [self._cl_mem["pos"], numpy.int32(self.pos_size), self._cl_mem["preresult"]]
         self._cl_kernel_args["reduce2"] = [self._cl_mem["preresult"], self._cl_mem["minmax"]]
         self._cl_kernel_args["corrections"] = [self._cl_mem["image"], numpy.int32(0), self._cl_mem["dark"], numpy.int32(0), self._cl_mem["flat"], \
                                               numpy.int32(0), self._cl_mem["solidangle"], numpy.int32(0), self._cl_mem["polarization"], \

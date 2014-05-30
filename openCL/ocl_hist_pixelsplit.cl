@@ -1,5 +1,5 @@
 //#pragma OPENCL EXTENSION cl_amd_printf : enable
-#pragma OPENCL EXTENSION cl_intel_printf : enable
+//#pragma OPENCL EXTENSION cl_intel_printf : enable
 
 
 float area4(float a0, float a1, float b0, float b1, float c0, float c1, float d0, float d1)
@@ -120,7 +120,6 @@ void reduce1(__global float2* buffer,
     
     int global_index = get_global_id(0);
     int global_size  = get_global_size(0);
-    printf("fooo");
     float4 accumulator;
     accumulator.x = INFINITY;
     accumulator.y = -INFINITY;
@@ -293,8 +292,10 @@ void integrate1(__global float8* pos,
     int global_index = get_global_id(0);
     if (global_index < length)
     {
-        float pos0_min = fmax(fmin(pos0Range.x,pos0Range.y),minmax[0].s0);
-        float pos0_max = fmin(fmax(pos0Range.x,pos0Range.y),minmax[0].s1);
+//         float pos0_min = fmax(fmin(pos0Range.x,pos0Range.y),minmax[0].s0);
+//         float pos0_max = fmin(fmax(pos0Range.x,pos0Range.y),minmax[0].s1);
+        float pos0_min = minmax[0].s0;
+        float pos0_max = minmax[0].s1;
         pos0_max *= 1 + EPS;
         
         float delta = (pos0_max - pos0_min) / BINS;
@@ -339,8 +340,10 @@ void integrate1(__global float8* pos,
             partialArea += integrate_line(C_lim, D_lim, CD);
             partialArea += integrate_line(D_lim, A_lim, DA);
             float tmp = fabs(partialArea) * oneOverPixelArea;
-            AtomicAdd(&outCount[bin], tmp); 
-            AtomicAdd(&outData[bin], data*tmp);
+            outCount[bin] = tmp;
+            outData[bin]  = data*tmp;
+//             AtomicAdd(&outCount[bin], tmp); 
+//             AtomicAdd(&outData[bin], data*tmp);
             
         }
     }

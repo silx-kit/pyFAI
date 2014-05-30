@@ -24,8 +24,10 @@ ref = ai.xrpd_LUT(data, 1000)[1]
 #obt = ai.xrpd_LUT_OCL(data, 1000)[1]
 
 #ref = ai.integrate1d(data, 1000, method="ocl_csr", unit="2th_deg")[0]
+pos_in = ai.array_from_unit(data.shape, "corner", unit="2th_deg")
 
-pos = ai.array_from_unit(data.shape, "corner", unit="2th_deg")
+pos = pos_in.reshape(pos_in.size/8,4,2)
+
 foo = splitPixelFullLUT.HistoLUT1dFullSplit(pos, 1000, unit="2th_deg")
 
 boo = foo.integrate(data)[1]
