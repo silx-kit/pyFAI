@@ -131,7 +131,12 @@ PyFAI solves this problem by pixel
 splitting : in addition to the pixel position, its
 spatial extension is calculated and each pixel is then split and
 distributed over the corresponding bins, the intensity being considered
-as homogeneous within a pixel and spread accordingly.
+as homogeneous within a pixel and spread accordingly. To simplify 
+calculations, this was initially done by abstracting the pixel shape 
+with a bounding box that circumscribes the pixel. In an effort to better
+the quality of the results this method was dropped in favour of a full 
+pixel splitting scheme that actually uses the actual pixel geometry 
+for its calculations.
 
 .. figure:: img/2DwithSplit.png
    :align: center
@@ -167,12 +172,25 @@ look like a simple (if large and sparse) matrix vector product.
 This look-up table size depends on whether pixels are split over multiple
 bins and to exploit the sparse structure, both index and weight of the pixel
 have to be stored.
-We measured that 500 Mb are needed to store the LUT to integrate a 16 megapixel image,
-which fits onto a reasonable quality graphics card nowadays.
+We measured that 500 Mbytes are needed to store the LUT to integrate a 16 
+megapixel image, which fits onto a reasonable quality graphics card nowadays 
+but can still be too large to fit on an entry-level graphics card.
+
 By making this change we switched from a “linear read / random write” forward algorithm
 to a “random read / linear write” backward algorithm which is more suitable for parallelization.
-This algorithm was implemented in Cython-OpenMP and OpenCL.
-When using OpenCL for the GPU we used a compensated, or Kahan summation to reduce
+As a farther improvement on the algorithm, the use of compressed sparse row (CSR) format was 
+introduced, to store the LUT data.
+This algorithm was implemented both in Cython-OpenMP and OpenCL.
+The CSR approach has a double benefit: 
+first, it reduces the size of the storage needed compared to the LUT by a factor two to three, 
+offering the opportunity of working with larger images on the same hardware. 
+Secondly, the CSR  implementation in OpenCL is using an algorithm based on multiple parallel 
+reductions where many execution threads are collaborating to calculate 
+the content of a single bin. 
+This makes it very well suited to run on GPUs and accelerators 
+where hundreds to thousands of simultaneous threads are available.
+
+When using OpenCL for the GPU we used a compensated, or Kahan summation, to reduce
 the error accumulation in the histogram summation (at the cost of more operations to be done).
 This allows accurate results to be obtained on cheap hardware that performs calculations
 in single precision floating-point arithmetic (32 bits) which are available on consumer
@@ -181,12 +199,14 @@ Double precision operations are currently limited to high price and performance 
 The additional cost of Kahan summation, 4x more arithmetic operations, is hidden by smaller data types,
 the higher number of single precision units and that the GPU is usually limited by the memory bandwidth anyway.
 
-The perfomances of the parallel implementation based on a LUT are above 125 MPix/s (on a 3.4 GHz Intel core i7-2600)
-and can reach 200 MPix/s on recent multi-socket, multi-core computer or on high-end GPUs like Tesla cards.
+The performances of the parallel implementation based on a LUT, stored in CSR format, can reach 750 MPix/s 
+on recent multi-core computer with a mid-range graphics card. 
+On multi-socket server featuring high-end GPUs like Tesla cards, the performances are similar with 
+the additional capability to work on multiple detector simultaneously.
 
 .. figure:: img/benchmark.png
    :align: center
-   :alt: benchmark performed on a 2010 consumer computer
+   :alt: benchmark performed on a 2014 single-socket workstation
 
 
 Conclusion
@@ -201,10 +221,10 @@ The library pyFAI was developed with two main goals:
    and local intensity preservation.
 
 PyFAI is the first implementation of an azimuthal integration algorithm
-on a gpu as far as we are aware of, and the stated twenty-fold speed up
+on a GPUs as far as we are aware of, and the stated twenty-fold speed up
 opens the door to a new kind of analysis, not even considered before.
-With a good interface close to the camera, we believe PyFAI is able to sustain the data
-streams from the next generation high-speed detectors.
+With a good interface close to the camera, we believe PyFAI is able to 
+sustain the data streams from the next generation high-speed detectors.
 
 Acknowledgments
 ...............

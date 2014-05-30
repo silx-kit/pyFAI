@@ -6,12 +6,12 @@ Purpose
 
 Calibrate the diffraction setup geometry based on Debye-Sherrer rings images
 without a priori knowledge of your setup.
-You will need a "d-spacing" file containing the spacing of Miller plans in
-Angstrom (in decreasing order).
-If you are using a standart calibrant, look at
-https://github.com/kif/pyFAI/tree/master/calibration
-or search in the American Mineralogist database:
-http://rruff.geo.arizona.edu/AMS/amcsd.php
+Most standard calibrants are directly installed together with pyFAI. 
+If you prefer using your own, you can provide a "d-spacing" file
+containing the spacing of Miller plans in Angstrom (in decreasing order). 
+Most crystal powders used for calibration are available in the American
+Mineralogist database: http://rruff.geo.arizona.edu/AMS/amcsd.php
+
 
 You will need in addition:
  * The radiation energy (in keV) or its wavelength (in A)
@@ -26,26 +26,28 @@ Many option are available among those:
  * Automatic desaturation (time consuming!)
  * Intensity weighted least-squares refinements
 
-The output of this program is a "PONI" file containing the detector description
-and the 6 refined parameters (distance, center, rotation) and wavelength.
-An 1D and 2D diffraction patterns are also produced. (.dat and .azim files)
+The output of this program is a "PONI" file containing the detector
+description and the 6 refined parameters (distance, center, rotation) and
+wavelength. An 1D and 2D diffraction patterns are also produced. (.dat and
+.azim files)
+
 
 Usage:
 ------
+pyFAI-calib [options] -w 1 -D detector -c calibrant.D imagefile.edf
 
-pyFAI-recalib [options] -w 1 -D detector -S calibrant.D imagefile.edf
 
 
 Options:
 --------
 
-  -h, --help            show the help message and exit
-  -V, --version         print version of the program and quit
+  --version             show program's version number and exit
+  -h, --help            show this help message and exit
   -o FILE, --out=FILE   Filename where processed image is saved
   -v, --verbose         switch to debug/verbose mode
-  -S FILE, --spacing=FILE
-                        file containing d-spacing of the reference sample
-                        (MANDATORY)
+  -c FILE, --calibrant=FILE
+                        Calibrant name or file containing d-spacing of the
+                        reference sample (MANDATORY)
   -w WAVELENGTH, --wavelength=WAVELENGTH
                         wavelength of the X-Ray beam in Angstrom
   -e ENERGY, --energy=ENERGY
@@ -110,11 +112,10 @@ Options:
                         pixels) between two consecutive rings, by default 100
                         Increase the value if the arc is not complete;
                         decrease the value if arcs are mixed together.
-  -c, --square          Use square kernel shape for neighbor search instead of
+  --square              Use square kernel shape for neighbor search instead of
                         diamond shape
   -p PIXEL, --pixel=PIXEL
                         size of the pixel in micron
-
 
 Example of usage:
 -----------------
@@ -123,7 +124,8 @@ Pilatus 1M image of Silver Behenate taken at ESRF-BM26:
 .......................................................
 
 ::
-	pyFAI-calib -D Pilatus1M -S calibration/AgBh.D -r -w 1.0 test/testimages/Pilatus1M.edf
+
+	pyFAI-calib -D Pilatus1M -c AgBh -r -w 1.0 test/testimages/Pilatus1M.edf
 
 We use the parameter -r to reconstruct the missing part between the modules of the
 Pilatus detector.
@@ -133,12 +135,14 @@ Half a FReLoN CCD image of Lantanide hexaboride taken at ESRF-ID11:
 ...................................................................
 
 ::
-	pyFAI-calib -s test/testimages/halfccd.spline -S calibration/LaB6.D -w 0.3 test/testimages/halfccd.edf -g 250
+
+	pyFAI-calib -s test/testimages/halfccd.spline -c LaB6 -w 0.3 test/testimages/halfccd.edf -g 250
 
 
-This image is rather spotty. We need to blur a lot to get the continuity of the rings. This is achieved by the -g parameter.
-While the sample is well diffracting and well known, the wavelength has been guessed.
-
+This image is rather spotty. We need to blur a lot to get the continuity of the rings. 
+This is achieved by the -g parameter.
+While the sample is well diffracting and well known, the wavelength has been guessed. 
+One should refine the wavelength when the peaks extracted are correct
 
 
 All those images are part of the test-suite of pyFAI. To download them from internet, run
@@ -147,4 +151,4 @@ All those images are part of the test-suite of pyFAI. To download them from inte
 
 	python setup.py build test
 
-They will be located in tests/testimages
+Downloaded test images  are located in tests/testimages

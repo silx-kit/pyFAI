@@ -760,9 +760,7 @@ class Distortion(object):
         @return: uncorrected 2D image and a mask (pixels in raw image
         """
         if self.LUT is None:
-            with self._sem:
-                if self.LUT is None:
-                    self.calc_LUT()
+            self.calc_LUT()
         out = numpy.zeros(self.shape,dtype=numpy.float32)
         mask = numpy.zeros(self.shape, dtype=numpy.int8)
         lmask = mask.ravel()

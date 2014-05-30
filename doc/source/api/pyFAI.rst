@@ -73,13 +73,22 @@ pyFAI Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`refinment2D` Module
--------------------------
+:mod:`blob_detection` Module
+------------------------
 
-.. automodule:: pyFAI.refinment2D
+.. automodule:: pyFAI.blob_detection
     :members:
     :undoc-members:
     :show-inheritance:
+
+
+.. :mod:`refinment2D` Module
+   -------------------------
+   
+   .. automodule:: pyFAI.refinment2D
+       :members:
+       :undoc-members:
+       :show-inheritance:
 
 :mod:`spline` Module
 --------------------
