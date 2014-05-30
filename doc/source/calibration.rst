@@ -34,7 +34,28 @@ Peak-picking
 ------------
 
 
-Identification of peaks and groups of peaks belonging to same ring
+The Peak-picking consists in the identification of peaks and groups of peaks 
+belonging to same ring. It can be performed by two methods : blob detection or 
+massif detection.
+
+Massif detection
+----------------
+This method consists in making the difference of the original image and a blurred
+image. Then we look for a chain of positives values on this difference starting 
+at a point chosen by the user. 
+
+Blob detection 
+--------------
+The approach is based on difference of gaussians (DoGs) as described in the article
+http://en.wikipedia.org/wiki/Blob_detection
+
+It consists in blurring the image by convolution with a gaussian and making 
+differences between two successives blurs.
+In theses DoGs, keypoints are defined as the maxima in the 3D space (y,x,size of
+the gaussian). After their localization, keypoints are refined by Savitzky Golay
+algorithm or by an interpolation at the second order which is equivalent but uses
+less points. At this step, if the estimation of the maximum is too far from the maximum, 
+the keypoint will be considered as a fake maximum and removed.
 
 Refinement of the parameters
 ----------------------------

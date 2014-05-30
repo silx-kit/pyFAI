@@ -14,6 +14,7 @@ from pyFAI.detectors import detector_factory
 
 
 def image_test():
+    "Creating a test image containing several gaussian of several sizes"
     img = numpy.zeros((128*4,128*4))
     a = numpy.linspace(0.5, 8, 16)
     xc = [64,64,64,64,192,192,192,192,320,320,320,320,448,448,448,448]
@@ -25,6 +26,7 @@ def image_test():
     return img
 
 def image_test_rings():
+    "Creating a test image containing gaussian spots on several rings"
     rings = 10
     mod = 50
     detector = detector_factory("Titan")
@@ -44,6 +46,7 @@ def image_test_rings():
 
 
 def make_gaussian(im,sigma,xc,yc):
+    "Creating 2D gaussian to be put in a test image"
     e = 0.5
     angle = 0
     sx = sigma * (1+e)
@@ -60,6 +63,7 @@ def make_gaussian(im,sigma,xc,yc):
     gaus = 0.01 + gausx * gausy
     im[xc-size/2:xc+size/2+1,yc-size/2:yc+size/2+1] = scipy.ndimage.rotate(gaus,angle, reshape = False)
     return im
+
 
 if len(UtilsTest.options.args) > 0:
      data = fabio.open(UtilsTest.options.args[0]).data

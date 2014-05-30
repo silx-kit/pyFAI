@@ -733,7 +733,7 @@ class AbstractCalibration(object):
                     self.fixed.remove(param)
             elif action == "recalib":
                 max_rings = None
-                method = "blob"
+#                 method = "blob"
                 if len(words) >= 2:
                     try:
                        max_rings = int(words[1])
