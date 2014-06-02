@@ -75,7 +75,12 @@ class OCL_LUT_Integrator(object):
         self._cl_mem = {}
         self.events = []
         if (platformid is None) and (deviceid is None):
-            platformid, deviceid = ocl.select_device(devicetype)
+            res = ocl.select_device(devicetype)
+            if res:
+                platformid, deviceid = res
+            else:
+                logger.warning("No such devicetype %s"%devicetype)
+                platformid, deviceid = ocl.select_device()
         elif platformid is None:
             platformid = 0
         elif deviceid is None:
