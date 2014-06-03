@@ -49,7 +49,7 @@ except ImportError:
 
 
 def main():
-    usage = "usage: %prog [options] -n 1000 -p ponifile file1.edf file2.edf ..."
+    usage = "pyFAI-saxs [options] -n 1000 -p ponifile file1.edf file2.edf ..."
     version = "PyFAI-saxs version %s from %s " % (pyFAI.version, pyFAI.date)
     description = """Azimuthal integration for SAXS users."""
     epilog = """pyFAI-saxs is the SAXS script of pyFAI that allows data
