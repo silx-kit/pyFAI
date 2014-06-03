@@ -58,6 +58,7 @@ class PeakPicker(object):
     """
     
     This class is in charge of peak picking, i.e. find bragg spots in the image
+    Two methods can be used : massif or blob
     
     """
     VALID_METHODS = ["massif", "blob"]
@@ -65,8 +66,10 @@ class PeakPicker(object):
     def __init__(self, strFilename, reconst=False, mask=None,
                  pointfile=None, calibrant=None, wavelength=None, method="massif"):
         """
-        @param: input image filename
+        @param strFilename: input image filename
         @param reconst: shall masked part or negative values be reconstructed (wipe out problems with pilatus gaps)
+        @param mask: area in which keypoints will not be considered as valid
+        @param pointfile: 
         """
         self.strFilename = strFilename
         self.data = fabio.open(strFilename).data.astype("float32")
@@ -835,6 +838,7 @@ class Massif(object):
 
     def nearest_peak(self, x):
         """
+        @param x: coordinates of the peak
         @returns the coordinates of the nearest peak
         """
 #        x = numpy.array(x, dtype="float32")
@@ -928,7 +932,7 @@ class Massif(object):
         @param Imin: minimum of intensity above the background to keep the point
         @param keep: maximum number of points to keep
         @param kwarg: ignored parameters
-        @return: list of peacks [y,x], [y,x], ...]
+        @return: list of peaks [y,x], [y,x], ...]
         """
         all_points = numpy.vstack(numpy.where(mask)).T
         res = []

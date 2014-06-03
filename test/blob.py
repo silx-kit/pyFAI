@@ -14,6 +14,7 @@ from pyFAI.detectors import detector_factory
 
 
 def image_test():
+    "Creating a test image containing several gaussian of several sizes"
     img = numpy.zeros((128*4,128*4))
     a = numpy.linspace(0.5, 8, 16)
     xc = [64,64,64,64,192,192,192,192,320,320,320,320,448,448,448,448]
@@ -25,6 +26,7 @@ def image_test():
     return img
 
 def image_test_rings():
+    "Creating a test image containing gaussian spots on several rings"
     rings = 10
     mod = 50
     detector = detector_factory("Titan")
@@ -44,7 +46,8 @@ def image_test_rings():
 
 
 def make_gaussian(im,sigma,xc,yc):
-    e = 0.75
+    "Creating 2D gaussian to be put in a test image"
+    e = 0.5
     angle = 0
     sx = sigma * (1+e)
     sy = sigma * (1-e)
@@ -60,6 +63,7 @@ def make_gaussian(im,sigma,xc,yc):
     gaus = 0.01 + gausx * gausy
     im[xc-size/2:xc+size/2+1,yc-size/2:yc+size/2+1] = scipy.ndimage.rotate(gaus,angle, reshape = False)
     return im
+
 
 if len(UtilsTest.options.args) > 0:
      data = fabio.open(UtilsTest.options.args[0]).data
@@ -81,7 +85,7 @@ ax.imshow(numpy.log1p(data), interpolation = 'nearest')
 
 for i in range(3):
     print ('Octave #%i' %i)
-    bd._one_octave(shrink=True, refine=True, n_5=True)
+    bd._one_octave(shrink=True, refine = True, n_5=True)
     print("Octave #%i Total kp: %i" % (i, bd.keypoints.size))
     
 # bd._one_octave(False, True ,False)
@@ -97,7 +101,7 @@ sigma = bd.keypoints.sigma
 for i,c in enumerate("bgrcmykw"):
 #    j = 2 ** i
     m = numpy.logical_and(sigma >= i, sigma < (i + 1))
-    ax.plot(bd.keypoints[m].x-0.5, bd.keypoints[m].y-0.5, "." + c, label=str(i))
+    ax.plot(bd.keypoints[m].x, bd.keypoints[m].y, "." + c, label=str(i))
 ax.legend()
 
 if sigma.size > 0:
