@@ -8,7 +8,7 @@
  *
  *   Principal authors: D. Karkoulis (karkouli@esrf.fr)
  *   Last revision: 11/05/2012
- *    
+ *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as published
  *   by the Free Software Foundation, either version 3 of the License, or
@@ -24,15 +24,6 @@
  *   If not, see <http://www.gnu.org/licenses/>.
  */
 
-//OpenCL extensions are silently defined by opencl compiler at compile-time:
-#ifdef cl_amd_printf
-  #pragma OPENCL EXTENSION cl_amd_printf : enable
-  //#define printf(...)
-#elif defined(cl_intel_printf)
-  #pragma OPENCL EXTENSION cl_intel_printf : enable
-#else
-  #define printf(...)
-#endif
 
 #ifdef ENABLE_FP64
   #pragma OPENCL EXTENSION cl_khr_fp64 : enable
@@ -52,7 +43,7 @@
 
 #define GROUP_SIZE BLOCK_SIZE
 
-/* uimemset2 
+/* uimemset2
  * Sets the values of two unsigned integer input arrays
  * to zero.
  * Recommended Gridsize = size of arrays, currently without padding only
@@ -207,7 +198,7 @@ __kernel void
 dummyval_correction(__global float *intensity, const __global float *dummyval)
 {
   uint gid = get_global_id(0);
-  float epsilon = 1e-6f;  
+  float epsilon = 1e-6f;
   float img_val;
 
   if(gid < NN)

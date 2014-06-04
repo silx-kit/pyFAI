@@ -48,14 +48,14 @@ logger = logging.getLogger("pyFAI.ocl_azim_csr")
 
 class OCL_CSR_Integrator(object):
     def __init__(self, lut, image_size, devicetype="all",
-                 padded=False, block_size=32,
-                 platformid=None, deviceid=None, 
+                 block_size=32,
+                 platformid=None, deviceid=None,
                  checksum=None, profile=False):
         """
         @param data: coefficient of the matrix in a 1D vector of float32 - size of nnz
-        @param indices: Column index position for the data (same size as data) 
+        @param indices: Column index position for the data (same size as data)
         @param indptr: row pointer indicates the start of a given row. len nbin+1
-        @param image_size: 
+        @param image_size:
         @param devicetype: can be "cpu","gpu","acc" or "all"
         @param platformid: number of the platform as given by clinfo
         @type platformid: int
@@ -65,7 +65,6 @@ class OCL_CSR_Integrator(object):
         @param profile: store profiling elements
         """
         self.BLOCK_SIZE = block_size  # query for warp size
-        self.padded = padded
         self._sem = threading.Semaphore()
         self._data = lut[0]
         self._indices = lut[1]
@@ -73,7 +72,7 @@ class OCL_CSR_Integrator(object):
         self.bins = self._indptr.shape[0] - 1
         if self._data.shape[0] != self._indices.shape[0]:
             raise RuntimeError("data.shape[0] != indices.shape[0]")
-        self.data_size = self._data.shape[0]  
+        self.data_size = self._data.shape[0]
         self.size = image_size
         self.profile = profile
         if not checksum:
@@ -99,7 +98,7 @@ class OCL_CSR_Integrator(object):
         self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
         try:
             self._ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
-            if self.profile:         
+            if self.profile:
                 self._queue = pyopencl.CommandQueue(self._ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
             else:
                 self._queue = pyopencl.CommandQueue(self._ctx)
@@ -119,7 +118,7 @@ class OCL_CSR_Integrator(object):
         if self.profile: self.events.append(("copy Row Index data",ev))
         ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indptr"], self._indptr)
         if self.profile: self.events.append(("copy Column Pointer data",ev))
-        
+
     def __del__(self):
         """
         Destructor: release all buffers
@@ -323,10 +322,6 @@ class OCL_CSR_Integrator(object):
             if do_dummy + do_polarization + do_solidAngle + do_flat + do_dark > 0:
                 ev = self._program.corrections(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["corrections"])
                 events.append(("corrections",ev))
-            #if self.padded is True:
-                #integrate = self._program.csr_integrate_padded(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["csr_integrate"])
-            #else:
-                #integrate = self._program.csr_integrate(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["csr_integrate"])
             integrate = self._program.csr_integrate_dis(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["csr_integrate"])
             events.append(("integrate",integrate))
             outMerge = numpy.empty(self.bins, dtype=numpy.float32)
@@ -339,8 +334,8 @@ class OCL_CSR_Integrator(object):
             ev=pyopencl.enqueue_copy(self._queue, outCount, self._cl_mem["outCount"])
             events.append(("copy D->H outCount",ev))
             ev.wait()
-        if self.profile: 
-            self.events+=events        
+        if self.profile:
+            self.events += events
         return outMerge, outData, outCount
 
     def log_profile(self):
