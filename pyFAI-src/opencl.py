@@ -50,8 +50,9 @@ NVIDIA_FLOP_PER_CORE = {(1, 0): 24,  # Guessed !
                          (1, 3): 24,  # measured on a GT285 (GT200)
                          (2, 0): 64,  # Measured on a 580 (GF110)
                          (2, 1): 96,  # Measured on Quadro2000 GF106GL
-                         (3, 0): 384,  # Guessed!
-                         (3, 5): 384}  # Measured on K20
+                         (3, 0): 384, # Guessed!
+                         (3, 5): 384, # Measured on K20
+                         (5, 0): 256} # Maxwell 4 warps/SM 2 flops/ CU
 AMD_FLOP_PER_CORE = 160  # Measured on a M7820 10 core, 700MHz 1120GFlops
 
 class Device(object):
