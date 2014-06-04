@@ -1260,7 +1260,7 @@ class MultiCalib(object):
         """
         parse options from command line
         """
-        usage = "usage: MX-Calibrate -w 1.54 -c CeO2 file1.cbf file2.cbf ..."
+        usage = "MX-Calibrate -w 1.54 -c CeO2 file1.cbf file2.cbf ..."
         version = "MX-Calibrate from pyFAI version %s: %s" % (PyFAI_VERSION, PyFAI_DATE)
         description = """
         Calibrate automatically a set of frames taken at various sample-detector distance.
