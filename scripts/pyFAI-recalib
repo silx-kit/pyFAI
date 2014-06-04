@@ -48,7 +48,7 @@ try:
     from rfoo.utils import rconsole
     rconsole.spawn_server()
 except ImportError:
-    logging.info("No socket opened for debugging -> install rfoo")
+    logging.debug("No socket opened for debugging -> install rfoo")
 
 
 # This is for debugging with rconsole
