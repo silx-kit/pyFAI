@@ -6,7 +6,7 @@ Python Fast Azimuthal Integration
 
 PyFAI is implemented in Python_ programming language, which is open
 source and already very popular for scientific data analysis ([PyMca]_,
-[PyNX]_, …). It relies on the scientific stack of python composed of [Numpy]_,
+[PyNX]_, …). It relies on the scientific stack of python composed of [NumPy]_,
 [SciPy]_ and [Matplotlib]_ plus the [OpenCL]_ binding [PyOpenCL]_ for performances.
 
 .. _Python: http://python.org
@@ -95,7 +95,7 @@ Python library
 ..............
 
 PyFAI is first and foremost a library: a tool of the scientific toolbox
-built around IPython and NumPy to perform data analysis either
+built around [IPython]_ and [NumPy]_ to perform data analysis either
 interactively or via scripts. Figure [notebook] shows an interactive
 session where an integrator is created, and an image loaded and
 integrated before being plotted.
@@ -157,10 +157,10 @@ Performances and migration to native code
 .........................................
 
 Originally, regrouping was implemented using the histogram provided by
-NumPy, then re-implemented in Cython with pixel splitting to achieve a
+[NumPy]_, then re-implemented in [Cython]_ with pixel splitting to achieve a
 four-fold speed-up. The computation time scales like O(N) with the size
 of the input image. The number of output bins shows only little
-influence; overall the single threaded Cython implementation has been
+influence; overall the single threaded [Cython]_ implementation has been
 stated at 30 Mpix/s (on a 3.4 GHz Intel core i7-2600).
 
 
@@ -195,7 +195,7 @@ By making this change we switched from a “linear read / random write” forwar
 to a “random read / linear write” backward algorithm which is more suitable for parallelization.
 As a farther improvement on the algorithm, the use of compressed sparse row (CSR) format was 
 introduced, to store the LUT data.
-This algorithm was implemented both in Cython-OpenMP and OpenCL.
+This algorithm was implemented both in [Cython]_-OpenMP and OpenCL.
 The CSR approach has a double benefit: 
 first, it reduces the size of the storage needed compared to the LUT by a factor two to three, 
 offering the opportunity of working with larger images on the same hardware. 
@@ -249,58 +249,3 @@ Acknowledgments
 Porting pyFAI to GPU would have not been possible without
 the financial support of LinkSCEEM-2 (RI-261600).
 
-
-.. [SRI2012] PyFAI, a versatile library for azimuthal regrouping 
-   J. Kieffer & D. Karkoulis
-   J. Phys.: Conf. Ser. 425 202012
-   http://dx.doi.org/10.1088/1742-6596/425/20/202012
-
-.. [EPDIC13] PyFAI: a Python library for high performance azimuthal integration on GPU
-   J. Kieffer & J. P. Wright,
-   Powder Diffraction / Volume 28 / Supplement S2 / September 2013, pp S339-S350
-   http://dx.doi.org/10.1017/S0885715613000924
-  
-.. [FIT2D] Hammersley A. P., Svensson S. O., Hanfland M., Fitch A. N. and Hausermann D. 
-   1996 High Press. Res. vol14 p235–248
-
-.. [SPD] Bösecke P. 2007 J. Appl. Cryst. vol40 s423–s427
-
-.. [EDNA] Incardona M. F., Bourenkov G. P., Levik K., Pieritz R. A., Popov A. N. and Svensson O. 
-   2009 J. Synchrotron Rad. vol16 p872–879
-
-.. [PyMca] Solé V. A., Papillon E., Cotte M., Walter P. and Susini J. 
-   2007 Spectrochim. Acta Part B vol vol62 p63 – 68
-
-.. [PyNX] Favre-Nicolin V., Coraux J., Richard M. I. and Renevier H. 
-   2011 J. Appl. Cryst. vol44 p635–640
-
-.. [iPython] Pérez F and Granger B E 
-   2007 Comput. Sci. Eng. vol9 p21–29 URL http://ipython.org
-  
-.. [NumPy] Oliphant T E 2007 Comput. Sci. Eng. vol9 p10–20
-
-.. [Cython] Behnel S, Bradshaw R, Citro C, Dalcin L, Seljebotn D and Smith K 2011 Comput. Sci. Eng. vol13 p31 –39
-
-.. [OpenCL] Khronos OpenCL Working Group 2010 The OpenCL Specification, version 1.1 URL http://www.khronos.org/registry/cl/specs/opencl-1.1.pdf
-
-.. [FabIO] Sorensen H O, Knudsen E, Wright J, Kieffer J et al. 
-   2007–2013 FabIO: I/O library for images produced by 2D X-ray detectors URL http://fable.sf.net/
-  
-.. [Matplotlib] Hunter J D 2007 Comput. Sci. Eng. vol9  p90–95 ISSN 1521-9615
-
-.. [SciPy] Jones E, Oliphant T, Peterson P et al. 
-   2001– SciPy: Open source scientific tools for Python URL
-   http://www.scipy.org/
-  
-.. [FFTw] Frigo M and Johnson S G 
-   2005 Proceedings of the IEEE 93 p 216–231
-
-.. [LImA] The LIMA Project Update
-   S. Petitdemange, L. Claustre, A. Homs, R. Homs Regojo, E. Papillon
-   Proceedings of ICALEPCS2013
-   http://accelconf.web.cern.ch/AccelConf/ICALEPCS2013/html/auth1084.htm
-
-.. [PyOpenCL]  PyCUDA and PyOpenCL: A scripting-based approach to GPU run-time code generation
-   Andreas Klöckner, Nicolas Pinto, Yunsup Lee, Bryan Catanzaro, Paul Ivanov, Ahmed Fasih,
-   Parallel Computing Vol 38, 3, March 2012, Pages 157–174
-   http://dx.doi.org/10.1016/j.parco.2011.09.001

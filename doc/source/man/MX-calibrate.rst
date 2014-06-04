@@ -10,11 +10,17 @@ This tool has been developed for ESRF MX-beamlines where an acceptable calibrati
 usually present is the header of the image. PyFAI reads it and does a "recalib" on 
 each of them before exporting a linear regression of all parameters versus this distance. 
 
+Most standard calibrants are directly installed together with pyFAI. 
+If you prefer using your own, you can provide a "d-spacing" file
+containing the spacing of Miller plans in Angstrom (in decreasing order). 
+Most crystal powders used for calibration are available in the American Mineralogist 
+database [AMD]_ or in the [COD]_.
+
 
 Usage:
 ------
 
-MX−Calibrate −w 1.54 −c CeO2 file1.cbf file2.cbf ...
+MX-Calibrate -w 1.54 -c CeO2 file1.cbf file2.cbf ...
 
 Options:
 --------
@@ -23,7 +29,7 @@ Options:
   -V, --version         print version of the program and quit
   -v, --verbose         switch to debug/verbose mode
   -c FILE, --calibrant FILE
-                        calibrant name or file containing d−spacing of the calibrant reference sample (MANDATORY)
+                        calibrant name or file containing d-spacing of the calibrant reference sample (MANDATORY)
   -w WAVELENGTH, --wavelength=WAVELENGTH
                         wavelength of the X-Ray beam in Angstrom
   -e ENERGY, --energy=ENERGY
@@ -78,7 +84,7 @@ Options:
   --no-interactive      force the program to run and exit without prompting
                         for refinements
   --interactive         force the program to prompt for refinements
-  --peak−picker PEAKPICKER
-                        Uses the ’massif’ or the ’blob’ peak−picker algorithm (default: blob)
+  --peak-picker PEAKPICKER
+                        Uses the 'massif' or the 'blob' peak-picker algorithm (default: blob)
 
                         

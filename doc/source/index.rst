@@ -25,6 +25,7 @@ The last chapter is an appendix giving some figures about the project and its ma
    man/scripts
    api/modules
    project
+   biblio
 
 
 Indices and tables

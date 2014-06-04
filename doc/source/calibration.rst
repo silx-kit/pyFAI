@@ -48,11 +48,9 @@ About 10 calibrant description files are shipped with the default installation o
 like LaB6, silicon, ceria, corrundum or silver behenate. 
 The user can choose to provide their own calibrant description files which are 
 simple text-file containing the largest d-spacing (in Angstrom) for a set of 
-Miller plans. A useful reference is the American_mineralogist_database_
-or the crystallographic_open_database_.
+Miller plans. A useful reference is the American Mineralogist database [AMD]_
+or the Crystallographic Open database [COD]_.
 
-.. _American_mineralogist_database: http://rruff.geo.arizona.edu/AMS/amcsd.php
-.. _crystallographic_open_database: http://www.crystallography.net/
 The calibration is divided into 4 major steps:
 
 Pre-processing of images: 
