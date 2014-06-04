@@ -40,4 +40,12 @@ Options:
   --unit=UNIT           unit for the radial dimension: can be q_nm^-1, q_A^-1,
                         2th_deg, 2th_rad or r_mm
   --ext=EXT             extension of the regrouped filename (.xy)
+  --multi
+                        Average out all frame in a file before integrating
+  --average AVERAGE
+                        Method for averaging out: can be 'mean' (default), 'min', 'max' or 'median'
+  --do-2D
+                        Perform 2D integration in addition to 1D
 
+pyFAI-waxs is the script of pyFAI that allows data reduction (azimuthal integration) for Wide Angle Scattering 
+to produce X-Ray Powder Diffraction Pattern with output axis in 2-theta space.

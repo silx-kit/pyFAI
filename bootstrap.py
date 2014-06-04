@@ -57,6 +57,8 @@ def _copy_files(source, dest, extn):
     """
     copy all files with a given extension from source to destination 
     """
+    if not os.path.isdir(dest):
+        os.makedirs(dest)
     full_src = os.path.join(os.path.dirname(__file__), source)
     for clf in os.listdir(full_src):
         if clf.endswith(extn) and clf not in os.listdir(dest):
@@ -74,7 +76,7 @@ if (not os.path.isdir(SCRIPTSPATH)) or (not os.path.isdir(LIBPATH)):
     print("Build process ended with rc= %s" % build.wait())
 _copy_files("openCL", os.path.join(LIBPATH, "pyFAI"), ".cl")
 _copy_files("gui", os.path.join(LIBPATH, "pyFAI"), ".ui")
-
+_copy_files("calibration", os.path.join(LIBPATH, "pyFAI", "calibration"), ".D")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -82,7 +84,7 @@ if __name__ == "__main__":
         print("Available scripts : %s\n" %
               _get_available_scripts(SCRIPTSPATH))
         sys.exit(1)
-
+    os.system("cd %s;python setup.py build; cd -" % home)
     print("Executing %s from source checkout" % (sys.argv[1]))
 
     sys.path.insert(0, LIBPATH)

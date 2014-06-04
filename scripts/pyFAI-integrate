@@ -54,7 +54,7 @@ except ImportError:
 try:
     from rfoo.utils import rconsole
     rconsole.spawn_server()
-    logger.info("Socket opened for debugging using rfoo")
+    logger.debug("Socket opened for debugging using rfoo")
 except ImportError:
     logger.debug("No socket opened for debugging -> please install rfoo")
 
@@ -63,7 +63,7 @@ window = None
 
 if __name__ == "__main__":
     usage = "usage: pyFAI-integrate [options] file1.edf file2.edf ..."
-    version = "%prog " + pyFAI.version
+    version = "pyFAI-integrate version %s from %s" % (pyFAI.version, pyFAI.date)
     description = """
     PyFAI-integrate is a graphical interface (based on Python/Qt4) to perform azimuthal integration
 on a set of files. It exposes most of the important options available within pyFAI and allows you

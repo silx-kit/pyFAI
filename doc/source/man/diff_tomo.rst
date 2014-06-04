@@ -16,7 +16,7 @@ where the 1d dataset has to be selected as last dimension. This file is not (yet
 
 This tool can be used for mapping experiments if one considers the slow scan direction as the rotation.
 
-tips: If the number of files is too large, use double quotes "*.edf" 
+tips: If the number of files is too large, use double quotes around "*.edf" 
 
 
 Usage:

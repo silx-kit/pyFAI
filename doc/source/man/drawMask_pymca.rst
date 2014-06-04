@@ -14,6 +14,8 @@ Draw a mask, i.e. an image containing the list of pixels which are considered in
 This will open a PyMca window and let you draw on the first image (provided) with different tools (brush, rectangle selection, ...).
 When you are finished, come back to the console and press enter.
 The mask image is saved into file1-masked.edf.
+Optionally the script will print the number of pixel
+masked and the intensity masked (as well on other files provided in input)
 
 
 Usage: drawMask_pymca [options] file1.edf file2.edf ...

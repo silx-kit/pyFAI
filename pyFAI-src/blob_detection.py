@@ -30,7 +30,8 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "13/05/2014"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
-import os, itertools
+import os, itertools, logging
+logger = logging.getLogger("pyFAI.blob_detection")
 import numpy
 try:
     from ._convolution import gaussian_filter
@@ -181,33 +182,11 @@ class BlobDetection(object):
         self.init_sigma = float(init_sigma)
         self.dest_sigma = float(dest_sigma)
         self.scale_per_octave = int(scale_per_octave)
-        if mask is not None:
-            self.mask = (mask != 0).astype(numpy.int8)
-        else:
-            self.mask = (img <= 0).astype(numpy.int8)
-        #mask out the border of the image
-        self.mask[0, :] = 1
-        self.mask[-1, :] = 1
-        self.mask[:, 0] = 1
-        self.mask[:, -1] = 1
-        to_mask = numpy.where(self.mask)
-        self.do_mask = to_mask[0].size > 0
-        if self.do_mask:
-            self.raw[to_mask] = 0
-
-            #initial grow of 4*sigma_dest ... subsequent re-grow of half
-            grow = int(4.0 * self.dest_sigma)
-            if not pyFAI_morphology:
-                my, mx = numpy.ogrid[-grow:grow + 1, -grow:grow + 1]
-                grow = (mx * mx + my * my) <= grow * grow
-            self.cur_mask = morphology.binary_dilation(self.mask, grow)
-            #subsequent grow
-            grow = int(2.0 * self.dest_sigma)
-            if not pyFAI_morphology:
-                my, mx = numpy.ogrid[-grow:grow + 1, -grow:grow + 1]
-                grow = (mx * mx + my * my) <= grow * grow
-            self.grow = grow
-
+        self.raw_mask = mask
+        self.cur_mask = None
+        self.do_mask = True
+        self.mask = None
+        self.grow = None
         self.data = None    # current image
         self.sigmas = None  # contains pairs of absolute sigma and relative ones...
         self.blurs = []     # different blurred images
@@ -230,6 +209,45 @@ class BlobDetection(object):
         lststr.append("found %s keypoint up to now, we are at reduction %s" % (len(self.keypoints), self.curr_reduction))
         return os.linesep.join(lststr)
 
+    def _init_mask(self):
+        """
+        Initialize the mask
+        """
+        if self.raw_mask is not None:
+            self.mask = (self.raw_mask != 0).astype(numpy.int8)
+        else:
+            self.mask = (self.raw < 0).astype(numpy.int8)
+        #mask out the border of the image
+        self.mask[0, :] = 1
+        self.mask[-1, :] = 1
+        self.mask[:, 0] = 1
+        self.mask[:, -1] = 1
+        to_mask = numpy.where(self.mask)
+        #always use a mask!!
+        self.do_mask = True #to_mask[0].size > 0
+        if self.do_mask:
+            self.raw[to_mask] = 0
+
+            #initial grow of 4*sigma_dest ... subsequent re-grow of half
+            grow = int(round(4.0 * self.dest_sigma))
+            if not pyFAI_morphology:
+                my, mx = numpy.ogrid[-grow:grow + 1, -grow:grow + 1]
+                grow = (mx * mx + my * my) <= grow * grow
+            self.cur_mask = morphology.binary_dilation(self.mask, grow)
+            #subsequent grow
+            grow = int(2.0 * self.dest_sigma)
+            if not pyFAI_morphology:
+                my, mx = numpy.ogrid[-grow:grow + 1, -grow:grow + 1]
+                grow = (mx * mx + my * my) <= grow * grow
+            self.grow = grow
+
+
+    def __repr__(self):
+        lststr = ["Blob detection, shape=%s, processed=%s." % (self.raw.shape, self.detection_started)]
+        lststr.append("Sigmas: input=%.3f \t init=%.3f, dest=%.3f over %i blurs/octave" % (self.cur_sigma, self.init_sigma, self.dest_sigma, self.scale_per_octave))
+        lststr.append("found %s keypoint up to now, we are at reduction %s" % (len(self.keypoints), self.curr_reduction))
+        return os.linesep.join(lststr)
+
     def _initial_blur(self):
         """
         Blur the original image to achieve the requested level of blur init_sigma
@@ -244,7 +262,7 @@ class BlobDetection(object):
         """
         Calculate all sigma to blur an image within an octave
         """
-        if not self.data:
+        if self.data is None:
             self._initial_blur()
         previous = self.init_sigma
         incr = 0
@@ -262,7 +280,8 @@ class BlobDetection(object):
         Return the blob coordinates for an octave
 
         @param shrink: perform the image shrinking after the octave processing
-        @param refine: can be None, True, "SG2" and "SG4" do_SG4: perform 3point hessian calcualation or Savitsky-Golay 2nd or 4th order fit.
+        @param refine: can be None, True, "SG2" and "SG4" do_SG4: perform 3point hessian calculation or Savitsky-Golay 2nd or 4th order fit.
+        @param n_5: use 5 points instead of 3 in y and x to determinate if a point is a maximum
 
         """
         x = []
@@ -271,8 +290,9 @@ class BlobDetection(object):
         dy = []
         if not self.sigmas:
             self._calc_sigma()
-#        print(self.sigmas)
-        if (1 - self.cur_mask).sum() == 0:
+        if self.do_mask and (self.cur_mask is None):
+            self._init_mask()
+        if self.do_mask and (numpy.logical_not(self.cur_mask).sum(dtype=int) == 0):
             return
 
         previous = self.data
@@ -329,16 +349,16 @@ class BlobDetection(object):
 
 
         if l != 0:
-            keypoints[:].x = (kpx[valid]+0.5) * self.curr_reduction
-            keypoints[:].y = (kpy[valid]+0.5) * self.curr_reduction
-            sigmas = self.init_sigma * (self.dest_sigma / self.init_sigma) ** ((kps[valid]+0.5) / (self.scale_per_octave))
+            keypoints[:].x = (kpx[valid] + 0.5) * self.curr_reduction - 0.5 # Place ourselves at the center of the pixel, and back
+            keypoints[:].y = (kpy[valid] + 0.5) * self.curr_reduction - 0.5 # Place ourselves at the center of the pixel, and back
+            sigmas = self.init_sigma * (self.dest_sigma / self.init_sigma) ** ((kps[valid] + 0.5) / (self.scale_per_octave))
             keypoints[:].sigma = (self.curr_reduction * sigmas)
             keypoints[:].I = peak_val[valid]
 
 
         if shrink:
             #shrink data so that they can be treated by next octave
-            print("In shrink")
+            logger.debug("In shrink")
             last = self.blurs[self.scale_per_octave]
             ty, tx = last.shape
             if ty % 2 != 0 or tx % 2 != 0:
@@ -374,12 +394,12 @@ class BlobDetection(object):
     def refine_Hessian(self, kpx, kpy, kps):
         """
 
-        Refine the keypoint location based on a 3 point derivative
+        Refine the keypoint location based on a 3 point derivative, and delete uncoherent keypoints
 
         @param kpx: x_pos of keypoint
         @param kpy: y_pos of keypoint
         @param kps: s_pos of keypoint
-        @return
+        @return arrays of corrected coordinates of keypoints, values and locations of keypoints
         """
         curr = self.dogs[(kps, kpy, kpx)]
         nx = self.dogs[(kps, kpy, kpx + 1)]
@@ -432,9 +452,14 @@ class BlobDetection(object):
         return kpx + delta_x, kpy + delta_y, kps + delta_s, peakval, mask
 
     def refine_Hessian_SG(self, kpx, kpy, kps):
-        """ Savitzky Golay algorithm to check if a point is really the maximum """
-
-
+        """ 
+        Savitzky Golay algorithm to check if a point is really the maximum 
+        @param kpx: x_pos of keypoint
+        @param kpy: y_pos of keypoint
+        @param kps: s_pos of keypoint
+        @return array of corrected keypoints
+        
+        """
 
         k2x = []
         k2y = []
@@ -444,7 +469,7 @@ class BlobDetection(object):
         kdx = []
         kdy = []
 
-        #Hessian patch 3
+        #Hessian patch 3 ordre 2
         SGX0Y0 = [-0.11111111 , 0.22222222 , -0.11111111 , 0.22222222 , 0.55555556 , 0.22222222 , -0.11111111 , 0.22222222 , -0.11111111]
         SGX1Y0 = [-0.16666667 , 0.00000000 , 0.16666667 , -0.16666667 , 0.00000000 , 0.16666667 , -0.16666667 , 0.00000000 , 0.16666667 ]
         SGX2Y0 = [0.16666667 , -0.33333333 , 0.16666667 , 0.16666667 , -0.33333333 , 0.16666667 , 0.16666667, -0.33333333, 0.16666667 ]
@@ -452,59 +477,72 @@ class BlobDetection(object):
         SGX1Y1 = [0.25000000, 0.00000000, -0.25000000, 0.00000000, 0.00000000, 0.00000000, -0.25000000, 0.00000000, 0.25000000]
         SGX0Y2 = [0.16666667 , 0.16666667 , 0.16666667 , -0.33333333 , -0.33333333 , -0.33333333 , 0.16666667 , 0.16666667 , 0.16666667]
 
+#         SGX0Y0 = [0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0]
+#         SGX1Y0 = [0.0,0.0,0.0,-0.5,0.0,0.5,0.0,0.0,0.0]
+#         SGX2Y0 = [0.0,0.0,0.0,0.33333333,-0.66666667,0.33333333,0.0,0.0,0.0]
+#         SGX0Y1 = [0.0,-0.5,0.0,0.0,0.0,0.0,0.0,0.5,0.0]
+#         SGX0Y2 = [0.0, 0.33333333 , 0.0 , 0.0 , -0.66666667,0.0, 0.0 , 0.33333333 , 0.0]
+
+
         for y, x, sigma in itertools.izip(kpy, kpx, kps):
 
+            curr_dog = self.dogs[sigma]
+            prev_dog = self.dogs[sigma - 1]
+            next_dog = self.dogs[sigma + 1]
 
-            j = round(numpy.log(sigma / self.sigmas[0][0]) / numpy.log(2) * self.scale_per_octave)
-
-            if j > 0 and j < self.scale_per_octave + 1:
-                curr_dog = self.dogs[j]
-                prev_dog = self.dogs[j - 1]
-                next_dog = self.dogs[j + 1]
-
-                if (x > 1 and x < curr_dog.shape[1] - 2 and y > 1 and y < curr_dog.shape[0] - 2):
+#             if (x > 1 and x < curr_dog.shape[1] - 2 and y > 1 and y < curr_dog.shape[0] - 2):
 
 
-                    patch3 = curr_dog[y - 1:y + 2, x - 1:x + 2]
-                    patch3_prev = prev_dog[y - 1:y + 2, x - 1:x + 2]
-                    patch3_next = next_dog[y - 1:y + 2, x - 1:x + 2]
+            patch3 = curr_dog[y - 1:y + 2, x - 1:x + 2]
+            patch3_prev = prev_dog[y - 1:y + 2, x - 1:x + 2]
+            patch3_next = next_dog[y - 1:y + 2, x - 1:x + 2]
 
-                    dx = (SGX1Y0 * patch3.ravel()).sum()
-                    dy = (SGX0Y1 * patch3.ravel()).sum()
-                    d2x = (SGX2Y0 * patch3.ravel()).sum()
-                    d2y = (SGX0Y2 * patch3.ravel()).sum()
-                    dxy = (SGX1Y1 * patch3.ravel()).sum()
+            dx = (SGX1Y0 * patch3.ravel()).sum()
+            dy = (SGX0Y1 * patch3.ravel()).sum()
+            d2x = (SGX2Y0 * patch3.ravel()).sum()
+            d2y = (SGX0Y2 * patch3.ravel()).sum()
+            dxy = (SGX1Y1 * patch3.ravel()).sum()
 
-                    s_next = (SGX0Y0 * patch3_next.ravel()).sum()
-                    s = (SGX0Y0 * patch3.ravel()).sum()
-                    s_prev = (SGX0Y0 * patch3_prev.ravel()).sum()
-                    d2s = (s_next + s_prev - 2.0 * s) / 4.0
-                    ds = (s_next - s_prev) / 2.0
+            s_next = (SGX0Y0 * patch3_next.ravel()).sum()
+            s = (SGX0Y0 * patch3.ravel()).sum()
+            s_prev = (SGX0Y0 * patch3_prev.ravel()).sum()
+            d2s = (s_next + s_prev - 2.0 * s)
+            ds = (s_next - s_prev) / 2.0
 
-                    dx_next = (SGX1Y0 * patch3_next.ravel()).sum()
-                    dx_prev = (SGX1Y0 * patch3_prev.ravel()).sum()
+            dx_next = (SGX1Y0 * patch3_next.ravel()).sum()
+            dx_prev = (SGX1Y0 * patch3_prev.ravel()).sum()
 
-                    dy_next = (SGX0Y1 * patch3_next.ravel()).sum()
-                    dy_prev = (SGX0Y1 * patch3_prev.ravel()).sum()
+            dy_next = (SGX0Y1 * patch3_next.ravel()).sum()
+            dy_prev = (SGX0Y1 * patch3_prev.ravel()).sum()
 
-                    dxs = (dx_next - dx_prev) / 2.0
-                    dys = (dy_next - dy_prev) / 2.0
-
-                    lap = numpy.array([[d2y, dxy, dys], [dxy, d2x, dxs], [dys, dxs, d2s]])
-                    delta = -(numpy.dot(numpy.linalg.inv(lap), [dy, dx, ds]))
-#                     print delta
-                    err = numpy.linalg.norm(delta[:-1])
-                    if  err < numpy.sqrt(4) and numpy.abs(delta[0]) <= 2.0 and numpy.abs(delta[1]) <= 2.0 and numpy.abs(delta[2]) <= self.sigmas[-1][0]:
-                        k2x.append(x + delta[1])
-                        k2y.append(y + delta[0])
-                        sigmas.append(sigma)
-                        kds.append(delta[2])
-                        kdx.append(delta[1])
-                        kdy.append(delta[0])
+            dxs = (dx_next - dx_prev) / 2.0
+            dys = (dy_next - dy_prev) / 2.0
+                    
+            print dx,dy,ds
+            print d2x,d2y,d2s,dxy,dxs,dys
+            
+            lap = numpy.array([[d2y, dxy, dys], [dxy, d2x, dxs], [dys, dxs, d2s]])
+            delta = -(numpy.dot(numpy.linalg.inv(lap), [dy, dx, ds]))
+            print y,x
+            print delta
+#                 err = numpy.linalg.norm(delta[:-1])
+            if  numpy.abs(delta[0]) <= self.tresh and numpy.abs(delta[1]) <= self.tresh and numpy.abs(delta[2]) <= self.tresh:
+                k2x.append(x + delta[1])
+                k2y.append(y + delta[0])
+                sigmas.append(sigma+delta[2])
+#                         kds.append(delta[2])
+#                         kdx.append(delta[1])
+#                         kdy.append(delta[0])
 
         return numpy.asarray(k2x), numpy.asarray(k2y), numpy.asarray(sigmas), numpy.asarray(kds)
 
     def direction(self):
+        """
+        Perform and plot the two main directions of the peaks, considering their previously 
+        calculated scale ,by calculating the Hessian at different sizes as the combination of 
+        gaussians and their first and second derivatives
+        
+        """
         import pylab
         i = 0
         kpx = self.keypoints.x
@@ -556,44 +594,104 @@ class BlobDetection(object):
 #                 else:
                 pylab.annotate("", xy=(x + vect[1][0] * val[1], y + vect[1][1] * val[1]), xytext=(x, y),
                     arrowprops=dict(facecolor='red', shrink=0.05),)
-
-        def process(max_octave=None):
-            """
-            Perform the keypoint extraction for max_octave cycles or until all octaves have been processed.
-            """
-            octave = 0
-            finished = False
-            while not finished:
-                self._one_octave(shrink=True, refine=True, n_5=True)
-                octave += 1
-                if max_octave and octave > max_octave:
-                    finished = True
-                else:
-                    finished = (1 - self.cur_mask).sum() == 0
-
-        def nearest_peak(p, refine=True, Imin=None):
-            """
-            Return the nearest peak from a position
-
-            @param p: input position (y,x) 2-tuple of float
-            @param refine: shall the position be refined on the raw data
-            @param Imin: minimum of intenity above the background
-            """
-            if Imin:
-                valid = self.keypoints.I >= Imin
-                kp = self.keypoints[self.keypoints.I >= Imin]
+    @timeit
+    def process(self, max_octave=None):
+        """
+        Perform the keypoint extraction for max_octave cycles or until all octaves have been processed.
+        @param max_octave: number of octave to process
+        """
+        finished = False
+        if self.cur_mask is None:
+            self._init_mask()
+        if self.data is None:
+            self._initial_blur()
+        if self.sigmas is None:
+            self._calc_sigma()
+        while not finished:
+            self._one_octave(shrink=True, refine=True, n_5=True)
+            if max_octave and self.octave >= max_octave:
+                finished = True
             else:
-                kp = self.keypoints
-            r2 = kp.x*kp.x+kp.y*kp.y
-            best_pos = r2.argmin()
-            best = [kp[best_pos].y, kp[best_pos].x]
-            if refine:
-                if self.bilinear is None:
-                    self.bilinear = Bilinear(self.raw)
-                best = [i + 0.5 for i in self.bilinear.local_maxi(best)]
-            return best
+                finished = (numpy.logical_not(self.cur_mask).sum(dtype=int) == 0)
+        logger.warning("Blob detection found %i keypoints" % len(self.keypoints))
 
+    def nearest_peak(self, p, refine=True, Imin=None):
+        """
+        Return the nearest peak from a position
 
+        @param p: input position (y,x) 2-tuple of float
+        @param refine: shall the position be refined on the raw data
+        @param Imin: minimum of intensity above the background
+        """
+        if Imin:
+            valid = (self.keypoints.I >= Imin)
+            kp = self.keypoints[valid]
+        else:
+            kp = self.keypoints
+        dy = kp.y - p[0]
+        dx = kp.x - p[1]
+        r2 = dx * dx + dy * dy
+        best_pos = r2.argmin()
+        best = [kp[best_pos].y, kp[best_pos].x]
+        if refine:
+            if self.bilinear is None:
+                self.bilinear = Bilinear(self.raw)
+            best = self.bilinear.local_maxi(best)
+        return best
+
+    def peaks_from_area(self, mask, keep=None, refine=True, Imin=None, **kwargs):
+        """
+        Return the list of peaks within an area
+
+        @param mask: 2d array with mask. 
+        @param refine: shall the position be refined on the raw data
+        @param Imin: minimum of intensity above the background
+        @param kwarg: ignored parameters
+        @return: list of peaks [y,x], [y,x], ...]
+        """
+        y = numpy.round(self.keypoints.y).astype(int)
+        x = numpy.round(self.keypoints.x).astype(int)
+        is_inside = (mask[y, x]).astype(bool)
+        if is_inside.sum() == 0:
+            logger.error("No keypoint that region")
+            return []
+        kp = self.keypoints[is_inside]
+        if Imin:
+            valid = kp.I >= Imin
+            if valid.sum() == 0:
+                logger.error("no keypoint match Intensity criteria in the region")
+                valid2 = self.raw[y, x] >= Imin
+                good_kp = self.keypoints[numpy.logical_and(valid2, is_inside)]
+            else:
+                good_kp = kp[valid]
+        else:
+            good_kp = kp
+        if keep and len(good_kp) > keep:
+            order = numpy.argsort(good_kp.I)
+            order = order[-1::-1][:keep] #keep only the most intense
+            good_kp = good_kp[order]
+        if refine:
+            if self.bilinear is None:
+                self.bilinear = Bilinear(self.raw)
+            return [self.bilinear.local_maxi((i.y, i.x)) for i in good_kp]
+        else:
+            return [(i.y, i.x) for i in good_kp]
+
+    def show_stats(self):
+        """
+        Shows a window with the repartition of keypoint in function of scale/intensity
+        """
+        if len(self.keypoints) == 0:
+            logger.warning("No keypoints yet: running process before display")
+            self.process()
+        import pylab
+        f = pylab.figure()
+        ax = f.add_subplot(1, 1, 1)
+        ax.plot(self.keypoints.sigma, self.keypoints.I, '.r')
+        ax.set_xlabel("Sigma")
+        ax.set_ylabel("Intensity")
+        ax.set_title("Peak repartition")
+        f.show()
 
 if __name__ == "__main__":
 
@@ -616,64 +714,64 @@ if __name__ == "__main__":
     bd = BlobDetection(img)
     kx, ky, dx, dy, sigma = bd._one_octave()
     print bd.sigmas
-
-    #building histogram with the corrected sigmas
-    sigma = numpy.asarray(sigma)
-    pylab.figure(2)
-    pylab.clf()
-    pylab.hist(sigma, bins=500)
-    pylab.show()
-
-
-    h = pylab.hist(sigma, bins=500)
-    n = h[0].__len__()
-    Proba = h[0] / float(numpy.sum(h[0]))
-#     print Proba.size,numpy.max(Proba)
-
-    max = 0.0
-#     print n
-
-    for cpt in range(n):
-#         print cpt
-        Proba1 = Proba[: cpt]
-        Proba2 = Proba[cpt :]
-        P1 = numpy.sum(Proba1)
-        P2 = numpy.sum(Proba2)
-#         print P1,P2
-
-        n1 = numpy.arange(cpt)
-        n2 = numpy.arange(cpt, n)
-        Moy1 = sum(n1 * Proba1) / P1
-        Moy2 = sum(n2 * Proba2) / P2
-#         print "Moyennes"
-#         print Moy1,Moy2
-
-        VarInterC = P1 * P2 * (Moy1 - Moy2) ** 2
-#         print "Variance IC"
-#         print VarInterC
-
-        if VarInterC > max :
-            max = VarInterC
-            index = cpt
-
-#     print max,cpt
-    print 'sigma pour la separation'
-    print h[1][index]
-#  building arrays x and y containing all the coordinates of the keypoints, only for vizualisation
-    x = []
-    y = []
-    print bd.keypoints.__len__()
-    for j in range(bd.keypoints.__len__()):
-        k = bd.keypoints[j]
-        x.extend(numpy.transpose(k)[0])
-        y.extend(numpy.transpose(k)[1])
-
-
-    print x.__len__(), y.__len__(), kx.__len__(), ky.__len__()
-
-    pylab.figure(1)
-    pylab.clf()
-    pylab.imshow((img), interpolation='nearest')
-    pylab.plot(x, y, 'or')
-    pylab.show()
+# 
+#     #building histogram with the corrected sigmas
+#     sigma = numpy.asarray(sigma)
+#     pylab.figure(2)
+#     pylab.clf()
+#     pylab.hist(sigma, bins=500)
+#     pylab.show()
+# 
+# 
+#     h = pylab.hist(sigma, bins=500)
+#     n = h[0].__len__()
+#     Proba = h[0] / float(numpy.sum(h[0]))
+# #     print Proba.size,numpy.max(Proba)
+# 
+#     max = 0.0
+# #     print n
+# 
+#     for cpt in range(n):
+# #         print cpt
+#         Proba1 = Proba[: cpt]
+#         Proba2 = Proba[cpt :]
+#         P1 = numpy.sum(Proba1)
+#         P2 = numpy.sum(Proba2)
+# #         print P1,P2
+# 
+#         n1 = numpy.arange(cpt)
+#         n2 = numpy.arange(cpt, n)
+#         Moy1 = sum(n1 * Proba1) / P1
+#         Moy2 = sum(n2 * Proba2) / P2
+# #         print "Moyennes"
+# #         print Moy1,Moy2
+# 
+#         VarInterC = P1 * P2 * (Moy1 - Moy2) ** 2
+# #         print "Variance IC"
+# #         print VarInterC
+# 
+#         if VarInterC > max :
+#             max = VarInterC
+#             index = cpt
+# 
+# #     print max,cpt
+#     print 'sigma pour la separation'
+#     print h[1][index]
+# #  building arrays x and y containing all the coordinates of the keypoints, only for vizualisation
+#     x = []
+#     y = []
+#     print bd.keypoints.__len__()
+#     for j in range(bd.keypoints.__len__()):
+#         k = bd.keypoints[j]
+#         x.extend(numpy.transpose(k)[0])
+#         y.extend(numpy.transpose(k)[1])
+# 
+# 
+#     print x.__len__(), y.__len__(), kx.__len__(), ky.__len__()
+# 
+#     pylab.figure(1)
+#     pylab.clf()
+#     pylab.imshow((img), interpolation='nearest')
+#     pylab.plot(x, y, 'or')
+#     pylab.show()
 

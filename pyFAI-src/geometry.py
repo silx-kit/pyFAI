@@ -1226,29 +1226,15 @@ class Geometry(object):
 
         """
         dim1_unit = units.to_unit(dim1_unit)
-        tth /= dim1_unit.scale
-        if dim1_unit == units.TTH:
-            if shape is None:
-                ttha = self._ttha
-                shape = self._ttha.shape
-            else:
-                ttha = self.twoThetaArray(shape)
-        elif dim1_unit == units.Q:
-            if shape is None:
-                ttha = self._qa
-                shape = ttha.shape
-            else:
-                ttha = self.qArray(shape)
-        elif dim1_unit == units.R:
-            if shape is None:
-                ttha = self._ra
-                shape = ttha.shape
-            else:
-                ttha = self.rArray(shape)
-        else:
-#            TODO
-            raise RuntimeError("in pyFAI.Geometry.calcfrom1d: "
-                               "Not (yet?) Implemented")
+        tth = tth.copy() / dim1_unit.scale
+
+        if shape is None:
+            shape = self.detector.max_shape
+        try:
+            ttha = self.__getattribute__(dim1_unit.center)(shape)
+        except:
+            raise RuntimeError("in pyFAI.Geometry.calcfrom1d: " + \
+                               str(dim1_unit) + " not (yet?) Implemented")
         calcimage = numpy.interp(ttha.ravel(), tth, I)
         calcimage.shape = shape
         if correctSolidAngle:
