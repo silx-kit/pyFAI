@@ -1,10 +1,11 @@
 #!/bin/sh
+mkdir man
 for i in scripts/*;
     do
     j=$(basename $i)
     echo $j
-    help2man $i --no-discard-stderr -N -n $j  -s1 -S PyFAI >man/$j.1
+    help2man --no-discard-stderr $i -N -n $j  -s1 -S PyFAI >man/$j.1
     man -t man/$j.1 | ps2pdf - man/$j.pdf
-    man2html man/$j.1 > man/$j.html
-    pandoc man/$j.html -o man/$j.rst
+#    man2html man/$j.1 > man/$j.html
+#    pandoc -t rst man/$j.html -o man/$j.rst
     done
