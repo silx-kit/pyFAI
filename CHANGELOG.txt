@@ -49,7 +49,15 @@
         Benchmarks with memory profiling
 0.9.3:  02/2014
         Better control for peak-picking (Contribution from Gero Flucke, Desy)
-        Integration of calibrant files to pyFAI
         Precise Rayonix detectors description thanks to Michael Blum
-        Description of Mar345 detector
-         
+        Start integrating blob-detection algorithm for peak-picking: #70
+        Switch fron OptParse to ArgPrse: #83
+        Provide some calibrant by default: #91
+        Description of Mar345 detector + mask#92
+        Auto-registration of detectors: #97
+        Recalib and check-calib can be called from calib: #99
+        Fake diffraction image from calibrant: #101
+        Implementation of the CSR matrix representation to replace LUT
+        Tight pixel splitting: #43
+        Update documentation
+0.9.4:  06/2014
