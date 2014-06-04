@@ -94,8 +94,8 @@ class AbstractCalibration(object):
             'bounds': "sets the upper and lower bound of all parameters",
             'refine': "performs a new cycle of refinement",
             'recalib': "extract a new set of rings and re-perform the calibration. One can specify how many rings to extract and the algorithm to use (blob or massif)",
-            'done': "finishes the processing, performs an integration and quits"
-
+            'done': "finishes the processing, performs an integration and quits",
+            'validate': "measures the offset between the calibrated image and the back-projected image"
             }
     PARAMETERS = ["dist","poni1","poni2","rot1","rot2","rot3","wavelength"]
     UNITS = {"dist":"meter", "poni1":"meter", "poni2":"meter", "rot1":"radian",
@@ -173,6 +173,7 @@ class AbstractCalibration(object):
         self.nPt_2D_rad = 400
         self.unit = None
         self.keep = True
+        self.check_calib = None
 
     def __repr__(self):
         lst = ["Calibration object:"]
@@ -856,6 +857,8 @@ class AbstractCalibration(object):
                 return False
             elif action == "fit":
                 return False
+            elif action == "validate":
+                self.validate_calibration()
 
     def postProcess(self):
         """
@@ -936,6 +939,23 @@ class AbstractCalibration(object):
             xrpd2.set_xlabel(self.unit)
             xrpd2.set_ylabel("Azimuthal angle (deg)")
             fig3.show()
+
+    def validate_calibration(self):
+        """
+        Validate the calivration and calculate the offset in the diffraction image
+        """
+        if not self.check_calib:
+            self.check_calib = CheckCalib()
+        if self.geoRef:
+            self.ai.setPyFAI(**self.geoRef.getPyFAI())
+            self.ai.wavelength = self.geoRef.wavelength
+        self.check_calib.ai = self.ai
+        self.check_calib.img = self.peakPicker.data
+        self.check_calib.mask = self.peakPicker.mask
+        self.check_calib.wavelength = self.check_calib.wavelength
+        self.check_calib.integrate()
+        self.check_calib.rebuild()
+        self.check_calib.show()
 
 ################################################################################
 # Calibration
@@ -1630,6 +1650,7 @@ class CheckCalib(object):
         self.masked_image = None
         self.offset = None
         self.data = None
+        self.fig = None
 
     def __repr__(self, *args, **kwargs):
         if self.ai:
@@ -1710,6 +1731,10 @@ correction, at a sub-pixel level.
                                              unit=self.unit, method="splitpixel")
 
     def rebuild(self):
+        """
+        Rebuild the diffraction image and measures the offset with the reference
+        @return: offset  
+        """
         logger.debug("in rebuild")
         if self.r is None:
             self.integrate()
@@ -1726,12 +1751,15 @@ correction, at a sub-pixel level.
             smooth_mask = 1.0
         self.masked_resynth = self.resynth * smooth_mask
         self.masked_image = self.img * smooth_mask
-        self.offset, log = measure_offset(self.masked_resynth, self.masked_image, withLog=1)
-        print os.linesep.join(log)
-
-        print "offset:", self.offset
+        self.offset = measure_offset(self.masked_resynth, self.masked_image, withLog=0)
+#        print os.linesep.join(log)
+        print("Measured offset: %s" % str(self.offset))
+        return self.offset
 
     def smooth_mask(self, hwhm=5):
+        """
+        smooth out around the mask to avoid aligning on the mask
+        """
         logger.debug("in smooth_mask")
         fwhm = int(round(2.0 * hwhm))
         sigma = hwhm / math.sqrt(2 * math.log(2))
@@ -1745,3 +1773,33 @@ correction, at a sub-pixel level.
                 big_mask = morphology.binary_dilation(self.mask.astype(numpy.int8), fwhm)
             smooth_mask = 1.0 - scipy.ndimage.filters.gaussian_filter(big_mask.astype(numpy.float32), sigma)
             return smooth_mask
+
+    def show(self):
+        """
+        Show the image with the the errors
+        """
+        if self.fig is None:
+            self.fig = pylab.figure()
+            draw = False
+        else:
+            draw = True
+            self.fig.clf()
+        ax1 = self.fig.add_subplot(2, 2, 3)
+        ax1.imshow(self.delta, aspect="auto", interpolation="nearest", origin="bottom")
+        ax1.set_title("Difference image")
+        ax2 = self.fig.add_subplot(2, 2, 1)
+        ax2.imshow(self.masked_image, aspect="auto", interpolation="nearest", origin="bottom")
+        ax2.set_title("Raw image")
+        ax3 = self.fig.add_subplot(2, 2, 2)
+        ax3.imshow(self.masked_resynth, aspect="auto", interpolation="nearest", origin="bottom")
+        ax3.set_title("Rebuild image")
+        ax4 = self.fig.add_subplot(2, 2, 4)
+        ax4.plot(self.r, self.I)
+        ax4.set_title("powder pattern")
+        ax4.set_xlabel(r"2$\theta$ ($^o$)")
+        ax4.set_ylabel("Intensity")
+        if draw:
+            self.fig.canvas.draw()
+        else:
+            self.fig.show()
+
