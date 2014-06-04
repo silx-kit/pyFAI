@@ -28,12 +28,12 @@ Azimuthal integration tools:
 
    pyFAI-average
    drawMask_pymca
-   MX-calibrate
-   check_calib
    pyFAI-calib
    pyFAI-recalib
+   check_calib
+   MX-calibrate
    pyFAI-integrate
+   diff_tomo
    pyFAI-saxs
    pyFAI-waxs
-   diff_tomo
 

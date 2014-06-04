@@ -9,8 +9,8 @@ without a priori knowledge of your setup.
 Most standard calibrants are directly installed together with pyFAI. 
 If you prefer using your own, you can provide a "d-spacing" file
 containing the spacing of Miller plans in Angstrom (in decreasing order). 
-Most crystal powders used for calibration are available in the American
-Mineralogist database: http://rruff.geo.arizona.edu/AMS/amcsd.php
+Most crystal powders used for calibration are available in the American_Mineralogist_database_
+.. _American_Mineralogist_database: http://rruff.geo.arizona.edu/AMS/amcsd.php
 
 
 You will need in addition:

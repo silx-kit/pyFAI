@@ -14,7 +14,7 @@ each of them before exporting a linear regression of all parameters versus this 
 Usage:
 ------
 
-MX-calibrate file1.edf file2.edf file3.edf
+MX−Calibrate −w 1.54 −c CeO2 file1.cbf file2.cbf ...
 
 Options:
 --------
@@ -22,9 +22,8 @@ Options:
   -h, --help            show this help message and exit
   -V, --version         print version of the program and quit
   -v, --verbose         switch to debug/verbose mode
-  -S FILE, --spacing=FILE
-                        file containing d-spacing of the reference sample
-                        (MANDATORY)
+  -c FILE, --calibrant FILE
+                        calibrant name or file containing d−spacing of the calibrant reference sample (MANDATORY)
   -w WAVELENGTH, --wavelength=WAVELENGTH
                         wavelength of the X-Ray beam in Angstrom
   -e ENERGY, --energy=ENERGY
@@ -79,4 +78,7 @@ Options:
   --no-interactive      force the program to run and exit without prompting
                         for refinements
   --interactive         force the program to prompt for refinements
+  --peak−picker PEAKPICKER
+                        Uses the ’massif’ or the ’blob’ peak−picker algorithm (default: blob)
 
+                        
