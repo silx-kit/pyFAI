@@ -1,26 +1,37 @@
 General introduction to PyFAI
 =============================
 
-Aim of PyFAI
-------------
+Python Fast Azimuthal Integration
+---------------------------------
 
-:math:`2D` area detectors like ccd or pixel detectors have become
-popular in the last 15 years for diffraction experiments (e.g. for waxs,
-saxs, single crystal and powder diffraction (xrpd)). These detectors
+PyFAI is implemented in Python_ programming language, which is open
+source and already very popular for scientific data analysis ([PyMca]_,
+[PyNX]_, …). It relies on the scientific stack of python composed of [Numpy]_,
+[SciPy]_ and [Matplotlib]_ plus the [OpenCL]_ binding [PyOpenCL]_ for performances.
+
+.. _Python: http://python.org
+
+:math:`2D` area detectors like CCD or pixel detectors have become
+popular in the last 15 years for diffraction experiments (e.g. for WAXS,
+SAXS, single crystal and powder diffraction). 
+These detectors
 have a large sensitive area of millions of pixels with high spatial
-resolution. The software package pyFAI has been designed to reduce saxs,
-waxs and xrpd images taken with those detectors into :math:`1D` curves
+resolution. The software package pyFAI ([SRI2012]_, [EPDIC13]_) 
+has been designed to reduce SAXS,
+WAXS and XRPD images taken with those detectors into :math:`1D` curves
 (azimuthal integration) usable by other software for in-depth analysis
 such as Rietveld refinement, or :math:`2D` images (a radial
-transformation named *caking*). As a library, the aim of pyFAI is to be
-integrated into other tools like PyMca or edna or LImA with a clean pythonic
-interface. However pyFAI features also command line and graphical tools for batch
+transformation named *caking* in [FIT2D]_). 
+As a library, the aim of pyFAI is to be
+integrated into other tools like [PyMca]_  or [EDNA]_ or [LImA]_ with a clean pythonic
+interface. 
+However pyFAI features also command line and graphical tools for batch
 processing, converting data into *q-space* (q being the momentum
 transfer) or 2\ :math:`\theta`-space (:math:`\theta` being the Bragg
 angle) and a calibration graphical interface for optimizing the geometry
 of the experiment using the Debye-Scherrer rings of a reference sample.
-PyFAI shares the geometry definition of spd but can directly import
-geometries determined by the software fit2d. PyFAI has been designed to
+PyFAI shares the geometry definition of SPD but can directly import
+geometries determined by the software FIT2D. PyFAI has been designed to
 work with any kind of detector and geometry (transmission or reflection)
 and relies on FabIO, a library able to read more than 20 image formats
 produced by detectors from 12 different manufacturers. During the
@@ -35,33 +46,27 @@ Introduction
 
 With the advent of hyperspectral experiments like diffraction tomography
 in the world of synchrotron radiation, existing software tools for
-azimuthal integration like fit2d\  and spd\  reached their performance
+azimuthal integration like [FIT2D]_  and [SPD]_  reached their performance
 limits owing to the fast data rate needed by such experiments. Even when
-integrated into massively parallel frameworks like edna\ , such
+integrated into massively parallel frameworks like [EDNA]_ , such
 stand-alone programs, due to their monolithic nature, cannot keep the
 pace with the data flow of new detectors. Therefore we decided to
 implemente from scratch a novel azimuthal integration tool which is
 designed to take advantage of modern parallel hardware features.
+PyFAI assumes the setup does not change during the experiment and tries to reuse 
+a maximum number of data (using memoization_), moreover those calculation are performed 
+only when needed (lazy_evaluation_).  
 
-Python Fast Azimuthal Integration
----------------------------------
+.. _memoization: http://en.wikipedia.org/wiki/Memoization
+.. _lazy_evaluation: http://en.wikipedia.org/wiki/Lazy_evaluation
 
-PyFAI is implemented in Python programming language, which is open
-source and already very popular for scientific data analysis (PyMca,
-PyNX, …).
 
 Geometry and calibration
-........................
+------------------------
+.. toctree::
+   :maxdepth: 4
 
-PyFAI and spd\  share the same 6-parameter geometry definition:
-distance, point of normal incidence (2 coordinates) and 3 rotations
-around the main axis; these parameters are saved in text files usually
-with the *.poni* extension. The program *pyFAI-calib* helps calibrating
-the experimental setup using a constrained least squares optimization on
-the Debye-Scherrer rings of a reference sample (:math:`LaB_6`, silver
-behenate, …). Alternatively, geometries calibrated using fit2d\  can be
-imported into pyFAI, including geometric distortions (i.e. optical-fiber
-tapers distortion) described as *spline-files*.
+   calibration
 
 PyFAI executables
 .................
@@ -78,9 +83,13 @@ describing the geometry and the mask file. They can also do some
 pre-processing like dark-noise subtraction and flat-field correction
 (solid-angle correction is done by default).
 
-A new Graphical interface based on Qt is under development:  *pyFAI-integrate*
+A new Graphical interface based on Qt called *pyFAI-integrate* is now available,
 offers all options possible for azimuthal integration (dark/flat/polarization, 
 ....) in addition to a finer tuning for the computing device selection (CPU/GPU).
+
+Finally a specialized tool called diff_tomo is available to reduce a mapping of 2D images 
+into a 3D volume (math:`x, y, 2\theta` for mapping or math:`rot, trans, 2\theta` for tomography)
+  
 
 Python library
 ..............
@@ -107,7 +116,7 @@ another weighted by pixel intensities (after dark-current subtraction,
 and corrections for flat-field, solid-angle and polarization). The
 division of the weighted histogram by the number of pixels per bin gives
 the diffraction pattern. :math:`2D` regrouping (called *caking* in
-fit2d) is obtained in the same way using two-dimensional histograms over
+FIT2D) is obtained in the same way using two-dimensional histograms over
 radial (:math:`2\theta` or :math:`q`) and azimuthal angles
 (:math:`\chi`).
 
@@ -131,10 +140,12 @@ PyFAI solves this problem by pixel
 splitting : in addition to the pixel position, its
 spatial extension is calculated and each pixel is then split and
 distributed over the corresponding bins, the intensity being considered
-as homogeneous within a pixel and spread accordingly. To simplify 
+as homogeneous within a pixel and spread accordingly.
+The drawback of this is the correlation introduced between two adjacent bins.
+To simplify 
 calculations, this was initially done by abstracting the pixel shape 
 with a bounding box that circumscribes the pixel. In an effort to better
-the quality of the results this method was dropped in favour of a full 
+the quality of the results this method was dropped in favo2r of a full 
 pixel splitting scheme that actually uses the actual pixel geometry 
 for its calculations.
 
@@ -159,13 +170,17 @@ Parallel implementation
 The method based on histograms works well on a single processor but runs
 into problems requiring so called "atomic operations" when run in parallel.
 Processing pixels in the input data order causes write access conflicts which
-become less efficient with the increase of number of computing units.
+become less efficient with the increase of number of computing units (need of atomic_operation)_.
 This is the main limit of the method exposed previously;
 especially on GPU where hundreds of threads are executed simultaneously.
 
+.. _atomic_operation: http://en.wikipedia.org/wiki/Atomic_operation
+
 To overcome this limitation; instead of looking at where input pixels GO TO
 in the output image, we instead look at where the output pixels COME FROM
-in the input image.
+in the input image. 
+This transformation is called a "scatter to gather" transformation in parallel programming.
+
 The correspondence between pixels and output bins can be stored in a
 look-up table (LUT) together with the pixel weight which make the integration
 look like a simple (if large and sparse) matrix vector product.
@@ -190,7 +205,7 @@ the content of a single bin.
 This makes it very well suited to run on GPUs and accelerators 
 where hundreds to thousands of simultaneous threads are available.
 
-When using OpenCL for the GPU we used a compensated, or Kahan summation, to reduce
+When using OpenCL for the GPU we used a compensated (or Kahan_summation_), to reduce
 the error accumulation in the histogram summation (at the cost of more operations to be done).
 This allows accurate results to be obtained on cheap hardware that performs calculations
 in single precision floating-point arithmetic (32 bits) which are available on consumer
@@ -198,6 +213,8 @@ grade graphic cards.
 Double precision operations are currently limited to high price and performance computing dedicated GPUs.
 The additional cost of Kahan summation, 4x more arithmetic operations, is hidden by smaller data types,
 the higher number of single precision units and that the GPU is usually limited by the memory bandwidth anyway.
+
+.. _Kahan_summation: http://en.wikipedia.org/wiki/Kahan_summation_algorithm
 
 The performances of the parallel implementation based on a LUT, stored in CSR format, can reach 750 MPix/s 
 on recent multi-core computer with a mid-range graphics card. 
@@ -232,49 +249,58 @@ Acknowledgments
 Porting pyFAI to GPU would have not been possible without
 the financial support of LinkSCEEM-2 (RI-261600).
 
-References:
-...........
 
-- The philosophy of pyFAI is described in the proceedings of SRI2012:
-  doi:10.1088/1742-6596/425/20/202012
-  http://iopscience.iop.org/1742-6596/425/20/202012/
+.. [SRI2012] PyFAI, a versatile library for azimuthal regrouping 
+   J. Kieffer & D. Karkoulis
+   J. Phys.: Conf. Ser. 425 202012
+   http://dx.doi.org/10.1088/1742-6596/425/20/202012
 
-- The LUT implementation (ported to GPU) is described in the proceedings
-  of EPDIC13:  http://epdic13.grenoble.cnrs.fr/spip.php?article43
-  (to be published)
+.. [EPDIC13] PyFAI: a Python library for high performance azimuthal integration on GPU
+   J. Kieffer & J. P. Wright,
+   Powder Diffraction / Volume 28 / Supplement S2 / September 2013, pp S339-S350
+   http://dx.doi.org/10.1017/S0885715613000924
   
-- [FIT2D] Hammersley A. P., Svensson S. O., Hanfland M., Fitch A. N. and Hausermann D. 
-  1996 High Press. Res. vol14 p235–248
+.. [FIT2D] Hammersley A. P., Svensson S. O., Hanfland M., Fitch A. N. and Hausermann D. 
+   1996 High Press. Res. vol14 p235–248
 
-- [SPD] Bösecke P. 2007 J. Appl. Cryst. vol40 s423–s427
+.. [SPD] Bösecke P. 2007 J. Appl. Cryst. vol40 s423–s427
 
-- [EDNA] Incardona M. F., Bourenkov G. P., Levik K., Pieritz R. A., Popov A. N. and Svensson O. 
-  2009 J. Synchrotron Rad. vol16 p872–879
+.. [EDNA] Incardona M. F., Bourenkov G. P., Levik K., Pieritz R. A., Popov A. N. and Svensson O. 
+   2009 J. Synchrotron Rad. vol16 p872–879
 
-- [PyMca] Solé V. A., Papillon E., Cotte M., Walter P. and Susini J. 
-  2007 Spectrochim. Acta Part B vol vol62 p63 – 68
+.. [PyMca] Solé V. A., Papillon E., Cotte M., Walter P. and Susini J. 
+   2007 Spectrochim. Acta Part B vol vol62 p63 – 68
 
-- [PyNX] Favre-Nicolin V., Coraux J., Richard M. I. and Renevier H. 
-  2011 J. Appl. Cryst. vol44 p635–640
+.. [PyNX] Favre-Nicolin V., Coraux J., Richard M. I. and Renevier H. 
+   2011 J. Appl. Cryst. vol44 p635–640
 
-- [iPython] Pérez F and Granger B E 
-  2007 Comput. Sci. Eng. vol9 p21–29 URL http://ipython.org
+.. [iPython] Pérez F and Granger B E 
+   2007 Comput. Sci. Eng. vol9 p21–29 URL http://ipython.org
   
-- [NumPy] Oliphant T E 2007 Comput. Sci. Eng. vol9 p10–20
+.. [NumPy] Oliphant T E 2007 Comput. Sci. Eng. vol9 p10–20
 
-- [Cython] Behnel S, Bradshaw R, Citro C, Dalcin L, Seljebotn D and Smith K 2011 Comput. Sci. Eng. vol13 p31 –39
+.. [Cython] Behnel S, Bradshaw R, Citro C, Dalcin L, Seljebotn D and Smith K 2011 Comput. Sci. Eng. vol13 p31 –39
 
-- [OpenCL] Khronos OpenCL Working Group 2010 The OpenCL Specification, version 1.1 URL http://www.khronos.org/registry/cl/specs/opencl-1.1.pdf
+.. [OpenCL] Khronos OpenCL Working Group 2010 The OpenCL Specification, version 1.1 URL http://www.khronos.org/registry/cl/specs/opencl-1.1.pdf
 
-- [FabIO] Sorensen H O, Knudsen E, Wright J, Kieffer J et al. 
-  2007–2013 FabIO: I/O library for images produced by 2D X-ray detectors URL http://fable.sf.net/
+.. [FabIO] Sorensen H O, Knudsen E, Wright J, Kieffer J et al. 
+   2007–2013 FabIO: I/O library for images produced by 2D X-ray detectors URL http://fable.sf.net/
   
-- [Matplotlib] Hunter J D 2007 Comput. Sci. Eng. vol9  p90–95 ISSN 1521-9615
+.. [Matplotlib] Hunter J D 2007 Comput. Sci. Eng. vol9  p90–95 ISSN 1521-9615
 
-- [SciPy] Jones E, Oliphant T, Peterson P et al. 
-  2001– SciPy: Open source scientific tools for Python URL
-  http://www.scipy.org/
+.. [SciPy] Jones E, Oliphant T, Peterson P et al. 
+   2001– SciPy: Open source scientific tools for Python URL
+   http://www.scipy.org/
   
-- [FFTw] Frigo M and Johnson S G 
-  2005 Proceedings of the IEEE 93 p 216–231
-  
+.. [FFTw] Frigo M and Johnson S G 
+   2005 Proceedings of the IEEE 93 p 216–231
+
+.. [LImA] The LIMA Project Update
+   S. Petitdemange, L. Claustre, A. Homs, R. Homs Regojo, E. Papillon
+   Proceedings of ICALEPCS2013
+   http://accelconf.web.cern.ch/AccelConf/ICALEPCS2013/html/auth1084.htm
+
+.. [PyOpenCL]  PyCUDA and PyOpenCL: A scripting-based approach to GPU run-time code generation
+   Andreas Klöckner, Nicolas Pinto, Yunsup Lee, Bryan Catanzaro, Paul Ivanov, Ahmed Fasih,
+   Parallel Computing Vol 38, 3, March 2012, Pages 157–174
+   http://dx.doi.org/10.1016/j.parco.2011.09.001

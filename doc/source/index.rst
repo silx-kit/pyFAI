@@ -6,11 +6,10 @@
 Welcome to pyFAI's documentation!
 =================================
 
-Contents:
-
 This document starts with a general descriptions of the pyFAI library in the first chapter. 
-This first chapter contains a mix of various publication describing pyFAI, what it is, what it aims at and how it works 
-(for scientists). Especially, azimuthal integration algorithms are described and pixel splitting schemes are explained. 
+This first chapter contains an introduction to pyFAI, what it is, what it aims at and how it works 
+(for scientists). Especially, geometry, calibration, azimuthal integration algorithms are described 
+and pixel splitting schemes are explained. 
 
 The second chapter is the concatenation of the manual pages of all (relevant) scripts. Those are programs to be launched at the 
 command line allowing the treatment of a  diffraction experiment without knowing anything about Python.  
