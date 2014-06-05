@@ -29,24 +29,15 @@
  * \brief OpenCL kernels for 1D azimuthal integration
  */
 
-//OpenCL extensions are silently defined by opencl compiler at compile-time:
-#ifdef cl_amd_printf
-  #pragma OPENCL EXTENSION cl_amd_printf : enable
-  //#define printf(...)
-#elif defined(cl_intel_printf)
-  #pragma OPENCL EXTENSION cl_intel_printf : enable
-#else
-  #define printf(...)
-#endif
 
 #ifdef ENABLE_FP64
-  #pragma OPENCL EXTENSION cl_khr_fp64 : enable
+//  #pragma OPENCL EXTENSION cl_khr_fp64 : enable
   #pragma OPENCL EXTENSION cl_khr_int64_base_atomics : enable
   #define UACC  100000000
   #define UACCf 100000000.0f
   typedef unsigned long UINTType;
 #else
-  #pragma OPENCL EXTENSION cl_khr_fp64 : disable
+//  #pragma OPENCL EXTENSION cl_khr_fp64 : disable
   #pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable
   #define UACC  100
   #define UACCf 100.0f
