@@ -29,15 +29,6 @@
  * \brief OpenCL kernels for 1D azimuthal integration
  */
 
-//OpenCL extensions are silently defined by opencl compiler at compile-time:
-#ifdef cl_amd_printf
-  #pragma OPENCL EXTENSION cl_amd_printf : enable
-  //#define printf(...)
-#elif defined(cl_intel_printf)
-  #pragma OPENCL EXTENSION cl_intel_printf : enable
-#else
-  #define printf(...)
-#endif
 
 
 #ifdef ENABLE_FP64

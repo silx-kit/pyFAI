@@ -48,13 +48,13 @@ logger = logging.getLogger("pyFAI.ocl_azim_csr")
 
 class OCL_CSR_Integrator(object):
     def __init__(self, lut, image_size, devicetype="all",
-                 padded=False, block_size=32,
-                 platformid=None, deviceid=None, 
+                 block_size=32,
+                 platformid=None, deviceid=None,
                  checksum=None, profile=False):
         """
-        @param lut: 3-tuple of arrays 
+        @param lut: 3-tuple of arrays
             data: coefficient of the matrix in a 1D vector of float32 - size of nnz
-            indices: Column index position for the data (same size as data) 
+            indices: Column index position for the data (same size as data)
             indptr: row pointer indicates the start of a given row. len nbin+1
         @param image_size: size of the image (for pre-processing)
         @param devicetype: can be "cpu","gpu","acc" or "all"
@@ -66,7 +66,6 @@ class OCL_CSR_Integrator(object):
         @param profile: store profiling elements
         """
         self.BLOCK_SIZE = block_size  # query for warp size
-        self.padded = padded
         self._sem = threading.Semaphore()
         self._data = lut[0]
         self._indices = lut[1]
@@ -75,7 +74,7 @@ class OCL_CSR_Integrator(object):
         self.nbytes = self._data.nbytes + self._indices.nbytes + self._indptr.nbytes
         if self._data.shape[0] != self._indices.shape[0]:
             raise RuntimeError("data.shape[0] != indices.shape[0]")
-        self.data_size = self._data.shape[0]  
+        self.data_size = self._data.shape[0]
         self.size = image_size
         self.profile = profile
         if not checksum:
@@ -106,7 +105,7 @@ class OCL_CSR_Integrator(object):
         self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
         try:
             self._ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
-            if self.profile:         
+            if self.profile:
                 self._queue = pyopencl.CommandQueue(self._ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
             else:
                 self._queue = pyopencl.CommandQueue(self._ctx)
@@ -116,12 +115,12 @@ class OCL_CSR_Integrator(object):
         except pyopencl.MemoryError as error:
             raise MemoryError(error)
         ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["data"], self._data)
-        if self.profile: self.events.append(("copy Coefficient data",ev))
+        if self.profile: self.events.append(("copy Coefficient data", ev))
         ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indices"], self._indices)
-        if self.profile: self.events.append(("copy Row Index data",ev))
+        if self.profile: self.events.append(("copy Row Index data", ev))
         ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indptr"], self._indptr)
-        if self.profile: self.events.append(("copy Column Pointer data",ev))
-        
+        if self.profile: self.events.append(("copy Column Pointer data", ev))
+
     def __del__(self):
         """
         Destructor: release all buffers
@@ -149,7 +148,7 @@ class OCL_CSR_Integrator(object):
         size_of_int = numpy.dtype(numpy.int32).itemsize
         size_of_long = numpy.dtype(numpy.int64).itemsize
 
-        ualloc  = (self.size * size_of_float) * 5
+        ualloc = (self.size * size_of_float) * 5
         ualloc += (self.size * size_of_short)
         ualloc += (self.data_size * (size_of_float + size_of_int))
         ualloc += ((self.bins + 1) * size_of_int)
@@ -162,7 +161,7 @@ class OCL_CSR_Integrator(object):
         try:
             self._cl_mem["data"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * self.data_size)
             self._cl_mem["indices"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_int * self.data_size)
-            self._cl_mem["indptr"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_int * (self.bins+1))
+            self._cl_mem["indptr"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_int * (self.bins + 1))
             self._cl_mem["outData"] = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, size_of_float * self.bins)
             self._cl_mem["outCount"] = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, size_of_float * self.bins)
             self._cl_mem["outMerge"] = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, size_of_float * self.bins)
@@ -234,7 +233,7 @@ class OCL_CSR_Integrator(object):
         self._cl_kernel_args["corrections"] = [self._cl_mem["image"], numpy.int32(0), self._cl_mem["dark"], numpy.int32(0), self._cl_mem["flat"], \
                                              numpy.int32(0), self._cl_mem["solidangle"], numpy.int32(0), self._cl_mem["polarization"], \
                                              numpy.int32(0), numpy.float32(0), numpy.float32(0)]
-        self._cl_kernel_args["csr_integrate"] = [self._cl_mem["image"], self._cl_mem["data"], self._cl_mem["indices"], self._cl_mem["indptr"],  \
+        self._cl_kernel_args["csr_integrate"] = [self._cl_mem["image"], self._cl_mem["data"], self._cl_mem["indices"], self._cl_mem["indptr"], \
                                                 numpy.int32(0), numpy.float32(0), \
                                                 self._cl_mem["outData"], self._cl_mem["outCount"], self._cl_mem["outMerge"]]
         self._cl_kernel_args["memset_out"] = [self._cl_mem[i] for i in ["outData", "outCount", "outMerge"]]
@@ -248,16 +247,16 @@ class OCL_CSR_Integrator(object):
             if data.dtype == numpy.uint16:
                 copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image_u16"], numpy.ascontiguousarray(data))
                 cast_u16_to_float = self._program.u16_to_float(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["u16_to_float"])
-                events+=[("copy image",copy_image),("cast", cast_u16_to_float)]
+                events += [("copy image", copy_image), ("cast", cast_u16_to_float)]
             elif data.dtype == numpy.int32:
                 copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image"], numpy.ascontiguousarray(data))
                 cast_s32_to_float = self._program.s32_to_float(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["s32_to_float"])
-                events+=[("copy image",copy_image),("cast", cast_s32_to_float)]
+                events += [("copy image", copy_image), ("cast", cast_s32_to_float)]
             else:
                 copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image"], numpy.ascontiguousarray(data, dtype=numpy.float32))
-                events+=[("copy image",copy_image)]
+                events += [("copy image", copy_image)]
             memset = self._program.memset_out(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["memset_out"])
-            events+=[("memset",memset)]
+            events += [("memset", memset)]
             if dummy is not None:
                 do_dummy = numpy.int32(1)
                 dummy = numpy.float32(dummy)
@@ -281,7 +280,7 @@ class OCL_CSR_Integrator(object):
                     dark_checksum = crc32(dark)
                 if dark_checksum != self.on_device["dark"]:
                     ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["dark"], numpy.ascontiguousarray(dark, dtype=numpy.float32))
-                    events.append("copy dark",ev)
+                    events.append("copy dark", ev)
                     self.on_device["dark"] = dark_checksum
             else:
                 do_dark = numpy.int32(0)
@@ -291,8 +290,8 @@ class OCL_CSR_Integrator(object):
                 if not flat_checksum:
                     flat_checksum = crc32(flat)
                 if self.on_device["flat"] != flat_checksum:
-                    ev=pyopencl.enqueue_copy(self._queue, self._cl_mem["flat"], numpy.ascontiguousarray(flat, dtype=numpy.float32))
-                    events.append("copy flat",ev)
+                    ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["flat"], numpy.ascontiguousarray(flat, dtype=numpy.float32))
+                    events.append("copy flat", ev)
                     self.on_device["flat"] = flat_checksum
             else:
                 do_flat = numpy.int32(0)
@@ -303,8 +302,8 @@ class OCL_CSR_Integrator(object):
                 if not solidAngle_checksum:
                     solidAngle_checksum = crc32(solidAngle)
                 if solidAngle_checksum != self.on_device["solidangle"]:
-                    ev=pyopencl.enqueue_copy(self._queue, self._cl_mem["solidangle"], numpy.ascontiguousarray(solidAngle, dtype=numpy.float32))
-	            events.append(("copy solidangle",ev))
+                    ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["solidangle"], numpy.ascontiguousarray(solidAngle, dtype=numpy.float32))
+	            events.append(("copy solidangle", ev))
                     self.on_device["solidangle"] = solidAngle_checksum
             else:
                 do_solidAngle = numpy.int32(0)
@@ -315,8 +314,8 @@ class OCL_CSR_Integrator(object):
                 if not polarization_checksum:
                     polarization_checksum = crc32(polarization)
                 if polarization_checksum != self.on_device["polarization"]:
-                    ev=pyopencl.enqueue_copy(self._queue, self._cl_mem["polarization"], numpy.ascontiguousarray(polarization, dtype=numpy.float32))
-                    events.append(("copy polarization",ev))
+                    ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["polarization"], numpy.ascontiguousarray(polarization, dtype=numpy.float32))
+                    events.append(("copy polarization", ev))
                     self.on_device["polarization"] = polarization_checksum
             else:
                 do_polarization = numpy.int32(0)
@@ -324,24 +323,24 @@ class OCL_CSR_Integrator(object):
             copy_image.wait()
             if do_dummy + do_polarization + do_solidAngle + do_flat + do_dark > 0:
                 ev = self._program.corrections(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["corrections"])
-                events.append(("corrections",ev))
-            if self.padded is True:
-                integrate = self._program.csr_integrate_padded(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["csr_integrate"])
-            else:
-                integrate = self._program.csr_integrate(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["csr_integrate"])
-            events.append(("integrate",integrate))
+                events.append(("corrections", ev))
+#            if self.padded:
+#                integrate = self._program.csr_integrate_padded(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["csr_integrate"])
+#            else:
+            integrate = self._program.csr_integrate(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["csr_integrate"])
+            events.append(("integrate", integrate))
             outMerge = numpy.empty(self.bins, dtype=numpy.float32)
             outData = numpy.empty(self.bins, dtype=numpy.float32)
             outCount = numpy.empty(self.bins, dtype=numpy.float32)
-            ev=pyopencl.enqueue_copy(self._queue, outMerge, self._cl_mem["outMerge"])
-            events.append(("copy D->H outMerge",ev))
-            ev=pyopencl.enqueue_copy(self._queue, outData, self._cl_mem["outData"])
-            events.append(("copy D->H outData",ev))
-            ev=pyopencl.enqueue_copy(self._queue, outCount, self._cl_mem["outCount"])
-            events.append(("copy D->H outCount",ev))
+            ev = pyopencl.enqueue_copy(self._queue, outMerge, self._cl_mem["outMerge"])
+            events.append(("copy D->H outMerge", ev))
+            ev = pyopencl.enqueue_copy(self._queue, outData, self._cl_mem["outData"])
+            events.append(("copy D->H outData", ev))
+            ev = pyopencl.enqueue_copy(self._queue, outCount, self._cl_mem["outCount"])
+            events.append(("copy D->H outCount", ev))
             ev.wait()
-        if self.profile: 
-            self.events+=events        
+        if self.profile:
+            self.events += events
         return outMerge, outData, outCount
 
     def log_profile(self):
