@@ -121,7 +121,11 @@ class Detector(object):
             self._pixel1 = float(pixel1)
         if pixel2:
             self._pixel2 = float(pixel2)
-        self.max_shape = (None, None)
+        if "MAX_SHAPE" in dir(self.__class__):
+            self.max_shape = tuple(self.MAX_SHAPE)
+        else:
+            self.max_shape = None
+        self.shape = self.max_shape
         self._binning = (1, 1)
         self._mask = False
         self._mask_crc = None
@@ -273,11 +277,17 @@ class Detector(object):
         d1 and d2 must have the same shape, returned array will have
         the same shape.
         """
-        if (d1 is None):
-            d1 = numpy.outer(numpy.arange(self.max_shape[0]), numpy.ones(self.max_shape[1]))
-
-        if (d2 is None):
-            d2 = numpy.outer(numpy.ones(self.max_shape[0]), numpy.arange(self.max_shape[1]))
+        if self.shape:
+            if (d1 is None):
+                d1 = numpy.outer(numpy.arange(self.shape[0]), numpy.ones(self.shape[1]))
+            if (d2 is None):
+                d2 = numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1]))
+        elif "ndim" in dir(d1):
+            if d1.ndim == 2:
+                self.shape = d1.shape
+        elif "ndim" in dir(d2):
+            if d2.ndim == 2:
+                self.shape = d2.shape
 
         if self.spline is None:
             dX = 0.
@@ -456,7 +466,7 @@ class Pilatus(Detector):
         """
         Returns a generic mask for Pilatus detectors...
         """
-        if (self.max_shape[0] or self.max_shape[1]) is None:
+        if self.max_shape is None:
             raise NotImplementedError("Generic Pilatus detector does not know"
                                       "the max size ...")
         mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
@@ -538,7 +548,6 @@ class Pilatus100k(Pilatus):
     MAX_SHAPE = 195, 487
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         super(Pilatus100k, self).__init__(pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = self.MAX_SHAPE
 
 
 class Pilatus200k(Pilatus):
@@ -548,7 +557,6 @@ class Pilatus200k(Pilatus):
     MAX_SHAPE = (407, 487)
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         super(Pilatus200k, self).__init__(pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = self.MAX_SHAPE
 
 
 class Pilatus300k(Pilatus):
@@ -558,8 +566,6 @@ class Pilatus300k(Pilatus):
     MAX_SHAPE = (619, 487)
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         super(Pilatus300k, self).__init__(pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = self.MAX_SHAPE
-
 
 class Pilatus300kw(Pilatus):
     """
@@ -568,7 +574,6 @@ class Pilatus300kw(Pilatus):
     MAX_SHAPE = (195, 1475)
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         super(Pilatus300kw, self).__init__(pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = self.MAX_SHAPE
 
 
 class Pilatus1M(Pilatus):
@@ -578,7 +583,6 @@ class Pilatus1M(Pilatus):
     MAX_SHAPE = (1043, 981)
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         super(Pilatus1M, self).__init__(pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = self.MAX_SHAPE
 
 
 class Pilatus2M(Pilatus):
@@ -589,7 +593,6 @@ class Pilatus2M(Pilatus):
     MAX_SHAPE = 1679, 1475
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         super(Pilatus2M, self).__init__(pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = self.MAX_SHAPE
 
 
 class Pilatus6M(Pilatus):
@@ -599,7 +602,6 @@ class Pilatus6M(Pilatus):
     MAX_SHAPE = (2527, 2463)
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         super(Pilatus6M, self).__init__(pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = self.MAX_SHAPE
 
 class Eiger(Detector):
     """
@@ -616,7 +618,7 @@ class Eiger(Detector):
         """
         Returns a generic mask for Pilatus detectors...
         """
-        if (self.max_shape[0] or self.max_shape[1]) is None:
+        if self.max_shape is None:
             raise NotImplementedError("Generic Pilatus detector does not know"
                                       "the max size ...")
         mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
@@ -697,7 +699,7 @@ class Eiger1M(Eiger):
     MAX_SHAPE = (1065, 1030)
     def __init__(self, pixel1=75e-6, pixel2=75e-6):
         Eiger.__init__(self, pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = self.MAX_SHAPE
+
 
 class Eiger4M(Eiger):
     """
@@ -706,7 +708,7 @@ class Eiger4M(Eiger):
     MAX_SHAPE = (2167, 2070)
     def __init__(self, pixel1=75e-6, pixel2=75e-6):
         Eiger.__init__(self, pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = self.MAX_SHAPE
+
 
 class Eiger9M(Eiger):
     """
@@ -715,7 +717,7 @@ class Eiger9M(Eiger):
     MAX_SHAPE = (3269, 3110)
     def __init__(self, pixel1=75e-6, pixel2=75e-6):
         Eiger.__init__(self, pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = self.MAX_SHAPE
+
 
 class Eiger16M(Eiger):
     """
@@ -724,7 +726,6 @@ class Eiger16M(Eiger):
     MAX_SHAPE = (4371, 4150)
     def __init__(self, pixel1=75e-6, pixel2=75e-6):
         Eiger.__init__(self, pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = self.MAX_SHAPE
 
 
 class Fairchild(Detector):
@@ -736,7 +737,6 @@ class Fairchild(Detector):
     MAX_SHAPE = (4096, 4096)
     def __init__(self, pixel1=15e-6, pixel2=15e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = self.MAX_SHAPE
 
 
 class Titan(Detector):
@@ -748,7 +748,6 @@ class Titan(Detector):
     aliases = ["Titan 2k x 2k"]
     def __init__(self, pixel1=60e-6, pixel2=60e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = self.MAX_SHAPE
 
 
 class Dexela2923(Detector):
@@ -760,7 +759,6 @@ class Dexela2923(Detector):
     MAX_SHAPE = (3888, 3072)
     def __init__(self, pixel1=75e-6, pixel2=75e-6):
         super(Dexela2923, self).__init__(pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = self.MAX_SHAPE
 
 
 class FReLoN(Detector):
@@ -777,6 +775,7 @@ class FReLoN(Detector):
                               int(self.spline.xmax - self.spline.xmin))
         else:
             self.max_shape = (2048, 2048)
+        self.shape = self.max_shape
 
     def calc_mask(self):
         """
@@ -784,8 +783,8 @@ class FReLoN(Detector):
         All pixels which (center) turns to be out of the valid region are by default discarded
         """
 
-        d1 = numpy.outer(numpy.arange(self.max_shape[0]), numpy.ones(self.max_shape[1])) + 0.5
-        d2 = numpy.outer(numpy.ones(self.max_shape[0]), numpy.arange(self.max_shape[1])) + 0.5
+        d1 = numpy.outer(numpy.arange(self.shape[0]), numpy.ones(self.shape[1])) + 0.5
+        d2 = numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1])) + 0.5
         dX = self.spline.splineFuncX(d2, d1)
         dY = self.spline.splineFuncY(d2, d1)
         p1 = dY + d1
@@ -806,7 +805,7 @@ class Basler(Detector):
     MAX_SHAPE = (966, 1296)
     def __init__(self, pixel=3.75e-6):
         super(Basler, self).__init__(pixel1=pixel, pixel2=pixel)
-        self.max_shape = self.MAX_SHAPE
+
 
 class Mar345(Detector):
 
@@ -821,11 +820,12 @@ class Mar345(Detector):
         Detector.__init__(self, pixel1, pixel2)
         self.max_shape = (int(self.MAX_SHAPE[0] * 100e-6 / self.pixel1),
                           int(self.MAX_SHAPE[1] * 100e-6 / self.pixel2))
+        self.shape = self.max_shape
 #        self.mode = 1
 
     def calc_mask(self):
-        c = [i // 2 for i in self.max_shape]
-        x, y = numpy.ogrid[:self.max_shape[0], :self.max_shape[1]]
+        c = [i // 2 for i in self.shape]
+        x, y = numpy.ogrid[:self.shape[0], :self.shape[1]]
         mask = ((x + 0.5 - c[0]) ** 2 + (y + 0.5 - c[1]) ** 2) > (c[0]) ** 2
         return mask
 
@@ -841,7 +841,6 @@ class Xpad_flat(Detector):
     MAX_SHAPE = (960, 560)
     def __init__(self, pixel1=130e-6, pixel2=130e-6):
         super(Xpad_flat, self).__init__(pixel1=pixel1, pixel2=pixel2)
-        self.max_shape = self.MAX_SHAPE
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -853,7 +852,7 @@ class Xpad_flat(Detector):
         discards the first line and raw form all modules:
         those are 2.5x bigger and often mis - behaving
         """
-        if (self.max_shape[0] or self.max_shape[1]) is None:
+        if self.max_shape is None:
             raise NotImplementedError("Generic Xpad detector does not"
                                       " know the max size ...")
         mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
@@ -993,7 +992,6 @@ class ImXPadS140(Detector):
     def __init__(self, pixel1=130e-6, pixel2=130e-6):
         super(ImXPadS140, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
-        self.max_shape = self.MAX_SHAPE
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -1066,8 +1064,8 @@ class Rayonix(Detector):
                 self._pixel1 = self.BINNED_PIXEL_SIZE[1] / float(bin_size[0])
                 self._pixel2 = self.BINNED_PIXEL_SIZE[1] / float(bin_size[1])
             self._binning = bin_size
-            self.max_shape = (self.MAX_SHAPE[0] // bin_size[0],
-                              self.MAX_SHAPE[1] // bin_size[1])
+            self.shape = (self.max_shape[0] // bin_size[0],
+                          self.max_shape[1] // bin_size[1])
     binning = property(get_binning, set_binning)
 
 
@@ -1092,13 +1090,13 @@ class Rayonix133(Rayonix):
 
     def __init__(self):
         Rayonix.__init__(self, pixel1=64e-6, pixel2=64e-6)
-        self.max_shape = (2048, 2048)
+        self.shape = (2048, 2048)
         self._binning = (2, 2)
 
     def calc_mask(self):
         """Circular mask"""
-        c = [i // 2 for i in self.max_shape]
-        x, y = numpy.ogrid[:self.max_shape[0], :self.max_shape[1]]
+        c = [i // 2 for i in self.shape]
+        x, y = numpy.ogrid[:self.shape[0], :self.shape[1]]
         mask = ((x + 0.5 - c[0]) ** 2 + (y + 0.5 - c[1]) ** 2) > (c[0]) ** 2
         return mask
 
@@ -1121,13 +1119,11 @@ class RayonixSx165(Rayonix):
 
     def __init__(self):
         Rayonix.__init__(self, pixel1=39.5e-6, pixel2=39.5e-6)
-        self.max_shape = self.MAX_SHAPE
-        self._binning = (1, 1)
 
     def calc_mask(self):
         """Circular mask"""
-        c = [i // 2 for i in self.max_shape]
-        x, y = numpy.ogrid[:self.max_shape[0], :self.max_shape[1]]
+        c = [i // 2 for i in self.shape]
+        x, y = numpy.ogrid[:self.shape[0], :self.shape[1]]
         mask = ((x + 0.5 - c[0]) ** 2 + (y + 0.5 - c[1]) ** 2) > (c[0]) ** 2
         return mask
 
@@ -1149,8 +1145,6 @@ class RayonixSx200(Rayonix):
 
     def __init__(self):
         Rayonix.__init__(self, pixel1=48e-6, pixel2=48e-6)
-        self.max_shape = self.MAX_SHAPE
-        self._binning = (1, 1)
 
 
 class RayonixLx170(Rayonix):
@@ -1174,8 +1168,6 @@ class RayonixLx170(Rayonix):
 
     def __init__(self):
         Rayonix.__init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6)
-        self.max_shape = self.MAX_SHAPE
-        self._binning = (1, 1)
 
 
 class RayonixMx170(Rayonix):
@@ -1198,8 +1190,6 @@ class RayonixMx170(Rayonix):
 
     def __init__(self):
         Rayonix.__init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6)
-        self.max_shape = self.MAX_SHAPE
-        self._binning = (1, 1)
 
 
 class RayonixLx255(Rayonix):
@@ -1222,8 +1212,6 @@ class RayonixLx255(Rayonix):
 
     def __init__(self):
         Rayonix.__init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6)
-        self.max_shape = self.MAX_SHAPE
-        self._binning = (1, 1)
 
 
 class RayonixMx225(Rayonix):
@@ -1245,7 +1233,7 @@ class RayonixMx225(Rayonix):
 
     def __init__(self):
         Rayonix.__init__(self, pixel1=73.242e-6, pixel2=73.242e-6)
-        self.max_shape = (3072, 3072)
+        self.shape = (3072, 3072)
         self._binning = (2, 2)
 
 
@@ -1269,7 +1257,7 @@ class RayonixMx225hs(Rayonix):
     aliases = ["Rayonix mx225hs"]
     def __init__(self):
         Rayonix.__init__(self, pixel1=78.125e-6, pixel2=78.125e-6)
-        self.max_shape = (2880, 2880)
+        self.shape = (2880, 2880)
         self._binning = (2, 2)
 
 
@@ -1291,7 +1279,7 @@ class RayonixMx300(Rayonix):
 
     def __init__(self):
         Rayonix.__init__(self, pixel1=73.242e-6, pixel2=73.242e-6)
-        self.max_shape = (4096, 4096)
+        self.shape = (4096, 4096)
         self._binning = (2, 2)
 
 
@@ -1316,7 +1304,7 @@ class RayonixMx300hs(Rayonix):
 
     def __init__(self):
         Rayonix.__init__(self, pixel1=78.125e-6, pixel2=78.125e-6)
-        self.max_shape = (3840, 3840)
+        self.shape = (3840, 3840)
         self._binning = (2, 2)
 
 
@@ -1341,7 +1329,7 @@ class RayonixMx340hs(Rayonix):
 
     def __init__(self):
         Rayonix.__init__(self, pixel1=88.5417e-6, pixel2=88.5417e-6)
-        self.max_shape = (3840, 3840)
+        self.shape = (3840, 3840)
         self._binning = (2, 2)
 
 class RayonixSx30hs(Rayonix):
@@ -1364,8 +1352,6 @@ class RayonixSx30hs(Rayonix):
 
     def __init__(self):
         Rayonix.__init__(self, pixel1=15.625e-6, pixel2=15.625e-6)
-        self.max_shape = self.MAX_SHAPE
-        self._binning = (1, 1)
 
 
 class RayonixSx85hs(Rayonix):
@@ -1387,8 +1373,7 @@ class RayonixSx85hs(Rayonix):
     aliases = ["Rayonix Sx85hs"]
     def __init__(self):
         Rayonix.__init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6)
-        self.max_shape = self.MAX_SHAPE
-        self._binning = (1, 1)
+
 
 class RayonixMx425hs(Rayonix):
     """
@@ -1409,8 +1394,6 @@ class RayonixMx425hs(Rayonix):
     aliases = ["Rayonix mx425hs"]
     def __init__(self):
         Rayonix.__init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6)
-        self.max_shape = self.MAX_SHAPE
-        self._binning = (1, 1)
 
 
 class RayonixMx325(Rayonix):
@@ -1429,7 +1412,7 @@ class RayonixMx325(Rayonix):
     aliases = ["Rayonix mx325"]
     def __init__(self):
         Rayonix.__init__(self, pixel1=79.346e-6, pixel2=79.346e-6)
-        self.max_shape = (4096, 4096)
+        self.shape = (4096, 4096)
         self._binning = (2, 2)
 
 
