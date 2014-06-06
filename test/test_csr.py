@@ -50,20 +50,17 @@ class ParameterisedTestCase(unittest.TestCase):
         return suite
 
 class TestOpenclCSR(ParameterisedTestCase):
-        
+
     def test_csr(self):
-        workgroup_size, padded = self.param        
+        workgroup_size = self.param
         N = 1000
         out_ref = pyFAI.splitBBox.histoBBox1d(data, ai._ttha, ai._dttha, bins=N)
-        if padded:
-            csr = pyFAI.splitBBoxCSR.HistoBBox1d(ai._ttha, ai._dttha, bins=N, unit="2th_deg", padding=workgroup_size)
-        else:
-            csr = pyFAI.splitBBoxCSR.HistoBBox1d(ai._ttha, ai._dttha, bins=N, unit="2th_deg")
+        csr = pyFAI.splitBBoxCSR.HistoBBox1d(ai._ttha, ai._dttha, bins=N, unit="2th_deg")
         if not opencl.ocl:
            skip=True
         else:
             try:
-                ocl_csr = ocl_azim_csr.OCL_CSR_Integrator(csr.lut, data.size, "ALL",profile=True, padded=padded, block_size=workgroup_size)
+                ocl_csr = ocl_azim_csr.OCL_CSR_Integrator(csr.lut, data.size, "ALL", profile=True, block_size=workgroup_size)
                 out_ocl_csr = ocl_csr.integrate(data)
             except (opencl.pyopencl.MemoryError, MemoryError):
                 logger.warning("Skipping test due to memory error on device")
@@ -71,7 +68,7 @@ class TestOpenclCSR(ParameterisedTestCase):
             else:
                 skip = False
         out_cyt_csr = csr.integrate(data)
-        cmt = "Testing ocl_csr with workgroup_size= %s  and padded= %s" % (workgroup_size, padded)
+        cmt = "Testing ocl_csr with workgroup_size= %s" % (workgroup_size)
         logger.debug(cmt)
         if skip:
             for ref, cyth in zip(out_ref, out_cyt_csr):
@@ -86,20 +83,7 @@ class TestOpenclCSR(ParameterisedTestCase):
         out_ocl_csr=None
         out_ref=None
 
-TESTCASES = [
- (8, False),
- (8, True),
- (16, False),
- (16, True),
- (32, False),
- (32, True),
- (64, False),
- (64, True),
- (128, False),
- (128, True),
- (256, False),
- (256, True)
- ]
+TESTCASES = [8 * 2 ** i for i in range(6)]#[8, 16, 32, 64, 128, 256]
 
 
 def test_suite_all_OpenCL_CSR():

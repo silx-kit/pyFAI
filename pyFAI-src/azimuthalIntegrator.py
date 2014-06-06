@@ -97,14 +97,14 @@ except ImportError as error:
     logger.error("Unable to import pyFAI.histogram"
                  " Cython OpenMP histogram implementation: %s" % error)
     histogram = None
-    
+
 try:
     from . import splitBBoxCSR  # IGNORE:F0401
 except ImportError as error:
     logger.error("Unable to import pyFAI.splitBBoxCSR"
                  " CSR based azimuthal integration: %s" % error)
     histogram = None
-    
+
 try:
     from . import ocl_azim_csr  # IGNORE:F0401
 except ImportError as error:
@@ -1044,7 +1044,7 @@ class AzimuthalIntegrator(Geometry):
                                             allow_pos0_neg=False,
                                             unit=unit)
 
-    def setup_CSR(self, shape, nbPt, mask=None,pos0_range=None, pos1_range=None, mask_checksum=None, unit=units.TTH, padding=1):
+    def setup_CSR(self, shape, nbPt, mask=None, pos0_range=None, pos1_range=None, mask_checksum=None, unit=units.TTH):
         """
         Prepare a look-up-table
 
@@ -1136,7 +1136,7 @@ class AzimuthalIntegrator(Geometry):
                                             mask_checksum=mask_checksum,
                                             allow_pos0_neg=False,
                                             unit=unit,
-                                            padding=padding)
+                                            )
 
     def xrpd_LUT(self, data, nbPt, filename=None, correctSolidAngle=True,
                  tthRange=None, chiRange=None, mask=None,
@@ -1491,11 +1491,11 @@ class AzimuthalIntegrator(Geometry):
                                      dummy=dummy,
                                      delta_dummy=delta_dummy,
                                      dark=dark,
-                                     flat=flat, 
+                                     flat=flat,
                                      chiRange=chiRange,
-                                     safe=safe, 
-                                     devicetype=devicetype, 
-                                     platformid=platformid, 
+                                     safe=safe,
+                                     devicetype=devicetype,
+                                     platformid=platformid,
                                      deviceid=deviceid)
         meth = "csr_ocl"
         if platformid and deviceid:
@@ -2032,7 +2032,7 @@ class AzimuthalIntegrator(Geometry):
         self.save2D(filename, I, bins2Th, binsChi, dark=dark, flat=flat,
                     polarization_factor=polarization_factor)
         return I, bins2Th, binsChi
-    
+
     xrpd2 = xrpd2_splitBBox
 
     def array_from_unit(self, shape, typ="center", unit=units.TTH):
@@ -2070,8 +2070,8 @@ class AzimuthalIntegrator(Geometry):
         Calculate the azimuthal integrated Saxs curve in q(nm^-1) by default
 
         Multi algorithm implementation (tries to be bullet proof), suitable for SAXS, WAXS, ... and much more
-        
-        
+
+
 
         @param data: 2D array from the Detector/CCD camera
         @type data: ndarray
@@ -2101,7 +2101,7 @@ class AzimuthalIntegrator(Geometry):
         @type dark: ndarray
         @param flat: flat field image
         @type flat: ndarray
-        @param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr; "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"  
+        @param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr; "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"
         @type method: str
         @param unit: Output units, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
         @type unit: pyFAI.units.Enum
@@ -2282,7 +2282,7 @@ class AzimuthalIntegrator(Geometry):
                                                                dummy=dummy,
                                                                delta_dummy=delta_dummy)
                             sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
-                            
+
         if (I is None) and ("csr" in method):
             mask_crc = None
             with self._csr_sem:
@@ -2371,7 +2371,7 @@ class AzimuthalIntegrator(Geometry):
                                                                                        platformid=platformid,
                                                                                        deviceid=deviceid,
                                                                                        checksum=self._csr_integrator.lut_checksum,
-                                                                                       padded=False,block_size=block_size,
+                                                                                       block_size=block_size,
                                                                                        profile=profile)
                             I, _, _ = self._ocl_csr_integr.integrate(data, dark=dark, flat=flat,
                                                                      solidAngle=solidangle,
@@ -2404,7 +2404,7 @@ class AzimuthalIntegrator(Geometry):
                                                                dummy=dummy,
                                                                delta_dummy=delta_dummy)
                             sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
-        
+
 
         if (I is None) and ("splitpix" in method):
             if splitPixel is None:
@@ -2539,7 +2539,7 @@ class AzimuthalIntegrator(Geometry):
                     logger.warning("pyFAI.histogram is not available,"
                                " falling back on numpy")
                     method = "numpy"
-                    
+
         if I is None:
             logger.debug("integrate1d uses Numpy implementation")
             method = "numpy"
@@ -2612,7 +2612,7 @@ class AzimuthalIntegrator(Geometry):
         @type dark: ndarray
         @param flat: flat field image
         @type flat: ndarray
-        @param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr; "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"  
+        @param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr; "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"
         @type method: str
         @param unit: Output units, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
         @type unit: pyFAI.units.Enum
@@ -2803,7 +2803,7 @@ class AzimuthalIntegrator(Geometry):
                     try:
                         self._csr_integrator = self.setup_CSR(shape, nbPt, mask, radial_range, azimuth_range, mask_checksum=mask_crc, unit=unit)
                         error = False
-                    except MemoryError: 
+                    except MemoryError:
                         logger.warning("MemoryError: falling back on forward implementation")
                         self._ocl_csr_integr = None
                         gc.collect()

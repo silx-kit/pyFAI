@@ -1,8 +1,8 @@
-PyFAI is a library to deal with diffraction images for data reduction.
-This chapter describes the project from the computer engineering point of view.
-
 Project structure
 =================
+
+PyFAI is a library to deal with diffraction images for data reduction.
+This chapter describes the project from the computer engineering point of view.
 
 PyFAI is an open source project licensed under the GPL mainly written in Python (v2.6 or 2.7) and heavily relying on the
 python scientific ecosystem: numpy, scipy and matplotlib. It provides high performances image treatment thanks to cython and
@@ -27,7 +27,7 @@ https://github.com/kif/pyFAI
 Which provides the issue tracker in addition to Git hosting.
 Collaboration is done via Pull-Requests in github's web interface:
 
-Anybody can fork the project and adapt it to his own needs (people from CEA-saclay or Synchrotron Soleil did it).
+Anybody can fork the project and adapt it to his own needs (people from CEA-saclay, Synchrotron Soleil or APS did it).
 If developments are useful to other, new developments can be merged into the main branch.
 
 Run dependencies

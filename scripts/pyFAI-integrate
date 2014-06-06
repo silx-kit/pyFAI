@@ -54,7 +54,7 @@ except ImportError:
 try:
     from rfoo.utils import rconsole
     rconsole.spawn_server()
-    logger.info("Socket opened for debugging using rfoo")
+    logger.debug("Socket opened for debugging using rfoo")
 except ImportError:
     logger.debug("No socket opened for debugging -> please install rfoo")
 

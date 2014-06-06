@@ -6,12 +6,11 @@ Purpose
 
 Calibrate the diffraction setup geometry based on Debye-Sherrer rings images
 with a priori knowledge of your setup (an input PONI-file).
-You will need a "d-spacing" file containing the spacing of Miller plans in
-Angstrom (in decreasing order).
-If you are using a standart calibrant, look at
-https://github.com/kif/pyFAI/tree/master/calibration
-or search in the American Mineralogist database:
-http://rruff.geo.arizona.edu/AMS/amcsd.php
+If you are using a standard calibrant, look at the list provided by pyFAI at:
+https://github.com/kif/pyFAI/tree/master/calibration.
+Else, you will need a "d-spacing" file containing the spacing of Miller plans in
+Angstrom (in decreasing order), they can be found on the American Mineralogist 
+database [AMD]_ or in the [COD]_.
 
 You will need in addition:
  * The radiation energy (in keV) or its wavelength (in A)

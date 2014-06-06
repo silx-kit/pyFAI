@@ -30,7 +30,7 @@ from libc.string cimport memset
 import numpy
 cimport numpy
 from libc.math cimport fabs, M_PI
-cdef float pi = <float> M_PI 
+cdef float pi = <float> M_PI
 cdef float onef = <float> 1.0
 try:
     from fastcrc import crc32
@@ -54,9 +54,9 @@ class HistoBBox1d(object):
     Now uses CSR (Compressed Sparse raw) with main attributes:
     * nnz: number of non zero elements
     * data: coefficient of the matrix in a 1D vector of float32
-    * indices: Column index position for the data (same size as  
+    * indices: Column index position for the data (same size as
     * indptr: row pointer indicates the start of a given row. len nrow+1
-    
+
     Nota: nnz = indptr[-1]
     """
     @cython.boundscheck(False)
@@ -72,7 +72,7 @@ class HistoBBox1d(object):
                  mask_checksum=None,
                  allow_pos0_neg=False,
                  unit="undefined",
-                 padding=False):
+                 ):
         """
         @param pos0: 1D array with pos0: tth or q_vect or r ...
         @param delta_pos0: 1D array with delta pos0: max center-corner distance
@@ -82,12 +82,9 @@ class HistoBBox1d(object):
         @param pos0Range: minimum and maximum  of the 2th range
         @param pos1Range: minimum and maximum  of the chi range
         @param mask: array (of int8) with masked pixels with 1 (0=not masked)
-        @param allow_pos0_neg: enforce the q<0 is usually not possible  
+        @param allow_pos0_neg: enforce the q<0 is usually not possible
         @param unit: can be 2th_deg or r_nm^-1 ...
-        @param padding: pad CSR array to a given multiple of given number (16,32, ...)
         """
-
-        self.padding = int(padding)
         self.size = pos0.size
         assert delta_pos0.size == self.size
         self.bins = bins
@@ -133,7 +130,7 @@ class HistoBBox1d(object):
         self.unit=unit
         self.lut=(self.data,self.indices,self.indptr)
         self.lut_nbytes = sum([i.nbytes for i in self.lut])
-                   
+
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def calc_boundaries(self,pos0Range):
@@ -186,17 +183,17 @@ class HistoBBox1d(object):
     def calc_lut(self):
         '''
         calculate the max number of elements in the LUT and populate it
-        
+
         '''
         cdef float delta=self.delta, pos0_min=self.pos0_min, pos1_min, pos1_max, min0, max0, fbin0_min, fbin0_max, deltaL, deltaR, deltaA
         cdef numpy.int32_t k,idx, i, j, tmp_index, index_tmp_index, bin0_min, bin0_max, bins = self.bins, size #same as numpy.uint32
         cdef bint check_mask, check_pos1
         cdef numpy.ndarray[numpy.int32_t, ndim = 1] outMax = numpy.zeros(bins, dtype=numpy.int32)
         cdef numpy.ndarray[numpy.int32_t, ndim = 1] indptr = numpy.zeros(bins+1, dtype=numpy.int32)
-        cdef numpy.ndarray[numpy.int32_t, ndim = 1] indices 
+        cdef numpy.ndarray[numpy.int32_t, ndim = 1] indices
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] data
         cdef float[:] cpos0_sup = self.cpos0_sup, cpos0_inf = self.cpos0_inf, cpos1_min, cpos1_max,
-                      
+
         cdef numpy.int8_t[:] cmask
         size = self.size
         if self.check_mask:
@@ -244,18 +241,12 @@ class HistoBBox1d(object):
                 else: #we have pixel splitting.
                     for i in range(bin0_min, bin0_max + 1):
                         outMax[i] += 1
-                        
 
-        if self.padding:
-            outMax_padded = self.padding*((outMax + (self.padding - 1))//(self.padding))
-            self.nnz = outMax_padded.sum()
-            self.nnz_actual = outMax.sum()
-        else:
-            self.nnz = self.nnz_actual = outMax.sum()
-            outMax_padded = outMax
-        indptr[1:] = outMax_padded.cumsum(dtype=numpy.int32)
+
+
+        indptr[1:] = outMax.cumsum(dtype=numpy.int32)
         self.indptr = indptr
-
+        self.nnz = indptr[bins]
 
         #just recycle the outMax array
         memset(&outMax[0], 0, bins * sizeof(numpy.int32_t))
@@ -312,7 +303,7 @@ class HistoBBox1d(object):
 
                     k = outMax[bin0_max]
                     indices[indptr[bin0_max]+k] = idx
-                    data[indptr[bin0_max]+k] = (deltaA * deltaR)                    
+                    data[indptr[bin0_max]+k] = (deltaA * deltaR)
                     outMax[bin0_max] += 1
 
                     if bin0_min + 1 < bin0_max:
@@ -321,19 +312,7 @@ class HistoBBox1d(object):
                             indices[indptr[i]+k] = idx
                             data[indptr[i]+k] = (deltaA)
                             outMax[i] += 1
-                            
-                            
-# At this point i could have stopped, but I continue to fill the padding in the indices 
-# array with the last nz value, so that when the kernel is called, no extra "bad" memory 
-# accesses will take place on the image array...
-        if self.padding:
-            for i in range(bins):
-                tmp_index = indptr[i]
-                index_tmp_index = indices[tmp_index + outMax[i] - 1]
-                for j in range(tmp_index + outMax[i], tmp_index + outMax_padded[i]):
-                    indices[j] = index_tmp_index
-                    data[j] = 0.0
-                    
+
         self.data = data
         self.indices = indices
 
@@ -371,10 +350,10 @@ class HistoBBox1d(object):
         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
         cdef float[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-                      
+
         cdef numpy.int32_t[:] indices = self.indices, indptr = self.indptr
         assert size == weights.size
-        
+
         if dummy is not None:
             do_dummy = True
             cdummy =  <float>float(dummy)
@@ -443,7 +422,7 @@ class HistoBBox1d(object):
                         cdata[i]+=cdummy
             else:
                 cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-        
+
         for i in prange(bins, nogil=True, schedule="guided"):
             sum_data = 0.0
             sum_count = 0.0
@@ -496,7 +475,7 @@ class HistoBBox2d(object):
         @param pos0Range: minimum and maximum  of the 2th range
         @param pos1Range: minimum and maximum  of the chi range
         @param mask: array (of int8) with masked pixels with 1 (0=not masked)
-        @param allow_pos0_neg: enforce the q<0 is usually not possible  
+        @param allow_pos0_neg: enforce the q<0 is usually not possible
         @param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
         """
         cdef int i, size, bin0, bin1
@@ -528,7 +507,7 @@ class HistoBBox2d(object):
         else:
             self.check_mask = False
             self.mask_checksum = None
-            
+
         self.data = self.nnz = self.indices = self.indptr = None
         self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=numpy.float32)
         self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=numpy.float32)
@@ -563,7 +542,7 @@ class HistoBBox2d(object):
         cdef float upper1, lower1, pos1_max, pos1_min, c1, d1
         cdef bint allow_pos0_neg=self.allow_pos0_neg
         cdef bint chiDiscAtPi = self.chiDiscAtPi
-        
+
         cpos0_sup = self.cpos0_sup
         cpos0_inf = self.cpos0_inf
         cpos0 = self.cpos0
@@ -651,7 +630,7 @@ class HistoBBox2d(object):
         cdef float[:] cpos1_sup = self.cpos1_sup
         cdef numpy.ndarray[numpy.int32_t, ndim = 2] outMax = numpy.zeros((bins0,bins1), dtype=numpy.int32)
         cdef numpy.ndarray[numpy.int32_t, ndim = 1] indptr = numpy.zeros((bins0*bins1)+1, dtype=numpy.int32)
-        cdef numpy.ndarray[numpy.int32_t, ndim = 1] indices 
+        cdef numpy.ndarray[numpy.int32_t, ndim = 1] indices
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] data
         cdef numpy.int8_t[:] cmask
         if self.check_mask:
