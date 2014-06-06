@@ -68,6 +68,12 @@ cdef inline double getBinNr( double x0, double pos0_min, double delta) nogil:
     return (x0 - pos0_min) / delta
 
 cdef double integrate( double A0, double B0, Function AB) nogil:
+    """
+    integrates the line defined by AB, from A0 to B0
+    param A0: first limit
+    param B0: second limit
+    param AB: struct with the slope and point of intersection of the line
+    """    
     if A0==B0:
         return 0.0
     else:
@@ -93,20 +99,15 @@ class HistoLUT1dFullSplit(object):
                  mask=None,
                  mask_checksum=None,
                  allow_pos0_neg=False,
-                 unit="undefined"): #,
-     #            padding=False):
+                 unit="undefined"): 
         """
-        @param pos0: 1D array with pos0: tth or q_vect or r ...
-        @param delta_pos0: 1D array with delta pos0: max center-corner distance
-        @param pos1: 1D array with pos1: chi
-        @param delta_pos1: 1D array with max pos1: max center-corner distance, unused !
+        @param pos: 3D or 4D array with the coordinates of each pixel point
         @param bins: number of output bins, 100 by default
         @param pos0Range: minimum and maximum  of the 2th range
         @param pos1Range: minimum and maximum  of the chi range
         @param mask: array (of int8) with masked pixels with 1 (0=not masked)
         @param allow_pos0_neg: enforce the q<0 is usually not possible  
         @param unit: can be 2th_deg or r_nm^-1 ...
-        @param padding: pad CSR array to a given multiple of given number (16,32, ...)
         """
 
 #        self.padding = int(padding)

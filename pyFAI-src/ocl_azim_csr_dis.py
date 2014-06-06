@@ -52,11 +52,13 @@ class OCL_CSR_Integrator(object):
                  platformid=None, deviceid=None, 
                  checksum=None, profile=False):
         """
-        @param data: coefficient of the matrix in a 1D vector of float32 - size of nnz
-        @param indices: Column index position for the data (same size as data) 
-        @param indptr: row pointer indicates the start of a given row. len nbin+1
+        @param lut: 3-tuple of arrays 
+            data: coefficient of the matrix in a 1D vector of float32 - size of nnz
+            indices: Column index position for the data (same size as data) 
+            indptr: row pointer indicates the start of a given row. len nbin+1
         @param image_size: 
         @param devicetype: can be "cpu","gpu","acc" or "all"
+        @param block_size: the chosen size for WORKGROUP_SIZE
         @param platformid: number of the platform as given by clinfo
         @type platformid: int
         @param deviceid: number of the device as given by clinfo

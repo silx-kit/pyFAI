@@ -34,8 +34,6 @@
 #ifdef cl_amd_printf
   #pragma OPENCL EXTENSION cl_amd_printf : enable
   //#define printf(...)
-#elif defined(cl_intel_printf)
-  #pragma OPENCL EXTENSION cl_intel_printf : enable
 #else
   #define printf(...)
 #endif
@@ -187,25 +185,21 @@ corrections( 		__global float 	*image,
 
 
 /**
- * \brief Performs 1d azimuthal integration with full pixel splitting based on a LUT
+ * \brief Performs 1d azimuthal integration with full pixel splitting based on a LUT in CSR form
  *
  * An image instensity value is spread across the bins according to the positions stored in the LUT.
- * The lut is an 2D-array of index (contains the positions of the pixel in the input array)
- * and coeficients (fraction of pixel going to the bin)
+ * The lut is represented by a set of 3 arrays (coefs, row_ind, col_ptr)
  * Values of 0 in the mask are processed and values of 1 ignored as per PyFAI
  *
  * This implementation is especially efficient on CPU where each core reads adjacents memory.
  * the use of local pointer can help on the CPU.
  *
  * @param weights     Float pointer to global memory storing the input image.
- * @param lut         Pointer to an 2D-array of (unsigned integers,float) containing the index of input pixels and the fraction of pixel going to the bin
+ * @param coefs       Float pointer to global memory holding the coeficient part of the LUT
+ * @param row_ind     Integer pointer to global memory holding the corresponding index of the coeficient
+ * @param col_ptr     Integer pointer to global memory holding the pointers to the coefs and row_ind for the CSR matrix
  * @param do_dummy    Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
  * @param dummy       Float: value for bad pixels
- * @param delta_dummy Float: precision for bad pixel value
- * @param do_dark     Bool/int: shall dark-current correction be applied ?
- * @param dark        Float pointer to global memory storing the dark image.
- * @param do_flat     Bool/int: shall flat-field correction be applied ? (could contain polarization corrections)
- * @param flat        Float pointer to global memory storing the flat image.
  * @param outData     Float pointer to the output 1D array with the weighted histogram
  * @param outCount    Float pointer to the output 1D array with the unweighted histogram
  * @param outMerged   Float pointer to the output 1D array with the diffractogram
@@ -221,7 +215,7 @@ csr_integrate(	const 	__global	float	*weights,
 						__global 	float	*outData,
 						__global 	float	*outCount,
 						__global 	float	*outMerge
-		        )
+		     )
 {
     int thread_id_loc = get_local_id(0);
     int bin_num = get_group_id(0); // each workgroup of size=warp is assinged to 1 bin
@@ -340,25 +334,20 @@ csr_integrate(	const 	__global	float	*weights,
 };//end kernel
 
 /**
- * \brief Performs 1d azimuthal integration with full pixel splitting based on a LUT
+ * \brief Performs 1d azimuthal integration with full pixel splitting based on a LUT in CSR form
  *
  * An image instensity value is spread across the bins according to the positions stored in the LUT.
- * The lut is an 2D-array of index (contains the positions of the pixel in the input array)
- * and coeficients (fraction of pixel going to the bin)
+ * The lut is represented by a set of 3 arrays (coefs, row_ind, col_ptr)
  * Values of 0 in the mask are processed and values of 1 ignored as per PyFAI
  *
- * This implementation is especially efficient on CPU where each core reads adjacents memory.
- * the use of local pointer can help on the CPU.
+ * This kernel is ment to be ran with padded data (the span of each bin must be a multiple of the workgroup size)
  *
  * @param weights     Float pointer to global memory storing the input image.
- * @param lut         Pointer to an 2D-array of (unsigned integers,float) containing the index of input pixels and the fraction of pixel going to the bin
+ * @param coefs       Float pointer to global memory holding the coeficient part of the LUT
+ * @param row_ind     Integer pointer to global memory holding the corresponding index of the coeficient
+ * @param col_ptr     Integer pointer to global memory holding the pointers to the coefs and row_ind for the CSR matrix
  * @param do_dummy    Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
  * @param dummy       Float: value for bad pixels
- * @param delta_dummy Float: precision for bad pixel value
- * @param do_dark     Bool/int: shall dark-current correction be applied ?
- * @param dark        Float pointer to global memory storing the dark image.
- * @param do_flat     Bool/int: shall flat-field correction be applied ? (could contain polarization corrections)
- * @param flat        Float pointer to global memory storing the flat image.
  * @param outData     Float pointer to the output 1D array with the weighted histogram
  * @param outCount    Float pointer to the output 1D array with the unweighted histogram
  * @param outMerged   Float pointer to the output 1D array with the diffractogram
@@ -366,15 +355,15 @@ csr_integrate(	const 	__global	float	*weights,
  */
 __kernel void
 csr_integrate_padded(	const 	__global	float	*weights,
-                const   __global    float   *coefs,
-                const   __global    int     *row_ind,
-                const   __global    int     *col_ptr,
-				const				int   	do_dummy,
-				const			 	float 	dummy,
-						__global 	float	*outData,
-						__global 	float	*outCount,
-						__global 	float	*outMerge
-		        )
+                        const   __global    float   *coefs,
+                        const   __global    int     *row_ind,
+                        const   __global    int     *col_ptr,
+                        const				int   	do_dummy,
+                        const			 	float 	dummy,
+                                __global 	float	*outData,
+                                __global 	float	*outCount,
+                                __global 	float	*outMerge
+                    )
 {
     int thread_id_loc = get_local_id(0);
     int bin_num = get_group_id(0); // each workgroup of size=warp is assinged to 1 bin
@@ -469,17 +458,25 @@ csr_integrate_padded(	const 	__global	float	*weights,
 };//end kernel
 
 
+Correct an image based on the look-up table calculated ...
+/**
+ * \brief Performs distortion corrections on an image using a LUT in CSR form
+ *
+ * @param weights     Float pointer to global memory storing the input image.
+ * @param coefs       Float pointer to global memory holding the coeficient part of the LUT
+ * @param row_ind     Integer pointer to global memory holding the corresponding index of the coeficient
+ * @param col_ptr     Integer pointer to global memory holding the pointers to the coefs and row_ind for the CSR matrix
+ * @param outData     Float pointer to the output 1D array with the corrected image
+ *
+ */
+
 __kernel void
 csr_integrate_dis(  const   __global    float   *weights,
-                const   __global    float   *coefs,
-                const   __global    int     *row_ind,
-                const   __global    int     *col_ptr,
-                const               int     do_dummy,
-                const               float   dummy,
-                        __global    float   *outData,
-                        __global    float   *outCount,
-                        __global    float   *outMerge
-                )
+                    const   __global    float   *coefs,
+                    const   __global    int     *row_ind,
+                    const   __global    int     *col_ptr,
+                            __global    float   *outData
+                 )
 {
     int thread_id_loc = get_local_id(0);
     int bin_num = get_group_id(0); // each workgroup of size=warp is assinged to 1 bin
@@ -502,17 +499,14 @@ csr_integrate_dis(  const   __global    float   *weights,
             coef = coefs[k];
             idx = row_ind[k];
             data = weights[idx];
-            if( (!do_dummy) || (data!=dummy) )
-            {
-                //sum_data +=  coef * data;
-                //sum_count += coef;
-                //Kahan summation allows single precision arithmetics with error compensation
-                //http://en.wikipedia.org/wiki/Kahan_summation_algorithm
-                y = coef*data - cd;
-                t = sum_data + y;
-                cd = (t - sum_data) - y;
-                sum_data = t;
-             };//end if dummy
+            //sum_data +=  coef * data;
+            //sum_count += coef;
+            //Kahan summation allows single precision arithmetics with error compensation
+            //http://en.wikipedia.org/wiki/Kahan_summation_algorithm
+            y = coef*data - cd;
+            t = sum_data + y;
+            cd = (t - sum_data) - y;
+            sum_data = t;
        } //end if k < bin_bounds.y
     };//for j
 /*

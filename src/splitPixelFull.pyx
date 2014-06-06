@@ -108,6 +108,12 @@ cdef struct Function:
         #self._intersect = A1 - self._slope*A0
         
 cdef double integrate( double A0, double B0, Function AB) nogil:
+    """
+    integrates the line defined by AB, from A0 to B0
+    param A0: first limit
+    param B0: second limit
+    param AB: struct with the slope and point of intersection of the line
+    """    
     if A0==B0:
         return 0.0
     else:
@@ -202,6 +208,7 @@ cdef double getBinNr(double x0, double pos0_min, double dpos) nogil:
             
 
 cdef double min4f(double a, double b, double c, double d) nogil:
+    """Calculates the min of 4 double numbers"""
     if (a <= b) and (a <= c) and (a <= d):
         return a
     if (b <= a) and (b <= c) and (b <= d):
@@ -245,7 +252,7 @@ def fullSplit1D(numpy.ndarray pos not None,
     No compromise for speed has been made here.
 
 
-    @param pos: 3D array with pos0; Corner A,B,C,D; tth or chi
+    @param pos: 3D or 4D array with the coordinates of each pixel point
     @param weights: array with intensities
     @param bins: number of output bins
     @param pos0Range: minimum and maximum  of the 2th range

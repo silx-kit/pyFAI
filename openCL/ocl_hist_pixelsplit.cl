@@ -112,6 +112,19 @@ memset_out(__global float *array0,
 }
 
 
+
+/**
+ * \brief Performs the first part of a 2-step parallel reduction.
+ * 
+ * Together with the second part, it take a flattened 4D-array 
+ * and returns the min and max of both of the 2 components of the 
+ * last dimension
+ *
+ * @param buffer: float Pointer to global memory with the flattened 4D-array (pos in pyFAI)
+ * @param length: interger value of the length of the buffer array
+ * @param preresult: float Pointer to global memory with the intermitiate data of the 2-step parallel reduction. Should be the size of the workgroup size
+ */
+
 __kernel
 void reduce1(__global float2* buffer,
              __const int length,
@@ -173,7 +186,16 @@ void reduce1(__global float2* buffer,
 }
 
 
-
+/**
+ * \brief Performs the second part of a 2-step parallel reduction.
+ * 
+ * Together with the second part, it take a flattened 4D-array 
+ * and returns the min and max of both of the 2 components of the 
+ * last dimension
+ *
+ * @param preresult: float Pointer to global memory with the intermitiate data of the 2-step parallel reduction. Should be the size of the workgroup size
+ * @param result: float Pointer to global memory with the min/max values requested
+ */
 
 __kernel
 void reduce2(__global float4* preresult,
@@ -273,7 +295,21 @@ corrections(        __global float  *image,
 };//end kernel
 
 
-
+/**
+ * \brief Performs 1d azimuthal integration with full pixel splitting
+ *
+ * @param pos         Float pointer to global memory storting the flattened 4D-array with the pixel point coords
+ * @param image       Float pointer to global memory storing the input image.
+ * @param minmax      Float pointer to global memory holding the min/max results of the reduction kernels
+ * @param length:     Interger value of the length of the buffer array
+ * @param row_ind     Integer pointer to global memory holding the corresponding index of the coeficient
+ * @param col_ptr     Integer pointer to global memory holding the pointers to the coefs and row_ind for the CSR matrix
+ * @param do_dummy    Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
+ * @param dummy       Float: value for bad pixels
+ * @param outData     Float pointer to the output 1D array with the weighted histogram
+ * @param outCount    Float pointer to the output 1D array with the unweighted histogram
+ *
+ */
 
 __kernel
 void integrate1(__global float8* pos,
@@ -282,8 +318,8 @@ void integrate1(__global float8* pos,
     //             __const  int     check_mask,
                 __global float4* minmax,
                 const    int     length,
-                         float2  pos0Range,
-                         float2  pos1Range,
+    //                     float2  pos0Range,
+    //                     float2  pos1Range,
                 const    int     do_dummy,
                 const    float   dummy,
                 __global float*  outData,
@@ -349,6 +385,14 @@ void integrate1(__global float8* pos,
     }
 }
 
+/**
+ * \brief Finished the 1d azimuthal integration by calculating the ratio of the 2 histograms
+ *
+ * @param outData     Float pointer to the output 1D array with the weighted histogram
+ * @param outCount    Float pointer to the output 1D array with the unweighted histogram
+ * @param outMerged   Float pointer to the output 1D array with the diffractogram
+ *
+ */
 
 __kernel
 void integrate2(__global float*  outData,

@@ -58,6 +58,7 @@ class OCL_CSR_Integrator(object):
             indptr: row pointer indicates the start of a given row. len nbin+1
         @param image_size: size of the image (for pre-processing)
         @param devicetype: can be "cpu","gpu","acc" or "all"
+        @param block_size: the chosen size for WORKGROUP_SIZE
         @param platformid: number of the platform as given by clinfo
         @type platformid: int
         @param deviceid: number of the device as given by clinfo
