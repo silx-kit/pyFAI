@@ -223,6 +223,13 @@ morphology_dic = dict(name="morphology",
 #                    extra_link_args=["openmp"]
                     )
 
+_marchingsquares_dic = dict(name="_marchingsquares",
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=[src['_marchingsquares']],
+#                    extra_compile_args=["openmp"],
+#                    extra_link_args=["openmp"]
+                    )
+
 
 ext_modules = [globals()[i + "_dic"] for i in cython_modules if i + "_dic" in dir()]
 

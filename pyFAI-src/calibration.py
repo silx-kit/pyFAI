@@ -95,12 +95,14 @@ class AbstractCalibration(object):
             'refine': "performs a new cycle of refinement",
             'recalib': "extract a new set of rings and re-perform the calibration. One can specify how many rings to extract and the algorithm to use (blob or massif)",
             'done': "finishes the processing, performs an integration and quits",
-            'validate': "measures the offset between the calibrated image and the back-projected image"
+            'validate': "measures the offset between the calibrated image and the back-projected image",
+            'integrate': "perform the azimuthal integration and display results",
+            'abort': "quit immediately, discarding any unsaved changes"
             }
-    PARAMETERS = ["dist","poni1","poni2","rot1","rot2","rot3","wavelength"]
+    PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
     UNITS = {"dist":"meter", "poni1":"meter", "poni2":"meter", "rot1":"radian",
              "rot2":"radian", "rot3":"radian", "wavelength":"meter"}
-    
+
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None,
                  splineFile=None, detector=None, wavelength=None, calibrant=None):
         """
@@ -174,6 +176,7 @@ class AbstractCalibration(object):
         self.unit = None
         self.keep = True
         self.check_calib = None
+        self.fig3 = self.ax_xrpd_1d = self.ax_xrpd_2d = None
 
     def __repr__(self):
         lst = ["Calibration object:"]
@@ -691,20 +694,20 @@ class AbstractCalibration(object):
                 finished = True
             if not finished:
                 previous = sys.maxint
-                
+
     def prompt(self):
         """
         prompt for commands to guide the calibration process
         
         @return: True when the user is happy with what he has, False to request another refinement 
-        """ 
-        
+        """
+
         while True:
             help = False
             print("Fixed: " + ", ".join(self.fixed))
             ans = raw_input("Modify parameters (or ? for help)?\t ").strip().lower()
             if "?" in ans:
-                help=True
+                help = True
             if not ans:
                 print("'done' to continue")
                 continue
@@ -730,8 +733,8 @@ class AbstractCalibration(object):
                 else:
                     print(self.HELP[action])
 
-            elif action=="set": #set wavelength 1e-10
-                if (len(words)==3) and  words[1] in self.PARAMETERS:
+            elif action == "set": #set wavelength 1e-10
+                if (len(words) == 3) and  words[1] in self.PARAMETERS:
                     param = words[1]
                     try:
                         value = float(words[2])
@@ -741,14 +744,14 @@ class AbstractCalibration(object):
                         setattr(self.geoRef, param, value)
                 else:
                     print(self.HELP[action])
-            elif action=="fix": #fix wavelength
+            elif action == "fix": #fix wavelength
                 if (len(words) == 2) and  (words[1] in self.PARAMETERS) and (words[1] not in self.fixed):
                     param = words[1]
                     print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
                     self.fixed.append(param)
                 else:
                     print(self.HELP[action])
-            elif action=="free": #free wavelength
+            elif action == "free": #free wavelength
                 if (len(words) == 2) and  (words[1] in self.PARAMETERS) and (words[1] in self.fixed):
                     param = words[1]
                     print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
@@ -772,21 +775,21 @@ class AbstractCalibration(object):
                     self.extract_cpt("blob")
                 self.geoRef.data = numpy.array(self.data, dtype=numpy.float64)
                 return False
-            elif action=="bound": #bound dist
+            elif action == "bound": #bound dist
                 if len(words) >= 2 and  words[1] in self.PARAMETERS:
                     param = words[1]
                     if len(words) == 2:
                         readFloatFromKeyboard("Enter %s in %s " % (param, self.UNITS[param]) +
-                             "(or %s_min[%.3f] %s[%.3f] %s_max[%.3f]):\t " %(
+                             "(or %s_min[%.3f] %s[%.3f] %s_max[%.3f]):\t " % (
                               param, self.geoRef.__getattribute__("get_%s_min" % param)(),
                               param, self.geoRef.__getattribute__("get_%s" % param)(),
                               param, self.geoRef.__getattribute__("get_%s_max" % param)()),
-                             {1:[self.geoRef.__getattribute__("set_%s"%param)],
-                              2:[self.geoRef.__getattribute__("set_%s_min"%param),
-                                 self.geoRef.__getattribute__("set_%s_max"%param)],
-                              3:[self.geoRef.__getattribute__("set_%s_min"%param),
-                                 self.geoRef.__getattribute__("set_%s"%param),
-                                 self.geoRef.__getattribute__("set_%s_max"%param)]})
+                             {1:[self.geoRef.__getattribute__("set_%s" % param)],
+                              2:[self.geoRef.__getattribute__("set_%s_min" % param),
+                                 self.geoRef.__getattribute__("set_%s_max" % param)],
+                              3:[self.geoRef.__getattribute__("set_%s_min" % param),
+                                 self.geoRef.__getattribute__("set_%s" % param),
+                                 self.geoRef.__getattribute__("set_%s_max" % param)]})
                     elif len(words) == 3:
                         try:
                             value = float(words[2])
@@ -859,7 +862,12 @@ class AbstractCalibration(object):
                 return False
             elif action == "validate":
                 self.validate_calibration()
-
+            elif action == "integrate":
+                self.postProcess()
+            elif action == "abort":
+                sys.exit()
+            else:
+                logger.warning("Unrecognized action: %s, type 'quit' to leave " % action)
     def postProcess(self):
         """
         Common part: shows the result of the azimuthal integration in 1D and 2D
@@ -884,9 +892,12 @@ class AbstractCalibration(object):
         self.geoRef.cornerArray(self.peakPicker.shape)
         t2b = time.time()
         if self.gui:
-            fig3 = pylab.plt.figure()
-            xrpd = fig3.add_subplot(1, 2, 1)
-            xrpd2 = fig3.add_subplot(1, 2, 2)
+            if self.fig3 is None:
+                self.fig3 = pylab.plt.figure()
+            else:
+                self.fig3.clf()
+            self.ax_xrpd_1d = self.fig3.add_subplot(1, 2, 1)
+            self.ax_xrpd_2d = self.fig3.add_subplot(1, 2, 2)
         t3 = time.time()
         a, b = self.geoRef.integrate1d(self.peakPicker.data, self.nPt_1D,
                                 filename=self.basename + ".xy", unit=self.unit,
@@ -898,7 +909,7 @@ class AbstractCalibration(object):
                                 polarization_factor=self.polarization_factor,
                                 method="splitbbox")
         t5 = time.time()
-        print (os.linesep.join(["Timings:",
+        logger.info(os.linesep.join(["Timings:",
                                 " * two theta array generation %.3fs" % (t1 - t0),
                                 " * diff Solid Angle           %.3fs" % (t2 - t1),
                                 " * chi array generation       %.3fs" % (t2a - t2),
@@ -906,7 +917,7 @@ class AbstractCalibration(object):
                                 " * 1D Azimuthal integration   %.3fs" % (t4 - t3),
                                 " * 2D Azimuthal integration   %.3fs" % (t5 - t4)]))
         if self.gui:
-            xrpd.plot(a, b)
+            self.ax_xrpd_1d.plot(a, b)
             # GF: Add vertical line for each used calibration ring:
             xValues = None
             twoTheta = numpy.array([i for i in self.peakPicker.points.calibrant.get_2th() if i])  # in radian
@@ -926,18 +937,18 @@ class AbstractCalibration(object):
                 logger.warning('Unknown unit %s, do not plot calibration rings' % str(self.unit))
             if xValues is not None:
                 for x in xValues:
-                    line = matplotlib.lines.Line2D([x, x], xrpd.axis()[2:4],
+                    line = matplotlib.lines.Line2D([x, x], self.ax_xrpd_1d.axis()[2:4],
                                                    color='red', linestyle='--')
-                    xrpd.add_line(line)
-            xrpd.set_title("1D integration")
-            xrpd.set_xlabel(self.unit)
-            xrpd.set_ylabel("Intensity")
-            xrpd2.imshow(numpy.log(img - img.min() + 1e-3), origin="lower",
+                    self.ax_xrpd_1d.add_line(line)
+            self.ax_xrpd_1d.set_title("1D integration")
+            self.ax_xrpd_1d.set_xlabel(self.unit)
+            self.ax_xrpd_1d.set_ylabel("Intensity")
+            self.ax_self.ax_xrpd_1d_2d.imshow(numpy.log(img - img.min() + 1e-3), origin="lower",
                          extent=[pos_rad.min(), pos_rad.max(), pos_azim.min(), pos_azim.max()],
                          aspect="auto")
-            xrpd2.set_title("2D regrouping")
-            xrpd2.set_xlabel(self.unit)
-            xrpd2.set_ylabel("Azimuthal angle (deg)")
+            self.ax_xrpd_2d.set_title("2D regrouping")
+            self.ax_xrpd_2d.set_xlabel(self.unit)
+            self.ax_xrpd_2d.set_ylabel("Azimuthal angle (deg)")
             fig3.show()
 
     def validate_calibration(self):
