@@ -9,6 +9,7 @@ import cython
 from libc.math cimport M_PI, sin, floor, fabs
 cdef double epsilon = numpy.finfo(numpy.float64).eps
 from cython.view cimport array as cvarray
+from .utils import timeit
 
 cdef numpy.int8_t[:,:] EDGETORELATIVEPOSX = numpy.array([ [0, 1], [1, 1], [1, 0], [0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 0], [1, 1], [1, 1], [0, 0] ], dtype=numpy.int8)
 cdef numpy.int8_t[:,:] EDGETORELATIVEPOSY = numpy.array([ [0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 1], [1, 1], [1, 0], [0, 0], [0, 0], [1, 1], [1, 1] ], dtype=numpy.int8)
@@ -50,70 +51,103 @@ def marching_squares(float[:,:] img, double isovalue,
     cdef int x, y, z, i, j, k, index,edgeCount = 0
     cdef int dx1, dy1, dz1, dx2, dy2, dz2
     cdef double fx, fy, fz, ff, tmpf, tmpf1, tmpf2
+    with nogil:
+        for y in range(dim_y-1):
+            for x in range(dim_x-1):
     
-    for y in range(dim_y-1):
-        for x in range(dim_x-1):
-
-            # Calculate index.
-            index = 0
-            if img[y, x] > isovalue:
-                index += 1
-            if img[y, x+1] > isovalue:
-                index += 2
-            if img[y+1, x+1] > isovalue:
-                index += 4
-            if img[y+1, x] > isovalue:
-                index += 8
-
-            # Resolve ambiguity
-            if index == 5 or index == 10:
-                # Calculate value of cell center (i.e. average of corners)
-                tmpf = 0.25*(img[y,x]+img[y,x+1]+img[y+1,x]+img[y+1,x+1])
-                # If below isovalue, swap
-                if tmpf <= isovalue:
-                    if index == 5:
-                        index = 10
-                    else:
-                        index = 5
-
-            # For each edge ...
-            for i in range(cellToEdge[index,0]):
-                # For both ends of the edge ...
-                for j in range(2):
-                    # Get edge index
-                    k = cellToEdge[index, 1+i*2+j]
-                    # Use these to look up the relative positions of the pixels to interpolate
-                    dx1, dy1 = edgeToRelativePosX[k,0], edgeToRelativePosY[k,0]
-                    dx2, dy2 = edgeToRelativePosX[k,1], edgeToRelativePosY[k,1]
-                    # Define "strength" of each corner of the cube that we need
-                    tmpf1 = 1.0 / (epsilon + fabs( img[y+dy1,x+dx1] - isovalue))
-                    tmpf2 = 1.0 / (epsilon + fabs( img[y+dy2,x+dx2] - isovalue))
-                    # Apply a kind of center-of-mass method
-                    fx, fy, ff = 0.0, 0.0, 0.0
-                    fx += <double>dx1 * tmpf1;  fy += <double>dy1 * tmpf1;  ff += tmpf1
-                    fx += <double>dx2 * tmpf2;  fy += <double>dy2 * tmpf2;  ff += tmpf2
-                    #
-                    fx /= ff
-                    fy /= ff
-                    # Append point
-                    edges[edgeCount,0] = <float>(x + fx)
-                    edges[edgeCount,1] = <float>(y + fy)
-                    edgeCount += 1
+                # Calculate index.
+                index = 0
+                if img[y, x] > isovalue:
+                    index += 1
+                if img[y, x+1] > isovalue:
+                    index += 2
+                if img[y+1, x+1] > isovalue:
+                    index += 4
+                if img[y+1, x] > isovalue:
+                    index += 8
+    
+                # Resolve ambiguity
+                if index == 5 or index == 10:
+                    # Calculate value of cell center (i.e. average of corners)
+                    tmpf = 0.25*(img[y,x]+img[y,x+1]+img[y+1,x]+img[y+1,x+1])
+                    # If below isovalue, swap
+                    if tmpf <= isovalue:
+                        if index == 5:
+                            index = 10
+                        else:
+                            index = 5
+    
+                # For each edge ...
+                for i in range(cellToEdge[index,0]):
+                    # For both ends of the edge ...
+                    for j in range(2):
+                        # Get edge index
+                        k = cellToEdge[index, 1+i*2+j]
+                        # Use these to look up the relative positions of the pixels to interpolate
+                        dx1, dy1 = edgeToRelativePosX[k,0], edgeToRelativePosY[k,0]
+                        dx2, dy2 = edgeToRelativePosX[k,1], edgeToRelativePosY[k,1]
+                        # Define "strength" of each corner of the cube that we need
+                        tmpf1 = 1.0 / (epsilon + fabs( img[y+dy1,x+dx1] - isovalue))
+                        tmpf2 = 1.0 / (epsilon + fabs( img[y+dy2,x+dx2] - isovalue))
+                        # Apply a kind of center-of-mass method
+                        fx, fy, ff = 0.0, 0.0, 0.0
+                        fx += <double>dx1 * tmpf1;  fy += <double>dy1 * tmpf1;  ff += tmpf1
+                        fx += <double>dx2 * tmpf2;  fy += <double>dy2 * tmpf2;  ff += tmpf2
+                        #
+                        fx /= ff
+                        fy /= ff
+                        # Append point
+                        edges[edgeCount,0] = <float>(x + fx)
+                        edges[edgeCount,1] = <float>(y + fy)
+                        edgeCount += 1
 
     # Done
     return edges[:edgeCount,:]
 
-def sort_edges(float[:,:] edges):
-    #TODO
+@cython.boundscheck(False)
+def sort_edges(edges):
+    """
+    Reorder edges in such a way they become contiguous
+    """
     cdef int size =  edges.shape[0]
-    cdef numpy.ndarray[numpy.float32_t, ndim=2] out = numpy.zeros((size,2), numpy.float32)
     cdef int[:] pos = cvarray(shape=(size,), itemsize=sizeof(int), format="i")
+    cdef int[:] remaining = cvarray(shape=(size,), itemsize=sizeof(int), format="i")
+    cdef float[:,:] dist2 = cvarray(shape=(size,size), itemsize=sizeof(float), format="f")
+    dist2[:,:] = 0
     pos[:] = 0
-    cdef int index = 0
-    out[0] = edges[0]
-    pass
+    cdef float d
+    cdef int i,j, index=0, current=0
+    cdef float[:,:]edges_ = numpy.ascontiguousarray(edges, numpy.float32)      
+    #initialize the distance (squared) array:
+    with nogil:
+        for i in range(size):
+            remaining[i] = i
+            for j in range(i+1,size):
+                d = (edges_[i,0]-edges_[j,0])**2 + (edges_[i,1]-edges_[j,1])**2 
+                dist2[i, j] = d
+                dist2[j, i] = d
+                
+    remaining[0] = -1
+    pos[0] = 0
+    for i in range(1, size):
+        current = pos[i-1]
+        index = -1
+        for j in range(1,size):
+            if remaining[j] == -1:
+                continue
+            elif index==-1: #not yet found a candidate
+                index=remaining[j]
+                d = dist2[index,current]
+                continue
+            elif dist2[j,current]<d:    
+                index = j
+                d = dist2[current,index]
+        pos[i] = index
+        remaining[index] = -1
+    return edges[pos,:]
 
-def isocontour(img, isovalue=None):
+
+def isocontour(img, isovalue=None, sorted=False):
     """ isocontour(img, isovalue=None)
 
     Calculate the iso contours for the given 2D image. If isovalue
@@ -121,7 +155,8 @@ def isocontour(img, isovalue=None):
     is used.
 
     @param img: 2D array representing the image
-    @param isovalue: the 
+    @param isovalue: the value for which the iso_contour shall be calculated
+    @param sorted: perform a sorting of the points to have them contiguous ? 
 
     Returns a pointset in which each two subsequent points form a line
     piece. This van be best visualized using "vv.plot(result, ls='+')".
@@ -138,6 +173,9 @@ def isocontour(img, isovalue=None):
     else:
         # Will raise error if not float-like value given
         isovalue = float(isovalue)
-    return marching_squares(numpy.ascontiguousarray(img, numpy.float32),  isovalue,
+    res =  marching_squares(numpy.ascontiguousarray(img, numpy.float32),  isovalue,
                             CELLTOEDGE, EDGETORELATIVEPOSX,EDGETORELATIVEPOSY)
-    
+    if sorted:
+        return sort_edges(res)
+    else:
+        return res
