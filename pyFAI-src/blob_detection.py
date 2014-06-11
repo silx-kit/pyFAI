@@ -590,7 +590,7 @@ class BlobDetection(object):
 
 #                 if val[0] < val[1]:
                 pylab.annotate("", xy=(x + vect[0][0] * val[0], y + vect[0][1] * val[0]), xytext=(x, y),
-                                   arrowprops=dict(facecolor='red', shrink=0.05),)
+                    arrowprops=dict(facecolor='red', shrink=0.05),)
 #                 else:
                 pylab.annotate("", xy=(x + vect[1][0] * val[1], y + vect[1][1] * val[1]), xytext=(x, y),
                     arrowprops=dict(facecolor='red', shrink=0.05),)

@@ -47,7 +47,7 @@ def image_test_rings():
 
 def make_gaussian(im,sigma,xc,yc):
     "Creating 2D gaussian to be put in a test image"
-    e = 0.5
+    e = 1
     angle = 0
     sx = sigma * (1+e)
     sy = sigma * (1-e)
