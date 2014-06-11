@@ -118,32 +118,34 @@ def sort_edges(edges):
     cdef float d
     cdef int i,j, index=0, current=0
     cdef float[:,:]edges_ = numpy.ascontiguousarray(edges, numpy.float32)      
-    #initialize the distance (squared) array:
+    
     with nogil:
+        #initialize the distance (squared) array:
         for i in range(size):
             remaining[i] = i
             for j in range(i+1,size):
                 d = (edges_[i,0]-edges_[j,0])**2 + (edges_[i,1]-edges_[j,1])**2 
                 dist2[i, j] = d
                 dist2[j, i] = d
-                
-    remaining[0] = -1
-    pos[0] = 0
-    for i in range(1, size):
-        current = pos[i-1]
-        index = -1
-        for j in range(1,size):
-            if remaining[j] == -1:
-                continue
-            elif index==-1: #not yet found a candidate
-                index=remaining[j]
-                d = dist2[index,current]
-                continue
-            elif dist2[j,current]<d:    
-                index = j
-                d = dist2[current,index]
-        pos[i] = index
-        remaining[index] = -1
+        #set element in remaining to -1 when already transfered
+        # O(n^2) implementation, not bright, any better idea is welcome
+        remaining[0] = -1
+        pos[0] = 0
+        for i in range(1, size):
+            current = pos[i-1]
+            index = -1
+            for j in range(1,size):
+                if remaining[j] == -1:
+                    continue
+                elif index==-1: #not yet found a candidate
+                    index=remaining[j]
+                    d = dist2[index,current]
+                    continue
+                elif dist2[j,current]<d:    
+                    index = j
+                    d = dist2[current,index]
+            pos[i] = index
+            remaining[index] = -1
     return edges[pos,:]
 
 
