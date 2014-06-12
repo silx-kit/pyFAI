@@ -943,13 +943,13 @@ class AbstractCalibration(object):
             self.ax_xrpd_1d.set_title("1D integration")
             self.ax_xrpd_1d.set_xlabel(self.unit)
             self.ax_xrpd_1d.set_ylabel("Intensity")
-            self.ax_self.ax_xrpd_1d_2d.imshow(numpy.log(img - img.min() + 1e-3), origin="lower",
+            self.ax_xrpd_2d.imshow(numpy.log(img - img.min() + 1e-3), origin="lower",
                          extent=[pos_rad.min(), pos_rad.max(), pos_azim.min(), pos_azim.max()],
                          aspect="auto")
             self.ax_xrpd_2d.set_title("2D regrouping")
             self.ax_xrpd_2d.set_xlabel(self.unit)
             self.ax_xrpd_2d.set_ylabel("Azimuthal angle (deg)")
-            fig3.show()
+            self.fig3.show()
 
     def validate_calibration(self):
         """
