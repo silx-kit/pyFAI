@@ -320,6 +320,8 @@ class BlobDetection(object):
             valid_points = local_max(self.dogs, self.cur_mask, n_5)
         kps, kpy, kpx = numpy.where(valid_points)
         self.raw_kp.append((kps, kpy, kpx))
+#        self.raw_kp.append((kps, (kpy+0.5)*self.curr_reduction-0.5, (kpx+0.5)*self.curr_reduction-0.5))
+        print self.raw_kp
 
         print ('Before refinement : %i keypoints' % kpx.size)
         if refine:
@@ -692,6 +694,28 @@ class BlobDetection(object):
         ax.set_ylabel("Intensity")
         ax.set_title("Peak repartition")
         f.show()
+        
+    def show_neighboor(self):
+        import pylab
+        nghx = []
+        nghy = []
+        
+        for i in range(self.keypoints.x.size):
+            y,x = self.nearest_peak((self.keypoints.y[i],self.keypoints.x[i]))
+            nghx.append(x)
+            nghy.append(y)
+            
+        nghx = numpy.asarray(nghx)
+        nghy = numpy.asarray(nghy)
+        
+        pylab.figure()
+        pylab.imshow(self.raw, interpolation='nearest')
+        pylab.plot(self.keypoints.x,self.keypoints.y,'og')
+        
+        for i in range(self.keypoints.x.size):
+            pylab.annotate("", xy=(nghx[i], nghy[i]), 
+                           xytext=(self.keypoints.x[i],self.keypoints.y[i]),arrowprops=dict(facecolor='red', shrink=0.05),)
+        
 
 if __name__ == "__main__":
 

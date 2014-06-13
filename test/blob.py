@@ -1,6 +1,9 @@
 #!/usr/bin/python
 # coding: utf-8
-import sys, scipy, pylab
+import sys, scipy
+import matplotlib
+matplotlib.use('Qt4Agg')
+import pylab
 from math import sqrt
 import fabio,numpy
 from utilstest import UtilsTest, getLogger
@@ -83,7 +86,7 @@ f=pylab.figure(1)
 ax = f.add_subplot(111)
 ax.imshow(numpy.log1p(data), interpolation = 'nearest')
 
-for i in range(3):
+for i in range(5):
     print ('Octave #%i' %i)
     bd._one_octave(shrink=True, refine = True, n_5=True)
     print("Octave #%i Total kp: %i" % (i, bd.keypoints.size))
@@ -101,7 +104,7 @@ sigma = bd.keypoints.sigma
 for i,c in enumerate("bgrcmykw"):
 #    j = 2 ** i
     m = numpy.logical_and(sigma >= i, sigma < (i + 1))
-    ax.plot(bd.keypoints[m].x, bd.keypoints[m].y, "." + c, label=str(i))
+    ax.plot(bd.keypoints[m].x, bd.keypoints[m].y, "o" + c, label=str(i))
 ax.legend()
 
 if sigma.size > 0:
