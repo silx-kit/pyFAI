@@ -41,7 +41,7 @@ logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 
 if logger.getEffectiveLevel() <= logging.INFO:
-    import pylab
+    import matplotlib;matplotlib.use('Qt4Agg');import pylab
 
 class TestIntegrate1D(unittest.TestCase):
     npt = 1000

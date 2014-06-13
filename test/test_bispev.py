@@ -43,7 +43,7 @@ logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 
 if logger.getEffectiveLevel() <= logging.INFO:
-    import pylab
+    import matplotlib;matplotlib.use('Qt4Agg');import pylab
 from pyFAI import spline, _bispev
 
 try:

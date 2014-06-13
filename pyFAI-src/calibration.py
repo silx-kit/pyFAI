@@ -48,7 +48,7 @@ import numpy, scipy.ndimage
 from scipy.stats import linregress
 import fabio
 import matplotlib
-import pylab
+import matplotlib;matplotlib.use('Qt4Agg');import pylab
 from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
 from .peakPicker import PeakPicker

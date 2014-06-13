@@ -47,7 +47,7 @@ from pyFAI.peakPicker import PeakPicker
 from pyFAI.calibrant import Calibrant
 from pyFAI.geometryRefinement import GeometryRefinement
 if logger.getEffectiveLevel() <= logging.INFO:
-    import pylab
+    import matplotlib;matplotlib.use('Qt4Agg');import pylab
 
 
 class test_peak_picking(unittest.TestCase):

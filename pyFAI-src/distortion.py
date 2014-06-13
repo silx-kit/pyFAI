@@ -635,7 +635,7 @@ def test():
 #    dis.calc_LUT()
 #    out = dis.correct(grid)
 #    fabio.edfimage.edfimage(data=out.astype("float32")).write("test2048.edf")
-    import pylab
+    import matplotlib;matplotlib.use('Qt4Agg');import pylab
     pylab.imshow(out)  # , interpolation="nearest")
     pylab.show()
 

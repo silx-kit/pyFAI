@@ -42,7 +42,7 @@ logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 
 if logger.getEffectiveLevel() <= logging.INFO:
-    import pylab
+    import matplotlib;matplotlib.use('Qt4Agg');import pylab
 
 class TestPolarization(unittest.TestCase):
     shape = (13, 13)

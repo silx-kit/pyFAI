@@ -2,7 +2,7 @@
 
 # this is a very simple tool that checks the calibratation
 import pyFAI, fabio, numpy, sys, os, optparse, time
-import pylab
+import matplotlib;matplotlib.use('Qt4Agg');import pylab
 
 def shift(input, shift):
     """
