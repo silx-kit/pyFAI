@@ -187,9 +187,9 @@ class Detector(object):
         @type bin_size: (int, int)
         """
         if "__len__" in dir(bin_size) and len(bin_size) >= 2:
-            bin_size = (float(bin_size[0]), float(bin_size[1]))
+            bin_size = int(round(float(bin_size[0]))), int(round(float(bin_size[1])))
         else:
-            b = float(bin_size)
+            b = int(round(float(bin_size)))
             bin_size = (b, b)
         if bin_size != self._binning:
             ratioX = bin_size[1] / self._binning[1]
@@ -202,9 +202,9 @@ class Detector(object):
                 self._pixel1 *= ratioY
                 self._pixel2 *= ratioX
             self._binning = bin_size
-
+            self.shape = (self.max_shape[0] // bin_size[0],
+                          self.max_shape[1] // bin_size[1])
     binning = property(get_binning, set_binning)
-
 
     def getPyFAI(self):
         """
