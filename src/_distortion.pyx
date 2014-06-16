@@ -808,30 +808,30 @@ def calc_size(numpy.ndarray[numpy.float32_t, ndim = 4] pos not None, shape):
                         lut_size[k,l] += 1
     return lut_size
 
-@cython.wraparound(False)
-@cython.boundscheck(False)
-@cython.cdivision(True)
-def cal_LUT(float[:,:,:,:] pos not None, shape, int size, max_pixel_size):
+#@cython.wraparound(False)
+#@cython.boundscheck(False)
+#@cython.cdivision(True)
+def calc_LUT(float[:,:,:,:] pos not None, shape, bin_size, max_pixel_size):
     """
     @param pos: 4D position array 
     @param shape: output shape
+    @param bin_size: number of input element per output element (numpy array)
     @param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
-    @param size: max number of input element per output element
     @return: look-up table"""
     cdef int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1
-    cdef int offset0, offset1, box_size0, box_size1
+    cdef int offset0, offset1, box_size0, box_size1, size
     cdef numpy.int32_t k, idx=0
     cdef float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area, value
     cdef numpy.ndarray[lut_point, ndim = 3] lut
-    cdef numpy.ndarray[numpy.int32_t, ndim = 2] outMax = numpy.zeros(shape, dtype=numpy.int32)
-    cdef float[:,:] buffer
+    size = bin_size.max()
     shape0, shape1 = shape
     delta0, delta1 = max_pixel_size
+    cdef int[:,:] outMax = cvarray(shape=(shape0, shape1), itemsize=sizeof(int), format="i")
+    cdef float[:,:] buffer = cvarray(shape=(delta0, delta1), itemsize=sizeof(float), format="f")     
     lut = numpy.recarray(shape=(shape0 , shape1, size), dtype=[("idx", numpy.int32), ("coef", numpy.float32)])
     lut_total_size = shape0*shape1*size*sizeof(lut_point)
     memset(&lut[0,0,0], 0, lut_total_size)
     logger.info("LUT shape: (%i,%i,%i) %.3f MByte"%(lut.shape[0], lut.shape[1],lut.shape[2],size/1.0e6))
-    buffer = cvarray(shape=(delta0, delta1), itemsize=sizeof(float), format="f")
     buffer_size = delta0 * delta1 * sizeof(float)
     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i"%(delta1,delta0, size))
     with nogil:
@@ -904,7 +904,9 @@ def cal_LUT(float[:,:,:,:] pos not None, shape, int size, max_pixel_size):
                 idx += 1
     return lut.reshape(shape0 * shape1, size)
 
-
+@cython.wraparound(False)
+@cython.boundscheck(False)
+@cython.cdivision(True)
 def cal_CSR(float[:,:,:,:] pos not None, shape, bin_size, max_pixel_size):
     """
     @param pos: 4D position array 
@@ -912,19 +914,18 @@ def cal_CSR(float[:,:,:,:] pos not None, shape, bin_size, max_pixel_size):
     @param bin_size: number of input element per output element (as numpy array) 
     @param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
     @return: look-up table in CSR format: 3-tuple of array"""
-    cdef int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1, bins, lut_size
+    cdef int i, j, k, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1, bins, lut_size
     cdef int offset0, offset1, box_size0, box_size1
-    cdef numpy.int32_t k, idx=0
+    cdef numpy.int32_t idx=0, tmp_index
     cdef float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area, value
-    cdef numpy.ndarray[lut_point, ndim = 3] lut
-    cdef numpy.ndarray[numpy.int32_t, ndim = 2] outMax = numpy.zeros(shape, dtype=numpy.int32)
-    cdef float[:,:] buffer
+    
     cdef numpy.ndarray[numpy.int32_t, ndim = 1] indptr, indices
     cdef numpy.ndarray[numpy.float32_t, ndim = 1] data
 
     shape0, shape1 = shape
     delta0, delta1 = max_pixel_size
     bins = shape0*shape1
+    cdef int[:,:] outMax = cvarray(shape=(shape0, shape1), itemsize=sizeof(int), format="i")
     indptr = numpy.empty(bins+1, dtype=numpy.int32)
     indptr[0] = 0
     indptr[1:] = bin_size.cumsum(dtype=numpy.int32)
@@ -941,7 +942,7 @@ def cal_CSR(float[:,:,:,:] pos not None, shape, bin_size, max_pixel_size):
     indptr_size = bins*sizeof(numpy.int32)
     
     logger.info("CSR matrix: %.3f MByte"%((indices_size+data_size+indptr_size)/1.0e6))
-    buffer = cvarray(shape=(delta0, delta1), itemsize=sizeof(float), format="f")
+    cdef float[:,:] buffer = cvarray(shape=(delta0, delta1), itemsize=sizeof(float), format="f")
     buffer_size = delta0 * delta1 * sizeof(float)
     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i"%(buffer.shape[1],buffer.shape[0], lut_size))
     with nogil:
@@ -958,10 +959,10 @@ def cal_CSR(float[:,:,:,:] pos not None, shape, bin_size, max_pixel_size):
                 C1 = pos[i, j, 2, 1]
                 D0 = pos[i, j, 3, 0]
                 D1 = pos[i, j, 3, 1]
-                offset0 = (<int> floor(min4f(A0, B0, C0, D0)))
-                offset1 = (<int> floor(min4f(A1, B1, C1, D1)))
-                box_size0 = (<int> ceil(max4f(A0, B0, C0, D0))) - offset0
-                box_size1 = (<int> ceil(max4f(A1, B1, C1, D1))) - offset1
+                offset0 = (<int> floor(min(A0, B0, C0, D0)))
+                offset1 = (<int> floor(min(A1, B1, C1, D1)))
+                box_size0 = (<int> ceil(max(A0, B0, C0, D0))) - offset0
+                box_size1 = (<int> ceil(max(A1, B1, C1, D1))) - offset1
                 A0 -= <float> offset0
                 A1 -= <float> offset1
                 B0 -= <float> offset0
@@ -1014,3 +1015,167 @@ def cal_CSR(float[:,:,:,:] pos not None, shape, bin_size, max_pixel_size):
                         outMax[ml,nl] = k + 1
                 idx += 1
     return (data, indices, indptr)
+
+@cython.wraparound(False)
+@cython.boundscheck(False)
+def correct_LUT(image, shape, lut_point[:,:] LUT not None):
+    """
+    Correct an image based on the look-up table calculated ...
+
+    @param image: 2D-array with the image
+    @param shape: shape of output image
+    @param LUT: Look up table, here a 2D-array of struct
+    @return: corrected 2D image
+    """
+    cdef int i,j, lshape0, lshape1, idx, size, shape0, shape1
+    cdef float coef, sum, error, t ,y
+    cdef float[:] lout, lin
+    shape0, shape1 = shape 
+    lshape0 = LUT.shape[0]
+    lshape1 = LUT.shape[1]
+    img_shape = image.shape
+    if (img_shape[0]<shape0) or (img_shape[1]<shape1):
+        new_image = numpy.zeros((shape0,shape1), dtype=numpy.float32)
+        new_image[:img_shape[0],:img_shape[1]] = image
+        image = new_image
+        logger.warning("Patching image as image is %ix%i and spline is %ix%i"%(img_shape[1],img_shape[0],shape1,shape0))
+
+    out = numpy.zeros(shape, dtype=numpy.float32)
+    lout = out.ravel()
+    lin = numpy.ascontiguousarray(image.ravel(),dtype=numpy.float32)
+    size = lin.size
+    for i in prange(lshape0, nogil=True, schedule="static"):
+        sum = 0.0    #Implement kahan summation
+        error = 0.0 
+        for j in range(lshape1):
+            idx = LUT[i,j].idx
+            coef = LUT[i,j].coef
+            if coef<=0:
+                continue
+            if idx>=size:
+                with gil:
+                    logger.warning("Accessing %i >= %i !!!"%(idx,size))
+                    continue
+            y = lin[idx] * coef - error
+            t = sum + y
+            error = (t - sum) - y
+            sum = t
+        lout[i] += sum #this += is for Cython's reduction
+    return out[:img_shape[0],:img_shape[1]]
+
+@cython.wraparound(False)
+@cython.boundscheck(False)
+def correct_CSR(image, shape, LUT):
+    """
+    Correct an image based on the look-up table calculated ...
+
+    @param image: 2D-array with the image
+    @param shape: shape of output image
+    @param LUT: Look up table, here a 3-tuple array of ndarray
+    @return: corrected 2D image
+    """
+    cdef int i,j, idx, size, bins
+    cdef float coef, tmp, error, sum, y ,t
+    cdef float[:] lout, lin, data
+    cdef numpy.int32_t[:] indices, indptr
+    data, indices, indptr = LUT
+    shape0, shape1 = shape 
+    bins = indptr.size-1
+    img_shape = image.shape
+    if (img_shape[0]<shape0) or (img_shape[1]<shape1):
+        new_image = numpy.zeros(shape, dtype=numpy.float32)
+        new_image[:img_shape[0],:img_shape[1]] = image
+        image = new_image
+        logger.warning("Patching image as image is %ix%i and spline is %ix%i"%(img_shape[1], img_shape[0], shape1, shape0))
+
+    out = numpy.zeros(shape, dtype=numpy.float32)
+    lout = out.ravel()
+    lin = numpy.ascontiguousarray(image.ravel(),dtype=numpy.float32)
+    size = lin.size
+
+    for i in prange(bins, nogil=True, schedule="static"):
+        sum = 0.0    #Implement Kahan summation
+        error = 0.0 
+        for j in range(indptr[i],indptr[i+1]):
+            idx = indices[j]
+            coef = data[j]
+            if coef<=0:
+                continue
+            if idx>=size:
+                with gil:
+                    logger.warning("Accessing %i >= %i !!!"%(idx,size))
+                    continue
+            y = lin[idx] * coef - error
+            t = sum + y
+            error = (t - sum) - y
+            sum = t
+        lout[i] += sum #this += is for Cython's reduction
+    return out[:img_shape[0],:img_shape[1]]
+
+
+def uncorrect_LUT(image, shape, lut_point[:,:]LUT):
+    """
+    Take an image which has been corrected and transform it into it's raw (with loss of information)
+    @param image: 2D-array with the image
+    @param shape: shape of output image
+    @param LUT: Look up table, here a 2D-array of struct
+    @return: uncorrected 2D image and a mask (pixels in raw image not existing)
+    """
+    cdef int idx, j
+    cdef float total, coef
+    out = numpy.zeros(shape, dtype=numpy.float32)
+    mask = numpy.zeros(shape, dtype=numpy.int8)
+    cdef numpy.int8_t[:] lmask = mask.ravel()
+    cdef float[:] lout = out.ravel()
+    cdef float[:] lin = numpy.ascontiguousarray(image, dtype=numpy.float32).ravel()
+    
+    for idx in range(LUT.shape[0]):
+        total = 0.0
+        for j in range(LUT.shape[1]):
+            coef = LUT[idx,j].coef 
+            if coef>0:
+                total += coef 
+        if total<= 0:
+            lmask[idx] = 1
+            continue
+        val = lin[idx]/total
+        for j in range(LUT.shape[1]):
+            coef = LUT[idx,j].coef 
+            if coef>0:
+                lout[LUT[idx,j].idx] += val * coef
+    return out, mask
+
+def uncorrect_CSR(image, shape, LUT):
+    """
+    Take an image which has been corrected and transform it into it's raw (with loss of information)
+    @param image: 2D-array with the image
+    @param shape: shape of output image
+    @param LUT: Look up table, here a 3-tuple of ndarray
+    @return: uncorrected 2D image and a mask (pixels in raw image not existing)
+    """
+    cdef int idx, j, nbins
+    cdef float total, coef
+    out = numpy.zeros(shape, dtype=numpy.float32)
+    mask = numpy.zeros(shape, dtype=numpy.int8)
+    cdef numpy.int8_t[:] lmask = mask.ravel()
+    cdef float[:] lout = out.ravel()
+    cdef float[:] lin = numpy.ascontiguousarray(image, dtype=numpy.float32).ravel()
+    cdef float[:] data = LUT[0]
+    cdef numpy.int32_t[:] indices = LUT[1]
+    cdef numpy.int32_t[:] indptr = LUT[2]
+    nbins = indptr.size-1
+    for idx in range(nbins):
+        total = 0.0
+        for j in range(indptr[idx],indptr[idx+1]):
+            coef = data[j] 
+            if coef>0:
+                total += coef 
+        if total<= 0:
+            lmask[idx] = 1
+            continue
+        val = lin[idx]/total
+        for j in range(indptr[idx],indptr[idx+1]):
+            coef = data[j] 
+            if coef>0:
+                lout[indices[j]] += val * coef
+    return out, mask

@@ -464,12 +464,7 @@ class Distortion(object):
         lout = out.ravel()
         lin = numpy.ascontiguousarray(image.ravel(),dtype=numpy.float32)
         size = lin.size
-        
-#        cdef threadlocal(int) j = 0
- #       cdef threadlocal(int) idx = 0
-  #      cdef threadlocal(float) coef = 0.0
-   #     cdef threadlocal(float) tmp = 0.0
-        
+
         for i in prange(bins, nogil=True, schedule="static"):
             for j in range(indptr[i],indptr[i+1]):
                 idx = indices[j]

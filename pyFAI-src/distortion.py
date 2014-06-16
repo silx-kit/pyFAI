@@ -37,7 +37,7 @@ import numpy
 logger = logging.getLogger("pyFAI.distortion")
 logging.basicConfig(level=logging.INFO)
 from math import ceil, floor
-from pyFAI import detectors, ocl_azim_lut
+from pyFAI import detectors, ocl_azim_lut, ocl_azim_csr
 from pyFAI.utils import timeit
 import fabio
 
@@ -45,7 +45,6 @@ try:
     from . import _distortion
 except ImportError:
     logger.warning("Import _distortion cython implementation failed ... pure python version is terribly slow !!!")
-else:
     _distortion = None
 
 
@@ -55,7 +54,7 @@ class Distortion(object):
 
     New version compatible both with CSR and LUT...
     """
-    def __init__(self, detector="detector", shape=None, method="LUT", device="openmp"):
+    def __init__(self, detector="detector", shape=None, method="LUT", device=None):
         """
         @param detector: detector instance or detector name
         """
@@ -65,24 +64,25 @@ class Distortion(object):
             self.detector = detector
         if "shape" in dir(self.detector):
             self.shape = self.detector.shape
-            if self.shape != shape:
+            if shape is not None and self.shape != shape:
                 logger.warning("unconsistency in detector geometry, got %s and expected %s" % (shape, self.shape))
+                self.shape = shape
         else:
             self.shape = shape
         self.shape = tuple([int(i) for i in self.shape])
         self._sem = threading.Semaphore()
 
-        self.size = None
+        self.bin_size = None
         self.max_size = None
         self.pos = None
         self.lut = None
         self.delta0 = self.delta1 = None  # max size of an pixel on a regular grid ...
         self.integrator = None
-        self.method = method
+        self.method = method.lower()
         self.device = device
 
     def __repr__(self):
-        return os.linesep.join(["Distortion correction %s for detector:",
+        return os.linesep.join(["Distortion correction %s on device %s for detector shape %s:" % (self.method, self.device, self.shape),
                                 self.detector.__repr__()])
 
     def reset(self, method=None, device=None):
@@ -93,9 +93,10 @@ class Distortion(object):
             self.delta0 = self.delta1 = None
             self.integrator = None
             if method is not None:
-                self.method = method
+                self.method = method.lower()
             if device is not None:
                 self.device = device
+        self.calc_init()
 
     @timeit
     def calc_pos(self):
@@ -135,13 +136,13 @@ class Distortion(object):
             with self._sem:
                 if self.max_size is None:
                     if _distortion:
-                        self.size = _distortion.cal_size(self.pos, self.shape)
+                        self.bin_size = _distortion.calc_size(self.pos, self.shape)
                     else:
                         pos0min = numpy.floor(pos[:, :, :, 0].min(axis= -1)).astype(numpy.int32).clip(0, self.shape[0])
                         pos1min = numpy.floor(pos[:, :, :, 1].min(axis= -1)).astype(numpy.int32).clip(0, self.shape[1])
                         pos0max = (numpy.ceil(pos[:, :, :, 0].max(axis= -1)).astype(numpy.int32) + 1).clip(0, self.shape[0])
                         pos1max = (numpy.ceil(pos[:, :, :, 1].max(axis= -1)).astype(numpy.int32) + 1).clip(0, self.shape[1])
-                        self.size = numpy.zeros(self.shape, dtype=numpy.int32)
+                        self.bin_size = numpy.zeros(self.shape, dtype=numpy.int32)
                         max0 = 0
                         max1 = 0
                         for i in range(self.shape[0]):
@@ -156,17 +157,41 @@ class Distortion(object):
                                     print old, "new max1", max1, i, j
 
                                 lut_size[pos0min[i, j]:pos0max[i, j], pos1min[i, j]:pos1max[i, j]] += 1
-                    self.max_size = self.size.max()
+                    self.max_size = self.bin_size.max()
 
+    def calc_init(self):
+        """
+        initialize all arrays
+        """
+        self.calc_pos()
+        self.calc_size()
+        self.calc_LUT()
+        if self.device is not None:
+            if "lower" in dir(self.device):
+                self.device = self.device.lower()
+                if self.method == "lut":
+                    self.integrator = ocl_azim_lut.OCL_LUT_Integrator(self.lut, self.shape[0] * self.shape[1], devicetype=self.device)
+                else:
+                    self.integrator = ocl_azim_csr.OCL_CSR_Integrator(self.lut, self.shape[0] * self.shape[1], devicetype=self.device)
+            else:
+                if self.method == "lut":
+                    self.integrator = ocl_azim_lut.OCL_LUT_Integrator(self.lut, self.shape[0] * self.shape[1],
+                                                                platformid=self.device[0], deviceid=self.device[1])
+                else:
+                    self.integrator = ocl_azim_csr.OCL_CSR_Integrator(self.lut, self.shape[0] * self.shape[1],
+                                                                platformid=self.device[0], deviceid=self.device[1])
     @timeit
     def calc_LUT(self):
         if self.max_size is None:
-            self.self.calc_size()
+            self.calc_size()
         if self.lut is None:
             with self._sem:
                 if self.lut is None:
                     if _distortion:
-                        self.lut = _distortion.cal_LUT(self.pos, self.shape, size, max_pixel_size=())
+                        if self.method == "lut":
+                            self.lut = _distortion.calc_LUT(self.pos, self.shape, self.bin_size, max_pixel_size=(self.delta0, self.delta1))
+                        else:
+                            self.lut = _distortion.calc_CSR(self.pos, self.shape, self.bin_size, max_pixel_size=(self.delta0, self.delta1))
                     else:
                         lut = numpy.recarray(shape=(self.shape[0] , self.shape[1], self.max_size), dtype=[("idx", numpy.uint32), ("coef", numpy.float32)])
                         lut[:, :, :].idx = 0
@@ -210,7 +235,6 @@ class Distortion(object):
                         lut.shape = (self.shape[0] * self.shape[1]), self.max_size
                         self.lut = lut
 
-    @timeit
     def correct(self, image):
         """
         Correct an image based on the look-up table calculated ...
@@ -218,15 +242,31 @@ class Distortion(object):
         @param image: 2D-array with the image
         @return: corrected 2D image
         """
-        if self.integrator is None:
+        if self.device:
+            if self.integrator is None:
+                self.calc_init()
+            out = self.integrator.integrate(image)[1]
+        else:
             if self.lut is None:
                 self.calc_LUT()
-            self.integrator = ocl_azim_lut.OCL_LUT_Integrator(self.lut, self.shape[0] * self.shape[1])
-        out = self.integrator.integrate(image)
-        out[1].shape = self.shape
-        return out[1]
+            if self.method == "lut":
+                if _distortion is not None:
+                    out = _distortion.correct_LUT(image, self.shape, self.lut)
+                else:
+                    big = image.ravel().take(self.lut.idx) * self.lut.coef
+                    out = big.sum(axis= -1)
+            elif self.method == "csr":
+                if _distortion is not None:
+                    out = _distortion.correct_CSR(image, self.shape, self.lut)
+                else:
+                    big = self.lut[0] * image.ravel().take(self.lut[1])
+                    indptr = self.lut[2]
+                    out = numpy.zeros(indptr.size - 1)
+                    for i in range(indptr.size - 1):
+                        out[i] = big[indptr[i]:indptr[i + 1]].sum()
+        out.shape = self.shape
+        return out
 
-    @timeit
     def uncorrect(self, image):
         """
         Take an image which has been corrected and transform it into it's raw (with loss of information)
@@ -236,22 +276,28 @@ class Distortion(object):
         """
         if self.lut is None:
             self.calc_LUT()
-        out = numpy.zeros(self.shape, dtype=numpy.float32)
-        mask = numpy.zeros(self.shape, dtype=numpy.int8)
-        lmask = mask.ravel()
-        lout = out.ravel()
-        lin = image.ravel()
-        tot = self.lut.coef.sum(axis= -1)
-        for idx in range(self.lut.shape[0]):
-            t = tot[idx]
-            if t <= 0:
-                lmask[idx] = 1
-                continue
-            val = lin[idx] / t
-            lout[self.lut[idx].idx] += val * self.lut[idx].coef
-#            lout[]
-
-
+        if self.method == "lut":
+            if _distortion is not None:
+                out, mask = _distortion.uncorrect_LUT(image, self.shape, self.lut)
+            else:
+                out = numpy.zeros(self.shape, dtype=numpy.float32)
+                mask = numpy.zeros(self.shape, dtype=numpy.int8)
+                lmask = mask.ravel()
+                lout = out.ravel()
+                lin = image.ravel()
+                tot = self.lut.coef.sum(axis= -1)
+                for idx in range(self.lut.shape[0]):
+                    t = tot[idx]
+                    if t <= 0:
+                        lmask[idx] = 1
+                        continue
+                    val = lin[idx] / t
+                    lout[self.lut[idx].idx] += val * self.lut[idx].coef
+        elif self.method == "csr":
+            if _distortion is not None:
+                out = _distortion.uncorrect_CSR(image, self.shape, self.lut)
+            else:
+                raise NotImplementedError()
         return out, mask
 
 
@@ -562,14 +608,6 @@ class Quad(object):
                             self.box[int(floor(stop)), h] += sign * dA
                             AA -= dA
                             h += 1
-try:
-    import pyFAI._distortion
-except ImportError:
-    logger.warning("Import _distortion cython implementation failed ... pure python version is terribly slow !!!")
-else:
-    logger.debug(" ".join(dir(pyFAI._distortion)))
-    Quad = pyFAI._distortion.Quad
-#    Distortion = pyFAI._distortion.Distortion
 
 
 def test():
