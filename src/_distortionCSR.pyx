@@ -438,7 +438,7 @@ class Distortion(object):
     def correctHost(self, image):
         """
         Correct an image based on the look-up table calculated ...
-        Caclulation takes place on the Host
+        Calculation takes place on the Host
 
         @param image: 2D-array with the image
         @return: corrected 2D image

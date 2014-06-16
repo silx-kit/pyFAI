@@ -903,3 +903,114 @@ def cal_LUT(float[:,:,:,:] pos not None, shape, int size, max_pixel_size):
                         outMax[ml, nl] = k + 1
                 idx += 1
     return lut.reshape(shape0 * shape1, size)
+
+
+def cal_CSR(float[:,:,:,:] pos not None, shape, bin_size, max_pixel_size):
+    """
+    @param pos: 4D position array 
+    @param shape: output shape
+    @param bin_size: number of input element per output element (as numpy array) 
+    @param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
+    @return: look-up table in CSR format: 3-tuple of array"""
+    cdef int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1, bins, lut_size
+    cdef int offset0, offset1, box_size0, box_size1
+    cdef numpy.int32_t k, idx=0
+    cdef float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area, value
+    cdef numpy.ndarray[lut_point, ndim = 3] lut
+    cdef numpy.ndarray[numpy.int32_t, ndim = 2] outMax = numpy.zeros(shape, dtype=numpy.int32)
+    cdef float[:,:] buffer
+    cdef numpy.ndarray[numpy.int32_t, ndim = 1] indptr, indices
+    cdef numpy.ndarray[numpy.float32_t, ndim = 1] data
+
+    shape0, shape1 = shape
+    delta0, delta1 = max_pixel_size
+    bins = shape0*shape1
+    indptr = numpy.empty(bins+1, dtype=numpy.int32)
+    indptr[0] = 0
+    indptr[1:] = bin_size.cumsum(dtype=numpy.int32)
+    lut_size = indptr[bins]
+                    
+    indices = numpy.zeros(shape=lut_size, dtype=numpy.int32)
+    data = numpy.zeros(shape=lut_size, dtype=numpy.float32)
+    
+    bins = shape0*shape1
+    indptr[1:] = bin_size.cumsum(dtype=numpy.int32)
+    
+    indices_size = lut_size*sizeof(numpy.int32)
+    data_size = lut_size*sizeof(numpy.float32)
+    indptr_size = bins*sizeof(numpy.int32)
+    
+    logger.info("CSR matrix: %.3f MByte"%((indices_size+data_size+indptr_size)/1.0e6))
+    buffer = cvarray(shape=(delta0, delta1), itemsize=sizeof(float), format="f")
+    buffer_size = delta0 * delta1 * sizeof(float)
+    logger.info("Max pixel size: %ix%i; Max source pixel in target: %i"%(buffer.shape[1],buffer.shape[0], lut_size))
+    with nogil:
+        # i,j, idx are indices of the raw image uncorrected
+        for i in range(shape0):
+            for j in range(shape1):
+                #reinit of buffer
+                memset(&buffer[0,0], 0, buffer_size)
+                A0 = pos[i, j, 0, 0]
+                A1 = pos[i, j, 0, 1]
+                B0 = pos[i, j, 1, 0]
+                B1 = pos[i, j, 1, 1]
+                C0 = pos[i, j, 2, 0]
+                C1 = pos[i, j, 2, 1]
+                D0 = pos[i, j, 3, 0]
+                D1 = pos[i, j, 3, 1]
+                offset0 = (<int> floor(min4f(A0, B0, C0, D0)))
+                offset1 = (<int> floor(min4f(A1, B1, C1, D1)))
+                box_size0 = (<int> ceil(max4f(A0, B0, C0, D0))) - offset0
+                box_size1 = (<int> ceil(max4f(A1, B1, C1, D1))) - offset1
+                A0 -= <float> offset0
+                A1 -= <float> offset1
+                B0 -= <float> offset0
+                B1 -= <float> offset1
+                C0 -= <float> offset0
+                C1 -= <float> offset1
+                D0 -= <float> offset0
+                D1 -= <float> offset1
+                if B0 != A0:
+                    pAB = (B1 - A1) / (B0 - A0)
+                    cAB = A1 - pAB * A0
+                else:
+                    pAB = cAB = 0.0
+                if C0 != B0:
+                    pBC = (C1 - B1) / (C0 - B0)
+                    cBC = B1 - pBC * B0
+                else:
+                    pBC = cBC = 0.0
+                if D0 != C0:
+                    pCD = (D1 - C1) / (D0 - C0)
+                    cCD = C1 - pCD * C0
+                else:
+                    pCD = cCD = 0.0
+                if A0 != D0:
+                    pDA = (A1 - D1) / (A0 - D0)
+                    cDA = D1 - pDA * D0
+                else:
+                    pDA = cDA = 0.0
+                integrate(buffer, B0, A0, pAB, cAB)
+                integrate(buffer, A0, D0, pDA, cDA)
+                integrate(buffer, D0, C0, pCD, cCD)
+                integrate(buffer, C0, B0, pBC, cBC)
+                area = 0.5*((C0 - A0)*(D1 - B1)-(C1 - A1)*(D0 - B0))
+                for ms in range(box_size0):
+                    ml = ms + offset0
+                    if ml < 0 or ml >= shape0:
+                        continue
+                    for ns in range(box_size1):
+                        # ms,ns are indexes of the corrected image in short form, ml & nl are the same
+                        nl = ns + offset1
+                        if nl < 0 or nl >= shape1:
+                            continue
+                        value = buffer[ms, ns] / area
+                        if value <= 0:
+                            continue
+                        k = outMax[ml,nl]
+                        tmp_index = indptr[ml*shape1+nl]
+                        indices[tmp_index+k] = idx
+                        data[tmp_index+k] = value
+                        outMax[ml,nl] = k + 1
+                idx += 1
+    return (data, indices, indptr)
