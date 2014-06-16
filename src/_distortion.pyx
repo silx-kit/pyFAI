@@ -26,6 +26,7 @@
 import cython
 cimport numpy
 import numpy
+from cython.view cimport array as cvarray
 from cython.parallel import prange
 from libc.math cimport floor,ceil, fabs
 from libc.string cimport memset
@@ -40,27 +41,27 @@ cdef struct lut_point:
     numpy.int32_t idx
     numpy.float32_t coef
 
-cdef inline float min4f(float a, float b, float c, float d) nogil:
-    """Calculates the min of 4 float numbers"""
-    if (a <= b) and (a <= c) and (a <= d):
-        return a
-    if (b <= a) and (b <= c) and (b <= d):
-        return b
-    if (c <= a) and (c <= b) and (c <= d):
-        return c
-    else:
-        return d
+#cdef inline float min(float a, float b, float c, float d) nogil:
+#    """Calculates the min of 4 float numbers"""
+#    if (a <= b) and (a <= c) and (a <= d):
+#        return a
+#    if (b <= a) and (b <= c) and (b <= d):
+#        return b
+#    if (c <= a) and (c <= b) and (c <= d):
+#        return c
+#    else:
+#        return d
 
-cdef inline float max4f(float a, float b, float c, float d) nogil:
-    """Calculates the max of 4 float numbers"""
-    if (a >= b) and (a >= c) and (a >= d):
-        return a
-    if (b >= a) and (b >= c) and (b >= d):
-        return b
-    if (c >= a) and (c >= b) and (c >= d):
-        return c
-    else:
-        return d
+#cdef inline float max(float a, float b, float c, float d) nogil:
+#    """Calculates the max of 4 float numbers"""
+#    if (a >= b) and (a >= c) and (a >= d):
+#        return a
+#    if (b >= a) and (b >= c) and (b >= d):
+#        return b
+#    if (c >= a) and (c >= b) and (c >= d):
+#        return c
+#    else:
+#        return d
 
 
 cpdef inline float calc_area(float I1, float I2, float slope, float intercept) nogil:
@@ -653,10 +654,10 @@ class Distortion(object):
                                 C1 = pos[i, j, 2, 1]
                                 D0 = pos[i, j, 3, 0]
                                 D1 = pos[i, j, 3, 1]
-                                offset0 = (<int> floor(min4f(A0, B0, C0, D0)))
-                                offset1 = (<int> floor(min4f(A1, B1, C1, D1)))
-                                box_size0 = (<int> ceil(max4f(A0, B0, C0, D0))) - offset0
-                                box_size1 = (<int> ceil(max4f(A1, B1, C1, D1))) - offset1
+                                offset0 = (<int> floor(min(A0, B0, C0, D0)))
+                                offset1 = (<int> floor(min(A1, B1, C1, D1)))
+                                box_size0 = (<int> ceil(max(A0, B0, C0, D0))) - offset0
+                                box_size1 = (<int> ceil(max(A1, B1, C1, D1))) - offset1
                                 A0 -= <float> offset0
                                 A1 -= <float> offset1
                                 B0 -= <float> offset0
@@ -775,3 +776,130 @@ class Distortion(object):
             val = lin[idx]/t
             lout[self.LUT[idx].idx] += val * self.LUT[idx].coef
         return out, mask
+
+################################################################################
+# Functions used in python classes from PyFAI.distortion
+################################################################################
+
+@cython.wraparound(False)
+@cython.boundscheck(False)
+def calc_size(numpy.ndarray[numpy.float32_t, ndim = 4] pos not None, shape):
+    """
+    Calculate the number of items per output pixel  
+    
+    @param pos: 4D array with position in space
+    @param shape: shape of the output array
+    @return: number of input element per output elements  
+    """    
+    cdef int i, j, k, l, shape0, shape1
+    cdef int[:,:] pos0min, pos1min, pos0max, pos1max
+    cdef numpy.ndarray[numpy.int32_t, ndim = 2] lut_size
+    shape0, shape1 = shape
+    pos0min = numpy.floor(pos[:, :, :, 0].min(axis= -1)).astype(numpy.int32).clip(0, shape0)
+    pos1min = numpy.floor(pos[:, :, :, 1].min(axis= -1)).astype(numpy.int32).clip(0, shape1)
+    pos0max = (numpy.ceil(pos[:, :, :, 0].max(axis= -1)).astype(numpy.int32) + 1).clip(0, shape0)
+    pos1max = (numpy.ceil(pos[:, :, :, 1].max(axis= -1)).astype(numpy.int32) + 1).clip(0, shape1)
+    lut_size = numpy.zeros(shape, dtype=numpy.int32)
+    with nogil:
+        for i in range(shape0):
+            for j in range(shape1):
+                for k in range(pos0min[i, j],pos0max[i, j]):
+                    for l in range(pos1min[i, j],pos1max[i, j]):
+                        lut_size[k,l] += 1
+    return lut_size
+
+@cython.wraparound(False)
+@cython.boundscheck(False)
+@cython.cdivision(True)
+def cal_LUT(float[:,:,:,:] pos not None, shape, int size, max_pixel_size):
+    """
+    @param pos: 4D position array 
+    @param shape: output shape
+    @param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
+    @param size: max number of input element per output element
+    @return: look-up table"""
+    cdef int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1
+    cdef int offset0, offset1, box_size0, box_size1
+    cdef numpy.int32_t k, idx=0
+    cdef float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area, value
+    cdef numpy.ndarray[lut_point, ndim = 3] lut
+    cdef numpy.ndarray[numpy.int32_t, ndim = 2] outMax = numpy.zeros(shape, dtype=numpy.int32)
+    cdef float[:,:] buffer
+    shape0, shape1 = shape
+    delta0, delta1 = max_pixel_size
+    lut = numpy.recarray(shape=(shape0 , shape1, size), dtype=[("idx", numpy.int32), ("coef", numpy.float32)])
+    lut_total_size = shape0*shape1*size*sizeof(lut_point)
+    memset(&lut[0,0,0], 0, lut_total_size)
+    logger.info("LUT shape: (%i,%i,%i) %.3f MByte"%(lut.shape[0], lut.shape[1],lut.shape[2],size/1.0e6))
+    buffer = cvarray(shape=(delta0, delta1), itemsize=sizeof(float), format="f")
+    buffer_size = delta0 * delta1 * sizeof(float)
+    logger.info("Max pixel size: %ix%i; Max source pixel in target: %i"%(delta1,delta0, size))
+    with nogil:
+        # i,j, idx are indexes of the raw image uncorrected
+        for i in range(shape0):
+            for j in range(shape1):
+                #reinit of buffer
+                memset(&buffer[0,0], 0, buffer_size)
+                A0 = pos[i, j, 0, 0]
+                A1 = pos[i, j, 0, 1]
+                B0 = pos[i, j, 1, 0]
+                B1 = pos[i, j, 1, 1]
+                C0 = pos[i, j, 2, 0]
+                C1 = pos[i, j, 2, 1]
+                D0 = pos[i, j, 3, 0]
+                D1 = pos[i, j, 3, 1]
+                offset0 = (<int> floor(min(A0, B0, C0, D0)))
+                offset1 = (<int> floor(min(A1, B1, C1, D1)))
+                box_size0 = (<int> ceil(max(A0, B0, C0, D0))) - offset0
+                box_size1 = (<int> ceil(max(A1, B1, C1, D1))) - offset1
+                A0 -= <float> offset0
+                A1 -= <float> offset1
+                B0 -= <float> offset0
+                B1 -= <float> offset1
+                C0 -= <float> offset0
+                C1 -= <float> offset1
+                D0 -= <float> offset0
+                D1 -= <float> offset1
+                if B0 != A0:
+                    pAB = (B1 - A1) / (B0 - A0)
+                    cAB = A1 - pAB * A0
+                else:
+                    pAB = cAB = 0.0
+                if C0 != B0:
+                    pBC = (C1 - B1) / (C0 - B0)
+                    cBC = B1 - pBC * B0
+                else:
+                    pBC = cBC = 0.0
+                if D0 != C0:
+                    pCD = (D1 - C1) / (D0 - C0)
+                    cCD = C1 - pCD * C0
+                else:
+                    pCD = cCD = 0.0
+                if A0 != D0:
+                    pDA = (A1 - D1) / (A0 - D0)
+                    cDA = D1 - pDA * D0
+                else:
+                    pDA = cDA = 0.0
+                integrate(buffer, B0, A0, pAB, cAB)
+                integrate(buffer, A0, D0, pDA, cDA)
+                integrate(buffer, D0, C0, pCD, cCD)
+                integrate(buffer, C0, B0, pBC, cBC)
+                area = 0.5*((C0 - A0)*(D1 - B1)-(C1 - A1)*(D0 - B0))
+                for ms in range(box_size0):
+                    ml = ms + offset0
+                    if ml < 0 or ml >= shape0:
+                        continue
+                    for ns in range(box_size1):
+                        # ms,ns are indexes of the corrected image in short form, ml & nl are the same
+                        nl = ns + offset1
+                        if nl < 0 or nl >= shape1:
+                            continue
+                        value = buffer[ms, ns] / area
+                        if value <= 0:
+                            continue
+                        k = outMax[ml, nl]
+                        lut[ml, nl, k].idx = idx
+                        lut[ml, nl, k].coef = value
+                        outMax[ml, nl] = k + 1
+                idx += 1
+    return lut.reshape(shape0 * shape1, size)
