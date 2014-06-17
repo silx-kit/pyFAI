@@ -26,10 +26,11 @@
 import cython
 cimport numpy
 import numpy
-from cython.view cimport array as cvarray
+from cython cimport view
 from cython.parallel import prange
+from cpython.ref cimport PyObject, Py_XDECREF
+from libc.string cimport memset,memcpy
 from libc.math cimport floor,ceil, fabs
-from libc.string cimport memset
 import logging, threading
 import types, os, sys, time
 logger = logging.getLogger("pyFAI._distortion")
@@ -41,32 +42,23 @@ cdef struct lut_point:
     numpy.int32_t idx
     numpy.float32_t coef
 
-#cdef inline float min(float a, float b, float c, float d) nogil:
-#    """Calculates the min of 4 float numbers"""
-#    if (a <= b) and (a <= c) and (a <= d):
-#        return a
-#    if (b <= a) and (b <= c) and (b <= d):
-#        return b
-#    if (c <= a) and (c <= b) and (c <= d):
-#        return c
-#    else:
-#        return d
-
-#cdef inline float max(float a, float b, float c, float d) nogil:
-#    """Calculates the max of 4 float numbers"""
-#    if (a >= b) and (a >= c) and (a >= d):
-#        return a
-#    if (b >= a) and (b >= c) and (b >= d):
-#        return b
-#    if (c >= a) and (c >= b) and (c >= d):
-#        return c
-#    else:
-#        return d
+dtype_lut=numpy.dtype([("idx",numpy.int32),("coef",numpy.float32)])
+cdef bint NEED_DECREF = sys.version_info<(2,7) and numpy.version.version<"1.5"
 
 
 cpdef inline float calc_area(float I1, float I2, float slope, float intercept) nogil:
     "Calculate the area between I1 and I2 of a line with a given slope & intercept"
     return 0.5 * (I2 - I1) * (slope * (I2 + I1) + 2 * intercept)
+
+cpdef inline int clip(int value, int min_val, int max_val) nogil:
+    "Limits the value to bounds"
+    if value<min_val:
+        return min_val
+    elif value>max_val:
+        return max_val
+    else:
+        return value
+
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
@@ -783,7 +775,7 @@ class Distortion(object):
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def calc_size(numpy.ndarray[numpy.float32_t, ndim = 4] pos not None, shape):
+def calc_size(float[:,:,:,:] pos not None, shape):
     """
     Calculate the number of items per output pixel  
     
@@ -791,26 +783,33 @@ def calc_size(numpy.ndarray[numpy.float32_t, ndim = 4] pos not None, shape):
     @param shape: shape of the output array
     @return: number of input element per output elements  
     """    
-    cdef int i, j, k, l, shape0, shape1
-    cdef int[:,:] pos0min, pos1min, pos0max, pos1max
-    cdef numpy.ndarray[numpy.int32_t, ndim = 2] lut_size
+    cdef int i, j, k, l, shape0, shape1, min0, min1, max0, max1
+    cdef numpy.ndarray[numpy.int32_t, ndim = 2] lut_size = numpy.zeros(shape, dtype=numpy.int32)
+    cdef float A0, A1, B0, B1, C0, C1, D0, D1
     shape0, shape1 = shape
-    pos0min = numpy.floor(pos[:, :, :, 0].min(axis= -1)).astype(numpy.int32).clip(0, shape0)
-    pos1min = numpy.floor(pos[:, :, :, 1].min(axis= -1)).astype(numpy.int32).clip(0, shape1)
-    pos0max = (numpy.ceil(pos[:, :, :, 0].max(axis= -1)).astype(numpy.int32) + 1).clip(0, shape0)
-    pos1max = (numpy.ceil(pos[:, :, :, 1].max(axis= -1)).astype(numpy.int32) + 1).clip(0, shape1)
-    lut_size = numpy.zeros(shape, dtype=numpy.int32)
     with nogil:
         for i in range(shape0):
             for j in range(shape1):
-                for k in range(pos0min[i, j],pos0max[i, j]):
-                    for l in range(pos1min[i, j],pos1max[i, j]):
+                A0 = pos[i, j, 0, 0]
+                A1 = pos[i, j, 0, 1]
+                B0 = pos[i, j, 1, 0]
+                B1 = pos[i, j, 1, 1]
+                C0 = pos[i, j, 2, 0]
+                C1 = pos[i, j, 2, 1]
+                D0 = pos[i, j, 3, 0]
+                D1 = pos[i, j, 3, 1]
+                min0 = clip(<int> floor(min(A0, B0, C0, D0)), 0, shape0)
+                min1 = clip(<int> floor(min(A1, B1, C1, D1)), 0, shape1)
+                max0 = clip(<int> ceil(max(A0, B0, C0, D0)) + 1, 0, shape0)
+                max1 = clip(<int> ceil(max(A1, B1, C1, D1)) + 1, 0, shape1)
+                for k in range(min0, max0):
+                    for l in range(min1,max1):
                         lut_size[k,l] += 1
     return lut_size
 
-#@cython.wraparound(False)
-#@cython.boundscheck(False)
-#@cython.cdivision(True)
+@cython.wraparound(False)
+@cython.boundscheck(False)
+@cython.cdivision(True)
 def calc_LUT(float[:,:,:,:] pos not None, shape, bin_size, max_pixel_size):
     """
     @param pos: 4D position array 
@@ -819,19 +818,23 @@ def calc_LUT(float[:,:,:,:] pos not None, shape, bin_size, max_pixel_size):
     @param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
     @return: look-up table"""
     cdef int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1
-    cdef int offset0, offset1, box_size0, box_size1, size
-    cdef numpy.int32_t k, idx=0
+    cdef int offset0, offset1, box_size0, box_size1, size, k
+    cdef numpy.int32_t idx=0
     cdef float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area, value
-    cdef numpy.ndarray[lut_point, ndim = 3] lut
+    cdef lut_point[:,:,:] lut
     size = bin_size.max()
     shape0, shape1 = shape
     delta0, delta1 = max_pixel_size
-    cdef int[:,:] outMax = cvarray(shape=(shape0, shape1), itemsize=sizeof(int), format="i")
-    cdef float[:,:] buffer = cvarray(shape=(delta0, delta1), itemsize=sizeof(float), format="f")     
-    lut = numpy.recarray(shape=(shape0 , shape1, size), dtype=[("idx", numpy.int32), ("coef", numpy.float32)])
+    cdef int[:,:] outMax = view.array(shape=(shape0, shape1), itemsize=sizeof(int), format="i")
+    memset(&outMax[0,0], 0, shape0*shape1*sizeof(int))
+    cdef float[:,:] buffer = view.array(shape=(delta0, delta1), itemsize=sizeof(float), format="f")
+    lut = view.array(shape=(shape0, shape1, size),itemsize=sizeof(lut_point), format="if")
+#   lut = numpy.zeros(shape=(bins, lut_size),dtype=dtype_lut)
+#   lut = < lut_point *>malloc(lut_nbytes)
+    #lut = numpy.recarray(shape=(shape0 , shape1, size), dtype=[("idx", numpy.int32), ("coef", numpy.float32)])
     lut_total_size = shape0*shape1*size*sizeof(lut_point)
     memset(&lut[0,0,0], 0, lut_total_size)
-    logger.info("LUT shape: (%i,%i,%i) %.3f MByte"%(lut.shape[0], lut.shape[1],lut.shape[2],size/1.0e6))
+    logger.info("LUT shape: (%i,%i,%i) %.3f MByte"%(lut.shape[0], lut.shape[1], lut.shape[2], lut_total_size/1.0e6))
     buffer_size = delta0 * delta1 * sizeof(float)
     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i"%(delta1,delta0, size))
     with nogil:
@@ -902,12 +905,18 @@ def calc_LUT(float[:,:,:,:] pos not None, shape, bin_size, max_pixel_size):
                         lut[ml, nl, k].coef = value
                         outMax[ml, nl] = k + 1
                 idx += 1
-    return lut.reshape(shape0 * shape1, size)
+
+    #Hack to prevent memory leak !!!
+    cdef numpy.ndarray[numpy.float64_t, ndim=2] tmp_ary = numpy.empty(shape=(shape0*shape1, size), dtype=numpy.float64)
+    memcpy(&tmp_ary[0,0], &lut[0,0,0], tmp_ary.nbytes)
+    return numpy.core.records.array(tmp_ary.view(dtype=dtype_lut),
+                                    shape=(shape0*shape1, size), dtype=dtype_lut,
+                                    copy=True)
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
 @cython.cdivision(True)
-def cal_CSR(float[:,:,:,:] pos not None, shape, bin_size, max_pixel_size):
+def calc_CSR(float[:,:,:,:] pos not None, shape, bin_size, max_pixel_size):
     """
     @param pos: 4D position array 
     @param shape: output shape
@@ -925,7 +934,8 @@ def cal_CSR(float[:,:,:,:] pos not None, shape, bin_size, max_pixel_size):
     shape0, shape1 = shape
     delta0, delta1 = max_pixel_size
     bins = shape0*shape1
-    cdef int[:,:] outMax = cvarray(shape=(shape0, shape1), itemsize=sizeof(int), format="i")
+    cdef int[:,:] outMax = view.array(shape=(shape0, shape1), itemsize=sizeof(int), format="i")
+    memset(&outMax[0,0], 0, shape0*shape1*sizeof(int))
     indptr = numpy.empty(bins+1, dtype=numpy.int32)
     indptr[0] = 0
     indptr[1:] = bin_size.cumsum(dtype=numpy.int32)
@@ -942,7 +952,7 @@ def cal_CSR(float[:,:,:,:] pos not None, shape, bin_size, max_pixel_size):
     indptr_size = bins*sizeof(numpy.int32)
     
     logger.info("CSR matrix: %.3f MByte"%((indices_size+data_size+indptr_size)/1.0e6))
-    cdef float[:,:] buffer = cvarray(shape=(delta0, delta1), itemsize=sizeof(float), format="f")
+    cdef float[:,:] buffer = view.array(shape=(delta0, delta1), itemsize=sizeof(float), format="f")
     buffer_size = delta0 * delta1 * sizeof(float)
     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i"%(buffer.shape[1],buffer.shape[0], lut_size))
     with nogil:

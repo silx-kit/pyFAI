@@ -172,14 +172,16 @@ class Distortion(object):
                 if self.method == "lut":
                     self.integrator = ocl_azim_lut.OCL_LUT_Integrator(self.lut, self.shape[0] * self.shape[1], devicetype=self.device)
                 else:
-                    self.integrator = ocl_azim_csr.OCL_CSR_Integrator(self.lut, self.shape[0] * self.shape[1], devicetype=self.device)
+                    self.integrator = ocl_azim_csr.OCL_CSR_Integrator(self.lut, self.shape[0] * self.shape[1], devicetype=self.device,
+                                                                      block_size=8)
             else:
                 if self.method == "lut":
                     self.integrator = ocl_azim_lut.OCL_LUT_Integrator(self.lut, self.shape[0] * self.shape[1],
                                                                 platformid=self.device[0], deviceid=self.device[1])
                 else:
                     self.integrator = ocl_azim_csr.OCL_CSR_Integrator(self.lut, self.shape[0] * self.shape[1],
-                                                                platformid=self.device[0], deviceid=self.device[1])
+                                                                platformid=self.device[0], deviceid=self.device[1],
+                                                                block_size=8)
     @timeit
     def calc_LUT(self):
         if self.max_size is None:

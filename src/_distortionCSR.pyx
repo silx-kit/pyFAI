@@ -42,6 +42,9 @@ cdef struct lut_point:
     numpy.int32_t idx
     numpy.float32_t coef
 
+cdef bint NEED_DECREF = sys.version_info<(2,7) and numpy.version.version<"1.5"
+
+
 cdef inline float min4f(float a, float b, float c, float d) nogil:
     """Calculates the min of 4 float numbers"""
     if (a <= b) and (a <= c) and (a <= d):
