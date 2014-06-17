@@ -54,9 +54,13 @@ class Distortion(object):
 
     New version compatible both with CSR and LUT...
     """
-    def __init__(self, detector="detector", shape=None, method="LUT", device=None):
+    def __init__(self, detector="detector", shape=None, method="LUT", device=None, workgroup=8):
         """
         @param detector: detector instance or detector name
+        @param shape: shape of the output image 
+        @param method: "lut" or "csr", the former is faster
+        @param device: Name of the device: None for OpenMP, "cpu" or "gou" or the id of the OpenCL device a 2-tuple of integer
+        @param workgroup: workgroup size for CSR on OpenCL
         """
         if type(detector) in types.StringTypes:
             self.detector = detectors.detector_factory(detector)
@@ -80,12 +84,20 @@ class Distortion(object):
         self.integrator = None
         self.method = method.lower()
         self.device = device
+        self.workgroup = int(workgroup)
 
     def __repr__(self):
         return os.linesep.join(["Distortion correction %s on device %s for detector shape %s:" % (self.method, self.device, self.shape),
                                 self.detector.__repr__()])
 
-    def reset(self, method=None, device=None):
+    def reset(self, method=None, device=None, workgroup=None):
+        """
+        reset the distortion correction and re-calculate the look-up table
+        
+        @param method: can be "lut" or "csr", "lut" looks faster
+        @param device: can be None, "cpu" or "gpu" or the id as a 2-tuple of integer
+        @param worgroup: enforce the workgroup size for CSR. 
+        """
         with self._sem:
             self.max_size = None
             self.pos = None
@@ -96,6 +108,9 @@ class Distortion(object):
                 self.method = method.lower()
             if device is not None:
                 self.device = device
+            if workgroup is not None:
+                self.workgroup = int(workgroup)
+
         self.calc_init()
 
     @timeit
@@ -173,7 +188,7 @@ class Distortion(object):
                     self.integrator = ocl_azim_lut.OCL_LUT_Integrator(self.lut, self.shape[0] * self.shape[1], devicetype=self.device)
                 else:
                     self.integrator = ocl_azim_csr.OCL_CSR_Integrator(self.lut, self.shape[0] * self.shape[1], devicetype=self.device,
-                                                                      block_size=8)
+                                                                      block_size=self.workgroup)
             else:
                 if self.method == "lut":
                     self.integrator = ocl_azim_lut.OCL_LUT_Integrator(self.lut, self.shape[0] * self.shape[1],
@@ -181,7 +196,7 @@ class Distortion(object):
                 else:
                     self.integrator = ocl_azim_csr.OCL_CSR_Integrator(self.lut, self.shape[0] * self.shape[1],
                                                                 platformid=self.device[0], deviceid=self.device[1],
-                                                                block_size=8)
+                                                                block_size=self.workgroup)
     @timeit
     def calc_LUT(self):
         if self.max_size is None:

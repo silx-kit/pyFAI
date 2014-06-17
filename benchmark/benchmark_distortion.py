@@ -31,8 +31,8 @@ splinefile = utilstest.UtilsTest.getimage("1900/frelon.spline")
 
 detector = pyFAI.detectors.FReLoN(splinefile)
 
-repeat = 3
-number = 10
+repeat = 1
+number = 1
 
 print("Number of iteration: %s average over %s processing" % (repeat, number))
 for method in ("LUT","CSR"):
