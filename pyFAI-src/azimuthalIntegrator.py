@@ -223,8 +223,8 @@ class AzimuthalIntegrator(Geometry):
 
         This method combine two masks (dynamic mask from *data &
         dummy* and *mask*) to generate a new one with the 'or' binary
-        operation.  One can adjuste the level, with the *dummy* and
-        the *delta_dummy* parameter, when you considere the *data*
+        operation.  One can adjust the level, with the *dummy* and
+        the *delta_dummy* parameter, when you consider the *data*
         values needs to be masked out.
 
         This method can work in two different *mode*:
@@ -247,7 +247,7 @@ class AzimuthalIntegrator(Geometry):
         else:
             mask = mask.astype(bool)
         if mask.sum(dtype=int) > mask.size // 2:
-            logger.debug("Mask likely to be inverted as more"
+            logger.warning("Mask likely to be inverted as more"
                          " than half pixel are masked !!!")
             numpy.logical_not(mask, mask)
         if (mask.shape != shape):
