@@ -422,9 +422,6 @@ csr_integrate_padded(	const 	__global	float	*weights,
     }
 };//end kernel
 
-=======
-
-Correct an image based on the look-up table calculated ...
 /**
  * \brief Performs distortion corrections on an image using a LUT in CSR form
  *
@@ -438,14 +435,14 @@ Correct an image based on the look-up table calculated ...
 
 __kernel void
 csr_integrate_dis(  const   __global    float   *weights,
-                const   __global    float   *coefs,
-                const   __global    int     *row_ind,
-                const   __global    int     *col_ptr,
-                const               int     do_dummy,
-                const               float   dummy,
-                        __global    float   *outData,
-                        __global    float   *outCount,
-                        __global    float   *outMerge
+                    const   __global    float   *coefs,
+                    const   __global    int     *row_ind,
+                    const   __global    int     *col_ptr,
+                    const               int     do_dummy,
+                    const               float   dummy,
+                            __global    float   *outData,
+                            __global    float   *outCount,
+                            __global    float   *outMerge
                 )
 {
     int thread_id_loc = get_local_id(0);
