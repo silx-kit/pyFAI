@@ -38,7 +38,7 @@ print("Number of iteration: %s average over %s processing" % (repeat, number))
 for method in ("LUT","CSR"):
     for device in ("None", '"CPU"', '"GPU"'):
         for wg in [1, 2, 4, 8, 16, 32]:
-            if method != "CSR" and wg > 1:
+            if (method != "CSR" or device == "None")and wg > 1:
                 continue
             setup = """
 import pyFAI, pyFAI.distortion, numpy
