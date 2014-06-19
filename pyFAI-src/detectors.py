@@ -1073,8 +1073,7 @@ class ImXPadS10(Detector):
             self._pixel_edges = pixel_edges1, pixel_edges2
         return self._pixel_edges
 
-    @classmethod
-    def calc_mask(cls):
+    def calc_mask(self):
         """
         Calculate the mask
         """
