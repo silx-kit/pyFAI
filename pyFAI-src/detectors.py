@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2014"
+__date__ = "19/06/2014"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instanciate them
@@ -941,32 +941,101 @@ def _pixels_extract_coordinates(coordinates, pixels):
     return coordinates[pixels] if (pixels is not None) else coordinates
 
 
-class ImXPadS140(Detector):
+#class ImXPadS140(Detector):
+#    """
+#    ImXPad detector: ImXPad s140 detector with 2x7modules
+#    """
+#    MODULE_SIZE = (120, 80)  # number of pixels per module (y, x)
+#    MAX_SHAPE = (240, 560)  # max size of the detector
+#    PIXEL_SIZE = (130e-6, 130e-6)
+#    BORDER_PIXEL_SIZE_RELATIVE = 2.5
+#    force_pixel = True
+#    aliases = ["Imxpad S140"]
+#
+#    class __metaclass__(DetectorMeta):
+#
+#        @lazy_property
+#        def COORDINATES(cls):
+#            """
+#            cache used to store the coordinates of the y, x, detector
+#            pixels. These array are compute only once for all
+#            instances.
+#            """
+#            return tuple(_pixels_compute_center(cls._pixels_size(n, m, p))
+#                         for n, m, p in zip(cls.MAX_SHAPE,
+#                                            cls.MODULE_SIZE,
+#                                            cls.PIXEL_SIZE))
+#
+#    @classmethod
+#    def _pixels_size(cls, length, module_size, pixel_size):
+#        """
+#        given the length (in pixel) of the detector, the size of a
+#        module (in pixels) and the pixel_size (in meter). this method
+#        return the length of each pixels 0..length.
+#
+#        @param length: the number of pixel to compute
+#        @type length: int
+#        @param module_size: the number of pixel of one module
+#        @type module_size: int
+#        @param pixel_size: the size of one pixels (meter per pixel)
+#        @type length: float
+#
+#        @return: the coordinates of each pixels 0..length
+#        @rtype: ndarray
+#        """
+#        size = numpy.ones(length)
+#        n = length // module_size
+#        for i in range(1, n):
+#            size[i * module_size - 1] = 2.5
+#            size[i * module_size] = 2.5
+#        return pixel_size * size
+#
+#    def __init__(self, pixel1=130e-6, pixel2=130e-6):
+#        super(ImXPadS140, self).__init__(pixel1=pixel1, pixel2=pixel2)
+#
+#
+#    def __repr__(self):
+#        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
+#            (self.name, self.pixel1, self.pixel2)
+#
+#
+#    def calc_cartesian_positions(self, d1=None, d2=None):
+#        """
+#        Calculate the position of each pixel center in cartesian coordinate
+#        and in meter of a couple of coordinates.
+#        The half pixel offset is taken into account here !!!
+#
+#        @param d1: the Y pixel positions (slow dimension)
+#        @type d1: ndarray (1D or 2D)
+#        @param d2: the X pixel positions (fast dimension)
+#        @type d2: ndarray (1D or 2D)
+#
+#        @return: position in meter of the center of each pixels.
+#        @rtype: ndarray
+#
+#        d1 and d2 must have the same shape, returned array will have
+#        the same shape.
+#
+#        """
+#        return tuple(_pixels_extract_coordinates(coordinates, pixels)
+#                     for coordinates, pixels in zip(ImXPadS140.COORDINATES,
+#                                                    (d1, d2)))
+
+class ImXPadS10(Detector):
     """
-    ImXPad detector: ImXPad s140 detector with 2x7modules
+    ImXPad detector: ImXPad s10 detector with 1x1modules
     """
     MODULE_SIZE = (120, 80)  # number of pixels per module (y, x)
-    MAX_SHAPE = (240, 560)  # max size of the detector
+    MAX_SHAPE = (120, 80)  # max size of the detector
     PIXEL_SIZE = (130e-6, 130e-6)
+    BORDER_SIZE_RELATIVE = 2.5
     force_pixel = True
-    aliases = ["Imxpad S140"]
+    aliases = ["Imxpad S10"]
+    PIXEL_EDGES = None # array of size max_shape+1: pixels are contiguous
+    MASK = None
 
-    class __metaclass__(DetectorMeta):
-
-        @lazy_property
-        def COORDINATES(cls):
-            """
-            cache used to store the coordinates of the y, x, detector
-            pixels. These array are compute only once for all
-            instances.
-            """
-            return tuple(_pixels_compute_center(cls._pixels_size(n, m, p))
-                         for n, m, p in zip(cls.MAX_SHAPE,
-                                            cls.MODULE_SIZE,
-                                            cls.PIXEL_SIZE))
-
-    @staticmethod
-    def _pixels_size(length, module_size, pixel_size):
+    @classmethod
+    def _calc_pixels_size(cls, length, module_size, pixel_size):
         """
         given the length (in pixel) of the detector, the size of a
         module (in pixels) and the pixel_size (in meter). this method
@@ -985,13 +1054,52 @@ class ImXPadS140(Detector):
         size = numpy.ones(length)
         n = length // module_size
         for i in range(1, n):
-            size[i * module_size - 1] = 2.5
-            size[i * module_size] = 2.5
+            size[i * module_size - 1] = cls.BORDER_SIZE_RELATIVE
+            size[i * module_size] = cls.BORDER_SIZE_RELATIVE
+        size[0] = cls.BORDER_SIZE_RELATIVE
+        size[-1] = cls.BORDER_SIZE_RELATIVE
         return pixel_size * size
 
-    def __init__(self, pixel1=130e-6, pixel2=130e-6):
-        super(ImXPadS140, self).__init__(pixel1=pixel1, pixel2=pixel2)
+    @classmethod
+    def calc_pixels_edges(cls):
+        """
+        Calculate the position of the pixel edges
+        """
+        if cls.PIXEL_EDGES is None:
+            pixel_size1 = cls._calc_pixels_size(cls.MAX_SHAPE[0], cls.MODULE_SIZE[0], cls.PIXEL_SIZE[0])
+            pixel_size2 = cls._calc_pixels_size(cls.MAX_SHAPE[1], cls.MODULE_SIZE[1], cls.PIXEL_SIZE[1])
+            pixel_edges1 = numpy.zeros(cls.MAX_SHAPE[0] + 1)
+            pixel_edges2 = numpy.zeros(cls.MAX_SHAPE[1] + 1)
+            pixel_edges1[1:] = numpy.cumsum(pixel_size1)
+            pixel_edges2[1:] = numpy.cumsum(pixel_size2)
+            cls.PIXEL_EDGES = pixel_edges1, pixel_edges2
+        return cls.PIXEL_EDGES
 
+    @classmethod
+    def calc_mask(cls):
+        """
+        Calculate the mask
+        """
+        dims = []
+        for dim in [0,1]:
+            pos = numpy.zeros(cls.MAX_SHAPE[dim], dtype=numpy.int8)
+            n = cls.MAX_SHAPE[dim] // cls.MODULE_SIZE[dim]
+            for i in range(1, n):
+                pos[i * cls.MODULE_SIZE[dim] - 1] = 1
+                pos[i * cls.MODULE_SIZE[dim]] = 1
+            pos[0] = 1
+            pos[-1] = 1
+            dims.append(pos)
+        dim1, dim2 = dims
+        dim1.shape = -1, 1
+        dim1.strides = dim1.strides[0],0
+        dim2.shape = 1, -1
+        dim2.strides = 0, dim2.strides[-1]
+        return (dim1 + dim2) > 0
+        
+        
+    def __init__(self, pixel1=130e-6, pixel2=130e-6):
+        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -1016,9 +1124,41 @@ class ImXPadS140(Detector):
         the same shape.
 
         """
-        return tuple(_pixels_extract_coordinates(coordinates, pixels)
-                     for coordinates, pixels in zip(ImXPadS140.COORDINATES,
-                                                    (d1, d2)))
+        edges1, edges2 = self.calc_pixels_edges()
+        p1 = numpy.interp(d1 + 0.5, numpy.arange(self.MAX_SHAPE[0] + 1), edges1, edges1[0], edges1[-1])
+        p2 = numpy.interp(d2 + 0.5, numpy.arange(self.MAX_SHAPE[1] + 1), edges2, edges2[0], edges2[-1])
+        return p1, p2
+
+
+class ImXPadS70(ImXPadS10):
+    """
+    ImXPad detector: ImXPad s70 detector with 1x7modules
+    """
+    MODULE_SIZE = (120, 80)  # number of pixels per module (y, x)
+    MAX_SHAPE = (120, 560)  # max size of the detector
+    PIXEL_SIZE = (130e-6, 130e-6)
+    BORDER_SIZE_RELATIVE = 2.5
+    force_pixel = True
+    aliases = ["Imxpad S70"]
+    PIXEL_EDGES = None # array of size max_shape+1: pixels are contiguous
+
+    def __init__(self, pixel1=130e-6, pixel2=130e-6):
+        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2)
+
+
+class ImXPadS140(ImXPadS10):
+    """
+    ImXPad detector: ImXPad s140 detector with 2x7modules
+    """
+    MODULE_SIZE = (120, 80)  # number of pixels per module (y, x)
+    MAX_SHAPE = (240, 560)  # max size of the detector
+    PIXEL_SIZE = (130e-6, 130e-6)
+    BORDER_PIXEL_SIZE_RELATIVE = 2.5
+    force_pixel = True
+    aliases = ["Imxpad S140"]
+
+    def __init__(self, pixel1=130e-6, pixel2=130e-6):
+        ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
 class Perkin(Detector):
