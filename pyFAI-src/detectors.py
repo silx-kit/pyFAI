@@ -1087,6 +1087,7 @@ class ImXPadS10(Detector):
             pos[0] = 1
             pos[-1] = 1
             dims.append(pos)
+        #This is just an "outer sum"
         dim1, dim2 = dims
         dim1.shape = -1, 1
         dim1.strides = dim1.strides[0],0
