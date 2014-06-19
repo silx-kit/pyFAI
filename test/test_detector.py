@@ -58,9 +58,10 @@ class TestDetector(unittest.TestCase):
         imxpad = detector_factory("imxpad_s140")
 
         # check that the cartesian coordinates is cached
-        self.assertEqual(hasattr(imxpad, 'COORDINATES'), False)
+        self.assertEqual(hasattr(imxpad, '_pixel_edges'), True)
+        self.assertEqual(imxpad._pixel_edges, None)
         y, x = imxpad.calc_cartesian_positions()
-        self.assertEqual(hasattr(imxpad, 'COORDINATES'), True)
+        self.assertEqual(imxpad._pixel_edges is None, False)
 
         # now check that the cached values are identical for each
         # method call
@@ -68,14 +69,14 @@ class TestDetector(unittest.TestCase):
         self.assertEqual(numpy.all(numpy.equal(y1, y)), True)
         self.assertEqual(numpy.all(numpy.equal(x1, x)), True)
 
-        # check that a few pixel positiopns are ok.
-        self.assertAlmostEqual(y[0], 130e-6 / 2.)
-        self.assertAlmostEqual(y[1], y[0] + 130e-6)
-        self.assertAlmostEqual(y[119], y[118] + 130e-6 * 3.5 / 2.)
+        # check that a few pixel positions are ok.
+        self.assertAlmostEqual(y[0, 0], 2.5 * 130e-6 / 2.)
+        self.assertAlmostEqual(y[3, 0], y[2, 0] + 130e-6)
+        self.assertAlmostEqual(y[119, 0], y[118, 0] + 130e-6 * 3.5 / 2.)
 
-        self.assertAlmostEqual(x[0], 130e-6 / 2.)
-        self.assertAlmostEqual(x[1], x[0] + 130e-6)
-        self.assertAlmostEqual(x[79], x[78] + 130e-6 * 3.5 / 2.)
+        self.assertAlmostEqual(x[0, 0], 2.5 * 130e-6 / 2.)
+        self.assertAlmostEqual(x[0, 3], x[0, 2] + 130e-6)
+        self.assertAlmostEqual(x[0, 79], x[0, 78] + 130e-6 * 3.5 / 2.)
 
     def test_detector_rayonix_sx165(self):
         """

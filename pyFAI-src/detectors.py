@@ -906,39 +906,39 @@ class Xpad_flat(Detector):
         return p1, p2
 
 
-def _pixels_compute_center(pixels_size):
-    """
-    given a list of pixel size, this method return the center of each
-    pixels. This method is generic.
-
-    @param pixels_size: the size of the pixels.
-    @type length: ndarray
-
-    @return: the center-coordinates of each pixels 0..length
-    @rtype: ndarray
-    """
-    center = pixels_size.cumsum()
-    tmp = center.copy()
-    center[1:] += tmp[:-1]
-    center /= 2.
-
-    return center
-
-
-def _pixels_extract_coordinates(coordinates, pixels):
-    """
-    given a list of pixel coordinates, return the correspondig
-    pixels coordinates extracted from the coodinates array.
-
-    @param coodinates: the pixels coordinates
-    @type coordinates: ndarray 1D (pixels -> coordinates)
-    @param pixels: the list of pixels to extract.
-    @type pixels: ndarray 1D(calibration) or 2D(integration)
-
-    @return: the pixels coordinates
-    @rtype: ndarray
-    """
-    return coordinates[pixels] if (pixels is not None) else coordinates
+#def _pixels_compute_center(pixels_size):
+#    """
+#    given a list of pixel size, this method return the center of each
+#    pixels. This method is generic.
+#
+#    @param pixels_size: the size of the pixels.
+#    @type length: ndarray
+#
+#    @return: the center-coordinates of each pixels 0..length
+#    @rtype: ndarray
+#    """
+#    center = pixels_size.cumsum()
+#    tmp = center.copy()
+#    center[1:] += tmp[:-1]
+#    center /= 2.
+#
+#    return center
+#
+#
+#def _pixels_extract_coordinates(coordinates, pixels):
+#    """
+#    given a list of pixel coordinates, return the correspondig
+#    pixels coordinates extracted from the coodinates array.
+#
+#    @param coodinates: the pixels coordinates
+#    @type coordinates: ndarray 1D (pixels -> coordinates)
+#    @param pixels: the list of pixels to extract.
+#    @type pixels: ndarray 1D(calibration) or 2D(integration)
+#
+#    @return: the pixels coordinates
+#    @rtype: ndarray
+#    """
+#    return coordinates[pixels] if (pixels is not None) else coordinates
 
 
 #class ImXPadS140(Detector):
@@ -1031,8 +1031,7 @@ class ImXPadS10(Detector):
     BORDER_SIZE_RELATIVE = 2.5
     force_pixel = True
     aliases = ["Imxpad S10"]
-    PIXEL_EDGES = None # array of size max_shape+1: pixels are contiguous
-    MASK = None
+
 
     @classmethod
     def _calc_pixels_size(cls, length, module_size, pixel_size):
@@ -1060,20 +1059,19 @@ class ImXPadS10(Detector):
         size[-1] = cls.BORDER_SIZE_RELATIVE
         return pixel_size * size
 
-    @classmethod
-    def calc_pixels_edges(cls):
+    def calc_pixels_edges(self):
         """
         Calculate the position of the pixel edges
         """
-        if cls.PIXEL_EDGES is None:
-            pixel_size1 = cls._calc_pixels_size(cls.MAX_SHAPE[0], cls.MODULE_SIZE[0], cls.PIXEL_SIZE[0])
-            pixel_size2 = cls._calc_pixels_size(cls.MAX_SHAPE[1], cls.MODULE_SIZE[1], cls.PIXEL_SIZE[1])
-            pixel_edges1 = numpy.zeros(cls.MAX_SHAPE[0] + 1)
-            pixel_edges2 = numpy.zeros(cls.MAX_SHAPE[1] + 1)
+        if self._pixel_edges is None:
+            pixel_size1 = self._calc_pixels_size(self.MAX_SHAPE[0], self.MODULE_SIZE[0], self.PIXEL_SIZE[0])
+            pixel_size2 = self._calc_pixels_size(self.MAX_SHAPE[1], self.MODULE_SIZE[1], self.PIXEL_SIZE[1])
+            pixel_edges1 = numpy.zeros(self.MAX_SHAPE[0] + 1)
+            pixel_edges2 = numpy.zeros(self.MAX_SHAPE[1] + 1)
             pixel_edges1[1:] = numpy.cumsum(pixel_size1)
             pixel_edges2[1:] = numpy.cumsum(pixel_size2)
-            cls.PIXEL_EDGES = pixel_edges1, pixel_edges2
-        return cls.PIXEL_EDGES
+            self._pixel_edges = pixel_edges1, pixel_edges2
+        return self._pixel_edges
 
     @classmethod
     def calc_mask(cls):
@@ -1082,11 +1080,11 @@ class ImXPadS10(Detector):
         """
         dims = []
         for dim in [0,1]:
-            pos = numpy.zeros(cls.MAX_SHAPE[dim], dtype=numpy.int8)
-            n = cls.MAX_SHAPE[dim] // cls.MODULE_SIZE[dim]
+            pos = numpy.zeros(self.MAX_SHAPE[dim], dtype=numpy.int8)
+            n = self.MAX_SHAPE[dim] // self.MODULE_SIZE[dim]
             for i in range(1, n):
-                pos[i * cls.MODULE_SIZE[dim] - 1] = 1
-                pos[i * cls.MODULE_SIZE[dim]] = 1
+                pos[i * self.MODULE_SIZE[dim] - 1] = 1
+                pos[i * self.MODULE_SIZE[dim]] = 1
             pos[0] = 1
             pos[-1] = 1
             dims.append(pos)
@@ -1100,6 +1098,7 @@ class ImXPadS10(Detector):
         
     def __init__(self, pixel1=130e-6, pixel2=130e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        self._pixel_edges = None # array of size max_shape+1: pixels are contiguous
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -1125,8 +1124,16 @@ class ImXPadS10(Detector):
 
         """
         edges1, edges2 = self.calc_pixels_edges()
-        p1 = numpy.interp(d1 + 0.5, numpy.arange(self.MAX_SHAPE[0] + 1), edges1, edges1[0], edges1[-1])
-        p2 = numpy.interp(d2 + 0.5, numpy.arange(self.MAX_SHAPE[1] + 1), edges2, edges2[0], edges2[-1])
+
+        if (d1 is None) or (d2 is None):
+            #Take the center of each pixel
+            d1 = 0.5 * (edges1[:-1] + edges1[1:])
+            d2 = 0.5 * (edges2[:-1] + edges2[1:])
+            p1 = numpy.outer(d1, numpy.ones(self.shape[1]))
+            p2 = numpy.outer(numpy.ones(self.shape[0]), d2)
+        else:
+            p1 = numpy.interp(d1 + 0.5, numpy.arange(self.MAX_SHAPE[0] + 1), edges1, edges1[0], edges1[-1])
+            p2 = numpy.interp(d2 + 0.5, numpy.arange(self.MAX_SHAPE[1] + 1), edges2, edges2[0], edges2[-1])
         return p1, p2
 
 
