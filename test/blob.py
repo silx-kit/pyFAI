@@ -49,7 +49,7 @@ def image_test_rings():
         img += numpy.exp(-(r - radius) ** 2 / (2 * (sigma * sigma)))
     
     img *= modulation
-    img = add_noise(img, 0.1)
+    img = add_noise(img, 0.0)
     return img
 
 def add_noise(img,rate):
