@@ -38,7 +38,7 @@ import numpy
 from scipy.optimize         import fmin
 from scipy.ndimage.filters  import median_filter
 from scipy.ndimage          import label
-import pylab
+import matplotlib;matplotlib.use('GTK');import pylab
 import fabio
 from .utils import gaussian_filter, binning, unBinning, deprecated, relabel, percentile
 from .bilinear import Bilinear

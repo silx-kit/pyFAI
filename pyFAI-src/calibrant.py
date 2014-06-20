@@ -203,7 +203,7 @@ class Calibrant(object):
             idx = None
         return idx
 
-    def fake_calibration_image(self, ai, Imax=1.0, U=0, V=0, W=0.0001):
+    def fake_calibration_image(self, ai, shape=None, Imax=1.0, U=0, V=0, W=0.0001):
         """
         Generates a fake calibration image from an azimuthal integrator
         
@@ -212,7 +212,13 @@ class Calibrant(object):
         @param U, V, W: width of the peak (FWHM = Utan(th)^2 + Vtan(th) + W)  
         
         """
-        shape = ai.detector.max_shape
+        if shape is None:
+            if ai.detector.shape:
+                shape = ai.detector.shape
+            elif ai.detector.max_shape:
+                 shape = ai.detector.max_shape
+        if shape is None:
+            raise RuntimeError("No shape available")
         tth = ai.twoThetaArray(shape)
         tth_min = tth.min()
         tth_max = tth.max()

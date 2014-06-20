@@ -43,7 +43,7 @@ logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 
 if logger.getEffectiveLevel() <= logging.INFO:
-    import pylab
+    import matplotlib;matplotlib.use('GTK');import pylab
 
 class TestFlat1D(unittest.TestCase):
     shape = 640, 480

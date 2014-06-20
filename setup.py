@@ -49,14 +49,10 @@ from distutils.sysconfig import get_python_lib
 from distutils.command.install_data import install_data
 
 ################################################################################
-# Remove MANIFEST file ... it needs to be re-generated on the fly
+# Check for Cython
 ################################################################################
 if op.isfile("MANIFEST"):
     os.unlink("MANIFEST")
-
-################################################################################
-# Check for Cython
-################################################################################
 try:
     from Cython.Distutils import build_ext
     CYTHON = True
@@ -124,7 +120,6 @@ if ("sdist" in sys.argv):
 # pyFAI extensions
 # ###############################################################################
 cython_modules = [os.path.splitext(os.path.basename(i))[0] for i in glob.glob("src/*.pyx")]
-
 src = dict([(ext, join("src", ext + cython_c_ext)) for ext in cython_modules])
 
 _geometry_dic = dict(name="_geometry",
@@ -149,6 +144,16 @@ histogram_dic = dict(name="histogram",
 splitPixel_dic = dict(name="splitPixel",
                  include_dirs=get_numpy_include_dirs(),
                  sources=[src['splitPixel']],
+                 )
+
+splitPixelFull_dic = dict(name="splitPixelFull",
+                 include_dirs=get_numpy_include_dirs(),
+                 sources=[src['splitPixelFull']],
+                 )
+
+splitPixelFullLUT_dic = dict(name="splitPixelFullLUT",
+                 include_dirs=get_numpy_include_dirs(),
+                 sources=[src['splitPixelFullLUT']],
                  )
 
 splitBBox_dic = dict(name="splitBBox",
@@ -200,6 +205,7 @@ _bispev_dic = dict(name="_bispev",
                         sources=[src['_bispev'] ],
                         extra_compile_args=['openmp'],
                         extra_link_args=['openmp'],
+
                         )
 
 _convolution_dic = dict(name="_convolution",
@@ -219,6 +225,13 @@ _blob_dic = dict(name="_blob",
 morphology_dic = dict(name="morphology",
                     include_dirs=get_numpy_include_dirs(),
                     sources=[src['morphology']],
+#                    extra_compile_args=["openmp"],
+#                    extra_link_args=["openmp"]
+                    )
+
+marchingsquares_dic = dict(name="marchingsquares",
+                    include_dirs=get_numpy_include_dirs(),
+                    sources=[src['marchingsquares']],
 #                    extra_compile_args=["openmp"],
 #                    extra_link_args=["openmp"]
                     )
@@ -259,6 +272,7 @@ if sys.platform == "win32":
         if (filein + ".py") not in script_files:
             shutil.copyfile(filein, filein + ".py")
             script_files.append(filein + ".py")
+
 else:
     script_files = glob.glob("scripts/*")
 
@@ -413,10 +427,11 @@ This python module can be found on:
 http://pypi.python.org/pypi/pyopencl
 """)
 
+
 """
-################################################################################
+# ###############################################################################
 # check if OpenMP modules, freshly installed can import
-################################################################################
+# ###############################################################################
 pyFAI = None
 sys.path.insert(0, os.path.dirname(installDir))
 # print installDir
@@ -429,7 +444,7 @@ for mod in sys.modules.copy():
 try:
     import pyFAI
 except ImportError as E:
-    print("Unable to import pyFAI from system: %s" % E)
+    print("Unable to import pyFAI: %s" % E)
 else:
     print("PyFAI is installed in %s" % pyFAI.__file__)
     try:
@@ -438,5 +453,4 @@ else:
         print("PyFAI.histogram failed to import. It is likely there is an OpenMP error: %s" % E)
     else:
         print("OpenMP libraries were found and pyFAI.histogram was successfully imported")
-
 """

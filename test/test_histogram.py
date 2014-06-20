@@ -44,7 +44,7 @@ from pyFAI.histogram import histogram, histogram2d
 #histogram = sys.modules["pyFAI.histogram"].histogram
 #histogram2d = sys.modules["pyFAI.histogram"].histogram2d
 if logger.getEffectiveLevel() == logging.DEBUG:
-    import pylab
+    import matplotlib;matplotlib.use('GTK');import pylab
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 class test_histogram1d(unittest.TestCase):
     """basic test"""

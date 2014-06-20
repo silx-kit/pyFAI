@@ -42,7 +42,7 @@ pyFAI = sys.modules["pyFAI"]
 import pyFAI.utils
 
 if logger.getEffectiveLevel() <= logging.INFO:
-    import pylab
+    import matplotlib;matplotlib.use('GTK');import pylab
 import scipy.ndimage
 
 # TODO Test:

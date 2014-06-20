@@ -43,7 +43,7 @@ logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 
 if logger.getEffectiveLevel() <= logging.INFO:
-    import pylab
+    import matplotlib;matplotlib.use('GTK');import pylab
 
 class TestSaxs(unittest.TestCase):
     img = UtilsTest.getimage("1883/Pilatus1M.edf")

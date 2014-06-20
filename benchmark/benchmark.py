@@ -20,6 +20,8 @@ except ImportError:
 #We use the locally build version of PyFAI
 pyFAI = utilstest.UtilsTest.pyFAI
 ocl = pyFAI.opencl.ocl
+import matplotlib
+matplotlib.use("GTK")
 from matplotlib import pyplot as plt
 plt.ion()
 

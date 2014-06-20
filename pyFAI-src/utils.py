@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/07/2013"
+__date__ = "11/06/2014"
 __status__ = "development"
 
 import logging, sys, types, os, glob
@@ -130,7 +130,12 @@ def timeit(func):
         a decorator that logs the execution time'''
         t1 = time.time()
         res = func(*arg, **kw)
-        timelog.warning("%s took %.3fs" % (func.func_name, time.time() - t1))
+        t2 = time.time()
+        if "func_name" in dir(func):
+            name = func.func_name
+        else:
+            name = str(func)
+        timelog.warning("%s took %.3fs" % (name, t2 - t1))
         return res
     wrapper.__name__ = func.__name__
     wrapper.__doc__ = func.__doc__

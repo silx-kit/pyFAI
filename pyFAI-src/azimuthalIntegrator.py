@@ -85,6 +85,13 @@ except ImportError as error:
     splitPixel = None
 
 try:
+    from . import splitPixelFull  # IGNORE:F0401
+except ImportError as error:
+    logger.error("Unable to import pyFAI.splitPixelFull"
+                  " full pixel splitting: %s" % error)
+    splitPixelFull = None
+
+try:
     from . import splitBBox  # IGNORE:F0401
 except ImportError as error:
     logger.error("Unable to import pyFAI.splitBBox"
@@ -216,8 +223,8 @@ class AzimuthalIntegrator(Geometry):
 
         This method combine two masks (dynamic mask from *data &
         dummy* and *mask*) to generate a new one with the 'or' binary
-        operation.  One can adjuste the level, with the *dummy* and
-        the *delta_dummy* parameter, when you considere the *data*
+        operation.  One can adjust the level, with the *dummy* and
+        the *delta_dummy* parameter, when you consider the *data*
         values needs to be masked out.
 
         This method can work in two different *mode*:
@@ -240,7 +247,7 @@ class AzimuthalIntegrator(Geometry):
         else:
             mask = mask.astype(bool)
         if mask.sum(dtype=int) > mask.size // 2:
-            logger.debug("Mask likely to be inverted as more"
+            logger.warning("Mask likely to be inverted as more"
                          " than half pixel are masked !!!")
             numpy.logical_not(mask, mask)
         if (mask.shape != shape):
@@ -2407,39 +2414,74 @@ class AzimuthalIntegrator(Geometry):
 
 
         if (I is None) and ("splitpix" in method):
-            if splitPixel is None:
-                logger.warning("SplitPixel is not available,"
-                               " falling back on splitbbox histogram !")
-                method = "splitbbox"
-            else:
-                logger.debug("integrate1d uses SplitPixel implementation")
-                pos = self.array_from_unit(shape, "corner", unit)
-                qAxis, I, a, b = splitPixel.fullSplit1D(pos=pos,
-                                                        weights=data,
-                                                        bins=nbPt,
-                                                        pos0Range=radial_range,
-                                                        pos1Range=azimuth_range,
-                                                        dummy=dummy,
-                                                        delta_dummy=delta_dummy,
-                                                        mask=mask,
-                                                        dark=dark,
-                                                        flat=flat,
-                                                        solidangle=solidangle,
-                                                        polarization=polarization
-                                                        )
-                if error_model == "azimuthal":
-                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
-                if variance is not None:
-                    _, var1d, a, b = splitPixel.fullSplit1D(pos=pos,
-                                                            weights=variance,
+            if "full" in method:
+                if splitPixel is None:
+                    logger.warning("SplitPixelFull is not available,"
+                                " falling back on splitbbox histogram !")
+                    method = "splitbbox"
+                else:
+                    logger.debug("integrate1d uses SplitPixel implementation")
+                    pos = self.array_from_unit(shape, "corner", unit)
+                    qAxis, I, a, b = splitPixelFull.fullSplit1D(pos=pos,
+                                                            weights=data,
                                                             bins=nbPt,
                                                             pos0Range=radial_range,
                                                             pos1Range=azimuth_range,
                                                             dummy=dummy,
                                                             delta_dummy=delta_dummy,
                                                             mask=mask,
+                                                            dark=dark,
+                                                            flat=flat,
+                                                            solidangle=solidangle,
+                                                            polarization=polarization
                                                             )
-                    sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
+                    if error_model == "azimuthal":
+                        variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
+                    if variance is not None:
+                        _, var1d, a, b = splitPixelFull.fullSplit1D(pos=pos,
+                                                                weights=variance,
+                                                                bins=nbPt,
+                                                                pos0Range=radial_range,
+                                                                pos1Range=azimuth_range,
+                                                                dummy=dummy,
+                                                                delta_dummy=delta_dummy,
+                                                                mask=mask,
+                                                                )
+                        sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
+            else:
+                if splitPixel is None:
+                    logger.warning("SplitPixel is not available,"
+                                " falling back on splitbbox histogram !")
+                    method = "splitbbox"
+                else:
+                    logger.debug("integrate1d uses SplitPixel implementation")
+                    pos = self.array_from_unit(shape, "corner", unit)
+                    qAxis, I, a, b = splitPixel.fullSplit1D(pos=pos,
+                                                            weights=data,
+                                                            bins=nbPt,
+                                                            pos0Range=radial_range,
+                                                            pos1Range=azimuth_range,
+                                                            dummy=dummy,
+                                                            delta_dummy=delta_dummy,
+                                                            mask=mask,
+                                                            dark=dark,
+                                                            flat=flat,
+                                                            solidangle=solidangle,
+                                                            polarization=polarization
+                                                            )
+                    if error_model == "azimuthal":
+                        variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
+                    if variance is not None:
+                        _, var1d, a, b = splitPixel.fullSplit1D(pos=pos,
+                                                                weights=variance,
+                                                                bins=nbPt,
+                                                                pos0Range=radial_range,
+                                                                pos1Range=azimuth_range,
+                                                                dummy=dummy,
+                                                                delta_dummy=delta_dummy,
+                                                                mask=mask,
+                                                                )
+                        sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
 
         if (I is None) and ("bbox" in method):
             if splitBBox is None:

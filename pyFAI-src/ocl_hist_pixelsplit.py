@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://forge.epn-campus.eu/projects/azimuthal
+#             https://github.com/kif/pyFAI
 #
-#    File: "$Id$"
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
+#                            Giannis Ashiotis
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -23,10 +23,10 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-__author__ = "Jerome Kieffer"
+__authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "GPLv3"
-__date__ = "18/10/2012"
-__copyright__ = "2012, ESRF, Grenoble"
+__date__ = "04/04/2014"
+__copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import os, gc, logging
@@ -36,6 +36,7 @@ import numpy
 from .opencl import ocl, pyopencl
 from .splitBBoxLUT import HistoBBox1d
 from .utils import get_cl_file
+from pyopencl import array
 if pyopencl:
     mf = pyopencl.mem_flags
 else:
@@ -46,19 +47,18 @@ except:
     from zlib import crc32
 logger = logging.getLogger("pyFAI.ocl_azim_csr")
 
-class OCL_CSR_Integrator(object):
-    def __init__(self, lut, image_size, devicetype="all",
-                 block_size=32,
-                 platformid=None, deviceid=None,
+class OCL_Hist_Pixelsplit(object):
+    def __init__(self, pos, bins, image_size, pos0Range=None, pos1Range=None, devicetype="all",
+                 padded=False, block_size=32,
+                 platformid=None, deviceid=None, 
                  checksum=None, profile=False):
         """
         @param lut: 3-tuple of arrays 
             data: coefficient of the matrix in a 1D vector of float32 - size of nnz
             indices: Column index position for the data (same size as data) 
             indptr: row pointer indicates the start of a given row. len nbin+1
-        @param image_size: 
+        @param image_size: size of the image (for pre-processing)
         @param devicetype: can be "cpu","gpu","acc" or "all"
-        @param block_size: the chosen size for WORKGROUP_SIZE
         @param platformid: number of the platform as given by clinfo
         @type platformid: int
         @param deviceid: number of the device as given by clinfo
@@ -67,19 +67,34 @@ class OCL_CSR_Integrator(object):
         @param profile: store profiling elements
         """
         self.BLOCK_SIZE = block_size  # query for warp size
+        self.padded = padded
         self._sem = threading.Semaphore()
-        self._data = lut[0]
-        self._indices = lut[1]
-        self._indptr = lut[2]
-        self.bins = self._indptr.shape[0] - 1
-        if self._data.shape[0] != self._indices.shape[0]:
-            raise RuntimeError("data.shape[0] != indices.shape[0]")
-        self.data_size = self._data.shape[0]
+        self.pos = pos
+        self.bins = bins
+        self.pos_size = pos.size
         self.size = image_size
+        if self.pos_size != 8 * self.size:
+            raise RuntimeError("pos.size != 8 * image_size")
+        self.pos0Range = numpy.zeros(1, pyopencl.array.vec.float2) 
+        self.pos1Range = numpy.zeros(1, pyopencl.array.vec.float2)
+        if (pos0Range is not None) and (len(pos0Range) is 2):
+            self.pos0Range[0][0] = min(pos0Range)
+            self.pos0Range[0][1] = max(pos0Range)
+        else:
+            self.pos0Range[0][0] = -float("inf")
+            self.pos0Range[0][1] =  float("inf")
+            
+        if (pos1Range is not None) and (len(pos1Range) is 2):
+            self.pos1Range[0][0] = min(pos1Range)
+            self.pos1Range[0][1] = max(pos1Range)
+        else:
+            self.pos1Range[0][0] = -float("inf")
+            self.pos1Range[0][1] =  float("inf")
+            
         self.profile = profile
         if not checksum:
-            checksum = crc32(self._data)
-        self.on_device = {"data":checksum, "dark":None, "flat":None, "polarization":None, "solidangle":None}
+            checksum = crc32(self.pos)
+        self.on_device = {"pos":checksum, "dark":None, "flat":None, "polarization":None, "solidangle":None}
         self._cl_kernel_args = {}
         self._cl_mem = {}
         self.events = []
@@ -99,8 +114,9 @@ class OCL_CSR_Integrator(object):
         self.wdim_bins = (self.bins * self.BLOCK_SIZE),
         self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
         try:
-            self._ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
-            if self.profile:
+            #self._ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
+            self._ctx = pyopencl.create_some_context()
+            if self.profile:         
                 self._queue = pyopencl.CommandQueue(self._ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
             else:
                 self._queue = pyopencl.CommandQueue(self._ctx)
@@ -109,18 +125,25 @@ class OCL_CSR_Integrator(object):
             self._set_kernel_arguments()
         except pyopencl.MemoryError as error:
             raise MemoryError(error)
-#        if self.device_type == "CPU":
-#            ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["data"], data)
-#            ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indices"], indices)
-#            ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indptr"], indptr)
-#        else:
-        ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["data"], self._data)
-        if self.profile: self.events.append(("copy Coefficient data",ev))
-        ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indices"], self._indices)
-        if self.profile: self.events.append(("copy Row Index data",ev))
-        ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indptr"], self._indptr)
-        if self.profile: self.events.append(("copy Column Pointer data",ev))
+        ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["pos"], self.pos)
+        if self.profile: self.events.append(("copy pos data",ev))
+        reduction_wg_size = 256
+        reduce1 = self._program.reduce1(self._queue, (reduction_wg_size*reduction_wg_size,), (reduction_wg_size,), *self._cl_kernel_args["reduce1"])
+        self.events.append(("reduce1",reduce1))
+        reduce2 = self._program.reduce2(self._queue, (reduction_wg_size,), (reduction_wg_size,), *self._cl_kernel_args["reduce2"])
+        self.events.append(("reduce2",reduce2))
+        
+        result = numpy.ndarray(4,dtype=numpy.float32)
+        pyopencl.enqueue_copy(self._queue,result, self._cl_mem["minmax"])
+        print result
+        min0 = pos[:, :, 0].min()
+        max0 = pos[:, :, 0].max()
+        min1 = pos[:, :, 1].min()
+        max1 = pos[:, :, 1].max()
+        minmax=(min0,max0,min1,max1)
 
+        print minmax
+       
     def __del__(self):
         """
         Destructor: release all buffers
@@ -148,10 +171,9 @@ class OCL_CSR_Integrator(object):
         size_of_int = numpy.dtype(numpy.int32).itemsize
         size_of_long = numpy.dtype(numpy.int64).itemsize
 
-        ualloc  = (self.size * size_of_float) * 5
-        ualloc += (self.size * size_of_short)
-        ualloc += (self.data_size * (size_of_float + size_of_int))
-        ualloc += ((self.bins + 1) * size_of_int)
+        ualloc  = (self.pos_size * size_of_float)
+        ualloc += (4 * self.BLOCK_SIZE * size_of_float)
+        ualloc += (self.size * size_of_float) * 5
         ualloc += (self.bins * size_of_float) * 3
         memory = self.device.memory
         logger.info("%.3fMB are needed on device which has %.3fMB" % (ualloc / 1.0e6, memory / 1.0e6))
@@ -159,12 +181,12 @@ class OCL_CSR_Integrator(object):
             raise MemoryError("Fatal error in _allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))
         # now actually allocate:
         try:
-            self._cl_mem["data"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * self.data_size)
-            self._cl_mem["indices"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_int * self.data_size)
-            self._cl_mem["indptr"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_int * (self.bins+1))
-            self._cl_mem["outData"] = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, size_of_float * self.bins)
-            self._cl_mem["outCount"] = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, size_of_float * self.bins)
-            self._cl_mem["outMerge"] = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, size_of_float * self.bins)
+            self._cl_mem["pos"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.pos_size)
+            self._cl_mem["preresult"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size=size_of_float * 4 * self.BLOCK_SIZE)
+            self._cl_mem["minmax"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size=size_of_float * 4)
+            self._cl_mem["outData"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size=size_of_float * self.bins)
+            self._cl_mem["outCount"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size=size_of_float * self.bins)
+            self._cl_mem["outMerge"] = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, size=size_of_float * self.bins)
             self._cl_mem["image_u16"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_short * self.size)
             self._cl_mem["image"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size=size_of_float * self.size)
             self._cl_mem["dark"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
@@ -187,14 +209,12 @@ class OCL_CSR_Integrator(object):
                 except pyopencl.LogicError:
                     logger.error("Error while freeing buffer %s" % buffer_name)
 
-
-
     def _compile_kernels(self, kernel_file=None):
         """
         Call the OpenCL compiler
         @param kernel_file: path tothe
         """
-        kernel_name = "ocl_azim_CSR.cl"
+        kernel_name = "ocl_hist_pixelsplit.cl"
         if kernel_file is None:
             if os.path.isfile(kernel_name):
                 kernel_file = os.path.abspath(kernel_name)
@@ -205,8 +225,8 @@ class OCL_CSR_Integrator(object):
         with open(kernel_file, "r") as kernelFile:
             kernel_src = kernelFile.read()
 
-        compile_options = "-D NBINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i -D ON_CPU=%i" % \
-                (self.bins, self.size, self.BLOCK_SIZE, int(self.device_type == "CPU"))
+        compile_options = "-D BINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i -D EPS=%f" % \
+                (self.bins, self.size, self.BLOCK_SIZE, numpy.finfo(numpy.float32).eps)
         logger.info("Compiling file %s with options %s" % (kernel_file, compile_options))
         try:
             self._program = pyopencl.Program(self._ctx, kernel_src).build(options=compile_options)
@@ -230,18 +250,19 @@ class OCL_CSR_Integrator(object):
         When setRange is called it replaces that argument with tthRange low and upper bounds. When unsetRange is called, the argument slot
         is reset to tth_min_max.
         """
+        self._cl_kernel_args["reduce1"] = [self._cl_mem["pos"], numpy.int32(self.pos_size), self._cl_mem["preresult"]]
+        self._cl_kernel_args["reduce2"] = [self._cl_mem["preresult"], self._cl_mem["minmax"]]
         self._cl_kernel_args["corrections"] = [self._cl_mem["image"], numpy.int32(0), self._cl_mem["dark"], numpy.int32(0), self._cl_mem["flat"], \
-                                             numpy.int32(0), self._cl_mem["solidangle"], numpy.int32(0), self._cl_mem["polarization"], \
-                                             numpy.int32(0), numpy.float32(0), numpy.float32(0)]
-        self._cl_kernel_args["csr_integrate"] = [self._cl_mem["image"], self._cl_mem["data"], self._cl_mem["indices"], self._cl_mem["indptr"],  \
-                                                numpy.int32(0), numpy.float32(0), \
-                                                self._cl_mem["outData"], self._cl_mem["outCount"], self._cl_mem["outMerge"]]
+                                              numpy.int32(0), self._cl_mem["solidangle"], numpy.int32(0), self._cl_mem["polarization"], \
+                                              numpy.int32(0), numpy.float32(0), numpy.float32(0)]
+        self._cl_kernel_args["integrate1"] = [self._cl_mem["pos"], self._cl_mem["image"], self._cl_mem["minmax"], numpy.int32(0), self.pos0Range[0], \
+                                            self.pos1Range[0], numpy.int32(0), numpy.float32(0), self._cl_mem["outData"], self._cl_mem["outCount"]]
+        self._cl_kernel_args["integrate2"] = [self._cl_mem["outData"], self._cl_mem["outCount"], self._cl_mem["outMerge"]]
         self._cl_kernel_args["memset_out"] = [self._cl_mem[i] for i in ["outData", "outCount", "outMerge"]]
         self._cl_kernel_args["u16_to_float"] = [self._cl_mem[i] for i in ["image_u16", "image"]]
         self._cl_kernel_args["s32_to_float"] = [self._cl_mem[i] for i in ["image", "image"]]
 
-    def integrate(self, data, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None,
-                            dark_checksum=None, flat_checksum=None, solidAngle_checksum=None, polarization_checksum=None):
+    def  integrate(self, data, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None, dark_checksum=None, flat_checksum=None, solidAngle_checksum=None, polarization_checksum=None):
         events = []
         with self._sem:
             if data.dtype == numpy.uint16:
@@ -271,8 +292,8 @@ class OCL_CSR_Integrator(object):
             self._cl_kernel_args["corrections"][9] = do_dummy
             self._cl_kernel_args["corrections"][10] = dummy
             self._cl_kernel_args["corrections"][11] = delta_dummy
-            self._cl_kernel_args["csr_integrate"][4] = do_dummy
-            self._cl_kernel_args["csr_integrate"][5] = dummy
+            self._cl_kernel_args["integrate1"][6] = do_dummy
+            self._cl_kernel_args["integrate1"][7] = dummy
 
             if dark is not None:
                 do_dark = numpy.int32(1)
@@ -303,8 +324,8 @@ class OCL_CSR_Integrator(object):
                     solidAngle_checksum = crc32(solidAngle)
                 if solidAngle_checksum != self.on_device["solidangle"]:
                     ev=pyopencl.enqueue_copy(self._queue, self._cl_mem["solidangle"], numpy.ascontiguousarray(solidAngle, dtype=numpy.float32))
-                events.append(("copy solidangle",ev))
-                self.on_device["solidangle"] = solidAngle_checksum
+	            events.append(("copy solidangle",ev))
+                    self.on_device["solidangle"] = solidAngle_checksum
             else:
                 do_solidAngle = numpy.int32(0)
             self._cl_kernel_args["corrections"][5] = do_solidAngle
@@ -324,23 +345,26 @@ class OCL_CSR_Integrator(object):
             if do_dummy + do_polarization + do_solidAngle + do_flat + do_dark > 0:
                 ev = self._program.corrections(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["corrections"])
                 events.append(("corrections",ev))
-            integrate = self._program.csr_integrate_dis(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["csr_integrate"])
-            events.append(("integrate",integrate))
+            integrate1 = self._program.integrate1(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["integrate1"])
+            events.append(("integrate1",integrate1))
             outMerge = numpy.empty(self.bins, dtype=numpy.float32)
             outData = numpy.empty(self.bins, dtype=numpy.float32)
             outCount = numpy.empty(self.bins, dtype=numpy.float32)
-            ev=pyopencl.enqueue_copy(self._queue, outMerge, self._cl_mem["outMerge"])
-            events.append(("copy D->H outMerge",ev))
             ev=pyopencl.enqueue_copy(self._queue, outData, self._cl_mem["outData"])
             events.append(("copy D->H outData",ev))
             ev=pyopencl.enqueue_copy(self._queue, outCount, self._cl_mem["outCount"])
             events.append(("copy D->H outCount",ev))
+            global_size_integrate2 = (self.bins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
+            integrate2 = self._program.integrate2(self._queue, global_size_integrate2, self.workgroup_size, *self._cl_kernel_args["integrate2"])
+            events.append(("integrate2",integrate2))
+            ev=pyopencl.enqueue_copy(self._queue, outMerge, self._cl_mem["outMerge"])
+            events.append(("copy D->H outMerge",ev))
             ev.wait()
-        if self.profile:
-            self.events += events
+        if self.profile: 
+            self.events+=events        
         return outMerge, outData, outCount
 
-    def log_profile(self):
+    def  log_profile(self):
         """
         If we are in profiling mode, prints out all timing for every single OpenCL call
         """
