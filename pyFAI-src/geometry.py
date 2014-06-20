@@ -921,6 +921,8 @@ class Geometry(object):
             out["rot1"] = self._rot1
             out["rot2"] = self._rot2
             out["rot3"] = self._rot3
+            if self._wavelength:
+                out["wavelength"] = self._wavelength
         return out
 
     def setPyFAI(self, **kwargs):
@@ -934,14 +936,14 @@ class Geometry(object):
                 self.detector = detectors.Detector()
             for key in ["dist", "poni1", "poni2",
                         "rot1", "rot2", "rot3",
-                        "pixel1", "pixel2", "splineFile"]:
+                        "pixel1", "pixel2", "splineFile", "wavelength"]:
                 if key in kwargs:
                     setattr(self, key, kwargs[key])
             self.param = [self._dist, self._poni1, self._poni2,
                           self._rot1, self._rot2, self._rot3]
             self.chiDiscAtPi = True  # position of the discontinuity of chi in radians, pi by default
             self.reset()
-            self._wavelength = None
+#            self._wavelength = None
             self._oversampling = None
             if self.splineFile:
                 self.detector.set_splineFile(self.splineFile)
