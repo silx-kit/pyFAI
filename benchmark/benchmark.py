@@ -21,7 +21,7 @@ except ImportError:
 pyFAI = utilstest.UtilsTest.pyFAI
 ocl = pyFAI.opencl.ocl
 import matplotlib
-matplotlib.use("Qt4Agg")
+matplotlib.use("GTK")
 from matplotlib import pyplot as plt
 plt.ion()
 

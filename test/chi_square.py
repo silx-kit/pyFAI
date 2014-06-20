@@ -6,7 +6,7 @@
 
 import sys
 import glob
-import matplotlib;matplotlib.use('Qt4Agg');import pylab
+import matplotlib;matplotlib.use('GTK');import pylab
 pylab.ion()
 import numpy
 from math import sqrt

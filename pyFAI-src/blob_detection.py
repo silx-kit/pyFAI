@@ -543,7 +543,7 @@ class BlobDetection(object):
         gaussians and their first and second derivatives
         
         """
-        import matplotlib;matplotlib.use('Qt4Agg');import pylab
+        import matplotlib;matplotlib.use('GTK');import pylab
         i = 0
         kpx = self.keypoints.x
         kpy = self.keypoints.y
@@ -684,7 +684,7 @@ class BlobDetection(object):
         if len(self.keypoints) == 0:
             logger.warning("No keypoints yet: running process before display")
             self.process()
-        import matplotlib;matplotlib.use('Qt4Agg');import pylab
+        import matplotlib;matplotlib.use('GTK');import pylab
         f = pylab.figure()
         ax = f.add_subplot(1, 1, 1)
         ax.plot(self.keypoints.sigma, self.keypoints.I, '.r')

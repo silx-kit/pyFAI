@@ -73,7 +73,7 @@ t1 = time.time()
 a, b, c, d = integ.integrate(data)
 t2 = time.time()
 print "LUT speed-up:", ref_time / (integ_time)
-import matplotlib;matplotlib.use('Qt4Agg');import pylab
+import matplotlib;matplotlib.use('GTK');import pylab
 #plot(ee)
 pylab.plot(a, b, label="LUT")
 pylab.plot(ra, rb, label="Original")
