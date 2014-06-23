@@ -57,14 +57,18 @@ import posixpath
 import json
 try:
     import h5py
-except ImportError:
+except ImportError as error:
     h5py = None
-    logger.error("h5py is missing")
+    logger.error("h5py module missing")
+else:
+    h5py._errors.silence_errors()
+
+
 
 import fabio
 from . import units
 
-def getIsoTime(forceTime=None):
+def get_isotime(forceTime=None):
     """
     @param forceTime: enforce a given time (current by default)
     @type forceTime: float
@@ -78,6 +82,20 @@ def getIsoTime(forceTime=None):
     tz_h = localtime.tm_hour - gmtime.tm_hour
     tz_m = localtime.tm_min - gmtime.tm_min
     return "%s%+03i:%02i" % (time.strftime("%Y-%m-%dT%H:%M:%S", localtime), tz_h, tz_m)
+
+def is_hdf5(filename):
+    """
+    Check if a file is actually a HDF5 file
+    
+    @param filename: this file has better to exist
+    """
+    signature = [137, 72, 68, 70, 13, 10, 26, 10]
+    if not os.path.exists(filename):
+        raise IOError("No such file %s" % (filename))
+    with open(filename, "rb") as f:
+        sig = [ord(i) for i in f.read(10)]
+    return sig == signature
+
 
 class Writer(object):
     """
@@ -279,7 +297,7 @@ class HDF5Writer(Writer):
             name += " experiment"
             self.group["title"] = name
             self.group["program"] = "PyFAI"
-            self.group["start_time"] = getIsoTime()
+            self.group["start_time"] = get_isotime()
 
     def flush(self, radial=None, azimuthal=None):
         """
@@ -440,7 +458,7 @@ class AsciiWriter(Writer):
         filename = os.path.join(self.directory, self.prefix + (self.index_format % (self.start_index + index)) + self.extension)
         if filename:
             with open(filename, "w") as f:
-                f.write("# Processing time: %s%s" % (getIsoTime(), self.header))
+                f.write("# Processing time: %s%s" % (get_isotime(), self.header))
                 numpy.savetxt(f, data)
 
 class FabioWriter(Writer):
@@ -531,5 +549,39 @@ class FabioWriter(Writer):
         filename = os.path.join(self.directory, self.prefix + (self.index_format % (self.start_index + index)) + self.extension)
         if filename:
             with open(filename, "w") as f:
-                f.write("# Processing time: %s%s" % (getIsoTime(), self.header))
+                f.write("# Processing time: %s%s" % (get_isotime(), self.header))
                 numpy.savetxt(f, data)
+
+
+class Nexus(object):
+    """
+    Writer class to handle Nexus/HDF5 data
+    Manages:
+    entry
+        instrument
+            detector
+    """
+    def __init__(self, filename, mode="r"):
+        """
+        Constructor
+        
+        @param filename: name of the hdf5 file containing the nexus
+        @param mode: can be r or a
+        """
+        self.filename = os.path.abspath(filename)
+        self.mode = mode
+        if not h5py:
+            logger.error("h5py module missing: NeXus not supported")
+            raise RuntimeError("H5py module is missing")
+        if os.path.exists(self.path) and self.mode == "r":
+            self.h5 = h5py.File(self.filename, mode=self.mode)
+        else:
+            self.h5 = h5py.File(self.filename)
+        
+        
+    def get_last_entry(self):
+        """
+        retrieves the last entry
+        """
+        entries = [grp for grp in self.h5 if ("start_time" in grp and 
+

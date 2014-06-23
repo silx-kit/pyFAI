@@ -51,6 +51,9 @@ try:
     import fabio
 except ImportError:
     fabio = None
+
+from .io import h5py, is_hdf5
+
 epsilon = 1e-6
 
 
@@ -92,6 +95,8 @@ class Detector(object):
         @return: an instance of the right detector, set-up if possible
         @rtype: pyFAI.detectors.Detector
         """
+        if os.path.isfile(name):
+            return cls.from_file(name)
         name = name.lower()
         names = [name, name.replace(" ", "_")]
         for name in names:
@@ -102,7 +107,7 @@ class Detector(object):
                 return mydet
         else:
             msg = ("Detector %s is unknown !, "
-                   "please select one from %s" % (name, cls.registry.keys()))
+                   "please check if the filename exists or select one from %s" % (name, cls.registry.keys()))
             logger.error(msg)
             raise RuntimeError(msg)
 
@@ -400,6 +405,50 @@ class Detector(object):
             name = self.__class__.__name__
         return name
     name = property(get_name)
+
+    def save(self, filename):
+        """
+        Saves the detector description into a NeXus file, adapted from:
+        http://download.nexusformat.org/sphinx/classes/base_classes/NXdetector.html
+        Main differences:
+        
+            * differentiate pixel center from pixel corner offsets
+            * store all offsets are ndarray according to slow/fast dimention (not x, y) 
+        
+        @param filename: name of the file on the disc 
+        """
+        if not h5py:
+            logger.error("h5py module missing: NeXus detectors not supported")
+            raise RuntimeError("H5py module is missing")
+        did_exist = os.path.exists(path)
+        h5 = h5py.File(filename)
+        entries = [(grp, from_isotime(h5[grp + "/start_time"]))
+                    for grp in h5
+                    if ("start_time" in h5[grp] and  "NX_class" in h5[grp].attr and h5[grp].attr["NX_class"] == "NXentry")]
+        
+            
+        
+    def load(self, filename):
+        """
+        Loads the detector description from a NeXus file, adapted from:
+        http://download.nexusformat.org/sphinx/classes/base_classes/NXdetector.html
+        
+        @param filename: name of the file on the disc 
+        """
+        if not h5py:
+            logger.error("h5py module missing: NeXus detectors not supported")
+            raise RuntimeError("H5py module is missing")
+        raise NotImplementedError("work in progress")
+
+
+    @classmethod
+    def from_file(cls, filename):
+        """
+        Create a detector instance from its NeXsus definition on 
+        """
+        inst = cls()
+        inst.load(filename)
+        return inst
 
 class Pilatus(Detector):
     """
