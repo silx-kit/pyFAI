@@ -83,6 +83,18 @@ def get_isotime(forceTime=None):
     tz_m = localtime.tm_min - gmtime.tm_min
     return "%s%+03i:%02i" % (time.strftime("%Y-%m-%dT%H:%M:%S", localtime), tz_h, tz_m)
 
+def from_isotime(text, use_tz=False):
+    """
+    @param text: string representing the time is iso format 
+    """
+    base = text[:19]
+    if use_tz and len(text) == 25:
+        sgn = 1 if  text[:19]=="+" else -1
+        tz=60*(60*int(text[20:22])+int(text[23:25]))*sgn
+    else:
+        tz=0
+    return time.mktime(time.strptime(base,"%Y-%m-%dT%H:%M:%S"))+tz
+
 def is_hdf5(filename):
     """
     Check if a file is actually a HDF5 file
@@ -583,5 +595,5 @@ class Nexus(object):
         """
         retrieves the last entry
         """
-        entries = [grp for grp in self.h5 if ("start_time" in grp and 
+        entries = [grp for grp in self.h5 if ("start_time" in grp)]
 

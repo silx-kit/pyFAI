@@ -142,8 +142,6 @@ class Detector(object):
         if splineFile:
             self.set_splineFile(splineFile)
 
-
-
     def __repr__(self):
         if (self._pixel1 is None) or (self._pixel2 is None):
             return "Undefined detector"
@@ -439,7 +437,21 @@ class Detector(object):
             logger.error("h5py module missing: NeXus detectors not supported")
             raise RuntimeError("H5py module is missing")
         raise NotImplementedError("work in progress")
+        self.aliases = [h5.name]
 
+
+class NexusDetector(Detector):
+    """
+    Class representing a 2D detector loaded from a NeXus file
+    """
+    def __init__(self, filename):
+        Detector.__init__(self)
+        self.load(filename)
+        self._filename = filename
+
+    def __repr__(self):
+        return "Nexus detector %s\t file: %s\t PixelSize= %.3e, %.3e m" % \
+            (self.name, self._filename, self._pixel1, self._pixel2)
 
     @classmethod
     def from_file(cls, filename):
