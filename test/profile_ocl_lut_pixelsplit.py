@@ -44,7 +44,7 @@ d_minmax = cl.Buffer(ctx, mf.READ_WRITE, 4*4)
 with open("../openCL/ocl_lut_pixelsplit.cl", "r") as kernelFile:
     kernel_src = kernelFile.read()
 
-compile_options = "-D BINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i -D EPS=%f" % \
+compile_options = "-D BINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i -D EPS=%f -g" % \
                 (bins, size, workgroup_size, numpy.finfo(numpy.float32).eps)
 
 program = cl.Program(ctx, kernel_src).build(options=compile_options)
@@ -135,13 +135,13 @@ cl.enqueue_copy(queue,outMerge, d_outMerge)
 
 
 
-#ref = ai.xrpd_LUT(data, 1000)[1]
+ref = ai.xrpd_LUT(data, 1000)[1]
 
 
-##assert(numpy.allclose(ref,outMerge))
+#assert(numpy.allclose(ref,outMerge))
 
 plot(outMerge, label="ocl_hist")
-#plot(ref, label="ref")
+plot(ref, label="ref")
 ##plot(abs(ref-outMerge)/outMerge, label="ocl_csr_fullsplit")
 legend()
 show()
