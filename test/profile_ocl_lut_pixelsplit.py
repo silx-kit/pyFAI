@@ -93,6 +93,9 @@ lut_size = int(lutsize[0])
 d_indices  = cl.Buffer(ctx, mf.READ_WRITE, 4*lut_size)
 d_data     = cl.Buffer(ctx, mf.READ_WRITE, 4*lut_size)
 
+d_check_atomics = cl.Buffer(ctx, mf.READ_WRITE, 4*lut_size)
+
+
 program.memset_out_int(queue, (1024,), (workgroup_size,), d_outMax)
 
 d_outData  = cl.Buffer(ctx, mf.READ_WRITE, 4*bins)
@@ -100,11 +103,12 @@ d_outCount = cl.Buffer(ctx, mf.READ_WRITE, 4*bins)
 d_outMerge = cl.Buffer(ctx, mf.READ_WRITE, 4*bins)
 memset_size = (bins + workgroup_size - 1) & ~(workgroup_size - 1),
 
-program.lut3(queue, global_size, (workgroup_size,), d_pos.data, d_minmax, numpy.uint32(size), d_outMax, d_idx_ptr, d_indices, d_data)
+program.lut3(queue, global_size, (workgroup_size,), d_pos.data, d_minmax, numpy.uint32(size), d_outMax, d_idx_ptr, d_indices, d_data, d_check_atomics)
 
 
+check_atomics = numpy.ndarray(lut_size, dtype=numpy.int32)
 
-
+cl.enqueue_copy(queue, check_atomics, d_check_atomics)
 
 
 program.memset_out(queue, memset_size, (workgroup_size,), d_outData, d_outCount, d_outMerge)

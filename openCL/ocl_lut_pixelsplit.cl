@@ -391,13 +391,15 @@ void lut3(__global float8* pos,
           __global int*    outMax,
           __global int*    idx_ptr,
           __global int*    indices,
-          __global float*  data)
+          __global float*  data,
+          __global int*    check_atomics)
 {
     int global_index = get_global_id(0);
     if (global_index < length)
     {
 //         float pos0_min = fmax(fmin(pos0Range.x,pos0Range.y),minmax[0].s0);
 //         float pos0_max = fmin(fmax(pos0Range.x,pos0Range.y),minmax[0].s1);
+        int atomics = 0;
         float pos0_min = minmax[0].s0;
         float pos0_max = minmax[0].s1;
         pos0_max *= 1 + EPS;
@@ -446,6 +448,8 @@ void lut3(__global float8* pos,
             int k = atomic_add(&outMax[bin],1);
 //            if (idx_ptr[bin]+k >= idx_ptr[BINS])
 //                printf("%d  %d \n", idx_ptr[bin]+k, idx_ptr[BINS]);
+            check_atomics[atomics] = idx_ptr[bin]+k;
+            atomics++;
             indices[idx_ptr[bin]+k] = global_index;
             data[idx_ptr[bin]+k] = tmp;
         }
