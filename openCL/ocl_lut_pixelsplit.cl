@@ -391,8 +391,7 @@ void lut3(__global float8* pos,
           __global int*    outMax,
           __global int*    idx_ptr,
           __global int*    indices,
-          __global float*  data,
-          __global int*    check_atomics)
+          __global float*  data)
 {
     int global_index = get_global_id(0);
     if (global_index < length)
@@ -401,7 +400,7 @@ void lut3(__global float8* pos,
 //         float pos0_max = fmin(fmax(pos0Range.x,pos0Range.y),minmax[0].s1);
         float pos0_min = minmax[0].s0;
         float pos0_max = minmax[0].s1;
-   //     pos0_max *= 1 + EPS;
+        pos0_max *= 1 + EPS;
        // pos0_max *= 1.1;
         
         float delta = (pos0_max - pos0_min) / BINS;
@@ -449,7 +448,7 @@ void lut3(__global float8* pos,
             float tmp = fabs(partialArea) * oneOverPixelArea;
             int k = atomic_add(&outMax[bin],1);
 //             if (bin == BINS)
-//                 printf("%d  %d  %f  %f\n", bin0_min, bin0_max, min0, max0);
+//            printf("%d  %d  %f  %f\n", bin0_min, bin0_max, min0, max0);
 //            check_atomics[atomics] = idx_ptr[bin]+k;
             indices[idx_ptr[bin]+k] = global_index;
             data[idx_ptr[bin]+k] = tmp;

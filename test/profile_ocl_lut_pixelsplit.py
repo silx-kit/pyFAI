@@ -68,8 +68,10 @@ print minmax
 print result
 
 
+memset_size = (bins + workgroup_size - 1) & ~(workgroup_size - 1),
+
 d_outMax  = cl.Buffer(ctx, mf.READ_WRITE, 4*bins)
-program.memset_out_int(queue, (1024,), (workgroup_size,), d_outMax)
+program.memset_out_int(queue, memset_size, (workgroup_size,), d_outMax)
 
 
 global_size = (size + workgroup_size - 1) & ~(workgroup_size - 1),
@@ -77,9 +79,9 @@ global_size = (size + workgroup_size - 1) & ~(workgroup_size - 1),
 program.lut1(queue, global_size, (workgroup_size,), d_pos.data, d_minmax, numpy.uint32(size), d_outMax)
 
 
-#outMax_1  = numpy.ndarray(bins, dtype=numpy.int32)
+outMax_1  = numpy.ndarray(bins, dtype=numpy.int32)
 
-#cl.enqueue_copy(queue, outMax_1, d_outMax)
+cl.enqueue_copy(queue, outMax_1, d_outMax)
 
 
 d_idx_ptr = cl.Buffer(ctx, mf.READ_WRITE, 4*(bins+1))
@@ -102,12 +104,11 @@ d_data     = cl.Buffer(ctx, mf.READ_WRITE, 4*lut_size)
 d_check_atomics = cl.Buffer(ctx, mf.READ_WRITE, 4*lut_size)
 
 
-program.memset_out_int(queue, (1024,), (workgroup_size,), d_outMax)
+program.memset_out_int(queue, memset_size, (workgroup_size,), d_outMax)
 
 d_outData  = cl.Buffer(ctx, mf.READ_WRITE, 4*bins)
 d_outCount = cl.Buffer(ctx, mf.READ_WRITE, 4*bins)
 d_outMerge = cl.Buffer(ctx, mf.READ_WRITE, 4*bins)
-memset_size = (bins + workgroup_size - 1) & ~(workgroup_size - 1),
 
 program.lut3(queue, global_size, (workgroup_size,), d_pos.data, d_minmax, numpy.uint32(size), d_outMax, d_idx_ptr, d_indices, d_data, d_check_atomics)
 
@@ -125,7 +126,8 @@ program.memset_out(queue, memset_size, (workgroup_size,), d_outData, d_outCount,
 d_image = cl.array.to_device(queue, data)
 d_image_float = cl.Buffer(ctx, mf.READ_WRITE, 4*size)
 
-program.s32_to_float(queue, global_size, (workgroup_size,), d_image.data, d_image_float)
+#program.s32_to_float(queue, global_size, (workgroup_size,), d_image.data, d_image_float)  # Pilatus1M
+program.u16_to_float(queue, global_size, (workgroup_size,), d_image.data, d_image_float)  # halfccd
 
 program.csr_integrate(queue, (bins*workgroup_size,),(workgroup_size,), d_image_float, d_data, d_indices, d_idx_ptr, d_outData, d_outCount, d_outMerge)
 
