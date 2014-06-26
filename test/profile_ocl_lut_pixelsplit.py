@@ -19,8 +19,8 @@ from pyFAI import ocl_hist_pixelsplit
 #logger = utilstest.getLogger("profile")
 
 
-ai = pyFAI.load("testimages/Pilatus1M.poni")
-data = fabio.open("testimages/Pilatus1M.edf").data
+ai = pyFAI.load("testimages/halfccd.poni")
+data = fabio.open("testimages/halfccd.edf").data
 
 workgroup_size = 256
 bins = 1000
@@ -152,10 +152,10 @@ ref = ai.xrpd_LUT(data, 1000)[1]
 
 #assert(numpy.allclose(ref,outMerge))
 
-#plot(outMerge, label="ocl_hist")
-#plot(ref, label="ref")
+plot(outMerge, label="ocl_hist")
+plot(ref, label="ref")
 ##plot(abs(ref-outMerge)/outMerge, label="ocl_csr_fullsplit")
-#legend()
-#show()
-#raw_input()
+legend()
+show()
+raw_input()
 

@@ -401,8 +401,8 @@ void lut3(__global float8* pos,
 //         float pos0_max = fmin(fmax(pos0Range.x,pos0Range.y),minmax[0].s1);
         float pos0_min = minmax[0].s0;
         float pos0_max = minmax[0].s1;
-       // pos0_max *= 1 + EPS;
-        pos0_max *= 1.1;
+   //     pos0_max *= 1 + EPS;
+       // pos0_max *= 1.1;
         
         float delta = (pos0_max - pos0_min) / BINS;
         
@@ -436,6 +436,8 @@ void lut3(__global float8* pos,
         float oneOverPixelArea = 1.0 / areaPixel;
         for (int bin=bin0_min; bin < bin0_max+1; bin++)
         {
+            if (bin >= BINS)
+                continue;
             float A_lim = (pixel.s0<=bin)*(pixel.s0<=(bin+1))*bin + (pixel.s0>bin)*(pixel.s0<=(bin+1))*pixel.s0 + (pixel.s0>bin)*(pixel.s0>(bin+1))*(bin+1);
             float B_lim = (pixel.s2<=bin)*(pixel.s2<=(bin+1))*bin + (pixel.s2>bin)*(pixel.s2<=(bin+1))*pixel.s2 + (pixel.s2>bin)*(pixel.s2>(bin+1))*(bin+1);
             float C_lim = (pixel.s4<=bin)*(pixel.s4<=(bin+1))*bin + (pixel.s4>bin)*(pixel.s4<=(bin+1))*pixel.s4 + (pixel.s4>bin)*(pixel.s4>(bin+1))*(bin+1);
