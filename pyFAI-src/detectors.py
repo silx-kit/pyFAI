@@ -565,8 +565,8 @@ class Pilatus(Detector):
         Returns a generic mask for Pilatus detectors...
         """
         if self.max_shape is None:
-            raise NotImplementedError("Generic Pilatus detector does not know"
-                                      "the max size ...")
+            raise NotImplementedError("Generic Pilatus detector does not know "
+                                      "its max size ...")
         mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
         # workinng in dim0 = Y
         for i in range(self.MODULE_SIZE[0], self.max_shape[0],
@@ -665,6 +665,7 @@ class Pilatus300k(Pilatus):
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         super(Pilatus300k, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
+
 class Pilatus300kw(Pilatus):
     """
     Pilatus 300k-wide detector
@@ -701,6 +702,7 @@ class Pilatus6M(Pilatus):
     def __init__(self, pixel1=172e-6, pixel2=172e-6):
         super(Pilatus6M, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
+
 class Eiger(Detector):
     """
     Eiger detector: generic description containing mask algorithm
@@ -711,6 +713,10 @@ class Eiger(Detector):
 
     def __init__(self, pixel1=75e-6, pixel2=75e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
+
+    def __repr__(self):
+        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
+            (self.name, self._pixel1, self._pixel2)
 
     def calc_mask(self):
         """
@@ -836,6 +842,10 @@ class Fairchild(Detector):
     def __init__(self, pixel1=15e-6, pixel2=15e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
+    def __repr__(self):
+        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
+            (self.name, self._pixel1, self._pixel2)
+
 
 class Titan(Detector):
     """
@@ -847,6 +857,10 @@ class Titan(Detector):
     def __init__(self, pixel1=60e-6, pixel2=60e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
+    def __repr__(self):
+        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
+            (self.name, self._pixel1, self._pixel2)
+
 
 class Dexela2923(Detector):
     """
@@ -857,6 +871,10 @@ class Dexela2923(Detector):
     MAX_SHAPE = (3888, 3072)
     def __init__(self, pixel1=75e-6, pixel2=75e-6):
         super(Dexela2923, self).__init__(pixel1=pixel1, pixel2=pixel2)
+
+    def __repr__(self):
+        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
+            (self.name, self._pixel1, self._pixel2)
 
 
 class FReLoN(Detector):
@@ -874,6 +892,8 @@ class FReLoN(Detector):
             self.uniform_pixel = False
         else:
             self.max_shape = (2048, 2048)
+            self.pixel1 = 50e-6
+            self.pixel2 = 50e-6
         self.shape = self.max_shape
 
     def calc_mask(self):
@@ -881,7 +901,8 @@ class FReLoN(Detector):
         Returns a generic mask for Frelon detectors...
         All pixels which (center) turns to be out of the valid region are by default discarded
         """
-
+        if not self._splineFile:
+            return
         d1 = numpy.outer(numpy.arange(self.shape[0]), numpy.ones(self.shape[1])) + 0.5
         d2 = numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1])) + 0.5
         dX = self.spline.splineFuncX(d2, d1)
@@ -905,6 +926,10 @@ class Basler(Detector):
     def __init__(self, pixel=3.75e-6):
         super(Basler, self).__init__(pixel1=pixel, pixel2=pixel)
 
+    def __repr__(self):
+        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
+            (self.name, self._pixel1, self._pixel2)
+
 
 class Mar345(Detector):
 
@@ -927,6 +952,10 @@ class Mar345(Detector):
         x, y = numpy.ogrid[:self.shape[0], :self.shape[1]]
         mask = ((x + 0.5 - c[0]) ** 2 + (y + 0.5 - c[1]) ** 2) > (c[0]) ** 2
         return mask
+
+    def __repr__(self):
+        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
+            (self.name, self._pixel1, self._pixel2)
 
 
 class Xpad_flat(Detector):
@@ -1281,6 +1310,9 @@ class Perkin(Detector):
     def __init__(self, pixel=200e-6):
         super(Perkin, self).__init__(pixel1=pixel, pixel2=pixel)
 
+    def __repr__(self):
+        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
+            (self.name, self._pixel1, self._pixel2)
 
 class Rayonix(Detector):
     force_pixel = True
@@ -1317,6 +1349,9 @@ class Rayonix(Detector):
                           self.max_shape[1] // bin_size[1])
     binning = property(get_binning, set_binning)
 
+    def __repr__(self):
+        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
+            (self.name, self._pixel1, self._pixel2)
 
 class Rayonix133(Rayonix):
     """
@@ -1580,6 +1615,7 @@ class RayonixMx340hs(Rayonix):
         Rayonix.__init__(self, pixel1=88.5417e-6, pixel2=88.5417e-6)
         self.shape = (3840, 3840)
         self._binning = (2, 2)
+
 
 class RayonixSx30hs(Rayonix):
     """

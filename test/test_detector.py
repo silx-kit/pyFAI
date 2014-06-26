@@ -134,13 +134,9 @@ class TestDetector(unittest.TestCase):
             fname = os.path.join(tmpdir, det_name + ".h5")
             print fname
             det = detector_factory(det_name)
-            print det
-            try:
-                det.save(fname)
-            except NotImplementedError:
+            if (det.pixel1 is None) or (det.shape is None):
                 continue
-
-
+            det.save(fname)
             #todo: read back an ensure they are the same
 
 
