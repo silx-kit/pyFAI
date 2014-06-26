@@ -1204,7 +1204,7 @@ without human intervention (--no-gui and --no-interactive options).
                                          poni2=self.ai.poni2, rot1=self.ai.rot1,
                                          rot2=self.ai.rot2, rot3=self.ai.rot3,
                                          detector=self.ai.detector, calibrant=self.calibrant,
-                                         wavelength=self.ai._wavelength)
+                                         wavelength=self.wavelength)
         self.ai = self.geoRef
         self.geoRef.set_tolerance(10)
         AbstractCalibration.refine(self)
@@ -1550,14 +1550,14 @@ class MultiCalib(object):
             centerX = self.centerX
             centerY = self.centerY
             if "_array_data.header_contents" in fabimg.header:
-                headers = fabimg.header["_array_data.header_contents"].split()
-                if "Detector_distance" in headers:
-                    dist = float(headers[headers.index("Detector_distance") + 1])
-                if "Wavelength" in headers:
-                    wavelength = float(headers[headers.index("Wavelength") + 1]) * 1e-10
-                if "Beam_xy" in headers:
-                    centerX = float(headers[headers.index("Beam_xy") + 1][1:-1])
-                    centerY = float(headers[headers.index("Beam_xy") + 2][:-1])
+                headers = fabimg.header["_array_data.header_contents"].lower().split()
+                if "detector_distance" in headers:
+                    dist = float(headers[headers.index("detector_distance") + 1])
+                if "wavelength" in headers:
+                    wavelength = float(headers[headers.index("wavelength") + 1]) * 1e-10
+                if "beam_xy" in headers:
+                    centerX = float(headers[headers.index("beam_xy") + 1][1:-1])
+                    centerY = float(headers[headers.index("beam_xy") + 2][:-1])
             if dist is None:
                 digits = ""
                 for i in os.path.basename(fn):
