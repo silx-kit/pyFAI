@@ -594,48 +594,54 @@ class BlobDetection(object):
                 dxy = (Hxy.ravel() * patch.ravel()).sum()
                 H = numpy.array([[d2y, dxy], [dxy, d2x]])
                 val, vect = numpy.linalg.eig(H)
-                vals.append(val)
-                vects.append(vect)
+
 #                 print 'new point'
 #                 print x, y
 #                 print val
 #                 print vect
 #                 print numpy.dot(vect[0],vect[1])
                 e = numpy.abs(val[0] - val[1]) / numpy.abs(val[0] + val[1])
-                j +=1
+                j += 1
 #                 print j
 #                 print e
-                if val[0] < val[1]:
-                    pylab.annotate("", xy=(x + vect[0][0] * val[0], y + vect[0][1] * val[0]), xytext=(x, y),
+                if numpy.abs(val[1]) < numpy.abs(val[0]): # reorganisation des valeurs propres et vecteurs propres
+                    val[0],val[1] = val[1],val[0]
+                    vect = vect[-1::-1,:]
+
+                    
+                pylab.annotate("", xy=(x + vect[0][0] * val[0], y + vect[0][1] * val[0]), xytext=(x, y),
                                        arrowprops=dict(facecolor='red', shrink=0.05),)
-                else:
-                    pylab.annotate("", xy=(x + vect[1][0] * val[1], y + vect[1][1] * val[1]), xytext=(x, y),
+
+                pylab.annotate("", xy=(x + vect[1][0] * val[1], y + vect[1][1] * val[1]), xytext=(x, y),
                                        arrowprops=dict(facecolor='red', shrink=0.05),)
                 pylab.plot(x, y, 'og')
+                vals.append(val)
+                vects.append(vect)
         return vals, vects
 
     def refinement(self):
-        from numpy import sqrt, cos, sin, power
+        from numpy import sqrt, cos, sin, power, arctan2, abs,pi
         val,vect = self.direction()
         
-        L = -1.629
+        L = 0.114
+#         L = 1.0
          
         poni1 = self.raw.shape[0]/2.0
         poni2 = self.raw.shape[1]/2.0
-#         poni1 = 0.1832/172.0 * power(10,6)
-#         poni2 = -0.0472/172.0 * power(10,6)
+#         poni1 = 0.0599/100.0 * power(10,6)
+#         poni2 = -0.07623/100.0 * power(10,6)
+
         d1 = self.keypoints.y - poni1
         d2 = self.keypoints.x - poni2
         rot1 = rot2 = rot3 = 0
-#         rot1 = -0.0479
-#         rot2 = -0.030194
-#         rot3 = -0.000026
-        
-        val = numpy.transpose(numpy.asarray(val))
-#         valy,valx = val
-        tan_phi_exp = val.min()/val.max()
-        print "tan phi exp"
-        print tan_phi_exp.max(), tan_phi_exp.min()
+#         rot1 = -0.22466
+#         rot2 = -0.07476
+#         rot3 = 0.00000005
+
+        valy,valx = numpy.transpose(vect)[0]
+        phi_exp = arctan2(valy,valx) % pi
+#         print "phi exp"
+#         print phi_exp * 180/ pi
 
         
         cosrot1 = cos(rot1)
@@ -645,51 +651,54 @@ class BlobDetection(object):
         sinrot2 = sin(rot2)
         sinrot3 = sin(rot3)
         
+        L = -L
         dy = ((L*cosrot1*cosrot2 + d2*cosrot2*sinrot1 - d1*sinrot2)*(2*cosrot2*cosrot3*(d1*cosrot2*cosrot3 + \
                         d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + L*(cosrot1*cosrot3*sinrot2 + \
                         sinrot1*sinrot3)) + 2*cosrot2*sinrot3*(d1*cosrot2*sinrot3 + \
                         L*(-(cosrot3*sinrot1) + cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + \
-                        sinrot1*sinrot2*sinrot3))))/(2.*sqrt(power(d1*cosrot2*cosrot3 + d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + \
-                        L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3),2) + power(d1*cosrot2*sinrot3 + \
+                        sinrot1*sinrot2*sinrot3))))/(2.*sqrt( (d1*cosrot2*cosrot3 + d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + \
+                        L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3) )**2 +  (d1*cosrot2*sinrot3 + \
                         L*(-(cosrot3*sinrot1) + cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + \
-                        sinrot1*sinrot2*sinrot3),2))*(power(L*cosrot1*cosrot2 + \
-                        d2*cosrot2*sinrot1 - d1*sinrot2,2) + power(d1*cosrot2*cosrot3 + \
-                        d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3),2) + \
-                        power(d1*cosrot2*sinrot3 + L*(-(cosrot3*sinrot1) + cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + \
-                        sinrot1*sinrot2*sinrot3),2)))+ (sinrot2*sqrt(power(d1*cosrot2*cosrot3 + \
-                        d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3),2) +  \
-                        power(d1*cosrot2*sinrot3 + L*(-(cosrot3*sinrot1) + cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + \
-                        sinrot1*sinrot2*sinrot3),2)))/(power(L*cosrot1*cosrot2 + d2*cosrot2*sinrot1 - d1*sinrot2,2) + \
-                        power(d1*cosrot2*cosrot3 + d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + \
-                        L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3), 2) + power(d1*cosrot2*sinrot3 + L*(-(cosrot3*sinrot1) +  \
-                        cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + sinrot1*sinrot2*sinrot3),2))
+                        sinrot1*sinrot2*sinrot3) )**2)*( (L*cosrot1*cosrot2 + \
+                        d2*cosrot2*sinrot1 - d1*sinrot2 )**2 +  (d1*cosrot2*cosrot3 + \
+                        d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3) )**2 + \
+                         (d1*cosrot2*sinrot3 + L*(-(cosrot3*sinrot1) + cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + \
+                        sinrot1*sinrot2*sinrot3) )**2))+ (sinrot2*sqrt( (d1*cosrot2*cosrot3 + \
+                        d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3) )**2 +  \
+                         (d1*cosrot2*sinrot3 + L*(-(cosrot3*sinrot1) + cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + \
+                        sinrot1*sinrot2*sinrot3) )**2))/( (L*cosrot1*cosrot2 + d2*cosrot2*sinrot1 - d1*sinrot2 )**2 + \
+                         (d1*cosrot2*cosrot3 + d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + \
+                        L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3) )**2 +  (d1*cosrot2*sinrot3 + L*(-(cosrot3*sinrot1) +  \
+                        cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + sinrot1*sinrot2*sinrot3) )**2)
                         
         dx = ((L*cosrot1*cosrot2 + d2*cosrot2*sinrot1 - d1*sinrot2)*(2*(cosrot3*sinrot1*sinrot2 - \
                         cosrot1*sinrot3)* (d1*cosrot2*cosrot3 + d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + \
                         L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3)) + 2*(cosrot1*cosrot3 + \
                         sinrot1*sinrot2*sinrot3)*(d1*cosrot2*sinrot3 + L*(-(cosrot3*sinrot1) + cosrot1*sinrot2*sinrot3) + \
-                        d2*(cosrot1*cosrot3 + sinrot1*sinrot2*sinrot3))))/(2.*sqrt(power(d1*cosrot2*cosrot3 + d2*(cosrot3*sinrot1*sinrot2 - \
-                        cosrot1*sinrot3) + L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3),2) + power(d1*cosrot2*sinrot3 + \
+                        d2*(cosrot1*cosrot3 + sinrot1*sinrot2*sinrot3))))/(2.*sqrt( (d1*cosrot2*cosrot3 + d2*(cosrot3*sinrot1*sinrot2 - \
+                        cosrot1*sinrot3) + L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3) )**2 +  (d1*cosrot2*sinrot3 + \
                         L*(-(cosrot3*sinrot1) + cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + \
-                        sinrot1*sinrot2*sinrot3),2))*(power(L*cosrot1*cosrot2 + d2*cosrot2*sinrot1 - d1*sinrot2,2) + \
-                        power(d1*cosrot2*cosrot3 + d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + \
-                        L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3),2) + power(d1*cosrot2*sinrot3 + \
+                        sinrot1*sinrot2*sinrot3) )**2)*( (L*cosrot1*cosrot2 + d2*cosrot2*sinrot1 - d1*sinrot2 )**2 + \
+                         (d1*cosrot2*cosrot3 + d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + \
+                        L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3) )**2 +  (d1*cosrot2*sinrot3 + \
                         L*(-(cosrot3*sinrot1) + cosrot1*sinrot2*sinrot3) + \
-                        d2*(cosrot1*cosrot3 + sinrot1*sinrot2*sinrot3),2))) - (cosrot2*sinrot1*sqrt(power(d1*cosrot2*cosrot3 + \
+                        d2*(cosrot1*cosrot3 + sinrot1*sinrot2*sinrot3) )**2)) - (cosrot2*sinrot1*sqrt( (d1*cosrot2*cosrot3 + \
                         d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + \
-                        L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3),2) + power(d1*cosrot2*sinrot3 + L*(-(cosrot3*sinrot1) + \
-                        cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + sinrot1*sinrot2*sinrot3),2)))/(power(L*cosrot1*cosrot2 + \
-                        d2*cosrot2*sinrot1 - d1*sinrot2,2) + power(d1*cosrot2*cosrot3 + d2*(cosrot3*sinrot1*sinrot2 - \
-                        cosrot1*sinrot3) + L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3),2) + power(d1*cosrot2*sinrot3 + \
-                        L*(-(cosrot3*sinrot1) + cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + sinrot1*sinrot2*sinrot3),2))
+                        L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3) )**2 +  (d1*cosrot2*sinrot3 + L*(-(cosrot3*sinrot1) + \
+                        cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + sinrot1*sinrot2*sinrot3) )**2))/( (L*cosrot1*cosrot2 + \
+                        d2*cosrot2*sinrot1 - d1*sinrot2 )**2 +  (d1*cosrot2*cosrot3 + d2*(cosrot3*sinrot1*sinrot2 - \
+                        cosrot1*sinrot3) + L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3) )**2 +  (d1*cosrot2*sinrot3 + \
+                        L*(-(cosrot3*sinrot1) + cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + sinrot1*sinrot2*sinrot3) )**2)
                         
-        tan_phi_th = dy/dx
-        print "tan phi th"
-        print tan_phi_th.max(), tan_phi_th.min()
-        err = self.keypoints.size * (tan_phi_th ** 2 - tan_phi_exp **2)/self.keypoints.size
+        
+        phi_th = arctan2(d1,d2)
+#         print "phi th"
+#         print phi_th_2
+        err = numpy.sum((phi_th - phi_exp)**2)/self.keypoints.x.size
         print "err"
-        print err.max(), err.min()
-        return val
+        print err
+        
+        return val,vect
 
 
     @timeit
