@@ -72,9 +72,15 @@ d_outMax  = cl.Buffer(ctx, mf.READ_WRITE, 4*bins)
 program.memset_out_int(queue, (1024,), (workgroup_size,), d_outMax)
 
 
-global_size = (data.size + workgroup_size - 1) & ~(workgroup_size - 1),
+global_size = (size + workgroup_size - 1) & ~(workgroup_size - 1),
 
 program.lut1(queue, global_size, (workgroup_size,), d_pos.data, d_minmax, numpy.uint32(size), d_outMax)
+
+
+#outMax_1  = numpy.ndarray(bins, dtype=numpy.int32)
+
+#cl.enqueue_copy(queue, outMax_1, d_outMax)
+
 
 d_idx_ptr = cl.Buffer(ctx, mf.READ_WRITE, 4*(bins+1))
 
