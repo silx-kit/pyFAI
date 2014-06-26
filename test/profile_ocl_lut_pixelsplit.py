@@ -132,13 +132,13 @@ program.u16_to_float(queue, global_size, (workgroup_size,), d_image.data, d_imag
 program.csr_integrate(queue, (bins*workgroup_size,),(workgroup_size,), d_image_float, d_data, d_indices, d_idx_ptr, d_outData, d_outCount, d_outMerge)
 
 
-#outData  = numpy.ndarray(bins, dtype=numpy.float32)
-#outCount = numpy.ndarray(bins, dtype=numpy.float32)
+outData  = numpy.ndarray(bins, dtype=numpy.float32)
+outCount = numpy.ndarray(bins, dtype=numpy.float32)
 outMerge = numpy.ndarray(bins, dtype=numpy.float32)
 
 
-#cl.enqueue_copy(queue,outData, d_outData)
-#cl.enqueue_copy(queue,outCount, d_outCount)
+cl.enqueue_copy(queue,outData, d_outData)
+cl.enqueue_copy(queue,outCount, d_outCount)
 cl.enqueue_copy(queue,outMerge, d_outMerge)
 
 #program.integrate2(queue, (1024,), (workgroup_size,), d_outData, d_outCount, d_outMerge)
@@ -149,15 +149,18 @@ cl.enqueue_copy(queue,outMerge, d_outMerge)
 
 
 
-ref = ai.xrpd_LUT(data, 1000)[1]
-
+ref = ai.integrate1d(data,bins,unit="2th_deg", correctSolidAngle=False, method="splitpixelfull")
 
 #assert(numpy.allclose(ref,outMerge))
 
-plot(outMerge, label="ocl_hist")
-plot(ref, label="ref")
+#plot(ref[0],outMerge, label="ocl_lut_merge")
+plot(ref[0],outData, label="ocl_lut_data")
+plot(ref[0],outCount, label="ocl_lut_count")
+#plot(*ref, label="ref_merge")
+plot(ref[0], ref[2], label="ref_count")
+plot(ref[0], ref[3], label="ref_data")
 ##plot(abs(ref-outMerge)/outMerge, label="ocl_csr_fullsplit")
 legend()
 show()
-raw_input()
+#raw_input()
 
