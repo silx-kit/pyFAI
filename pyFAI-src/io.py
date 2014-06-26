@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: Azimuthal integration
-#             https://github.com/kif
+#    Project: Fast Azimuthal Integration
+#             https://github.com/kif/
 #
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
@@ -29,7 +29,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2013"
+__date__ = "26/06/2014"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -63,6 +63,7 @@ except ImportError as error:
 else:
     h5py._errors.silence_errors()
 
+from . import version
 
 
 import fabio
@@ -570,8 +571,10 @@ class Nexus(object):
     Writer class to handle Nexus/HDF5 data
     Manages:
     entry
-        instrument
+        pyFAI-subentry
             detector
+
+    #TODO: make it thread-safe !!!
     """
     def __init__(self, filename, mode="r"):
         """
@@ -585,15 +588,99 @@ class Nexus(object):
         if not h5py:
             logger.error("h5py module missing: NeXus not supported")
             raise RuntimeError("H5py module is missing")
-        if os.path.exists(self.path) and self.mode == "r":
+        if os.path.exists(self.filename) and self.mode == "r":
             self.h5 = h5py.File(self.filename, mode=self.mode)
         else:
             self.h5 = h5py.File(self.filename)
-        
-        
-    def get_last_entry(self):
-        """
-        retrieves the last entry
-        """
-        entries = [grp for grp in self.h5 if ("start_time" in grp)]
+        self.to_close = []
 
+    def close(self):
+        """
+        close the filename and update all entries   
+        """
+        end_time = get_isotime()
+        for entry in self.to_close:
+            entry["end_time"] = end_time
+        self.h5.close()
+        
+        
+    def get_entries(self):
+        """
+        retrieves all entry sorted the latest first.
+        """
+
+        entries = [(grp, from_isotime(self.h5[grp + "/start_time"]))
+                    for grp in self.h5
+                    if ("start_time" in self.h5[grp] and  "NX_class" in self.h5[grp].attr and self.h5[grp].attrs["NX_class"] == "NXentry")]
+        entries.sort(cmp=lambda a, b: 1 if a[1] < b[1] else -1) #sort entries in decreasing time
+        return [self.h5[i[0]] for i in entries]
+
+    def find_detector(self, all=False):
+        """
+        Tries to find a detector within a NeXus file, takes the first compatible detector
+        
+        @param all: return all detectors found as a list 
+        """
+        result = []
+        for entry in self.get_entries():
+            for instrument in self.get_class(entry, "NXinstrument"):
+                 for detector in self.get_class(instrument, "NXdetector"):
+                     if all:
+                         result.append(detector)
+                     else:
+                         return detector
+
+    def new_entry(self, entry):
+        """
+        Create a new entry
+
+        @param entry: name of the entry
+        @return: the corresponding HDF5 group
+        """
+        nb_entries = 1 + len(self.get_entries())
+        entry_grp = self.h5.require_group("%s_%04i" % (entry, nb_entries))
+        entry_grp.attrs["NX_class"] = "NXentry"
+        entry_grp["start_time"] = get_isotime()
+        entry_grp["title"] = numpy.string_("description of experiment")
+        entry_grp["program_name"] = "pyFAI"
+        self.to_close.append(entry_grp)
+        return entry_grp
+
+    def new_class(self, grp, name, class_type="NXcollection"):
+        """
+        create a new sub-group with  type class_type
+        @param grp: parent group
+        @param name: name of the sub-group
+        @param class_type: NeXus class name
+        @return: subgroup created
+        """
+        sub = grp.require_group(name)
+        sub.attrs["NX_class"] = class_type
+        return sub
+
+    def new_detector(self, name="detector", entry="entry", subentry="pyFAI"):
+        """
+        Create a new entry/pyFAI/Detector
+        
+        @param detector: name of the detector
+        @param entry: name of the entry
+        @param subentry: all pyFAI description of detectors should be in a pyFAI sub-entry
+        """
+        entry_grp = self.new_entry(entry)
+        pyFAI_grp = self.new_class(entry_grp, subentry, "NXsubentry")
+        pyFAI_grp["definition_local"] = "pyFAI"
+        pyFAI_grp["definition_local"].attrs["version"] = version
+        det_grp = self.new_class(pyFAI_grp, name, "NXdetector")
+        return det_grp
+
+
+    def get_class(self, grp, class_type="NXcollection"):
+        """
+        return all sub-groups of the given type within a group
+        
+        @param entry: HDF5 group
+        @param   
+        """
+        coll = [entry[grp] for grp in entry
+               if ("NX_class" in entry[grp].attr and entry[grp].attrs["NX_class"] == type)]
+        return coll

@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/06/2014"
+__date__ = "26/06/2014"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instanciate them
@@ -51,8 +51,7 @@ try:
     import fabio
 except ImportError:
     fabio = None
-
-from .io import h5py, is_hdf5
+from . import io
 
 epsilon = 1e-6
 
@@ -81,6 +80,7 @@ class Detector(object):
     force_pixel = False     # Used to specify pixel size should be defined by the class itself.
     aliases = []            # list of alternative names
     registry = {}           # list of  detectors ...
+    uniform_pixel = True    # tells all pixels have the same size
 
     @classmethod
     def factory(cls, name, config=None):
@@ -96,7 +96,7 @@ class Detector(object):
         @rtype: pyFAI.detectors.Detector
         """
         if os.path.isfile(name):
-            return cls.from_file(name)
+            return NexusDetector(name)
         name = name.lower()
         names = [name, name.replace(" ", "_")]
         for name in names:
@@ -174,9 +174,11 @@ class Detector(object):
             # NOTA : X is axis 1 and Y is Axis 0
             self._pixel2, self._pixel1 = self.spline.getPixelSize()
             self._splineCache = {}
+            self.uniform_pixel = False
         else:
             self._splineFile = None
             self.spline = None
+            self.uniform_pixel = True
     splineFile = property(get_splineFile, set_splineFile)
 
     def get_binning(self):
@@ -415,17 +417,55 @@ class Detector(object):
         
         @param filename: name of the file on the disc 
         """
-        if not h5py:
+        if not io.h5py:
             logger.error("h5py module missing: NeXus detectors not supported")
             raise RuntimeError("H5py module is missing")
-        did_exist = os.path.exists(path)
-        h5 = h5py.File(filename)
-        entries = [(grp, from_isotime(h5[grp + "/start_time"]))
-                    for grp in h5
-                    if ("start_time" in h5[grp] and  "NX_class" in h5[grp].attr and h5[grp].attr["NX_class"] == "NXentry")]
+#        did_exist = os.path.exists(path)
+        nxs = io.Nexus(filename, "+")
+        det_grp = nxs.new_detector(name=self.name)
+        det_grp["pixel_size"] = numpy.array([self.pixel1, self.pixel2], dtype=numpy.float32)
+        if self.max_shape is not None:
+            det_grp["max_shape"] = numpy.array(self.max_shape, dtype=numpy.int32)
+        if self.shape is not None:
+            det_grp["shape"] = numpy.array(self.shape, dtype=numpy.int32)
+        if self.binning is not None:
+            det_grp["binning"] = numpy.array(self._binning, dtype=numpy.int32)
+        if self.mask is not None:
+            det_grp["mask"] = self.mask
+        if not self.uniform_pixel:
+            #Get ready for the worse case: 4 corner per pixel, position 3D: z,y,x
+            det_grp["pixel_corners"] = self.get_pixel_corners()
+            det_grp["pixel_corners"].attrs["interpretation"] = "vertex"
+        nxs.close()
+
+    def get_pixel_corners(self):
+        """
+        Calculate the position of the corner of the pixels
         
-            
+        This should be overwritten by class representing non-contiguous detector (Xpad, ...)
         
+        @return:  4D array containing:
+                    pixel index (slow dimension)
+                    pixel index (fast dimension)
+                    corner index (A, B, C or D), triangles or hexagons can be handled the same way 
+                    vertex position (z,y,x) 
+        """
+        #float32 is ok: precision of 1µm for a detector size of 1m
+        corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
+        d1 = numpy.outer(numpy.arange(self.shape[0] + 1), numpy.ones(self.shape[1] + 1)) - 0.5
+        d2 = numpy.outer(numpy.ones(self.shape[0] + 1), numpy.arange(self.shape[1] + 1)) - 0.5
+        p1, p2 = self.calc_cartesian_positions(d1, d2)
+        corners[:, :, 0, 1] = p1[:-1, :-1]
+        corners[:, :, 0, 2] = p2[:-1, :-1]
+        corners[:, :, 1, 1] = p1[1:, :-1]
+        corners[:, :, 1, 2] = p2[1:, :-1]
+        corners[:, :, 2, 1] = p1[1:, 1:]
+        corners[:, :, 2, 2] = p2[1:, 1:]
+        corners[:, :, 3, 1] = p1[:-1, 1:]
+        corners[:, :, 3, 2] = p2[:-1, 1:]
+        return corners
+
+
     def load(self, filename):
         """
         Loads the detector description from a NeXus file, adapted from:
@@ -444,23 +484,16 @@ class NexusDetector(Detector):
     """
     Class representing a 2D detector loaded from a NeXus file
     """
-    def __init__(self, filename):
+    def __init__(self, filename=None):
         Detector.__init__(self)
-        self.load(filename)
+        if filename is not None:
+            self.load(filename)
         self._filename = filename
 
     def __repr__(self):
-        return "Nexus detector %s\t file: %s\t PixelSize= %.3e, %.3e m" % \
+        return "%s detector from NeXus %s\t file: %s\t PixelSize= %.3e, %.3e m" % \
             (self.name, self._filename, self._pixel1, self._pixel2)
 
-    @classmethod
-    def from_file(cls, filename):
-        """
-        Create a detector instance from its NeXsus definition on 
-        """
-        inst = cls()
-        inst.load(filename)
-        return inst
 
 class Pilatus(Detector):
     """
@@ -508,9 +541,11 @@ class Pilatus(Detector):
                 files = splineFile.split(",")
                 self.x_offset_file = [os.path.abspath(i) for i in files if "x" in i.lower()][0]
                 self.y_offset_file = [os.path.abspath(i) for i in files if "y" in i.lower()][0]
+                self.uniform_pixel = False
             except Exception as error:
                 logger.error("set_splineFile with %s gave error: %s" % (splineFile, error))
                 self.x_offset_file = self.y_offset_file = self.offset1 = self.offset2 = None
+                self.uniform_pixel = True
                 return
             if fabio:
                 self.offset1 = fabio.open(self.y_offset_file).data
@@ -519,8 +554,10 @@ class Pilatus(Detector):
                 logging.error("FabIO is not available: no distortion correction for Pilatus detectors, sorry.")
                 self.offset1 = None
                 self.offset2 = None
+
         else:
             self._splineFile = None
+            self.uniform_pixel = True
     splineFile = property(get_splineFile, set_splineFile)
 
     def calc_mask(self):
@@ -834,6 +871,7 @@ class FReLoN(Detector):
         if splineFile:
             self.max_shape = (int(self.spline.ymax - self.spline.ymin),
                               int(self.spline.xmax - self.spline.xmin))
+            self.uniform_pixel = False
         else:
             self.max_shape = (2048, 2048)
         self.shape = self.max_shape
@@ -900,12 +938,15 @@ class Xpad_flat(Detector):
     MODULE_GAP = (3 + 3.57 * 1000 / 130, 3)  # in pixels
     force_pixel = True
     MAX_SHAPE = (960, 560)
+    uniform_pixel = False
+
     def __init__(self, pixel1=130e-6, pixel2=130e-6):
         super(Xpad_flat, self).__init__(pixel1=pixel1, pixel2=pixel2)
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
                 (self.name, self.pixel1, self.pixel2)
+
 
     def calc_mask(self):
         """
@@ -1092,7 +1133,7 @@ class ImXPadS10(Detector):
     BORDER_SIZE_RELATIVE = 2.5
     force_pixel = True
     aliases = ["Imxpad S10"]
-
+    uniform_pixel = False
 
     @classmethod
     def _calc_pixels_size(cls, length, module_size, pixel_size):
@@ -1139,7 +1180,7 @@ class ImXPadS10(Detector):
         Calculate the mask
         """
         dims = []
-        for dim in [0,1]:
+        for dim in [0, 1]:
             pos = numpy.zeros(self.MAX_SHAPE[dim], dtype=numpy.int8)
             n = self.MAX_SHAPE[dim] // self.MODULE_SIZE[dim]
             for i in range(1, n):
@@ -1151,12 +1192,12 @@ class ImXPadS10(Detector):
         #This is just an "outer sum"
         dim1, dim2 = dims
         dim1.shape = -1, 1
-        dim1.strides = dim1.strides[0],0
+        dim1.strides = dim1.strides[0], 0
         dim2.shape = 1, -1
         dim2.strides = 0, dim2.strides[-1]
         return (dim1 + dim2) > 0
-        
-        
+
+
     def __init__(self, pixel1=130e-6, pixel2=130e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
         self._pixel_edges = None # array of size max_shape+1: pixels are contiguous

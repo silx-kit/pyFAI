@@ -60,7 +60,7 @@ from test_sparse               import test_suite_all_sparse
 from test_csr                  import test_suite_all_OpenCL_CSR
 from test_blob_detection       import test_suite_all_blob_detection
 from test_marchingsquares      import test_suite_all_marchingsquares
-from test_io import TestIsoTime
+from test_io import test_suite_all_io
 
 def test_suite_all():
     testSuite = unittest.TestSuite()

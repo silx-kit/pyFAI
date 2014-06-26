@@ -31,11 +31,12 @@ __date__ = "24/06/2014"
 
 
 import unittest
-import os
+import os, shutil
 import numpy
 import logging, time
 import sys
 import fabio
+import tempfile
 from utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
@@ -48,12 +49,27 @@ class TestIsoTime(unittest.TestCase):
     def test_from(self):
         t0 = time.time()
         isotime = io.get_isotime(t0)
-        self.assertAlmostEqual(t0, io.from_isotime(isotime) , 0, "timing are precise to the second")
+        self.assert_(abs(t0 - io.from_isotime(isotime)) < 1, "timing are precise to the second")
 
+class TestNexus(unittest.TestCase):
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.tmpdir =tempfile.mkdtemp() 
+    def test_new_detector(self):
+        fname = os.path.join(self.tmpdir, "nxs.h5")
+        nxs = io.Nexus(fname, "r+")
+        nxs.new_detector()
+        nxs.close()
+#        os.system("h5ls -r -a %s" % fname)
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        shutil.rmtree(self.tmpdir)
 def test_suite_all_io():
     testSuite = unittest.TestSuite()
     testSuite.addTest(TestIsoTime("test_get"))
     testSuite.addTest(TestIsoTime("test_from"))
+    testSuite.addTest(TestNexus("test_new_detector"))
+
 
     return testSuite
 

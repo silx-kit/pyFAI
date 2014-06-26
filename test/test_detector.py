@@ -29,9 +29,9 @@ __author__ = "Picca Frédéric-Emmanuel"
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/09/2013"
+__date__ = "26/06/2014"
 
-import sys
+import sys, os, tempfile
 import unittest
 import numpy
 from utilstest import getLogger  # UtilsTest, Rwp, getLogger
@@ -127,12 +127,30 @@ class TestDetector(unittest.TestCase):
         sx165.binning = 10
         self.assertAlmostEqual(sx165.pixel1, sx165.pixel2)
 
+    def test_nexus_detector(self):
+        tmpdir = tempfile.mkdtemp()
+        print(tmpdir)
+        for det_name in ALL_DETECTORS:
+            fname = os.path.join(tmpdir, det_name + ".h5")
+            print fname
+            det = detector_factory(det_name)
+            print det
+            try:
+                det.save(fname)
+            except NotImplementedError:
+                continue
+
+
+            #todo: read back an ensure they are the same
+
 
 def test_suite_all_detectors():
     testSuite = unittest.TestSuite()
     testSuite.addTest(TestDetector("test_detector_instanciate"))
     testSuite.addTest(TestDetector("test_detector_imxpad_s140"))
     testSuite.addTest(TestDetector("test_detector_rayonix_sx165"))
+    testSuite.addTest(TestDetector("test_nexus_detector"))
+
     return testSuite
 
 if __name__ == '__main__':
