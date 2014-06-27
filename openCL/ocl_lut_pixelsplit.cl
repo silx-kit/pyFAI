@@ -312,7 +312,8 @@ void lut1(__global float8* pos,
 //         float pos0_max = fmin(fmax(pos0Range.x,pos0Range.y),minmax[0].s1);
         float pos0_min = minmax[0].s0;
         float pos0_max = minmax[0].s1;
-        pos0_max *= 1 + EPS;
+//         pos0_max *= 1 + EPS;
+        pos0_max *= 1.00001;
         
         float delta = (pos0_max - pos0_min) / BINS;
         
@@ -333,7 +334,13 @@ void lut1(__global float8* pos,
         
         for (int bin=bin0_min; bin < bin0_max+1; bin++)
         {
-            atomic_add(&outMax[bin], 1);
+            if (bin < BINS)
+            {
+                atomic_add(&outMax[bin], 1);
+            }else{
+                printf("fooo %d \n", bin);
+            }
+//             atomic_add(&outMax[bin], 1);
             
         }
     }
