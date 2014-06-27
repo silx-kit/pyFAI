@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/06/2014"
+__date__ = "27/06/2014"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instanciate them
@@ -406,6 +406,33 @@ class Detector(object):
         return name
     name = property(get_name)
 
+    def get_pixel_corners(self):
+        """
+        Calculate the position of the corner of the pixels
+        
+        This should be overwritten by class representing non-contiguous detector (Xpad, ...)
+        
+        @return:  4D array containing:
+                    pixel index (slow dimension)
+                    pixel index (fast dimension)
+                    corner index (A, B, C or D), triangles or hexagons can be handled the same way 
+                    vertex position (z,y,x) 
+        """
+        #float32 is ok: precision of 1µm for a detector size of 1m
+        corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
+        d1 = numpy.outer(numpy.arange(self.shape[0] + 1), numpy.ones(self.shape[1] + 1)) - 0.5
+        d2 = numpy.outer(numpy.ones(self.shape[0] + 1), numpy.arange(self.shape[1] + 1)) - 0.5
+        p1, p2 = self.calc_cartesian_positions(d1, d2)
+        corners[:, :, 0, 1] = p1[:-1, :-1]
+        corners[:, :, 0, 2] = p2[:-1, :-1]
+        corners[:, :, 1, 1] = p1[1:, :-1]
+        corners[:, :, 1, 2] = p2[1:, :-1]
+        corners[:, :, 2, 1] = p1[1:, 1:]
+        corners[:, :, 2, 2] = p2[1:, 1:]
+        corners[:, :, 3, 1] = p1[:-1, 1:]
+        corners[:, :, 3, 2] = p2[:-1, 1:]
+        return corners
+
     def save(self, filename):
         """
         Saves the detector description into a NeXus file, adapted from:
@@ -438,34 +465,6 @@ class Detector(object):
             det_grp["pixel_corners"].attrs["interpretation"] = "vertex"
         nxs.close()
 
-    def get_pixel_corners(self):
-        """
-        Calculate the position of the corner of the pixels
-        
-        This should be overwritten by class representing non-contiguous detector (Xpad, ...)
-        
-        @return:  4D array containing:
-                    pixel index (slow dimension)
-                    pixel index (fast dimension)
-                    corner index (A, B, C or D), triangles or hexagons can be handled the same way 
-                    vertex position (z,y,x) 
-        """
-        #float32 is ok: precision of 1µm for a detector size of 1m
-        corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
-        d1 = numpy.outer(numpy.arange(self.shape[0] + 1), numpy.ones(self.shape[1] + 1)) - 0.5
-        d2 = numpy.outer(numpy.ones(self.shape[0] + 1), numpy.arange(self.shape[1] + 1)) - 0.5
-        p1, p2 = self.calc_cartesian_positions(d1, d2)
-        corners[:, :, 0, 1] = p1[:-1, :-1]
-        corners[:, :, 0, 2] = p2[:-1, :-1]
-        corners[:, :, 1, 1] = p1[1:, :-1]
-        corners[:, :, 1, 2] = p2[1:, :-1]
-        corners[:, :, 2, 1] = p1[1:, 1:]
-        corners[:, :, 2, 2] = p2[1:, 1:]
-        corners[:, :, 3, 1] = p1[:-1, 1:]
-        corners[:, :, 3, 2] = p2[:-1, 1:]
-        return corners
-
-
     def load(self, filename):
         """
         Loads the detector description from a NeXus file, adapted from:
@@ -473,11 +472,13 @@ class Detector(object):
         
         @param filename: name of the file on the disc 
         """
-        if not h5py:
+        if not io.h5py:
             logger.error("h5py module missing: NeXus detectors not supported")
             raise RuntimeError("H5py module is missing")
-        raise NotImplementedError("work in progress")
-        self.aliases = [h5.name]
+        nxs = io.Nexus(filename, "r")
+        det_grp = nxs.find_detector()
+        print(det_grp)
+        #self.aliases = [h5.name]
 
 
 class NexusDetector(Detector):

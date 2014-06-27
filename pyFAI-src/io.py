@@ -88,13 +88,14 @@ def from_isotime(text, use_tz=False):
     """
     @param text: string representing the time is iso format 
     """
+    text = str(text)
     base = text[:19]
     if use_tz and len(text) == 25:
-        sgn = 1 if  text[:19]=="+" else -1
-        tz=60*(60*int(text[20:22])+int(text[23:25]))*sgn
+        sgn = 1 if  text[:19] == "+" else -1
+        tz = 60 * (60 * int(text[20:22]) + int(text[23:25])) * sgn
     else:
-        tz=0
-    return time.mktime(time.strptime(base,"%Y-%m-%dT%H:%M:%S"))+tz
+        tz = 0
+    return time.mktime(time.strptime(base, "%Y-%m-%dT%H:%M:%S")) + tz
 
 def is_hdf5(filename):
     """
@@ -602,16 +603,19 @@ class Nexus(object):
         for entry in self.to_close:
             entry["end_time"] = end_time
         self.h5.close()
-        
-        
+
+
     def get_entries(self):
         """
         retrieves all entry sorted the latest first.
         """
 
-        entries = [(grp, from_isotime(self.h5[grp + "/start_time"]))
+        entries = [(grp, from_isotime(self.h5[grp + "/start_time"].value))
                     for grp in self.h5
-                    if ("start_time" in self.h5[grp] and  "NX_class" in self.h5[grp].attr and self.h5[grp].attrs["NX_class"] == "NXentry")]
+                    if (isinstance(self.h5[grp], h5py.Group) and \
+                        "start_time" in self.h5[grp] and  \
+                        "NX_class" in self.h5[grp].attrs and \
+                        self.h5[grp].attrs["NX_class"] == "NXentry")]
         entries.sort(cmp=lambda a, b: 1 if a[1] < b[1] else -1) #sort entries in decreasing time
         return [self.h5[i[0]] for i in entries]
 
@@ -623,12 +627,12 @@ class Nexus(object):
         """
         result = []
         for entry in self.get_entries():
-            for instrument in self.get_class(entry, "NXinstrument"):
-                 for detector in self.get_class(instrument, "NXdetector"):
-                     if all:
-                         result.append(detector)
-                     else:
-                         return detector
+            for instrument in self.get_class(entry, "NXsubentry"):
+                for detector in self.get_class(instrument, "NXdetector"):
+                    if all:
+                        result.append(detector)
+                    else:
+                        return detector
 
     def new_entry(self, entry):
         """
@@ -640,9 +644,9 @@ class Nexus(object):
         nb_entries = 1 + len(self.get_entries())
         entry_grp = self.h5.require_group("%s_%04i" % (entry, nb_entries))
         entry_grp.attrs["NX_class"] = "NXentry"
-        entry_grp["start_time"] = get_isotime()
+        entry_grp["start_time"] = numpy.string_(get_isotime())
         entry_grp["title"] = numpy.string_("description of experiment")
-        entry_grp["program_name"] = "pyFAI"
+        entry_grp["program_name"] = numpy.string_("pyFAI")
         self.to_close.append(entry_grp)
         return entry_grp
 
@@ -678,9 +682,11 @@ class Nexus(object):
         """
         return all sub-groups of the given type within a group
         
-        @param entry: HDF5 group
-        @param   
+        @param grp: HDF5 group
+        @param class_type: name of the NeXus class
         """
-        coll = [entry[grp] for grp in entry
-               if ("NX_class" in entry[grp].attr and entry[grp].attrs["NX_class"] == type)]
+        coll = [grp[name] for name in grp
+               if (isinstance(grp[name], h5py.Group) and \
+                   "NX_class" in grp[name].attrs and \
+                   grp[name].attrs["NX_class"] == class_type)]
         return coll

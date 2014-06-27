@@ -137,6 +137,7 @@ class TestDetector(unittest.TestCase):
             if (det.pixel1 is None) or (det.shape is None):
                 continue
             det.save(fname)
+            new_det = detector_factory(fname)
             #todo: read back an ensure they are the same
 
 
