@@ -29,6 +29,14 @@ pos_in = ai.array_from_unit(data.shape, "corner", unit="2th_deg")
 
 pos = pos_in.reshape(pos_in.size/8,4,2)
 
+
+
+
+ref = splitPixelFullLUT.HistoLUT1dFullSplit(pos,bins, unit="2th_deg")
+
+
+
+
 pos_size = pos.size
 #size = data.size
 size = pos_size/8
@@ -68,38 +76,48 @@ print d_minmax
 
 memset_size = (bins + workgroup_size - 1) & ~(workgroup_size - 1),
 
-d_outMax  = cl.array.empty(queue, (bins,), dtype=numpy.int32)
+#d_outMax  = cl.array.empty(queue, (bins,), dtype=numpy.int32)
 
-program.memset_out_int(queue, memset_size, (workgroup_size,), d_outMax.data)
+#program.memset_out_int(queue, memset_size, (workgroup_size,), d_outMax.data)
 
 global_size = (size + workgroup_size - 1) & ~(workgroup_size - 1),
 
-program.lut1(queue, global_size, (workgroup_size,), d_pos.data, d_minmax.data, numpy.uint32(size), d_outMax.data)
+#program.lut1(queue, global_size, (workgroup_size,), d_pos.data, d_minmax.data, numpy.uint32(size), d_outMax.data)
 
 
-outMax_1  = numpy.copy(d_outMax)
+#outMax_1  = numpy.copy(d_outMax)
 
 
 
-d_idx_ptr = cl.array.empty(queue, (bins+1,), dtype=numpy.int32)
+outMax = ref.outMax
 
-d_lutsize = cl.array.empty(queue, (1,), dtype=numpy.int32)
+idx_ptr = numpy.ndarray(bins+1, dtype=numpy.int32)
+idx_ptr[0] = 0
+idx_ptr[1:] = outMax.cumsum()
 
-program.lut2(queue, (1,), (1,), d_outMax.data, d_idx_ptr.data, d_lutsize.data)
 
-lutsize  = numpy.ndarray(1, dtype=numpy.int32)
 
-cl.enqueue_copy(queue, lutsize, d_lutsize.data)
+d_idx_ptr = cl.array.to_device(queue, idx_ptr)
 
-print lutsize
+#d_lutsize = cl.array.empty(queue, (1,), dtype=numpy.int32)
 
-lut_size = int(lutsize[0])
+#program.lut2(queue, (1,), (1,), d_outMax.data, d_idx_ptr.data, d_lutsize.data)
+
+#lutsize  = numpy.ndarray(1, dtype=numpy.int32)
+
+#cl.enqueue_copy(queue, lutsize, d_lutsize.data)
+
+#print lutsize
+
+lut_size = int(idx_ptr[-1])
 
 d_indices  = cl.array.empty(queue, (lut_size,), dtype=numpy.int32)
 d_data     = cl.array.empty(queue, (lut_size,), dtype=numpy.float32)
 
 #d_check_atomics = cl.Buffer(ctx, mf.READ_WRITE, 4*lut_size)
 
+
+d_outMax = cl.array.empty(queue, (bins,), dtype=numpy.int32)
 
 program.memset_out_int(queue, memset_size, (workgroup_size,), d_outMax.data)
 
@@ -148,16 +166,16 @@ cl.enqueue_copy(queue,outMerge, d_outMerge.data)
 
 
 
-#ref = ai.integrate1d(data,bins,unit="2th_deg", correctSolidAngle=False, method="splitpixelfull")
+ref = ai.integrate1d(data,bins,unit="2th_deg", correctSolidAngle=False, method="splitpixelfull")
 
-ref = splitPixelFullLUT.HistoLUT1dFullSplit(pos,bins, unit="2th_deg")
+
 
 #assert(numpy.allclose(ref,outMerge))
 
-#plot(ref[0],outMerge, label="ocl_lut_merge")
+plot(ref[0],outMerge, label="ocl_lut_merge")
 ##plot(ref[0],outData, label="ocl_lut_data")
 ##plot(ref[0],outCount, label="ocl_lut_count")
-plot(ref[1], label="ref_merge")
+plot(*ref, label="ref_merge")
 ##plot(ref[0], ref[2], label="ref_data")
 ##plot(ref[0], ref[3], label="ref_count")
 ###plot(abs(ref-outMerge)/outMerge, label="ocl_csr_fullsplit")

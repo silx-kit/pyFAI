@@ -315,8 +315,8 @@ void lut1(__global float8* pos,
         float pos0_max = pos0_maxin*( 1 + EPS);
 //         pos0_max *= 1.00001;
         
-        if (global_index == 0)
-            printf("%f  %f  %f", pos0_maxin, pos0_max, ( 1 + EPS));
+//         if (global_index == 0)
+//             printf("%f  %f  %f", pos0_maxin, pos0_max, ( 1 + EPS));
         
         float delta = (pos0_max - pos0_min) / BINS;
         
@@ -337,13 +337,13 @@ void lut1(__global float8* pos,
         
         for (int bin=bin0_min; bin < bin0_max+1; bin++)
         {
-            if (bin < BINS)
-            {
-                atomic_add(&outMax[bin], 1);
-            }else{
-                printf("fooo %d \n", bin);
-            }
-//             atomic_add(&outMax[bin], 1);
+//             if (bin < BINS)
+//             {
+//                 atomic_add(&outMax[bin], 1);
+//             }else{
+//                 printf("fooo %d \n", bin);
+//             }
+             atomic_add(&outMax[bin], 1);
             
         }
     }
@@ -409,8 +409,8 @@ void lut3(__global float8* pos,
 //         float pos0_min = fmax(fmin(pos0Range.x,pos0Range.y),minmax[0].s0);
 //         float pos0_max = fmin(fmax(pos0Range.x,pos0Range.y),minmax[0].s1);
         float pos0_min = minmax[0].s0;
-        float pos0_max = minmax[0].s1;
-        pos0_max *= 1 + EPS;
+        float pos0_maxin = minmax[0].s1;
+        float pos0_max = pos0_maxin * (1 + EPS);
        // pos0_max *= 1.1;
         
         float delta = (pos0_max - pos0_min) / BINS;
@@ -441,12 +441,20 @@ void lut3(__global float8* pos,
         DA.x=(pixel.s1-pixel.s7)/(pixel.s0-pixel.s6);
         DA.y= pixel.s7 - DA.x*pixel.s6;
         
-        float areaPixel = area4(pixel.s0, pixel.s1, pixel.s2, pixel.s3, pixel.s4, pixel.s5, pixel.s6, pixel.s7);
-        float oneOverPixelArea = 1.0 / areaPixel;
+        float A_lim = pixel.s0;
+        float B_lim = pixel.s2;
+        float C_lim = pixel.s4;
+        float D_lim = pixel.s6;
+        float pixelArea  = integrate_line(A_lim, B_lim, AB);
+        pixelArea += integrate_line(B_lim, C_lim, BC);
+        pixelArea += integrate_line(C_lim, D_lim, CD);
+        pixelArea += integrate_line(D_lim, A_lim, DA);
+
+        pixelArea = fabs(pixelArea);
+        float oneOverPixelArea = 1.0 / pixelArea;
+        
         for (int bin=bin0_min; bin < bin0_max+1; bin++)
         {
-            if (bin >= BINS)
-                continue;
             float A_lim = (pixel.s0<=bin)*(pixel.s0<=(bin+1))*bin + (pixel.s0>bin)*(pixel.s0<=(bin+1))*pixel.s0 + (pixel.s0>bin)*(pixel.s0>(bin+1))*(bin+1);
             float B_lim = (pixel.s2<=bin)*(pixel.s2<=(bin+1))*bin + (pixel.s2>bin)*(pixel.s2<=(bin+1))*pixel.s2 + (pixel.s2>bin)*(pixel.s2>(bin+1))*(bin+1);
             float C_lim = (pixel.s4<=bin)*(pixel.s4<=(bin+1))*bin + (pixel.s4>bin)*(pixel.s4<=(bin+1))*pixel.s4 + (pixel.s4>bin)*(pixel.s4>(bin+1))*(bin+1);

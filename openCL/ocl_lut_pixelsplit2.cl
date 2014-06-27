@@ -315,8 +315,8 @@ void lut1(__global float8* pos,
         float pos0_max = pos0_maxin*( 1 + EPS);
 //         pos0_max *= 1.00001;
         
-        if (global_index == 0)
-            printf("%f  %f  %f", pos0_maxin, pos0_max, ( 1 + EPS));
+//         if (global_index == 0)
+//             printf("%f  %f  %f", pos0_maxin, pos0_max, ( 1 + EPS));
         
         float delta = (pos0_max - pos0_min) / BINS;
         
@@ -335,16 +335,14 @@ void lut1(__global float8* pos,
         int bin0_min = floor(min0);
         int bin0_max = floor(max0);
         
-        for (int bin=bin0_min; bin < bin0_max+1; bin++)
+        if (bin0_min == bin0_max)
         {
-            if (bin < BINS)
-            {
+            atomic_add(&outMax[bin0_min], 1);
+        }
+        else
+        {
+            for (int bin=bin0_min; bin < bin0_max+1; bin++)
                 atomic_add(&outMax[bin], 1);
-            }else{
-                printf("fooo %d \n", bin);
-            }
-//             atomic_add(&outMax[bin], 1);
-            
         }
     }
 }
@@ -429,6 +427,52 @@ void lut3(__global float8* pos,
         
         int bin0_min = floor(min0);
         int bin0_max = floor(max0);
+        
+        if (bin0_min == bin0_max)
+        {
+            int k = atomic_add(&outMax[bin0_min],1);
+            indices[idx_ptr[bin0_min]+k] = global_index;
+            data[idx_ptr[bin0_min]+k] = 1.0;
+
+        }
+        else
+        {
+            float2 AB, BC, CD, DA;
+            
+            AB.x=(pixel.s3-pixel.s1)/(pixel.s2-pixel.s0);
+            AB.y= pixel.s1 - AB.x*pixel.s0;
+            BC.x=(pixel.s5-pixel.s3)/(pixel.s4-pixel.s2);
+            BC.y= pixel.s3 - BC.x*pixel.s2;
+            CD.x=(pixel.s7-pixel.s5)/(pixel.s6-pixel.s4);
+            CD.y= pixel.s5 - CD.x*pixel.s4;
+            DA.x=(pixel.s1-pixel.s7)/(pixel.s0-pixel.s6);
+            DA.y= pixel.s7 - DA.x*pixel.s6;
+            
+            float areaPixel = area4(pixel.s0, pixel.s1, pixel.s2, pixel.s3, pixel.s4, pixel.s5, pixel.s6, pixel.s7);
+            float oneOverPixelArea = 1.0 / areaPixel;
+            for (int bin=bin0_min; bin < bin0_max+1; bin++)
+            {
+                if (bin >= BINS)
+                    continue;
+                float A_lim = (pixel.s0<=bin)*(pixel.s0<=(bin+1))*bin + (pixel.s0>bin)*(pixel.s0<=(bin+1))*pixel.s0 + (pixel.s0>bin)*(pixel.s0>(bin+1))*(bin+1);
+                float B_lim = (pixel.s2<=bin)*(pixel.s2<=(bin+1))*bin + (pixel.s2>bin)*(pixel.s2<=(bin+1))*pixel.s2 + (pixel.s2>bin)*(pixel.s2>(bin+1))*(bin+1);
+                float C_lim = (pixel.s4<=bin)*(pixel.s4<=(bin+1))*bin + (pixel.s4>bin)*(pixel.s4<=(bin+1))*pixel.s4 + (pixel.s4>bin)*(pixel.s4>(bin+1))*(bin+1);
+                float D_lim = (pixel.s6<=bin)*(pixel.s6<=(bin+1))*bin + (pixel.s6>bin)*(pixel.s6<=(bin+1))*pixel.s6 + (pixel.s6>bin)*(pixel.s6>(bin+1))*(bin+1);
+                float partialArea  = integrate_line(A_lim, B_lim, AB);
+                partialArea += integrate_line(B_lim, C_lim, BC);
+                partialArea += integrate_line(C_lim, D_lim, CD);
+                partialArea += integrate_line(D_lim, A_lim, DA);
+                float tmp = fabs(partialArea) * oneOverPixelArea;
+                int k = atomic_add(&outMax[bin],1);
+    //             if (bin == BINS)
+    //            printf("%d  %d  %f  %f\n", bin0_min, bin0_max, min0, max0);
+    //            check_atomics[atomics] = idx_ptr[bin]+k;
+                indices[idx_ptr[bin]+k] = global_index;
+                data[idx_ptr[bin]+k] = tmp;
+            }
+
+        }
+
         
         float2 AB, BC, CD, DA;
         
