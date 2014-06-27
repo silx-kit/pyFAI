@@ -21,9 +21,10 @@ except ImportError:
 pyFAI = utilstest.UtilsTest.pyFAI
 ocl = pyFAI.opencl.ocl
 import matplotlib
-matplotlib.use("GTK")
+from PyQt4 import QtGui, QtCore
+matplotlib.use("Qt4Agg")
 from matplotlib import pyplot as plt
-plt.ion()
+#plt.ion()
 
 ds_list = ["Pilatus1M.poni", "halfccd.poni", "Frelon2k.poni", "Pilatus6M.poni", "Mar3450.poni", "Fairchild.poni"]
 datasets = {"Fairchild.poni":utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
@@ -377,8 +378,9 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
             print("Already initialized")
             return
         if "DISPLAY" in os.environ:
-            plt.ion()
+#            plt.ion()
             self.fig = plt.figure()
+            self.fig.show()
             self.ax = self.fig.add_subplot(1, 1, 1)
             self.ax.set_autoscale_on(False)
             self.ax.set_xlabel("Image size in Mega-Pixels")
@@ -390,12 +392,24 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
             self.ax.set_xlim(0.5, 17)
             self.ax.set_ylim(0.5, 500)
             self.ax.set_title(self.get_cpu() + " / " + self.get_gpu())
+            self.update_graph()
 
-            if self.fig.canvas:
-                self.fig.canvas.draw()
-#            plt.show()
+    def update_graph(self):
+        """
+        Uses a trick to enforce actual image to be re-drawn
+        """
+        if self.fig.canvas:
+            self.fig.canvas.draw()
+            #trick to update the graph !
+            QtGui.qApp.postEvent(self.fig.canvas,
+                                 QtGui.QResizeEvent(self.fig.canvas.size(),
+                                                    self.fig.canvas.size()))
+            QtCore.QCoreApplication.processEvents()
 
     def new_curve(self, results, label):
+        """
+        Create a new curve within the current graph
+        """
         self.update_mp()
         if not self.fig:
             return
@@ -404,12 +418,12 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
         self.plot_y = [1000.0 / results[i] for i in self.plot_x]
         self.plot = self.ax.plot(self.plot_x, self.plot_y, "o-", label=label)[0]
         self.ax.legend()
-        if self.fig.canvas:
-            self.fig.canvas.draw()
+        self.update_graph()
 
     def new_point(self, size, exec_time):
         """
         Add new point to current curve
+
         @param size: of the system
         @parm exec_time: execution time in ms
         """
@@ -420,8 +434,7 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
         self.plot_x.append(size)
         self.plot_y.append(1000.0 / exec_time)
         self.plot.set_data(self.plot_x, self.plot_y)
-        if self.fig.canvas:
-            self.fig.canvas.draw()
+        self.update_graph()
 
     def display_all(self):
         if not self.fig:
@@ -435,12 +448,16 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
 
 
     def update_mp(self):
+        """
+        Update memory profile curve
+        """
         if not self.do_memprofile:
             return
         self.memory_profile[0].append(time.time() - self.starttime)
         self.memory_profile[1].append(self.get_mem())
         if not self.fig_mp:
             self.fig_mp = plt.figure()
+            self.fig_mp.show()
             self.ax_mp = self.fig_mp.add_subplot(1, 1, 1)
             self.ax_mp.set_autoscale_on(False)
             self.ax_mp.set_xlabel("Run time (s)")
@@ -460,6 +477,10 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
 
         if self.fig_mp.canvas:
             self.fig_mp.canvas.draw()
+            QtGui.qApp.postEvent(self.fig_mp.canvas,
+                                 QtGui.QResizeEvent(self.fig_mp.canvas.size(),
+                                                    self.fig_mp.canvas.size()))
+            QtCore.QApplication.processEvents()
 
     def get_size(self):
         if len(self.meth) == 0:
