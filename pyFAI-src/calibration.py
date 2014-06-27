@@ -47,8 +47,7 @@ logger = logging.getLogger("pyFAI.calibration")
 import numpy, scipy.ndimage
 from scipy.stats import linregress
 import fabio
-import matplotlib
-import matplotlib;matplotlib.use('GTK');import pylab
+from .gui_utils import pylab, update_fig, matplotlib
 from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
 from .peakPicker import PeakPicker
@@ -72,7 +71,6 @@ except ImportError:
 else:
     pyFAI_morphology = True
 
-matplotlib.interactive(True)
 
 class AbstractCalibration(object):
 
@@ -551,7 +549,7 @@ class AbstractCalibration(object):
 
         if self.gui:
             self.peakPicker.gui(log=True, maximize=True)
-            self.peakPicker.fig.canvas.draw()
+            update_fig(self.peakPicker.fig)
 
     def extract_cpt(self, method="massif"):
         """
@@ -598,7 +596,7 @@ class AbstractCalibration(object):
                 rings += 1
                 self.peakPicker.massif_contour(mask)
                 if self.gui:
-                    self.peakPicker.fig.canvas.draw()
+                    update_fig(self.peakPicker.fig)
                 sub_data = self.peakPicker.data.ravel()[numpy.where(mask.ravel())]
                 mean = sub_data.mean(dtype=numpy.float64)
                 std = sub_data.std(dtype=numpy.float64)
@@ -620,7 +618,7 @@ class AbstractCalibration(object):
                 if self.gui:
                     # minIndex: skip redrawing of previous rings
                     self.peakPicker.display_points(minIndex=i)
-                    self.peakPicker.fig.canvas.draw()
+                    update_fig(self.peakPicker.fig)
 
         self.peakPicker.points.save(self.basename + ".npt")
         if self.weighted:
@@ -688,6 +686,8 @@ class AbstractCalibration(object):
                             im.autoscale()
 
                         fig2.show()
+                        update_fig(fig2)
+
             if self.interactive:
                 finished = self.prompt()
             else:
@@ -698,8 +698,8 @@ class AbstractCalibration(object):
     def prompt(self):
         """
         prompt for commands to guide the calibration process
-        
-        @return: True when the user is happy with what he has, False to request another refinement 
+
+        @return: True when the user is happy with what he has, False to request another refinement
         """
 
         while True:
@@ -950,6 +950,7 @@ class AbstractCalibration(object):
             self.ax_xrpd_2d.set_xlabel(self.unit)
             self.ax_xrpd_2d.set_ylabel("Azimuthal angle (deg)")
             self.fig3.show()
+            update_fig(self.fig3)
 
     def validate_calibration(self):
         """
@@ -1013,9 +1014,9 @@ class Calibration(AbstractCalibration):
         """
         description = """Calibrate the diffraction setup geometry based on Debye-Sherrer rings images
 without a priori knowledge of your setup.
-Most standard calibrants are directly installed together with pyFAI. 
+Most standard calibrants are directly installed together with pyFAI.
 If you prefer using your own, you can provide a "d-spacing" file
-containing the spacing of Miller plans in Angstrom (in decreasing order). 
+containing the spacing of Miller plans in Angstrom (in decreasing order).
 Most crystal powders used for calibration are available in the American
 Mineralogist database: http://rruff.geo.arizona.edu/AMS/amcsd.php"""
 
@@ -1074,7 +1075,7 @@ decrease the value if arcs are mixed together.""", default=None)
         if os.path.isfile(self.pointfile):
             self.peakPicker.load(self.pointfile)
         if self.gui:
-            self.peakPicker.fig.canvas.draw()
+            update_fig(self.peakPicker.fig)
         self.data = self.peakPicker.finish(self.pointfile)
         if not self.weighted:
             self.data = numpy.array(self.data)[:, :-1]
@@ -1744,7 +1745,7 @@ correction, at a sub-pixel level.
     def rebuild(self):
         """
         Rebuild the diffraction image and measures the offset with the reference
-        @return: offset  
+        @return: offset
         """
         logger.debug("in rebuild")
         if self.r is None:
@@ -1791,9 +1792,8 @@ correction, at a sub-pixel level.
         """
         if self.fig is None:
             self.fig = pylab.figure()
-            draw = False
+            self.fig.show()
         else:
-            draw = True
             self.fig.clf()
         ax1 = self.fig.add_subplot(2, 2, 3)
         ax1.imshow(self.delta, aspect="auto", interpolation="nearest", origin="bottom")
@@ -1809,8 +1809,7 @@ correction, at a sub-pixel level.
         ax4.set_title("powder pattern")
         ax4.set_xlabel(r"2$\theta$ ($^o$)")
         ax4.set_ylabel("Intensity")
-        if draw:
-            self.fig.canvas.draw()
-        else:
-            self.fig.show()
+        update_fig(self.fig)
+
+
 

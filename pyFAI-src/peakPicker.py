@@ -38,7 +38,7 @@ import numpy
 from scipy.optimize         import fmin
 from scipy.ndimage.filters  import median_filter
 from scipy.ndimage          import label
-import matplotlib;matplotlib.use('GTK');import pylab
+from .gui_utils import pylab, update_fig, maximize_fig
 import fabio
 from .utils import gaussian_filter, binning, unBinning, deprecated, relabel, percentile
 from .bilinear import Bilinear
@@ -56,10 +56,10 @@ TARGET_SIZE = 1024
 ################################################################################
 class PeakPicker(object):
     """
-    
+
     This class is in charge of peak picking, i.e. find bragg spots in the image
     Two methods can be used : massif or blob
-    
+
     """
     VALID_METHODS = ["massif", "blob"]
 
@@ -69,7 +69,7 @@ class PeakPicker(object):
         @param strFilename: input image filename
         @param reconst: shall masked part or negative values be reconstructed (wipe out problems with pilatus gaps)
         @param mask: area in which keypoints will not be considered as valid
-        @param pointfile: 
+        @param pointfile:
         """
         self.strFilename = strFilename
         self.data = fabio.open(strFilename).data.astype("float32")
@@ -158,10 +158,10 @@ class PeakPicker(object):
         """
         Return the list of peaks within an area
 
-        @param mask: 2d array with mask. 
+        @param mask: 2d array with mask.
         @param Imin: minimum of intensity above the background to keep the point
         @param keep: maximum number of points to keep
-        @param method: enforce the use of detection using "massif" or "blob" 
+        @param method: enforce the use of detection using "massif" or "blob"
         @return: list of peaks [y,x], [y,x], ...]
         """
         if not method:
@@ -186,7 +186,7 @@ class PeakPicker(object):
                self.ax.lines = []
             #Redraw the image
             self.fig.show()
-            self.fig.canvas.draw()
+            update_fig(self.fig)
 
     def gui(self, log=False, maximize=False):
         """
@@ -198,6 +198,7 @@ class PeakPicker(object):
             self.ax = self.fig.add_subplot(111)
             self.ct = self.fig.add_subplot(111)
             self.msp = self.fig.add_subplot(111)
+            self.fig.show()
         if log:
             showData = numpy.log1p(self.data - self.data.min())
             self.ax.set_title('Log colour scale (skipping lowest/highest per mille)')
@@ -212,17 +213,9 @@ class PeakPicker(object):
 
         self.ax.autoscale_view(False, False, False)
         self.fig.colorbar(im)
-        self.fig.show()
+        update_fig(self.fig)
         if maximize:
-            mng = pylab.get_current_fig_manager()
-            # attempt to maximize the figure ... lost hopes.
-            win_shape = (1920, 1080)
-            event = Event(*win_shape)
-            try:
-                mng.resize(event)
-            except TypeError:
-                 mng.resize(*win_shape)
-            self.fig.canvas.draw()
+            maximize_fig(self.fig)
         self.mpl_connectId = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
 
     def load(self, filename):
@@ -262,7 +255,7 @@ class PeakPicker(object):
             else:
                 self.ax.annotate("%i" % (len(self.points)), xy=(x[1], x[0]), xytext=(x0[1], x0[0]), color="white",
                      arrowprops=dict(facecolor='white', edgecolor='white'),)
-                self.fig.canvas.draw()
+                update_fig(self.fig)
 
         with self._sem:
             x0 = event.xdata
@@ -275,7 +268,7 @@ class PeakPicker(object):
                     if len(self.ax.lines) > 0:
                         self.ax.lines.pop()
 
-                    self.fig.show()
+                    update_fig(self.fig)
                     newpeak = self.massif.nearest_peak([y0, x0])
                     if newpeak:
                         if not points:
@@ -300,7 +293,7 @@ class PeakPicker(object):
                     # no, keep annotation! if len(self.ax.texts) > 0: self.ax.texts.pop()
                     if len(self.ax.lines) > 0:
                         self.ax.lines.pop()
-                    self.fig.show()
+                    update_fig(self.fig)
                     # need to annotate only if a new group:
                     localAnn = None if points else annontate
                     listpeak = self.massif.find_peaks([y0, x0], self.defaultNbPoints, localAnn, self.massif_contour)
@@ -320,7 +313,7 @@ class PeakPicker(object):
                 self.points.append(points)
                 npl = numpy.array(points)
                 self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
-                self.fig.show()
+                update_fig(self.fig)
                 sys.stdout.flush()
             elif event.button == 2:  # center click: remove 1 or all points from current group
                 logger.debug("Button: %i, Key modifier: %s" % (event.button, event.key))
@@ -349,8 +342,8 @@ class PeakPicker(object):
                 else:
                     logger.info("No groups to remove")
 
-                self.fig.show()
-                self.fig.canvas.draw()
+#                self.fig.show()
+                update_fig(self.fig)
                 sys.stdout.flush()
 
     def finish(self, filename=None,):
@@ -408,12 +401,12 @@ class PeakPicker(object):
                 print("Check also for correct indexing of rings")
             except MemoryError:
                 logging.error("Sorry but your computer does NOT have enough memory to display the 2-theta contour plot")
-            self.fig.show()
+            update_fig(self.fig)
 
     def massif_contour(self, data):
         """
         Overlays a mask over a diffraction image
-        
+
         @param data: mask to be overlaid
         """
 
@@ -435,8 +428,7 @@ class PeakPicker(object):
                 self.ax.set_xlim(xlim);self.ax.set_ylim(ylim);
             except MemoryError:
                 logging.error("Sorry but your computer does NOT have enough memory to display the massif plot")
-            # self.fig.show()
-            self.fig.canvas.draw()
+            update_fig(self.fig)
 
     def closeGUI(self):
         if self.fig is not None:
@@ -928,7 +920,7 @@ class Massif(object):
         """
         Return the list of peaks within an area
 
-        @param mask: 2d array with mask. 
+        @param mask: 2d array with mask.
         @param Imin: minimum of intensity above the background to keep the point
         @param keep: maximum number of points to keep
         @param kwarg: ignored parameters

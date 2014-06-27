@@ -57,7 +57,7 @@ class Distortion(object):
     def __init__(self, detector="detector", shape=None, method="LUT", device=None, workgroup=8):
         """
         @param detector: detector instance or detector name
-        @param shape: shape of the output image 
+        @param shape: shape of the output image
         @param method: "lut" or "csr", the former is faster
         @param device: Name of the device: None for OpenMP, "cpu" or "gou" or the id of the OpenCL device a 2-tuple of integer
         @param workgroup: workgroup size for CSR on OpenCL
@@ -93,10 +93,10 @@ class Distortion(object):
     def reset(self, method=None, device=None, workgroup=None):
         """
         reset the distortion correction and re-calculate the look-up table
-        
+
         @param method: can be "lut" or "csr", "lut" looks faster
         @param device: can be None, "cpu" or "gpu" or the id as a 2-tuple of integer
-        @param worgroup: enforce the workgroup size for CSR. 
+        @param worgroup: enforce the workgroup size for CSR.
         """
         with self._sem:
             self.max_size = None
@@ -711,7 +711,7 @@ def test():
 #    dis.calc_LUT()
 #    out = dis.correct(grid)
 #    fabio.edfimage.edfimage(data=out.astype("float32")).write("test2048.edf")
-    import matplotlib;matplotlib.use('GTK');import pylab
+    from .gui_utils import pylab
     pylab.imshow(out)  # , interpolation="nearest")
     pylab.show()
 
