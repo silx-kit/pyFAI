@@ -136,8 +136,22 @@ class TestDetector(unittest.TestCase):
             det = detector_factory(det_name)
             if (det.pixel1 is None) or (det.shape is None):
                 continue
+            print det
+            
             det.save(fname)
             new_det = detector_factory(fname)
+            print new_det
+            for what in ("pixel1", "pixel2", "name", "max_shape", "shape", "binning"):
+                if "__len__" in dir(det.__getattribute__(what)):
+                    self.assertEqual(det.__getattribute__(what), new_det.__getattribute__(what), "%s is the same for %s" % (what, fname))
+                else:
+                    self.assertAlmostEqual(det.__getattribute__(what), new_det.__getattribute__(what), 4, "%s is the same for %s" % (what, fname))
+            r1,r2 = det.calc_cartesian_positions()
+            o1, o2 = new_det.calc_cartesian_positions()
+            err1 = abs(r1 - o1).max()
+            err2 = abs(r2 - o2).max()
+            self.assert_(err1 < 1e-6, "precision on pixel position 1 is better than 1µm, got %e" % err2)
+            self.assert_(err2 < 1e-6, "precision on pixel position 2 is better than 1µm, got %e" % err2)
             #todo: read back an ensure they are the same
 
 

@@ -29,7 +29,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/06/2014"
+__date__ = "27/06/2014"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -672,7 +672,7 @@ class Nexus(object):
         """
         entry_grp = self.new_entry(entry)
         pyFAI_grp = self.new_class(entry_grp, subentry, "NXsubentry")
-        pyFAI_grp["definition_local"] = "pyFAI"
+        pyFAI_grp["definition_local"] = numpy.string_("pyFAI")
         pyFAI_grp["definition_local"].attrs["version"] = version
         det_grp = self.new_class(pyFAI_grp, name, "NXdetector")
         return det_grp

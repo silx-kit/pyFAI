@@ -38,6 +38,9 @@ import os
 import logging
 import threading
 import numpy
+import posixpath
+
+from .utils import timeit
 
 logger = logging.getLogger("pyFAI.detectors")
 
@@ -47,6 +50,10 @@ try:
     from .fastcrc import crc32
 except ImportError:
     from zlib import crc32
+try:
+    from . import bilinear
+except ImportError:
+     bilinear = None
 try:
     import fabio
 except ImportError:
@@ -264,7 +271,7 @@ class Detector(object):
                 self.pixel1 = val * 1e-6
             elif kw == "splineFile":
                 self.set_splineFile(kwarg[kw])
-
+    @timeit
     def calc_cartesian_positions(self, d1=None, d2=None):
         """
         Calculate the position of each pixel center in cartesian coordinate
@@ -449,7 +456,7 @@ class Detector(object):
             raise RuntimeError("H5py module is missing")
 #        did_exist = os.path.exists(path)
         nxs = io.Nexus(filename, "+")
-        det_grp = nxs.new_detector(name=self.name)
+        det_grp = nxs.new_detector(name=self.name.replace(" ", "_"))
         det_grp["pixel_size"] = numpy.array([self.pixel1, self.pixel2], dtype=numpy.float32)
         if self.max_shape is not None:
             det_grp["max_shape"] = numpy.array(self.max_shape, dtype=numpy.int32)
@@ -465,6 +472,23 @@ class Detector(object):
             det_grp["pixel_corners"].attrs["interpretation"] = "vertex"
         nxs.close()
 
+
+
+class NexusDetector(Detector):
+    """
+    Class representing a 2D detector loaded from a NeXus file
+    """
+    def __init__(self, filename=None):
+        Detector.__init__(self)
+        self._pixel_corners = None
+        if filename is not None:
+            self.load(filename)
+        self._filename = filename
+
+    def __repr__(self):
+        return "%s detector from NeXus file: %s\t PixelSize= %.3e, %.3e m" % \
+            (self.name, self._filename, self._pixel1, self._pixel2)
+
     def load(self, filename):
         """
         Loads the detector description from a NeXus file, adapted from:
@@ -477,24 +501,108 @@ class Detector(object):
             raise RuntimeError("H5py module is missing")
         nxs = io.Nexus(filename, "r")
         det_grp = nxs.find_detector()
-        print(det_grp)
-        #self.aliases = [h5.name]
+        name = posixpath.split(det_grp.name)[-1]
+        self.aliases = [name.replace("_", " "), det_grp.name]
+        if "pixel_size" in det_grp:
+            self.pixel1, self.pixel2 = det_grp["pixel_size"]
+        if "binning" in det_grp:
+            self._binning = tuple(i for i in det_grp["binning"].value)
+        for what in ("max_shape", "shape"):
+            if what in det_grp:
+                self.__setattr__(what, tuple(i for i in det_grp[what].value))
+        if "mask" in det_grp:
+            self.mask = det_grp["mask"].value
+        if "pixel_corners" in det_grp:
+            self._pixel_corners = det_grp["pixel_corners"].value
+            self.uniform_pixel = False
 
+    def get_pixel_corners(self):
+        """
+        Calculate the position of the corner of the pixels
+        
+        This should be overwritten by class representing non-contiguous detector (Xpad, ...)
+        
+        @return:  4D array containing:
+                    pixel index (slow dimension)
+                    pixel index (fast dimension)
+                    corner index (A, B, C or D), triangles or hexagons can be handled the same way 
+                    vertex position (z,y,x) 
+        """
+        if self._pixel_corners is None:
+            with self._sem:
+                if self._pixel_corners is None:
+                    corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
+                    d1 = numpy.outer(numpy.arange(self.shape[0] + 1), numpy.ones(self.shape[1] + 1))
+                    d2 = numpy.outer(numpy.ones(self.shape[0] + 1), numpy.arange(self.shape[1] + 1))
+                    p1 = self._pixel1 * d1
+                    p2 = self._pixel2 * d2
+                    corners[:, :, 0, 1] = p1[:-1, :-1]
+                    corners[:, :, 0, 2] = p2[:-1, :-1]
+                    corners[:, :, 1, 1] = p1[1:, :-1]
+                    corners[:, :, 1, 2] = p2[1:, :-1]
+                    corners[:, :, 2, 1] = p1[1:, 1:]
+                    corners[:, :, 2, 2] = p2[1:, 1:]
+                    corners[:, :, 3, 1] = p1[:-1, 1:]
+                    corners[:, :, 3, 2] = p2[:-1, 1:]
+                    self._pixel_corners = corners
+        return self._pixel_corners
 
-class NexusDetector(Detector):
-    """
-    Class representing a 2D detector loaded from a NeXus file
-    """
-    def __init__(self, filename=None):
-        Detector.__init__(self)
-        if filename is not None:
-            self.load(filename)
-        self._filename = filename
+    @timeit
+    def calc_cartesian_positions(self, d1=None, d2=None, center=True):
+        """
+        Calculate the position of each pixel center in cartesian coordinate
+        and in meter of a couple of coordinates.
+        The half pixel offset is taken into account here !!!
+        Adapted to Nexus detector definition 
 
-    def __repr__(self):
-        return "%s detector from NeXus %s\t file: %s\t PixelSize= %.3e, %.3e m" % \
-            (self.name, self._filename, self._pixel1, self._pixel2)
+        @param d1: the Y pixel positions (slow dimension)
+        @type d1: ndarray (1D or 2D)
+        @param d2: the X pixel positions (fast dimension)
+        @type d2: ndarray (1D or 2D)
+        @param center: retrieve the coordinate of the center of the pixel
+        
+        @return: position in meter of the center of each pixels.
+        @rtype: ndarray
 
+        d1 and d2 must have the same shape, returned array will have
+        the same shape.
+        """
+        if (d1 is None):
+            d1 = numpy.outer(numpy.arange(self.shape[0]), numpy.ones(self.shape[1]))
+        if (d2 is None):
+            d2 = numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1]))
+        corners = self.get_pixel_corners()
+        if center:
+            d1 += 0.5
+            d2 += 0.5
+        if bilinear:
+            p1, p2 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
+            p1.shape = d1.shape
+            p2.shape = d2.shape
+        else:
+            i1 = d1.astype(int)
+            i2 = d2.astype(int)
+            delta1 = d1 - i1
+            delta2 = d2 - i2
+            pixels = corners[i1, i2]
+            A1 = pixels[:, :, 0, 1]
+            A2 = pixels[:, :, 0, 2]
+            B1 = pixels[:, :, 1, 1]
+            B2 = pixels[:, :, 1, 2]
+            C1 = pixels[:, :, 2, 1]
+            C2 = pixels[:, :, 2, 2]
+            D1 = pixels[:, :, 3, 1]
+            D2 = pixels[:, :, 3, 2]
+            #points A and D are on the same dim1 (Y), they differ in dim2 (X)
+            #points B and C are on the same dim1 (Y), they differ in dim2 (X)
+            #p1 = mean(A1,D1) + delta1 * (mean(C2,D2)-mean(A2,C2))
+            p1 = 0.5 * ((A1 + D1) * (1.0 - delta1) + delta1 * (B1 + C1))
+
+            #points A and B are on the same dim2 (X), they differ in dim1
+            #points A and B are on the same dim2 (X), they differ in dim1
+            #p2 = mean(A2,B2) + delta2 * (mean(C2,D2)-mean(A2,C2))
+            p2 = 0.5 * ((A2 + B2) * (1.0 - delta2) + delta2 * (C2 + D2))
+        return p1, p2
 
 class Pilatus(Detector):
     """
@@ -714,6 +822,7 @@ class Eiger(Detector):
 
     def __init__(self, pixel1=75e-6, pixel2=75e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
+        self.offset1 = self.offset2 = None
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -969,6 +1078,7 @@ class Xpad_flat(Detector):
     force_pixel = True
     MAX_SHAPE = (960, 560)
     uniform_pixel = False
+    aliases = ["Xpad flat"]
 
     def __init__(self, pixel1=130e-6, pixel2=130e-6):
         super(Xpad_flat, self).__init__(pixel1=pixel1, pixel2=pixel2)

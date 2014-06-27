@@ -180,6 +180,8 @@ relabel_dic = dict(name="relabel",
 
 bilinear_dic = dict(name="bilinear",
                     include_dirs=get_numpy_include_dirs(),
+                    extra_compile_args=['openmp'],
+                    extra_link_args=['openmp'],
                     sources=[src['bilinear']])
 
 fastcrc_dic = dict(name="fastcrc",
