@@ -293,6 +293,8 @@ def fullSplit1D(numpy.ndarray pos not None,
     #cdef point2D[:] pixel
     cdef Function AB, BC, CD, DA
     cdef double epsilon=1e-10
+    
+    cdef int lut_size = 0
 
     cdef bint check_pos1=False, check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
     cdef int i=0, idx=0, bin=0, bin0_max=0, bin0_min=0, pixel_bins=0, cur_bin
@@ -311,7 +313,8 @@ def fullSplit1D(numpy.ndarray pos not None,
     else:
         pos1_min = pos[:, :, 1].min()
         pos1_maxin = pos[:, :, 1].max()
-    pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
+    #pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
+    pos1_max = pos1_maxin * 1.00001
     dpos = (pos0_max - pos0_min) / (< double > (bins))
 
 
@@ -412,6 +415,7 @@ def fullSplit1D(numpy.ndarray pos not None,
                 #All pixel is within a single bin
                 outCount[bin0_min] += 1
                 outData[bin0_min] += data
+                lut_size += 1
 
     #        else we have pixel spliting.
             else:
@@ -439,6 +443,7 @@ def fullSplit1D(numpy.ndarray pos not None,
                     partialArea2 += partialArea
                     outCount[bin] += tmp
                     outData[bin] += data * tmp
+                    lut_size += 1
                 #if fabs(partialArea2-areaPixel) > epsilon:
                     #printf("%d -  %f \n",idx,(partialArea2-areaPixel)/areaPixel)
                 
@@ -449,6 +454,7 @@ def fullSplit1D(numpy.ndarray pos not None,
             else:
                 outMerge[i] = cdummy
 
+    print lut_size
     return  outPos, outMerge, outData, outCount
 
 
