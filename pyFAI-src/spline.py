@@ -233,7 +233,7 @@ class Spline(object):
         logger.info("FWHM in X= %.3f pixels,\t in Y= %.3f pixels." % (fFWHM_X, fFWHM_Y))
 
         if verbose:
-            import matplotlib;matplotlib.use('GTK');import pylab
+            import pylab
             pylab.plot(histXdr, histX[0], label="error in X")
             pylab.plot(histYdr, histY[0], label="error in Y")
             pylab.legend()

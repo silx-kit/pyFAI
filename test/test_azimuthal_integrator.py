@@ -44,7 +44,7 @@ logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 if logger.getEffectiveLevel() <= logging.INFO:
-    import matplotlib;matplotlib.use('GTK');import pylab
+    import pylab
 
 class test_azim_halfFrelon(unittest.TestCase):
     """basic test"""

@@ -452,13 +452,13 @@ class BlobDetection(object):
         return kpx + delta_x, kpy + delta_y, kps + delta_s, peakval, mask
 
     def refine_Hessian_SG(self, kpx, kpy, kps):
-        """ 
-        Savitzky Golay algorithm to check if a point is really the maximum 
+        """
+        Savitzky Golay algorithm to check if a point is really the maximum
         @param kpx: x_pos of keypoint
         @param kpy: y_pos of keypoint
         @param kps: s_pos of keypoint
         @return array of corrected keypoints
-        
+
         """
 
         k2x = []
@@ -517,10 +517,10 @@ class BlobDetection(object):
 
             dxs = (dx_next - dx_prev) / 2.0
             dys = (dy_next - dy_prev) / 2.0
-                    
+
             print dx,dy,ds
             print d2x,d2y,d2s,dxy,dxs,dys
-            
+
             lap = numpy.array([[d2y, dxy, dys], [dxy, d2x, dxs], [dys, dxs, d2s]])
             delta = -(numpy.dot(numpy.linalg.inv(lap), [dy, dx, ds]))
             print y,x
@@ -538,12 +538,12 @@ class BlobDetection(object):
 
     def direction(self):
         """
-        Perform and plot the two main directions of the peaks, considering their previously 
-        calculated scale ,by calculating the Hessian at different sizes as the combination of 
+        Perform and plot the two main directions of the peaks, considering their previously
+        calculated scale ,by calculating the Hessian at different sizes as the combination of
         gaussians and their first and second derivatives
-        
+
         """
-        import matplotlib;matplotlib.use('GTK');import pylab
+        import pylab
         i = 0
         kpx = self.keypoints.x
         kpy = self.keypoints.y
@@ -643,7 +643,7 @@ class BlobDetection(object):
         """
         Return the list of peaks within an area
 
-        @param mask: 2d array with mask. 
+        @param mask: 2d array with mask.
         @param refine: shall the position be refined on the raw data
         @param Imin: minimum of intensity above the background
         @param kwarg: ignored parameters
@@ -684,7 +684,7 @@ class BlobDetection(object):
         if len(self.keypoints) == 0:
             logger.warning("No keypoints yet: running process before display")
             self.process()
-        import matplotlib;matplotlib.use('GTK');import pylab
+        import pylab
         f = pylab.figure()
         ax = f.add_subplot(1, 1, 1)
         ax.plot(self.keypoints.sigma, self.keypoints.I, '.r')
@@ -714,23 +714,23 @@ if __name__ == "__main__":
     bd = BlobDetection(img)
     kx, ky, dx, dy, sigma = bd._one_octave()
     print bd.sigmas
-# 
+#
 #     #building histogram with the corrected sigmas
 #     sigma = numpy.asarray(sigma)
 #     pylab.figure(2)
 #     pylab.clf()
 #     pylab.hist(sigma, bins=500)
 #     pylab.show()
-# 
-# 
+#
+#
 #     h = pylab.hist(sigma, bins=500)
 #     n = h[0].__len__()
 #     Proba = h[0] / float(numpy.sum(h[0]))
 # #     print Proba.size,numpy.max(Proba)
-# 
+#
 #     max = 0.0
 # #     print n
-# 
+#
 #     for cpt in range(n):
 # #         print cpt
 #         Proba1 = Proba[: cpt]
@@ -738,22 +738,22 @@ if __name__ == "__main__":
 #         P1 = numpy.sum(Proba1)
 #         P2 = numpy.sum(Proba2)
 # #         print P1,P2
-# 
+#
 #         n1 = numpy.arange(cpt)
 #         n2 = numpy.arange(cpt, n)
 #         Moy1 = sum(n1 * Proba1) / P1
 #         Moy2 = sum(n2 * Proba2) / P2
 # #         print "Moyennes"
 # #         print Moy1,Moy2
-# 
+#
 #         VarInterC = P1 * P2 * (Moy1 - Moy2) ** 2
 # #         print "Variance IC"
 # #         print VarInterC
-# 
+#
 #         if VarInterC > max :
 #             max = VarInterC
 #             index = cpt
-# 
+#
 # #     print max,cpt
 #     print 'sigma pour la separation'
 #     print h[1][index]
@@ -765,10 +765,10 @@ if __name__ == "__main__":
 #         k = bd.keypoints[j]
 #         x.extend(numpy.transpose(k)[0])
 #         y.extend(numpy.transpose(k)[1])
-# 
-# 
+#
+#
 #     print x.__len__(), y.__len__(), kx.__len__(), ky.__len__()
-# 
+#
 #     pylab.figure(1)
 #     pylab.clf()
 #     pylab.imshow((img), interpolation='nearest')
