@@ -45,7 +45,7 @@ pyFAI = sys.modules["pyFAI"]
 from pyFAI import bilinear
 # from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 # if logger.getEffectiveLevel() <= logging.INFO:
-#    import matplotlib;matplotlib.use('GTK');import pylab
+#    import pylab
 #from pyFAI import bilinear
 #bilinear = sys.modules["pyFAI.bilinear"]
 

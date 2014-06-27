@@ -41,7 +41,7 @@ logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI.marchingsquares import isocontour
 if logger.getEffectiveLevel() <= logging.INFO:
-    import matplotlib;matplotlib.use('GTK');import pylab
+    import pylab
 
 class TestMarchingSquares(unittest.TestCase):
     def test_isocontour(self):

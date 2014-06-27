@@ -126,7 +126,7 @@ def test():
 #    dis.calc_LUT()
 #    out = dis.correct(grid)
 #    fabio.edfimage.edfimage(data=out.astype("float32")).write("test2048.edf")
-    import matplotlib;matplotlib.use('GTK');import pylab
+    import pylab
     #pylab.imshow(outLUT)
     #pylab.show()
     #pylab.imshow(outCSR)  # , interpolation="nearest")
