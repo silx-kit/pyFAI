@@ -41,7 +41,7 @@ from libc.math cimport floor,ceil
 import logging
 logger = logging.getLogger("pyFAI.bilinear")
 
-from .utils import timeit 
+from .utils import timeit
 
 cdef class Bilinear:
     """Bilinear interpolator for finding max"""
@@ -193,24 +193,24 @@ cdef class Bilinear:
            return (sum0/sum,sum1/sum)
         else:
             return (current0,current1)
-@timeit
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)
 def calc_cartesian_positions(float32_64[:] d1, float32_64[:] d2, float[:,:,:,:] pos):
     """
-    Calculate the cartesian position for array of position (d1, d2) 
+    Calculate the cartesian position for array of position (d1, d2)
     with pixel coordinated stored in array pos
     This is bilinear interpolation
-    
+
     @param d1: position in dim1
     @param d2: position in dim2
-    @param pos: array with position of pixels corners 
+    @param pos: array with position of pixels corners
     """
     cdef int i, p1, p2, size = d1.size
     cdef float delta1, delta2, A1, A2, B1, B2, C1, C2, D1, D2
     cdef numpy.ndarray[numpy.float32_t, ndim = 1] out1 = numpy.empty(size, dtype=numpy.float32)
-    cdef numpy.ndarray[numpy.float32_t, ndim = 1] out2 = numpy.empty(size, dtype=numpy.float32) 
+    cdef numpy.ndarray[numpy.float32_t, ndim = 1] out2 = numpy.empty(size, dtype=numpy.float32)
     assert size == d2.size
     for i in prange(size, nogil=True):
         p1 = <int> d1[i]
@@ -225,8 +225,36 @@ def calc_cartesian_positions(float32_64[:] d1, float32_64[:] d2, float[:,:,:,:] 
         C2 = pos[p1,p2, 2, 2]
         D1 = pos[p1,p2, 3, 1]
         D2 = pos[p1,p2, 3, 2]
-        
+
         out1[i] = 0.5 * ((A1 + D1) * (1.0 - delta1) + delta1 * (B1 + C1))
         out2[i] = 0.5 * ((A2 + B2) * (1.0 - delta2) + delta2 * (C2 + D2))
     return out1, out2
-    
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+def convert_corner_2D_to_4D(int ndim, float32_64[:,:] d1, float32_64[:,:] d2):
+    """
+    Convert 2 array of corner position into a 4D array of pixel corner coodinates
+
+    @param ndim: 2d or 3D output
+    @param d1: 2D position in dim1 (shape +1)
+    @param d2: 2D position in dim2 (shape +1)
+    @param pos: 4D array with position of pixels corners
+    """
+    cdef int shape0, shape1, i, j
+    shape0 = d1.shape[0] - 1 #edges position are n+1 compared to number of pixels
+    shape1 = d1.shape[1] - 1
+    cdef numpy.ndarray[numpy.float32_t, ndim = 4] pos = numpy.zeros((shape0, shape1, 4, ndim), dtype=numpy.float32)
+#    assert d1.shape == d2.shape
+    for i in prange(shape0, nogil=True):
+        for j in range(shape1):
+            pos[i,j, 0, ndim-2] = d1[i, j]
+            pos[i,j, 0, ndim-1] = d2[i, j]
+            pos[i,j, 1, ndim-2] = d1[i+1, j]
+            pos[i,j, 1, ndim-1] = d2[i+1, j]
+            pos[i,j, 2, ndim-2] = d1[i+1, j+1]
+            pos[i,j, 2, ndim-1] = d2[i+1, j+1]
+            pos[i,j, 3, ndim-2] = d1[i, j+1]
+            pos[i,j, 3, ndim-1] = d2[i, j+1]
+    return pos

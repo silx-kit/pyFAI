@@ -98,7 +98,7 @@ class Detector(object):
         @type name: str
         @param config: configuration of the detector
         @type config: dict or JSON representation of it.
-    
+
         @return: an instance of the right detector, set-up if possible
         @rtype: pyFAI.detectors.Detector
         """
@@ -271,7 +271,7 @@ class Detector(object):
                 self.pixel1 = val * 1e-6
             elif kw == "splineFile":
                 self.set_splineFile(kwarg[kw])
-    @timeit
+
     def calc_cartesian_positions(self, d1=None, d2=None):
         """
         Calculate the position of each pixel center in cartesian coordinate
@@ -290,9 +290,9 @@ class Detector(object):
         the same shape.
         """
         if self.shape:
-            if (d1 is None):
+            if (d1 is None) or (d2 is None):
+#                d1, d2 = numpy.ogrid[:self.shape[0], :self.shape[1]]
                 d1 = numpy.outer(numpy.arange(self.shape[0]), numpy.ones(self.shape[1]))
-            if (d2 is None):
                 d2 = numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1]))
         elif "ndim" in dir(d1):
             if d1.ndim == 2:
@@ -416,14 +416,14 @@ class Detector(object):
     def get_pixel_corners(self):
         """
         Calculate the position of the corner of the pixels
-        
+
         This should be overwritten by class representing non-contiguous detector (Xpad, ...)
-        
+
         @return:  4D array containing:
                     pixel index (slow dimension)
                     pixel index (fast dimension)
-                    corner index (A, B, C or D), triangles or hexagons can be handled the same way 
-                    vertex position (z,y,x) 
+                    corner index (A, B, C or D), triangles or hexagons can be handled the same way
+                    vertex position (z,y,x)
         """
         #float32 is ok: precision of 1µm for a detector size of 1m
         corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
@@ -445,11 +445,11 @@ class Detector(object):
         Saves the detector description into a NeXus file, adapted from:
         http://download.nexusformat.org/sphinx/classes/base_classes/NXdetector.html
         Main differences:
-        
+
             * differentiate pixel center from pixel corner offsets
-            * store all offsets are ndarray according to slow/fast dimention (not x, y) 
-        
-        @param filename: name of the file on the disc 
+            * store all offsets are ndarray according to slow/fast dimention (not x, y)
+
+        @param filename: name of the file on the disc
         """
         if not io.h5py:
             logger.error("h5py module missing: NeXus detectors not supported")
@@ -484,6 +484,7 @@ class NexusDetector(Detector):
         if filename is not None:
             self.load(filename)
         self._filename = filename
+        uniform_pixel = True
 
     def __repr__(self):
         return "%s detector from NeXus file: %s\t PixelSize= %.3e, %.3e m" % \
@@ -493,8 +494,8 @@ class NexusDetector(Detector):
         """
         Loads the detector description from a NeXus file, adapted from:
         http://download.nexusformat.org/sphinx/classes/base_classes/NXdetector.html
-        
-        @param filename: name of the file on the disc 
+
+        @param filename: name of the file on the disc
         """
         if not io.h5py:
             logger.error("h5py module missing: NeXus detectors not supported")
@@ -515,61 +516,66 @@ class NexusDetector(Detector):
         if "pixel_corners" in det_grp:
             self._pixel_corners = det_grp["pixel_corners"].value
             self.uniform_pixel = False
+        else:
+            self.uniform_pixel = True
 
     def get_pixel_corners(self):
         """
         Calculate the position of the corner of the pixels
-        
+
         This should be overwritten by class representing non-contiguous detector (Xpad, ...)
-        
+
         @return:  4D array containing:
                     pixel index (slow dimension)
                     pixel index (fast dimension)
-                    corner index (A, B, C or D), triangles or hexagons can be handled the same way 
-                    vertex position (z,y,x) 
+                    corner index (A, B, C or D), triangles or hexagons can be handled the same way
+                    vertex position (z,y,x)
         """
         if self._pixel_corners is None:
             with self._sem:
                 if self._pixel_corners is None:
-                    corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
+
                     d1 = numpy.outer(numpy.arange(self.shape[0] + 1), numpy.ones(self.shape[1] + 1))
                     d2 = numpy.outer(numpy.ones(self.shape[0] + 1), numpy.arange(self.shape[1] + 1))
                     p1 = self._pixel1 * d1
                     p2 = self._pixel2 * d2
-                    corners[:, :, 0, 1] = p1[:-1, :-1]
-                    corners[:, :, 0, 2] = p2[:-1, :-1]
-                    corners[:, :, 1, 1] = p1[1:, :-1]
-                    corners[:, :, 1, 2] = p2[1:, :-1]
-                    corners[:, :, 2, 1] = p1[1:, 1:]
-                    corners[:, :, 2, 2] = p2[1:, 1:]
-                    corners[:, :, 3, 1] = p1[:-1, 1:]
-                    corners[:, :, 3, 2] = p2[:-1, 1:]
+                    if bilinear:
+                        corners = bilinear.convert_corner_2D_to_4D(3, p1, p2)
+                    else:
+                        corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
+                        corners[:, :, 0, 1] = p1[:-1, :-1]
+                        corners[:, :, 0, 2] = p2[:-1, :-1]
+                        corners[:, :, 1, 1] = p1[1:, :-1]
+                        corners[:, :, 1, 2] = p2[1:, :-1]
+                        corners[:, :, 2, 1] = p1[1:, 1:]
+                        corners[:, :, 2, 2] = p2[1:, 1:]
+                        corners[:, :, 3, 1] = p1[:-1, 1:]
+                        corners[:, :, 3, 2] = p2[:-1, 1:]
                     self._pixel_corners = corners
         return self._pixel_corners
 
-    @timeit
     def calc_cartesian_positions(self, d1=None, d2=None, center=True):
         """
         Calculate the position of each pixel center in cartesian coordinate
         and in meter of a couple of coordinates.
         The half pixel offset is taken into account here !!!
-        Adapted to Nexus detector definition 
+        Adapted to Nexus detector definition
 
         @param d1: the Y pixel positions (slow dimension)
         @type d1: ndarray (1D or 2D)
         @param d2: the X pixel positions (fast dimension)
         @type d2: ndarray (1D or 2D)
         @param center: retrieve the coordinate of the center of the pixel
-        
+
         @return: position in meter of the center of each pixels.
         @rtype: ndarray
 
         d1 and d2 must have the same shape, returned array will have
         the same shape.
         """
-        if (d1 is None):
+        if (d1 is None) or d2 is None:
+#            d1, d2 = numpy.ogrid[:self.shape[0], :self.shape[1]]
             d1 = numpy.outer(numpy.arange(self.shape[0]), numpy.ones(self.shape[1]))
-        if (d2 is None):
             d2 = numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1]))
         corners = self.get_pixel_corners()
         if center:
@@ -597,7 +603,6 @@ class NexusDetector(Detector):
             #points B and C are on the same dim1 (Y), they differ in dim2 (X)
             #p1 = mean(A1,D1) + delta1 * (mean(C2,D2)-mean(A2,C2))
             p1 = 0.5 * ((A1 + D1) * (1.0 - delta1) + delta1 * (B1 + C1))
-
             #points A and B are on the same dim2 (X), they differ in dim1
             #points A and B are on the same dim2 (X), they differ in dim1
             #p2 = mean(A2,B2) + delta2 * (mean(C2,D2)-mean(A2,C2))
@@ -947,7 +952,8 @@ class Fairchild(Detector):
     Fairchild Condor 486:90 detector
     """
     force_pixel = True
-    aliases = ["Condor", "Fairchild Condor 486:90"]
+    uniform_pixel = True
+    aliases = ["Fairchild", "Condor", "Fairchild Condor 486:90"]
     MAX_SHAPE = (4096, 4096)
     def __init__(self, pixel1=15e-6, pixel2=15e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -963,7 +969,8 @@ class Titan(Detector):
     """
     force_pixel = True
     MAX_SHAPE = (2048, 2048)
-    aliases = ["Titan 2k x 2k"]
+    aliases = ["Titan 2k x 2k", "OXD Titan", "Agilent Titan"]
+    uniform_pixel = True
     def __init__(self, pixel1=60e-6, pixel2=60e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
@@ -1078,7 +1085,7 @@ class Xpad_flat(Detector):
     force_pixel = True
     MAX_SHAPE = (960, 560)
     uniform_pixel = False
-    aliases = ["Xpad flat"]
+    aliases = ["Xpad S540 flat"]
 
     def __init__(self, pixel1=130e-6, pixel2=130e-6):
         super(Xpad_flat, self).__init__(pixel1=pixel1, pixel2=pixel2)
@@ -1129,16 +1136,19 @@ class Xpad_flat(Detector):
         if (d1 is None):
             c1 = numpy.arange(self.max_shape[0])
             for i in range(self.max_shape[0] // self.MODULE_SIZE[0]):
-                c1[i * self.MODULE_SIZE[0],
+                c1[i * self.MODULE_SIZE[0]:
                    (i + 1) * self.MODULE_SIZE[0]] += i * self.MODULE_GAP[0]
+            c1 = numpy.outer(c1, numpy.ones(self.max_shape[1]))
         else:
             c1 = d1 + (d1.astype(numpy.int64) // self.MODULE_SIZE[0])\
                 * self.MODULE_GAP[0]
+
         if (d2 is None):
             c2 = numpy.arange(self.max_shape[1])
             for i in range(self.max_shape[1] // self.MODULE_SIZE[1]):
-                c2[i * self.MODULE_SIZE[1],
+                c2[i * self.MODULE_SIZE[1]:
                    (i + 1) * self.MODULE_SIZE[1]] += i * self.MODULE_GAP[1]
+            c2 = numpy.outer(numpy.ones(self.max_shape[0]), c2)
         else:
             c2 = d2 + (d2.astype(numpy.int64) // self.MODULE_SIZE[1])\
                 * self.MODULE_GAP[1]

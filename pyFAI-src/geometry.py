@@ -28,8 +28,8 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/04/2013"
-__status__ = "beta"
+__date__ = "29/06/2013"
+__status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import os
@@ -38,6 +38,7 @@ import threading
 import logging
 import types
 import numpy
+logger = logging.getLogger("pyFAI.geometry")
 
 from numpy import radians, degrees, arccos, arctan2, sin, cos, sqrt
 from . import detectors
@@ -46,7 +47,13 @@ try:
     from . import _geometry
 except ImportError:
     _geometry = None
-logger = logging.getLogger("pyFAI.geometry")
+
+try:
+    from . import bilinear
+except ImportError:
+    bilinear = None
+
+
 try:
     from .fastcrc import crc32
 except ImportError:
@@ -533,22 +540,26 @@ class Geometry(object):
         if self._corner4Da is None:
             with self._sem:
                 if self._corner4Da is None:
-                    self._corner4Da = numpy.zeros((shape[0], shape[1], 4, 2),
-                                                  dtype=numpy.float32)
                     chi = numpy.fromfunction(self.chi_corner,
                                              (shape[0] + 1, shape[1] + 1),
                                              dtype=numpy.float32)
                     tth = numpy.fromfunction(self.tth_corner,
                                              (shape[0] + 1, shape[1] + 1),
                                              dtype=numpy.float32)
-                    self._corner4Da[:, :, 0, 0] = tth[:-1, :-1]
-                    self._corner4Da[:, :, 0, 1] = chi[:-1, :-1]
-                    self._corner4Da[:, :, 1, 0] = tth[1:, :-1]
-                    self._corner4Da[:, :, 1, 1] = chi[1:, :-1]
-                    self._corner4Da[:, :, 2, 0] = tth[1:, 1:]
-                    self._corner4Da[:, :, 2, 1] = chi[1:, 1:]
-                    self._corner4Da[:, :, 3, 0] = tth[:-1, 1:]
-                    self._corner4Da[:, :, 3, 1] = chi[:-1, 1:]
+                    if bilinear:
+                        corners = bilinear.convert_corner_2D_to_4D(2, tth, chi)
+                    else:
+                        corners = numpy.zeros((shape[0], shape[1], 4, 2),
+                                                  dtype=numpy.float32)
+                        corners[:, :, 0, 0] = tth[:-1, :-1]
+                        corners[:, :, 0, 1] = chi[:-1, :-1]
+                        corners[:, :, 1, 0] = tth[1:, :-1]
+                        corners[:, :, 1, 1] = chi[1:, :-1]
+                        corners[:, :, 2, 0] = tth[1:, 1:]
+                        corners[:, :, 2, 1] = chi[1:, 1:]
+                        corners[:, :, 3, 0] = tth[:-1, 1:]
+                        corners[:, :, 3, 1] = chi[:-1, 1:]
+                    self._corner4Da = corners
         return self._corner4Da
 
     def cornerQArray(self, shape):
@@ -567,14 +578,20 @@ class Geometry(object):
                     chi = numpy.fromfunction(self.chi_corner,
                                              (shape[0] + 1, shape[1] + 1),
                                              dtype=numpy.float32)
-                    self._corner4Dqa[:, :, 0, 0] = qar[:-1, :-1]
-                    self._corner4Dqa[:, :, 0, 1] = chi[:-1, :-1]
-                    self._corner4Dqa[:, :, 1, 0] = qar[1:, :-1]
-                    self._corner4Dqa[:, :, 1, 1] = chi[1:, :-1]
-                    self._corner4Dqa[:, :, 2, 0] = qar[1:, 1:]
-                    self._corner4Dqa[:, :, 2, 1] = chi[1:, 1:]
-                    self._corner4Dqa[:, :, 3, 0] = qar[:-1, 1:]
-                    self._corner4Dqa[:, :, 3, 1] = chi[:-1, 1:]
+                    if bilinear:
+                        corners = bilinear.convert_corner_2D_to_4D(2, qar, chi)
+                    else:
+                        corners = numpy.zeros((shape[0], shape[1], 4, 2),
+                                                  dtype=numpy.float32)
+                        corners[:, :, 0, 0] = qar[:-1, :-1]
+                        corners[:, :, 0, 1] = chi[:-1, :-1]
+                        corners[:, :, 1, 0] = qar[1:, :-1]
+                        corners[:, :, 1, 1] = chi[1:, :-1]
+                        corners[:, :, 2, 0] = qar[1:, 1:]
+                        corners[:, :, 2, 1] = chi[1:, 1:]
+                        corners[:, :, 3, 0] = qar[:-1, 1:]
+                        corners[:, :, 3, 1] = chi[:-1, 1:]
+                    self._corner4Dqa = corners
         return self._corner4Dqa
 
     def cornerRArray(self, shape):
@@ -593,14 +610,20 @@ class Geometry(object):
                     chi = numpy.fromfunction(self.chi_corner,
                                              (shape[0] + 1, shape[1] + 1),
                                              dtype=numpy.float32)
-                    self._corner4Dra[:, :, 0, 0] = rar[:-1, :-1]
-                    self._corner4Dra[:, :, 0, 1] = chi[:-1, :-1]
-                    self._corner4Dra[:, :, 1, 0] = rar[1:, :-1]
-                    self._corner4Dra[:, :, 1, 1] = chi[1:, :-1]
-                    self._corner4Dra[:, :, 2, 0] = rar[1:, 1:]
-                    self._corner4Dra[:, :, 2, 1] = chi[1:, 1:]
-                    self._corner4Dra[:, :, 3, 0] = rar[:-1, 1:]
-                    self._corner4Dra[:, :, 3, 1] = chi[:-1, 1:]
+                    if bilinear:
+                        corners = bilinear.convert_corner_2D_to_4D(2, rar, chi)
+                    else:
+                        corners = numpy.zeros((shape[0], shape[1], 4, 2),
+                                                  dtype=numpy.float32)
+                        corners[:, :, 0, 0] = rar[:-1, :-1]
+                        corners[:, :, 0, 1] = chi[:-1, :-1]
+                        corners[:, :, 1, 0] = rar[1:, :-1]
+                        corners[:, :, 1, 1] = chi[1:, :-1]
+                        corners[:, :, 2, 0] = rar[1:, 1:]
+                        corners[:, :, 2, 1] = chi[1:, 1:]
+                        corners[:, :, 3, 0] = rar[:-1, 1:]
+                        corners[:, :, 3, 1] = chi[:-1, 1:]
+                    self._corner4Dra = corners
         return self._corner4Dra
 
     def delta2Theta(self, shape):
@@ -751,9 +774,9 @@ class Geometry(object):
 
     def cosIncidance(self, d1, d2):
         """
-        Calculate the incidence angle (alpha) for current pixels (P). 
+        Calculate the incidence angle (alpha) for current pixels (P).
         The poni is at incidence angle=1 so cos(alpha) = 1
-        
+
         """
         p1, p2 = self._calcCartesianPositions(d1, d2)
         cosa = self._dist / numpy.sqrt(self._dist * self._dist + p1 * p1 + p2 * p2)
@@ -1149,17 +1172,17 @@ class Geometry(object):
         """
         Defines the absorption correction for a phosphor screen or a scintillator
         from t0, the normal transmission of the screen.
-        
+
         Icor = Iobs(1-t0)/(1-exp(ln(t0)/cos(incidence)))
                  1-exp(ln(t0)/cos(incidence)
         let t = -----------------------------
                           1 - t0
         See reference on:
         J. Appl. Cryst. (2002). 35, 356–359 G. Wu et al.  CCD phosphor
-        
+
         @param t0: value of the normal transmission (from 0 to 1)
         @param shape: shape of the array
-        @return: actual  
+        @return: actual
         """
         if t0 < 0 or t0 > 1:
             logger.error("Impossible value for normal transmission: %s" % t0)
