@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://forge.epn-campus.eu/projects/azimuthal
-#
-#    File: "$Id$"
+#             https://github.com/kif/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -25,13 +23,13 @@
 #
 "test suite for masked arrays"
 
-__author__ = "Picca Frédéric-Emmanuel"
+__author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "26/06/2014"
 
-import sys, os, tempfile
+import sys, os, tempfile, shutil
 import unittest
 import numpy
 from utilstest import getLogger  # UtilsTest, Rwp, getLogger
@@ -129,10 +127,12 @@ class TestDetector(unittest.TestCase):
 
     def test_nexus_detector(self):
         tmpdir = tempfile.mkdtemp()
-        known_fail = ["Xpad S540 flat"] #TODO: fix broken detectors
+        known_fail = [] #TODO: fix broken detectors
         print(tmpdir)
         for det_name in ALL_DETECTORS:
             fname = os.path.join(tmpdir, det_name + ".h5")
+            if os.path.exists(fname): #already tested with another alias
+                continue
             print fname
             det = detector_factory(det_name)
             if (det.pixel1 is None) or (det.shape is None):
@@ -156,6 +156,7 @@ class TestDetector(unittest.TestCase):
                 self.assert_(err1 < 1e-6, "precision on pixel position 1 is better than 1µm, got %e" % err2)
                 self.assert_(err2 < 1e-6, "precision on pixel position 2 is better than 1µm, got %e" % err2)
             #todo: check masks
+        shutil.rmtree(tmpdir)
 
 
 def test_suite_all_detectors():

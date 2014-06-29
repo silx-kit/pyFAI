@@ -1075,204 +1075,6 @@ class Mar345(Detector):
             (self.name, self._pixel1, self._pixel2)
 
 
-class Xpad_flat(Detector):
-    """
-    Xpad detector: generic description for
-    ImXPad detector with 8x7modules
-    """
-    MODULE_SIZE = (120, 80)
-    MODULE_GAP = (3 + 3.57 * 1000 / 130, 3)  # in pixels
-    force_pixel = True
-    MAX_SHAPE = (960, 560)
-    uniform_pixel = False
-    aliases = ["Xpad S540 flat"]
-
-    def __init__(self, pixel1=130e-6, pixel2=130e-6):
-        super(Xpad_flat, self).__init__(pixel1=pixel1, pixel2=pixel2)
-
-    def __repr__(self):
-        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
-                (self.name, self.pixel1, self.pixel2)
-
-
-    def calc_mask(self):
-        """
-        Returns a generic mask for Xpad detectors...
-        discards the first line and raw form all modules:
-        those are 2.5x bigger and often mis - behaving
-        """
-        if self.max_shape is None:
-            raise NotImplementedError("Generic Xpad detector does not"
-                                      " know the max size ...")
-        mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
-        # workinng in dim0 = Y
-        for i in range(0, self.max_shape[0], self.MODULE_SIZE[0]):
-            mask[i, :] = 1
-            mask[i + self.MODULE_SIZE[0] - 1, :] = 1
-        # workinng in dim1 = X
-        for i in range(0, self.max_shape[1], self.MODULE_SIZE[1]):
-            mask[:, i ] = 1
-            mask[:, i + self.MODULE_SIZE[1] - 1] = 1
-        return mask
-
-    def calc_cartesian_positions(self, d1=None, d2=None):
-        """
-        Calculate the position of each pixel center in cartesian coordinate
-        and in meter of a couple of coordinates.
-        The half pixel offset is taken into account here !!!
-
-        @param d1: the Y pixel positions (slow dimension)
-        @type d1: ndarray (1D or 2D)
-        @param d2: the X pixel positions (fast dimension)
-        @type d2: ndarray (1D or 2D)
-
-        @return: position in meter of the center of each pixels.
-        @rtype: ndarray
-
-        d1 and d2 must have the same shape, returned array will have
-        the same shape.
-
-        """
-        if (d1 is None):
-            c1 = numpy.arange(self.max_shape[0])
-            for i in range(self.max_shape[0] // self.MODULE_SIZE[0]):
-                c1[i * self.MODULE_SIZE[0]:
-                   (i + 1) * self.MODULE_SIZE[0]] += i * self.MODULE_GAP[0]
-            c1 = numpy.outer(c1, numpy.ones(self.max_shape[1]))
-        else:
-            c1 = d1 + (d1.astype(numpy.int64) // self.MODULE_SIZE[0])\
-                * self.MODULE_GAP[0]
-
-        if (d2 is None):
-            c2 = numpy.arange(self.max_shape[1])
-            for i in range(self.max_shape[1] // self.MODULE_SIZE[1]):
-                c2[i * self.MODULE_SIZE[1]:
-                   (i + 1) * self.MODULE_SIZE[1]] += i * self.MODULE_GAP[1]
-            c2 = numpy.outer(numpy.ones(self.max_shape[0]), c2)
-        else:
-            c2 = d2 + (d2.astype(numpy.int64) // self.MODULE_SIZE[1])\
-                * self.MODULE_GAP[1]
-
-        p1 = self.pixel1 * (0.5 + c1)
-        p2 = self.pixel2 * (0.5 + c2)
-        return p1, p2
-
-
-#def _pixels_compute_center(pixels_size):
-#    """
-#    given a list of pixel size, this method return the center of each
-#    pixels. This method is generic.
-#
-#    @param pixels_size: the size of the pixels.
-#    @type length: ndarray
-#
-#    @return: the center-coordinates of each pixels 0..length
-#    @rtype: ndarray
-#    """
-#    center = pixels_size.cumsum()
-#    tmp = center.copy()
-#    center[1:] += tmp[:-1]
-#    center /= 2.
-#
-#    return center
-#
-#
-#def _pixels_extract_coordinates(coordinates, pixels):
-#    """
-#    given a list of pixel coordinates, return the correspondig
-#    pixels coordinates extracted from the coodinates array.
-#
-#    @param coodinates: the pixels coordinates
-#    @type coordinates: ndarray 1D (pixels -> coordinates)
-#    @param pixels: the list of pixels to extract.
-#    @type pixels: ndarray 1D(calibration) or 2D(integration)
-#
-#    @return: the pixels coordinates
-#    @rtype: ndarray
-#    """
-#    return coordinates[pixels] if (pixels is not None) else coordinates
-
-
-#class ImXPadS140(Detector):
-#    """
-#    ImXPad detector: ImXPad s140 detector with 2x7modules
-#    """
-#    MODULE_SIZE = (120, 80)  # number of pixels per module (y, x)
-#    MAX_SHAPE = (240, 560)  # max size of the detector
-#    PIXEL_SIZE = (130e-6, 130e-6)
-#    BORDER_PIXEL_SIZE_RELATIVE = 2.5
-#    force_pixel = True
-#    aliases = ["Imxpad S140"]
-#
-#    class __metaclass__(DetectorMeta):
-#
-#        @lazy_property
-#        def COORDINATES(cls):
-#            """
-#            cache used to store the coordinates of the y, x, detector
-#            pixels. These array are compute only once for all
-#            instances.
-#            """
-#            return tuple(_pixels_compute_center(cls._pixels_size(n, m, p))
-#                         for n, m, p in zip(cls.MAX_SHAPE,
-#                                            cls.MODULE_SIZE,
-#                                            cls.PIXEL_SIZE))
-#
-#    @classmethod
-#    def _pixels_size(cls, length, module_size, pixel_size):
-#        """
-#        given the length (in pixel) of the detector, the size of a
-#        module (in pixels) and the pixel_size (in meter). this method
-#        return the length of each pixels 0..length.
-#
-#        @param length: the number of pixel to compute
-#        @type length: int
-#        @param module_size: the number of pixel of one module
-#        @type module_size: int
-#        @param pixel_size: the size of one pixels (meter per pixel)
-#        @type length: float
-#
-#        @return: the coordinates of each pixels 0..length
-#        @rtype: ndarray
-#        """
-#        size = numpy.ones(length)
-#        n = length // module_size
-#        for i in range(1, n):
-#            size[i * module_size - 1] = 2.5
-#            size[i * module_size] = 2.5
-#        return pixel_size * size
-#
-#    def __init__(self, pixel1=130e-6, pixel2=130e-6):
-#        super(ImXPadS140, self).__init__(pixel1=pixel1, pixel2=pixel2)
-#
-#
-#    def __repr__(self):
-#        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
-#            (self.name, self.pixel1, self.pixel2)
-#
-#
-#    def calc_cartesian_positions(self, d1=None, d2=None):
-#        """
-#        Calculate the position of each pixel center in cartesian coordinate
-#        and in meter of a couple of coordinates.
-#        The half pixel offset is taken into account here !!!
-#
-#        @param d1: the Y pixel positions (slow dimension)
-#        @type d1: ndarray (1D or 2D)
-#        @param d2: the X pixel positions (fast dimension)
-#        @type d2: ndarray (1D or 2D)
-#
-#        @return: position in meter of the center of each pixels.
-#        @rtype: ndarray
-#
-#        d1 and d2 must have the same shape, returned array will have
-#        the same shape.
-#
-#        """
-#        return tuple(_pixels_extract_coordinates(coordinates, pixels)
-#                     for coordinates, pixels in zip(ImXPadS140.COORDINATES,
-#                                                    (d1, d2)))
-
 class ImXPadS10(Detector):
     """
     ImXPad detector: ImXPad s10 detector with 1x1modules
@@ -1418,6 +1220,161 @@ class ImXPadS140(ImXPadS10):
 
     def __init__(self, pixel1=130e-6, pixel2=130e-6):
         ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2)
+
+
+class Xpad_flat(ImXPadS10):
+    """
+    Xpad detector: generic description for
+    ImXPad detector with 8x7modules
+    """
+    MODULE_SIZE = (120, 80)
+    MODULE_GAP = (3.57e-3, 0)  # in meter
+    force_pixel = True
+    MAX_SHAPE = (960, 560)
+    uniform_pixel = False
+    aliases = ["Xpad S540 flat"]
+    MODULE_SIZE = (120, 80)  # number of pixels per module (y, x)
+    PIXEL_SIZE = (130e-6, 130e-6)
+    BORDER_PIXEL_SIZE_RELATIVE = 2.5
+
+    def __init__(self, pixel1=130e-6, pixel2=130e-6):
+        super(Xpad_flat, self).__init__(pixel1=pixel1, pixel2=pixel2)
+        self._pixel_corners = None
+
+    def __repr__(self):
+        return "Detector %s\t PixelSize= %.3e, %.3e m" % \
+                (self.name, self.pixel1, self.pixel2)
+
+
+    def calc_mask(self):
+        """
+        Returns a generic mask for Xpad detectors...
+        discards the first line and raw form all modules:
+        those are 2.5x bigger and often mis - behaving
+        """
+        if self.max_shape is None:
+            raise NotImplementedError("Generic Xpad detector does not"
+                                      " know the max size ...")
+        mask = numpy.zeros(self.max_shape, dtype=numpy.int8)
+        # workinng in dim0 = Y
+        for i in range(0, self.max_shape[0], self.MODULE_SIZE[0]):
+            mask[i, :] = 1
+            mask[i + self.MODULE_SIZE[0] - 1, :] = 1
+        # workinng in dim1 = X
+        for i in range(0, self.max_shape[1], self.MODULE_SIZE[1]):
+            mask[:, i ] = 1
+            mask[:, i + self.MODULE_SIZE[1] - 1] = 1
+        return mask
+
+
+    def calc_cartesian_positions(self, d1=None, d2=None, center=True):
+        """
+        Calculate the position of each pixel center in cartesian coordinate
+        and in meter of a couple of coordinates.
+        The half pixel offset is taken into account here !!!
+        Adapted to Nexus detector definition
+
+        @param d1: the Y pixel positions (slow dimension)
+        @type d1: ndarray (1D or 2D)
+        @param d2: the X pixel positions (fast dimension)
+        @type d2: ndarray (1D or 2D)
+        @param center: retrieve the coordinate of the center of the pixel
+
+        @return: position in meter of the center of each pixels.
+        @rtype: ndarray
+
+        d1 and d2 must have the same shape, returned array will have
+        the same shape.
+        """
+        if (d1 is None) or d2 is None:
+#            d1, d2 = numpy.ogrid[:self.shape[0], :self.shape[1]]
+            d1 = numpy.outer(numpy.arange(self.shape[0]), numpy.ones(self.shape[1]))
+            d2 = numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1]))
+        corners = self.get_pixel_corners()
+        if center:
+            d1 += 0.5
+            d2 += 0.5
+        if bilinear:
+            p1, p2 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
+            p1.shape = d1.shape
+            p2.shape = d2.shape
+        else:
+            i1 = d1.astype(int)
+            i2 = d2.astype(int)
+            delta1 = d1 - i1
+            delta2 = d2 - i2
+            pixels = corners[i1, i2]
+            A1 = pixels[:, :, 0, 1]
+            A2 = pixels[:, :, 0, 2]
+            B1 = pixels[:, :, 1, 1]
+            B2 = pixels[:, :, 1, 2]
+            C1 = pixels[:, :, 2, 1]
+            C2 = pixels[:, :, 2, 2]
+            D1 = pixels[:, :, 3, 1]
+            D2 = pixels[:, :, 3, 2]
+            #points A and D are on the same dim1 (Y), they differ in dim2 (X)
+            #points B and C are on the same dim1 (Y), they differ in dim2 (X)
+            #p1 = mean(A1,D1) + delta1 * (mean(C2,D2)-mean(A2,C2))
+            p1 = 0.5 * ((A1 + D1) * (1.0 - delta1) + delta1 * (B1 + C1))
+            #points A and B are on the same dim2 (X), they differ in dim1
+            #points A and B are on the same dim2 (X), they differ in dim1
+            #p2 = mean(A2,B2) + delta2 * (mean(C2,D2)-mean(A2,C2))
+            p2 = 0.5 * ((A2 + B2) * (1.0 - delta2) + delta2 * (C2 + D2))
+        return p1, p2
+
+    def get_pixel_corners(self):
+        """
+        Calculate the position of the corner of the pixels
+
+        @return:  4D array containing:
+                    pixel index (slow dimension)
+                    pixel index (fast dimension)
+                    corner index (A, B, C or D), triangles or hexagons can be handled the same way
+                    vertex position (z,y,x)
+        """
+        if self._pixel_corners is None:
+            with self._sem:
+                if self._pixel_corners is None:
+                    pixel_size1 = self._calc_pixels_size(self.MAX_SHAPE[0], self.MODULE_SIZE[0], self.PIXEL_SIZE[0])
+                    pixel_size2 = self._calc_pixels_size(self.MAX_SHAPE[1], self.MODULE_SIZE[1], self.PIXEL_SIZE[1])
+                    # half pixel offset
+                    pixel_center1 = pixel_size1 / 2.0 # half pixel offset
+                    pixel_center2 = pixel_size2 / 2.0
+                    #size of all preceeding pixels
+                    pixel_center1[1:] += numpy.cumsum(pixel_size1[:-1])
+                    pixel_center2[1:] += numpy.cumsum(pixel_size2[:-1])
+                    #gaps
+                    for i in range(self.MAX_SHAPE[0] // self.MODULE_SIZE[0]):
+                        pixel_center1[i * self.MODULE_SIZE[0]:
+                           (i + 1) * self.MODULE_SIZE[0]] += i * self.MODULE_GAP[0]
+                    for i in range(self.MAX_SHAPE[1] // self.MODULE_SIZE[1]):
+                        pixel_center2[i * self.MODULE_SIZE[1]:
+                           (i + 1) * self.MODULE_SIZE[1]] += i * self.MODULE_GAP[1]
+
+                    pixel_center1.shape = -1, 1
+                    pixel_center1.strides = pixel_center1.strides[0], 0
+
+                    pixel_center2.shape = 1, -1
+                    pixel_center2.strides = 0, pixel_center2.strides[1]
+
+                    pixel_size1.shape = -1, 1
+                    pixel_size1.strides = pixel_size1.strides[0], 0
+
+                    pixel_size2.shape = 1, -1
+                    pixel_size2.strides = 0, pixel_size2.strides[1]
+
+                    corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
+                    corners[:, :, 0, 1] = pixel_center1 - pixel_size1 / 2.0
+                    corners[:, :, 0, 2] = pixel_center2 - pixel_size2 / 2.0
+                    corners[:, :, 1, 1] = pixel_center1 + pixel_size1 / 2.0
+                    corners[:, :, 1, 2] = pixel_center2 - pixel_size2 / 2.0
+                    corners[:, :, 2, 1] = pixel_center1 + pixel_size1 / 2.0
+                    corners[:, :, 2, 2] = pixel_center2 + pixel_size2 / 2.0
+                    corners[:, :, 3, 1] = pixel_center1 - pixel_size1 / 2.0
+                    corners[:, :, 3, 2] = pixel_center2 + pixel_size2 / 2.0
+                    self._pixel_corners = corners
+        return self._pixel_corners
+
 
 
 class Perkin(Detector):
