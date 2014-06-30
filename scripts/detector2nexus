@@ -51,9 +51,10 @@ def main():
     version = "detector2nexus version %s from %s" % (pyFAI.version, pyFAI.date)
     description = """
     Convert a complex detector definition (multiple modules, possibly in 3D)
-    into a single NeXus detector definition togeather with the mask (and much more in the future)
+    into a single NeXus detector definition together with the mask (and much more in the future)
     """
-    epilog = """bla.
+    epilog = """
+    This summarizes  
     """
     parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
     parser.add_argument("-V", "--version", action='version', version=version)
@@ -70,14 +71,14 @@ def main():
                   help="Base detector name (see documentation of pyFAI.detectors")
     parser.add_argument("-s", "--splinefile", dest="splinefile", type=str, default=None,
                   help="Geometric distortion file from FIT2D")
-    parser.add_argument("-dx", "--splinefile", dest="splinefile", type=str, default=None,
-                  help="Geometric distortion file from FIT2D")
-
-    #TODO ... -p pixel size, --shape ...
-    parser.add_argument("-c", "--cutoff", dest="cutoff", type=float, default=None,
-                  help="Take the mean of the average +/- cutoff * std_dev.")
-    parser.add_argument("-F", "--format", dest="format", type=str, default="edf",
-                  help="Output file/image format (by default EDF)")
+    parser.add_argument("-dx", "--x-corr", dest="dx", type=str, default=None,
+                  help="Geometric correction for pilatus")
+    parser.add_argument("-dy", "--y-corr", dest="dy", type=str, default=None,
+                  help="Geometric correction for pilatus")
+    parser.add_argument("-p", "--pixel", dest="pixel", type=str, default=None,
+                  help="pixel size (comma separated): x,y")
+    parser.add_argument("-S", "--shape", dest="shape", type=str, default=None,
+                  help="shape of the detector (comma separated): x,y")
     parser.add_argument("-d", "--dark", dest="dark", type=str, default=None,
                   help="Dark noise to be subtracted")
     parser.add_argument("-f", "--flat", dest="flat", type=str, default=None,

@@ -519,7 +519,7 @@ class NexusDetector(Detector):
         else:
             self.uniform_pixel = True
 
-    def get_pixel_corners(self):
+    def get_pixel_corners(self, use_cython=True):
         """
         Calculate the position of the corner of the pixels
 
@@ -535,22 +535,28 @@ class NexusDetector(Detector):
             with self._sem:
                 if self._pixel_corners is None:
 
-                    d1 = numpy.outer(numpy.arange(self.shape[0] + 1), numpy.ones(self.shape[1] + 1))
-                    d2 = numpy.outer(numpy.ones(self.shape[0] + 1), numpy.arange(self.shape[1] + 1))
-                    p1 = self._pixel1 * d1
-                    p2 = self._pixel2 * d2
-                    if bilinear:
+                    if bilinear and use_cython:
+                        d1 = numpy.outer(numpy.arange(self.shape[0] + 1), numpy.ones(self.shape[1] + 1))
+                        d2 = numpy.outer(numpy.ones(self.shape[0] + 1), numpy.arange(self.shape[1] + 1))
+                        p1 = self._pixel1 * d1
+                        p2 = self._pixel2 * d2
                         corners = bilinear.convert_corner_2D_to_4D(3, p1, p2)
                     else:
+                        p1 = numpy.arange(self.shape[0] + 1) * self._pixel1
+                        p2 = numpy.arange(self.shape[1] + 1) * self._pixel2
+                        p1.shape = -1, 1
+                        p1.strides = p1.strides[0], 0
+                        p2.shape = 1, -1
+                        p2.strides = 0, p2.strides[1]
                         corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
-                        corners[:, :, 0, 1] = p1[:-1, :-1]
-                        corners[:, :, 0, 2] = p2[:-1, :-1]
-                        corners[:, :, 1, 1] = p1[1:, :-1]
-                        corners[:, :, 1, 2] = p2[1:, :-1]
-                        corners[:, :, 2, 1] = p1[1:, 1:]
-                        corners[:, :, 2, 2] = p2[1:, 1:]
-                        corners[:, :, 3, 1] = p1[:-1, 1:]
-                        corners[:, :, 3, 2] = p2[:-1, 1:]
+                        corners[:, :, 0, 1] = p1[:-1, :]
+                        corners[:, :, 0, 2] = p2[:, :-1]
+                        corners[:, :, 1, 1] = p1[1:, :]
+                        corners[:, :, 1, 2] = p2[:, :-1]
+                        corners[:, :, 2, 1] = p1[1:, :]
+                        corners[:, :, 2, 2] = p2[:, 1:]
+                        corners[:, :, 3, 1] = p1[:-1, :]
+                        corners[:, :, 3, 2] = p2[:, 1:]
                     self._pixel_corners = corners
         return self._pixel_corners
 

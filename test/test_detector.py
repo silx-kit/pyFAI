@@ -128,34 +128,41 @@ class TestDetector(unittest.TestCase):
     def test_nexus_detector(self):
         tmpdir = tempfile.mkdtemp()
         known_fail = [] #TODO: fix broken detectors
-        print(tmpdir)
+#        print(tmpdir)
         for det_name in ALL_DETECTORS:
             fname = os.path.join(tmpdir, det_name + ".h5")
             if os.path.exists(fname): #already tested with another alias
                 continue
-            print fname
+#            print fname
             det = detector_factory(det_name)
             if (det.pixel1 is None) or (det.shape is None):
                 continue
-            print det
+#            print(det)
 
             det.save(fname)
             new_det = detector_factory(fname)
-            print new_det
+#            print new_det
             for what in ("pixel1", "pixel2", "name", "max_shape", "shape", "binning"):
                 if "__len__" in dir(det.__getattribute__(what)):
                     self.assertEqual(det.__getattribute__(what), new_det.__getattribute__(what), "%s is the same for %s" % (what, fname))
                 else:
                     self.assertAlmostEqual(det.__getattribute__(what), new_det.__getattribute__(what), 4, "%s is the same for %s" % (what, fname))
-            print det, det.shape
+            if det.shape[0] > 2000:
+                continue
             r1, r2 = det.calc_cartesian_positions()
             o1, o2 = new_det.calc_cartesian_positions()
             err1 = abs(r1 - o1).max()
             err2 = abs(r2 - o2).max()
             if det.name not in known_fail:
-                self.assert_(err1 < 1e-6, "precision on pixel position 1 is better than 1µm, got %e" % err2)
-                self.assert_(err2 < 1e-6, "precision on pixel position 2 is better than 1µm, got %e" % err2)
-            #todo: check masks
+                self.assert_(err1 < 1e-6, "%s precision on pixel position 1 is better than 1µm, got %e" % (det_name,err2))
+                self.assert_(err2 < 1e-6, "%s precision on pixel position 2 is better than 1µm, got %e" % (det_name, err2))
+            if (det.mask is not None) or (new_det.mask is not None):
+                self.assert_(numpy.allclose(det.mask, new_det.mask), "%s mask is not the same" % det_name)
+            
+        #check Pilatus with displacement maps
+        #check spline
+        #check SPD sisplacement
+
         shutil.rmtree(tmpdir)
 
 
