@@ -288,6 +288,29 @@ csr_integrate(	const 	__global	float	*weights,
     cd = 0;
     cc = 0;
 
+    while (active_threads != 1)
+    {
+        active_threads /= 2;
+        if (thread_id_loc < active_threads)
+        {
+            index = thread_id_loc+active_threads;
+            cd = super_sum_data_correction[thread_id_loc] + super_sum_data_correction[index];
+            super_sum_temp = super_sum_data[thread_id_loc];
+            y = super_sum_data[index] - cd;
+            t = super_sum_temp + y;
+            super_sum_data_correction[thread_id_loc] = (t - super_sum_temp) - y;
+            super_sum_data[thread_id_loc] = t;
+
+            cc = super_sum_count_correction[thread_id_loc] + super_sum_count_correction[index];
+            super_sum_temp = super_sum_count[thread_id_loc];
+            y = super_sum_count[index] - cc;
+            t = super_sum_temp + y;
+            super_sum_count_correction[thread_id_loc]  = (t - super_sum_temp) - y;
+            super_sum_count[thread_id_loc] = t;
+        }
+        barrier(CLK_LOCAL_MEM_FENCE);
+    }
+
     if (thread_id_loc == 0)
     {
         outData[bin_num] = super_sum_data[0];
