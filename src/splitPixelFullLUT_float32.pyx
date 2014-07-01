@@ -43,10 +43,10 @@ EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
 
 cdef struct Function:
-    double slope
-    double intersect
+    float slope
+    float intersect
 
-cdef double area4(double a0, double a1, double b0, double b1, double c0, double c1, double d0, double d1) nogil:
+cdef float area4(float a0, float a1, float b0, float b1, float c0, float c1, float d0, float d1) nogil:
     """
     Calculate the area of the ABCD quadrilataire  with corners:
     A(a0,a1)
@@ -58,7 +58,7 @@ cdef double area4(double a0, double a1, double b0, double b1, double c0, double 
     return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
     
 @cython.cdivision(True)
-cdef inline double getBinNr( double x0, double pos0_min, double delta) nogil:
+cdef inline float getBinNr( float x0, float pos0_min, float delta) nogil:
     """
     calculate the bin number for any point
     param x0: current position
@@ -67,7 +67,7 @@ cdef inline double getBinNr( double x0, double pos0_min, double delta) nogil:
     """
     return (x0 - pos0_min) / delta
 
-cdef double integrate( double A0, double B0, Function AB) nogil:
+cdef float integrate( float A0, float B0, Function AB) nogil:
     """
     integrates the line defined by AB, from A0 to B0
     param A0: first limit
@@ -152,12 +152,12 @@ class HistoLUT1dFullSplit(object):
         cdef numpy.int8_t[:] cmask
         cdef numpy.ndarray[numpy.int32_t, ndim = 1] outMax = numpy.zeros(self.bins, dtype=numpy.int32)
         cdef numpy.ndarray[numpy.int32_t, ndim = 1] indptr = numpy.zeros(self.bins+1, dtype=numpy.int32)
-        cdef double pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0
-        cdef double max0, min0
-        cdef double areaPixel=0, delta=0
-        cdef double A0=0, B0=0, C0=0, D0=0, A1=0, B1=0, C1=0, D1=0
-        cdef double A_lim=0, B_lim=0, C_lim=0, D_lim=0
-        cdef double oneOverArea=0, partialArea=0, tmp=0
+        cdef float pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0
+        cdef float max0, min0
+        cdef float areaPixel=0, delta=0
+        cdef float A0=0, B0=0, C0=0, D0=0, A1=0, B1=0, C1=0, D1=0
+        cdef float A_lim=0, B_lim=0, C_lim=0, D_lim=0
+        cdef float oneOverArea=0, partialArea=0, tmp=0
         cdef Function AB, BC, CD, DA
         cdef int bins, i=0, idx=0, bin=0, bin0_max=0, bin0_min=0, pixel_bins=0, k=0, size=0
         cdef bint check_pos1=False, check_mask=False
@@ -179,7 +179,7 @@ class HistoLUT1dFullSplit(object):
             self.pos1_maxin = self.pos[:, :, 1].max()
         self.pos1_max = self.pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
 
-        self.delta = (self.pos0_max - self.pos0_min) / (< double > (bins))
+        self.delta = (self.pos0_max - self.pos0_min) / (< float > (bins))
         
         pos0_min = self.pos0_min
         pos0_max = self.pos0_max
@@ -198,14 +198,14 @@ class HistoLUT1dFullSplit(object):
                 if (check_mask) and (cmask[idx]):
                     continue
 
-                A0 = getBinNr(< double > cpos[idx, 0, 0], pos0_min, delta)
-                A1 = < double > cpos[idx, 0, 1]
-                B0 = getBinNr(< double > cpos[idx, 1, 0], pos0_min, delta)
-                B1 = < double > cpos[idx, 1, 1]
-                C0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, delta)
-                C1 = < double > cpos[idx, 2, 1]
-                D0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, delta)
-                D1 = < double > cpos[idx, 3, 1]
+                A0 = getBinNr(< float > cpos[idx, 0, 0], pos0_min, delta)
+                A1 = < float > cpos[idx, 0, 1]
+                B0 = getBinNr(< float > cpos[idx, 1, 0], pos0_min, delta)
+                B1 = < float > cpos[idx, 1, 1]
+                C0 = getBinNr(< float > cpos[idx, 2, 0], pos0_min, delta)
+                C1 = < float > cpos[idx, 2, 1]
+                D0 = getBinNr(< float > cpos[idx, 3, 0], pos0_min, delta)
+                D1 = < float > cpos[idx, 3, 1]
 
                 min0 = min(A0, B0, C0, D0)
                 max0 = max(A0, B0, C0, D0)
@@ -236,14 +236,14 @@ class HistoLUT1dFullSplit(object):
                 if (check_mask) and (cmask[idx]):
                     continue
 
-                A0 = getBinNr(< double > cpos[idx, 0, 0], pos0_min, delta)
-                A1 = < double > cpos[idx, 0, 1]
-                B0 = getBinNr(< double > cpos[idx, 1, 0], pos0_min, delta)
-                B1 = < double > cpos[idx, 1, 1]
-                C0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, delta)
-                C1 = < double > cpos[idx, 2, 1]
-                D0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, delta)
-                D1 = < double > cpos[idx, 3, 1]
+                A0 = getBinNr(< float > cpos[idx, 0, 0], pos0_min, delta)
+                A1 = < float > cpos[idx, 0, 1]
+                B0 = getBinNr(< float > cpos[idx, 1, 0], pos0_min, delta)
+                B1 = < float > cpos[idx, 1, 1]
+                C0 = getBinNr(< float > cpos[idx, 2, 0], pos0_min, delta)
+                C1 = < float > cpos[idx, 2, 1]
+                D0 = getBinNr(< float > cpos[idx, 3, 0], pos0_min, delta)
+                D1 = < float > cpos[idx, 3, 1]
 
                 min0 = min(A0, B0, C0, D0)
                 max0 = max(A0, B0, C0, D0)
@@ -318,7 +318,7 @@ class HistoLUT1dFullSplit(object):
 
         """
         cdef numpy.int32_t i=0, j=0, idx=0, bins=self.bins, size=self.size
-        cdef double sum_data=0.0, sum_count=0.0, epsilon=1e-10
+        cdef float sum_data=0.0, sum_count=0.0, epsilon=1e-10
         cdef float data=0, coef=0, cdummy=0, cddummy=0
         cdef bint do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
@@ -869,7 +869,7 @@ class HistoLUT1dFullSplit(object):
 
         #"""
         #cdef int i=0, j=0, idx=0, bins0=self.bins[0], bins1=self.bins[1], bins=bins0*bins1, size=self.size
-        #cdef double sum_data=0.0, sum_count=0.0, epsilon=1e-10
+        #cdef float sum_data=0.0, sum_count=0.0, epsilon=1e-10
         #cdef float data=0, coef=0, cdummy=0, cddummy=0
         #cdef bint do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
         #cdef numpy.ndarray[numpy.float64_t, ndim = 2] outData = numpy.zeros(self.bins, dtype=numpy.float64)

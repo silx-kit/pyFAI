@@ -429,7 +429,17 @@ void lut3(__global float8* pos,
         DA.x=(pixel.s1-pixel.s7)/(pixel.s0-pixel.s6);
         DA.y= pixel.s7 - DA.x*pixel.s6;
         
-        float areaPixel = area4(pixel.s0, pixel.s1, pixel.s2, pixel.s3, pixel.s4, pixel.s5, pixel.s6, pixel.s7);
+        float A_lim = pixel.s0;
+        float B_lim = pixel.s2;
+        float C_lim = pixel.s4;
+        float D_lim = pixel.s6;
+        float areaPixel = integrate_line(A_lim, B_lim, AB);
+        areaPixel += integrate_line(B_lim, C_lim, BC);
+        areaPixel += integrate_line(C_lim, D_lim, CD);
+        areaPixel += integrate_line(D_lim, A_lim, DA);
+        areaPixel = fabs(areaPixel);
+        float areaPixel2 = area4(pixel.s0, pixel.s1, pixel.s2, pixel.s3, pixel.s4, pixel.s5, pixel.s6, pixel.s7);
+        printf("%d\t%f\t%f\t%f\t%f \n", global_index, areaPixel, areaPixel2, fabs(areaPixel-areaPixel2), fabs(areaPixel-areaPixel2)/areaPixel);
         float oneOverPixelArea = 1.0 / areaPixel;
         for (int bin=bin0_min; bin < bin0_max+1; bin++)
         {
@@ -437,7 +447,7 @@ void lut3(__global float8* pos,
             float B_lim = (pixel.s2<=bin)*(pixel.s2<=(bin+1))*bin + (pixel.s2>bin)*(pixel.s2<=(bin+1))*pixel.s2 + (pixel.s2>bin)*(pixel.s2>(bin+1))*(bin+1);
             float C_lim = (pixel.s4<=bin)*(pixel.s4<=(bin+1))*bin + (pixel.s4>bin)*(pixel.s4<=(bin+1))*pixel.s4 + (pixel.s4>bin)*(pixel.s4>(bin+1))*(bin+1);
             float D_lim = (pixel.s6<=bin)*(pixel.s6<=(bin+1))*bin + (pixel.s6>bin)*(pixel.s6<=(bin+1))*pixel.s6 + (pixel.s6>bin)*(pixel.s6>(bin+1))*(bin+1);
-            float partialArea  = integrate_line(A_lim, B_lim, AB);
+            float partialArea = integrate_line(A_lim, B_lim, AB);
             partialArea += integrate_line(B_lim, C_lim, BC);
             partialArea += integrate_line(C_lim, D_lim, CD);
             partialArea += integrate_line(D_lim, A_lim, DA);

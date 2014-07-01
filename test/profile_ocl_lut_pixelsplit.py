@@ -112,6 +112,14 @@ program.lut3(queue, global_size, (workgroup_size,), d_pos.data, d_minmax.data, n
 
 outMax_2  = numpy.copy(d_outMax)
 
+indices  = ndarray(lut_size, dtype=numpy.int32)
+data_lut = ndarray(lut_size, dtype=numpy.float32)
+idx_ptr  = ndarray(bins+1, dtype=numpy.int32)
+
+cl.enqueue_copy(queue,indices, d_indices.data)
+cl.enqueue_copy(queue,data_lut, d_data.data)
+cl.enqueue_copy(queue,idx_ptr, d_idx_ptr.data)
+
 #check_atomics = numpy.ndarray(lut_size, dtype=numpy.int32)
 
 #cl.enqueue_copy(queue, check_atomics, d_check_atomics)
@@ -131,13 +139,17 @@ program.u16_to_float(queue, global_size, (workgroup_size,), d_image.data, d_imag
 program.csr_integrate(queue, (bins*workgroup_size,),(workgroup_size,), d_image_float.data, d_data.data, d_indices.data, d_idx_ptr.data, d_outData.data, d_outCount.data, d_outMerge.data)
 
 
-#outData  = numpy.ndarray(bins, dtype=numpy.float32)
-#outCount = numpy.ndarray(bins, dtype=numpy.float32)
+#outData  = numpy.copy(d_outData)
+#outCount = numpy.copy(d_outCount)
+#outMerge = numpy.copy(d_outMerge)
+
+outData  = numpy.ndarray(bins, dtype=numpy.float32)
+outCount = numpy.ndarray(bins, dtype=numpy.float32)
 outMerge = numpy.ndarray(bins, dtype=numpy.float32)
 
 
-#cl.enqueue_copy(queue,outData, d_outData)
-#cl.enqueue_copy(queue,outCount, d_outCount)
+cl.enqueue_copy(queue,outData, d_outData.data)
+cl.enqueue_copy(queue,outCount, d_outCount.data)
 cl.enqueue_copy(queue,outMerge, d_outMerge.data)
 
 #program.integrate2(queue, (1024,), (workgroup_size,), d_outData, d_outCount, d_outMerge)
@@ -150,18 +162,39 @@ cl.enqueue_copy(queue,outMerge, d_outMerge.data)
 
 #ref = ai.integrate1d(data,bins,unit="2th_deg", correctSolidAngle=False, method="splitpixelfull")
 
-ref = splitPixelFullLUT.HistoLUT1dFullSplit(pos,bins, unit="2th_deg")
+foo = splitPixelFullLUT.HistoLUT1dFullSplit(pos,bins, unit="2th_deg")
 
-#assert(numpy.allclose(ref,outMerge))
+ref = foo.integrate(data)
+assert(numpy.allclose(ref[1],outMerge))
 
 #plot(ref[0],outMerge, label="ocl_lut_merge")
-##plot(ref[0],outData, label="ocl_lut_data")
-##plot(ref[0],outCount, label="ocl_lut_count")
-plot(ref[1], label="ref_merge")
-##plot(ref[0], ref[2], label="ref_data")
-##plot(ref[0], ref[3], label="ref_count")
-###plot(abs(ref-outMerge)/outMerge, label="ocl_csr_fullsplit")
-legend()
-show()
-raw_input()
+#plot(ref[0],outData, label="ocl_lut_data")
+#plot(ref[0],outCount, label="ocl_lut_count")
+#plot(ref[0], ref[1], label="ref_merge")
+#plot(ref[0], ref[2], label="ref_data")
+#plot(ref[0], ref[3], label="ref_count")
+####plot(abs(ref-outMerge)/outMerge, label="ocl_csr_fullsplit")
+#legend()
+#show()
+#raw_input()
 
+  
+#aaa = 0
+#bbb = 0
+#for i in range(bins):
+    #ind_tmp1 = numpy.copy(indices[idx_ptr[i]:idx_ptr[i+1]])
+    #ind_tmp2 = numpy.copy(foo.indices[idx_ptr[i]:idx_ptr[i+1]])
+    #data_tmp1 = numpy.copy(data_lut[idx_ptr[i]:idx_ptr[i+1]])
+    #data_tmp2 = numpy.copy(foo.data[idx_ptr[i]:idx_ptr[i+1]])
+    #sort1 = numpy.argsort(ind_tmp1)
+    #sort2 = numpy.argsort(ind_tmp2)
+    #data_1 = data_tmp1[sort1]
+    #data_2 = data_tmp2[sort2]
+    #for j in range(data_1.size):
+        #aaa += 1
+        #if not numpy.allclose(data_1[j],data_2[j]):
+            #bbb += 1
+            #print data_1[j],data_2[j],numpy.allclose(data_1[j],data_2[j]), idx_ptr[i]+j
+
+
+#print aaa,bbb
