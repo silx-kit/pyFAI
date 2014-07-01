@@ -34,10 +34,10 @@ __status__ = "beta"
 __docformat__ = 'restructuredtext'
 __doc__ = """
 
-Module for "high-performance" writing in either 1D with Ascii , or 2D with FabIO 
-or even nD with n varying from  2 to 4 using HDF5 
+Module for "high-performance" writing in either 1D with Ascii , or 2D with FabIO
+or even nD with n varying from  2 to 4 using HDF5
 
-Stand-alone module which tries to offer interface to HDF5 via H5Py and 
+Stand-alone module which tries to offer interface to HDF5 via H5Py and
 capabilities to write EDF or other formats using fabio.
 
 Can be imported without h5py but then limited to fabio & ascii formats.
@@ -61,7 +61,11 @@ except ImportError as error:
     h5py = None
     logger.error("h5py module missing")
 else:
-    h5py._errors.silence_errors()
+    try:
+        h5py._errors.silence_errors()
+    except AttributeError: #old h5py
+        pass
+
 
 from . import version
 
@@ -74,7 +78,7 @@ def get_isotime(forceTime=None):
     @param forceTime: enforce a given time (current by default)
     @type forceTime: float
     @return: the current time as an ISO8601 string
-    @rtype: string  
+    @rtype: string
     """
     if forceTime is None:
         forceTime = time.time()
@@ -86,7 +90,7 @@ def get_isotime(forceTime=None):
 
 def from_isotime(text, use_tz=False):
     """
-    @param text: string representing the time is iso format 
+    @param text: string representing the time is iso format
     """
     text = str(text)
     base = text[:19]
@@ -100,7 +104,7 @@ def from_isotime(text, use_tz=False):
 def is_hdf5(filename):
     """
     Check if a file is actually a HDF5 file
-    
+
     @param filename: this file has better to exist
     """
     signature = [137, 72, 68, 70, 13, 10, 26, 10]
@@ -113,12 +117,12 @@ def is_hdf5(filename):
 
 class Writer(object):
     """
-    Abstract class for writers. 
+    Abstract class for writers.
     """
     CONFIG_ITEMS = ["filename", "dirname", "extension", "subdir", "hpath"]
     def __init__(self, filename=None, extension=None):
         """
-        
+
         """
         self.filename = filename
         if os.path.exists(filename):
@@ -136,9 +140,9 @@ class Writer(object):
 
     def init(self, fai_cfg=None, lima_cfg=None):
         """
-        Creates the directory that will host the output file(s) 
+        Creates the directory that will host the output file(s)
         @param fai_cfg: configuration for worker
-        @param lima_cfg: configuration for acquisition 
+        @param lima_cfg: configuration for acquisition
         """
 
         with self._sem:
@@ -184,17 +188,17 @@ class Writer(object):
 class HDF5Writer(Writer):
     """
     Class allowing to write HDF5 Files.
-    
+
     """
     CONFIG = "pyFAI"
     DATASET_NAME = "data"
     def __init__(self, filename, hpath="data", fast_scan_width=None):
         """
         Constructor of an HDF5 writer:
-        
+
         @param filename: name of the file
         @param hpath: name of the group: it will contain data (2-4D dataset), [tth|q|r] and pyFAI, group containing the configuration
-        @param fast_scan_width: set it to define the width of 
+        @param fast_scan_width: set it to define the width of
         """
         Writer.__init__(self, filename)
         self.hpath = hpath
@@ -316,7 +320,7 @@ class HDF5Writer(Writer):
     def flush(self, radial=None, azimuthal=None):
         """
         Update some data like axis units and so on.
-        
+
         @param radial: position in radial direction
         @param  azimuthal: position in azimuthal direction
         """
@@ -393,11 +397,11 @@ class HDF5Writer(Writer):
 
 class AsciiWriter(Writer):
     """
-    Ascii file writer (.xy or .dat) 
+    Ascii file writer (.xy or .dat)
     """
     def __init__(self, filename=None, prefix="fai_", extension=".dat"):
         """
-        
+
         """
         Writer.__init__(self, filename, extension)
         self.header = None
@@ -414,8 +418,8 @@ class AsciiWriter(Writer):
 
     def init(self, fai_cfg=None, lima_cfg=None):
         """
-        Creates the directory that will host the output file(s) 
-        
+        Creates the directory that will host the output file(s)
+
         """
         Writer.init(self, fai_cfg, lima_cfg)
         with self._sem:
@@ -477,13 +481,13 @@ class AsciiWriter(Writer):
 
 class FabioWriter(Writer):
     """
-    Image file writer based on FabIO 
-    
+    Image file writer based on FabIO
+
     TODO !!!
     """
     def __init__(self, filename=None):
         """
-        
+
         """
         Writer.__init__(self, filename)
         self.header = None
@@ -498,8 +502,8 @@ class FabioWriter(Writer):
 
     def init(self, fai_cfg=None, lima_cfg=None):
         """
-        Creates the directory that will host the output file(s) 
-        
+        Creates the directory that will host the output file(s)
+
         """
         Writer.init(self, fai_cfg, lima_cfg)
         with self._sem:
@@ -580,7 +584,7 @@ class Nexus(object):
     def __init__(self, filename, mode="r"):
         """
         Constructor
-        
+
         @param filename: name of the hdf5 file containing the nexus
         @param mode: can be r or a
         """
@@ -597,7 +601,7 @@ class Nexus(object):
 
     def close(self):
         """
-        close the filename and update all entries   
+        close the filename and update all entries
         """
         end_time = get_isotime()
         for entry in self.to_close:
@@ -622,8 +626,8 @@ class Nexus(object):
     def find_detector(self, all=False):
         """
         Tries to find a detector within a NeXus file, takes the first compatible detector
-        
-        @param all: return all detectors found as a list 
+
+        @param all: return all detectors found as a list
         """
         result = []
         for entry in self.get_entries():
@@ -665,7 +669,7 @@ class Nexus(object):
     def new_detector(self, name="detector", entry="entry", subentry="pyFAI"):
         """
         Create a new entry/pyFAI/Detector
-        
+
         @param detector: name of the detector
         @param entry: name of the entry
         @param subentry: all pyFAI description of detectors should be in a pyFAI sub-entry
@@ -681,7 +685,7 @@ class Nexus(object):
     def get_class(self, grp, class_type="NXcollection"):
         """
         return all sub-groups of the given type within a group
-        
+
         @param grp: HDF5 group
         @param class_type: name of the NeXus class
         """
