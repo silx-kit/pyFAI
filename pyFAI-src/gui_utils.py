@@ -43,6 +43,8 @@ import pylab
 
 from PyQt4 import QtGui, QtCore
 
+main_loop = False
+
 def update_fig(fig=None):
     """
     Update a matplotlib figure with a Qt4 backend
@@ -55,7 +57,8 @@ def update_fig(fig=None):
             QtGui.qApp.postEvent(fig.canvas,
                                  QtGui.QResizeEvent(fig.canvas.size(),
                                                     fig.canvas.size()))
-            QtCore.QCoreApplication.processEvents()
+            if not main_loop:
+                QtCore.QCoreApplication.processEvents()
 
 def maximize_fig(fig=None):
     """

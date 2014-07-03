@@ -51,7 +51,7 @@ from .gui_utils import pylab, update_fig, matplotlib
 from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
 from .peak_picker import PeakPicker
-from . import units
+from . import units, gui_utils
 from .utils import averageImages, measure_offset, expand_args, readFloatFromKeyboard
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import hc
@@ -945,7 +945,8 @@ class AbstractCalibration(object):
             self.ax_xrpd_2d.set_title("2D regrouping")
             self.ax_xrpd_2d.set_xlabel(self.unit)
             self.ax_xrpd_2d.set_ylabel("Azimuthal angle (deg)")
-            self.fig3.show()
+            if not gui_utils.main_loop:
+                self.fig3.show()
             update_fig(self.fig3)
 
     def validate_calibration(self):
@@ -968,6 +969,15 @@ class AbstractCalibration(object):
 ################################################################################
 # Calibration
 ################################################################################
+
+    def set_data(self, data):
+        """
+        call-back function for the peak-picker
+        """
+        self.data = data
+        if not self.weighted:
+            self.data = numpy.array(self.data)[:, :-1]
+        self.refine()
 
 class Calibration(AbstractCalibration):
     """
@@ -1066,7 +1076,6 @@ decrease the value if arcs are mixed together.""", default=None)
             self.peakPicker.gui(log=True, maximize=True, pick=True)
             update_fig(self.peakPicker.fig)
 
-
     def gui_peakPicker(self):
         if self.peakPicker is None:
             self.preprocess()
@@ -1075,10 +1084,12 @@ decrease the value if arcs are mixed together.""", default=None)
             self.peakPicker.load(self.pointfile)
         if self.gui:
             update_fig(self.peakPicker.fig)
-        self.data = self.peakPicker.finish(self.pointfile)
-        if not self.weighted:
-            self.data = numpy.array(self.data)[:, :-1]
-
+#        self.peakPicker.finish(self.pointfile, callback=self.set_data)
+        self.set_data(self.peakPicker.finish(self.pointfile))
+        raw_input("Please press enter when you are happy with your selection" + os.linesep)
+#        while self.data is None:
+#            update_fig(self.peakPicker.fig)
+#            time.sleep(0.1)
 
     def refine(self):
         """
@@ -1801,7 +1812,8 @@ correction, at a sub-pixel level.
         """
         if self.fig is None:
             self.fig = pylab.figure()
-            self.fig.show()
+            if not gui_utils.main_loop:
+                self.fig.show()
         else:
             self.fig.clf()
         ax1 = self.fig.add_subplot(2, 2, 3)
