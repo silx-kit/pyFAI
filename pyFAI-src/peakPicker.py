@@ -35,7 +35,7 @@ import os, sys, threading, logging, gc, types
 import operator
 from math import sqrt
 import numpy
-from .gui_utils import pylab, update_fig, maximize_fig
+from .gui_utils import pylab, update_fig, maximize_fig, QtGui, backend
 import fabio
 from .utils import deprecated, percentile
 from .reconstruct import reconstruct
@@ -46,6 +46,45 @@ logger = logging.getLogger("pyFAI.peakPicker")
 if os.name != "nt":
     WindowsError = RuntimeError
 
+################################################################################
+# Toolbar widget
+################################################################################
+#class PeakPickerToolbar(backend.NavigationToolbar2QT):
+#    def __init__(self, canvas, parent, coordinates=True):
+#        backend.NavigationToolbar2QT.__init__(self, canvas, parent, False)
+#        self.append_mode = None
+#
+#
+##    def _init_toolbar(self):
+##        backend.NavigationToolbar2QT._init_toolbar(self)
+##        self.addSeparator()
+##        a = self.addAction('+pts', self.on_plus_pts_clicked)
+##        a.setToolTip('Add more points to group')
+##        a = self.addAction('-pts', self.on_minus_pts_clicked)
+##        a.setToolTip('Remove points from group')
+#
+#    def pan(self):
+#        self.append_mode = None
+#        backend.NavigationToolbar2QT.pan(self)
+#
+#    def zoom(self):
+#        self.append_mode = None
+#        backend.NavigationToolbar2QT.zoom(self)
+#
+#
+#    def on_plus_pts_clicked(self, *args):
+#        """
+#        callback function
+#        """
+#        self.append_mode = True
+#        print(self.append_mode)
+#
+#    def on_minus_pts_clicked(self, *args):
+#        """
+#        callback function
+#        """
+#        self.append_mode = False
+#        print(self.append_mode)
 
 
 ################################################################################
@@ -85,6 +124,8 @@ class PeakPicker(object):
         self.ax = None
         self.ct = None
         self.msp = None
+        self.append_mode = None
+        self.spinbox = None
         self.reconstruct = reconst
         self.mask = mask
         self.massif = None  #used for massif detection
@@ -195,7 +236,25 @@ class PeakPicker(object):
             self.ax = self.fig.add_subplot(111)
             self.ct = self.fig.add_subplot(111)
             self.msp = self.fig.add_subplot(111)
+#            self.ax.format_coord = self.format_coord
+            #Add widget to the toolbar
+            toolbar = self.fig.canvas.toolbar
+            toolbar.addSeparator()
+#            a = toolbar.addAction('+pts', self.on_plus_pts_clicked)
+#            a.setToolTip('Add more points to group')
+#            a = toolbar.addAction('-pts', self.on_minus_pts_clicked)
+#            a.setToolTip('Remove points from group')
+            label = QtGui.QLabel("ring ", toolbar)
+#            self.pix_coords_label = QLabel("Pixel coordinates and intensity : x = None , y = None , i = None ", self)
+            toolbar.addWidget(label)
+            self.spinbox = QtGui.QSpinBox(toolbar)
+            self.spinbox.setMinimum(0)
+            toolbar.addWidget(self.spinbox)
+
+
             self.fig.show()
+#            self.fig.canvas.toolbar.show()
+
         if log:
             showData = numpy.log1p(self.data - self.data.min())
             self.ax.set_title('Log colour scale (skipping lowest/highest per mille)')
@@ -432,6 +491,33 @@ class PeakPicker(object):
             self.fig.clear()
             self.fig = None
             gc.collect()
+
+
+#    def format_coord(self, x, y):
+#        """
+#        Print coordinated in matplotlib toolbar
+#        """
+#        col = int(x + 0.5)
+#        row = int(y + 0.5)
+#        if col >= 0 and col < self.shape[1] and row >= 0 and row < self.shape[0]:
+#            z = self.data[row, col]
+#            return 'x=%.2f \t y=%.2f \t I=%1.4f' % (x, y, z)
+#        else:
+#            return 'x=%.2f \t y=%.2f \t I=None' % (x, y)
+
+    def on_plus_pts_clicked(self, *args):
+        """
+        callback function
+        """
+        self.append_mode = True
+        print(self.append_mode)
+
+    def on_minus_pts_clicked(self, *args):
+        """
+        callback function
+        """
+        self.append_mode = False
+        print(self.append_mode)
 
 ################################################################################
 # ControlPoints
