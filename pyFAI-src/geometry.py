@@ -218,7 +218,7 @@ class Geometry(object):
         self._polarization_axis_offset = 0
         self._polarization = None
         self._polarization_crc = None  # checksum associated with _polarization
-        self._cosa = None      #cosine of the incidance angle
+        self._cosa = None  # cosine of the incidance angle
         self._transmission_normal = None
         self._transmission_corr = None
         self._transmission_crc = None
@@ -275,6 +275,49 @@ class Geometry(object):
         p1, p2 = self.detector.calc_cartesian_positions(d1, d2)
         return p1 - poni1, p2 - poni2
 
+    def calc_pos_zyx(self, d0=None, d1=None, d2=None, param=None):
+        """
+        Allows you to calculate the position of a set of points in space in the sample
+        re 
+        
+        
+        @param d0: altitude on the point compared to the detector (i.e. z)
+        @param d1: position on the detector along the slow dimention (i.e. y)
+        @param d2: position on the detector along the fastest dimention (i.e. x)
+        @return zyx array, so 3D array with dim0=along the beam, 
+                                            dim1=along slowest dimension
+                                            dim2=along fastest dimension
+                                            unless rotations are too large
+        """
+        if param is None:
+            param = self.param
+        if (d1 is None) or (d2 is None):
+            raise RuntimeError("input corrdiate d1 and d2 are mandatory")
+        p1, p2 = self._calcCartesianPositions(d1, d2, param[1], param[2])
+        if d0 is None:
+            L = param[0]
+        else:
+            L = param[0] + d0
+        cosRot1 = cos(param[3])
+        cosRot2 = cos(param[4])
+        cosRot3 = cos(param[5])
+        sinRot1 = sin(param[3])
+        sinRot2 = sin(param[4])
+        sinRot3 = sin(param[5])
+        t1 = p1 * cosRot2 * cosRot3 + \
+            p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - \
+            L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
+        t2 = p1 * cosRot2 * sinRot3 + \
+            p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - \
+            L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
+        t3 = p1 * sinRot2 - p2 * cosRot2 * sinRot1 + L * cosRot1 * cosRot2
+        shape = 3, d1.shape[0], d1.shape[1]
+        zyx = numpy.zeros(shape)
+        zyx[0] = t3
+        zyx[1] = t1
+        zyx[2] = t2
+        return zyx
+
     def tth(self, d1, d2, param=None, path="cython"):
         """
         Calculates the 2theta value for the center of a given pixel
@@ -288,11 +331,13 @@ class Geometry(object):
         @return: 2theta in radians
         @rtype: floar or array of floats.
         """
-        if param is None:
-            param = self.param
-        p1, p2 = self._calcCartesianPositions(d1, d2, param[1], param[2])
 
         if path == "cython" and _geometry:
+            if param is None:
+                param = self.param
+
+            p1, p2 = self._calcCartesianPositions(d1, d2, param[1], param[2])
+
             tmp = _geometry.calc_tth(L=param[0],
                                      rot1=param[3],
                                      rot2=param[4],
@@ -301,20 +346,27 @@ class Geometry(object):
                                      pos2=p2)
             tmp.shape = p1.shape
         else:
-            L = param[0]
-            cosRot1 = cos(param[3])
-            cosRot2 = cos(param[4])
-            cosRot3 = cos(param[5])
-            sinRot1 = sin(param[3])
-            sinRot2 = sin(param[4])
-            sinRot3 = sin(param[5])
-            t1 = p1 * cosRot2 * cosRot3 + \
-                p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - \
-                L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
-            t2 = p1 * cosRot2 * sinRot3 + \
-                p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - \
-                L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
-            t3 = p1 * sinRot2 - p2 * cosRot2 * sinRot1 + L * cosRot1 * cosRot2
+#             if param is None:
+#                 param = self.param
+#             p1, p2 = self._calcCartesianPositions(d1, d2, param[1], param[2])
+#             L = param[0]
+#             cosRot1 = cos(param[3])
+#             cosRot2 = cos(param[4])
+#             cosRot3 = cos(param[5])
+#             sinRot1 = sin(param[3])
+#             sinRot2 = sin(param[4])
+#             sinRot3 = sin(param[5])
+#             t1 = p1 * cosRot2 * cosRot3 + \
+#                 p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - \
+#                 L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
+#             t2 = p1 * cosRot2 * sinRot3 + \
+#                 p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - \
+#                 L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
+#             t3 = p1 * sinRot2 - p2 * cosRot2 * sinRot1 + L * cosRot1 * cosRot2
+            zyx = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, param=param)
+            t1 = zyx[1]
+            t2 = zyx[2]
+            t3 = zyx[0]
             if path == "cos":
                 tmp = arccos(t3 / sqrt(t1 ** 2 + t2 ** 2 + t3 ** 2))
             else:
@@ -706,7 +758,7 @@ class Geometry(object):
                         delta[:, :, 3] = \
                             numpy.minimum(((chi_corner[:-1, 1: ] - chi_center) % twoPi),
                                           ((chi_center - chi_corner[:-1, 1: ]) % twoPi))
-                    self._dchia = delta.max(axis= -1)
+                    self._dchia = delta.max(axis=-1)
         return self._dchia
 
     def deltaQ(self, shape):
@@ -738,7 +790,7 @@ class Geometry(object):
                         delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
                         delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
                         delta[:, :, 3] = abs(q_corner[:-1, 1:] - q_center)
-                    self._dqa = delta.max(axis= -1)
+                    self._dqa = delta.max(axis=-1)
         return self._dqa
 
     def deltaR(self, shape):
@@ -769,7 +821,7 @@ class Geometry(object):
                         delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
                         delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
                         delta[:, :, 3] = abs(q_corner[:-1, 1:] - q_center)
-                    self._dra = delta.max(axis= -1)
+                    self._dra = delta.max(axis=-1)
         return self._dra
 
     def cosIncidance(self, d1, d2):
