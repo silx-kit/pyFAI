@@ -38,7 +38,9 @@ __status__ = "production"
 
 import matplotlib
 matplotlib.use('Qt4Agg')
+from matplotlib.backends import backend_qt4 as backend
 import pylab
+
 from PyQt4 import QtGui, QtCore
 
 def update_fig(fig=None):
