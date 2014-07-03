@@ -126,6 +126,9 @@ class PeakPicker(object):
         self.msp = None
         self.append_mode = None
         self.spinbox = None
+        self.refine_btn = None
+        self.ref_action = None
+        self.sb_action = None
         self.reconstruct = reconst
         self.mask = mask
         self.massif = None  #used for massif detection
@@ -226,7 +229,7 @@ class PeakPicker(object):
             self.fig.show()
             update_fig(self.fig)
 
-    def gui(self, log=False, maximize=False):
+    def gui(self, log=False, maximize=False, pick=True):
         """
         @param log: show z in log scale
         """
@@ -236,24 +239,23 @@ class PeakPicker(object):
             self.ax = self.fig.add_subplot(111)
             self.ct = self.fig.add_subplot(111)
             self.msp = self.fig.add_subplot(111)
-#            self.ax.format_coord = self.format_coord
-            #Add widget to the toolbar
             toolbar = self.fig.canvas.toolbar
             toolbar.addSeparator()
-#            a = toolbar.addAction('+pts', self.on_plus_pts_clicked)
-#            a.setToolTip('Add more points to group')
-#            a = toolbar.addAction('-pts', self.on_minus_pts_clicked)
-#            a.setToolTip('Remove points from group')
-            label = QtGui.QLabel("ring ", toolbar)
-#            self.pix_coords_label = QLabel("Pixel coordinates and intensity : x = None , y = None , i = None ", self)
-            toolbar.addWidget(label)
-            self.spinbox = QtGui.QSpinBox(toolbar)
-            self.spinbox.setMinimum(0)
-            toolbar.addWidget(self.spinbox)
+
+            a = toolbar.addAction('Opts', self.on_option_clicked)
+            a.setToolTip('open options window')
+            if pick:
+                label = QtGui.QLabel("Ring #", toolbar)
+                toolbar.addWidget(label)
+                self.spinbox = QtGui.QSpinBox(toolbar)
+                self.spinbox.setMinimum(0)
+                self.sb_action = toolbar.addWidget(self.spinbox)
+                a = toolbar.addAction('Refine', self.on_refine_clicked)
+                a.setToolTip('switch to refinement mode')
+                self.ref_action = a
+                self.mpl_connectId = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
 
 
-            self.fig.show()
-#            self.fig.canvas.toolbar.show()
 
         if log:
             showData = numpy.log1p(self.data - self.data.min())
@@ -268,11 +270,11 @@ class PeakPicker(object):
         im = self.ax.imshow(showData, vmin=showMin, vmax=showMax, origin="lower", interpolation="nearest")
 
         self.ax.autoscale_view(False, False, False)
-        self.fig.colorbar(im)
+        self.fig.colorbar(im)#, self.ax)
         update_fig(self.fig)
         if maximize:
             maximize_fig(self.fig)
-        self.mpl_connectId = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
+        self.fig.show()
 
     def load(self, filename):
         """
@@ -518,6 +520,22 @@ class PeakPicker(object):
         """
         self.append_mode = False
         print(self.append_mode)
+
+    def on_option_clicked(self, *args):
+        """
+        callback function
+        """
+        print("Option!")
+
+    def on_refine_clicked(self, *args):
+        """
+        callback function
+        """
+        print("refine, now!")
+        self.sb_action.setDisabled(True)
+        self.ref_action.setDisabled(True)
+        self.spinbox.setEnabled(False)
+        self.mpl_connectId = None
 
 ################################################################################
 # ControlPoints

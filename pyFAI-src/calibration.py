@@ -547,10 +547,6 @@ class AbstractCalibration(object):
             self.read_wavelength()
             self.peakPicker.points.calibrant.wavelength = self.wavelength
 
-        if self.gui:
-            self.peakPicker.gui(log=True, maximize=True)
-            update_fig(self.peakPicker.fig)
-
     def extract_cpt(self, method="massif"):
         """
         Performs an automatic keypoint extraction:
@@ -1066,6 +1062,9 @@ decrease the value if arcs are mixed together.""", default=None)
             self.peakPicker.massif.setValleySize(self.gaussianWidth)
         else:
             self.peakPicker.massif.initValleySize()
+        if self.gui:
+            self.peakPicker.gui(log=True, maximize=True, pick=True)
+            update_fig(self.peakPicker.fig)
 
 
     def gui_peakPicker(self):
@@ -1193,6 +1192,16 @@ without human intervention (--no-gui and --no-interactive options).
         """Read the name of the file with d-spacing"""
         AbstractCalibration.read_dSpacingFile(self, verbose=False)
 
+
+    def preprocess(self):
+        """
+        do dark, flat correction thresholding, ...
+        """
+        AbstractCalibration.preprocess(self)
+
+        if self.gui:
+            self.peakPicker.gui(log=True, maximize=True, pick=False)
+            update_fig(self.peakPicker.fig)
 
 
 
