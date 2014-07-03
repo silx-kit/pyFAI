@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20140106"
+__date__ = "20140703"
 
 
 import unittest
@@ -41,9 +41,9 @@ import fabio
 from utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
-import pyFAI.peakPicker
+import pyFAI.peak_picker
 import pyFAI.geometryRefinement
-from pyFAI.peakPicker import PeakPicker
+from pyFAI.peak_picker import PeakPicker
 from pyFAI.calibrant import Calibrant
 from pyFAI.geometryRefinement import GeometryRefinement
 if logger.getEffectiveLevel() <= logging.INFO:

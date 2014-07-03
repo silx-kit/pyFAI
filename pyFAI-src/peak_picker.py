@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2014"
+__date__ = "03/07/2014"
 __status__ = "production"
 
 import os, sys, threading, logging, gc, types
@@ -42,7 +42,7 @@ from .reconstruct import reconstruct
 from .calibrant import Calibrant, ALL_CALIBRANTS
 from .blob_detection import BlobDetection
 from .massif import Massif
-logger = logging.getLogger("pyFAI.peakPicker")
+logger = logging.getLogger("pyFAI.peak_picker")
 if os.name != "nt":
     WindowsError = RuntimeError
 

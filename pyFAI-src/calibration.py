@@ -50,7 +50,7 @@ import fabio
 from .gui_utils import pylab, update_fig, matplotlib
 from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
-from .peakPicker import PeakPicker
+from .peak_picker import PeakPicker
 from . import units
 from .utils import averageImages, measure_offset, expand_args, readFloatFromKeyboard
 from .azimuthalIntegrator import AzimuthalIntegrator
