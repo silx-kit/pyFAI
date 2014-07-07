@@ -39,19 +39,20 @@ size = pos_size/8
 
 
 
-boo = splitPixelFullLUT_float32.HistoLUT1dFullSplit(pos,bins, unit="2th_deg", bad_pixel=1101814)
+boo = splitPixelFullLUT_float32.HistoLUT1dFullSplit(pos,bins, unit="2th_deg", bad_pixel=None) #1101814
 
 #matrix_32 =  scipy.sparse.csr_matrix((boo.data,boo.indices,boo.indptr), shape=(bins,data.size))
 #mat32d = matrix_32.todense()
 #mat32d.shape = (mat32d.size,)
-#out = boo.integrate(data)
+out = boo.integrate(data)
 
 #ai.xrpd_LUT(data, 1000)
 
 #ref = ai.integrate1d(data,bins,unit="2th_deg", correctSolidAngle=False, method="lut")
 
-foo = splitPixelFullLUT.HistoLUT1dFullSplit(pos,bins, unit="2th_deg", bad_pixel=1101814)
+#foo = splitPixelFullLUT.HistoLUT1dFullSplit(pos,bins, unit="2th_deg", bad_pixel=None)
 
+#ref = foo.integrate(data)
 #matrix_64 =  scipy.sparse.csr_matrix((foo.data,foo.indices,foo.indptr), shape=(bins,data.size))
 #mat64d = matrix_64.todense()
 #mat64d.shape = (mat64d.size,)
@@ -89,7 +90,7 @@ foo = splitPixelFullLUT.HistoLUT1dFullSplit(pos,bins, unit="2th_deg", bad_pixel=
 #plot(ref[0],outData, label="ocl_lut_data")
 #plot(ref[0],outCount, label="ocl_lut_count")
 
-#plot(out[0], out[1], label="ocl_lut_merge")
+plot(out[0], out[1], label="ocl_lut_merge")
 #plot(out[0], out[2], label="ocl_lut_data")
 #plot(out[0], out[3], label="ocl_lut_count")
 
@@ -97,9 +98,9 @@ foo = splitPixelFullLUT.HistoLUT1dFullSplit(pos,bins, unit="2th_deg", bad_pixel=
 #plot(ref[0], ref[2], label="ref_data")
 #plot(ref[0], ref[3], label="ref_count")
 ####plot(abs(ref-outMerge)/outMerge, label="ocl_csr_fullsplit")
-#legend()
-#show()
-#raw_input()
+legend()
+show()
+raw_input()
 
   
 #aaa = 0

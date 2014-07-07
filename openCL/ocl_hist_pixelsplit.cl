@@ -318,6 +318,11 @@ void integrate1(__global float8* pos,
         
         float2 AB, BC, CD, DA;
         
+        pixel.s0 -= bin0_min;
+        pixel.s2 -= bin0_min;
+        pixel.s4 -= bin0_min;
+        pixel.s6 -= bin0_min;
+        
         AB.x=(pixel.s3-pixel.s1)/(pixel.s2-pixel.s0);
         AB.y= pixel.s1 - AB.x*pixel.s0;
         BC.x=(pixel.s5-pixel.s3)/(pixel.s4-pixel.s2);
@@ -331,10 +336,15 @@ void integrate1(__global float8* pos,
         float oneOverPixelArea = 1.0 / areaPixel;
         for (int bin=bin0_min; bin < bin0_max+1; bin++)
         {
-            float A_lim = (pixel.s0<=bin)*(pixel.s0<=(bin+1))*bin + (pixel.s0>bin)*(pixel.s0<=(bin+1))*pixel.s0 + (pixel.s0>bin)*(pixel.s0>(bin+1))*(bin+1);
-            float B_lim = (pixel.s2<=bin)*(pixel.s2<=(bin+1))*bin + (pixel.s2>bin)*(pixel.s2<=(bin+1))*pixel.s2 + (pixel.s2>bin)*(pixel.s2>(bin+1))*(bin+1);
-            float C_lim = (pixel.s4<=bin)*(pixel.s4<=(bin+1))*bin + (pixel.s4>bin)*(pixel.s4<=(bin+1))*pixel.s4 + (pixel.s4>bin)*(pixel.s4>(bin+1))*(bin+1);
-            float D_lim = (pixel.s6<=bin)*(pixel.s6<=(bin+1))*bin + (pixel.s6>bin)*(pixel.s6<=(bin+1))*pixel.s6 + (pixel.s6>bin)*(pixel.s6>(bin+1))*(bin+1);
+//             float A_lim = (pixel.s0<=bin)*(pixel.s0<=(bin+1))*bin + (pixel.s0>bin)*(pixel.s0<=(bin+1))*pixel.s0 + (pixel.s0>bin)*(pixel.s0>(bin+1))*(bin+1);
+//             float B_lim = (pixel.s2<=bin)*(pixel.s2<=(bin+1))*bin + (pixel.s2>bin)*(pixel.s2<=(bin+1))*pixel.s2 + (pixel.s2>bin)*(pixel.s2>(bin+1))*(bin+1);
+//             float C_lim = (pixel.s4<=bin)*(pixel.s4<=(bin+1))*bin + (pixel.s4>bin)*(pixel.s4<=(bin+1))*pixel.s4 + (pixel.s4>bin)*(pixel.s4>(bin+1))*(bin+1);
+//             float D_lim = (pixel.s6<=bin)*(pixel.s6<=(bin+1))*bin + (pixel.s6>bin)*(pixel.s6<=(bin+1))*pixel.s6 + (pixel.s6>bin)*(pixel.s6>(bin+1))*(bin+1);
+            int bin0 = bin - bin0_min;
+            float A_lim = (pixel.s0<=bin0)*(pixel.s0<=(bin0+1))*bin0 + (pixel.s0>bin0)*(pixel.s0<=(bin0+1))*pixel.s0 + (pixel.s0>bin0)*(pixel.s0>(bin0+1))*(bin0+1);
+            float B_lim = (pixel.s2<=bin0)*(pixel.s2<=(bin0+1))*bin0 + (pixel.s2>bin0)*(pixel.s2<=(bin0+1))*pixel.s2 + (pixel.s2>bin0)*(pixel.s2>(bin0+1))*(bin0+1);
+            float C_lim = (pixel.s4<=bin0)*(pixel.s4<=(bin0+1))*bin0 + (pixel.s4>bin0)*(pixel.s4<=(bin0+1))*pixel.s4 + (pixel.s4>bin0)*(pixel.s4>(bin0+1))*(bin0+1);
+            float D_lim = (pixel.s6<=bin0)*(pixel.s6<=(bin0+1))*bin0 + (pixel.s6>bin0)*(pixel.s6<=(bin0+1))*pixel.s6 + (pixel.s6>bin0)*(pixel.s6>(bin0+1))*(bin0+1);
             float partialArea  = integrate_line(A_lim, B_lim, AB);
             partialArea += integrate_line(B_lim, C_lim, BC);
             partialArea += integrate_line(C_lim, D_lim, CD);

@@ -13,14 +13,15 @@ from pylab import *
 print "#"*50
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import splitPixelFullLUT
+from pyFAI import splitPixelFull
 from pyFAI import ocl_hist_pixelsplit
 #from pyFAI import splitBBoxLUT
 #from pyFAI import splitBBoxCSR
 #logger = utilstest.getLogger("profile")
 
 
-ai = pyFAI.load("testimages/Pilatus1M.poni")
-data = fabio.open("testimages/Pilatus1M.edf").data
+ai = pyFAI.load("testimages/halfccd.poni")
+data = fabio.open("testimages/halfccd.edf").data
 
 workgroup_size = 256
 bins = 1000
@@ -87,7 +88,8 @@ global_size = (data.size + workgroup_size - 1) & ~(workgroup_size - 1),
 d_image = cl.array.to_device(queue, data)
 d_image_float = cl.Buffer(ctx, mf.READ_WRITE, 4*size)
 
-program.s32_to_float(queue, global_size, (workgroup_size,), d_image.data, d_image_float)
+#program.s32_to_float(queue, global_size, (workgroup_size,), d_image.data, d_image_float)  # Pilatus1M
+program.u16_to_float(queue, global_size, (workgroup_size,), d_image.data, d_image_float)  # halfccd
 
 program.integrate1(queue, global_size,(workgroup_size,), d_pos.data, d_image_float, d_minmax, numpy.int32(data.size), d_outData, d_outCount)
 
@@ -103,13 +105,14 @@ cl.enqueue_copy(queue,outMerge, d_outMerge)
 
 
 
-ref = ai.xrpd_LUT(data, 1000)[1]
-
+ref = ai.xrpd_LUT(data, bins, correctSolidAngle=False)
+test = splitPixelFull.fullSplit1D(pos, data, bins)
 
 #assert(numpy.allclose(ref,outMerge))
 
-plot(outMerge, label="ocl_hist")
-plot(ref, label="ref")
+#plot(outMerge, label="ocl_hist")
+plot(ref[0], test[1], label="splitPixelFull")
+plot(ref[0], ref[1], label="ref")
 #plot(abs(ref-outMerge)/outMerge, label="ocl_csr_fullsplit")
 legend()
 show()

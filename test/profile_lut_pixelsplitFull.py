@@ -16,7 +16,6 @@ from pyFAI import splitPixelFullLUT
 from pyFAI import ocl_hist_pixelsplit
 #from pyFAI import splitBBoxLUT
 from pyFAI import splitBBoxCSR
-from pyFAI import splitPixelFullLUT_float32
 #logger = utilstest.getLogger("profile")
 
 
@@ -165,16 +164,15 @@ ai.xrpd_LUT(data, 1000)
 
 #foo = splitPixelFullLUT.HistoLUT1dFullSplit(pos,bins, unit="2th_deg")
 foo = splitBBoxCSR.HistoBBox1d(ai._ttha, ai._dttha, bins=bins, unit="2th_deg")
-#foo = splitPixelFullLUT_float32.HistoLUT1dFullSplit(pos,bins, unit="2th_deg")
 ref = foo.integrate(data)
 #assert(numpy.allclose(ref[1],outMerge))
 
-plot(ref[0],outMerge, label="ocl_lut_merge")
+#plot(ref[0],outMerge, label="ocl_lut_merge")
 #plot(ref[0],outData, label="ocl_lut_data")
-#plot(ref[0],outCount, label="ocl_lut_count")
-plot(ref[0], ref[1], label="ref_merge")
+plot(ref[0],outCount, label="ocl_lut_count")
+#plot(ref[0], ref[1], label="ref_merge")
 #plot(ref[0], ref[2], label="ref_data")
-#plot(ref[0], ref[3], label="ref_count")
+plot(ref[0], ref[3], label="ref_count")
 ####plot(abs(ref-outMerge)/outMerge, label="ocl_csr_fullsplit")
 legend()
 show()

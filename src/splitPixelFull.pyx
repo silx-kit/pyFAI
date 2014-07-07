@@ -289,7 +289,7 @@ def fullSplit1D(numpy.ndarray pos not None,
     cdef double A0=0, B0=0, C0=0, D0=0, A1=0, B1=0, C1=0, D1=0
     cdef double A_lim=0, B_lim=0, C_lim=0, D_lim=0
     cdef double oneOverArea=0, partialArea=0, tmp=0
-    cdef double max0, min0
+    cdef double max0, min0, min1, max1
     #cdef point2D[:] pixel
     cdef Function AB, BC, CD, DA
     cdef double epsilon=1e-10
@@ -297,7 +297,7 @@ def fullSplit1D(numpy.ndarray pos not None,
     cdef int lut_size = 0
 
     cdef bint check_pos1=False, check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
-    cdef int i=0, idx=0, bin=0, bin0_max=0, bin0_min=0, pixel_bins=0, cur_bin
+    cdef int i=0, idx=0, bin=0, bin0, bin0_max=0, bin0_min=0, pixel_bins=0, cur_bin
 
     if pos0Range is not None and len(pos0Range) > 1:
         pos0_min = min(pos0Range)
@@ -313,8 +313,8 @@ def fullSplit1D(numpy.ndarray pos not None,
     else:
         pos1_min = pos[:, :, 1].min()
         pos1_maxin = pos[:, :, 1].max()
-    #pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
-    pos1_max = pos1_maxin * 1.00001
+    pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
+    #pos1_max = pos1_maxin * 1.00001
     dpos = (pos0_max - pos0_min) / (< double > (bins))
 
 
@@ -419,6 +419,11 @@ def fullSplit1D(numpy.ndarray pos not None,
 
     #        else we have pixel spliting.
             else:
+                A0 -= bin0_min
+                B0 -= bin0_min
+                C0 -= bin0_min
+                D0 -= bin0_min
+                
                 AB.slope=(B1-A1)/(B0-A0)
                 AB.intersect= A1 - AB.slope*A0
                 BC.slope=(C1-B1)/(C0-B0)
@@ -431,10 +436,11 @@ def fullSplit1D(numpy.ndarray pos not None,
                 oneOverPixelArea = 1.0 / areaPixel
                 partialArea2 = 0.0
                 for bin in range(bin0_min, bin0_max+1):
-                    A_lim = (A0<=bin)*(A0<=(bin+1))*bin + (A0>bin)*(A0<=(bin+1))*A0 + (A0>bin)*(A0>(bin+1))*(bin+1)
-                    B_lim = (B0<=bin)*(B0<=(bin+1))*bin + (B0>bin)*(B0<=(bin+1))*B0 + (B0>bin)*(B0>(bin+1))*(bin+1)
-                    C_lim = (C0<=bin)*(C0<=(bin+1))*bin + (C0>bin)*(C0<=(bin+1))*C0 + (C0>bin)*(C0>(bin+1))*(bin+1)
-                    D_lim = (D0<=bin)*(D0<=(bin+1))*bin + (D0>bin)*(D0<=(bin+1))*D0 + (D0>bin)*(D0>(bin+1))*(bin+1)
+                    bin0 = bin - bin0_min
+                    A_lim = (A0<=bin0)*(A0<=(bin0+1))*bin0 + (A0>bin0)*(A0<=(bin0+1))*A0 + (A0>bin0)*(A0>(bin0+1))*(bin0+1)
+                    B_lim = (B0<=bin0)*(B0<=(bin0+1))*bin0 + (B0>bin0)*(B0<=(bin0+1))*B0 + (B0>bin0)*(B0>(bin0+1))*(bin0+1)
+                    C_lim = (C0<=bin0)*(C0<=(bin0+1))*bin0 + (C0>bin0)*(C0<=(bin0+1))*C0 + (C0>bin0)*(C0>(bin0+1))*(bin0+1)
+                    D_lim = (D0<=bin0)*(D0<=(bin0+1))*bin0 + (D0>bin0)*(D0<=(bin0+1))*D0 + (D0>bin0)*(D0>(bin0+1))*(bin0+1)
                     partialArea  = integrate(A_lim, B_lim, AB)
                     partialArea += integrate(B_lim, C_lim, BC)
                     partialArea += integrate(C_lim, D_lim, CD)
