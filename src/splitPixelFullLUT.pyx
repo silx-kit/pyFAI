@@ -99,8 +99,8 @@ class HistoLUT1dFullSplit(object):
                  mask=None,
                  mask_checksum=None,
                  allow_pos0_neg=False,
-                 unit="undefined",
-                 bad_pixel=False): 
+                 unit="undefined"): #,
+                                    #bad_pixel=False): 
         """
         @param pos: 3D or 4D array with the coordinates of each pixel point
         @param bins: number of output bins, 100 by default
@@ -120,7 +120,7 @@ class HistoLUT1dFullSplit(object):
         self.pos = pos
         self.size = pos.shape[0]
         self.bins = bins
-        self.bad_pixel = bad_pixel
+        #self.bad_pixel = bad_pixel
         self.lut_size = 0
         self.allow_pos0_neg = allow_pos0_neg
         if  mask is not None:
@@ -163,7 +163,7 @@ class HistoLUT1dFullSplit(object):
         cdef Function AB, BC, CD, DA
         cdef int bins, i=0, idx=0, bin=0, bin0=0, bin0_max=0, bin0_min=0, bin1_min, pixel_bins=0, k=0, size=0
         cdef bint check_pos1=False, check_mask=False
-        cdef int range1=0, range2=0
+        #cdef int range1=0, range2=0
         
         bins = self.bins
         if self.pos0Range is not None and len(self.pos0Range) > 1:
@@ -276,7 +276,7 @@ class HistoLUT1dFullSplit(object):
         #cdef float area_sum, corr, y, t  # kahan summation vars
         
         with nogil:
-            for idx in range(range1,range2):
+            for idx in range(size):
 
                 if (check_mask) and (cmask[idx]):
                     continue

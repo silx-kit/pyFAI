@@ -13,7 +13,6 @@ from pylab import *
 print "#"*50
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import splitPixelFullLUT
-from pyFAI import splitPixelFullLUT_float32
 from pyFAI import ocl_hist_pixelsplit
 #from pyFAI import splitBBoxLUT
 from pyFAI import splitBBoxCSR
@@ -39,7 +38,7 @@ size = pos_size/8
 
 
 
-boo = splitPixelFullLUT_float32.HistoLUT1dFullSplit(pos,bins, unit="2th_deg", bad_pixel=None) #1101814
+boo = splitPixelFullLUT.HistoLUT1dFullSplit(pos,bins, unit="2th_deg") #1101814
 
 #matrix_32 =  scipy.sparse.csr_matrix((boo.data,boo.indices,boo.indptr), shape=(bins,data.size))
 #mat32d = matrix_32.todense()
