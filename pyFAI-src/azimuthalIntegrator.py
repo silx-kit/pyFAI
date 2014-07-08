@@ -3257,18 +3257,19 @@ class AzimuthalIntegrator(Geometry):
             img.write(filename)
         except IOError:
             logger.error("IOError while writing %s" % filename)
-            
-    def separate(self,data, npt_rad=1024, npt_azim=512, unit="2th_deg", percentile=50, mask=None):
+
+    def separate(self, data, npt_rad=1024, npt_azim=512, unit="2th_deg", percentile=50, mask=None, restore_mask=True):
         """
         Separate bragg signal from powder/amorphous signal using azimuthal integration,
         median filering and projected back before subtraction.
-        
+
         @param data: input image as numpy array
         @param npt_rad: number of radial points
         @param npt_azim: number of azimuthal points
         @param unit: unit to be used for integration
-        @param percentile: which percentile use for cutting out 
+        @param percentile: which percentile use for cutting out
         @param mask: masked out pixels array
+        @param restore_mask: masked pixels have the same value as input data provided
         @return: bragg, amorphous
         """
         if mask is None:
@@ -3283,11 +3284,16 @@ class AzimuthalIntegrator(Geometry):
         assert (pos>=0).all()
         assert (pos<npt_azim).all()
         spectrum = sorted[(pos, numpy.arange(npt_rad))]
-        amorphous = self.calcfrom1d(radial, spectrum, data.shape, mask=mask,
+        amorphous = self.calcfrom1d(radial, spectrum, data.shape, mask=None,
                    dim1_unit=unit, correctSolidAngle=True)
         bragg = data - amorphous
+        if restore_mask:
+            wmask = numpy.where(mask)
+            maskdata = data[wmask]
+            bragg[wmask] = maskdata
+            amorphous[wmask] = maskdata
         return bragg, amorphous
-        
+
 ################################################################################
 # Some properties
 ################################################################################
