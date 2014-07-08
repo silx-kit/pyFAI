@@ -156,6 +156,11 @@ splitPixelFullLUT_dic = dict(name="splitPixelFullLUT",
                  sources=[src['splitPixelFullLUT']],
                  )
 
+splitPixelFullLUT_double_dic = dict(name="splitPixelFullLUT_double",
+                 include_dirs=get_numpy_include_dirs(),
+                 sources=[src['splitPixelFullLUT_double']],
+                 )
+
 splitBBox_dic = dict(name="splitBBox",
                      include_dirs=get_numpy_include_dirs(),
                      sources=[src['splitBBox']],
