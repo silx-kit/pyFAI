@@ -144,9 +144,9 @@ class AIWidget(QtGui.QWidget):
             else:
                 kwarg["polarization_factor"] = None
 
-            kwarg["nbPt_rad"] = int(str(self.nbpt_rad.text()).strip())
+            kwarg["npt_rad"] = int(str(self.nbpt_rad.text()).strip())
             if self.do_2D.isChecked():
-                kwarg["nbPt_azim"] = int(str(self.nbpt_azim.text()).strip())
+                kwarg["npt_azim"] = int(str(self.nbpt_azim.text()).strip())
 
             if self.do_OpenCL.isChecked():
                 platform = ocl.get_platform(self.platform.currentText())
@@ -193,16 +193,16 @@ class AIWidget(QtGui.QWidget):
 
             elif "ndim" in dir(self.input_data) and (self.input_data.ndim == 3):
                 # We have a numpy array of dim3
-                if "nbPt_azim" in kwarg:
-                    out = numpy.zeros((self.input_data.shape[0], kwarg["nbPt_azim"], kwarg["nbPt_rad"]), dtype=numpy.float32)
+                if "npt_azim" in kwarg:
+                    out = numpy.zeros((self.input_data.shape[0], kwarg["npt_azim"], kwarg["npt_rad"]), dtype=numpy.float32)
                     for i in range(self.input_data.shape[0]):
                         self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
                         kwarg["data"] = self.input_data[i]
                         out[i] = self.ai.integrate2d(**kwarg)[0]
 
                 else:
-                    if "nbPt_rad" in kwarg:  # convert nbPt_rad -> nbPt
-                            kwarg["nbPt"] = kwarg.pop("nbPt_rad")
+                    if "npt_rad" in kwarg:  # convert npt_rad -> nbPt
+                            kwarg["nbPt"] = kwarg.pop("npt_rad")
                     out = numpy.zeros((self.input_data.shape[0], kwarg["nbPt"]), dtype=numpy.float32)
                     for i in range(self.input_data.shape[0]):
                         self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
@@ -215,27 +215,27 @@ class AIWidget(QtGui.QWidget):
                     import h5py
                     hdf5 = h5py.File(self.output_path)
                     if self.fast_dim:
-                        if "nbPt_azim" in kwarg:
-                            ds = hdf5.create_dataset("diffraction", (1, self.fast_dim, kwarg["nbPt_azim"], kwarg["nbPt_rad"]),
+                        if "npt_azim" in kwarg:
+                            ds = hdf5.create_dataset("diffraction", (1, self.fast_dim, kwarg["npt_azim"], kwarg["npt_rad"]),
                                                       dtype=numpy.float32,
-                                                      chunks=(1, self.fast_dim, kwarg["nbPt_azim"], kwarg["nbPt_rad"]),
-                                                      maxshape=(None, self.fast_dim, kwarg["nbPt_azim"], kwarg["nbPt_rad"]))
+                                                      chunks=(1, self.fast_dim, kwarg["npt_azim"], kwarg["npt_rad"]),
+                                                      maxshape=(None, self.fast_dim, kwarg["npt_azim"], kwarg["npt_rad"]))
                         else:
-                            ds = hdf5.create_dataset("diffraction", (1, self.fast_dim, kwarg["nbPt_rad"]),
+                            ds = hdf5.create_dataset("diffraction", (1, self.fast_dim, kwarg["npt_rad"]),
                                                       dtype=numpy.float32,
-                                                      chunks=(1, self.fast_dim, kwarg["nbPt_rad"]),
-                                                      maxshape=(None, self.fast_dim, kwarg["nbPt_rad"]))
+                                                      chunks=(1, self.fast_dim, kwarg["npt_rad"]),
+                                                      maxshape=(None, self.fast_dim, kwarg["npt_rad"]))
                     else:
-                        if "nbPt_azim" in kwarg:
-                            ds = hdf5.create_dataset("diffraction", (1, kwarg["nbPt_azim"], kwarg["nbPt_rad"]),
+                        if "npt_azim" in kwarg:
+                            ds = hdf5.create_dataset("diffraction", (1, kwarg["npt_azim"], kwarg["npt_rad"]),
                                                       dtype=numpy.float32,
-                                                      chunks=(1, kwarg["nbPt_azim"], kwarg["nbPt_rad"]),
-                                                      maxshape=(None, kwarg["nbPt_azim"], kwarg["nbPt_rad"]))
+                                                      chunks=(1, kwarg["npt_azim"], kwarg["npt_rad"]),
+                                                      maxshape=(None, kwarg["npt_azim"], kwarg["npt_rad"]))
                         else:
-                            ds = hdf5.create_dataset("diffraction", (1, kwarg["nbPt_rad"]),
+                            ds = hdf5.create_dataset("diffraction", (1, kwarg["npt_rad"]),
                                                       dtype=numpy.float32,
-                                                      chunks=(1, kwarg["nbPt_rad"]),
-                                                      maxshape=(None, kwarg["nbPt_rad"]))
+                                                      chunks=(1, kwarg["npt_rad"]),
+                                                      maxshape=(None, kwarg["npt_rad"]))
 
                 for i, item in enumerate(self.input_data):
                     self.progressBar.setValue(100.0 * i / len(self.input_data))
@@ -249,7 +249,7 @@ class AIWidget(QtGui.QWidget):
                                 outpath = op.join(self.output_path, op.splitext(op.basename(item))[0])
                             else:
                                 outpath = op.splitext(item)[0]
-                            if "nbPt_azim" in kwarg and not multiframe:
+                            if "npt_azim" in kwarg and not multiframe:
                                 kwarg["filename"] = outpath + ".azim"
                             else:
                                 kwarg["filename"] = outpath + ".dat"
@@ -268,20 +268,20 @@ class AIWidget(QtGui.QWidget):
                             kwarg["data"] = fab_img.getframe(i).data
                             radial = None
                             azimuthal = None
-                            if "nbPt_azim" in kwarg:
+                            if "npt_azim" in kwarg:
                                 res = self.ai.integrate2d(**kwarg)
                             else:
-                                if "nbPt_rad" in kwarg:  # convert nbPt_rad -> nbPt
-                                    kwarg["nbPt"] = kwarg.pop("nbPt_rad")
+                                if "npt_rad" in kwarg:  # convert npt_rad -> nbPt
+                                    kwarg["nbPt"] = kwarg.pop("npt_rad")
                                 res = self.ai.integrate1d(**kwarg)
                             writer.write(res, index=i)
                         writer.close()
                     else:
-                        if kwarg.get("nbPt_azim"):
+                        if kwarg.get("npt_azim"):
                             res = self.ai.integrate2d(**kwarg)
                         else:
-                            if "nbPt_rad" in kwarg:  # convert nbPt_rad -> nbPt
-                                kwarg["nbPt"] = kwarg.pop("nbPt_rad")
+                            if "npt_rad" in kwarg:  # convert npt_rad -> nbPt
+                                kwarg["nbPt"] = kwarg.pop("npt_rad")
                             res = self.ai.integrate1d(**kwarg)
                     out.append(res)
 

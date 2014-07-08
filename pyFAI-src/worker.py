@@ -206,8 +206,8 @@ class Worker(object):
 
 
         if self.do_2D():
-            kwarg["nbPt_rad"] = self.nbpt_rad
-            kwarg["nbPt_azim"] = self.nbpt_azim
+            kwarg["npt_rad"] = self.nbpt_rad
+            kwarg["npt_azim"] = self.nbpt_azim
             if "filename" in kwarg:
                 if self.extension:
                     kwarg["filename"] += self.extension

@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/04/2014"
+__date__ = "08/07/2014"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -133,7 +133,7 @@ class AzimuthalIntegrator(Geometry):
 
         >>> tth, I = ai.integrate1d(data, nbPt, unit="2th_deg")
         >>> q, I, sigma = ai.integrate1d(data, nbPt, unit="q_nm^-1", error_model="poisson")
-        >>> regrouped = ai.integrate2d(data, nbPt_rad, nbPt_azim, unit="q_nm^-1")[0]
+        >>> regrouped = ai.integrate2d(data, npt_rad, npt_azim, unit="q_nm^-1")[0]
     """
 
     def __init__(self, dist=1, poni1=0, poni2=0,
@@ -2612,7 +2612,7 @@ class AzimuthalIntegrator(Geometry):
         else:
             return qAxis, I
 
-    def integrate2d(self, data, nbPt_rad, nbPt_azim=360,
+    def integrate2d(self, data, npt_rad, npt_azim=360,
                     filename=None, correctSolidAngle=True, variance=None,
                     error_model=None, radial_range=None, azimuth_range=None,
                     mask=None, dummy=None, delta_dummy=None,
@@ -2626,10 +2626,10 @@ class AzimuthalIntegrator(Geometry):
 
         @param data: 2D array from the Detector/CCD camera
         @type data: ndarray
-        @param nbPt_rad: number of points in the radial direction
-        @type nbPt_rad: int
-        @param nbPt_azim: number of points in the azimuthal direction
-        @type nbPt_azim: int
+        @param npt_rad: number of points in the radial direction
+        @type npt_rad: int
+        @param npt_azim: number of points in the azimuthal direction
+        @type npt_azim: int
         @param filename: output image (as edf format)
         @type filename: str
         @param correctSolidAngle: correct for solid angle of each pixel if True
@@ -2667,7 +2667,7 @@ class AzimuthalIntegrator(Geometry):
         @rtype: 3-tuple of ndarrays (2d, 1d, 1d)
         """
         method = method.lower()
-        nbPt = (nbPt_rad, nbPt_azim)
+        nbPt = (npt_rad, npt_azim)
         unit = units.to_unit(unit)
         pos0_scale = unit.scale
         if mask is None:
@@ -2906,7 +2906,7 @@ class AzimuthalIntegrator(Geometry):
                 pos = self.array_from_unit(shape, "corner", unit)
                 I, bins_rad, bins_azim, _, _ = splitPixel.fullSplit2D(pos=pos,
                                                                       weights=data,
-                                                                      bins=(nbPt_rad, nbPt_azim),
+                                                                      bins=(npt_rad, npt_azim),
                                                                       pos0Range=radial_range,
                                                                       pos1Range=azimuth_range,
                                                                       dummy=dummy,
@@ -2932,7 +2932,7 @@ class AzimuthalIntegrator(Geometry):
                                                                       delta_pos0=dpos0,
                                                                       pos1=chi,
                                                                       delta_pos1=dchi,
-                                                                      bins=(nbPt_rad, nbPt_azim),
+                                                                      bins=(npt_rad, npt_azim),
                                                                       pos0Range=radial_range,
                                                                       pos1Range=azimuth_range,
                                                                       dummy=dummy,
@@ -2990,17 +2990,17 @@ class AzimuthalIntegrator(Geometry):
                     I, bins_azim, bins_rad, _a, _b = histogram.histogram2d(pos0=pos1,
                                                                            pos1=pos0,
                                                                            weights=data,
-                                                                           bins=(nbPt_azim, nbPt_rad),
+                                                                           bins=(npt_azim, npt_rad),
                                                                            split=False,
                                                                            dummy=dummy)
 
         if I is None:
             logger.debug("integrate2d uses Numpy implementation")
-            ref, b, c = numpy.histogram2d(pos1, pos0, (nbPt_azim, nbPt_rad), range=[azimuth_range, radial_range])
+            ref, b, c = numpy.histogram2d(pos1, pos0, (npt_azim, npt_rad), range=[azimuth_range, radial_range])
             bins_azim = (b[1:] + b[:-1]) / 2.0
             bins_rad = (c[1:] + c[:-1]) / 2.0
             count = numpy.maximum(1, ref)
-            val, b, c = numpy.histogram2d(pos1, pos0, (nbPt_azim, nbPt_rad),
+            val, b, c = numpy.histogram2d(pos1, pos0, (npt_azim, npt_rad),
                                           weights=data, range=[azimuth_range, radial_range])
             I = val / count
         # I know I make copies ....
@@ -3257,7 +3257,37 @@ class AzimuthalIntegrator(Geometry):
             img.write(filename)
         except IOError:
             logger.error("IOError while writing %s" % filename)
-
+            
+    def separate(self,data, npt_rad=1024, npt_azim=512, unit="2th_deg", percentile=50, mask=None):
+        """
+        Separate bragg signal from powder/amorphous signal using azimuthal integration,
+        median filering and projected back before subtraction.
+        
+        @param data: input image as numpy array
+        @param npt_rad: number of radial points
+        @param npt_azim: number of azimuthal points
+        @param unit: unit to be used for integration
+        @param percentile: which percentile use for cutting out 
+        @param mask: masked out pixels array
+        @return: bragg, amorphous
+        """
+        if mask is None:
+            mask = self.mask
+        dummy = numpy.int(data.min() - 1234)
+        integ2d, radial, azimuthal = self.integrate2d(data, npt_rad, npt_azim, mask=mask,
+                                                      unit=unit, method="splitpixel",
+                                                      dummy=dummy, correctSolidAngle=True)
+        dummies = (integ2d == dummy).sum(axis=0)
+        sorted = numpy.sort(integ2d, axis=0)
+        pos = (dummies + (percentile / 100.) * (npt_azim - dummies)).astype(int)
+        assert (pos>=0).all()
+        assert (pos<npt_azim).all()
+        spectrum = sorted[(pos, numpy.arange(npt_rad))]
+        amorphous = self.calcfrom1d(radial, spectrum, data.shape, mask=mask,
+                   dim1_unit=unit, correctSolidAngle=True)
+        bragg = data - amorphous
+        return bragg, amorphous
+        
 ################################################################################
 # Some properties
 ################################################################################

@@ -93,9 +93,9 @@ class AIWidget(QtGui.QWidget):
             if bool(self.do_polarization.isChecked()):
                 kwarg["polarization_factor"] = float(self.polarization_factor.value())
 
-            kwarg["nbPt_rad"] = int(str(self.nbpt_rad.text()).strip())
+            kwarg["npt_rad"] = int(str(self.nbpt_rad.text()).strip())
             if self.do_2D.isChecked():
-                kwarg["nbPt_azim"] = int(str(self.nbpt_rad.text()).strip())
+                kwarg["npt_azim"] = int(str(self.nbpt_rad.text()).strip())
 
             if self.do_OpenCL.isChecked():
                 platform = ocl.get_platform(self.platform.currentText())
@@ -135,15 +135,15 @@ class AIWidget(QtGui.QWidget):
 
             elif "ndim" in dir(self.input_data) and (self.input_data.ndim == 3):
                 # We have a numpy array of dim3
-                if "nbPt_azim" in kwarg:
-                    out = numpy.zeros((self.input_data.shape[0], kwarg["nbPt_azim"], kwarg["nbPt_rad"]), dtype=numpy.float32)
+                if "npt_azim" in kwarg:
+                    out = numpy.zeros((self.input_data.shape[0], kwarg["npt_azim"], kwarg["npt_rad"]), dtype=numpy.float32)
                     for i in range(self.input_data.shape[0]):
                         self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
                         kwarg["data"] = self.input_data[i]
                         out[i] = self.ai.integrate2d(kwarg)[0]
 
                 else:
-                    out = numpy.zeros((self.input_data.shape[0], kwarg["nbPt_rad"]), dtype=numpy.float32)
+                    out = numpy.zeros((self.input_data.shape[0], kwarg["npt_rad"]), dtype=numpy.float32)
                     for i in range(self.input_data.shape[0]):
                         self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
                         kwarg["data"] = self.input_data[i]
@@ -156,7 +156,7 @@ class AIWidget(QtGui.QWidget):
                     logger.debug("processing %s" % item)
                     if (type(item) in types.StringTypes) and op.exists(item):
                         kwarg["data"] = fabio.open(item).data
-                        if "nbPt_azim" in kwarg:
+                        if "npt_azim" in kwarg:
                             kwarg["filename"] = op.splitext(item)[0] + ".azim"
                         else:
                             kwarg["filename"] = op.splitext(item)[0] + ".dat"
@@ -164,7 +164,7 @@ class AIWidget(QtGui.QWidget):
                         logger.warning("item is not a file ... guessing it is a numpy array")
                         kwarg["data"] = item
                         kwarg["filename"] = None
-                    if "nbPt_azim" in kwarg:
+                    if "npt_azim" in kwarg:
                         out.append(self.ai.integrate2d(**kwarg)[0])
                     else:
                         out.append(self.ai.integrate1d(**kwarg)[0])
