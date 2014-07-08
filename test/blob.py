@@ -1,6 +1,9 @@
 #!/usr/bin/python
 # coding: utf-8
-import sys, scipy, pylab
+import sys, scipy
+import matplotlib
+matplotlib.use('Qt4Agg')
+import pylab
 from math import sqrt
 import fabio,numpy
 from utilstest import UtilsTest, getLogger
@@ -11,7 +14,9 @@ from pyFAI.blob_detection import BlobDetection
 from pyFAI.detectors import detector_factory
 
 
-
+def somme(im):
+    im[1:-1, 1:-1] += im[:-2, 1:-1] + im[2:, 1:-1] + im[1:-1, :-2] + im[1:-1, 2:] #+ im[:-2, :-2] + im[2:, 2:] + im[2:, :-2] + im[:-2, 2:]
+    return im
 
 def image_test():
     "Creating a test image containing several gaussian of several sizes"
@@ -23,6 +28,7 @@ def image_test():
     for sigma in a:
         img = make_gaussian(img,sigma,xc[cpt],yc[cpt])
         cpt = cpt + 1
+    img = add_noise(img, 0.1)
     return img
 
 def image_test_rings():
@@ -41,13 +47,18 @@ def image_test_rings():
     modulation = (1 + numpy.sin(5 * r + chi * mod))
     for radius in numpy.linspace(0, r_max, rings):
         img += numpy.exp(-(r - radius) ** 2 / (2 * (sigma * sigma)))
-    return img * modulation
+    
+    img *= modulation
+    img = add_noise(img, 0.0)
+    return img
 
-
-
+def add_noise(img,rate):
+    noise = numpy.random.random(img.shape) * rate
+    return img+noise
+    
 def make_gaussian(im,sigma,xc,yc):
     "Creating 2D gaussian to be put in a test image"
-    e = 0.5
+    e = 1
     angle = 0
     sx = sigma * (1+e)
     sy = sigma * (1-e)
@@ -76,16 +87,16 @@ else:
     msk = None
 
 
-bd = BlobDetection(data, mask=msk)#, cur_sigma=0.25, init_sigma=0.50, dest_sigma=8, scale_per_octave=8)
+bd = BlobDetection(data, mask=msk)#, cur_sigma=0.25, init_sigma=numpy.sqrt(2)/2, dest_sigma=numpy.sqrt(2), scale_per_octave=2)
 
 pylab.ion()
 f=pylab.figure(1)
 ax = f.add_subplot(111)
 ax.imshow(numpy.log1p(data), interpolation = 'nearest')
 
-for i in range(3):
+for i in range(5):
     print ('Octave #%i' %i)
-    bd._one_octave(shrink=True, refine = True, n_5=True)
+    bd._one_octave(shrink=True, refine = True, n_5 = False)
     print("Octave #%i Total kp: %i" % (i, bd.keypoints.size))
     
 # bd._one_octave(False, True ,False)
@@ -98,10 +109,10 @@ i = 0
 #     ax.annotate("", xy=(kp.x, kp.y), xytext=(kp.x+ds, kp.y+ds),
 #                 arrowprops=dict(facecolor='blue', shrink=0.05),)
 sigma = bd.keypoints.sigma
-for i,c in enumerate("bgrcmykw"):
+for i,c in enumerate("ygrcmykw"):
 #    j = 2 ** i
     m = numpy.logical_and(sigma >= i, sigma < (i + 1))
-    ax.plot(bd.keypoints[m].x, bd.keypoints[m].y, "." + c, label=str(i))
+    ax.plot(bd.keypoints[m].x, bd.keypoints[m].y, "o" + c, label=str(i))
 ax.legend()
 
 if sigma.size > 0:
