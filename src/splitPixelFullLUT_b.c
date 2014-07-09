@@ -306,8 +306,8 @@ static CYTHON_INLINE float __PYX_NAN() {
 #define _USE_MATH_DEFINES
 #endif
 #include <math.h>
-#define __PYX_HAVE__splitPixel
-#define __PYX_HAVE_API__splitPixel
+#define __PYX_HAVE__splitPixelFullLUT_b
+#define __PYX_HAVE_API__splitPixelFullLUT_b
 #include "string.h"
 #include "stdio.h"
 #include "stdlib.h"
@@ -509,7 +509,7 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "splitPixel.pyx",
+  "splitPixelFullLUT_b.pyx",
   "numpy.pxd",
   "stringsource",
   "type.pxd",
@@ -856,6 +856,24 @@ typedef npy_clongdouble __pyx_t_5numpy_clongdouble_t;
  * cdef inline object PyArray_MultiIterNew1(a):
  */
 typedef npy_cdouble __pyx_t_5numpy_complex_t;
+struct __pyx_t_19splitPixelFullLUT_b_Function;
+struct __pyx_defaults;
+typedef struct __pyx_defaults __pyx_defaults;
+
+/* "splitPixelFullLUT_b.pyx":45
+ * 
+ * 
+ * cdef struct Function:             # <<<<<<<<<<<<<<
+ *     double slope
+ *     double intersect
+ */
+struct __pyx_t_19splitPixelFullLUT_b_Function {
+  double slope;
+  double intersect;
+};
+struct __pyx_defaults {
+  PyObject *__pyx_arg_allow_pos0_neg;
+};
 
 /* "View.MemoryView":308
  * 
@@ -1060,7 +1078,40 @@ static int __Pyx_ArgTypeTest(PyObject *obj, PyTypeObject *type, int none_allowed
 
 static CYTHON_INLINE int __Pyx_TypeTest(PyObject *obj, PyTypeObject *type); /*proto*/
 
+#if CYTHON_COMPILING_IN_CPYTHON
+#define __Pyx_PyObject_DelAttrStr(o,n) __Pyx_PyObject_SetAttrStr(o,n,NULL)
+static CYTHON_INLINE int __Pyx_PyObject_SetAttrStr(PyObject* obj, PyObject* attr_name, PyObject* value) {
+    PyTypeObject* tp = Py_TYPE(obj);
+    if (likely(tp->tp_setattro))
+        return tp->tp_setattro(obj, attr_name, value);
+#if PY_MAJOR_VERSION < 3
+    if (likely(tp->tp_setattr))
+        return tp->tp_setattr(obj, PyString_AS_STRING(attr_name), value);
+#endif
+    return PyObject_SetAttr(obj, attr_name, value);
+}
+#else
+#define __Pyx_PyObject_DelAttrStr(o,n)   PyObject_DelAttr(o,n)
+#define __Pyx_PyObject_SetAttrStr(o,n,v) PyObject_SetAttr(o,n,v)
+#endif
+
 static CYTHON_INLINE PyObject *__Pyx_GetModuleGlobalName(PyObject *name); /*proto*/
+
+#if CYTHON_COMPILING_IN_CPYTHON
+static CYTHON_INLINE int __Pyx_ListComp_Append(PyObject* list, PyObject* x) {
+    PyListObject* L = (PyListObject*) list;
+    Py_ssize_t len = Py_SIZE(list);
+    if (likely(L->allocated > len)) {
+        Py_INCREF(x);
+        PyList_SET_ITEM(list, len, x);
+        Py_SIZE(list) = len+1;
+        return 0;
+    }
+    return PyList_Append(list, x);
+}
+#else
+#define __Pyx_ListComp_Append(L,x) PyList_Append(L,x)
+#endif
 
 static CYTHON_INLINE int  __Pyx_GetBufferAndValidate(Py_buffer* buf, PyObject* obj,
     __Pyx_TypeInfo* dtype, int flags, int nd, int cast, __Pyx_BufFmt_StackElem* stack);
@@ -1071,22 +1122,13 @@ static CYTHON_INLINE void __Pyx_RaiseUnboundLocalError(const char *varname);
 static void __Pyx_RaiseUnboundMemoryviewSliceNogil(const char *varname);
 
 #define __Pyx_BufPtrStrided3d(type, buf, i0, s0, i1, s1, i2, s2) (type)((char*)buf + i0 * s0 + i1 * s1 + i2 * s2)
-static double __Pyx__PyObject_AsDouble(PyObject* obj); /* proto */
-#if CYTHON_COMPILING_IN_PYPY
-#define __Pyx_PyObject_AsDouble(obj) \
-(likely(PyFloat_CheckExact(obj)) ? PyFloat_AS_DOUBLE(obj) : \
- likely(PyInt_CheckExact(obj)) ? \
- PyFloat_AsDouble(obj) : __Pyx__PyObject_AsDouble(obj))
-#else
-#define __Pyx_PyObject_AsDouble(obj) \
-((likely(PyFloat_CheckExact(obj))) ? \
- PyFloat_AS_DOUBLE(obj) : __Pyx__PyObject_AsDouble(obj))
-#endif
-
 #define __Pyx_BufPtrStrided1d(type, buf, i0, s0) (type)((char*)buf + i0 * s0)
-#ifndef __PYX_FORCE_INIT_THREADS
-  #define __PYX_FORCE_INIT_THREADS 0
-#endif
+#define __Pyx_PyObject_DelSlice(obj, cstart, cstop, py_start, py_stop, py_slice, has_cstart, has_cstop, wraparound) \
+    __Pyx_PyObject_SetSlice(obj, (PyObject*)NULL, cstart, cstop, py_start, py_stop, py_slice, has_cstart, has_cstop, wraparound)
+static CYTHON_INLINE int __Pyx_PyObject_SetSlice(
+        PyObject* obj, PyObject* value, Py_ssize_t cstart, Py_ssize_t cstop,
+        PyObject** py_start, PyObject** py_stop, PyObject** py_slice,
+        int has_cstart, int has_cstop, int wraparound);
 
 #define __Pyx_BUF_MAX_NDIMS %(BUF_MAX_NDIMS)d
 #define __Pyx_MEMVIEW_DIRECT   1
@@ -1116,6 +1158,24 @@ static CYTHON_INLINE void __Pyx_XDEC_MEMVIEW(__Pyx_memviewslice *, int, int);
 static CYTHON_INLINE void __Pyx_ErrRestore(PyObject *type, PyObject *value, PyObject *tb); /*proto*/
 static CYTHON_INLINE void __Pyx_ErrFetch(PyObject **type, PyObject **value, PyObject **tb); /*proto*/
 
+static double __Pyx__PyObject_AsDouble(PyObject* obj); /* proto */
+#if CYTHON_COMPILING_IN_PYPY
+#define __Pyx_PyObject_AsDouble(obj) \
+(likely(PyFloat_CheckExact(obj)) ? PyFloat_AS_DOUBLE(obj) : \
+ likely(PyInt_CheckExact(obj)) ? \
+ PyFloat_AsDouble(obj) : __Pyx__PyObject_AsDouble(obj))
+#else
+#define __Pyx_PyObject_AsDouble(obj) \
+((likely(PyFloat_CheckExact(obj))) ? \
+ PyFloat_AS_DOUBLE(obj) : __Pyx__PyObject_AsDouble(obj))
+#endif
+
+#ifndef __PYX_FORCE_INIT_THREADS
+  #define __PYX_FORCE_INIT_THREADS 0
+#endif
+
+static void __Pyx_Raise(PyObject *type, PyObject *value, PyObject *tb, PyObject *cause); /*proto*/
+
 static CYTHON_INLINE void __Pyx_RaiseTooManyValuesError(Py_ssize_t expected);
 
 static CYTHON_INLINE void __Pyx_RaiseNeedMoreValuesError(Py_ssize_t index);
@@ -1125,13 +1185,6 @@ static CYTHON_INLINE void __Pyx_RaiseNoneNotIterableError(void);
 static CYTHON_INLINE int __Pyx_IterFinish(void); /*proto*/
 
 static int __Pyx_IternextUnpackEndCheck(PyObject *retval, Py_ssize_t expected); /*proto*/
-
-static int __Pyx_GetException(PyObject **type, PyObject **value, PyObject **tb); /*proto*/
-
-static void __Pyx_RaiseBufferFallbackError(void); /*proto*/
-
-#define __Pyx_BufPtrStrided2d(type, buf, i0, s0, i1, s1) (type)((char*)buf + i0 * s0 + i1 * s1)
-static void __Pyx_Raise(PyObject *type, PyObject *value, PyObject *tb, PyObject *cause); /*proto*/
 
 static CYTHON_INLINE PyObject *__Pyx_GetAttr(PyObject *, PyObject *); /*proto*/
 
@@ -1151,6 +1204,8 @@ static CYTHON_INLINE PyObject* __Pyx_decode_c_string(
          PyObject* (*decode_func)(const char *s, Py_ssize_t size, const char *errors));
 
 #include <string.h>
+
+static int __Pyx_GetException(PyObject **type, PyObject **value, PyObject **tb); /*proto*/
 
 #define __Pyx_GetItemInt(o, i, size, to_py_func, is_list, wraparound, boundscheck) \
     (((size) <= sizeof(Py_ssize_t)) ? \
@@ -1176,22 +1231,6 @@ static CYTHON_UNUSED int __pyx_memoryview_getbuffer(PyObject *__pyx_v_self, Py_b
 static PyObject *__pyx_memoryview_transpose(PyObject *__pyx_v_self); /*proto*/
 static PyObject *__pyx_memoryview__get__base(PyObject *__pyx_v_self); /*proto*/
 static PyObject *__pyx_memoryview_get_shape(PyObject *__pyx_v_self); /*proto*/
-#if CYTHON_COMPILING_IN_CPYTHON
-static CYTHON_INLINE int __Pyx_ListComp_Append(PyObject* list, PyObject* x) {
-    PyListObject* L = (PyListObject*) list;
-    Py_ssize_t len = Py_SIZE(list);
-    if (likely(L->allocated > len)) {
-        Py_INCREF(x);
-        PyList_SET_ITEM(list, len, x);
-        Py_SIZE(list) = len+1;
-        return 0;
-    }
-    return PyList_Append(list, x);
-}
-#else
-#define __Pyx_ListComp_Append(L,x) PyList_Append(L,x)
-#endif
-
 static PyObject *__pyx_memoryview_get_strides(PyObject *__pyx_v_self); /*proto*/
 static PyObject *__pyx_memoryview_get_suboffsets(PyObject *__pyx_v_self); /*proto*/
 static PyObject *__pyx_memoryview_get_ndim(PyObject *__pyx_v_self); /*proto*/
@@ -1221,6 +1260,57 @@ static void __Pyx_WriteUnraisable(const char *name, int clineno,
                                   int lineno, const char *filename); /*proto*/
 
 static int __Pyx_SetVtable(PyObject *dict, void *vtable); /*proto*/
+
+static PyObject* __Pyx_ImportFrom(PyObject* module, PyObject* name); /*proto*/
+
+#define __Pyx_CyFunction_USED 1
+#include <structmember.h>
+#define __Pyx_CYFUNCTION_STATICMETHOD  0x01
+#define __Pyx_CYFUNCTION_CLASSMETHOD   0x02
+#define __Pyx_CYFUNCTION_CCLASS        0x04
+#define __Pyx_CyFunction_GetClosure(f) \
+    (((__pyx_CyFunctionObject *) (f))->func_closure)
+#define __Pyx_CyFunction_GetClassObj(f) \
+    (((__pyx_CyFunctionObject *) (f))->func_classobj)
+#define __Pyx_CyFunction_Defaults(type, f) \
+    ((type *)(((__pyx_CyFunctionObject *) (f))->defaults))
+#define __Pyx_CyFunction_SetDefaultsGetter(f, g) \
+    ((__pyx_CyFunctionObject *) (f))->defaults_getter = (g)
+typedef struct {
+    PyCFunctionObject func;
+    int flags;
+    PyObject *func_dict;
+    PyObject *func_weakreflist;
+    PyObject *func_name;
+    PyObject *func_qualname;
+    PyObject *func_doc;
+    PyObject *func_code;
+    PyObject *func_closure;
+    PyObject *func_classobj; /* No-args super() class cell */
+    void *defaults;
+    int defaults_pyobjects;
+    PyObject *defaults_tuple;   /* Const defaults tuple */
+    PyObject *defaults_kwdict;  /* Const kwonly defaults dict */
+    PyObject *(*defaults_getter)(PyObject *);
+    PyObject *func_annotations; /* function annotations dict */
+} __pyx_CyFunctionObject;
+static PyTypeObject *__pyx_CyFunctionType = 0;
+#define __Pyx_CyFunction_NewEx(ml, flags, qualname, self, module, code) \
+    __Pyx_CyFunction_New(__pyx_CyFunctionType, ml, flags, qualname, self, module, code)
+static PyObject *__Pyx_CyFunction_New(PyTypeObject *, PyMethodDef *ml,
+                                      int flags, PyObject* qualname,
+                                      PyObject *self, PyObject *module,
+                                      PyObject* code);
+static CYTHON_INLINE void *__Pyx_CyFunction_InitDefaults(PyObject *m,
+                                                         size_t size,
+                                                         int pyobjects);
+static CYTHON_INLINE void __Pyx_CyFunction_SetDefaultsTuple(PyObject *m,
+                                                            PyObject *tuple);
+static CYTHON_INLINE void __Pyx_CyFunction_SetDefaultsKwDict(PyObject *m,
+                                                             PyObject *dict);
+static CYTHON_INLINE void __Pyx_CyFunction_SetAnnotationsDict(PyObject *m,
+                                                              PyObject *dict);
+static int __Pyx_CyFunction_init(void);
 
 static CYTHON_INLINE void __Pyx_ExceptionSave(PyObject **type, PyObject **value, PyObject **tb); /*proto*/
 static void __Pyx_ExceptionReset(PyObject *type, PyObject *value, PyObject *tb); /*proto*/
@@ -1252,15 +1342,18 @@ static Py_ssize_t __Pyx_minusones[] = {-1, -1, -1, -1, -1, -1, -1, -1};
 
 static PyObject *__Pyx_Import(PyObject *name, PyObject *from_list, int level); /*proto*/
 
+static PyObject *__Pyx_FindPy2Metaclass(PyObject *bases); /*proto*/
+
+static PyObject *__Pyx_CreateClass(PyObject *bases, PyObject *dict, PyObject *name,
+                                   PyObject *qualname, PyObject *modname); /*proto*/
+
+static CYTHON_INLINE PyObject *__Pyx_PyInt_to_py_Py_intptr_t(Py_intptr_t);
+
 static CYTHON_INLINE PyObject *__Pyx_PyInt_to_py_npy_int8(npy_int8);
 
-static int __Pyx_Print(PyObject*, PyObject *, int); /*proto*/
-#if CYTHON_COMPILING_IN_PYPY || PY_MAJOR_VERSION >= 3
-static PyObject* __pyx_print = 0;
-static PyObject* __pyx_print_kwargs = 0;
-#endif
+static CYTHON_INLINE PyObject *__Pyx_PyInt_to_py_npy_int32(npy_int32);
 
-static int __Pyx_PrintOne(PyObject* stream, PyObject *o); /*proto*/
+static CYTHON_INLINE npy_int32 __Pyx_PyInt_from_py_npy_int32(PyObject *);
 
 #if CYTHON_CCOMPLEX
   #ifdef __cplusplus
@@ -1419,9 +1512,11 @@ static int __Pyx_ValidateAndInit_memviewslice(
                 __Pyx_memviewslice *memviewslice,
                 PyObject *original_obj);
 
+static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5numpy_int8_t(PyObject *);
+
 static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_double(PyObject *);
 
-static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5numpy_int8_t(PyObject *);
+static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5numpy_int32_t(PyObject *);
 
 static int __Pyx_check_binary_version(void);
 
@@ -1461,11 +1556,11 @@ static int __Pyx_InitStrings(__Pyx_StringTabEntry *t); /*proto*/
 
 /* Module declarations from 'cython' */
 
+/* Module declarations from 'libc.string' */
+
 /* Module declarations from 'cpython.buffer' */
 
 /* Module declarations from 'cpython.ref' */
-
-/* Module declarations from 'libc.string' */
 
 /* Module declarations from 'libc.stdio' */
 
@@ -1490,20 +1585,21 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *, cha
 
 /* Module declarations from 'libc.math' */
 
-/* Module declarations from 'splitPixel' */
+/* Module declarations from 'splitPixelFullLUT_b' */
 static PyTypeObject *__pyx_memoryview_type = 0;
 static PyTypeObject *__pyx_array_type = 0;
 static PyTypeObject *__pyx_MemviewEnum_type = 0;
 static PyTypeObject *__pyx_memoryviewslice_type = 0;
+static float __pyx_v_19splitPixelFullLUT_b_pi;
+static float __pyx_v_19splitPixelFullLUT_b_onef;
 static PyObject *generic = 0;
 static PyObject *strided = 0;
 static PyObject *indirect = 0;
 static PyObject *contiguous = 0;
 static PyObject *indirect_contiguous = 0;
-static CYTHON_INLINE double __pyx_f_10splitPixel_area4(double, double, double, double, double, double, double, double); /*proto*/
-static CYTHON_INLINE double __pyx_f_10splitPixel_getBinNr(double, double, double); /*proto*/
-static CYTHON_INLINE double __pyx_f_10splitPixel_calc_area(double, double, double, double); /*proto*/
-static CYTHON_INLINE void __pyx_f_10splitPixel_integrate(__Pyx_memviewslice, int, double, double, double, double); /*proto*/
+static double __pyx_f_19splitPixelFullLUT_b_area4(double, double, double, double, double, double, double, double); /*proto*/
+static CYTHON_INLINE double __pyx_f_19splitPixelFullLUT_b_getBinNr(double, double, double); /*proto*/
+static double __pyx_f_19splitPixelFullLUT_b_integrate(double, double, struct __pyx_t_19splitPixelFullLUT_b_Function); /*proto*/
 static struct __pyx_array_obj *__pyx_array_new(PyObject *, Py_ssize_t, char *, char *, char *); /*proto*/
 static void *__pyx_align_pointer(void *, size_t); /*proto*/
 static PyObject *__pyx_memoryview_new(PyObject *, int, int, __Pyx_TypeInfo *); /*proto*/
@@ -1537,15 +1633,19 @@ static void __pyx_memoryview_refcount_objects_in_slice(char *, Py_ssize_t *, Py_
 static void __pyx_memoryview_slice_assign_scalar(__Pyx_memviewslice *, int, size_t, void *, int); /*proto*/
 static void __pyx_memoryview__slice_assign_scalar(char *, Py_ssize_t *, Py_ssize_t *, int, size_t, void *); /*proto*/
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t = { "float64_t", NULL, sizeof(__pyx_t_5numpy_float64_t), { 0 }, 0, 'R', 0, 0 };
-static __Pyx_TypeInfo __Pyx_TypeInfo_double = { "double", NULL, sizeof(double), { 0 }, 0, 'R', 0, 0 };
+static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_5numpy_int32_t = { "int32_t", NULL, sizeof(__pyx_t_5numpy_int32_t), { 0 }, 0, IS_UNSIGNED(__pyx_t_5numpy_int32_t) ? 'U' : 'I', IS_UNSIGNED(__pyx_t_5numpy_int32_t), 0 };
+static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_5numpy_float32_t = { "float32_t", NULL, sizeof(__pyx_t_5numpy_float32_t), { 0 }, 0, 'R', 0, 0 };
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_5numpy_int8_t = { "int8_t", NULL, sizeof(__pyx_t_5numpy_int8_t), { 0 }, 0, IS_UNSIGNED(__pyx_t_5numpy_int8_t) ? 'U' : 'I', IS_UNSIGNED(__pyx_t_5numpy_int8_t), 0 };
-#define __Pyx_MODULE_NAME "splitPixel"
-int __pyx_module_is_main_splitPixel = 0;
+static __Pyx_TypeInfo __Pyx_TypeInfo_double = { "double", NULL, sizeof(double), { 0 }, 0, 'R', 0, 0 };
+#define __Pyx_MODULE_NAME "splitPixelFullLUT_b"
+int __pyx_module_is_main_splitPixelFullLUT_b = 0;
 
-/* Implementation of 'splitPixel' */
-static PyObject *__pyx_builtin_range;
+/* Implementation of 'splitPixelFullLUT_b' */
+static PyObject *__pyx_builtin_object;
+static PyObject *__pyx_builtin_sum;
 static PyObject *__pyx_builtin_min;
 static PyObject *__pyx_builtin_max;
+static PyObject *__pyx_builtin_range;
 static PyObject *__pyx_builtin_ValueError;
 static PyObject *__pyx_builtin_RuntimeError;
 static PyObject *__pyx_builtin_MemoryError;
@@ -1555,8 +1655,10 @@ static PyObject *__pyx_builtin_TypeError;
 static PyObject *__pyx_builtin_xrange;
 static PyObject *__pyx_builtin_id;
 static PyObject *__pyx_builtin_IndexError;
-static PyObject *__pyx_pf_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_pos, PyArrayObject *__pyx_v_weights, int __pyx_v_bins, PyObject *__pyx_v_pos0Range, PyObject *__pyx_v_pos1Range, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy, PyObject *__pyx_v_mask, PyObject *__pyx_v_dark, PyObject *__pyx_v_flat, PyObject *__pyx_v_solidangle, PyObject *__pyx_v_polarization); /* proto */
-static PyObject *__pyx_pf_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_pos, PyArrayObject *__pyx_v_weights, PyObject *__pyx_v_bins, PyObject *__pyx_v_pos0Range, PyObject *__pyx_v_pos1Range, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy, PyObject *__pyx_v_mask, PyObject *__pyx_v_dark, PyObject *__pyx_v_flat, PyObject *__pyx_v_solidangle, PyObject *__pyx_v_polarization); /* proto */
+static PyObject *__pyx_pf_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_6__defaults__(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_19splitPixelFullLUT_b_19HistoLUT1dFullSplit___init__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyArrayObject *__pyx_v_pos, int __pyx_v_bins, PyObject *__pyx_v_pos0Range, PyObject *__pyx_v_pos1Range, PyObject *__pyx_v_mask, PyObject *__pyx_v_mask_checksum, PyObject *__pyx_v_allow_pos0_neg, PyObject *__pyx_v_unit); /* proto */
+static PyObject *__pyx_pf_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_2calc_lut(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_4integrate(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_weights, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy, PyObject *__pyx_v_dark, PyObject *__pyx_v_flat, PyObject *__pyx_v_solidAngle, PyObject *__pyx_v_polarization); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static int __pyx_array_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
@@ -1595,47 +1697,49 @@ static PyObject *__pyx_tp_new_memoryview(PyTypeObject *t, PyObject *a, PyObject 
 static PyObject *__pyx_tp_new_array(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_Enum(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new__memoryviewslice(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
-static char __pyx_k_9[] = "area_pixel=%s area_sum=%s, Error= %s";
-static char __pyx_k_24[] = "ndarray is not C contiguous";
-static char __pyx_k_26[] = "ndarray is not Fortran contiguous";
-static char __pyx_k_28[] = "Non-native byte order not supported";
-static char __pyx_k_30[] = "unknown dtype code in numpy.pxd (%d)";
-static char __pyx_k_31[] = "Format string allocated too short, see comment in numpy.pxd";
-static char __pyx_k_34[] = "Format string allocated too short.";
-static char __pyx_k_36[] = "Empty shape tuple for cython.array";
-static char __pyx_k_38[] = "itemsize <= 0 for cython.array";
-static char __pyx_k_41[] = "unable to allocate shape or strides.";
-static char __pyx_k_43[] = "Invalid shape in axis %d: %d.";
-static char __pyx_k_44[] = "Invalid mode, expected 'c' or 'fortran', got %s";
-static char __pyx_k_46[] = "unable to allocate array data.";
-static char __pyx_k_48[] = "Can only create a buffer that is contiguous in memory.";
-static char __pyx_k_50[] = "Unable to convert item to object";
-static char __pyx_k_52[] = "Buffer view does not expose strides";
-static char __pyx_k_54[] = "<MemoryView of %r at 0x%x>";
-static char __pyx_k_55[] = "<MemoryView of %r object>";
-static char __pyx_k_58[] = "Cannot index with type '%s'";
-static char __pyx_k_60[] = "Indirect dimensions not supported";
-static char __pyx_k_62[] = "Index out of bounds (axis %d)";
-static char __pyx_k_63[] = "Step may not be zero (axis %d)";
-static char __pyx_k_64[] = "All dimensions preceding dimension %d must be indexed and not sliced";
-static char __pyx_k_65[] = "Out of bounds on buffer access (axis %d)";
-static char __pyx_k_66[] = "Cannot transpose memoryview with indirect dimensions";
-static char __pyx_k_67[] = "got differing extents in dimension %d (got %d and %d)";
-static char __pyx_k_68[] = "Dimension %d is not direct";
-static char __pyx_k_71[] = "/users/kieffer/workspace-ssd/pyFAI/src/splitPixel.pyx";
-static char __pyx_k_74[] = "getbuffer(obj, view, flags)";
-static char __pyx_k_75[] = "<strided and direct or indirect>";
-static char __pyx_k_77[] = "<strided and direct>";
-static char __pyx_k_79[] = "<strided and indirect>";
-static char __pyx_k_81[] = "<contiguous and direct>";
-static char __pyx_k_83[] = "<contiguous and indirect>";
+static char __pyx_k_16[] = "ndarray is not C contiguous";
+static char __pyx_k_18[] = "ndarray is not Fortran contiguous";
+static char __pyx_k_20[] = "Non-native byte order not supported";
+static char __pyx_k_22[] = "unknown dtype code in numpy.pxd (%d)";
+static char __pyx_k_23[] = "Format string allocated too short, see comment in numpy.pxd";
+static char __pyx_k_26[] = "Format string allocated too short.";
+static char __pyx_k_28[] = "Empty shape tuple for cython.array";
+static char __pyx_k_30[] = "itemsize <= 0 for cython.array";
+static char __pyx_k_33[] = "unable to allocate shape or strides.";
+static char __pyx_k_35[] = "Invalid shape in axis %d: %d.";
+static char __pyx_k_36[] = "Invalid mode, expected 'c' or 'fortran', got %s";
+static char __pyx_k_38[] = "unable to allocate array data.";
+static char __pyx_k_40[] = "Can only create a buffer that is contiguous in memory.";
+static char __pyx_k_42[] = "Unable to convert item to object";
+static char __pyx_k_44[] = "Buffer view does not expose strides";
+static char __pyx_k_46[] = "<MemoryView of %r at 0x%x>";
+static char __pyx_k_47[] = "<MemoryView of %r object>";
+static char __pyx_k_50[] = "Cannot index with type '%s'";
+static char __pyx_k_52[] = "Indirect dimensions not supported";
+static char __pyx_k_54[] = "Index out of bounds (axis %d)";
+static char __pyx_k_55[] = "Step may not be zero (axis %d)";
+static char __pyx_k_56[] = "All dimensions preceding dimension %d must be indexed and not sliced";
+static char __pyx_k_57[] = "Out of bounds on buffer access (axis %d)";
+static char __pyx_k_58[] = "Cannot transpose memoryview with indirect dimensions";
+static char __pyx_k_59[] = "got differing extents in dimension %d (got %d and %d)";
+static char __pyx_k_60[] = "Dimension %d is not direct";
+static char __pyx_k_63[] = "/users/kieffer/workspace-ssd/pyFAI/src/splitPixelFullLUT_b.pyx";
+static char __pyx_k_64[] = "HistoLUT1dFullSplit.__init__";
+static char __pyx_k_67[] = "HistoLUT1dFullSplit.calc_lut";
+static char __pyx_k_71[] = "HistoLUT1dFullSplit.integrate";
+static char __pyx_k_72[] = "\n    Now uses CSR (Compressed Sparse raw) with main attributes:\n    * nnz: number of non zero elements\n    * data: coefficient of the matrix in a 1D vector of float64\n    * indices: Column index position for the data (same size as  \n    * indptr: row pointer indicates the start of a given row. len nrow+1\n    \n    Nota: nnz = indptr[-1]\n    ";
+static char __pyx_k_73[] = "getbuffer(obj, view, flags)";
+static char __pyx_k_74[] = "<strided and direct or indirect>";
+static char __pyx_k_76[] = "<strided and direct>";
+static char __pyx_k_78[] = "<strided and indirect>";
+static char __pyx_k_80[] = "<contiguous and direct>";
+static char __pyx_k_82[] = "<contiguous and indirect>";
 static char __pyx_k__B[] = "B";
 static char __pyx_k__H[] = "H";
 static char __pyx_k__I[] = "I";
 static char __pyx_k__L[] = "L";
 static char __pyx_k__O[] = "O";
 static char __pyx_k__Q[] = "Q";
-static char __pyx_k__T[] = "T";
 static char __pyx_k__b[] = "b";
 static char __pyx_k__c[] = "c";
 static char __pyx_k__d[] = "d";
@@ -1644,84 +1748,96 @@ static char __pyx_k__g[] = "g";
 static char __pyx_k__h[] = "h";
 static char __pyx_k__i[] = "i";
 static char __pyx_k__j[] = "j";
+static char __pyx_k__k[] = "k";
 static char __pyx_k__l[] = "l";
 static char __pyx_k__q[] = "q";
+static char __pyx_k__A0[] = "A0";
+static char __pyx_k__A1[] = "A1";
+static char __pyx_k__AB[] = "AB";
+static char __pyx_k__B0[] = "B0";
+static char __pyx_k__B1[] = "B1";
+static char __pyx_k__BC[] = "BC";
+static char __pyx_k__C0[] = "C0";
+static char __pyx_k__C1[] = "C1";
+static char __pyx_k__CD[] = "CD";
+static char __pyx_k__D0[] = "D0";
+static char __pyx_k__D1[] = "D1";
+static char __pyx_k__DA[] = "DA";
 static char __pyx_k__Zd[] = "Zd";
 static char __pyx_k__Zf[] = "Zf";
 static char __pyx_k__Zg[] = "Zg";
-static char __pyx_k__a0[] = "a0";
-static char __pyx_k__a1[] = "a1";
-static char __pyx_k__b0[] = "b0";
-static char __pyx_k__b1[] = "b1";
-static char __pyx_k__c0[] = "c0";
-static char __pyx_k__c1[] = "c1";
-static char __pyx_k__d0[] = "d0";
-static char __pyx_k__d1[] = "d1";
 static char __pyx_k__id[] = "id";
+static char __pyx_k__os[] = "os";
 static char __pyx_k__bin[] = "bin";
-static char __pyx_k__end[] = "end";
 static char __pyx_k__eps[] = "eps";
 static char __pyx_k__idx[] = "idx";
+static char __pyx_k__lut[] = "lut";
 static char __pyx_k__max[] = "max";
 static char __pyx_k__min[] = "min";
+static char __pyx_k__nnz[] = "nnz";
 static char __pyx_k__obj[] = "obj";
 static char __pyx_k__pos[] = "pos";
+static char __pyx_k__sum[] = "sum";
+static char __pyx_k__sys[] = "sys";
+static char __pyx_k__tmp[] = "tmp";
 static char __pyx_k__base[] = "base";
 static char __pyx_k__bins[] = "bins";
+static char __pyx_k__coef[] = "coef";
 static char __pyx_k__cpos[] = "cpos";
 static char __pyx_k__dark[] = "dark";
 static char __pyx_k__data[] = "data";
-static char __pyx_k__dpos[] = "dpos";
-static char __pyx_k__file[] = "file";
 static char __pyx_k__flat[] = "flat";
 static char __pyx_k__int8[] = "int8";
 static char __pyx_k__mask[] = "mask";
 static char __pyx_k__max0[] = "max0";
-static char __pyx_k__max1[] = "max1";
 static char __pyx_k__min0[] = "min0";
-static char __pyx_k__min1[] = "min1";
 static char __pyx_k__mode[] = "mode";
 static char __pyx_k__name[] = "name";
 static char __pyx_k__ndim[] = "ndim";
 static char __pyx_k__pack[] = "pack";
+static char __pyx_k__self[] = "self";
 static char __pyx_k__size[] = "size";
 static char __pyx_k__step[] = "step";
 static char __pyx_k__stop[] = "stop";
+static char __pyx_k__unit[] = "unit";
+static char __pyx_k__zlib[] = "zlib";
 static char __pyx_k__ASCII[] = "ASCII";
+static char __pyx_k__A_lim[] = "A_lim";
+static char __pyx_k__B_lim[] = "B_lim";
+static char __pyx_k__C_lim[] = "C_lim";
+static char __pyx_k__D_lim[] = "D_lim";
 static char __pyx_k__EPS32[] = "EPS32";
-static char __pyx_k__bins0[] = "bins0";
-static char __pyx_k__bins1[] = "bins1";
+static char __pyx_k__areas[] = "areas";
+static char __pyx_k__ccoef[] = "ccoef";
 static char __pyx_k__cdark[] = "cdark";
 static char __pyx_k__cdata[] = "cdata";
 static char __pyx_k__cflat[] = "cflat";
 static char __pyx_k__cmask[] = "cmask";
-static char __pyx_k__dpos0[] = "dpos0";
-static char __pyx_k__dpos1[] = "dpos1";
+static char __pyx_k__crc32[] = "crc32";
+static char __pyx_k__delta[] = "delta";
 static char __pyx_k__dtype[] = "dtype";
 static char __pyx_k__dummy[] = "dummy";
 static char __pyx_k__error[] = "error";
 static char __pyx_k__finfo[] = "finfo";
 static char __pyx_k__flags[] = "flags";
+static char __pyx_k__int32[] = "int32";
 static char __pyx_k__numpy[] = "numpy";
-static char __pyx_k__print[] = "print";
 static char __pyx_k__range[] = "range";
 static char __pyx_k__ravel[] = "ravel";
 static char __pyx_k__shape[] = "shape";
 static char __pyx_k__start[] = "start";
+static char __pyx_k__tdata[] = "tdata";
 static char __pyx_k__zeros[] = "zeros";
-static char __pyx_k__astype[] = "astype";
-static char __pyx_k__buffer[] = "buffer";
 static char __pyx_k__cdummy[] = "cdummy";
+static char __pyx_k__cumsum[] = "cumsum";
 static char __pyx_k__decode[] = "decode";
-static char __pyx_k__deltaD[] = "deltaD";
-static char __pyx_k__deltaL[] = "deltaL";
-static char __pyx_k__deltaR[] = "deltaR";
-static char __pyx_k__deltaU[] = "deltaU";
-static char __pyx_k__edges0[] = "edges0";
-static char __pyx_k__edges1[] = "edges1";
 static char __pyx_k__encode[] = "encode";
 static char __pyx_k__extend[] = "extend";
 static char __pyx_k__format[] = "format";
+static char __pyx_k__indptr[] = "indptr";
+static char __pyx_k__nbytes[] = "nbytes";
+static char __pyx_k__object[] = "object";
+static char __pyx_k__outMax[] = "outMax";
 static char __pyx_k__outPos[] = "outPos";
 static char __pyx_k__struct[] = "struct";
 static char __pyx_k__unpack[] = "unpack";
@@ -1729,190 +1845,198 @@ static char __pyx_k__xrange[] = "xrange";
 static char __pyx_k__cddummy[] = "cddummy";
 static char __pyx_k__do_dark[] = "do_dark";
 static char __pyx_k__do_flat[] = "do_flat";
-static char __pyx_k__do_pos1[] = "do_pos1";
 static char __pyx_k__epsilon[] = "epsilon";
+static char __pyx_k__fastcrc[] = "fastcrc";
 static char __pyx_k__float32[] = "float32";
 static char __pyx_k__float64[] = "float64";
 static char __pyx_k__fortran[] = "fortran";
+static char __pyx_k__indices[] = "indices";
 static char __pyx_k__memview[] = "memview";
 static char __pyx_k__outData[] = "outData";
 static char __pyx_k__reshape[] = "reshape";
 static char __pyx_k__weights[] = "weights";
 static char __pyx_k__Ellipsis[] = "Ellipsis";
+static char __pyx_k____init__[] = "__init__";
 static char __pyx_k____main__[] = "__main__";
 static char __pyx_k____name__[] = "__name__";
 static char __pyx_k____test__[] = "__test__";
 static char __pyx_k__bin0_max[] = "bin0_max";
 static char __pyx_k__bin0_min[] = "bin0_min";
-static char __pyx_k__bin1_max[] = "bin1_max";
-static char __pyx_k__bin1_min[] = "bin1_min";
+static char __pyx_k__calc_lut[] = "calc_lut";
 static char __pyx_k__do_dummy[] = "do_dummy";
 static char __pyx_k__itemsize[] = "itemsize";
 static char __pyx_k__linspace[] = "linspace";
+static char __pyx_k__lut_size[] = "lut_size";
 static char __pyx_k__outCount[] = "outCount";
 static char __pyx_k__outMerge[] = "outMerge";
 static char __pyx_k__pos0_max[] = "pos0_max";
 static char __pyx_k__pos0_min[] = "pos0_min";
 static char __pyx_k__pos1_max[] = "pos1_max";
 static char __pyx_k__pos1_min[] = "pos1_min";
-static char __pyx_k__sub_area[] = "sub_area";
-static char __pyx_k__sum_area[] = "sum_area";
+static char __pyx_k__sum_data[] = "sum_data";
 static char __pyx_k__TypeError[] = "TypeError";
 static char __pyx_k____class__[] = "__class__";
+static char __pyx_k__areaPixel[] = "areaPixel";
 static char __pyx_k__enumerate[] = "enumerate";
-static char __pyx_k__fbin0_max[] = "fbin0_max";
-static char __pyx_k__fbin0_min[] = "fbin0_min";
-static char __pyx_k__fbin1_max[] = "fbin1_max";
-static char __pyx_k__fbin1_min[] = "fbin1_min";
+static char __pyx_k__integrate[] = "integrate";
 static char __pyx_k__pos0Range[] = "pos0Range";
 static char __pyx_k__pos1Range[] = "pos1Range";
+static char __pyx_k__sum_count[] = "sum_count";
+static char __pyx_k__undefined[] = "undefined";
 static char __pyx_k__IndexError[] = "IndexError";
 static char __pyx_k__ValueError[] = "ValueError";
 static char __pyx_k____import__[] = "__import__";
-static char __pyx_k__aera_pixel[] = "aera_pixel";
+static char __pyx_k____module__[] = "__module__";
 static char __pyx_k__check_mask[] = "check_mask";
 static char __pyx_k__check_pos1[] = "check_pos1";
+static char __pyx_k__lut_nbytes[] = "lut_nbytes";
+static char __pyx_k__pixel_bins[] = "pixel_bins";
 static char __pyx_k__pos0_maxin[] = "pos0_maxin";
 static char __pyx_k__pos1_maxin[] = "pos1_maxin";
-static char __pyx_k__solidangle[] = "solidangle";
-static char __pyx_k__splitPixel[] = "splitPixel";
+static char __pyx_k__solidAngle[] = "solidAngle";
 static char __pyx_k__MemoryError[] = "MemoryError";
-static char __pyx_k__check_dummy[] = "check_dummy";
-static char __pyx_k__csolidangle[] = "csolidangle";
+static char __pyx_k__csolidAngle[] = "csolidAngle";
 static char __pyx_k__delta_dummy[] = "delta_dummy";
-static char __pyx_k__fullSplit1D[] = "fullSplit1D";
-static char __pyx_k__fullSplit2D[] = "fullSplit2D";
+static char __pyx_k__oneOverArea[] = "oneOverArea";
+static char __pyx_k__partialArea[] = "partialArea";
 static char __pyx_k__RuntimeError[] = "RuntimeError";
+static char __pyx_k____qualname__[] = "__qualname__";
+static char __pyx_k__lut_checksum[] = "lut_checksum";
+static char __pyx_k__partialArea2[] = "partialArea2";
 static char __pyx_k__polarization[] = "polarization";
+static char __pyx_k____metaclass__[] = "__metaclass__";
 static char __pyx_k__cpolarization[] = "cpolarization";
-static char __pyx_k__do_solidangle[] = "do_solidangle";
-static char __pyx_k__one_over_area[] = "one_over_area";
+static char __pyx_k__do_solidAngle[] = "do_solidAngle";
+static char __pyx_k__mask_checksum[] = "mask_checksum";
 static char __pyx_k____pyx_vtable__[] = "__pyx_vtable__";
+static char __pyx_k__allow_pos0_neg[] = "allow_pos0_neg";
 static char __pyx_k____pyx_getbuffer[] = "__pyx_getbuffer";
 static char __pyx_k__allocate_buffer[] = "allocate_buffer";
 static char __pyx_k__do_polarization[] = "do_polarization";
 static char __pyx_k__dtype_is_object[] = "dtype_is_object";
+static char __pyx_k__oneOverPixelArea[] = "oneOverPixelArea";
 static char __pyx_k__ascontiguousarray[] = "ascontiguousarray";
+static char __pyx_k__HistoLUT1dFullSplit[] = "HistoLUT1dFullSplit";
 static char __pyx_k____pyx_releasebuffer[] = "__pyx_releasebuffer";
-static PyObject *__pyx_kp_u_24;
+static char __pyx_k__splitPixelFullLUT_b[] = "splitPixelFullLUT_b";
+static PyObject *__pyx_kp_u_16;
+static PyObject *__pyx_kp_u_18;
+static PyObject *__pyx_kp_u_20;
+static PyObject *__pyx_kp_u_22;
+static PyObject *__pyx_kp_u_23;
 static PyObject *__pyx_kp_u_26;
-static PyObject *__pyx_kp_u_28;
-static PyObject *__pyx_kp_u_30;
-static PyObject *__pyx_kp_u_31;
-static PyObject *__pyx_kp_u_34;
+static PyObject *__pyx_kp_s_28;
+static PyObject *__pyx_kp_s_30;
+static PyObject *__pyx_kp_s_33;
+static PyObject *__pyx_kp_s_35;
 static PyObject *__pyx_kp_s_36;
 static PyObject *__pyx_kp_s_38;
-static PyObject *__pyx_kp_s_41;
-static PyObject *__pyx_kp_s_43;
+static PyObject *__pyx_kp_s_40;
+static PyObject *__pyx_kp_s_42;
 static PyObject *__pyx_kp_s_44;
 static PyObject *__pyx_kp_s_46;
-static PyObject *__pyx_kp_s_48;
+static PyObject *__pyx_kp_s_47;
 static PyObject *__pyx_kp_s_50;
 static PyObject *__pyx_kp_s_52;
-static PyObject *__pyx_kp_s_54;
-static PyObject *__pyx_kp_s_55;
-static PyObject *__pyx_kp_s_58;
-static PyObject *__pyx_kp_s_60;
-static PyObject *__pyx_kp_s_65;
-static PyObject *__pyx_kp_s_67;
-static PyObject *__pyx_kp_s_71;
-static PyObject *__pyx_kp_s_75;
-static PyObject *__pyx_kp_s_77;
-static PyObject *__pyx_kp_s_79;
-static PyObject *__pyx_kp_s_81;
-static PyObject *__pyx_kp_s_83;
-static PyObject *__pyx_kp_s_9;
+static PyObject *__pyx_kp_s_57;
+static PyObject *__pyx_kp_s_59;
+static PyObject *__pyx_kp_s_63;
+static PyObject *__pyx_n_s_64;
+static PyObject *__pyx_n_s_67;
+static PyObject *__pyx_n_s_71;
+static PyObject *__pyx_kp_s_72;
+static PyObject *__pyx_kp_s_74;
+static PyObject *__pyx_kp_s_76;
+static PyObject *__pyx_kp_s_78;
+static PyObject *__pyx_kp_s_80;
+static PyObject *__pyx_kp_s_82;
+static PyObject *__pyx_n_s__A0;
+static PyObject *__pyx_n_s__A1;
+static PyObject *__pyx_n_s__AB;
 static PyObject *__pyx_n_s__ASCII;
+static PyObject *__pyx_n_s__A_lim;
+static PyObject *__pyx_n_s__B0;
+static PyObject *__pyx_n_s__B1;
+static PyObject *__pyx_n_s__BC;
+static PyObject *__pyx_n_s__B_lim;
+static PyObject *__pyx_n_s__C0;
+static PyObject *__pyx_n_s__C1;
+static PyObject *__pyx_n_s__CD;
+static PyObject *__pyx_n_s__C_lim;
+static PyObject *__pyx_n_s__D0;
+static PyObject *__pyx_n_s__D1;
+static PyObject *__pyx_n_s__DA;
+static PyObject *__pyx_n_s__D_lim;
 static PyObject *__pyx_n_s__EPS32;
 static PyObject *__pyx_n_s__Ellipsis;
+static PyObject *__pyx_n_s__HistoLUT1dFullSplit;
 static PyObject *__pyx_n_s__IndexError;
 static PyObject *__pyx_n_s__MemoryError;
 static PyObject *__pyx_n_b__O;
 static PyObject *__pyx_n_s__RuntimeError;
-static PyObject *__pyx_n_s__T;
 static PyObject *__pyx_n_s__TypeError;
 static PyObject *__pyx_n_s__ValueError;
 static PyObject *__pyx_n_s____class__;
 static PyObject *__pyx_n_s____import__;
+static PyObject *__pyx_n_s____init__;
 static PyObject *__pyx_n_s____main__;
+static PyObject *__pyx_n_s____metaclass__;
+static PyObject *__pyx_n_s____module__;
 static PyObject *__pyx_n_s____name__;
 static PyObject *__pyx_n_s____pyx_getbuffer;
 static PyObject *__pyx_n_s____pyx_releasebuffer;
 static PyObject *__pyx_n_s____pyx_vtable__;
+static PyObject *__pyx_n_s____qualname__;
 static PyObject *__pyx_n_s____test__;
-static PyObject *__pyx_n_s__a0;
-static PyObject *__pyx_n_s__a1;
-static PyObject *__pyx_n_s__aera_pixel;
 static PyObject *__pyx_n_s__allocate_buffer;
+static PyObject *__pyx_n_s__allow_pos0_neg;
+static PyObject *__pyx_n_s__areaPixel;
+static PyObject *__pyx_n_s__areas;
 static PyObject *__pyx_n_s__ascontiguousarray;
-static PyObject *__pyx_n_s__astype;
-static PyObject *__pyx_n_s__b;
-static PyObject *__pyx_n_s__b0;
-static PyObject *__pyx_n_s__b1;
 static PyObject *__pyx_n_s__base;
 static PyObject *__pyx_n_s__bin;
 static PyObject *__pyx_n_s__bin0_max;
 static PyObject *__pyx_n_s__bin0_min;
-static PyObject *__pyx_n_s__bin1_max;
-static PyObject *__pyx_n_s__bin1_min;
 static PyObject *__pyx_n_s__bins;
-static PyObject *__pyx_n_s__bins0;
-static PyObject *__pyx_n_s__bins1;
-static PyObject *__pyx_n_s__buffer;
 static PyObject *__pyx_n_b__c;
 static PyObject *__pyx_n_s__c;
 static PyObject *__pyx_n_u__c;
-static PyObject *__pyx_n_s__c0;
-static PyObject *__pyx_n_s__c1;
+static PyObject *__pyx_n_s__calc_lut;
+static PyObject *__pyx_n_s__ccoef;
 static PyObject *__pyx_n_s__cdark;
 static PyObject *__pyx_n_s__cdata;
 static PyObject *__pyx_n_s__cddummy;
 static PyObject *__pyx_n_s__cdummy;
 static PyObject *__pyx_n_s__cflat;
-static PyObject *__pyx_n_s__check_dummy;
 static PyObject *__pyx_n_s__check_mask;
 static PyObject *__pyx_n_s__check_pos1;
 static PyObject *__pyx_n_s__cmask;
+static PyObject *__pyx_n_s__coef;
 static PyObject *__pyx_n_s__cpolarization;
 static PyObject *__pyx_n_s__cpos;
-static PyObject *__pyx_n_s__csolidangle;
-static PyObject *__pyx_n_s__d;
-static PyObject *__pyx_n_s__d0;
-static PyObject *__pyx_n_s__d1;
+static PyObject *__pyx_n_s__crc32;
+static PyObject *__pyx_n_s__csolidAngle;
+static PyObject *__pyx_n_s__cumsum;
 static PyObject *__pyx_n_s__dark;
 static PyObject *__pyx_n_s__data;
 static PyObject *__pyx_n_s__decode;
-static PyObject *__pyx_n_s__deltaD;
-static PyObject *__pyx_n_s__deltaL;
-static PyObject *__pyx_n_s__deltaR;
-static PyObject *__pyx_n_s__deltaU;
+static PyObject *__pyx_n_s__delta;
 static PyObject *__pyx_n_s__delta_dummy;
 static PyObject *__pyx_n_s__do_dark;
 static PyObject *__pyx_n_s__do_dummy;
 static PyObject *__pyx_n_s__do_flat;
 static PyObject *__pyx_n_s__do_polarization;
-static PyObject *__pyx_n_s__do_pos1;
-static PyObject *__pyx_n_s__do_solidangle;
-static PyObject *__pyx_n_s__dpos;
-static PyObject *__pyx_n_s__dpos0;
-static PyObject *__pyx_n_s__dpos1;
+static PyObject *__pyx_n_s__do_solidAngle;
 static PyObject *__pyx_n_s__dtype;
 static PyObject *__pyx_n_s__dtype_is_object;
 static PyObject *__pyx_n_s__dummy;
-static PyObject *__pyx_n_s__edges0;
-static PyObject *__pyx_n_s__edges1;
 static PyObject *__pyx_n_s__encode;
-static PyObject *__pyx_n_s__end;
 static PyObject *__pyx_n_s__enumerate;
 static PyObject *__pyx_n_s__eps;
 static PyObject *__pyx_n_s__epsilon;
 static PyObject *__pyx_n_s__error;
 static PyObject *__pyx_n_s__extend;
-static PyObject *__pyx_n_s__fbin0_max;
-static PyObject *__pyx_n_s__fbin0_min;
-static PyObject *__pyx_n_s__fbin1_max;
-static PyObject *__pyx_n_s__fbin1_min;
-static PyObject *__pyx_n_s__file;
+static PyObject *__pyx_n_s__fastcrc;
 static PyObject *__pyx_n_s__finfo;
 static PyObject *__pyx_n_s__flags;
 static PyObject *__pyx_n_s__flat;
@@ -1921,34 +2045,49 @@ static PyObject *__pyx_n_s__float64;
 static PyObject *__pyx_n_s__format;
 static PyObject *__pyx_n_b__fortran;
 static PyObject *__pyx_n_s__fortran;
-static PyObject *__pyx_n_s__fullSplit1D;
-static PyObject *__pyx_n_s__fullSplit2D;
 static PyObject *__pyx_n_s__i;
 static PyObject *__pyx_n_s__id;
 static PyObject *__pyx_n_s__idx;
+static PyObject *__pyx_n_s__indices;
+static PyObject *__pyx_n_s__indptr;
+static PyObject *__pyx_n_s__int32;
 static PyObject *__pyx_n_s__int8;
+static PyObject *__pyx_n_s__integrate;
 static PyObject *__pyx_n_s__itemsize;
 static PyObject *__pyx_n_s__j;
+static PyObject *__pyx_n_s__k;
 static PyObject *__pyx_n_s__linspace;
+static PyObject *__pyx_n_s__lut;
+static PyObject *__pyx_n_s__lut_checksum;
+static PyObject *__pyx_n_s__lut_nbytes;
+static PyObject *__pyx_n_s__lut_size;
 static PyObject *__pyx_n_s__mask;
+static PyObject *__pyx_n_s__mask_checksum;
 static PyObject *__pyx_n_s__max;
 static PyObject *__pyx_n_s__max0;
-static PyObject *__pyx_n_s__max1;
 static PyObject *__pyx_n_s__memview;
 static PyObject *__pyx_n_s__min;
 static PyObject *__pyx_n_s__min0;
-static PyObject *__pyx_n_s__min1;
 static PyObject *__pyx_n_s__mode;
 static PyObject *__pyx_n_s__name;
+static PyObject *__pyx_n_s__nbytes;
 static PyObject *__pyx_n_s__ndim;
+static PyObject *__pyx_n_s__nnz;
 static PyObject *__pyx_n_s__numpy;
 static PyObject *__pyx_n_s__obj;
-static PyObject *__pyx_n_s__one_over_area;
+static PyObject *__pyx_n_s__object;
+static PyObject *__pyx_n_s__oneOverArea;
+static PyObject *__pyx_n_s__oneOverPixelArea;
+static PyObject *__pyx_n_s__os;
 static PyObject *__pyx_n_s__outCount;
 static PyObject *__pyx_n_s__outData;
+static PyObject *__pyx_n_s__outMax;
 static PyObject *__pyx_n_s__outMerge;
 static PyObject *__pyx_n_s__outPos;
 static PyObject *__pyx_n_s__pack;
+static PyObject *__pyx_n_s__partialArea;
+static PyObject *__pyx_n_s__partialArea2;
+static PyObject *__pyx_n_s__pixel_bins;
 static PyObject *__pyx_n_s__polarization;
 static PyObject *__pyx_n_s__pos;
 static PyObject *__pyx_n_s__pos0Range;
@@ -1959,24 +2098,31 @@ static PyObject *__pyx_n_s__pos1Range;
 static PyObject *__pyx_n_s__pos1_max;
 static PyObject *__pyx_n_s__pos1_maxin;
 static PyObject *__pyx_n_s__pos1_min;
-static PyObject *__pyx_n_s__print;
 static PyObject *__pyx_n_s__range;
 static PyObject *__pyx_n_s__ravel;
 static PyObject *__pyx_n_s__reshape;
+static PyObject *__pyx_n_s__self;
 static PyObject *__pyx_n_s__shape;
 static PyObject *__pyx_n_s__size;
-static PyObject *__pyx_n_s__solidangle;
-static PyObject *__pyx_n_s__splitPixel;
+static PyObject *__pyx_n_s__solidAngle;
+static PyObject *__pyx_n_s__splitPixelFullLUT_b;
 static PyObject *__pyx_n_s__start;
 static PyObject *__pyx_n_s__step;
 static PyObject *__pyx_n_s__stop;
 static PyObject *__pyx_n_s__struct;
-static PyObject *__pyx_n_s__sub_area;
-static PyObject *__pyx_n_s__sum_area;
+static PyObject *__pyx_n_s__sum;
+static PyObject *__pyx_n_s__sum_count;
+static PyObject *__pyx_n_s__sum_data;
+static PyObject *__pyx_n_s__sys;
+static PyObject *__pyx_n_s__tdata;
+static PyObject *__pyx_n_s__tmp;
+static PyObject *__pyx_n_s__undefined;
+static PyObject *__pyx_n_s__unit;
 static PyObject *__pyx_n_s__unpack;
 static PyObject *__pyx_n_s__weights;
 static PyObject *__pyx_n_s__xrange;
 static PyObject *__pyx_n_s__zeros;
+static PyObject *__pyx_n_s__zlib;
 static PyObject *__pyx_int_0;
 static PyObject *__pyx_int_1;
 static PyObject *__pyx_int_2;
@@ -1987,65 +2133,61 @@ static PyObject *__pyx_k_slice_3;
 static PyObject *__pyx_k_slice_4;
 static PyObject *__pyx_k_slice_6;
 static PyObject *__pyx_k_slice_7;
+static PyObject *__pyx_k_slice_9;
 static PyObject *__pyx_k_tuple_1;
 static PyObject *__pyx_k_tuple_2;
 static PyObject *__pyx_k_tuple_5;
 static PyObject *__pyx_k_tuple_8;
+static PyObject *__pyx_k_slice_10;
 static PyObject *__pyx_k_slice_12;
 static PyObject *__pyx_k_slice_13;
 static PyObject *__pyx_k_slice_15;
-static PyObject *__pyx_k_slice_16;
-static PyObject *__pyx_k_slice_18;
-static PyObject *__pyx_k_slice_19;
-static PyObject *__pyx_k_slice_21;
-static PyObject *__pyx_k_slice_22;
-static PyObject *__pyx_k_tuple_10;
 static PyObject *__pyx_k_tuple_11;
 static PyObject *__pyx_k_tuple_14;
 static PyObject *__pyx_k_tuple_17;
-static PyObject *__pyx_k_tuple_20;
-static PyObject *__pyx_k_tuple_23;
+static PyObject *__pyx_k_tuple_19;
+static PyObject *__pyx_k_tuple_21;
+static PyObject *__pyx_k_tuple_24;
 static PyObject *__pyx_k_tuple_25;
 static PyObject *__pyx_k_tuple_27;
 static PyObject *__pyx_k_tuple_29;
+static PyObject *__pyx_k_tuple_31;
 static PyObject *__pyx_k_tuple_32;
-static PyObject *__pyx_k_tuple_33;
-static PyObject *__pyx_k_tuple_35;
+static PyObject *__pyx_k_tuple_34;
 static PyObject *__pyx_k_tuple_37;
 static PyObject *__pyx_k_tuple_39;
-static PyObject *__pyx_k_tuple_40;
-static PyObject *__pyx_k_tuple_42;
+static PyObject *__pyx_k_tuple_41;
+static PyObject *__pyx_k_tuple_43;
 static PyObject *__pyx_k_tuple_45;
-static PyObject *__pyx_k_tuple_47;
+static PyObject *__pyx_k_tuple_48;
 static PyObject *__pyx_k_tuple_49;
 static PyObject *__pyx_k_tuple_51;
 static PyObject *__pyx_k_tuple_53;
-static PyObject *__pyx_k_tuple_56;
-static PyObject *__pyx_k_tuple_57;
-static PyObject *__pyx_k_tuple_59;
 static PyObject *__pyx_k_tuple_61;
-static PyObject *__pyx_k_tuple_69;
-static PyObject *__pyx_k_tuple_72;
-static PyObject *__pyx_k_tuple_76;
-static PyObject *__pyx_k_tuple_78;
-static PyObject *__pyx_k_tuple_80;
-static PyObject *__pyx_k_tuple_82;
-static PyObject *__pyx_k_tuple_84;
-static PyObject *__pyx_k_codeobj_70;
-static PyObject *__pyx_k_codeobj_73;
+static PyObject *__pyx_k_tuple_65;
+static PyObject *__pyx_k_tuple_68;
+static PyObject *__pyx_k_tuple_70;
+static PyObject *__pyx_k_tuple_75;
+static PyObject *__pyx_k_tuple_77;
+static PyObject *__pyx_k_tuple_79;
+static PyObject *__pyx_k_tuple_81;
+static PyObject *__pyx_k_tuple_83;
+static PyObject *__pyx_k_codeobj_62;
+static PyObject *__pyx_k_codeobj_66;
+static PyObject *__pyx_k_codeobj_69;
 
-/* "splitPixel.pyx":53
- * #    return 0.5 * (((b0 - a0) * (c1 - a1)) - ((b1 - a1) * (c0 - a0)))
+/* "splitPixelFullLUT_b.pyx":49
+ *     double intersect
  * 
- * cdef inline double area4(double a0,             # <<<<<<<<<<<<<<
- *                          double a1,
- *                          double b0,
+ * cdef double area4(double a0, double a1, double b0, double b1, double c0, double c1, double d0, double d1) nogil:             # <<<<<<<<<<<<<<
+ *     """
+ *     Calculate the area of the ABCD quadrilataire  with corners:
  */
 
-static CYTHON_INLINE double __pyx_f_10splitPixel_area4(double __pyx_v_a0, double __pyx_v_a1, double __pyx_v_b0, double __pyx_v_b1, double __pyx_v_c0, double __pyx_v_c1, double __pyx_v_d0, double __pyx_v_d1) {
+static double __pyx_f_19splitPixelFullLUT_b_area4(double __pyx_v_a0, double __pyx_v_a1, double __pyx_v_b0, double __pyx_v_b1, double __pyx_v_c0, double __pyx_v_c1, double __pyx_v_d0, double __pyx_v_d1) {
   double __pyx_r;
 
-  /* "splitPixel.pyx":69
+  /* "splitPixelFullLUT_b.pyx":58
  *     @return: area, i.e. 1/2 * (AC ^ BD)
  *     """
  *     return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))             # <<<<<<<<<<<<<<
@@ -2060,25 +2202,25 @@ static CYTHON_INLINE double __pyx_f_10splitPixel_area4(double __pyx_v_a0, double
   return __pyx_r;
 }
 
-/* "splitPixel.pyx":72
+/* "splitPixelFullLUT_b.pyx":61
  * 
  * @cython.cdivision(True)
- * cdef inline double  getBinNr( double x0,  double pos0_min,  double dpos) nogil:             # <<<<<<<<<<<<<<
+ * cdef inline double getBinNr( double x0, double pos0_min, double delta) nogil:             # <<<<<<<<<<<<<<
  *     """
  *     calculate the bin number for any point
  */
 
-static CYTHON_INLINE double __pyx_f_10splitPixel_getBinNr(double __pyx_v_x0, double __pyx_v_pos0_min, double __pyx_v_dpos) {
+static CYTHON_INLINE double __pyx_f_19splitPixelFullLUT_b_getBinNr(double __pyx_v_x0, double __pyx_v_pos0_min, double __pyx_v_delta) {
   double __pyx_r;
 
-  /* "splitPixel.pyx":79
- *     param dpos: bin width
+  /* "splitPixelFullLUT_b.pyx":68
+ *     param delta: bin width
  *     """
- *     return (x0 - pos0_min) / dpos             # <<<<<<<<<<<<<<
+ *     return (x0 - pos0_min) / delta             # <<<<<<<<<<<<<<
  * 
- * 
+ * cdef double integrate( double A0, double B0, Function AB) nogil:
  */
-  __pyx_r = ((__pyx_v_x0 - __pyx_v_pos0_min) / __pyx_v_dpos);
+  __pyx_r = ((__pyx_v_x0 - __pyx_v_pos0_min) / __pyx_v_delta);
   goto __pyx_L0;
 
   __pyx_r = 0;
@@ -2086,454 +2228,176 @@ static CYTHON_INLINE double __pyx_f_10splitPixel_getBinNr(double __pyx_v_x0, dou
   return __pyx_r;
 }
 
-/* "splitPixel.pyx":83
+/* "splitPixelFullLUT_b.pyx":70
+ *     return (x0 - pos0_min) / delta
  * 
- * #def calc_area(double I1, double I2, double slope, double intercept):
- * cdef inline double calc_area(double I1, double I2, double slope, double intercept) nogil:             # <<<<<<<<<<<<<<
- *     "Calculate the area between I1 and I2 of a line with a given slope & intercept"
- *     return 0.5 * ((I2 - I1) * (slope * (I2 + I1) + 2 * intercept))
+ * cdef double integrate( double A0, double B0, Function AB) nogil:             # <<<<<<<<<<<<<<
+ *     """
+ *     integrates the line defined by AB, from A0 to B0
  */
 
-static CYTHON_INLINE double __pyx_f_10splitPixel_calc_area(double __pyx_v_I1, double __pyx_v_I2, double __pyx_v_slope, double __pyx_v_intercept) {
+static double __pyx_f_19splitPixelFullLUT_b_integrate(double __pyx_v_A0, double __pyx_v_B0, struct __pyx_t_19splitPixelFullLUT_b_Function __pyx_v_AB) {
   double __pyx_r;
-
-  /* "splitPixel.pyx":85
- * cdef inline double calc_area(double I1, double I2, double slope, double intercept) nogil:
- *     "Calculate the area between I1 and I2 of a line with a given slope & intercept"
- *     return 0.5 * ((I2 - I1) * (slope * (I2 + I1) + 2 * intercept))             # <<<<<<<<<<<<<<
- * 
- * @cython.boundscheck(False)
- */
-  __pyx_r = (0.5 * ((__pyx_v_I2 - __pyx_v_I1) * ((__pyx_v_slope * (__pyx_v_I2 + __pyx_v_I1)) + (2.0 * __pyx_v_intercept))));
-  goto __pyx_L0;
-
-  __pyx_r = 0;
-  __pyx_L0:;
-  return __pyx_r;
-}
-
-/* "splitPixel.pyx":90
- * @cython.wraparound(False)
- * @cython.cdivision(True)
- * cdef inline void integrate(double[:] buffer, int buffer_size, double start0, double start1, double stop0, double stop1) nogil:             # <<<<<<<<<<<<<<
- *     "Integrate in a box a line between start and stop"
- * 
- */
-
-static CYTHON_INLINE void __pyx_f_10splitPixel_integrate(__Pyx_memviewslice __pyx_v_buffer, int __pyx_v_buffer_size, double __pyx_v_start0, double __pyx_v_start1, double __pyx_v_stop0, double __pyx_v_stop1) {
-  double __pyx_v_slope;
-  double __pyx_v_intercept;
-  int __pyx_v_i;
-  int __pyx_v_istart0;
-  int __pyx_v_istop0;
   int __pyx_t_1;
-  int __pyx_t_2;
-  int __pyx_t_3;
-  int __pyx_t_4;
-  int __pyx_t_5;
-  int __pyx_t_6;
-  int __pyx_t_7;
-  long __pyx_t_8;
-  long __pyx_t_9;
-  long __pyx_t_10;
-  int __pyx_t_11;
-  int __pyx_t_12;
-  int __pyx_t_13;
 
-  /* "splitPixel.pyx":93
- *     "Integrate in a box a line between start and stop"
- * 
- *     if stop0 == start0:             # <<<<<<<<<<<<<<
- *         #slope is infinite, area is null: no change to the buffer
- *         return
+  /* "splitPixelFullLUT_b.pyx":77
+ *     param AB: struct with the slope and point of intersection of the line
+ *     """
+ *     if A0==B0:             # <<<<<<<<<<<<<<
+ *         return 0.0
+ *     else:
  */
-  __pyx_t_1 = ((__pyx_v_stop0 == __pyx_v_start0) != 0);
+  __pyx_t_1 = ((__pyx_v_A0 == __pyx_v_B0) != 0);
   if (__pyx_t_1) {
 
-    /* "splitPixel.pyx":95
- *     if stop0 == start0:
- *         #slope is infinite, area is null: no change to the buffer
- *         return             # <<<<<<<<<<<<<<
- *     cdef double slope, intercept
- *     cdef int i, istart0 = <int> floor(start0), istop0 = <int> floor(stop0)
+    /* "splitPixelFullLUT_b.pyx":78
+ *     """
+ *     if A0==B0:
+ *         return 0.0             # <<<<<<<<<<<<<<
+ *     else:
+ *         return AB.slope*(B0*B0 - A0*A0)*0.5 + AB.intersect*(B0-A0)
  */
+    __pyx_r = 0.0;
     goto __pyx_L0;
     goto __pyx_L3;
   }
-  __pyx_L3:;
-
-  /* "splitPixel.pyx":97
- *         return
- *     cdef double slope, intercept
- *     cdef int i, istart0 = <int> floor(start0), istop0 = <int> floor(stop0)             # <<<<<<<<<<<<<<
- *     slope = (stop1 - start1) / (stop0 - start0)
- *     intercept = start1 - slope * start0
- */
-  __pyx_v_istart0 = ((int)floor(__pyx_v_start0));
-  __pyx_v_istop0 = ((int)floor(__pyx_v_stop0));
-
-  /* "splitPixel.pyx":98
- *     cdef double slope, intercept
- *     cdef int i, istart0 = <int> floor(start0), istop0 = <int> floor(stop0)
- *     slope = (stop1 - start1) / (stop0 - start0)             # <<<<<<<<<<<<<<
- *     intercept = start1 - slope * start0
- *     if buffer_size > istop0 == istart0 >= 0:
- */
-  __pyx_v_slope = ((__pyx_v_stop1 - __pyx_v_start1) / (__pyx_v_stop0 - __pyx_v_start0));
-
-  /* "splitPixel.pyx":99
- *     cdef int i, istart0 = <int> floor(start0), istop0 = <int> floor(stop0)
- *     slope = (stop1 - start1) / (stop0 - start0)
- *     intercept = start1 - slope * start0             # <<<<<<<<<<<<<<
- *     if buffer_size > istop0 == istart0 >= 0:
- *         buffer[istart0] += calc_area(start0, stop0, slope, intercept)
- */
-  __pyx_v_intercept = (__pyx_v_start1 - (__pyx_v_slope * __pyx_v_start0));
-
-  /* "splitPixel.pyx":100
- *     slope = (stop1 - start1) / (stop0 - start0)
- *     intercept = start1 - slope * start0
- *     if buffer_size > istop0 == istart0 >= 0:             # <<<<<<<<<<<<<<
- *         buffer[istart0] += calc_area(start0, stop0, slope, intercept)
- *     else:
- */
-  __pyx_t_1 = (__pyx_v_buffer_size > __pyx_v_istop0);
-  if (__pyx_t_1) {
-    __pyx_t_1 = (__pyx_v_istop0 == __pyx_v_istart0);
-    if (__pyx_t_1) {
-      __pyx_t_1 = (__pyx_v_istart0 >= 0);
-    }
-  }
-  __pyx_t_2 = (__pyx_t_1 != 0);
-  if (__pyx_t_2) {
-
-    /* "splitPixel.pyx":101
- *     intercept = start1 - slope * start0
- *     if buffer_size > istop0 == istart0 >= 0:
- *         buffer[istart0] += calc_area(start0, stop0, slope, intercept)             # <<<<<<<<<<<<<<
- *     else:
- *         if stop0 > start0:
- */
-    __pyx_t_3 = __pyx_v_istart0;
-    *((double *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_3 * __pyx_v_buffer.strides[0]) )) += __pyx_f_10splitPixel_calc_area(__pyx_v_start0, __pyx_v_stop0, __pyx_v_slope, __pyx_v_intercept);
-    goto __pyx_L4;
-  }
   /*else*/ {
 
-    /* "splitPixel.pyx":103
- *         buffer[istart0] += calc_area(start0, stop0, slope, intercept)
+    /* "splitPixelFullLUT_b.pyx":80
+ *         return 0.0
  *     else:
- *         if stop0 > start0:             # <<<<<<<<<<<<<<
- *                 if 0 <= start0 < buffer_size:
- *                     buffer[istart0] += calc_area(start0, floor(start0+1), slope, intercept)
- */
-    __pyx_t_2 = ((__pyx_v_stop0 > __pyx_v_start0) != 0);
-    if (__pyx_t_2) {
-
-      /* "splitPixel.pyx":104
- *     else:
- *         if stop0 > start0:
- *                 if 0 <= start0 < buffer_size:             # <<<<<<<<<<<<<<
- *                     buffer[istart0] += calc_area(start0, floor(start0+1), slope, intercept)
- *                 for i in range(max(istart0+1, 0), min(istop0, buffer_size)):
- */
-      __pyx_t_2 = (0.0 <= __pyx_v_start0);
-      if (__pyx_t_2) {
-        __pyx_t_2 = (__pyx_v_start0 < __pyx_v_buffer_size);
-      }
-      __pyx_t_1 = (__pyx_t_2 != 0);
-      if (__pyx_t_1) {
-
-        /* "splitPixel.pyx":105
- *         if stop0 > start0:
- *                 if 0 <= start0 < buffer_size:
- *                     buffer[istart0] += calc_area(start0, floor(start0+1), slope, intercept)             # <<<<<<<<<<<<<<
- *                 for i in range(max(istart0+1, 0), min(istop0, buffer_size)):
- *                     buffer[i] += calc_area(i, i+1, slope, intercept)
- */
-        __pyx_t_4 = __pyx_v_istart0;
-        *((double *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_4 * __pyx_v_buffer.strides[0]) )) += __pyx_f_10splitPixel_calc_area(__pyx_v_start0, floor((__pyx_v_start0 + 1.0)), __pyx_v_slope, __pyx_v_intercept);
-        goto __pyx_L6;
-      }
-      __pyx_L6:;
-
-      /* "splitPixel.pyx":106
- *                 if 0 <= start0 < buffer_size:
- *                     buffer[istart0] += calc_area(start0, floor(start0+1), slope, intercept)
- *                 for i in range(max(istart0+1, 0), min(istop0, buffer_size)):             # <<<<<<<<<<<<<<
- *                     buffer[i] += calc_area(i, i+1, slope, intercept)
- *                 if buffer_size > stop0 >= 0:
- */
-      __pyx_t_5 = __pyx_v_buffer_size;
-      __pyx_t_6 = __pyx_v_istop0;
-      if (((__pyx_t_5 < __pyx_t_6) != 0)) {
-        __pyx_t_7 = __pyx_t_5;
-      } else {
-        __pyx_t_7 = __pyx_t_6;
-      }
-      __pyx_t_5 = __pyx_t_7;
-      __pyx_t_8 = 0;
-      __pyx_t_9 = (__pyx_v_istart0 + 1);
-      if (((__pyx_t_8 > __pyx_t_9) != 0)) {
-        __pyx_t_10 = __pyx_t_8;
-      } else {
-        __pyx_t_10 = __pyx_t_9;
-      }
-      for (__pyx_t_7 = __pyx_t_10; __pyx_t_7 < __pyx_t_5; __pyx_t_7+=1) {
-        __pyx_v_i = __pyx_t_7;
-
-        /* "splitPixel.pyx":107
- *                     buffer[istart0] += calc_area(start0, floor(start0+1), slope, intercept)
- *                 for i in range(max(istart0+1, 0), min(istop0, buffer_size)):
- *                     buffer[i] += calc_area(i, i+1, slope, intercept)             # <<<<<<<<<<<<<<
- *                 if buffer_size > stop0 >= 0:
- *                     buffer[istop0] += calc_area(istop0, stop0, slope, intercept)
- */
-        __pyx_t_6 = __pyx_v_i;
-        *((double *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_6 * __pyx_v_buffer.strides[0]) )) += __pyx_f_10splitPixel_calc_area(__pyx_v_i, (__pyx_v_i + 1), __pyx_v_slope, __pyx_v_intercept);
-      }
-
-      /* "splitPixel.pyx":108
- *                 for i in range(max(istart0+1, 0), min(istop0, buffer_size)):
- *                     buffer[i] += calc_area(i, i+1, slope, intercept)
- *                 if buffer_size > stop0 >= 0:             # <<<<<<<<<<<<<<
- *                     buffer[istop0] += calc_area(istop0, stop0, slope, intercept)
- *         else:
- */
-      __pyx_t_1 = (__pyx_v_buffer_size > __pyx_v_stop0);
-      if (__pyx_t_1) {
-        __pyx_t_1 = (__pyx_v_stop0 >= 0.0);
-      }
-      __pyx_t_2 = (__pyx_t_1 != 0);
-      if (__pyx_t_2) {
-
-        /* "splitPixel.pyx":109
- *                     buffer[i] += calc_area(i, i+1, slope, intercept)
- *                 if buffer_size > stop0 >= 0:
- *                     buffer[istop0] += calc_area(istop0, stop0, slope, intercept)             # <<<<<<<<<<<<<<
- *         else:
- *             if 0 <= start0 < buffer_size:
- */
-        __pyx_t_5 = __pyx_v_istop0;
-        *((double *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_5 * __pyx_v_buffer.strides[0]) )) += __pyx_f_10splitPixel_calc_area(__pyx_v_istop0, __pyx_v_stop0, __pyx_v_slope, __pyx_v_intercept);
-        goto __pyx_L9;
-      }
-      __pyx_L9:;
-      goto __pyx_L5;
-    }
-    /*else*/ {
-
-      /* "splitPixel.pyx":111
- *                     buffer[istop0] += calc_area(istop0, stop0, slope, intercept)
- *         else:
- *             if 0 <= start0 < buffer_size:             # <<<<<<<<<<<<<<
- *                 buffer[istart0] += calc_area(start0, istart0, slope, intercept)
- *             for i in range(min(istart0, buffer_size)-1, max(<int> floor(stop0), -1), -1):
- */
-      __pyx_t_2 = (0.0 <= __pyx_v_start0);
-      if (__pyx_t_2) {
-        __pyx_t_2 = (__pyx_v_start0 < __pyx_v_buffer_size);
-      }
-      __pyx_t_1 = (__pyx_t_2 != 0);
-      if (__pyx_t_1) {
-
-        /* "splitPixel.pyx":112
- *         else:
- *             if 0 <= start0 < buffer_size:
- *                 buffer[istart0] += calc_area(start0, istart0, slope, intercept)             # <<<<<<<<<<<<<<
- *             for i in range(min(istart0, buffer_size)-1, max(<int> floor(stop0), -1), -1):
- *                 buffer[i] += calc_area(i+1, i, slope, intercept)
- */
-        __pyx_t_7 = __pyx_v_istart0;
-        *((double *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_7 * __pyx_v_buffer.strides[0]) )) += __pyx_f_10splitPixel_calc_area(__pyx_v_start0, __pyx_v_istart0, __pyx_v_slope, __pyx_v_intercept);
-        goto __pyx_L10;
-      }
-      __pyx_L10:;
-
-      /* "splitPixel.pyx":113
- *             if 0 <= start0 < buffer_size:
- *                 buffer[istart0] += calc_area(start0, istart0, slope, intercept)
- *             for i in range(min(istart0, buffer_size)-1, max(<int> floor(stop0), -1), -1):             # <<<<<<<<<<<<<<
- *                 buffer[i] += calc_area(i+1, i, slope, intercept)
- *             if buffer_size > stop0 >= 0:
- */
-      __pyx_t_10 = -1;
-      __pyx_t_11 = ((int)floor(__pyx_v_stop0));
-      if (((__pyx_t_10 > __pyx_t_11) != 0)) {
-        __pyx_t_8 = __pyx_t_10;
-      } else {
-        __pyx_t_8 = __pyx_t_11;
-      }
-      __pyx_t_10 = __pyx_t_8;
-      __pyx_t_11 = __pyx_v_buffer_size;
-      __pyx_t_12 = __pyx_v_istart0;
-      if (((__pyx_t_11 < __pyx_t_12) != 0)) {
-        __pyx_t_13 = __pyx_t_11;
-      } else {
-        __pyx_t_13 = __pyx_t_12;
-      }
-      for (__pyx_t_11 = (__pyx_t_13 - 1); __pyx_t_11 > __pyx_t_10; __pyx_t_11-=1) {
-        __pyx_v_i = __pyx_t_11;
-
-        /* "splitPixel.pyx":114
- *                 buffer[istart0] += calc_area(start0, istart0, slope, intercept)
- *             for i in range(min(istart0, buffer_size)-1, max(<int> floor(stop0), -1), -1):
- *                 buffer[i] += calc_area(i+1, i, slope, intercept)             # <<<<<<<<<<<<<<
- *             if buffer_size > stop0 >= 0:
- *                 buffer[istop0] += calc_area(floor(stop0+1), stop0, slope, intercept)
- */
-        __pyx_t_12 = __pyx_v_i;
-        *((double *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_12 * __pyx_v_buffer.strides[0]) )) += __pyx_f_10splitPixel_calc_area((__pyx_v_i + 1), __pyx_v_i, __pyx_v_slope, __pyx_v_intercept);
-      }
-
-      /* "splitPixel.pyx":115
- *             for i in range(min(istart0, buffer_size)-1, max(<int> floor(stop0), -1), -1):
- *                 buffer[i] += calc_area(i+1, i, slope, intercept)
- *             if buffer_size > stop0 >= 0:             # <<<<<<<<<<<<<<
- *                 buffer[istop0] += calc_area(floor(stop0+1), stop0, slope, intercept)
+ *         return AB.slope*(B0*B0 - A0*A0)*0.5 + AB.intersect*(B0-A0)             # <<<<<<<<<<<<<<
+ * 
  * 
  */
-      __pyx_t_1 = (__pyx_v_buffer_size > __pyx_v_stop0);
-      if (__pyx_t_1) {
-        __pyx_t_1 = (__pyx_v_stop0 >= 0.0);
-      }
-      __pyx_t_2 = (__pyx_t_1 != 0);
-      if (__pyx_t_2) {
-
-        /* "splitPixel.pyx":116
- *                 buffer[i] += calc_area(i+1, i, slope, intercept)
- *             if buffer_size > stop0 >= 0:
- *                 buffer[istop0] += calc_area(floor(stop0+1), stop0, slope, intercept)             # <<<<<<<<<<<<<<
- * 
- * @cython.cdivision(True)
- */
-        __pyx_t_13 = __pyx_v_istop0;
-        *((double *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_13 * __pyx_v_buffer.strides[0]) )) += __pyx_f_10splitPixel_calc_area(floor((__pyx_v_stop0 + 1.0)), __pyx_v_stop0, __pyx_v_slope, __pyx_v_intercept);
-        goto __pyx_L13;
-      }
-      __pyx_L13:;
-    }
-    __pyx_L5:;
+    __pyx_r = (((__pyx_v_AB.slope * ((__pyx_v_B0 * __pyx_v_B0) - (__pyx_v_A0 * __pyx_v_A0))) * 0.5) + (__pyx_v_AB.intersect * (__pyx_v_B0 - __pyx_v_A0)));
+    goto __pyx_L0;
   }
-  __pyx_L4:;
+  __pyx_L3:;
 
+  __pyx_r = 0;
   __pyx_L0:;
+  return __pyx_r;
+}
+
+/* "splitPixelFullLUT_b.pyx":94
+ *     """
+ *     @cython.boundscheck(False)
+ *     def __init__(self,             # <<<<<<<<<<<<<<
+ *                  numpy.ndarray pos not None,
+ *                  int bins=100,
+ */
+
+static PyObject *__pyx_pf_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_6__defaults__(CYTHON_UNUSED PyObject *__pyx_self) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("__defaults__", 0);
+  __Pyx_XDECREF(__pyx_r);
+
+  /* "splitPixelFullLUT_b.pyx":96
+ *     def __init__(self,
+ *                  numpy.ndarray pos not None,
+ *                  int bins=100,             # <<<<<<<<<<<<<<
+ *                  pos0Range=None,
+ *                  pos1Range=None,
+ */
+  __pyx_t_1 = PyInt_FromLong(((int)100)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 96; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+
+  /* "splitPixelFullLUT_b.pyx":94
+ *     """
+ *     @cython.boundscheck(False)
+ *     def __init__(self,             # <<<<<<<<<<<<<<
+ *                  numpy.ndarray pos not None,
+ *                  int bins=100,
+ */
+  __pyx_t_2 = PyTuple_New(7); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_1);
+  __Pyx_GIVEREF(__pyx_t_1);
+  __Pyx_INCREF(((PyObject *)Py_None));
+  PyTuple_SET_ITEM(__pyx_t_2, 1, ((PyObject *)Py_None));
+  __Pyx_GIVEREF(((PyObject *)Py_None));
+  __Pyx_INCREF(((PyObject *)Py_None));
+  PyTuple_SET_ITEM(__pyx_t_2, 2, ((PyObject *)Py_None));
+  __Pyx_GIVEREF(((PyObject *)Py_None));
+  __Pyx_INCREF(((PyObject *)Py_None));
+  PyTuple_SET_ITEM(__pyx_t_2, 3, ((PyObject *)Py_None));
+  __Pyx_GIVEREF(((PyObject *)Py_None));
+  __Pyx_INCREF(((PyObject *)Py_None));
+  PyTuple_SET_ITEM(__pyx_t_2, 4, ((PyObject *)Py_None));
+  __Pyx_GIVEREF(((PyObject *)Py_None));
+  __Pyx_INCREF(__Pyx_CyFunction_Defaults(__pyx_defaults, __pyx_self)->__pyx_arg_allow_pos0_neg);
+  PyTuple_SET_ITEM(__pyx_t_2, 5, __Pyx_CyFunction_Defaults(__pyx_defaults, __pyx_self)->__pyx_arg_allow_pos0_neg);
+  __Pyx_GIVEREF(__Pyx_CyFunction_Defaults(__pyx_defaults, __pyx_self)->__pyx_arg_allow_pos0_neg);
+  __Pyx_INCREF(((PyObject *)((PyObject*)__pyx_n_s__undefined)));
+  PyTuple_SET_ITEM(__pyx_t_2, 6, ((PyObject *)((PyObject*)__pyx_n_s__undefined)));
+  __Pyx_GIVEREF(((PyObject *)((PyObject*)__pyx_n_s__undefined)));
+  __pyx_t_1 = 0;
+  __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  PyTuple_SET_ITEM(__pyx_t_1, 0, ((PyObject *)__pyx_t_2));
+  __Pyx_GIVEREF(((PyObject *)__pyx_t_2));
+  __Pyx_INCREF(Py_None);
+  PyTuple_SET_ITEM(__pyx_t_1, 1, Py_None);
+  __Pyx_GIVEREF(Py_None);
+  __pyx_t_2 = 0;
+  __pyx_r = ((PyObject *)__pyx_t_1);
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  __pyx_r = Py_None; __Pyx_INCREF(Py_None);
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_AddTraceback("splitPixelFullLUT_b.HistoLUT1dFullSplit.__defaults__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_10splitPixel_1fullSplit1D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_10splitPixel_fullSplit1D[] = "\n    Calculates histogram of pos weighted by weights\n\n    Splitting is done on the pixel's bounding box like fit2D.\n    No compromise for speed has been made here.\n\n\n    @param pos: 3D array with pos0; Corner A,B,C,D; tth or chi\n    @param weights: array with intensities\n    @param bins: number of output bins\n    @param pos0Range: minimum and maximum  of the 2th range\n    @param pos1Range: minimum and maximum  of the chi range\n    @param dummy: value for bins without pixels\n    @param delta_dummy: precision of dummy value\n    @param mask: array (of int8) with masked pixels with 1 (0=not masked)\n    @param dark: array (of float64) with dark noise to be subtracted (or None)\n    @param flat: array (of float64) with flat image\n    @param polarization: array (of float64) with polarization correction\n    @param solidangle: array (of float64) with flat image\n    @return 2theta, I, weighted histogram, unweighted histogram\n    ";
-static PyMethodDef __pyx_mdef_10splitPixel_1fullSplit1D = {__Pyx_NAMESTR("fullSplit1D"), (PyCFunction)__pyx_pw_10splitPixel_1fullSplit1D, METH_VARARGS|METH_KEYWORDS, __Pyx_DOCSTR(__pyx_doc_10splitPixel_fullSplit1D)};
-static PyObject *__pyx_pw_10splitPixel_1fullSplit1D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_1__init__(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_19splitPixelFullLUT_b_19HistoLUT1dFullSplit___init__[] = "\n        @param pos: 3D or 4D array with the coordinates of each pixel point\n        @param bins: number of output bins, 100 by default\n        @param pos0Range: minimum and maximum  of the 2th range\n        @param pos1Range: minimum and maximum  of the chi range\n        @param mask: array (of int8) with masked pixels with 1 (0=not masked)\n        @param allow_pos0_neg: enforce the q<0 is usually not possible  \n        @param unit: can be 2th_deg or r_nm^-1 ...\n        ";
+static PyMethodDef __pyx_mdef_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_1__init__ = {__Pyx_NAMESTR("__init__"), (PyCFunction)__pyx_pw_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_1__init__, METH_VARARGS|METH_KEYWORDS, __Pyx_DOCSTR(__pyx_doc_19splitPixelFullLUT_b_19HistoLUT1dFullSplit___init__)};
+static PyObject *__pyx_pw_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_1__init__(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  PyObject *__pyx_v_self = 0;
   PyArrayObject *__pyx_v_pos = 0;
-  PyArrayObject *__pyx_v_weights = 0;
   int __pyx_v_bins;
   PyObject *__pyx_v_pos0Range = 0;
   PyObject *__pyx_v_pos1Range = 0;
-  PyObject *__pyx_v_dummy = 0;
-  PyObject *__pyx_v_delta_dummy = 0;
   PyObject *__pyx_v_mask = 0;
-  PyObject *__pyx_v_dark = 0;
-  PyObject *__pyx_v_flat = 0;
-  PyObject *__pyx_v_solidangle = 0;
-  PyObject *__pyx_v_polarization = 0;
+  PyObject *__pyx_v_mask_checksum = 0;
+  PyObject *__pyx_v_allow_pos0_neg = 0;
+  PyObject *__pyx_v_unit = 0;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("fullSplit1D (wrapper)", 0);
+  __Pyx_RefNannySetupContext("__init__ (wrapper)", 0);
   {
-    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s__pos,&__pyx_n_s__weights,&__pyx_n_s__bins,&__pyx_n_s__pos0Range,&__pyx_n_s__pos1Range,&__pyx_n_s__dummy,&__pyx_n_s__delta_dummy,&__pyx_n_s__mask,&__pyx_n_s__dark,&__pyx_n_s__flat,&__pyx_n_s__solidangle,&__pyx_n_s__polarization,0};
-    PyObject* values[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
-
-    /* "splitPixel.pyx":124
- *                 numpy.ndarray weights not None,
- *                 int bins=100,
- *                 pos0Range=None,             # <<<<<<<<<<<<<<
- *                 pos1Range=None,
- *                 dummy=None,
- */
-    values[3] = ((PyObject *)Py_None);
-
-    /* "splitPixel.pyx":125
- *                 int bins=100,
- *                 pos0Range=None,
- *                 pos1Range=None,             # <<<<<<<<<<<<<<
- *                 dummy=None,
- *                 delta_dummy=None,
- */
-    values[4] = ((PyObject *)Py_None);
-
-    /* "splitPixel.pyx":126
- *                 pos0Range=None,
- *                 pos1Range=None,
- *                 dummy=None,             # <<<<<<<<<<<<<<
- *                 delta_dummy=None,
- *                 mask=None,
- */
-    values[5] = ((PyObject *)Py_None);
-
-    /* "splitPixel.pyx":127
- *                 pos1Range=None,
- *                 dummy=None,
- *                 delta_dummy=None,             # <<<<<<<<<<<<<<
- *                 mask=None,
- *                 dark=None,
- */
-    values[6] = ((PyObject *)Py_None);
-
-    /* "splitPixel.pyx":128
- *                 dummy=None,
- *                 delta_dummy=None,
- *                 mask=None,             # <<<<<<<<<<<<<<
- *                 dark=None,
- *                 flat=None,
- */
-    values[7] = ((PyObject *)Py_None);
-
-    /* "splitPixel.pyx":129
- *                 delta_dummy=None,
- *                 mask=None,
- *                 dark=None,             # <<<<<<<<<<<<<<
- *                 flat=None,
- *                 solidangle=None,
- */
-    values[8] = ((PyObject *)Py_None);
-
-    /* "splitPixel.pyx":130
- *                 mask=None,
- *                 dark=None,
- *                 flat=None,             # <<<<<<<<<<<<<<
- *                 solidangle=None,
- *                 polarization=None
- */
-    values[9] = ((PyObject *)Py_None);
-
-    /* "splitPixel.pyx":131
- *                 dark=None,
- *                 flat=None,
- *                 solidangle=None,             # <<<<<<<<<<<<<<
- *                 polarization=None
- *               ):
- */
-    values[10] = ((PyObject *)Py_None);
-
-    /* "splitPixel.pyx":132
- *                 flat=None,
- *                 solidangle=None,
- *                 polarization=None             # <<<<<<<<<<<<<<
- *               ):
- *     """
- */
-    values[11] = ((PyObject *)Py_None);
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s__self,&__pyx_n_s__pos,&__pyx_n_s__bins,&__pyx_n_s__pos0Range,&__pyx_n_s__pos1Range,&__pyx_n_s__mask,&__pyx_n_s__mask_checksum,&__pyx_n_s__allow_pos0_neg,&__pyx_n_s__unit,0};
+    PyObject* values[9] = {0,0,0,0,0,0,0,0,0};
+    __pyx_defaults *__pyx_dynamic_args = __Pyx_CyFunction_Defaults(__pyx_defaults, __pyx_self);
+    values[3] = ((PyObject *)((PyObject *)Py_None));
+    values[4] = ((PyObject *)((PyObject *)Py_None));
+    values[5] = ((PyObject *)((PyObject *)Py_None));
+    values[6] = ((PyObject *)((PyObject *)Py_None));
+    values[7] = __pyx_dynamic_args->__pyx_arg_allow_pos0_neg;
+    values[8] = ((PyObject *)((PyObject*)__pyx_n_s__undefined));
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
       const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
       switch (pos_args) {
-        case 12: values[11] = PyTuple_GET_ITEM(__pyx_args, 11);
-        case 11: values[10] = PyTuple_GET_ITEM(__pyx_args, 10);
-        case 10: values[9] = PyTuple_GET_ITEM(__pyx_args, 9);
         case  9: values[8] = PyTuple_GET_ITEM(__pyx_args, 8);
         case  8: values[7] = PyTuple_GET_ITEM(__pyx_args, 7);
         case  7: values[6] = PyTuple_GET_ITEM(__pyx_args, 6);
@@ -2549,12 +2413,12 @@ static PyObject *__pyx_pw_10splitPixel_1fullSplit1D(PyObject *__pyx_self, PyObje
       kw_args = PyDict_Size(__pyx_kwds);
       switch (pos_args) {
         case  0:
-        if (likely((values[0] = PyDict_GetItem(__pyx_kwds, __pyx_n_s__pos)) != 0)) kw_args--;
+        if (likely((values[0] = PyDict_GetItem(__pyx_kwds, __pyx_n_s__self)) != 0)) kw_args--;
         else goto __pyx_L5_argtuple_error;
         case  1:
-        if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s__weights)) != 0)) kw_args--;
+        if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s__pos)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("fullSplit1D", 0, 2, 12, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 121; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+          __Pyx_RaiseArgtupleInvalid("__init__", 0, 2, 9, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
         }
         case  2:
         if (kw_args > 0) {
@@ -2573,48 +2437,30 @@ static PyObject *__pyx_pw_10splitPixel_1fullSplit1D(PyObject *__pyx_self, PyObje
         }
         case  5:
         if (kw_args > 0) {
-          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__dummy);
+          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__mask);
           if (value) { values[5] = value; kw_args--; }
         }
         case  6:
         if (kw_args > 0) {
-          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__delta_dummy);
+          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__mask_checksum);
           if (value) { values[6] = value; kw_args--; }
         }
         case  7:
         if (kw_args > 0) {
-          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__mask);
+          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__allow_pos0_neg);
           if (value) { values[7] = value; kw_args--; }
         }
         case  8:
         if (kw_args > 0) {
-          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__dark);
+          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__unit);
           if (value) { values[8] = value; kw_args--; }
-        }
-        case  9:
-        if (kw_args > 0) {
-          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__flat);
-          if (value) { values[9] = value; kw_args--; }
-        }
-        case 10:
-        if (kw_args > 0) {
-          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__solidangle);
-          if (value) { values[10] = value; kw_args--; }
-        }
-        case 11:
-        if (kw_args > 0) {
-          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__polarization);
-          if (value) { values[11] = value; kw_args--; }
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "fullSplit1D") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 121; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
-        case 12: values[11] = PyTuple_GET_ITEM(__pyx_args, 11);
-        case 11: values[10] = PyTuple_GET_ITEM(__pyx_args, 10);
-        case 10: values[9] = PyTuple_GET_ITEM(__pyx_args, 9);
         case  9: values[8] = PyTuple_GET_ITEM(__pyx_args, 8);
         case  8: values[7] = PyTuple_GET_ITEM(__pyx_args, 7);
         case  7: values[6] = PyTuple_GET_ITEM(__pyx_args, 6);
@@ -2628,34 +2474,30 @@ static PyObject *__pyx_pw_10splitPixel_1fullSplit1D(PyObject *__pyx_self, PyObje
         default: goto __pyx_L5_argtuple_error;
       }
     }
-    __pyx_v_pos = ((PyArrayObject *)values[0]);
-    __pyx_v_weights = ((PyArrayObject *)values[1]);
+    __pyx_v_self = values[0];
+    __pyx_v_pos = ((PyArrayObject *)values[1]);
     if (values[2]) {
-      __pyx_v_bins = __Pyx_PyInt_AsInt(values[2]); if (unlikely((__pyx_v_bins == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 123; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+      __pyx_v_bins = __Pyx_PyInt_AsInt(values[2]); if (unlikely((__pyx_v_bins == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 96; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
     } else {
-      __pyx_v_bins = ((int)100);
+      __pyx_v_bins = ((int)((int)100));
     }
     __pyx_v_pos0Range = values[3];
     __pyx_v_pos1Range = values[4];
-    __pyx_v_dummy = values[5];
-    __pyx_v_delta_dummy = values[6];
-    __pyx_v_mask = values[7];
-    __pyx_v_dark = values[8];
-    __pyx_v_flat = values[9];
-    __pyx_v_solidangle = values[10];
-    __pyx_v_polarization = values[11];
+    __pyx_v_mask = values[5];
+    __pyx_v_mask_checksum = values[6];
+    __pyx_v_allow_pos0_neg = values[7];
+    __pyx_v_unit = values[8];
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("fullSplit1D", 0, 2, 12, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 121; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __Pyx_RaiseArgtupleInvalid("__init__", 0, 2, 9, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("splitPixel.fullSplit1D", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("splitPixelFullLUT_b.HistoLUT1dFullSplit.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_pos), __pyx_ptype_5numpy_ndarray, 0, "pos", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 121; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_weights), __pyx_ptype_5numpy_ndarray, 0, "weights", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 122; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_r = __pyx_pf_10splitPixel_fullSplit1D(__pyx_self, __pyx_v_pos, __pyx_v_weights, __pyx_v_bins, __pyx_v_pos0Range, __pyx_v_pos1Range, __pyx_v_dummy, __pyx_v_delta_dummy, __pyx_v_mask, __pyx_v_dark, __pyx_v_flat, __pyx_v_solidangle, __pyx_v_polarization);
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_pos), __pyx_ptype_5numpy_ndarray, 0, "pos", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_r = __pyx_pf_19splitPixelFullLUT_b_19HistoLUT1dFullSplit___init__(__pyx_self, __pyx_v_self, __pyx_v_pos, __pyx_v_bins, __pyx_v_pos0Range, __pyx_v_pos1Range, __pyx_v_mask, __pyx_v_mask_checksum, __pyx_v_allow_pos0_neg, __pyx_v_unit);
   goto __pyx_L0;
   __pyx_L1_error:;
   __pyx_r = NULL;
@@ -2664,115 +2506,664 @@ static PyObject *__pyx_pw_10splitPixel_1fullSplit1D(PyObject *__pyx_self, PyObje
   return __pyx_r;
 }
 
-/* "splitPixel.pyx":121
- * @cython.boundscheck(False)
- * @cython.wraparound(False)
- * def fullSplit1D(numpy.ndarray pos not None,             # <<<<<<<<<<<<<<
- *                 numpy.ndarray weights not None,
- *                 int bins=100,
- */
-
-static PyObject *__pyx_pf_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_pos, PyArrayObject *__pyx_v_weights, int __pyx_v_bins, PyObject *__pyx_v_pos0Range, PyObject *__pyx_v_pos1Range, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy, PyObject *__pyx_v_mask, PyObject *__pyx_v_dark, PyObject *__pyx_v_flat, PyObject *__pyx_v_solidangle, PyObject *__pyx_v_polarization) {
-  int __pyx_v_size;
-  PyArrayObject *__pyx_v_cpos = 0;
-  PyArrayObject *__pyx_v_cdata = 0;
-  PyArrayObject *__pyx_v_outData = 0;
-  PyArrayObject *__pyx_v_outCount = 0;
-  PyArrayObject *__pyx_v_outMerge = 0;
-  __Pyx_memviewslice __pyx_v_cmask = { 0, 0, { 0 }, { 0 }, { 0 } };
-  __Pyx_memviewslice __pyx_v_cflat = { 0, 0, { 0 }, { 0 }, { 0 } };
-  __Pyx_memviewslice __pyx_v_cdark = { 0, 0, { 0 }, { 0 }, { 0 } };
-  __Pyx_memviewslice __pyx_v_cpolarization = { 0, 0, { 0 }, { 0 }, { 0 } };
-  __Pyx_memviewslice __pyx_v_csolidangle = { 0, 0, { 0 }, { 0 }, { 0 } };
-  __Pyx_memviewslice __pyx_v_buffer = { 0, 0, { 0 }, { 0 }, { 0 } };
-  double __pyx_v_cdummy;
-  double __pyx_v_cddummy;
-  double __pyx_v_data;
-  CYTHON_UNUSED double __pyx_v_deltaR;
-  CYTHON_UNUSED double __pyx_v_deltaL;
-  double __pyx_v_one_over_area;
-  double __pyx_v_pos0_min;
-  double __pyx_v_pos0_max;
-  double __pyx_v_pos0_maxin;
-  double __pyx_v_pos1_min;
-  double __pyx_v_pos1_max;
-  double __pyx_v_pos1_maxin;
-  double __pyx_v_aera_pixel;
-  double __pyx_v_sum_area;
-  double __pyx_v_sub_area;
-  double __pyx_v_dpos;
-  CYTHON_UNUSED double __pyx_v_fbin0_min;
-  CYTHON_UNUSED double __pyx_v_fbin0_max;
-  double __pyx_v_a0;
-  double __pyx_v_b0;
-  double __pyx_v_c0;
-  double __pyx_v_d0;
-  double __pyx_v_max0;
-  double __pyx_v_min0;
-  double __pyx_v_a1;
-  double __pyx_v_b1;
-  double __pyx_v_c1;
-  double __pyx_v_d1;
-  double __pyx_v_max1;
-  double __pyx_v_min1;
-  double __pyx_v_epsilon;
-  int __pyx_v_check_pos1;
-  int __pyx_v_check_mask;
-  CYTHON_UNUSED int __pyx_v_do_dummy;
-  int __pyx_v_do_dark;
-  int __pyx_v_do_flat;
-  int __pyx_v_do_polarization;
-  int __pyx_v_do_solidangle;
-  int __pyx_v_i;
-  CYTHON_UNUSED int __pyx_v_b;
-  int __pyx_v_idx;
-  CYTHON_UNUSED int __pyx_v_bin;
-  int __pyx_v_bin0_max;
-  int __pyx_v_bin0_min;
-  CYTHON_UNUSED int __pyx_v_do_pos1;
-  PyObject *__pyx_v_outPos = NULL;
-  int __pyx_v_check_dummy;
-  __Pyx_LocalBuf_ND __pyx_pybuffernd_cdata;
-  __Pyx_Buffer __pyx_pybuffer_cdata;
-  __Pyx_LocalBuf_ND __pyx_pybuffernd_cpos;
-  __Pyx_Buffer __pyx_pybuffer_cpos;
-  __Pyx_LocalBuf_ND __pyx_pybuffernd_outCount;
-  __Pyx_Buffer __pyx_pybuffer_outCount;
-  __Pyx_LocalBuf_ND __pyx_pybuffernd_outData;
-  __Pyx_Buffer __pyx_pybuffer_outData;
-  __Pyx_LocalBuf_ND __pyx_pybuffernd_outMerge;
-  __Pyx_Buffer __pyx_pybuffer_outMerge;
+static PyObject *__pyx_pf_19splitPixelFullLUT_b_19HistoLUT1dFullSplit___init__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyArrayObject *__pyx_v_pos, int __pyx_v_bins, PyObject *__pyx_v_pos0Range, PyObject *__pyx_v_pos1Range, PyObject *__pyx_v_mask, PyObject *__pyx_v_mask_checksum, PyObject *__pyx_v_allow_pos0_neg, PyObject *__pyx_v_unit) {
+  PyObject *__pyx_v_i = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  int __pyx_t_2;
-  int __pyx_t_3;
-  PyObject *__pyx_t_4 = NULL;
+  int __pyx_t_1;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  int __pyx_t_4;
   PyObject *__pyx_t_5 = NULL;
   PyObject *__pyx_t_6 = NULL;
   PyObject *__pyx_t_7 = NULL;
+  PyObject *__pyx_t_8 = NULL;
+  Py_ssize_t __pyx_t_9;
+  PyObject *(*__pyx_t_10)(PyObject *);
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("__init__", 0);
+  __Pyx_INCREF((PyObject *)__pyx_v_pos);
+
+  /* "splitPixelFullLUT_b.pyx":114
+ * 
+ * #        self.padding = int(padding)
+ *         if pos.ndim>3: #create a view             # <<<<<<<<<<<<<<
+ *             pos = pos.reshape((-1,4,2))
+ *         assert pos.shape[1] == 4
+ */
+  __pyx_t_1 = ((__pyx_v_pos->nd > 3) != 0);
+  if (__pyx_t_1) {
+
+    /* "splitPixelFullLUT_b.pyx":115
+ * #        self.padding = int(padding)
+ *         if pos.ndim>3: #create a view
+ *             pos = pos.reshape((-1,4,2))             # <<<<<<<<<<<<<<
+ *         assert pos.shape[1] == 4
+ *         assert pos.shape[2] == 2
+ */
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_pos), __pyx_n_s__reshape); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 115; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_2);
+    __pyx_t_3 = PyObject_Call(__pyx_t_2, ((PyObject *)__pyx_k_tuple_2), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 115; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    if (!(likely(((__pyx_t_3) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_3, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 115; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF_SET(__pyx_v_pos, ((PyArrayObject *)__pyx_t_3));
+    __pyx_t_3 = 0;
+    goto __pyx_L3;
+  }
+  __pyx_L3:;
+
+  /* "splitPixelFullLUT_b.pyx":116
+ *         if pos.ndim>3: #create a view
+ *             pos = pos.reshape((-1,4,2))
+ *         assert pos.shape[1] == 4             # <<<<<<<<<<<<<<
+ *         assert pos.shape[2] == 2
+ *         assert pos.ndim == 3
+ */
+  #ifndef CYTHON_WITHOUT_ASSERTIONS
+  if (unlikely(!(((__pyx_v_pos->dimensions[1]) == 4) != 0))) {
+    PyErr_SetNone(PyExc_AssertionError);
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 116; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  }
+  #endif
+
+  /* "splitPixelFullLUT_b.pyx":117
+ *             pos = pos.reshape((-1,4,2))
+ *         assert pos.shape[1] == 4
+ *         assert pos.shape[2] == 2             # <<<<<<<<<<<<<<
+ *         assert pos.ndim == 3
+ *         self.pos = pos
+ */
+  #ifndef CYTHON_WITHOUT_ASSERTIONS
+  if (unlikely(!(((__pyx_v_pos->dimensions[2]) == 2) != 0))) {
+    PyErr_SetNone(PyExc_AssertionError);
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 117; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  }
+  #endif
+
+  /* "splitPixelFullLUT_b.pyx":118
+ *         assert pos.shape[1] == 4
+ *         assert pos.shape[2] == 2
+ *         assert pos.ndim == 3             # <<<<<<<<<<<<<<
+ *         self.pos = pos
+ *         self.size = pos.shape[0]
+ */
+  #ifndef CYTHON_WITHOUT_ASSERTIONS
+  if (unlikely(!((__pyx_v_pos->nd == 3) != 0))) {
+    PyErr_SetNone(PyExc_AssertionError);
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 118; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  }
+  #endif
+
+  /* "splitPixelFullLUT_b.pyx":119
+ *         assert pos.shape[2] == 2
+ *         assert pos.ndim == 3
+ *         self.pos = pos             # <<<<<<<<<<<<<<
+ *         self.size = pos.shape[0]
+ *         self.bins = bins
+ */
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__pos, ((PyObject *)__pyx_v_pos)) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 119; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "splitPixelFullLUT_b.pyx":120
+ *         assert pos.ndim == 3
+ *         self.pos = pos
+ *         self.size = pos.shape[0]             # <<<<<<<<<<<<<<
+ *         self.bins = bins
+ *         self.lut_size = 0
+ */
+  __pyx_t_3 = __Pyx_PyInt_to_py_Py_intptr_t((__pyx_v_pos->dimensions[0])); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 120; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__size, __pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 120; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+
+  /* "splitPixelFullLUT_b.pyx":121
+ *         self.pos = pos
+ *         self.size = pos.shape[0]
+ *         self.bins = bins             # <<<<<<<<<<<<<<
+ *         self.lut_size = 0
+ *         self.allow_pos0_neg = allow_pos0_neg
+ */
+  __pyx_t_3 = PyInt_FromLong(__pyx_v_bins); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 121; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__bins, __pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 121; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+
+  /* "splitPixelFullLUT_b.pyx":122
+ *         self.size = pos.shape[0]
+ *         self.bins = bins
+ *         self.lut_size = 0             # <<<<<<<<<<<<<<
+ *         self.allow_pos0_neg = allow_pos0_neg
+ *         if  mask is not None:
+ */
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__lut_size, __pyx_int_0) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 122; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "splitPixelFullLUT_b.pyx":123
+ *         self.bins = bins
+ *         self.lut_size = 0
+ *         self.allow_pos0_neg = allow_pos0_neg             # <<<<<<<<<<<<<<
+ *         if  mask is not None:
+ *             assert mask.size == self.size
+ */
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__allow_pos0_neg, __pyx_v_allow_pos0_neg) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 123; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "splitPixelFullLUT_b.pyx":124
+ *         self.lut_size = 0
+ *         self.allow_pos0_neg = allow_pos0_neg
+ *         if  mask is not None:             # <<<<<<<<<<<<<<
+ *             assert mask.size == self.size
+ *             self.check_mask = True
+ */
+  __pyx_t_1 = (__pyx_v_mask != Py_None);
+  __pyx_t_4 = (__pyx_t_1 != 0);
+  if (__pyx_t_4) {
+
+    /* "splitPixelFullLUT_b.pyx":125
+ *         self.allow_pos0_neg = allow_pos0_neg
+ *         if  mask is not None:
+ *             assert mask.size == self.size             # <<<<<<<<<<<<<<
+ *             self.check_mask = True
+ *             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
+ */
+    #ifndef CYTHON_WITHOUT_ASSERTIONS
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_mask, __pyx_n_s__size); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 125; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__size); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 125; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_2);
+    __pyx_t_5 = PyObject_RichCompare(__pyx_t_3, __pyx_t_2, Py_EQ); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 125; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_4 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 125; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    if (unlikely(!__pyx_t_4)) {
+      PyErr_SetNone(PyExc_AssertionError);
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 125; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    }
+    #endif
+
+    /* "splitPixelFullLUT_b.pyx":126
+ *         if  mask is not None:
+ *             assert mask.size == self.size
+ *             self.check_mask = True             # <<<<<<<<<<<<<<
+ *             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
+ *             if mask_checksum:
+ */
+    __pyx_t_5 = __Pyx_PyBool_FromLong(1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 126; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__check_mask, __pyx_t_5) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 126; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+
+    /* "splitPixelFullLUT_b.pyx":127
+ *             assert mask.size == self.size
+ *             self.check_mask = True
+ *             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)             # <<<<<<<<<<<<<<
+ *             if mask_checksum:
+ *                 self.mask_checksum = mask_checksum
+ */
+    __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s__ascontiguousarray); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_2);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_mask, __pyx_n_s__ravel); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_3 = PyObject_Call(__pyx_t_5, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_5 = PyTuple_New(1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_3);
+    __Pyx_GIVEREF(__pyx_t_3);
+    __pyx_t_3 = 0;
+    __pyx_t_3 = PyDict_New(); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(((PyObject *)__pyx_t_3));
+    __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_6);
+    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s__int8); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_7);
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    if (PyDict_SetItem(__pyx_t_3, ((PyObject *)__pyx_n_s__dtype), __pyx_t_7) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    __pyx_t_7 = PyObject_Call(__pyx_t_2, ((PyObject *)__pyx_t_5), ((PyObject *)__pyx_t_3)); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_7);
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __Pyx_DECREF(((PyObject *)__pyx_t_5)); __pyx_t_5 = 0;
+    __Pyx_DECREF(((PyObject *)__pyx_t_3)); __pyx_t_3 = 0;
+    if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__cmask, __pyx_t_7) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+
+    /* "splitPixelFullLUT_b.pyx":128
+ *             self.check_mask = True
+ *             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
+ *             if mask_checksum:             # <<<<<<<<<<<<<<
+ *                 self.mask_checksum = mask_checksum
+ *             else:
+ */
+    __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_v_mask_checksum); if (unlikely(__pyx_t_4 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 128; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (__pyx_t_4) {
+
+      /* "splitPixelFullLUT_b.pyx":129
+ *             self.cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
+ *             if mask_checksum:
+ *                 self.mask_checksum = mask_checksum             # <<<<<<<<<<<<<<
+ *             else:
+ *                 self.mask_checksum = crc32(mask)
+ */
+      if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__mask_checksum, __pyx_v_mask_checksum) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 129; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      goto __pyx_L5;
+    }
+    /*else*/ {
+
+      /* "splitPixelFullLUT_b.pyx":131
+ *                 self.mask_checksum = mask_checksum
+ *             else:
+ *                 self.mask_checksum = crc32(mask)             # <<<<<<<<<<<<<<
+ *         else:
+ *             self.check_mask = False
+ */
+      __pyx_t_7 = __Pyx_GetModuleGlobalName(__pyx_n_s__crc32); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 131; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_7);
+      __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 131; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_INCREF(__pyx_v_mask);
+      PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_v_mask);
+      __Pyx_GIVEREF(__pyx_v_mask);
+      __pyx_t_5 = PyObject_Call(__pyx_t_7, ((PyObject *)__pyx_t_3), NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 131; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_5);
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __Pyx_DECREF(((PyObject *)__pyx_t_3)); __pyx_t_3 = 0;
+      if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__mask_checksum, __pyx_t_5) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 131; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    }
+    __pyx_L5:;
+    goto __pyx_L4;
+  }
+  /*else*/ {
+
+    /* "splitPixelFullLUT_b.pyx":133
+ *                 self.mask_checksum = crc32(mask)
+ *         else:
+ *             self.check_mask = False             # <<<<<<<<<<<<<<
+ *             self.mask_checksum = None
+ *         self.data = self.nnz = self.indices = self.indptr = None
+ */
+    __pyx_t_5 = __Pyx_PyBool_FromLong(0); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 133; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__check_mask, __pyx_t_5) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 133; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+
+    /* "splitPixelFullLUT_b.pyx":134
+ *         else:
+ *             self.check_mask = False
+ *             self.mask_checksum = None             # <<<<<<<<<<<<<<
+ *         self.data = self.nnz = self.indices = self.indptr = None
+ *         self.pos0Range = pos0Range
+ */
+    if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__mask_checksum, Py_None) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 134; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  }
+  __pyx_L4:;
+
+  /* "splitPixelFullLUT_b.pyx":135
+ *             self.check_mask = False
+ *             self.mask_checksum = None
+ *         self.data = self.nnz = self.indices = self.indptr = None             # <<<<<<<<<<<<<<
+ *         self.pos0Range = pos0Range
+ *         self.pos1Range = pos1Range
+ */
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__data, Py_None) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 135; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__nnz, Py_None) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 135; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__indices, Py_None) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 135; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__indptr, Py_None) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 135; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "splitPixelFullLUT_b.pyx":136
+ *             self.mask_checksum = None
+ *         self.data = self.nnz = self.indices = self.indptr = None
+ *         self.pos0Range = pos0Range             # <<<<<<<<<<<<<<
+ *         self.pos1Range = pos1Range
+ * 
+ */
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__pos0Range, __pyx_v_pos0Range) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 136; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "splitPixelFullLUT_b.pyx":137
+ *         self.data = self.nnz = self.indices = self.indptr = None
+ *         self.pos0Range = pos0Range
+ *         self.pos1Range = pos1Range             # <<<<<<<<<<<<<<
+ * 
+ *         self.calc_lut()
+ */
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__pos1Range, __pyx_v_pos1Range) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 137; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "splitPixelFullLUT_b.pyx":139
+ *         self.pos1Range = pos1Range
+ * 
+ *         self.calc_lut()             # <<<<<<<<<<<<<<
+ *         self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, self.pos0_maxin-0.5*self.delta, self.bins)
+ *         self.lut_checksum = crc32(self.data)
+ */
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__calc_lut); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 139; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_3 = PyObject_Call(__pyx_t_5, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 139; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+
+  /* "splitPixelFullLUT_b.pyx":140
+ * 
+ *         self.calc_lut()
+ *         self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, self.pos0_maxin-0.5*self.delta, self.bins)             # <<<<<<<<<<<<<<
+ *         self.lut_checksum = crc32(self.data)
+ *         self.unit=unit
+ */
+  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s__linspace); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos0_min); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_7 = PyFloat_FromDouble(0.5); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_7);
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__delta); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_6 = PyNumber_Multiply(__pyx_t_7, __pyx_t_2); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_6);
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_2 = PyNumber_Add(__pyx_t_3, __pyx_t_6); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos0_maxin); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_6);
+  __pyx_t_3 = PyFloat_FromDouble(0.5); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__delta); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_7);
+  __pyx_t_8 = PyNumber_Multiply(__pyx_t_3, __pyx_t_7); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_8);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  __pyx_t_7 = PyNumber_Subtract(__pyx_t_6, __pyx_t_8); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_7);
+  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__bins); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_8);
+  __pyx_t_6 = PyTuple_New(3); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_6);
+  PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_2);
+  __Pyx_GIVEREF(__pyx_t_2);
+  PyTuple_SET_ITEM(__pyx_t_6, 1, __pyx_t_7);
+  __Pyx_GIVEREF(__pyx_t_7);
+  PyTuple_SET_ITEM(__pyx_t_6, 2, __pyx_t_8);
+  __Pyx_GIVEREF(__pyx_t_8);
+  __pyx_t_2 = 0;
+  __pyx_t_7 = 0;
+  __pyx_t_8 = 0;
+  __pyx_t_8 = PyObject_Call(__pyx_t_5, ((PyObject *)__pyx_t_6), NULL); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_8);
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __Pyx_DECREF(((PyObject *)__pyx_t_6)); __pyx_t_6 = 0;
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__outPos, __pyx_t_8) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+
+  /* "splitPixelFullLUT_b.pyx":141
+ *         self.calc_lut()
+ *         self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, self.pos0_maxin-0.5*self.delta, self.bins)
+ *         self.lut_checksum = crc32(self.data)             # <<<<<<<<<<<<<<
+ *         self.unit=unit
+ *         self.lut=(self.data,self.indices,self.indptr)
+ */
+  __pyx_t_8 = __Pyx_GetModuleGlobalName(__pyx_n_s__crc32); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 141; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_8);
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__data); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 141; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_6);
+  __pyx_t_5 = PyTuple_New(1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 141; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_6);
+  __Pyx_GIVEREF(__pyx_t_6);
+  __pyx_t_6 = 0;
+  __pyx_t_6 = PyObject_Call(__pyx_t_8, ((PyObject *)__pyx_t_5), NULL); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 141; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_6);
+  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+  __Pyx_DECREF(((PyObject *)__pyx_t_5)); __pyx_t_5 = 0;
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__lut_checksum, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 141; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+  /* "splitPixelFullLUT_b.pyx":142
+ *         self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, self.pos0_maxin-0.5*self.delta, self.bins)
+ *         self.lut_checksum = crc32(self.data)
+ *         self.unit=unit             # <<<<<<<<<<<<<<
+ *         self.lut=(self.data,self.indices,self.indptr)
+ *         self.lut_nbytes = sum([i.nbytes for i in self.lut])
+ */
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__unit, __pyx_v_unit) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "splitPixelFullLUT_b.pyx":143
+ *         self.lut_checksum = crc32(self.data)
+ *         self.unit=unit
+ *         self.lut=(self.data,self.indices,self.indptr)             # <<<<<<<<<<<<<<
+ *         self.lut_nbytes = sum([i.nbytes for i in self.lut])
+ * 
+ */
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__data); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 143; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_6);
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__indices); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 143; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__indptr); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 143; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_8);
+  __pyx_t_7 = PyTuple_New(3); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 143; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_7);
+  PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_6);
+  __Pyx_GIVEREF(__pyx_t_6);
+  PyTuple_SET_ITEM(__pyx_t_7, 1, __pyx_t_5);
+  __Pyx_GIVEREF(__pyx_t_5);
+  PyTuple_SET_ITEM(__pyx_t_7, 2, __pyx_t_8);
+  __Pyx_GIVEREF(__pyx_t_8);
+  __pyx_t_6 = 0;
+  __pyx_t_5 = 0;
+  __pyx_t_8 = 0;
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__lut, ((PyObject *)__pyx_t_7)) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 143; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(((PyObject *)__pyx_t_7)); __pyx_t_7 = 0;
+
+  /* "splitPixelFullLUT_b.pyx":144
+ *         self.unit=unit
+ *         self.lut=(self.data,self.indices,self.indptr)
+ *         self.lut_nbytes = sum([i.nbytes for i in self.lut])             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+  __pyx_t_7 = PyList_New(0); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_7);
+  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__lut); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_8);
+  if (PyList_CheckExact(__pyx_t_8) || PyTuple_CheckExact(__pyx_t_8)) {
+    __pyx_t_5 = __pyx_t_8; __Pyx_INCREF(__pyx_t_5); __pyx_t_9 = 0;
+    __pyx_t_10 = NULL;
+  } else {
+    __pyx_t_9 = -1; __pyx_t_5 = PyObject_GetIter(__pyx_t_8); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_10 = Py_TYPE(__pyx_t_5)->tp_iternext;
+  }
+  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+  for (;;) {
+    if (!__pyx_t_10 && PyList_CheckExact(__pyx_t_5)) {
+      if (__pyx_t_9 >= PyList_GET_SIZE(__pyx_t_5)) break;
+      #if CYTHON_COMPILING_IN_CPYTHON
+      __pyx_t_8 = PyList_GET_ITEM(__pyx_t_5, __pyx_t_9); __Pyx_INCREF(__pyx_t_8); __pyx_t_9++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      #else
+      __pyx_t_8 = PySequence_ITEM(__pyx_t_5, __pyx_t_9); __pyx_t_9++; if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      #endif
+    } else if (!__pyx_t_10 && PyTuple_CheckExact(__pyx_t_5)) {
+      if (__pyx_t_9 >= PyTuple_GET_SIZE(__pyx_t_5)) break;
+      #if CYTHON_COMPILING_IN_CPYTHON
+      __pyx_t_8 = PyTuple_GET_ITEM(__pyx_t_5, __pyx_t_9); __Pyx_INCREF(__pyx_t_8); __pyx_t_9++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      #else
+      __pyx_t_8 = PySequence_ITEM(__pyx_t_5, __pyx_t_9); __pyx_t_9++; if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      #endif
+    } else {
+      __pyx_t_8 = __pyx_t_10(__pyx_t_5);
+      if (unlikely(!__pyx_t_8)) {
+        if (PyErr_Occurred()) {
+          if (likely(PyErr_ExceptionMatches(PyExc_StopIteration))) PyErr_Clear();
+          else {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        }
+        break;
+      }
+      __Pyx_GOTREF(__pyx_t_8);
+    }
+    __Pyx_XDECREF_SET(__pyx_v_i, __pyx_t_8);
+    __pyx_t_8 = 0;
+    __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_v_i, __pyx_n_s__nbytes); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_8);
+    if (unlikely(__Pyx_ListComp_Append(__pyx_t_7, (PyObject*)__pyx_t_8))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+  }
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_t_5 = PyTuple_New(1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  PyTuple_SET_ITEM(__pyx_t_5, 0, ((PyObject *)__pyx_t_7));
+  __Pyx_GIVEREF(((PyObject *)__pyx_t_7));
+  __pyx_t_7 = 0;
+  __pyx_t_7 = PyObject_Call(__pyx_builtin_sum, ((PyObject *)__pyx_t_5), NULL); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_7);
+  __Pyx_DECREF(((PyObject *)__pyx_t_5)); __pyx_t_5 = 0;
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__lut_nbytes, __pyx_t_7) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+
+  __pyx_r = Py_None; __Pyx_INCREF(Py_None);
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_5);
+  __Pyx_XDECREF(__pyx_t_6);
+  __Pyx_XDECREF(__pyx_t_7);
+  __Pyx_XDECREF(__pyx_t_8);
+  __Pyx_AddTraceback("splitPixelFullLUT_b.HistoLUT1dFullSplit.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XDECREF(__pyx_v_i);
+  __Pyx_XDECREF((PyObject *)__pyx_v_pos);
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* Python wrapper */
+static PyObject *__pyx_pw_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_3calc_lut(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
+static PyMethodDef __pyx_mdef_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_3calc_lut = {__Pyx_NAMESTR("calc_lut"), (PyCFunction)__pyx_pw_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_3calc_lut, METH_O, __Pyx_DOCSTR(0)};
+static PyObject *__pyx_pw_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_3calc_lut(PyObject *__pyx_self, PyObject *__pyx_v_self) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("calc_lut (wrapper)", 0);
+  __pyx_r = __pyx_pf_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_2calc_lut(__pyx_self, ((PyObject *)__pyx_v_self));
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "splitPixelFullLUT_b.pyx":150
+ *     @cython.boundscheck(False)
+ *     @cython.wraparound(False)
+ *     def calc_lut(self):             # <<<<<<<<<<<<<<
+ *         cdef numpy.ndarray[numpy.float64_t, ndim = 3] cpos = numpy.ascontiguousarray(self.pos,dtype=numpy.float64)
+ *         cdef numpy.int8_t[:] cmask
+ */
+
+static PyObject *__pyx_pf_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_2calc_lut(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
+  PyArrayObject *__pyx_v_cpos = 0;
+  __Pyx_memviewslice __pyx_v_cmask = { 0, 0, { 0 }, { 0 }, { 0 } };
+  PyArrayObject *__pyx_v_outMax = 0;
+  PyArrayObject *__pyx_v_indptr = 0;
+  double __pyx_v_pos0_min;
+  CYTHON_UNUSED double __pyx_v_pos0_max;
+  CYTHON_UNUSED double __pyx_v_pos0_maxin;
+  double __pyx_v_pos1_min;
+  CYTHON_UNUSED double __pyx_v_pos1_max;
+  double __pyx_v_pos1_maxin;
+  double __pyx_v_max0;
+  double __pyx_v_min0;
+  double __pyx_v_areaPixel;
+  double __pyx_v_delta;
+  double __pyx_v_A0;
+  double __pyx_v_B0;
+  double __pyx_v_C0;
+  double __pyx_v_D0;
+  double __pyx_v_A1;
+  double __pyx_v_B1;
+  double __pyx_v_C1;
+  double __pyx_v_D1;
+  double __pyx_v_A_lim;
+  double __pyx_v_B_lim;
+  double __pyx_v_C_lim;
+  double __pyx_v_D_lim;
+  CYTHON_UNUSED double __pyx_v_oneOverArea;
+  double __pyx_v_partialArea;
+  double __pyx_v_tmp;
+  struct __pyx_t_19splitPixelFullLUT_b_Function __pyx_v_AB;
+  struct __pyx_t_19splitPixelFullLUT_b_Function __pyx_v_BC;
+  struct __pyx_t_19splitPixelFullLUT_b_Function __pyx_v_CD;
+  struct __pyx_t_19splitPixelFullLUT_b_Function __pyx_v_DA;
+  int __pyx_v_bins;
+  CYTHON_UNUSED int __pyx_v_i;
+  int __pyx_v_idx;
+  int __pyx_v_bin;
+  int __pyx_v_bin0_max;
+  int __pyx_v_bin0_min;
+  CYTHON_UNUSED int __pyx_v_pixel_bins;
+  int __pyx_v_k;
+  int __pyx_v_size;
+  int __pyx_v_check_pos1;
+  int __pyx_v_check_mask;
+  PyArrayObject *__pyx_v_indices = 0;
+  PyArrayObject *__pyx_v_data = 0;
+  PyArrayObject *__pyx_v_areas = 0;
+  double __pyx_v_oneOverPixelArea;
+  CYTHON_UNUSED double __pyx_v_partialArea2;
+  __Pyx_LocalBuf_ND __pyx_pybuffernd_areas;
+  __Pyx_Buffer __pyx_pybuffer_areas;
+  __Pyx_LocalBuf_ND __pyx_pybuffernd_cpos;
+  __Pyx_Buffer __pyx_pybuffer_cpos;
+  __Pyx_LocalBuf_ND __pyx_pybuffernd_data;
+  __Pyx_Buffer __pyx_pybuffer_data;
+  __Pyx_LocalBuf_ND __pyx_pybuffernd_indices;
+  __Pyx_Buffer __pyx_pybuffer_indices;
+  __Pyx_LocalBuf_ND __pyx_pybuffernd_indptr;
+  __Pyx_Buffer __pyx_pybuffer_indptr;
+  __Pyx_LocalBuf_ND __pyx_pybuffernd_outMax;
+  __Pyx_Buffer __pyx_pybuffer_outMax;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  PyObject *__pyx_t_4 = NULL;
+  PyObject *__pyx_t_5 = NULL;
+  PyArrayObject *__pyx_t_6 = NULL;
+  PyArrayObject *__pyx_t_7 = NULL;
   PyArrayObject *__pyx_t_8 = NULL;
-  PyArrayObject *__pyx_t_9 = NULL;
-  PyArrayObject *__pyx_t_10 = NULL;
-  PyArrayObject *__pyx_t_11 = NULL;
-  PyArrayObject *__pyx_t_12 = NULL;
-  __Pyx_memviewslice __pyx_t_13 = { 0, 0, { 0 }, { 0 }, { 0 } };
-  Py_ssize_t __pyx_t_14;
-  int __pyx_t_15;
-  __Pyx_memviewslice __pyx_t_16 = { 0, 0, { 0 }, { 0 }, { 0 } };
-  Py_ssize_t __pyx_t_17;
+  int __pyx_t_9;
+  int __pyx_t_10;
+  Py_ssize_t __pyx_t_11;
+  int __pyx_t_12;
+  int __pyx_t_13;
+  double __pyx_t_14;
+  __Pyx_memviewslice __pyx_t_15 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  int __pyx_t_16;
+  int __pyx_t_17;
   int __pyx_t_18;
-  double __pyx_t_19;
-  int __pyx_t_20;
+  long __pyx_t_19;
+  long __pyx_t_20;
   int __pyx_t_21;
-  int __pyx_t_22;
+  long __pyx_t_22;
   long __pyx_t_23;
-  long __pyx_t_24;
-  __pyx_t_5numpy_float64_t __pyx_t_25;
-  int __pyx_t_26;
-  long __pyx_t_27;
+  int __pyx_t_24;
+  long __pyx_t_25;
+  long __pyx_t_26;
+  int __pyx_t_27;
   long __pyx_t_28;
-  int __pyx_t_29;
+  long __pyx_t_29;
   int __pyx_t_30;
   long __pyx_t_31;
   long __pyx_t_32;
@@ -2785,25 +3176,25 @@ static PyObject *__pyx_pf_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *__pyx
   int __pyx_t_39;
   long __pyx_t_40;
   long __pyx_t_41;
-  int __pyx_t_42;
-  long __pyx_t_43;
-  long __pyx_t_44;
-  int __pyx_t_45;
+  double __pyx_t_42;
+  double __pyx_t_43;
+  double __pyx_t_44;
+  double __pyx_t_45;
   long __pyx_t_46;
-  long __pyx_t_47;
+  int __pyx_t_47;
   int __pyx_t_48;
-  long __pyx_t_49;
-  long __pyx_t_50;
-  int __pyx_t_51;
-  long __pyx_t_52;
-  long __pyx_t_53;
-  double __pyx_t_54;
-  double __pyx_t_55;
-  double __pyx_t_56;
-  double __pyx_t_57;
+  PyArrayObject *__pyx_t_49 = NULL;
+  PyArrayObject *__pyx_t_50 = NULL;
+  PyArrayObject *__pyx_t_51 = NULL;
+  int __pyx_t_52;
+  int __pyx_t_53;
+  int __pyx_t_54;
+  int __pyx_t_55;
+  long __pyx_t_56;
+  long __pyx_t_57;
   int __pyx_t_58;
-  int __pyx_t_59;
-  int __pyx_t_60;
+  long __pyx_t_59;
+  long __pyx_t_60;
   int __pyx_t_61;
   long __pyx_t_62;
   long __pyx_t_63;
@@ -2823,430 +3214,202 @@ static PyObject *__pyx_pf_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *__pyx
   long __pyx_t_77;
   long __pyx_t_78;
   int __pyx_t_79;
-  long __pyx_t_80;
-  long __pyx_t_81;
+  int __pyx_t_80;
+  int __pyx_t_81;
   int __pyx_t_82;
-  long __pyx_t_83;
-  long __pyx_t_84;
+  int __pyx_t_83;
+  int __pyx_t_84;
   int __pyx_t_85;
   int __pyx_t_86;
-  int __pyx_t_87;
+  long __pyx_t_87;
   int __pyx_t_88;
   int __pyx_t_89;
   int __pyx_t_90;
   int __pyx_t_91;
-  long __pyx_t_92;
-  long __pyx_t_93;
+  int __pyx_t_92;
+  int __pyx_t_93;
   int __pyx_t_94;
   int __pyx_t_95;
   int __pyx_t_96;
-  int __pyx_t_97;
-  int __pyx_t_98;
-  int __pyx_t_99;
-  int __pyx_t_100;
-  int __pyx_t_101;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("fullSplit1D", 0);
-  __Pyx_INCREF((PyObject *)__pyx_v_pos);
+  __Pyx_RefNannySetupContext("calc_lut", 0);
   __pyx_pybuffer_cpos.pybuffer.buf = NULL;
   __pyx_pybuffer_cpos.refcount = 0;
   __pyx_pybuffernd_cpos.data = NULL;
   __pyx_pybuffernd_cpos.rcbuffer = &__pyx_pybuffer_cpos;
-  __pyx_pybuffer_cdata.pybuffer.buf = NULL;
-  __pyx_pybuffer_cdata.refcount = 0;
-  __pyx_pybuffernd_cdata.data = NULL;
-  __pyx_pybuffernd_cdata.rcbuffer = &__pyx_pybuffer_cdata;
-  __pyx_pybuffer_outData.pybuffer.buf = NULL;
-  __pyx_pybuffer_outData.refcount = 0;
-  __pyx_pybuffernd_outData.data = NULL;
-  __pyx_pybuffernd_outData.rcbuffer = &__pyx_pybuffer_outData;
-  __pyx_pybuffer_outCount.pybuffer.buf = NULL;
-  __pyx_pybuffer_outCount.refcount = 0;
-  __pyx_pybuffernd_outCount.data = NULL;
-  __pyx_pybuffernd_outCount.rcbuffer = &__pyx_pybuffer_outCount;
-  __pyx_pybuffer_outMerge.pybuffer.buf = NULL;
-  __pyx_pybuffer_outMerge.refcount = 0;
-  __pyx_pybuffernd_outMerge.data = NULL;
-  __pyx_pybuffernd_outMerge.rcbuffer = &__pyx_pybuffer_outMerge;
+  __pyx_pybuffer_outMax.pybuffer.buf = NULL;
+  __pyx_pybuffer_outMax.refcount = 0;
+  __pyx_pybuffernd_outMax.data = NULL;
+  __pyx_pybuffernd_outMax.rcbuffer = &__pyx_pybuffer_outMax;
+  __pyx_pybuffer_indptr.pybuffer.buf = NULL;
+  __pyx_pybuffer_indptr.refcount = 0;
+  __pyx_pybuffernd_indptr.data = NULL;
+  __pyx_pybuffernd_indptr.rcbuffer = &__pyx_pybuffer_indptr;
+  __pyx_pybuffer_indices.pybuffer.buf = NULL;
+  __pyx_pybuffer_indices.refcount = 0;
+  __pyx_pybuffernd_indices.data = NULL;
+  __pyx_pybuffernd_indices.rcbuffer = &__pyx_pybuffer_indices;
+  __pyx_pybuffer_data.pybuffer.buf = NULL;
+  __pyx_pybuffer_data.refcount = 0;
+  __pyx_pybuffernd_data.data = NULL;
+  __pyx_pybuffernd_data.rcbuffer = &__pyx_pybuffer_data;
+  __pyx_pybuffer_areas.pybuffer.buf = NULL;
+  __pyx_pybuffer_areas.refcount = 0;
+  __pyx_pybuffernd_areas.data = NULL;
+  __pyx_pybuffernd_areas.rcbuffer = &__pyx_pybuffer_areas;
 
-  /* "splitPixel.pyx":155
- *     @return 2theta, I, weighted histogram, unweighted histogram
- *     """
- *     cdef int  size = weights.size             # <<<<<<<<<<<<<<
- *     if pos.ndim>3: #create a view
- *         pos = pos.reshape((-1,4,2))
+  /* "splitPixelFullLUT_b.pyx":151
+ *     @cython.wraparound(False)
+ *     def calc_lut(self):
+ *         cdef numpy.ndarray[numpy.float64_t, ndim = 3] cpos = numpy.ascontiguousarray(self.pos,dtype=numpy.float64)             # <<<<<<<<<<<<<<
+ *         cdef numpy.int8_t[:] cmask
+ *         cdef numpy.ndarray[numpy.int32_t, ndim = 1] outMax = numpy.zeros(self.bins, dtype=numpy.int32)
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_weights), __pyx_n_s__size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 155; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyInt_AsInt(__pyx_t_1); if (unlikely((__pyx_t_2 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 155; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s__ascontiguousarray); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_v_size = __pyx_t_2;
-
-  /* "splitPixel.pyx":156
- *     """
- *     cdef int  size = weights.size
- *     if pos.ndim>3: #create a view             # <<<<<<<<<<<<<<
- *         pos = pos.reshape((-1,4,2))
- *     assert pos.shape[0] == size
- */
-  __pyx_t_3 = ((__pyx_v_pos->nd > 3) != 0);
-  if (__pyx_t_3) {
-
-    /* "splitPixel.pyx":157
- *     cdef int  size = weights.size
- *     if pos.ndim>3: #create a view
- *         pos = pos.reshape((-1,4,2))             # <<<<<<<<<<<<<<
- *     assert pos.shape[0] == size
- *     assert pos.shape[1] == 4
- */
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_pos), __pyx_n_s__reshape); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 157; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_4 = PyObject_Call(__pyx_t_1, ((PyObject *)__pyx_k_tuple_2), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 157; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (!(likely(((__pyx_t_4) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_4, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 157; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF_SET(__pyx_v_pos, ((PyArrayObject *)__pyx_t_4));
-    __pyx_t_4 = 0;
-    goto __pyx_L3;
-  }
-  __pyx_L3:;
-
-  /* "splitPixel.pyx":158
- *     if pos.ndim>3: #create a view
- *         pos = pos.reshape((-1,4,2))
- *     assert pos.shape[0] == size             # <<<<<<<<<<<<<<
- *     assert pos.shape[1] == 4
- *     assert pos.shape[2] == 2
- */
-  #ifndef CYTHON_WITHOUT_ASSERTIONS
-  if (unlikely(!(((__pyx_v_pos->dimensions[0]) == __pyx_v_size) != 0))) {
-    PyErr_SetNone(PyExc_AssertionError);
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 158; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  }
-  #endif
-
-  /* "splitPixel.pyx":159
- *         pos = pos.reshape((-1,4,2))
- *     assert pos.shape[0] == size
- *     assert pos.shape[1] == 4             # <<<<<<<<<<<<<<
- *     assert pos.shape[2] == 2
- *     assert pos.ndim == 3
- */
-  #ifndef CYTHON_WITHOUT_ASSERTIONS
-  if (unlikely(!(((__pyx_v_pos->dimensions[1]) == 4) != 0))) {
-    PyErr_SetNone(PyExc_AssertionError);
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 159; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  }
-  #endif
-
-  /* "splitPixel.pyx":160
- *     assert pos.shape[0] == size
- *     assert pos.shape[1] == 4
- *     assert pos.shape[2] == 2             # <<<<<<<<<<<<<<
- *     assert pos.ndim == 3
- *     assert  bins > 1
- */
-  #ifndef CYTHON_WITHOUT_ASSERTIONS
-  if (unlikely(!(((__pyx_v_pos->dimensions[2]) == 2) != 0))) {
-    PyErr_SetNone(PyExc_AssertionError);
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 160; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  }
-  #endif
-
-  /* "splitPixel.pyx":161
- *     assert pos.shape[1] == 4
- *     assert pos.shape[2] == 2
- *     assert pos.ndim == 3             # <<<<<<<<<<<<<<
- *     assert  bins > 1
- * 
- */
-  #ifndef CYTHON_WITHOUT_ASSERTIONS
-  if (unlikely(!((__pyx_v_pos->nd == 3) != 0))) {
-    PyErr_SetNone(PyExc_AssertionError);
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 161; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  }
-  #endif
-
-  /* "splitPixel.pyx":162
- *     assert pos.shape[2] == 2
- *     assert pos.ndim == 3
- *     assert  bins > 1             # <<<<<<<<<<<<<<
- * 
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 3] cpos = numpy.ascontiguousarray(pos,dtype=numpy.float64)
- */
-  #ifndef CYTHON_WITHOUT_ASSERTIONS
-  if (unlikely(!((__pyx_v_bins > 1) != 0))) {
-    PyErr_SetNone(PyExc_AssertionError);
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 162; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  }
-  #endif
-
-  /* "splitPixel.pyx":164
- *     assert  bins > 1
- * 
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 3] cpos = numpy.ascontiguousarray(pos,dtype=numpy.float64)             # <<<<<<<<<<<<<<
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(bins, dtype=numpy.float64)
- */
-  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 164; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s__ascontiguousarray); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 164; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_1);
+  __Pyx_GIVEREF(__pyx_t_1);
+  __pyx_t_1 = 0;
+  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(((PyObject *)__pyx_t_1));
+  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s__float64); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 164; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_INCREF(((PyObject *)__pyx_v_pos));
-  PyTuple_SET_ITEM(__pyx_t_4, 0, ((PyObject *)__pyx_v_pos));
-  __Pyx_GIVEREF(((PyObject *)__pyx_v_pos));
-  __pyx_t_5 = PyDict_New(); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 164; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(((PyObject *)__pyx_t_5));
-  __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 164; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s__float64); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 164; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_7);
-  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  if (PyDict_SetItem(__pyx_t_5, ((PyObject *)__pyx_n_s__dtype), __pyx_t_7) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 164; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_7 = PyObject_Call(__pyx_t_1, ((PyObject *)__pyx_t_4), ((PyObject *)__pyx_t_5)); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 164; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_7);
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_4)); __pyx_t_4 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_5)); __pyx_t_5 = 0;
-  if (!(likely(((__pyx_t_7) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_7, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 164; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_8 = ((PyArrayObject *)__pyx_t_7);
+  if (PyDict_SetItem(__pyx_t_1, ((PyObject *)__pyx_n_s__dtype), __pyx_t_5) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_t_5 = PyObject_Call(__pyx_t_2, ((PyObject *)__pyx_t_3), ((PyObject *)__pyx_t_1)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_DECREF(((PyObject *)__pyx_t_3)); __pyx_t_3 = 0;
+  __Pyx_DECREF(((PyObject *)__pyx_t_1)); __pyx_t_1 = 0;
+  if (!(likely(((__pyx_t_5) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_5, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = ((PyArrayObject *)__pyx_t_5);
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_cpos.rcbuffer->pybuffer, (PyObject*)__pyx_t_8, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES, 3, 0, __pyx_stack) == -1)) {
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_cpos.rcbuffer->pybuffer, (PyObject*)__pyx_t_6, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES, 3, 0, __pyx_stack) == -1)) {
       __pyx_v_cpos = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf = NULL;
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 164; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     } else {__pyx_pybuffernd_cpos.diminfo[0].strides = __pyx_pybuffernd_cpos.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_cpos.diminfo[0].shape = __pyx_pybuffernd_cpos.rcbuffer->pybuffer.shape[0]; __pyx_pybuffernd_cpos.diminfo[1].strides = __pyx_pybuffernd_cpos.rcbuffer->pybuffer.strides[1]; __pyx_pybuffernd_cpos.diminfo[1].shape = __pyx_pybuffernd_cpos.rcbuffer->pybuffer.shape[1]; __pyx_pybuffernd_cpos.diminfo[2].strides = __pyx_pybuffernd_cpos.rcbuffer->pybuffer.strides[2]; __pyx_pybuffernd_cpos.diminfo[2].shape = __pyx_pybuffernd_cpos.rcbuffer->pybuffer.shape[2];
     }
   }
-  __pyx_t_8 = 0;
-  __pyx_v_cpos = ((PyArrayObject *)__pyx_t_7);
-  __pyx_t_7 = 0;
-
-  /* "splitPixel.pyx":165
- * 
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 3] cpos = numpy.ascontiguousarray(pos,dtype=numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(bins, dtype=numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype=numpy.float64)
- */
-  __pyx_t_7 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_7);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s__ascontiguousarray); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_5);
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_weights), __pyx_n_s__ravel); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_7);
-  __pyx_t_4 = PyObject_Call(__pyx_t_7, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_7 = PyTuple_New(1); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_7);
-  PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_4);
-  __Pyx_GIVEREF(__pyx_t_4);
-  __pyx_t_4 = 0;
-  __pyx_t_4 = PyDict_New(); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(((PyObject *)__pyx_t_4));
-  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s__float64); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_6);
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  if (PyDict_SetItem(__pyx_t_4, ((PyObject *)__pyx_n_s__dtype), __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __pyx_t_6 = PyObject_Call(__pyx_t_5, ((PyObject *)__pyx_t_7), ((PyObject *)__pyx_t_4)); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_6);
-  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_7)); __pyx_t_7 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_4)); __pyx_t_4 = 0;
-  if (!(likely(((__pyx_t_6) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_6, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_9 = ((PyArrayObject *)__pyx_t_6);
-  {
-    __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_cdata.rcbuffer->pybuffer, (PyObject*)__pyx_t_9, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {
-      __pyx_v_cdata = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_cdata.rcbuffer->pybuffer.buf = NULL;
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    } else {__pyx_pybuffernd_cdata.diminfo[0].strides = __pyx_pybuffernd_cdata.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_cdata.diminfo[0].shape = __pyx_pybuffernd_cdata.rcbuffer->pybuffer.shape[0];
-    }
-  }
-  __pyx_t_9 = 0;
-  __pyx_v_cdata = ((PyArrayObject *)__pyx_t_6);
   __pyx_t_6 = 0;
-
-  /* "splitPixel.pyx":166
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 3] cpos = numpy.ascontiguousarray(pos,dtype=numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(bins, dtype=numpy.float64)             # <<<<<<<<<<<<<<
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype=numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outMerge = numpy.zeros(bins, dtype=numpy.float64)
- */
-  __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s__zeros); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __pyx_t_6 = PyInt_FromLong(__pyx_v_bins); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_7 = PyTuple_New(1); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_7);
-  PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_6);
-  __Pyx_GIVEREF(__pyx_t_6);
-  __pyx_t_6 = 0;
-  __pyx_t_6 = PyDict_New(); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(((PyObject *)__pyx_t_6));
-  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s__float64); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  if (PyDict_SetItem(__pyx_t_6, ((PyObject *)__pyx_n_s__dtype), __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyObject_Call(__pyx_t_4, ((PyObject *)__pyx_t_7), ((PyObject *)__pyx_t_6)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_7)); __pyx_t_7 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_6)); __pyx_t_6 = 0;
-  if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_10 = ((PyArrayObject *)__pyx_t_1);
-  {
-    __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_outData.rcbuffer->pybuffer, (PyObject*)__pyx_t_10, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES| PyBUF_WRITABLE, 1, 0, __pyx_stack) == -1)) {
-      __pyx_v_outData = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf = NULL;
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    } else {__pyx_pybuffernd_outData.diminfo[0].strides = __pyx_pybuffernd_outData.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_outData.diminfo[0].shape = __pyx_pybuffernd_outData.rcbuffer->pybuffer.shape[0];
-    }
-  }
-  __pyx_t_10 = 0;
-  __pyx_v_outData = ((PyArrayObject *)__pyx_t_1);
-  __pyx_t_1 = 0;
-
-  /* "splitPixel.pyx":167
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(bins, dtype=numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype=numpy.float64)             # <<<<<<<<<<<<<<
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outMerge = numpy.zeros(bins, dtype=numpy.float64)
- *     cdef numpy.int8_t[:] cmask
- */
-  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 167; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s__zeros); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 167; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_6);
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyInt_FromLong(__pyx_v_bins); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 167; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_7 = PyTuple_New(1); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 167; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_7);
-  PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_1);
-  __Pyx_GIVEREF(__pyx_t_1);
-  __pyx_t_1 = 0;
-  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 167; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(((PyObject *)__pyx_t_1));
-  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 167; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s__float64); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 167; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_5);
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  if (PyDict_SetItem(__pyx_t_1, ((PyObject *)__pyx_n_s__dtype), __pyx_t_5) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 167; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_5 = PyObject_Call(__pyx_t_6, ((PyObject *)__pyx_t_7), ((PyObject *)__pyx_t_1)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 167; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_5);
-  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_7)); __pyx_t_7 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_1)); __pyx_t_1 = 0;
-  if (!(likely(((__pyx_t_5) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_5, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 167; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_11 = ((PyArrayObject *)__pyx_t_5);
-  {
-    __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_outCount.rcbuffer->pybuffer, (PyObject*)__pyx_t_11, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES| PyBUF_WRITABLE, 1, 0, __pyx_stack) == -1)) {
-      __pyx_v_outCount = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf = NULL;
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 167; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    } else {__pyx_pybuffernd_outCount.diminfo[0].strides = __pyx_pybuffernd_outCount.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_outCount.diminfo[0].shape = __pyx_pybuffernd_outCount.rcbuffer->pybuffer.shape[0];
-    }
-  }
-  __pyx_t_11 = 0;
-  __pyx_v_outCount = ((PyArrayObject *)__pyx_t_5);
+  __pyx_v_cpos = ((PyArrayObject *)__pyx_t_5);
   __pyx_t_5 = 0;
 
-  /* "splitPixel.pyx":168
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(bins, dtype=numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype=numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] outMerge = numpy.zeros(bins, dtype=numpy.float64)             # <<<<<<<<<<<<<<
- *     cdef numpy.int8_t[:] cmask
- *     cdef double[:] cflat, cdark, cpolarization, csolidangle, buffer
+  /* "splitPixelFullLUT_b.pyx":153
+ *         cdef numpy.ndarray[numpy.float64_t, ndim = 3] cpos = numpy.ascontiguousarray(self.pos,dtype=numpy.float64)
+ *         cdef numpy.int8_t[:] cmask
+ *         cdef numpy.ndarray[numpy.int32_t, ndim = 1] outMax = numpy.zeros(self.bins, dtype=numpy.int32)             # <<<<<<<<<<<<<<
+ *         cdef numpy.ndarray[numpy.int32_t, ndim = 1] indptr = numpy.zeros(self.bins+1, dtype=numpy.int32)
+ *         cdef double pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0
  */
-  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s__zeros); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s__zeros); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_5 = PyInt_FromLong(__pyx_v_bins); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__bins); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_7 = PyTuple_New(1); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_7);
-  PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_5);
+  __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_5);
   __Pyx_GIVEREF(__pyx_t_5);
   __pyx_t_5 = 0;
-  __pyx_t_5 = PyDict_New(); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = PyDict_New(); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(((PyObject *)__pyx_t_5));
-  __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s__float64); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s__int32); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  if (PyDict_SetItem(__pyx_t_5, ((PyObject *)__pyx_n_s__dtype), __pyx_t_4) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  if (PyDict_SetItem(__pyx_t_5, ((PyObject *)__pyx_n_s__dtype), __pyx_t_4) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = PyObject_Call(__pyx_t_1, ((PyObject *)__pyx_t_7), ((PyObject *)__pyx_t_5)); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = PyObject_Call(__pyx_t_1, ((PyObject *)__pyx_t_3), ((PyObject *)__pyx_t_5)); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_7)); __pyx_t_7 = 0;
+  __Pyx_DECREF(((PyObject *)__pyx_t_3)); __pyx_t_3 = 0;
   __Pyx_DECREF(((PyObject *)__pyx_t_5)); __pyx_t_5 = 0;
-  if (!(likely(((__pyx_t_4) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_4, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_12 = ((PyArrayObject *)__pyx_t_4);
+  if (!(likely(((__pyx_t_4) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_4, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_7 = ((PyArrayObject *)__pyx_t_4);
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_outMerge.rcbuffer->pybuffer, (PyObject*)__pyx_t_12, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES| PyBUF_WRITABLE, 1, 0, __pyx_stack) == -1)) {
-      __pyx_v_outMerge = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_outMerge.rcbuffer->pybuffer.buf = NULL;
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    } else {__pyx_pybuffernd_outMerge.diminfo[0].strides = __pyx_pybuffernd_outMerge.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_outMerge.diminfo[0].shape = __pyx_pybuffernd_outMerge.rcbuffer->pybuffer.shape[0];
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_outMax.rcbuffer->pybuffer, (PyObject*)__pyx_t_7, &__Pyx_TypeInfo_nn___pyx_t_5numpy_int32_t, PyBUF_FORMAT| PyBUF_STRIDES| PyBUF_WRITABLE, 1, 0, __pyx_stack) == -1)) {
+      __pyx_v_outMax = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_outMax.rcbuffer->pybuffer.buf = NULL;
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    } else {__pyx_pybuffernd_outMax.diminfo[0].strides = __pyx_pybuffernd_outMax.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_outMax.diminfo[0].shape = __pyx_pybuffernd_outMax.rcbuffer->pybuffer.shape[0];
     }
   }
-  __pyx_t_12 = 0;
-  __pyx_v_outMerge = ((PyArrayObject *)__pyx_t_4);
+  __pyx_t_7 = 0;
+  __pyx_v_outMax = ((PyArrayObject *)__pyx_t_4);
   __pyx_t_4 = 0;
 
-  /* "splitPixel.pyx":173
- * 
- * 
- *     cdef  double cdummy=0, cddummy=0, data=0             # <<<<<<<<<<<<<<
- *     cdef  double deltaR=0, deltaL=0, one_over_area=0
- *     cdef  double pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0
+  /* "splitPixelFullLUT_b.pyx":154
+ *         cdef numpy.int8_t[:] cmask
+ *         cdef numpy.ndarray[numpy.int32_t, ndim = 1] outMax = numpy.zeros(self.bins, dtype=numpy.int32)
+ *         cdef numpy.ndarray[numpy.int32_t, ndim = 1] indptr = numpy.zeros(self.bins+1, dtype=numpy.int32)             # <<<<<<<<<<<<<<
+ *         cdef double pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0
+ *         cdef double max0, min0
  */
-  __pyx_v_cdummy = 0.0;
-  __pyx_v_cddummy = 0.0;
-  __pyx_v_data = 0.0;
+  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s__zeros); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__bins); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_t_3 = PyNumber_Add(__pyx_t_4, __pyx_int_1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_4);
+  PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_3);
+  __Pyx_GIVEREF(__pyx_t_3);
+  __pyx_t_3 = 0;
+  __pyx_t_3 = PyDict_New(); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(((PyObject *)__pyx_t_3));
+  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s__int32); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  if (PyDict_SetItem(__pyx_t_3, ((PyObject *)__pyx_n_s__dtype), __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_2 = PyObject_Call(__pyx_t_5, ((PyObject *)__pyx_t_4), ((PyObject *)__pyx_t_3)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __Pyx_DECREF(((PyObject *)__pyx_t_4)); __pyx_t_4 = 0;
+  __Pyx_DECREF(((PyObject *)__pyx_t_3)); __pyx_t_3 = 0;
+  if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_8 = ((PyArrayObject *)__pyx_t_2);
+  {
+    __Pyx_BufFmt_StackElem __pyx_stack[1];
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_indptr.rcbuffer->pybuffer, (PyObject*)__pyx_t_8, &__Pyx_TypeInfo_nn___pyx_t_5numpy_int32_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {
+      __pyx_v_indptr = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_indptr.rcbuffer->pybuffer.buf = NULL;
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    } else {__pyx_pybuffernd_indptr.diminfo[0].strides = __pyx_pybuffernd_indptr.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_indptr.diminfo[0].shape = __pyx_pybuffernd_indptr.rcbuffer->pybuffer.shape[0];
+    }
+  }
+  __pyx_t_8 = 0;
+  __pyx_v_indptr = ((PyArrayObject *)__pyx_t_2);
+  __pyx_t_2 = 0;
 
-  /* "splitPixel.pyx":174
- * 
- *     cdef  double cdummy=0, cddummy=0, data=0
- *     cdef  double deltaR=0, deltaL=0, one_over_area=0             # <<<<<<<<<<<<<<
- *     cdef  double pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0
- *     cdef  double aera_pixel=0, sum_area=0, sub_area=0,  dpos=0, fbin0_min=0, fbin0_max=0#, fbin1_min, fbin1_max
- */
-  __pyx_v_deltaR = 0.0;
-  __pyx_v_deltaL = 0.0;
-  __pyx_v_one_over_area = 0.0;
-
-  /* "splitPixel.pyx":175
- *     cdef  double cdummy=0, cddummy=0, data=0
- *     cdef  double deltaR=0, deltaL=0, one_over_area=0
- *     cdef  double pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0             # <<<<<<<<<<<<<<
- *     cdef  double aera_pixel=0, sum_area=0, sub_area=0,  dpos=0, fbin0_min=0, fbin0_max=0#, fbin1_min, fbin1_max
- *     cdef  double a0=0, b0=0, c0=0, d0=0, max0=0, min0=0, a1=0, b1=0, c1=0, d1=0, max1=0, min1=0
+  /* "splitPixelFullLUT_b.pyx":155
+ *         cdef numpy.ndarray[numpy.int32_t, ndim = 1] outMax = numpy.zeros(self.bins, dtype=numpy.int32)
+ *         cdef numpy.ndarray[numpy.int32_t, ndim = 1] indptr = numpy.zeros(self.bins+1, dtype=numpy.int32)
+ *         cdef double pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0             # <<<<<<<<<<<<<<
+ *         cdef double max0, min0
+ *         cdef double areaPixel=0, delta=0
  */
   __pyx_v_pos0_min = 0.0;
   __pyx_v_pos0_max = 0.0;
@@ -3255,1439 +3418,557 @@ static PyObject *__pyx_pf_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *__pyx
   __pyx_v_pos1_max = 0.0;
   __pyx_v_pos1_maxin = 0.0;
 
-  /* "splitPixel.pyx":176
- *     cdef  double deltaR=0, deltaL=0, one_over_area=0
- *     cdef  double pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0
- *     cdef  double aera_pixel=0, sum_area=0, sub_area=0,  dpos=0, fbin0_min=0, fbin0_max=0#, fbin1_min, fbin1_max             # <<<<<<<<<<<<<<
- *     cdef  double a0=0, b0=0, c0=0, d0=0, max0=0, min0=0, a1=0, b1=0, c1=0, d1=0, max1=0, min1=0
- *     cdef  double epsilon=1e-10
+  /* "splitPixelFullLUT_b.pyx":157
+ *         cdef double pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0
+ *         cdef double max0, min0
+ *         cdef double areaPixel=0, delta=0             # <<<<<<<<<<<<<<
+ *         cdef double A0=0, B0=0, C0=0, D0=0, A1=0, B1=0, C1=0, D1=0
+ *         cdef double A_lim=0, B_lim=0, C_lim=0, D_lim=0
  */
-  __pyx_v_aera_pixel = 0.0;
-  __pyx_v_sum_area = 0.0;
-  __pyx_v_sub_area = 0.0;
-  __pyx_v_dpos = 0.0;
-  __pyx_v_fbin0_min = 0.0;
-  __pyx_v_fbin0_max = 0.0;
+  __pyx_v_areaPixel = 0.0;
+  __pyx_v_delta = 0.0;
 
-  /* "splitPixel.pyx":177
- *     cdef  double pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0
- *     cdef  double aera_pixel=0, sum_area=0, sub_area=0,  dpos=0, fbin0_min=0, fbin0_max=0#, fbin1_min, fbin1_max
- *     cdef  double a0=0, b0=0, c0=0, d0=0, max0=0, min0=0, a1=0, b1=0, c1=0, d1=0, max1=0, min1=0             # <<<<<<<<<<<<<<
- *     cdef  double epsilon=1e-10
- * 
+  /* "splitPixelFullLUT_b.pyx":158
+ *         cdef double max0, min0
+ *         cdef double areaPixel=0, delta=0
+ *         cdef double A0=0, B0=0, C0=0, D0=0, A1=0, B1=0, C1=0, D1=0             # <<<<<<<<<<<<<<
+ *         cdef double A_lim=0, B_lim=0, C_lim=0, D_lim=0
+ *         cdef double oneOverArea=0, partialArea=0, tmp=0
  */
-  __pyx_v_a0 = 0.0;
-  __pyx_v_b0 = 0.0;
-  __pyx_v_c0 = 0.0;
-  __pyx_v_d0 = 0.0;
-  __pyx_v_max0 = 0.0;
-  __pyx_v_min0 = 0.0;
-  __pyx_v_a1 = 0.0;
-  __pyx_v_b1 = 0.0;
-  __pyx_v_c1 = 0.0;
-  __pyx_v_d1 = 0.0;
-  __pyx_v_max1 = 0.0;
-  __pyx_v_min1 = 0.0;
+  __pyx_v_A0 = 0.0;
+  __pyx_v_B0 = 0.0;
+  __pyx_v_C0 = 0.0;
+  __pyx_v_D0 = 0.0;
+  __pyx_v_A1 = 0.0;
+  __pyx_v_B1 = 0.0;
+  __pyx_v_C1 = 0.0;
+  __pyx_v_D1 = 0.0;
 
-  /* "splitPixel.pyx":178
- *     cdef  double aera_pixel=0, sum_area=0, sub_area=0,  dpos=0, fbin0_min=0, fbin0_max=0#, fbin1_min, fbin1_max
- *     cdef  double a0=0, b0=0, c0=0, d0=0, max0=0, min0=0, a1=0, b1=0, c1=0, d1=0, max1=0, min1=0
- *     cdef  double epsilon=1e-10             # <<<<<<<<<<<<<<
- * 
- *     cdef bint check_pos1=False, check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
+  /* "splitPixelFullLUT_b.pyx":159
+ *         cdef double areaPixel=0, delta=0
+ *         cdef double A0=0, B0=0, C0=0, D0=0, A1=0, B1=0, C1=0, D1=0
+ *         cdef double A_lim=0, B_lim=0, C_lim=0, D_lim=0             # <<<<<<<<<<<<<<
+ *         cdef double oneOverArea=0, partialArea=0, tmp=0
+ *         cdef Function AB, BC, CD, DA
  */
-  __pyx_v_epsilon = 1e-10;
+  __pyx_v_A_lim = 0.0;
+  __pyx_v_B_lim = 0.0;
+  __pyx_v_C_lim = 0.0;
+  __pyx_v_D_lim = 0.0;
 
-  /* "splitPixel.pyx":180
- *     cdef  double epsilon=1e-10
- * 
- *     cdef bint check_pos1=False, check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False             # <<<<<<<<<<<<<<
- *     cdef int i=0, b=0, idx=0, bin=0, bin0_max=0, bin0_min=0
- *     buffer = view.array(shape=(bins,),itemsize=sizeof(double), format="d")
+  /* "splitPixelFullLUT_b.pyx":160
+ *         cdef double A0=0, B0=0, C0=0, D0=0, A1=0, B1=0, C1=0, D1=0
+ *         cdef double A_lim=0, B_lim=0, C_lim=0, D_lim=0
+ *         cdef double oneOverArea=0, partialArea=0, tmp=0             # <<<<<<<<<<<<<<
+ *         cdef Function AB, BC, CD, DA
+ *         cdef int bins, i=0, idx=0, bin=0, bin0_max=0, bin0_min=0, pixel_bins=0, k=0, size=0
  */
-  __pyx_v_check_pos1 = 0;
-  __pyx_v_check_mask = 0;
-  __pyx_v_do_dummy = 0;
-  __pyx_v_do_dark = 0;
-  __pyx_v_do_flat = 0;
-  __pyx_v_do_polarization = 0;
-  __pyx_v_do_solidangle = 0;
+  __pyx_v_oneOverArea = 0.0;
+  __pyx_v_partialArea = 0.0;
+  __pyx_v_tmp = 0.0;
 
-  /* "splitPixel.pyx":181
+  /* "splitPixelFullLUT_b.pyx":162
+ *         cdef double oneOverArea=0, partialArea=0, tmp=0
+ *         cdef Function AB, BC, CD, DA
+ *         cdef int bins, i=0, idx=0, bin=0, bin0_max=0, bin0_min=0, pixel_bins=0, k=0, size=0             # <<<<<<<<<<<<<<
+ *         cdef bint check_pos1=False, check_mask=False
  * 
- *     cdef bint check_pos1=False, check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
- *     cdef int i=0, b=0, idx=0, bin=0, bin0_max=0, bin0_min=0             # <<<<<<<<<<<<<<
- *     buffer = view.array(shape=(bins,),itemsize=sizeof(double), format="d")
- *     memset(&buffer[0], 0, sizeof(double)*bins)
  */
   __pyx_v_i = 0;
-  __pyx_v_b = 0;
   __pyx_v_idx = 0;
   __pyx_v_bin = 0;
   __pyx_v_bin0_max = 0;
   __pyx_v_bin0_min = 0;
+  __pyx_v_pixel_bins = 0;
+  __pyx_v_k = 0;
+  __pyx_v_size = 0;
 
-  /* "splitPixel.pyx":182
- *     cdef bint check_pos1=False, check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
- *     cdef int i=0, b=0, idx=0, bin=0, bin0_max=0, bin0_min=0
- *     buffer = view.array(shape=(bins,),itemsize=sizeof(double), format="d")             # <<<<<<<<<<<<<<
- *     memset(&buffer[0], 0, sizeof(double)*bins)
+  /* "splitPixelFullLUT_b.pyx":163
+ *         cdef Function AB, BC, CD, DA
+ *         cdef int bins, i=0, idx=0, bin=0, bin0_max=0, bin0_min=0, pixel_bins=0, k=0, size=0
+ *         cdef bint check_pos1=False, check_mask=False             # <<<<<<<<<<<<<<
  * 
+ *         bins = self.bins
  */
-  __pyx_t_4 = PyDict_New(); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(((PyObject *)__pyx_t_4));
-  __pyx_t_5 = PyInt_FromLong(__pyx_v_bins); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_v_check_pos1 = 0;
+  __pyx_v_check_mask = 0;
+
+  /* "splitPixelFullLUT_b.pyx":165
+ *         cdef bint check_pos1=False, check_mask=False
+ * 
+ *         bins = self.bins             # <<<<<<<<<<<<<<
+ *         if self.pos0Range is not None and len(self.pos0Range) > 1:
+ *             self.pos0_min = min(self.pos0Range)
+ */
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__bins); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_9 = __Pyx_PyInt_AsInt(__pyx_t_2); if (unlikely((__pyx_t_9 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_v_bins = __pyx_t_9;
+
+  /* "splitPixelFullLUT_b.pyx":166
+ * 
+ *         bins = self.bins
+ *         if self.pos0Range is not None and len(self.pos0Range) > 1:             # <<<<<<<<<<<<<<
+ *             self.pos0_min = min(self.pos0Range)
+ *             self.pos0_maxin = max(self.pos0Range)
+ */
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos0Range); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_10 = (__pyx_t_2 != Py_None);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  if ((__pyx_t_10 != 0)) {
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos0Range); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_2);
+    __pyx_t_11 = PyObject_Length(__pyx_t_2); if (unlikely(__pyx_t_11 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __pyx_t_12 = ((__pyx_t_11 > 1) != 0);
+    __pyx_t_13 = __pyx_t_12;
+  } else {
+    __pyx_t_13 = (__pyx_t_10 != 0);
+  }
+  if (__pyx_t_13) {
+
+    /* "splitPixelFullLUT_b.pyx":167
+ *         bins = self.bins
+ *         if self.pos0Range is not None and len(self.pos0Range) > 1:
+ *             self.pos0_min = min(self.pos0Range)             # <<<<<<<<<<<<<<
+ *             self.pos0_maxin = max(self.pos0Range)
+ *         else:
+ */
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos0Range); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 167; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_2);
+    __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 167; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_2);
+    __Pyx_GIVEREF(__pyx_t_2);
+    __pyx_t_2 = 0;
+    __pyx_t_2 = PyObject_Call(__pyx_builtin_min, ((PyObject *)__pyx_t_3), NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 167; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_2);
+    __Pyx_DECREF(((PyObject *)__pyx_t_3)); __pyx_t_3 = 0;
+    if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__pos0_min, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 167; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+    /* "splitPixelFullLUT_b.pyx":168
+ *         if self.pos0Range is not None and len(self.pos0Range) > 1:
+ *             self.pos0_min = min(self.pos0Range)
+ *             self.pos0_maxin = max(self.pos0Range)             # <<<<<<<<<<<<<<
+ *         else:
+ *             self.pos0_min = self.pos[:, :, 0].min()
+ */
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos0Range); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_2);
+    __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_2);
+    __Pyx_GIVEREF(__pyx_t_2);
+    __pyx_t_2 = 0;
+    __pyx_t_2 = PyObject_Call(__pyx_builtin_max, ((PyObject *)__pyx_t_3), NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_2);
+    __Pyx_DECREF(((PyObject *)__pyx_t_3)); __pyx_t_3 = 0;
+    if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__pos0_maxin, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    goto __pyx_L3;
+  }
+  /*else*/ {
+
+    /* "splitPixelFullLUT_b.pyx":170
+ *             self.pos0_maxin = max(self.pos0Range)
+ *         else:
+ *             self.pos0_min = self.pos[:, :, 0].min()             # <<<<<<<<<<<<<<
+ *             self.pos0_maxin = self.pos[:, :, 0].max()
+ *         self.pos0_max = self.pos0_maxin * (1 + numpy.finfo(numpy.float64).eps)
+ */
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_2);
+    __pyx_t_3 = PyObject_GetItem(__pyx_t_2, ((PyObject *)__pyx_k_tuple_5)); if (!__pyx_t_3) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s__min); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_2);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = PyObject_Call(__pyx_t_2, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__pos0_min, __pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+
+    /* "splitPixelFullLUT_b.pyx":171
+ *         else:
+ *             self.pos0_min = self.pos[:, :, 0].min()
+ *             self.pos0_maxin = self.pos[:, :, 0].max()             # <<<<<<<<<<<<<<
+ *         self.pos0_max = self.pos0_maxin * (1 + numpy.finfo(numpy.float64).eps)
+ *         if self.pos1Range is not None and len(self.pos1Range) > 1:
+ */
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 171; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_2 = PyObject_GetItem(__pyx_t_3, ((PyObject *)__pyx_k_tuple_8)); if (!__pyx_t_2) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 171; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_2);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s__max); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 171; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __pyx_t_2 = PyObject_Call(__pyx_t_3, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 171; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_2);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__pos0_maxin, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 171; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  }
+  __pyx_L3:;
+
+  /* "splitPixelFullLUT_b.pyx":172
+ *             self.pos0_min = self.pos[:, :, 0].min()
+ *             self.pos0_maxin = self.pos[:, :, 0].max()
+ *         self.pos0_max = self.pos0_maxin * (1 + numpy.finfo(numpy.float64).eps)             # <<<<<<<<<<<<<<
+ *         if self.pos1Range is not None and len(self.pos1Range) > 1:
+ *             self.pos1_min = min(self.pos1Range)
+ */
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos0_maxin); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s__finfo); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_4);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s__float64); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_7 = PyTuple_New(1); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_7);
-  PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_5);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_5);
   __Pyx_GIVEREF(__pyx_t_5);
   __pyx_t_5 = 0;
-  if (PyDict_SetItem(__pyx_t_4, ((PyObject *)__pyx_n_s__shape), ((PyObject *)__pyx_t_7)) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(((PyObject *)__pyx_t_7)); __pyx_t_7 = 0;
-  __pyx_t_7 = __Pyx_PyInt_FromSize_t((sizeof(double))); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_7);
-  if (PyDict_SetItem(__pyx_t_4, ((PyObject *)__pyx_n_s__itemsize), __pyx_t_7) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  if (PyDict_SetItem(__pyx_t_4, ((PyObject *)__pyx_n_s__format), ((PyObject *)__pyx_n_s__d)) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_7 = PyObject_Call(((PyObject *)((PyObject *)__pyx_array_type)), ((PyObject *)__pyx_empty_tuple), ((PyObject *)__pyx_t_4)); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_7);
-  __Pyx_DECREF(((PyObject *)__pyx_t_4)); __pyx_t_4 = 0;
-  __pyx_t_13 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_7);
-  if (unlikely(!__pyx_t_13.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_v_buffer = __pyx_t_13;
-  __pyx_t_13.memview = NULL;
-  __pyx_t_13.data = NULL;
+  __pyx_t_5 = PyObject_Call(__pyx_t_4, ((PyObject *)__pyx_t_3), NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __Pyx_DECREF(((PyObject *)__pyx_t_3)); __pyx_t_3 = 0;
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s__eps); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_t_5 = PyNumber_Add(__pyx_int_1, __pyx_t_3); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_3 = PyNumber_Multiply(__pyx_t_2, __pyx_t_5); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__pos0_max, __pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-  /* "splitPixel.pyx":183
- *     cdef int i=0, b=0, idx=0, bin=0, bin0_max=0, bin0_min=0
- *     buffer = view.array(shape=(bins,),itemsize=sizeof(double), format="d")
- *     memset(&buffer[0], 0, sizeof(double)*bins)             # <<<<<<<<<<<<<<
- * 
- *     if mask is not None:
+  /* "splitPixelFullLUT_b.pyx":173
+ *             self.pos0_maxin = self.pos[:, :, 0].max()
+ *         self.pos0_max = self.pos0_maxin * (1 + numpy.finfo(numpy.float64).eps)
+ *         if self.pos1Range is not None and len(self.pos1Range) > 1:             # <<<<<<<<<<<<<<
+ *             self.pos1_min = min(self.pos1Range)
+ *             self.pos1_maxin = max(self.pos1Range)
  */
-  __pyx_t_14 = 0;
-  memset((&(*((double *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_14 * __pyx_v_buffer.strides[0]) )))), 0, ((sizeof(double)) * __pyx_v_bins));
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos1Range); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 173; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_13 = (__pyx_t_3 != Py_None);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  if ((__pyx_t_13 != 0)) {
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos1Range); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 173; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_11 = PyObject_Length(__pyx_t_3); if (unlikely(__pyx_t_11 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 173; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_10 = ((__pyx_t_11 > 1) != 0);
+    __pyx_t_12 = __pyx_t_10;
+  } else {
+    __pyx_t_12 = (__pyx_t_13 != 0);
+  }
+  if (__pyx_t_12) {
 
-  /* "splitPixel.pyx":185
- *     memset(&buffer[0], 0, sizeof(double)*bins)
- * 
- *     if mask is not None:             # <<<<<<<<<<<<<<
- *         check_mask = True
- *         assert mask.size == size
+    /* "splitPixelFullLUT_b.pyx":174
+ *         self.pos0_max = self.pos0_maxin * (1 + numpy.finfo(numpy.float64).eps)
+ *         if self.pos1Range is not None and len(self.pos1Range) > 1:
+ *             self.pos1_min = min(self.pos1Range)             # <<<<<<<<<<<<<<
+ *             self.pos1_maxin = max(self.pos1Range)
+ *             self.check_pos1 = True
  */
-  __pyx_t_3 = (__pyx_v_mask != Py_None);
-  __pyx_t_15 = (__pyx_t_3 != 0);
-  if (__pyx_t_15) {
-
-    /* "splitPixel.pyx":186
- * 
- *     if mask is not None:
- *         check_mask = True             # <<<<<<<<<<<<<<
- *         assert mask.size == size
- *         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
- */
-    __pyx_v_check_mask = 1;
-
-    /* "splitPixel.pyx":187
- *     if mask is not None:
- *         check_mask = True
- *         assert mask.size == size             # <<<<<<<<<<<<<<
- *         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
- * 
- */
-    #ifndef CYTHON_WITHOUT_ASSERTIONS
-    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_v_mask, __pyx_n_s__size); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 187; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_7);
-    __pyx_t_4 = PyInt_FromLong(__pyx_v_size); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 187; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_5 = PyObject_RichCompare(__pyx_t_7, __pyx_t_4, Py_EQ); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 187; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_15 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 187; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    if (unlikely(!__pyx_t_15)) {
-      PyErr_SetNone(PyExc_AssertionError);
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 187; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    }
-    #endif
-
-    /* "splitPixel.pyx":188
- *         check_mask = True
- *         assert mask.size == size
- *         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)             # <<<<<<<<<<<<<<
- * 
- * 
- */
-    __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 188; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos1Range); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 174; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_5 = PyTuple_New(1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 174; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s__ascontiguousarray); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 188; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_mask, __pyx_n_s__ravel); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 188; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_7 = PyObject_Call(__pyx_t_5, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 188; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_7);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = PyTuple_New(1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 188; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_5);
-    PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_7);
-    __Pyx_GIVEREF(__pyx_t_7);
-    __pyx_t_7 = 0;
-    __pyx_t_7 = PyDict_New(); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 188; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(((PyObject *)__pyx_t_7));
-    __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 188; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s__int8); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 188; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_6);
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (PyDict_SetItem(__pyx_t_7, ((PyObject *)__pyx_n_s__dtype), __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 188; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_6 = PyObject_Call(__pyx_t_4, ((PyObject *)__pyx_t_5), ((PyObject *)__pyx_t_7)); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 188; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_6);
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_3);
+    __Pyx_GIVEREF(__pyx_t_3);
+    __pyx_t_3 = 0;
+    __pyx_t_3 = PyObject_Call(__pyx_builtin_min, ((PyObject *)__pyx_t_5), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 174; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(((PyObject *)__pyx_t_5)); __pyx_t_5 = 0;
-    __Pyx_DECREF(((PyObject *)__pyx_t_7)); __pyx_t_7 = 0;
-    __pyx_t_16 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5numpy_int8_t(__pyx_t_6);
-    if (unlikely(!__pyx_t_16.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 188; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_v_cmask = __pyx_t_16;
-    __pyx_t_16.memview = NULL;
-    __pyx_t_16.data = NULL;
+    if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__pos1_min, __pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 174; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+
+    /* "splitPixelFullLUT_b.pyx":175
+ *         if self.pos1Range is not None and len(self.pos1Range) > 1:
+ *             self.pos1_min = min(self.pos1Range)
+ *             self.pos1_maxin = max(self.pos1Range)             # <<<<<<<<<<<<<<
+ *             self.check_pos1 = True
+ *         else:
+ */
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos1Range); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 175; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_5 = PyTuple_New(1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 175; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_3);
+    __Pyx_GIVEREF(__pyx_t_3);
+    __pyx_t_3 = 0;
+    __pyx_t_3 = PyObject_Call(__pyx_builtin_max, ((PyObject *)__pyx_t_5), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 175; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(((PyObject *)__pyx_t_5)); __pyx_t_5 = 0;
+    if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__pos1_maxin, __pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 175; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+
+    /* "splitPixelFullLUT_b.pyx":176
+ *             self.pos1_min = min(self.pos1Range)
+ *             self.pos1_maxin = max(self.pos1Range)
+ *             self.check_pos1 = True             # <<<<<<<<<<<<<<
+ *         else:
+ *             self.pos1_min = self.pos[:, :, 1].min()
+ */
+    __pyx_t_3 = __Pyx_PyBool_FromLong(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 176; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__check_pos1, __pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 176; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     goto __pyx_L4;
+  }
+  /*else*/ {
+
+    /* "splitPixelFullLUT_b.pyx":178
+ *             self.check_pos1 = True
+ *         else:
+ *             self.pos1_min = self.pos[:, :, 1].min()             # <<<<<<<<<<<<<<
+ *             self.pos1_maxin = self.pos[:, :, 1].max()
+ *         self.pos1_max = self.pos1_maxin * (1 + numpy.finfo(numpy.float64).eps)
+ */
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 178; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_5 = PyObject_GetItem(__pyx_t_3, ((PyObject *)__pyx_k_tuple_11)); if (!__pyx_t_5) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 178; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s__min); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 178; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_5 = PyObject_Call(__pyx_t_3, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 178; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__pos1_min, __pyx_t_5) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 178; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+
+    /* "splitPixelFullLUT_b.pyx":179
+ *         else:
+ *             self.pos1_min = self.pos[:, :, 1].min()
+ *             self.pos1_maxin = self.pos[:, :, 1].max()             # <<<<<<<<<<<<<<
+ *         self.pos1_max = self.pos1_maxin * (1 + numpy.finfo(numpy.float64).eps)
+ * 
+ */
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 179; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_3 = PyObject_GetItem(__pyx_t_5, ((PyObject *)__pyx_k_tuple_14)); if (!__pyx_t_3) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 179; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s__max); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 179; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = PyObject_Call(__pyx_t_5, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 179; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__pos1_maxin, __pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 179; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   }
   __pyx_L4:;
 
-  /* "splitPixel.pyx":191
+  /* "splitPixelFullLUT_b.pyx":180
+ *             self.pos1_min = self.pos[:, :, 1].min()
+ *             self.pos1_maxin = self.pos[:, :, 1].max()
+ *         self.pos1_max = self.pos1_maxin * (1 + numpy.finfo(numpy.float64).eps)             # <<<<<<<<<<<<<<
  * 
- * 
- *     if pos0Range is not None and len(pos0Range) > 1:             # <<<<<<<<<<<<<<
- *         pos0_min = min(pos0Range)
- *         pos0_maxin = max(pos0Range)
+ *         self.delta = (self.pos0_max - self.pos0_min) / (< double > (bins))
  */
-  __pyx_t_15 = (__pyx_v_pos0Range != Py_None);
-  if ((__pyx_t_15 != 0)) {
-    __pyx_t_17 = PyObject_Length(__pyx_v_pos0Range); if (unlikely(__pyx_t_17 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 191; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __pyx_t_3 = ((__pyx_t_17 > 1) != 0);
-    __pyx_t_18 = __pyx_t_3;
-  } else {
-    __pyx_t_18 = (__pyx_t_15 != 0);
-  }
-  if (__pyx_t_18) {
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos1_maxin); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 180; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 180; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s__finfo); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 180; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 180; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s__float64); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 180; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_4);
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_t_5 = PyTuple_New(1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 180; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4);
+  __Pyx_GIVEREF(__pyx_t_4);
+  __pyx_t_4 = 0;
+  __pyx_t_4 = PyObject_Call(__pyx_t_2, ((PyObject *)__pyx_t_5), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 180; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_4);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_DECREF(((PyObject *)__pyx_t_5)); __pyx_t_5 = 0;
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s__eps); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 180; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __pyx_t_4 = PyNumber_Add(__pyx_int_1, __pyx_t_5); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 180; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_4);
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_t_5 = PyNumber_Multiply(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 180; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__pos1_max, __pyx_t_5) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 180; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-    /* "splitPixel.pyx":192
+  /* "splitPixelFullLUT_b.pyx":182
+ *         self.pos1_max = self.pos1_maxin * (1 + numpy.finfo(numpy.float64).eps)
  * 
- *     if pos0Range is not None and len(pos0Range) > 1:
- *         pos0_min = min(pos0Range)             # <<<<<<<<<<<<<<
- *         pos0_maxin = max(pos0Range)
- *     else:
+ *         self.delta = (self.pos0_max - self.pos0_min) / (< double > (bins))             # <<<<<<<<<<<<<<
+ * 
+ *         pos0_min = self.pos0_min
  */
-    __pyx_t_6 = PyTuple_New(1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 192; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_6);
-    __Pyx_INCREF(__pyx_v_pos0Range);
-    PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_v_pos0Range);
-    __Pyx_GIVEREF(__pyx_v_pos0Range);
-    __pyx_t_7 = PyObject_Call(__pyx_builtin_min, ((PyObject *)__pyx_t_6), NULL); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 192; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_7);
-    __Pyx_DECREF(((PyObject *)__pyx_t_6)); __pyx_t_6 = 0;
-    __pyx_t_19 = __pyx_PyFloat_AsDouble(__pyx_t_7); if (unlikely((__pyx_t_19 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 192; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    __pyx_v_pos0_min = __pyx_t_19;
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos0_max); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos0_min); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_t_3 = PyNumber_Subtract(__pyx_t_5, __pyx_t_4); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __pyx_t_4 = PyFloat_FromDouble(((double)__pyx_v_bins)); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_t_5 = __Pyx_PyNumber_Divide(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__delta, __pyx_t_5) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-    /* "splitPixel.pyx":193
- *     if pos0Range is not None and len(pos0Range) > 1:
- *         pos0_min = min(pos0Range)
- *         pos0_maxin = max(pos0Range)             # <<<<<<<<<<<<<<
- *     else:
+  /* "splitPixelFullLUT_b.pyx":184
+ *         self.delta = (self.pos0_max - self.pos0_min) / (< double > (bins))
+ * 
+ *         pos0_min = self.pos0_min             # <<<<<<<<<<<<<<
+ *         pos0_max = self.pos0_max
+ *         pos1_min = self.pos1_min
+ */
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos0_min); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 184; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_14 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_14 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 184; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_v_pos0_min = __pyx_t_14;
+
+  /* "splitPixelFullLUT_b.pyx":185
+ * 
+ *         pos0_min = self.pos0_min
+ *         pos0_max = self.pos0_max             # <<<<<<<<<<<<<<
+ *         pos1_min = self.pos1_min
+ *         pos1_max = self.pos1_max
+ */
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos0_max); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 185; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_14 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_14 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 185; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_v_pos0_max = __pyx_t_14;
+
+  /* "splitPixelFullLUT_b.pyx":186
+ *         pos0_min = self.pos0_min
+ *         pos0_max = self.pos0_max
+ *         pos1_min = self.pos1_min             # <<<<<<<<<<<<<<
+ *         pos1_max = self.pos1_max
+ *         delta = self.delta
+ */
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos1_min); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_14 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_14 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_v_pos1_min = __pyx_t_14;
+
+  /* "splitPixelFullLUT_b.pyx":187
+ *         pos0_max = self.pos0_max
+ *         pos1_min = self.pos1_min
+ *         pos1_max = self.pos1_max             # <<<<<<<<<<<<<<
+ *         delta = self.delta
+ * 
+ */
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__pos1_max); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 187; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_14 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_14 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 187; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_v_pos1_max = __pyx_t_14;
+
+  /* "splitPixelFullLUT_b.pyx":188
+ *         pos1_min = self.pos1_min
+ *         pos1_max = self.pos1_max
+ *         delta = self.delta             # <<<<<<<<<<<<<<
+ * 
+ *         size = self.size
+ */
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__delta); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 188; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_14 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_14 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 188; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_v_delta = __pyx_t_14;
+
+  /* "splitPixelFullLUT_b.pyx":190
+ *         delta = self.delta
+ * 
+ *         size = self.size             # <<<<<<<<<<<<<<
+ *         check_mask = self.check_mask
+ *         if check_mask:
+ */
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__size); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 190; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_9 = __Pyx_PyInt_AsInt(__pyx_t_5); if (unlikely((__pyx_t_9 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 190; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_v_size = __pyx_t_9;
+
+  /* "splitPixelFullLUT_b.pyx":191
+ * 
+ *         size = self.size
+ *         check_mask = self.check_mask             # <<<<<<<<<<<<<<
+ *         if check_mask:
+ *             cmask = self.cmask
+ */
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__check_mask); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 191; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_12 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely((__pyx_t_12 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 191; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_v_check_mask = __pyx_t_12;
+
+  /* "splitPixelFullLUT_b.pyx":192
+ *         size = self.size
+ *         check_mask = self.check_mask
+ *         if check_mask:             # <<<<<<<<<<<<<<
+ *             cmask = self.cmask
+ * 
+ */
+  __pyx_t_12 = (__pyx_v_check_mask != 0);
+  if (__pyx_t_12) {
+
+    /* "splitPixelFullLUT_b.pyx":193
+ *         check_mask = self.check_mask
+ *         if check_mask:
+ *             cmask = self.cmask             # <<<<<<<<<<<<<<
+ * 
  *         with nogil:
  */
-    __pyx_t_7 = PyTuple_New(1); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_7);
-    __Pyx_INCREF(__pyx_v_pos0Range);
-    PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_v_pos0Range);
-    __Pyx_GIVEREF(__pyx_v_pos0Range);
-    __pyx_t_6 = PyObject_Call(__pyx_builtin_max, ((PyObject *)__pyx_t_7), NULL); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_6);
-    __Pyx_DECREF(((PyObject *)__pyx_t_7)); __pyx_t_7 = 0;
-    __pyx_t_19 = __pyx_PyFloat_AsDouble(__pyx_t_6); if (unlikely((__pyx_t_19 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_v_pos0_maxin = __pyx_t_19;
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__cmask); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_15 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5numpy_int8_t(__pyx_t_5);
+    if (unlikely(!__pyx_t_15.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_v_cmask = __pyx_t_15;
+    __pyx_t_15.memview = NULL;
+    __pyx_t_15.data = NULL;
     goto __pyx_L5;
-  }
-  /*else*/ {
-
-    /* "splitPixel.pyx":195
- *         pos0_maxin = max(pos0Range)
- *     else:
- *         with nogil:             # <<<<<<<<<<<<<<
- *             for idx in range(size):
- *                 if (check_mask) and (cmask[idx]):
- */
-    {
-        #ifdef WITH_THREAD
-        PyThreadState *_save;
-        Py_UNBLOCK_THREADS
-        #endif
-        /*try:*/ {
-
-          /* "splitPixel.pyx":196
- *     else:
- *         with nogil:
- *             for idx in range(size):             # <<<<<<<<<<<<<<
- *                 if (check_mask) and (cmask[idx]):
- *                     pos0_max = pos0_min = cpos[idx, 0, 0]
- */
-          __pyx_t_2 = __pyx_v_size;
-          for (__pyx_t_20 = 0; __pyx_t_20 < __pyx_t_2; __pyx_t_20+=1) {
-            __pyx_v_idx = __pyx_t_20;
-
-            /* "splitPixel.pyx":197
- *         with nogil:
- *             for idx in range(size):
- *                 if (check_mask) and (cmask[idx]):             # <<<<<<<<<<<<<<
- *                     pos0_max = pos0_min = cpos[idx, 0, 0]
- *                     pos1_max = pos1_min = cpos[idx, 0, 1]
- */
-            __pyx_t_18 = __pyx_v_check_mask;
-            if (__pyx_t_18) {
-              if (unlikely(!__pyx_v_cmask.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("cmask"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L7;} }
-              __pyx_t_21 = __pyx_v_idx;
-              __pyx_t_15 = ((*((__pyx_t_5numpy_int8_t *) ( /* dim=0 */ (__pyx_v_cmask.data + __pyx_t_21 * __pyx_v_cmask.strides[0]) ))) != 0);
-            } else {
-              __pyx_t_15 = __pyx_t_18;
-            }
-            if (__pyx_t_15) {
-
-              /* "splitPixel.pyx":198
- *             for idx in range(size):
- *                 if (check_mask) and (cmask[idx]):
- *                     pos0_max = pos0_min = cpos[idx, 0, 0]             # <<<<<<<<<<<<<<
- *                     pos1_max = pos1_min = cpos[idx, 0, 1]
- *                     break
- */
-              __pyx_t_22 = __pyx_v_idx;
-              __pyx_t_23 = 0;
-              __pyx_t_24 = 0;
-              __pyx_t_25 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_22, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_23, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_24, __pyx_pybuffernd_cpos.diminfo[2].strides));
-              __pyx_v_pos0_max = __pyx_t_25;
-              __pyx_v_pos0_min = __pyx_t_25;
-
-              /* "splitPixel.pyx":199
- *                 if (check_mask) and (cmask[idx]):
- *                     pos0_max = pos0_min = cpos[idx, 0, 0]
- *                     pos1_max = pos1_min = cpos[idx, 0, 1]             # <<<<<<<<<<<<<<
- *                     break
- *             for idx in range(size):
- */
-              __pyx_t_26 = __pyx_v_idx;
-              __pyx_t_27 = 0;
-              __pyx_t_28 = 1;
-              __pyx_t_25 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_26, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_27, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_28, __pyx_pybuffernd_cpos.diminfo[2].strides));
-              __pyx_v_pos1_max = __pyx_t_25;
-              __pyx_v_pos1_min = __pyx_t_25;
-
-              /* "splitPixel.pyx":200
- *                     pos0_max = pos0_min = cpos[idx, 0, 0]
- *                     pos1_max = pos1_min = cpos[idx, 0, 1]
- *                     break             # <<<<<<<<<<<<<<
- *             for idx in range(size):
- *                 if (check_mask) and (cmask[idx]):
- */
-              goto __pyx_L10_break;
-              goto __pyx_L11;
-            }
-            __pyx_L11:;
-          }
-          __pyx_L10_break:;
-
-          /* "splitPixel.pyx":201
- *                     pos1_max = pos1_min = cpos[idx, 0, 1]
- *                     break
- *             for idx in range(size):             # <<<<<<<<<<<<<<
- *                 if (check_mask) and (cmask[idx]):
- *                     continue
- */
-          __pyx_t_2 = __pyx_v_size;
-          for (__pyx_t_20 = 0; __pyx_t_20 < __pyx_t_2; __pyx_t_20+=1) {
-            __pyx_v_idx = __pyx_t_20;
-
-            /* "splitPixel.pyx":202
- *                     break
- *             for idx in range(size):
- *                 if (check_mask) and (cmask[idx]):             # <<<<<<<<<<<<<<
- *                     continue
- *                 a0 = cpos[idx, 0, 0]
- */
-            __pyx_t_15 = __pyx_v_check_mask;
-            if (__pyx_t_15) {
-              if (unlikely(!__pyx_v_cmask.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("cmask"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 202; __pyx_clineno = __LINE__; goto __pyx_L7;} }
-              __pyx_t_29 = __pyx_v_idx;
-              __pyx_t_18 = ((*((__pyx_t_5numpy_int8_t *) ( /* dim=0 */ (__pyx_v_cmask.data + __pyx_t_29 * __pyx_v_cmask.strides[0]) ))) != 0);
-            } else {
-              __pyx_t_18 = __pyx_t_15;
-            }
-            if (__pyx_t_18) {
-
-              /* "splitPixel.pyx":203
- *             for idx in range(size):
- *                 if (check_mask) and (cmask[idx]):
- *                     continue             # <<<<<<<<<<<<<<
- *                 a0 = cpos[idx, 0, 0]
- *                 a1 = cpos[idx, 0, 1]
- */
-              goto __pyx_L12_continue;
-              goto __pyx_L14;
-            }
-            __pyx_L14:;
-
-            /* "splitPixel.pyx":204
- *                 if (check_mask) and (cmask[idx]):
- *                     continue
- *                 a0 = cpos[idx, 0, 0]             # <<<<<<<<<<<<<<
- *                 a1 = cpos[idx, 0, 1]
- *                 b0 = cpos[idx, 1, 0]
- */
-            __pyx_t_30 = __pyx_v_idx;
-            __pyx_t_31 = 0;
-            __pyx_t_32 = 0;
-            __pyx_v_a0 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_30, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_31, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_32, __pyx_pybuffernd_cpos.diminfo[2].strides));
-
-            /* "splitPixel.pyx":205
- *                     continue
- *                 a0 = cpos[idx, 0, 0]
- *                 a1 = cpos[idx, 0, 1]             # <<<<<<<<<<<<<<
- *                 b0 = cpos[idx, 1, 0]
- *                 b1 = cpos[idx, 1, 1]
- */
-            __pyx_t_33 = __pyx_v_idx;
-            __pyx_t_34 = 0;
-            __pyx_t_35 = 1;
-            __pyx_v_a1 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_33, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_34, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_35, __pyx_pybuffernd_cpos.diminfo[2].strides));
-
-            /* "splitPixel.pyx":206
- *                 a0 = cpos[idx, 0, 0]
- *                 a1 = cpos[idx, 0, 1]
- *                 b0 = cpos[idx, 1, 0]             # <<<<<<<<<<<<<<
- *                 b1 = cpos[idx, 1, 1]
- *                 c0 = cpos[idx, 2, 0]
- */
-            __pyx_t_36 = __pyx_v_idx;
-            __pyx_t_37 = 1;
-            __pyx_t_38 = 0;
-            __pyx_v_b0 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_36, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_37, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_38, __pyx_pybuffernd_cpos.diminfo[2].strides));
-
-            /* "splitPixel.pyx":207
- *                 a1 = cpos[idx, 0, 1]
- *                 b0 = cpos[idx, 1, 0]
- *                 b1 = cpos[idx, 1, 1]             # <<<<<<<<<<<<<<
- *                 c0 = cpos[idx, 2, 0]
- *                 c1 = cpos[idx, 2, 1]
- */
-            __pyx_t_39 = __pyx_v_idx;
-            __pyx_t_40 = 1;
-            __pyx_t_41 = 1;
-            __pyx_v_b1 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_39, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_40, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_41, __pyx_pybuffernd_cpos.diminfo[2].strides));
-
-            /* "splitPixel.pyx":208
- *                 b0 = cpos[idx, 1, 0]
- *                 b1 = cpos[idx, 1, 1]
- *                 c0 = cpos[idx, 2, 0]             # <<<<<<<<<<<<<<
- *                 c1 = cpos[idx, 2, 1]
- *                 d0 = cpos[idx, 3, 0]
- */
-            __pyx_t_42 = __pyx_v_idx;
-            __pyx_t_43 = 2;
-            __pyx_t_44 = 0;
-            __pyx_v_c0 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_42, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_43, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_44, __pyx_pybuffernd_cpos.diminfo[2].strides));
-
-            /* "splitPixel.pyx":209
- *                 b1 = cpos[idx, 1, 1]
- *                 c0 = cpos[idx, 2, 0]
- *                 c1 = cpos[idx, 2, 1]             # <<<<<<<<<<<<<<
- *                 d0 = cpos[idx, 3, 0]
- *                 d1 = cpos[idx, 3, 1]
- */
-            __pyx_t_45 = __pyx_v_idx;
-            __pyx_t_46 = 2;
-            __pyx_t_47 = 1;
-            __pyx_v_c1 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_45, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_46, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_47, __pyx_pybuffernd_cpos.diminfo[2].strides));
-
-            /* "splitPixel.pyx":210
- *                 c0 = cpos[idx, 2, 0]
- *                 c1 = cpos[idx, 2, 1]
- *                 d0 = cpos[idx, 3, 0]             # <<<<<<<<<<<<<<
- *                 d1 = cpos[idx, 3, 1]
- *                 min0 = min(a0, b0, c0, d0)
- */
-            __pyx_t_48 = __pyx_v_idx;
-            __pyx_t_49 = 3;
-            __pyx_t_50 = 0;
-            __pyx_v_d0 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_48, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_49, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_50, __pyx_pybuffernd_cpos.diminfo[2].strides));
-
-            /* "splitPixel.pyx":211
- *                 c1 = cpos[idx, 2, 1]
- *                 d0 = cpos[idx, 3, 0]
- *                 d1 = cpos[idx, 3, 1]             # <<<<<<<<<<<<<<
- *                 min0 = min(a0, b0, c0, d0)
- *                 max0 = max(a0, b0, c0, d0)
- */
-            __pyx_t_51 = __pyx_v_idx;
-            __pyx_t_52 = 3;
-            __pyx_t_53 = 1;
-            __pyx_v_d1 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_51, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_52, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_53, __pyx_pybuffernd_cpos.diminfo[2].strides));
-
-            /* "splitPixel.pyx":212
- *                 d0 = cpos[idx, 3, 0]
- *                 d1 = cpos[idx, 3, 1]
- *                 min0 = min(a0, b0, c0, d0)             # <<<<<<<<<<<<<<
- *                 max0 = max(a0, b0, c0, d0)
- *                 if max0>pos0_max:
- */
-            __pyx_t_19 = __pyx_v_b0;
-            __pyx_t_54 = __pyx_v_c0;
-            __pyx_t_55 = __pyx_v_d0;
-            __pyx_t_56 = __pyx_v_a0;
-            if (((__pyx_t_19 < __pyx_t_56) != 0)) {
-              __pyx_t_57 = __pyx_t_19;
-            } else {
-              __pyx_t_57 = __pyx_t_56;
-            }
-            __pyx_t_56 = __pyx_t_57;
-            if (((__pyx_t_54 < __pyx_t_56) != 0)) {
-              __pyx_t_57 = __pyx_t_54;
-            } else {
-              __pyx_t_57 = __pyx_t_56;
-            }
-            __pyx_t_56 = __pyx_t_57;
-            if (((__pyx_t_55 < __pyx_t_56) != 0)) {
-              __pyx_t_57 = __pyx_t_55;
-            } else {
-              __pyx_t_57 = __pyx_t_56;
-            }
-            __pyx_v_min0 = __pyx_t_57;
-
-            /* "splitPixel.pyx":213
- *                 d1 = cpos[idx, 3, 1]
- *                 min0 = min(a0, b0, c0, d0)
- *                 max0 = max(a0, b0, c0, d0)             # <<<<<<<<<<<<<<
- *                 if max0>pos0_max:
- *                     pos0_max = max0
- */
-            __pyx_t_57 = __pyx_v_b0;
-            __pyx_t_19 = __pyx_v_c0;
-            __pyx_t_54 = __pyx_v_d0;
-            __pyx_t_55 = __pyx_v_a0;
-            if (((__pyx_t_57 > __pyx_t_55) != 0)) {
-              __pyx_t_56 = __pyx_t_57;
-            } else {
-              __pyx_t_56 = __pyx_t_55;
-            }
-            __pyx_t_55 = __pyx_t_56;
-            if (((__pyx_t_19 > __pyx_t_55) != 0)) {
-              __pyx_t_56 = __pyx_t_19;
-            } else {
-              __pyx_t_56 = __pyx_t_55;
-            }
-            __pyx_t_55 = __pyx_t_56;
-            if (((__pyx_t_54 > __pyx_t_55) != 0)) {
-              __pyx_t_56 = __pyx_t_54;
-            } else {
-              __pyx_t_56 = __pyx_t_55;
-            }
-            __pyx_v_max0 = __pyx_t_56;
-
-            /* "splitPixel.pyx":214
- *                 min0 = min(a0, b0, c0, d0)
- *                 max0 = max(a0, b0, c0, d0)
- *                 if max0>pos0_max:             # <<<<<<<<<<<<<<
- *                     pos0_max = max0
- *                 if min0<pos0_min:
- */
-            __pyx_t_18 = ((__pyx_v_max0 > __pyx_v_pos0_max) != 0);
-            if (__pyx_t_18) {
-
-              /* "splitPixel.pyx":215
- *                 max0 = max(a0, b0, c0, d0)
- *                 if max0>pos0_max:
- *                     pos0_max = max0             # <<<<<<<<<<<<<<
- *                 if min0<pos0_min:
- *                     pos0_min = min0
- */
-              __pyx_v_pos0_max = __pyx_v_max0;
-              goto __pyx_L15;
-            }
-            __pyx_L15:;
-
-            /* "splitPixel.pyx":216
- *                 if max0>pos0_max:
- *                     pos0_max = max0
- *                 if min0<pos0_min:             # <<<<<<<<<<<<<<
- *                     pos0_min = min0
- *                 min1 = min(a1, b1, c1, d1)
- */
-            __pyx_t_18 = ((__pyx_v_min0 < __pyx_v_pos0_min) != 0);
-            if (__pyx_t_18) {
-
-              /* "splitPixel.pyx":217
- *                     pos0_max = max0
- *                 if min0<pos0_min:
- *                     pos0_min = min0             # <<<<<<<<<<<<<<
- *                 min1 = min(a1, b1, c1, d1)
- *                 max1 = max(a1, b1, c1, d1)
- */
-              __pyx_v_pos0_min = __pyx_v_min0;
-              goto __pyx_L16;
-            }
-            __pyx_L16:;
-
-            /* "splitPixel.pyx":218
- *                 if min0<pos0_min:
- *                     pos0_min = min0
- *                 min1 = min(a1, b1, c1, d1)             # <<<<<<<<<<<<<<
- *                 max1 = max(a1, b1, c1, d1)
- *                 if max1>pos1_max:
- */
-            __pyx_t_56 = __pyx_v_b1;
-            __pyx_t_57 = __pyx_v_c1;
-            __pyx_t_19 = __pyx_v_d1;
-            __pyx_t_54 = __pyx_v_a1;
-            if (((__pyx_t_56 < __pyx_t_54) != 0)) {
-              __pyx_t_55 = __pyx_t_56;
-            } else {
-              __pyx_t_55 = __pyx_t_54;
-            }
-            __pyx_t_54 = __pyx_t_55;
-            if (((__pyx_t_57 < __pyx_t_54) != 0)) {
-              __pyx_t_55 = __pyx_t_57;
-            } else {
-              __pyx_t_55 = __pyx_t_54;
-            }
-            __pyx_t_54 = __pyx_t_55;
-            if (((__pyx_t_19 < __pyx_t_54) != 0)) {
-              __pyx_t_55 = __pyx_t_19;
-            } else {
-              __pyx_t_55 = __pyx_t_54;
-            }
-            __pyx_v_min1 = __pyx_t_55;
-
-            /* "splitPixel.pyx":219
- *                     pos0_min = min0
- *                 min1 = min(a1, b1, c1, d1)
- *                 max1 = max(a1, b1, c1, d1)             # <<<<<<<<<<<<<<
- *                 if max1>pos1_max:
- *                     pos1_max = max1
- */
-            __pyx_t_55 = __pyx_v_b1;
-            __pyx_t_56 = __pyx_v_c1;
-            __pyx_t_57 = __pyx_v_d1;
-            __pyx_t_19 = __pyx_v_a1;
-            if (((__pyx_t_55 > __pyx_t_19) != 0)) {
-              __pyx_t_54 = __pyx_t_55;
-            } else {
-              __pyx_t_54 = __pyx_t_19;
-            }
-            __pyx_t_19 = __pyx_t_54;
-            if (((__pyx_t_56 > __pyx_t_19) != 0)) {
-              __pyx_t_54 = __pyx_t_56;
-            } else {
-              __pyx_t_54 = __pyx_t_19;
-            }
-            __pyx_t_19 = __pyx_t_54;
-            if (((__pyx_t_57 > __pyx_t_19) != 0)) {
-              __pyx_t_54 = __pyx_t_57;
-            } else {
-              __pyx_t_54 = __pyx_t_19;
-            }
-            __pyx_v_max1 = __pyx_t_54;
-
-            /* "splitPixel.pyx":220
- *                 min1 = min(a1, b1, c1, d1)
- *                 max1 = max(a1, b1, c1, d1)
- *                 if max1>pos1_max:             # <<<<<<<<<<<<<<
- *                     pos1_max = max1
- *                 if min1<pos1_min:
- */
-            __pyx_t_18 = ((__pyx_v_max1 > __pyx_v_pos1_max) != 0);
-            if (__pyx_t_18) {
-
-              /* "splitPixel.pyx":221
- *                 max1 = max(a1, b1, c1, d1)
- *                 if max1>pos1_max:
- *                     pos1_max = max1             # <<<<<<<<<<<<<<
- *                 if min1<pos1_min:
- *                     pos1_min = min1
- */
-              __pyx_v_pos1_max = __pyx_v_max1;
-              goto __pyx_L17;
-            }
-            __pyx_L17:;
-
-            /* "splitPixel.pyx":222
- *                 if max1>pos1_max:
- *                     pos1_max = max1
- *                 if min1<pos1_min:             # <<<<<<<<<<<<<<
- *                     pos1_min = min1
- * 
- */
-            __pyx_t_18 = ((__pyx_v_min1 < __pyx_v_pos1_min) != 0);
-            if (__pyx_t_18) {
-
-              /* "splitPixel.pyx":223
- *                     pos1_max = max1
- *                 if min1<pos1_min:
- *                     pos1_min = min1             # <<<<<<<<<<<<<<
- * 
- *             pos0_maxin = pos0_max
- */
-              __pyx_v_pos1_min = __pyx_v_min1;
-              goto __pyx_L18;
-            }
-            __pyx_L18:;
-            __pyx_L12_continue:;
-          }
-
-          /* "splitPixel.pyx":225
- *                     pos1_min = min1
- * 
- *             pos0_maxin = pos0_max             # <<<<<<<<<<<<<<
- *     if pos0_min<0:
- *         pos0_min=0
- */
-          __pyx_v_pos0_maxin = __pyx_v_pos0_max;
-        }
-
-        /* "splitPixel.pyx":195
- *         pos0_maxin = max(pos0Range)
- *     else:
- *         with nogil:             # <<<<<<<<<<<<<<
- *             for idx in range(size):
- *                 if (check_mask) and (cmask[idx]):
- */
-        /*finally:*/ {
-          int __pyx_why;
-          __pyx_why = 0; goto __pyx_L8;
-          __pyx_L7: __pyx_why = 4; goto __pyx_L8;
-          __pyx_L8:;
-          #ifdef WITH_THREAD
-          Py_BLOCK_THREADS
-          #endif
-          switch (__pyx_why) {
-            case 4: goto __pyx_L1_error;
-          }
-        }
-    }
   }
   __pyx_L5:;
 
-  /* "splitPixel.pyx":226
+  /* "splitPixelFullLUT_b.pyx":195
+ *             cmask = self.cmask
  * 
- *             pos0_maxin = pos0_max
- *     if pos0_min<0:             # <<<<<<<<<<<<<<
- *         pos0_min=0
- *     pos0_max = pos0_maxin * EPS32
- */
-  __pyx_t_18 = ((__pyx_v_pos0_min < 0.0) != 0);
-  if (__pyx_t_18) {
-
-    /* "splitPixel.pyx":227
- *             pos0_maxin = pos0_max
- *     if pos0_min<0:
- *         pos0_min=0             # <<<<<<<<<<<<<<
- *     pos0_max = pos0_maxin * EPS32
- * 
- */
-    __pyx_v_pos0_min = 0.0;
-    goto __pyx_L20;
-  }
-  __pyx_L20:;
-
-  /* "splitPixel.pyx":228
- *     if pos0_min<0:
- *         pos0_min=0
- *     pos0_max = pos0_maxin * EPS32             # <<<<<<<<<<<<<<
- * 
- *     if pos1Range is not None and len(pos1Range) > 1:
- */
-  __pyx_t_6 = PyFloat_FromDouble(__pyx_v_pos0_maxin); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_7 = __Pyx_GetModuleGlobalName(__pyx_n_s__EPS32); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_7);
-  __pyx_t_5 = PyNumber_Multiply(__pyx_t_6, __pyx_t_7); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_5);
-  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_54 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_54 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_v_pos0_max = __pyx_t_54;
-
-  /* "splitPixel.pyx":230
- *     pos0_max = pos0_maxin * EPS32
- * 
- *     if pos1Range is not None and len(pos1Range) > 1:             # <<<<<<<<<<<<<<
- *         pos1_min = min(pos1Range)
- *         pos1_maxin = max(pos1Range)
- */
-  __pyx_t_18 = (__pyx_v_pos1Range != Py_None);
-  if ((__pyx_t_18 != 0)) {
-    __pyx_t_17 = PyObject_Length(__pyx_v_pos1Range); if (unlikely(__pyx_t_17 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 230; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __pyx_t_15 = ((__pyx_t_17 > 1) != 0);
-    __pyx_t_3 = __pyx_t_15;
-  } else {
-    __pyx_t_3 = (__pyx_t_18 != 0);
-  }
-  if (__pyx_t_3) {
-
-    /* "splitPixel.pyx":231
- * 
- *     if pos1Range is not None and len(pos1Range) > 1:
- *         pos1_min = min(pos1Range)             # <<<<<<<<<<<<<<
- *         pos1_maxin = max(pos1Range)
- *         do_pos1 = True
- */
-    __pyx_t_5 = PyTuple_New(1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_5);
-    __Pyx_INCREF(__pyx_v_pos1Range);
-    PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_v_pos1Range);
-    __Pyx_GIVEREF(__pyx_v_pos1Range);
-    __pyx_t_7 = PyObject_Call(__pyx_builtin_min, ((PyObject *)__pyx_t_5), NULL); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_7);
-    __Pyx_DECREF(((PyObject *)__pyx_t_5)); __pyx_t_5 = 0;
-    __pyx_t_54 = __pyx_PyFloat_AsDouble(__pyx_t_7); if (unlikely((__pyx_t_54 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    __pyx_v_pos1_min = __pyx_t_54;
-
-    /* "splitPixel.pyx":232
- *     if pos1Range is not None and len(pos1Range) > 1:
- *         pos1_min = min(pos1Range)
- *         pos1_maxin = max(pos1Range)             # <<<<<<<<<<<<<<
- *         do_pos1 = True
- *     else:
- */
-    __pyx_t_7 = PyTuple_New(1); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 232; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_7);
-    __Pyx_INCREF(__pyx_v_pos1Range);
-    PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_v_pos1Range);
-    __Pyx_GIVEREF(__pyx_v_pos1Range);
-    __pyx_t_5 = PyObject_Call(__pyx_builtin_max, ((PyObject *)__pyx_t_7), NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 232; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_5);
-    __Pyx_DECREF(((PyObject *)__pyx_t_7)); __pyx_t_7 = 0;
-    __pyx_t_54 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_54 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 232; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_v_pos1_maxin = __pyx_t_54;
-
-    /* "splitPixel.pyx":233
- *         pos1_min = min(pos1Range)
- *         pos1_maxin = max(pos1Range)
- *         do_pos1 = True             # <<<<<<<<<<<<<<
- *     else:
- *         if min1==max1==0:
- */
-    __pyx_v_do_pos1 = 1;
-    goto __pyx_L21;
-  }
-  /*else*/ {
-
-    /* "splitPixel.pyx":235
- *         do_pos1 = True
- *     else:
- *         if min1==max1==0:             # <<<<<<<<<<<<<<
- *             pos1_min = pos[:, :, 1].min()
- *             pos1_maxin = pos[:, :, 1].max()
- */
-    __pyx_t_3 = (__pyx_v_min1 == __pyx_v_max1);
-    if (__pyx_t_3) {
-      __pyx_t_3 = (__pyx_v_max1 == 0.0);
-    }
-    __pyx_t_18 = (__pyx_t_3 != 0);
-    if (__pyx_t_18) {
-
-      /* "splitPixel.pyx":236
- *     else:
- *         if min1==max1==0:
- *             pos1_min = pos[:, :, 1].min()             # <<<<<<<<<<<<<<
- *             pos1_maxin = pos[:, :, 1].max()
- *     pos1_max = pos1_maxin * EPS32
- */
-      __pyx_t_5 = PyObject_GetItem(((PyObject *)__pyx_v_pos), ((PyObject *)__pyx_k_tuple_5)); if (!__pyx_t_5) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 236; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s__min); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 236; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_GOTREF(__pyx_t_7);
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_t_5 = PyObject_Call(__pyx_t_7, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 236; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_GOTREF(__pyx_t_5);
-      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-      __pyx_t_54 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_54 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 236; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_v_pos1_min = __pyx_t_54;
-
-      /* "splitPixel.pyx":237
- *         if min1==max1==0:
- *             pos1_min = pos[:, :, 1].min()
- *             pos1_maxin = pos[:, :, 1].max()             # <<<<<<<<<<<<<<
- *     pos1_max = pos1_maxin * EPS32
- *     dpos = (pos0_max - pos0_min) / (<  double > (bins))
- */
-      __pyx_t_5 = PyObject_GetItem(((PyObject *)__pyx_v_pos), ((PyObject *)__pyx_k_tuple_8)); if (!__pyx_t_5) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s__max); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_GOTREF(__pyx_t_7);
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_t_5 = PyObject_Call(__pyx_t_7, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_GOTREF(__pyx_t_5);
-      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-      __pyx_t_54 = __pyx_PyFloat_AsDouble(__pyx_t_5); if (unlikely((__pyx_t_54 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_v_pos1_maxin = __pyx_t_54;
-      goto __pyx_L22;
-    }
-    __pyx_L22:;
-  }
-  __pyx_L21:;
-
-  /* "splitPixel.pyx":238
- *             pos1_min = pos[:, :, 1].min()
- *             pos1_maxin = pos[:, :, 1].max()
- *     pos1_max = pos1_maxin * EPS32             # <<<<<<<<<<<<<<
- *     dpos = (pos0_max - pos0_min) / (<  double > (bins))
- * 
- */
-  __pyx_t_5 = PyFloat_FromDouble(__pyx_v_pos1_maxin); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 238; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_7 = __Pyx_GetModuleGlobalName(__pyx_n_s__EPS32); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 238; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_7);
-  __pyx_t_6 = PyNumber_Multiply(__pyx_t_5, __pyx_t_7); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 238; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_6);
-  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_54 = __pyx_PyFloat_AsDouble(__pyx_t_6); if (unlikely((__pyx_t_54 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 238; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __pyx_v_pos1_max = __pyx_t_54;
-
-  /* "splitPixel.pyx":239
- *             pos1_maxin = pos[:, :, 1].max()
- *     pos1_max = pos1_maxin * EPS32
- *     dpos = (pos0_max - pos0_min) / (<  double > (bins))             # <<<<<<<<<<<<<<
- * 
- *     outPos = numpy.linspace(pos0_min+0.5*dpos, pos0_maxin-0.5*dpos, bins)
- */
-  __pyx_v_dpos = ((__pyx_v_pos0_max - __pyx_v_pos0_min) / ((double)__pyx_v_bins));
-
-  /* "splitPixel.pyx":241
- *     dpos = (pos0_max - pos0_min) / (<  double > (bins))
- * 
- *     outPos = numpy.linspace(pos0_min+0.5*dpos, pos0_maxin-0.5*dpos, bins)             # <<<<<<<<<<<<<<
- * 
- *     if (dummy is not None) and (delta_dummy is not None):
- */
-  __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 241; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s__linspace); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 241; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_7);
-  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __pyx_t_6 = PyFloat_FromDouble((__pyx_v_pos0_min + (0.5 * __pyx_v_dpos))); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 241; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_5 = PyFloat_FromDouble((__pyx_v_pos0_maxin - (0.5 * __pyx_v_dpos))); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 241; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_4 = PyInt_FromLong(__pyx_v_bins); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 241; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_1 = PyTuple_New(3); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 241; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_6);
-  __Pyx_GIVEREF(__pyx_t_6);
-  PyTuple_SET_ITEM(__pyx_t_1, 1, __pyx_t_5);
-  __Pyx_GIVEREF(__pyx_t_5);
-  PyTuple_SET_ITEM(__pyx_t_1, 2, __pyx_t_4);
-  __Pyx_GIVEREF(__pyx_t_4);
-  __pyx_t_6 = 0;
-  __pyx_t_5 = 0;
-  __pyx_t_4 = 0;
-  __pyx_t_4 = PyObject_Call(__pyx_t_7, ((PyObject *)__pyx_t_1), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 241; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_1)); __pyx_t_1 = 0;
-  __pyx_v_outPos = __pyx_t_4;
-  __pyx_t_4 = 0;
-
-  /* "splitPixel.pyx":243
- *     outPos = numpy.linspace(pos0_min+0.5*dpos, pos0_maxin-0.5*dpos, bins)
- * 
- *     if (dummy is not None) and (delta_dummy is not None):             # <<<<<<<<<<<<<<
- *         check_dummy = True
- *         cdummy =  float(dummy)
- */
-  __pyx_t_18 = (__pyx_v_dummy != Py_None);
-  if ((__pyx_t_18 != 0)) {
-    __pyx_t_3 = (__pyx_v_delta_dummy != Py_None);
-    __pyx_t_15 = (__pyx_t_3 != 0);
-  } else {
-    __pyx_t_15 = (__pyx_t_18 != 0);
-  }
-  if (__pyx_t_15) {
-
-    /* "splitPixel.pyx":244
- * 
- *     if (dummy is not None) and (delta_dummy is not None):
- *         check_dummy = True             # <<<<<<<<<<<<<<
- *         cdummy =  float(dummy)
- *         cddummy =  float(delta_dummy)
- */
-    __pyx_v_check_dummy = 1;
-
-    /* "splitPixel.pyx":245
- *     if (dummy is not None) and (delta_dummy is not None):
- *         check_dummy = True
- *         cdummy =  float(dummy)             # <<<<<<<<<<<<<<
- *         cddummy =  float(delta_dummy)
- *     elif (dummy is not None):
- */
-    __pyx_t_54 = __Pyx_PyObject_AsDouble(__pyx_v_dummy); if (unlikely(__pyx_t_54 == ((double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __pyx_v_cdummy = __pyx_t_54;
-
-    /* "splitPixel.pyx":246
- *         check_dummy = True
- *         cdummy =  float(dummy)
- *         cddummy =  float(delta_dummy)             # <<<<<<<<<<<<<<
- *     elif (dummy is not None):
- *         check_dummy = True
- */
-    __pyx_t_54 = __Pyx_PyObject_AsDouble(__pyx_v_delta_dummy); if (unlikely(__pyx_t_54 == ((double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __pyx_v_cddummy = __pyx_t_54;
-    goto __pyx_L23;
-  }
-
-  /* "splitPixel.pyx":247
- *         cdummy =  float(dummy)
- *         cddummy =  float(delta_dummy)
- *     elif (dummy is not None):             # <<<<<<<<<<<<<<
- *         check_dummy = True
- *         cdummy = float(dummy)
- */
-  __pyx_t_15 = (__pyx_v_dummy != Py_None);
-  __pyx_t_18 = (__pyx_t_15 != 0);
-  if (__pyx_t_18) {
-
-    /* "splitPixel.pyx":248
- *         cddummy =  float(delta_dummy)
- *     elif (dummy is not None):
- *         check_dummy = True             # <<<<<<<<<<<<<<
- *         cdummy = float(dummy)
- *         cddummy = 0.0
- */
-    __pyx_v_check_dummy = 1;
-
-    /* "splitPixel.pyx":249
- *     elif (dummy is not None):
- *         check_dummy = True
- *         cdummy = float(dummy)             # <<<<<<<<<<<<<<
- *         cddummy = 0.0
- *     else:
- */
-    __pyx_t_54 = __Pyx_PyObject_AsDouble(__pyx_v_dummy); if (unlikely(__pyx_t_54 == ((double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 249; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __pyx_v_cdummy = __pyx_t_54;
-
-    /* "splitPixel.pyx":250
- *         check_dummy = True
- *         cdummy = float(dummy)
- *         cddummy = 0.0             # <<<<<<<<<<<<<<
- *     else:
- *         check_dummy = False
- */
-    __pyx_v_cddummy = 0.0;
-    goto __pyx_L23;
-  }
-  /*else*/ {
-
-    /* "splitPixel.pyx":252
- *         cddummy = 0.0
- *     else:
- *         check_dummy = False             # <<<<<<<<<<<<<<
- *         cdummy = 0.0
- *         cddummy = 0.0
- */
-    __pyx_v_check_dummy = 0;
-
-    /* "splitPixel.pyx":253
- *     else:
- *         check_dummy = False
- *         cdummy = 0.0             # <<<<<<<<<<<<<<
- *         cddummy = 0.0
- * 
- */
-    __pyx_v_cdummy = 0.0;
-
-    /* "splitPixel.pyx":254
- *         check_dummy = False
- *         cdummy = 0.0
- *         cddummy = 0.0             # <<<<<<<<<<<<<<
- * 
- *     if dark is not None:
- */
-    __pyx_v_cddummy = 0.0;
-  }
-  __pyx_L23:;
-
-  /* "splitPixel.pyx":256
- *         cddummy = 0.0
- * 
- *     if dark is not None:             # <<<<<<<<<<<<<<
- *         do_dark = True
- *         assert dark.size == size
- */
-  __pyx_t_18 = (__pyx_v_dark != Py_None);
-  __pyx_t_15 = (__pyx_t_18 != 0);
-  if (__pyx_t_15) {
-
-    /* "splitPixel.pyx":257
- * 
- *     if dark is not None:
- *         do_dark = True             # <<<<<<<<<<<<<<
- *         assert dark.size == size
- *         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
- */
-    __pyx_v_do_dark = 1;
-
-    /* "splitPixel.pyx":258
- *     if dark is not None:
- *         do_dark = True
- *         assert dark.size == size             # <<<<<<<<<<<<<<
- *         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
- *     if flat is not None:
- */
-    #ifndef CYTHON_WITHOUT_ASSERTIONS
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_dark, __pyx_n_s__size); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 258; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_1 = PyInt_FromLong(__pyx_v_size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 258; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_7 = PyObject_RichCompare(__pyx_t_4, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_7); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 258; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely(__pyx_t_15 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 258; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    if (unlikely(!__pyx_t_15)) {
-      PyErr_SetNone(PyExc_AssertionError);
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 258; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    }
-    #endif
-
-    /* "splitPixel.pyx":259
- *         do_dark = True
- *         assert dark.size == size
- *         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
- *     if flat is not None:
- *         do_flat = True
- */
-    __pyx_t_7 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 259; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_7);
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s__ascontiguousarray); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 259; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_v_dark, __pyx_n_s__ravel); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 259; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_7);
-    __pyx_t_4 = PyObject_Call(__pyx_t_7, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 259; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    __pyx_t_7 = PyTuple_New(1); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 259; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_7);
-    PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_4);
-    __Pyx_GIVEREF(__pyx_t_4);
-    __pyx_t_4 = 0;
-    __pyx_t_4 = PyDict_New(); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 259; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(((PyObject *)__pyx_t_4));
-    __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 259; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s__float64); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 259; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_6);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    if (PyDict_SetItem(__pyx_t_4, ((PyObject *)__pyx_n_s__dtype), __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 259; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_6 = PyObject_Call(__pyx_t_1, ((PyObject *)__pyx_t_7), ((PyObject *)__pyx_t_4)); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 259; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_6);
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __Pyx_DECREF(((PyObject *)__pyx_t_7)); __pyx_t_7 = 0;
-    __Pyx_DECREF(((PyObject *)__pyx_t_4)); __pyx_t_4 = 0;
-    __pyx_t_13 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_6);
-    if (unlikely(!__pyx_t_13.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 259; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_v_cdark = __pyx_t_13;
-    __pyx_t_13.memview = NULL;
-    __pyx_t_13.data = NULL;
-    goto __pyx_L24;
-  }
-  __pyx_L24:;
-
-  /* "splitPixel.pyx":260
- *         assert dark.size == size
- *         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
- *     if flat is not None:             # <<<<<<<<<<<<<<
- *         do_flat = True
- *         assert flat.size == size
- */
-  __pyx_t_15 = (__pyx_v_flat != Py_None);
-  __pyx_t_18 = (__pyx_t_15 != 0);
-  if (__pyx_t_18) {
-
-    /* "splitPixel.pyx":261
- *         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
- *     if flat is not None:
- *         do_flat = True             # <<<<<<<<<<<<<<
- *         assert flat.size == size
- *         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)
- */
-    __pyx_v_do_flat = 1;
-
-    /* "splitPixel.pyx":262
- *     if flat is not None:
- *         do_flat = True
- *         assert flat.size == size             # <<<<<<<<<<<<<<
- *         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)
- *     if polarization is not None:
- */
-    #ifndef CYTHON_WITHOUT_ASSERTIONS
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_flat, __pyx_n_s__size); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 262; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_4 = PyInt_FromLong(__pyx_v_size); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 262; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_7 = PyObject_RichCompare(__pyx_t_6, __pyx_t_4, Py_EQ); __Pyx_XGOTREF(__pyx_t_7); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 262; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_18 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely(__pyx_t_18 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 262; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    if (unlikely(!__pyx_t_18)) {
-      PyErr_SetNone(PyExc_AssertionError);
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 262; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    }
-    #endif
-
-    /* "splitPixel.pyx":263
- *         do_flat = True
- *         assert flat.size == size
- *         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
- *     if polarization is not None:
- *         do_polarization = True
- */
-    __pyx_t_7 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 263; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_7);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s__ascontiguousarray); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 263; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_v_flat, __pyx_n_s__ravel); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 263; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_7);
-    __pyx_t_6 = PyObject_Call(__pyx_t_7, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 263; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_6);
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    __pyx_t_7 = PyTuple_New(1); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 263; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_7);
-    PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_6);
-    __Pyx_GIVEREF(__pyx_t_6);
-    __pyx_t_6 = 0;
-    __pyx_t_6 = PyDict_New(); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 263; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(((PyObject *)__pyx_t_6));
-    __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 263; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s__float64); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 263; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_5);
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (PyDict_SetItem(__pyx_t_6, ((PyObject *)__pyx_n_s__dtype), __pyx_t_5) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 263; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = PyObject_Call(__pyx_t_4, ((PyObject *)__pyx_t_7), ((PyObject *)__pyx_t_6)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 263; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_5);
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __Pyx_DECREF(((PyObject *)__pyx_t_7)); __pyx_t_7 = 0;
-    __Pyx_DECREF(((PyObject *)__pyx_t_6)); __pyx_t_6 = 0;
-    __pyx_t_13 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_5);
-    if (unlikely(!__pyx_t_13.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 263; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_v_cflat = __pyx_t_13;
-    __pyx_t_13.memview = NULL;
-    __pyx_t_13.data = NULL;
-    goto __pyx_L25;
-  }
-  __pyx_L25:;
-
-  /* "splitPixel.pyx":264
- *         assert flat.size == size
- *         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)
- *     if polarization is not None:             # <<<<<<<<<<<<<<
- *         do_polarization = True
- *         assert polarization.size == size
- */
-  __pyx_t_18 = (__pyx_v_polarization != Py_None);
-  __pyx_t_15 = (__pyx_t_18 != 0);
-  if (__pyx_t_15) {
-
-    /* "splitPixel.pyx":265
- *         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)
- *     if polarization is not None:
- *         do_polarization = True             # <<<<<<<<<<<<<<
- *         assert polarization.size == size
- *         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)
- */
-    __pyx_v_do_polarization = 1;
-
-    /* "splitPixel.pyx":266
- *     if polarization is not None:
- *         do_polarization = True
- *         assert polarization.size == size             # <<<<<<<<<<<<<<
- *         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)
- *     if solidangle is not None:
- */
-    #ifndef CYTHON_WITHOUT_ASSERTIONS
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_polarization, __pyx_n_s__size); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 266; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_6 = PyInt_FromLong(__pyx_v_size); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 266; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_7 = PyObject_RichCompare(__pyx_t_5, __pyx_t_6, Py_EQ); __Pyx_XGOTREF(__pyx_t_7); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 266; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely(__pyx_t_15 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 266; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    if (unlikely(!__pyx_t_15)) {
-      PyErr_SetNone(PyExc_AssertionError);
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 266; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    }
-    #endif
-
-    /* "splitPixel.pyx":267
- *         do_polarization = True
- *         assert polarization.size == size
- *         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
- *     if solidangle is not None:
- *         do_solidangle = True
- */
-    __pyx_t_7 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 267; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_7);
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s__ascontiguousarray); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 267; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_6);
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_v_polarization, __pyx_n_s__ravel); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 267; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_7);
-    __pyx_t_5 = PyObject_Call(__pyx_t_7, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 267; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_5);
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    __pyx_t_7 = PyTuple_New(1); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 267; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_7);
-    PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_5);
-    __Pyx_GIVEREF(__pyx_t_5);
-    __pyx_t_5 = 0;
-    __pyx_t_5 = PyDict_New(); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 267; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(((PyObject *)__pyx_t_5));
-    __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 267; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s__float64); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 267; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (PyDict_SetItem(__pyx_t_5, ((PyObject *)__pyx_n_s__dtype), __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 267; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = PyObject_Call(__pyx_t_6, ((PyObject *)__pyx_t_7), ((PyObject *)__pyx_t_5)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 267; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __Pyx_DECREF(((PyObject *)__pyx_t_7)); __pyx_t_7 = 0;
-    __Pyx_DECREF(((PyObject *)__pyx_t_5)); __pyx_t_5 = 0;
-    __pyx_t_13 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_1);
-    if (unlikely(!__pyx_t_13.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 267; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_v_cpolarization = __pyx_t_13;
-    __pyx_t_13.memview = NULL;
-    __pyx_t_13.data = NULL;
-    goto __pyx_L26;
-  }
-  __pyx_L26:;
-
-  /* "splitPixel.pyx":268
- *         assert polarization.size == size
- *         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)
- *     if solidangle is not None:             # <<<<<<<<<<<<<<
- *         do_solidangle = True
- *         assert solidangle.size == size
- */
-  __pyx_t_15 = (__pyx_v_solidangle != Py_None);
-  __pyx_t_18 = (__pyx_t_15 != 0);
-  if (__pyx_t_18) {
-
-    /* "splitPixel.pyx":269
- *         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)
- *     if solidangle is not None:
- *         do_solidangle = True             # <<<<<<<<<<<<<<
- *         assert solidangle.size == size
- *         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)
- */
-    __pyx_v_do_solidangle = 1;
-
-    /* "splitPixel.pyx":270
- *     if solidangle is not None:
- *         do_solidangle = True
- *         assert solidangle.size == size             # <<<<<<<<<<<<<<
- *         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)
- * 
- */
-    #ifndef CYTHON_WITHOUT_ASSERTIONS
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_solidangle, __pyx_n_s__size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 270; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_5 = PyInt_FromLong(__pyx_v_size); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 270; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_7 = PyObject_RichCompare(__pyx_t_1, __pyx_t_5, Py_EQ); __Pyx_XGOTREF(__pyx_t_7); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 270; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_18 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely(__pyx_t_18 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 270; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    if (unlikely(!__pyx_t_18)) {
-      PyErr_SetNone(PyExc_AssertionError);
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 270; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    }
-    #endif
-
-    /* "splitPixel.pyx":271
- *         do_solidangle = True
- *         assert solidangle.size == size
- *         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
- * 
- *     with nogil:
- */
-    __pyx_t_7 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 271; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_7);
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s__ascontiguousarray); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 271; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_5);
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_v_solidangle, __pyx_n_s__ravel); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 271; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_7);
-    __pyx_t_1 = PyObject_Call(__pyx_t_7, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 271; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    __pyx_t_7 = PyTuple_New(1); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 271; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_7);
-    PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_1);
-    __Pyx_GIVEREF(__pyx_t_1);
-    __pyx_t_1 = 0;
-    __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 271; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(((PyObject *)__pyx_t_1));
-    __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 271; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s__float64); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 271; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    if (PyDict_SetItem(__pyx_t_1, ((PyObject *)__pyx_n_s__dtype), __pyx_t_4) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 271; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = PyObject_Call(__pyx_t_5, ((PyObject *)__pyx_t_7), ((PyObject *)__pyx_t_1)); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 271; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __Pyx_DECREF(((PyObject *)__pyx_t_7)); __pyx_t_7 = 0;
-    __Pyx_DECREF(((PyObject *)__pyx_t_1)); __pyx_t_1 = 0;
-    __pyx_t_13 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_4);
-    if (unlikely(!__pyx_t_13.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 271; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_v_csolidangle = __pyx_t_13;
-    __pyx_t_13.memview = NULL;
-    __pyx_t_13.data = NULL;
-    goto __pyx_L27;
-  }
-  __pyx_L27:;
-
-  /* "splitPixel.pyx":273
- *         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)
- * 
- *     with nogil:             # <<<<<<<<<<<<<<
- *         for idx in range(size):
+ *         with nogil:             # <<<<<<<<<<<<<<
+ *             for idx in range(size):
  * 
  */
   {
@@ -4697,855 +3978,368 @@ static PyObject *__pyx_pf_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *__pyx
       #endif
       /*try:*/ {
 
-        /* "splitPixel.pyx":274
+        /* "splitPixelFullLUT_b.pyx":196
  * 
- *     with nogil:
- *         for idx in range(size):             # <<<<<<<<<<<<<<
+ *         with nogil:
+ *             for idx in range(size):             # <<<<<<<<<<<<<<
  * 
- *             if (check_mask) and (cmask[idx]):
+ *                 if (check_mask) and (cmask[idx]):
  */
-        __pyx_t_2 = __pyx_v_size;
-        for (__pyx_t_20 = 0; __pyx_t_20 < __pyx_t_2; __pyx_t_20+=1) {
-          __pyx_v_idx = __pyx_t_20;
+        __pyx_t_9 = __pyx_v_size;
+        for (__pyx_t_16 = 0; __pyx_t_16 < __pyx_t_9; __pyx_t_16+=1) {
+          __pyx_v_idx = __pyx_t_16;
 
-          /* "splitPixel.pyx":276
- *         for idx in range(size):
+          /* "splitPixelFullLUT_b.pyx":198
+ *             for idx in range(size):
  * 
- *             if (check_mask) and (cmask[idx]):             # <<<<<<<<<<<<<<
- *                 continue
- * 
- */
-          __pyx_t_18 = __pyx_v_check_mask;
-          if (__pyx_t_18) {
-            if (unlikely(!__pyx_v_cmask.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("cmask"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 276; __pyx_clineno = __LINE__; goto __pyx_L29;} }
-            __pyx_t_58 = __pyx_v_idx;
-            __pyx_t_15 = ((*((__pyx_t_5numpy_int8_t *) ( /* dim=0 */ (__pyx_v_cmask.data + __pyx_t_58 * __pyx_v_cmask.strides[0]) ))) != 0);
-          } else {
-            __pyx_t_15 = __pyx_t_18;
-          }
-          if (__pyx_t_15) {
-
-            /* "splitPixel.pyx":277
- * 
- *             if (check_mask) and (cmask[idx]):
- *                 continue             # <<<<<<<<<<<<<<
- * 
- *             data = cdata[idx]
- */
-            goto __pyx_L31_continue;
-            goto __pyx_L33;
-          }
-          __pyx_L33:;
-
-          /* "splitPixel.pyx":279
- *                 continue
- * 
- *             data = cdata[idx]             # <<<<<<<<<<<<<<
- *             if check_dummy and ( (cddummy==0.0 and data==cdummy) or (cddummy!=0.0 and fabs(data-cdummy)<=cddummy)):
- *                 continue
- */
-          __pyx_t_59 = __pyx_v_idx;
-          __pyx_v_data = (*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cdata.rcbuffer->pybuffer.buf, __pyx_t_59, __pyx_pybuffernd_cdata.diminfo[0].strides));
-
-          /* "splitPixel.pyx":280
- * 
- *             data = cdata[idx]
- *             if check_dummy and ( (cddummy==0.0 and data==cdummy) or (cddummy!=0.0 and fabs(data-cdummy)<=cddummy)):             # <<<<<<<<<<<<<<
- *                 continue
- * 
- */
-          if ((__pyx_v_check_dummy != 0)) {
-            __pyx_t_15 = ((__pyx_v_cddummy == 0.0) != 0);
-            if (__pyx_t_15) {
-              __pyx_t_18 = ((__pyx_v_data == __pyx_v_cdummy) != 0);
-              __pyx_t_3 = __pyx_t_18;
-            } else {
-              __pyx_t_3 = __pyx_t_15;
-            }
-            if (!__pyx_t_3) {
-              __pyx_t_15 = ((__pyx_v_cddummy != 0.0) != 0);
-              if (__pyx_t_15) {
-                __pyx_t_18 = ((fabs((__pyx_v_data - __pyx_v_cdummy)) <= __pyx_v_cddummy) != 0);
-                __pyx_t_60 = __pyx_t_18;
-              } else {
-                __pyx_t_60 = __pyx_t_15;
-              }
-              __pyx_t_15 = __pyx_t_60;
-            } else {
-              __pyx_t_15 = __pyx_t_3;
-            }
-            __pyx_t_3 = __pyx_t_15;
-          } else {
-            __pyx_t_3 = (__pyx_v_check_dummy != 0);
-          }
-          if (__pyx_t_3) {
-
-            /* "splitPixel.pyx":281
- *             data = cdata[idx]
- *             if check_dummy and ( (cddummy==0.0 and data==cdummy) or (cddummy!=0.0 and fabs(data-cdummy)<=cddummy)):
- *                 continue             # <<<<<<<<<<<<<<
- * 
- *             # a0, b0, c0 and d0 are in bin number (2theta, q or r)
- */
-            goto __pyx_L31_continue;
-            goto __pyx_L34;
-          }
-          __pyx_L34:;
-
-          /* "splitPixel.pyx":285
- *             # a0, b0, c0 and d0 are in bin number (2theta, q or r)
- *             # a1, b1, c1 and d1 are in Chi angle in radians ...
- *             a0 = getBinNr(cpos[idx, 0, 0], pos0_min, dpos)             # <<<<<<<<<<<<<<
- *             a1 = <  double > cpos[idx, 0, 1]
- *             b0 = getBinNr(cpos[idx, 1, 0], pos0_min, dpos)
- */
-          __pyx_t_61 = __pyx_v_idx;
-          __pyx_t_62 = 0;
-          __pyx_t_63 = 0;
-          __pyx_v_a0 = __pyx_f_10splitPixel_getBinNr((*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_61, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_62, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_63, __pyx_pybuffernd_cpos.diminfo[2].strides)), __pyx_v_pos0_min, __pyx_v_dpos);
-
-          /* "splitPixel.pyx":286
- *             # a1, b1, c1 and d1 are in Chi angle in radians ...
- *             a0 = getBinNr(cpos[idx, 0, 0], pos0_min, dpos)
- *             a1 = <  double > cpos[idx, 0, 1]             # <<<<<<<<<<<<<<
- *             b0 = getBinNr(cpos[idx, 1, 0], pos0_min, dpos)
- *             b1 = <  double > cpos[idx, 1, 1]
- */
-          __pyx_t_64 = __pyx_v_idx;
-          __pyx_t_65 = 0;
-          __pyx_t_66 = 1;
-          __pyx_v_a1 = ((double)(*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_64, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_65, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_66, __pyx_pybuffernd_cpos.diminfo[2].strides)));
-
-          /* "splitPixel.pyx":287
- *             a0 = getBinNr(cpos[idx, 0, 0], pos0_min, dpos)
- *             a1 = <  double > cpos[idx, 0, 1]
- *             b0 = getBinNr(cpos[idx, 1, 0], pos0_min, dpos)             # <<<<<<<<<<<<<<
- *             b1 = <  double > cpos[idx, 1, 1]
- *             c0 = getBinNr(cpos[idx, 2, 0], pos0_min, dpos)
- */
-          __pyx_t_67 = __pyx_v_idx;
-          __pyx_t_68 = 1;
-          __pyx_t_69 = 0;
-          __pyx_v_b0 = __pyx_f_10splitPixel_getBinNr((*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_67, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_68, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_69, __pyx_pybuffernd_cpos.diminfo[2].strides)), __pyx_v_pos0_min, __pyx_v_dpos);
-
-          /* "splitPixel.pyx":288
- *             a1 = <  double > cpos[idx, 0, 1]
- *             b0 = getBinNr(cpos[idx, 1, 0], pos0_min, dpos)
- *             b1 = <  double > cpos[idx, 1, 1]             # <<<<<<<<<<<<<<
- *             c0 = getBinNr(cpos[idx, 2, 0], pos0_min, dpos)
- *             c1 = <  double > cpos[idx, 2, 1]
- */
-          __pyx_t_70 = __pyx_v_idx;
-          __pyx_t_71 = 1;
-          __pyx_t_72 = 1;
-          __pyx_v_b1 = ((double)(*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_70, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_71, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_72, __pyx_pybuffernd_cpos.diminfo[2].strides)));
-
-          /* "splitPixel.pyx":289
- *             b0 = getBinNr(cpos[idx, 1, 0], pos0_min, dpos)
- *             b1 = <  double > cpos[idx, 1, 1]
- *             c0 = getBinNr(cpos[idx, 2, 0], pos0_min, dpos)             # <<<<<<<<<<<<<<
- *             c1 = <  double > cpos[idx, 2, 1]
- *             d0 = getBinNr(cpos[idx, 3, 0], pos0_min, dpos)
- */
-          __pyx_t_73 = __pyx_v_idx;
-          __pyx_t_74 = 2;
-          __pyx_t_75 = 0;
-          __pyx_v_c0 = __pyx_f_10splitPixel_getBinNr((*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_73, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_74, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_75, __pyx_pybuffernd_cpos.diminfo[2].strides)), __pyx_v_pos0_min, __pyx_v_dpos);
-
-          /* "splitPixel.pyx":290
- *             b1 = <  double > cpos[idx, 1, 1]
- *             c0 = getBinNr(cpos[idx, 2, 0], pos0_min, dpos)
- *             c1 = <  double > cpos[idx, 2, 1]             # <<<<<<<<<<<<<<
- *             d0 = getBinNr(cpos[idx, 3, 0], pos0_min, dpos)
- *             d1 = <  double > cpos[idx, 3, 1]
- */
-          __pyx_t_76 = __pyx_v_idx;
-          __pyx_t_77 = 2;
-          __pyx_t_78 = 1;
-          __pyx_v_c1 = ((double)(*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_76, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_77, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_78, __pyx_pybuffernd_cpos.diminfo[2].strides)));
-
-          /* "splitPixel.pyx":291
- *             c0 = getBinNr(cpos[idx, 2, 0], pos0_min, dpos)
- *             c1 = <  double > cpos[idx, 2, 1]
- *             d0 = getBinNr(cpos[idx, 3, 0], pos0_min, dpos)             # <<<<<<<<<<<<<<
- *             d1 = <  double > cpos[idx, 3, 1]
- *             min0 = min(a0, b0, c0, d0)
- */
-          __pyx_t_79 = __pyx_v_idx;
-          __pyx_t_80 = 3;
-          __pyx_t_81 = 0;
-          __pyx_v_d0 = __pyx_f_10splitPixel_getBinNr((*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_79, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_80, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_81, __pyx_pybuffernd_cpos.diminfo[2].strides)), __pyx_v_pos0_min, __pyx_v_dpos);
-
-          /* "splitPixel.pyx":292
- *             c1 = <  double > cpos[idx, 2, 1]
- *             d0 = getBinNr(cpos[idx, 3, 0], pos0_min, dpos)
- *             d1 = <  double > cpos[idx, 3, 1]             # <<<<<<<<<<<<<<
- *             min0 = min(a0, b0, c0, d0)
- *             max0 = max(a0, b0, c0, d0)
- */
-          __pyx_t_82 = __pyx_v_idx;
-          __pyx_t_83 = 3;
-          __pyx_t_84 = 1;
-          __pyx_v_d1 = ((double)(*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_82, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_83, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_84, __pyx_pybuffernd_cpos.diminfo[2].strides)));
-
-          /* "splitPixel.pyx":293
- *             d0 = getBinNr(cpos[idx, 3, 0], pos0_min, dpos)
- *             d1 = <  double > cpos[idx, 3, 1]
- *             min0 = min(a0, b0, c0, d0)             # <<<<<<<<<<<<<<
- *             max0 = max(a0, b0, c0, d0)
- * 
- */
-          __pyx_t_54 = __pyx_v_b0;
-          __pyx_t_55 = __pyx_v_c0;
-          __pyx_t_56 = __pyx_v_d0;
-          __pyx_t_57 = __pyx_v_a0;
-          if (((__pyx_t_54 < __pyx_t_57) != 0)) {
-            __pyx_t_19 = __pyx_t_54;
-          } else {
-            __pyx_t_19 = __pyx_t_57;
-          }
-          __pyx_t_57 = __pyx_t_19;
-          if (((__pyx_t_55 < __pyx_t_57) != 0)) {
-            __pyx_t_19 = __pyx_t_55;
-          } else {
-            __pyx_t_19 = __pyx_t_57;
-          }
-          __pyx_t_57 = __pyx_t_19;
-          if (((__pyx_t_56 < __pyx_t_57) != 0)) {
-            __pyx_t_19 = __pyx_t_56;
-          } else {
-            __pyx_t_19 = __pyx_t_57;
-          }
-          __pyx_v_min0 = __pyx_t_19;
-
-          /* "splitPixel.pyx":294
- *             d1 = <  double > cpos[idx, 3, 1]
- *             min0 = min(a0, b0, c0, d0)
- *             max0 = max(a0, b0, c0, d0)             # <<<<<<<<<<<<<<
- * 
- *             if (max0<0) or (min0 >=bins):
- */
-          __pyx_t_19 = __pyx_v_b0;
-          __pyx_t_54 = __pyx_v_c0;
-          __pyx_t_55 = __pyx_v_d0;
-          __pyx_t_56 = __pyx_v_a0;
-          if (((__pyx_t_19 > __pyx_t_56) != 0)) {
-            __pyx_t_57 = __pyx_t_19;
-          } else {
-            __pyx_t_57 = __pyx_t_56;
-          }
-          __pyx_t_56 = __pyx_t_57;
-          if (((__pyx_t_54 > __pyx_t_56) != 0)) {
-            __pyx_t_57 = __pyx_t_54;
-          } else {
-            __pyx_t_57 = __pyx_t_56;
-          }
-          __pyx_t_56 = __pyx_t_57;
-          if (((__pyx_t_55 > __pyx_t_56) != 0)) {
-            __pyx_t_57 = __pyx_t_55;
-          } else {
-            __pyx_t_57 = __pyx_t_56;
-          }
-          __pyx_v_max0 = __pyx_t_57;
-
-          /* "splitPixel.pyx":296
- *             max0 = max(a0, b0, c0, d0)
- * 
- *             if (max0<0) or (min0 >=bins):             # <<<<<<<<<<<<<<
- *                 continue
- *             if check_pos1:
- */
-          __pyx_t_3 = ((__pyx_v_max0 < 0.0) != 0);
-          if (!__pyx_t_3) {
-            __pyx_t_15 = ((__pyx_v_min0 >= __pyx_v_bins) != 0);
-            __pyx_t_60 = __pyx_t_15;
-          } else {
-            __pyx_t_60 = __pyx_t_3;
-          }
-          if (__pyx_t_60) {
-
-            /* "splitPixel.pyx":297
- * 
- *             if (max0<0) or (min0 >=bins):
- *                 continue             # <<<<<<<<<<<<<<
- *             if check_pos1:
- *                 min1 = min(a1, b1, c1, d1)
- */
-            goto __pyx_L31_continue;
-            goto __pyx_L35;
-          }
-          __pyx_L35:;
-
-          /* "splitPixel.pyx":298
- *             if (max0<0) or (min0 >=bins):
- *                 continue
- *             if check_pos1:             # <<<<<<<<<<<<<<
- *                 min1 = min(a1, b1, c1, d1)
- *                 max1 = max(a1, b1, c1, d1)
- */
-          __pyx_t_60 = (__pyx_v_check_pos1 != 0);
-          if (__pyx_t_60) {
-
-            /* "splitPixel.pyx":299
- *                 continue
- *             if check_pos1:
- *                 min1 = min(a1, b1, c1, d1)             # <<<<<<<<<<<<<<
- *                 max1 = max(a1, b1, c1, d1)
- *                 if (max1<pos1_min) or (min1 > pos1_maxin):
- */
-            __pyx_t_57 = __pyx_v_b1;
-            __pyx_t_19 = __pyx_v_c1;
-            __pyx_t_54 = __pyx_v_d1;
-            __pyx_t_55 = __pyx_v_a1;
-            if (((__pyx_t_57 < __pyx_t_55) != 0)) {
-              __pyx_t_56 = __pyx_t_57;
-            } else {
-              __pyx_t_56 = __pyx_t_55;
-            }
-            __pyx_t_55 = __pyx_t_56;
-            if (((__pyx_t_19 < __pyx_t_55) != 0)) {
-              __pyx_t_56 = __pyx_t_19;
-            } else {
-              __pyx_t_56 = __pyx_t_55;
-            }
-            __pyx_t_55 = __pyx_t_56;
-            if (((__pyx_t_54 < __pyx_t_55) != 0)) {
-              __pyx_t_56 = __pyx_t_54;
-            } else {
-              __pyx_t_56 = __pyx_t_55;
-            }
-            __pyx_v_min1 = __pyx_t_56;
-
-            /* "splitPixel.pyx":300
- *             if check_pos1:
- *                 min1 = min(a1, b1, c1, d1)
- *                 max1 = max(a1, b1, c1, d1)             # <<<<<<<<<<<<<<
- *                 if (max1<pos1_min) or (min1 > pos1_maxin):
+ *                 if (check_mask) and (cmask[idx]):             # <<<<<<<<<<<<<<
  *                     continue
+ * 
  */
-            __pyx_t_56 = __pyx_v_b1;
-            __pyx_t_57 = __pyx_v_c1;
-            __pyx_t_19 = __pyx_v_d1;
-            __pyx_t_54 = __pyx_v_a1;
-            if (((__pyx_t_56 > __pyx_t_54) != 0)) {
-              __pyx_t_55 = __pyx_t_56;
-            } else {
-              __pyx_t_55 = __pyx_t_54;
-            }
-            __pyx_t_54 = __pyx_t_55;
-            if (((__pyx_t_57 > __pyx_t_54) != 0)) {
-              __pyx_t_55 = __pyx_t_57;
-            } else {
-              __pyx_t_55 = __pyx_t_54;
-            }
-            __pyx_t_54 = __pyx_t_55;
-            if (((__pyx_t_19 > __pyx_t_54) != 0)) {
-              __pyx_t_55 = __pyx_t_19;
-            } else {
-              __pyx_t_55 = __pyx_t_54;
-            }
-            __pyx_v_max1 = __pyx_t_55;
+          __pyx_t_12 = __pyx_v_check_mask;
+          if (__pyx_t_12) {
+            if (unlikely(!__pyx_v_cmask.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("cmask"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 198; __pyx_clineno = __LINE__; goto __pyx_L7;} }
+            __pyx_t_17 = __pyx_v_idx;
+            __pyx_t_13 = ((*((__pyx_t_5numpy_int8_t *) ( /* dim=0 */ (__pyx_v_cmask.data + __pyx_t_17 * __pyx_v_cmask.strides[0]) ))) != 0);
+          } else {
+            __pyx_t_13 = __pyx_t_12;
+          }
+          if (__pyx_t_13) {
 
-            /* "splitPixel.pyx":301
- *                 min1 = min(a1, b1, c1, d1)
- *                 max1 = max(a1, b1, c1, d1)
- *                 if (max1<pos1_min) or (min1 > pos1_maxin):             # <<<<<<<<<<<<<<
- *                     continue
- *              #needs to be addressed in another way
- */
-            __pyx_t_60 = ((__pyx_v_max1 < __pyx_v_pos1_min) != 0);
-            if (!__pyx_t_60) {
-              __pyx_t_3 = ((__pyx_v_min1 > __pyx_v_pos1_maxin) != 0);
-              __pyx_t_15 = __pyx_t_3;
-            } else {
-              __pyx_t_15 = __pyx_t_60;
-            }
-            if (__pyx_t_15) {
-
-              /* "splitPixel.pyx":302
- *                 max1 = max(a1, b1, c1, d1)
- *                 if (max1<pos1_min) or (min1 > pos1_maxin):
+            /* "splitPixelFullLUT_b.pyx":199
+ * 
+ *                 if (check_mask) and (cmask[idx]):
  *                     continue             # <<<<<<<<<<<<<<
- *              #needs to be addressed in another way
- * #            if min0 < 0:
+ * 
+ *                 A0 = getBinNr(< double > cpos[idx, 0, 0], pos0_min, delta)
  */
-              goto __pyx_L31_continue;
-              goto __pyx_L37;
+            goto __pyx_L9_continue;
+            goto __pyx_L11;
+          }
+          __pyx_L11:;
+
+          /* "splitPixelFullLUT_b.pyx":201
+ *                     continue
+ * 
+ *                 A0 = getBinNr(< double > cpos[idx, 0, 0], pos0_min, delta)             # <<<<<<<<<<<<<<
+ *                 A1 = < double > cpos[idx, 0, 1]
+ *                 B0 = getBinNr(< double > cpos[idx, 1, 0], pos0_min, delta)
+ */
+          __pyx_t_18 = __pyx_v_idx;
+          __pyx_t_19 = 0;
+          __pyx_t_20 = 0;
+          __pyx_v_A0 = __pyx_f_19splitPixelFullLUT_b_getBinNr(((double)(*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_18, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_19, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_20, __pyx_pybuffernd_cpos.diminfo[2].strides))), __pyx_v_pos0_min, __pyx_v_delta);
+
+          /* "splitPixelFullLUT_b.pyx":202
+ * 
+ *                 A0 = getBinNr(< double > cpos[idx, 0, 0], pos0_min, delta)
+ *                 A1 = < double > cpos[idx, 0, 1]             # <<<<<<<<<<<<<<
+ *                 B0 = getBinNr(< double > cpos[idx, 1, 0], pos0_min, delta)
+ *                 B1 = < double > cpos[idx, 1, 1]
+ */
+          __pyx_t_21 = __pyx_v_idx;
+          __pyx_t_22 = 0;
+          __pyx_t_23 = 1;
+          __pyx_v_A1 = ((double)(*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_21, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_22, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_23, __pyx_pybuffernd_cpos.diminfo[2].strides)));
+
+          /* "splitPixelFullLUT_b.pyx":203
+ *                 A0 = getBinNr(< double > cpos[idx, 0, 0], pos0_min, delta)
+ *                 A1 = < double > cpos[idx, 0, 1]
+ *                 B0 = getBinNr(< double > cpos[idx, 1, 0], pos0_min, delta)             # <<<<<<<<<<<<<<
+ *                 B1 = < double > cpos[idx, 1, 1]
+ *                 C0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, delta)
+ */
+          __pyx_t_24 = __pyx_v_idx;
+          __pyx_t_25 = 1;
+          __pyx_t_26 = 0;
+          __pyx_v_B0 = __pyx_f_19splitPixelFullLUT_b_getBinNr(((double)(*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_24, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_25, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_26, __pyx_pybuffernd_cpos.diminfo[2].strides))), __pyx_v_pos0_min, __pyx_v_delta);
+
+          /* "splitPixelFullLUT_b.pyx":204
+ *                 A1 = < double > cpos[idx, 0, 1]
+ *                 B0 = getBinNr(< double > cpos[idx, 1, 0], pos0_min, delta)
+ *                 B1 = < double > cpos[idx, 1, 1]             # <<<<<<<<<<<<<<
+ *                 C0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, delta)
+ *                 C1 = < double > cpos[idx, 2, 1]
+ */
+          __pyx_t_27 = __pyx_v_idx;
+          __pyx_t_28 = 1;
+          __pyx_t_29 = 1;
+          __pyx_v_B1 = ((double)(*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_27, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_28, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_29, __pyx_pybuffernd_cpos.diminfo[2].strides)));
+
+          /* "splitPixelFullLUT_b.pyx":205
+ *                 B0 = getBinNr(< double > cpos[idx, 1, 0], pos0_min, delta)
+ *                 B1 = < double > cpos[idx, 1, 1]
+ *                 C0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, delta)             # <<<<<<<<<<<<<<
+ *                 C1 = < double > cpos[idx, 2, 1]
+ *                 D0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, delta)
+ */
+          __pyx_t_30 = __pyx_v_idx;
+          __pyx_t_31 = 2;
+          __pyx_t_32 = 0;
+          __pyx_v_C0 = __pyx_f_19splitPixelFullLUT_b_getBinNr(((double)(*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_30, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_31, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_32, __pyx_pybuffernd_cpos.diminfo[2].strides))), __pyx_v_pos0_min, __pyx_v_delta);
+
+          /* "splitPixelFullLUT_b.pyx":206
+ *                 B1 = < double > cpos[idx, 1, 1]
+ *                 C0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, delta)
+ *                 C1 = < double > cpos[idx, 2, 1]             # <<<<<<<<<<<<<<
+ *                 D0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, delta)
+ *                 D1 = < double > cpos[idx, 3, 1]
+ */
+          __pyx_t_33 = __pyx_v_idx;
+          __pyx_t_34 = 2;
+          __pyx_t_35 = 1;
+          __pyx_v_C1 = ((double)(*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_33, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_34, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_35, __pyx_pybuffernd_cpos.diminfo[2].strides)));
+
+          /* "splitPixelFullLUT_b.pyx":207
+ *                 C0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, delta)
+ *                 C1 = < double > cpos[idx, 2, 1]
+ *                 D0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, delta)             # <<<<<<<<<<<<<<
+ *                 D1 = < double > cpos[idx, 3, 1]
+ * 
+ */
+          __pyx_t_36 = __pyx_v_idx;
+          __pyx_t_37 = 3;
+          __pyx_t_38 = 0;
+          __pyx_v_D0 = __pyx_f_19splitPixelFullLUT_b_getBinNr(((double)(*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_36, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_37, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_38, __pyx_pybuffernd_cpos.diminfo[2].strides))), __pyx_v_pos0_min, __pyx_v_delta);
+
+          /* "splitPixelFullLUT_b.pyx":208
+ *                 C1 = < double > cpos[idx, 2, 1]
+ *                 D0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, delta)
+ *                 D1 = < double > cpos[idx, 3, 1]             # <<<<<<<<<<<<<<
+ * 
+ *                 min0 = min(A0, B0, C0, D0)
+ */
+          __pyx_t_39 = __pyx_v_idx;
+          __pyx_t_40 = 3;
+          __pyx_t_41 = 1;
+          __pyx_v_D1 = ((double)(*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_39, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_40, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_41, __pyx_pybuffernd_cpos.diminfo[2].strides)));
+
+          /* "splitPixelFullLUT_b.pyx":210
+ *                 D1 = < double > cpos[idx, 3, 1]
+ * 
+ *                 min0 = min(A0, B0, C0, D0)             # <<<<<<<<<<<<<<
+ *                 max0 = max(A0, B0, C0, D0)
+ *                 if (max0<0) or (min0 >=bins):
+ */
+          __pyx_t_14 = __pyx_v_B0;
+          __pyx_t_42 = __pyx_v_C0;
+          __pyx_t_43 = __pyx_v_D0;
+          __pyx_t_44 = __pyx_v_A0;
+          if (((__pyx_t_14 < __pyx_t_44) != 0)) {
+            __pyx_t_45 = __pyx_t_14;
+          } else {
+            __pyx_t_45 = __pyx_t_44;
+          }
+          __pyx_t_44 = __pyx_t_45;
+          if (((__pyx_t_42 < __pyx_t_44) != 0)) {
+            __pyx_t_45 = __pyx_t_42;
+          } else {
+            __pyx_t_45 = __pyx_t_44;
+          }
+          __pyx_t_44 = __pyx_t_45;
+          if (((__pyx_t_43 < __pyx_t_44) != 0)) {
+            __pyx_t_45 = __pyx_t_43;
+          } else {
+            __pyx_t_45 = __pyx_t_44;
+          }
+          __pyx_v_min0 = __pyx_t_45;
+
+          /* "splitPixelFullLUT_b.pyx":211
+ * 
+ *                 min0 = min(A0, B0, C0, D0)
+ *                 max0 = max(A0, B0, C0, D0)             # <<<<<<<<<<<<<<
+ *                 if (max0<0) or (min0 >=bins):
+ *                     continue
+ */
+          __pyx_t_45 = __pyx_v_B0;
+          __pyx_t_14 = __pyx_v_C0;
+          __pyx_t_42 = __pyx_v_D0;
+          __pyx_t_43 = __pyx_v_A0;
+          if (((__pyx_t_45 > __pyx_t_43) != 0)) {
+            __pyx_t_44 = __pyx_t_45;
+          } else {
+            __pyx_t_44 = __pyx_t_43;
+          }
+          __pyx_t_43 = __pyx_t_44;
+          if (((__pyx_t_14 > __pyx_t_43) != 0)) {
+            __pyx_t_44 = __pyx_t_14;
+          } else {
+            __pyx_t_44 = __pyx_t_43;
+          }
+          __pyx_t_43 = __pyx_t_44;
+          if (((__pyx_t_42 > __pyx_t_43) != 0)) {
+            __pyx_t_44 = __pyx_t_42;
+          } else {
+            __pyx_t_44 = __pyx_t_43;
+          }
+          __pyx_v_max0 = __pyx_t_44;
+
+          /* "splitPixelFullLUT_b.pyx":212
+ *                 min0 = min(A0, B0, C0, D0)
+ *                 max0 = max(A0, B0, C0, D0)
+ *                 if (max0<0) or (min0 >=bins):             # <<<<<<<<<<<<<<
+ *                     continue
+ *                 if check_pos1:
+ */
+          __pyx_t_13 = ((__pyx_v_max0 < 0.0) != 0);
+          if (!__pyx_t_13) {
+            __pyx_t_12 = ((__pyx_v_min0 >= __pyx_v_bins) != 0);
+            __pyx_t_10 = __pyx_t_12;
+          } else {
+            __pyx_t_10 = __pyx_t_13;
+          }
+          if (__pyx_t_10) {
+
+            /* "splitPixelFullLUT_b.pyx":213
+ *                 max0 = max(A0, B0, C0, D0)
+ *                 if (max0<0) or (min0 >=bins):
+ *                     continue             # <<<<<<<<<<<<<<
+ *                 if check_pos1:
+ *                     if (max(A1, B1, C1, D1) < pos1_min) or (min(A1, B1, C1, D1) > pos1_maxin):
+ */
+            goto __pyx_L9_continue;
+            goto __pyx_L12;
+          }
+          __pyx_L12:;
+
+          /* "splitPixelFullLUT_b.pyx":214
+ *                 if (max0<0) or (min0 >=bins):
+ *                     continue
+ *                 if check_pos1:             # <<<<<<<<<<<<<<
+ *                     if (max(A1, B1, C1, D1) < pos1_min) or (min(A1, B1, C1, D1) > pos1_maxin):
+ *                         continue
+ */
+          __pyx_t_10 = (__pyx_v_check_pos1 != 0);
+          if (__pyx_t_10) {
+
+            /* "splitPixelFullLUT_b.pyx":215
+ *                     continue
+ *                 if check_pos1:
+ *                     if (max(A1, B1, C1, D1) < pos1_min) or (min(A1, B1, C1, D1) > pos1_maxin):             # <<<<<<<<<<<<<<
+ *                         continue
+ * 
+ */
+            __pyx_t_44 = __pyx_v_B1;
+            __pyx_t_45 = __pyx_v_C1;
+            __pyx_t_14 = __pyx_v_D1;
+            __pyx_t_42 = __pyx_v_A1;
+            if (((__pyx_t_44 > __pyx_t_42) != 0)) {
+              __pyx_t_43 = __pyx_t_44;
+            } else {
+              __pyx_t_43 = __pyx_t_42;
             }
-            __pyx_L37:;
-            goto __pyx_L36;
-          }
-          __pyx_L36:;
+            __pyx_t_42 = __pyx_t_43;
+            if (((__pyx_t_45 > __pyx_t_42) != 0)) {
+              __pyx_t_43 = __pyx_t_45;
+            } else {
+              __pyx_t_43 = __pyx_t_42;
+            }
+            __pyx_t_42 = __pyx_t_43;
+            if (((__pyx_t_14 > __pyx_t_42) != 0)) {
+              __pyx_t_43 = __pyx_t_14;
+            } else {
+              __pyx_t_43 = __pyx_t_42;
+            }
+            __pyx_t_10 = ((__pyx_t_43 < __pyx_v_pos1_min) != 0);
+            if (!__pyx_t_10) {
+              __pyx_t_43 = __pyx_v_B1;
+              __pyx_t_44 = __pyx_v_C1;
+              __pyx_t_45 = __pyx_v_D1;
+              __pyx_t_14 = __pyx_v_A1;
+              if (((__pyx_t_43 < __pyx_t_14) != 0)) {
+                __pyx_t_42 = __pyx_t_43;
+              } else {
+                __pyx_t_42 = __pyx_t_14;
+              }
+              __pyx_t_14 = __pyx_t_42;
+              if (((__pyx_t_44 < __pyx_t_14) != 0)) {
+                __pyx_t_42 = __pyx_t_44;
+              } else {
+                __pyx_t_42 = __pyx_t_14;
+              }
+              __pyx_t_14 = __pyx_t_42;
+              if (((__pyx_t_45 < __pyx_t_14) != 0)) {
+                __pyx_t_42 = __pyx_t_45;
+              } else {
+                __pyx_t_42 = __pyx_t_14;
+              }
+              __pyx_t_13 = ((__pyx_t_42 > __pyx_v_pos1_maxin) != 0);
+              __pyx_t_12 = __pyx_t_13;
+            } else {
+              __pyx_t_12 = __pyx_t_10;
+            }
+            if (__pyx_t_12) {
 
-          /* "splitPixel.pyx":309
- * #                max0 = bins
+              /* "splitPixelFullLUT_b.pyx":216
+ *                 if check_pos1:
+ *                     if (max(A1, B1, C1, D1) < pos1_min) or (min(A1, B1, C1, D1) > pos1_maxin):
+ *                         continue             # <<<<<<<<<<<<<<
  * 
- *             if do_dark:             # <<<<<<<<<<<<<<
- *                 data -= cdark[idx]
- *             if do_flat:
+ *                 bin0_min = < int > floor(min0)
  */
-          __pyx_t_15 = (__pyx_v_do_dark != 0);
-          if (__pyx_t_15) {
-
-            /* "splitPixel.pyx":310
- * 
- *             if do_dark:
- *                 data -= cdark[idx]             # <<<<<<<<<<<<<<
- *             if do_flat:
- *                 data /= cflat[idx]
- */
-            if (unlikely(!__pyx_v_cdark.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("cdark"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 310; __pyx_clineno = __LINE__; goto __pyx_L29;} }
-            __pyx_t_85 = __pyx_v_idx;
-            __pyx_v_data = (__pyx_v_data - (*((double *) ( /* dim=0 */ (__pyx_v_cdark.data + __pyx_t_85 * __pyx_v_cdark.strides[0]) ))));
-            goto __pyx_L38;
+              goto __pyx_L9_continue;
+              goto __pyx_L14;
+            }
+            __pyx_L14:;
+            goto __pyx_L13;
           }
-          __pyx_L38:;
+          __pyx_L13:;
 
-          /* "splitPixel.pyx":311
- *             if do_dark:
- *                 data -= cdark[idx]
- *             if do_flat:             # <<<<<<<<<<<<<<
- *                 data /= cflat[idx]
- *             if do_polarization:
- */
-          __pyx_t_15 = (__pyx_v_do_flat != 0);
-          if (__pyx_t_15) {
-
-            /* "splitPixel.pyx":312
- *                 data -= cdark[idx]
- *             if do_flat:
- *                 data /= cflat[idx]             # <<<<<<<<<<<<<<
- *             if do_polarization:
- *                 data /= cpolarization[idx]
- */
-            if (unlikely(!__pyx_v_cflat.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("cflat"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 312; __pyx_clineno = __LINE__; goto __pyx_L29;} }
-            __pyx_t_86 = __pyx_v_idx;
-            __pyx_v_data = (__pyx_v_data / (*((double *) ( /* dim=0 */ (__pyx_v_cflat.data + __pyx_t_86 * __pyx_v_cflat.strides[0]) ))));
-            goto __pyx_L39;
-          }
-          __pyx_L39:;
-
-          /* "splitPixel.pyx":313
- *             if do_flat:
- *                 data /= cflat[idx]
- *             if do_polarization:             # <<<<<<<<<<<<<<
- *                 data /= cpolarization[idx]
- *             if do_solidangle:
- */
-          __pyx_t_15 = (__pyx_v_do_polarization != 0);
-          if (__pyx_t_15) {
-
-            /* "splitPixel.pyx":314
- *                 data /= cflat[idx]
- *             if do_polarization:
- *                 data /= cpolarization[idx]             # <<<<<<<<<<<<<<
- *             if do_solidangle:
- *                 data /= csolidangle[idx]
- */
-            if (unlikely(!__pyx_v_cpolarization.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("cpolarization"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 314; __pyx_clineno = __LINE__; goto __pyx_L29;} }
-            __pyx_t_87 = __pyx_v_idx;
-            __pyx_v_data = (__pyx_v_data / (*((double *) ( /* dim=0 */ (__pyx_v_cpolarization.data + __pyx_t_87 * __pyx_v_cpolarization.strides[0]) ))));
-            goto __pyx_L40;
-          }
-          __pyx_L40:;
-
-          /* "splitPixel.pyx":315
- *             if do_polarization:
- *                 data /= cpolarization[idx]
- *             if do_solidangle:             # <<<<<<<<<<<<<<
- *                 data /= csolidangle[idx]
+          /* "splitPixelFullLUT_b.pyx":218
+ *                         continue
  * 
- */
-          __pyx_t_15 = (__pyx_v_do_solidangle != 0);
-          if (__pyx_t_15) {
-
-            /* "splitPixel.pyx":316
- *                 data /= cpolarization[idx]
- *             if do_solidangle:
- *                 data /= csolidangle[idx]             # <<<<<<<<<<<<<<
- * 
- *             bin0_min = < int > floor(min0)
- */
-            if (unlikely(!__pyx_v_csolidangle.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("csolidangle"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 316; __pyx_clineno = __LINE__; goto __pyx_L29;} }
-            __pyx_t_88 = __pyx_v_idx;
-            __pyx_v_data = (__pyx_v_data / (*((double *) ( /* dim=0 */ (__pyx_v_csolidangle.data + __pyx_t_88 * __pyx_v_csolidangle.strides[0]) ))));
-            goto __pyx_L41;
-          }
-          __pyx_L41:;
-
-          /* "splitPixel.pyx":318
- *                 data /= csolidangle[idx]
- * 
- *             bin0_min = < int > floor(min0)             # <<<<<<<<<<<<<<
- *             bin0_max = < int > floor(max0)
+ *                 bin0_min = < int > floor(min0)             # <<<<<<<<<<<<<<
+ *                 bin0_max = < int > floor(max0)
  * 
  */
           __pyx_v_bin0_min = ((int)floor(__pyx_v_min0));
 
-          /* "splitPixel.pyx":319
+          /* "splitPixelFullLUT_b.pyx":219
  * 
- *             bin0_min = < int > floor(min0)
- *             bin0_max = < int > floor(max0)             # <<<<<<<<<<<<<<
+ *                 bin0_min = < int > floor(min0)
+ *                 bin0_max = < int > floor(max0)             # <<<<<<<<<<<<<<
  * 
- *             if bin0_min == bin0_max:
+ *                 for bin in range(bin0_min, bin0_max+1):
  */
           __pyx_v_bin0_max = ((int)floor(__pyx_v_max0));
 
-          /* "splitPixel.pyx":321
- *             bin0_max = < int > floor(max0)
+          /* "splitPixelFullLUT_b.pyx":221
+ *                 bin0_max = < int > floor(max0)
  * 
- *             if bin0_min == bin0_max:             # <<<<<<<<<<<<<<
- *                 #All pixel is within a single bin
- *                 outCount[bin0_min] += 1.0
+ *                 for bin in range(bin0_min, bin0_max+1):             # <<<<<<<<<<<<<<
+ *                     outMax[bin] += 1
+ * 
  */
-          __pyx_t_15 = ((__pyx_v_bin0_min == __pyx_v_bin0_max) != 0);
-          if (__pyx_t_15) {
+          __pyx_t_46 = (__pyx_v_bin0_max + 1);
+          for (__pyx_t_47 = __pyx_v_bin0_min; __pyx_t_47 < __pyx_t_46; __pyx_t_47+=1) {
+            __pyx_v_bin = __pyx_t_47;
 
-            /* "splitPixel.pyx":323
- *             if bin0_min == bin0_max:
- *                 #All pixel is within a single bin
- *                 outCount[bin0_min] += 1.0             # <<<<<<<<<<<<<<
- *                 outData[bin0_min] += data
+            /* "splitPixelFullLUT_b.pyx":222
  * 
- */
-            __pyx_t_89 = __pyx_v_bin0_min;
-            *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_89, __pyx_pybuffernd_outCount.diminfo[0].strides) += 1.0;
-
-            /* "splitPixel.pyx":324
- *                 #All pixel is within a single bin
- *                 outCount[bin0_min] += 1.0
- *                 outData[bin0_min] += data             # <<<<<<<<<<<<<<
+ *                 for bin in range(bin0_min, bin0_max+1):
+ *                     outMax[bin] += 1             # <<<<<<<<<<<<<<
  * 
- *     #        else we have pixel spliting.
+ *         indptr[1:] = outMax.cumsum()
  */
-            __pyx_t_90 = __pyx_v_bin0_min;
-            *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_90, __pyx_pybuffernd_outData.diminfo[0].strides) += __pyx_v_data;
-            goto __pyx_L42;
+            __pyx_t_48 = __pyx_v_bin;
+            *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int32_t *, __pyx_pybuffernd_outMax.rcbuffer->pybuffer.buf, __pyx_t_48, __pyx_pybuffernd_outMax.diminfo[0].strides) += 1;
           }
-          /*else*/ {
-
-            /* "splitPixel.pyx":328
- *     #        else we have pixel spliting.
- *             else:
- *                 bin0_min = max(0,bin0_min)             # <<<<<<<<<<<<<<
- *                 bin0_max = min(bins,bin0_max+1)
- *                 aera_pixel = area4(a0,a1,b0,b1,c0,c1,d0,d1)
- */
-            __pyx_t_91 = __pyx_v_bin0_min;
-            __pyx_t_92 = 0;
-            if (((__pyx_t_91 > __pyx_t_92) != 0)) {
-              __pyx_t_93 = __pyx_t_91;
-            } else {
-              __pyx_t_93 = __pyx_t_92;
-            }
-            __pyx_v_bin0_min = __pyx_t_93;
-
-            /* "splitPixel.pyx":329
- *             else:
- *                 bin0_min = max(0,bin0_min)
- *                 bin0_max = min(bins,bin0_max+1)             # <<<<<<<<<<<<<<
- *                 aera_pixel = area4(a0,a1,b0,b1,c0,c1,d0,d1)
- *                 one_over_area = 1.0 / aera_pixel
- */
-            __pyx_t_93 = (__pyx_v_bin0_max + 1);
-            __pyx_t_91 = __pyx_v_bins;
-            if (((__pyx_t_93 < __pyx_t_91) != 0)) {
-              __pyx_t_92 = __pyx_t_93;
-            } else {
-              __pyx_t_92 = __pyx_t_91;
-            }
-            __pyx_v_bin0_max = __pyx_t_92;
-
-            /* "splitPixel.pyx":330
- *                 bin0_min = max(0,bin0_min)
- *                 bin0_max = min(bins,bin0_max+1)
- *                 aera_pixel = area4(a0,a1,b0,b1,c0,c1,d0,d1)             # <<<<<<<<<<<<<<
- *                 one_over_area = 1.0 / aera_pixel
- * #                log_err = ["Error on pixel %i: %s %i-%i/ %i"%(idx,range(bin0_min,bin0_max),bin0_min,bin0_max, bins),
- */
-            __pyx_v_aera_pixel = __pyx_f_10splitPixel_area4(__pyx_v_a0, __pyx_v_a1, __pyx_v_b0, __pyx_v_b1, __pyx_v_c0, __pyx_v_c1, __pyx_v_d0, __pyx_v_d1);
-
-            /* "splitPixel.pyx":331
- *                 bin0_max = min(bins,bin0_max+1)
- *                 aera_pixel = area4(a0,a1,b0,b1,c0,c1,d0,d1)
- *                 one_over_area = 1.0 / aera_pixel             # <<<<<<<<<<<<<<
- * #                log_err = ["Error on pixel %i: %s %i-%i/ %i"%(idx,range(bin0_min,bin0_max),bin0_min,bin0_max, bins),
- * #                           (a0,b0,c0,d0), (a1,b1,c1,d1)]
- */
-            __pyx_v_one_over_area = (1.0 / __pyx_v_aera_pixel);
-
-            /* "splitPixel.pyx":336
- * 
- *                 #TODO: split pixel
- *                 integrate(buffer, bins, a0, a1, b0, b1) #A-B             # <<<<<<<<<<<<<<
- * #                with gil:
- * #                log_err.append("AB: %s"%[buffer[i] for i in range(bin0_min,bin0_max)])
- */
-            __pyx_f_10splitPixel_integrate(__pyx_v_buffer, __pyx_v_bins, __pyx_v_a0, __pyx_v_a1, __pyx_v_b0, __pyx_v_b1);
-
-            /* "splitPixel.pyx":339
- * #                with gil:
- * #                log_err.append("AB: %s"%[buffer[i] for i in range(bin0_min,bin0_max)])
- *                 integrate(buffer, bins, b0, b1, c0, c1) #B-C             # <<<<<<<<<<<<<<
- *                 #with gil:
- * #                log_err.append("BC %s:"%[buffer[i] for i in range(bin0_min,bin0_max)])
- */
-            __pyx_f_10splitPixel_integrate(__pyx_v_buffer, __pyx_v_bins, __pyx_v_b0, __pyx_v_b1, __pyx_v_c0, __pyx_v_c1);
-
-            /* "splitPixel.pyx":342
- *                 #with gil:
- * #                log_err.append("BC %s:"%[buffer[i] for i in range(bin0_min,bin0_max)])
- *                 integrate(buffer, bins, c0, c1, d0, d1) #C-D             # <<<<<<<<<<<<<<
- *                 #with gil:
- * #                log_err.append("CD: %s"%[buffer[i] for i in range(bin0_min,bin0_max)])
- */
-            __pyx_f_10splitPixel_integrate(__pyx_v_buffer, __pyx_v_bins, __pyx_v_c0, __pyx_v_c1, __pyx_v_d0, __pyx_v_d1);
-
-            /* "splitPixel.pyx":345
- *                 #with gil:
- * #                log_err.append("CD: %s"%[buffer[i] for i in range(bin0_min,bin0_max)])
- *                 integrate(buffer, bins, d0, d1, a0, a1) #D-A             # <<<<<<<<<<<<<<
- * #                with gil:
- * #                log_err.append("DA: %s"%[buffer[i] for i in range(bin0_min,bin0_max)])
- */
-            __pyx_f_10splitPixel_integrate(__pyx_v_buffer, __pyx_v_bins, __pyx_v_d0, __pyx_v_d1, __pyx_v_a0, __pyx_v_a1);
-
-            /* "splitPixel.pyx":350
- * 
- *                 #Distribute pixel area
- *                 sum_area = 0.0             # <<<<<<<<<<<<<<
- *                 for i in range(bin0_min,bin0_max):
- *                     sub_area = fabs(buffer[i])
- */
-            __pyx_v_sum_area = 0.0;
-
-            /* "splitPixel.pyx":351
- *                 #Distribute pixel area
- *                 sum_area = 0.0
- *                 for i in range(bin0_min,bin0_max):             # <<<<<<<<<<<<<<
- *                     sub_area = fabs(buffer[i])
- *                     sum_area += sub_area
- */
-            __pyx_t_91 = __pyx_v_bin0_max;
-            for (__pyx_t_94 = __pyx_v_bin0_min; __pyx_t_94 < __pyx_t_91; __pyx_t_94+=1) {
-              __pyx_v_i = __pyx_t_94;
-
-              /* "splitPixel.pyx":352
- *                 sum_area = 0.0
- *                 for i in range(bin0_min,bin0_max):
- *                     sub_area = fabs(buffer[i])             # <<<<<<<<<<<<<<
- *                     sum_area += sub_area
- *                     sub_area = sub_area * one_over_area
- */
-              __pyx_t_95 = __pyx_v_i;
-              __pyx_v_sub_area = fabs((*((double *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_95 * __pyx_v_buffer.strides[0]) ))));
-
-              /* "splitPixel.pyx":353
- *                 for i in range(bin0_min,bin0_max):
- *                     sub_area = fabs(buffer[i])
- *                     sum_area += sub_area             # <<<<<<<<<<<<<<
- *                     sub_area = sub_area * one_over_area
- *                     outCount[i] += sub_area
- */
-              __pyx_v_sum_area = (__pyx_v_sum_area + __pyx_v_sub_area);
-
-              /* "splitPixel.pyx":354
- *                     sub_area = fabs(buffer[i])
- *                     sum_area += sub_area
- *                     sub_area = sub_area * one_over_area             # <<<<<<<<<<<<<<
- *                     outCount[i] += sub_area
- *                     outData[i] += sub_area * data
- */
-              __pyx_v_sub_area = (__pyx_v_sub_area * __pyx_v_one_over_area);
-
-              /* "splitPixel.pyx":355
- *                     sum_area += sub_area
- *                     sub_area = sub_area * one_over_area
- *                     outCount[i] += sub_area             # <<<<<<<<<<<<<<
- *                     outData[i] += sub_area * data
- * 
- */
-              __pyx_t_96 = __pyx_v_i;
-              *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_96, __pyx_pybuffernd_outCount.diminfo[0].strides) += __pyx_v_sub_area;
-
-              /* "splitPixel.pyx":356
- *                     sub_area = sub_area * one_over_area
- *                     outCount[i] += sub_area
- *                     outData[i] += sub_area * data             # <<<<<<<<<<<<<<
- * 
- *                 #check the total area:
- */
-              __pyx_t_97 = __pyx_v_i;
-              *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_97, __pyx_pybuffernd_outData.diminfo[0].strides) += (__pyx_v_sub_area * __pyx_v_data);
-            }
-
-            /* "splitPixel.pyx":359
- * 
- *                 #check the total area:
- *                 if fabs(sum_area-aera_pixel)/aera_pixel>1e-6 and bin0_min!=0 and bin0_max!=bins:             # <<<<<<<<<<<<<<
- * #                if sum_area!=aera_pixel:
- *                     with gil:
- */
-            __pyx_t_15 = (((fabs((__pyx_v_sum_area - __pyx_v_aera_pixel)) / __pyx_v_aera_pixel) > 1e-6) != 0);
-            if (__pyx_t_15) {
-              __pyx_t_60 = ((__pyx_v_bin0_min != 0) != 0);
-              if (__pyx_t_60) {
-                __pyx_t_3 = ((__pyx_v_bin0_max != __pyx_v_bins) != 0);
-                __pyx_t_18 = __pyx_t_3;
-              } else {
-                __pyx_t_18 = __pyx_t_60;
-              }
-              __pyx_t_60 = __pyx_t_18;
-            } else {
-              __pyx_t_60 = __pyx_t_15;
-            }
-            if (__pyx_t_60) {
-
-              /* "splitPixel.pyx":361
- *                 if fabs(sum_area-aera_pixel)/aera_pixel>1e-6 and bin0_min!=0 and bin0_max!=bins:
- * #                if sum_area!=aera_pixel:
- *                     with gil:             # <<<<<<<<<<<<<<
- *                         print("area_pixel=%s area_sum=%s, Error= %s"%(aera_pixel,sum_area,(aera_pixel-sum_area)/aera_pixel))
- * #                    for line in log_err:
- */
-              {
-                  #ifdef WITH_THREAD
-                  PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
-                  #endif
-                  /*try:*/ {
-
-                    /* "splitPixel.pyx":362
- * #                if sum_area!=aera_pixel:
- *                     with gil:
- *                         print("area_pixel=%s area_sum=%s, Error= %s"%(aera_pixel,sum_area,(aera_pixel-sum_area)/aera_pixel))             # <<<<<<<<<<<<<<
- * #                    for line in log_err:
- * #                        print(line)
- */
-                    __pyx_t_4 = PyFloat_FromDouble(__pyx_v_aera_pixel); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 362; __pyx_clineno = __LINE__; goto __pyx_L49;}
-                    __Pyx_GOTREF(__pyx_t_4);
-                    __pyx_t_1 = PyFloat_FromDouble(__pyx_v_sum_area); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 362; __pyx_clineno = __LINE__; goto __pyx_L49;}
-                    __Pyx_GOTREF(__pyx_t_1);
-                    __pyx_t_7 = PyFloat_FromDouble(((__pyx_v_aera_pixel - __pyx_v_sum_area) / __pyx_v_aera_pixel)); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 362; __pyx_clineno = __LINE__; goto __pyx_L49;}
-                    __Pyx_GOTREF(__pyx_t_7);
-                    __pyx_t_5 = PyTuple_New(3); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 362; __pyx_clineno = __LINE__; goto __pyx_L49;}
-                    __Pyx_GOTREF(__pyx_t_5);
-                    PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4);
-                    __Pyx_GIVEREF(__pyx_t_4);
-                    PyTuple_SET_ITEM(__pyx_t_5, 1, __pyx_t_1);
-                    __Pyx_GIVEREF(__pyx_t_1);
-                    PyTuple_SET_ITEM(__pyx_t_5, 2, __pyx_t_7);
-                    __Pyx_GIVEREF(__pyx_t_7);
-                    __pyx_t_4 = 0;
-                    __pyx_t_1 = 0;
-                    __pyx_t_7 = 0;
-                    __pyx_t_7 = PyNumber_Remainder(((PyObject *)__pyx_kp_s_9), ((PyObject *)__pyx_t_5)); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 362; __pyx_clineno = __LINE__; goto __pyx_L49;}
-                    __Pyx_GOTREF(((PyObject *)__pyx_t_7));
-                    __Pyx_DECREF(((PyObject *)__pyx_t_5)); __pyx_t_5 = 0;
-                    if (__Pyx_PrintOne(0, ((PyObject *)__pyx_t_7)) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 362; __pyx_clineno = __LINE__; goto __pyx_L49;}
-                    __Pyx_DECREF(((PyObject *)__pyx_t_7)); __pyx_t_7 = 0;
-                  }
-
-                  /* "splitPixel.pyx":361
- *                 if fabs(sum_area-aera_pixel)/aera_pixel>1e-6 and bin0_min!=0 and bin0_max!=bins:
- * #                if sum_area!=aera_pixel:
- *                     with gil:             # <<<<<<<<<<<<<<
- *                         print("area_pixel=%s area_sum=%s, Error= %s"%(aera_pixel,sum_area,(aera_pixel-sum_area)/aera_pixel))
- * #                    for line in log_err:
- */
-                  /*finally:*/ {
-                    int __pyx_why;
-                    __pyx_why = 0; goto __pyx_L50;
-                    __pyx_L49: __pyx_why = 4; goto __pyx_L50;
-                    __pyx_L50:;
-                    #ifdef WITH_THREAD
-                    PyGILState_Release(__pyx_gilstate_save);
-                    #endif
-                    switch (__pyx_why) {
-                      case 4: goto __pyx_L29;
-                    }
-                  }
-              }
-              goto __pyx_L45;
-            }
-            __pyx_L45:;
-
-            /* "splitPixel.pyx":365
- * #                    for line in log_err:
- * #                        print(line)
- *                 memset(&buffer[bin0_min], 0, sizeof(double)*(bin0_max-bin0_min))             # <<<<<<<<<<<<<<
- *         for i in range(bins):
- *             if outCount[i] > epsilon:
- */
-            __pyx_t_91 = __pyx_v_bin0_min;
-            memset((&(*((double *) ( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_91 * __pyx_v_buffer.strides[0]) )))), 0, ((sizeof(double)) * (__pyx_v_bin0_max - __pyx_v_bin0_min)));
-          }
-          __pyx_L42:;
-          __pyx_L31_continue:;
-        }
-
-        /* "splitPixel.pyx":366
- * #                        print(line)
- *                 memset(&buffer[bin0_min], 0, sizeof(double)*(bin0_max-bin0_min))
- *         for i in range(bins):             # <<<<<<<<<<<<<<
- *             if outCount[i] > epsilon:
- *                 outMerge[i] = outData[i] / outCount[i]
- */
-        __pyx_t_2 = __pyx_v_bins;
-        for (__pyx_t_20 = 0; __pyx_t_20 < __pyx_t_2; __pyx_t_20+=1) {
-          __pyx_v_i = __pyx_t_20;
-
-          /* "splitPixel.pyx":367
- *                 memset(&buffer[bin0_min], 0, sizeof(double)*(bin0_max-bin0_min))
- *         for i in range(bins):
- *             if outCount[i] > epsilon:             # <<<<<<<<<<<<<<
- *                 outMerge[i] = outData[i] / outCount[i]
- *             else:
- */
-          __pyx_t_94 = __pyx_v_i;
-          __pyx_t_60 = (((*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_94, __pyx_pybuffernd_outCount.diminfo[0].strides)) > __pyx_v_epsilon) != 0);
-          if (__pyx_t_60) {
-
-            /* "splitPixel.pyx":368
- *         for i in range(bins):
- *             if outCount[i] > epsilon:
- *                 outMerge[i] = outData[i] / outCount[i]             # <<<<<<<<<<<<<<
- *             else:
- *                 outMerge[i] = cdummy
- */
-            __pyx_t_98 = __pyx_v_i;
-            __pyx_t_99 = __pyx_v_i;
-            __pyx_t_100 = __pyx_v_i;
-            *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outMerge.rcbuffer->pybuffer.buf, __pyx_t_100, __pyx_pybuffernd_outMerge.diminfo[0].strides) = ((*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_98, __pyx_pybuffernd_outData.diminfo[0].strides)) / (*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_99, __pyx_pybuffernd_outCount.diminfo[0].strides)));
-            goto __pyx_L54;
-          }
-          /*else*/ {
-
-            /* "splitPixel.pyx":370
- *                 outMerge[i] = outData[i] / outCount[i]
- *             else:
- *                 outMerge[i] = cdummy             # <<<<<<<<<<<<<<
- * 
- *     return  outPos, outMerge, outData, outCount
- */
-            __pyx_t_101 = __pyx_v_i;
-            *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outMerge.rcbuffer->pybuffer.buf, __pyx_t_101, __pyx_pybuffernd_outMerge.diminfo[0].strides) = __pyx_v_cdummy;
-          }
-          __pyx_L54:;
+          __pyx_L9_continue:;
         }
       }
 
-      /* "splitPixel.pyx":273
- *         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)
+      /* "splitPixelFullLUT_b.pyx":195
+ *             cmask = self.cmask
  * 
- *     with nogil:             # <<<<<<<<<<<<<<
- *         for idx in range(size):
+ *         with nogil:             # <<<<<<<<<<<<<<
+ *             for idx in range(size):
  * 
  */
       /*finally:*/ {
         int __pyx_why;
-        __pyx_why = 0; goto __pyx_L30;
-        __pyx_L29: __pyx_why = 4; goto __pyx_L30;
-        __pyx_L30:;
+        __pyx_why = 0; goto __pyx_L8;
+        __pyx_L7: __pyx_why = 4; goto __pyx_L8;
+        __pyx_L8:;
         #ifdef WITH_THREAD
         Py_BLOCK_THREADS
         #endif
@@ -5555,193 +4349,977 @@ static PyObject *__pyx_pf_10splitPixel_fullSplit1D(CYTHON_UNUSED PyObject *__pyx
       }
   }
 
-  /* "splitPixel.pyx":372
- *                 outMerge[i] = cdummy
+  /* "splitPixelFullLUT_b.pyx":224
+ *                     outMax[bin] += 1
  * 
- *     return  outPos, outMerge, outData, outCount             # <<<<<<<<<<<<<<
- * 
+ *         indptr[1:] = outMax.cumsum()             # <<<<<<<<<<<<<<
+ *         self.indptr = indptr
  * 
  */
-  __Pyx_XDECREF(__pyx_r);
-  __pyx_t_7 = PyTuple_New(4); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 372; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_7);
-  __Pyx_INCREF(__pyx_v_outPos);
-  PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_v_outPos);
-  __Pyx_GIVEREF(__pyx_v_outPos);
-  __Pyx_INCREF(((PyObject *)__pyx_v_outMerge));
-  PyTuple_SET_ITEM(__pyx_t_7, 1, ((PyObject *)__pyx_v_outMerge));
-  __Pyx_GIVEREF(((PyObject *)__pyx_v_outMerge));
-  __Pyx_INCREF(((PyObject *)__pyx_v_outData));
-  PyTuple_SET_ITEM(__pyx_t_7, 2, ((PyObject *)__pyx_v_outData));
-  __Pyx_GIVEREF(((PyObject *)__pyx_v_outData));
-  __Pyx_INCREF(((PyObject *)__pyx_v_outCount));
-  PyTuple_SET_ITEM(__pyx_t_7, 3, ((PyObject *)__pyx_v_outCount));
-  __Pyx_GIVEREF(((PyObject *)__pyx_v_outCount));
-  __pyx_r = ((PyObject *)__pyx_t_7);
-  __pyx_t_7 = 0;
-  goto __pyx_L0;
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_outMax), __pyx_n_s__cumsum); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 224; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_4 = PyObject_Call(__pyx_t_5, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 224; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_4);
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  if (__Pyx_PyObject_SetSlice(((PyObject *)__pyx_v_indptr), __pyx_t_4, 1, 0, NULL, NULL, &__pyx_k_slice_15, 1, 0, 0) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 224; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+
+  /* "splitPixelFullLUT_b.pyx":225
+ * 
+ *         indptr[1:] = outMax.cumsum()
+ *         self.indptr = indptr             # <<<<<<<<<<<<<<
+ * 
+ *         cdef numpy.ndarray[numpy.int32_t, ndim = 1] indices = numpy.zeros(indptr[bins], dtype=numpy.int32)
+ */
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__indptr, ((PyObject *)__pyx_v_indptr)) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 225; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "splitPixelFullLUT_b.pyx":227
+ *         self.indptr = indptr
+ * 
+ *         cdef numpy.ndarray[numpy.int32_t, ndim = 1] indices = numpy.zeros(indptr[bins], dtype=numpy.int32)             # <<<<<<<<<<<<<<
+ *         cdef numpy.ndarray[numpy.float64_t, ndim = 1] data = numpy.zeros(indptr[bins], dtype=numpy.float64)
+ *         cdef numpy.ndarray[numpy.float32_t, ndim = 1] areas = numpy.zeros(indptr[bins], dtype=numpy.float32)
+ */
+  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 227; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s__zeros); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 227; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __pyx_t_9 = __pyx_v_bins;
+  __pyx_t_4 = __Pyx_PyInt_to_py_npy_int32((*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int32_t *, __pyx_pybuffernd_indptr.rcbuffer->pybuffer.buf, __pyx_t_9, __pyx_pybuffernd_indptr.diminfo[0].strides))); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 227; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 227; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_4);
+  __Pyx_GIVEREF(__pyx_t_4);
+  __pyx_t_4 = 0;
+  __pyx_t_4 = PyDict_New(); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 227; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(((PyObject *)__pyx_t_4));
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 227; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s__int32); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 227; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  if (PyDict_SetItem(__pyx_t_4, ((PyObject *)__pyx_n_s__dtype), __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 227; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_1 = PyObject_Call(__pyx_t_5, ((PyObject *)__pyx_t_3), ((PyObject *)__pyx_t_4)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 227; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __Pyx_DECREF(((PyObject *)__pyx_t_3)); __pyx_t_3 = 0;
+  __Pyx_DECREF(((PyObject *)__pyx_t_4)); __pyx_t_4 = 0;
+  if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 227; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_49 = ((PyArrayObject *)__pyx_t_1);
+  {
+    __Pyx_BufFmt_StackElem __pyx_stack[1];
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_indices.rcbuffer->pybuffer, (PyObject*)__pyx_t_49, &__Pyx_TypeInfo_nn___pyx_t_5numpy_int32_t, PyBUF_FORMAT| PyBUF_STRIDES| PyBUF_WRITABLE, 1, 0, __pyx_stack) == -1)) {
+      __pyx_v_indices = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_indices.rcbuffer->pybuffer.buf = NULL;
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 227; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    } else {__pyx_pybuffernd_indices.diminfo[0].strides = __pyx_pybuffernd_indices.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_indices.diminfo[0].shape = __pyx_pybuffernd_indices.rcbuffer->pybuffer.shape[0];
+    }
+  }
+  __pyx_t_49 = 0;
+  __pyx_v_indices = ((PyArrayObject *)__pyx_t_1);
+  __pyx_t_1 = 0;
+
+  /* "splitPixelFullLUT_b.pyx":228
+ * 
+ *         cdef numpy.ndarray[numpy.int32_t, ndim = 1] indices = numpy.zeros(indptr[bins], dtype=numpy.int32)
+ *         cdef numpy.ndarray[numpy.float64_t, ndim = 1] data = numpy.zeros(indptr[bins], dtype=numpy.float64)             # <<<<<<<<<<<<<<
+ *         cdef numpy.ndarray[numpy.float32_t, ndim = 1] areas = numpy.zeros(indptr[bins], dtype=numpy.float32)
+ * 
+ */
+  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s__zeros); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_4);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_16 = __pyx_v_bins;
+  __pyx_t_1 = __Pyx_PyInt_to_py_npy_int32((*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int32_t *, __pyx_pybuffernd_indptr.rcbuffer->pybuffer.buf, __pyx_t_16, __pyx_pybuffernd_indptr.diminfo[0].strides))); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_1);
+  __Pyx_GIVEREF(__pyx_t_1);
+  __pyx_t_1 = 0;
+  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(((PyObject *)__pyx_t_1));
+  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s__float64); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  if (PyDict_SetItem(__pyx_t_1, ((PyObject *)__pyx_n_s__dtype), __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_2 = PyObject_Call(__pyx_t_4, ((PyObject *)__pyx_t_3), ((PyObject *)__pyx_t_1)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __Pyx_DECREF(((PyObject *)__pyx_t_3)); __pyx_t_3 = 0;
+  __Pyx_DECREF(((PyObject *)__pyx_t_1)); __pyx_t_1 = 0;
+  if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_50 = ((PyArrayObject *)__pyx_t_2);
+  {
+    __Pyx_BufFmt_StackElem __pyx_stack[1];
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_data.rcbuffer->pybuffer, (PyObject*)__pyx_t_50, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES| PyBUF_WRITABLE, 1, 0, __pyx_stack) == -1)) {
+      __pyx_v_data = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_data.rcbuffer->pybuffer.buf = NULL;
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    } else {__pyx_pybuffernd_data.diminfo[0].strides = __pyx_pybuffernd_data.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_data.diminfo[0].shape = __pyx_pybuffernd_data.rcbuffer->pybuffer.shape[0];
+    }
+  }
+  __pyx_t_50 = 0;
+  __pyx_v_data = ((PyArrayObject *)__pyx_t_2);
+  __pyx_t_2 = 0;
+
+  /* "splitPixelFullLUT_b.pyx":229
+ *         cdef numpy.ndarray[numpy.int32_t, ndim = 1] indices = numpy.zeros(indptr[bins], dtype=numpy.int32)
+ *         cdef numpy.ndarray[numpy.float64_t, ndim = 1] data = numpy.zeros(indptr[bins], dtype=numpy.float64)
+ *         cdef numpy.ndarray[numpy.float32_t, ndim = 1] areas = numpy.zeros(indptr[bins], dtype=numpy.float32)             # <<<<<<<<<<<<<<
+ * 
+ *         #just recycle the outMax array
+ */
+  __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s__zeros); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_47 = __pyx_v_bins;
+  __pyx_t_2 = __Pyx_PyInt_to_py_npy_int32((*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int32_t *, __pyx_pybuffernd_indptr.rcbuffer->pybuffer.buf, __pyx_t_47, __pyx_pybuffernd_indptr.diminfo[0].strides))); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_2);
+  __Pyx_GIVEREF(__pyx_t_2);
+  __pyx_t_2 = 0;
+  __pyx_t_2 = PyDict_New(); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(((PyObject *)__pyx_t_2));
+  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s__float32); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  if (PyDict_SetItem(__pyx_t_2, ((PyObject *)__pyx_n_s__dtype), __pyx_t_5) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_t_5 = PyObject_Call(__pyx_t_1, ((PyObject *)__pyx_t_3), ((PyObject *)__pyx_t_2)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __Pyx_DECREF(((PyObject *)__pyx_t_3)); __pyx_t_3 = 0;
+  __Pyx_DECREF(((PyObject *)__pyx_t_2)); __pyx_t_2 = 0;
+  if (!(likely(((__pyx_t_5) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_5, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_51 = ((PyArrayObject *)__pyx_t_5);
+  {
+    __Pyx_BufFmt_StackElem __pyx_stack[1];
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_areas.rcbuffer->pybuffer, (PyObject*)__pyx_t_51, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float32_t, PyBUF_FORMAT| PyBUF_STRIDES| PyBUF_WRITABLE, 1, 0, __pyx_stack) == -1)) {
+      __pyx_v_areas = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_areas.rcbuffer->pybuffer.buf = NULL;
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    } else {__pyx_pybuffernd_areas.diminfo[0].strides = __pyx_pybuffernd_areas.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_areas.diminfo[0].shape = __pyx_pybuffernd_areas.rcbuffer->pybuffer.shape[0];
+    }
+  }
+  __pyx_t_51 = 0;
+  __pyx_v_areas = ((PyArrayObject *)__pyx_t_5);
+  __pyx_t_5 = 0;
+
+  /* "splitPixelFullLUT_b.pyx":232
+ * 
+ *         #just recycle the outMax array
+ *         memset(&outMax[0], 0, bins * sizeof(numpy.int32_t))             # <<<<<<<<<<<<<<
+ * 
+ *         with nogil:
+ */
+  __pyx_t_46 = 0;
+  memset((&(*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int32_t *, __pyx_pybuffernd_outMax.rcbuffer->pybuffer.buf, __pyx_t_46, __pyx_pybuffernd_outMax.diminfo[0].strides))), 0, (__pyx_v_bins * (sizeof(__pyx_t_5numpy_int32_t))));
+
+  /* "splitPixelFullLUT_b.pyx":234
+ *         memset(&outMax[0], 0, bins * sizeof(numpy.int32_t))
+ * 
+ *         with nogil:             # <<<<<<<<<<<<<<
+ *             for idx in range(size):
+ * 
+ */
+  {
+      #ifdef WITH_THREAD
+      PyThreadState *_save;
+      Py_UNBLOCK_THREADS
+      #endif
+      /*try:*/ {
+
+        /* "splitPixelFullLUT_b.pyx":235
+ * 
+ *         with nogil:
+ *             for idx in range(size):             # <<<<<<<<<<<<<<
+ * 
+ *                 if (check_mask) and (cmask[idx]):
+ */
+        __pyx_t_52 = __pyx_v_size;
+        for (__pyx_t_53 = 0; __pyx_t_53 < __pyx_t_52; __pyx_t_53+=1) {
+          __pyx_v_idx = __pyx_t_53;
+
+          /* "splitPixelFullLUT_b.pyx":237
+ *             for idx in range(size):
+ * 
+ *                 if (check_mask) and (cmask[idx]):             # <<<<<<<<<<<<<<
+ *                     continue
+ * 
+ */
+          __pyx_t_12 = __pyx_v_check_mask;
+          if (__pyx_t_12) {
+            if (unlikely(!__pyx_v_cmask.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("cmask"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L19;} }
+            __pyx_t_54 = __pyx_v_idx;
+            __pyx_t_10 = ((*((__pyx_t_5numpy_int8_t *) ( /* dim=0 */ (__pyx_v_cmask.data + __pyx_t_54 * __pyx_v_cmask.strides[0]) ))) != 0);
+          } else {
+            __pyx_t_10 = __pyx_t_12;
+          }
+          if (__pyx_t_10) {
+
+            /* "splitPixelFullLUT_b.pyx":238
+ * 
+ *                 if (check_mask) and (cmask[idx]):
+ *                     continue             # <<<<<<<<<<<<<<
+ * 
+ *                 A0 = getBinNr(< double > cpos[idx, 0, 0], pos0_min, delta)
+ */
+            goto __pyx_L21_continue;
+            goto __pyx_L23;
+          }
+          __pyx_L23:;
+
+          /* "splitPixelFullLUT_b.pyx":240
+ *                     continue
+ * 
+ *                 A0 = getBinNr(< double > cpos[idx, 0, 0], pos0_min, delta)             # <<<<<<<<<<<<<<
+ *                 A1 = < double > cpos[idx, 0, 1]
+ *                 B0 = getBinNr(< double > cpos[idx, 1, 0], pos0_min, delta)
+ */
+          __pyx_t_55 = __pyx_v_idx;
+          __pyx_t_56 = 0;
+          __pyx_t_57 = 0;
+          __pyx_v_A0 = __pyx_f_19splitPixelFullLUT_b_getBinNr(((double)(*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_55, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_56, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_57, __pyx_pybuffernd_cpos.diminfo[2].strides))), __pyx_v_pos0_min, __pyx_v_delta);
+
+          /* "splitPixelFullLUT_b.pyx":241
+ * 
+ *                 A0 = getBinNr(< double > cpos[idx, 0, 0], pos0_min, delta)
+ *                 A1 = < double > cpos[idx, 0, 1]             # <<<<<<<<<<<<<<
+ *                 B0 = getBinNr(< double > cpos[idx, 1, 0], pos0_min, delta)
+ *                 B1 = < double > cpos[idx, 1, 1]
+ */
+          __pyx_t_58 = __pyx_v_idx;
+          __pyx_t_59 = 0;
+          __pyx_t_60 = 1;
+          __pyx_v_A1 = ((double)(*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_58, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_59, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_60, __pyx_pybuffernd_cpos.diminfo[2].strides)));
+
+          /* "splitPixelFullLUT_b.pyx":242
+ *                 A0 = getBinNr(< double > cpos[idx, 0, 0], pos0_min, delta)
+ *                 A1 = < double > cpos[idx, 0, 1]
+ *                 B0 = getBinNr(< double > cpos[idx, 1, 0], pos0_min, delta)             # <<<<<<<<<<<<<<
+ *                 B1 = < double > cpos[idx, 1, 1]
+ *                 C0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, delta)
+ */
+          __pyx_t_61 = __pyx_v_idx;
+          __pyx_t_62 = 1;
+          __pyx_t_63 = 0;
+          __pyx_v_B0 = __pyx_f_19splitPixelFullLUT_b_getBinNr(((double)(*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_61, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_62, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_63, __pyx_pybuffernd_cpos.diminfo[2].strides))), __pyx_v_pos0_min, __pyx_v_delta);
+
+          /* "splitPixelFullLUT_b.pyx":243
+ *                 A1 = < double > cpos[idx, 0, 1]
+ *                 B0 = getBinNr(< double > cpos[idx, 1, 0], pos0_min, delta)
+ *                 B1 = < double > cpos[idx, 1, 1]             # <<<<<<<<<<<<<<
+ *                 C0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, delta)
+ *                 C1 = < double > cpos[idx, 2, 1]
+ */
+          __pyx_t_64 = __pyx_v_idx;
+          __pyx_t_65 = 1;
+          __pyx_t_66 = 1;
+          __pyx_v_B1 = ((double)(*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_64, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_65, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_66, __pyx_pybuffernd_cpos.diminfo[2].strides)));
+
+          /* "splitPixelFullLUT_b.pyx":244
+ *                 B0 = getBinNr(< double > cpos[idx, 1, 0], pos0_min, delta)
+ *                 B1 = < double > cpos[idx, 1, 1]
+ *                 C0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, delta)             # <<<<<<<<<<<<<<
+ *                 C1 = < double > cpos[idx, 2, 1]
+ *                 D0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, delta)
+ */
+          __pyx_t_67 = __pyx_v_idx;
+          __pyx_t_68 = 2;
+          __pyx_t_69 = 0;
+          __pyx_v_C0 = __pyx_f_19splitPixelFullLUT_b_getBinNr(((double)(*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_67, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_68, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_69, __pyx_pybuffernd_cpos.diminfo[2].strides))), __pyx_v_pos0_min, __pyx_v_delta);
+
+          /* "splitPixelFullLUT_b.pyx":245
+ *                 B1 = < double > cpos[idx, 1, 1]
+ *                 C0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, delta)
+ *                 C1 = < double > cpos[idx, 2, 1]             # <<<<<<<<<<<<<<
+ *                 D0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, delta)
+ *                 D1 = < double > cpos[idx, 3, 1]
+ */
+          __pyx_t_70 = __pyx_v_idx;
+          __pyx_t_71 = 2;
+          __pyx_t_72 = 1;
+          __pyx_v_C1 = ((double)(*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_70, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_71, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_72, __pyx_pybuffernd_cpos.diminfo[2].strides)));
+
+          /* "splitPixelFullLUT_b.pyx":246
+ *                 C0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, delta)
+ *                 C1 = < double > cpos[idx, 2, 1]
+ *                 D0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, delta)             # <<<<<<<<<<<<<<
+ *                 D1 = < double > cpos[idx, 3, 1]
+ * 
+ */
+          __pyx_t_73 = __pyx_v_idx;
+          __pyx_t_74 = 3;
+          __pyx_t_75 = 0;
+          __pyx_v_D0 = __pyx_f_19splitPixelFullLUT_b_getBinNr(((double)(*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_73, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_74, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_75, __pyx_pybuffernd_cpos.diminfo[2].strides))), __pyx_v_pos0_min, __pyx_v_delta);
+
+          /* "splitPixelFullLUT_b.pyx":247
+ *                 C1 = < double > cpos[idx, 2, 1]
+ *                 D0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, delta)
+ *                 D1 = < double > cpos[idx, 3, 1]             # <<<<<<<<<<<<<<
+ * 
+ *                 min0 = min(A0, B0, C0, D0)
+ */
+          __pyx_t_76 = __pyx_v_idx;
+          __pyx_t_77 = 3;
+          __pyx_t_78 = 1;
+          __pyx_v_D1 = ((double)(*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_76, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_77, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_78, __pyx_pybuffernd_cpos.diminfo[2].strides)));
+
+          /* "splitPixelFullLUT_b.pyx":249
+ *                 D1 = < double > cpos[idx, 3, 1]
+ * 
+ *                 min0 = min(A0, B0, C0, D0)             # <<<<<<<<<<<<<<
+ *                 max0 = max(A0, B0, C0, D0)
+ *                 if (max0<0) or (min0 >=bins):
+ */
+          __pyx_t_42 = __pyx_v_B0;
+          __pyx_t_43 = __pyx_v_C0;
+          __pyx_t_44 = __pyx_v_D0;
+          __pyx_t_45 = __pyx_v_A0;
+          if (((__pyx_t_42 < __pyx_t_45) != 0)) {
+            __pyx_t_14 = __pyx_t_42;
+          } else {
+            __pyx_t_14 = __pyx_t_45;
+          }
+          __pyx_t_45 = __pyx_t_14;
+          if (((__pyx_t_43 < __pyx_t_45) != 0)) {
+            __pyx_t_14 = __pyx_t_43;
+          } else {
+            __pyx_t_14 = __pyx_t_45;
+          }
+          __pyx_t_45 = __pyx_t_14;
+          if (((__pyx_t_44 < __pyx_t_45) != 0)) {
+            __pyx_t_14 = __pyx_t_44;
+          } else {
+            __pyx_t_14 = __pyx_t_45;
+          }
+          __pyx_v_min0 = __pyx_t_14;
+
+          /* "splitPixelFullLUT_b.pyx":250
+ * 
+ *                 min0 = min(A0, B0, C0, D0)
+ *                 max0 = max(A0, B0, C0, D0)             # <<<<<<<<<<<<<<
+ *                 if (max0<0) or (min0 >=bins):
+ *                     continue
+ */
+          __pyx_t_14 = __pyx_v_B0;
+          __pyx_t_42 = __pyx_v_C0;
+          __pyx_t_43 = __pyx_v_D0;
+          __pyx_t_44 = __pyx_v_A0;
+          if (((__pyx_t_14 > __pyx_t_44) != 0)) {
+            __pyx_t_45 = __pyx_t_14;
+          } else {
+            __pyx_t_45 = __pyx_t_44;
+          }
+          __pyx_t_44 = __pyx_t_45;
+          if (((__pyx_t_42 > __pyx_t_44) != 0)) {
+            __pyx_t_45 = __pyx_t_42;
+          } else {
+            __pyx_t_45 = __pyx_t_44;
+          }
+          __pyx_t_44 = __pyx_t_45;
+          if (((__pyx_t_43 > __pyx_t_44) != 0)) {
+            __pyx_t_45 = __pyx_t_43;
+          } else {
+            __pyx_t_45 = __pyx_t_44;
+          }
+          __pyx_v_max0 = __pyx_t_45;
+
+          /* "splitPixelFullLUT_b.pyx":251
+ *                 min0 = min(A0, B0, C0, D0)
+ *                 max0 = max(A0, B0, C0, D0)
+ *                 if (max0<0) or (min0 >=bins):             # <<<<<<<<<<<<<<
+ *                     continue
+ *                 if check_pos1:
+ */
+          __pyx_t_10 = ((__pyx_v_max0 < 0.0) != 0);
+          if (!__pyx_t_10) {
+            __pyx_t_12 = ((__pyx_v_min0 >= __pyx_v_bins) != 0);
+            __pyx_t_13 = __pyx_t_12;
+          } else {
+            __pyx_t_13 = __pyx_t_10;
+          }
+          if (__pyx_t_13) {
+
+            /* "splitPixelFullLUT_b.pyx":252
+ *                 max0 = max(A0, B0, C0, D0)
+ *                 if (max0<0) or (min0 >=bins):
+ *                     continue             # <<<<<<<<<<<<<<
+ *                 if check_pos1:
+ *                     if (max(A1, B1, C1, D1) < pos1_min) or (min(A1, B1, C1, D1) > pos1_maxin):
+ */
+            goto __pyx_L21_continue;
+            goto __pyx_L24;
+          }
+          __pyx_L24:;
+
+          /* "splitPixelFullLUT_b.pyx":253
+ *                 if (max0<0) or (min0 >=bins):
+ *                     continue
+ *                 if check_pos1:             # <<<<<<<<<<<<<<
+ *                     if (max(A1, B1, C1, D1) < pos1_min) or (min(A1, B1, C1, D1) > pos1_maxin):
+ *                         continue
+ */
+          __pyx_t_13 = (__pyx_v_check_pos1 != 0);
+          if (__pyx_t_13) {
+
+            /* "splitPixelFullLUT_b.pyx":254
+ *                     continue
+ *                 if check_pos1:
+ *                     if (max(A1, B1, C1, D1) < pos1_min) or (min(A1, B1, C1, D1) > pos1_maxin):             # <<<<<<<<<<<<<<
+ *                         continue
+ * 
+ */
+            __pyx_t_45 = __pyx_v_B1;
+            __pyx_t_14 = __pyx_v_C1;
+            __pyx_t_42 = __pyx_v_D1;
+            __pyx_t_43 = __pyx_v_A1;
+            if (((__pyx_t_45 > __pyx_t_43) != 0)) {
+              __pyx_t_44 = __pyx_t_45;
+            } else {
+              __pyx_t_44 = __pyx_t_43;
+            }
+            __pyx_t_43 = __pyx_t_44;
+            if (((__pyx_t_14 > __pyx_t_43) != 0)) {
+              __pyx_t_44 = __pyx_t_14;
+            } else {
+              __pyx_t_44 = __pyx_t_43;
+            }
+            __pyx_t_43 = __pyx_t_44;
+            if (((__pyx_t_42 > __pyx_t_43) != 0)) {
+              __pyx_t_44 = __pyx_t_42;
+            } else {
+              __pyx_t_44 = __pyx_t_43;
+            }
+            __pyx_t_13 = ((__pyx_t_44 < __pyx_v_pos1_min) != 0);
+            if (!__pyx_t_13) {
+              __pyx_t_44 = __pyx_v_B1;
+              __pyx_t_45 = __pyx_v_C1;
+              __pyx_t_14 = __pyx_v_D1;
+              __pyx_t_42 = __pyx_v_A1;
+              if (((__pyx_t_44 < __pyx_t_42) != 0)) {
+                __pyx_t_43 = __pyx_t_44;
+              } else {
+                __pyx_t_43 = __pyx_t_42;
+              }
+              __pyx_t_42 = __pyx_t_43;
+              if (((__pyx_t_45 < __pyx_t_42) != 0)) {
+                __pyx_t_43 = __pyx_t_45;
+              } else {
+                __pyx_t_43 = __pyx_t_42;
+              }
+              __pyx_t_42 = __pyx_t_43;
+              if (((__pyx_t_14 < __pyx_t_42) != 0)) {
+                __pyx_t_43 = __pyx_t_14;
+              } else {
+                __pyx_t_43 = __pyx_t_42;
+              }
+              __pyx_t_10 = ((__pyx_t_43 > __pyx_v_pos1_maxin) != 0);
+              __pyx_t_12 = __pyx_t_10;
+            } else {
+              __pyx_t_12 = __pyx_t_13;
+            }
+            if (__pyx_t_12) {
+
+              /* "splitPixelFullLUT_b.pyx":255
+ *                 if check_pos1:
+ *                     if (max(A1, B1, C1, D1) < pos1_min) or (min(A1, B1, C1, D1) > pos1_maxin):
+ *                         continue             # <<<<<<<<<<<<<<
+ * 
+ *                 bin0_min = < int > floor(min0)
+ */
+              goto __pyx_L21_continue;
+              goto __pyx_L26;
+            }
+            __pyx_L26:;
+            goto __pyx_L25;
+          }
+          __pyx_L25:;
+
+          /* "splitPixelFullLUT_b.pyx":257
+ *                         continue
+ * 
+ *                 bin0_min = < int > floor(min0)             # <<<<<<<<<<<<<<
+ *                 bin0_max = < int > floor(max0)
+ * 
+ */
+          __pyx_v_bin0_min = ((int)floor(__pyx_v_min0));
+
+          /* "splitPixelFullLUT_b.pyx":258
+ * 
+ *                 bin0_min = < int > floor(min0)
+ *                 bin0_max = < int > floor(max0)             # <<<<<<<<<<<<<<
+ * 
+ *                 if bin0_min == bin0_max:
+ */
+          __pyx_v_bin0_max = ((int)floor(__pyx_v_max0));
+
+          /* "splitPixelFullLUT_b.pyx":260
+ *                 bin0_max = < int > floor(max0)
+ * 
+ *                 if bin0_min == bin0_max:             # <<<<<<<<<<<<<<
+ *                     #All pixel is within a single bin
+ *                     k = outMax[bin0_min]
+ */
+          __pyx_t_12 = ((__pyx_v_bin0_min == __pyx_v_bin0_max) != 0);
+          if (__pyx_t_12) {
+
+            /* "splitPixelFullLUT_b.pyx":262
+ *                 if bin0_min == bin0_max:
+ *                     #All pixel is within a single bin
+ *                     k = outMax[bin0_min]             # <<<<<<<<<<<<<<
+ *                     indices[indptr[bin0_min]+k] = idx
+ *                     data[indptr[bin0_min]+k] = 1.0
+ */
+            __pyx_t_79 = __pyx_v_bin0_min;
+            __pyx_v_k = (*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int32_t *, __pyx_pybuffernd_outMax.rcbuffer->pybuffer.buf, __pyx_t_79, __pyx_pybuffernd_outMax.diminfo[0].strides));
+
+            /* "splitPixelFullLUT_b.pyx":263
+ *                     #All pixel is within a single bin
+ *                     k = outMax[bin0_min]
+ *                     indices[indptr[bin0_min]+k] = idx             # <<<<<<<<<<<<<<
+ *                     data[indptr[bin0_min]+k] = 1.0
+ *                     areas[indptr[bin0_min]+k] = -1.0
+ */
+            __pyx_t_80 = __pyx_v_bin0_min;
+            __pyx_t_81 = ((*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int32_t *, __pyx_pybuffernd_indptr.rcbuffer->pybuffer.buf, __pyx_t_80, __pyx_pybuffernd_indptr.diminfo[0].strides)) + __pyx_v_k);
+            *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int32_t *, __pyx_pybuffernd_indices.rcbuffer->pybuffer.buf, __pyx_t_81, __pyx_pybuffernd_indices.diminfo[0].strides) = __pyx_v_idx;
+
+            /* "splitPixelFullLUT_b.pyx":264
+ *                     k = outMax[bin0_min]
+ *                     indices[indptr[bin0_min]+k] = idx
+ *                     data[indptr[bin0_min]+k] = 1.0             # <<<<<<<<<<<<<<
+ *                     areas[indptr[bin0_min]+k] = -1.0
+ *                     outMax[bin0_min] += 1 #k+1
+ */
+            __pyx_t_82 = __pyx_v_bin0_min;
+            __pyx_t_83 = ((*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int32_t *, __pyx_pybuffernd_indptr.rcbuffer->pybuffer.buf, __pyx_t_82, __pyx_pybuffernd_indptr.diminfo[0].strides)) + __pyx_v_k);
+            *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_data.rcbuffer->pybuffer.buf, __pyx_t_83, __pyx_pybuffernd_data.diminfo[0].strides) = 1.0;
+
+            /* "splitPixelFullLUT_b.pyx":265
+ *                     indices[indptr[bin0_min]+k] = idx
+ *                     data[indptr[bin0_min]+k] = 1.0
+ *                     areas[indptr[bin0_min]+k] = -1.0             # <<<<<<<<<<<<<<
+ *                     outMax[bin0_min] += 1 #k+1
+ *                 else:  #else we have pixel spliting.
+ */
+            __pyx_t_84 = __pyx_v_bin0_min;
+            __pyx_t_85 = ((*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int32_t *, __pyx_pybuffernd_indptr.rcbuffer->pybuffer.buf, __pyx_t_84, __pyx_pybuffernd_indptr.diminfo[0].strides)) + __pyx_v_k);
+            *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_areas.rcbuffer->pybuffer.buf, __pyx_t_85, __pyx_pybuffernd_areas.diminfo[0].strides) = -1.0;
+
+            /* "splitPixelFullLUT_b.pyx":266
+ *                     data[indptr[bin0_min]+k] = 1.0
+ *                     areas[indptr[bin0_min]+k] = -1.0
+ *                     outMax[bin0_min] += 1 #k+1             # <<<<<<<<<<<<<<
+ *                 else:  #else we have pixel spliting.
+ *                     AB.slope=(B1-A1)/(B0-A0)
+ */
+            __pyx_t_86 = __pyx_v_bin0_min;
+            *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int32_t *, __pyx_pybuffernd_outMax.rcbuffer->pybuffer.buf, __pyx_t_86, __pyx_pybuffernd_outMax.diminfo[0].strides) += 1;
+            goto __pyx_L27;
+          }
+          /*else*/ {
+
+            /* "splitPixelFullLUT_b.pyx":268
+ *                     outMax[bin0_min] += 1 #k+1
+ *                 else:  #else we have pixel spliting.
+ *                     AB.slope=(B1-A1)/(B0-A0)             # <<<<<<<<<<<<<<
+ *                     AB.intersect= A1 - AB.slope*A0
+ *                     BC.slope=(C1-B1)/(C0-B0)
+ */
+            __pyx_v_AB.slope = ((__pyx_v_B1 - __pyx_v_A1) / (__pyx_v_B0 - __pyx_v_A0));
+
+            /* "splitPixelFullLUT_b.pyx":269
+ *                 else:  #else we have pixel spliting.
+ *                     AB.slope=(B1-A1)/(B0-A0)
+ *                     AB.intersect= A1 - AB.slope*A0             # <<<<<<<<<<<<<<
+ *                     BC.slope=(C1-B1)/(C0-B0)
+ *                     BC.intersect= B1 - BC.slope*B0
+ */
+            __pyx_v_AB.intersect = (__pyx_v_A1 - (__pyx_v_AB.slope * __pyx_v_A0));
+
+            /* "splitPixelFullLUT_b.pyx":270
+ *                     AB.slope=(B1-A1)/(B0-A0)
+ *                     AB.intersect= A1 - AB.slope*A0
+ *                     BC.slope=(C1-B1)/(C0-B0)             # <<<<<<<<<<<<<<
+ *                     BC.intersect= B1 - BC.slope*B0
+ *                     CD.slope=(D1-C1)/(D0-C0)
+ */
+            __pyx_v_BC.slope = ((__pyx_v_C1 - __pyx_v_B1) / (__pyx_v_C0 - __pyx_v_B0));
+
+            /* "splitPixelFullLUT_b.pyx":271
+ *                     AB.intersect= A1 - AB.slope*A0
+ *                     BC.slope=(C1-B1)/(C0-B0)
+ *                     BC.intersect= B1 - BC.slope*B0             # <<<<<<<<<<<<<<
+ *                     CD.slope=(D1-C1)/(D0-C0)
+ *                     CD.intersect= C1 - CD.slope*C0
+ */
+            __pyx_v_BC.intersect = (__pyx_v_B1 - (__pyx_v_BC.slope * __pyx_v_B0));
+
+            /* "splitPixelFullLUT_b.pyx":272
+ *                     BC.slope=(C1-B1)/(C0-B0)
+ *                     BC.intersect= B1 - BC.slope*B0
+ *                     CD.slope=(D1-C1)/(D0-C0)             # <<<<<<<<<<<<<<
+ *                     CD.intersect= C1 - CD.slope*C0
+ *                     DA.slope=(A1-D1)/(A0-D0)
+ */
+            __pyx_v_CD.slope = ((__pyx_v_D1 - __pyx_v_C1) / (__pyx_v_D0 - __pyx_v_C0));
+
+            /* "splitPixelFullLUT_b.pyx":273
+ *                     BC.intersect= B1 - BC.slope*B0
+ *                     CD.slope=(D1-C1)/(D0-C0)
+ *                     CD.intersect= C1 - CD.slope*C0             # <<<<<<<<<<<<<<
+ *                     DA.slope=(A1-D1)/(A0-D0)
+ *                     DA.intersect= D1 - DA.slope*D0
+ */
+            __pyx_v_CD.intersect = (__pyx_v_C1 - (__pyx_v_CD.slope * __pyx_v_C0));
+
+            /* "splitPixelFullLUT_b.pyx":274
+ *                     CD.slope=(D1-C1)/(D0-C0)
+ *                     CD.intersect= C1 - CD.slope*C0
+ *                     DA.slope=(A1-D1)/(A0-D0)             # <<<<<<<<<<<<<<
+ *                     DA.intersect= D1 - DA.slope*D0
+ *                     areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
+ */
+            __pyx_v_DA.slope = ((__pyx_v_A1 - __pyx_v_D1) / (__pyx_v_A0 - __pyx_v_D0));
+
+            /* "splitPixelFullLUT_b.pyx":275
+ *                     CD.intersect= C1 - CD.slope*C0
+ *                     DA.slope=(A1-D1)/(A0-D0)
+ *                     DA.intersect= D1 - DA.slope*D0             # <<<<<<<<<<<<<<
+ *                     areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
+ *                     oneOverPixelArea = 1.0 / areaPixel
+ */
+            __pyx_v_DA.intersect = (__pyx_v_D1 - (__pyx_v_DA.slope * __pyx_v_D0));
+
+            /* "splitPixelFullLUT_b.pyx":276
+ *                     DA.slope=(A1-D1)/(A0-D0)
+ *                     DA.intersect= D1 - DA.slope*D0
+ *                     areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)             # <<<<<<<<<<<<<<
+ *                     oneOverPixelArea = 1.0 / areaPixel
+ *                     partialArea2 = 0.0
+ */
+            __pyx_v_areaPixel = __pyx_f_19splitPixelFullLUT_b_area4(__pyx_v_A0, __pyx_v_A1, __pyx_v_B0, __pyx_v_B1, __pyx_v_C0, __pyx_v_C1, __pyx_v_D0, __pyx_v_D1);
+
+            /* "splitPixelFullLUT_b.pyx":277
+ *                     DA.intersect= D1 - DA.slope*D0
+ *                     areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
+ *                     oneOverPixelArea = 1.0 / areaPixel             # <<<<<<<<<<<<<<
+ *                     partialArea2 = 0.0
+ *                     for bin in range(bin0_min, bin0_max+1):
+ */
+            __pyx_v_oneOverPixelArea = (1.0 / __pyx_v_areaPixel);
+
+            /* "splitPixelFullLUT_b.pyx":278
+ *                     areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
+ *                     oneOverPixelArea = 1.0 / areaPixel
+ *                     partialArea2 = 0.0             # <<<<<<<<<<<<<<
+ *                     for bin in range(bin0_min, bin0_max+1):
+ *                         A_lim = (A0<=bin)*(A0<=(bin+1))*bin + (A0>bin)*(A0<=(bin+1))*A0 + (A0>bin)*(A0>(bin+1))*(bin+1)
+ */
+            __pyx_v_partialArea2 = 0.0;
+
+            /* "splitPixelFullLUT_b.pyx":279
+ *                     oneOverPixelArea = 1.0 / areaPixel
+ *                     partialArea2 = 0.0
+ *                     for bin in range(bin0_min, bin0_max+1):             # <<<<<<<<<<<<<<
+ *                         A_lim = (A0<=bin)*(A0<=(bin+1))*bin + (A0>bin)*(A0<=(bin+1))*A0 + (A0>bin)*(A0>(bin+1))*(bin+1)
+ *                         B_lim = (B0<=bin)*(B0<=(bin+1))*bin + (B0>bin)*(B0<=(bin+1))*B0 + (B0>bin)*(B0>(bin+1))*(bin+1)
+ */
+            __pyx_t_87 = (__pyx_v_bin0_max + 1);
+            for (__pyx_t_88 = __pyx_v_bin0_min; __pyx_t_88 < __pyx_t_87; __pyx_t_88+=1) {
+              __pyx_v_bin = __pyx_t_88;
+
+              /* "splitPixelFullLUT_b.pyx":280
+ *                     partialArea2 = 0.0
+ *                     for bin in range(bin0_min, bin0_max+1):
+ *                         A_lim = (A0<=bin)*(A0<=(bin+1))*bin + (A0>bin)*(A0<=(bin+1))*A0 + (A0>bin)*(A0>(bin+1))*(bin+1)             # <<<<<<<<<<<<<<
+ *                         B_lim = (B0<=bin)*(B0<=(bin+1))*bin + (B0>bin)*(B0<=(bin+1))*B0 + (B0>bin)*(B0>(bin+1))*(bin+1)
+ *                         C_lim = (C0<=bin)*(C0<=(bin+1))*bin + (C0>bin)*(C0<=(bin+1))*C0 + (C0>bin)*(C0>(bin+1))*(bin+1)
+ */
+              __pyx_v_A_lim = (((((__pyx_v_A0 <= __pyx_v_bin) * (__pyx_v_A0 <= (__pyx_v_bin + 1))) * __pyx_v_bin) + (((__pyx_v_A0 > __pyx_v_bin) * (__pyx_v_A0 <= (__pyx_v_bin + 1))) * __pyx_v_A0)) + (((__pyx_v_A0 > __pyx_v_bin) * (__pyx_v_A0 > (__pyx_v_bin + 1))) * (__pyx_v_bin + 1)));
+
+              /* "splitPixelFullLUT_b.pyx":281
+ *                     for bin in range(bin0_min, bin0_max+1):
+ *                         A_lim = (A0<=bin)*(A0<=(bin+1))*bin + (A0>bin)*(A0<=(bin+1))*A0 + (A0>bin)*(A0>(bin+1))*(bin+1)
+ *                         B_lim = (B0<=bin)*(B0<=(bin+1))*bin + (B0>bin)*(B0<=(bin+1))*B0 + (B0>bin)*(B0>(bin+1))*(bin+1)             # <<<<<<<<<<<<<<
+ *                         C_lim = (C0<=bin)*(C0<=(bin+1))*bin + (C0>bin)*(C0<=(bin+1))*C0 + (C0>bin)*(C0>(bin+1))*(bin+1)
+ *                         D_lim = (D0<=bin)*(D0<=(bin+1))*bin + (D0>bin)*(D0<=(bin+1))*D0 + (D0>bin)*(D0>(bin+1))*(bin+1)
+ */
+              __pyx_v_B_lim = (((((__pyx_v_B0 <= __pyx_v_bin) * (__pyx_v_B0 <= (__pyx_v_bin + 1))) * __pyx_v_bin) + (((__pyx_v_B0 > __pyx_v_bin) * (__pyx_v_B0 <= (__pyx_v_bin + 1))) * __pyx_v_B0)) + (((__pyx_v_B0 > __pyx_v_bin) * (__pyx_v_B0 > (__pyx_v_bin + 1))) * (__pyx_v_bin + 1)));
+
+              /* "splitPixelFullLUT_b.pyx":282
+ *                         A_lim = (A0<=bin)*(A0<=(bin+1))*bin + (A0>bin)*(A0<=(bin+1))*A0 + (A0>bin)*(A0>(bin+1))*(bin+1)
+ *                         B_lim = (B0<=bin)*(B0<=(bin+1))*bin + (B0>bin)*(B0<=(bin+1))*B0 + (B0>bin)*(B0>(bin+1))*(bin+1)
+ *                         C_lim = (C0<=bin)*(C0<=(bin+1))*bin + (C0>bin)*(C0<=(bin+1))*C0 + (C0>bin)*(C0>(bin+1))*(bin+1)             # <<<<<<<<<<<<<<
+ *                         D_lim = (D0<=bin)*(D0<=(bin+1))*bin + (D0>bin)*(D0<=(bin+1))*D0 + (D0>bin)*(D0>(bin+1))*(bin+1)
+ *                         partialArea  = integrate(A_lim, B_lim, AB)
+ */
+              __pyx_v_C_lim = (((((__pyx_v_C0 <= __pyx_v_bin) * (__pyx_v_C0 <= (__pyx_v_bin + 1))) * __pyx_v_bin) + (((__pyx_v_C0 > __pyx_v_bin) * (__pyx_v_C0 <= (__pyx_v_bin + 1))) * __pyx_v_C0)) + (((__pyx_v_C0 > __pyx_v_bin) * (__pyx_v_C0 > (__pyx_v_bin + 1))) * (__pyx_v_bin + 1)));
+
+              /* "splitPixelFullLUT_b.pyx":283
+ *                         B_lim = (B0<=bin)*(B0<=(bin+1))*bin + (B0>bin)*(B0<=(bin+1))*B0 + (B0>bin)*(B0>(bin+1))*(bin+1)
+ *                         C_lim = (C0<=bin)*(C0<=(bin+1))*bin + (C0>bin)*(C0<=(bin+1))*C0 + (C0>bin)*(C0>(bin+1))*(bin+1)
+ *                         D_lim = (D0<=bin)*(D0<=(bin+1))*bin + (D0>bin)*(D0<=(bin+1))*D0 + (D0>bin)*(D0>(bin+1))*(bin+1)             # <<<<<<<<<<<<<<
+ *                         partialArea  = integrate(A_lim, B_lim, AB)
+ *                         partialArea += integrate(B_lim, C_lim, BC)
+ */
+              __pyx_v_D_lim = (((((__pyx_v_D0 <= __pyx_v_bin) * (__pyx_v_D0 <= (__pyx_v_bin + 1))) * __pyx_v_bin) + (((__pyx_v_D0 > __pyx_v_bin) * (__pyx_v_D0 <= (__pyx_v_bin + 1))) * __pyx_v_D0)) + (((__pyx_v_D0 > __pyx_v_bin) * (__pyx_v_D0 > (__pyx_v_bin + 1))) * (__pyx_v_bin + 1)));
+
+              /* "splitPixelFullLUT_b.pyx":284
+ *                         C_lim = (C0<=bin)*(C0<=(bin+1))*bin + (C0>bin)*(C0<=(bin+1))*C0 + (C0>bin)*(C0>(bin+1))*(bin+1)
+ *                         D_lim = (D0<=bin)*(D0<=(bin+1))*bin + (D0>bin)*(D0<=(bin+1))*D0 + (D0>bin)*(D0>(bin+1))*(bin+1)
+ *                         partialArea  = integrate(A_lim, B_lim, AB)             # <<<<<<<<<<<<<<
+ *                         partialArea += integrate(B_lim, C_lim, BC)
+ *                         partialArea += integrate(C_lim, D_lim, CD)
+ */
+              __pyx_v_partialArea = __pyx_f_19splitPixelFullLUT_b_integrate(__pyx_v_A_lim, __pyx_v_B_lim, __pyx_v_AB);
+
+              /* "splitPixelFullLUT_b.pyx":285
+ *                         D_lim = (D0<=bin)*(D0<=(bin+1))*bin + (D0>bin)*(D0<=(bin+1))*D0 + (D0>bin)*(D0>(bin+1))*(bin+1)
+ *                         partialArea  = integrate(A_lim, B_lim, AB)
+ *                         partialArea += integrate(B_lim, C_lim, BC)             # <<<<<<<<<<<<<<
+ *                         partialArea += integrate(C_lim, D_lim, CD)
+ *                         partialArea += integrate(D_lim, A_lim, DA)
+ */
+              __pyx_v_partialArea = (__pyx_v_partialArea + __pyx_f_19splitPixelFullLUT_b_integrate(__pyx_v_B_lim, __pyx_v_C_lim, __pyx_v_BC));
+
+              /* "splitPixelFullLUT_b.pyx":286
+ *                         partialArea  = integrate(A_lim, B_lim, AB)
+ *                         partialArea += integrate(B_lim, C_lim, BC)
+ *                         partialArea += integrate(C_lim, D_lim, CD)             # <<<<<<<<<<<<<<
+ *                         partialArea += integrate(D_lim, A_lim, DA)
+ *                         tmp = fabs(partialArea) * oneOverPixelArea
+ */
+              __pyx_v_partialArea = (__pyx_v_partialArea + __pyx_f_19splitPixelFullLUT_b_integrate(__pyx_v_C_lim, __pyx_v_D_lim, __pyx_v_CD));
+
+              /* "splitPixelFullLUT_b.pyx":287
+ *                         partialArea += integrate(B_lim, C_lim, BC)
+ *                         partialArea += integrate(C_lim, D_lim, CD)
+ *                         partialArea += integrate(D_lim, A_lim, DA)             # <<<<<<<<<<<<<<
+ *                         tmp = fabs(partialArea) * oneOverPixelArea
+ *                         k = outMax[bin]
+ */
+              __pyx_v_partialArea = (__pyx_v_partialArea + __pyx_f_19splitPixelFullLUT_b_integrate(__pyx_v_D_lim, __pyx_v_A_lim, __pyx_v_DA));
+
+              /* "splitPixelFullLUT_b.pyx":288
+ *                         partialArea += integrate(C_lim, D_lim, CD)
+ *                         partialArea += integrate(D_lim, A_lim, DA)
+ *                         tmp = fabs(partialArea) * oneOverPixelArea             # <<<<<<<<<<<<<<
+ *                         k = outMax[bin]
+ *                         indices[indptr[bin]+k] = idx
+ */
+              __pyx_v_tmp = (fabs(__pyx_v_partialArea) * __pyx_v_oneOverPixelArea);
+
+              /* "splitPixelFullLUT_b.pyx":289
+ *                         partialArea += integrate(D_lim, A_lim, DA)
+ *                         tmp = fabs(partialArea) * oneOverPixelArea
+ *                         k = outMax[bin]             # <<<<<<<<<<<<<<
+ *                         indices[indptr[bin]+k] = idx
+ *                         data[indptr[bin]+k] = tmp
+ */
+              __pyx_t_89 = __pyx_v_bin;
+              __pyx_v_k = (*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int32_t *, __pyx_pybuffernd_outMax.rcbuffer->pybuffer.buf, __pyx_t_89, __pyx_pybuffernd_outMax.diminfo[0].strides));
+
+              /* "splitPixelFullLUT_b.pyx":290
+ *                         tmp = fabs(partialArea) * oneOverPixelArea
+ *                         k = outMax[bin]
+ *                         indices[indptr[bin]+k] = idx             # <<<<<<<<<<<<<<
+ *                         data[indptr[bin]+k] = tmp
+ *                         areas[indptr[bin]+k] = fabs(partialArea)
+ */
+              __pyx_t_90 = __pyx_v_bin;
+              __pyx_t_91 = ((*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int32_t *, __pyx_pybuffernd_indptr.rcbuffer->pybuffer.buf, __pyx_t_90, __pyx_pybuffernd_indptr.diminfo[0].strides)) + __pyx_v_k);
+              *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int32_t *, __pyx_pybuffernd_indices.rcbuffer->pybuffer.buf, __pyx_t_91, __pyx_pybuffernd_indices.diminfo[0].strides) = __pyx_v_idx;
+
+              /* "splitPixelFullLUT_b.pyx":291
+ *                         k = outMax[bin]
+ *                         indices[indptr[bin]+k] = idx
+ *                         data[indptr[bin]+k] = tmp             # <<<<<<<<<<<<<<
+ *                         areas[indptr[bin]+k] = fabs(partialArea)
+ *                         outMax[bin] += 1 #k+1
+ */
+              __pyx_t_92 = __pyx_v_bin;
+              __pyx_t_93 = ((*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int32_t *, __pyx_pybuffernd_indptr.rcbuffer->pybuffer.buf, __pyx_t_92, __pyx_pybuffernd_indptr.diminfo[0].strides)) + __pyx_v_k);
+              *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_data.rcbuffer->pybuffer.buf, __pyx_t_93, __pyx_pybuffernd_data.diminfo[0].strides) = __pyx_v_tmp;
+
+              /* "splitPixelFullLUT_b.pyx":292
+ *                         indices[indptr[bin]+k] = idx
+ *                         data[indptr[bin]+k] = tmp
+ *                         areas[indptr[bin]+k] = fabs(partialArea)             # <<<<<<<<<<<<<<
+ *                         outMax[bin] += 1 #k+1
+ *         self.data = data
+ */
+              __pyx_t_94 = __pyx_v_bin;
+              __pyx_t_95 = ((*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int32_t *, __pyx_pybuffernd_indptr.rcbuffer->pybuffer.buf, __pyx_t_94, __pyx_pybuffernd_indptr.diminfo[0].strides)) + __pyx_v_k);
+              *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_areas.rcbuffer->pybuffer.buf, __pyx_t_95, __pyx_pybuffernd_areas.diminfo[0].strides) = fabs(__pyx_v_partialArea);
+
+              /* "splitPixelFullLUT_b.pyx":293
+ *                         data[indptr[bin]+k] = tmp
+ *                         areas[indptr[bin]+k] = fabs(partialArea)
+ *                         outMax[bin] += 1 #k+1             # <<<<<<<<<<<<<<
+ *         self.data = data
+ *         self.indices = indices
+ */
+              __pyx_t_96 = __pyx_v_bin;
+              *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int32_t *, __pyx_pybuffernd_outMax.rcbuffer->pybuffer.buf, __pyx_t_96, __pyx_pybuffernd_outMax.diminfo[0].strides) += 1;
+            }
+          }
+          __pyx_L27:;
+          __pyx_L21_continue:;
+        }
+      }
+
+      /* "splitPixelFullLUT_b.pyx":234
+ *         memset(&outMax[0], 0, bins * sizeof(numpy.int32_t))
+ * 
+ *         with nogil:             # <<<<<<<<<<<<<<
+ *             for idx in range(size):
+ * 
+ */
+      /*finally:*/ {
+        int __pyx_why;
+        __pyx_why = 0; goto __pyx_L20;
+        __pyx_L19: __pyx_why = 4; goto __pyx_L20;
+        __pyx_L20:;
+        #ifdef WITH_THREAD
+        Py_BLOCK_THREADS
+        #endif
+        switch (__pyx_why) {
+          case 4: goto __pyx_L1_error;
+        }
+      }
+  }
+
+  /* "splitPixelFullLUT_b.pyx":294
+ *                         areas[indptr[bin]+k] = fabs(partialArea)
+ *                         outMax[bin] += 1 #k+1
+ *         self.data = data             # <<<<<<<<<<<<<<
+ *         self.indices = indices
+ *         self.outMax = outMax
+ */
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__data, ((PyObject *)__pyx_v_data)) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 294; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "splitPixelFullLUT_b.pyx":295
+ *                         outMax[bin] += 1 #k+1
+ *         self.data = data
+ *         self.indices = indices             # <<<<<<<<<<<<<<
+ *         self.outMax = outMax
+ *         self.areas = areas
+ */
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__indices, ((PyObject *)__pyx_v_indices)) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 295; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "splitPixelFullLUT_b.pyx":296
+ *         self.data = data
+ *         self.indices = indices
+ *         self.outMax = outMax             # <<<<<<<<<<<<<<
+ *         self.areas = areas
+ * 
+ */
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__outMax, ((PyObject *)__pyx_v_outMax)) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 296; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "splitPixelFullLUT_b.pyx":297
+ *         self.indices = indices
+ *         self.outMax = outMax
+ *         self.areas = areas             # <<<<<<<<<<<<<<
+ * 
+ *     @cython.cdivision(True)
+ */
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s__areas, ((PyObject *)__pyx_v_areas)) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 297; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   __pyx_r = Py_None; __Pyx_INCREF(Py_None);
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
-  __Pyx_XDECREF(__pyx_t_6);
-  __Pyx_XDECREF(__pyx_t_7);
-  __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
-  __PYX_XDEC_MEMVIEW(&__pyx_t_16, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_15, 1);
   { PyObject *__pyx_type, *__pyx_value, *__pyx_tb;
     __Pyx_ErrFetch(&__pyx_type, &__pyx_value, &__pyx_tb);
-    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_cdata.rcbuffer->pybuffer);
+    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_areas.rcbuffer->pybuffer);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_cpos.rcbuffer->pybuffer);
-    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_outCount.rcbuffer->pybuffer);
-    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_outData.rcbuffer->pybuffer);
-    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_outMerge.rcbuffer->pybuffer);
+    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_data.rcbuffer->pybuffer);
+    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_indices.rcbuffer->pybuffer);
+    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_indptr.rcbuffer->pybuffer);
+    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_outMax.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("splitPixel.fullSplit1D", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("splitPixelFullLUT_b.HistoLUT1dFullSplit.calc_lut", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   goto __pyx_L2;
   __pyx_L0:;
-  __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_cdata.rcbuffer->pybuffer);
+  __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_areas.rcbuffer->pybuffer);
   __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_cpos.rcbuffer->pybuffer);
-  __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_outCount.rcbuffer->pybuffer);
-  __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_outData.rcbuffer->pybuffer);
-  __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_outMerge.rcbuffer->pybuffer);
+  __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_data.rcbuffer->pybuffer);
+  __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_indices.rcbuffer->pybuffer);
+  __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_indptr.rcbuffer->pybuffer);
+  __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_outMax.rcbuffer->pybuffer);
   __pyx_L2:;
   __Pyx_XDECREF((PyObject *)__pyx_v_cpos);
-  __Pyx_XDECREF((PyObject *)__pyx_v_cdata);
-  __Pyx_XDECREF((PyObject *)__pyx_v_outData);
-  __Pyx_XDECREF((PyObject *)__pyx_v_outCount);
-  __Pyx_XDECREF((PyObject *)__pyx_v_outMerge);
   __PYX_XDEC_MEMVIEW(&__pyx_v_cmask, 1);
-  __PYX_XDEC_MEMVIEW(&__pyx_v_cflat, 1);
-  __PYX_XDEC_MEMVIEW(&__pyx_v_cdark, 1);
-  __PYX_XDEC_MEMVIEW(&__pyx_v_cpolarization, 1);
-  __PYX_XDEC_MEMVIEW(&__pyx_v_csolidangle, 1);
-  __PYX_XDEC_MEMVIEW(&__pyx_v_buffer, 1);
-  __Pyx_XDECREF(__pyx_v_outPos);
-  __Pyx_XDECREF((PyObject *)__pyx_v_pos);
+  __Pyx_XDECREF((PyObject *)__pyx_v_outMax);
+  __Pyx_XDECREF((PyObject *)__pyx_v_indptr);
+  __Pyx_XDECREF((PyObject *)__pyx_v_indices);
+  __Pyx_XDECREF((PyObject *)__pyx_v_data);
+  __Pyx_XDECREF((PyObject *)__pyx_v_areas);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_10splitPixel_3fullSplit2D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_10splitPixel_2fullSplit2D[] = "\n    Calculate 2D histogram of pos weighted by weights\n\n    Splitting is done on the pixel's bounding box like fit2D\n\n\n    @param pos: 3D array with pos0; Corner A,B,C,D; tth or chi\n    @param weights: array with intensities\n    @param bins: number of output bins int or 2-tuple of int\n    @param pos0Range: minimum and maximum  of the 2th range\n    @param pos1Range: minimum and maximum  of the chi range\n    @param dummy: value for bins without pixels\n    @param delta_dummy: precision of dummy value\n    @param mask: array (of int8) with masked pixels with 1 (0=not masked)\n    @param dark: array (of float64) with dark noise to be subtracted (or None)\n    @param flat: array (of float64) with flat-field image\n    @param polarization: array (of float64) with polarization correction\n    @param solidangle: array (of float64)with solid angle corrections\n    @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)\n    ";
-static PyMethodDef __pyx_mdef_10splitPixel_3fullSplit2D = {__Pyx_NAMESTR("fullSplit2D"), (PyCFunction)__pyx_pw_10splitPixel_3fullSplit2D, METH_VARARGS|METH_KEYWORDS, __Pyx_DOCSTR(__pyx_doc_10splitPixel_2fullSplit2D)};
-static PyObject *__pyx_pw_10splitPixel_3fullSplit2D(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
-  PyArrayObject *__pyx_v_pos = 0;
-  PyArrayObject *__pyx_v_weights = 0;
-  PyObject *__pyx_v_bins = 0;
-  PyObject *__pyx_v_pos0Range = 0;
-  PyObject *__pyx_v_pos1Range = 0;
+static PyObject *__pyx_pw_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_5integrate(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_4integrate[] = "\n        Actually perform the integration which in this case looks more like a matrix-vector product\n\n        @param weights: input image\n        @type weights: ndarray\n        @param dummy: value for dead pixels (optional)\n        @type dummy: float\n        @param delta_dummy: precision for dead-pixel value in dynamic masking\n        @type delta_dummy: float\n        @param dark: array with the dark-current value to be subtracted (if any)\n        @type dark: ndarray\n        @param flat: array with the dark-current value to be divided by (if any)\n        @type flat: ndarray\n        @param solidAngle: array with the solid angle of each pixel to be divided by (if any)\n        @type solidAngle: ndarray\n        @param polarization: array with the polarization correction values to be divided by (if any)\n        @type polarization: ndarray\n        @return : positions, pattern, weighted_histogram and unweighted_histogram\n        @rtype: 4-tuple of ndarrays\n\n        ";
+static PyMethodDef __pyx_mdef_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_5integrate = {__Pyx_NAMESTR("integrate"), (PyCFunction)__pyx_pw_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_5integrate, METH_VARARGS|METH_KEYWORDS, __Pyx_DOCSTR(__pyx_doc_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_4integrate)};
+static PyObject *__pyx_pw_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_5integrate(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  PyObject *__pyx_v_self = 0;
+  PyObject *__pyx_v_weights = 0;
   PyObject *__pyx_v_dummy = 0;
   PyObject *__pyx_v_delta_dummy = 0;
-  PyObject *__pyx_v_mask = 0;
   PyObject *__pyx_v_dark = 0;
   PyObject *__pyx_v_flat = 0;
-  PyObject *__pyx_v_solidangle = 0;
+  PyObject *__pyx_v_solidAngle = 0;
   PyObject *__pyx_v_polarization = 0;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("fullSplit2D (wrapper)", 0);
+  __Pyx_RefNannySetupContext("integrate (wrapper)", 0);
   {
-    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s__pos,&__pyx_n_s__weights,&__pyx_n_s__bins,&__pyx_n_s__pos0Range,&__pyx_n_s__pos1Range,&__pyx_n_s__dummy,&__pyx_n_s__delta_dummy,&__pyx_n_s__mask,&__pyx_n_s__dark,&__pyx_n_s__flat,&__pyx_n_s__solidangle,&__pyx_n_s__polarization,0};
-    PyObject* values[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s__self,&__pyx_n_s__weights,&__pyx_n_s__dummy,&__pyx_n_s__delta_dummy,&__pyx_n_s__dark,&__pyx_n_s__flat,&__pyx_n_s__solidAngle,&__pyx_n_s__polarization,0};
+    PyObject* values[8] = {0,0,0,0,0,0,0,0};
 
-    /* "splitPixel.pyx":385
- *                 numpy.ndarray weights not None,
- *                 bins not None,
- *                 pos0Range=None,             # <<<<<<<<<<<<<<
- *                 pos1Range=None,
- *                 dummy=None,
+    /* "splitPixelFullLUT_b.pyx":302
+ *     @cython.boundscheck(False)
+ *     @cython.wraparound(False)
+ *     def integrate(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None):             # <<<<<<<<<<<<<<
+ *         """
+ *         Actually perform the integration which in this case looks more like a matrix-vector product
  */
-    values[3] = ((PyObject *)Py_None);
-
-    /* "splitPixel.pyx":386
- *                 bins not None,
- *                 pos0Range=None,
- *                 pos1Range=None,             # <<<<<<<<<<<<<<
- *                 dummy=None,
- *                 delta_dummy=None,
- */
-    values[4] = ((PyObject *)Py_None);
-
-    /* "splitPixel.pyx":387
- *                 pos0Range=None,
- *                 pos1Range=None,
- *                 dummy=None,             # <<<<<<<<<<<<<<
- *                 delta_dummy=None,
- *                 mask=None,
- */
-    values[5] = ((PyObject *)Py_None);
-
-    /* "splitPixel.pyx":388
- *                 pos1Range=None,
- *                 dummy=None,
- *                 delta_dummy=None,             # <<<<<<<<<<<<<<
- *                 mask=None,
- *                 dark=None,
- */
-    values[6] = ((PyObject *)Py_None);
-
-    /* "splitPixel.pyx":389
- *                 dummy=None,
- *                 delta_dummy=None,
- *                 mask=None,             # <<<<<<<<<<<<<<
- *                 dark=None,
- *                 flat=None,
- */
-    values[7] = ((PyObject *)Py_None);
-
-    /* "splitPixel.pyx":390
- *                 delta_dummy=None,
- *                 mask=None,
- *                 dark=None,             # <<<<<<<<<<<<<<
- *                 flat=None,
- *                 solidangle=None,
- */
-    values[8] = ((PyObject *)Py_None);
-
-    /* "splitPixel.pyx":391
- *                 mask=None,
- *                 dark=None,
- *                 flat=None,             # <<<<<<<<<<<<<<
- *                 solidangle=None,
- *                 polarization=None):
- */
-    values[9] = ((PyObject *)Py_None);
-
-    /* "splitPixel.pyx":392
- *                 dark=None,
- *                 flat=None,
- *                 solidangle=None,             # <<<<<<<<<<<<<<
- *                 polarization=None):
- *     """
- */
-    values[10] = ((PyObject *)Py_None);
-
-    /* "splitPixel.pyx":393
- *                 flat=None,
- *                 solidangle=None,
- *                 polarization=None):             # <<<<<<<<<<<<<<
- *     """
- *     Calculate 2D histogram of pos weighted by weights
- */
-    values[11] = ((PyObject *)Py_None);
+    values[2] = ((PyObject *)((PyObject *)Py_None));
+    values[3] = ((PyObject *)((PyObject *)Py_None));
+    values[4] = ((PyObject *)((PyObject *)Py_None));
+    values[5] = ((PyObject *)((PyObject *)Py_None));
+    values[6] = ((PyObject *)((PyObject *)Py_None));
+    values[7] = ((PyObject *)((PyObject *)Py_None));
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
       const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
       switch (pos_args) {
-        case 12: values[11] = PyTuple_GET_ITEM(__pyx_args, 11);
-        case 11: values[10] = PyTuple_GET_ITEM(__pyx_args, 10);
-        case 10: values[9] = PyTuple_GET_ITEM(__pyx_args, 9);
-        case  9: values[8] = PyTuple_GET_ITEM(__pyx_args, 8);
         case  8: values[7] = PyTuple_GET_ITEM(__pyx_args, 7);
         case  7: values[6] = PyTuple_GET_ITEM(__pyx_args, 6);
         case  6: values[5] = PyTuple_GET_ITEM(__pyx_args, 5);
@@ -5756,200 +5334,113 @@ static PyObject *__pyx_pw_10splitPixel_3fullSplit2D(PyObject *__pyx_self, PyObje
       kw_args = PyDict_Size(__pyx_kwds);
       switch (pos_args) {
         case  0:
-        if (likely((values[0] = PyDict_GetItem(__pyx_kwds, __pyx_n_s__pos)) != 0)) kw_args--;
+        if (likely((values[0] = PyDict_GetItem(__pyx_kwds, __pyx_n_s__self)) != 0)) kw_args--;
         else goto __pyx_L5_argtuple_error;
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s__weights)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("fullSplit2D", 0, 3, 12, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 382; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+          __Pyx_RaiseArgtupleInvalid("integrate", 0, 2, 8, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 302; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
         }
         case  2:
-        if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s__bins)) != 0)) kw_args--;
-        else {
-          __Pyx_RaiseArgtupleInvalid("fullSplit2D", 0, 3, 12, 2); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 382; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (kw_args > 0) {
+          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__dummy);
+          if (value) { values[2] = value; kw_args--; }
         }
         case  3:
         if (kw_args > 0) {
-          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__pos0Range);
+          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__delta_dummy);
           if (value) { values[3] = value; kw_args--; }
         }
         case  4:
         if (kw_args > 0) {
-          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__pos1Range);
+          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__dark);
           if (value) { values[4] = value; kw_args--; }
         }
         case  5:
         if (kw_args > 0) {
-          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__dummy);
+          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__flat);
           if (value) { values[5] = value; kw_args--; }
         }
         case  6:
         if (kw_args > 0) {
-          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__delta_dummy);
+          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__solidAngle);
           if (value) { values[6] = value; kw_args--; }
         }
         case  7:
         if (kw_args > 0) {
-          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__mask);
-          if (value) { values[7] = value; kw_args--; }
-        }
-        case  8:
-        if (kw_args > 0) {
-          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__dark);
-          if (value) { values[8] = value; kw_args--; }
-        }
-        case  9:
-        if (kw_args > 0) {
-          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__flat);
-          if (value) { values[9] = value; kw_args--; }
-        }
-        case 10:
-        if (kw_args > 0) {
-          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__solidangle);
-          if (value) { values[10] = value; kw_args--; }
-        }
-        case 11:
-        if (kw_args > 0) {
           PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s__polarization);
-          if (value) { values[11] = value; kw_args--; }
+          if (value) { values[7] = value; kw_args--; }
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "fullSplit2D") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 382; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "integrate") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 302; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
-        case 12: values[11] = PyTuple_GET_ITEM(__pyx_args, 11);
-        case 11: values[10] = PyTuple_GET_ITEM(__pyx_args, 10);
-        case 10: values[9] = PyTuple_GET_ITEM(__pyx_args, 9);
-        case  9: values[8] = PyTuple_GET_ITEM(__pyx_args, 8);
         case  8: values[7] = PyTuple_GET_ITEM(__pyx_args, 7);
         case  7: values[6] = PyTuple_GET_ITEM(__pyx_args, 6);
         case  6: values[5] = PyTuple_GET_ITEM(__pyx_args, 5);
         case  5: values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
         case  4: values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
         case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
-        values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
         values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
         break;
         default: goto __pyx_L5_argtuple_error;
       }
     }
-    __pyx_v_pos = ((PyArrayObject *)values[0]);
-    __pyx_v_weights = ((PyArrayObject *)values[1]);
-    __pyx_v_bins = values[2];
-    __pyx_v_pos0Range = values[3];
-    __pyx_v_pos1Range = values[4];
-    __pyx_v_dummy = values[5];
-    __pyx_v_delta_dummy = values[6];
-    __pyx_v_mask = values[7];
-    __pyx_v_dark = values[8];
-    __pyx_v_flat = values[9];
-    __pyx_v_solidangle = values[10];
-    __pyx_v_polarization = values[11];
+    __pyx_v_self = values[0];
+    __pyx_v_weights = values[1];
+    __pyx_v_dummy = values[2];
+    __pyx_v_delta_dummy = values[3];
+    __pyx_v_dark = values[4];
+    __pyx_v_flat = values[5];
+    __pyx_v_solidAngle = values[6];
+    __pyx_v_polarization = values[7];
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("fullSplit2D", 0, 3, 12, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 382; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __Pyx_RaiseArgtupleInvalid("integrate", 0, 2, 8, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 302; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("splitPixel.fullSplit2D", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("splitPixelFullLUT_b.HistoLUT1dFullSplit.integrate", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_pos), __pyx_ptype_5numpy_ndarray, 0, "pos", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 382; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_weights), __pyx_ptype_5numpy_ndarray, 0, "weights", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 383; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (unlikely(((PyObject *)__pyx_v_bins) == Py_None)) {
-    PyErr_Format(PyExc_TypeError, "Argument 'bins' must not be None"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 384; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  }
-  __pyx_r = __pyx_pf_10splitPixel_2fullSplit2D(__pyx_self, __pyx_v_pos, __pyx_v_weights, __pyx_v_bins, __pyx_v_pos0Range, __pyx_v_pos1Range, __pyx_v_dummy, __pyx_v_delta_dummy, __pyx_v_mask, __pyx_v_dark, __pyx_v_flat, __pyx_v_solidangle, __pyx_v_polarization);
-  goto __pyx_L0;
-  __pyx_L1_error:;
-  __pyx_r = NULL;
-  __pyx_L0:;
+  __pyx_r = __pyx_pf_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_4integrate(__pyx_self, __pyx_v_self, __pyx_v_weights, __pyx_v_dummy, __pyx_v_delta_dummy, __pyx_v_dark, __pyx_v_flat, __pyx_v_solidAngle, __pyx_v_polarization);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "splitPixel.pyx":382
- * @cython.boundscheck(False)
- * @cython.wraparound(False)
- * def fullSplit2D(numpy.ndarray pos not None,             # <<<<<<<<<<<<<<
- *                 numpy.ndarray weights not None,
- *                 bins not None,
- */
-
-static PyObject *__pyx_pf_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_pos, PyArrayObject *__pyx_v_weights, PyObject *__pyx_v_bins, PyObject *__pyx_v_pos0Range, PyObject *__pyx_v_pos1Range, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy, PyObject *__pyx_v_mask, PyObject *__pyx_v_dark, PyObject *__pyx_v_flat, PyObject *__pyx_v_solidangle, PyObject *__pyx_v_polarization) {
-  int __pyx_v_bins0;
-  int __pyx_v_bins1;
-  int __pyx_v_size;
-  PyArrayObject *__pyx_v_cpos = 0;
-  PyArrayObject *__pyx_v_cdata = 0;
-  PyArrayObject *__pyx_v_outData = 0;
-  PyArrayObject *__pyx_v_outCount = 0;
-  PyArrayObject *__pyx_v_outMerge = 0;
-  PyArrayObject *__pyx_v_edges0 = 0;
-  PyArrayObject *__pyx_v_edges1 = 0;
-  __Pyx_memviewslice __pyx_v_cmask = { 0, 0, { 0 }, { 0 }, { 0 } };
-  __Pyx_memviewslice __pyx_v_cflat = { 0, 0, { 0 }, { 0 }, { 0 } };
-  __Pyx_memviewslice __pyx_v_cdark = { 0, 0, { 0 }, { 0 }, { 0 } };
-  __Pyx_memviewslice __pyx_v_cpolarization = { 0, 0, { 0 }, { 0 }, { 0 } };
-  __Pyx_memviewslice __pyx_v_csolidangle = { 0, 0, { 0 }, { 0 }, { 0 } };
-  int __pyx_v_check_mask;
-  CYTHON_UNUSED int __pyx_v_do_dummy;
+static PyObject *__pyx_pf_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_4integrate(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_weights, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy, PyObject *__pyx_v_dark, PyObject *__pyx_v_flat, PyObject *__pyx_v_solidAngle, PyObject *__pyx_v_polarization) {
+  __pyx_t_5numpy_int32_t __pyx_v_i;
+  __pyx_t_5numpy_int32_t __pyx_v_j;
+  __pyx_t_5numpy_int32_t __pyx_v_idx;
+  CYTHON_UNUSED __pyx_t_5numpy_int32_t __pyx_v_bins;
+  __pyx_t_5numpy_int32_t __pyx_v_size;
+  double __pyx_v_sum_data;
+  double __pyx_v_sum_count;
+  double __pyx_v_epsilon;
+  double __pyx_v_data;
+  double __pyx_v_coef;
+  double __pyx_v_cdummy;
+  double __pyx_v_cddummy;
+  int __pyx_v_do_dummy;
   int __pyx_v_do_dark;
   int __pyx_v_do_flat;
   int __pyx_v_do_polarization;
-  int __pyx_v_do_solidangle;
-  double __pyx_v_cdummy;
-  double __pyx_v_cddummy;
-  double __pyx_v_data;
-  double __pyx_v_min0;
-  double __pyx_v_max0;
-  double __pyx_v_min1;
-  double __pyx_v_max1;
-  double __pyx_v_deltaR;
-  double __pyx_v_deltaL;
-  double __pyx_v_deltaU;
-  double __pyx_v_deltaD;
-  double __pyx_v_one_over_area;
-  double __pyx_v_pos0_min;
-  double __pyx_v_pos0_max;
-  double __pyx_v_pos1_min;
-  double __pyx_v_pos1_max;
-  double __pyx_v_pos0_maxin;
-  double __pyx_v_pos1_maxin;
-  double __pyx_v_aera_pixel;
-  double __pyx_v_fbin0_min;
-  double __pyx_v_fbin0_max;
-  double __pyx_v_fbin1_min;
-  double __pyx_v_fbin1_max;
-  double __pyx_v_a0;
-  double __pyx_v_a1;
-  double __pyx_v_b0;
-  double __pyx_v_b1;
-  double __pyx_v_c0;
-  double __pyx_v_c1;
-  double __pyx_v_d0;
-  double __pyx_v_d1;
-  double __pyx_v_epsilon;
-  int __pyx_v_bin0_max;
-  int __pyx_v_bin0_min;
-  int __pyx_v_bin1_max;
-  int __pyx_v_bin1_min;
-  int __pyx_v_i;
-  int __pyx_v_j;
-  int __pyx_v_idx;
-  double __pyx_v_dpos0;
-  double __pyx_v_dpos1;
-  int __pyx_v_check_dummy;
-  __Pyx_LocalBuf_ND __pyx_pybuffernd_cdata;
-  __Pyx_Buffer __pyx_pybuffer_cdata;
-  __Pyx_LocalBuf_ND __pyx_pybuffernd_cpos;
-  __Pyx_Buffer __pyx_pybuffer_cpos;
-  __Pyx_LocalBuf_ND __pyx_pybuffernd_edges0;
-  __Pyx_Buffer __pyx_pybuffer_edges0;
-  __Pyx_LocalBuf_ND __pyx_pybuffernd_edges1;
-  __Pyx_Buffer __pyx_pybuffer_edges1;
+  int __pyx_v_do_solidAngle;
+  PyArrayObject *__pyx_v_outData = 0;
+  PyArrayObject *__pyx_v_outCount = 0;
+  PyArrayObject *__pyx_v_outMerge = 0;
+  __Pyx_memviewslice __pyx_v_ccoef = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v_cdata = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v_tdata = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v_cflat = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v_cdark = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v_csolidAngle = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v_cpolarization = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v_indices = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v_indptr = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_LocalBuf_ND __pyx_pybuffernd_outCount;
   __Pyx_Buffer __pyx_pybuffer_outCount;
   __Pyx_LocalBuf_ND __pyx_pybuffernd_outData;
@@ -5959,155 +5450,52 @@ static PyObject *__pyx_pf_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject *__py
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
-  int __pyx_t_2;
-  int __pyx_t_3;
+  __pyx_t_5numpy_int32_t __pyx_t_2;
+  PyObject *__pyx_t_3 = NULL;
   PyObject *__pyx_t_4 = NULL;
   PyObject *__pyx_t_5 = NULL;
   PyObject *__pyx_t_6 = NULL;
-  PyObject *__pyx_t_7 = NULL;
-  PyObject *__pyx_t_8 = NULL;
-  PyObject *__pyx_t_9 = NULL;
-  PyObject *(*__pyx_t_10)(PyObject *);
-  int __pyx_t_11;
-  PyArrayObject *__pyx_t_12 = NULL;
-  PyArrayObject *__pyx_t_13 = NULL;
-  PyObject *__pyx_t_14 = NULL;
-  PyArrayObject *__pyx_t_15 = NULL;
-  PyArrayObject *__pyx_t_16 = NULL;
-  PyArrayObject *__pyx_t_17 = NULL;
-  PyArrayObject *__pyx_t_18 = NULL;
-  PyArrayObject *__pyx_t_19 = NULL;
-  Py_ssize_t __pyx_t_20;
-  int __pyx_t_21;
-  int __pyx_t_22;
-  double __pyx_t_23;
-  __Pyx_memviewslice __pyx_t_24 = { 0, 0, { 0 }, { 0 }, { 0 } };
-  __Pyx_memviewslice __pyx_t_25 = { 0, 0, { 0 }, { 0 }, { 0 } };
-  int __pyx_t_26;
-  int __pyx_t_27;
-  int __pyx_t_28;
-  int __pyx_t_29;
-  long __pyx_t_30;
-  long __pyx_t_31;
-  int __pyx_t_32;
-  long __pyx_t_33;
-  long __pyx_t_34;
-  int __pyx_t_35;
-  long __pyx_t_36;
-  long __pyx_t_37;
-  int __pyx_t_38;
-  long __pyx_t_39;
-  long __pyx_t_40;
-  int __pyx_t_41;
-  long __pyx_t_42;
-  long __pyx_t_43;
-  int __pyx_t_44;
-  long __pyx_t_45;
-  long __pyx_t_46;
-  int __pyx_t_47;
-  long __pyx_t_48;
-  long __pyx_t_49;
-  int __pyx_t_50;
-  long __pyx_t_51;
-  long __pyx_t_52;
-  double __pyx_t_53;
-  double __pyx_t_54;
-  double __pyx_t_55;
-  double __pyx_t_56;
-  int __pyx_t_57;
-  int __pyx_t_58;
-  int __pyx_t_59;
-  int __pyx_t_60;
-  int __pyx_t_61;
-  int __pyx_t_62;
-  int __pyx_t_63;
-  int __pyx_t_64;
-  int __pyx_t_65;
-  int __pyx_t_66;
-  int __pyx_t_67;
-  int __pyx_t_68;
-  int __pyx_t_69;
-  int __pyx_t_70;
-  int __pyx_t_71;
-  int __pyx_t_72;
-  int __pyx_t_73;
-  int __pyx_t_74;
-  int __pyx_t_75;
-  int __pyx_t_76;
-  int __pyx_t_77;
-  int __pyx_t_78;
-  int __pyx_t_79;
-  int __pyx_t_80;
-  int __pyx_t_81;
-  int __pyx_t_82;
-  int __pyx_t_83;
-  int __pyx_t_84;
-  int __pyx_t_85;
-  int __pyx_t_86;
-  int __pyx_t_87;
-  int __pyx_t_88;
-  int __pyx_t_89;
-  int __pyx_t_90;
-  int __pyx_t_91;
-  int __pyx_t_92;
-  int __pyx_t_93;
-  int __pyx_t_94;
-  int __pyx_t_95;
-  int __pyx_t_96;
-  int __pyx_t_97;
-  int __pyx_t_98;
-  int __pyx_t_99;
-  int __pyx_t_100;
-  int __pyx_t_101;
-  int __pyx_t_102;
-  int __pyx_t_103;
-  int __pyx_t_104;
-  int __pyx_t_105;
-  int __pyx_t_106;
-  int __pyx_t_107;
-  int __pyx_t_108;
-  int __pyx_t_109;
-  int __pyx_t_110;
-  int __pyx_t_111;
-  int __pyx_t_112;
-  int __pyx_t_113;
-  int __pyx_t_114;
-  int __pyx_t_115;
-  int __pyx_t_116;
-  int __pyx_t_117;
-  int __pyx_t_118;
-  int __pyx_t_119;
-  int __pyx_t_120;
-  int __pyx_t_121;
-  int __pyx_t_122;
-  int __pyx_t_123;
-  int __pyx_t_124;
-  int __pyx_t_125;
-  int __pyx_t_126;
-  int __pyx_t_127;
-  int __pyx_t_128;
-  int __pyx_t_129;
-  int __pyx_t_130;
-  int __pyx_t_131;
-  int __pyx_t_132;
-  int __pyx_t_133;
-  int __pyx_t_134;
-  int __pyx_t_135;
-  int __pyx_t_136;
-  int __pyx_t_137;
+  PyArrayObject *__pyx_t_7 = NULL;
+  PyArrayObject *__pyx_t_8 = NULL;
+  PyArrayObject *__pyx_t_9 = NULL;
+  __Pyx_memviewslice __pyx_t_10 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_t_11 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  int __pyx_t_12;
+  int __pyx_t_13;
+  double __pyx_t_14;
+  __pyx_t_5numpy_int32_t __pyx_t_15;
+  __pyx_t_5numpy_int32_t __pyx_t_16;
+  __pyx_t_5numpy_int32_t __pyx_t_17;
+  int __pyx_t_18;
+  int __pyx_t_19;
+  __pyx_t_5numpy_int32_t __pyx_t_20;
+  __pyx_t_5numpy_int32_t __pyx_t_21;
+  __pyx_t_5numpy_int32_t __pyx_t_22;
+  __pyx_t_5numpy_int32_t __pyx_t_23;
+  __pyx_t_5numpy_int32_t __pyx_t_24;
+  __pyx_t_5numpy_int32_t __pyx_t_25;
+  __pyx_t_5numpy_int32_t __pyx_t_26;
+  __pyx_t_5numpy_int32_t __pyx_t_27;
+  __pyx_t_5numpy_int32_t __pyx_t_28;
+  __pyx_t_5numpy_int32_t __pyx_t_29;
+  __pyx_t_5numpy_int32_t __pyx_t_30;
+  __pyx_t_5numpy_int32_t __pyx_t_31;
+  __pyx_t_5numpy_int32_t __pyx_t_32;
+  __pyx_t_5numpy_int32_t __pyx_t_33;
+  __pyx_t_5numpy_int32_t __pyx_t_34;
+  long __pyx_t_35;
+  __pyx_t_5numpy_int32_t __pyx_t_36;
+  __pyx_t_5numpy_int32_t __pyx_t_37;
+  __pyx_t_5numpy_int32_t __pyx_t_38;
+  __pyx_t_5numpy_int32_t __pyx_t_39;
+  __pyx_t_5numpy_int32_t __pyx_t_40;
+  __pyx_t_5numpy_int32_t __pyx_t_41;
+  __pyx_t_5numpy_int32_t __pyx_t_42;
+  __pyx_t_5numpy_int32_t __pyx_t_43;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("fullSplit2D", 0);
-  __Pyx_INCREF((PyObject *)__pyx_v_pos);
-  __pyx_pybuffer_cpos.pybuffer.buf = NULL;
-  __pyx_pybuffer_cpos.refcount = 0;
-  __pyx_pybuffernd_cpos.data = NULL;
-  __pyx_pybuffernd_cpos.rcbuffer = &__pyx_pybuffer_cpos;
-  __pyx_pybuffer_cdata.pybuffer.buf = NULL;
-  __pyx_pybuffer_cdata.refcount = 0;
-  __pyx_pybuffernd_cdata.data = NULL;
-  __pyx_pybuffernd_cdata.rcbuffer = &__pyx_pybuffer_cdata;
+  __Pyx_RefNannySetupContext("integrate", 0);
   __pyx_pybuffer_outData.pybuffer.buf = NULL;
   __pyx_pybuffer_outData.refcount = 0;
   __pyx_pybuffernd_outData.data = NULL;
@@ -6120,1727 +5508,1668 @@ static PyObject *__pyx_pf_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject *__py
   __pyx_pybuffer_outMerge.refcount = 0;
   __pyx_pybuffernd_outMerge.data = NULL;
   __pyx_pybuffernd_outMerge.rcbuffer = &__pyx_pybuffer_outMerge;
-  __pyx_pybuffer_edges0.pybuffer.buf = NULL;
-  __pyx_pybuffer_edges0.refcount = 0;
-  __pyx_pybuffernd_edges0.data = NULL;
-  __pyx_pybuffernd_edges0.rcbuffer = &__pyx_pybuffer_edges0;
-  __pyx_pybuffer_edges1.pybuffer.buf = NULL;
-  __pyx_pybuffer_edges1.refcount = 0;
-  __pyx_pybuffernd_edges1.data = NULL;
-  __pyx_pybuffernd_edges1.rcbuffer = &__pyx_pybuffer_edges1;
 
-  /* "splitPixel.pyx":415
- *     """
+  /* "splitPixelFullLUT_b.pyx":324
  * 
- *     cdef int  bins0=0, bins1=0, size = weights.size             # <<<<<<<<<<<<<<
- *     if pos.ndim>3: #create a view
- *         pos = pos.reshape((-1,4,2))
+ *         """
+ *         cdef numpy.int32_t i=0, j=0, idx=0, bins=self.bins, size=self.size             # <<<<<<<<<<<<<<
+ *         cdef double sum_data=0.0, sum_count=0.0, epsilon=1e-10
+ *         cdef double data=0, coef=0, cdummy=0, cddummy=0
  */
-  __pyx_v_bins0 = 0;
-  __pyx_v_bins1 = 0;
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_weights), __pyx_n_s__size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 415; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_v_i = 0;
+  __pyx_v_j = 0;
+  __pyx_v_idx = 0;
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__bins); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 324; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyInt_AsInt(__pyx_t_1); if (unlikely((__pyx_t_2 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 415; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyInt_from_py_npy_int32(__pyx_t_1); if (unlikely((__pyx_t_2 == (npy_int32)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 324; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_v_bins = __pyx_t_2;
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 324; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = __Pyx_PyInt_from_py_npy_int32(__pyx_t_1); if (unlikely((__pyx_t_2 == (npy_int32)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 324; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_size = __pyx_t_2;
 
-  /* "splitPixel.pyx":416
- * 
- *     cdef int  bins0=0, bins1=0, size = weights.size
- *     if pos.ndim>3: #create a view             # <<<<<<<<<<<<<<
- *         pos = pos.reshape((-1,4,2))
- * 
+  /* "splitPixelFullLUT_b.pyx":325
+ *         """
+ *         cdef numpy.int32_t i=0, j=0, idx=0, bins=self.bins, size=self.size
+ *         cdef double sum_data=0.0, sum_count=0.0, epsilon=1e-10             # <<<<<<<<<<<<<<
+ *         cdef double data=0, coef=0, cdummy=0, cddummy=0
+ *         cdef bint do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
  */
-  __pyx_t_3 = ((__pyx_v_pos->nd > 3) != 0);
-  if (__pyx_t_3) {
+  __pyx_v_sum_data = 0.0;
+  __pyx_v_sum_count = 0.0;
+  __pyx_v_epsilon = 1e-10;
 
-    /* "splitPixel.pyx":417
- *     cdef int  bins0=0, bins1=0, size = weights.size
- *     if pos.ndim>3: #create a view
- *         pos = pos.reshape((-1,4,2))             # <<<<<<<<<<<<<<
- * 
- *     assert pos.shape[0] == size
+  /* "splitPixelFullLUT_b.pyx":326
+ *         cdef numpy.int32_t i=0, j=0, idx=0, bins=self.bins, size=self.size
+ *         cdef double sum_data=0.0, sum_count=0.0, epsilon=1e-10
+ *         cdef double data=0, coef=0, cdummy=0, cddummy=0             # <<<<<<<<<<<<<<
+ *         cdef bint do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
+ *         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
  */
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_pos), __pyx_n_s__reshape); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 417; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_4 = PyObject_Call(__pyx_t_1, ((PyObject *)__pyx_k_tuple_11), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 417; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (!(likely(((__pyx_t_4) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_4, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 417; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF_SET(__pyx_v_pos, ((PyArrayObject *)__pyx_t_4));
-    __pyx_t_4 = 0;
-    goto __pyx_L3;
-  }
-  __pyx_L3:;
+  __pyx_v_data = 0.0;
+  __pyx_v_coef = 0.0;
+  __pyx_v_cdummy = 0.0;
+  __pyx_v_cddummy = 0.0;
 
-  /* "splitPixel.pyx":419
- *         pos = pos.reshape((-1,4,2))
- * 
- *     assert pos.shape[0] == size             # <<<<<<<<<<<<<<
- *     assert pos.shape[1] == 4 # 4 corners
- *     assert pos.shape[2] == 2 # tth and chi
+  /* "splitPixelFullLUT_b.pyx":327
+ *         cdef double sum_data=0.0, sum_count=0.0, epsilon=1e-10
+ *         cdef double data=0, coef=0, cdummy=0, cddummy=0
+ *         cdef bint do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False             # <<<<<<<<<<<<<<
+ *         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
+ *         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
  */
-  #ifndef CYTHON_WITHOUT_ASSERTIONS
-  if (unlikely(!(((__pyx_v_pos->dimensions[0]) == __pyx_v_size) != 0))) {
-    PyErr_SetNone(PyExc_AssertionError);
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 419; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  }
-  #endif
-
-  /* "splitPixel.pyx":420
- * 
- *     assert pos.shape[0] == size
- *     assert pos.shape[1] == 4 # 4 corners             # <<<<<<<<<<<<<<
- *     assert pos.shape[2] == 2 # tth and chi
- *     assert pos.ndim == 3
- */
-  #ifndef CYTHON_WITHOUT_ASSERTIONS
-  if (unlikely(!(((__pyx_v_pos->dimensions[1]) == 4) != 0))) {
-    PyErr_SetNone(PyExc_AssertionError);
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 420; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  }
-  #endif
-
-  /* "splitPixel.pyx":421
- *     assert pos.shape[0] == size
- *     assert pos.shape[1] == 4 # 4 corners
- *     assert pos.shape[2] == 2 # tth and chi             # <<<<<<<<<<<<<<
- *     assert pos.ndim == 3
- *     try:
- */
-  #ifndef CYTHON_WITHOUT_ASSERTIONS
-  if (unlikely(!(((__pyx_v_pos->dimensions[2]) == 2) != 0))) {
-    PyErr_SetNone(PyExc_AssertionError);
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 421; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  }
-  #endif
-
-  /* "splitPixel.pyx":422
- *     assert pos.shape[1] == 4 # 4 corners
- *     assert pos.shape[2] == 2 # tth and chi
- *     assert pos.ndim == 3             # <<<<<<<<<<<<<<
- *     try:
- *         bins0, bins1 = tuple(bins)
- */
-  #ifndef CYTHON_WITHOUT_ASSERTIONS
-  if (unlikely(!((__pyx_v_pos->nd == 3) != 0))) {
-    PyErr_SetNone(PyExc_AssertionError);
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 422; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  }
-  #endif
-
-  /* "splitPixel.pyx":423
- *     assert pos.shape[2] == 2 # tth and chi
- *     assert pos.ndim == 3
- *     try:             # <<<<<<<<<<<<<<
- *         bins0, bins1 = tuple(bins)
- *     except:
- */
-  {
-    __Pyx_ExceptionSave(&__pyx_t_5, &__pyx_t_6, &__pyx_t_7);
-    __Pyx_XGOTREF(__pyx_t_5);
-    __Pyx_XGOTREF(__pyx_t_6);
-    __Pyx_XGOTREF(__pyx_t_7);
-    /*try:*/ {
-
-      /* "splitPixel.pyx":424
- *     assert pos.ndim == 3
- *     try:
- *         bins0, bins1 = tuple(bins)             # <<<<<<<<<<<<<<
- *     except:
- *         bins0 = bins1 = < int > bins
- */
-      __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 424; __pyx_clineno = __LINE__; goto __pyx_L4_error;}
-      __Pyx_GOTREF(__pyx_t_4);
-      __Pyx_INCREF(__pyx_v_bins);
-      PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_v_bins);
-      __Pyx_GIVEREF(__pyx_v_bins);
-      __pyx_t_1 = PyObject_Call(((PyObject *)((PyObject*)(&PyTuple_Type))), ((PyObject *)__pyx_t_4), NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 424; __pyx_clineno = __LINE__; goto __pyx_L4_error;}
-      __Pyx_GOTREF(__pyx_t_1);
-      __Pyx_DECREF(((PyObject *)__pyx_t_4)); __pyx_t_4 = 0;
-      if (1) {
-        PyObject* sequence = __pyx_t_1;
-        #if CYTHON_COMPILING_IN_CPYTHON
-        Py_ssize_t size = Py_SIZE(sequence);
-        #else
-        Py_ssize_t size = PySequence_Size(sequence);
-        #endif
-        if (unlikely(size != 2)) {
-          if (size > 2) __Pyx_RaiseTooManyValuesError(2);
-          else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-          {__pyx_filename = __pyx_f[0]; __pyx_lineno = 424; __pyx_clineno = __LINE__; goto __pyx_L4_error;}
-        }
-        #if CYTHON_COMPILING_IN_CPYTHON
-        __pyx_t_4 = PyTuple_GET_ITEM(sequence, 0); 
-        __pyx_t_8 = PyTuple_GET_ITEM(sequence, 1); 
-        __Pyx_INCREF(__pyx_t_4);
-        __Pyx_INCREF(__pyx_t_8);
-        #else
-        __pyx_t_4 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 424; __pyx_clineno = __LINE__; goto __pyx_L4_error;}
-        __Pyx_GOTREF(__pyx_t_4);
-        __pyx_t_8 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 424; __pyx_clineno = __LINE__; goto __pyx_L4_error;}
-        __Pyx_GOTREF(__pyx_t_8);
-        #endif
-        __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      } else if (1) {
-        __Pyx_RaiseNoneNotIterableError(); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 424; __pyx_clineno = __LINE__; goto __pyx_L4_error;}
-      } else
-      {
-        Py_ssize_t index = -1;
-        __pyx_t_9 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 424; __pyx_clineno = __LINE__; goto __pyx_L4_error;}
-        __Pyx_GOTREF(__pyx_t_9);
-        __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-        __pyx_t_10 = Py_TYPE(__pyx_t_9)->tp_iternext;
-        index = 0; __pyx_t_4 = __pyx_t_10(__pyx_t_9); if (unlikely(!__pyx_t_4)) goto __pyx_L12_unpacking_failed;
-        __Pyx_GOTREF(__pyx_t_4);
-        index = 1; __pyx_t_8 = __pyx_t_10(__pyx_t_9); if (unlikely(!__pyx_t_8)) goto __pyx_L12_unpacking_failed;
-        __Pyx_GOTREF(__pyx_t_8);
-        if (__Pyx_IternextUnpackEndCheck(__pyx_t_10(__pyx_t_9), 2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 424; __pyx_clineno = __LINE__; goto __pyx_L4_error;}
-        __pyx_t_10 = NULL;
-        __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-        goto __pyx_L13_unpacking_done;
-        __pyx_L12_unpacking_failed:;
-        __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-        __pyx_t_10 = NULL;
-        if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 424; __pyx_clineno = __LINE__; goto __pyx_L4_error;}
-        __pyx_L13_unpacking_done:;
-      }
-      __pyx_t_2 = __Pyx_PyInt_AsInt(__pyx_t_4); if (unlikely((__pyx_t_2 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 424; __pyx_clineno = __LINE__; goto __pyx_L4_error;}
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_11 = __Pyx_PyInt_AsInt(__pyx_t_8); if (unlikely((__pyx_t_11 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 424; __pyx_clineno = __LINE__; goto __pyx_L4_error;}
-      __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-      __pyx_v_bins0 = __pyx_t_2;
-      __pyx_v_bins1 = __pyx_t_11;
-    }
-    __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
-    goto __pyx_L11_try_end;
-    __pyx_L4_error:;
-    __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
-    __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
-    __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-
-    /* "splitPixel.pyx":425
- *     try:
- *         bins0, bins1 = tuple(bins)
- *     except:             # <<<<<<<<<<<<<<
- *         bins0 = bins1 = < int > bins
- *     if bins0 <= 0:
- */
-    /*except:*/ {
-      __Pyx_AddTraceback("splitPixel.fullSplit2D", __pyx_clineno, __pyx_lineno, __pyx_filename);
-      if (__Pyx_GetException(&__pyx_t_1, &__pyx_t_8, &__pyx_t_4) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 425; __pyx_clineno = __LINE__; goto __pyx_L6_except_error;}
-      __Pyx_GOTREF(__pyx_t_1);
-      __Pyx_GOTREF(__pyx_t_8);
-      __Pyx_GOTREF(__pyx_t_4);
-
-      /* "splitPixel.pyx":426
- *         bins0, bins1 = tuple(bins)
- *     except:
- *         bins0 = bins1 = < int > bins             # <<<<<<<<<<<<<<
- *     if bins0 <= 0:
- *         bins0 = 1
- */
-      __pyx_t_11 = __Pyx_PyInt_AsInt(__pyx_v_bins); if (unlikely((__pyx_t_11 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 426; __pyx_clineno = __LINE__; goto __pyx_L6_except_error;}
-      __pyx_v_bins0 = ((int)__pyx_t_11);
-      __pyx_v_bins1 = ((int)__pyx_t_11);
-      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      goto __pyx_L5_exception_handled;
-    }
-    __pyx_L6_except_error:;
-    __Pyx_XGIVEREF(__pyx_t_5);
-    __Pyx_XGIVEREF(__pyx_t_6);
-    __Pyx_XGIVEREF(__pyx_t_7);
-    __Pyx_ExceptionReset(__pyx_t_5, __pyx_t_6, __pyx_t_7);
-    goto __pyx_L1_error;
-    __pyx_L5_exception_handled:;
-    __Pyx_XGIVEREF(__pyx_t_5);
-    __Pyx_XGIVEREF(__pyx_t_6);
-    __Pyx_XGIVEREF(__pyx_t_7);
-    __Pyx_ExceptionReset(__pyx_t_5, __pyx_t_6, __pyx_t_7);
-    __pyx_L11_try_end:;
-  }
-
-  /* "splitPixel.pyx":427
- *     except:
- *         bins0 = bins1 = < int > bins
- *     if bins0 <= 0:             # <<<<<<<<<<<<<<
- *         bins0 = 1
- *     if bins1 <= 0:
- */
-  __pyx_t_3 = ((__pyx_v_bins0 <= 0) != 0);
-  if (__pyx_t_3) {
-
-    /* "splitPixel.pyx":428
- *         bins0 = bins1 = < int > bins
- *     if bins0 <= 0:
- *         bins0 = 1             # <<<<<<<<<<<<<<
- *     if bins1 <= 0:
- *         bins1 = 1
- */
-    __pyx_v_bins0 = 1;
-    goto __pyx_L16;
-  }
-  __pyx_L16:;
-
-  /* "splitPixel.pyx":429
- *     if bins0 <= 0:
- *         bins0 = 1
- *     if bins1 <= 0:             # <<<<<<<<<<<<<<
- *         bins1 = 1
- * 
- */
-  __pyx_t_3 = ((__pyx_v_bins1 <= 0) != 0);
-  if (__pyx_t_3) {
-
-    /* "splitPixel.pyx":430
- *         bins0 = 1
- *     if bins1 <= 0:
- *         bins1 = 1             # <<<<<<<<<<<<<<
- * 
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 3] cpos = pos.astype(numpy.float64)
- */
-    __pyx_v_bins1 = 1;
-    goto __pyx_L17;
-  }
-  __pyx_L17:;
-
-  /* "splitPixel.pyx":432
- *         bins1 = 1
- * 
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 3] cpos = pos.astype(numpy.float64)             # <<<<<<<<<<<<<<
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] cdata = weights.astype(numpy.float64).ravel()
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outData = numpy.zeros((bins0, bins1), dtype=numpy.float64)
- */
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_pos), __pyx_n_s__astype); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 432; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_8 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 432; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_8);
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s__float64); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 432; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  __pyx_t_8 = PyTuple_New(1); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 432; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_8);
-  PyTuple_SET_ITEM(__pyx_t_8, 0, __pyx_t_1);
-  __Pyx_GIVEREF(__pyx_t_1);
-  __pyx_t_1 = 0;
-  __pyx_t_1 = PyObject_Call(__pyx_t_4, ((PyObject *)__pyx_t_8), NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 432; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_8)); __pyx_t_8 = 0;
-  if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 432; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_12 = ((PyArrayObject *)__pyx_t_1);
-  {
-    __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_cpos.rcbuffer->pybuffer, (PyObject*)__pyx_t_12, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES, 3, 0, __pyx_stack) == -1)) {
-      __pyx_v_cpos = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf = NULL;
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 432; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    } else {__pyx_pybuffernd_cpos.diminfo[0].strides = __pyx_pybuffernd_cpos.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_cpos.diminfo[0].shape = __pyx_pybuffernd_cpos.rcbuffer->pybuffer.shape[0]; __pyx_pybuffernd_cpos.diminfo[1].strides = __pyx_pybuffernd_cpos.rcbuffer->pybuffer.strides[1]; __pyx_pybuffernd_cpos.diminfo[1].shape = __pyx_pybuffernd_cpos.rcbuffer->pybuffer.shape[1]; __pyx_pybuffernd_cpos.diminfo[2].strides = __pyx_pybuffernd_cpos.rcbuffer->pybuffer.strides[2]; __pyx_pybuffernd_cpos.diminfo[2].shape = __pyx_pybuffernd_cpos.rcbuffer->pybuffer.shape[2];
-    }
-  }
-  __pyx_t_12 = 0;
-  __pyx_v_cpos = ((PyArrayObject *)__pyx_t_1);
-  __pyx_t_1 = 0;
-
-  /* "splitPixel.pyx":433
- * 
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 3] cpos = pos.astype(numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] cdata = weights.astype(numpy.float64).ravel()             # <<<<<<<<<<<<<<
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outData = numpy.zeros((bins0, bins1), dtype=numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outCount = numpy.zeros((bins0, bins1), dtype=numpy.float64)
- */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_weights), __pyx_n_s__astype); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 433; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_8 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 433; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_8);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s__float64); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 433; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  __pyx_t_8 = PyTuple_New(1); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 433; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_8);
-  PyTuple_SET_ITEM(__pyx_t_8, 0, __pyx_t_4);
-  __Pyx_GIVEREF(__pyx_t_4);
-  __pyx_t_4 = 0;
-  __pyx_t_4 = PyObject_Call(__pyx_t_1, ((PyObject *)__pyx_t_8), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 433; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_8)); __pyx_t_8 = 0;
-  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s__ravel); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 433; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_8);
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = PyObject_Call(__pyx_t_8, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 433; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  if (!(likely(((__pyx_t_4) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_4, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 433; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_13 = ((PyArrayObject *)__pyx_t_4);
-  {
-    __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_cdata.rcbuffer->pybuffer, (PyObject*)__pyx_t_13, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {
-      __pyx_v_cdata = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_cdata.rcbuffer->pybuffer.buf = NULL;
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 433; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    } else {__pyx_pybuffernd_cdata.diminfo[0].strides = __pyx_pybuffernd_cdata.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_cdata.diminfo[0].shape = __pyx_pybuffernd_cdata.rcbuffer->pybuffer.shape[0];
-    }
-  }
-  __pyx_t_13 = 0;
-  __pyx_v_cdata = ((PyArrayObject *)__pyx_t_4);
-  __pyx_t_4 = 0;
-
-  /* "splitPixel.pyx":434
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 3] cpos = pos.astype(numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] cdata = weights.astype(numpy.float64).ravel()
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outData = numpy.zeros((bins0, bins1), dtype=numpy.float64)             # <<<<<<<<<<<<<<
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outCount = numpy.zeros((bins0, bins1), dtype=numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outMerge = numpy.zeros((bins0, bins1), dtype=numpy.float64)
- */
-  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 434; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s__zeros); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 434; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_8);
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = PyInt_FromLong(__pyx_v_bins0); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 434; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_1 = PyInt_FromLong(__pyx_v_bins1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 434; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_9 = PyTuple_New(2); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 434; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_9);
-  PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_4);
-  __Pyx_GIVEREF(__pyx_t_4);
-  PyTuple_SET_ITEM(__pyx_t_9, 1, __pyx_t_1);
-  __Pyx_GIVEREF(__pyx_t_1);
-  __pyx_t_4 = 0;
-  __pyx_t_1 = 0;
-  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 434; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  PyTuple_SET_ITEM(__pyx_t_1, 0, ((PyObject *)__pyx_t_9));
-  __Pyx_GIVEREF(((PyObject *)__pyx_t_9));
-  __pyx_t_9 = 0;
-  __pyx_t_9 = PyDict_New(); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 434; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(((PyObject *)__pyx_t_9));
-  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 434; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_14 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s__float64); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 434; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_14);
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  if (PyDict_SetItem(__pyx_t_9, ((PyObject *)__pyx_n_s__dtype), __pyx_t_14) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 434; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-  __pyx_t_14 = PyObject_Call(__pyx_t_8, ((PyObject *)__pyx_t_1), ((PyObject *)__pyx_t_9)); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 434; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_14);
-  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_1)); __pyx_t_1 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_9)); __pyx_t_9 = 0;
-  if (!(likely(((__pyx_t_14) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_14, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 434; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_15 = ((PyArrayObject *)__pyx_t_14);
-  {
-    __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_outData.rcbuffer->pybuffer, (PyObject*)__pyx_t_15, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES| PyBUF_WRITABLE, 2, 0, __pyx_stack) == -1)) {
-      __pyx_v_outData = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf = NULL;
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 434; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    } else {__pyx_pybuffernd_outData.diminfo[0].strides = __pyx_pybuffernd_outData.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_outData.diminfo[0].shape = __pyx_pybuffernd_outData.rcbuffer->pybuffer.shape[0]; __pyx_pybuffernd_outData.diminfo[1].strides = __pyx_pybuffernd_outData.rcbuffer->pybuffer.strides[1]; __pyx_pybuffernd_outData.diminfo[1].shape = __pyx_pybuffernd_outData.rcbuffer->pybuffer.shape[1];
-    }
-  }
-  __pyx_t_15 = 0;
-  __pyx_v_outData = ((PyArrayObject *)__pyx_t_14);
-  __pyx_t_14 = 0;
-
-  /* "splitPixel.pyx":435
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] cdata = weights.astype(numpy.float64).ravel()
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outData = numpy.zeros((bins0, bins1), dtype=numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outCount = numpy.zeros((bins0, bins1), dtype=numpy.float64)             # <<<<<<<<<<<<<<
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outMerge = numpy.zeros((bins0, bins1), dtype=numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] edges0 = numpy.zeros(bins0, dtype=numpy.float64)
- */
-  __pyx_t_14 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 435; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_14);
-  __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_14, __pyx_n_s__zeros); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 435; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_9);
-  __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-  __pyx_t_14 = PyInt_FromLong(__pyx_v_bins0); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 435; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_14);
-  __pyx_t_1 = PyInt_FromLong(__pyx_v_bins1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 435; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_8 = PyTuple_New(2); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 435; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_8);
-  PyTuple_SET_ITEM(__pyx_t_8, 0, __pyx_t_14);
-  __Pyx_GIVEREF(__pyx_t_14);
-  PyTuple_SET_ITEM(__pyx_t_8, 1, __pyx_t_1);
-  __Pyx_GIVEREF(__pyx_t_1);
-  __pyx_t_14 = 0;
-  __pyx_t_1 = 0;
-  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 435; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  PyTuple_SET_ITEM(__pyx_t_1, 0, ((PyObject *)__pyx_t_8));
-  __Pyx_GIVEREF(((PyObject *)__pyx_t_8));
-  __pyx_t_8 = 0;
-  __pyx_t_8 = PyDict_New(); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 435; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(((PyObject *)__pyx_t_8));
-  __pyx_t_14 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 435; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_14);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_14, __pyx_n_s__float64); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 435; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-  if (PyDict_SetItem(__pyx_t_8, ((PyObject *)__pyx_n_s__dtype), __pyx_t_4) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 435; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = PyObject_Call(__pyx_t_9, ((PyObject *)__pyx_t_1), ((PyObject *)__pyx_t_8)); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 435; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_1)); __pyx_t_1 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_8)); __pyx_t_8 = 0;
-  if (!(likely(((__pyx_t_4) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_4, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 435; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_16 = ((PyArrayObject *)__pyx_t_4);
-  {
-    __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_outCount.rcbuffer->pybuffer, (PyObject*)__pyx_t_16, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES| PyBUF_WRITABLE, 2, 0, __pyx_stack) == -1)) {
-      __pyx_v_outCount = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf = NULL;
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 435; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    } else {__pyx_pybuffernd_outCount.diminfo[0].strides = __pyx_pybuffernd_outCount.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_outCount.diminfo[0].shape = __pyx_pybuffernd_outCount.rcbuffer->pybuffer.shape[0]; __pyx_pybuffernd_outCount.diminfo[1].strides = __pyx_pybuffernd_outCount.rcbuffer->pybuffer.strides[1]; __pyx_pybuffernd_outCount.diminfo[1].shape = __pyx_pybuffernd_outCount.rcbuffer->pybuffer.shape[1];
-    }
-  }
-  __pyx_t_16 = 0;
-  __pyx_v_outCount = ((PyArrayObject *)__pyx_t_4);
-  __pyx_t_4 = 0;
-
-  /* "splitPixel.pyx":436
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outData = numpy.zeros((bins0, bins1), dtype=numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outCount = numpy.zeros((bins0, bins1), dtype=numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outMerge = numpy.zeros((bins0, bins1), dtype=numpy.float64)             # <<<<<<<<<<<<<<
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] edges0 = numpy.zeros(bins0, dtype=numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] edges1 = numpy.zeros(bins1, dtype=numpy.float64)
- */
-  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 436; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s__zeros); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 436; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_8);
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = PyInt_FromLong(__pyx_v_bins0); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 436; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_1 = PyInt_FromLong(__pyx_v_bins1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 436; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_9 = PyTuple_New(2); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 436; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_9);
-  PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_4);
-  __Pyx_GIVEREF(__pyx_t_4);
-  PyTuple_SET_ITEM(__pyx_t_9, 1, __pyx_t_1);
-  __Pyx_GIVEREF(__pyx_t_1);
-  __pyx_t_4 = 0;
-  __pyx_t_1 = 0;
-  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 436; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  PyTuple_SET_ITEM(__pyx_t_1, 0, ((PyObject *)__pyx_t_9));
-  __Pyx_GIVEREF(((PyObject *)__pyx_t_9));
-  __pyx_t_9 = 0;
-  __pyx_t_9 = PyDict_New(); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 436; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(((PyObject *)__pyx_t_9));
-  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 436; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_14 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s__float64); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 436; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_14);
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  if (PyDict_SetItem(__pyx_t_9, ((PyObject *)__pyx_n_s__dtype), __pyx_t_14) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 436; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-  __pyx_t_14 = PyObject_Call(__pyx_t_8, ((PyObject *)__pyx_t_1), ((PyObject *)__pyx_t_9)); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 436; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_14);
-  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_1)); __pyx_t_1 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_9)); __pyx_t_9 = 0;
-  if (!(likely(((__pyx_t_14) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_14, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 436; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_17 = ((PyArrayObject *)__pyx_t_14);
-  {
-    __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_outMerge.rcbuffer->pybuffer, (PyObject*)__pyx_t_17, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES| PyBUF_WRITABLE, 2, 0, __pyx_stack) == -1)) {
-      __pyx_v_outMerge = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_outMerge.rcbuffer->pybuffer.buf = NULL;
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 436; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    } else {__pyx_pybuffernd_outMerge.diminfo[0].strides = __pyx_pybuffernd_outMerge.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_outMerge.diminfo[0].shape = __pyx_pybuffernd_outMerge.rcbuffer->pybuffer.shape[0]; __pyx_pybuffernd_outMerge.diminfo[1].strides = __pyx_pybuffernd_outMerge.rcbuffer->pybuffer.strides[1]; __pyx_pybuffernd_outMerge.diminfo[1].shape = __pyx_pybuffernd_outMerge.rcbuffer->pybuffer.shape[1];
-    }
-  }
-  __pyx_t_17 = 0;
-  __pyx_v_outMerge = ((PyArrayObject *)__pyx_t_14);
-  __pyx_t_14 = 0;
-
-  /* "splitPixel.pyx":437
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outCount = numpy.zeros((bins0, bins1), dtype=numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outMerge = numpy.zeros((bins0, bins1), dtype=numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] edges0 = numpy.zeros(bins0, dtype=numpy.float64)             # <<<<<<<<<<<<<<
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] edges1 = numpy.zeros(bins1, dtype=numpy.float64)
- *     cdef numpy.int8_t[:] cmask
- */
-  __pyx_t_14 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 437; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_14);
-  __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_14, __pyx_n_s__zeros); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 437; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_9);
-  __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-  __pyx_t_14 = PyInt_FromLong(__pyx_v_bins0); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 437; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_14);
-  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 437; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_14);
-  __Pyx_GIVEREF(__pyx_t_14);
-  __pyx_t_14 = 0;
-  __pyx_t_14 = PyDict_New(); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 437; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(((PyObject *)__pyx_t_14));
-  __pyx_t_8 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 437; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_8);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s__float64); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 437; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  if (PyDict_SetItem(__pyx_t_14, ((PyObject *)__pyx_n_s__dtype), __pyx_t_4) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 437; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = PyObject_Call(__pyx_t_9, ((PyObject *)__pyx_t_1), ((PyObject *)__pyx_t_14)); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 437; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_1)); __pyx_t_1 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_14)); __pyx_t_14 = 0;
-  if (!(likely(((__pyx_t_4) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_4, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 437; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_18 = ((PyArrayObject *)__pyx_t_4);
-  {
-    __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_edges0.rcbuffer->pybuffer, (PyObject*)__pyx_t_18, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {
-      __pyx_v_edges0 = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_edges0.rcbuffer->pybuffer.buf = NULL;
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 437; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    } else {__pyx_pybuffernd_edges0.diminfo[0].strides = __pyx_pybuffernd_edges0.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_edges0.diminfo[0].shape = __pyx_pybuffernd_edges0.rcbuffer->pybuffer.shape[0];
-    }
-  }
-  __pyx_t_18 = 0;
-  __pyx_v_edges0 = ((PyArrayObject *)__pyx_t_4);
-  __pyx_t_4 = 0;
-
-  /* "splitPixel.pyx":438
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 2] outMerge = numpy.zeros((bins0, bins1), dtype=numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] edges0 = numpy.zeros(bins0, dtype=numpy.float64)
- *     cdef numpy.ndarray[numpy.float64_t, ndim = 1] edges1 = numpy.zeros(bins1, dtype=numpy.float64)             # <<<<<<<<<<<<<<
- *     cdef numpy.int8_t[:] cmask
- *     cdef double[:] cflat, cdark, cpolarization, csolidangle
- */
-  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 438; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_14 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s__zeros); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 438; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_14);
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = PyInt_FromLong(__pyx_v_bins1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 438; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 438; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_4);
-  __Pyx_GIVEREF(__pyx_t_4);
-  __pyx_t_4 = 0;
-  __pyx_t_4 = PyDict_New(); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 438; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(((PyObject *)__pyx_t_4));
-  __pyx_t_9 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 438; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_9);
-  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_9, __pyx_n_s__float64); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 438; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_8);
-  __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-  if (PyDict_SetItem(__pyx_t_4, ((PyObject *)__pyx_n_s__dtype), __pyx_t_8) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 438; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  __pyx_t_8 = PyObject_Call(__pyx_t_14, ((PyObject *)__pyx_t_1), ((PyObject *)__pyx_t_4)); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 438; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_8);
-  __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_1)); __pyx_t_1 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_4)); __pyx_t_4 = 0;
-  if (!(likely(((__pyx_t_8) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_8, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 438; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_19 = ((PyArrayObject *)__pyx_t_8);
-  {
-    __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_edges1.rcbuffer->pybuffer, (PyObject*)__pyx_t_19, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {
-      __pyx_v_edges1 = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_edges1.rcbuffer->pybuffer.buf = NULL;
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 438; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    } else {__pyx_pybuffernd_edges1.diminfo[0].strides = __pyx_pybuffernd_edges1.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_edges1.diminfo[0].shape = __pyx_pybuffernd_edges1.rcbuffer->pybuffer.shape[0];
-    }
-  }
-  __pyx_t_19 = 0;
-  __pyx_v_edges1 = ((PyArrayObject *)__pyx_t_8);
-  __pyx_t_8 = 0;
-
-  /* "splitPixel.pyx":442
- *     cdef double[:] cflat, cdark, cpolarization, csolidangle
- * 
- *     cdef bint check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False             # <<<<<<<<<<<<<<
- * 
- *     cdef double cdummy=0, cddummy=0, data=0
- */
-  __pyx_v_check_mask = 0;
   __pyx_v_do_dummy = 0;
   __pyx_v_do_dark = 0;
   __pyx_v_do_flat = 0;
   __pyx_v_do_polarization = 0;
-  __pyx_v_do_solidangle = 0;
+  __pyx_v_do_solidAngle = 0;
 
-  /* "splitPixel.pyx":444
- *     cdef bint check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
- * 
- *     cdef double cdummy=0, cddummy=0, data=0             # <<<<<<<<<<<<<<
- *     cdef double min0=0, max0=0, min1=0, max1=0, deltaR=0, deltaL=0, deltaU=0, deltaD=0, one_over_area=0
- *     cdef double pos0_min=0, pos0_max=0, pos1_min=0, pos1_max=0, pos0_maxin=0, pos1_maxin=0
+  /* "splitPixelFullLUT_b.pyx":328
+ *         cdef double data=0, coef=0, cdummy=0, cddummy=0
+ *         cdef bint do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
+ *         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(self.bins, dtype=numpy.float64)             # <<<<<<<<<<<<<<
+ *         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
+ *         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float64)
  */
-  __pyx_v_cdummy = 0.0;
-  __pyx_v_cddummy = 0.0;
-  __pyx_v_data = 0.0;
-
-  /* "splitPixel.pyx":445
- * 
- *     cdef double cdummy=0, cddummy=0, data=0
- *     cdef double min0=0, max0=0, min1=0, max1=0, deltaR=0, deltaL=0, deltaU=0, deltaD=0, one_over_area=0             # <<<<<<<<<<<<<<
- *     cdef double pos0_min=0, pos0_max=0, pos1_min=0, pos1_max=0, pos0_maxin=0, pos1_maxin=0
- *     cdef double aera_pixel=0, fbin0_min=0, fbin0_max=0, fbin1_min=0, fbin1_max=0
- */
-  __pyx_v_min0 = 0.0;
-  __pyx_v_max0 = 0.0;
-  __pyx_v_min1 = 0.0;
-  __pyx_v_max1 = 0.0;
-  __pyx_v_deltaR = 0.0;
-  __pyx_v_deltaL = 0.0;
-  __pyx_v_deltaU = 0.0;
-  __pyx_v_deltaD = 0.0;
-  __pyx_v_one_over_area = 0.0;
-
-  /* "splitPixel.pyx":446
- *     cdef double cdummy=0, cddummy=0, data=0
- *     cdef double min0=0, max0=0, min1=0, max1=0, deltaR=0, deltaL=0, deltaU=0, deltaD=0, one_over_area=0
- *     cdef double pos0_min=0, pos0_max=0, pos1_min=0, pos1_max=0, pos0_maxin=0, pos1_maxin=0             # <<<<<<<<<<<<<<
- *     cdef double aera_pixel=0, fbin0_min=0, fbin0_max=0, fbin1_min=0, fbin1_max=0
- *     cdef double a0=0, a1=0, b0=0, b1=0, c0=0, c1=0, d0=0, d1=0
- */
-  __pyx_v_pos0_min = 0.0;
-  __pyx_v_pos0_max = 0.0;
-  __pyx_v_pos1_min = 0.0;
-  __pyx_v_pos1_max = 0.0;
-  __pyx_v_pos0_maxin = 0.0;
-  __pyx_v_pos1_maxin = 0.0;
-
-  /* "splitPixel.pyx":447
- *     cdef double min0=0, max0=0, min1=0, max1=0, deltaR=0, deltaL=0, deltaU=0, deltaD=0, one_over_area=0
- *     cdef double pos0_min=0, pos0_max=0, pos1_min=0, pos1_max=0, pos0_maxin=0, pos1_maxin=0
- *     cdef double aera_pixel=0, fbin0_min=0, fbin0_max=0, fbin1_min=0, fbin1_max=0             # <<<<<<<<<<<<<<
- *     cdef double a0=0, a1=0, b0=0, b1=0, c0=0, c1=0, d0=0, d1=0
- *     cdef double epsilon = 1e-10
- */
-  __pyx_v_aera_pixel = 0.0;
-  __pyx_v_fbin0_min = 0.0;
-  __pyx_v_fbin0_max = 0.0;
-  __pyx_v_fbin1_min = 0.0;
-  __pyx_v_fbin1_max = 0.0;
-
-  /* "splitPixel.pyx":448
- *     cdef double pos0_min=0, pos0_max=0, pos1_min=0, pos1_max=0, pos0_maxin=0, pos1_maxin=0
- *     cdef double aera_pixel=0, fbin0_min=0, fbin0_max=0, fbin1_min=0, fbin1_max=0
- *     cdef double a0=0, a1=0, b0=0, b1=0, c0=0, c1=0, d0=0, d1=0             # <<<<<<<<<<<<<<
- *     cdef double epsilon = 1e-10
- * 
- */
-  __pyx_v_a0 = 0.0;
-  __pyx_v_a1 = 0.0;
-  __pyx_v_b0 = 0.0;
-  __pyx_v_b1 = 0.0;
-  __pyx_v_c0 = 0.0;
-  __pyx_v_c1 = 0.0;
-  __pyx_v_d0 = 0.0;
-  __pyx_v_d1 = 0.0;
-
-  /* "splitPixel.pyx":449
- *     cdef double aera_pixel=0, fbin0_min=0, fbin0_max=0, fbin1_min=0, fbin1_max=0
- *     cdef double a0=0, a1=0, b0=0, b1=0, c0=0, c1=0, d0=0, d1=0
- *     cdef double epsilon = 1e-10             # <<<<<<<<<<<<<<
- * 
- *     cdef int bin0_max=0, bin0_min=0, bin1_max=0, bin1_min=0, i=0, j=0, idx=0
- */
-  __pyx_v_epsilon = 1e-10;
-
-  /* "splitPixel.pyx":451
- *     cdef double epsilon = 1e-10
- * 
- *     cdef int bin0_max=0, bin0_min=0, bin1_max=0, bin1_min=0, i=0, j=0, idx=0             # <<<<<<<<<<<<<<
- * 
- *     if pos0Range is not None and len(pos0Range) == 2:
- */
-  __pyx_v_bin0_max = 0;
-  __pyx_v_bin0_min = 0;
-  __pyx_v_bin1_max = 0;
-  __pyx_v_bin1_min = 0;
-  __pyx_v_i = 0;
-  __pyx_v_j = 0;
-  __pyx_v_idx = 0;
-
-  /* "splitPixel.pyx":453
- *     cdef int bin0_max=0, bin0_min=0, bin1_max=0, bin1_min=0, i=0, j=0, idx=0
- * 
- *     if pos0Range is not None and len(pos0Range) == 2:             # <<<<<<<<<<<<<<
- *         pos0_min = min(pos0Range)
- *         pos0_maxin = max(pos0Range)
- */
-  __pyx_t_3 = (__pyx_v_pos0Range != Py_None);
-  if ((__pyx_t_3 != 0)) {
-    __pyx_t_20 = PyObject_Length(__pyx_v_pos0Range); if (unlikely(__pyx_t_20 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 453; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __pyx_t_21 = ((__pyx_t_20 == 2) != 0);
-    __pyx_t_22 = __pyx_t_21;
-  } else {
-    __pyx_t_22 = (__pyx_t_3 != 0);
-  }
-  if (__pyx_t_22) {
-
-    /* "splitPixel.pyx":454
- * 
- *     if pos0Range is not None and len(pos0Range) == 2:
- *         pos0_min = min(pos0Range)             # <<<<<<<<<<<<<<
- *         pos0_maxin = max(pos0Range)
- *     else:
- */
-    __pyx_t_8 = PyTuple_New(1); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 454; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_8);
-    __Pyx_INCREF(__pyx_v_pos0Range);
-    PyTuple_SET_ITEM(__pyx_t_8, 0, __pyx_v_pos0Range);
-    __Pyx_GIVEREF(__pyx_v_pos0Range);
-    __pyx_t_4 = PyObject_Call(__pyx_builtin_min, ((PyObject *)__pyx_t_8), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 454; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(((PyObject *)__pyx_t_8)); __pyx_t_8 = 0;
-    __pyx_t_23 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_23 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 454; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_v_pos0_min = __pyx_t_23;
-
-    /* "splitPixel.pyx":455
- *     if pos0Range is not None and len(pos0Range) == 2:
- *         pos0_min = min(pos0Range)
- *         pos0_maxin = max(pos0Range)             # <<<<<<<<<<<<<<
- *     else:
- *         pos0_min = pos[:, :, 0].min()
- */
-    __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 455; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_INCREF(__pyx_v_pos0Range);
-    PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_v_pos0Range);
-    __Pyx_GIVEREF(__pyx_v_pos0Range);
-    __pyx_t_8 = PyObject_Call(__pyx_builtin_max, ((PyObject *)__pyx_t_4), NULL); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 455; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_8);
-    __Pyx_DECREF(((PyObject *)__pyx_t_4)); __pyx_t_4 = 0;
-    __pyx_t_23 = __pyx_PyFloat_AsDouble(__pyx_t_8); if (unlikely((__pyx_t_23 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 455; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    __pyx_v_pos0_maxin = __pyx_t_23;
-    goto __pyx_L18;
-  }
-  /*else*/ {
-
-    /* "splitPixel.pyx":457
- *         pos0_maxin = max(pos0Range)
- *     else:
- *         pos0_min = pos[:, :, 0].min()             # <<<<<<<<<<<<<<
- *         pos0_maxin = pos[:, :, 0].max()
- *     pos0_max = pos0_maxin * (1 + numpy.finfo(numpy.float32).eps)
- */
-    __pyx_t_8 = PyObject_GetItem(((PyObject *)__pyx_v_pos), ((PyObject *)__pyx_k_tuple_14)); if (!__pyx_t_8) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 457; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_8);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s__min); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 457; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    __pyx_t_8 = PyObject_Call(__pyx_t_4, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 457; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_8);
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_23 = __pyx_PyFloat_AsDouble(__pyx_t_8); if (unlikely((__pyx_t_23 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 457; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    __pyx_v_pos0_min = __pyx_t_23;
-
-    /* "splitPixel.pyx":458
- *     else:
- *         pos0_min = pos[:, :, 0].min()
- *         pos0_maxin = pos[:, :, 0].max()             # <<<<<<<<<<<<<<
- *     pos0_max = pos0_maxin * (1 + numpy.finfo(numpy.float32).eps)
- * 
- */
-    __pyx_t_8 = PyObject_GetItem(((PyObject *)__pyx_v_pos), ((PyObject *)__pyx_k_tuple_17)); if (!__pyx_t_8) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 458; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_8);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s__max); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 458; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    __pyx_t_8 = PyObject_Call(__pyx_t_4, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 458; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_8);
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_23 = __pyx_PyFloat_AsDouble(__pyx_t_8); if (unlikely((__pyx_t_23 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 458; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    __pyx_v_pos0_maxin = __pyx_t_23;
-  }
-  __pyx_L18:;
-
-  /* "splitPixel.pyx":459
- *         pos0_min = pos[:, :, 0].min()
- *         pos0_maxin = pos[:, :, 0].max()
- *     pos0_max = pos0_maxin * (1 + numpy.finfo(numpy.float32).eps)             # <<<<<<<<<<<<<<
- * 
- *     if pos1Range is not None and len(pos1Range) > 1:
- */
-  __pyx_t_8 = PyFloat_FromDouble(__pyx_v_pos0_maxin); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 459; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_8);
-  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 459; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s__finfo); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 459; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 328; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 459; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s__zeros); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 328; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__bins); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 328; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 328; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_14 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s__float32); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 459; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_14);
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 459; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_1);
+  __Pyx_GIVEREF(__pyx_t_1);
+  __pyx_t_1 = 0;
+  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 328; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(((PyObject *)__pyx_t_1));
+  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 328; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s__float64); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 328; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_6);
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  if (PyDict_SetItem(__pyx_t_1, ((PyObject *)__pyx_n_s__dtype), __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 328; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+  __pyx_t_6 = PyObject_Call(__pyx_t_3, ((PyObject *)__pyx_t_4), ((PyObject *)__pyx_t_1)); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 328; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_6);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __Pyx_DECREF(((PyObject *)__pyx_t_4)); __pyx_t_4 = 0;
+  __Pyx_DECREF(((PyObject *)__pyx_t_1)); __pyx_t_1 = 0;
+  if (!(likely(((__pyx_t_6) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_6, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 328; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_7 = ((PyArrayObject *)__pyx_t_6);
+  {
+    __Pyx_BufFmt_StackElem __pyx_stack[1];
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_outData.rcbuffer->pybuffer, (PyObject*)__pyx_t_7, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES| PyBUF_WRITABLE, 1, 0, __pyx_stack) == -1)) {
+      __pyx_v_outData = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf = NULL;
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 328; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    } else {__pyx_pybuffernd_outData.diminfo[0].strides = __pyx_pybuffernd_outData.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_outData.diminfo[0].shape = __pyx_pybuffernd_outData.rcbuffer->pybuffer.shape[0];
+    }
+  }
+  __pyx_t_7 = 0;
+  __pyx_v_outData = ((PyArrayObject *)__pyx_t_6);
+  __pyx_t_6 = 0;
+
+  /* "splitPixelFullLUT_b.pyx":329
+ *         cdef bint do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
+ *         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
+ *         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)             # <<<<<<<<<<<<<<
+ *         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float64)
+ *         cdef double[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
+ */
+  __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 329; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_6);
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s__zeros); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 329; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__bins); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 329; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_6);
+  __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 329; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
-  PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_14);
-  __Pyx_GIVEREF(__pyx_t_14);
-  __pyx_t_14 = 0;
-  __pyx_t_14 = PyObject_Call(__pyx_t_1, ((PyObject *)__pyx_t_4), NULL); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 459; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_14);
+  PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_6);
+  __Pyx_GIVEREF(__pyx_t_6);
+  __pyx_t_6 = 0;
+  __pyx_t_6 = PyDict_New(); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 329; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(((PyObject *)__pyx_t_6));
+  __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 329; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s__float64); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 329; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  if (PyDict_SetItem(__pyx_t_6, ((PyObject *)__pyx_n_s__dtype), __pyx_t_5) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 329; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_t_5 = PyObject_Call(__pyx_t_1, ((PyObject *)__pyx_t_4), ((PyObject *)__pyx_t_6)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 329; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(((PyObject *)__pyx_t_4)); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_14, __pyx_n_s__eps); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 459; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-  __pyx_t_14 = PyNumber_Add(__pyx_int_1, __pyx_t_4); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 459; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_14);
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = PyNumber_Multiply(__pyx_t_8, __pyx_t_14); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 459; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-  __pyx_t_23 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_23 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 459; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_v_pos0_max = __pyx_t_23;
-
-  /* "splitPixel.pyx":461
- *     pos0_max = pos0_maxin * (1 + numpy.finfo(numpy.float32).eps)
- * 
- *     if pos1Range is not None and len(pos1Range) > 1:             # <<<<<<<<<<<<<<
- *         pos1_min = min(pos1Range)
- *         pos1_maxin = max(pos1Range)
- */
-  __pyx_t_22 = (__pyx_v_pos1Range != Py_None);
-  if ((__pyx_t_22 != 0)) {
-    __pyx_t_20 = PyObject_Length(__pyx_v_pos1Range); if (unlikely(__pyx_t_20 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 461; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __pyx_t_3 = ((__pyx_t_20 > 1) != 0);
-    __pyx_t_21 = __pyx_t_3;
-  } else {
-    __pyx_t_21 = (__pyx_t_22 != 0);
-  }
-  if (__pyx_t_21) {
-
-    /* "splitPixel.pyx":462
- * 
- *     if pos1Range is not None and len(pos1Range) > 1:
- *         pos1_min = min(pos1Range)             # <<<<<<<<<<<<<<
- *         pos1_maxin = max(pos1Range)
- *     else:
- */
-    __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 462; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_INCREF(__pyx_v_pos1Range);
-    PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_v_pos1Range);
-    __Pyx_GIVEREF(__pyx_v_pos1Range);
-    __pyx_t_14 = PyObject_Call(__pyx_builtin_min, ((PyObject *)__pyx_t_4), NULL); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 462; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_14);
-    __Pyx_DECREF(((PyObject *)__pyx_t_4)); __pyx_t_4 = 0;
-    __pyx_t_23 = __pyx_PyFloat_AsDouble(__pyx_t_14); if (unlikely((__pyx_t_23 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 462; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-    __pyx_v_pos1_min = __pyx_t_23;
-
-    /* "splitPixel.pyx":463
- *     if pos1Range is not None and len(pos1Range) > 1:
- *         pos1_min = min(pos1Range)
- *         pos1_maxin = max(pos1Range)             # <<<<<<<<<<<<<<
- *     else:
- *         pos1_min = pos[:, :, 1].min()
- */
-    __pyx_t_14 = PyTuple_New(1); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 463; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_14);
-    __Pyx_INCREF(__pyx_v_pos1Range);
-    PyTuple_SET_ITEM(__pyx_t_14, 0, __pyx_v_pos1Range);
-    __Pyx_GIVEREF(__pyx_v_pos1Range);
-    __pyx_t_4 = PyObject_Call(__pyx_builtin_max, ((PyObject *)__pyx_t_14), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 463; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(((PyObject *)__pyx_t_14)); __pyx_t_14 = 0;
-    __pyx_t_23 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_23 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 463; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_v_pos1_maxin = __pyx_t_23;
-    goto __pyx_L19;
-  }
-  /*else*/ {
-
-    /* "splitPixel.pyx":465
- *         pos1_maxin = max(pos1Range)
- *     else:
- *         pos1_min = pos[:, :, 1].min()             # <<<<<<<<<<<<<<
- *         pos1_maxin = pos[:, :, 1].max()
- *     pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
- */
-    __pyx_t_4 = PyObject_GetItem(((PyObject *)__pyx_v_pos), ((PyObject *)__pyx_k_tuple_20)); if (!__pyx_t_4) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 465; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_14 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s__min); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 465; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_14);
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = PyObject_Call(__pyx_t_14, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 465; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-    __pyx_t_23 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_23 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 465; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_v_pos1_min = __pyx_t_23;
-
-    /* "splitPixel.pyx":466
- *     else:
- *         pos1_min = pos[:, :, 1].min()
- *         pos1_maxin = pos[:, :, 1].max()             # <<<<<<<<<<<<<<
- *     pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
- * 
- */
-    __pyx_t_4 = PyObject_GetItem(((PyObject *)__pyx_v_pos), ((PyObject *)__pyx_k_tuple_23)); if (!__pyx_t_4) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 466; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_14 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s__max); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 466; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_14);
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = PyObject_Call(__pyx_t_14, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 466; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-    __pyx_t_23 = __pyx_PyFloat_AsDouble(__pyx_t_4); if (unlikely((__pyx_t_23 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 466; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_v_pos1_maxin = __pyx_t_23;
-  }
-  __pyx_L19:;
-
-  /* "splitPixel.pyx":467
- *         pos1_min = pos[:, :, 1].min()
- *         pos1_maxin = pos[:, :, 1].max()
- *     pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)             # <<<<<<<<<<<<<<
- * 
- *     cdef double dpos0 = (pos0_max - pos0_min) / (< double > (bins0))
- */
-  __pyx_t_4 = PyFloat_FromDouble(__pyx_v_pos1_maxin); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 467; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_14 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 467; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_14);
-  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_14, __pyx_n_s__finfo); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 467; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_8);
-  __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-  __pyx_t_14 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 467; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_14);
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_14, __pyx_n_s__float32); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 467; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-  __pyx_t_14 = PyTuple_New(1); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 467; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_14);
-  PyTuple_SET_ITEM(__pyx_t_14, 0, __pyx_t_1);
-  __Pyx_GIVEREF(__pyx_t_1);
-  __pyx_t_1 = 0;
-  __pyx_t_1 = PyObject_Call(__pyx_t_8, ((PyObject *)__pyx_t_14), NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 467; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_14)); __pyx_t_14 = 0;
-  __pyx_t_14 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s__eps); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 467; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_14);
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyNumber_Add(__pyx_int_1, __pyx_t_14); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 467; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-  __pyx_t_14 = PyNumber_Multiply(__pyx_t_4, __pyx_t_1); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 467; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_14);
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_23 = __pyx_PyFloat_AsDouble(__pyx_t_14); if (unlikely((__pyx_t_23 == (double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 467; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-  __pyx_v_pos1_max = __pyx_t_23;
-
-  /* "splitPixel.pyx":469
- *     pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
- * 
- *     cdef double dpos0 = (pos0_max - pos0_min) / (< double > (bins0))             # <<<<<<<<<<<<<<
- *     cdef double dpos1 = (pos1_max - pos1_min) / (< double > (bins1))
- *     edges0 = numpy.linspace(pos0_min+0.5*dpos0, pos0_maxin-0.5*dpos0, bins0)
- */
-  __pyx_v_dpos0 = ((__pyx_v_pos0_max - __pyx_v_pos0_min) / ((double)__pyx_v_bins0));
-
-  /* "splitPixel.pyx":470
- * 
- *     cdef double dpos0 = (pos0_max - pos0_min) / (< double > (bins0))
- *     cdef double dpos1 = (pos1_max - pos1_min) / (< double > (bins1))             # <<<<<<<<<<<<<<
- *     edges0 = numpy.linspace(pos0_min+0.5*dpos0, pos0_maxin-0.5*dpos0, bins0)
- *     edges1 = numpy.linspace(pos1_min+0.5*dpos1, pos1_maxin-0.5*dpos1, bins1)
- */
-  __pyx_v_dpos1 = ((__pyx_v_pos1_max - __pyx_v_pos1_min) / ((double)__pyx_v_bins1));
-
-  /* "splitPixel.pyx":471
- *     cdef double dpos0 = (pos0_max - pos0_min) / (< double > (bins0))
- *     cdef double dpos1 = (pos1_max - pos1_min) / (< double > (bins1))
- *     edges0 = numpy.linspace(pos0_min+0.5*dpos0, pos0_maxin-0.5*dpos0, bins0)             # <<<<<<<<<<<<<<
- *     edges1 = numpy.linspace(pos1_min+0.5*dpos1, pos1_maxin-0.5*dpos1, bins1)
- * 
- */
-  __pyx_t_14 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 471; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_14);
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_14, __pyx_n_s__linspace); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 471; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-  __pyx_t_14 = PyFloat_FromDouble((__pyx_v_pos0_min + (0.5 * __pyx_v_dpos0))); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 471; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_14);
-  __pyx_t_4 = PyFloat_FromDouble((__pyx_v_pos0_maxin - (0.5 * __pyx_v_dpos0))); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 471; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_8 = PyInt_FromLong(__pyx_v_bins0); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 471; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_8);
-  __pyx_t_9 = PyTuple_New(3); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 471; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_9);
-  PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_14);
-  __Pyx_GIVEREF(__pyx_t_14);
-  PyTuple_SET_ITEM(__pyx_t_9, 1, __pyx_t_4);
-  __Pyx_GIVEREF(__pyx_t_4);
-  PyTuple_SET_ITEM(__pyx_t_9, 2, __pyx_t_8);
-  __Pyx_GIVEREF(__pyx_t_8);
-  __pyx_t_14 = 0;
-  __pyx_t_4 = 0;
-  __pyx_t_8 = 0;
-  __pyx_t_8 = PyObject_Call(__pyx_t_1, ((PyObject *)__pyx_t_9), NULL); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 471; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_8);
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_9)); __pyx_t_9 = 0;
-  if (!(likely(((__pyx_t_8) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_8, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 471; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_18 = ((PyArrayObject *)__pyx_t_8);
+  __Pyx_DECREF(((PyObject *)__pyx_t_6)); __pyx_t_6 = 0;
+  if (!(likely(((__pyx_t_5) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_5, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 329; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_8 = ((PyArrayObject *)__pyx_t_5);
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
-    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_edges0.rcbuffer->pybuffer);
-    __pyx_t_11 = __Pyx_GetBufferAndValidate(&__pyx_pybuffernd_edges0.rcbuffer->pybuffer, (PyObject*)__pyx_t_18, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack);
-    if (unlikely(__pyx_t_11 < 0)) {
-      PyErr_Fetch(&__pyx_t_7, &__pyx_t_6, &__pyx_t_5);
-      if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_edges0.rcbuffer->pybuffer, (PyObject*)__pyx_v_edges0, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {
-        Py_XDECREF(__pyx_t_7); Py_XDECREF(__pyx_t_6); Py_XDECREF(__pyx_t_5);
-        __Pyx_RaiseBufferFallbackError();
-      } else {
-        PyErr_Restore(__pyx_t_7, __pyx_t_6, __pyx_t_5);
-      }
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_outCount.rcbuffer->pybuffer, (PyObject*)__pyx_t_8, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES| PyBUF_WRITABLE, 1, 0, __pyx_stack) == -1)) {
+      __pyx_v_outCount = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf = NULL;
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 329; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    } else {__pyx_pybuffernd_outCount.diminfo[0].strides = __pyx_pybuffernd_outCount.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_outCount.diminfo[0].shape = __pyx_pybuffernd_outCount.rcbuffer->pybuffer.shape[0];
     }
-    __pyx_pybuffernd_edges0.diminfo[0].strides = __pyx_pybuffernd_edges0.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_edges0.diminfo[0].shape = __pyx_pybuffernd_edges0.rcbuffer->pybuffer.shape[0];
-    if (unlikely(__pyx_t_11 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 471; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_18 = 0;
-  __Pyx_DECREF_SET(__pyx_v_edges0, ((PyArrayObject *)__pyx_t_8));
   __pyx_t_8 = 0;
+  __pyx_v_outCount = ((PyArrayObject *)__pyx_t_5);
+  __pyx_t_5 = 0;
 
-  /* "splitPixel.pyx":472
- *     cdef double dpos1 = (pos1_max - pos1_min) / (< double > (bins1))
- *     edges0 = numpy.linspace(pos0_min+0.5*dpos0, pos0_maxin-0.5*dpos0, bins0)
- *     edges1 = numpy.linspace(pos1_min+0.5*dpos1, pos1_maxin-0.5*dpos1, bins1)             # <<<<<<<<<<<<<<
+  /* "splitPixelFullLUT_b.pyx":330
+ *         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
+ *         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
+ *         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float64)             # <<<<<<<<<<<<<<
+ *         cdef double[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
  * 
- *     if (dummy is not None) and (delta_dummy is not None):
  */
-  __pyx_t_8 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 472; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_8);
-  __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s__linspace); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 472; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_9);
-  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  __pyx_t_8 = PyFloat_FromDouble((__pyx_v_pos1_min + (0.5 * __pyx_v_dpos1))); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 472; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_8);
-  __pyx_t_1 = PyFloat_FromDouble((__pyx_v_pos1_maxin - (0.5 * __pyx_v_dpos1))); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 472; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 330; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s__zeros); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 330; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_6);
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__bins); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 330; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 330; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_4);
+  PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_5);
+  __Pyx_GIVEREF(__pyx_t_5);
+  __pyx_t_5 = 0;
+  __pyx_t_5 = PyDict_New(); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 330; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(((PyObject *)__pyx_t_5));
+  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 330; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_4 = PyInt_FromLong(__pyx_v_bins1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 472; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_14 = PyTuple_New(3); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 472; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_14);
-  PyTuple_SET_ITEM(__pyx_t_14, 0, __pyx_t_8);
-  __Pyx_GIVEREF(__pyx_t_8);
-  PyTuple_SET_ITEM(__pyx_t_14, 1, __pyx_t_1);
-  __Pyx_GIVEREF(__pyx_t_1);
-  PyTuple_SET_ITEM(__pyx_t_14, 2, __pyx_t_4);
-  __Pyx_GIVEREF(__pyx_t_4);
-  __pyx_t_8 = 0;
-  __pyx_t_1 = 0;
-  __pyx_t_4 = 0;
-  __pyx_t_4 = PyObject_Call(__pyx_t_9, ((PyObject *)__pyx_t_14), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 472; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-  __Pyx_DECREF(((PyObject *)__pyx_t_14)); __pyx_t_14 = 0;
-  if (!(likely(((__pyx_t_4) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_4, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 472; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_19 = ((PyArrayObject *)__pyx_t_4);
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s__float64); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 330; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  if (PyDict_SetItem(__pyx_t_5, ((PyObject *)__pyx_n_s__dtype), __pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 330; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_3 = PyObject_Call(__pyx_t_6, ((PyObject *)__pyx_t_4), ((PyObject *)__pyx_t_5)); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 330; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+  __Pyx_DECREF(((PyObject *)__pyx_t_4)); __pyx_t_4 = 0;
+  __Pyx_DECREF(((PyObject *)__pyx_t_5)); __pyx_t_5 = 0;
+  if (!(likely(((__pyx_t_3) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_3, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 330; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_9 = ((PyArrayObject *)__pyx_t_3);
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
-    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_edges1.rcbuffer->pybuffer);
-    __pyx_t_11 = __Pyx_GetBufferAndValidate(&__pyx_pybuffernd_edges1.rcbuffer->pybuffer, (PyObject*)__pyx_t_19, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack);
-    if (unlikely(__pyx_t_11 < 0)) {
-      PyErr_Fetch(&__pyx_t_5, &__pyx_t_6, &__pyx_t_7);
-      if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_edges1.rcbuffer->pybuffer, (PyObject*)__pyx_v_edges1, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {
-        Py_XDECREF(__pyx_t_5); Py_XDECREF(__pyx_t_6); Py_XDECREF(__pyx_t_7);
-        __Pyx_RaiseBufferFallbackError();
-      } else {
-        PyErr_Restore(__pyx_t_5, __pyx_t_6, __pyx_t_7);
-      }
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_outMerge.rcbuffer->pybuffer, (PyObject*)__pyx_t_9, &__Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t, PyBUF_FORMAT| PyBUF_STRIDES| PyBUF_WRITABLE, 1, 0, __pyx_stack) == -1)) {
+      __pyx_v_outMerge = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_outMerge.rcbuffer->pybuffer.buf = NULL;
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 330; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    } else {__pyx_pybuffernd_outMerge.diminfo[0].strides = __pyx_pybuffernd_outMerge.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_outMerge.diminfo[0].shape = __pyx_pybuffernd_outMerge.rcbuffer->pybuffer.shape[0];
     }
-    __pyx_pybuffernd_edges1.diminfo[0].strides = __pyx_pybuffernd_edges1.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_edges1.diminfo[0].shape = __pyx_pybuffernd_edges1.rcbuffer->pybuffer.shape[0];
-    if (unlikely(__pyx_t_11 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 472; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_19 = 0;
-  __Pyx_DECREF_SET(__pyx_v_edges1, ((PyArrayObject *)__pyx_t_4));
-  __pyx_t_4 = 0;
+  __pyx_t_9 = 0;
+  __pyx_v_outMerge = ((PyArrayObject *)__pyx_t_3);
+  __pyx_t_3 = 0;
 
-  /* "splitPixel.pyx":474
- *     edges1 = numpy.linspace(pos1_min+0.5*dpos1, pos1_maxin-0.5*dpos1, bins1)
+  /* "splitPixelFullLUT_b.pyx":331
+ *         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
+ *         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float64)
+ *         cdef double[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization             # <<<<<<<<<<<<<<
  * 
- *     if (dummy is not None) and (delta_dummy is not None):             # <<<<<<<<<<<<<<
- *         check_dummy = True
- *         cdummy =  float(dummy)
+ *         cdef numpy.int32_t[:] indices = self.indices, indptr = self.indptr
  */
-  __pyx_t_21 = (__pyx_v_dummy != Py_None);
-  if ((__pyx_t_21 != 0)) {
-    __pyx_t_22 = (__pyx_v_delta_dummy != Py_None);
-    __pyx_t_3 = (__pyx_t_22 != 0);
-  } else {
-    __pyx_t_3 = (__pyx_t_21 != 0);
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__data); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 331; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_10 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_3);
+  if (unlikely(!__pyx_t_10.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 331; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_v_ccoef = __pyx_t_10;
+  __pyx_t_10.memview = NULL;
+  __pyx_t_10.data = NULL;
+
+  /* "splitPixelFullLUT_b.pyx":333
+ *         cdef double[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
+ * 
+ *         cdef numpy.int32_t[:] indices = self.indices, indptr = self.indptr             # <<<<<<<<<<<<<<
+ *         assert size == weights.size
+ * 
+ */
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__indices); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 333; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_11 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5numpy_int32_t(__pyx_t_3);
+  if (unlikely(!__pyx_t_11.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 333; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_v_indices = __pyx_t_11;
+  __pyx_t_11.memview = NULL;
+  __pyx_t_11.data = NULL;
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__indptr); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 333; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_11 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5numpy_int32_t(__pyx_t_3);
+  if (unlikely(!__pyx_t_11.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 333; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_v_indptr = __pyx_t_11;
+  __pyx_t_11.memview = NULL;
+  __pyx_t_11.data = NULL;
+
+  /* "splitPixelFullLUT_b.pyx":334
+ * 
+ *         cdef numpy.int32_t[:] indices = self.indices, indptr = self.indptr
+ *         assert size == weights.size             # <<<<<<<<<<<<<<
+ * 
+ *         if dummy is not None:
+ */
+  #ifndef CYTHON_WITHOUT_ASSERTIONS
+  __pyx_t_3 = __Pyx_PyInt_to_py_npy_int32(__pyx_v_size); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 334; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_weights, __pyx_n_s__size); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 334; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_4 = PyObject_RichCompare(__pyx_t_3, __pyx_t_5, Py_EQ); __Pyx_XGOTREF(__pyx_t_4); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 334; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_t_12 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_12 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 334; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  if (unlikely(!__pyx_t_12)) {
+    PyErr_SetNone(PyExc_AssertionError);
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 334; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  if (__pyx_t_3) {
+  #endif
 
-    /* "splitPixel.pyx":475
+  /* "splitPixelFullLUT_b.pyx":336
+ *         assert size == weights.size
  * 
- *     if (dummy is not None) and (delta_dummy is not None):
- *         check_dummy = True             # <<<<<<<<<<<<<<
- *         cdummy =  float(dummy)
- *         cddummy =  float(delta_dummy)
+ *         if dummy is not None:             # <<<<<<<<<<<<<<
+ *             do_dummy = True
+ *             cdummy =  <double>float(dummy)
  */
-    __pyx_v_check_dummy = 1;
+  __pyx_t_12 = (__pyx_v_dummy != Py_None);
+  __pyx_t_13 = (__pyx_t_12 != 0);
+  if (__pyx_t_13) {
 
-    /* "splitPixel.pyx":476
- *     if (dummy is not None) and (delta_dummy is not None):
- *         check_dummy = True
- *         cdummy =  float(dummy)             # <<<<<<<<<<<<<<
- *         cddummy =  float(delta_dummy)
- *     elif (dummy is not None):
- */
-    __pyx_t_23 = __Pyx_PyObject_AsDouble(__pyx_v_dummy); if (unlikely(__pyx_t_23 == ((double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 476; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __pyx_v_cdummy = __pyx_t_23;
-
-    /* "splitPixel.pyx":477
- *         check_dummy = True
- *         cdummy =  float(dummy)
- *         cddummy =  float(delta_dummy)             # <<<<<<<<<<<<<<
- *     elif (dummy is not None):
- *         check_dummy = True
- */
-    __pyx_t_23 = __Pyx_PyObject_AsDouble(__pyx_v_delta_dummy); if (unlikely(__pyx_t_23 == ((double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 477; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __pyx_v_cddummy = __pyx_t_23;
-    goto __pyx_L20;
-  }
-
-  /* "splitPixel.pyx":478
- *         cdummy =  float(dummy)
- *         cddummy =  float(delta_dummy)
- *     elif (dummy is not None):             # <<<<<<<<<<<<<<
- *         check_dummy = True
- *         cdummy = float(dummy)
- */
-  __pyx_t_3 = (__pyx_v_dummy != Py_None);
-  __pyx_t_21 = (__pyx_t_3 != 0);
-  if (__pyx_t_21) {
-
-    /* "splitPixel.pyx":479
- *         cddummy =  float(delta_dummy)
- *     elif (dummy is not None):
- *         check_dummy = True             # <<<<<<<<<<<<<<
- *         cdummy = float(dummy)
- *         cddummy = 0.0
- */
-    __pyx_v_check_dummy = 1;
-
-    /* "splitPixel.pyx":480
- *     elif (dummy is not None):
- *         check_dummy = True
- *         cdummy = float(dummy)             # <<<<<<<<<<<<<<
- *         cddummy = 0.0
- *     else:
- */
-    __pyx_t_23 = __Pyx_PyObject_AsDouble(__pyx_v_dummy); if (unlikely(__pyx_t_23 == ((double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 480; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __pyx_v_cdummy = __pyx_t_23;
-
-    /* "splitPixel.pyx":481
- *         check_dummy = True
- *         cdummy = float(dummy)
- *         cddummy = 0.0             # <<<<<<<<<<<<<<
- *     else:
- *         check_dummy = False
- */
-    __pyx_v_cddummy = 0.0;
-    goto __pyx_L20;
-  }
-  /*else*/ {
-
-    /* "splitPixel.pyx":483
- *         cddummy = 0.0
- *     else:
- *         check_dummy = False             # <<<<<<<<<<<<<<
- *         cdummy = 0.0
- *         cddummy = 0.0
- */
-    __pyx_v_check_dummy = 0;
-
-    /* "splitPixel.pyx":484
- *     else:
- *         check_dummy = False
- *         cdummy = 0.0             # <<<<<<<<<<<<<<
- *         cddummy = 0.0
+    /* "splitPixelFullLUT_b.pyx":337
  * 
+ *         if dummy is not None:
+ *             do_dummy = True             # <<<<<<<<<<<<<<
+ *             cdummy =  <double>float(dummy)
+ *             if delta_dummy is None:
  */
-    __pyx_v_cdummy = 0.0;
+    __pyx_v_do_dummy = 1;
 
-    /* "splitPixel.pyx":485
- *         check_dummy = False
- *         cdummy = 0.0
- *         cddummy = 0.0             # <<<<<<<<<<<<<<
- * 
- *     if mask is not None:
+    /* "splitPixelFullLUT_b.pyx":338
+ *         if dummy is not None:
+ *             do_dummy = True
+ *             cdummy =  <double>float(dummy)             # <<<<<<<<<<<<<<
+ *             if delta_dummy is None:
+ *                 cddummy = <double>0.0
  */
-    __pyx_v_cddummy = 0.0;
-  }
-  __pyx_L20:;
+    __pyx_t_14 = __Pyx_PyObject_AsDouble(__pyx_v_dummy); if (unlikely(__pyx_t_14 == ((double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 338; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_v_cdummy = ((double)__pyx_t_14);
 
-  /* "splitPixel.pyx":487
- *         cddummy = 0.0
- * 
- *     if mask is not None:             # <<<<<<<<<<<<<<
- *         check_mask = True
- *         assert mask.size == size
+    /* "splitPixelFullLUT_b.pyx":339
+ *             do_dummy = True
+ *             cdummy =  <double>float(dummy)
+ *             if delta_dummy is None:             # <<<<<<<<<<<<<<
+ *                 cddummy = <double>0.0
+ *             else:
  */
-  __pyx_t_21 = (__pyx_v_mask != Py_None);
-  __pyx_t_3 = (__pyx_t_21 != 0);
-  if (__pyx_t_3) {
+    __pyx_t_13 = (__pyx_v_delta_dummy == Py_None);
+    __pyx_t_12 = (__pyx_t_13 != 0);
+    if (__pyx_t_12) {
 
-    /* "splitPixel.pyx":488
- * 
- *     if mask is not None:
- *         check_mask = True             # <<<<<<<<<<<<<<
- *         assert mask.size == size
- *         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
+      /* "splitPixelFullLUT_b.pyx":340
+ *             cdummy =  <double>float(dummy)
+ *             if delta_dummy is None:
+ *                 cddummy = <double>0.0             # <<<<<<<<<<<<<<
+ *             else:
+ *                 cddummy = <double>float(delta_dummy)
  */
-    __pyx_v_check_mask = 1;
-
-    /* "splitPixel.pyx":489
- *     if mask is not None:
- *         check_mask = True
- *         assert mask.size == size             # <<<<<<<<<<<<<<
- *         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
- *     if dark is not None:
- */
-    #ifndef CYTHON_WITHOUT_ASSERTIONS
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_mask, __pyx_n_s__size); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 489; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_14 = PyInt_FromLong(__pyx_v_size); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 489; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_14);
-    __pyx_t_9 = PyObject_RichCompare(__pyx_t_4, __pyx_t_14, Py_EQ); __Pyx_XGOTREF(__pyx_t_9); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 489; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-    __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_t_9); if (unlikely(__pyx_t_3 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 489; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    if (unlikely(!__pyx_t_3)) {
-      PyErr_SetNone(PyExc_AssertionError);
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 489; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_v_cddummy = ((double)0.0);
+      goto __pyx_L4;
     }
-    #endif
+    /*else*/ {
 
-    /* "splitPixel.pyx":490
- *         check_mask = True
- *         assert mask.size == size
- *         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)             # <<<<<<<<<<<<<<
- *     if dark is not None:
- *         do_dark = True
+      /* "splitPixelFullLUT_b.pyx":342
+ *                 cddummy = <double>0.0
+ *             else:
+ *                 cddummy = <double>float(delta_dummy)             # <<<<<<<<<<<<<<
+ * 
+ *         if flat is not None:
  */
-    __pyx_t_9 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 490; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_9);
-    __pyx_t_14 = __Pyx_PyObject_GetAttrStr(__pyx_t_9, __pyx_n_s__ascontiguousarray); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 490; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_14);
-    __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_v_mask, __pyx_n_s__ravel); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 490; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_9);
-    __pyx_t_4 = PyObject_Call(__pyx_t_9, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 490; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    __pyx_t_9 = PyTuple_New(1); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 490; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_9);
-    PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_4);
-    __Pyx_GIVEREF(__pyx_t_4);
-    __pyx_t_4 = 0;
-    __pyx_t_4 = PyDict_New(); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 490; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(((PyObject *)__pyx_t_4));
-    __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 490; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s__int8); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 490; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_8);
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (PyDict_SetItem(__pyx_t_4, ((PyObject *)__pyx_n_s__dtype), __pyx_t_8) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 490; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    __pyx_t_8 = PyObject_Call(__pyx_t_14, ((PyObject *)__pyx_t_9), ((PyObject *)__pyx_t_4)); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 490; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_8);
-    __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-    __Pyx_DECREF(((PyObject *)__pyx_t_9)); __pyx_t_9 = 0;
-    __Pyx_DECREF(((PyObject *)__pyx_t_4)); __pyx_t_4 = 0;
-    __pyx_t_24 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5numpy_int8_t(__pyx_t_8);
-    if (unlikely(!__pyx_t_24.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 490; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    __pyx_v_cmask = __pyx_t_24;
-    __pyx_t_24.memview = NULL;
-    __pyx_t_24.data = NULL;
-    goto __pyx_L21;
-  }
-  __pyx_L21:;
-
-  /* "splitPixel.pyx":491
- *         assert mask.size == size
- *         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
- *     if dark is not None:             # <<<<<<<<<<<<<<
- *         do_dark = True
- *         assert dark.size == size
- */
-  __pyx_t_3 = (__pyx_v_dark != Py_None);
-  __pyx_t_21 = (__pyx_t_3 != 0);
-  if (__pyx_t_21) {
-
-    /* "splitPixel.pyx":492
- *         cmask = numpy.ascontiguousarray(mask.ravel(), dtype=numpy.int8)
- *     if dark is not None:
- *         do_dark = True             # <<<<<<<<<<<<<<
- *         assert dark.size == size
- *         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
- */
-    __pyx_v_do_dark = 1;
-
-    /* "splitPixel.pyx":493
- *     if dark is not None:
- *         do_dark = True
- *         assert dark.size == size             # <<<<<<<<<<<<<<
- *         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
- *     if flat is not None:
- */
-    #ifndef CYTHON_WITHOUT_ASSERTIONS
-    __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_v_dark, __pyx_n_s__size); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 493; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_8);
-    __pyx_t_4 = PyInt_FromLong(__pyx_v_size); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 493; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_9 = PyObject_RichCompare(__pyx_t_8, __pyx_t_4, Py_EQ); __Pyx_XGOTREF(__pyx_t_9); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 493; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_21 = __Pyx_PyObject_IsTrue(__pyx_t_9); if (unlikely(__pyx_t_21 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 493; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    if (unlikely(!__pyx_t_21)) {
-      PyErr_SetNone(PyExc_AssertionError);
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 493; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_14 = __Pyx_PyObject_AsDouble(__pyx_v_delta_dummy); if (unlikely(__pyx_t_14 == ((double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 342; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_v_cddummy = ((double)__pyx_t_14);
     }
-    #endif
-
-    /* "splitPixel.pyx":494
- *         do_dark = True
- *         assert dark.size == size
- *         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
- *     if flat is not None:
- *         do_flat = True
- */
-    __pyx_t_9 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 494; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_9);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_9, __pyx_n_s__ascontiguousarray); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 494; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_v_dark, __pyx_n_s__ravel); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 494; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_9);
-    __pyx_t_8 = PyObject_Call(__pyx_t_9, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 494; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_8);
-    __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    __pyx_t_9 = PyTuple_New(1); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 494; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_9);
-    PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_8);
-    __Pyx_GIVEREF(__pyx_t_8);
-    __pyx_t_8 = 0;
-    __pyx_t_8 = PyDict_New(); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 494; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(((PyObject *)__pyx_t_8));
-    __pyx_t_14 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 494; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_14);
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_14, __pyx_n_s__float64); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 494; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-    if (PyDict_SetItem(__pyx_t_8, ((PyObject *)__pyx_n_s__dtype), __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 494; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = PyObject_Call(__pyx_t_4, ((PyObject *)__pyx_t_9), ((PyObject *)__pyx_t_8)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 494; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __Pyx_DECREF(((PyObject *)__pyx_t_9)); __pyx_t_9 = 0;
-    __Pyx_DECREF(((PyObject *)__pyx_t_8)); __pyx_t_8 = 0;
-    __pyx_t_25 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_1);
-    if (unlikely(!__pyx_t_25.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 494; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_v_cdark = __pyx_t_25;
-    __pyx_t_25.memview = NULL;
-    __pyx_t_25.data = NULL;
-    goto __pyx_L22;
+    __pyx_L4:;
+    goto __pyx_L3;
   }
-  __pyx_L22:;
+  __pyx_L3:;
 
-  /* "splitPixel.pyx":495
- *         assert dark.size == size
- *         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
- *     if flat is not None:             # <<<<<<<<<<<<<<
- *         do_flat = True
- *         assert flat.size == size
+  /* "splitPixelFullLUT_b.pyx":344
+ *                 cddummy = <double>float(delta_dummy)
+ * 
+ *         if flat is not None:             # <<<<<<<<<<<<<<
+ *             do_flat = True
+ *             assert flat.size == size
  */
-  __pyx_t_21 = (__pyx_v_flat != Py_None);
-  __pyx_t_3 = (__pyx_t_21 != 0);
-  if (__pyx_t_3) {
+  __pyx_t_12 = (__pyx_v_flat != Py_None);
+  __pyx_t_13 = (__pyx_t_12 != 0);
+  if (__pyx_t_13) {
 
-    /* "splitPixel.pyx":496
- *         cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
- *     if flat is not None:
- *         do_flat = True             # <<<<<<<<<<<<<<
- *         assert flat.size == size
- *         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)
+    /* "splitPixelFullLUT_b.pyx":345
+ * 
+ *         if flat is not None:
+ *             do_flat = True             # <<<<<<<<<<<<<<
+ *             assert flat.size == size
+ *             cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)
  */
     __pyx_v_do_flat = 1;
 
-    /* "splitPixel.pyx":497
- *     if flat is not None:
- *         do_flat = True
- *         assert flat.size == size             # <<<<<<<<<<<<<<
- *         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)
- *     if polarization is not None:
+    /* "splitPixelFullLUT_b.pyx":346
+ *         if flat is not None:
+ *             do_flat = True
+ *             assert flat.size == size             # <<<<<<<<<<<<<<
+ *             cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)
+ *         if dark is not None:
  */
     #ifndef CYTHON_WITHOUT_ASSERTIONS
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_flat, __pyx_n_s__size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 497; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_8 = PyInt_FromLong(__pyx_v_size); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 497; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_8);
-    __pyx_t_9 = PyObject_RichCompare(__pyx_t_1, __pyx_t_8, Py_EQ); __Pyx_XGOTREF(__pyx_t_9); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 497; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_t_9); if (unlikely(__pyx_t_3 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 497; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    if (unlikely(!__pyx_t_3)) {
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_flat, __pyx_n_s__size); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_4);
+    __pyx_t_5 = __Pyx_PyInt_to_py_npy_int32(__pyx_v_size); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_3 = PyObject_RichCompare(__pyx_t_4, __pyx_t_5, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_13 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_13 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    if (unlikely(!__pyx_t_13)) {
       PyErr_SetNone(PyExc_AssertionError);
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 497; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
     #endif
 
-    /* "splitPixel.pyx":498
- *         do_flat = True
- *         assert flat.size == size
- *         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
- *     if polarization is not None:
- *         do_polarization = True
+    /* "splitPixelFullLUT_b.pyx":347
+ *             do_flat = True
+ *             assert flat.size == size
+ *             cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
+ *         if dark is not None:
+ *             do_dark = True
  */
-    __pyx_t_9 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_9);
-    __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_9, __pyx_n_s__ascontiguousarray); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_8);
-    __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_v_flat, __pyx_n_s__ravel); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_9);
-    __pyx_t_1 = PyObject_Call(__pyx_t_9, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s__ascontiguousarray); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_flat, __pyx_n_s__ravel); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_4 = PyObject_Call(__pyx_t_3, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_4);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_4);
+    __Pyx_GIVEREF(__pyx_t_4);
+    __pyx_t_4 = 0;
+    __pyx_t_4 = PyDict_New(); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(((PyObject *)__pyx_t_4));
+    __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_6);
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s__float64); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    __pyx_t_9 = PyTuple_New(1); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_9);
-    PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_1);
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    if (PyDict_SetItem(__pyx_t_4, ((PyObject *)__pyx_n_s__dtype), __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+    __pyx_t_1 = PyObject_Call(__pyx_t_5, ((PyObject *)__pyx_t_3), ((PyObject *)__pyx_t_4)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_DECREF(((PyObject *)__pyx_t_3)); __pyx_t_3 = 0;
+    __Pyx_DECREF(((PyObject *)__pyx_t_4)); __pyx_t_4 = 0;
+    __pyx_t_10 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_1);
+    if (unlikely(!__pyx_t_10.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+    __pyx_v_cflat = __pyx_t_10;
+    __pyx_t_10.memview = NULL;
+    __pyx_t_10.data = NULL;
+    goto __pyx_L5;
+  }
+  __pyx_L5:;
+
+  /* "splitPixelFullLUT_b.pyx":348
+ *             assert flat.size == size
+ *             cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)
+ *         if dark is not None:             # <<<<<<<<<<<<<<
+ *             do_dark = True
+ *             assert dark.size == size
+ */
+  __pyx_t_13 = (__pyx_v_dark != Py_None);
+  __pyx_t_12 = (__pyx_t_13 != 0);
+  if (__pyx_t_12) {
+
+    /* "splitPixelFullLUT_b.pyx":349
+ *             cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)
+ *         if dark is not None:
+ *             do_dark = True             # <<<<<<<<<<<<<<
+ *             assert dark.size == size
+ *             cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
+ */
+    __pyx_v_do_dark = 1;
+
+    /* "splitPixelFullLUT_b.pyx":350
+ *         if dark is not None:
+ *             do_dark = True
+ *             assert dark.size == size             # <<<<<<<<<<<<<<
+ *             cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
+ *         if solidAngle is not None:
+ */
+    #ifndef CYTHON_WITHOUT_ASSERTIONS
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_dark, __pyx_n_s__size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 350; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    __pyx_t_4 = __Pyx_PyInt_to_py_npy_int32(__pyx_v_size); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 350; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_4);
+    __pyx_t_3 = PyObject_RichCompare(__pyx_t_1, __pyx_t_4, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 350; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __pyx_t_12 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_12 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 350; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    if (unlikely(!__pyx_t_12)) {
+      PyErr_SetNone(PyExc_AssertionError);
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 350; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    }
+    #endif
+
+    /* "splitPixelFullLUT_b.pyx":351
+ *             do_dark = True
+ *             assert dark.size == size
+ *             cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
+ *         if solidAngle is not None:
+ *             do_solidAngle = True
+ */
+    __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 351; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s__ascontiguousarray); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 351; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_4);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_dark, __pyx_n_s__ravel); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 351; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_1 = PyObject_Call(__pyx_t_3, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 351; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 351; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_1);
     __Pyx_GIVEREF(__pyx_t_1);
     __pyx_t_1 = 0;
-    __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 351; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(((PyObject *)__pyx_t_1));
-    __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_14 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s__float64); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_14);
+    __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 351; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s__float64); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 351; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_6);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    if (PyDict_SetItem(__pyx_t_1, ((PyObject *)__pyx_n_s__dtype), __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 351; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __pyx_t_6 = PyObject_Call(__pyx_t_4, ((PyObject *)__pyx_t_3), ((PyObject *)__pyx_t_1)); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 351; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (PyDict_SetItem(__pyx_t_1, ((PyObject *)__pyx_n_s__dtype), __pyx_t_14) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-    __pyx_t_14 = PyObject_Call(__pyx_t_8, ((PyObject *)__pyx_t_9), ((PyObject *)__pyx_t_1)); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_14);
-    __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    __Pyx_DECREF(((PyObject *)__pyx_t_9)); __pyx_t_9 = 0;
+    __Pyx_DECREF(((PyObject *)__pyx_t_3)); __pyx_t_3 = 0;
     __Pyx_DECREF(((PyObject *)__pyx_t_1)); __pyx_t_1 = 0;
-    __pyx_t_25 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_14);
-    if (unlikely(!__pyx_t_25.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 498; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-    __pyx_v_cflat = __pyx_t_25;
-    __pyx_t_25.memview = NULL;
-    __pyx_t_25.data = NULL;
-    goto __pyx_L23;
+    __pyx_t_10 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_6);
+    if (unlikely(!__pyx_t_10.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 351; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __pyx_v_cdark = __pyx_t_10;
+    __pyx_t_10.memview = NULL;
+    __pyx_t_10.data = NULL;
+    goto __pyx_L6;
   }
-  __pyx_L23:;
+  __pyx_L6:;
 
-  /* "splitPixel.pyx":499
- *         assert flat.size == size
- *         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)
- *     if polarization is not None:             # <<<<<<<<<<<<<<
- *         do_polarization = True
- *         assert polarization.size == size
+  /* "splitPixelFullLUT_b.pyx":352
+ *             assert dark.size == size
+ *             cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
+ *         if solidAngle is not None:             # <<<<<<<<<<<<<<
+ *             do_solidAngle = True
+ *             assert solidAngle.size == size
  */
-  __pyx_t_3 = (__pyx_v_polarization != Py_None);
-  __pyx_t_21 = (__pyx_t_3 != 0);
-  if (__pyx_t_21) {
+  __pyx_t_12 = (__pyx_v_solidAngle != Py_None);
+  __pyx_t_13 = (__pyx_t_12 != 0);
+  if (__pyx_t_13) {
 
-    /* "splitPixel.pyx":500
- *         cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float64)
- *     if polarization is not None:
- *         do_polarization = True             # <<<<<<<<<<<<<<
- *         assert polarization.size == size
- *         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)
+    /* "splitPixelFullLUT_b.pyx":353
+ *             cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float64)
+ *         if solidAngle is not None:
+ *             do_solidAngle = True             # <<<<<<<<<<<<<<
+ *             assert solidAngle.size == size
+ *             csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float64)
+ */
+    __pyx_v_do_solidAngle = 1;
+
+    /* "splitPixelFullLUT_b.pyx":354
+ *         if solidAngle is not None:
+ *             do_solidAngle = True
+ *             assert solidAngle.size == size             # <<<<<<<<<<<<<<
+ *             csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float64)
+ *         if polarization is not None:
+ */
+    #ifndef CYTHON_WITHOUT_ASSERTIONS
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_solidAngle, __pyx_n_s__size); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 354; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_6);
+    __pyx_t_1 = __Pyx_PyInt_to_py_npy_int32(__pyx_v_size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 354; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    __pyx_t_3 = PyObject_RichCompare(__pyx_t_6, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 354; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+    __pyx_t_13 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_13 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 354; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    if (unlikely(!__pyx_t_13)) {
+      PyErr_SetNone(PyExc_AssertionError);
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 354; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    }
+    #endif
+
+    /* "splitPixelFullLUT_b.pyx":355
+ *             do_solidAngle = True
+ *             assert solidAngle.size == size
+ *             csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
+ *         if polarization is not None:
+ *             do_polarization = True
+ */
+    __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 355; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s__ascontiguousarray); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 355; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_solidAngle, __pyx_n_s__ravel); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 355; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_6 = PyObject_Call(__pyx_t_3, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 355; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_6);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 355; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_6);
+    __Pyx_GIVEREF(__pyx_t_6);
+    __pyx_t_6 = 0;
+    __pyx_t_6 = PyDict_New(); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 355; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(((PyObject *)__pyx_t_6));
+    __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 355; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_4);
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s__float64); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 355; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    if (PyDict_SetItem(__pyx_t_6, ((PyObject *)__pyx_n_s__dtype), __pyx_t_5) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 355; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_5 = PyObject_Call(__pyx_t_1, ((PyObject *)__pyx_t_3), ((PyObject *)__pyx_t_6)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 355; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+    __Pyx_DECREF(((PyObject *)__pyx_t_3)); __pyx_t_3 = 0;
+    __Pyx_DECREF(((PyObject *)__pyx_t_6)); __pyx_t_6 = 0;
+    __pyx_t_10 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_5);
+    if (unlikely(!__pyx_t_10.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 355; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_v_csolidAngle = __pyx_t_10;
+    __pyx_t_10.memview = NULL;
+    __pyx_t_10.data = NULL;
+    goto __pyx_L7;
+  }
+  __pyx_L7:;
+
+  /* "splitPixelFullLUT_b.pyx":356
+ *             assert solidAngle.size == size
+ *             csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float64)
+ *         if polarization is not None:             # <<<<<<<<<<<<<<
+ *             do_polarization = True
+ *             assert polarization.size == size
+ */
+  __pyx_t_13 = (__pyx_v_polarization != Py_None);
+  __pyx_t_12 = (__pyx_t_13 != 0);
+  if (__pyx_t_12) {
+
+    /* "splitPixelFullLUT_b.pyx":357
+ *             csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float64)
+ *         if polarization is not None:
+ *             do_polarization = True             # <<<<<<<<<<<<<<
+ *             assert polarization.size == size
+ *             cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)
  */
     __pyx_v_do_polarization = 1;
 
-    /* "splitPixel.pyx":501
- *     if polarization is not None:
- *         do_polarization = True
- *         assert polarization.size == size             # <<<<<<<<<<<<<<
- *         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)
- *     if solidangle is not None:
+    /* "splitPixelFullLUT_b.pyx":358
+ *         if polarization is not None:
+ *             do_polarization = True
+ *             assert polarization.size == size             # <<<<<<<<<<<<<<
+ *             cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)
+ * 
  */
     #ifndef CYTHON_WITHOUT_ASSERTIONS
-    __pyx_t_14 = __Pyx_PyObject_GetAttrStr(__pyx_v_polarization, __pyx_n_s__size); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 501; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_14);
-    __pyx_t_1 = PyInt_FromLong(__pyx_v_size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 501; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_9 = PyObject_RichCompare(__pyx_t_14, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_9); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 501; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_21 = __Pyx_PyObject_IsTrue(__pyx_t_9); if (unlikely(__pyx_t_21 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 501; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    if (unlikely(!__pyx_t_21)) {
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_polarization, __pyx_n_s__size); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 358; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_6 = __Pyx_PyInt_to_py_npy_int32(__pyx_v_size); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 358; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_6);
+    __pyx_t_3 = PyObject_RichCompare(__pyx_t_5, __pyx_t_6, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 358; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __pyx_t_12 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_12 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 358; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    if (unlikely(!__pyx_t_12)) {
       PyErr_SetNone(PyExc_AssertionError);
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 501; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 358; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
     #endif
 
-    /* "splitPixel.pyx":502
- *         do_polarization = True
- *         assert polarization.size == size
- *         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
- *     if solidangle is not None:
- *         do_solidangle = True
+    /* "splitPixelFullLUT_b.pyx":359
+ *             do_polarization = True
+ *             assert polarization.size == size
+ *             cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
+ * 
+ *         if (do_dark + do_flat + do_polarization + do_solidAngle):
  */
-    __pyx_t_9 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 502; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_9);
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_9, __pyx_n_s__ascontiguousarray); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 502; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 359; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s__ascontiguousarray); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 359; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_6);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_polarization, __pyx_n_s__ravel); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 359; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_5 = PyObject_Call(__pyx_t_3, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 359; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 359; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_5);
+    __Pyx_GIVEREF(__pyx_t_5);
+    __pyx_t_5 = 0;
+    __pyx_t_5 = PyDict_New(); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 359; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(((PyObject *)__pyx_t_5));
+    __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 359; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_v_polarization, __pyx_n_s__ravel); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 502; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_9);
-    __pyx_t_14 = PyObject_Call(__pyx_t_9, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 502; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_14);
-    __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    __pyx_t_9 = PyTuple_New(1); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 502; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_9);
-    PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_14);
-    __Pyx_GIVEREF(__pyx_t_14);
-    __pyx_t_14 = 0;
-    __pyx_t_14 = PyDict_New(); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 502; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(((PyObject *)__pyx_t_14));
-    __pyx_t_8 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 502; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_8);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s__float64); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 502; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    if (PyDict_SetItem(__pyx_t_14, ((PyObject *)__pyx_n_s__dtype), __pyx_t_4) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 502; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = PyObject_Call(__pyx_t_1, ((PyObject *)__pyx_t_9), ((PyObject *)__pyx_t_14)); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 502; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s__float64); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 359; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __Pyx_DECREF(((PyObject *)__pyx_t_9)); __pyx_t_9 = 0;
-    __Pyx_DECREF(((PyObject *)__pyx_t_14)); __pyx_t_14 = 0;
-    __pyx_t_25 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_4);
-    if (unlikely(!__pyx_t_25.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 502; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (PyDict_SetItem(__pyx_t_5, ((PyObject *)__pyx_n_s__dtype), __pyx_t_4) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 359; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_v_cpolarization = __pyx_t_25;
-    __pyx_t_25.memview = NULL;
-    __pyx_t_25.data = NULL;
-    goto __pyx_L24;
+    __pyx_t_4 = PyObject_Call(__pyx_t_6, ((PyObject *)__pyx_t_3), ((PyObject *)__pyx_t_5)); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 359; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_4);
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __Pyx_DECREF(((PyObject *)__pyx_t_3)); __pyx_t_3 = 0;
+    __Pyx_DECREF(((PyObject *)__pyx_t_5)); __pyx_t_5 = 0;
+    __pyx_t_10 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_4);
+    if (unlikely(!__pyx_t_10.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 359; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __pyx_v_cpolarization = __pyx_t_10;
+    __pyx_t_10.memview = NULL;
+    __pyx_t_10.data = NULL;
+    goto __pyx_L8;
   }
-  __pyx_L24:;
+  __pyx_L8:;
 
-  /* "splitPixel.pyx":503
- *         assert polarization.size == size
- *         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)
- *     if solidangle is not None:             # <<<<<<<<<<<<<<
- *         do_solidangle = True
- *         assert solidangle.size == size
- */
-  __pyx_t_21 = (__pyx_v_solidangle != Py_None);
-  __pyx_t_3 = (__pyx_t_21 != 0);
-  if (__pyx_t_3) {
-
-    /* "splitPixel.pyx":504
- *         cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)
- *     if solidangle is not None:
- *         do_solidangle = True             # <<<<<<<<<<<<<<
- *         assert solidangle.size == size
- *         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)
- */
-    __pyx_v_do_solidangle = 1;
-
-    /* "splitPixel.pyx":505
- *     if solidangle is not None:
- *         do_solidangle = True
- *         assert solidangle.size == size             # <<<<<<<<<<<<<<
- *         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)
+  /* "splitPixelFullLUT_b.pyx":361
+ *             cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float64)
  * 
+ *         if (do_dark + do_flat + do_polarization + do_solidAngle):             # <<<<<<<<<<<<<<
+ *             tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)
+ *             cdata = numpy.zeros(size,dtype=numpy.float64)
  */
-    #ifndef CYTHON_WITHOUT_ASSERTIONS
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_solidangle, __pyx_n_s__size); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 505; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_12 = ((((__pyx_v_do_dark + __pyx_v_do_flat) + __pyx_v_do_polarization) + __pyx_v_do_solidAngle) != 0);
+  if (__pyx_t_12) {
+
+    /* "splitPixelFullLUT_b.pyx":362
+ * 
+ *         if (do_dark + do_flat + do_polarization + do_solidAngle):
+ *             tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
+ *             cdata = numpy.zeros(size,dtype=numpy.float64)
+ *             if do_dummy:
+ */
+    __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 362; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_14 = PyInt_FromLong(__pyx_v_size); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 505; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_14);
-    __pyx_t_9 = PyObject_RichCompare(__pyx_t_4, __pyx_t_14, Py_EQ); __Pyx_XGOTREF(__pyx_t_9); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 505; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s__ascontiguousarray); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 362; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-    __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_t_9); if (unlikely(__pyx_t_3 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 505; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    if (unlikely(!__pyx_t_3)) {
-      PyErr_SetNone(PyExc_AssertionError);
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 505; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    }
-    #endif
-
-    /* "splitPixel.pyx":506
- *         do_solidangle = True
- *         assert solidangle.size == size
- *         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
- * 
- *     with nogil:
- */
-    __pyx_t_9 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 506; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_9);
-    __pyx_t_14 = __Pyx_PyObject_GetAttrStr(__pyx_t_9, __pyx_n_s__ascontiguousarray); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 506; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_14);
-    __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_v_solidangle, __pyx_n_s__ravel); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 506; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_9);
-    __pyx_t_4 = PyObject_Call(__pyx_t_9, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 506; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_weights, __pyx_n_s__ravel); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 362; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    __pyx_t_9 = PyTuple_New(1); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 506; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_9);
-    PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_4);
-    __Pyx_GIVEREF(__pyx_t_4);
-    __pyx_t_4 = 0;
-    __pyx_t_4 = PyDict_New(); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 506; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(((PyObject *)__pyx_t_4));
-    __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 506; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PyObject_Call(__pyx_t_4, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 362; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 362; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_4);
+    PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_3);
+    __Pyx_GIVEREF(__pyx_t_3);
+    __pyx_t_3 = 0;
+    __pyx_t_3 = PyDict_New(); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 362; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(((PyObject *)__pyx_t_3));
+    __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 362; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_6);
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s__float64); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 362; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s__float64); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 506; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_8);
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    if (PyDict_SetItem(__pyx_t_3, ((PyObject *)__pyx_n_s__dtype), __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 362; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (PyDict_SetItem(__pyx_t_4, ((PyObject *)__pyx_n_s__dtype), __pyx_t_8) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 506; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    __pyx_t_8 = PyObject_Call(__pyx_t_14, ((PyObject *)__pyx_t_9), ((PyObject *)__pyx_t_4)); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 506; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_8);
-    __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-    __Pyx_DECREF(((PyObject *)__pyx_t_9)); __pyx_t_9 = 0;
+    __pyx_t_1 = PyObject_Call(__pyx_t_5, ((PyObject *)__pyx_t_4), ((PyObject *)__pyx_t_3)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 362; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_DECREF(((PyObject *)__pyx_t_4)); __pyx_t_4 = 0;
-    __pyx_t_25 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_8);
-    if (unlikely(!__pyx_t_25.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 506; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    __pyx_v_csolidangle = __pyx_t_25;
-    __pyx_t_25.memview = NULL;
-    __pyx_t_25.data = NULL;
-    goto __pyx_L25;
-  }
-  __pyx_L25:;
+    __Pyx_DECREF(((PyObject *)__pyx_t_3)); __pyx_t_3 = 0;
+    __pyx_t_10 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_1);
+    if (unlikely(!__pyx_t_10.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 362; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+    __pyx_v_tdata = __pyx_t_10;
+    __pyx_t_10.memview = NULL;
+    __pyx_t_10.data = NULL;
 
-  /* "splitPixel.pyx":508
- *         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)
+    /* "splitPixelFullLUT_b.pyx":363
+ *         if (do_dark + do_flat + do_polarization + do_solidAngle):
+ *             tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)
+ *             cdata = numpy.zeros(size,dtype=numpy.float64)             # <<<<<<<<<<<<<<
+ *             if do_dummy:
+ *                 for i in prange(size, nogil=True, schedule="static"):
+ */
+    __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 363; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s__zeros); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 363; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+    __pyx_t_1 = __Pyx_PyInt_to_py_npy_int32(__pyx_v_size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 363; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 363; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_4);
+    PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_1);
+    __Pyx_GIVEREF(__pyx_t_1);
+    __pyx_t_1 = 0;
+    __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 363; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(((PyObject *)__pyx_t_1));
+    __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 363; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s__float64); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 363; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_6);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    if (PyDict_SetItem(__pyx_t_1, ((PyObject *)__pyx_n_s__dtype), __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 363; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __pyx_t_6 = PyObject_Call(__pyx_t_3, ((PyObject *)__pyx_t_4), ((PyObject *)__pyx_t_1)); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 363; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_6);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __Pyx_DECREF(((PyObject *)__pyx_t_4)); __pyx_t_4 = 0;
+    __Pyx_DECREF(((PyObject *)__pyx_t_1)); __pyx_t_1 = 0;
+    __pyx_t_10 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_6);
+    if (unlikely(!__pyx_t_10.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 363; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __pyx_v_cdata = __pyx_t_10;
+    __pyx_t_10.memview = NULL;
+    __pyx_t_10.data = NULL;
+
+    /* "splitPixelFullLUT_b.pyx":364
+ *             tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)
+ *             cdata = numpy.zeros(size,dtype=numpy.float64)
+ *             if do_dummy:             # <<<<<<<<<<<<<<
+ *                 for i in prange(size, nogil=True, schedule="static"):
+ *                     data = tdata[i]
+ */
+    __pyx_t_12 = (__pyx_v_do_dummy != 0);
+    if (__pyx_t_12) {
+
+      /* "splitPixelFullLUT_b.pyx":365
+ *             cdata = numpy.zeros(size,dtype=numpy.float64)
+ *             if do_dummy:
+ *                 for i in prange(size, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
+ *                     data = tdata[i]
+ *                     if ((cddummy!=0) and (fabs(data-cdummy) > cddummy)) or ((cddummy==0) and (data!=cdummy)):
+ */
+      {
+          #ifdef WITH_THREAD
+          PyThreadState *_save;
+          Py_UNBLOCK_THREADS
+          #endif
+          /*try:*/ {
+            __pyx_t_2 = __pyx_v_size;
+            if (1 == 0) abort();
+            {
+                double __pyx_parallel_temp0 = __PYX_NAN();
+                __pyx_t_5numpy_int32_t __pyx_parallel_temp1 = 0xbad0bad0;
+                const char *__pyx_parallel_filename = NULL; int __pyx_parallel_lineno = 0, __pyx_parallel_clineno = 0;
+                PyObject *__pyx_parallel_exc_type = NULL, *__pyx_parallel_exc_value = NULL, *__pyx_parallel_exc_tb = NULL;
+                int __pyx_parallel_why;
+                __pyx_parallel_why = 0;
+                #if ((defined(__APPLE__) || defined(__OSX__)) && (defined(__GNUC__) && (__GNUC__ > 2 || (__GNUC__ == 2 && (__GNUC_MINOR__ > 95)))))
+                    #undef likely
+                    #undef unlikely
+                    #define likely(x)   (x)
+                    #define unlikely(x) (x)
+                #endif
+                __pyx_t_16 = (__pyx_t_2 - 0) / 1;
+                if (__pyx_t_16 > 0)
+                {
+                    #ifdef _OPENMP
+                    #pragma omp parallel private(__pyx_t_19, __pyx_t_17, __pyx_t_13, __pyx_t_18, __pyx_t_24, __pyx_t_12, __pyx_t_20, __pyx_t_22, __pyx_t_23, __pyx_t_25, __pyx_t_21) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
+                    #endif /* _OPENMP */
+                    {
+                        #ifdef _OPENMP
+                        #ifdef WITH_THREAD
+                        PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
+                        #endif
+                        Py_BEGIN_ALLOW_THREADS
+                        #endif /* _OPENMP */
+                        #ifdef _OPENMP
+                        #pragma omp for lastprivate(__pyx_v_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
+                        #endif /* _OPENMP */
+                        for (__pyx_t_15 = 0; __pyx_t_15 < __pyx_t_16; __pyx_t_15++){
+                            if (__pyx_parallel_why < 2)
+                            {
+                                __pyx_v_i = 0 + 1 * __pyx_t_15;
+                                /* Initialize private variables to invalid values */
+                                __pyx_v_data = ((double)__PYX_NAN());
+
+                                /* "splitPixelFullLUT_b.pyx":366
+ *             if do_dummy:
+ *                 for i in prange(size, nogil=True, schedule="static"):
+ *                     data = tdata[i]             # <<<<<<<<<<<<<<
+ *                     if ((cddummy!=0) and (fabs(data-cdummy) > cddummy)) or ((cddummy==0) and (data!=cdummy)):
+ *                         #Nota: -= and /= operatore are seen as reduction in cython parallel.
+ */
+                                __pyx_t_17 = __pyx_v_i;
+                                __pyx_v_data = (*((double *) ( /* dim=0 */ (__pyx_v_tdata.data + __pyx_t_17 * __pyx_v_tdata.strides[0]) )));
+
+                                /* "splitPixelFullLUT_b.pyx":367
+ *                 for i in prange(size, nogil=True, schedule="static"):
+ *                     data = tdata[i]
+ *                     if ((cddummy!=0) and (fabs(data-cdummy) > cddummy)) or ((cddummy==0) and (data!=cdummy)):             # <<<<<<<<<<<<<<
+ *                         #Nota: -= and /= operatore are seen as reduction in cython parallel.
+ *                         if do_dark:
+ */
+                                __pyx_t_12 = ((__pyx_v_cddummy != 0.0) != 0);
+                                if (__pyx_t_12) {
+                                  __pyx_t_13 = ((fabs((__pyx_v_data - __pyx_v_cdummy)) > __pyx_v_cddummy) != 0);
+                                  __pyx_t_18 = __pyx_t_13;
+                                } else {
+                                  __pyx_t_18 = __pyx_t_12;
+                                }
+                                if (!__pyx_t_18) {
+                                  __pyx_t_12 = ((__pyx_v_cddummy == 0.0) != 0);
+                                  if (__pyx_t_12) {
+                                    __pyx_t_13 = ((__pyx_v_data != __pyx_v_cdummy) != 0);
+                                    __pyx_t_19 = __pyx_t_13;
+                                  } else {
+                                    __pyx_t_19 = __pyx_t_12;
+                                  }
+                                  __pyx_t_12 = __pyx_t_19;
+                                } else {
+                                  __pyx_t_12 = __pyx_t_18;
+                                }
+                                if (__pyx_t_12) {
+
+                                  /* "splitPixelFullLUT_b.pyx":369
+ *                     if ((cddummy!=0) and (fabs(data-cdummy) > cddummy)) or ((cddummy==0) and (data!=cdummy)):
+ *                         #Nota: -= and /= operatore are seen as reduction in cython parallel.
+ *                         if do_dark:             # <<<<<<<<<<<<<<
+ *                             data = data - cdark[i]
+ *                         if do_flat:
+ */
+                                  __pyx_t_12 = (__pyx_v_do_dark != 0);
+                                  if (__pyx_t_12) {
+
+                                    /* "splitPixelFullLUT_b.pyx":370
+ *                         #Nota: -= and /= operatore are seen as reduction in cython parallel.
+ *                         if do_dark:
+ *                             data = data - cdark[i]             # <<<<<<<<<<<<<<
+ *                         if do_flat:
+ *                             data = data / cflat[i]
+ */
+                                    if (unlikely(!__pyx_v_cdark.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("cdark"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 370; __pyx_clineno = __LINE__; goto __pyx_L16_error;} }
+                                    __pyx_t_20 = __pyx_v_i;
+                                    __pyx_v_data = (__pyx_v_data - (*((double *) ( /* dim=0 */ (__pyx_v_cdark.data + __pyx_t_20 * __pyx_v_cdark.strides[0]) ))));
+                                    goto __pyx_L19;
+                                  }
+                                  __pyx_L19:;
+
+                                  /* "splitPixelFullLUT_b.pyx":371
+ *                         if do_dark:
+ *                             data = data - cdark[i]
+ *                         if do_flat:             # <<<<<<<<<<<<<<
+ *                             data = data / cflat[i]
+ *                         if do_polarization:
+ */
+                                  __pyx_t_12 = (__pyx_v_do_flat != 0);
+                                  if (__pyx_t_12) {
+
+                                    /* "splitPixelFullLUT_b.pyx":372
+ *                             data = data - cdark[i]
+ *                         if do_flat:
+ *                             data = data / cflat[i]             # <<<<<<<<<<<<<<
+ *                         if do_polarization:
+ *                             data = data / cpolarization[i]
+ */
+                                    if (unlikely(!__pyx_v_cflat.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("cflat"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 372; __pyx_clineno = __LINE__; goto __pyx_L16_error;} }
+                                    __pyx_t_21 = __pyx_v_i;
+                                    __pyx_v_data = (__pyx_v_data / (*((double *) ( /* dim=0 */ (__pyx_v_cflat.data + __pyx_t_21 * __pyx_v_cflat.strides[0]) ))));
+                                    goto __pyx_L20;
+                                  }
+                                  __pyx_L20:;
+
+                                  /* "splitPixelFullLUT_b.pyx":373
+ *                         if do_flat:
+ *                             data = data / cflat[i]
+ *                         if do_polarization:             # <<<<<<<<<<<<<<
+ *                             data = data / cpolarization[i]
+ *                         if do_solidAngle:
+ */
+                                  __pyx_t_12 = (__pyx_v_do_polarization != 0);
+                                  if (__pyx_t_12) {
+
+                                    /* "splitPixelFullLUT_b.pyx":374
+ *                             data = data / cflat[i]
+ *                         if do_polarization:
+ *                             data = data / cpolarization[i]             # <<<<<<<<<<<<<<
+ *                         if do_solidAngle:
+ *                             data = data / csolidAngle[i]
+ */
+                                    if (unlikely(!__pyx_v_cpolarization.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("cpolarization"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 374; __pyx_clineno = __LINE__; goto __pyx_L16_error;} }
+                                    __pyx_t_22 = __pyx_v_i;
+                                    __pyx_v_data = (__pyx_v_data / (*((double *) ( /* dim=0 */ (__pyx_v_cpolarization.data + __pyx_t_22 * __pyx_v_cpolarization.strides[0]) ))));
+                                    goto __pyx_L21;
+                                  }
+                                  __pyx_L21:;
+
+                                  /* "splitPixelFullLUT_b.pyx":375
+ *                         if do_polarization:
+ *                             data = data / cpolarization[i]
+ *                         if do_solidAngle:             # <<<<<<<<<<<<<<
+ *                             data = data / csolidAngle[i]
+ *                         cdata[i]+=data
+ */
+                                  __pyx_t_12 = (__pyx_v_do_solidAngle != 0);
+                                  if (__pyx_t_12) {
+
+                                    /* "splitPixelFullLUT_b.pyx":376
+ *                             data = data / cpolarization[i]
+ *                         if do_solidAngle:
+ *                             data = data / csolidAngle[i]             # <<<<<<<<<<<<<<
+ *                         cdata[i]+=data
+ *                     else: #set all dummy_like values to cdummy. simplifies further processing
+ */
+                                    if (unlikely(!__pyx_v_csolidAngle.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("csolidAngle"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 376; __pyx_clineno = __LINE__; goto __pyx_L16_error;} }
+                                    __pyx_t_23 = __pyx_v_i;
+                                    __pyx_v_data = (__pyx_v_data / (*((double *) ( /* dim=0 */ (__pyx_v_csolidAngle.data + __pyx_t_23 * __pyx_v_csolidAngle.strides[0]) ))));
+                                    goto __pyx_L22;
+                                  }
+                                  __pyx_L22:;
+
+                                  /* "splitPixelFullLUT_b.pyx":377
+ *                         if do_solidAngle:
+ *                             data = data / csolidAngle[i]
+ *                         cdata[i]+=data             # <<<<<<<<<<<<<<
+ *                     else: #set all dummy_like values to cdummy. simplifies further processing
+ *                         cdata[i]+=cdummy
+ */
+                                  __pyx_t_24 = __pyx_v_i;
+                                  *((double *) ( /* dim=0 */ (__pyx_v_cdata.data + __pyx_t_24 * __pyx_v_cdata.strides[0]) )) += __pyx_v_data;
+                                  goto __pyx_L18;
+                                }
+                                /*else*/ {
+
+                                  /* "splitPixelFullLUT_b.pyx":379
+ *                         cdata[i]+=data
+ *                     else: #set all dummy_like values to cdummy. simplifies further processing
+ *                         cdata[i]+=cdummy             # <<<<<<<<<<<<<<
+ *             else:
+ *                 for i in prange(size, nogil=True, schedule="static"):
+ */
+                                  __pyx_t_25 = __pyx_v_i;
+                                  *((double *) ( /* dim=0 */ (__pyx_v_cdata.data + __pyx_t_25 * __pyx_v_cdata.strides[0]) )) += __pyx_v_cdummy;
+                                }
+                                __pyx_L18:;
+                                goto __pyx_L24;
+                                __pyx_L16_error:;
+                                {
+                                    #ifdef WITH_THREAD
+                                    PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
+                                    #endif
+                                    #ifdef _OPENMP
+                                    #pragma omp flush(__pyx_parallel_exc_type)
+                                    #endif /* _OPENMP */
+                                    if (!__pyx_parallel_exc_type) {
+                                      __Pyx_ErrFetch(&__pyx_parallel_exc_type, &__pyx_parallel_exc_value, &__pyx_parallel_exc_tb);
+                                      __pyx_parallel_filename = __pyx_filename; __pyx_parallel_lineno = __pyx_lineno; __pyx_parallel_clineno = __pyx_clineno;
+                                      __Pyx_GOTREF(__pyx_parallel_exc_type);
+                                    }
+                                    #ifdef WITH_THREAD
+                                    PyGILState_Release(__pyx_gilstate_save);
+                                    #endif
+                                }
+                                __pyx_parallel_why = 4;
+                                goto __pyx_L23;
+                                __pyx_L23:;
+                                #ifdef _OPENMP
+                                #pragma omp critical(__pyx_parallel_lastprivates16)
+                                #endif /* _OPENMP */
+                                {
+                                    __pyx_parallel_temp0 = __pyx_v_data;
+                                    __pyx_parallel_temp1 = __pyx_v_i;
+                                }
+                                __pyx_L24:;
+                                #ifdef _OPENMP
+                                #pragma omp flush(__pyx_parallel_why)
+                                #endif /* _OPENMP */
+                            }
+                        }
+                        #ifdef _OPENMP
+                        Py_END_ALLOW_THREADS
+                        #else
+{
+#ifdef WITH_THREAD
+                        PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
+                        #endif
+                        #endif /* _OPENMP */
+                        /* Clean up any temporaries */
+                        #ifdef WITH_THREAD
+                        PyGILState_Release(__pyx_gilstate_save);
+                        #endif
+                        #ifndef _OPENMP
+}
+#endif /* _OPENMP */
+                    }
+                }
+                if (__pyx_parallel_exc_type) {
+                  /* This may have been overridden by a continue, break or return in another thread. Prefer the error. */
+                  __pyx_parallel_why = 4;
+                }
+                if (__pyx_parallel_why) {
+                  __pyx_v_data = __pyx_parallel_temp0;
+                  __pyx_v_i = __pyx_parallel_temp1;
+                  switch (__pyx_parallel_why) {
+                        case 3: goto __pyx_L11;
+                        case 4:
+                    {
+                        #ifdef WITH_THREAD
+                        PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
+                        #endif
+                        __Pyx_ErrRestore(__pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb);
+                        __pyx_filename = __pyx_parallel_filename; __pyx_lineno = __pyx_parallel_lineno; __pyx_clineno = __pyx_parallel_clineno;
+                        __Pyx_GIVEREF(__pyx_parallel_exc_type);
+                        #ifdef WITH_THREAD
+                        PyGILState_Release(__pyx_gilstate_save);
+                        #endif
+                    }
+                    goto __pyx_L12;
+                  }
+                }
+            }
+            #if ((defined(__APPLE__) || defined(__OSX__)) && (defined(__GNUC__) && (__GNUC__ > 2 || (__GNUC__ == 2 && (__GNUC_MINOR__ > 95)))))
+                #undef likely
+                #undef unlikely
+                #define likely(x)   __builtin_expect(!!(x), 1)
+                #define unlikely(x) __builtin_expect(!!(x), 0)
+            #endif
+          }
+
+          /* "splitPixelFullLUT_b.pyx":365
+ *             cdata = numpy.zeros(size,dtype=numpy.float64)
+ *             if do_dummy:
+ *                 for i in prange(size, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
+ *                     data = tdata[i]
+ *                     if ((cddummy!=0) and (fabs(data-cdummy) > cddummy)) or ((cddummy==0) and (data!=cdummy)):
+ */
+          /*finally:*/ {
+            int __pyx_why;
+            __pyx_why = 0; goto __pyx_L13;
+            __pyx_L11: __pyx_why = 3; goto __pyx_L13;
+            __pyx_L12: __pyx_why = 4; goto __pyx_L13;
+            __pyx_L13:;
+            #ifdef WITH_THREAD
+            Py_BLOCK_THREADS
+            #endif
+            switch (__pyx_why) {
+              case 3: goto __pyx_L0;
+              case 4: goto __pyx_L1_error;
+            }
+          }
+      }
+      goto __pyx_L10;
+    }
+    /*else*/ {
+
+      /* "splitPixelFullLUT_b.pyx":381
+ *                         cdata[i]+=cdummy
+ *             else:
+ *                 for i in prange(size, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
+ *                     data = tdata[i]
+ *                     if do_dark:
+ */
+      {
+          #ifdef WITH_THREAD
+          PyThreadState *_save;
+          Py_UNBLOCK_THREADS
+          #endif
+          /*try:*/ {
+            __pyx_t_16 = __pyx_v_size;
+            if (1 == 0) abort();
+            {
+                double __pyx_parallel_temp0 = __PYX_NAN();
+                __pyx_t_5numpy_int32_t __pyx_parallel_temp1 = 0xbad0bad0;
+                const char *__pyx_parallel_filename = NULL; int __pyx_parallel_lineno = 0, __pyx_parallel_clineno = 0;
+                PyObject *__pyx_parallel_exc_type = NULL, *__pyx_parallel_exc_value = NULL, *__pyx_parallel_exc_tb = NULL;
+                int __pyx_parallel_why;
+                __pyx_parallel_why = 0;
+                #if ((defined(__APPLE__) || defined(__OSX__)) && (defined(__GNUC__) && (__GNUC__ > 2 || (__GNUC__ == 2 && (__GNUC_MINOR__ > 95)))))
+                    #undef likely
+                    #undef unlikely
+                    #define likely(x)   (x)
+                    #define unlikely(x) (x)
+                #endif
+                __pyx_t_2 = (__pyx_t_16 - 0) / 1;
+                if (__pyx_t_2 > 0)
+                {
+                    #ifdef _OPENMP
+                    #pragma omp parallel private(__pyx_t_29, __pyx_t_31, __pyx_t_12, __pyx_t_26, __pyx_t_27, __pyx_t_30, __pyx_t_28) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
+                    #endif /* _OPENMP */
+                    {
+                        #ifdef _OPENMP
+                        #ifdef WITH_THREAD
+                        PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
+                        #endif
+                        Py_BEGIN_ALLOW_THREADS
+                        #endif /* _OPENMP */
+                        #ifdef _OPENMP
+                        #pragma omp for lastprivate(__pyx_v_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
+                        #endif /* _OPENMP */
+                        for (__pyx_t_15 = 0; __pyx_t_15 < __pyx_t_2; __pyx_t_15++){
+                            if (__pyx_parallel_why < 2)
+                            {
+                                __pyx_v_i = 0 + 1 * __pyx_t_15;
+                                /* Initialize private variables to invalid values */
+                                __pyx_v_data = ((double)__PYX_NAN());
+
+                                /* "splitPixelFullLUT_b.pyx":382
+ *             else:
+ *                 for i in prange(size, nogil=True, schedule="static"):
+ *                     data = tdata[i]             # <<<<<<<<<<<<<<
+ *                     if do_dark:
+ *                         data = data - cdark[i]
+ */
+                                __pyx_t_26 = __pyx_v_i;
+                                __pyx_v_data = (*((double *) ( /* dim=0 */ (__pyx_v_tdata.data + __pyx_t_26 * __pyx_v_tdata.strides[0]) )));
+
+                                /* "splitPixelFullLUT_b.pyx":383
+ *                 for i in prange(size, nogil=True, schedule="static"):
+ *                     data = tdata[i]
+ *                     if do_dark:             # <<<<<<<<<<<<<<
+ *                         data = data - cdark[i]
+ *                     if do_flat:
+ */
+                                __pyx_t_12 = (__pyx_v_do_dark != 0);
+                                if (__pyx_t_12) {
+
+                                  /* "splitPixelFullLUT_b.pyx":384
+ *                     data = tdata[i]
+ *                     if do_dark:
+ *                         data = data - cdark[i]             # <<<<<<<<<<<<<<
+ *                     if do_flat:
+ *                         data = data / cflat[i]
+ */
+                                  if (unlikely(!__pyx_v_cdark.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("cdark"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 384; __pyx_clineno = __LINE__; goto __pyx_L31_error;} }
+                                  __pyx_t_27 = __pyx_v_i;
+                                  __pyx_v_data = (__pyx_v_data - (*((double *) ( /* dim=0 */ (__pyx_v_cdark.data + __pyx_t_27 * __pyx_v_cdark.strides[0]) ))));
+                                  goto __pyx_L33;
+                                }
+                                __pyx_L33:;
+
+                                /* "splitPixelFullLUT_b.pyx":385
+ *                     if do_dark:
+ *                         data = data - cdark[i]
+ *                     if do_flat:             # <<<<<<<<<<<<<<
+ *                         data = data / cflat[i]
+ *                     if do_polarization:
+ */
+                                __pyx_t_12 = (__pyx_v_do_flat != 0);
+                                if (__pyx_t_12) {
+
+                                  /* "splitPixelFullLUT_b.pyx":386
+ *                         data = data - cdark[i]
+ *                     if do_flat:
+ *                         data = data / cflat[i]             # <<<<<<<<<<<<<<
+ *                     if do_polarization:
+ *                         data = data / cpolarization[i]
+ */
+                                  if (unlikely(!__pyx_v_cflat.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("cflat"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 386; __pyx_clineno = __LINE__; goto __pyx_L31_error;} }
+                                  __pyx_t_28 = __pyx_v_i;
+                                  __pyx_v_data = (__pyx_v_data / (*((double *) ( /* dim=0 */ (__pyx_v_cflat.data + __pyx_t_28 * __pyx_v_cflat.strides[0]) ))));
+                                  goto __pyx_L34;
+                                }
+                                __pyx_L34:;
+
+                                /* "splitPixelFullLUT_b.pyx":387
+ *                     if do_flat:
+ *                         data = data / cflat[i]
+ *                     if do_polarization:             # <<<<<<<<<<<<<<
+ *                         data = data / cpolarization[i]
+ *                     if do_solidAngle:
+ */
+                                __pyx_t_12 = (__pyx_v_do_polarization != 0);
+                                if (__pyx_t_12) {
+
+                                  /* "splitPixelFullLUT_b.pyx":388
+ *                         data = data / cflat[i]
+ *                     if do_polarization:
+ *                         data = data / cpolarization[i]             # <<<<<<<<<<<<<<
+ *                     if do_solidAngle:
+ *                         data = data / csolidAngle[i]
+ */
+                                  if (unlikely(!__pyx_v_cpolarization.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("cpolarization"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 388; __pyx_clineno = __LINE__; goto __pyx_L31_error;} }
+                                  __pyx_t_29 = __pyx_v_i;
+                                  __pyx_v_data = (__pyx_v_data / (*((double *) ( /* dim=0 */ (__pyx_v_cpolarization.data + __pyx_t_29 * __pyx_v_cpolarization.strides[0]) ))));
+                                  goto __pyx_L35;
+                                }
+                                __pyx_L35:;
+
+                                /* "splitPixelFullLUT_b.pyx":389
+ *                     if do_polarization:
+ *                         data = data / cpolarization[i]
+ *                     if do_solidAngle:             # <<<<<<<<<<<<<<
+ *                         data = data / csolidAngle[i]
+ *                     cdata[i]+=data
+ */
+                                __pyx_t_12 = (__pyx_v_do_solidAngle != 0);
+                                if (__pyx_t_12) {
+
+                                  /* "splitPixelFullLUT_b.pyx":390
+ *                         data = data / cpolarization[i]
+ *                     if do_solidAngle:
+ *                         data = data / csolidAngle[i]             # <<<<<<<<<<<<<<
+ *                     cdata[i]+=data
+ *         else:
+ */
+                                  if (unlikely(!__pyx_v_csolidAngle.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("csolidAngle"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 390; __pyx_clineno = __LINE__; goto __pyx_L31_error;} }
+                                  __pyx_t_30 = __pyx_v_i;
+                                  __pyx_v_data = (__pyx_v_data / (*((double *) ( /* dim=0 */ (__pyx_v_csolidAngle.data + __pyx_t_30 * __pyx_v_csolidAngle.strides[0]) ))));
+                                  goto __pyx_L36;
+                                }
+                                __pyx_L36:;
+
+                                /* "splitPixelFullLUT_b.pyx":391
+ *                     if do_solidAngle:
+ *                         data = data / csolidAngle[i]
+ *                     cdata[i]+=data             # <<<<<<<<<<<<<<
+ *         else:
+ *             if do_dummy:
+ */
+                                __pyx_t_31 = __pyx_v_i;
+                                *((double *) ( /* dim=0 */ (__pyx_v_cdata.data + __pyx_t_31 * __pyx_v_cdata.strides[0]) )) += __pyx_v_data;
+                                goto __pyx_L38;
+                                __pyx_L31_error:;
+                                {
+                                    #ifdef WITH_THREAD
+                                    PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
+                                    #endif
+                                    #ifdef _OPENMP
+                                    #pragma omp flush(__pyx_parallel_exc_type)
+                                    #endif /* _OPENMP */
+                                    if (!__pyx_parallel_exc_type) {
+                                      __Pyx_ErrFetch(&__pyx_parallel_exc_type, &__pyx_parallel_exc_value, &__pyx_parallel_exc_tb);
+                                      __pyx_parallel_filename = __pyx_filename; __pyx_parallel_lineno = __pyx_lineno; __pyx_parallel_clineno = __pyx_clineno;
+                                      __Pyx_GOTREF(__pyx_parallel_exc_type);
+                                    }
+                                    #ifdef WITH_THREAD
+                                    PyGILState_Release(__pyx_gilstate_save);
+                                    #endif
+                                }
+                                __pyx_parallel_why = 4;
+                                goto __pyx_L37;
+                                __pyx_L37:;
+                                #ifdef _OPENMP
+                                #pragma omp critical(__pyx_parallel_lastprivates17)
+                                #endif /* _OPENMP */
+                                {
+                                    __pyx_parallel_temp0 = __pyx_v_data;
+                                    __pyx_parallel_temp1 = __pyx_v_i;
+                                }
+                                __pyx_L38:;
+                                #ifdef _OPENMP
+                                #pragma omp flush(__pyx_parallel_why)
+                                #endif /* _OPENMP */
+                            }
+                        }
+                        #ifdef _OPENMP
+                        Py_END_ALLOW_THREADS
+                        #else
+{
+#ifdef WITH_THREAD
+                        PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
+                        #endif
+                        #endif /* _OPENMP */
+                        /* Clean up any temporaries */
+                        #ifdef WITH_THREAD
+                        PyGILState_Release(__pyx_gilstate_save);
+                        #endif
+                        #ifndef _OPENMP
+}
+#endif /* _OPENMP */
+                    }
+                }
+                if (__pyx_parallel_exc_type) {
+                  /* This may have been overridden by a continue, break or return in another thread. Prefer the error. */
+                  __pyx_parallel_why = 4;
+                }
+                if (__pyx_parallel_why) {
+                  __pyx_v_data = __pyx_parallel_temp0;
+                  __pyx_v_i = __pyx_parallel_temp1;
+                  switch (__pyx_parallel_why) {
+                        case 3: goto __pyx_L26;
+                        case 4:
+                    {
+                        #ifdef WITH_THREAD
+                        PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
+                        #endif
+                        __Pyx_ErrRestore(__pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb);
+                        __pyx_filename = __pyx_parallel_filename; __pyx_lineno = __pyx_parallel_lineno; __pyx_clineno = __pyx_parallel_clineno;
+                        __Pyx_GIVEREF(__pyx_parallel_exc_type);
+                        #ifdef WITH_THREAD
+                        PyGILState_Release(__pyx_gilstate_save);
+                        #endif
+                    }
+                    goto __pyx_L27;
+                  }
+                }
+            }
+            #if ((defined(__APPLE__) || defined(__OSX__)) && (defined(__GNUC__) && (__GNUC__ > 2 || (__GNUC__ == 2 && (__GNUC_MINOR__ > 95)))))
+                #undef likely
+                #undef unlikely
+                #define likely(x)   __builtin_expect(!!(x), 1)
+                #define unlikely(x) __builtin_expect(!!(x), 0)
+            #endif
+          }
+
+          /* "splitPixelFullLUT_b.pyx":381
+ *                         cdata[i]+=cdummy
+ *             else:
+ *                 for i in prange(size, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
+ *                     data = tdata[i]
+ *                     if do_dark:
+ */
+          /*finally:*/ {
+            int __pyx_why;
+            __pyx_why = 0; goto __pyx_L28;
+            __pyx_L26: __pyx_why = 3; goto __pyx_L28;
+            __pyx_L27: __pyx_why = 4; goto __pyx_L28;
+            __pyx_L28:;
+            #ifdef WITH_THREAD
+            Py_BLOCK_THREADS
+            #endif
+            switch (__pyx_why) {
+              case 3: goto __pyx_L0;
+              case 4: goto __pyx_L1_error;
+            }
+          }
+      }
+    }
+    __pyx_L10:;
+    goto __pyx_L9;
+  }
+  /*else*/ {
+
+    /* "splitPixelFullLUT_b.pyx":393
+ *                     cdata[i]+=data
+ *         else:
+ *             if do_dummy:             # <<<<<<<<<<<<<<
+ *                 tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)
+ *                 cdata = numpy.zeros(size,dtype=numpy.float64)
+ */
+    __pyx_t_12 = (__pyx_v_do_dummy != 0);
+    if (__pyx_t_12) {
+
+      /* "splitPixelFullLUT_b.pyx":394
+ *         else:
+ *             if do_dummy:
+ *                 tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
+ *                 cdata = numpy.zeros(size,dtype=numpy.float64)
+ *                 for i in prange(size, nogil=True, schedule="static"):
+ */
+      __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 394; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_6);
+      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s__ascontiguousarray); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 394; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_weights, __pyx_n_s__ravel); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 394; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_6);
+      __pyx_t_4 = PyObject_Call(__pyx_t_6, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 394; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_4);
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+      __pyx_t_6 = PyTuple_New(1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 394; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_6);
+      PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_4);
+      __Pyx_GIVEREF(__pyx_t_4);
+      __pyx_t_4 = 0;
+      __pyx_t_4 = PyDict_New(); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 394; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(((PyObject *)__pyx_t_4));
+      __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 394; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_3);
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s__float64); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 394; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_5);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      if (PyDict_SetItem(__pyx_t_4, ((PyObject *)__pyx_n_s__dtype), __pyx_t_5) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 394; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __pyx_t_5 = PyObject_Call(__pyx_t_1, ((PyObject *)__pyx_t_6), ((PyObject *)__pyx_t_4)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 394; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_5);
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+      __Pyx_DECREF(((PyObject *)__pyx_t_6)); __pyx_t_6 = 0;
+      __Pyx_DECREF(((PyObject *)__pyx_t_4)); __pyx_t_4 = 0;
+      __pyx_t_10 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_5);
+      if (unlikely(!__pyx_t_10.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 394; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __pyx_v_tdata = __pyx_t_10;
+      __pyx_t_10.memview = NULL;
+      __pyx_t_10.data = NULL;
+
+      /* "splitPixelFullLUT_b.pyx":395
+ *             if do_dummy:
+ *                 tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)
+ *                 cdata = numpy.zeros(size,dtype=numpy.float64)             # <<<<<<<<<<<<<<
+ *                 for i in prange(size, nogil=True, schedule="static"):
+ *                     data = tdata[i]
+ */
+      __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 395; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_5);
+      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s__zeros); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 395; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_4);
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __pyx_t_5 = __Pyx_PyInt_to_py_npy_int32(__pyx_v_size); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 395; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_5);
+      __pyx_t_6 = PyTuple_New(1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 395; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_6);
+      PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5);
+      __Pyx_GIVEREF(__pyx_t_5);
+      __pyx_t_5 = 0;
+      __pyx_t_5 = PyDict_New(); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 395; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(((PyObject *)__pyx_t_5));
+      __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 395; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_1);
+      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s__float64); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 395; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+      if (PyDict_SetItem(__pyx_t_5, ((PyObject *)__pyx_n_s__dtype), __pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 395; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __pyx_t_3 = PyObject_Call(__pyx_t_4, ((PyObject *)__pyx_t_6), ((PyObject *)__pyx_t_5)); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 395; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_DECREF(((PyObject *)__pyx_t_6)); __pyx_t_6 = 0;
+      __Pyx_DECREF(((PyObject *)__pyx_t_5)); __pyx_t_5 = 0;
+      __pyx_t_10 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_3);
+      if (unlikely(!__pyx_t_10.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 395; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __pyx_v_cdata = __pyx_t_10;
+      __pyx_t_10.memview = NULL;
+      __pyx_t_10.data = NULL;
+
+      /* "splitPixelFullLUT_b.pyx":396
+ *                 tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)
+ *                 cdata = numpy.zeros(size,dtype=numpy.float64)
+ *                 for i in prange(size, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
+ *                     data = tdata[i]
+ *                     if ((cddummy!=0) and (fabs(data-cdummy) > cddummy)) or ((cddummy==0) and (data!=cdummy)):
+ */
+      {
+          #ifdef WITH_THREAD
+          PyThreadState *_save;
+          Py_UNBLOCK_THREADS
+          #endif
+          /*try:*/ {
+            __pyx_t_2 = __pyx_v_size;
+            if (1 == 0) abort();
+            {
+                #if ((defined(__APPLE__) || defined(__OSX__)) && (defined(__GNUC__) && (__GNUC__ > 2 || (__GNUC__ == 2 && (__GNUC_MINOR__ > 95)))))
+                    #undef likely
+                    #undef unlikely
+                    #define likely(x)   (x)
+                    #define unlikely(x) (x)
+                #endif
+                __pyx_t_16 = (__pyx_t_2 - 0) / 1;
+                if (__pyx_t_16 > 0)
+                {
+                    #ifdef _OPENMP
+                    #pragma omp parallel private(__pyx_t_19, __pyx_t_13, __pyx_t_18, __pyx_t_33, __pyx_t_12, __pyx_t_34, __pyx_t_32)
+                    #endif /* _OPENMP */
+                    {
+                        #ifdef _OPENMP
+                        #pragma omp for lastprivate(__pyx_v_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
+                        #endif /* _OPENMP */
+                        for (__pyx_t_15 = 0; __pyx_t_15 < __pyx_t_16; __pyx_t_15++){
+                            {
+                                __pyx_v_i = 0 + 1 * __pyx_t_15;
+                                /* Initialize private variables to invalid values */
+                                __pyx_v_data = ((double)__PYX_NAN());
+
+                                /* "splitPixelFullLUT_b.pyx":397
+ *                 cdata = numpy.zeros(size,dtype=numpy.float64)
+ *                 for i in prange(size, nogil=True, schedule="static"):
+ *                     data = tdata[i]             # <<<<<<<<<<<<<<
+ *                     if ((cddummy!=0) and (fabs(data-cdummy) > cddummy)) or ((cddummy==0) and (data!=cdummy)):
+ *                         cdata[i]+=data
+ */
+                                __pyx_t_32 = __pyx_v_i;
+                                __pyx_v_data = (*((double *) ( /* dim=0 */ (__pyx_v_tdata.data + __pyx_t_32 * __pyx_v_tdata.strides[0]) )));
+
+                                /* "splitPixelFullLUT_b.pyx":398
+ *                 for i in prange(size, nogil=True, schedule="static"):
+ *                     data = tdata[i]
+ *                     if ((cddummy!=0) and (fabs(data-cdummy) > cddummy)) or ((cddummy==0) and (data!=cdummy)):             # <<<<<<<<<<<<<<
+ *                         cdata[i]+=data
+ *                     else:
+ */
+                                __pyx_t_12 = ((__pyx_v_cddummy != 0.0) != 0);
+                                if (__pyx_t_12) {
+                                  __pyx_t_18 = ((fabs((__pyx_v_data - __pyx_v_cdummy)) > __pyx_v_cddummy) != 0);
+                                  __pyx_t_19 = __pyx_t_18;
+                                } else {
+                                  __pyx_t_19 = __pyx_t_12;
+                                }
+                                if (!__pyx_t_19) {
+                                  __pyx_t_12 = ((__pyx_v_cddummy == 0.0) != 0);
+                                  if (__pyx_t_12) {
+                                    __pyx_t_18 = ((__pyx_v_data != __pyx_v_cdummy) != 0);
+                                    __pyx_t_13 = __pyx_t_18;
+                                  } else {
+                                    __pyx_t_13 = __pyx_t_12;
+                                  }
+                                  __pyx_t_12 = __pyx_t_13;
+                                } else {
+                                  __pyx_t_12 = __pyx_t_19;
+                                }
+                                if (__pyx_t_12) {
+
+                                  /* "splitPixelFullLUT_b.pyx":399
+ *                     data = tdata[i]
+ *                     if ((cddummy!=0) and (fabs(data-cdummy) > cddummy)) or ((cddummy==0) and (data!=cdummy)):
+ *                         cdata[i]+=data             # <<<<<<<<<<<<<<
+ *                     else:
+ *                         cdata[i]+=cdummy
+ */
+                                  __pyx_t_33 = __pyx_v_i;
+                                  *((double *) ( /* dim=0 */ (__pyx_v_cdata.data + __pyx_t_33 * __pyx_v_cdata.strides[0]) )) += __pyx_v_data;
+                                  goto __pyx_L48;
+                                }
+                                /*else*/ {
+
+                                  /* "splitPixelFullLUT_b.pyx":401
+ *                         cdata[i]+=data
+ *                     else:
+ *                         cdata[i]+=cdummy             # <<<<<<<<<<<<<<
+ *             else:
+ *                 cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)
+ */
+                                  __pyx_t_34 = __pyx_v_i;
+                                  *((double *) ( /* dim=0 */ (__pyx_v_cdata.data + __pyx_t_34 * __pyx_v_cdata.strides[0]) )) += __pyx_v_cdummy;
+                                }
+                                __pyx_L48:;
+                            }
+                        }
+                    }
+                }
+            }
+            #if ((defined(__APPLE__) || defined(__OSX__)) && (defined(__GNUC__) && (__GNUC__ > 2 || (__GNUC__ == 2 && (__GNUC_MINOR__ > 95)))))
+                #undef likely
+                #undef unlikely
+                #define likely(x)   __builtin_expect(!!(x), 1)
+                #define unlikely(x) __builtin_expect(!!(x), 0)
+            #endif
+          }
+
+          /* "splitPixelFullLUT_b.pyx":396
+ *                 tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)
+ *                 cdata = numpy.zeros(size,dtype=numpy.float64)
+ *                 for i in prange(size, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
+ *                     data = tdata[i]
+ *                     if ((cddummy!=0) and (fabs(data-cdummy) > cddummy)) or ((cddummy==0) and (data!=cdummy)):
+ */
+          /*finally:*/ {
+            #ifdef WITH_THREAD
+            Py_BLOCK_THREADS
+            #endif
+          }
+      }
+      goto __pyx_L40;
+    }
+    /*else*/ {
+
+      /* "splitPixelFullLUT_b.pyx":403
+ *                         cdata[i]+=cdummy
+ *             else:
+ *                 cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)             # <<<<<<<<<<<<<<
  * 
- *     with nogil:             # <<<<<<<<<<<<<<
- *         for idx in range(size):
+ *         for i in prange(bins, nogil=True, schedule="guided"):
+ */
+      __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 403; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_3);
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s__ascontiguousarray); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 403; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_5);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_weights, __pyx_n_s__ravel); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 403; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_3);
+      __pyx_t_6 = PyObject_Call(__pyx_t_3, ((PyObject *)__pyx_empty_tuple), NULL); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 403; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_6);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 403; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_3);
+      PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_6);
+      __Pyx_GIVEREF(__pyx_t_6);
+      __pyx_t_6 = 0;
+      __pyx_t_6 = PyDict_New(); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 403; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(((PyObject *)__pyx_t_6));
+      __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 403; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_4);
+      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s__float64); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 403; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      if (PyDict_SetItem(__pyx_t_6, ((PyObject *)__pyx_n_s__dtype), __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 403; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+      __pyx_t_1 = PyObject_Call(__pyx_t_5, ((PyObject *)__pyx_t_3), ((PyObject *)__pyx_t_6)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 403; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_DECREF(((PyObject *)__pyx_t_3)); __pyx_t_3 = 0;
+      __Pyx_DECREF(((PyObject *)__pyx_t_6)); __pyx_t_6 = 0;
+      __pyx_t_10 = __Pyx_PyObject_to_MemoryviewSlice_ds_double(__pyx_t_1);
+      if (unlikely(!__pyx_t_10.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 403; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+      __pyx_v_cdata = __pyx_t_10;
+      __pyx_t_10.memview = NULL;
+      __pyx_t_10.data = NULL;
+    }
+    __pyx_L40:;
+  }
+  __pyx_L9:;
+
+  /* "splitPixelFullLUT_b.pyx":405
+ *                 cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)
  * 
+ *         for i in prange(bins, nogil=True, schedule="guided"):             # <<<<<<<<<<<<<<
+ *             sum_data = 0.0
+ *             sum_count = 0.0
  */
   {
       #ifdef WITH_THREAD
@@ -7848,1485 +7177,311 @@ static PyObject *__pyx_pf_10splitPixel_2fullSplit2D(CYTHON_UNUSED PyObject *__py
       Py_UNBLOCK_THREADS
       #endif
       /*try:*/ {
+        __pyx_t_16 = __pyx_v_bins;
+        if (1 == 0) abort();
+        {
+            #if ((defined(__APPLE__) || defined(__OSX__)) && (defined(__GNUC__) && (__GNUC__ > 2 || (__GNUC__ == 2 && (__GNUC_MINOR__ > 95)))))
+                #undef likely
+                #undef unlikely
+                #define likely(x)   (x)
+                #define unlikely(x) (x)
+            #endif
+            __pyx_t_2 = (__pyx_t_16 - 0) / 1;
+            if (__pyx_t_2 > 0)
+            {
+                #ifdef _OPENMP
+                #pragma omp parallel private(__pyx_t_40, __pyx_t_19, __pyx_t_41, __pyx_t_43, __pyx_t_35, __pyx_t_12, __pyx_t_37, __pyx_t_39, __pyx_t_38, __pyx_t_36, __pyx_t_42)
+                #endif /* _OPENMP */
+                {
+                    #ifdef _OPENMP
+                    #pragma omp for lastprivate(__pyx_v_sum_count) lastprivate(__pyx_v_data) lastprivate(__pyx_v_sum_data) lastprivate(__pyx_v_j) lastprivate(__pyx_v_coef) lastprivate(__pyx_v_idx) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(guided)
+                    #endif /* _OPENMP */
+                    for (__pyx_t_15 = 0; __pyx_t_15 < __pyx_t_2; __pyx_t_15++){
+                        {
+                            __pyx_v_i = 0 + 1 * __pyx_t_15;
+                            /* Initialize private variables to invalid values */
+                            __pyx_v_sum_count = ((double)__PYX_NAN());
+                            __pyx_v_data = ((double)__PYX_NAN());
+                            __pyx_v_sum_data = ((double)__PYX_NAN());
+                            __pyx_v_j = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
+                            __pyx_v_coef = ((double)__PYX_NAN());
+                            __pyx_v_idx = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
 
-        /* "splitPixel.pyx":509
+                            /* "splitPixelFullLUT_b.pyx":406
  * 
- *     with nogil:
- *         for idx in range(size):             # <<<<<<<<<<<<<<
- * 
- *             if (check_mask) and (cmask[idx]):
+ *         for i in prange(bins, nogil=True, schedule="guided"):
+ *             sum_data = 0.0             # <<<<<<<<<<<<<<
+ *             sum_count = 0.0
+ *             for j in range(indptr[i],indptr[i+1]):
  */
-        __pyx_t_11 = __pyx_v_size;
-        for (__pyx_t_2 = 0; __pyx_t_2 < __pyx_t_11; __pyx_t_2+=1) {
-          __pyx_v_idx = __pyx_t_2;
+                            __pyx_v_sum_data = 0.0;
 
-          /* "splitPixel.pyx":511
- *         for idx in range(size):
- * 
- *             if (check_mask) and (cmask[idx]):             # <<<<<<<<<<<<<<
- *                 continue
- * 
+                            /* "splitPixelFullLUT_b.pyx":407
+ *         for i in prange(bins, nogil=True, schedule="guided"):
+ *             sum_data = 0.0
+ *             sum_count = 0.0             # <<<<<<<<<<<<<<
+ *             for j in range(indptr[i],indptr[i+1]):
+ *                 idx = indices[j]
  */
-          __pyx_t_3 = __pyx_v_check_mask;
-          if (__pyx_t_3) {
-            if (unlikely(!__pyx_v_cmask.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("cmask"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 511; __pyx_clineno = __LINE__; goto __pyx_L27;} }
-            __pyx_t_26 = __pyx_v_idx;
-            __pyx_t_21 = ((*((__pyx_t_5numpy_int8_t *) ( /* dim=0 */ (__pyx_v_cmask.data + __pyx_t_26 * __pyx_v_cmask.strides[0]) ))) != 0);
-          } else {
-            __pyx_t_21 = __pyx_t_3;
-          }
-          if (__pyx_t_21) {
+                            __pyx_v_sum_count = 0.0;
 
-            /* "splitPixel.pyx":512
- * 
- *             if (check_mask) and (cmask[idx]):
- *                 continue             # <<<<<<<<<<<<<<
- * 
- *             data = cdata[idx]
+                            /* "splitPixelFullLUT_b.pyx":408
+ *             sum_data = 0.0
+ *             sum_count = 0.0
+ *             for j in range(indptr[i],indptr[i+1]):             # <<<<<<<<<<<<<<
+ *                 idx = indices[j]
+ *                 coef = ccoef[j]
  */
-            goto __pyx_L29_continue;
-            goto __pyx_L31;
-          }
-          __pyx_L31:;
+                            __pyx_t_35 = (__pyx_v_i + 1);
+                            __pyx_t_36 = (*((__pyx_t_5numpy_int32_t *) ( /* dim=0 */ (__pyx_v_indptr.data + __pyx_t_35 * __pyx_v_indptr.strides[0]) )));
+                            __pyx_t_37 = __pyx_v_i;
+                            for (__pyx_t_38 = (*((__pyx_t_5numpy_int32_t *) ( /* dim=0 */ (__pyx_v_indptr.data + __pyx_t_37 * __pyx_v_indptr.strides[0]) ))); __pyx_t_38 < __pyx_t_36; __pyx_t_38+=1) {
+                              __pyx_v_j = __pyx_t_38;
 
-          /* "splitPixel.pyx":514
- *                 continue
- * 
- *             data = cdata[idx]             # <<<<<<<<<<<<<<
- *             if check_dummy and ( (cddummy==0.0 and data==cdummy) or (cddummy!=0.0 and fabs(data-cdummy)<=cddummy)):
- *                 continue
+                              /* "splitPixelFullLUT_b.pyx":409
+ *             sum_count = 0.0
+ *             for j in range(indptr[i],indptr[i+1]):
+ *                 idx = indices[j]             # <<<<<<<<<<<<<<
+ *                 coef = ccoef[j]
+ *                 if coef == 0.0:
  */
-          __pyx_t_27 = __pyx_v_idx;
-          __pyx_v_data = (*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cdata.rcbuffer->pybuffer.buf, __pyx_t_27, __pyx_pybuffernd_cdata.diminfo[0].strides));
+                              __pyx_t_39 = __pyx_v_j;
+                              __pyx_v_idx = (*((__pyx_t_5numpy_int32_t *) ( /* dim=0 */ (__pyx_v_indices.data + __pyx_t_39 * __pyx_v_indices.strides[0]) )));
 
-          /* "splitPixel.pyx":515
- * 
- *             data = cdata[idx]
- *             if check_dummy and ( (cddummy==0.0 and data==cdummy) or (cddummy!=0.0 and fabs(data-cdummy)<=cddummy)):             # <<<<<<<<<<<<<<
- *                 continue
- * 
- */
-          if ((__pyx_v_check_dummy != 0)) {
-            __pyx_t_21 = ((__pyx_v_cddummy == 0.0) != 0);
-            if (__pyx_t_21) {
-              __pyx_t_3 = ((__pyx_v_data == __pyx_v_cdummy) != 0);
-              __pyx_t_22 = __pyx_t_3;
-            } else {
-              __pyx_t_22 = __pyx_t_21;
-            }
-            if (!__pyx_t_22) {
-              __pyx_t_21 = ((__pyx_v_cddummy != 0.0) != 0);
-              if (__pyx_t_21) {
-                __pyx_t_3 = ((fabs((__pyx_v_data - __pyx_v_cdummy)) <= __pyx_v_cddummy) != 0);
-                __pyx_t_28 = __pyx_t_3;
-              } else {
-                __pyx_t_28 = __pyx_t_21;
-              }
-              __pyx_t_21 = __pyx_t_28;
-            } else {
-              __pyx_t_21 = __pyx_t_22;
-            }
-            __pyx_t_22 = __pyx_t_21;
-          } else {
-            __pyx_t_22 = (__pyx_v_check_dummy != 0);
-          }
-          if (__pyx_t_22) {
-
-            /* "splitPixel.pyx":516
- *             data = cdata[idx]
- *             if check_dummy and ( (cddummy==0.0 and data==cdummy) or (cddummy!=0.0 and fabs(data-cdummy)<=cddummy)):
- *                 continue             # <<<<<<<<<<<<<<
- * 
- *             a0 =  cpos[idx, 0, 0]
- */
-            goto __pyx_L29_continue;
-            goto __pyx_L32;
-          }
-          __pyx_L32:;
-
-          /* "splitPixel.pyx":518
- *                 continue
- * 
- *             a0 =  cpos[idx, 0, 0]             # <<<<<<<<<<<<<<
- *             a1 =  cpos[idx, 0, 1]
- *             b0 =  cpos[idx, 1, 0]
- */
-          __pyx_t_29 = __pyx_v_idx;
-          __pyx_t_30 = 0;
-          __pyx_t_31 = 0;
-          __pyx_v_a0 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_29, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_30, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_31, __pyx_pybuffernd_cpos.diminfo[2].strides));
-
-          /* "splitPixel.pyx":519
- * 
- *             a0 =  cpos[idx, 0, 0]
- *             a1 =  cpos[idx, 0, 1]             # <<<<<<<<<<<<<<
- *             b0 =  cpos[idx, 1, 0]
- *             b1 =  cpos[idx, 1, 1]
- */
-          __pyx_t_32 = __pyx_v_idx;
-          __pyx_t_33 = 0;
-          __pyx_t_34 = 1;
-          __pyx_v_a1 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_32, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_33, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_34, __pyx_pybuffernd_cpos.diminfo[2].strides));
-
-          /* "splitPixel.pyx":520
- *             a0 =  cpos[idx, 0, 0]
- *             a1 =  cpos[idx, 0, 1]
- *             b0 =  cpos[idx, 1, 0]             # <<<<<<<<<<<<<<
- *             b1 =  cpos[idx, 1, 1]
- *             c0 =  cpos[idx, 2, 0]
- */
-          __pyx_t_35 = __pyx_v_idx;
-          __pyx_t_36 = 1;
-          __pyx_t_37 = 0;
-          __pyx_v_b0 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_35, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_36, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_37, __pyx_pybuffernd_cpos.diminfo[2].strides));
-
-          /* "splitPixel.pyx":521
- *             a1 =  cpos[idx, 0, 1]
- *             b0 =  cpos[idx, 1, 0]
- *             b1 =  cpos[idx, 1, 1]             # <<<<<<<<<<<<<<
- *             c0 =  cpos[idx, 2, 0]
- *             c1 =  cpos[idx, 2, 1]
- */
-          __pyx_t_38 = __pyx_v_idx;
-          __pyx_t_39 = 1;
-          __pyx_t_40 = 1;
-          __pyx_v_b1 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_38, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_39, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_40, __pyx_pybuffernd_cpos.diminfo[2].strides));
-
-          /* "splitPixel.pyx":522
- *             b0 =  cpos[idx, 1, 0]
- *             b1 =  cpos[idx, 1, 1]
- *             c0 =  cpos[idx, 2, 0]             # <<<<<<<<<<<<<<
- *             c1 =  cpos[idx, 2, 1]
- *             d0 =  cpos[idx, 3, 0]
- */
-          __pyx_t_41 = __pyx_v_idx;
-          __pyx_t_42 = 2;
-          __pyx_t_43 = 0;
-          __pyx_v_c0 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_41, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_42, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_43, __pyx_pybuffernd_cpos.diminfo[2].strides));
-
-          /* "splitPixel.pyx":523
- *             b1 =  cpos[idx, 1, 1]
- *             c0 =  cpos[idx, 2, 0]
- *             c1 =  cpos[idx, 2, 1]             # <<<<<<<<<<<<<<
- *             d0 =  cpos[idx, 3, 0]
- *             d1 =  cpos[idx, 3, 1]
- */
-          __pyx_t_44 = __pyx_v_idx;
-          __pyx_t_45 = 2;
-          __pyx_t_46 = 1;
-          __pyx_v_c1 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_44, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_45, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_46, __pyx_pybuffernd_cpos.diminfo[2].strides));
-
-          /* "splitPixel.pyx":524
- *             c0 =  cpos[idx, 2, 0]
- *             c1 =  cpos[idx, 2, 1]
- *             d0 =  cpos[idx, 3, 0]             # <<<<<<<<<<<<<<
- *             d1 =  cpos[idx, 3, 1]
- * 
- */
-          __pyx_t_47 = __pyx_v_idx;
-          __pyx_t_48 = 3;
-          __pyx_t_49 = 0;
-          __pyx_v_d0 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_47, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_48, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_49, __pyx_pybuffernd_cpos.diminfo[2].strides));
-
-          /* "splitPixel.pyx":525
- *             c1 =  cpos[idx, 2, 1]
- *             d0 =  cpos[idx, 3, 0]
- *             d1 =  cpos[idx, 3, 1]             # <<<<<<<<<<<<<<
- * 
- *             min0 = min(a0, b0, c0, d0)
- */
-          __pyx_t_50 = __pyx_v_idx;
-          __pyx_t_51 = 3;
-          __pyx_t_52 = 1;
-          __pyx_v_d1 = (*__Pyx_BufPtrStrided3d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_cpos.rcbuffer->pybuffer.buf, __pyx_t_50, __pyx_pybuffernd_cpos.diminfo[0].strides, __pyx_t_51, __pyx_pybuffernd_cpos.diminfo[1].strides, __pyx_t_52, __pyx_pybuffernd_cpos.diminfo[2].strides));
-
-          /* "splitPixel.pyx":527
- *             d1 =  cpos[idx, 3, 1]
- * 
- *             min0 = min(a0, b0, c0, d0)             # <<<<<<<<<<<<<<
- *             max0 = max(a0, b0, c0, d0)
- *             min1 = min(a1, b1, c1, d1)
- */
-          __pyx_t_23 = __pyx_v_b0;
-          __pyx_t_53 = __pyx_v_c0;
-          __pyx_t_54 = __pyx_v_d0;
-          __pyx_t_55 = __pyx_v_a0;
-          if (((__pyx_t_23 < __pyx_t_55) != 0)) {
-            __pyx_t_56 = __pyx_t_23;
-          } else {
-            __pyx_t_56 = __pyx_t_55;
-          }
-          __pyx_t_55 = __pyx_t_56;
-          if (((__pyx_t_53 < __pyx_t_55) != 0)) {
-            __pyx_t_56 = __pyx_t_53;
-          } else {
-            __pyx_t_56 = __pyx_t_55;
-          }
-          __pyx_t_55 = __pyx_t_56;
-          if (((__pyx_t_54 < __pyx_t_55) != 0)) {
-            __pyx_t_56 = __pyx_t_54;
-          } else {
-            __pyx_t_56 = __pyx_t_55;
-          }
-          __pyx_v_min0 = __pyx_t_56;
-
-          /* "splitPixel.pyx":528
- * 
- *             min0 = min(a0, b0, c0, d0)
- *             max0 = max(a0, b0, c0, d0)             # <<<<<<<<<<<<<<
- *             min1 = min(a1, b1, c1, d1)
- *             max1 = max(a1, b1, c1, d1)
- */
-          __pyx_t_56 = __pyx_v_b0;
-          __pyx_t_23 = __pyx_v_c0;
-          __pyx_t_53 = __pyx_v_d0;
-          __pyx_t_54 = __pyx_v_a0;
-          if (((__pyx_t_56 > __pyx_t_54) != 0)) {
-            __pyx_t_55 = __pyx_t_56;
-          } else {
-            __pyx_t_55 = __pyx_t_54;
-          }
-          __pyx_t_54 = __pyx_t_55;
-          if (((__pyx_t_23 > __pyx_t_54) != 0)) {
-            __pyx_t_55 = __pyx_t_23;
-          } else {
-            __pyx_t_55 = __pyx_t_54;
-          }
-          __pyx_t_54 = __pyx_t_55;
-          if (((__pyx_t_53 > __pyx_t_54) != 0)) {
-            __pyx_t_55 = __pyx_t_53;
-          } else {
-            __pyx_t_55 = __pyx_t_54;
-          }
-          __pyx_v_max0 = __pyx_t_55;
-
-          /* "splitPixel.pyx":529
- *             min0 = min(a0, b0, c0, d0)
- *             max0 = max(a0, b0, c0, d0)
- *             min1 = min(a1, b1, c1, d1)             # <<<<<<<<<<<<<<
- *             max1 = max(a1, b1, c1, d1)
- * 
- */
-          __pyx_t_55 = __pyx_v_b1;
-          __pyx_t_56 = __pyx_v_c1;
-          __pyx_t_23 = __pyx_v_d1;
-          __pyx_t_53 = __pyx_v_a1;
-          if (((__pyx_t_55 < __pyx_t_53) != 0)) {
-            __pyx_t_54 = __pyx_t_55;
-          } else {
-            __pyx_t_54 = __pyx_t_53;
-          }
-          __pyx_t_53 = __pyx_t_54;
-          if (((__pyx_t_56 < __pyx_t_53) != 0)) {
-            __pyx_t_54 = __pyx_t_56;
-          } else {
-            __pyx_t_54 = __pyx_t_53;
-          }
-          __pyx_t_53 = __pyx_t_54;
-          if (((__pyx_t_23 < __pyx_t_53) != 0)) {
-            __pyx_t_54 = __pyx_t_23;
-          } else {
-            __pyx_t_54 = __pyx_t_53;
-          }
-          __pyx_v_min1 = __pyx_t_54;
-
-          /* "splitPixel.pyx":530
- *             max0 = max(a0, b0, c0, d0)
- *             min1 = min(a1, b1, c1, d1)
- *             max1 = max(a1, b1, c1, d1)             # <<<<<<<<<<<<<<
- * 
- *             if (max0<pos0_min) or (min0 > pos0_maxin) or (max1<pos1_min) or (min1 > pos1_maxin):
- */
-          __pyx_t_54 = __pyx_v_b1;
-          __pyx_t_55 = __pyx_v_c1;
-          __pyx_t_56 = __pyx_v_d1;
-          __pyx_t_23 = __pyx_v_a1;
-          if (((__pyx_t_54 > __pyx_t_23) != 0)) {
-            __pyx_t_53 = __pyx_t_54;
-          } else {
-            __pyx_t_53 = __pyx_t_23;
-          }
-          __pyx_t_23 = __pyx_t_53;
-          if (((__pyx_t_55 > __pyx_t_23) != 0)) {
-            __pyx_t_53 = __pyx_t_55;
-          } else {
-            __pyx_t_53 = __pyx_t_23;
-          }
-          __pyx_t_23 = __pyx_t_53;
-          if (((__pyx_t_56 > __pyx_t_23) != 0)) {
-            __pyx_t_53 = __pyx_t_56;
-          } else {
-            __pyx_t_53 = __pyx_t_23;
-          }
-          __pyx_v_max1 = __pyx_t_53;
-
-          /* "splitPixel.pyx":532
- *             max1 = max(a1, b1, c1, d1)
- * 
- *             if (max0<pos0_min) or (min0 > pos0_maxin) or (max1<pos1_min) or (min1 > pos1_maxin):             # <<<<<<<<<<<<<<
+                              /* "splitPixelFullLUT_b.pyx":410
+ *             for j in range(indptr[i],indptr[i+1]):
+ *                 idx = indices[j]
+ *                 coef = ccoef[j]             # <<<<<<<<<<<<<<
+ *                 if coef == 0.0:
  *                     continue
- * 
  */
-          __pyx_t_22 = ((__pyx_v_max0 < __pyx_v_pos0_min) != 0);
-          if (!__pyx_t_22) {
-            __pyx_t_21 = ((__pyx_v_min0 > __pyx_v_pos0_maxin) != 0);
-            if (!__pyx_t_21) {
-              __pyx_t_28 = ((__pyx_v_max1 < __pyx_v_pos1_min) != 0);
-              if (!__pyx_t_28) {
-                __pyx_t_3 = ((__pyx_v_min1 > __pyx_v_pos1_maxin) != 0);
-                __pyx_t_57 = __pyx_t_3;
-              } else {
-                __pyx_t_57 = __pyx_t_28;
-              }
-              __pyx_t_28 = __pyx_t_57;
-            } else {
-              __pyx_t_28 = __pyx_t_21;
-            }
-            __pyx_t_21 = __pyx_t_28;
-          } else {
-            __pyx_t_21 = __pyx_t_22;
-          }
-          if (__pyx_t_21) {
+                              __pyx_t_40 = __pyx_v_j;
+                              __pyx_v_coef = (*((double *) ( /* dim=0 */ (__pyx_v_ccoef.data + __pyx_t_40 * __pyx_v_ccoef.strides[0]) )));
 
-            /* "splitPixel.pyx":533
- * 
- *             if (max0<pos0_min) or (min0 > pos0_maxin) or (max1<pos1_min) or (min1 > pos1_maxin):
+                              /* "splitPixelFullLUT_b.pyx":411
+ *                 idx = indices[j]
+ *                 coef = ccoef[j]
+ *                 if coef == 0.0:             # <<<<<<<<<<<<<<
+ *                     continue
+ *                 data = cdata[idx]
+ */
+                              __pyx_t_12 = ((__pyx_v_coef == 0.0) != 0);
+                              if (__pyx_t_12) {
+
+                                /* "splitPixelFullLUT_b.pyx":412
+ *                 coef = ccoef[j]
+ *                 if coef == 0.0:
  *                     continue             # <<<<<<<<<<<<<<
- * 
- *             if do_dark:
+ *                 data = cdata[idx]
+ *                 if do_dummy and data==cdummy:
  */
-            goto __pyx_L29_continue;
-            goto __pyx_L33;
-          }
-          __pyx_L33:;
+                                goto __pyx_L58_continue;
+                                goto __pyx_L60;
+                              }
+                              __pyx_L60:;
 
-          /* "splitPixel.pyx":535
+                              /* "splitPixelFullLUT_b.pyx":413
+ *                 if coef == 0.0:
  *                     continue
- * 
- *             if do_dark:             # <<<<<<<<<<<<<<
- *                 data -= cdark[idx]
- *             if do_flat:
+ *                 data = cdata[idx]             # <<<<<<<<<<<<<<
+ *                 if do_dummy and data==cdummy:
+ *                     continue
  */
-          __pyx_t_21 = (__pyx_v_do_dark != 0);
-          if (__pyx_t_21) {
+                              __pyx_t_41 = __pyx_v_idx;
+                              __pyx_v_data = (*((double *) ( /* dim=0 */ (__pyx_v_cdata.data + __pyx_t_41 * __pyx_v_cdata.strides[0]) )));
 
-            /* "splitPixel.pyx":536
- * 
- *             if do_dark:
- *                 data -= cdark[idx]             # <<<<<<<<<<<<<<
- *             if do_flat:
- *                 data /= cflat[idx]
+                              /* "splitPixelFullLUT_b.pyx":414
+ *                     continue
+ *                 data = cdata[idx]
+ *                 if do_dummy and data==cdummy:             # <<<<<<<<<<<<<<
+ *                     continue
+ *                 sum_data = sum_data + coef * data
  */
-            if (unlikely(!__pyx_v_cdark.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("cdark"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 536; __pyx_clineno = __LINE__; goto __pyx_L27;} }
-            __pyx_t_58 = __pyx_v_idx;
-            __pyx_v_data = (__pyx_v_data - (*((double *) ( /* dim=0 */ (__pyx_v_cdark.data + __pyx_t_58 * __pyx_v_cdark.strides[0]) ))));
-            goto __pyx_L34;
-          }
-          __pyx_L34:;
+                              if ((__pyx_v_do_dummy != 0)) {
+                                __pyx_t_12 = ((__pyx_v_data == __pyx_v_cdummy) != 0);
+                                __pyx_t_19 = __pyx_t_12;
+                              } else {
+                                __pyx_t_19 = (__pyx_v_do_dummy != 0);
+                              }
+                              if (__pyx_t_19) {
 
-          /* "splitPixel.pyx":537
- *             if do_dark:
- *                 data -= cdark[idx]
- *             if do_flat:             # <<<<<<<<<<<<<<
- *                 data /= cflat[idx]
- *             if do_polarization:
+                                /* "splitPixelFullLUT_b.pyx":415
+ *                 data = cdata[idx]
+ *                 if do_dummy and data==cdummy:
+ *                     continue             # <<<<<<<<<<<<<<
+ *                 sum_data = sum_data + coef * data
+ *                 sum_count = sum_count + coef
  */
-          __pyx_t_21 = (__pyx_v_do_flat != 0);
-          if (__pyx_t_21) {
+                                goto __pyx_L58_continue;
+                                goto __pyx_L61;
+                              }
+                              __pyx_L61:;
 
-            /* "splitPixel.pyx":538
- *                 data -= cdark[idx]
- *             if do_flat:
- *                 data /= cflat[idx]             # <<<<<<<<<<<<<<
- *             if do_polarization:
- *                 data /= cpolarization[idx]
+                              /* "splitPixelFullLUT_b.pyx":416
+ *                 if do_dummy and data==cdummy:
+ *                     continue
+ *                 sum_data = sum_data + coef * data             # <<<<<<<<<<<<<<
+ *                 sum_count = sum_count + coef
+ *             outData[i] += sum_data
  */
-            if (unlikely(!__pyx_v_cflat.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("cflat"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 538; __pyx_clineno = __LINE__; goto __pyx_L27;} }
-            __pyx_t_59 = __pyx_v_idx;
-            __pyx_v_data = (__pyx_v_data / (*((double *) ( /* dim=0 */ (__pyx_v_cflat.data + __pyx_t_59 * __pyx_v_cflat.strides[0]) ))));
-            goto __pyx_L35;
-          }
-          __pyx_L35:;
+                              __pyx_v_sum_data = (__pyx_v_sum_data + (__pyx_v_coef * __pyx_v_data));
 
-          /* "splitPixel.pyx":539
- *             if do_flat:
- *                 data /= cflat[idx]
- *             if do_polarization:             # <<<<<<<<<<<<<<
- *                 data /= cpolarization[idx]
- *             if do_solidangle:
+                              /* "splitPixelFullLUT_b.pyx":417
+ *                     continue
+ *                 sum_data = sum_data + coef * data
+ *                 sum_count = sum_count + coef             # <<<<<<<<<<<<<<
+ *             outData[i] += sum_data
+ *             outCount[i] += sum_count
  */
-          __pyx_t_21 = (__pyx_v_do_polarization != 0);
-          if (__pyx_t_21) {
+                              __pyx_v_sum_count = (__pyx_v_sum_count + __pyx_v_coef);
+                              __pyx_L58_continue:;
+                            }
 
-            /* "splitPixel.pyx":540
- *                 data /= cflat[idx]
- *             if do_polarization:
- *                 data /= cpolarization[idx]             # <<<<<<<<<<<<<<
- *             if do_solidangle:
- *                 data /= csolidangle[idx]
+                            /* "splitPixelFullLUT_b.pyx":418
+ *                 sum_data = sum_data + coef * data
+ *                 sum_count = sum_count + coef
+ *             outData[i] += sum_data             # <<<<<<<<<<<<<<
+ *             outCount[i] += sum_count
+ *             if sum_count > epsilon:
  */
-            if (unlikely(!__pyx_v_cpolarization.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("cpolarization"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 540; __pyx_clineno = __LINE__; goto __pyx_L27;} }
-            __pyx_t_60 = __pyx_v_idx;
-            __pyx_v_data = (__pyx_v_data / (*((double *) ( /* dim=0 */ (__pyx_v_cpolarization.data + __pyx_t_60 * __pyx_v_cpolarization.strides[0]) ))));
-            goto __pyx_L36;
-          }
-          __pyx_L36:;
+                            __pyx_t_36 = __pyx_v_i;
+                            *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_36, __pyx_pybuffernd_outData.diminfo[0].strides) += __pyx_v_sum_data;
 
-          /* "splitPixel.pyx":541
- *             if do_polarization:
- *                 data /= cpolarization[idx]
- *             if do_solidangle:             # <<<<<<<<<<<<<<
- *                 data /= csolidangle[idx]
- * 
+                            /* "splitPixelFullLUT_b.pyx":419
+ *                 sum_count = sum_count + coef
+ *             outData[i] += sum_data
+ *             outCount[i] += sum_count             # <<<<<<<<<<<<<<
+ *             if sum_count > epsilon:
+ *                 outMerge[i] += sum_data / sum_count
  */
-          __pyx_t_21 = (__pyx_v_do_solidangle != 0);
-          if (__pyx_t_21) {
+                            __pyx_t_38 = __pyx_v_i;
+                            *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_38, __pyx_pybuffernd_outCount.diminfo[0].strides) += __pyx_v_sum_count;
 
-            /* "splitPixel.pyx":542
- *                 data /= cpolarization[idx]
- *             if do_solidangle:
- *                 data /= csolidangle[idx]             # <<<<<<<<<<<<<<
- * 
- * 
+                            /* "splitPixelFullLUT_b.pyx":420
+ *             outData[i] += sum_data
+ *             outCount[i] += sum_count
+ *             if sum_count > epsilon:             # <<<<<<<<<<<<<<
+ *                 outMerge[i] += sum_data / sum_count
+ *             else:
  */
-            if (unlikely(!__pyx_v_csolidangle.memview)) { __Pyx_RaiseUnboundMemoryviewSliceNogil("csolidangle"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 542; __pyx_clineno = __LINE__; goto __pyx_L27;} }
-            __pyx_t_61 = __pyx_v_idx;
-            __pyx_v_data = (__pyx_v_data / (*((double *) ( /* dim=0 */ (__pyx_v_csolidangle.data + __pyx_t_61 * __pyx_v_csolidangle.strides[0]) ))));
-            goto __pyx_L37;
-          }
-          __pyx_L37:;
+                            __pyx_t_19 = ((__pyx_v_sum_count > __pyx_v_epsilon) != 0);
+                            if (__pyx_t_19) {
 
-          /* "splitPixel.pyx":545
- * 
- * 
- *             if min0 < pos0_min:             # <<<<<<<<<<<<<<
- *                 data = data * (pos0_min - min0) / (max0 - min0)
- *                 min0 = pos0_min
+                              /* "splitPixelFullLUT_b.pyx":421
+ *             outCount[i] += sum_count
+ *             if sum_count > epsilon:
+ *                 outMerge[i] += sum_data / sum_count             # <<<<<<<<<<<<<<
+ *             else:
+ *                 outMerge[i] += cdummy
  */
-          __pyx_t_21 = ((__pyx_v_min0 < __pyx_v_pos0_min) != 0);
-          if (__pyx_t_21) {
+                              __pyx_t_42 = __pyx_v_i;
+                              *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outMerge.rcbuffer->pybuffer.buf, __pyx_t_42, __pyx_pybuffernd_outMerge.diminfo[0].strides) += (__pyx_v_sum_data / __pyx_v_sum_count);
+                              goto __pyx_L62;
+                            }
+                            /*else*/ {
 
-            /* "splitPixel.pyx":546
- * 
- *             if min0 < pos0_min:
- *                 data = data * (pos0_min - min0) / (max0 - min0)             # <<<<<<<<<<<<<<
- *                 min0 = pos0_min
- *             if min1 < pos1_min:
- */
-            __pyx_v_data = ((__pyx_v_data * (__pyx_v_pos0_min - __pyx_v_min0)) / (__pyx_v_max0 - __pyx_v_min0));
-
-            /* "splitPixel.pyx":547
- *             if min0 < pos0_min:
- *                 data = data * (pos0_min - min0) / (max0 - min0)
- *                 min0 = pos0_min             # <<<<<<<<<<<<<<
- *             if min1 < pos1_min:
- *                 data = data * (pos1_min - min1) / (max1 - min1)
- */
-            __pyx_v_min0 = __pyx_v_pos0_min;
-            goto __pyx_L38;
-          }
-          __pyx_L38:;
-
-          /* "splitPixel.pyx":548
- *                 data = data * (pos0_min - min0) / (max0 - min0)
- *                 min0 = pos0_min
- *             if min1 < pos1_min:             # <<<<<<<<<<<<<<
- *                 data = data * (pos1_min - min1) / (max1 - min1)
- *                 min1 = pos1_min
- */
-          __pyx_t_21 = ((__pyx_v_min1 < __pyx_v_pos1_min) != 0);
-          if (__pyx_t_21) {
-
-            /* "splitPixel.pyx":549
- *                 min0 = pos0_min
- *             if min1 < pos1_min:
- *                 data = data * (pos1_min - min1) / (max1 - min1)             # <<<<<<<<<<<<<<
- *                 min1 = pos1_min
- *             if max0 > pos0_maxin:
- */
-            __pyx_v_data = ((__pyx_v_data * (__pyx_v_pos1_min - __pyx_v_min1)) / (__pyx_v_max1 - __pyx_v_min1));
-
-            /* "splitPixel.pyx":550
- *             if min1 < pos1_min:
- *                 data = data * (pos1_min - min1) / (max1 - min1)
- *                 min1 = pos1_min             # <<<<<<<<<<<<<<
- *             if max0 > pos0_maxin:
- *                 data = data * (max0 - pos0_maxin) / (max0 - min0)
- */
-            __pyx_v_min1 = __pyx_v_pos1_min;
-            goto __pyx_L39;
-          }
-          __pyx_L39:;
-
-          /* "splitPixel.pyx":551
- *                 data = data * (pos1_min - min1) / (max1 - min1)
- *                 min1 = pos1_min
- *             if max0 > pos0_maxin:             # <<<<<<<<<<<<<<
- *                 data = data * (max0 - pos0_maxin) / (max0 - min0)
- *                 max0 = pos0_maxin
- */
-          __pyx_t_21 = ((__pyx_v_max0 > __pyx_v_pos0_maxin) != 0);
-          if (__pyx_t_21) {
-
-            /* "splitPixel.pyx":552
- *                 min1 = pos1_min
- *             if max0 > pos0_maxin:
- *                 data = data * (max0 - pos0_maxin) / (max0 - min0)             # <<<<<<<<<<<<<<
- *                 max0 = pos0_maxin
- *             if max1 > pos1_maxin:
- */
-            __pyx_v_data = ((__pyx_v_data * (__pyx_v_max0 - __pyx_v_pos0_maxin)) / (__pyx_v_max0 - __pyx_v_min0));
-
-            /* "splitPixel.pyx":553
- *             if max0 > pos0_maxin:
- *                 data = data * (max0 - pos0_maxin) / (max0 - min0)
- *                 max0 = pos0_maxin             # <<<<<<<<<<<<<<
- *             if max1 > pos1_maxin:
- *                 data = data * (max1 - pos1_maxin) / (max1 - min1)
- */
-            __pyx_v_max0 = __pyx_v_pos0_maxin;
-            goto __pyx_L40;
-          }
-          __pyx_L40:;
-
-          /* "splitPixel.pyx":554
- *                 data = data * (max0 - pos0_maxin) / (max0 - min0)
- *                 max0 = pos0_maxin
- *             if max1 > pos1_maxin:             # <<<<<<<<<<<<<<
- *                 data = data * (max1 - pos1_maxin) / (max1 - min1)
- *                 max1 = pos1_maxin
- */
-          __pyx_t_21 = ((__pyx_v_max1 > __pyx_v_pos1_maxin) != 0);
-          if (__pyx_t_21) {
-
-            /* "splitPixel.pyx":555
- *                 max0 = pos0_maxin
- *             if max1 > pos1_maxin:
- *                 data = data * (max1 - pos1_maxin) / (max1 - min1)             # <<<<<<<<<<<<<<
- *                 max1 = pos1_maxin
+                              /* "splitPixelFullLUT_b.pyx":423
+ *                 outMerge[i] += sum_data / sum_count
+ *             else:
+ *                 outMerge[i] += cdummy             # <<<<<<<<<<<<<<
+ *         return  self.outPos, outMerge, outData, outCount
  * 
  */
-            __pyx_v_data = ((__pyx_v_data * (__pyx_v_max1 - __pyx_v_pos1_maxin)) / (__pyx_v_max1 - __pyx_v_min1));
-
-            /* "splitPixel.pyx":556
- *             if max1 > pos1_maxin:
- *                 data = data * (max1 - pos1_maxin) / (max1 - min1)
- *                 max1 = pos1_maxin             # <<<<<<<<<<<<<<
- * 
- * ##                treat data for pixel on chi discontinuity
- */
-            __pyx_v_max1 = __pyx_v_pos1_maxin;
-            goto __pyx_L41;
-          }
-          __pyx_L41:;
-
-          /* "splitPixel.pyx":559
- * 
- * ##                treat data for pixel on chi discontinuity
- *             if ((max1 - min1) / dpos1) > (bins1 / 2.0):             # <<<<<<<<<<<<<<
- *                 if pos1_maxin - max1 > min1 - pos1_min:
- *                     min1 = max1
- */
-          __pyx_t_21 = ((((__pyx_v_max1 - __pyx_v_min1) / __pyx_v_dpos1) > (__pyx_v_bins1 / 2.0)) != 0);
-          if (__pyx_t_21) {
-
-            /* "splitPixel.pyx":560
- * ##                treat data for pixel on chi discontinuity
- *             if ((max1 - min1) / dpos1) > (bins1 / 2.0):
- *                 if pos1_maxin - max1 > min1 - pos1_min:             # <<<<<<<<<<<<<<
- *                     min1 = max1
- *                     max1 = pos1_maxin
- */
-            __pyx_t_21 = (((__pyx_v_pos1_maxin - __pyx_v_max1) > (__pyx_v_min1 - __pyx_v_pos1_min)) != 0);
-            if (__pyx_t_21) {
-
-              /* "splitPixel.pyx":561
- *             if ((max1 - min1) / dpos1) > (bins1 / 2.0):
- *                 if pos1_maxin - max1 > min1 - pos1_min:
- *                     min1 = max1             # <<<<<<<<<<<<<<
- *                     max1 = pos1_maxin
- *                 else:
- */
-              __pyx_v_min1 = __pyx_v_max1;
-
-              /* "splitPixel.pyx":562
- *                 if pos1_maxin - max1 > min1 - pos1_min:
- *                     min1 = max1
- *                     max1 = pos1_maxin             # <<<<<<<<<<<<<<
- *                 else:
- *                     max1 = min1
- */
-              __pyx_v_max1 = __pyx_v_pos1_maxin;
-              goto __pyx_L43;
-            }
-            /*else*/ {
-
-              /* "splitPixel.pyx":564
- *                     max1 = pos1_maxin
- *                 else:
- *                     max1 = min1             # <<<<<<<<<<<<<<
- *                     min1 = pos1_min
- * 
- */
-              __pyx_v_max1 = __pyx_v_min1;
-
-              /* "splitPixel.pyx":565
- *                 else:
- *                     max1 = min1
- *                     min1 = pos1_min             # <<<<<<<<<<<<<<
- * 
- *             fbin0_min = getBinNr(min0, pos0_min, dpos0)
- */
-              __pyx_v_min1 = __pyx_v_pos1_min;
-            }
-            __pyx_L43:;
-            goto __pyx_L42;
-          }
-          __pyx_L42:;
-
-          /* "splitPixel.pyx":567
- *                     min1 = pos1_min
- * 
- *             fbin0_min = getBinNr(min0, pos0_min, dpos0)             # <<<<<<<<<<<<<<
- *             fbin0_max = getBinNr(max0, pos0_min, dpos0)
- *             fbin1_min = getBinNr(min1, pos1_min, dpos1)
- */
-          __pyx_v_fbin0_min = __pyx_f_10splitPixel_getBinNr(__pyx_v_min0, __pyx_v_pos0_min, __pyx_v_dpos0);
-
-          /* "splitPixel.pyx":568
- * 
- *             fbin0_min = getBinNr(min0, pos0_min, dpos0)
- *             fbin0_max = getBinNr(max0, pos0_min, dpos0)             # <<<<<<<<<<<<<<
- *             fbin1_min = getBinNr(min1, pos1_min, dpos1)
- *             fbin1_max = getBinNr(max1, pos1_min, dpos1)
- */
-          __pyx_v_fbin0_max = __pyx_f_10splitPixel_getBinNr(__pyx_v_max0, __pyx_v_pos0_min, __pyx_v_dpos0);
-
-          /* "splitPixel.pyx":569
- *             fbin0_min = getBinNr(min0, pos0_min, dpos0)
- *             fbin0_max = getBinNr(max0, pos0_min, dpos0)
- *             fbin1_min = getBinNr(min1, pos1_min, dpos1)             # <<<<<<<<<<<<<<
- *             fbin1_max = getBinNr(max1, pos1_min, dpos1)
- * 
- */
-          __pyx_v_fbin1_min = __pyx_f_10splitPixel_getBinNr(__pyx_v_min1, __pyx_v_pos1_min, __pyx_v_dpos1);
-
-          /* "splitPixel.pyx":570
- *             fbin0_max = getBinNr(max0, pos0_min, dpos0)
- *             fbin1_min = getBinNr(min1, pos1_min, dpos1)
- *             fbin1_max = getBinNr(max1, pos1_min, dpos1)             # <<<<<<<<<<<<<<
- * 
- *             bin0_min = < int > fbin0_min
- */
-          __pyx_v_fbin1_max = __pyx_f_10splitPixel_getBinNr(__pyx_v_max1, __pyx_v_pos1_min, __pyx_v_dpos1);
-
-          /* "splitPixel.pyx":572
- *             fbin1_max = getBinNr(max1, pos1_min, dpos1)
- * 
- *             bin0_min = < int > fbin0_min             # <<<<<<<<<<<<<<
- *             bin0_max = < int > fbin0_max
- *             bin1_min = < int > fbin1_min
- */
-          __pyx_v_bin0_min = ((int)__pyx_v_fbin0_min);
-
-          /* "splitPixel.pyx":573
- * 
- *             bin0_min = < int > fbin0_min
- *             bin0_max = < int > fbin0_max             # <<<<<<<<<<<<<<
- *             bin1_min = < int > fbin1_min
- *             bin1_max = < int > fbin1_max
- */
-          __pyx_v_bin0_max = ((int)__pyx_v_fbin0_max);
-
-          /* "splitPixel.pyx":574
- *             bin0_min = < int > fbin0_min
- *             bin0_max = < int > fbin0_max
- *             bin1_min = < int > fbin1_min             # <<<<<<<<<<<<<<
- *             bin1_max = < int > fbin1_max
- * 
- */
-          __pyx_v_bin1_min = ((int)__pyx_v_fbin1_min);
-
-          /* "splitPixel.pyx":575
- *             bin0_max = < int > fbin0_max
- *             bin1_min = < int > fbin1_min
- *             bin1_max = < int > fbin1_max             # <<<<<<<<<<<<<<
- * 
- * 
- */
-          __pyx_v_bin1_max = ((int)__pyx_v_fbin1_max);
-
-          /* "splitPixel.pyx":578
- * 
- * 
- *             if bin0_min == bin0_max:             # <<<<<<<<<<<<<<
- *                 if bin1_min == bin1_max:
- *                     #All pixel is within a single bin
- */
-          __pyx_t_21 = ((__pyx_v_bin0_min == __pyx_v_bin0_max) != 0);
-          if (__pyx_t_21) {
-
-            /* "splitPixel.pyx":579
- * 
- *             if bin0_min == bin0_max:
- *                 if bin1_min == bin1_max:             # <<<<<<<<<<<<<<
- *                     #All pixel is within a single bin
- *                     outCount[bin0_min, bin1_min] += 1.0
- */
-            __pyx_t_21 = ((__pyx_v_bin1_min == __pyx_v_bin1_max) != 0);
-            if (__pyx_t_21) {
-
-              /* "splitPixel.pyx":581
- *                 if bin1_min == bin1_max:
- *                     #All pixel is within a single bin
- *                     outCount[bin0_min, bin1_min] += 1.0             # <<<<<<<<<<<<<<
- *                     outData[bin0_min, bin1_min] += data
- *                 else:
- */
-              __pyx_t_62 = __pyx_v_bin0_min;
-              __pyx_t_63 = __pyx_v_bin1_min;
-              *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_62, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_63, __pyx_pybuffernd_outCount.diminfo[1].strides) += 1.0;
-
-              /* "splitPixel.pyx":582
- *                     #All pixel is within a single bin
- *                     outCount[bin0_min, bin1_min] += 1.0
- *                     outData[bin0_min, bin1_min] += data             # <<<<<<<<<<<<<<
- *                 else:
- *                     #spread on more than 2 bins
- */
-              __pyx_t_64 = __pyx_v_bin0_min;
-              __pyx_t_65 = __pyx_v_bin1_min;
-              *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_64, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_65, __pyx_pybuffernd_outData.diminfo[1].strides) += __pyx_v_data;
-              goto __pyx_L45;
-            }
-            /*else*/ {
-
-              /* "splitPixel.pyx":585
- *                 else:
- *                     #spread on more than 2 bins
- *                     aera_pixel = fbin1_max - fbin1_min             # <<<<<<<<<<<<<<
- *                     deltaD = (< double > (bin1_min + 1)) - fbin1_min
- *                     deltaU = fbin1_max - (< double > bin1_max)
- */
-              __pyx_v_aera_pixel = (__pyx_v_fbin1_max - __pyx_v_fbin1_min);
-
-              /* "splitPixel.pyx":586
- *                     #spread on more than 2 bins
- *                     aera_pixel = fbin1_max - fbin1_min
- *                     deltaD = (< double > (bin1_min + 1)) - fbin1_min             # <<<<<<<<<<<<<<
- *                     deltaU = fbin1_max - (< double > bin1_max)
- *                     one_over_area = 1.0 / aera_pixel
- */
-              __pyx_v_deltaD = (((double)(__pyx_v_bin1_min + 1)) - __pyx_v_fbin1_min);
-
-              /* "splitPixel.pyx":587
- *                     aera_pixel = fbin1_max - fbin1_min
- *                     deltaD = (< double > (bin1_min + 1)) - fbin1_min
- *                     deltaU = fbin1_max - (< double > bin1_max)             # <<<<<<<<<<<<<<
- *                     one_over_area = 1.0 / aera_pixel
- * 
- */
-              __pyx_v_deltaU = (__pyx_v_fbin1_max - ((double)__pyx_v_bin1_max));
-
-              /* "splitPixel.pyx":588
- *                     deltaD = (< double > (bin1_min + 1)) - fbin1_min
- *                     deltaU = fbin1_max - (< double > bin1_max)
- *                     one_over_area = 1.0 / aera_pixel             # <<<<<<<<<<<<<<
- * 
- *                     outCount[bin0_min, bin1_min] += one_over_area * deltaD
- */
-              __pyx_v_one_over_area = (1.0 / __pyx_v_aera_pixel);
-
-              /* "splitPixel.pyx":590
- *                     one_over_area = 1.0 / aera_pixel
- * 
- *                     outCount[bin0_min, bin1_min] += one_over_area * deltaD             # <<<<<<<<<<<<<<
- *                     outData[bin0_min, bin1_min] += data * one_over_area * deltaD
- * 
- */
-              __pyx_t_66 = __pyx_v_bin0_min;
-              __pyx_t_67 = __pyx_v_bin1_min;
-              *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_66, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_67, __pyx_pybuffernd_outCount.diminfo[1].strides) += (__pyx_v_one_over_area * __pyx_v_deltaD);
-
-              /* "splitPixel.pyx":591
- * 
- *                     outCount[bin0_min, bin1_min] += one_over_area * deltaD
- *                     outData[bin0_min, bin1_min] += data * one_over_area * deltaD             # <<<<<<<<<<<<<<
- * 
- *                     outCount[bin0_min, bin1_max] += one_over_area * deltaU
- */
-              __pyx_t_68 = __pyx_v_bin0_min;
-              __pyx_t_69 = __pyx_v_bin1_min;
-              *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_68, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_69, __pyx_pybuffernd_outData.diminfo[1].strides) += ((__pyx_v_data * __pyx_v_one_over_area) * __pyx_v_deltaD);
-
-              /* "splitPixel.pyx":593
- *                     outData[bin0_min, bin1_min] += data * one_over_area * deltaD
- * 
- *                     outCount[bin0_min, bin1_max] += one_over_area * deltaU             # <<<<<<<<<<<<<<
- *                     outData[bin0_min, bin1_max] += data * one_over_area * deltaU
- * #                    if bin1_min +1< bin1_max:
- */
-              __pyx_t_70 = __pyx_v_bin0_min;
-              __pyx_t_71 = __pyx_v_bin1_max;
-              *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_70, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_71, __pyx_pybuffernd_outCount.diminfo[1].strides) += (__pyx_v_one_over_area * __pyx_v_deltaU);
-
-              /* "splitPixel.pyx":594
- * 
- *                     outCount[bin0_min, bin1_max] += one_over_area * deltaU
- *                     outData[bin0_min, bin1_max] += data * one_over_area * deltaU             # <<<<<<<<<<<<<<
- * #                    if bin1_min +1< bin1_max:
- *                     for j in range(bin1_min + 1, bin1_max):
- */
-              __pyx_t_72 = __pyx_v_bin0_min;
-              __pyx_t_73 = __pyx_v_bin1_max;
-              *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_72, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_73, __pyx_pybuffernd_outData.diminfo[1].strides) += ((__pyx_v_data * __pyx_v_one_over_area) * __pyx_v_deltaU);
-
-              /* "splitPixel.pyx":596
- *                     outData[bin0_min, bin1_max] += data * one_over_area * deltaU
- * #                    if bin1_min +1< bin1_max:
- *                     for j in range(bin1_min + 1, bin1_max):             # <<<<<<<<<<<<<<
- *                             outCount[bin0_min, j] += one_over_area
- *                             outData[bin0_min, j] += data * one_over_area
- */
-              __pyx_t_74 = __pyx_v_bin1_max;
-              for (__pyx_t_75 = (__pyx_v_bin1_min + 1); __pyx_t_75 < __pyx_t_74; __pyx_t_75+=1) {
-                __pyx_v_j = __pyx_t_75;
-
-                /* "splitPixel.pyx":597
- * #                    if bin1_min +1< bin1_max:
- *                     for j in range(bin1_min + 1, bin1_max):
- *                             outCount[bin0_min, j] += one_over_area             # <<<<<<<<<<<<<<
- *                             outData[bin0_min, j] += data * one_over_area
- * 
- */
-                __pyx_t_76 = __pyx_v_bin0_min;
-                __pyx_t_77 = __pyx_v_j;
-                *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_76, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_77, __pyx_pybuffernd_outCount.diminfo[1].strides) += __pyx_v_one_over_area;
-
-                /* "splitPixel.pyx":598
- *                     for j in range(bin1_min + 1, bin1_max):
- *                             outCount[bin0_min, j] += one_over_area
- *                             outData[bin0_min, j] += data * one_over_area             # <<<<<<<<<<<<<<
- * 
- *             else: #spread on more than 2 bins in dim 0
- */
-                __pyx_t_78 = __pyx_v_bin0_min;
-                __pyx_t_79 = __pyx_v_j;
-                *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_78, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_79, __pyx_pybuffernd_outData.diminfo[1].strides) += (__pyx_v_data * __pyx_v_one_over_area);
-              }
-            }
-            __pyx_L45:;
-            goto __pyx_L44;
-          }
-          /*else*/ {
-
-            /* "splitPixel.pyx":601
- * 
- *             else: #spread on more than 2 bins in dim 0
- *                 if bin1_min == bin1_max:             # <<<<<<<<<<<<<<
- *                     #All pixel fall on 1 bins in dim 1
- *                     aera_pixel = fbin0_max - fbin0_min
- */
-            __pyx_t_21 = ((__pyx_v_bin1_min == __pyx_v_bin1_max) != 0);
-            if (__pyx_t_21) {
-
-              /* "splitPixel.pyx":603
- *                 if bin1_min == bin1_max:
- *                     #All pixel fall on 1 bins in dim 1
- *                     aera_pixel = fbin0_max - fbin0_min             # <<<<<<<<<<<<<<
- *                     deltaL = (< double > (bin0_min + 1)) - fbin0_min
- *                     one_over_area = deltaL / aera_pixel
- */
-              __pyx_v_aera_pixel = (__pyx_v_fbin0_max - __pyx_v_fbin0_min);
-
-              /* "splitPixel.pyx":604
- *                     #All pixel fall on 1 bins in dim 1
- *                     aera_pixel = fbin0_max - fbin0_min
- *                     deltaL = (< double > (bin0_min + 1)) - fbin0_min             # <<<<<<<<<<<<<<
- *                     one_over_area = deltaL / aera_pixel
- *                     outCount[bin0_min, bin1_min] += one_over_area
- */
-              __pyx_v_deltaL = (((double)(__pyx_v_bin0_min + 1)) - __pyx_v_fbin0_min);
-
-              /* "splitPixel.pyx":605
- *                     aera_pixel = fbin0_max - fbin0_min
- *                     deltaL = (< double > (bin0_min + 1)) - fbin0_min
- *                     one_over_area = deltaL / aera_pixel             # <<<<<<<<<<<<<<
- *                     outCount[bin0_min, bin1_min] += one_over_area
- *                     outData[bin0_min, bin1_min] += data * one_over_area
- */
-              __pyx_v_one_over_area = (__pyx_v_deltaL / __pyx_v_aera_pixel);
-
-              /* "splitPixel.pyx":606
- *                     deltaL = (< double > (bin0_min + 1)) - fbin0_min
- *                     one_over_area = deltaL / aera_pixel
- *                     outCount[bin0_min, bin1_min] += one_over_area             # <<<<<<<<<<<<<<
- *                     outData[bin0_min, bin1_min] += data * one_over_area
- *                     deltaR = fbin0_max - (< double > bin0_max)
- */
-              __pyx_t_74 = __pyx_v_bin0_min;
-              __pyx_t_75 = __pyx_v_bin1_min;
-              *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_74, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_75, __pyx_pybuffernd_outCount.diminfo[1].strides) += __pyx_v_one_over_area;
-
-              /* "splitPixel.pyx":607
- *                     one_over_area = deltaL / aera_pixel
- *                     outCount[bin0_min, bin1_min] += one_over_area
- *                     outData[bin0_min, bin1_min] += data * one_over_area             # <<<<<<<<<<<<<<
- *                     deltaR = fbin0_max - (< double > bin0_max)
- *                     one_over_area = deltaR / aera_pixel
- */
-              __pyx_t_80 = __pyx_v_bin0_min;
-              __pyx_t_81 = __pyx_v_bin1_min;
-              *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_80, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_81, __pyx_pybuffernd_outData.diminfo[1].strides) += (__pyx_v_data * __pyx_v_one_over_area);
-
-              /* "splitPixel.pyx":608
- *                     outCount[bin0_min, bin1_min] += one_over_area
- *                     outData[bin0_min, bin1_min] += data * one_over_area
- *                     deltaR = fbin0_max - (< double > bin0_max)             # <<<<<<<<<<<<<<
- *                     one_over_area = deltaR / aera_pixel
- *                     outCount[bin0_max, bin1_min] += one_over_area
- */
-              __pyx_v_deltaR = (__pyx_v_fbin0_max - ((double)__pyx_v_bin0_max));
-
-              /* "splitPixel.pyx":609
- *                     outData[bin0_min, bin1_min] += data * one_over_area
- *                     deltaR = fbin0_max - (< double > bin0_max)
- *                     one_over_area = deltaR / aera_pixel             # <<<<<<<<<<<<<<
- *                     outCount[bin0_max, bin1_min] += one_over_area
- *                     outData[bin0_max, bin1_min] += data * one_over_area
- */
-              __pyx_v_one_over_area = (__pyx_v_deltaR / __pyx_v_aera_pixel);
-
-              /* "splitPixel.pyx":610
- *                     deltaR = fbin0_max - (< double > bin0_max)
- *                     one_over_area = deltaR / aera_pixel
- *                     outCount[bin0_max, bin1_min] += one_over_area             # <<<<<<<<<<<<<<
- *                     outData[bin0_max, bin1_min] += data * one_over_area
- *                     one_over_area = 1.0 / aera_pixel
- */
-              __pyx_t_82 = __pyx_v_bin0_max;
-              __pyx_t_83 = __pyx_v_bin1_min;
-              *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_82, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_83, __pyx_pybuffernd_outCount.diminfo[1].strides) += __pyx_v_one_over_area;
-
-              /* "splitPixel.pyx":611
- *                     one_over_area = deltaR / aera_pixel
- *                     outCount[bin0_max, bin1_min] += one_over_area
- *                     outData[bin0_max, bin1_min] += data * one_over_area             # <<<<<<<<<<<<<<
- *                     one_over_area = 1.0 / aera_pixel
- *                     for i in range(bin0_min + 1, bin0_max):
- */
-              __pyx_t_84 = __pyx_v_bin0_max;
-              __pyx_t_85 = __pyx_v_bin1_min;
-              *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_84, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_85, __pyx_pybuffernd_outData.diminfo[1].strides) += (__pyx_v_data * __pyx_v_one_over_area);
-
-              /* "splitPixel.pyx":612
- *                     outCount[bin0_max, bin1_min] += one_over_area
- *                     outData[bin0_max, bin1_min] += data * one_over_area
- *                     one_over_area = 1.0 / aera_pixel             # <<<<<<<<<<<<<<
- *                     for i in range(bin0_min + 1, bin0_max):
- *                             outCount[i, bin1_min] += one_over_area
- */
-              __pyx_v_one_over_area = (1.0 / __pyx_v_aera_pixel);
-
-              /* "splitPixel.pyx":613
- *                     outData[bin0_max, bin1_min] += data * one_over_area
- *                     one_over_area = 1.0 / aera_pixel
- *                     for i in range(bin0_min + 1, bin0_max):             # <<<<<<<<<<<<<<
- *                             outCount[i, bin1_min] += one_over_area
- *                             outData[i, bin1_min] += data * one_over_area
- */
-              __pyx_t_86 = __pyx_v_bin0_max;
-              for (__pyx_t_87 = (__pyx_v_bin0_min + 1); __pyx_t_87 < __pyx_t_86; __pyx_t_87+=1) {
-                __pyx_v_i = __pyx_t_87;
-
-                /* "splitPixel.pyx":614
- *                     one_over_area = 1.0 / aera_pixel
- *                     for i in range(bin0_min + 1, bin0_max):
- *                             outCount[i, bin1_min] += one_over_area             # <<<<<<<<<<<<<<
- *                             outData[i, bin1_min] += data * one_over_area
- *                 else:
- */
-                __pyx_t_88 = __pyx_v_i;
-                __pyx_t_89 = __pyx_v_bin1_min;
-                *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_88, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_89, __pyx_pybuffernd_outCount.diminfo[1].strides) += __pyx_v_one_over_area;
-
-                /* "splitPixel.pyx":615
- *                     for i in range(bin0_min + 1, bin0_max):
- *                             outCount[i, bin1_min] += one_over_area
- *                             outData[i, bin1_min] += data * one_over_area             # <<<<<<<<<<<<<<
- *                 else:
- *                     #spread on n pix in dim0 and m pixel in dim1:
- */
-                __pyx_t_90 = __pyx_v_i;
-                __pyx_t_91 = __pyx_v_bin1_min;
-                *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_90, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_91, __pyx_pybuffernd_outData.diminfo[1].strides) += (__pyx_v_data * __pyx_v_one_over_area);
-              }
-              goto __pyx_L48;
-            }
-            /*else*/ {
-
-              /* "splitPixel.pyx":618
- *                 else:
- *                     #spread on n pix in dim0 and m pixel in dim1:
- *                     aera_pixel = (fbin0_max - fbin0_min) * (fbin1_max - fbin1_min)             # <<<<<<<<<<<<<<
- *                     deltaL = (< double > (bin0_min + 1.0)) - fbin0_min
- *                     deltaR = fbin0_max - (< double > bin0_max)
- */
-              __pyx_v_aera_pixel = ((__pyx_v_fbin0_max - __pyx_v_fbin0_min) * (__pyx_v_fbin1_max - __pyx_v_fbin1_min));
-
-              /* "splitPixel.pyx":619
- *                     #spread on n pix in dim0 and m pixel in dim1:
- *                     aera_pixel = (fbin0_max - fbin0_min) * (fbin1_max - fbin1_min)
- *                     deltaL = (< double > (bin0_min + 1.0)) - fbin0_min             # <<<<<<<<<<<<<<
- *                     deltaR = fbin0_max - (< double > bin0_max)
- *                     deltaD = (< double > (bin1_min + 1.0)) - fbin1_min
- */
-              __pyx_v_deltaL = (((double)(__pyx_v_bin0_min + 1.0)) - __pyx_v_fbin0_min);
-
-              /* "splitPixel.pyx":620
- *                     aera_pixel = (fbin0_max - fbin0_min) * (fbin1_max - fbin1_min)
- *                     deltaL = (< double > (bin0_min + 1.0)) - fbin0_min
- *                     deltaR = fbin0_max - (< double > bin0_max)             # <<<<<<<<<<<<<<
- *                     deltaD = (< double > (bin1_min + 1.0)) - fbin1_min
- *                     deltaU = fbin1_max - (< double > bin1_max)
- */
-              __pyx_v_deltaR = (__pyx_v_fbin0_max - ((double)__pyx_v_bin0_max));
-
-              /* "splitPixel.pyx":621
- *                     deltaL = (< double > (bin0_min + 1.0)) - fbin0_min
- *                     deltaR = fbin0_max - (< double > bin0_max)
- *                     deltaD = (< double > (bin1_min + 1.0)) - fbin1_min             # <<<<<<<<<<<<<<
- *                     deltaU = fbin1_max - (< double > bin1_max)
- *                     one_over_area = 1.0 / aera_pixel
- */
-              __pyx_v_deltaD = (((double)(__pyx_v_bin1_min + 1.0)) - __pyx_v_fbin1_min);
-
-              /* "splitPixel.pyx":622
- *                     deltaR = fbin0_max - (< double > bin0_max)
- *                     deltaD = (< double > (bin1_min + 1.0)) - fbin1_min
- *                     deltaU = fbin1_max - (< double > bin1_max)             # <<<<<<<<<<<<<<
- *                     one_over_area = 1.0 / aera_pixel
- * 
- */
-              __pyx_v_deltaU = (__pyx_v_fbin1_max - ((double)__pyx_v_bin1_max));
-
-              /* "splitPixel.pyx":623
- *                     deltaD = (< double > (bin1_min + 1.0)) - fbin1_min
- *                     deltaU = fbin1_max - (< double > bin1_max)
- *                     one_over_area = 1.0 / aera_pixel             # <<<<<<<<<<<<<<
- * 
- *                     outCount[bin0_min, bin1_min] += one_over_area * deltaL * deltaD
- */
-              __pyx_v_one_over_area = (1.0 / __pyx_v_aera_pixel);
-
-              /* "splitPixel.pyx":625
- *                     one_over_area = 1.0 / aera_pixel
- * 
- *                     outCount[bin0_min, bin1_min] += one_over_area * deltaL * deltaD             # <<<<<<<<<<<<<<
- *                     outData[bin0_min, bin1_min] += data * one_over_area * deltaL * deltaD
- * 
- */
-              __pyx_t_86 = __pyx_v_bin0_min;
-              __pyx_t_87 = __pyx_v_bin1_min;
-              *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_86, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_87, __pyx_pybuffernd_outCount.diminfo[1].strides) += ((__pyx_v_one_over_area * __pyx_v_deltaL) * __pyx_v_deltaD);
-
-              /* "splitPixel.pyx":626
- * 
- *                     outCount[bin0_min, bin1_min] += one_over_area * deltaL * deltaD
- *                     outData[bin0_min, bin1_min] += data * one_over_area * deltaL * deltaD             # <<<<<<<<<<<<<<
- * 
- *                     outCount[bin0_min, bin1_max] += one_over_area * deltaL * deltaU
- */
-              __pyx_t_92 = __pyx_v_bin0_min;
-              __pyx_t_93 = __pyx_v_bin1_min;
-              *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_92, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_93, __pyx_pybuffernd_outData.diminfo[1].strides) += (((__pyx_v_data * __pyx_v_one_over_area) * __pyx_v_deltaL) * __pyx_v_deltaD);
-
-              /* "splitPixel.pyx":628
- *                     outData[bin0_min, bin1_min] += data * one_over_area * deltaL * deltaD
- * 
- *                     outCount[bin0_min, bin1_max] += one_over_area * deltaL * deltaU             # <<<<<<<<<<<<<<
- *                     outData[bin0_min, bin1_max] += data * one_over_area * deltaL * deltaU
- * 
- */
-              __pyx_t_94 = __pyx_v_bin0_min;
-              __pyx_t_95 = __pyx_v_bin1_max;
-              *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_94, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_95, __pyx_pybuffernd_outCount.diminfo[1].strides) += ((__pyx_v_one_over_area * __pyx_v_deltaL) * __pyx_v_deltaU);
-
-              /* "splitPixel.pyx":629
- * 
- *                     outCount[bin0_min, bin1_max] += one_over_area * deltaL * deltaU
- *                     outData[bin0_min, bin1_max] += data * one_over_area * deltaL * deltaU             # <<<<<<<<<<<<<<
- * 
- *                     outCount[bin0_max, bin1_min] += one_over_area * deltaR * deltaD
- */
-              __pyx_t_96 = __pyx_v_bin0_min;
-              __pyx_t_97 = __pyx_v_bin1_max;
-              *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_96, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_97, __pyx_pybuffernd_outData.diminfo[1].strides) += (((__pyx_v_data * __pyx_v_one_over_area) * __pyx_v_deltaL) * __pyx_v_deltaU);
-
-              /* "splitPixel.pyx":631
- *                     outData[bin0_min, bin1_max] += data * one_over_area * deltaL * deltaU
- * 
- *                     outCount[bin0_max, bin1_min] += one_over_area * deltaR * deltaD             # <<<<<<<<<<<<<<
- *                     outData[bin0_max, bin1_min] += data * one_over_area * deltaR * deltaD
- * 
- */
-              __pyx_t_98 = __pyx_v_bin0_max;
-              __pyx_t_99 = __pyx_v_bin1_min;
-              *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_98, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_99, __pyx_pybuffernd_outCount.diminfo[1].strides) += ((__pyx_v_one_over_area * __pyx_v_deltaR) * __pyx_v_deltaD);
-
-              /* "splitPixel.pyx":632
- * 
- *                     outCount[bin0_max, bin1_min] += one_over_area * deltaR * deltaD
- *                     outData[bin0_max, bin1_min] += data * one_over_area * deltaR * deltaD             # <<<<<<<<<<<<<<
- * 
- *                     outCount[bin0_max, bin1_max] += one_over_area * deltaR * deltaU
- */
-              __pyx_t_100 = __pyx_v_bin0_max;
-              __pyx_t_101 = __pyx_v_bin1_min;
-              *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_100, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_101, __pyx_pybuffernd_outData.diminfo[1].strides) += (((__pyx_v_data * __pyx_v_one_over_area) * __pyx_v_deltaR) * __pyx_v_deltaD);
-
-              /* "splitPixel.pyx":634
- *                     outData[bin0_max, bin1_min] += data * one_over_area * deltaR * deltaD
- * 
- *                     outCount[bin0_max, bin1_max] += one_over_area * deltaR * deltaU             # <<<<<<<<<<<<<<
- *                     outData[bin0_max, bin1_max] += data * one_over_area * deltaR * deltaU
- *                     for i in range(bin0_min + 1, bin0_max):
- */
-              __pyx_t_102 = __pyx_v_bin0_max;
-              __pyx_t_103 = __pyx_v_bin1_max;
-              *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_102, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_103, __pyx_pybuffernd_outCount.diminfo[1].strides) += ((__pyx_v_one_over_area * __pyx_v_deltaR) * __pyx_v_deltaU);
-
-              /* "splitPixel.pyx":635
- * 
- *                     outCount[bin0_max, bin1_max] += one_over_area * deltaR * deltaU
- *                     outData[bin0_max, bin1_max] += data * one_over_area * deltaR * deltaU             # <<<<<<<<<<<<<<
- *                     for i in range(bin0_min + 1, bin0_max):
- *                             outCount[i, bin1_min] += one_over_area * deltaD
- */
-              __pyx_t_104 = __pyx_v_bin0_max;
-              __pyx_t_105 = __pyx_v_bin1_max;
-              *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_104, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_105, __pyx_pybuffernd_outData.diminfo[1].strides) += (((__pyx_v_data * __pyx_v_one_over_area) * __pyx_v_deltaR) * __pyx_v_deltaU);
-
-              /* "splitPixel.pyx":636
- *                     outCount[bin0_max, bin1_max] += one_over_area * deltaR * deltaU
- *                     outData[bin0_max, bin1_max] += data * one_over_area * deltaR * deltaU
- *                     for i in range(bin0_min + 1, bin0_max):             # <<<<<<<<<<<<<<
- *                             outCount[i, bin1_min] += one_over_area * deltaD
- *                             outData[i, bin1_min] += data * one_over_area * deltaD
- */
-              __pyx_t_106 = __pyx_v_bin0_max;
-              for (__pyx_t_107 = (__pyx_v_bin0_min + 1); __pyx_t_107 < __pyx_t_106; __pyx_t_107+=1) {
-                __pyx_v_i = __pyx_t_107;
-
-                /* "splitPixel.pyx":637
- *                     outData[bin0_max, bin1_max] += data * one_over_area * deltaR * deltaU
- *                     for i in range(bin0_min + 1, bin0_max):
- *                             outCount[i, bin1_min] += one_over_area * deltaD             # <<<<<<<<<<<<<<
- *                             outData[i, bin1_min] += data * one_over_area * deltaD
- *                             for j in range(bin1_min + 1, bin1_max):
- */
-                __pyx_t_108 = __pyx_v_i;
-                __pyx_t_109 = __pyx_v_bin1_min;
-                *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_108, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_109, __pyx_pybuffernd_outCount.diminfo[1].strides) += (__pyx_v_one_over_area * __pyx_v_deltaD);
-
-                /* "splitPixel.pyx":638
- *                     for i in range(bin0_min + 1, bin0_max):
- *                             outCount[i, bin1_min] += one_over_area * deltaD
- *                             outData[i, bin1_min] += data * one_over_area * deltaD             # <<<<<<<<<<<<<<
- *                             for j in range(bin1_min + 1, bin1_max):
- *                                 outCount[i, j] += one_over_area
- */
-                __pyx_t_110 = __pyx_v_i;
-                __pyx_t_111 = __pyx_v_bin1_min;
-                *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_110, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_111, __pyx_pybuffernd_outData.diminfo[1].strides) += ((__pyx_v_data * __pyx_v_one_over_area) * __pyx_v_deltaD);
-
-                /* "splitPixel.pyx":639
- *                             outCount[i, bin1_min] += one_over_area * deltaD
- *                             outData[i, bin1_min] += data * one_over_area * deltaD
- *                             for j in range(bin1_min + 1, bin1_max):             # <<<<<<<<<<<<<<
- *                                 outCount[i, j] += one_over_area
- *                                 outData[i, j] += data * one_over_area
- */
-                __pyx_t_112 = __pyx_v_bin1_max;
-                for (__pyx_t_113 = (__pyx_v_bin1_min + 1); __pyx_t_113 < __pyx_t_112; __pyx_t_113+=1) {
-                  __pyx_v_j = __pyx_t_113;
-
-                  /* "splitPixel.pyx":640
- *                             outData[i, bin1_min] += data * one_over_area * deltaD
- *                             for j in range(bin1_min + 1, bin1_max):
- *                                 outCount[i, j] += one_over_area             # <<<<<<<<<<<<<<
- *                                 outData[i, j] += data * one_over_area
- *                             outCount[i, bin1_max] += one_over_area * deltaU
- */
-                  __pyx_t_114 = __pyx_v_i;
-                  __pyx_t_115 = __pyx_v_j;
-                  *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_114, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_115, __pyx_pybuffernd_outCount.diminfo[1].strides) += __pyx_v_one_over_area;
-
-                  /* "splitPixel.pyx":641
- *                             for j in range(bin1_min + 1, bin1_max):
- *                                 outCount[i, j] += one_over_area
- *                                 outData[i, j] += data * one_over_area             # <<<<<<<<<<<<<<
- *                             outCount[i, bin1_max] += one_over_area * deltaU
- *                             outData[i, bin1_max] += data * one_over_area * deltaU
- */
-                  __pyx_t_116 = __pyx_v_i;
-                  __pyx_t_117 = __pyx_v_j;
-                  *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_116, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_117, __pyx_pybuffernd_outData.diminfo[1].strides) += (__pyx_v_data * __pyx_v_one_over_area);
+                              __pyx_t_43 = __pyx_v_i;
+                              *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outMerge.rcbuffer->pybuffer.buf, __pyx_t_43, __pyx_pybuffernd_outMerge.diminfo[0].strides) += __pyx_v_cdummy;
+                            }
+                            __pyx_L62:;
+                        }
+                    }
                 }
-
-                /* "splitPixel.pyx":642
- *                                 outCount[i, j] += one_over_area
- *                                 outData[i, j] += data * one_over_area
- *                             outCount[i, bin1_max] += one_over_area * deltaU             # <<<<<<<<<<<<<<
- *                             outData[i, bin1_max] += data * one_over_area * deltaU
- *                     for j in range(bin1_min + 1, bin1_max):
- */
-                __pyx_t_112 = __pyx_v_i;
-                __pyx_t_113 = __pyx_v_bin1_max;
-                *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_112, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_113, __pyx_pybuffernd_outCount.diminfo[1].strides) += (__pyx_v_one_over_area * __pyx_v_deltaU);
-
-                /* "splitPixel.pyx":643
- *                                 outData[i, j] += data * one_over_area
- *                             outCount[i, bin1_max] += one_over_area * deltaU
- *                             outData[i, bin1_max] += data * one_over_area * deltaU             # <<<<<<<<<<<<<<
- *                     for j in range(bin1_min + 1, bin1_max):
- *                             outCount[bin0_min, j] += one_over_area * deltaL
- */
-                __pyx_t_118 = __pyx_v_i;
-                __pyx_t_119 = __pyx_v_bin1_max;
-                *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_118, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_119, __pyx_pybuffernd_outData.diminfo[1].strides) += ((__pyx_v_data * __pyx_v_one_over_area) * __pyx_v_deltaU);
-              }
-
-              /* "splitPixel.pyx":644
- *                             outCount[i, bin1_max] += one_over_area * deltaU
- *                             outData[i, bin1_max] += data * one_over_area * deltaU
- *                     for j in range(bin1_min + 1, bin1_max):             # <<<<<<<<<<<<<<
- *                             outCount[bin0_min, j] += one_over_area * deltaL
- *                             outData[bin0_min, j] += data * one_over_area * deltaL
- */
-              __pyx_t_106 = __pyx_v_bin1_max;
-              for (__pyx_t_107 = (__pyx_v_bin1_min + 1); __pyx_t_107 < __pyx_t_106; __pyx_t_107+=1) {
-                __pyx_v_j = __pyx_t_107;
-
-                /* "splitPixel.pyx":645
- *                             outData[i, bin1_max] += data * one_over_area * deltaU
- *                     for j in range(bin1_min + 1, bin1_max):
- *                             outCount[bin0_min, j] += one_over_area * deltaL             # <<<<<<<<<<<<<<
- *                             outData[bin0_min, j] += data * one_over_area * deltaL
- * 
- */
-                __pyx_t_120 = __pyx_v_bin0_min;
-                __pyx_t_121 = __pyx_v_j;
-                *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_120, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_121, __pyx_pybuffernd_outCount.diminfo[1].strides) += (__pyx_v_one_over_area * __pyx_v_deltaL);
-
-                /* "splitPixel.pyx":646
- *                     for j in range(bin1_min + 1, bin1_max):
- *                             outCount[bin0_min, j] += one_over_area * deltaL
- *                             outData[bin0_min, j] += data * one_over_area * deltaL             # <<<<<<<<<<<<<<
- * 
- *                             outCount[bin0_max, j] += one_over_area * deltaR
- */
-                __pyx_t_122 = __pyx_v_bin0_min;
-                __pyx_t_123 = __pyx_v_j;
-                *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_122, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_123, __pyx_pybuffernd_outData.diminfo[1].strides) += ((__pyx_v_data * __pyx_v_one_over_area) * __pyx_v_deltaL);
-
-                /* "splitPixel.pyx":648
- *                             outData[bin0_min, j] += data * one_over_area * deltaL
- * 
- *                             outCount[bin0_max, j] += one_over_area * deltaR             # <<<<<<<<<<<<<<
- *                             outData[bin0_max, j] += data * one_over_area * deltaR
- * 
- */
-                __pyx_t_124 = __pyx_v_bin0_max;
-                __pyx_t_125 = __pyx_v_j;
-                *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_124, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_125, __pyx_pybuffernd_outCount.diminfo[1].strides) += (__pyx_v_one_over_area * __pyx_v_deltaR);
-
-                /* "splitPixel.pyx":649
- * 
- *                             outCount[bin0_max, j] += one_over_area * deltaR
- *                             outData[bin0_max, j] += data * one_over_area * deltaR             # <<<<<<<<<<<<<<
- * 
- *     #with nogil:
- */
-                __pyx_t_126 = __pyx_v_bin0_max;
-                __pyx_t_127 = __pyx_v_j;
-                *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_126, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_127, __pyx_pybuffernd_outData.diminfo[1].strides) += ((__pyx_v_data * __pyx_v_one_over_area) * __pyx_v_deltaR);
-              }
             }
-            __pyx_L48:;
-          }
-          __pyx_L44:;
-          __pyx_L29_continue:;
         }
-
-        /* "splitPixel.pyx":652
- * 
- *     #with nogil:
- *         for i in range(bins0):             # <<<<<<<<<<<<<<
- *             for j in range(bins1):
- *                 if outCount[i, j] > epsilon:
- */
-        __pyx_t_11 = __pyx_v_bins0;
-        for (__pyx_t_2 = 0; __pyx_t_2 < __pyx_t_11; __pyx_t_2+=1) {
-          __pyx_v_i = __pyx_t_2;
-
-          /* "splitPixel.pyx":653
- *     #with nogil:
- *         for i in range(bins0):
- *             for j in range(bins1):             # <<<<<<<<<<<<<<
- *                 if outCount[i, j] > epsilon:
- *                     outMerge[i, j] = outData[i, j] / outCount[i, j]
- */
-          __pyx_t_106 = __pyx_v_bins1;
-          for (__pyx_t_107 = 0; __pyx_t_107 < __pyx_t_106; __pyx_t_107+=1) {
-            __pyx_v_j = __pyx_t_107;
-
-            /* "splitPixel.pyx":654
- *         for i in range(bins0):
- *             for j in range(bins1):
- *                 if outCount[i, j] > epsilon:             # <<<<<<<<<<<<<<
- *                     outMerge[i, j] = outData[i, j] / outCount[i, j]
- *                 else:
- */
-            __pyx_t_128 = __pyx_v_i;
-            __pyx_t_129 = __pyx_v_j;
-            __pyx_t_21 = (((*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_128, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_129, __pyx_pybuffernd_outCount.diminfo[1].strides)) > __pyx_v_epsilon) != 0);
-            if (__pyx_t_21) {
-
-              /* "splitPixel.pyx":655
- *             for j in range(bins1):
- *                 if outCount[i, j] > epsilon:
- *                     outMerge[i, j] = outData[i, j] / outCount[i, j]             # <<<<<<<<<<<<<<
- *                 else:
- *                     outMerge[i, j] = cdummy
- */
-              __pyx_t_130 = __pyx_v_i;
-              __pyx_t_131 = __pyx_v_j;
-              __pyx_t_132 = __pyx_v_i;
-              __pyx_t_133 = __pyx_v_j;
-              __pyx_t_134 = __pyx_v_i;
-              __pyx_t_135 = __pyx_v_j;
-              *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outMerge.rcbuffer->pybuffer.buf, __pyx_t_134, __pyx_pybuffernd_outMerge.diminfo[0].strides, __pyx_t_135, __pyx_pybuffernd_outMerge.diminfo[1].strides) = ((*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outData.rcbuffer->pybuffer.buf, __pyx_t_130, __pyx_pybuffernd_outData.diminfo[0].strides, __pyx_t_131, __pyx_pybuffernd_outData.diminfo[1].strides)) / (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outCount.rcbuffer->pybuffer.buf, __pyx_t_132, __pyx_pybuffernd_outCount.diminfo[0].strides, __pyx_t_133, __pyx_pybuffernd_outCount.diminfo[1].strides)));
-              goto __pyx_L61;
-            }
-            /*else*/ {
-
-              /* "splitPixel.pyx":657
- *                     outMerge[i, j] = outData[i, j] / outCount[i, j]
- *                 else:
- *                     outMerge[i, j] = cdummy             # <<<<<<<<<<<<<<
- *     return outMerge.T, edges0, edges1, outData.T, outCount.T
- * 
- */
-              __pyx_t_136 = __pyx_v_i;
-              __pyx_t_137 = __pyx_v_j;
-              *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_outMerge.rcbuffer->pybuffer.buf, __pyx_t_136, __pyx_pybuffernd_outMerge.diminfo[0].strides, __pyx_t_137, __pyx_pybuffernd_outMerge.diminfo[1].strides) = __pyx_v_cdummy;
-            }
-            __pyx_L61:;
-          }
-        }
+        #if ((defined(__APPLE__) || defined(__OSX__)) && (defined(__GNUC__) && (__GNUC__ > 2 || (__GNUC__ == 2 && (__GNUC_MINOR__ > 95)))))
+            #undef likely
+            #undef unlikely
+            #define likely(x)   __builtin_expect(!!(x), 1)
+            #define unlikely(x) __builtin_expect(!!(x), 0)
+        #endif
       }
 
-      /* "splitPixel.pyx":508
- *         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)
+      /* "splitPixelFullLUT_b.pyx":405
+ *                 cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)
  * 
- *     with nogil:             # <<<<<<<<<<<<<<
- *         for idx in range(size):
- * 
+ *         for i in prange(bins, nogil=True, schedule="guided"):             # <<<<<<<<<<<<<<
+ *             sum_data = 0.0
+ *             sum_count = 0.0
  */
       /*finally:*/ {
-        int __pyx_why;
-        __pyx_why = 0; goto __pyx_L28;
-        __pyx_L27: __pyx_why = 4; goto __pyx_L28;
-        __pyx_L28:;
         #ifdef WITH_THREAD
         Py_BLOCK_THREADS
         #endif
-        switch (__pyx_why) {
-          case 4: goto __pyx_L1_error;
-        }
       }
   }
 
-  /* "splitPixel.pyx":658
- *                 else:
- *                     outMerge[i, j] = cdummy
- *     return outMerge.T, edges0, edges1, outData.T, outCount.T             # <<<<<<<<<<<<<<
+  /* "splitPixelFullLUT_b.pyx":424
+ *             else:
+ *                 outMerge[i] += cdummy
+ *         return  self.outPos, outMerge, outData, outCount             # <<<<<<<<<<<<<<
+ * 
  * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_outMerge), __pyx_n_s__T); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 658; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_8);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_outData), __pyx_n_s__T); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 658; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_9 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_outCount), __pyx_n_s__T); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 658; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_9);
-  __pyx_t_14 = PyTuple_New(5); if (unlikely(!__pyx_t_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 658; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_14);
-  PyTuple_SET_ITEM(__pyx_t_14, 0, __pyx_t_8);
-  __Pyx_GIVEREF(__pyx_t_8);
-  __Pyx_INCREF(((PyObject *)__pyx_v_edges0));
-  PyTuple_SET_ITEM(__pyx_t_14, 1, ((PyObject *)__pyx_v_edges0));
-  __Pyx_GIVEREF(((PyObject *)__pyx_v_edges0));
-  __Pyx_INCREF(((PyObject *)__pyx_v_edges1));
-  PyTuple_SET_ITEM(__pyx_t_14, 2, ((PyObject *)__pyx_v_edges1));
-  __Pyx_GIVEREF(((PyObject *)__pyx_v_edges1));
-  PyTuple_SET_ITEM(__pyx_t_14, 3, __pyx_t_4);
-  __Pyx_GIVEREF(__pyx_t_4);
-  PyTuple_SET_ITEM(__pyx_t_14, 4, __pyx_t_9);
-  __Pyx_GIVEREF(__pyx_t_9);
-  __pyx_t_8 = 0;
-  __pyx_t_4 = 0;
-  __pyx_t_9 = 0;
-  __pyx_r = ((PyObject *)__pyx_t_14);
-  __pyx_t_14 = 0;
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s__outPos); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 424; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_6 = PyTuple_New(4); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 424; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_6);
+  PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_1);
+  __Pyx_GIVEREF(__pyx_t_1);
+  __Pyx_INCREF(((PyObject *)__pyx_v_outMerge));
+  PyTuple_SET_ITEM(__pyx_t_6, 1, ((PyObject *)__pyx_v_outMerge));
+  __Pyx_GIVEREF(((PyObject *)__pyx_v_outMerge));
+  __Pyx_INCREF(((PyObject *)__pyx_v_outData));
+  PyTuple_SET_ITEM(__pyx_t_6, 2, ((PyObject *)__pyx_v_outData));
+  __Pyx_GIVEREF(((PyObject *)__pyx_v_outData));
+  __Pyx_INCREF(((PyObject *)__pyx_v_outCount));
+  PyTuple_SET_ITEM(__pyx_t_6, 3, ((PyObject *)__pyx_v_outCount));
+  __Pyx_GIVEREF(((PyObject *)__pyx_v_outCount));
+  __pyx_t_1 = 0;
+  __pyx_r = ((PyObject *)__pyx_t_6);
+  __pyx_t_6 = 0;
   goto __pyx_L0;
 
   __pyx_r = Py_None; __Pyx_INCREF(Py_None);
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_XDECREF(__pyx_t_8);
-  __Pyx_XDECREF(__pyx_t_9);
-  __Pyx_XDECREF(__pyx_t_14);
-  __PYX_XDEC_MEMVIEW(&__pyx_t_24, 1);
-  __PYX_XDEC_MEMVIEW(&__pyx_t_25, 1);
+  __Pyx_XDECREF(__pyx_t_5);
+  __Pyx_XDECREF(__pyx_t_6);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_10, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_11, 1);
   { PyObject *__pyx_type, *__pyx_value, *__pyx_tb;
     __Pyx_ErrFetch(&__pyx_type, &__pyx_value, &__pyx_tb);
-    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_cdata.rcbuffer->pybuffer);
-    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_cpos.rcbuffer->pybuffer);
-    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_edges0.rcbuffer->pybuffer);
-    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_edges1.rcbuffer->pybuffer);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_outCount.rcbuffer->pybuffer);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_outData.rcbuffer->pybuffer);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_outMerge.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("splitPixel.fullSplit2D", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("splitPixelFullLUT_b.HistoLUT1dFullSplit.integrate", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   goto __pyx_L2;
   __pyx_L0:;
-  __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_cdata.rcbuffer->pybuffer);
-  __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_cpos.rcbuffer->pybuffer);
-  __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_edges0.rcbuffer->pybuffer);
-  __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_edges1.rcbuffer->pybuffer);
   __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_outCount.rcbuffer->pybuffer);
   __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_outData.rcbuffer->pybuffer);
   __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_outMerge.rcbuffer->pybuffer);
   __pyx_L2:;
-  __Pyx_XDECREF((PyObject *)__pyx_v_cpos);
-  __Pyx_XDECREF((PyObject *)__pyx_v_cdata);
   __Pyx_XDECREF((PyObject *)__pyx_v_outData);
   __Pyx_XDECREF((PyObject *)__pyx_v_outCount);
   __Pyx_XDECREF((PyObject *)__pyx_v_outMerge);
-  __Pyx_XDECREF((PyObject *)__pyx_v_edges0);
-  __Pyx_XDECREF((PyObject *)__pyx_v_edges1);
-  __PYX_XDEC_MEMVIEW(&__pyx_v_cmask, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_v_ccoef, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_v_cdata, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_v_tdata, 1);
   __PYX_XDEC_MEMVIEW(&__pyx_v_cflat, 1);
   __PYX_XDEC_MEMVIEW(&__pyx_v_cdark, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_v_csolidAngle, 1);
   __PYX_XDEC_MEMVIEW(&__pyx_v_cpolarization, 1);
-  __PYX_XDEC_MEMVIEW(&__pyx_v_csolidangle, 1);
-  __Pyx_XDECREF((PyObject *)__pyx_v_pos);
+  __PYX_XDEC_MEMVIEW(&__pyx_v_indices, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_v_indptr, 1);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
@@ -9488,7 +7643,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  * 
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
  */
-    __pyx_t_4 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_25), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_17), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_Raise(__pyx_t_4, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -9528,7 +7683,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  * 
  *             info.buf = PyArray_DATA(self)
  */
-    __pyx_t_4 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_27), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_19), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_Raise(__pyx_t_4, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -9802,7 +7957,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  *                 if   t == NPY_BYTE:        f = "b"
  *                 elif t == NPY_UBYTE:       f = "B"
  */
-      __pyx_t_4 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_29), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 257; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_4 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_21), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 257; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_Raise(__pyx_t_4, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -10017,7 +8172,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
       __pyx_t_4 = PyInt_FromLong(__pyx_v_t); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 276; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_8 = PyNumber_Remainder(((PyObject *)__pyx_kp_u_30), __pyx_t_4); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 276; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_8 = PyNumber_Remainder(((PyObject *)__pyx_kp_u_22), __pyx_t_4); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 276; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(((PyObject *)__pyx_t_8));
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 276; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -10589,7 +8744,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  * 
  *         if ((child.byteorder == c'>' and little_endian) or
  */
-      __pyx_t_5 = PyObject_Call(__pyx_builtin_RuntimeError, ((PyObject *)__pyx_k_tuple_32), NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 799; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_5 = PyObject_Call(__pyx_builtin_RuntimeError, ((PyObject *)__pyx_k_tuple_24), NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 799; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_Raise(__pyx_t_5, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -10640,7 +8795,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  *             # One could encode it in the format string and have Cython
  *             # complain instead, BUT: < and > in format strings also imply
  */
-      __pyx_t_5 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_33), NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 803; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_5 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_25), NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 803; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_Raise(__pyx_t_5, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -10743,7 +8898,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  * 
  *             # Until ticket #99 is fixed, use integers to avoid warnings
  */
-        __pyx_t_3 = PyObject_Call(__pyx_builtin_RuntimeError, ((PyObject *)__pyx_k_tuple_35), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 823; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_3 = PyObject_Call(__pyx_builtin_RuntimeError, ((PyObject *)__pyx_k_tuple_27), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 823; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_3);
         __Pyx_Raise(__pyx_t_3, 0, 0, 0);
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -11072,7 +9227,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  *             f += 1
  *         else:
  */
-        __pyx_t_5 = PyNumber_Remainder(((PyObject *)__pyx_kp_u_30), __pyx_v_t); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 844; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_5 = PyNumber_Remainder(((PyObject *)__pyx_kp_u_22), __pyx_v_t); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 844; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(((PyObject *)__pyx_t_5));
         __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 844; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_3);
@@ -11464,7 +9619,7 @@ static int __pyx_array_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx
  * 
  *         if self.itemsize <= 0:
  */
-    __pyx_t_3 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_37), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 124; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_29), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 124; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_Raise(__pyx_t_3, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -11490,7 +9645,7 @@ static int __pyx_array_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx
  * 
  *         encode = getattr(format, 'encode', None)
  */
-    __pyx_t_3 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_39), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_31), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_Raise(__pyx_t_3, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -11528,7 +9683,7 @@ static int __pyx_array_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx
  *         self._format = format
  *         self.format = self._format
  */
-    __pyx_t_3 = PyObject_Call(__pyx_v_encode, ((PyObject *)__pyx_k_tuple_40), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 131; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PyObject_Call(__pyx_v_encode, ((PyObject *)__pyx_k_tuple_32), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 131; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF_SET(__pyx_v_format, __pyx_t_3);
     __pyx_t_3 = 0;
@@ -11619,7 +9774,7 @@ static int __pyx_array_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx
  * 
  * 
  */
-    __pyx_t_3 = PyObject_Call(__pyx_builtin_MemoryError, ((PyObject *)__pyx_k_tuple_42), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 141; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PyObject_Call(__pyx_builtin_MemoryError, ((PyObject *)__pyx_k_tuple_34), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 141; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_Raise(__pyx_t_3, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -11687,7 +9842,7 @@ static int __pyx_array_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx
       PyTuple_SET_ITEM(__pyx_t_9, 1, __pyx_v_dim);
       __Pyx_GIVEREF(__pyx_v_dim);
       __pyx_t_8 = 0;
-      __pyx_t_8 = PyNumber_Remainder(((PyObject *)__pyx_kp_s_43), ((PyObject *)__pyx_t_9)); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 147; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_8 = PyNumber_Remainder(((PyObject *)__pyx_kp_s_35), ((PyObject *)__pyx_t_9)); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 147; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(((PyObject *)__pyx_t_8));
       __Pyx_DECREF(((PyObject *)__pyx_t_9)); __pyx_t_9 = 0;
       __pyx_t_9 = PyTuple_New(1); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 147; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -11757,7 +9912,7 @@ static int __pyx_array_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx
  * 
  *         cdef char order
  */
-    __pyx_t_3 = PyNumber_Remainder(((PyObject *)__pyx_kp_s_44), __pyx_v_mode); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PyNumber_Remainder(((PyObject *)__pyx_kp_s_36), __pyx_v_mode); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(((PyObject *)__pyx_t_3));
     __pyx_t_8 = PyTuple_New(1); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_8);
@@ -11847,7 +10002,7 @@ static int __pyx_array_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx
  *         self.mode = mode
  * 
  */
-    __pyx_t_3 = PyObject_Call(__pyx_v_decode, ((PyObject *)__pyx_k_tuple_45), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PyObject_Call(__pyx_v_decode, ((PyObject *)__pyx_k_tuple_37), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF_SET(__pyx_v_mode, __pyx_t_3);
     __pyx_t_3 = 0;
@@ -11926,7 +10081,7 @@ static int __pyx_array_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx
  * 
  *             if self.dtype_is_object:
  */
-      __pyx_t_3 = PyObject_Call(__pyx_builtin_MemoryError, ((PyObject *)__pyx_k_tuple_47), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 174; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_3 = PyObject_Call(__pyx_builtin_MemoryError, ((PyObject *)__pyx_k_tuple_39), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 174; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_Raise(__pyx_t_3, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -12138,7 +10293,7 @@ static int __pyx_array_getbuffer_MemoryView_5array_2__getbuffer__(struct __pyx_a
  *         info.buf = self.data
  *         info.len = self.len
  */
-    __pyx_t_3 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_49), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 190; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_41), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 190; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_Raise(__pyx_t_3, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -14608,7 +12763,7 @@ static PyObject *__pyx_memoryview_convert_item_to_object(struct __pyx_memoryview
  *         else:
  *             if len(self.view.format) == 1:
  */
-      __pyx_t_10 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_51), NULL); if (unlikely(!__pyx_t_10)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 452; __pyx_clineno = __LINE__; goto __pyx_L5_except_error;}
+      __pyx_t_10 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_43), NULL); if (unlikely(!__pyx_t_10)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 452; __pyx_clineno = __LINE__; goto __pyx_L5_except_error;}
       __Pyx_GOTREF(__pyx_t_10);
       __Pyx_Raise(__pyx_t_10, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
@@ -15321,7 +13476,7 @@ static PyObject *__pyx_memoryview_get_strides_MemoryView_10memoryview_7strides__
  * 
  *             return tuple([self.view.strides[i] for i in xrange(self.view.ndim)])
  */
-    __pyx_t_2 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_53), NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 528; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_45), NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 528; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_Raise(__pyx_t_2, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
@@ -15939,7 +14094,7 @@ static PyObject *__pyx_memoryview_MemoryView_10memoryview_12__repr__(struct __py
   __Pyx_GIVEREF(__pyx_t_3);
   __pyx_t_1 = 0;
   __pyx_t_3 = 0;
-  __pyx_t_3 = PyNumber_Remainder(((PyObject *)__pyx_kp_s_54), ((PyObject *)__pyx_t_2)); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 575; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = PyNumber_Remainder(((PyObject *)__pyx_kp_s_46), ((PyObject *)__pyx_t_2)); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 575; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(((PyObject *)__pyx_t_3));
   __Pyx_DECREF(((PyObject *)__pyx_t_2)); __pyx_t_2 = 0;
   __pyx_r = ((PyObject *)__pyx_t_3);
@@ -16010,7 +14165,7 @@ static PyObject *__pyx_memoryview_MemoryView_10memoryview_14__str__(struct __pyx
   PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_1);
   __pyx_t_1 = 0;
-  __pyx_t_1 = PyNumber_Remainder(((PyObject *)__pyx_kp_s_55), ((PyObject *)__pyx_t_2)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 579; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyNumber_Remainder(((PyObject *)__pyx_kp_s_47), ((PyObject *)__pyx_t_2)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 579; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(((PyObject *)__pyx_t_1));
   __Pyx_DECREF(((PyObject *)__pyx_t_2)); __pyx_t_2 = 0;
   __pyx_r = ((PyObject *)__pyx_t_1);
@@ -16638,7 +14793,7 @@ static PyObject *_unellipsify(PyObject *__pyx_v_index, int __pyx_v_ndim) {
  */
         __pyx_t_7 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_result), __pyx_n_s__extend); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 643; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_7);
-        __pyx_t_8 = PyObject_Call(((PyObject *)((PyObject*)(&PySlice_Type))), ((PyObject *)__pyx_k_tuple_56), NULL); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 643; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_8 = PyObject_Call(((PyObject *)((PyObject*)(&PySlice_Type))), ((PyObject *)__pyx_k_tuple_48), NULL); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 643; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_8);
         __pyx_t_9 = PyObject_Length(__pyx_v_tup); if (unlikely(__pyx_t_9 == -1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 643; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __pyx_t_10 = PyList_New(1 * ((((__pyx_v_ndim - __pyx_t_9) + 1)<0) ? 0:((__pyx_v_ndim - __pyx_t_9) + 1))); if (unlikely(!__pyx_t_10)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 643; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -16681,7 +14836,7 @@ static PyObject *_unellipsify(PyObject *__pyx_v_index, int __pyx_v_ndim) {
  *             have_slices = True
  *         else:
  */
-        __pyx_t_10 = PyObject_Call(((PyObject *)((PyObject*)(&PySlice_Type))), ((PyObject *)__pyx_k_tuple_57), NULL); if (unlikely(!__pyx_t_10)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 646; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_10 = PyObject_Call(((PyObject *)((PyObject*)(&PySlice_Type))), ((PyObject *)__pyx_k_tuple_49), NULL); if (unlikely(!__pyx_t_10)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 646; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_10);
         __pyx_t_11 = __Pyx_PyList_Append(__pyx_v_result, __pyx_t_10); if (unlikely(__pyx_t_11 == -1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 646; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
@@ -16727,7 +14882,7 @@ static PyObject *_unellipsify(PyObject *__pyx_v_index, int __pyx_v_ndim) {
  * 
  *             have_slices = have_slices or isinstance(item, slice)
  */
-        __pyx_t_10 = PyNumber_Remainder(((PyObject *)__pyx_kp_s_58), ((PyObject *)Py_TYPE(__pyx_v_item))); if (unlikely(!__pyx_t_10)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 650; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_10 = PyNumber_Remainder(((PyObject *)__pyx_kp_s_50), ((PyObject *)Py_TYPE(__pyx_v_item))); if (unlikely(!__pyx_t_10)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 650; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(((PyObject *)__pyx_t_10));
         __pyx_t_8 = PyTuple_New(1); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 650; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_8);
@@ -16811,7 +14966,7 @@ static PyObject *_unellipsify(PyObject *__pyx_v_index, int __pyx_v_ndim) {
  */
     __pyx_t_3 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_result), __pyx_n_s__extend); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 657; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_4 = PyObject_Call(((PyObject *)((PyObject*)(&PySlice_Type))), ((PyObject *)__pyx_k_tuple_59), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 657; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = PyObject_Call(((PyObject *)((PyObject*)(&PySlice_Type))), ((PyObject *)__pyx_k_tuple_51), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 657; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
     __pyx_t_8 = PyList_New(1); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 657; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_8);
@@ -16938,7 +15093,7 @@ static PyObject *assert_direct_dimensions(Py_ssize_t *__pyx_v_suboffsets, int __
  * 
  * 
  */
-      __pyx_t_4 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_61), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 665; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_4 = PyObject_Call(__pyx_builtin_ValueError, ((PyObject *)__pyx_k_tuple_53), NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 665; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_Raise(__pyx_t_4, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -17543,7 +15698,7 @@ static int __pyx_memoryview_slice_memviewslice(__Pyx_memviewslice *__pyx_v_dst, 
  *     else:
  * 
  */
-      __pyx_t_3 = __pyx_memoryview_err_dim(__pyx_builtin_IndexError, __pyx_k_62, __pyx_v_dim); if (unlikely(__pyx_t_3 == -1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 794; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_3 = __pyx_memoryview_err_dim(__pyx_builtin_IndexError, __pyx_k_54, __pyx_v_dim); if (unlikely(__pyx_t_3 == -1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 794; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       goto __pyx_L5;
     }
     __pyx_L5:;
@@ -17589,7 +15744,7 @@ static int __pyx_memoryview_slice_memviewslice(__Pyx_memviewslice *__pyx_v_dst, 
  * 
  * 
  */
-      __pyx_t_3 = __pyx_memoryview_err_dim(__pyx_builtin_ValueError, __pyx_k_63, __pyx_v_dim); if (unlikely(__pyx_t_3 == -1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 800; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_3 = __pyx_memoryview_err_dim(__pyx_builtin_ValueError, __pyx_k_55, __pyx_v_dim); if (unlikely(__pyx_t_3 == -1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 800; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       goto __pyx_L6;
     }
     __pyx_L6:;
@@ -18031,7 +16186,7 @@ static int __pyx_memoryview_slice_memviewslice(__Pyx_memviewslice *__pyx_v_dst, 
  *         else:
  *             suboffset_dim[0] = new_ndim
  */
-        __pyx_t_3 = __pyx_memoryview_err_dim(__pyx_builtin_IndexError, __pyx_k_64, __pyx_v_dim); if (unlikely(__pyx_t_3 == -1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 861; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_3 = __pyx_memoryview_err_dim(__pyx_builtin_IndexError, __pyx_k_56, __pyx_v_dim); if (unlikely(__pyx_t_3 == -1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 861; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
       __pyx_L22:;
       goto __pyx_L21;
@@ -18254,7 +16409,7 @@ static char *__pyx_pybuffer_index(Py_buffer *__pyx_v_view, char *__pyx_v_bufp, P
  */
       __pyx_t_3 = PyInt_FromLong(__pyx_v_dim); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 890; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_4 = PyNumber_Remainder(((PyObject *)__pyx_kp_s_65), __pyx_t_3); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 890; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_4 = PyNumber_Remainder(((PyObject *)__pyx_kp_s_57), __pyx_t_3); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 890; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(((PyObject *)__pyx_t_4));
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 890; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -18294,7 +16449,7 @@ static char *__pyx_pybuffer_index(Py_buffer *__pyx_v_view, char *__pyx_v_bufp, P
  */
     __pyx_t_4 = PyInt_FromLong(__pyx_v_dim); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 893; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_3 = PyNumber_Remainder(((PyObject *)__pyx_kp_s_65), __pyx_t_4); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 893; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PyNumber_Remainder(((PyObject *)__pyx_kp_s_57), __pyx_t_4); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 893; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(((PyObject *)__pyx_t_3));
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 893; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -18490,7 +16645,7 @@ static int __pyx_memslice_transpose(__Pyx_memviewslice *__pyx_v_memslice) {
  * 
  *     return 1
  */
-      __pyx_t_9 = __pyx_memoryview_err(__pyx_builtin_ValueError, __pyx_k_66); if (unlikely(__pyx_t_9 == -1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 919; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_9 = __pyx_memoryview_err(__pyx_builtin_ValueError, __pyx_k_58); if (unlikely(__pyx_t_9 == -1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 919; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       goto __pyx_L5;
     }
     __pyx_L5:;
@@ -20271,7 +18426,7 @@ static int __pyx_memoryview_err_extents(int __pyx_v_i, Py_ssize_t __pyx_v_extent
   __pyx_t_1 = 0;
   __pyx_t_2 = 0;
   __pyx_t_3 = 0;
-  __pyx_t_3 = PyNumber_Remainder(((PyObject *)__pyx_kp_s_67), ((PyObject *)__pyx_t_4)); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 1212; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = PyNumber_Remainder(((PyObject *)__pyx_kp_s_59), ((PyObject *)__pyx_t_4)); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 1212; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(((PyObject *)__pyx_t_3));
   __Pyx_DECREF(((PyObject *)__pyx_t_4)); __pyx_t_4 = 0;
   __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 1212; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -20672,7 +18827,7 @@ static int __pyx_memoryview_copy_contents(__Pyx_memviewslice __pyx_v_src, __Pyx_
  * 
  *     if slices_overlap(&src, &dst, ndim, itemsize):
  */
-      __pyx_t_4 = __pyx_memoryview_err_dim(__pyx_builtin_ValueError, __pyx_k_68, __pyx_v_i); if (unlikely(__pyx_t_4 == -1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 1259; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_4 = __pyx_memoryview_err_dim(__pyx_builtin_ValueError, __pyx_k_60, __pyx_v_i); if (unlikely(__pyx_t_4 == -1)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 1259; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       goto __pyx_L8;
     }
     __pyx_L8:;
@@ -21537,7 +19692,7 @@ static PyBufferProcs __pyx_tp_as_buffer_memoryview = {
 
 static PyTypeObject __pyx_type___pyx_memoryview = {
   PyVarObject_HEAD_INIT(0, 0)
-  __Pyx_NAMESTR("splitPixel.memoryview"), /*tp_name*/
+  __Pyx_NAMESTR("splitPixelFullLUT_b.memoryview"), /*tp_name*/
   sizeof(struct __pyx_memoryview_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_memoryview, /*tp_dealloc*/
@@ -21729,7 +19884,7 @@ static PyBufferProcs __pyx_tp_as_buffer_array = {
 
 static PyTypeObject __pyx_type___pyx_array = {
   PyVarObject_HEAD_INIT(0, 0)
-  __Pyx_NAMESTR("splitPixel.array"), /*tp_name*/
+  __Pyx_NAMESTR("splitPixelFullLUT_b.array"), /*tp_name*/
   sizeof(struct __pyx_array_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_array, /*tp_dealloc*/
@@ -21824,7 +19979,7 @@ static PyMethodDef __pyx_methods_Enum[] = {
 
 static PyTypeObject __pyx_type___pyx_MemviewEnum = {
   PyVarObject_HEAD_INIT(0, 0)
-  __Pyx_NAMESTR("splitPixel.Enum"), /*tp_name*/
+  __Pyx_NAMESTR("splitPixelFullLUT_b.Enum"), /*tp_name*/
   sizeof(struct __pyx_MemviewEnum_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_Enum, /*tp_dealloc*/
@@ -21943,7 +20098,7 @@ static struct PyGetSetDef __pyx_getsets__memoryviewslice[] = {
 
 static PyTypeObject __pyx_type___pyx_memoryviewslice = {
   PyVarObject_HEAD_INIT(0, 0)
-  __Pyx_NAMESTR("splitPixel._memoryviewslice"), /*tp_name*/
+  __Pyx_NAMESTR("splitPixelFullLUT_b._memoryviewslice"), /*tp_name*/
   sizeof(struct __pyx_memoryviewslice_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc__memoryviewslice, /*tp_dealloc*/
@@ -22016,7 +20171,7 @@ static struct PyModuleDef __pyx_moduledef = {
   #else
     PyModuleDef_HEAD_INIT,
   #endif
-    __Pyx_NAMESTR("splitPixel"),
+    __Pyx_NAMESTR("splitPixelFullLUT_b"),
     0, /* m_doc */
     -1, /* m_size */
     __pyx_methods /* m_methods */,
@@ -22028,125 +20183,124 @@ static struct PyModuleDef __pyx_moduledef = {
 #endif
 
 static __Pyx_StringTabEntry __pyx_string_tab[] = {
-  {&__pyx_kp_u_24, __pyx_k_24, sizeof(__pyx_k_24), 0, 1, 0, 0},
+  {&__pyx_kp_u_16, __pyx_k_16, sizeof(__pyx_k_16), 0, 1, 0, 0},
+  {&__pyx_kp_u_18, __pyx_k_18, sizeof(__pyx_k_18), 0, 1, 0, 0},
+  {&__pyx_kp_u_20, __pyx_k_20, sizeof(__pyx_k_20), 0, 1, 0, 0},
+  {&__pyx_kp_u_22, __pyx_k_22, sizeof(__pyx_k_22), 0, 1, 0, 0},
+  {&__pyx_kp_u_23, __pyx_k_23, sizeof(__pyx_k_23), 0, 1, 0, 0},
   {&__pyx_kp_u_26, __pyx_k_26, sizeof(__pyx_k_26), 0, 1, 0, 0},
-  {&__pyx_kp_u_28, __pyx_k_28, sizeof(__pyx_k_28), 0, 1, 0, 0},
-  {&__pyx_kp_u_30, __pyx_k_30, sizeof(__pyx_k_30), 0, 1, 0, 0},
-  {&__pyx_kp_u_31, __pyx_k_31, sizeof(__pyx_k_31), 0, 1, 0, 0},
-  {&__pyx_kp_u_34, __pyx_k_34, sizeof(__pyx_k_34), 0, 1, 0, 0},
+  {&__pyx_kp_s_28, __pyx_k_28, sizeof(__pyx_k_28), 0, 0, 1, 0},
+  {&__pyx_kp_s_30, __pyx_k_30, sizeof(__pyx_k_30), 0, 0, 1, 0},
+  {&__pyx_kp_s_33, __pyx_k_33, sizeof(__pyx_k_33), 0, 0, 1, 0},
+  {&__pyx_kp_s_35, __pyx_k_35, sizeof(__pyx_k_35), 0, 0, 1, 0},
   {&__pyx_kp_s_36, __pyx_k_36, sizeof(__pyx_k_36), 0, 0, 1, 0},
   {&__pyx_kp_s_38, __pyx_k_38, sizeof(__pyx_k_38), 0, 0, 1, 0},
-  {&__pyx_kp_s_41, __pyx_k_41, sizeof(__pyx_k_41), 0, 0, 1, 0},
-  {&__pyx_kp_s_43, __pyx_k_43, sizeof(__pyx_k_43), 0, 0, 1, 0},
+  {&__pyx_kp_s_40, __pyx_k_40, sizeof(__pyx_k_40), 0, 0, 1, 0},
+  {&__pyx_kp_s_42, __pyx_k_42, sizeof(__pyx_k_42), 0, 0, 1, 0},
   {&__pyx_kp_s_44, __pyx_k_44, sizeof(__pyx_k_44), 0, 0, 1, 0},
   {&__pyx_kp_s_46, __pyx_k_46, sizeof(__pyx_k_46), 0, 0, 1, 0},
-  {&__pyx_kp_s_48, __pyx_k_48, sizeof(__pyx_k_48), 0, 0, 1, 0},
+  {&__pyx_kp_s_47, __pyx_k_47, sizeof(__pyx_k_47), 0, 0, 1, 0},
   {&__pyx_kp_s_50, __pyx_k_50, sizeof(__pyx_k_50), 0, 0, 1, 0},
   {&__pyx_kp_s_52, __pyx_k_52, sizeof(__pyx_k_52), 0, 0, 1, 0},
-  {&__pyx_kp_s_54, __pyx_k_54, sizeof(__pyx_k_54), 0, 0, 1, 0},
-  {&__pyx_kp_s_55, __pyx_k_55, sizeof(__pyx_k_55), 0, 0, 1, 0},
-  {&__pyx_kp_s_58, __pyx_k_58, sizeof(__pyx_k_58), 0, 0, 1, 0},
-  {&__pyx_kp_s_60, __pyx_k_60, sizeof(__pyx_k_60), 0, 0, 1, 0},
-  {&__pyx_kp_s_65, __pyx_k_65, sizeof(__pyx_k_65), 0, 0, 1, 0},
-  {&__pyx_kp_s_67, __pyx_k_67, sizeof(__pyx_k_67), 0, 0, 1, 0},
-  {&__pyx_kp_s_71, __pyx_k_71, sizeof(__pyx_k_71), 0, 0, 1, 0},
-  {&__pyx_kp_s_75, __pyx_k_75, sizeof(__pyx_k_75), 0, 0, 1, 0},
-  {&__pyx_kp_s_77, __pyx_k_77, sizeof(__pyx_k_77), 0, 0, 1, 0},
-  {&__pyx_kp_s_79, __pyx_k_79, sizeof(__pyx_k_79), 0, 0, 1, 0},
-  {&__pyx_kp_s_81, __pyx_k_81, sizeof(__pyx_k_81), 0, 0, 1, 0},
-  {&__pyx_kp_s_83, __pyx_k_83, sizeof(__pyx_k_83), 0, 0, 1, 0},
-  {&__pyx_kp_s_9, __pyx_k_9, sizeof(__pyx_k_9), 0, 0, 1, 0},
+  {&__pyx_kp_s_57, __pyx_k_57, sizeof(__pyx_k_57), 0, 0, 1, 0},
+  {&__pyx_kp_s_59, __pyx_k_59, sizeof(__pyx_k_59), 0, 0, 1, 0},
+  {&__pyx_kp_s_63, __pyx_k_63, sizeof(__pyx_k_63), 0, 0, 1, 0},
+  {&__pyx_n_s_64, __pyx_k_64, sizeof(__pyx_k_64), 0, 0, 1, 1},
+  {&__pyx_n_s_67, __pyx_k_67, sizeof(__pyx_k_67), 0, 0, 1, 1},
+  {&__pyx_n_s_71, __pyx_k_71, sizeof(__pyx_k_71), 0, 0, 1, 1},
+  {&__pyx_kp_s_72, __pyx_k_72, sizeof(__pyx_k_72), 0, 0, 1, 0},
+  {&__pyx_kp_s_74, __pyx_k_74, sizeof(__pyx_k_74), 0, 0, 1, 0},
+  {&__pyx_kp_s_76, __pyx_k_76, sizeof(__pyx_k_76), 0, 0, 1, 0},
+  {&__pyx_kp_s_78, __pyx_k_78, sizeof(__pyx_k_78), 0, 0, 1, 0},
+  {&__pyx_kp_s_80, __pyx_k_80, sizeof(__pyx_k_80), 0, 0, 1, 0},
+  {&__pyx_kp_s_82, __pyx_k_82, sizeof(__pyx_k_82), 0, 0, 1, 0},
+  {&__pyx_n_s__A0, __pyx_k__A0, sizeof(__pyx_k__A0), 0, 0, 1, 1},
+  {&__pyx_n_s__A1, __pyx_k__A1, sizeof(__pyx_k__A1), 0, 0, 1, 1},
+  {&__pyx_n_s__AB, __pyx_k__AB, sizeof(__pyx_k__AB), 0, 0, 1, 1},
   {&__pyx_n_s__ASCII, __pyx_k__ASCII, sizeof(__pyx_k__ASCII), 0, 0, 1, 1},
+  {&__pyx_n_s__A_lim, __pyx_k__A_lim, sizeof(__pyx_k__A_lim), 0, 0, 1, 1},
+  {&__pyx_n_s__B0, __pyx_k__B0, sizeof(__pyx_k__B0), 0, 0, 1, 1},
+  {&__pyx_n_s__B1, __pyx_k__B1, sizeof(__pyx_k__B1), 0, 0, 1, 1},
+  {&__pyx_n_s__BC, __pyx_k__BC, sizeof(__pyx_k__BC), 0, 0, 1, 1},
+  {&__pyx_n_s__B_lim, __pyx_k__B_lim, sizeof(__pyx_k__B_lim), 0, 0, 1, 1},
+  {&__pyx_n_s__C0, __pyx_k__C0, sizeof(__pyx_k__C0), 0, 0, 1, 1},
+  {&__pyx_n_s__C1, __pyx_k__C1, sizeof(__pyx_k__C1), 0, 0, 1, 1},
+  {&__pyx_n_s__CD, __pyx_k__CD, sizeof(__pyx_k__CD), 0, 0, 1, 1},
+  {&__pyx_n_s__C_lim, __pyx_k__C_lim, sizeof(__pyx_k__C_lim), 0, 0, 1, 1},
+  {&__pyx_n_s__D0, __pyx_k__D0, sizeof(__pyx_k__D0), 0, 0, 1, 1},
+  {&__pyx_n_s__D1, __pyx_k__D1, sizeof(__pyx_k__D1), 0, 0, 1, 1},
+  {&__pyx_n_s__DA, __pyx_k__DA, sizeof(__pyx_k__DA), 0, 0, 1, 1},
+  {&__pyx_n_s__D_lim, __pyx_k__D_lim, sizeof(__pyx_k__D_lim), 0, 0, 1, 1},
   {&__pyx_n_s__EPS32, __pyx_k__EPS32, sizeof(__pyx_k__EPS32), 0, 0, 1, 1},
   {&__pyx_n_s__Ellipsis, __pyx_k__Ellipsis, sizeof(__pyx_k__Ellipsis), 0, 0, 1, 1},
+  {&__pyx_n_s__HistoLUT1dFullSplit, __pyx_k__HistoLUT1dFullSplit, sizeof(__pyx_k__HistoLUT1dFullSplit), 0, 0, 1, 1},
   {&__pyx_n_s__IndexError, __pyx_k__IndexError, sizeof(__pyx_k__IndexError), 0, 0, 1, 1},
   {&__pyx_n_s__MemoryError, __pyx_k__MemoryError, sizeof(__pyx_k__MemoryError), 0, 0, 1, 1},
   {&__pyx_n_b__O, __pyx_k__O, sizeof(__pyx_k__O), 0, 0, 0, 1},
   {&__pyx_n_s__RuntimeError, __pyx_k__RuntimeError, sizeof(__pyx_k__RuntimeError), 0, 0, 1, 1},
-  {&__pyx_n_s__T, __pyx_k__T, sizeof(__pyx_k__T), 0, 0, 1, 1},
   {&__pyx_n_s__TypeError, __pyx_k__TypeError, sizeof(__pyx_k__TypeError), 0, 0, 1, 1},
   {&__pyx_n_s__ValueError, __pyx_k__ValueError, sizeof(__pyx_k__ValueError), 0, 0, 1, 1},
   {&__pyx_n_s____class__, __pyx_k____class__, sizeof(__pyx_k____class__), 0, 0, 1, 1},
   {&__pyx_n_s____import__, __pyx_k____import__, sizeof(__pyx_k____import__), 0, 0, 1, 1},
+  {&__pyx_n_s____init__, __pyx_k____init__, sizeof(__pyx_k____init__), 0, 0, 1, 1},
   {&__pyx_n_s____main__, __pyx_k____main__, sizeof(__pyx_k____main__), 0, 0, 1, 1},
+  {&__pyx_n_s____metaclass__, __pyx_k____metaclass__, sizeof(__pyx_k____metaclass__), 0, 0, 1, 1},
+  {&__pyx_n_s____module__, __pyx_k____module__, sizeof(__pyx_k____module__), 0, 0, 1, 1},
   {&__pyx_n_s____name__, __pyx_k____name__, sizeof(__pyx_k____name__), 0, 0, 1, 1},
   {&__pyx_n_s____pyx_getbuffer, __pyx_k____pyx_getbuffer, sizeof(__pyx_k____pyx_getbuffer), 0, 0, 1, 1},
   {&__pyx_n_s____pyx_releasebuffer, __pyx_k____pyx_releasebuffer, sizeof(__pyx_k____pyx_releasebuffer), 0, 0, 1, 1},
   {&__pyx_n_s____pyx_vtable__, __pyx_k____pyx_vtable__, sizeof(__pyx_k____pyx_vtable__), 0, 0, 1, 1},
+  {&__pyx_n_s____qualname__, __pyx_k____qualname__, sizeof(__pyx_k____qualname__), 0, 0, 1, 1},
   {&__pyx_n_s____test__, __pyx_k____test__, sizeof(__pyx_k____test__), 0, 0, 1, 1},
-  {&__pyx_n_s__a0, __pyx_k__a0, sizeof(__pyx_k__a0), 0, 0, 1, 1},
-  {&__pyx_n_s__a1, __pyx_k__a1, sizeof(__pyx_k__a1), 0, 0, 1, 1},
-  {&__pyx_n_s__aera_pixel, __pyx_k__aera_pixel, sizeof(__pyx_k__aera_pixel), 0, 0, 1, 1},
   {&__pyx_n_s__allocate_buffer, __pyx_k__allocate_buffer, sizeof(__pyx_k__allocate_buffer), 0, 0, 1, 1},
+  {&__pyx_n_s__allow_pos0_neg, __pyx_k__allow_pos0_neg, sizeof(__pyx_k__allow_pos0_neg), 0, 0, 1, 1},
+  {&__pyx_n_s__areaPixel, __pyx_k__areaPixel, sizeof(__pyx_k__areaPixel), 0, 0, 1, 1},
+  {&__pyx_n_s__areas, __pyx_k__areas, sizeof(__pyx_k__areas), 0, 0, 1, 1},
   {&__pyx_n_s__ascontiguousarray, __pyx_k__ascontiguousarray, sizeof(__pyx_k__ascontiguousarray), 0, 0, 1, 1},
-  {&__pyx_n_s__astype, __pyx_k__astype, sizeof(__pyx_k__astype), 0, 0, 1, 1},
-  {&__pyx_n_s__b, __pyx_k__b, sizeof(__pyx_k__b), 0, 0, 1, 1},
-  {&__pyx_n_s__b0, __pyx_k__b0, sizeof(__pyx_k__b0), 0, 0, 1, 1},
-  {&__pyx_n_s__b1, __pyx_k__b1, sizeof(__pyx_k__b1), 0, 0, 1, 1},
   {&__pyx_n_s__base, __pyx_k__base, sizeof(__pyx_k__base), 0, 0, 1, 1},
   {&__pyx_n_s__bin, __pyx_k__bin, sizeof(__pyx_k__bin), 0, 0, 1, 1},
   {&__pyx_n_s__bin0_max, __pyx_k__bin0_max, sizeof(__pyx_k__bin0_max), 0, 0, 1, 1},
   {&__pyx_n_s__bin0_min, __pyx_k__bin0_min, sizeof(__pyx_k__bin0_min), 0, 0, 1, 1},
-  {&__pyx_n_s__bin1_max, __pyx_k__bin1_max, sizeof(__pyx_k__bin1_max), 0, 0, 1, 1},
-  {&__pyx_n_s__bin1_min, __pyx_k__bin1_min, sizeof(__pyx_k__bin1_min), 0, 0, 1, 1},
   {&__pyx_n_s__bins, __pyx_k__bins, sizeof(__pyx_k__bins), 0, 0, 1, 1},
-  {&__pyx_n_s__bins0, __pyx_k__bins0, sizeof(__pyx_k__bins0), 0, 0, 1, 1},
-  {&__pyx_n_s__bins1, __pyx_k__bins1, sizeof(__pyx_k__bins1), 0, 0, 1, 1},
-  {&__pyx_n_s__buffer, __pyx_k__buffer, sizeof(__pyx_k__buffer), 0, 0, 1, 1},
   {&__pyx_n_b__c, __pyx_k__c, sizeof(__pyx_k__c), 0, 0, 0, 1},
   {&__pyx_n_s__c, __pyx_k__c, sizeof(__pyx_k__c), 0, 0, 1, 1},
   {&__pyx_n_u__c, __pyx_k__c, sizeof(__pyx_k__c), 0, 1, 0, 1},
-  {&__pyx_n_s__c0, __pyx_k__c0, sizeof(__pyx_k__c0), 0, 0, 1, 1},
-  {&__pyx_n_s__c1, __pyx_k__c1, sizeof(__pyx_k__c1), 0, 0, 1, 1},
+  {&__pyx_n_s__calc_lut, __pyx_k__calc_lut, sizeof(__pyx_k__calc_lut), 0, 0, 1, 1},
+  {&__pyx_n_s__ccoef, __pyx_k__ccoef, sizeof(__pyx_k__ccoef), 0, 0, 1, 1},
   {&__pyx_n_s__cdark, __pyx_k__cdark, sizeof(__pyx_k__cdark), 0, 0, 1, 1},
   {&__pyx_n_s__cdata, __pyx_k__cdata, sizeof(__pyx_k__cdata), 0, 0, 1, 1},
   {&__pyx_n_s__cddummy, __pyx_k__cddummy, sizeof(__pyx_k__cddummy), 0, 0, 1, 1},
   {&__pyx_n_s__cdummy, __pyx_k__cdummy, sizeof(__pyx_k__cdummy), 0, 0, 1, 1},
   {&__pyx_n_s__cflat, __pyx_k__cflat, sizeof(__pyx_k__cflat), 0, 0, 1, 1},
-  {&__pyx_n_s__check_dummy, __pyx_k__check_dummy, sizeof(__pyx_k__check_dummy), 0, 0, 1, 1},
   {&__pyx_n_s__check_mask, __pyx_k__check_mask, sizeof(__pyx_k__check_mask), 0, 0, 1, 1},
   {&__pyx_n_s__check_pos1, __pyx_k__check_pos1, sizeof(__pyx_k__check_pos1), 0, 0, 1, 1},
   {&__pyx_n_s__cmask, __pyx_k__cmask, sizeof(__pyx_k__cmask), 0, 0, 1, 1},
+  {&__pyx_n_s__coef, __pyx_k__coef, sizeof(__pyx_k__coef), 0, 0, 1, 1},
   {&__pyx_n_s__cpolarization, __pyx_k__cpolarization, sizeof(__pyx_k__cpolarization), 0, 0, 1, 1},
   {&__pyx_n_s__cpos, __pyx_k__cpos, sizeof(__pyx_k__cpos), 0, 0, 1, 1},
-  {&__pyx_n_s__csolidangle, __pyx_k__csolidangle, sizeof(__pyx_k__csolidangle), 0, 0, 1, 1},
-  {&__pyx_n_s__d, __pyx_k__d, sizeof(__pyx_k__d), 0, 0, 1, 1},
-  {&__pyx_n_s__d0, __pyx_k__d0, sizeof(__pyx_k__d0), 0, 0, 1, 1},
-  {&__pyx_n_s__d1, __pyx_k__d1, sizeof(__pyx_k__d1), 0, 0, 1, 1},
+  {&__pyx_n_s__crc32, __pyx_k__crc32, sizeof(__pyx_k__crc32), 0, 0, 1, 1},
+  {&__pyx_n_s__csolidAngle, __pyx_k__csolidAngle, sizeof(__pyx_k__csolidAngle), 0, 0, 1, 1},
+  {&__pyx_n_s__cumsum, __pyx_k__cumsum, sizeof(__pyx_k__cumsum), 0, 0, 1, 1},
   {&__pyx_n_s__dark, __pyx_k__dark, sizeof(__pyx_k__dark), 0, 0, 1, 1},
   {&__pyx_n_s__data, __pyx_k__data, sizeof(__pyx_k__data), 0, 0, 1, 1},
   {&__pyx_n_s__decode, __pyx_k__decode, sizeof(__pyx_k__decode), 0, 0, 1, 1},
-  {&__pyx_n_s__deltaD, __pyx_k__deltaD, sizeof(__pyx_k__deltaD), 0, 0, 1, 1},
-  {&__pyx_n_s__deltaL, __pyx_k__deltaL, sizeof(__pyx_k__deltaL), 0, 0, 1, 1},
-  {&__pyx_n_s__deltaR, __pyx_k__deltaR, sizeof(__pyx_k__deltaR), 0, 0, 1, 1},
-  {&__pyx_n_s__deltaU, __pyx_k__deltaU, sizeof(__pyx_k__deltaU), 0, 0, 1, 1},
+  {&__pyx_n_s__delta, __pyx_k__delta, sizeof(__pyx_k__delta), 0, 0, 1, 1},
   {&__pyx_n_s__delta_dummy, __pyx_k__delta_dummy, sizeof(__pyx_k__delta_dummy), 0, 0, 1, 1},
   {&__pyx_n_s__do_dark, __pyx_k__do_dark, sizeof(__pyx_k__do_dark), 0, 0, 1, 1},
   {&__pyx_n_s__do_dummy, __pyx_k__do_dummy, sizeof(__pyx_k__do_dummy), 0, 0, 1, 1},
   {&__pyx_n_s__do_flat, __pyx_k__do_flat, sizeof(__pyx_k__do_flat), 0, 0, 1, 1},
   {&__pyx_n_s__do_polarization, __pyx_k__do_polarization, sizeof(__pyx_k__do_polarization), 0, 0, 1, 1},
-  {&__pyx_n_s__do_pos1, __pyx_k__do_pos1, sizeof(__pyx_k__do_pos1), 0, 0, 1, 1},
-  {&__pyx_n_s__do_solidangle, __pyx_k__do_solidangle, sizeof(__pyx_k__do_solidangle), 0, 0, 1, 1},
-  {&__pyx_n_s__dpos, __pyx_k__dpos, sizeof(__pyx_k__dpos), 0, 0, 1, 1},
-  {&__pyx_n_s__dpos0, __pyx_k__dpos0, sizeof(__pyx_k__dpos0), 0, 0, 1, 1},
-  {&__pyx_n_s__dpos1, __pyx_k__dpos1, sizeof(__pyx_k__dpos1), 0, 0, 1, 1},
+  {&__pyx_n_s__do_solidAngle, __pyx_k__do_solidAngle, sizeof(__pyx_k__do_solidAngle), 0, 0, 1, 1},
   {&__pyx_n_s__dtype, __pyx_k__dtype, sizeof(__pyx_k__dtype), 0, 0, 1, 1},
   {&__pyx_n_s__dtype_is_object, __pyx_k__dtype_is_object, sizeof(__pyx_k__dtype_is_object), 0, 0, 1, 1},
   {&__pyx_n_s__dummy, __pyx_k__dummy, sizeof(__pyx_k__dummy), 0, 0, 1, 1},
-  {&__pyx_n_s__edges0, __pyx_k__edges0, sizeof(__pyx_k__edges0), 0, 0, 1, 1},
-  {&__pyx_n_s__edges1, __pyx_k__edges1, sizeof(__pyx_k__edges1), 0, 0, 1, 1},
   {&__pyx_n_s__encode, __pyx_k__encode, sizeof(__pyx_k__encode), 0, 0, 1, 1},
-  {&__pyx_n_s__end, __pyx_k__end, sizeof(__pyx_k__end), 0, 0, 1, 1},
   {&__pyx_n_s__enumerate, __pyx_k__enumerate, sizeof(__pyx_k__enumerate), 0, 0, 1, 1},
   {&__pyx_n_s__eps, __pyx_k__eps, sizeof(__pyx_k__eps), 0, 0, 1, 1},
   {&__pyx_n_s__epsilon, __pyx_k__epsilon, sizeof(__pyx_k__epsilon), 0, 0, 1, 1},
   {&__pyx_n_s__error, __pyx_k__error, sizeof(__pyx_k__error), 0, 0, 1, 1},
   {&__pyx_n_s__extend, __pyx_k__extend, sizeof(__pyx_k__extend), 0, 0, 1, 1},
-  {&__pyx_n_s__fbin0_max, __pyx_k__fbin0_max, sizeof(__pyx_k__fbin0_max), 0, 0, 1, 1},
-  {&__pyx_n_s__fbin0_min, __pyx_k__fbin0_min, sizeof(__pyx_k__fbin0_min), 0, 0, 1, 1},
-  {&__pyx_n_s__fbin1_max, __pyx_k__fbin1_max, sizeof(__pyx_k__fbin1_max), 0, 0, 1, 1},
-  {&__pyx_n_s__fbin1_min, __pyx_k__fbin1_min, sizeof(__pyx_k__fbin1_min), 0, 0, 1, 1},
-  {&__pyx_n_s__file, __pyx_k__file, sizeof(__pyx_k__file), 0, 0, 1, 1},
+  {&__pyx_n_s__fastcrc, __pyx_k__fastcrc, sizeof(__pyx_k__fastcrc), 0, 0, 1, 1},
   {&__pyx_n_s__finfo, __pyx_k__finfo, sizeof(__pyx_k__finfo), 0, 0, 1, 1},
   {&__pyx_n_s__flags, __pyx_k__flags, sizeof(__pyx_k__flags), 0, 0, 1, 1},
   {&__pyx_n_s__flat, __pyx_k__flat, sizeof(__pyx_k__flat), 0, 0, 1, 1},
@@ -22155,34 +20309,49 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s__format, __pyx_k__format, sizeof(__pyx_k__format), 0, 0, 1, 1},
   {&__pyx_n_b__fortran, __pyx_k__fortran, sizeof(__pyx_k__fortran), 0, 0, 0, 1},
   {&__pyx_n_s__fortran, __pyx_k__fortran, sizeof(__pyx_k__fortran), 0, 0, 1, 1},
-  {&__pyx_n_s__fullSplit1D, __pyx_k__fullSplit1D, sizeof(__pyx_k__fullSplit1D), 0, 0, 1, 1},
-  {&__pyx_n_s__fullSplit2D, __pyx_k__fullSplit2D, sizeof(__pyx_k__fullSplit2D), 0, 0, 1, 1},
   {&__pyx_n_s__i, __pyx_k__i, sizeof(__pyx_k__i), 0, 0, 1, 1},
   {&__pyx_n_s__id, __pyx_k__id, sizeof(__pyx_k__id), 0, 0, 1, 1},
   {&__pyx_n_s__idx, __pyx_k__idx, sizeof(__pyx_k__idx), 0, 0, 1, 1},
+  {&__pyx_n_s__indices, __pyx_k__indices, sizeof(__pyx_k__indices), 0, 0, 1, 1},
+  {&__pyx_n_s__indptr, __pyx_k__indptr, sizeof(__pyx_k__indptr), 0, 0, 1, 1},
+  {&__pyx_n_s__int32, __pyx_k__int32, sizeof(__pyx_k__int32), 0, 0, 1, 1},
   {&__pyx_n_s__int8, __pyx_k__int8, sizeof(__pyx_k__int8), 0, 0, 1, 1},
+  {&__pyx_n_s__integrate, __pyx_k__integrate, sizeof(__pyx_k__integrate), 0, 0, 1, 1},
   {&__pyx_n_s__itemsize, __pyx_k__itemsize, sizeof(__pyx_k__itemsize), 0, 0, 1, 1},
   {&__pyx_n_s__j, __pyx_k__j, sizeof(__pyx_k__j), 0, 0, 1, 1},
+  {&__pyx_n_s__k, __pyx_k__k, sizeof(__pyx_k__k), 0, 0, 1, 1},
   {&__pyx_n_s__linspace, __pyx_k__linspace, sizeof(__pyx_k__linspace), 0, 0, 1, 1},
+  {&__pyx_n_s__lut, __pyx_k__lut, sizeof(__pyx_k__lut), 0, 0, 1, 1},
+  {&__pyx_n_s__lut_checksum, __pyx_k__lut_checksum, sizeof(__pyx_k__lut_checksum), 0, 0, 1, 1},
+  {&__pyx_n_s__lut_nbytes, __pyx_k__lut_nbytes, sizeof(__pyx_k__lut_nbytes), 0, 0, 1, 1},
+  {&__pyx_n_s__lut_size, __pyx_k__lut_size, sizeof(__pyx_k__lut_size), 0, 0, 1, 1},
   {&__pyx_n_s__mask, __pyx_k__mask, sizeof(__pyx_k__mask), 0, 0, 1, 1},
+  {&__pyx_n_s__mask_checksum, __pyx_k__mask_checksum, sizeof(__pyx_k__mask_checksum), 0, 0, 1, 1},
   {&__pyx_n_s__max, __pyx_k__max, sizeof(__pyx_k__max), 0, 0, 1, 1},
   {&__pyx_n_s__max0, __pyx_k__max0, sizeof(__pyx_k__max0), 0, 0, 1, 1},
-  {&__pyx_n_s__max1, __pyx_k__max1, sizeof(__pyx_k__max1), 0, 0, 1, 1},
   {&__pyx_n_s__memview, __pyx_k__memview, sizeof(__pyx_k__memview), 0, 0, 1, 1},
   {&__pyx_n_s__min, __pyx_k__min, sizeof(__pyx_k__min), 0, 0, 1, 1},
   {&__pyx_n_s__min0, __pyx_k__min0, sizeof(__pyx_k__min0), 0, 0, 1, 1},
-  {&__pyx_n_s__min1, __pyx_k__min1, sizeof(__pyx_k__min1), 0, 0, 1, 1},
   {&__pyx_n_s__mode, __pyx_k__mode, sizeof(__pyx_k__mode), 0, 0, 1, 1},
   {&__pyx_n_s__name, __pyx_k__name, sizeof(__pyx_k__name), 0, 0, 1, 1},
+  {&__pyx_n_s__nbytes, __pyx_k__nbytes, sizeof(__pyx_k__nbytes), 0, 0, 1, 1},
   {&__pyx_n_s__ndim, __pyx_k__ndim, sizeof(__pyx_k__ndim), 0, 0, 1, 1},
+  {&__pyx_n_s__nnz, __pyx_k__nnz, sizeof(__pyx_k__nnz), 0, 0, 1, 1},
   {&__pyx_n_s__numpy, __pyx_k__numpy, sizeof(__pyx_k__numpy), 0, 0, 1, 1},
   {&__pyx_n_s__obj, __pyx_k__obj, sizeof(__pyx_k__obj), 0, 0, 1, 1},
-  {&__pyx_n_s__one_over_area, __pyx_k__one_over_area, sizeof(__pyx_k__one_over_area), 0, 0, 1, 1},
+  {&__pyx_n_s__object, __pyx_k__object, sizeof(__pyx_k__object), 0, 0, 1, 1},
+  {&__pyx_n_s__oneOverArea, __pyx_k__oneOverArea, sizeof(__pyx_k__oneOverArea), 0, 0, 1, 1},
+  {&__pyx_n_s__oneOverPixelArea, __pyx_k__oneOverPixelArea, sizeof(__pyx_k__oneOverPixelArea), 0, 0, 1, 1},
+  {&__pyx_n_s__os, __pyx_k__os, sizeof(__pyx_k__os), 0, 0, 1, 1},
   {&__pyx_n_s__outCount, __pyx_k__outCount, sizeof(__pyx_k__outCount), 0, 0, 1, 1},
   {&__pyx_n_s__outData, __pyx_k__outData, sizeof(__pyx_k__outData), 0, 0, 1, 1},
+  {&__pyx_n_s__outMax, __pyx_k__outMax, sizeof(__pyx_k__outMax), 0, 0, 1, 1},
   {&__pyx_n_s__outMerge, __pyx_k__outMerge, sizeof(__pyx_k__outMerge), 0, 0, 1, 1},
   {&__pyx_n_s__outPos, __pyx_k__outPos, sizeof(__pyx_k__outPos), 0, 0, 1, 1},
   {&__pyx_n_s__pack, __pyx_k__pack, sizeof(__pyx_k__pack), 0, 0, 1, 1},
+  {&__pyx_n_s__partialArea, __pyx_k__partialArea, sizeof(__pyx_k__partialArea), 0, 0, 1, 1},
+  {&__pyx_n_s__partialArea2, __pyx_k__partialArea2, sizeof(__pyx_k__partialArea2), 0, 0, 1, 1},
+  {&__pyx_n_s__pixel_bins, __pyx_k__pixel_bins, sizeof(__pyx_k__pixel_bins), 0, 0, 1, 1},
   {&__pyx_n_s__polarization, __pyx_k__polarization, sizeof(__pyx_k__polarization), 0, 0, 1, 1},
   {&__pyx_n_s__pos, __pyx_k__pos, sizeof(__pyx_k__pos), 0, 0, 1, 1},
   {&__pyx_n_s__pos0Range, __pyx_k__pos0Range, sizeof(__pyx_k__pos0Range), 0, 0, 1, 1},
@@ -22193,30 +20362,39 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s__pos1_max, __pyx_k__pos1_max, sizeof(__pyx_k__pos1_max), 0, 0, 1, 1},
   {&__pyx_n_s__pos1_maxin, __pyx_k__pos1_maxin, sizeof(__pyx_k__pos1_maxin), 0, 0, 1, 1},
   {&__pyx_n_s__pos1_min, __pyx_k__pos1_min, sizeof(__pyx_k__pos1_min), 0, 0, 1, 1},
-  {&__pyx_n_s__print, __pyx_k__print, sizeof(__pyx_k__print), 0, 0, 1, 1},
   {&__pyx_n_s__range, __pyx_k__range, sizeof(__pyx_k__range), 0, 0, 1, 1},
   {&__pyx_n_s__ravel, __pyx_k__ravel, sizeof(__pyx_k__ravel), 0, 0, 1, 1},
   {&__pyx_n_s__reshape, __pyx_k__reshape, sizeof(__pyx_k__reshape), 0, 0, 1, 1},
+  {&__pyx_n_s__self, __pyx_k__self, sizeof(__pyx_k__self), 0, 0, 1, 1},
   {&__pyx_n_s__shape, __pyx_k__shape, sizeof(__pyx_k__shape), 0, 0, 1, 1},
   {&__pyx_n_s__size, __pyx_k__size, sizeof(__pyx_k__size), 0, 0, 1, 1},
-  {&__pyx_n_s__solidangle, __pyx_k__solidangle, sizeof(__pyx_k__solidangle), 0, 0, 1, 1},
-  {&__pyx_n_s__splitPixel, __pyx_k__splitPixel, sizeof(__pyx_k__splitPixel), 0, 0, 1, 1},
+  {&__pyx_n_s__solidAngle, __pyx_k__solidAngle, sizeof(__pyx_k__solidAngle), 0, 0, 1, 1},
+  {&__pyx_n_s__splitPixelFullLUT_b, __pyx_k__splitPixelFullLUT_b, sizeof(__pyx_k__splitPixelFullLUT_b), 0, 0, 1, 1},
   {&__pyx_n_s__start, __pyx_k__start, sizeof(__pyx_k__start), 0, 0, 1, 1},
   {&__pyx_n_s__step, __pyx_k__step, sizeof(__pyx_k__step), 0, 0, 1, 1},
   {&__pyx_n_s__stop, __pyx_k__stop, sizeof(__pyx_k__stop), 0, 0, 1, 1},
   {&__pyx_n_s__struct, __pyx_k__struct, sizeof(__pyx_k__struct), 0, 0, 1, 1},
-  {&__pyx_n_s__sub_area, __pyx_k__sub_area, sizeof(__pyx_k__sub_area), 0, 0, 1, 1},
-  {&__pyx_n_s__sum_area, __pyx_k__sum_area, sizeof(__pyx_k__sum_area), 0, 0, 1, 1},
+  {&__pyx_n_s__sum, __pyx_k__sum, sizeof(__pyx_k__sum), 0, 0, 1, 1},
+  {&__pyx_n_s__sum_count, __pyx_k__sum_count, sizeof(__pyx_k__sum_count), 0, 0, 1, 1},
+  {&__pyx_n_s__sum_data, __pyx_k__sum_data, sizeof(__pyx_k__sum_data), 0, 0, 1, 1},
+  {&__pyx_n_s__sys, __pyx_k__sys, sizeof(__pyx_k__sys), 0, 0, 1, 1},
+  {&__pyx_n_s__tdata, __pyx_k__tdata, sizeof(__pyx_k__tdata), 0, 0, 1, 1},
+  {&__pyx_n_s__tmp, __pyx_k__tmp, sizeof(__pyx_k__tmp), 0, 0, 1, 1},
+  {&__pyx_n_s__undefined, __pyx_k__undefined, sizeof(__pyx_k__undefined), 0, 0, 1, 1},
+  {&__pyx_n_s__unit, __pyx_k__unit, sizeof(__pyx_k__unit), 0, 0, 1, 1},
   {&__pyx_n_s__unpack, __pyx_k__unpack, sizeof(__pyx_k__unpack), 0, 0, 1, 1},
   {&__pyx_n_s__weights, __pyx_k__weights, sizeof(__pyx_k__weights), 0, 0, 1, 1},
   {&__pyx_n_s__xrange, __pyx_k__xrange, sizeof(__pyx_k__xrange), 0, 0, 1, 1},
   {&__pyx_n_s__zeros, __pyx_k__zeros, sizeof(__pyx_k__zeros), 0, 0, 1, 1},
+  {&__pyx_n_s__zlib, __pyx_k__zlib, sizeof(__pyx_k__zlib), 0, 0, 1, 1},
   {0, 0, 0, 0, 0, 0, 0}
 };
 static int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s__range); if (!__pyx_builtin_range) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_builtin_min = __Pyx_GetBuiltinName(__pyx_n_s__min); if (!__pyx_builtin_min) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 192; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_builtin_max = __Pyx_GetBuiltinName(__pyx_n_s__max); if (!__pyx_builtin_max) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_builtin_object = __Pyx_GetBuiltinName(__pyx_n_s__object); if (!__pyx_builtin_object) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 83; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_builtin_sum = __Pyx_GetBuiltinName(__pyx_n_s__sum); if (!__pyx_builtin_sum) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_builtin_min = __Pyx_GetBuiltinName(__pyx_n_s__min); if (!__pyx_builtin_min) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 167; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_builtin_max = __Pyx_GetBuiltinName(__pyx_n_s__max); if (!__pyx_builtin_max) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s__range); if (!__pyx_builtin_range) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 196; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s__ValueError); if (!__pyx_builtin_ValueError) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_builtin_RuntimeError = __Pyx_GetBuiltinName(__pyx_n_s__RuntimeError); if (!__pyx_builtin_RuntimeError) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 799; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_builtin_MemoryError = __Pyx_GetBuiltinName(__pyx_n_s__MemoryError); if (!__pyx_builtin_MemoryError) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 141; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -22239,135 +20417,98 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "splitPixel.pyx":157
- *     cdef int  size = weights.size
- *     if pos.ndim>3: #create a view
- *         pos = pos.reshape((-1,4,2))             # <<<<<<<<<<<<<<
- *     assert pos.shape[0] == size
- *     assert pos.shape[1] == 4
+  /* "splitPixelFullLUT_b.pyx":115
+ * #        self.padding = int(padding)
+ *         if pos.ndim>3: #create a view
+ *             pos = pos.reshape((-1,4,2))             # <<<<<<<<<<<<<<
+ *         assert pos.shape[1] == 4
+ *         assert pos.shape[2] == 2
  */
-  __pyx_k_tuple_1 = PyTuple_Pack(3, __pyx_int_neg_1, __pyx_int_4, __pyx_int_2); if (unlikely(!__pyx_k_tuple_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 157; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k_tuple_1 = PyTuple_Pack(3, __pyx_int_neg_1, __pyx_int_4, __pyx_int_2); if (unlikely(!__pyx_k_tuple_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 115; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_k_tuple_1);
   __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_1));
-  __pyx_k_tuple_2 = PyTuple_Pack(1, ((PyObject *)__pyx_k_tuple_1)); if (unlikely(!__pyx_k_tuple_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 157; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k_tuple_2 = PyTuple_Pack(1, ((PyObject *)__pyx_k_tuple_1)); if (unlikely(!__pyx_k_tuple_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 115; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_k_tuple_2);
   __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_2));
 
-  /* "splitPixel.pyx":236
- *     else:
- *         if min1==max1==0:
- *             pos1_min = pos[:, :, 1].min()             # <<<<<<<<<<<<<<
- *             pos1_maxin = pos[:, :, 1].max()
- *     pos1_max = pos1_maxin * EPS32
+  /* "splitPixelFullLUT_b.pyx":170
+ *             self.pos0_maxin = max(self.pos0Range)
+ *         else:
+ *             self.pos0_min = self.pos[:, :, 0].min()             # <<<<<<<<<<<<<<
+ *             self.pos0_maxin = self.pos[:, :, 0].max()
+ *         self.pos0_max = self.pos0_maxin * (1 + numpy.finfo(numpy.float64).eps)
  */
-  __pyx_k_slice_3 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_k_slice_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 236; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k_slice_3 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_k_slice_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_k_slice_3);
   __Pyx_GIVEREF(__pyx_k_slice_3);
-  __pyx_k_slice_4 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_k_slice_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 236; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k_slice_4 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_k_slice_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_k_slice_4);
   __Pyx_GIVEREF(__pyx_k_slice_4);
-  __pyx_k_tuple_5 = PyTuple_Pack(3, __pyx_k_slice_3, __pyx_k_slice_4, __pyx_int_1); if (unlikely(!__pyx_k_tuple_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 236; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k_tuple_5 = PyTuple_Pack(3, __pyx_k_slice_3, __pyx_k_slice_4, __pyx_int_0); if (unlikely(!__pyx_k_tuple_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_k_tuple_5);
   __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_5));
 
-  /* "splitPixel.pyx":237
- *         if min1==max1==0:
- *             pos1_min = pos[:, :, 1].min()
- *             pos1_maxin = pos[:, :, 1].max()             # <<<<<<<<<<<<<<
- *     pos1_max = pos1_maxin * EPS32
- *     dpos = (pos0_max - pos0_min) / (<  double > (bins))
+  /* "splitPixelFullLUT_b.pyx":171
+ *         else:
+ *             self.pos0_min = self.pos[:, :, 0].min()
+ *             self.pos0_maxin = self.pos[:, :, 0].max()             # <<<<<<<<<<<<<<
+ *         self.pos0_max = self.pos0_maxin * (1 + numpy.finfo(numpy.float64).eps)
+ *         if self.pos1Range is not None and len(self.pos1Range) > 1:
  */
-  __pyx_k_slice_6 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_k_slice_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k_slice_6 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_k_slice_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 171; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_k_slice_6);
   __Pyx_GIVEREF(__pyx_k_slice_6);
-  __pyx_k_slice_7 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_k_slice_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k_slice_7 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_k_slice_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 171; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_k_slice_7);
   __Pyx_GIVEREF(__pyx_k_slice_7);
-  __pyx_k_tuple_8 = PyTuple_Pack(3, __pyx_k_slice_6, __pyx_k_slice_7, __pyx_int_1); if (unlikely(!__pyx_k_tuple_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k_tuple_8 = PyTuple_Pack(3, __pyx_k_slice_6, __pyx_k_slice_7, __pyx_int_0); if (unlikely(!__pyx_k_tuple_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 171; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_k_tuple_8);
   __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_8));
 
-  /* "splitPixel.pyx":417
- *     cdef int  bins0=0, bins1=0, size = weights.size
- *     if pos.ndim>3: #create a view
- *         pos = pos.reshape((-1,4,2))             # <<<<<<<<<<<<<<
- * 
- *     assert pos.shape[0] == size
+  /* "splitPixelFullLUT_b.pyx":178
+ *             self.check_pos1 = True
+ *         else:
+ *             self.pos1_min = self.pos[:, :, 1].min()             # <<<<<<<<<<<<<<
+ *             self.pos1_maxin = self.pos[:, :, 1].max()
+ *         self.pos1_max = self.pos1_maxin * (1 + numpy.finfo(numpy.float64).eps)
  */
-  __pyx_k_tuple_10 = PyTuple_Pack(3, __pyx_int_neg_1, __pyx_int_4, __pyx_int_2); if (unlikely(!__pyx_k_tuple_10)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 417; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_10);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_10));
-  __pyx_k_tuple_11 = PyTuple_Pack(1, ((PyObject *)__pyx_k_tuple_10)); if (unlikely(!__pyx_k_tuple_11)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 417; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k_slice_9 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_k_slice_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 178; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_slice_9);
+  __Pyx_GIVEREF(__pyx_k_slice_9);
+  __pyx_k_slice_10 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_k_slice_10)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 178; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_slice_10);
+  __Pyx_GIVEREF(__pyx_k_slice_10);
+  __pyx_k_tuple_11 = PyTuple_Pack(3, __pyx_k_slice_9, __pyx_k_slice_10, __pyx_int_1); if (unlikely(!__pyx_k_tuple_11)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 178; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_k_tuple_11);
   __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_11));
 
-  /* "splitPixel.pyx":457
- *         pos0_maxin = max(pos0Range)
- *     else:
- *         pos0_min = pos[:, :, 0].min()             # <<<<<<<<<<<<<<
- *         pos0_maxin = pos[:, :, 0].max()
- *     pos0_max = pos0_maxin * (1 + numpy.finfo(numpy.float32).eps)
+  /* "splitPixelFullLUT_b.pyx":179
+ *         else:
+ *             self.pos1_min = self.pos[:, :, 1].min()
+ *             self.pos1_maxin = self.pos[:, :, 1].max()             # <<<<<<<<<<<<<<
+ *         self.pos1_max = self.pos1_maxin * (1 + numpy.finfo(numpy.float64).eps)
+ * 
  */
-  __pyx_k_slice_12 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_k_slice_12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 457; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k_slice_12 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_k_slice_12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 179; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_k_slice_12);
   __Pyx_GIVEREF(__pyx_k_slice_12);
-  __pyx_k_slice_13 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_k_slice_13)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 457; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k_slice_13 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_k_slice_13)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 179; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_k_slice_13);
   __Pyx_GIVEREF(__pyx_k_slice_13);
-  __pyx_k_tuple_14 = PyTuple_Pack(3, __pyx_k_slice_12, __pyx_k_slice_13, __pyx_int_0); if (unlikely(!__pyx_k_tuple_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 457; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k_tuple_14 = PyTuple_Pack(3, __pyx_k_slice_12, __pyx_k_slice_13, __pyx_int_1); if (unlikely(!__pyx_k_tuple_14)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 179; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_k_tuple_14);
   __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_14));
 
-  /* "splitPixel.pyx":458
- *     else:
- *         pos0_min = pos[:, :, 0].min()
- *         pos0_maxin = pos[:, :, 0].max()             # <<<<<<<<<<<<<<
- *     pos0_max = pos0_maxin * (1 + numpy.finfo(numpy.float32).eps)
+  /* "splitPixelFullLUT_b.pyx":224
+ *                     outMax[bin] += 1
+ * 
+ *         indptr[1:] = outMax.cumsum()             # <<<<<<<<<<<<<<
+ *         self.indptr = indptr
  * 
  */
-  __pyx_k_slice_15 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_k_slice_15)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 458; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k_slice_15 = PySlice_New(__pyx_int_1, Py_None, Py_None); if (unlikely(!__pyx_k_slice_15)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 224; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_k_slice_15);
   __Pyx_GIVEREF(__pyx_k_slice_15);
-  __pyx_k_slice_16 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_k_slice_16)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 458; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_slice_16);
-  __Pyx_GIVEREF(__pyx_k_slice_16);
-  __pyx_k_tuple_17 = PyTuple_Pack(3, __pyx_k_slice_15, __pyx_k_slice_16, __pyx_int_0); if (unlikely(!__pyx_k_tuple_17)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 458; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_17);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_17));
-
-  /* "splitPixel.pyx":465
- *         pos1_maxin = max(pos1Range)
- *     else:
- *         pos1_min = pos[:, :, 1].min()             # <<<<<<<<<<<<<<
- *         pos1_maxin = pos[:, :, 1].max()
- *     pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
- */
-  __pyx_k_slice_18 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_k_slice_18)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 465; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_slice_18);
-  __Pyx_GIVEREF(__pyx_k_slice_18);
-  __pyx_k_slice_19 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_k_slice_19)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 465; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_slice_19);
-  __Pyx_GIVEREF(__pyx_k_slice_19);
-  __pyx_k_tuple_20 = PyTuple_Pack(3, __pyx_k_slice_18, __pyx_k_slice_19, __pyx_int_1); if (unlikely(!__pyx_k_tuple_20)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 465; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_20);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_20));
-
-  /* "splitPixel.pyx":466
- *     else:
- *         pos1_min = pos[:, :, 1].min()
- *         pos1_maxin = pos[:, :, 1].max()             # <<<<<<<<<<<<<<
- *     pos1_max = pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
- * 
- */
-  __pyx_k_slice_21 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_k_slice_21)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 466; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_slice_21);
-  __Pyx_GIVEREF(__pyx_k_slice_21);
-  __pyx_k_slice_22 = PySlice_New(Py_None, Py_None, Py_None); if (unlikely(!__pyx_k_slice_22)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 466; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_slice_22);
-  __Pyx_GIVEREF(__pyx_k_slice_22);
-  __pyx_k_tuple_23 = PyTuple_Pack(3, __pyx_k_slice_21, __pyx_k_slice_22, __pyx_int_1); if (unlikely(!__pyx_k_tuple_23)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 466; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_23);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_23));
 
   /* "numpy.pxd":215
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)
@@ -22376,9 +20517,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
  */
-  __pyx_k_tuple_25 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_u_24)); if (unlikely(!__pyx_k_tuple_25)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_25);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_25));
+  __pyx_k_tuple_17 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_u_16)); if (unlikely(!__pyx_k_tuple_17)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_17);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_17));
 
   /* "numpy.pxd":219
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
@@ -22387,9 +20528,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *             info.buf = PyArray_DATA(self)
  */
-  __pyx_k_tuple_27 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_u_26)); if (unlikely(!__pyx_k_tuple_27)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_27);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_27));
+  __pyx_k_tuple_19 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_u_18)); if (unlikely(!__pyx_k_tuple_19)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_19);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_19));
 
   /* "numpy.pxd":257
  *                 if ((descr.byteorder == c'>' and little_endian) or
@@ -22398,9 +20539,9 @@ static int __Pyx_InitCachedConstants(void) {
  *                 if   t == NPY_BYTE:        f = "b"
  *                 elif t == NPY_UBYTE:       f = "B"
  */
-  __pyx_k_tuple_29 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_u_28)); if (unlikely(!__pyx_k_tuple_29)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 257; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_29);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_29));
+  __pyx_k_tuple_21 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_u_20)); if (unlikely(!__pyx_k_tuple_21)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 257; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_21);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_21));
 
   /* "numpy.pxd":799
  * 
@@ -22409,9 +20550,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *         if ((child.byteorder == c'>' and little_endian) or
  */
-  __pyx_k_tuple_32 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_u_31)); if (unlikely(!__pyx_k_tuple_32)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 799; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_32);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_32));
+  __pyx_k_tuple_24 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_u_23)); if (unlikely(!__pyx_k_tuple_24)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 799; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_24);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_24));
 
   /* "numpy.pxd":803
  *         if ((child.byteorder == c'>' and little_endian) or
@@ -22420,9 +20561,9 @@ static int __Pyx_InitCachedConstants(void) {
  *             # One could encode it in the format string and have Cython
  *             # complain instead, BUT: < and > in format strings also imply
  */
-  __pyx_k_tuple_33 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_u_28)); if (unlikely(!__pyx_k_tuple_33)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 803; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_33);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_33));
+  __pyx_k_tuple_25 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_u_20)); if (unlikely(!__pyx_k_tuple_25)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 803; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_25);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_25));
 
   /* "numpy.pxd":823
  *             t = child.type_num
@@ -22431,9 +20572,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *             # Until ticket #99 is fixed, use integers to avoid warnings
  */
-  __pyx_k_tuple_35 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_u_34)); if (unlikely(!__pyx_k_tuple_35)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 823; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_35);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_35));
+  __pyx_k_tuple_27 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_u_26)); if (unlikely(!__pyx_k_tuple_27)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 823; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_27);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_27));
 
   /* "View.MemoryView":124
  * 
@@ -22442,9 +20583,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *         if self.itemsize <= 0:
  */
-  __pyx_k_tuple_37 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_36)); if (unlikely(!__pyx_k_tuple_37)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 124; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_37);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_37));
+  __pyx_k_tuple_29 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_28)); if (unlikely(!__pyx_k_tuple_29)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 124; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_29);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_29));
 
   /* "View.MemoryView":127
  * 
@@ -22453,9 +20594,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *         encode = getattr(format, 'encode', None)
  */
-  __pyx_k_tuple_39 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_38)); if (unlikely(!__pyx_k_tuple_39)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_39);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_39));
+  __pyx_k_tuple_31 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_30)); if (unlikely(!__pyx_k_tuple_31)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_31);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_31));
 
   /* "View.MemoryView":131
  *         encode = getattr(format, 'encode', None)
@@ -22464,9 +20605,9 @@ static int __Pyx_InitCachedConstants(void) {
  *         self._format = format
  *         self.format = self._format
  */
-  __pyx_k_tuple_40 = PyTuple_Pack(1, ((PyObject *)__pyx_n_s__ASCII)); if (unlikely(!__pyx_k_tuple_40)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 131; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_40);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_40));
+  __pyx_k_tuple_32 = PyTuple_Pack(1, ((PyObject *)__pyx_n_s__ASCII)); if (unlikely(!__pyx_k_tuple_32)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 131; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_32);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_32));
 
   /* "View.MemoryView":141
  *             free(self._shape)
@@ -22475,9 +20616,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  * 
  */
-  __pyx_k_tuple_42 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_41)); if (unlikely(!__pyx_k_tuple_42)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 141; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_42);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_42));
+  __pyx_k_tuple_34 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_33)); if (unlikely(!__pyx_k_tuple_34)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 141; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_34);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_34));
 
   /* "View.MemoryView":166
  *         decode = getattr(mode, 'decode', None)
@@ -22486,9 +20627,9 @@ static int __Pyx_InitCachedConstants(void) {
  *         self.mode = mode
  * 
  */
-  __pyx_k_tuple_45 = PyTuple_Pack(1, ((PyObject *)__pyx_n_s__ASCII)); if (unlikely(!__pyx_k_tuple_45)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_45);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_45));
+  __pyx_k_tuple_37 = PyTuple_Pack(1, ((PyObject *)__pyx_n_s__ASCII)); if (unlikely(!__pyx_k_tuple_37)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_37);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_37));
 
   /* "View.MemoryView":174
  *             self.data = <char *>malloc(self.len)
@@ -22497,9 +20638,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *             if self.dtype_is_object:
  */
-  __pyx_k_tuple_47 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_46)); if (unlikely(!__pyx_k_tuple_47)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 174; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_47);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_47));
+  __pyx_k_tuple_39 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_38)); if (unlikely(!__pyx_k_tuple_39)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 174; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_39);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_39));
 
   /* "View.MemoryView":190
  *             bufmode = PyBUF_F_CONTIGUOUS | PyBUF_ANY_CONTIGUOUS
@@ -22508,9 +20649,9 @@ static int __Pyx_InitCachedConstants(void) {
  *         info.buf = self.data
  *         info.len = self.len
  */
-  __pyx_k_tuple_49 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_48)); if (unlikely(!__pyx_k_tuple_49)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 190; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_49);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_49));
+  __pyx_k_tuple_41 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_40)); if (unlikely(!__pyx_k_tuple_41)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 190; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_41);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_41));
 
   /* "View.MemoryView":452
  *             result = struct.unpack(self.view.format, bytesitem)
@@ -22519,9 +20660,9 @@ static int __Pyx_InitCachedConstants(void) {
  *         else:
  *             if len(self.view.format) == 1:
  */
-  __pyx_k_tuple_51 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_50)); if (unlikely(!__pyx_k_tuple_51)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 452; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_51);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_51));
+  __pyx_k_tuple_43 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_42)); if (unlikely(!__pyx_k_tuple_43)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 452; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_43);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_43));
 
   /* "View.MemoryView":528
  *             if self.view.strides == NULL:
@@ -22530,9 +20671,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *             return tuple([self.view.strides[i] for i in xrange(self.view.ndim)])
  */
-  __pyx_k_tuple_53 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_52)); if (unlikely(!__pyx_k_tuple_53)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 528; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_53);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_53));
+  __pyx_k_tuple_45 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_44)); if (unlikely(!__pyx_k_tuple_45)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 528; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_45);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_45));
 
   /* "View.MemoryView":643
  *         if item is Ellipsis:
@@ -22541,9 +20682,9 @@ static int __Pyx_InitCachedConstants(void) {
  *                 seen_ellipsis = True
  *             else:
  */
-  __pyx_k_tuple_56 = PyTuple_Pack(1, Py_None); if (unlikely(!__pyx_k_tuple_56)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 643; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_56);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_56));
+  __pyx_k_tuple_48 = PyTuple_Pack(1, Py_None); if (unlikely(!__pyx_k_tuple_48)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 643; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_48);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_48));
 
   /* "View.MemoryView":646
  *                 seen_ellipsis = True
@@ -22552,9 +20693,9 @@ static int __Pyx_InitCachedConstants(void) {
  *             have_slices = True
  *         else:
  */
-  __pyx_k_tuple_57 = PyTuple_Pack(1, Py_None); if (unlikely(!__pyx_k_tuple_57)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 646; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_57);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_57));
+  __pyx_k_tuple_49 = PyTuple_Pack(1, Py_None); if (unlikely(!__pyx_k_tuple_49)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 646; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_49);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_49));
 
   /* "View.MemoryView":657
  *     nslices = ndim - len(result)
@@ -22563,9 +20704,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *     return have_slices or nslices, tuple(result)
  */
-  __pyx_k_tuple_59 = PyTuple_Pack(1, Py_None); if (unlikely(!__pyx_k_tuple_59)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 657; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_59);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_59));
+  __pyx_k_tuple_51 = PyTuple_Pack(1, Py_None); if (unlikely(!__pyx_k_tuple_51)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 657; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_51);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_51));
 
   /* "View.MemoryView":665
  *     for i in range(ndim):
@@ -22574,33 +20715,48 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  * 
  */
-  __pyx_k_tuple_61 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_60)); if (unlikely(!__pyx_k_tuple_61)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 665; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k_tuple_53 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_52)); if (unlikely(!__pyx_k_tuple_53)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 665; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_53);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_53));
+
+  /* "splitPixelFullLUT_b.pyx":94
+ *     """
+ *     @cython.boundscheck(False)
+ *     def __init__(self,             # <<<<<<<<<<<<<<
+ *                  numpy.ndarray pos not None,
+ *                  int bins=100,
+ */
+  __pyx_k_tuple_61 = PyTuple_Pack(10, ((PyObject *)__pyx_n_s__self), ((PyObject *)__pyx_n_s__pos), ((PyObject *)__pyx_n_s__bins), ((PyObject *)__pyx_n_s__pos0Range), ((PyObject *)__pyx_n_s__pos1Range), ((PyObject *)__pyx_n_s__mask), ((PyObject *)__pyx_n_s__mask_checksum), ((PyObject *)__pyx_n_s__allow_pos0_neg), ((PyObject *)__pyx_n_s__unit), ((PyObject *)__pyx_n_s__i)); if (unlikely(!__pyx_k_tuple_61)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_k_tuple_61);
   __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_61));
+  __pyx_k_codeobj_62 = (PyObject*)__Pyx_PyCode_New(9, 0, 10, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_k_tuple_61, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_63, __pyx_n_s____init__, 94, __pyx_empty_bytes); if (unlikely(!__pyx_k_codeobj_62)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "splitPixel.pyx":121
- * @cython.boundscheck(False)
- * @cython.wraparound(False)
- * def fullSplit1D(numpy.ndarray pos not None,             # <<<<<<<<<<<<<<
- *                 numpy.ndarray weights not None,
- *                 int bins=100,
+  /* "splitPixelFullLUT_b.pyx":150
+ *     @cython.boundscheck(False)
+ *     @cython.wraparound(False)
+ *     def calc_lut(self):             # <<<<<<<<<<<<<<
+ *         cdef numpy.ndarray[numpy.float64_t, ndim = 3] cpos = numpy.ascontiguousarray(self.pos,dtype=numpy.float64)
+ *         cdef numpy.int8_t[:] cmask
  */
-  __pyx_k_tuple_69 = PyTuple_Pack(71, ((PyObject *)__pyx_n_s__pos), ((PyObject *)__pyx_n_s__weights), ((PyObject *)__pyx_n_s__bins), ((PyObject *)__pyx_n_s__pos0Range), ((PyObject *)__pyx_n_s__pos1Range), ((PyObject *)__pyx_n_s__dummy), ((PyObject *)__pyx_n_s__delta_dummy), ((PyObject *)__pyx_n_s__mask), ((PyObject *)__pyx_n_s__dark), ((PyObject *)__pyx_n_s__flat), ((PyObject *)__pyx_n_s__solidangle), ((PyObject *)__pyx_n_s__polarization), ((PyObject *)__pyx_n_s__size), ((PyObject *)__pyx_n_s__cpos), ((PyObject *)__pyx_n_s__cdata), ((PyObject *)__pyx_n_s__outData), ((PyObject *)__pyx_n_s__outCount), ((PyObject *)__pyx_n_s__outMerge), ((PyObject *)__pyx_n_s__cmask), ((PyObject *)__pyx_n_s__cflat), ((PyObject *)__pyx_n_s__cdark), ((PyObject *)__pyx_n_s__cpolarization), ((PyObject *)__pyx_n_s__csolidangle), ((PyObject *)__pyx_n_s__buffer), ((PyObject *)__pyx_n_s__cdummy), ((PyObject *)__pyx_n_s__cddummy), ((PyObject *)__pyx_n_s__data), ((PyObject *)__pyx_n_s__deltaR), ((PyObject *)__pyx_n_s__deltaL), ((PyObject *)__pyx_n_s__one_over_area), ((PyObject *)__pyx_n_s__pos0_min), ((PyObject *)__pyx_n_s__pos0_max), ((PyObject *)__pyx_n_s__pos0_maxin), ((PyObject *)__pyx_n_s__pos1_min), ((PyObject *)__pyx_n_s__pos1_max), ((PyObject *)__pyx_n_s__pos1_maxin), ((PyObject *)__pyx_n_s__aera_pixel), ((PyObject *)__pyx_n_s__sum_area), ((PyObject *)__pyx_n_s__sub_area), ((PyObject *)__pyx_n_s__dpos), ((PyObject *)__pyx_n_s__fbin0_min), ((PyObject *)__pyx_n_s__fbin0_max), ((PyObject *)__pyx_n_s__a0), ((PyObject *)__pyx_n_s__b0), ((PyObject *)__pyx_n_s__c0), ((PyObject *)__pyx_n_s__d0), ((PyObject *)__pyx_n_s__max0), ((PyObject *)__pyx_n_s__min0), ((PyObject *)__pyx_n_s__a1), ((PyObject *)__pyx_n_s__b1), ((PyObject *)__pyx_n_s__c1), ((PyObject *)__pyx_n_s__d1), ((PyObject *)__pyx_n_s__max1), ((PyObject *)__pyx_n_s__min1), ((PyObject *)__pyx_n_s__epsilon), ((PyObject *)__pyx_n_s__check_pos1), ((PyObject *)__pyx_n_s__check_mask), ((PyObject *)__pyx_n_s__do_dummy), ((PyObject *)__pyx_n_s__do_dark), ((PyObject *)__pyx_n_s__do_flat), ((PyObject *)__pyx_n_s__do_polarization), ((PyObject *)__pyx_n_s__do_solidangle), ((PyObject *)__pyx_n_s__i), ((PyObject *)__pyx_n_s__b), ((PyObject *)__pyx_n_s__idx), ((PyObject *)__pyx_n_s__bin), ((PyObject *)__pyx_n_s__bin0_max), ((PyObject *)__pyx_n_s__bin0_min), ((PyObject *)__pyx_n_s__do_pos1), ((PyObject *)__pyx_n_s__outPos), ((PyObject *)__pyx_n_s__check_dummy)); if (unlikely(!__pyx_k_tuple_69)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 121; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_69);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_69));
-  __pyx_k_codeobj_70 = (PyObject*)__Pyx_PyCode_New(12, 0, 71, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_k_tuple_69, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_71, __pyx_n_s__fullSplit1D, 121, __pyx_empty_bytes); if (unlikely(!__pyx_k_codeobj_70)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 121; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k_tuple_65 = PyTuple_Pack(50, ((PyObject *)__pyx_n_s__self), ((PyObject *)__pyx_n_s__cpos), ((PyObject *)__pyx_n_s__cmask), ((PyObject *)__pyx_n_s__outMax), ((PyObject *)__pyx_n_s__indptr), ((PyObject *)__pyx_n_s__pos0_min), ((PyObject *)__pyx_n_s__pos0_max), ((PyObject *)__pyx_n_s__pos0_maxin), ((PyObject *)__pyx_n_s__pos1_min), ((PyObject *)__pyx_n_s__pos1_max), ((PyObject *)__pyx_n_s__pos1_maxin), ((PyObject *)__pyx_n_s__max0), ((PyObject *)__pyx_n_s__min0), ((PyObject *)__pyx_n_s__areaPixel), ((PyObject *)__pyx_n_s__delta), ((PyObject *)__pyx_n_s__A0), ((PyObject *)__pyx_n_s__B0), ((PyObject *)__pyx_n_s__C0), ((PyObject *)__pyx_n_s__D0), ((PyObject *)__pyx_n_s__A1), ((PyObject *)__pyx_n_s__B1), ((PyObject *)__pyx_n_s__C1), ((PyObject *)__pyx_n_s__D1), ((PyObject *)__pyx_n_s__A_lim), ((PyObject *)__pyx_n_s__B_lim), ((PyObject *)__pyx_n_s__C_lim), ((PyObject *)__pyx_n_s__D_lim), ((PyObject *)__pyx_n_s__oneOverArea), ((PyObject *)__pyx_n_s__partialArea), ((PyObject *)__pyx_n_s__tmp), ((PyObject *)__pyx_n_s__AB), ((PyObject *)__pyx_n_s__BC), ((PyObject *)__pyx_n_s__CD), ((PyObject *)__pyx_n_s__DA), ((PyObject *)__pyx_n_s__bins), ((PyObject *)__pyx_n_s__i), ((PyObject *)__pyx_n_s__idx), ((PyObject *)__pyx_n_s__bin), ((PyObject *)__pyx_n_s__bin0_max), ((PyObject *)__pyx_n_s__bin0_min), ((PyObject *)__pyx_n_s__pixel_bins), ((PyObject *)__pyx_n_s__k), ((PyObject *)__pyx_n_s__size), ((PyObject *)__pyx_n_s__check_pos1), ((PyObject *)__pyx_n_s__check_mask), ((PyObject *)__pyx_n_s__indices), ((PyObject *)__pyx_n_s__data), ((PyObject *)__pyx_n_s__areas), ((PyObject *)__pyx_n_s__oneOverPixelArea), ((PyObject *)__pyx_n_s__partialArea2)); if (unlikely(!__pyx_k_tuple_65)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_65);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_65));
+  __pyx_k_codeobj_66 = (PyObject*)__Pyx_PyCode_New(1, 0, 50, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_k_tuple_65, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_63, __pyx_n_s__calc_lut, 150, __pyx_empty_bytes); if (unlikely(!__pyx_k_codeobj_66)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "splitPixel.pyx":382
- * @cython.boundscheck(False)
- * @cython.wraparound(False)
- * def fullSplit2D(numpy.ndarray pos not None,             # <<<<<<<<<<<<<<
- *                 numpy.ndarray weights not None,
- *                 bins not None,
+  /* "splitPixelFullLUT_b.pyx":302
+ *     @cython.boundscheck(False)
+ *     @cython.wraparound(False)
+ *     def integrate(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None):             # <<<<<<<<<<<<<<
+ *         """
+ *         Actually perform the integration which in this case looks more like a matrix-vector product
  */
-  __pyx_k_tuple_72 = PyTuple_Pack(75, ((PyObject *)__pyx_n_s__pos), ((PyObject *)__pyx_n_s__weights), ((PyObject *)__pyx_n_s__bins), ((PyObject *)__pyx_n_s__pos0Range), ((PyObject *)__pyx_n_s__pos1Range), ((PyObject *)__pyx_n_s__dummy), ((PyObject *)__pyx_n_s__delta_dummy), ((PyObject *)__pyx_n_s__mask), ((PyObject *)__pyx_n_s__dark), ((PyObject *)__pyx_n_s__flat), ((PyObject *)__pyx_n_s__solidangle), ((PyObject *)__pyx_n_s__polarization), ((PyObject *)__pyx_n_s__bins0), ((PyObject *)__pyx_n_s__bins1), ((PyObject *)__pyx_n_s__size), ((PyObject *)__pyx_n_s__cpos), ((PyObject *)__pyx_n_s__cdata), ((PyObject *)__pyx_n_s__outData), ((PyObject *)__pyx_n_s__outCount), ((PyObject *)__pyx_n_s__outMerge), ((PyObject *)__pyx_n_s__edges0), ((PyObject *)__pyx_n_s__edges1), ((PyObject *)__pyx_n_s__cmask), ((PyObject *)__pyx_n_s__cflat), ((PyObject *)__pyx_n_s__cdark), ((PyObject *)__pyx_n_s__cpolarization), ((PyObject *)__pyx_n_s__csolidangle), ((PyObject *)__pyx_n_s__check_mask), ((PyObject *)__pyx_n_s__do_dummy), ((PyObject *)__pyx_n_s__do_dark), ((PyObject *)__pyx_n_s__do_flat), ((PyObject *)__pyx_n_s__do_polarization), ((PyObject *)__pyx_n_s__do_solidangle), ((PyObject *)__pyx_n_s__cdummy), ((PyObject *)__pyx_n_s__cddummy), ((PyObject *)__pyx_n_s__data), ((PyObject *)__pyx_n_s__min0), ((PyObject *)__pyx_n_s__max0), ((PyObject *)__pyx_n_s__min1), ((PyObject *)__pyx_n_s__max1), ((PyObject *)__pyx_n_s__deltaR), ((PyObject *)__pyx_n_s__deltaL), ((PyObject *)__pyx_n_s__deltaU), ((PyObject *)__pyx_n_s__deltaD), ((PyObject *)__pyx_n_s__one_over_area), ((PyObject *)__pyx_n_s__pos0_min), ((PyObject *)__pyx_n_s__pos0_max), ((PyObject *)__pyx_n_s__pos1_min), ((PyObject *)__pyx_n_s__pos1_max), ((PyObject *)__pyx_n_s__pos0_maxin), ((PyObject *)__pyx_n_s__pos1_maxin), ((PyObject *)__pyx_n_s__aera_pixel), ((PyObject *)__pyx_n_s__fbin0_min), ((PyObject *)__pyx_n_s__fbin0_max), ((PyObject *)__pyx_n_s__fbin1_min), ((PyObject *)__pyx_n_s__fbin1_max), ((PyObject *)__pyx_n_s__a0), ((PyObject *)__pyx_n_s__a1), ((PyObject *)__pyx_n_s__b0), ((PyObject *)__pyx_n_s__b1), ((PyObject *)__pyx_n_s__c0), ((PyObject *)__pyx_n_s__c1), ((PyObject *)__pyx_n_s__d0), ((PyObject *)__pyx_n_s__d1), ((PyObject *)__pyx_n_s__epsilon), ((PyObject *)__pyx_n_s__bin0_max), ((PyObject *)__pyx_n_s__bin0_min), ((PyObject *)__pyx_n_s__bin1_max), ((PyObject *)__pyx_n_s__bin1_min), ((PyObject *)__pyx_n_s__i), ((PyObject *)__pyx_n_s__j), ((PyObject *)__pyx_n_s__idx), ((PyObject *)__pyx_n_s__dpos0), ((PyObject *)__pyx_n_s__dpos1), ((PyObject *)__pyx_n_s__check_dummy)); if (unlikely(!__pyx_k_tuple_72)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 382; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_72);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_72));
-  __pyx_k_codeobj_73 = (PyObject*)__Pyx_PyCode_New(12, 0, 75, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_k_tuple_72, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_71, __pyx_n_s__fullSplit2D, 382, __pyx_empty_bytes); if (unlikely(!__pyx_k_codeobj_73)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 382; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k_tuple_68 = PyTuple_Pack(37, ((PyObject *)__pyx_n_s__self), ((PyObject *)__pyx_n_s__weights), ((PyObject *)__pyx_n_s__dummy), ((PyObject *)__pyx_n_s__delta_dummy), ((PyObject *)__pyx_n_s__dark), ((PyObject *)__pyx_n_s__flat), ((PyObject *)__pyx_n_s__solidAngle), ((PyObject *)__pyx_n_s__polarization), ((PyObject *)__pyx_n_s__i), ((PyObject *)__pyx_n_s__j), ((PyObject *)__pyx_n_s__idx), ((PyObject *)__pyx_n_s__bins), ((PyObject *)__pyx_n_s__size), ((PyObject *)__pyx_n_s__sum_data), ((PyObject *)__pyx_n_s__sum_count), ((PyObject *)__pyx_n_s__epsilon), ((PyObject *)__pyx_n_s__data), ((PyObject *)__pyx_n_s__coef), ((PyObject *)__pyx_n_s__cdummy), ((PyObject *)__pyx_n_s__cddummy), ((PyObject *)__pyx_n_s__do_dummy), ((PyObject *)__pyx_n_s__do_dark), ((PyObject *)__pyx_n_s__do_flat), ((PyObject *)__pyx_n_s__do_polarization), ((PyObject *)__pyx_n_s__do_solidAngle), ((PyObject *)__pyx_n_s__outData), ((PyObject *)__pyx_n_s__outCount), ((PyObject *)__pyx_n_s__outMerge), ((PyObject *)__pyx_n_s__ccoef), ((PyObject *)__pyx_n_s__cdata), ((PyObject *)__pyx_n_s__tdata), ((PyObject *)__pyx_n_s__cflat), ((PyObject *)__pyx_n_s__cdark), ((PyObject *)__pyx_n_s__csolidAngle), ((PyObject *)__pyx_n_s__cpolarization), ((PyObject *)__pyx_n_s__indices), ((PyObject *)__pyx_n_s__indptr)); if (unlikely(!__pyx_k_tuple_68)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 302; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_68);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_68));
+  __pyx_k_codeobj_69 = (PyObject*)__Pyx_PyCode_New(8, 0, 37, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_k_tuple_68, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_63, __pyx_n_s__integrate, 302, __pyx_empty_bytes); if (unlikely(!__pyx_k_codeobj_69)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 302; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_k_tuple_70 = PyTuple_Pack(6, ((PyObject *)Py_None), ((PyObject *)Py_None), ((PyObject *)Py_None), ((PyObject *)Py_None), ((PyObject *)Py_None), ((PyObject *)Py_None)); if (unlikely(!__pyx_k_tuple_70)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 302; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_70);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_70));
 
   /* "View.MemoryView":282
  *         return self.name
@@ -22609,9 +20765,9 @@ static int __Pyx_InitCachedConstants(void) {
  * cdef strided = Enum("<strided and direct>") # default
  * cdef indirect = Enum("<strided and indirect>")
  */
-  __pyx_k_tuple_76 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_75)); if (unlikely(!__pyx_k_tuple_76)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 282; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_76);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_76));
+  __pyx_k_tuple_75 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_74)); if (unlikely(!__pyx_k_tuple_75)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 282; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_75);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_75));
 
   /* "View.MemoryView":283
  * 
@@ -22620,9 +20776,9 @@ static int __Pyx_InitCachedConstants(void) {
  * cdef indirect = Enum("<strided and indirect>")
  * 
  */
-  __pyx_k_tuple_78 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_77)); if (unlikely(!__pyx_k_tuple_78)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 283; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_78);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_78));
+  __pyx_k_tuple_77 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_76)); if (unlikely(!__pyx_k_tuple_77)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 283; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_77);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_77));
 
   /* "View.MemoryView":284
  * cdef generic = Enum("<strided and direct or indirect>")
@@ -22631,9 +20787,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  * 
  */
-  __pyx_k_tuple_80 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_79)); if (unlikely(!__pyx_k_tuple_80)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 284; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_80);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_80));
+  __pyx_k_tuple_79 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_78)); if (unlikely(!__pyx_k_tuple_79)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 284; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_79);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_79));
 
   /* "View.MemoryView":287
  * 
@@ -22642,9 +20798,9 @@ static int __Pyx_InitCachedConstants(void) {
  * cdef indirect_contiguous = Enum("<contiguous and indirect>")
  * 
  */
-  __pyx_k_tuple_82 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_81)); if (unlikely(!__pyx_k_tuple_82)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 287; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_82);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_82));
+  __pyx_k_tuple_81 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_80)); if (unlikely(!__pyx_k_tuple_81)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 287; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_81);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_81));
 
   /* "View.MemoryView":288
  * 
@@ -22653,9 +20809,9 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  * 
  */
-  __pyx_k_tuple_84 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_83)); if (unlikely(!__pyx_k_tuple_84)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 288; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_k_tuple_84);
-  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_84));
+  __pyx_k_tuple_83 = PyTuple_Pack(1, ((PyObject *)__pyx_kp_s_82)); if (unlikely(!__pyx_k_tuple_83)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 288; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_k_tuple_83);
+  __Pyx_GIVEREF(((PyObject *)__pyx_k_tuple_83));
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -22664,6 +20820,13 @@ static int __Pyx_InitCachedConstants(void) {
 }
 
 static int __Pyx_InitGlobals(void) {
+  /* InitThreads.init */
+  #ifdef WITH_THREAD
+PyEval_InitThreads();
+#endif
+
+if (unlikely(PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
   if (__Pyx_InitStrings(__pyx_string_tab) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __pyx_int_0 = PyInt_FromLong(0); if (unlikely(!__pyx_int_0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __pyx_int_1 = PyInt_FromLong(1); if (unlikely(!__pyx_int_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
@@ -22677,16 +20840,21 @@ static int __Pyx_InitGlobals(void) {
 }
 
 #if PY_MAJOR_VERSION < 3
-PyMODINIT_FUNC initsplitPixel(void); /*proto*/
-PyMODINIT_FUNC initsplitPixel(void)
+PyMODINIT_FUNC initsplitPixelFullLUT_b(void); /*proto*/
+PyMODINIT_FUNC initsplitPixelFullLUT_b(void)
 #else
-PyMODINIT_FUNC PyInit_splitPixel(void); /*proto*/
-PyMODINIT_FUNC PyInit_splitPixel(void)
+PyMODINIT_FUNC PyInit_splitPixelFullLUT_b(void); /*proto*/
+PyMODINIT_FUNC PyInit_splitPixelFullLUT_b(void)
 #endif
 {
   PyObject *__pyx_t_1 = NULL;
   PyObject *__pyx_t_2 = NULL;
   PyObject *__pyx_t_3 = NULL;
+  PyObject *__pyx_t_4 = NULL;
+  PyObject *__pyx_t_5 = NULL;
+  PyObject *__pyx_t_6 = NULL;
+  PyObject *__pyx_t_7 = NULL;
+  PyObject *__pyx_t_8 = NULL;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -22700,7 +20868,7 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
           Py_FatalError("failed to import 'refnanny' module");
   }
   #endif
-  __Pyx_RefNannySetupContext("PyMODINIT_FUNC PyInit_splitPixel(void)", 0);
+  __Pyx_RefNannySetupContext("PyMODINIT_FUNC PyInit_splitPixelFullLUT_b(void)", 0);
   if ( __Pyx_check_binary_version() < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_empty_tuple = PyTuple_New(0); if (unlikely(!__pyx_empty_tuple)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_empty_bytes = PyBytes_FromStringAndSize("", 0); if (unlikely(!__pyx_empty_bytes)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -22722,7 +20890,7 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
   #endif
   /*--- Module creation code ---*/
   #if PY_MAJOR_VERSION < 3
-  __pyx_m = Py_InitModule4(__Pyx_NAMESTR("splitPixel"), __pyx_methods, 0, 0, PYTHON_API_VERSION); Py_XINCREF(__pyx_m);
+  __pyx_m = Py_InitModule4(__Pyx_NAMESTR("splitPixelFullLUT_b"), __pyx_methods, 0, 0, PYTHON_API_VERSION); Py_XINCREF(__pyx_m);
   #else
   __pyx_m = PyModule_Create(&__pyx_moduledef);
   #endif
@@ -22732,8 +20900,8 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    if (!PyDict_GetItemString(modules, "splitPixel")) {
-      if (unlikely(PyDict_SetItemString(modules, "splitPixel", __pyx_m) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!PyDict_GetItemString(modules, "splitPixelFullLUT_b")) {
+      if (unlikely(PyDict_SetItemString(modules, "splitPixelFullLUT_b", __pyx_m) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
   }
   #endif
@@ -22747,7 +20915,7 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   #endif
-  if (__pyx_module_is_main_splitPixel) {
+  if (__pyx_module_is_main_splitPixelFullLUT_b) {
     if (__Pyx_SetAttrString(__pyx_m, "__name__", __pyx_n_s____main__) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   }
   /*--- Builtin init code ---*/
@@ -22803,86 +20971,277 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
   /*--- Function import code ---*/
   /*--- Execution code ---*/
 
-  /* "splitPixel.pyx":30
+  /* "splitPixelFullLUT_b.pyx":27
+ * #
  * import cython
- * cimport numpy
- * import numpy             # <<<<<<<<<<<<<<
- * from libc.math cimport fabs, ceil, floor
+ * import os, sys             # <<<<<<<<<<<<<<
+ * from cython.parallel import prange
  * from libc.string cimport memset
+ */
+  __pyx_t_1 = __Pyx_Import(((PyObject *)__pyx_n_s__os), 0, -1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s__os, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_1 = __Pyx_Import(((PyObject *)__pyx_n_s__sys), 0, -1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s__sys, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "splitPixelFullLUT_b.pyx":30
+ * from cython.parallel import prange
+ * from libc.string cimport memset
+ * import numpy             # <<<<<<<<<<<<<<
+ * cimport numpy
+ * from libc.math cimport fabs, M_PI, floor
  */
   __pyx_t_1 = __Pyx_Import(((PyObject *)__pyx_n_s__numpy), 0, -1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s__numpy, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "splitPixel.pyx":35
- * from cython cimport view
+  /* "splitPixelFullLUT_b.pyx":35
+ * from libc.stdio cimport printf
  * 
- * EPS32 = (1 + numpy.finfo(numpy.float32).eps)             # <<<<<<<<<<<<<<
- * 
- * #cdef double area3(double a0,
+ * cdef float pi = <float> M_PI             # <<<<<<<<<<<<<<
+ * cdef float onef = <float> 1.0
+ * try:
  */
-  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 35; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_v_19splitPixelFullLUT_b_pi = ((float)M_PI);
+
+  /* "splitPixelFullLUT_b.pyx":36
+ * 
+ * cdef float pi = <float> M_PI
+ * cdef float onef = <float> 1.0             # <<<<<<<<<<<<<<
+ * try:
+ *     from fastcrc import crc32
+ */
+  __pyx_v_19splitPixelFullLUT_b_onef = ((float)1.0);
+
+  /* "splitPixelFullLUT_b.pyx":37
+ * cdef float pi = <float> M_PI
+ * cdef float onef = <float> 1.0
+ * try:             # <<<<<<<<<<<<<<
+ *     from fastcrc import crc32
+ * except:
+ */
+  {
+    __Pyx_ExceptionSave(&__pyx_t_2, &__pyx_t_3, &__pyx_t_4);
+    __Pyx_XGOTREF(__pyx_t_2);
+    __Pyx_XGOTREF(__pyx_t_3);
+    __Pyx_XGOTREF(__pyx_t_4);
+    /*try:*/ {
+
+      /* "splitPixelFullLUT_b.pyx":38
+ * cdef float onef = <float> 1.0
+ * try:
+ *     from fastcrc import crc32             # <<<<<<<<<<<<<<
+ * except:
+ *     from zlib import crc32
+ */
+      __pyx_t_1 = PyList_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L2_error;}
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_INCREF(((PyObject *)__pyx_n_s__crc32));
+      PyList_SET_ITEM(__pyx_t_1, 0, ((PyObject *)__pyx_n_s__crc32));
+      __Pyx_GIVEREF(((PyObject *)__pyx_n_s__crc32));
+      __pyx_t_5 = __Pyx_Import(((PyObject *)__pyx_n_s__fastcrc), ((PyObject *)__pyx_t_1), -1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L2_error;}
+      __Pyx_GOTREF(__pyx_t_5);
+      __Pyx_DECREF(((PyObject *)__pyx_t_1)); __pyx_t_1 = 0;
+      __pyx_t_1 = __Pyx_ImportFrom(__pyx_t_5, __pyx_n_s__crc32); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L2_error;}
+      __Pyx_GOTREF(__pyx_t_1);
+      if (PyDict_SetItem(__pyx_d, __pyx_n_s__crc32, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L2_error;}
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    }
+    __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+    goto __pyx_L9_try_end;
+    __pyx_L2_error:;
+    __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+    __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+
+    /* "splitPixelFullLUT_b.pyx":39
+ * try:
+ *     from fastcrc import crc32
+ * except:             # <<<<<<<<<<<<<<
+ *     from zlib import crc32
+ * EPS32 = (1.0 + numpy.finfo(numpy.float64).eps)
+ */
+    /*except:*/ {
+      __Pyx_AddTraceback("splitPixelFullLUT_b", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      if (__Pyx_GetException(&__pyx_t_5, &__pyx_t_1, &__pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L4_except_error;}
+      __Pyx_GOTREF(__pyx_t_5);
+      __Pyx_GOTREF(__pyx_t_1);
+      __Pyx_GOTREF(__pyx_t_6);
+
+      /* "splitPixelFullLUT_b.pyx":40
+ *     from fastcrc import crc32
+ * except:
+ *     from zlib import crc32             # <<<<<<<<<<<<<<
+ * EPS32 = (1.0 + numpy.finfo(numpy.float64).eps)
+ * 
+ */
+      __pyx_t_7 = PyList_New(1); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L4_except_error;}
+      __Pyx_GOTREF(__pyx_t_7);
+      __Pyx_INCREF(((PyObject *)__pyx_n_s__crc32));
+      PyList_SET_ITEM(__pyx_t_7, 0, ((PyObject *)__pyx_n_s__crc32));
+      __Pyx_GIVEREF(((PyObject *)__pyx_n_s__crc32));
+      __pyx_t_8 = __Pyx_Import(((PyObject *)__pyx_n_s__zlib), ((PyObject *)__pyx_t_7), -1); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L4_except_error;}
+      __Pyx_GOTREF(__pyx_t_8);
+      __Pyx_DECREF(((PyObject *)__pyx_t_7)); __pyx_t_7 = 0;
+      __pyx_t_7 = __Pyx_ImportFrom(__pyx_t_8, __pyx_n_s__crc32); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L4_except_error;}
+      __Pyx_GOTREF(__pyx_t_7);
+      if (PyDict_SetItem(__pyx_d, __pyx_n_s__crc32, __pyx_t_7) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L4_except_error;}
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+      goto __pyx_L3_exception_handled;
+    }
+    __pyx_L4_except_error:;
+    __Pyx_XGIVEREF(__pyx_t_2);
+    __Pyx_XGIVEREF(__pyx_t_3);
+    __Pyx_XGIVEREF(__pyx_t_4);
+    __Pyx_ExceptionReset(__pyx_t_2, __pyx_t_3, __pyx_t_4);
+    goto __pyx_L1_error;
+    __pyx_L3_exception_handled:;
+    __Pyx_XGIVEREF(__pyx_t_2);
+    __Pyx_XGIVEREF(__pyx_t_3);
+    __Pyx_XGIVEREF(__pyx_t_4);
+    __Pyx_ExceptionReset(__pyx_t_2, __pyx_t_3, __pyx_t_4);
+    __pyx_L9_try_end:;
+  }
+
+  /* "splitPixelFullLUT_b.pyx":41
+ * except:
+ *     from zlib import crc32
+ * EPS32 = (1.0 + numpy.finfo(numpy.float64).eps)             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+  __pyx_t_6 = PyFloat_FromDouble(1.0); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 41; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_6);
+  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 41; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s__finfo); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 35; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s__finfo); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 41; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 35; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s__numpy); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 41; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s__float32); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 35; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s__float64); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 41; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 35; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 41; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_3);
-  __Pyx_GIVEREF(__pyx_t_3);
-  __pyx_t_3 = 0;
-  __pyx_t_3 = PyObject_Call(__pyx_t_2, ((PyObject *)__pyx_t_1), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 35; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_3);
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_8);
+  __Pyx_GIVEREF(__pyx_t_8);
+  __pyx_t_8 = 0;
+  __pyx_t_8 = PyObject_Call(__pyx_t_5, ((PyObject *)__pyx_t_1), NULL); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 41; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_8);
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __Pyx_DECREF(((PyObject *)__pyx_t_1)); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s__eps); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 35; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s__eps); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 41; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = PyNumber_Add(__pyx_int_1, __pyx_t_1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 35; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+  __pyx_t_8 = PyNumber_Add(__pyx_t_6, __pyx_t_1); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 41; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_8);
+  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s__EPS32, __pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 35; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s__EPS32, __pyx_t_8) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 41; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-  /* "splitPixel.pyx":121
- * @cython.boundscheck(False)
- * @cython.wraparound(False)
- * def fullSplit1D(numpy.ndarray pos not None,             # <<<<<<<<<<<<<<
- *                 numpy.ndarray weights not None,
- *                 int bins=100,
+  /* "splitPixelFullLUT_b.pyx":83
+ * 
+ * 
+ * class HistoLUT1dFullSplit(object):             # <<<<<<<<<<<<<<
+ *     """
+ *     Now uses CSR (Compressed Sparse raw) with main attributes:
  */
-  __pyx_t_3 = PyCFunction_NewEx(&__pyx_mdef_10splitPixel_1fullSplit1D, NULL, __pyx_n_s__splitPixel); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 121; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_3);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s__fullSplit1D, __pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 121; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_8 = PyDict_New(); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 83; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(((PyObject *)__pyx_t_8));
 
-  /* "splitPixel.pyx":382
- * @cython.boundscheck(False)
- * @cython.wraparound(False)
- * def fullSplit2D(numpy.ndarray pos not None,             # <<<<<<<<<<<<<<
- *                 numpy.ndarray weights not None,
- *                 bins not None,
+  /* "splitPixelFullLUT_b.pyx":94
+ *     """
+ *     @cython.boundscheck(False)
+ *     def __init__(self,             # <<<<<<<<<<<<<<
+ *                  numpy.ndarray pos not None,
+ *                  int bins=100,
  */
-  __pyx_t_3 = PyCFunction_NewEx(&__pyx_mdef_10splitPixel_3fullSplit2D, NULL, __pyx_n_s__splitPixel); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 382; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_3);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s__fullSplit2D, __pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 382; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_1__init__, 0, __pyx_n_s_64, NULL, __pyx_n_s__splitPixelFullLUT_b, ((PyObject *)__pyx_k_codeobj_62)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  if (!__Pyx_CyFunction_InitDefaults(__pyx_t_1, sizeof(__pyx_defaults), 1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "splitPixel.pyx":1
+  /* "splitPixelFullLUT_b.pyx":101
+ *                  mask=None,
+ *                  mask_checksum=None,
+ *                  allow_pos0_neg=False,             # <<<<<<<<<<<<<<
+ *                  unit="undefined"):
+ *         """
+ */
+  __pyx_t_6 = __Pyx_PyBool_FromLong(0); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 101; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_6);
+  __Pyx_CyFunction_Defaults(__pyx_defaults, __pyx_t_1)->__pyx_arg_allow_pos0_neg = __pyx_t_6;
+  __Pyx_GIVEREF(__pyx_t_6);
+  __pyx_t_6 = 0;
+  __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_1, __pyx_pf_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_6__defaults__);
+  if (PyObject_SetItem(__pyx_t_8, __pyx_n_s____init__, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "splitPixelFullLUT_b.pyx":150
+ *     @cython.boundscheck(False)
+ *     @cython.wraparound(False)
+ *     def calc_lut(self):             # <<<<<<<<<<<<<<
+ *         cdef numpy.ndarray[numpy.float64_t, ndim = 3] cpos = numpy.ascontiguousarray(self.pos,dtype=numpy.float64)
+ *         cdef numpy.int8_t[:] cmask
+ */
+  __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_3calc_lut, 0, __pyx_n_s_67, NULL, __pyx_n_s__splitPixelFullLUT_b, ((PyObject *)__pyx_k_codeobj_66)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  if (PyObject_SetItem(__pyx_t_8, __pyx_n_s__calc_lut, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "splitPixelFullLUT_b.pyx":302
+ *     @cython.boundscheck(False)
+ *     @cython.wraparound(False)
+ *     def integrate(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None):             # <<<<<<<<<<<<<<
+ *         """
+ *         Actually perform the integration which in this case looks more like a matrix-vector product
+ */
+  __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_19splitPixelFullLUT_b_19HistoLUT1dFullSplit_5integrate, 0, __pyx_n_s_71, NULL, __pyx_n_s__splitPixelFullLUT_b, ((PyObject *)__pyx_k_codeobj_69)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 302; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_1, ((PyObject *)__pyx_k_tuple_70));
+  if (PyObject_SetItem(__pyx_t_8, __pyx_n_s__integrate, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 302; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "splitPixelFullLUT_b.pyx":83
+ * 
+ * 
+ * class HistoLUT1dFullSplit(object):             # <<<<<<<<<<<<<<
+ *     """
+ *     Now uses CSR (Compressed Sparse raw) with main attributes:
+ */
+  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 83; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_INCREF(__pyx_builtin_object);
+  PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_builtin_object);
+  __Pyx_GIVEREF(__pyx_builtin_object);
+  if (PyDict_SetItemString(((PyObject *)__pyx_t_8), "__doc__", ((PyObject *)__pyx_kp_s_72)) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 83; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = __Pyx_CreateClass(((PyObject *)__pyx_t_1), ((PyObject *)__pyx_t_8), __pyx_n_s__HistoLUT1dFullSplit, __pyx_n_s__HistoLUT1dFullSplit, __pyx_n_s__splitPixelFullLUT_b); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 83; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_6);
+  __Pyx_DECREF(((PyObject *)__pyx_t_1)); __pyx_t_1 = 0;
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s__HistoLUT1dFullSplit, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 83; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+  __Pyx_DECREF(((PyObject *)__pyx_t_8)); __pyx_t_8 = 0;
+
+  /* "splitPixelFullLUT_b.pyx":1
  * #!/usr/bin/env python             # <<<<<<<<<<<<<<
  * # -*- coding: utf-8 -*-
  * #
  */
-  __pyx_t_3 = PyDict_New(); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(((PyObject *)__pyx_t_3));
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s____test__, ((PyObject *)__pyx_t_3)) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(((PyObject *)__pyx_t_3)); __pyx_t_3 = 0;
+  __pyx_t_8 = PyDict_New(); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(((PyObject *)__pyx_t_8));
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s____test__, ((PyObject *)__pyx_t_8)) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(((PyObject *)__pyx_t_8)); __pyx_t_8 = 0;
 
   /* "View.MemoryView":207
  *         info.obj = self
@@ -22891,10 +21250,10 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
  * 
  *     def __dealloc__(array self):
  */
-  __pyx_t_3 = __pyx_capsule_create(((void *)(&__pyx_array_getbuffer)), __pyx_k_74); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 207; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_3);
-  if (PyDict_SetItem(__pyx_array_type->tp_dict, __pyx_n_s____pyx_getbuffer, __pyx_t_3) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 207; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_8 = __pyx_capsule_create(((void *)(&__pyx_array_getbuffer)), __pyx_k_73); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 207; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_8);
+  if (PyDict_SetItem(__pyx_array_type->tp_dict, __pyx_n_s____pyx_getbuffer, __pyx_t_8) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 207; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   PyType_Modified(__pyx_array_type);
 
   /* "View.MemoryView":282
@@ -22904,12 +21263,12 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
  * cdef strided = Enum("<strided and direct>") # default
  * cdef indirect = Enum("<strided and indirect>")
  */
-  __pyx_t_3 = PyObject_Call(((PyObject *)((PyObject *)__pyx_MemviewEnum_type)), ((PyObject *)__pyx_k_tuple_76), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 282; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_8 = PyObject_Call(((PyObject *)((PyObject *)__pyx_MemviewEnum_type)), ((PyObject *)__pyx_k_tuple_75), NULL); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 282; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_8);
   __Pyx_XGOTREF(generic);
-  __Pyx_DECREF_SET(generic, __pyx_t_3);
-  __Pyx_GIVEREF(__pyx_t_3);
-  __pyx_t_3 = 0;
+  __Pyx_DECREF_SET(generic, __pyx_t_8);
+  __Pyx_GIVEREF(__pyx_t_8);
+  __pyx_t_8 = 0;
 
   /* "View.MemoryView":283
  * 
@@ -22918,12 +21277,12 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
  * cdef indirect = Enum("<strided and indirect>")
  * 
  */
-  __pyx_t_3 = PyObject_Call(((PyObject *)((PyObject *)__pyx_MemviewEnum_type)), ((PyObject *)__pyx_k_tuple_78), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 283; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_8 = PyObject_Call(((PyObject *)((PyObject *)__pyx_MemviewEnum_type)), ((PyObject *)__pyx_k_tuple_77), NULL); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 283; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_8);
   __Pyx_XGOTREF(strided);
-  __Pyx_DECREF_SET(strided, __pyx_t_3);
-  __Pyx_GIVEREF(__pyx_t_3);
-  __pyx_t_3 = 0;
+  __Pyx_DECREF_SET(strided, __pyx_t_8);
+  __Pyx_GIVEREF(__pyx_t_8);
+  __pyx_t_8 = 0;
 
   /* "View.MemoryView":284
  * cdef generic = Enum("<strided and direct or indirect>")
@@ -22932,12 +21291,12 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
  * 
  * 
  */
-  __pyx_t_3 = PyObject_Call(((PyObject *)((PyObject *)__pyx_MemviewEnum_type)), ((PyObject *)__pyx_k_tuple_80), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 284; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_8 = PyObject_Call(((PyObject *)((PyObject *)__pyx_MemviewEnum_type)), ((PyObject *)__pyx_k_tuple_79), NULL); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 284; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_8);
   __Pyx_XGOTREF(indirect);
-  __Pyx_DECREF_SET(indirect, __pyx_t_3);
-  __Pyx_GIVEREF(__pyx_t_3);
-  __pyx_t_3 = 0;
+  __Pyx_DECREF_SET(indirect, __pyx_t_8);
+  __Pyx_GIVEREF(__pyx_t_8);
+  __pyx_t_8 = 0;
 
   /* "View.MemoryView":287
  * 
@@ -22946,12 +21305,12 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
  * cdef indirect_contiguous = Enum("<contiguous and indirect>")
  * 
  */
-  __pyx_t_3 = PyObject_Call(((PyObject *)((PyObject *)__pyx_MemviewEnum_type)), ((PyObject *)__pyx_k_tuple_82), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 287; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_8 = PyObject_Call(((PyObject *)((PyObject *)__pyx_MemviewEnum_type)), ((PyObject *)__pyx_k_tuple_81), NULL); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 287; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_8);
   __Pyx_XGOTREF(contiguous);
-  __Pyx_DECREF_SET(contiguous, __pyx_t_3);
-  __Pyx_GIVEREF(__pyx_t_3);
-  __pyx_t_3 = 0;
+  __Pyx_DECREF_SET(contiguous, __pyx_t_8);
+  __Pyx_GIVEREF(__pyx_t_8);
+  __pyx_t_8 = 0;
 
   /* "View.MemoryView":288
  * 
@@ -22960,12 +21319,12 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
  * 
  * 
  */
-  __pyx_t_3 = PyObject_Call(((PyObject *)((PyObject *)__pyx_MemviewEnum_type)), ((PyObject *)__pyx_k_tuple_84), NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 288; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_8 = PyObject_Call(((PyObject *)((PyObject *)__pyx_MemviewEnum_type)), ((PyObject *)__pyx_k_tuple_83), NULL); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 288; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_8);
   __Pyx_XGOTREF(indirect_contiguous);
-  __Pyx_DECREF_SET(indirect_contiguous, __pyx_t_3);
-  __Pyx_GIVEREF(__pyx_t_3);
-  __pyx_t_3 = 0;
+  __Pyx_DECREF_SET(indirect_contiguous, __pyx_t_8);
+  __Pyx_GIVEREF(__pyx_t_8);
+  __pyx_t_8 = 0;
 
   /* "View.MemoryView":503
  *         info.obj = self
@@ -22974,10 +21333,10 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
  * 
  * 
  */
-  __pyx_t_3 = __pyx_capsule_create(((void *)(&__pyx_memoryview_getbuffer)), __pyx_k_74); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 503; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_3);
-  if (PyDict_SetItem(__pyx_memoryview_type->tp_dict, __pyx_n_s____pyx_getbuffer, __pyx_t_3) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 503; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_8 = __pyx_capsule_create(((void *)(&__pyx_memoryview_getbuffer)), __pyx_k_73); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 503; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_8);
+  if (PyDict_SetItem(__pyx_memoryview_type->tp_dict, __pyx_n_s____pyx_getbuffer, __pyx_t_8) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 503; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   PyType_Modified(__pyx_memoryview_type);
 
   /* "View.MemoryView":958
@@ -22987,10 +21346,10 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
  * 
  * 
  */
-  __pyx_t_3 = __pyx_capsule_create(((void *)(&__pyx_memoryview_getbuffer)), __pyx_k_74); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 958; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_3);
-  if (PyDict_SetItem(__pyx_memoryviewslice_type->tp_dict, __pyx_n_s____pyx_getbuffer, __pyx_t_3) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 958; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_8 = __pyx_capsule_create(((void *)(&__pyx_memoryview_getbuffer)), __pyx_k_73); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 958; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_8);
+  if (PyDict_SetItem(__pyx_memoryviewslice_type->tp_dict, __pyx_n_s____pyx_getbuffer, __pyx_t_8) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 958; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   PyType_Modified(__pyx_memoryviewslice_type);
 
   /* "View.MemoryView":1365
@@ -23003,13 +21362,15 @@ PyMODINIT_FUNC PyInit_splitPixel(void)
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_5);
+  __Pyx_XDECREF(__pyx_t_6);
+  __Pyx_XDECREF(__pyx_t_7);
+  __Pyx_XDECREF(__pyx_t_8);
   if (__pyx_m) {
-    __Pyx_AddTraceback("init splitPixel", __pyx_clineno, __pyx_lineno, __pyx_filename);
+    __Pyx_AddTraceback("init splitPixelFullLUT_b", __pyx_clineno, __pyx_lineno, __pyx_filename);
     Py_DECREF(__pyx_m); __pyx_m = 0;
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init splitPixel");
+    PyErr_SetString(PyExc_ImportError, "init splitPixelFullLUT_b");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -23795,43 +22156,102 @@ static void __Pyx_RaiseUnboundMemoryviewSliceNogil(const char *varname) {
     #endif
 }
 
-static double __Pyx__PyObject_AsDouble(PyObject* obj) {
-    PyObject* float_value;
-#if CYTHON_COMPILING_IN_PYPY
-    float_value = PyNumber_Float(obj);
-#else
-    PyNumberMethods *nb = Py_TYPE(obj)->tp_as_number;
-    if (likely(nb) && likely(nb->nb_float)) {
-        float_value = nb->nb_float(obj);
-        if (likely(float_value) && unlikely(!PyFloat_Check(float_value))) {
-            PyErr_Format(PyExc_TypeError,
-                "__float__ returned non-float (type %.200s)",
-                Py_TYPE(float_value)->tp_name);
-            Py_DECREF(float_value);
-            goto bad;
+static CYTHON_INLINE int __Pyx_PyObject_SetSlice(
+        PyObject* obj, PyObject* value, Py_ssize_t cstart, Py_ssize_t cstop,
+        PyObject** _py_start, PyObject** _py_stop, PyObject** _py_slice,
+        int has_cstart, int has_cstop, CYTHON_UNUSED int wraparound) {
+#if CYTHON_COMPILING_IN_CPYTHON
+    PyMappingMethods* mp;
+#if PY_MAJOR_VERSION < 3
+    PySequenceMethods* ms = Py_TYPE(obj)->tp_as_sequence;
+    if (likely(ms && ms->sq_ass_slice)) {
+        if (!has_cstart) {
+            if (_py_start && (*_py_start != Py_None)) {
+                cstart = __Pyx_PyIndex_AsSsize_t(*_py_start);
+                if ((cstart == (Py_ssize_t)-1) && PyErr_Occurred()) goto bad;
+            } else
+                cstart = 0;
         }
-    } else if (PyUnicode_CheckExact(obj) || PyBytes_CheckExact(obj)) {
-#if PY_MAJOR_VERSION >= 3
-        float_value = PyFloat_FromString(obj);
+        if (!has_cstop) {
+            if (_py_stop && (*_py_stop != Py_None)) {
+                cstop = __Pyx_PyIndex_AsSsize_t(*_py_stop);
+                if ((cstop == (Py_ssize_t)-1) && PyErr_Occurred()) goto bad;
+            } else
+                cstop = PY_SSIZE_T_MAX;
+        }
+        if (wraparound && unlikely((cstart < 0) | (cstop < 0)) && likely(ms->sq_length)) {
+            Py_ssize_t l = ms->sq_length(obj);
+            if (likely(l >= 0)) {
+                if (cstop < 0) {
+                    cstop += l;
+                    if (cstop < 0) cstop = 0;
+                }
+                if (cstart < 0) {
+                    cstart += l;
+                    if (cstart < 0) cstart = 0;
+                }
+            } else {
+                if (PyErr_ExceptionMatches(PyExc_OverflowError))
+                    PyErr_Clear();
+                else
+                    goto bad;
+            }
+        }
+        return ms->sq_ass_slice(obj, cstart, cstop, value);
+    }
+#endif
+    mp = Py_TYPE(obj)->tp_as_mapping;
+    if (likely(mp && mp->mp_ass_subscript))
+#endif
+    {
+        int result;
+        PyObject *py_slice, *py_start, *py_stop;
+        if (_py_slice) {
+            py_slice = *_py_slice;
+        } else {
+            PyObject* owned_start = NULL;
+            PyObject* owned_stop = NULL;
+            if (_py_start) {
+                py_start = *_py_start;
+            } else {
+                if (has_cstart) {
+                    owned_start = py_start = PyInt_FromSsize_t(cstart);
+                    if (unlikely(!py_start)) goto bad;
+                } else
+                    py_start = Py_None;
+            }
+            if (_py_stop) {
+                py_stop = *_py_stop;
+            } else {
+                if (has_cstop) {
+                    owned_stop = py_stop = PyInt_FromSsize_t(cstop);
+                    if (unlikely(!py_stop)) {
+                        Py_XDECREF(owned_start);
+                        goto bad;
+                    }
+                } else
+                    py_stop = Py_None;
+            }
+            py_slice = PySlice_New(py_start, py_stop, Py_None);
+            Py_XDECREF(owned_start);
+            Py_XDECREF(owned_stop);
+            if (unlikely(!py_slice)) goto bad;
+        }
+#if CYTHON_COMPILING_IN_CPYTHON
+        result = mp->mp_ass_subscript(obj, py_slice, value);
 #else
-        float_value = PyFloat_FromString(obj, 0);
+        result = value ? PyObject_SetItem(obj, py_slice, value) : PyObject_DelItem(obj, py_slice);
 #endif
-    } else {
-        PyObject* args = PyTuple_New(1);
-        if (unlikely(!args)) goto bad;
-        PyTuple_SET_ITEM(args, 0, obj);
-        float_value = PyObject_Call((PyObject*)&PyFloat_Type, args, 0);
-        PyTuple_SET_ITEM(args, 0, 0);
-        Py_DECREF(args);
+        if (!_py_slice) {
+            Py_DECREF(py_slice);
+        }
+        return result;
     }
-#endif
-    if (likely(float_value)) {
-        double value = PyFloat_AS_DOUBLE(float_value);
-        Py_DECREF(float_value);
-        return value;
-    }
+    PyErr_Format(PyExc_TypeError,
+        "'%.200s' object does not support slice %s",
+        Py_TYPE(obj)->tp_name, value ? "assignment" : "deletion");
 bad:
-    return (double)-1;
+    return -1;
 }
 
 static int
@@ -24000,126 +22420,43 @@ static CYTHON_INLINE void __Pyx_ErrFetch(PyObject **type, PyObject **value, PyOb
 #endif
 }
 
-static CYTHON_INLINE void __Pyx_RaiseTooManyValuesError(Py_ssize_t expected) {
-    PyErr_Format(PyExc_ValueError,
-                 "too many values to unpack (expected %" CYTHON_FORMAT_SSIZE_T "d)", expected);
-}
-
-static CYTHON_INLINE void __Pyx_RaiseNeedMoreValuesError(Py_ssize_t index) {
-    PyErr_Format(PyExc_ValueError,
-                 "need more than %" CYTHON_FORMAT_SSIZE_T "d value%s to unpack",
-                 index, (index == 1) ? "" : "s");
-}
-
-static CYTHON_INLINE void __Pyx_RaiseNoneNotIterableError(void) {
-    PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-}
-
-static CYTHON_INLINE int __Pyx_IterFinish(void) {
-#if CYTHON_COMPILING_IN_CPYTHON
-    PyThreadState *tstate = PyThreadState_GET();
-    PyObject* exc_type = tstate->curexc_type;
-    if (unlikely(exc_type)) {
-        if (likely(exc_type == PyExc_StopIteration) || PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration)) {
-            PyObject *exc_value, *exc_tb;
-            exc_value = tstate->curexc_value;
-            exc_tb = tstate->curexc_traceback;
-            tstate->curexc_type = 0;
-            tstate->curexc_value = 0;
-            tstate->curexc_traceback = 0;
-            Py_DECREF(exc_type);
-            Py_XDECREF(exc_value);
-            Py_XDECREF(exc_tb);
-            return 0;
-        } else {
-            return -1;
-        }
-    }
-    return 0;
+static double __Pyx__PyObject_AsDouble(PyObject* obj) {
+    PyObject* float_value;
+#if CYTHON_COMPILING_IN_PYPY
+    float_value = PyNumber_Float(obj);
 #else
-    if (unlikely(PyErr_Occurred())) {
-        if (likely(PyErr_ExceptionMatches(PyExc_StopIteration))) {
-            PyErr_Clear();
-            return 0;
-        } else {
-            return -1;
+    PyNumberMethods *nb = Py_TYPE(obj)->tp_as_number;
+    if (likely(nb) && likely(nb->nb_float)) {
+        float_value = nb->nb_float(obj);
+        if (likely(float_value) && unlikely(!PyFloat_Check(float_value))) {
+            PyErr_Format(PyExc_TypeError,
+                "__float__ returned non-float (type %.200s)",
+                Py_TYPE(float_value)->tp_name);
+            Py_DECREF(float_value);
+            goto bad;
         }
-    }
-    return 0;
+    } else if (PyUnicode_CheckExact(obj) || PyBytes_CheckExact(obj)) {
+#if PY_MAJOR_VERSION >= 3
+        float_value = PyFloat_FromString(obj);
+#else
+        float_value = PyFloat_FromString(obj, 0);
 #endif
-}
-
-static int __Pyx_IternextUnpackEndCheck(PyObject *retval, Py_ssize_t expected) {
-    if (unlikely(retval)) {
-        Py_DECREF(retval);
-        __Pyx_RaiseTooManyValuesError(expected);
-        return -1;
     } else {
-        return __Pyx_IterFinish();
+        PyObject* args = PyTuple_New(1);
+        if (unlikely(!args)) goto bad;
+        PyTuple_SET_ITEM(args, 0, obj);
+        float_value = PyObject_Call((PyObject*)&PyFloat_Type, args, 0);
+        PyTuple_SET_ITEM(args, 0, 0);
+        Py_DECREF(args);
     }
-    return 0;
-}
-
-static int __Pyx_GetException(PyObject **type, PyObject **value, PyObject **tb) {
-    PyObject *local_type, *local_value, *local_tb;
-#if CYTHON_COMPILING_IN_CPYTHON
-    PyObject *tmp_type, *tmp_value, *tmp_tb;
-    PyThreadState *tstate = PyThreadState_GET();
-    local_type = tstate->curexc_type;
-    local_value = tstate->curexc_value;
-    local_tb = tstate->curexc_traceback;
-    tstate->curexc_type = 0;
-    tstate->curexc_value = 0;
-    tstate->curexc_traceback = 0;
-#else
-    PyErr_Fetch(&local_type, &local_value, &local_tb);
 #endif
-    PyErr_NormalizeException(&local_type, &local_value, &local_tb);
-#if CYTHON_COMPILING_IN_CPYTHON
-    if (unlikely(tstate->curexc_type))
-#else
-    if (unlikely(PyErr_Occurred()))
-#endif
-        goto bad;
-    #if PY_MAJOR_VERSION >= 3
-    if (unlikely(PyException_SetTraceback(local_value, local_tb) < 0))
-        goto bad;
-    #endif
-    Py_INCREF(local_type);
-    Py_INCREF(local_value);
-    Py_INCREF(local_tb);
-    *type = local_type;
-    *value = local_value;
-    *tb = local_tb;
-#if CYTHON_COMPILING_IN_CPYTHON
-    tmp_type = tstate->exc_type;
-    tmp_value = tstate->exc_value;
-    tmp_tb = tstate->exc_traceback;
-    tstate->exc_type = local_type;
-    tstate->exc_value = local_value;
-    tstate->exc_traceback = local_tb;
-    /* Make sure tstate is in a consistent state when we XDECREF
-       these objects (DECREF may run arbitrary code). */
-    Py_XDECREF(tmp_type);
-    Py_XDECREF(tmp_value);
-    Py_XDECREF(tmp_tb);
-#else
-    PyErr_SetExcInfo(local_type, local_value, local_tb);
-#endif
-    return 0;
+    if (likely(float_value)) {
+        double value = PyFloat_AS_DOUBLE(float_value);
+        Py_DECREF(float_value);
+        return value;
+    }
 bad:
-    *type = 0;
-    *value = 0;
-    *tb = 0;
-    Py_XDECREF(local_type);
-    Py_XDECREF(local_value);
-    Py_XDECREF(local_tb);
-    return -1;
-}
-
-static void __Pyx_RaiseBufferFallbackError(void) {
-  PyErr_Format(PyExc_ValueError,
-     "Buffer acquisition failed on assignment; and then reacquiring the old buffer failed too!");
+    return (double)-1;
 }
 
 #if PY_MAJOR_VERSION < 3
@@ -24274,6 +22611,66 @@ bad:
 }
 #endif
 
+static CYTHON_INLINE void __Pyx_RaiseTooManyValuesError(Py_ssize_t expected) {
+    PyErr_Format(PyExc_ValueError,
+                 "too many values to unpack (expected %" CYTHON_FORMAT_SSIZE_T "d)", expected);
+}
+
+static CYTHON_INLINE void __Pyx_RaiseNeedMoreValuesError(Py_ssize_t index) {
+    PyErr_Format(PyExc_ValueError,
+                 "need more than %" CYTHON_FORMAT_SSIZE_T "d value%s to unpack",
+                 index, (index == 1) ? "" : "s");
+}
+
+static CYTHON_INLINE void __Pyx_RaiseNoneNotIterableError(void) {
+    PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
+}
+
+static CYTHON_INLINE int __Pyx_IterFinish(void) {
+#if CYTHON_COMPILING_IN_CPYTHON
+    PyThreadState *tstate = PyThreadState_GET();
+    PyObject* exc_type = tstate->curexc_type;
+    if (unlikely(exc_type)) {
+        if (likely(exc_type == PyExc_StopIteration) || PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration)) {
+            PyObject *exc_value, *exc_tb;
+            exc_value = tstate->curexc_value;
+            exc_tb = tstate->curexc_traceback;
+            tstate->curexc_type = 0;
+            tstate->curexc_value = 0;
+            tstate->curexc_traceback = 0;
+            Py_DECREF(exc_type);
+            Py_XDECREF(exc_value);
+            Py_XDECREF(exc_tb);
+            return 0;
+        } else {
+            return -1;
+        }
+    }
+    return 0;
+#else
+    if (unlikely(PyErr_Occurred())) {
+        if (likely(PyErr_ExceptionMatches(PyExc_StopIteration))) {
+            PyErr_Clear();
+            return 0;
+        } else {
+            return -1;
+        }
+    }
+    return 0;
+#endif
+}
+
+static int __Pyx_IternextUnpackEndCheck(PyObject *retval, Py_ssize_t expected) {
+    if (unlikely(retval)) {
+        Py_DECREF(retval);
+        __Pyx_RaiseTooManyValuesError(expected);
+        return -1;
+    } else {
+        return __Pyx_IterFinish();
+    }
+    return 0;
+}
+
 static CYTHON_INLINE PyObject *__Pyx_GetAttr(PyObject *o, PyObject *n) {
 #if CYTHON_COMPILING_IN_CPYTHON
 #if PY_MAJOR_VERSION >= 3
@@ -24377,6 +22774,63 @@ static CYTHON_INLINE PyObject* __Pyx_decode_c_string(
     } else {
         return PyUnicode_Decode(cstring, length, encoding, errors);
     }
+}
+
+static int __Pyx_GetException(PyObject **type, PyObject **value, PyObject **tb) {
+    PyObject *local_type, *local_value, *local_tb;
+#if CYTHON_COMPILING_IN_CPYTHON
+    PyObject *tmp_type, *tmp_value, *tmp_tb;
+    PyThreadState *tstate = PyThreadState_GET();
+    local_type = tstate->curexc_type;
+    local_value = tstate->curexc_value;
+    local_tb = tstate->curexc_traceback;
+    tstate->curexc_type = 0;
+    tstate->curexc_value = 0;
+    tstate->curexc_traceback = 0;
+#else
+    PyErr_Fetch(&local_type, &local_value, &local_tb);
+#endif
+    PyErr_NormalizeException(&local_type, &local_value, &local_tb);
+#if CYTHON_COMPILING_IN_CPYTHON
+    if (unlikely(tstate->curexc_type))
+#else
+    if (unlikely(PyErr_Occurred()))
+#endif
+        goto bad;
+    #if PY_MAJOR_VERSION >= 3
+    if (unlikely(PyException_SetTraceback(local_value, local_tb) < 0))
+        goto bad;
+    #endif
+    Py_INCREF(local_type);
+    Py_INCREF(local_value);
+    Py_INCREF(local_tb);
+    *type = local_type;
+    *value = local_value;
+    *tb = local_tb;
+#if CYTHON_COMPILING_IN_CPYTHON
+    tmp_type = tstate->exc_type;
+    tmp_value = tstate->exc_value;
+    tmp_tb = tstate->exc_traceback;
+    tstate->exc_type = local_type;
+    tstate->exc_value = local_value;
+    tstate->exc_traceback = local_tb;
+    /* Make sure tstate is in a consistent state when we XDECREF
+       these objects (DECREF may run arbitrary code). */
+    Py_XDECREF(tmp_type);
+    Py_XDECREF(tmp_value);
+    Py_XDECREF(tmp_tb);
+#else
+    PyErr_SetExcInfo(local_type, local_value, local_tb);
+#endif
+    return 0;
+bad:
+    *type = 0;
+    *value = 0;
+    *tb = 0;
+    Py_XDECREF(local_type);
+    Py_XDECREF(local_value);
+    Py_XDECREF(local_tb);
+    return -1;
 }
 
 static CYTHON_INLINE PyObject *__Pyx_GetItemInt_Generic(PyObject *o, PyObject* j) {
@@ -24500,6 +22954,559 @@ bad:
     return -1;
 }
 
+static PyObject* __Pyx_ImportFrom(PyObject* module, PyObject* name) {
+    PyObject* value = __Pyx_PyObject_GetAttrStr(module, name);
+    if (unlikely(!value) && PyErr_ExceptionMatches(PyExc_AttributeError)) {
+        PyErr_Format(PyExc_ImportError,
+        #if PY_MAJOR_VERSION < 3
+            "cannot import name %.230s", PyString_AS_STRING(name));
+        #else
+            "cannot import name %S", name);
+        #endif
+    }
+    return value;
+}
+
+static PyObject *
+__Pyx_CyFunction_get_doc(__pyx_CyFunctionObject *op, CYTHON_UNUSED void *closure)
+{
+    if (unlikely(op->func_doc == NULL)) {
+        if (op->func.m_ml->ml_doc) {
+#if PY_MAJOR_VERSION >= 3
+            op->func_doc = PyUnicode_FromString(op->func.m_ml->ml_doc);
+#else
+            op->func_doc = PyString_FromString(op->func.m_ml->ml_doc);
+#endif
+            if (unlikely(op->func_doc == NULL))
+                return NULL;
+        } else {
+            Py_INCREF(Py_None);
+            return Py_None;
+        }
+    }
+    Py_INCREF(op->func_doc);
+    return op->func_doc;
+}
+static int
+__Pyx_CyFunction_set_doc(__pyx_CyFunctionObject *op, PyObject *value)
+{
+    PyObject *tmp = op->func_doc;
+    if (value == NULL)
+        value = Py_None; /* Mark as deleted */
+    Py_INCREF(value);
+    op->func_doc = value;
+    Py_XDECREF(tmp);
+    return 0;
+}
+static PyObject *
+__Pyx_CyFunction_get_name(__pyx_CyFunctionObject *op)
+{
+    if (unlikely(op->func_name == NULL)) {
+#if PY_MAJOR_VERSION >= 3
+        op->func_name = PyUnicode_InternFromString(op->func.m_ml->ml_name);
+#else
+        op->func_name = PyString_InternFromString(op->func.m_ml->ml_name);
+#endif
+        if (unlikely(op->func_name == NULL))
+            return NULL;
+    }
+    Py_INCREF(op->func_name);
+    return op->func_name;
+}
+static int
+__Pyx_CyFunction_set_name(__pyx_CyFunctionObject *op, PyObject *value)
+{
+    PyObject *tmp;
+#if PY_MAJOR_VERSION >= 3
+    if (unlikely(value == NULL || !PyUnicode_Check(value))) {
+#else
+    if (unlikely(value == NULL || !PyString_Check(value))) {
+#endif
+        PyErr_SetString(PyExc_TypeError,
+                        "__name__ must be set to a string object");
+        return -1;
+    }
+    tmp = op->func_name;
+    Py_INCREF(value);
+    op->func_name = value;
+    Py_XDECREF(tmp);
+    return 0;
+}
+static PyObject *
+__Pyx_CyFunction_get_qualname(__pyx_CyFunctionObject *op)
+{
+    Py_INCREF(op->func_qualname);
+    return op->func_qualname;
+}
+static int
+__Pyx_CyFunction_set_qualname(__pyx_CyFunctionObject *op, PyObject *value)
+{
+    PyObject *tmp;
+#if PY_MAJOR_VERSION >= 3
+    if (unlikely(value == NULL || !PyUnicode_Check(value))) {
+#else
+    if (unlikely(value == NULL || !PyString_Check(value))) {
+#endif
+        PyErr_SetString(PyExc_TypeError,
+                        "__qualname__ must be set to a string object");
+        return -1;
+    }
+    tmp = op->func_qualname;
+    Py_INCREF(value);
+    op->func_qualname = value;
+    Py_XDECREF(tmp);
+    return 0;
+}
+static PyObject *
+__Pyx_CyFunction_get_self(__pyx_CyFunctionObject *m, CYTHON_UNUSED void *closure)
+{
+    PyObject *self;
+    self = m->func_closure;
+    if (self == NULL)
+        self = Py_None;
+    Py_INCREF(self);
+    return self;
+}
+static PyObject *
+__Pyx_CyFunction_get_dict(__pyx_CyFunctionObject *op)
+{
+    if (unlikely(op->func_dict == NULL)) {
+        op->func_dict = PyDict_New();
+        if (unlikely(op->func_dict == NULL))
+            return NULL;
+    }
+    Py_INCREF(op->func_dict);
+    return op->func_dict;
+}
+static int
+__Pyx_CyFunction_set_dict(__pyx_CyFunctionObject *op, PyObject *value)
+{
+    PyObject *tmp;
+    if (unlikely(value == NULL)) {
+        PyErr_SetString(PyExc_TypeError,
+               "function's dictionary may not be deleted");
+        return -1;
+    }
+    if (unlikely(!PyDict_Check(value))) {
+        PyErr_SetString(PyExc_TypeError,
+               "setting function's dictionary to a non-dict");
+        return -1;
+    }
+    tmp = op->func_dict;
+    Py_INCREF(value);
+    op->func_dict = value;
+    Py_XDECREF(tmp);
+    return 0;
+}
+static PyObject *
+__Pyx_CyFunction_get_globals(CYTHON_UNUSED __pyx_CyFunctionObject *op)
+{
+    PyObject* dict = PyModule_GetDict(__pyx_m);
+    Py_XINCREF(dict);
+    return dict;
+}
+static PyObject *
+__Pyx_CyFunction_get_closure(CYTHON_UNUSED __pyx_CyFunctionObject *op)
+{
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+static PyObject *
+__Pyx_CyFunction_get_code(__pyx_CyFunctionObject *op)
+{
+    PyObject* result = (op->func_code) ? op->func_code : Py_None;
+    Py_INCREF(result);
+    return result;
+}
+static int
+__Pyx_CyFunction_init_defaults(__pyx_CyFunctionObject *op) {
+    PyObject *res = op->defaults_getter((PyObject *) op);
+    if (unlikely(!res))
+        return -1;
+    op->defaults_tuple = PyTuple_GET_ITEM(res, 0);
+    Py_INCREF(op->defaults_tuple);
+    op->defaults_kwdict = PyTuple_GET_ITEM(res, 1);
+    Py_INCREF(op->defaults_kwdict);
+    Py_DECREF(res);
+    return 0;
+}
+static int
+__Pyx_CyFunction_set_defaults(__pyx_CyFunctionObject *op, PyObject* value) {
+    PyObject* tmp;
+    if (!value) {
+        value = Py_None;
+    } else if (value != Py_None && !PyTuple_Check(value)) {
+        PyErr_SetString(PyExc_TypeError,
+                        "__defaults__ must be set to a tuple object");
+        return -1;
+    }
+    Py_INCREF(value);
+    tmp = op->defaults_tuple;
+    op->defaults_tuple = value;
+    Py_XDECREF(tmp);
+    return 0;
+}
+static PyObject *
+__Pyx_CyFunction_get_defaults(__pyx_CyFunctionObject *op) {
+    PyObject* result = op->defaults_tuple;
+    if (unlikely(!result)) {
+        if (op->defaults_getter) {
+            if (__Pyx_CyFunction_init_defaults(op) < 0) return NULL;
+            result = op->defaults_tuple;
+        } else {
+            result = Py_None;
+        }
+    }
+    Py_INCREF(result);
+    return result;
+}
+static int
+__Pyx_CyFunction_set_kwdefaults(__pyx_CyFunctionObject *op, PyObject* value) {
+    PyObject* tmp;
+    if (!value) {
+        value = Py_None;
+    } else if (value != Py_None && !PyDict_Check(value)) {
+        PyErr_SetString(PyExc_TypeError,
+                        "__kwdefaults__ must be set to a dict object");
+        return -1;
+    }
+    Py_INCREF(value);
+    tmp = op->defaults_kwdict;
+    op->defaults_kwdict = value;
+    Py_XDECREF(tmp);
+    return 0;
+}
+static PyObject *
+__Pyx_CyFunction_get_kwdefaults(__pyx_CyFunctionObject *op) {
+    PyObject* result = op->defaults_kwdict;
+    if (unlikely(!result)) {
+        if (op->defaults_getter) {
+            if (__Pyx_CyFunction_init_defaults(op) < 0) return NULL;
+            result = op->defaults_kwdict;
+        } else {
+            result = Py_None;
+        }
+    }
+    Py_INCREF(result);
+    return result;
+}
+static int
+__Pyx_CyFunction_set_annotations(__pyx_CyFunctionObject *op, PyObject* value) {
+    PyObject* tmp;
+    if (!value || value == Py_None) {
+        value = NULL;
+    } else if (!PyDict_Check(value)) {
+        PyErr_SetString(PyExc_TypeError,
+                        "__annotations__ must be set to a dict object");
+        return -1;
+    }
+    Py_XINCREF(value);
+    tmp = op->func_annotations;
+    op->func_annotations = value;
+    Py_XDECREF(tmp);
+    return 0;
+}
+static PyObject *
+__Pyx_CyFunction_get_annotations(__pyx_CyFunctionObject *op) {
+    PyObject* result = op->func_annotations;
+    if (unlikely(!result)) {
+        result = PyDict_New();
+        if (unlikely(!result)) return NULL;
+        op->func_annotations = result;
+    }
+    Py_INCREF(result);
+    return result;
+}
+static PyGetSetDef __pyx_CyFunction_getsets[] = {
+    {(char *) "func_doc", (getter)__Pyx_CyFunction_get_doc, (setter)__Pyx_CyFunction_set_doc, 0, 0},
+    {(char *) "__doc__",  (getter)__Pyx_CyFunction_get_doc, (setter)__Pyx_CyFunction_set_doc, 0, 0},
+    {(char *) "func_name", (getter)__Pyx_CyFunction_get_name, (setter)__Pyx_CyFunction_set_name, 0, 0},
+    {(char *) "__name__", (getter)__Pyx_CyFunction_get_name, (setter)__Pyx_CyFunction_set_name, 0, 0},
+    {(char *) "__qualname__", (getter)__Pyx_CyFunction_get_qualname, (setter)__Pyx_CyFunction_set_qualname, 0, 0},
+    {(char *) "__self__", (getter)__Pyx_CyFunction_get_self, 0, 0, 0},
+    {(char *) "func_dict", (getter)__Pyx_CyFunction_get_dict, (setter)__Pyx_CyFunction_set_dict, 0, 0},
+    {(char *) "__dict__", (getter)__Pyx_CyFunction_get_dict, (setter)__Pyx_CyFunction_set_dict, 0, 0},
+    {(char *) "func_globals", (getter)__Pyx_CyFunction_get_globals, 0, 0, 0},
+    {(char *) "__globals__", (getter)__Pyx_CyFunction_get_globals, 0, 0, 0},
+    {(char *) "func_closure", (getter)__Pyx_CyFunction_get_closure, 0, 0, 0},
+    {(char *) "__closure__", (getter)__Pyx_CyFunction_get_closure, 0, 0, 0},
+    {(char *) "func_code", (getter)__Pyx_CyFunction_get_code, 0, 0, 0},
+    {(char *) "__code__", (getter)__Pyx_CyFunction_get_code, 0, 0, 0},
+    {(char *) "func_defaults", (getter)__Pyx_CyFunction_get_defaults, (setter)__Pyx_CyFunction_set_defaults, 0, 0},
+    {(char *) "__defaults__", (getter)__Pyx_CyFunction_get_defaults, (setter)__Pyx_CyFunction_set_defaults, 0, 0},
+    {(char *) "__kwdefaults__", (getter)__Pyx_CyFunction_get_kwdefaults, (setter)__Pyx_CyFunction_set_kwdefaults, 0, 0},
+    {(char *) "__annotations__", (getter)__Pyx_CyFunction_get_annotations, (setter)__Pyx_CyFunction_set_annotations, 0, 0},
+    {0, 0, 0, 0, 0}
+};
+#ifndef PY_WRITE_RESTRICTED /* < Py2.5 */
+#define PY_WRITE_RESTRICTED WRITE_RESTRICTED
+#endif
+static PyMemberDef __pyx_CyFunction_members[] = {
+    {(char *) "__module__", T_OBJECT, offsetof(__pyx_CyFunctionObject, func.m_module), PY_WRITE_RESTRICTED, 0},
+    {0, 0, 0,  0, 0}
+};
+static PyObject *
+__Pyx_CyFunction_reduce(__pyx_CyFunctionObject *m, CYTHON_UNUSED PyObject *args)
+{
+#if PY_MAJOR_VERSION >= 3
+    return PyUnicode_FromString(m->func.m_ml->ml_name);
+#else
+    return PyString_FromString(m->func.m_ml->ml_name);
+#endif
+}
+static PyMethodDef __pyx_CyFunction_methods[] = {
+    {__Pyx_NAMESTR("__reduce__"), (PyCFunction)__Pyx_CyFunction_reduce, METH_VARARGS, 0},
+    {0, 0, 0, 0}
+};
+static PyObject *__Pyx_CyFunction_New(PyTypeObject *type, PyMethodDef *ml, int flags, PyObject* qualname,
+                                      PyObject *closure, PyObject *module, PyObject* code) {
+    __pyx_CyFunctionObject *op = PyObject_GC_New(__pyx_CyFunctionObject, type);
+    if (op == NULL)
+        return NULL;
+    op->flags = flags;
+    op->func_weakreflist = NULL;
+    op->func.m_ml = ml;
+    op->func.m_self = (PyObject *) op;
+    Py_XINCREF(closure);
+    op->func_closure = closure;
+    Py_XINCREF(module);
+    op->func.m_module = module;
+    op->func_dict = NULL;
+    op->func_name = NULL;
+    Py_INCREF(qualname);
+    op->func_qualname = qualname;
+    op->func_doc = NULL;
+    op->func_classobj = NULL;
+    Py_XINCREF(code);
+    op->func_code = code;
+    op->defaults_pyobjects = 0;
+    op->defaults = NULL;
+    op->defaults_tuple = NULL;
+    op->defaults_kwdict = NULL;
+    op->defaults_getter = NULL;
+    op->func_annotations = NULL;
+    PyObject_GC_Track(op);
+    return (PyObject *) op;
+}
+static int
+__Pyx_CyFunction_clear(__pyx_CyFunctionObject *m)
+{
+    Py_CLEAR(m->func_closure);
+    Py_CLEAR(m->func.m_module);
+    Py_CLEAR(m->func_dict);
+    Py_CLEAR(m->func_name);
+    Py_CLEAR(m->func_qualname);
+    Py_CLEAR(m->func_doc);
+    Py_CLEAR(m->func_code);
+    Py_CLEAR(m->func_classobj);
+    Py_CLEAR(m->defaults_tuple);
+    Py_CLEAR(m->defaults_kwdict);
+    Py_CLEAR(m->func_annotations);
+    if (m->defaults) {
+        PyObject **pydefaults = __Pyx_CyFunction_Defaults(PyObject *, m);
+        int i;
+        for (i = 0; i < m->defaults_pyobjects; i++)
+            Py_XDECREF(pydefaults[i]);
+        PyMem_Free(m->defaults);
+        m->defaults = NULL;
+    }
+    return 0;
+}
+static void __Pyx_CyFunction_dealloc(__pyx_CyFunctionObject *m)
+{
+    PyObject_GC_UnTrack(m);
+    if (m->func_weakreflist != NULL)
+        PyObject_ClearWeakRefs((PyObject *) m);
+    __Pyx_CyFunction_clear(m);
+    PyObject_GC_Del(m);
+}
+static int __Pyx_CyFunction_traverse(__pyx_CyFunctionObject *m, visitproc visit, void *arg)
+{
+    Py_VISIT(m->func_closure);
+    Py_VISIT(m->func.m_module);
+    Py_VISIT(m->func_dict);
+    Py_VISIT(m->func_name);
+    Py_VISIT(m->func_qualname);
+    Py_VISIT(m->func_doc);
+    Py_VISIT(m->func_code);
+    Py_VISIT(m->func_classobj);
+    Py_VISIT(m->defaults_tuple);
+    Py_VISIT(m->defaults_kwdict);
+    if (m->defaults) {
+        PyObject **pydefaults = __Pyx_CyFunction_Defaults(PyObject *, m);
+        int i;
+        for (i = 0; i < m->defaults_pyobjects; i++)
+            Py_VISIT(pydefaults[i]);
+    }
+    return 0;
+}
+static PyObject *__Pyx_CyFunction_descr_get(PyObject *func, PyObject *obj, PyObject *type)
+{
+    __pyx_CyFunctionObject *m = (__pyx_CyFunctionObject *) func;
+    if (m->flags & __Pyx_CYFUNCTION_STATICMETHOD) {
+        Py_INCREF(func);
+        return func;
+    }
+    if (m->flags & __Pyx_CYFUNCTION_CLASSMETHOD) {
+        if (type == NULL)
+            type = (PyObject *)(Py_TYPE(obj));
+        return PyMethod_New(func,
+                            type, (PyObject *)(Py_TYPE(type)));
+    }
+    if (obj == Py_None)
+        obj = NULL;
+    return PyMethod_New(func, obj, type);
+}
+static PyObject*
+__Pyx_CyFunction_repr(__pyx_CyFunctionObject *op)
+{
+#if PY_MAJOR_VERSION >= 3
+    return PyUnicode_FromFormat("<cyfunction %U at %p>",
+                                op->func_qualname, (void *)op);
+#else
+    return PyString_FromFormat("<cyfunction %s at %p>",
+                               PyString_AsString(op->func_qualname), (void *)op);
+#endif
+}
+#if CYTHON_COMPILING_IN_PYPY
+static PyObject * __Pyx_CyFunction_Call(PyObject *func, PyObject *arg, PyObject *kw) {
+    PyCFunctionObject* f = (PyCFunctionObject*)func;
+    PyCFunction meth = PyCFunction_GET_FUNCTION(func);
+    PyObject *self = PyCFunction_GET_SELF(func);
+    Py_ssize_t size;
+    switch (PyCFunction_GET_FLAGS(func) & ~(METH_CLASS | METH_STATIC | METH_COEXIST)) {
+    case METH_VARARGS:
+        if (likely(kw == NULL) || PyDict_Size(kw) == 0)
+            return (*meth)(self, arg);
+        break;
+    case METH_VARARGS | METH_KEYWORDS:
+        return (*(PyCFunctionWithKeywords)meth)(self, arg, kw);
+    case METH_NOARGS:
+        if (likely(kw == NULL) || PyDict_Size(kw) == 0) {
+            size = PyTuple_GET_SIZE(arg);
+            if (size == 0)
+                return (*meth)(self, NULL);
+            PyErr_Format(PyExc_TypeError,
+                "%.200s() takes no arguments (%zd given)",
+                f->m_ml->ml_name, size);
+            return NULL;
+        }
+        break;
+    case METH_O:
+        if (likely(kw == NULL) || PyDict_Size(kw) == 0) {
+            size = PyTuple_GET_SIZE(arg);
+            if (size == 1)
+                return (*meth)(self, PyTuple_GET_ITEM(arg, 0));
+            PyErr_Format(PyExc_TypeError,
+                "%.200s() takes exactly one argument (%zd given)",
+                f->m_ml->ml_name, size);
+            return NULL;
+        }
+        break;
+    default:
+        PyErr_SetString(PyExc_SystemError, "Bad call flags in "
+                        "__Pyx_CyFunction_Call. METH_OLDARGS is no "
+                        "longer supported!");
+        return NULL;
+    }
+    PyErr_Format(PyExc_TypeError, "%.200s() takes no keyword arguments",
+                 f->m_ml->ml_name);
+    return NULL;
+}
+#else
+static PyObject * __Pyx_CyFunction_Call(PyObject *func, PyObject *arg, PyObject *kw) {
+	return PyCFunction_Call(func, arg, kw);
+}
+#endif
+static PyTypeObject __pyx_CyFunctionType_type = {
+    PyVarObject_HEAD_INIT(0, 0)
+    __Pyx_NAMESTR("cython_function_or_method"), /*tp_name*/
+    sizeof(__pyx_CyFunctionObject),   /*tp_basicsize*/
+    0,                                  /*tp_itemsize*/
+    (destructor) __Pyx_CyFunction_dealloc, /*tp_dealloc*/
+    0,                                  /*tp_print*/
+    0,                                  /*tp_getattr*/
+    0,                                  /*tp_setattr*/
+#if PY_MAJOR_VERSION < 3
+    0,                                  /*tp_compare*/
+#else
+    0,                                  /*reserved*/
+#endif
+    (reprfunc) __Pyx_CyFunction_repr,   /*tp_repr*/
+    0,                                  /*tp_as_number*/
+    0,                                  /*tp_as_sequence*/
+    0,                                  /*tp_as_mapping*/
+    0,                                  /*tp_hash*/
+    __Pyx_CyFunction_Call,              /*tp_call*/
+    0,                                  /*tp_str*/
+    0,                                  /*tp_getattro*/
+    0,                                  /*tp_setattro*/
+    0,                                  /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC, /* tp_flags*/
+    0,                                  /*tp_doc*/
+    (traverseproc) __Pyx_CyFunction_traverse,   /*tp_traverse*/
+    (inquiry) __Pyx_CyFunction_clear,   /*tp_clear*/
+    0,                                  /*tp_richcompare*/
+    offsetof(__pyx_CyFunctionObject, func_weakreflist), /* tp_weaklistoffse */
+    0,                                  /*tp_iter*/
+    0,                                  /*tp_iternext*/
+    __pyx_CyFunction_methods,           /*tp_methods*/
+    __pyx_CyFunction_members,           /*tp_members*/
+    __pyx_CyFunction_getsets,           /*tp_getset*/
+    0,                                  /*tp_base*/
+    0,                                  /*tp_dict*/
+    __Pyx_CyFunction_descr_get,         /*tp_descr_get*/
+    0,                                  /*tp_descr_set*/
+    offsetof(__pyx_CyFunctionObject, func_dict),/*tp_dictoffset*/
+    0,                                  /*tp_init*/
+    0,                                  /*tp_alloc*/
+    0,                                  /*tp_new*/
+    0,                                  /*tp_free*/
+    0,                                  /*tp_is_gc*/
+    0,                                  /*tp_bases*/
+    0,                                  /*tp_mro*/
+    0,                                  /*tp_cache*/
+    0,                                  /*tp_subclasses*/
+    0,                                  /*tp_weaklist*/
+    0,                                  /*tp_del*/
+#if PY_VERSION_HEX >= 0x02060000
+    0,                                  /*tp_version_tag*/
+#endif
+};
+static int __Pyx_CyFunction_init(void) {
+#if !CYTHON_COMPILING_IN_PYPY
+    __pyx_CyFunctionType_type.tp_call = PyCFunction_Call;
+#endif
+    if (PyType_Ready(&__pyx_CyFunctionType_type) < 0)
+        return -1;
+    __pyx_CyFunctionType = &__pyx_CyFunctionType_type;
+    return 0;
+}
+static CYTHON_INLINE void *__Pyx_CyFunction_InitDefaults(PyObject *func, size_t size, int pyobjects) {
+    __pyx_CyFunctionObject *m = (__pyx_CyFunctionObject *) func;
+    m->defaults = PyMem_Malloc(size);
+    if (!m->defaults)
+        return PyErr_NoMemory();
+    memset(m->defaults, 0, size);
+    m->defaults_pyobjects = pyobjects;
+    return m->defaults;
+}
+static CYTHON_INLINE void __Pyx_CyFunction_SetDefaultsTuple(PyObject *func, PyObject *tuple) {
+    __pyx_CyFunctionObject *m = (__pyx_CyFunctionObject *) func;
+    m->defaults_tuple = tuple;
+    Py_INCREF(tuple);
+}
+static CYTHON_INLINE void __Pyx_CyFunction_SetDefaultsKwDict(PyObject *func, PyObject *dict) {
+    __pyx_CyFunctionObject *m = (__pyx_CyFunctionObject *) func;
+    m->defaults_kwdict = dict;
+    Py_INCREF(dict);
+}
+static CYTHON_INLINE void __Pyx_CyFunction_SetAnnotationsDict(PyObject *func, PyObject *dict) {
+    __pyx_CyFunctionObject *m = (__pyx_CyFunctionObject *) func;
+    m->func_annotations = dict;
+    Py_INCREF(dict);
+}
+
 static CYTHON_INLINE void __Pyx_ExceptionSave(PyObject **type, PyObject **value, PyObject **tb) {
 #if CYTHON_COMPILING_IN_CPYTHON
     PyThreadState *tstate = PyThreadState_GET();
@@ -24598,7 +23605,7 @@ nofail:
 #endif /*  PY_MAJOR_VERSION < 3 */
 
 
-          static PyObject *__Pyx_Import(PyObject *name, PyObject *from_list, int level) {
+              static PyObject *__Pyx_Import(PyObject *name, PyObject *from_list, int level) {
     PyObject *empty_list = 0;
     PyObject *module = 0;
     PyObject *global_dict = 0;
@@ -24680,6 +23687,75 @@ bad:
     return module;
 }
 
+static PyObject *__Pyx_FindPy2Metaclass(PyObject *bases) {
+    PyObject *metaclass;
+#if PY_MAJOR_VERSION < 3
+    if (PyTuple_Check(bases) && PyTuple_GET_SIZE(bases) > 0) {
+        PyObject *base = PyTuple_GET_ITEM(bases, 0);
+        metaclass = __Pyx_PyObject_GetAttrStr(base, __pyx_n_s____class__);
+        if (!metaclass) {
+            PyErr_Clear();
+            metaclass = (PyObject*) Py_TYPE(base);
+        }
+    } else {
+        metaclass = (PyObject *) &PyClass_Type;
+    }
+#else
+    if (PyTuple_Check(bases) && PyTuple_GET_SIZE(bases) > 0) {
+        PyObject *base = PyTuple_GET_ITEM(bases, 0);
+        metaclass = (PyObject*) Py_TYPE(base);
+    } else {
+        metaclass = (PyObject *) &PyType_Type;
+    }
+#endif
+    Py_INCREF(metaclass);
+    return metaclass;
+}
+
+static PyObject *__Pyx_CreateClass(PyObject *bases, PyObject *dict, PyObject *name,
+                                   PyObject *qualname, PyObject *modname) {
+    PyObject *result;
+    PyObject *metaclass;
+    if (PyDict_SetItem(dict, __pyx_n_s____module__, modname) < 0)
+        return NULL;
+    if (PyDict_SetItem(dict, __pyx_n_s____qualname__, qualname) < 0)
+        return NULL;
+    metaclass = PyDict_GetItem(dict, __pyx_n_s____metaclass__);
+    if (metaclass) {
+        Py_INCREF(metaclass);
+    } else {
+        metaclass = __Pyx_FindPy2Metaclass(bases);
+    }
+    result = PyObject_CallFunctionObjArgs(metaclass, name, bases, dict, NULL);
+    Py_DECREF(metaclass);
+    return result;
+}
+
+static CYTHON_INLINE PyObject *__Pyx_PyInt_to_py_Py_intptr_t(Py_intptr_t val) {
+    const Py_intptr_t neg_one = (Py_intptr_t)-1, const_zero = (Py_intptr_t)0;
+    const int is_unsigned = const_zero < neg_one;
+    if ((sizeof(Py_intptr_t) == sizeof(char))  ||
+        (sizeof(Py_intptr_t) == sizeof(short))) {
+        return PyInt_FromLong((long)val);
+    } else if ((sizeof(Py_intptr_t) == sizeof(int)) ||
+               (sizeof(Py_intptr_t) == sizeof(long))) {
+        if (is_unsigned)
+            return PyLong_FromUnsignedLong((unsigned long)val);
+        else
+            return PyInt_FromLong((long)val);
+    } else if (sizeof(Py_intptr_t) == sizeof(PY_LONG_LONG)) {
+        if (is_unsigned)
+            return PyLong_FromUnsignedLongLong((unsigned PY_LONG_LONG)val);
+        else
+            return PyLong_FromLongLong((PY_LONG_LONG)val);
+    } else {
+        int one = 1; int little = (int)*(unsigned char *)&one;
+        unsigned char *bytes = (unsigned char *)&val;
+        return _PyLong_FromByteArray(bytes, sizeof(Py_intptr_t),
+                                     little, !is_unsigned);
+    }
+}
+
 static CYTHON_INLINE PyObject *__Pyx_PyInt_to_py_npy_int8(npy_int8 val) {
     const npy_int8 neg_one = (npy_int8)-1, const_zero = (npy_int8)0;
     const int is_unsigned = const_zero < neg_one;
@@ -24705,141 +23781,87 @@ static CYTHON_INLINE PyObject *__Pyx_PyInt_to_py_npy_int8(npy_int8 val) {
     }
 }
 
-#if !CYTHON_COMPILING_IN_PYPY && PY_MAJOR_VERSION < 3
-static PyObject *__Pyx_GetStdout(void) {
-    PyObject *f = PySys_GetObject((char *)"stdout");
-    if (!f) {
-        PyErr_SetString(PyExc_RuntimeError, "lost sys.stdout");
+static CYTHON_INLINE PyObject *__Pyx_PyInt_to_py_npy_int32(npy_int32 val) {
+    const npy_int32 neg_one = (npy_int32)-1, const_zero = (npy_int32)0;
+    const int is_unsigned = const_zero < neg_one;
+    if ((sizeof(npy_int32) == sizeof(char))  ||
+        (sizeof(npy_int32) == sizeof(short))) {
+        return PyInt_FromLong((long)val);
+    } else if ((sizeof(npy_int32) == sizeof(int)) ||
+               (sizeof(npy_int32) == sizeof(long))) {
+        if (is_unsigned)
+            return PyLong_FromUnsignedLong((unsigned long)val);
+        else
+            return PyInt_FromLong((long)val);
+    } else if (sizeof(npy_int32) == sizeof(PY_LONG_LONG)) {
+        if (is_unsigned)
+            return PyLong_FromUnsignedLongLong((unsigned PY_LONG_LONG)val);
+        else
+            return PyLong_FromLongLong((PY_LONG_LONG)val);
+    } else {
+        int one = 1; int little = (int)*(unsigned char *)&one;
+        unsigned char *bytes = (unsigned char *)&val;
+        return _PyLong_FromByteArray(bytes, sizeof(npy_int32),
+                                     little, !is_unsigned);
     }
-    return f;
 }
-static int __Pyx_Print(PyObject* f, PyObject *arg_tuple, int newline) {
-    int i;
-    if (!f) {
-        if (!(f = __Pyx_GetStdout()))
-            return -1;
-    }
-    Py_INCREF(f);
-    for (i=0; i < PyTuple_GET_SIZE(arg_tuple); i++) {
-        PyObject* v;
-        if (PyFile_SoftSpace(f, 1)) {
-            if (PyFile_WriteString(" ", f) < 0)
-                goto error;
-        }
-        v = PyTuple_GET_ITEM(arg_tuple, i);
-        if (PyFile_WriteObject(v, f, Py_PRINT_RAW) < 0)
-            goto error;
-        if (PyString_Check(v)) {
-            char *s = PyString_AsString(v);
-            Py_ssize_t len = PyString_Size(v);
-            if (len > 0 &&
-                isspace(Py_CHARMASK(s[len-1])) &&
-                s[len-1] != ' ')
-                    PyFile_SoftSpace(f, 0);
-        }
-    }
-    if (newline) {
-        if (PyFile_WriteString("\n", f) < 0)
-            goto error;
-        PyFile_SoftSpace(f, 0);
-    }
-    Py_DECREF(f);
-    return 0;
-error:
-    Py_DECREF(f);
-    return -1;
-}
-#else /* Python 3 has a print function */
-static int __Pyx_Print(PyObject* stream, PyObject *arg_tuple, int newline) {
-    PyObject* kwargs = 0;
-    PyObject* result = 0;
-    PyObject* end_string;
-    if (unlikely(!__pyx_print)) {
-        __pyx_print = PyObject_GetAttr(__pyx_b, __pyx_n_s__print);
-        if (!__pyx_print)
-            return -1;
-    }
-    if (stream) {
-        kwargs = PyDict_New();
-        if (unlikely(!kwargs))
-            return -1;
-        if (unlikely(PyDict_SetItem(kwargs, __pyx_n_s__file, stream) < 0))
-            goto bad;
-        if (!newline) {
-            end_string = PyUnicode_FromStringAndSize(" ", 1);
-            if (unlikely(!end_string))
-                goto bad;
-            if (PyDict_SetItem(kwargs, __pyx_n_s__end, end_string) < 0) {
-                Py_DECREF(end_string);
-                goto bad;
-            }
-            Py_DECREF(end_string);
-        }
-    } else if (!newline) {
-        if (unlikely(!__pyx_print_kwargs)) {
-            __pyx_print_kwargs = PyDict_New();
-            if (unlikely(!__pyx_print_kwargs))
-                return -1;
-            end_string = PyUnicode_FromStringAndSize(" ", 1);
-            if (unlikely(!end_string))
-                return -1;
-            if (PyDict_SetItem(__pyx_print_kwargs, __pyx_n_s__end, end_string) < 0) {
-                Py_DECREF(end_string);
-                return -1;
-            }
-            Py_DECREF(end_string);
-        }
-        kwargs = __pyx_print_kwargs;
-    }
-    result = PyObject_Call(__pyx_print, arg_tuple, kwargs);
-    if (unlikely(kwargs) && (kwargs != __pyx_print_kwargs))
-        Py_DECREF(kwargs);
-    if (!result)
-        return -1;
-    Py_DECREF(result);
-    return 0;
-bad:
-    if (kwargs != __pyx_print_kwargs)
-        Py_XDECREF(kwargs);
-    return -1;
-}
-#endif
 
-#if !CYTHON_COMPILING_IN_PYPY && PY_MAJOR_VERSION < 3
-static int __Pyx_PrintOne(PyObject* f, PyObject *o) {
-    if (!f) {
-        if (!(f = __Pyx_GetStdout()))
-            return -1;
+static CYTHON_INLINE npy_int32 __Pyx_PyInt_from_py_npy_int32(PyObject* x) {
+    const npy_int32 neg_one = (npy_int32)-1, const_zero = (npy_int32)0;
+    const int is_unsigned = const_zero < neg_one;
+    if (sizeof(npy_int32) == sizeof(char)) {
+        if (is_unsigned)
+            return (npy_int32)__Pyx_PyInt_AsUnsignedChar(x);
+        else
+            return (npy_int32)__Pyx_PyInt_AsSignedChar(x);
+    } else if (sizeof(npy_int32) == sizeof(short)) {
+        if (is_unsigned)
+            return (npy_int32)__Pyx_PyInt_AsUnsignedShort(x);
+        else
+            return (npy_int32)__Pyx_PyInt_AsSignedShort(x);
+    } else if (sizeof(npy_int32) == sizeof(int)) {
+        if (is_unsigned)
+            return (npy_int32)__Pyx_PyInt_AsUnsignedInt(x);
+        else
+            return (npy_int32)__Pyx_PyInt_AsSignedInt(x);
+    } else if (sizeof(npy_int32) == sizeof(long)) {
+        if (is_unsigned)
+            return (npy_int32)__Pyx_PyInt_AsUnsignedLong(x);
+        else
+            return (npy_int32)__Pyx_PyInt_AsSignedLong(x);
+    } else if (sizeof(npy_int32) == sizeof(PY_LONG_LONG)) {
+        if (is_unsigned)
+            return (npy_int32)__Pyx_PyInt_AsUnsignedLongLong(x);
+        else
+            return (npy_int32)__Pyx_PyInt_AsSignedLongLong(x);
+    }  else {
+        #if CYTHON_COMPILING_IN_PYPY && !defined(_PyLong_AsByteArray)
+        PyErr_SetString(PyExc_RuntimeError,
+                        "_PyLong_AsByteArray() not available in PyPy, cannot convert large numbers");
+        #else
+        npy_int32 val;
+        PyObject *v = __Pyx_PyNumber_Int(x);
+        #if PY_MAJOR_VERSION < 3
+        if (likely(v) && !PyLong_Check(v)) {
+            PyObject *tmp = v;
+            v = PyNumber_Long(tmp);
+            Py_DECREF(tmp);
+        }
+        #endif
+        if (likely(v)) {
+            int one = 1; int is_little = (int)*(unsigned char *)&one;
+            unsigned char *bytes = (unsigned char *)&val;
+            int ret = _PyLong_AsByteArray((PyLongObject *)v,
+                                          bytes, sizeof(val),
+                                          is_little, !is_unsigned);
+            Py_DECREF(v);
+            if (likely(!ret))
+                return val;
+        }
+        #endif
+        return (npy_int32)-1;
     }
-    Py_INCREF(f);
-    if (PyFile_SoftSpace(f, 0)) {
-        if (PyFile_WriteString(" ", f) < 0)
-            goto error;
-    }
-    if (PyFile_WriteObject(o, f, Py_PRINT_RAW) < 0)
-        goto error;
-    if (PyFile_WriteString("\n", f) < 0)
-        goto error;
-    Py_DECREF(f);
-    return 0;
-error:
-    Py_DECREF(f);
-    return -1;
-    /* the line below is just to avoid C compiler
-     * warnings about unused functions */
-    return __Pyx_Print(f, NULL, 0);
 }
-#else /* Python 3 has a print function */
-static int __Pyx_PrintOne(PyObject* stream, PyObject *o) {
-    int res;
-    PyObject* arg_tuple = PyTuple_Pack(1, o);
-    if (unlikely(!arg_tuple))
-        return -1;
-    res = __Pyx_Print(stream, arg_tuple, 1);
-    Py_DECREF(arg_tuple);
-    return res;
-}
-#endif
 
 #if CYTHON_CCOMPLEX
   #ifdef __cplusplus
@@ -25993,6 +25015,28 @@ no_fail:
     return retval;
 }
 
+static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5numpy_int8_t(PyObject *obj) {
+    __Pyx_memviewslice result = { 0, 0, { 0 }, { 0 }, { 0 } };
+    __Pyx_BufFmt_StackElem stack[1];
+    int axes_specs[] = { (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED) };
+    int retcode;
+    if (obj == Py_None) {
+        result.memview = (struct __pyx_memoryview_obj *) Py_None;
+        return result;
+    }
+    retcode = __Pyx_ValidateAndInit_memviewslice(axes_specs, 0,
+                                                 PyBUF_RECORDS, 1,
+                                                 &__Pyx_TypeInfo_nn___pyx_t_5numpy_int8_t, stack,
+                                                 &result, obj);
+    if (unlikely(retcode == -1))
+        goto __pyx_fail;
+    return result;
+__pyx_fail:
+    result.memview = NULL;
+    result.data = NULL;
+    return result;
+}
+
 static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_double(PyObject *obj) {
     __Pyx_memviewslice result = { 0, 0, { 0 }, { 0 }, { 0 } };
     __Pyx_BufFmt_StackElem stack[1];
@@ -26015,7 +25059,7 @@ __pyx_fail:
     return result;
 }
 
-static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5numpy_int8_t(PyObject *obj) {
+static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5numpy_int32_t(PyObject *obj) {
     __Pyx_memviewslice result = { 0, 0, { 0 }, { 0 }, { 0 } };
     __Pyx_BufFmt_StackElem stack[1];
     int axes_specs[] = { (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED) };
@@ -26026,7 +25070,7 @@ static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_nn_
     }
     retcode = __Pyx_ValidateAndInit_memviewslice(axes_specs, 0,
                                                  PyBUF_RECORDS, 1,
-                                                 &__Pyx_TypeInfo_nn___pyx_t_5numpy_int8_t, stack,
+                                                 &__Pyx_TypeInfo_nn___pyx_t_5numpy_int32_t, stack,
                                                  &result, obj);
     if (unlikely(retcode == -1))
         goto __pyx_fail;
