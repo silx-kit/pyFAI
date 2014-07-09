@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/11/2013"
+__date__ = "09/07/2014"
 __status__ = "stable"
 
 
@@ -41,6 +41,7 @@ import sys
 import glob
 import shutil
 import platform
+import subprocess
 import os.path as op
 from os.path import join
 from distutils.core import setup, Extension, Command
@@ -66,10 +67,16 @@ if CYTHON:
     else:
         if Cython.Compiler.Version.version < "0.17":
             CYTHON = False
+
+if "WITH_CYTHON" in os.environ and os.environ["WITH_CYTHON"] == "False":
+    CYTHON = False
+    print("No Cython requested by environment")
+
 if ("--no-cython" in sys.argv):
     CYTHON = False
     sys.argv.remove("--no-cython")
-
+    os.environ["WITH_CYTHON"] = "False"
+    print("No Cython requested by command line")
 
 if CYTHON:
     cython_c_ext = ".pyx"
@@ -338,12 +345,14 @@ cmdclass['build_ext'] = build_ext_pyFAI
 
 class PyTest(Command):
     user_options = []
+
     def initialize_options(self):
         pass
+
     def finalize_options(self):
         pass
+
     def run(self):
-        import sys, subprocess
         os.chdir("test")
         errno = subprocess.call([sys.executable, 'test_all.py'])
         if errno != 0:
