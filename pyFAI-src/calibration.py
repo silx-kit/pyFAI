@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/05/2014"
+__date__ = "09/07/2014"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -223,7 +223,7 @@ class AbstractCalibration(object):
                           action="store_true", dest="debug", default=False,
                           help="switch to debug/verbose mode")
         self.parser.add_argument("-c", "--calibrant", dest="spacing", metavar="FILE",
-                      help="Calibrant name or file containing d-spacing of the reference sample (MANDATORY)",
+                      help="Calibrant name or file containing d-spacing of the reference sample (MANDATORY, case sensitive !)",
                       default=None)
         self.parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
                       help="wavelength of the X-Ray beam in Angstrom", default=None)
@@ -1086,7 +1086,7 @@ decrease the value if arcs are mixed together.""", default=None)
             update_fig(self.peakPicker.fig)
 #        self.peakPicker.finish(self.pointfile, callback=self.set_data)
         self.set_data(self.peakPicker.finish(self.pointfile))
-        raw_input("Please press enter when you are happy with your selection" + os.linesep)
+#        raw_input("Please press enter when you are happy with your selection" + os.linesep)
 #        while self.data is None:
 #            update_fig(self.peakPicker.fig)
 #            time.sleep(0.1)
