@@ -201,9 +201,9 @@ class AIWidget(QtGui.QWidget):
                         out[i] = self.ai.integrate2d(**kwarg)[0]
 
                 else:
-                    if "npt_rad" in kwarg:  # convert npt_rad -> nbPt
-                            kwarg["nbPt"] = kwarg.pop("npt_rad")
-                    out = numpy.zeros((self.input_data.shape[0], kwarg["nbPt"]), dtype=numpy.float32)
+                    if "npt_rad" in kwarg:  # convert npt_rad -> npt
+                            kwarg["npt"] = kwarg.pop("npt_rad")
+                    out = numpy.zeros((self.input_data.shape[0], kwarg["npt"]), dtype=numpy.float32)
                     for i in range(self.input_data.shape[0]):
                         self.progressBar.setValue(100.0 * i / self.input_data.shape[0])
                         kwarg["data"] = self.input_data[i]
@@ -271,8 +271,8 @@ class AIWidget(QtGui.QWidget):
                             if "npt_azim" in kwarg:
                                 res = self.ai.integrate2d(**kwarg)
                             else:
-                                if "npt_rad" in kwarg:  # convert npt_rad -> nbPt
-                                    kwarg["nbPt"] = kwarg.pop("npt_rad")
+                                if "npt_rad" in kwarg:  # convert npt_rad -> npt
+                                    kwarg["npt"] = kwarg.pop("npt_rad")
                                 res = self.ai.integrate1d(**kwarg)
                             writer.write(res, index=i)
                         writer.close()
@@ -280,8 +280,8 @@ class AIWidget(QtGui.QWidget):
                         if kwarg.get("npt_azim"):
                             res = self.ai.integrate2d(**kwarg)
                         else:
-                            if "npt_rad" in kwarg:  # convert npt_rad -> nbPt
-                                kwarg["nbPt"] = kwarg.pop("npt_rad")
+                            if "npt_rad" in kwarg:  # convert npt_rad -> npt
+                                kwarg["npt"] = kwarg.pop("npt_rad")
                             res = self.ai.integrate1d(**kwarg)
                     out.append(res)
 

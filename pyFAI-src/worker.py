@@ -214,7 +214,7 @@ class Worker(object):
                 else:
                     kwarg["filename"] += ".azim"
         else:
-            kwarg["nbPt"] = self.nbpt_rad
+            kwarg["npt"] = self.nbpt_rad
             if "filename" in kwarg:
                 if self.extension:
                     kwarg["filename"] += self.extension
