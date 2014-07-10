@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/06/2014"
+__date__ = "09/07/2014"
 __status__ = "production"
 
 import matplotlib
@@ -41,7 +41,7 @@ matplotlib.use('Qt4Agg')
 from matplotlib.backends import backend_qt4 as backend
 import pylab
 
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtGui, QtCore, uic
 
 main_loop = False
 
