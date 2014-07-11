@@ -38,6 +38,7 @@ import sys
 import fabio
 import logging
 import pyFAI, pyFAI.utils
+import numpy
 try:
     from argparse import ArgumentParser
 except ImportError:
@@ -67,55 +68,83 @@ def main():
     parser.add_argument("-m", "--mask", dest="mask",
                       type=str, default=None,
                       help="mask corresponding to the detector")
-    parser.add_argument("-D", "--detector", dest="detector", type=str, default="Detector",
-                  help="Base detector name (see documentation of pyFAI.detectors")
-    parser.add_argument("-s", "--splinefile", dest="splinefile", type=str, default=None,
-                  help="Geometric distortion file from FIT2D")
+    parser.add_argument("-D", "--detector", dest="detector", type=str, 
+                        default="Detector",
+                        help="Base detector name (see documentation of pyFAI.detectors")
+    parser.add_argument("-s", "--splinefile", dest="splinefile", type=str, 
+                        default=None,
+                        help="Geometric distortion file from FIT2D")
     parser.add_argument("-dx", "--x-corr", dest="dx", type=str, default=None,
-                  help="Geometric correction for pilatus")
+                        help="Geometric correction for pilatus")
     parser.add_argument("-dy", "--y-corr", dest="dy", type=str, default=None,
-                  help="Geometric correction for pilatus")
+                        help="Geometric correction for pilatus")
     parser.add_argument("-p", "--pixel", dest="pixel", type=str, default=None,
-                  help="pixel size (comma separated): x,y")
+                        help="pixel size (comma separated): x,y")
     parser.add_argument("-S", "--shape", dest="shape", type=str, default=None,
-                  help="shape of the detector (comma separated): x,y")
+                        help="shape of the detector (comma separated): x,y")
     parser.add_argument("-d", "--dark", dest="dark", type=str, default=None,
-                  help="Dark noise to be subtracted")
+                        help="Dark noise to be subtracted")
     parser.add_argument("-f", "--flat", dest="flat", type=str, default=None,
-                  help="Flat field correction")
+                        help="Flat field correction")
     parser.add_argument("-v", "--verbose", action="store_true", dest="verbose", default=False,
-                      help="switch to verbose/debug mode")
-    parser.add_argument("args", metavar='FILE', type=str, nargs='+',
-                        help="Files to be processed")
+                        help="switch to verbose/debug mode")
+#     parser.add_argument("args", metavar='FILE', type=str, nargs='+',
+#                         help="Files to be processed")
 
     options = parser.parse_args()
 
-    # Analyse aruments and options
-    images = pyFAI.utils.expand_args(options.args)
-
     if options.verbose:
-        pyFAI.utils.logger.setLevel(logging.DEBUG)
+        logger.setLevel(logging.DEBUG)
     else:
-        pyFAI.utils.logger.setLevel(logging.INFO)
+        logger.setLevel(logging.INFO)
+
+    detector = pyFAI.detectors.detector_factory(options.detector)
     if  options.output:
         output = options.output
     else:
-        output = "%s_%s" % (os.path.commonprefix(images), options.method)
-        if options.cutoff:
-            output += "_cutoff_%s_std" % options.cutoff
-        output += "_%s_frames.%s" % (len(images), options.format)
-    if options.flat:
-        flats = pyFAI.utils.expand_args([options.flat])
-    else:
-        flats = None
-    if options.dark:
-        darks = pyFAI.utils.expand_args([options.dark])
-    else:
-        darks = None
+        output = detector.name+".h5"
 
-    if images:
-        dataout = pyFAI.utils.averageImages(images, filter_=options.method, cutoff=options.cutoff,
-                                            threshold=0, format=options.format, output=output,
-                                            flats=flats, darks=darks)
+    if options.mask:
+        mask = fabio.open(options.mask).data.astype(bool)
+        if detector.mask is None:
+            detector.mask = mask
+        else:
+            detector.mask = numpy.logical_or(mask,detector.mask)
+            
+    if options.flat:
+        detector.flat = fabio.open(options.flat).data
+    if options.dark:
+        detector.dark = fabio.open(options.dark).data
+    if options.splinefile:
+        detector.set_splineFile(options.splinefile)
+    else:
+        if options.pixel:
+            p = options.pixel.split(",")
+            psize = float(p[0])
+            if len(p)==1: 
+                detector.pixel1 = psize
+                detector.pixel2 = psize
+            else:
+                detector.pixel1 =float(p[1]) 
+                detector.pixel2 = psize
+        if options.shape:
+            p = options.shape.split(",")
+            psize = int(p[0])
+            if len(p)==1: 
+                detector.shape = psize,psize
+            else:
+                detector.shape  = int(p[1]),psize 
+        if options.dx and options.dy:
+            dx = fabio.open(options.dx).data 
+            dy = fabio.open(options.dy).data
+            #pilatus give displaceemt in percent of pixel ... 
+            if ".cbf" in options.dx: 
+                dx=dx*0.01
+            if ".cbf" in options.dy:
+                dy=dy*0.01
+            # TODO : assign to detector !!!  
+           
+    detector.save(output)
+    
 if __name__ == "__main__":
     main()
