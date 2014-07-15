@@ -54,13 +54,17 @@ class TestIsoTime(unittest.TestCase):
 class TestNexus(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.tmpdir =tempfile.mkdtemp() 
+        self.tmpdir = tempfile.mkdtemp()
     def test_new_detector(self):
         fname = os.path.join(self.tmpdir, "nxs.h5")
         nxs = io.Nexus(fname, "r+")
         nxs.new_detector()
         nxs.close()
+
+        self.assert_(io.is_hdf5(fname), "nexus file is an HDF5")
 #        os.system("h5ls -r -a %s" % fname)
+
+
     def tearDown(self):
         unittest.TestCase.tearDown(self)
         shutil.rmtree(self.tmpdir)
