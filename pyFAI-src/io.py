@@ -114,7 +114,7 @@ def is_hdf5(filename):
     if not os.path.exists(filename):
         raise IOError("No such file %s" % (filename))
     with open(filename, "rb") as f:
-        sig = [ord(i) for i in f.read(10)]
+        sig = [ord(i) for i in f.read(8)]
     return sig == signature
 
 
