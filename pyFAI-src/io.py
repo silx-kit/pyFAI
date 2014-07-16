@@ -29,7 +29,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/06/2014"
+__date__ = "16/07/2014"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -45,16 +45,22 @@ Can be imported without h5py but then limited to fabio & ascii formats.
 TODO:
 * add monitor to HDF5
 """
-import sys
-import os
-import time
-import threading
-import logging
-logger = logging.getLogger("pyFAI.io")
-import types
-import numpy
-import posixpath
+import fabio
 import json
+import logging
+import numpy
+import os
+import posixpath
+import sys
+import threading
+import time
+import types
+
+from . import units
+from . import version
+
+
+logger = logging.getLogger("pyFAI.io")
 try:
     import h5py
 except ImportError as error:
@@ -67,11 +73,8 @@ else:
         pass
 
 
-from . import version
 
 
-import fabio
-from . import units
 
 def get_isotime(forceTime=None):
     """
@@ -653,6 +656,16 @@ class Nexus(object):
         entry_grp["program_name"] = numpy.string_("pyFAI")
         self.to_close.append(entry_grp)
         return entry_grp
+
+    def new_instrument(self, entry="entry", instrument_name="id00",):
+        """
+        Create an instrument in an entry or create both the entry and the instrument if
+        """
+        if not isinstance(entry, h5py.Group):
+            entry = self.new_entry(entry)
+        return self.new_class(entry, instrument_name, "NXinstrument")
+#        howto external link
+        #myfile['ext link'] = h5py.ExternalLink("otherfile.hdf5", "/path/to/resource")
 
     def new_class(self, grp, name, class_type="NXcollection"):
         """
