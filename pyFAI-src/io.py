@@ -611,12 +611,28 @@ class Nexus(object):
             entry["end_time"] = end_time
         self.h5.close()
 
+    def get_entry(self, name):
+        """
+        Retrieves an entry from its name
+        
+        @param name: name of the entry to retrieve
+        @return: HDF5 group of NXclass == NXentry
+        """
+        for grp_name in self.h5:
+            if  grp_name == name:
+                grp = self.h5[grp_name]
+                if isinstance(grp, h5py.Group) and \
+                    "start_time" in grp and  \
+                    "NX_class" in grp.attrs and \
+                    grp.attrs["NX_class"] == "NXentry" :
+                        return grp
 
     def get_entries(self):
         """
         retrieves all entry sorted the latest first.
+        
+        @return: list of HDF5 groups
         """
-
         entries = [(grp, from_isotime(self.h5[grp + "/start_time"].value))
                     for grp in self.h5
                     if (isinstance(self.h5[grp], h5py.Group) and \
