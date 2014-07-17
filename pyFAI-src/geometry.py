@@ -1123,7 +1123,7 @@ class Geometry(object):
             self._rot3 = rot3
             self.reset()
 
-    def setSPD(self, SampleDistance, Center_1, Center_2, Rot_1=0, Rot_2=0, Rot3=0,
+    def setSPD(self, SampleDistance, Center_1, Center_2, Rot_1=0, Rot_2=0, Rot_3=0,
                PSize_1=None, PSize_2=None, splineFile=None, BSize_1=1, BSize_2=1,
                WaveLength=None):
         """
@@ -1152,7 +1152,7 @@ class Geometry(object):
             self.detector.binning = (int(BSize_2), int(BSize_1))
         elif PSize_1 and PSize_2:
             self.detector = detectors.Detector(PSize_2, PSize_1)
-            if self.BSize_2 > 1 or self.BSize_1 > 1:
+            if BSize_2 > 1 or BSize_1 > 1:
                 #set binning factor without changing pixel size
                 self.detector._binning = (int(BSize_2), int(BSize_1))
 
@@ -1161,13 +1161,14 @@ class Geometry(object):
         self._poni1 = float(Center_2) * self.detector.pixel1
         self._poni2 = float(Center_1) * self.detector.pixel2
         #This is WRONG ... correct it
-        self._rot1 = Rot_2
-        self._rot2 = Rot_1
-        self._rot3 = -Rot3
-        if Rot_1 != 0 or Rot_2 != 0 or Rot3 != 0:
+        self._rot1 = Rot_2 or 0
+        self._rot2 = Rot_1 or 0
+        self._rot3 = -(Rot_3 or 0)
+        if Rot_1  or Rot_2  or Rot_3 :
             raise NotImplementedError("rotation axis not yet implemented for SPD")
         #and finally the wavelength
-        self.wavelength = float(WaveLength)
+        if WaveLength:
+            self.wavelength = float(WaveLength)
         self.reset()
 
     def getSPD(self):
@@ -1201,7 +1202,7 @@ class Geometry(object):
                "Rot_1":None,
                "Center_2" : self._poni1 / self.detector.pixel1,
                "Center_1" : self._poni2 / self.detector.pixel2,
-
+               "SampleDistance": self.dist
                }
         if self._wavelength:
             res["WaveLength"] = self._wavelength
