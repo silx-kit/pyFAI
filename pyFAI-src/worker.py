@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/10/2013"
+__date__ = "18/07/2014"
 __status__ = "development"
 __doc__ = """
 
@@ -425,3 +425,38 @@ class Worker(object):
     def set_normalization_factor(self, value):
         with self._sem:
             self._normalization_factor = value
+
+class PixelwiseWorker(object):
+    """
+    Simple worker doing dark, flat, solid angle and polarization correction
+    """
+    def __init__(self, dark=None, flat=None, solidangle=None, polarization=None, 
+                 mask=None, dummy=None, delta_dummy=None, device=None):
+        """
+        @param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context 
+        """
+        self.ctx = None
+        if dark is not None:
+            self.dark = numpy.ascontiguousarray(dark, dtype=numpy.float32)
+        else:
+            self.dark = None
+        if flat is not None:
+            self.flat = numpy.ascontiguousarray(flat, dtype=numpy.float32)
+        else:
+            self.flat = None
+        
+        
+    def process(self, data, normalization=None):
+        """
+        Process the data and apply a normalization factor
+        @param data: input data
+        @param normalization: niormalization factor
+        @return processed data
+        """
+        if self.ctx:
+        else:
+            if dummy is not None:
+                if delta_
+            masked = 
+        
+
