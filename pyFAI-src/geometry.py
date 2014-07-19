@@ -28,20 +28,24 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2013"
+__date__ = "17/07/2014"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
-import os
-import time
-import threading
 import logging
-import types
+from numpy import radians, degrees, arccos, arctan2, sin, cos, sqrt
 import numpy
+import os
+import threading
+import time
+import types
+
+from . import detectors
+from . import units
+
+
 logger = logging.getLogger("pyFAI.geometry")
 
-from numpy import radians, degrees, arccos, arctan2, sin, cos, sqrt
-from . import detectors
 
 try:
     from . import _geometry
@@ -58,7 +62,6 @@ try:
     from .fastcrc import crc32
 except ImportError:
     from zlib import crc32
-from . import units
 
 
 class Geometry(object):
@@ -1119,6 +1122,93 @@ class Geometry(object):
             self._rot2 = rot2
             self._rot3 = rot3
             self.reset()
+
+    def setSPD(self, SampleDistance, Center_1, Center_2, Rot_1=0, Rot_2=0, Rot_3=0,
+               PSize_1=None, PSize_2=None, splineFile=None, BSize_1=1, BSize_2=1,
+               WaveLength=None):
+        """
+        Set the SPD like parameter set: For geometry description see
+        Peter Boesecke J.Appl.Cryst.(2007).40, s423–s427 
+
+        Basically the main difference with pyFAI is the order of the axis which are flipped
+
+        @param SampleDistance: distance from sample to detector at the PONI (orthogonal projection)
+        @param Center_1, pixel position of the PONI along fastest axis
+        @param Center_2: pixel position of the PONI along slowest axis
+        @param Rot_1: rotation around the fastest axis (x)
+        @param Rot_2: rotation around the slowest axis (y)
+        @param Rot_3: rotation around the axis ORTHOGONAL to the detector plan
+        @param PSize_1: pixel size in meter along the fastest dimention
+        @param PSize_2: pixel size in meter along the slowst dimention
+        @param splineFile: name of the file containing the spline 
+        @param BSize_1: pixel binning factor along the fastest dimention
+        @param BSize_2: pixel binning factor along the slowst dimention
+        @param WaveLength: wavelength used
+        """
+        #first define the detector
+        if splineFile:
+            #let's assume the spline file is for unbinned detectors ...
+            self.detector = detectors.FReLoN(splineFile)
+            self.detector.binning = (int(BSize_2), int(BSize_1))
+        elif PSize_1 and PSize_2:
+            self.detector = detectors.Detector(PSize_2, PSize_1)
+            if BSize_2 > 1 or BSize_1 > 1:
+                #set binning factor without changing pixel size
+                self.detector._binning = (int(BSize_2), int(BSize_1))
+
+        #then the geometry
+        self._dist = float(SampleDistance)
+        self._poni1 = float(Center_2) * self.detector.pixel1
+        self._poni2 = float(Center_1) * self.detector.pixel2
+        #This is WRONG ... correct it
+        self._rot1 = Rot_2 or 0
+        self._rot2 = Rot_1 or 0
+        self._rot3 = -(Rot_3 or 0)
+        if Rot_1  or Rot_2  or Rot_3 :
+            raise NotImplementedError("rotation axis not yet implemented for SPD")
+        #and finally the wavelength
+        if WaveLength:
+            self.wavelength = float(WaveLength)
+        self.reset()
+
+    def getSPD(self):
+        """
+        get the SPD like parameter set: For geometry description see
+        Peter Boesecke J.Appl.Cryst.(2007).40, s423–s427 
+
+        Basically the main difference with pyFAI is the order of the axis which are flipped
+
+        @return: dictionnary with those parameters:
+            SampleDistance: distance from sample to detector at the PONI (orthogonal projection)
+            Center_1, pixel position of the PONI along fastest axis
+            Center_2: pixel position of the PONI along slowest axis
+            Rot_1: rotation around the fastest axis (x)
+            Rot_2: rotation around the slowest axis (y)
+            Rot_3: rotation around the axis ORTHOGONAL to the detector plan
+            PSize_1: pixel size in meter along the fastest dimention
+            PSize_2: pixel size in meter along the slowst dimention
+            splineFile: name of the file containing the spline 
+            BSize_1: pixel binning factor along the fastest dimention
+            BSize_2: pixel binning factor along the slowst dimention
+            WaveLength: wavelength used in meter
+        """
+        res = {"PSize_1": self.detector.pixel2,
+               "PSize_2": self.detector.pixel1,
+               "BSize_1":self.detector.binning[1],
+               "BSize_2":self.detector.binning[0],
+               "splineFile":self.detector.splineFile,
+               "Rot_3": None,
+               "Rot_2": None,
+               "Rot_1":None,
+               "Center_2" : self._poni1 / self.detector.pixel1,
+               "Center_1" : self._poni2 / self.detector.pixel2,
+               "SampleDistance": self.dist
+               }
+        if self._wavelength:
+            res["WaveLength"] = self._wavelength
+        if abs(self.rot1) > 1e-6 or abs(self.rot2) > 1e-6 or abs(self.rot3) > 1e-6:
+            logger.warning("Rotation conversion from pyFAI to SPD is not yet implemented")
+        return res
 
     def setChiDiscAtZero(self):
         """

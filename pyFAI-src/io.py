@@ -29,7 +29,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/07/2014"
+__date__ = "17/07/2014"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -657,7 +657,7 @@ class Nexus(object):
                     else:
                         return detector
 
-    def new_entry(self, entry):
+    def new_entry(self, entry="entry"):
         """
         Create a new entry
 

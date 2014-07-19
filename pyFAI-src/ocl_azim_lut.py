@@ -25,7 +25,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
-__date__ = "18/10/2012"
+__date__ = "18/07/2014"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -226,7 +226,8 @@ class OCL_LUT_Integrator(object):
         self._cl_kernel_args["s32_to_float"] = [self._cl_mem[i] for i in ["image", "image"]]
 
     def integrate(self, data, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None,
-                            dark_checksum=None, flat_checksum=None, solidAngle_checksum=None, polarization_checksum=None):
+                            dark_checksum=None, flat_checksum=None, solidAngle_checksum=None, polarization_checksum=None,
+                            preprocess_only=False):
         events = []
         with self._sem:
             if data.dtype == numpy.uint16:
@@ -310,6 +311,12 @@ class OCL_LUT_Integrator(object):
             if do_dummy + do_polarization + do_solidAngle + do_flat + do_dark > 0:
                 ev = self._program.corrections(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["corrections"])
                 events.append(("corrections", ev))
+            if preprocess_only:
+                image = numpy.empty(data.shape, dtype=numpy.float32)
+                ev = pyopencl.enqueue_copy(self._queue, image, self._cl_mem["image"])
+                events.append(("copy D->H image", ev))
+                ev, wait()
+                return image
             integrate = self._program.lut_integrate(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["lut_integrate"])
             events.append(("integrate", integrate))
             outMerge = numpy.empty(self.bins, dtype=numpy.float32)
