@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/07/2014"
+__date__ = "21/07/2014"
 __status__ = "development"
 __doc__ = """
 
@@ -190,7 +190,12 @@ class Worker(object):
     def process(self, data) :
         """
         Process a frame
+        #TODO: 
+        dark, flat, sa are missing
+        
+        @param: data: numpy array containing the input image
         """
+        
         with self._sem:
             monitor = self._normalization_factor
         kwarg = {"unit": self.unit,
@@ -454,9 +459,10 @@ class PixelwiseWorker(object):
         @return processed data
         """
         if self.ctx:
+            pass
         else:
             if dummy is not None:
-                if delta_
-            masked = 
+#                if delta_
+            masked = None
         
 
