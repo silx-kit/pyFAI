@@ -449,20 +449,57 @@ class PixelwiseWorker(object):
             self.flat = numpy.ascontiguousarray(flat, dtype=numpy.float32)
         else:
             self.flat = None
-        
-        
+        if solidangle is not None:
+            self.solidangle = numpy.ascontiguousarray(solidangle, dtype=numpy.float32)
+        else:
+            self.solidangle = None
+        if polarization is not None:
+            self.polarization = numpy.ascontiguousarray(polarization, dtype=numpy.float32)
+        else:
+            self.polarization = None
+
+        if mask is None:
+            self.mask = False
+        elif mask.min() < 0 and mask.max() == 0:  # 0 is valid, <0 is invalid
+            self.mask = (mask < 0)
+        else:
+            self.mask = mask.astype(bool)
+
+        self.dummy = dummy
+        if device is not None:
+            logger.warning("GPU is not yet implemented")
+
     def process(self, data, normalization=None):
         """
         Process the data and apply a normalization factor
         @param data: input data
-        @param normalization: niormalization factor
+        @param normalization: normalization factor
         @return processed data
         """
-        if self.ctx:
-            pass
+        shape = data.shape
+        #       ^^^^   this is why data is mandatory !
+        if self.dummy is not None:
+            if self.delta_dummy is None:
+                mask = numpy.logical_or((data == self.dummy), self.mask)
+            else:
+                mask = numpy.logical_or(abs(data - dummy) <= delta_dummy,
+                                        self.mask)
+            do_mask = True
         else:
-            if dummy is not None:
-#                if delta_
-            masked = None
+            do_mask = (self.mask is not False)
+        data = numpy.ascontiguousarray(data, dtype=numpy.float32)
+        if self.dark:
+            data -= self.dark
+        if self.flat:
+            data /= self.flat
+        if self.solidangle:
+            data /= self.solidangle
+        if self.polarization:
+            data /= self.polarization
         
+        if do_mask:
+            data[self.mask] = self.dummy or 0
+        return data
+
+
 

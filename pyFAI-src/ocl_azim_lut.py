@@ -25,7 +25,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
-__date__ = "18/07/2014"
+__date__ = "21/07/2014"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -157,7 +157,7 @@ class OCL_LUT_Integrator(object):
             self._cl_mem["flat"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
             self._cl_mem["polarization"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
             self._cl_mem["solidangle"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
-        except pyopencl.MemoryError as error:
+        except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             self._free_buffers()
             raise MemoryError(error)
 
@@ -170,10 +170,8 @@ class OCL_LUT_Integrator(object):
                 try:
                     self._cl_mem[buffer_name].release()
                     self._cl_mem[buffer_name] = None
-                except pyopencl.LogicError:
-                    logger.error("Error while freeing buffer %s" % buffer_name)
-
-
+                except (pyopencl.MemoryError, pyopencl.LogicError) as error:
+                    logger.error("Error while freeing buffer %s: %s" % (buffer_name, error))
 
     def _compile_kernels(self, kernel_file=None):
         """
