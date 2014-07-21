@@ -103,7 +103,7 @@ class OCL_LUT_Integrator(object):
             self._allocate_buffers()
             self._compile_kernels()
             self._set_kernel_arguments()
-        except pyopencl.MemoryError as error:
+        except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             raise MemoryError(error)
         if self.device_type == "CPU":
             ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["lut"], lut)
@@ -194,7 +194,7 @@ class OCL_LUT_Integrator(object):
         logger.info("Compiling file %s with options %s" % (kernel_file, compile_options))
         try:
             self._program = pyopencl.Program(self._ctx, kernel_src).build(options=compile_options)
-        except pyopencl.MemoryError as error:
+        except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             raise MemoryError(error)
 
     def _free_kernels(self):
