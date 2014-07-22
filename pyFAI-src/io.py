@@ -29,7 +29,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/07/2014"
+__date__ = "22/07/2014"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -656,6 +656,7 @@ class Nexus(object):
                         result.append(detector)
                     else:
                         return detector
+        return result
 
     def new_entry(self, entry="entry"):
         """
@@ -664,7 +665,7 @@ class Nexus(object):
         @param entry: name of the entry
         @return: the corresponding HDF5 group
         """
-        nb_entries = 1 + len(self.get_entries())
+        nb_entries = len(self.get_entries())
         entry_grp = self.h5.require_group("%s_%04i" % (entry, nb_entries))
         entry_grp.attrs["NX_class"] = "NXentry"
         entry_grp["start_time"] = numpy.string_(get_isotime())
