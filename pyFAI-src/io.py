@@ -724,3 +724,16 @@ class Nexus(object):
                    "NX_class" in grp[name].attrs and \
                    grp[name].attrs["NX_class"] == class_type)]
         return coll
+
+    def get_data(self, grp, class_type="NXdata"):
+        """
+        return all dataset of the the NeXus class NXdata
+
+        @param grp: HDF5 group
+        @param class_type: name of the NeXus class
+        """
+        coll = [grp[name] for name in grp
+               if (isinstance(grp[name], h5py.Dataset) and \
+                   "NX_class" in grp[name].attrs and \
+                   grp[name].attrs["NX_class"] == class_type)]
+        return coll
