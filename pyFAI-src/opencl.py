@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: Azimuthal integration
-#             https://forge.epn-campus.eu/projects/azimuthal
-#
-#    File: "$Id$"
+#    Project: Fast Azimuthal Integration
+#             https://github.com/kif/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -28,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2013"
+__date__ = "23/07/2014"
 __status__ = "stable"
 
 import os, logging
@@ -82,6 +80,23 @@ class Device(object):
 
     def __repr__(self):
         return "%s" % self.name
+
+    def pretty_print(self):
+        """
+        Complete device description
+        
+        @return: string
+        """
+        lst = ["Name\t:\t%s"%self.name,
+               "Type\t:\t%s"%self.type, 
+               "Memory\t:\t%s"%self.memory,
+               "Cores\t:\t%s CU"%self.cores,
+               "Frequency\t:\t%s MHz"%self.frequency,
+               "Speed\t:\t%s MFLOPS"%self.flops,
+               "version\t:\t%s"%self.version,
+               "available\t:\t%s" % self.available]
+        return os.linesep.join(lst)
+
 
 class Platform(object):
     """
