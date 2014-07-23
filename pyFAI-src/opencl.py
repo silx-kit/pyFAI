@@ -87,14 +87,14 @@ class Device(object):
         
         @return: string
         """
-        lst = ["Name\t:\t%s"%self.name,
-               "Type\t:\t%s"%self.type, 
-               "Memory\t:\t%s"%self.memory,
-               "Cores\t:\t%s CU"%self.cores,
+        lst = ["Name\t\t:\t%s" % self.name,
+               "Type\t\t:\t%s" % self.type,
+               "Memory\t\t:\t%.3f MB" % (self.memory / 2.0 ** 20),
+               "Cores\t\t:\t%s CU" % self.cores,
                "Frequency\t:\t%s MHz"%self.frequency,
-               "Speed\t:\t%s MFLOPS"%self.flops,
-               "version\t:\t%s"%self.version,
-               "available\t:\t%s" % self.available]
+               "Speed\t\t:\t%.3f GFLOPS" % (self.flops / 1000.),
+               "Version\t\t:\t%s" % self.version,
+               "Available\t:\t%s" % self.available]
         return os.linesep.join(lst)
 
 
