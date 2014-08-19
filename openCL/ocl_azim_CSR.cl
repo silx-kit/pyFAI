@@ -458,7 +458,6 @@ csr_integrate_padded(	const 	__global	float	*weights,
 };//end kernel
 
 
-Correct an image based on the look-up table calculated ...
 /**
  * \brief Performs distortion corrections on an image using a LUT in CSR form
  *
