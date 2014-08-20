@@ -301,18 +301,22 @@ void lut1(__global float8* pos,
 //             __const  int     check_mask,
           __global float4* minmax,
           const    int     length,
-//                   float2  pos0Range,
-//                   float2  pos1Range,
+                   float2  pos0Range,
+                   float2  pos1Range,
           __global int*  outMax)
 {
     int global_index = get_global_id(0);
     if (global_index < length)
     {
-//         float pos0_min = fmax(fmin(pos0Range.x,pos0Range.y),minmax[0].s0);
-//         float pos0_max = fmin(fmax(pos0Range.x,pos0Range.y),minmax[0].s1);
-        float pos0_min = minmax[0].s0;
-        float pos0_maxin = minmax[0].s1;
+        int tmp_bool = (pos0Range.x == pos0Range.y); //(== 0)
+        float pos0_min = !tmp_bool*fmin(pos0Range.x,pos0Range.y) + tmp_bool*minmax[0].s0;
+        float pos0_max = !tmp_bool*fmax(pos0Range.x,pos0Range.y) + tmp_bool*minmax[0].s1);
+//        float pos0_min = minmax[0].s0;
+//        float pos0_maxin = minmax[0].s1;
         float pos0_max = pos0_maxin*( 1 + EPS);
+
+
+
         
         float delta = (pos0_max - pos0_min) / BINS;
         
@@ -330,6 +334,8 @@ void lut1(__global float8* pos,
         
         int bin0_min = floor(min0);
         int bin0_max = floor(max0);
+        
+//        if (bin0_min >= 0) && (bin0_max < BINS) // do i count half pixels
         
         for (int bin=bin0_min; bin < bin0_max+1; bin++)
         {

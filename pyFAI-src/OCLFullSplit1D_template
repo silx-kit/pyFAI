@@ -1,0 +1,20 @@
+class OCLFullSplit1d(object):
+    """
+    1D histogramming with full pixel splitting
+    based on a Look-up table in CSR format
+    
+    
+    The initialization of the class can take quite a while (operation are not parallelized)
+    but each integrate is parallelized and quite efficient. 
+    """
+
+    @cython.boundscheck(False)
+    def __init__(self,
+                 pos,
+                 int bins=100,
+                 pos0Range=None,
+                 pos1Range=None,
+                 mask=None,
+                 mask_checksum=None,
+                 allow_pos0_neg=False,
+                 unit="undefined"):
