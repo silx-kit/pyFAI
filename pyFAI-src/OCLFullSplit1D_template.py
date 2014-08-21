@@ -16,7 +16,7 @@ class OCLFullSplit1d(object):
         
         self.bins = bins
         self.lut_size = 0
-        self.allow_pos0_neg =  allow_pos0_neg
+        self.allow_pos0_neg = allow_pos0_neg
 
         if len(pos.shape) == 3:
             assert pos.shape[1] == 4
@@ -41,35 +41,59 @@ class OCLFullSplit1d(object):
             self.mask_checksum = None
             
         self.pos = numpy.ascontiguousarray(pos.ravel(), dtype=numpy.float32)
-        self.pos0Range = pos0Range
-        self.pos1Range = pos1Range
+        self.pos0Range = numpy.empty(2,dtype=numpy.float32)
+        self.pos1Range = numpy.empty(2,dtype=numpy.float32)
         
-        
-        tmp0 = (pos0Range is not None) and (len(pos0Range) is 2)
-        tmp1 = (pos1Range is not None) and (len(pos1Range) is 2)
-        if (not tmp0) and (not tmp1):
-            self._minMax()
-        elif (tmp0) and (not tmp1):
-            self._minMax()
-            #pull d_minmax, replace pos0, send back
-            self.pos0_min = min(pos0Range)
-            if (not allow_pos0_neg) and self.pos0_min < 0:
-                self.pos0_min = 0
-            self.pos0_maxin = max(pos0Range)
-        elif (not tmp0) and (tmp1):
-            self._minMax()
-            #pull d_minmax, replace pos1, send back
-            self.pos1_min = min(pos1Range)
-            self.pos1_maxin = max(pos1Range)
-            
+        if (pos0Range is not None) and (len(pos0Range) is 2):
+            self.pos0Range[0] = min(pos0Range) # do it on GPU?
+            self.pos0Range[1] = max(pos0Range)
+            if (not self.allow_pos0_neg) and (self.pos0Range[0] < 0):
+                self.pos0Range[0] = 0.0
+                if self.pos0Range[1] < 0:
+                    print "Warning: Invalid 0-dim range! Using the data derived range instead"
+                    self.pos0Range[1] = 0.0
+            #self.pos0Range[0] = pos0Range[0]
+            #self.pos0Range[1] = pos0Range[1]
         else:
-            #allocate d_minmax
-            self.pos0_min = min(pos0Range)
-            if (not allow_pos0_neg) and self.pos0_min < 0:
-                self.pos0_min = 0
-            self.pos0_maxin = max(pos0Range)
-            self.pos1_min = min(pos1Range)
-            self.pos1_maxin = max(pos1Range)
+            self.pos0Range[0] = 0.0
+            self.pos0Range[1] = 0.0
+            
+            
+        if (pos1Range is not None) and (len(pos1Range) is 2):
+            self.pos1Range[0] = min(pos1Range) # do it on GPU?
+            self.pos1Range[1] = max(pos1Range)
+            #self.pos1Range[0] = pos1Range[0]
+            #self.pos1Range[1] = pos1Range[1]
+        else:
+            self.pos1Range[0] = 0.0
+            self.pos1Range[1] = 0.0
+            
+        
+        #tmp0 = (pos0Range is not None) and (len(pos0Range) is 2)
+        #tmp1 = (pos1Range is not None) and (len(pos1Range) is 2)
+        #if (not tmp0) and (not tmp1):
+            #self._minMax()
+        #elif (tmp0) and (not tmp1):
+            #self._minMax()
+            ##pull d_minmax, replace pos0, send back
+            #self.pos0_min = min(pos0Range)
+            #if (not allow_pos0_neg) and self.pos0_min < 0:
+                #self.pos0_min = 0
+            #self.pos0_maxin = max(pos0Range)
+        #elif (not tmp0) and (tmp1):
+            #self._minMax()
+            ##pull d_minmax, replace pos1, send back
+            #self.pos1_min = min(pos1Range)
+            #self.pos1_maxin = max(pos1Range)
+            
+        #else:
+            ##allocate d_minmax
+            #self.pos0_min = min(pos0Range)
+            #if (not allow_pos0_neg) and self.pos0_min < 0:
+                #self.pos0_min = 0
+            #self.pos0_maxin = max(pos0Range)
+            #self.pos1_min = min(pos1Range)
+            #self.pos1_maxin = max(pos1Range)
         
         self._minMax()
 
