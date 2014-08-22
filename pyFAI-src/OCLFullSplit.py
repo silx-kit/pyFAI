@@ -48,7 +48,7 @@ logger = logging.getLogger("pyFAI.OCLFullSplit")
 
 
 class OCLFullSplit1d(object):
-    def __init__(self,
+    def __init__(self, 
                  pos,
                  bins=100,
                  pos0Range=None,
@@ -76,7 +76,8 @@ class OCLFullSplit1d(object):
             assert pos.shape[3] == 2
         else:
             raise ValueError("Pos array dimentions are wrong")
-        self.size = pos.size/8
+        self.pos_size = pos.size
+        self.size = self.pos_size/8
         self.pos = numpy.ascontiguousarray(pos.ravel(), dtype=numpy.float32)
         self.pos0Range = numpy.empty(2,dtype=numpy.float32)
         self.pos1Range = numpy.empty(2,dtype=numpy.float32)
@@ -133,8 +134,6 @@ class OCLFullSplit1d(object):
         self.device = self.platform.devices[deviceid]
         self.device_type = self.device.type
         
-        self.compile_options = "-D BINS=%i -D SIZE=%i -D WORKGROUP_SIZE=%i -D EPS=%e" % (self.bins, self.size, self.workgroup_size, numpy.finfo(numpy.float32).eps)
-            
         if (self.device_type == "CPU") and (self.platform.vendor == "Apple"):
             logger.warning("This is a workaround for Apple's OpenCL on CPU: enforce BLOCK_SIZE=1")
             self.workgroup_size = 1
@@ -144,8 +143,33 @@ class OCLFullSplit1d(object):
                 self._queue = pyopencl.CommandQueue(self._ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
             else:
                 self._queue = pyopencl.CommandQueue(self._ctx)
+            self._compile_kernels()
             self._calc_boundaries()
             self._calc_LUT()
+        except pyopencl.MemoryError as error:
+            raise MemoryError(error)
+        
+    def _compile_kernels(self, kernel_file=None):
+        """
+        Call the OpenCL compiler
+        @param kernel_file: path tothe
+        """
+        kernel_name = "ocl_lut.cl"
+        if kernel_file is None:
+            if os.path.isfile(kernel_name):
+                kernel_file = os.path.abspath(kernel_name)
+            else:
+                kernel_file = get_cl_file(kernel_name)
+        else:
+            kernel_file = str(kernel_file)
+        with open(kernel_file, "r") as kernelFile:
+            kernel_src = kernelFile.read()
+
+        compile_options = "-D BINS=%i -D POS_SIZE=%i -D SIZE=%i -D WORKGROUP_SIZE=%i -D EPS=%e" % \
+                          (self.bins, self.pos_size, self.size, self.workgroup_size, numpy.finfo(numpy.float32).eps)
+        logger.info("Compiling file %s with options %s" % (kernel_file, compile_options))
+        try:
+            self._program = pyopencl.Program(self._ctx, kernel_src).build(options=compile_options)
         except pyopencl.MemoryError as error:
             raise MemoryError(error)
 
@@ -153,17 +177,49 @@ class OCLFullSplit1d(object):
         """
         comments
         """
-        # Check for memory and allocate
+        # # # # # # # # Check for memory# # # # # # # #
         size_of_float = numpy.dtype(numpy.float32).itemsize
-        size_of_int = numpy.dtype(numpy.int32).itemsize
         
-        ualloc  = (self.size * 8 * size_of_float)
+        ualloc  = (self.pos_size * size_of_float)
         ualloc += (self.workgroup_size * 4 * size_of_float)
         ualloc += (4 * size_of_float)
-        
         memory = self.device.memory
-
-        pass
+        if ualloc >= memory:
+            raise MemoryError("Fatal error in _allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))
+        # # # # # # # # # # # # # # # # # # # # # # # #
+        # # # # # # # # allocate memory # # # # # # # #
+        try:
+            # No returned event for profiling
+            #self._cl_mem["pos"]       = pyopencl.array.to_device(self._queue, self.pos)
+            #self._cl_mem["preresult"] = pyopencl.array.empty(self._queue, (4*self.workgroup_size,), dtype=numpy.float32)
+            #self._cl_mem["minmax"]    = pyopencl.array.empty(self._queue, (4,), dtype=numpy.float32)
+            self._cl_mem["pos"]       = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size_of_float * self.pos_size)
+            self._cl_mem["preresult"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * 4 * self.workgroup_size)
+            self._cl_mem["minmax"]    = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * 4)
+        except pyopencl.MemoryError as error:
+            self._free_device_memory()
+            raise MemoryError(error)
+        # # # # # # # # # # # # # # # # # # # # # # # #
+        # # # # # # # # # move data # # # # # # # # # # 
+        with self._sem:
+            copy_pos = pyopencl.enqueue_copy(self._queue, self._cl_mem["pos"], self.pos)
+            self.events += [("copy pos", copy_pos)]
+        # # # # # # # # set arguments # # # # # # # # #
+        self._cl_kernel_args["reduce_minmax_1"] = [self._cl_mem["pos"], self._cl_mem["preresult"]]
+        self._cl_kernel_args["reduce_minmax_2"] = [self._cl_mem["preresult"], self._cl_mem["minmax"]]
+        # # # # # # # # # # # # # # # # # # # # # # # #
+        # # # # # # do the minmax reduction # # # # # # 
+        with self._sem:
+            reduce_minmax_1 = self._program.reduce_minmax_1(self._queue, (self.workgroup_size * self.workgroup_size,), (self.workgroup_size,), *self._cl_kernel_args["reduce_minmax_1"])
+            self.events += [("reduce_minmax_1",reduce_minmax_1)]
+            reduce_minmax_2 = self._program.reduce_minmax_2(self._queue, (self.workgroup_size,), (self.workgroup_size,), *self._cl_kernel_args["reduce_minmax_2"])
+            self.events += [("reduce_minmax_2",reduce_minmax_2)]
+        # # # # # # # # # # # # # # # # # # # # # # # #
+        # # # # # release the redundant data  # # # # #
+        self._cl_mem["preresult"].release()
+        self._cl_mem.pop("preresult")
+        # # # # # # # # # # # # # # # # # # # # # # # #
+        
         #check memory of d_pos + d_preresult + d_minmax
         #load d_pos
         #allocate d_preresult
@@ -175,7 +231,101 @@ class OCLFullSplit1d(object):
         
         
     def _calc_LUT(self):
-        pass
+        """
+        first need to call lut_1 and lut_2 to find the size of the LUT and the lut_3 to create it
+        """
+        # # # # # # # # Check for memory# # # # # # # #
+        size_of_float = numpy.dtype(numpy.float32).itemsize
+        size_of_int = numpy.dtype(numpy.int32).itemsize
+        
+        ualloc  = (self.pos_size * size_of_float) # pos
+        ualloc += (4 * size_of_float)             # minmax
+        ualloc += (2 * size_of_float) * 2         # pos0Range, pos1Range
+        ualloc += (self.bins * size_of_int)       # outMax
+        ualloc += (1 * size_of_int)               # lutsize
+        ualloc += ((self.bins+1) * size_of_int)   # idx_ptr
+        memory = self.device.memory
+        if ualloc >= memory:
+            raise MemoryError("Fatal error in _allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))
+        # # # # # # # # # # # # # # # # # # # # # # # #
+        # # # # # # # # allocate memory # # # # # # # #
+        try:
+            #self._cl_mem["pos0Range"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size_of_float * 2)
+            #self._cl_mem["pos1Range"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size_of_float * 2)
+            self._cl_mem["outMax"]    = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * self.bins)
+            self._cl_mem["lutsize"]   = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * 1)
+            self._cl_mem["idx_ptr"]   = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * (self.bins+1))
+        except pyopencl.MemoryError as error:
+            self._free_device_memory()
+            raise MemoryError(error)
+        # # # # # # # # # # # # # # # # # # # # # # # #
+        # # # # # # # # # move data # # # # # # # # # # 
+        #with self._sem:
+            #copy_pos0Range = pyopencl.enqueue_copy(self._queue, self._cl_mem["pos0Range"], self.pos0Range)
+            #self.events += [("copy pos0Range", copy_pos0Range)]
+            #copy_pos1Range = pyopencl.enqueue_copy(self._queue, self._cl_mem["pos1Range"], self.pos1Range)
+            #self.events += [("copy pos1Range", copy_pos1Range)]
+        # # # # # # # # set arguments # # # # # # # # #
+        self._cl_kernel_args["memset_outMax"] = [self._cl_mem["outMax"]]
+        self._cl_kernel_args["lut_1"] = [self._cl_mem["pos"],  self._cl_mem["minmax"], self.pos0Range.data, self.pos1Range.data, self._cl_mem["outMax"]]
+        self._cl_kernel_args["lut_2"] = [self._cl_mem["outMax"], self._cl_mem["idx_ptr"], self._cl_mem["lutsize"]]
+        # # # # # # # # # # # # # # # # # # # # # # # #
+        # # # # # # start the LUT creation  # # # # # # 
+        memset_size = (self.bins + self.workgroup_size - 1) & ~(self.workgroup_size - 1),
+        global_size = (self.size + self.workgroup_size - 1) & ~(self.workgroup_size - 1),
+        with self._sem:
+            memset_outMax = self._program.memset_outMax(self._queue, memset_size, (self.workgroup_size,), *self._cl_kernel_args["memset_outMax"])
+            self.events += [("memset_outMax", memset_outMax)]
+            lut_1 = self._program.lut_1(self._queue, global_size, (self.workgroup_size,), *self._cl_kernel_args["lut_1"])
+            self.events += [("lut_1", lut_1)]
+            lut_2 = self._program.lut_2(self._queue, (1,), (1,), *self._cl_kernel_args["lut_2"])
+            self.events += [("lut_2", lut_2)]
+        # # # # # # # # # # # # # # # # # # # # # # # #
+        # # # # # # # # get the lutsize # # # # # # # # 
+            self.lutsize = numpy.ndarray(1, dtype=numpy.int32)
+            get_lutsize = pyopencl.enqueue_copy(self._queue, self.lutsize, self._cl_mem["lutsize"])
+            self.events += [("get_lutsize", get_lutsize)]
+        # # # # # # # # # # # # # # # # # # # # # # # #
+        # # # # # # # #  check  memory  # # # # # # # #
+        ualloc += (self.lutsize * size_of_int)     # indices
+        ualloc += (self.lutsize * size_of_float)   # data
+        if ualloc >= memory:
+            raise MemoryError("Fatal error in _allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))
+        # # # # # # # # # # # # # # # # # # # # # # # #
+        # # # # # # # # allocate memory # # # # # # # #
+        try:
+            self._cl_mem["indices"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_int * self.lutsize[0])
+            self._cl_mem["data"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size_of_float * self.lutsize[0])
+        except pyopencl.MemoryError as error:
+            self._free_device_memory()
+            raise MemoryError(error)
+        # # # # # # # # # # # # # # # # # # # # # # # #
+        # # # # # # # # set arguments # # # # # # # # #
+        self._cl_kernel_args["lut_3"] = [self._cl_mem["pos"],  self._cl_mem["minmax"], self.pos0Range.data, self.pos1Range.data, self._cl_mem["outMax"], self._cl_mem["idx_ptr"], self._cl_mem["indices"], self._cl_mem["data"]]
+        # # # # # # # # # # # # # # # # # # # # # # # #
+        # # # # #   finish the LUT creation   # # # # # 
+        with self._sem:
+            memset_outMax = self._program.memset_outMax(self._queue, memset_size, (self.workgroup_size,), *self._cl_kernel_args["memset_outMax"])
+            self.events += [("memset_outMax", memset_outMax)]
+            lut_3 = self._program.lut_3(self._queue, global_size, (self.workgroup_size,), *self._cl_kernel_args["lut_3"])
+            self.events += [("lut_3", lut_3)]
+        # # # # # # # # # # # # # # # # # # # # # # # #
+        # # # # # release the redundant data  # # # # #
+        self._cl_mem["pos"].release()
+        self._cl_mem.pop("pos")
+        self._cl_mem["minmax"].release()
+        self._cl_mem.pop("minmax")
+        #self._cl_mem["pos0Range"].release()
+        #self._cl_mem.pop("pos0Range")
+        #self._cl_mem["pos1Range"].release()
+        #self._cl_mem.pop("pos1Range")
+        self._cl_mem["outMax"].release()
+        self._cl_mem.pop("outMax")
+        self._cl_mem["lutsize"].release()
+        self._cl_mem.pop("lutsize")
+        # # # # # # # # # # # # # # # # # # # # # # # #
+        
+        
         #check memory of d_pos + d_minmax + d_outMax + d_lutsize
         #allocate d_outMax
         #allocate d_lutsize
@@ -192,7 +342,20 @@ class OCLFullSplit1d(object):
         #free d_lutsize
         #run lut4
         #free d_outMax
-        
+    
+    def _free_device_memory(self):
+        """
+        free all memory allocated on the device
+        """
+        for buffer_name in self._cl_mem:
+            if self._cl_mem[buffer_name] is not None:
+                try:
+                    self._cl_mem[buffer_name].release()
+                    self._cl_mem.pop[buffer_name]
+                    #self._cl_mem[buffer_name] = None
+                except pyopencl.LogicError:
+                    logger.error("Error while freeing buffer %s" % buffer_name)
+                    
     def get_platform(self):
         pass
     

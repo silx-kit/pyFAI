@@ -7,30 +7,25 @@ float area4(float a0, float a1, float b0, float b1, float c0, float c1, float d0
     return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)));
 }
 
-
 float integrate_line( float A0, float B0, float2 AB)
 {
     return (A0==B0) ? 0.0 : AB.s0*(B0*B0 - A0*A0)*0.5 + AB.s1*(B0-A0);
 }
-
 
 float getBinNr(float x0, float delta, float pos0_min)
 {
     return (x0 - pos0_min) / delta;
 }
 
-
 float min4f(float a, float b, float c, float d)
 {
     return fmin(fmin(a,b),fmin(c,d));
 }
 
-
 float max4f(float a, float b, float c, float d)
 {
     return fmax(fmax(a,b),fmax(c,d));
 }
-
 
 void AtomicAdd(volatile __global float *source, const float operand) 
 {
@@ -48,70 +43,6 @@ void AtomicAdd(volatile __global float *source, const float operand)
     } while (atomic_cmpxchg((volatile __global unsigned int *)source, prevVal.intVal, newVal.intVal) != prevVal.intVal);
 }
 
-
-/**
- * \brief cast values of an array of uint16 into a float output array.
- *
- * @param array_u16: Pointer to global memory with the input data as unsigned16 array
- * @param array_float:  Pointer to global memory with the output data as float array
- */
-__kernel void
-u16_to_float(__global unsigned short  *array_u16,
-             __global float *array_float
-)
-{
-  int i = get_global_id(0);
-  //Global memory guard for padding
-  if(i < NIMAGE)
-    array_float[i]=(float)array_u16[i];
-}
-
-
-/**
- * \brief convert values of an array of int32 into a float output array.
- *
- * @param array_int:  Pointer to global memory with the data in int
- * @param array_float:  Pointer to global memory with the data in float
- */
-__kernel void
-s32_to_float(   __global int  *array_int,
-                __global float  *array_float
-        )
-{
-  int i = get_global_id(0);
-  //Global memory guard for padding
-  if(i < NIMAGE)
-    array_float[i] = (float)(array_int[i]);
-}
-
-
-
-/**
- * \brief Sets the values of 3 float output arrays to zero.
- *
- * Gridsize = size of arrays + padding.
- *
- * @param array0: float Pointer to global memory with the outMerge array
- * @param array1: float Pointer to global memory with the outCount array
- * @param array2: float Pointer to global memory with the outData array
- */
-__kernel void
-memset_out(__global float *array0,
-           __global float *array1,
-           __global float *array2
-)
-{
-  int i = get_global_id(0);
-  //Global memory guard for padding
-  if(i < BINS)
-  {
-    array0[i]=0.0f;
-    array1[i]=0.0f;
-    array2[i]=0.0f;
-  }
-}
-
-
 /**
  * \brief Sets the values of 3 float output arrays to zero.
  *
@@ -120,7 +51,7 @@ memset_out(__global float *array0,
  * @param array0: int Pointer to global memory with the outMax array
  */
 __kernel void
-memset_out_int(__global int *array0)
+memset_outMax(__global int *array0)
 {
     int i = get_global_id(0);
     //Global memory guard for padding
@@ -128,12 +59,8 @@ memset_out_int(__global int *array0)
         array0[i]=0;
 }
 
-
-
-
-
 __kernel
-void reduce1(__global float2* buffer,
+void reduce_minmax_1(__global float2* buffer,
              __global float4* preresult) {
     
     
@@ -195,7 +122,7 @@ void reduce1(__global float2* buffer,
 
 
 __kernel
-void reduce2(__global float4* preresult,
+void reduce_minmax_2(__global float4* preresult,
              __global float4* result) {
     
     
@@ -236,79 +163,21 @@ void reduce2(__global float4* preresult,
     }
 }
 
-
-/**
- * \brief Performs Normalization of input image
- *
- * Intensities of images are corrected by:
- *  - dark (read-out) noise subtraction
- *  - Solid angle correction (division)
- *  - polarization correction (division)
- *  - flat fiels correction (division)
- * Corrections are made in place unless the pixel is dummy.
- * Dummy pixels are left untouched so that they remain dummy
- *
- * @param image           Float pointer to global memory storing the input image.
- * @param do_dark         Bool/int: shall dark-current correction be applied ?
- * @param dark            Float pointer to global memory storing the dark image.
- * @param do_flat         Bool/int: shall flat-field correction be applied ?
- * @param flat            Float pointer to global memory storing the flat image.
- * @param do_solidangle   Bool/int: shall flat-field correction be applied ?
- * @param solidangle      Float pointer to global memory storing the solid angle of each pixel.
- * @param do_polarization Bool/int: shall flat-field correction be applied ?
- * @param polarization    Float pointer to global memory storing the polarization of each pixel.
- * @param do_dummy        Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
- * @param dummy           Float: value for bad pixels
- * @param delta_dummy     Float: precision for bad pixel value
- *
-
-__kernel void
-corrections(        __global float  *image,
-            const            int    do_dark,
-            const   __global float  *dark,
-            const            int    do_flat,
-            const   __global float  *flat,
-            const            int    do_solidangle,
-            const   __global float  *solidangle,
-            const            int    do_polarization,
-            const   __global float  *polarization,
-            const            int    do_dummy,
-            const            float  dummy,
-            const            float  delta_dummy
-            )
-{
-    float data;
-    int i= get_global_id(0);
-    if(i < NIMAGE)
-    {
-        data = image[i];
-        int dummy_condition = ((!do_dummy) || ((delta_dummy!=0.0f) && (fabs(data-dummy) > delta_dummy)) || ((delta_dummy==0.0f) && (data!=dummy)));
-        data -= do_dark         ? dark[i]           : 0;
-        data *= do_flat         ? 1/flat[i]         : 1;
-        data *= do_solidangle   ? 1/solidangle[i]   : 1;
-        data *= do_polarization ? 1/polarization[i] : 1;
-        image[i] = dummy_condition ? data : dummy;
-    };//end if NIMAGE
-};//end kernel
-**/
-
-
-
 __kernel
-void lut1(__global float8* pos,
+void lut_1(__global float8* pos,
 //             __global int*    mask,
 //             __const  int     check_mask,
-          __global float4* minmax,
-                   float2  pos0Range,
-                   float2  pos1Range,
-          __global int*  outMax)
-{
+           __global float4* minmax,
+                    float2 pos0Range,
+                    float2 pos1Range,
+           __global int*  outMax)
+{ 
     int global_index = get_global_id(0);
     if (global_index < SIZE)
     {
         int tmp_bool = (pos0Range.x == pos0Range.y); //(== 0)
-        float pos0_min = !tmp_bool*fmin(pos0Range.x,pos0Range.y) + tmp_bool*minmax[0].s0;
-        float pos0_max = !tmp_bool*fmax(pos0Range.x,pos0Range.y) + tmp_bool*minmax[0].s1);
+        float pos0_min   = !tmp_bool*fmin(pos0Range.x,pos0Range.y) + tmp_bool*minmax[0].s0;
+        float pos0_maxin = !tmp_bool*fmax(pos0Range.x,pos0Range.y) + tmp_bool*minmax[0].s1;
 //        float pos0_min = minmax[0].s0;
 //        float pos0_maxin = minmax[0].s1;
         float pos0_max = pos0_maxin*( 1 + EPS);
@@ -344,10 +213,10 @@ void lut1(__global float8* pos,
 
 // to be run with global_size = local_size
 __kernel
-void lut2(__global int*  outMax,
-          __global int*  idx_ptr,
-          __global int*  lutsize)
-{
+void lut_2(__global int*  outMax,
+           __global int*  idx_ptr,
+           __global int*  lutsize)
+{ 
     int local_index = get_local_id(0);
 //    int local_size  = get_local_size(0);
     
@@ -382,14 +251,13 @@ void lut2(__global int*  outMax,
 //     }
 }
 
-
 __kernel
-void lut3(__global float8* pos,
+void lut_3(__global float8* pos,
 //             __global int*    mask,
 //             __const  int     check_mask,
           __global float4* minmax,
-//                   float2  pos0Range,
-//                   float2  pos1Range,
+          __global float2* pos0Range,
+          __global float2* pos1Range,
           __global int*    outMax,
           __global int*    idx_ptr,
           __global int*    indices,
@@ -461,146 +329,3 @@ void lut3(__global float8* pos,
         }
     }
 }
-
-
-
-/**
- * \brief Performs 1d azimuthal integration with full pixel splitting based on a LUT in CSR form
- *
- * An image instensity value is spread across the bins according to the positions stored in the LUT.
- * The lut is represented by a set of 3 arrays (coefs, row_ind, col_ptr)
- * Values of 0 in the mask are processed and values of 1 ignored as per PyFAI
- *
- * This implementation is especially efficient on CPU where each core reads adjacents memory.
- * the use of local pointer can help on the CPU.
- *
- * @param weights     Float pointer to global memory storing the input image.
- * @param coefs       Float pointer to global memory holding the coeficient part of the LUT
- * @param row_ind     Integer pointer to global memory holding the corresponding index of the coeficient
- * @param col_ptr     Integer pointer to global memory holding the pointers to the coefs and row_ind for the CSR matrix
- * @param do_dummy    Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
- * @param dummy       Float: value for bad pixels
- * @param outData     Float pointer to the output 1D array with the weighted histogram
- * @param outCount    Float pointer to the output 1D array with the unweighted histogram
- * @param outMerged   Float pointer to the output 1D array with the diffractogram
- *
- */
-__kernel void
-csr_integrate(  const   __global    float   *weights,
-                const   __global    float   *coefs,
-                const   __global    int     *row_ind,
-                const   __global    int     *col_ptr,
-                        __global    float   *outData,
-                        __global    float   *outCount,
-                        __global    float   *outMerge
-             )
-{
-    int thread_id_loc = get_local_id(0);
-    int bin_num = get_group_id(0); // each workgroup of size=warp is assinged to 1 bin
-    int2 bin_bounds;
-//    bin_bounds = (int2) *(col_ptr+bin_num);  // cool stuff!
-    bin_bounds.x = col_ptr[bin_num];
-    bin_bounds.y = col_ptr[bin_num+1];
-    int bin_size = bin_bounds.y-bin_bounds.x;
-    float sum_data = 0.0f;
-    float sum_count = 0.0f;
-    float cd = 0.0f;
-    float cc = 0.0f;
-    float t, y;
-    const float epsilon = 1e-10f;
-    float coef, data;
-    int idx, k, j;
-
-    for (j=bin_bounds.x;j<bin_bounds.y;j+=WORKGROUP_SIZE)
-    {
-        k = j+thread_id_loc;
-        if (k < bin_bounds.y)     // I don't like conditionals!!
-        {
-            coef = coefs[k];
-            idx = row_ind[k];
-            data = weights[idx];
-            //sum_data +=  coef * data;
-            //sum_count += coef;
-            //Kahan summation allows single precision arithmetics with error compensation
-            //http://en.wikipedia.org/wiki/Kahan_summation_algorithm
-            y = coef*data - cd;
-            t = sum_data + y;
-            cd = (t - sum_data) - y;
-            sum_data = t;
-            y = coef - cc;
-            t = sum_count + y;
-            cc = (t - sum_count) - y;
-            sum_count = t;
-       } //end if k < bin_bounds.y
-    };//for j
-/*
- * parallel reduction
- */
-
-// REMEMBER TO PASS WORKGROUP_SIZE AS A CPP DEF
-    __local float super_sum_data[WORKGROUP_SIZE];
-    __local float super_sum_data_correction[WORKGROUP_SIZE];
-    __local float super_sum_count[WORKGROUP_SIZE];
-    __local float super_sum_count_correction[WORKGROUP_SIZE];
-    
-    float super_sum_temp = 0.0f;
-    int index, active_threads = WORKGROUP_SIZE;
-    
-    if (bin_size < WORKGROUP_SIZE)
-    {
-        if (thread_id_loc < bin_size)
-        {
-            super_sum_data_correction[thread_id_loc] = cd;
-            super_sum_count_correction[thread_id_loc] = cc;
-            super_sum_data[thread_id_loc] = sum_data;
-            super_sum_count[thread_id_loc] = sum_count;
-        }
-        else
-        {
-            super_sum_data_correction[thread_id_loc] = 0.0f;
-            super_sum_count_correction[thread_id_loc] = 0.0f;
-            super_sum_data[thread_id_loc] = 0.0f;
-            super_sum_count[thread_id_loc] = 0.0f;
-        }
-    }
-    else
-    {
-        super_sum_data_correction[thread_id_loc] = cd;
-        super_sum_count_correction[thread_id_loc] = cc;
-        super_sum_data[thread_id_loc] = sum_data;
-        super_sum_count[thread_id_loc] = sum_count;
-    }
-    barrier(CLK_LOCAL_MEM_FENCE);
-    cd = 0;
-    cc = 0;
-    
-    while (active_threads != 1)
-    {
-        active_threads /= 2;
-        if (thread_id_loc < active_threads)
-        {
-            index = thread_id_loc+active_threads;
-            cd = super_sum_data_correction[thread_id_loc] + super_sum_data_correction[index];
-            super_sum_temp = super_sum_data[thread_id_loc];
-            y = super_sum_data[index] - cd;
-            t = super_sum_temp + y;
-            super_sum_data_correction[thread_id_loc] = (t - super_sum_temp) - y;
-            super_sum_data[thread_id_loc] = t;
-            
-            cc = super_sum_count_correction[thread_id_loc] + super_sum_count_correction[index];
-            super_sum_temp = super_sum_count[thread_id_loc];
-            y = super_sum_count[index] - cc;
-            t = super_sum_temp + y;
-            super_sum_count_correction[thread_id_loc]  = (t - super_sum_temp) - y;
-            super_sum_count[thread_id_loc] = t;
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-    }
-
-    if (thread_id_loc == 0)
-    {
-        outData[bin_num] = super_sum_data[0];
-        outCount[bin_num] = super_sum_count[0];
-        outMerge[bin_num] =  outData[bin_num] / outCount[bin_num];
-    }
-};//end kernel
