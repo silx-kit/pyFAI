@@ -40,16 +40,16 @@ import glob
 import shutil
 import platform
 import subprocess
-import os.path as op
+
 from os.path import join
 from distutils.core import setup, Extension, Command
 from numpy.distutils.misc_util import get_numpy_include_dirs
-from distutils.sysconfig import get_python_lib
 from distutils.command.install_data import install_data
+from distutils.command.build_ext import build_ext
 
-################################################################################
+###############################################################################
 # Check for Cython
-################################################################################
+###############################################################################
 try:
     from Cython.Distutils import build_ext
     CYTHON = True
@@ -78,7 +78,6 @@ if CYTHON:
     cython_c_ext = ".pyx"
 else:
     cython_c_ext = ".c"
-    from distutils.command.build_ext import build_ext
 
 
 def rewriteManifest(with_testimages=False):
@@ -112,7 +111,7 @@ def rewriteManifest(with_testimages=False):
             f.write(os.linesep.join(manifest_new))
 
         # remove MANIFEST: will be re generated !
-        if op.isfile("MANIFEST"):
+        if os.path.isfile("MANIFEST"):
             os.unlink("MANIFEST")
 
 if ("sdist" in sys.argv):
@@ -125,7 +124,8 @@ if ("sdist" in sys.argv):
 # ###############################################################################
 # pyFAI extensions
 # ###############################################################################
-cython_modules = [os.path.splitext(os.path.basename(i))[0] for i in glob.glob("src/*.pyx")]
+cython_modules = [os.path.splitext(os.path.basename(i))[0]
+                  for i in glob.glob(os.path.join("src", "*.pyx"))]
 src = dict([(ext, join("src", ext + cython_c_ext)) for ext in cython_modules])
 
 _geometry_dic = dict(name="_geometry",
@@ -141,49 +141,42 @@ reconstruct_dic = dict(name="reconstruct",
                        extra_link_args=['openmp'])
 
 histogram_dic = dict(name="histogram",
-                include_dirs=get_numpy_include_dirs(),
-                sources=[src['histogram']],
-                extra_compile_args=['openmp'],
-                extra_link_args=['openmp'],
-                )
+                     include_dirs=get_numpy_include_dirs(),
+                     sources=[src['histogram']],
+                     extra_compile_args=['openmp'],
+                     extra_link_args=['openmp'])
 
 splitPixel_dic = dict(name="splitPixel",
-                 include_dirs=get_numpy_include_dirs(),
-                 sources=[src['splitPixel']],
-                 )
+                      include_dirs=get_numpy_include_dirs(),
+                      sources=[src['splitPixel']])
 
 splitPixelFull_dic = dict(name="splitPixelFull",
-                 include_dirs=get_numpy_include_dirs(),
-                 sources=[src['splitPixelFull']],
-                 )
+                          include_dirs=get_numpy_include_dirs(),
+                          sources=[src['splitPixelFull']])
 
 splitPixelFullLUT_dic = dict(name="splitPixelFullLUT",
-                 include_dirs=get_numpy_include_dirs(),
-                 sources=[src['splitPixelFullLUT']],
-                 )
+                             include_dirs=get_numpy_include_dirs(),
+                             sources=[src['splitPixelFullLUT']])
 
 splitPixelFullLUT_double_dic = dict(name="splitPixelFullLUT_double",
-                 include_dirs=get_numpy_include_dirs(),
-                 sources=[src['splitPixelFullLUT_double']],
-                 )
+                                    include_dirs=get_numpy_include_dirs(),
+                                    sources=[src['splitPixelFullLUT_double']])
 
 splitBBox_dic = dict(name="splitBBox",
                      include_dirs=get_numpy_include_dirs(),
-                     sources=[src['splitBBox']],
-                     )
+                     sources=[src['splitBBox']])
+
 splitBBoxLUT_dic = dict(name="splitBBoxLUT",
                         include_dirs=get_numpy_include_dirs(),
                         sources=[src['splitBBoxLUT']],
                         extra_compile_args=['openmp'],
-                        extra_link_args=['openmp'],
-                        )
+                        extra_link_args=['openmp'])
 
 splitBBoxCSR_dic = dict(name="splitBBoxCSR",
                         include_dirs=get_numpy_include_dirs(),
                         sources=[src['splitBBoxCSR']],
                         extra_compile_args=['openmp'],
-                        extra_link_args=['openmp'],
-                        )
+                        extra_link_args=['openmp'])
 
 relabel_dic = dict(name="relabel",
                    include_dirs=get_numpy_include_dirs(),
@@ -196,61 +189,48 @@ bilinear_dic = dict(name="bilinear",
                     sources=[src['bilinear']])
 
 fastcrc_dic = dict(name="fastcrc",
-                        include_dirs=get_numpy_include_dirs(),
-                        sources=[src['fastcrc'] , join("src", "crc32.c")],
-                        )
+                   include_dirs=get_numpy_include_dirs(),
+                   sources=[src['fastcrc'], os.path.join("src", "crc32.c")])
+
 _distortion_dic = dict(name="_distortion",
-                        include_dirs=get_numpy_include_dirs(),
-                        sources=[src['_distortion'] ],
-                        extra_compile_args=['openmp'],
-                        extra_link_args=['openmp'],
+                       include_dirs=get_numpy_include_dirs(),
+                       sources=[src['_distortion'] ],
+                       extra_compile_args=['openmp'],
+                       extra_link_args=['openmp'])
 
-                        )
 _distortionCSR_dic = dict(name="_distortionCSR",
-                        include_dirs=get_numpy_include_dirs(),
-                        sources=[src['_distortionCSR'] ],
-                        extra_compile_args=['openmp'],
-                        extra_link_args=['openmp'],
+                          include_dirs=get_numpy_include_dirs(),
+                          sources=[src['_distortionCSR'] ],
+                          extra_compile_args=['openmp'],
+                          extra_link_args=['openmp'])
 
-                        )
 _bispev_dic = dict(name="_bispev",
-                        include_dirs=get_numpy_include_dirs(),
-                        sources=[src['_bispev'] ],
-                        extra_compile_args=['openmp'],
-                        extra_link_args=['openmp'],
-
-                        )
+                   include_dirs=get_numpy_include_dirs(),
+                   sources=[src['_bispev'] ],
+                   extra_compile_args=['openmp'],
+                   extra_link_args=['openmp'])
 
 _convolution_dic = dict(name="_convolution",
-                    include_dirs=get_numpy_include_dirs(),
-                    sources=[src['_convolution']],
-                    extra_compile_args=["openmp"],
-                    extra_link_args=["openmp"]
-                    )
+                        include_dirs=get_numpy_include_dirs(),
+                        sources=[src['_convolution']],
+                        extra_compile_args=["openmp"],
+                        extra_link_args=["openmp"])
 
 _blob_dic = dict(name="_blob",
-                    include_dirs=get_numpy_include_dirs(),
-                    sources=[src['_blob']],
-#                    extra_compile_args=["openmp"],
-#                    extra_link_args=["openmp"]
-                    )
+                 include_dirs=get_numpy_include_dirs(),
+                 sources=[src['_blob']])
 
 morphology_dic = dict(name="morphology",
-                    include_dirs=get_numpy_include_dirs(),
-                    sources=[src['morphology']],
-#                    extra_compile_args=["openmp"],
-#                    extra_link_args=["openmp"]
-                    )
+                      include_dirs=get_numpy_include_dirs(),
+                      sources=[src['morphology']])
 
 marchingsquares_dic = dict(name="marchingsquares",
-                    include_dirs=get_numpy_include_dirs(),
-                    sources=[src['marchingsquares']],
-#                    extra_compile_args=["openmp"],
-#                    extra_link_args=["openmp"]
-                    )
+                           include_dirs=get_numpy_include_dirs(),
+                           sources=[src['marchingsquares']])
 
-
-ext_modules = [globals()[i + "_dic"] for i in cython_modules if i + "_dic" in dir()]
+ext_modules = [globals()[ext + "_dic"]
+               for ext in cython_modules
+               if ext + "_dic" in dir()]
 
 
 if (os.name != "posix") or ("x86" not in platform.machine()):
@@ -289,36 +269,43 @@ if sys.platform == "win32":
 else:
     script_files = glob.glob("scripts/*")
 
-version = [eval(l.split("=")[1]) for l in open(join(os.path.dirname(
-    os.path.abspath(__file__)), "pyFAI-src", "__init__.py"))
-    if l.strip().startswith("version")][0]
 
+# get the version without importing pyFAI
+def get_version():
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           "pyFAI-src", "__init__.py")) as f:
+        for line in f:
+            if line.strip().startswith("version"):
+                return eval(line.split("=")[1])
+
+version = get_version()
 
 # We subclass the build_ext class in order to handle compiler flags
 # for openmp and opencl etc in a cross platform way
 translator = {
-        # Compiler
-            # name, compileflag, linkflag
-        'msvc' : {
-            'openmp' : ('/openmp', ' '),
-            'debug'  : ('/Zi', ' '),
-            'OpenCL' : 'OpenCL',
-            },
-        'mingw32':{
-            'openmp' : ('-fopenmp', '-fopenmp'),
-            'debug'  : ('-g', '-g'),
-            'stdc++' : 'stdc++',
-            'OpenCL' : 'OpenCL'
-            },
-        'default':{
-            'openmp' : ('-fopenmp', '-fopenmp'),
-            'debug'  : ('-g', '-g'),
-            'stdc++' : 'stdc++',
-            'OpenCL' : 'OpenCL'
-            }
-        }
+    # Compiler
+    # name, compileflag, linkflag
+    'msvc': {
+        'openmp': ('/openmp', ' '),
+        'debug': ('/Zi', ' '),
+        'OpenCL': 'OpenCL',
+    },
+    'mingw32': {
+        'openmp': ('-fopenmp', '-fopenmp'),
+        'debug': ('-g', '-g'),
+        'stdc++': 'stdc++',
+        'OpenCL': 'OpenCL'
+    },
+    'default': {
+        'openmp': ('-fopenmp', '-fopenmp'),
+        'debug': ('-g', '-g'),
+        'stdc++': 'stdc++',
+        'OpenCL': 'OpenCL'
+    }
+}
 
 cmdclass = {}
+
 
 class build_ext_pyFAI(build_ext):
     def build_extensions(self):
@@ -328,12 +315,12 @@ class build_ext_pyFAI(build_ext):
             trans = translator['default']
 
         for e in self.extensions:
-            e.extra_compile_args = [ trans[a][0] if a in trans else a
-                                    for a in e.extra_compile_args]
-            e.extra_link_args = [ trans[a][1] if a in trans else a
-                                 for a in e.extra_link_args]
-            e.libraries = filter(None, [ trans[a] if a in trans else None
-                                        for a in e.libraries])
+            e.extra_compile_args = [trans[arg][0] if arg in trans else arg
+                                    for arg in e.extra_compile_args]
+            e.extra_link_args = [trans[arg][1] if arg in trans else arg
+                                 for arg in e.extra_link_args]
+            e.libraries = filter(None, [trans[arg] if arg in trans else None
+                                        for arg in e.libraries])
 
             # If you are confused look here:
             # print e, e.libraries
@@ -341,6 +328,7 @@ class build_ext_pyFAI(build_ext):
             # print e.extra_link_args
         build_ext.build_extensions(self)
 cmdclass['build_ext'] = build_ext_pyFAI
+
 
 class PyTest(Command):
     user_options = []
@@ -393,6 +381,7 @@ if sphinx:
             sys.path.pop(0)
     cmdclass['build_doc'] = build_doc
 
+
 class smart_install_data(install_data):
     def run(self):
         install_cmd = self.get_finalized_command('install')
@@ -408,8 +397,10 @@ cmdclass['install_data'] = smart_install_data
 setup(name='pyFAI',
       version=version,
       author="Jérôme Kieffer (python), \
-      Peter Boesecke (geometry), Manuel Sanchez del Rio (algorithm), Vicente Armando Sole (algorithm), \
-      Dimitris Karkoulis (GPU), Jon Wright (adaptations) and Frederic-Emmanuel Picca",
+      Peter Boesecke (geometry), Manuel Sanchez del Rio (algorithm), \
+      Vicente Armando Sole (algorithm), \
+      Dimitris Karkoulis (GPU), Jon Wright (adaptations) \
+      and Frederic-Emmanuel Picca",
       author_email="jerome.kieffer@esrf.fr",
       description='Python implementation of fast azimuthal integration',
       url="http://forge.epn-campus.eu/azimuthal",
@@ -441,31 +432,3 @@ except ImportError:
 This python module can be found on:
 http://pypi.python.org/pypi/pyopencl
 """)
-
-
-"""
-# ###############################################################################
-# check if OpenMP modules, freshly installed can import
-# ###############################################################################
-pyFAI = None
-sys.path.insert(0, os.path.dirname(installDir))
-# print installDir
-for loc in ["", ".", os.getcwd()]:
-    if loc in sys.path:
-        sys.path.pop(sys.path.index(loc))
-for mod in sys.modules.copy():
-    if mod.startswith("pyFAI"):
-        sys.modules.pop(mod)
-try:
-    import pyFAI
-except ImportError as E:
-    print("Unable to import pyFAI: %s" % E)
-else:
-    print("PyFAI is installed in %s" % pyFAI.__file__)
-    try:
-        import pyFAI.histogram
-    except ImportError as E:
-        print("PyFAI.histogram failed to import. It is likely there is an OpenMP error: %s" % E)
-    else:
-        print("OpenMP libraries were found and pyFAI.histogram was successfully imported")
-"""
