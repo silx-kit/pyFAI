@@ -47,12 +47,17 @@ from distutils.command.install_data import install_data
 from distutils.command.build_ext import build_ext
 from numpy.distutils.core import Extension as _Extension
 
-###############################################################################
-# Check for Cython
-###############################################################################
+cmdclass = {}
 
+
+# ################ #
+# pyFAI extensions #
+# ################ #
 
 def check_cython():
+    """
+    Check if cython must be activated fron te command line or the environment.
+    """
     try:
         import Cython.Compiler.Version
     except ImportError:
@@ -74,52 +79,6 @@ def check_cython():
     return True
 
 CYTHON = check_cython()
-
-
-def rewriteManifest(with_testimages=False):
-    """
-    Rewrite the "Manifest" file ... if needed
-
-    @param with_testimages: include
-    """
-    base = os.path.dirname(os.path.abspath(__file__))
-    manifest_in = os.path.join(base, "MANIFEST.in")
-    if not os.path.isfile(manifest_in):
-        print("%s file is missing !!!" % manifest_in)
-        return
-
-    manifest = None
-    with open(manifest_in) as f:
-        manifest = [line.strip() for line in f]
-
-    # get rid of all test images in the manifest_in
-    manifest_new = [line for line in manifest
-                    if not line.startswith("include test/testimages")]
-
-    # add the testimages if required
-    if with_testimages:
-        testimages = ["include test/testimages/" + image for image in
-                      os.listdir(os.path.join(base, "test", "testimages"))]
-        manifest_new.extend(testimages)
-
-    if manifest_new != manifest:
-        with open(manifest_in, "w") as f:
-            f.write(os.linesep.join(manifest_new))
-
-        # remove MANIFEST: will be re generated !
-        if os.path.isfile("MANIFEST"):
-            os.unlink("MANIFEST")
-
-if ("sdist" in sys.argv):
-    if ("--with-testimages" in sys.argv):
-        sys.argv.remove("--with-testimages")
-        rewriteManifest(with_testimages=True)
-    else:
-        rewriteManifest(with_testimages=False)
-
-# ###############################################################################
-# pyFAI extensions
-# ###############################################################################
 
 
 def Extension(name, extra_sources=None, **kwargs):
@@ -198,9 +157,61 @@ if CYTHON:
     from Cython.Build import cythonize
     ext_modules = cythonize(ext_modules)
 
-# ###############################################################################
-# scripts and data installation
-# ###############################################################################
+
+class build_ext_pyFAI(build_ext):
+    """
+    We subclass the build_ext class in order to handle compiler flags
+    for openmp and opencl etc in a cross platform way
+    """
+    translator = {
+        # Compiler
+        # name, compileflag, linkflag
+        'msvc': {
+            'openmp': ('/openmp', ' '),
+            'debug': ('/Zi', ' '),
+            'OpenCL': 'OpenCL',
+        },
+        'mingw32': {
+            'openmp': ('-fopenmp', '-fopenmp'),
+            'debug': ('-g', '-g'),
+            'stdc++': 'stdc++',
+            'OpenCL': 'OpenCL'
+        },
+        'default': {
+            'openmp': ('-fopenmp', '-fopenmp'),
+            'debug': ('-g', '-g'),
+            'stdc++': 'stdc++',
+            'OpenCL': 'OpenCL'
+        }
+    }
+
+    def build_extensions(self):
+        if self.compiler.compiler_type in self.translator:
+            trans = self.translator[self.compiler.compiler_type]
+        else:
+            trans = self.translator['default']
+
+        for e in self.extensions:
+            e.extra_compile_args = [trans[arg][0] if arg in trans else arg
+                                    for arg in e.extra_compile_args]
+            e.extra_link_args = [trans[arg][1] if arg in trans else arg
+                                 for arg in e.extra_link_args]
+            e.libraries = filter(None, [trans[arg] if arg in trans else None
+                                        for arg in e.libraries])
+
+            # If you are confused look here:
+            # print e, e.libraries
+            # print e.extra_compile_args
+            # print e.extra_link_args
+        build_ext.build_extensions(self)
+
+cmdclass['build_ext'] = build_ext_pyFAI
+
+
+# ############################# #
+# scripts and data installation #
+# ############################# #
+
 installDir = "pyFAI"
 
 data_files = [(installDir, glob.glob("openCL/*.cl")),
@@ -230,64 +241,63 @@ else:
     script_files = glob.glob("scripts/*")
 
 
-# get the version without importing pyFAI
-def get_version():
-    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                           "pyFAI-src", "__init__.py")) as f:
-        for line in f:
-            if line.strip().startswith("version"):
-                return eval(line.split("=")[1])
+class smart_install_data(install_data):
+    def run(self):
+        global installDir
 
-version = get_version()
-
-# We subclass the build_ext class in order to handle compiler flags
-# for openmp and opencl etc in a cross platform way
-translator = {
-    # Compiler
-    # name, compileflag, linkflag
-    'msvc': {
-        'openmp': ('/openmp', ' '),
-        'debug': ('/Zi', ' '),
-        'OpenCL': 'OpenCL',
-    },
-    'mingw32': {
-        'openmp': ('-fopenmp', '-fopenmp'),
-        'debug': ('-g', '-g'),
-        'stdc++': 'stdc++',
-        'OpenCL': 'OpenCL'
-    },
-    'default': {
-        'openmp': ('-fopenmp', '-fopenmp'),
-        'debug': ('-g', '-g'),
-        'stdc++': 'stdc++',
-        'OpenCL': 'OpenCL'
-    }
-}
-
-cmdclass = {}
+        install_cmd = self.get_finalized_command('install')
+#        self.install_dir = join(getattr(install_cmd,'install_lib'), "data")
+        self.install_dir = getattr(install_cmd, 'install_lib')
+        print("DATA to be installed in %s" % self.install_dir)
+        installDir = os.path.join(self.install_dir, installDir)
+        return install_data.run(self)
+cmdclass['install_data'] = smart_install_data
 
 
-class build_ext_pyFAI(build_ext):
-    def build_extensions(self):
-        if self.compiler.compiler_type in translator:
-            trans = translator[self.compiler.compiler_type]
-        else:
-            trans = translator['default']
+# #################################### #
+# Test part and sdist with test images #
+# #################################### #
 
-        for e in self.extensions:
-            e.extra_compile_args = [trans[arg][0] if arg in trans else arg
-                                    for arg in e.extra_compile_args]
-            e.extra_link_args = [trans[arg][1] if arg in trans else arg
-                                 for arg in e.extra_link_args]
-            e.libraries = filter(None, [trans[arg] if arg in trans else None
-                                        for arg in e.libraries])
+def rewriteManifest(with_testimages=False):
+    """
+    Rewrite the "Manifest" file ... if needed
 
-            # If you are confused look here:
-            # print e, e.libraries
-            # print e.extra_compile_args
-            # print e.extra_link_args
-        build_ext.build_extensions(self)
-cmdclass['build_ext'] = build_ext_pyFAI
+    @param with_testimages: include
+    """
+    base = os.path.dirname(os.path.abspath(__file__))
+    manifest_in = os.path.join(base, "MANIFEST.in")
+    if not os.path.isfile(manifest_in):
+        print("%s file is missing !!!" % manifest_in)
+        return
+
+    manifest = None
+    with open(manifest_in) as f:
+        manifest = [line.strip() for line in f]
+
+    # get rid of all test images in the manifest_in
+    manifest_new = [line for line in manifest
+                    if not line.startswith("include test/testimages")]
+
+    # add the testimages if required
+    if with_testimages:
+        testimages = ["include test/testimages/" + image for image in
+                      os.listdir(os.path.join(base, "test", "testimages"))]
+        manifest_new.extend(testimages)
+
+    if manifest_new != manifest:
+        with open(manifest_in, "w") as f:
+            f.write(os.linesep.join(manifest_new))
+
+        # remove MANIFEST: will be re generated !
+        if os.path.isfile("MANIFEST"):
+            os.unlink("MANIFEST")
+
+if ("sdist" in sys.argv):
+    if ("--with-testimages" in sys.argv):
+        sys.argv.remove("--with-testimages")
+        rewriteManifest(with_testimages=True)
+    else:
+        rewriteManifest(with_testimages=False)
 
 
 class PyTest(Command):
@@ -307,9 +317,10 @@ class PyTest(Command):
         else:
             os.chdir("..")
 cmdclass['test'] = PyTest
-#######################
+
+# ################### #
 # build_doc commandes #
-#######################
+# ################### #
 
 try:
     import sphinx
@@ -341,21 +352,16 @@ if sphinx:
     cmdclass['build_doc'] = build_doc
 
 
-class smart_install_data(install_data):
-    def run(self):
-        global installDir
-
-        install_cmd = self.get_finalized_command('install')
-#        self.install_dir = join(getattr(install_cmd,'install_lib'), "data")
-        self.install_dir = getattr(install_cmd, 'install_lib')
-        print("DATA to be installed in %s" % self.install_dir)
-        installDir = os.path.join(self.install_dir, installDir)
-        return install_data.run(self)
-cmdclass['install_data'] = smart_install_data
-
+# get the version without importing pyFAI
+def get_version():
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           "pyFAI-src", "__init__.py")) as f:
+        for line in f:
+            if line.strip().startswith("version"):
+                return eval(line.split("=")[1])
 
 setup(name='pyFAI',
-      version=version,
+      version=get_version(),
       author="Jérôme Kieffer (python), \
       Peter Boesecke (geometry), Manuel Sanchez del Rio (algorithm), \
       Vicente Armando Sole (algorithm), \
@@ -375,9 +381,9 @@ setup(name='pyFAI',
       data_files=data_files
       )
 
-# ###############################################################################
-# Check for Fabio to be present of the system
-# ###############################################################################
+# ########################################### #
+# Check for Fabio to be present of the system #
+# ########################################### #
 try:
     import fabio
 except ImportError:
