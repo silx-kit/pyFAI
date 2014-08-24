@@ -38,10 +38,10 @@ import os
 import sys
 import glob
 import shutil
+import os.path
 import platform
 import subprocess
 
-from os.path import join
 from distutils.core import setup, Extension, Command
 from numpy.distutils.misc_util import get_numpy_include_dirs
 from distutils.command.install_data import install_data
@@ -87,7 +87,7 @@ def rewriteManifest(with_testimages=False):
     @param with_testimages: include
     """
     base = os.path.dirname(os.path.abspath(__file__))
-    manifest_in = join(base, "MANIFEST.in")
+    manifest_in = os.path.join(base, "MANIFEST.in")
     if not os.path.isfile(manifest_in):
         print("%s file is missing !!!" % manifest_in)
         return
@@ -103,7 +103,7 @@ def rewriteManifest(with_testimages=False):
     # add the testimages if required
     if with_testimages:
         testimages = ["include test/testimages/" + image for image in
-                      os.listdir(join(base, "test", "testimages"))]
+                      os.listdir(os.path.join(base, "test", "testimages"))]
         manifest_new.extend(testimages)
 
     if manifest_new != manifest:
@@ -126,7 +126,8 @@ if ("sdist" in sys.argv):
 # ###############################################################################
 cython_modules = [os.path.splitext(os.path.basename(i))[0]
                   for i in glob.glob(os.path.join("src", "*.pyx"))]
-src = dict([(ext, join("src", ext + cython_c_ext)) for ext in cython_modules])
+src = dict([(ext, os.path.join("src", ext + cython_c_ext))
+            for ext in cython_modules])
 
 _geometry_dic = dict(name="_geometry",
                      include_dirs=get_numpy_include_dirs(),
@@ -240,28 +241,27 @@ if (os.name != "posix") or ("x86" not in platform.machine()):
 # ###############################################################################
 # scripts and data installation
 # ###############################################################################
-global installDir
 installDir = "pyFAI"
 
 data_files = [(installDir, glob.glob("openCL/*.cl")),
-              (join(installDir, "gui"), glob.glob("gui/*.ui")),
-              (join(installDir, "calibration"), glob.glob("calibration/*.D"))]
+              (os.path.join(installDir, "gui"), glob.glob("gui/*.ui")),
+              (os.path.join(installDir, "calibration"), glob.glob("calibration/*.D"))]
 
 if sys.platform == "win32":
     # This is for mingw32/gomp
     if tuple.__itemsize__ == 4:
-        data_files[0][1].append(join("dll", "pthreadGC2.dll"))
+        data_files[0][1].append(os.path.join("dll", "pthreadGC2.dll"))
     root = os.path.dirname(os.path.abspath(__file__))
     tocopy_files = []
     script_files = []
-    for i in os.listdir(join(root, "scripts")):
-        if os.path.isfile(join(root, "scripts", i)):
+    for i in os.listdir(os.path.join(root, "scripts")):
+        if os.path.isfile(os.path.join(root, "scripts", i)):
             if i.endswith(".py"):
-                script_files.append(join("scripts", i))
+                script_files.append(os.path.join("scripts", i))
             else:
-                tocopy_files.append(join("scripts", i))
+                tocopy_files.append(os.path.join("scripts", i))
     for i in tocopy_files:
-        filein = join(root, i)
+        filein = os.path.join(root, i)
         if (filein + ".py") not in script_files:
             shutil.copyfile(filein, filein + ".py")
             script_files.append(filein + ".py")
@@ -374,9 +374,8 @@ if sphinx:
             # Build the Users Guide in HTML and TeX format
             for builder in ('html', 'latex'):
                 self.builder = builder
-                self.builder_target_dir = join(self.build_dir, builder)
+                self.builder_target_dir = os.path.join(self.build_dir, builder)
                 self.mkpath(self.builder_target_dir)
-                builder_index = 'index_{0}.txt'.format(builder)
                 BuildDoc.run(self)
             sys.path.pop(0)
     cmdclass['build_doc'] = build_doc
@@ -384,12 +383,13 @@ if sphinx:
 
 class smart_install_data(install_data):
     def run(self):
+        global installDir
+
         install_cmd = self.get_finalized_command('install')
 #        self.install_dir = join(getattr(install_cmd,'install_lib'), "data")
         self.install_dir = getattr(install_cmd, 'install_lib')
         print("DATA to be installed in %s" % self.install_dir)
-        global installDir
-        installDir = join(self.install_dir, installDir)
+        installDir = os.path.join(self.install_dir, installDir)
         return install_data.run(self)
 cmdclass['install_data'] = smart_install_data
 
