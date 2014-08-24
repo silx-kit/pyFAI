@@ -42,42 +42,38 @@ import os.path
 import platform
 import subprocess
 
-from distutils.core import setup, Extension, Command
-from numpy.distutils.misc_util import get_numpy_include_dirs
+from distutils.core import setup, Command
 from distutils.command.install_data import install_data
 from distutils.command.build_ext import build_ext
+from numpy.distutils.core import Extension as _Extension
 
 ###############################################################################
 # Check for Cython
 ###############################################################################
-try:
-    from Cython.Distutils import build_ext
-    CYTHON = True
-except ImportError:
-    CYTHON = False
-if CYTHON:
+
+
+def check_cython():
     try:
         import Cython.Compiler.Version
     except ImportError:
-        CYTHON = False
+        return False
     else:
         if Cython.Compiler.Version.version < "0.17":
-            CYTHON = False
+            return False
 
-if "WITH_CYTHON" in os.environ and os.environ["WITH_CYTHON"] == "False":
-    CYTHON = False
-    print("No Cython requested by environment")
+    if "WITH_CYTHON" in os.environ and os.environ["WITH_CYTHON"] == "False":
+        print("No Cython requested by environment")
+        return False
 
-if ("--no-cython" in sys.argv):
-    CYTHON = False
-    sys.argv.remove("--no-cython")
-    os.environ["WITH_CYTHON"] = "False"
-    print("No Cython requested by command line")
+    if ("--no-cython" in sys.argv):
+        sys.argv.remove("--no-cython")
+        os.environ["WITH_CYTHON"] = "False"
+        print("No Cython requested by command line")
+        return False
 
-if CYTHON:
-    cython_c_ext = ".pyx"
-else:
-    cython_c_ext = ".c"
+    return True
+
+CYTHON = check_cython()
 
 
 def rewriteManifest(with_testimages=False):
@@ -124,119 +120,83 @@ if ("sdist" in sys.argv):
 # ###############################################################################
 # pyFAI extensions
 # ###############################################################################
-cython_modules = [os.path.splitext(os.path.basename(i))[0]
-                  for i in glob.glob(os.path.join("src", "*.pyx"))]
-src = dict([(ext, os.path.join("src", ext + cython_c_ext))
-            for ext in cython_modules])
-
-_geometry_dic = dict(name="_geometry",
-                     include_dirs=get_numpy_include_dirs(),
-                     sources=[src['_geometry']],
-                     extra_compile_args=['openmp'],
-                     extra_link_args=['openmp'])
-
-reconstruct_dic = dict(name="reconstruct",
-                       include_dirs=get_numpy_include_dirs(),
-                       sources=[src['reconstruct']],
-                       extra_compile_args=['openmp'],
-                       extra_link_args=['openmp'])
-
-histogram_dic = dict(name="histogram",
-                     include_dirs=get_numpy_include_dirs(),
-                     sources=[src['histogram']],
-                     extra_compile_args=['openmp'],
-                     extra_link_args=['openmp'])
-
-splitPixel_dic = dict(name="splitPixel",
-                      include_dirs=get_numpy_include_dirs(),
-                      sources=[src['splitPixel']])
-
-splitPixelFull_dic = dict(name="splitPixelFull",
-                          include_dirs=get_numpy_include_dirs(),
-                          sources=[src['splitPixelFull']])
-
-splitPixelFullLUT_dic = dict(name="splitPixelFullLUT",
-                             include_dirs=get_numpy_include_dirs(),
-                             sources=[src['splitPixelFullLUT']])
-
-splitPixelFullLUT_double_dic = dict(name="splitPixelFullLUT_double",
-                                    include_dirs=get_numpy_include_dirs(),
-                                    sources=[src['splitPixelFullLUT_double']])
-
-splitBBox_dic = dict(name="splitBBox",
-                     include_dirs=get_numpy_include_dirs(),
-                     sources=[src['splitBBox']])
-
-splitBBoxLUT_dic = dict(name="splitBBoxLUT",
-                        include_dirs=get_numpy_include_dirs(),
-                        sources=[src['splitBBoxLUT']],
-                        extra_compile_args=['openmp'],
-                        extra_link_args=['openmp'])
-
-splitBBoxCSR_dic = dict(name="splitBBoxCSR",
-                        include_dirs=get_numpy_include_dirs(),
-                        sources=[src['splitBBoxCSR']],
-                        extra_compile_args=['openmp'],
-                        extra_link_args=['openmp'])
-
-relabel_dic = dict(name="relabel",
-                   include_dirs=get_numpy_include_dirs(),
-                   sources=[src['relabel']])
-
-bilinear_dic = dict(name="bilinear",
-                    include_dirs=get_numpy_include_dirs(),
-                    extra_compile_args=['openmp'],
-                    extra_link_args=['openmp'],
-                    sources=[src['bilinear']])
-
-fastcrc_dic = dict(name="fastcrc",
-                   include_dirs=get_numpy_include_dirs(),
-                   sources=[src['fastcrc'], os.path.join("src", "crc32.c")])
-
-_distortion_dic = dict(name="_distortion",
-                       include_dirs=get_numpy_include_dirs(),
-                       sources=[src['_distortion'] ],
-                       extra_compile_args=['openmp'],
-                       extra_link_args=['openmp'])
-
-_distortionCSR_dic = dict(name="_distortionCSR",
-                          include_dirs=get_numpy_include_dirs(),
-                          sources=[src['_distortionCSR'] ],
-                          extra_compile_args=['openmp'],
-                          extra_link_args=['openmp'])
-
-_bispev_dic = dict(name="_bispev",
-                   include_dirs=get_numpy_include_dirs(),
-                   sources=[src['_bispev'] ],
-                   extra_compile_args=['openmp'],
-                   extra_link_args=['openmp'])
-
-_convolution_dic = dict(name="_convolution",
-                        include_dirs=get_numpy_include_dirs(),
-                        sources=[src['_convolution']],
-                        extra_compile_args=["openmp"],
-                        extra_link_args=["openmp"])
-
-_blob_dic = dict(name="_blob",
-                 include_dirs=get_numpy_include_dirs(),
-                 sources=[src['_blob']])
-
-morphology_dic = dict(name="morphology",
-                      include_dirs=get_numpy_include_dirs(),
-                      sources=[src['morphology']])
-
-marchingsquares_dic = dict(name="marchingsquares",
-                           include_dirs=get_numpy_include_dirs(),
-                           sources=[src['marchingsquares']])
-
-ext_modules = [globals()[ext + "_dic"]
-               for ext in cython_modules
-               if ext + "_dic" in dir()]
 
 
-if (os.name != "posix") or ("x86" not in platform.machine()):
-    ext_modules.remove(fastcrc_dic)
+def Extension(name, extra_sources=None, **kwargs):
+    cython_c_ext = ".pyx" if CYTHON else ".c"
+    sources = [os.path.join("src", name + cython_c_ext)]
+    if extra_sources:
+        sources.extend(extra_sources)
+    return _Extension(name=name, sources=sources, **kwargs)
 
+ext_modules = [
+    Extension("_geometry",
+              extra_compile_args=["openmp"],
+              extra_link_args=["openmp"]),
+
+    Extension("reconstruct",
+              extra_compile_args=["openmp"],
+              extra_link_args=["openmp"]),
+
+    Extension('histogram',
+              extra_compile_args=['openmp'],
+              extra_link_args=['openmp']),
+
+    Extension('splitPixel'),
+
+    Extension('splitPixelFull'),
+
+    Extension('splitPixelFullLUT'),
+
+    Extension('splitPixelFullLUT_double'),
+
+    Extension('splitBBox'),
+
+    Extension('splitBBoxLUT',
+              extra_compile_args=['openmp'],
+              extra_link_args=['openmp']),
+
+    Extension('splitBBoxCSR',
+              extra_compile_args=['openmp'],
+              extra_link_args=['openmp']),
+
+    Extension('relabel'),
+
+    Extension("bilinear",
+              extra_compile_args=['openmp'],
+              extra_link_args=['openmp']),
+
+    Extension('_distortion',
+              extra_compile_args=['openmp'],
+              extra_link_args=['openmp']),
+
+    Extension('_distortionCSR',
+              extra_compile_args=['openmp'],
+              extra_link_args=['openmp']),
+
+    Extension('_bispev',
+              extra_compile_args=['openmp'],
+              extra_link_args=['openmp']),
+
+    Extension('_convolution',
+              extra_compile_args=["openmp"],
+              extra_link_args=["openmp"]),
+
+    Extension('_blob'),
+
+    Extension('morphology'),
+
+    Extension('marchingsquares')
+]
+
+if (os.name == "posix") and ("x86" in platform.machine()):
+    ext_modules.append(
+        Extension('fastcrc', [os.path.join("src", "crc32.c")])
+    )
+
+if CYTHON:
+    from Cython.Build import cythonize
+    ext_modules = cythonize(ext_modules)
 
 # ###############################################################################
 # scripts and data installation
@@ -407,7 +367,7 @@ setup(name='pyFAI',
       download_url="http://forge.epn-campus.eu/projects/azimuthal/files",
       ext_package="pyFAI",
       scripts=script_files,
-      ext_modules=[Extension(**dico) for dico in ext_modules],
+      ext_modules=ext_modules,
       packages=["pyFAI"],
       package_dir={"pyFAI": "pyFAI-src" },
       test_suite="test",
