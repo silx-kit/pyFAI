@@ -50,8 +50,6 @@ from distutils.command.install_data import install_data
 ################################################################################
 # Check for Cython
 ################################################################################
-if op.isfile("MANIFEST"):
-    os.unlink("MANIFEST")
 try:
     from Cython.Distutils import build_ext
     CYTHON = True
@@ -90,29 +88,32 @@ def rewriteManifest(with_testimages=False):
     @param with_testimages: include
     """
     base = os.path.dirname(os.path.abspath(__file__))
-    manifest_file = join(base, "MANIFEST.in")
-    if not os.path.isfile(manifest_file):
-        print("MANIFEST file is missing !!!")
+    manifest_in = join(base, "MANIFEST.in")
+    if not os.path.isfile(manifest_in):
+        print("%s file is missing !!!" % manifest_in)
         return
-    manifest = [i.strip() for i in open(manifest_file)]
-    changed = False
 
+    manifest = None
+    with open(manifest_in) as f:
+        manifest = [line.strip() for line in f]
+
+    # get rid of all test images in the manifest_in
+    manifest_new = [line for line in manifest
+                    if not line.startswith("include test/testimages")]
+
+    # add the testimages if required
     if with_testimages:
-        testimages = ["test/testimages/" + i for i in os.listdir(join(base, "test", "testimages"))]
-        for image in testimages:
-            if image not in manifest:
-                manifest.append("include " + image)
-                changed = True
-    else:
-        for line in manifest[:]:
-            if line.startswith("include test/testimages"):
-                changed = True
-                manifest.remove(line)
-    if changed:
-        with open(manifest_file, "w") as f:
-            f.write(os.linesep.join(manifest))
+        testimages = ["include test/testimages/" + image for image in
+                      os.listdir(join(base, "test", "testimages"))]
+        manifest_new.extend(testimages)
+
+    if manifest_new != manifest:
+        with open(manifest_in, "w") as f:
+            f.write(os.linesep.join(manifest_new))
+
         # remove MANIFEST: will be re generated !
-        os.unlink(manifest_file[:-3])
+        if op.isfile("MANIFEST"):
+            os.unlink("MANIFEST")
 
 if ("sdist" in sys.argv):
     if ("--with-testimages" in sys.argv):
