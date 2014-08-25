@@ -281,13 +281,13 @@ class Geometry(object):
     def calc_pos_zyx(self, d0=None, d1=None, d2=None, param=None):
         """
         Allows you to calculate the position of a set of points in space in the sample
-        re 
-        
-        
+        re
+
+
         @param d0: altitude on the point compared to the detector (i.e. z)
         @param d1: position on the detector along the slow dimention (i.e. y)
         @param d2: position on the detector along the fastest dimention (i.e. x)
-        @return zyx array, so 3D array with dim0=along the beam, 
+        @return zyx array, so 3D array with dim0=along the beam,
                                             dim1=along slowest dimension
                                             dim2=along fastest dimension
                                             unless rotations are too large
@@ -905,23 +905,21 @@ class Geometry(object):
         try:
             with open(filename, "a") as f:
                 f.write(("# Nota: C-Order, 1 refers to the Y axis,"
-                         " 2 to the X axis %s") % os.linesep)
-                f.write("# Calibration done at %s%s" % (time.ctime(), os.linesep))
+                         " 2 to the X axis \n"))
+                f.write("# Calibration done at %s\n" % time.ctime())
                 if self.detector.name != "Detector":
-                    f.write("Detector: %s%s" % (self.detector.__class__.__name__,
-                                                os.linesep))
-                f.write("PixelSize1: %s%s" % (self.pixel1, os.linesep))
-                f.write("PixelSize2: %s%s" % (self.pixel2, os.linesep))
-                f.write("Distance: %s%s" % (self._dist, os.linesep))
-                f.write("Poni1: %s%s" % (self._poni1, os.linesep))
-                f.write("Poni2: %s%s" % (self._poni2, os.linesep))
-                f.write("Rot1: %s%s" % (self._rot1, os.linesep))
-                f.write("Rot2: %s%s" % (self._rot2, os.linesep))
-                f.write("Rot3: %s%s" % (self._rot3, os.linesep))
-                f.write("SplineFile: %s%s" % (self.splineFile, os.linesep))
+                    f.write("Detector: %s\n" % self.detector.__class__.__name__)
+                f.write("PixelSize1: %s\n" % self.pixel1)
+                f.write("PixelSize2: %s\n" % self.pixel2)
+                f.write("Distance: %s\n" % self._dist)
+                f.write("Poni1: %s\n" % self._poni1)
+                f.write("Poni2: %s\n" % self._poni2)
+                f.write("Rot1: %s\n" % self._rot1)
+                f.write("Rot2: %s\n" % self._rot2)
+                f.write("Rot3: %s\n" % self._rot3)
+                f.write("SplineFile: %s\n" % self.splineFile)
                 if self._wavelength is not None:
-                    f.write("Wavelength: %s%s" % (self._wavelength,
-                                                  os.linesep))
+                    f.write("Wavelength: %s\n" % self._wavelength)
         except IOError:
             logger.error("IOError while writing to file %s" % filename)
     write = save
@@ -1128,7 +1126,7 @@ class Geometry(object):
                WaveLength=None):
         """
         Set the SPD like parameter set: For geometry description see
-        Peter Boesecke J.Appl.Cryst.(2007).40, s423–s427 
+        Peter Boesecke J.Appl.Cryst.(2007).40, s423–s427
 
         Basically the main difference with pyFAI is the order of the axis which are flipped
 
@@ -1140,7 +1138,7 @@ class Geometry(object):
         @param Rot_3: rotation around the axis ORTHOGONAL to the detector plan
         @param PSize_1: pixel size in meter along the fastest dimention
         @param PSize_2: pixel size in meter along the slowst dimention
-        @param splineFile: name of the file containing the spline 
+        @param splineFile: name of the file containing the spline
         @param BSize_1: pixel binning factor along the fastest dimention
         @param BSize_2: pixel binning factor along the slowst dimention
         @param WaveLength: wavelength used
@@ -1174,7 +1172,7 @@ class Geometry(object):
     def getSPD(self):
         """
         get the SPD like parameter set: For geometry description see
-        Peter Boesecke J.Appl.Cryst.(2007).40, s423–s427 
+        Peter Boesecke J.Appl.Cryst.(2007).40, s423–s427
 
         Basically the main difference with pyFAI is the order of the axis which are flipped
 
@@ -1187,7 +1185,7 @@ class Geometry(object):
             Rot_3: rotation around the axis ORTHOGONAL to the detector plan
             PSize_1: pixel size in meter along the fastest dimention
             PSize_2: pixel size in meter along the slowst dimention
-            splineFile: name of the file containing the spline 
+            splineFile: name of the file containing the spline
             BSize_1: pixel binning factor along the fastest dimention
             BSize_2: pixel binning factor along the slowst dimention
             WaveLength: wavelength used in meter

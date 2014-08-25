@@ -495,7 +495,7 @@ class Spline(object):
             txt = ""
         lst.append("")
         with open(filename, "w") as fil:
-            fil.write(os.linesep.join(lst))
+            fil.write("\n".join(lst))
 
     def tilt(self, center=(0.0, 0.0), tiltAngle=0.0, tiltPlanRot=0.0,
              distanceSampleDetector=1.0, timing=False):

@@ -693,7 +693,7 @@ class ControlPoints(object):
                 for point in points:
                     lstOut.append("point: x=%s y=%s" % (point[1], point[0]))
             with open(filename, "w") as f:
-                f.write(os.linesep.join(lstOut))
+                f.write("\n".join(lstOut))
 
     def load(self, filename):
         """
