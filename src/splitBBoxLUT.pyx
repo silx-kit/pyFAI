@@ -489,6 +489,171 @@ class HistoBBox1d(object):
             Py_XDECREF(<PyObject *> self._lut)
         return  self.outPos, outMerge, outData, outCount
 
+    @cython.cdivision(True)
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    def integrate_kahan(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None):
+        """
+        Actually perform the integration which in this case looks more like a matrix-vector product
+        Single precision implementation using Kahan summation
+
+        @param weights: input image
+        @type weights: ndarray
+        @param dummy: value for dead pixels (optional)
+        @type dummy: float
+        @param delta_dummy: precision for dead-pixel value in dynamic masking
+        @type delta_dummy: float
+        @param dark: array with the dark-current value to be subtracted (if any)
+        @type dark: ndarray
+        @param flat: array with the dark-current value to be divided by (if any)
+        @type flat: ndarray
+        @param solidAngle: array with the solid angle of each pixel to be divided by (if any)
+        @type solidAngle: ndarray
+        @param polarization: array with the polarization correction values to be divided by (if any)
+        @type polarization: ndarray
+        @return : positions, pattern, weighted_histogram and unweighted_histogram
+        @rtype: 4-tuple of ndarrays
+
+        """
+        cdef numpy.int32_t i=0, j=0, idx=0, bins=self.bins, lut_size=self.lut_size, size=self.size
+        cdef float sum_data=0, sum_count=0, epsilon=1e-10
+        cdef float data=0, coef=0, cdummy=0, cddummy=0
+        cdef bint do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
+        cdef numpy.ndarray[numpy.float32_t, ndim = 1] outData = numpy.zeros(self.bins, dtype=numpy.float32)
+        cdef numpy.ndarray[numpy.float32_t, ndim = 1] outCount = numpy.zeros(self.bins, dtype=numpy.float32)
+        cdef numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
+        cdef float[:] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
+
+        cdef float c_data, y_data, t_data
+        cdef float c_count, y_count, t_count
+
+
+        #Ugly hack against bug #89: https://github.com/kif/pyFAI/issues/89
+        cdef int rc_before, rc_after
+        rc_before = sys.getrefcount(self._lut)
+        cdef lut_point[:,:] lut = self._lut
+        rc_after = sys.getrefcount(self._lut)
+        cdef bint need_decref = NEED_DECREF & ((rc_after-rc_before)>=2)
+
+        assert size == weights.size
+
+        if dummy is not None:
+            do_dummy = True
+            cdummy =  <float>float(dummy)
+            if delta_dummy is None:
+                cddummy = <float>0.0
+            else:
+                cddummy = <float>float(delta_dummy)
+
+        if flat is not None:
+            do_flat = True
+            assert flat.size == size
+            cflat = numpy.ascontiguousarray(flat.ravel(), dtype=numpy.float32)
+        if dark is not None:
+            do_dark = True
+            assert dark.size == size
+            cdark = numpy.ascontiguousarray(dark.ravel(), dtype=numpy.float32)
+        if solidAngle is not None:
+            do_solidAngle = True
+            assert solidAngle.size == size
+            csolidAngle = numpy.ascontiguousarray(solidAngle.ravel(), dtype=numpy.float32)
+        if polarization is not None:
+            do_polarization = True
+            assert polarization.size == size
+            cpolarization = numpy.ascontiguousarray(polarization.ravel(), dtype=numpy.float32)
+
+        if (do_dark + do_flat + do_polarization + do_solidAngle):
+            tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
+            cdata = numpy.zeros(size,dtype=numpy.float32)
+            if do_dummy:
+                for i in prange(size, nogil=True, schedule="static"):
+                    data = tdata[i]
+                    if ((cddummy!=0) and (fabs(data-cdummy) > cddummy)) or ((cddummy==0) and (data!=cdummy)):
+                        #Nota: -= and /= operatore are seen as reduction in cython parallel.
+                        if do_dark:
+                            data = data - cdark[i]
+                        if do_flat:
+                            data = data / cflat[i]
+                        if do_polarization:
+                            data = data / cpolarization[i]
+                        if do_solidAngle:
+                            data = data / csolidAngle[i]
+                        cdata[i]+=data
+                    else: #set all dummy_like values to cdummy. simplifies further processing
+                        cdata[i]+=cdummy
+            else:
+                for i in prange(size, nogil=True, schedule="static"):
+                    data = tdata[i]
+                    if do_dark:
+                        data = data - cdark[i]
+                    if do_flat:
+                        data = data / cflat[i]
+                    if do_polarization:
+                        data = data / cpolarization[i]
+                    if do_solidAngle:
+                        data = data / csolidAngle[i]
+                    cdata[i]+=data
+        else:
+            if do_dummy:
+                tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
+                cdata = numpy.zeros(size,dtype=numpy.float32)
+                for i in prange(size, nogil=True, schedule="static"):
+                    data = tdata[i]
+                    if ((cddummy!=0) and (fabs(data-cdummy) > cddummy)) or ((cddummy==0) and (data!=cdummy)):
+                        cdata[i]+=data
+                    else:
+                        cdata[i]+=cdummy
+            else:
+                cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
+        #TODO: what is the best: static or guided ?
+        for i in prange(bins, nogil=True, schedule="guided"):
+            sum_data = 0.0
+            sum_count = 0.0
+            c_data = 0.0
+            c_count = 0.0
+            for j in range(lut_size):
+                idx = lut[i, j].idx
+                coef = lut[i, j].coef
+                if idx <= 0 and coef <= 0.0:
+                    continue
+                data = cdata[idx]
+                if do_dummy and data==cdummy:
+                    continue
+# function KahanSum(input)
+#     var sum = 0.0
+#     var c = 0.0                  // A running compensation for lost low-order bits.
+#     for i = 1 to input.length do
+#         var y = input[i] - c     // So far, so good: c is zero.
+#         var t = sum + y          // Alas, sum is big, y small, so low-order digits of y are lost.
+#         c = (t - sum) - y // (t - sum) recovers the high-order part of y; subtracting y recovers -(low part of y)
+#         sum = t           // Algebraically, c should always be zero. Beware overly-aggressive optimizing compilers!
+#         // Next time around, the lost low part will be added to y in a fresh attempt.
+#     return sum
+
+                #sum_data = sum_data + coef * data
+                y_data = coef * data - c_data
+                t_data = sum_data + y_data
+                c_data = (t_data - sum_data) - y_data
+                sum_data = t_data
+                
+                #sum_count = sum_count + coef
+                y_count = coef - c_count
+                t_count = sum_count + y_count
+                c_count = (t_count - sum_count) - y_count
+                sum_count = t_count
+                
+            outData[i] += sum_data
+            outCount[i] += sum_count
+            if sum_count > epsilon:
+                outMerge[i] += sum_data / sum_count
+            else:
+                outMerge[i] += cdummy
+        
+        #Ugly against bug#89
+        if need_decref and (sys.getrefcount(self._lut)>=rc_before+2):
+            print("Decref needed")
+            Py_XDECREF(<PyObject *> self._lut)
+        return  self.outPos, outMerge, outData, outCount
 
 
 ################################################################################
