@@ -25,7 +25,7 @@ data = fabio.open("testimages/Pilatus1M.edf").data
 ref = ai.integrate2d(data, 100, 360, method="lut", unit="2th_deg")[0]
 obt = ai.integrate2d(data, 100, 360, method="ocl_csr", unit="2th_deg")[0]
 ##logger.debug("check LUT basics: %s"%abs(obt[1] - ref[1]).max())
-#assert numpy.allclose(ref,obt)
+assert numpy.allclose(ref,obt)
 
 
 plot(ref.ravel(), label="ocl_lut")

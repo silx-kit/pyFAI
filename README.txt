@@ -20,13 +20,13 @@ tarball. Download either one and unpack it.
 Developement is done on Github: https://github.com/kif/pyFAI
 
 e.g.
-tar xvzf pyFAI-0.9.2.tar.gz
+tar xvzf pyFAI-0.9.5.tar.gz
 or
-unzip pyFAI-0.9.2.zip
+unzip pyFAI-0.9.5.zip
 
-All files are unpacked into the directory pyFAI-0.9.2.
+All files are unpacked into the directory pyFAI-0.9.5.
 
-cd pyFAI-0.9.2
+cd pyFAI-0.9.5
 
 Build it & test it. For test pyFAI downloads test images (you may have to setup a proxy configuration like export http_proxy=http://proxy.site.org:3128):
 
@@ -52,6 +52,10 @@ http://mathema.tician.de/software/pyopencl
 If you are using MS Windows you can also download a binary version packaged as executable
 installation files (Chose the one corresponding to your python version).
 
+For MacOSX users with MacOS version>10.7, the default compiler switched from gcc
+to clang and dropped the OpenMP support. While clang does not support OpenMP, the
+use of gcc is advised for MacOSX users.
+
 Documentation
 -------------
 
@@ -74,7 +78,8 @@ For full functionality of pyFAI the following modules need to be installed.
 
 Ubuntu and Debian Like linux distributions:
 -------------------------------------------
-To use pyFAI on Ubuntu (a linux distribution based on Debian) the needed python modules
+
+To use pyFAI on Ubuntu/Debian the needed python modules
 can be installed either through the Synaptic Package Manager (found in System -> Administration)
 or using apt-get on from the command line in a terminal.
 The extra ubuntu packages needed are:
@@ -84,27 +89,46 @@ The extra ubuntu packages needed are:
     * python-matplotlib
     * python-dev
     * python-fabio
+    * python-pyopencl
+    * python-fftw
+    * python-qt4
 
 using apt-get these can be installed as:
 
-sudo apt-get install python-numpy python-scipy python-matplotlib  python-dev python-fabio
+sudo apt-get install python-numpy python-scipy python-matplotlib  python-dev python-fabio python-pyopencl python-fftw python-qt4
+
+MacOSX
+------
+
+You are advised to build pyFAI with the GCC compiler, clang laking the support of OpenMP.
+
+Windows
+-------
+
+Under 32 bits windows, pyFAI can be built using The MinGW compiler. Unfortunately,
+pyFAI will be limited to small images as the memory consumption, limited to 2GB
+under windows, easy easily reached. The VisualStudio C++ compiler works as well.
+With 64 bits windows, the Visual Studio C++ compiler is the only one known to work correctly.
 
 
 Contributors
 ============
  * Jérôme Kieffer (ESRF)
- * Dimitris Karkoulis (ESRF)
- * Jon Wright (ESF)
  * Frédéric-Emmanuel Picca (Soleil)
+ * Dimitris Karkoulis (ESRF)
+ * Aurore Deschildre (ESRF)
+ * Giannis Ashiotis (ESRF)
+ * Zubair Nawaz (Sesame)
+ * Jon Wright (ESRF)
  * Amund Hov (ESRF)
  * Dodogerstlin @github
  * Gunthard Benecke (Desy)
  * Gero Flucke (Desy)
- 
+
 Indirect contributors (ideas, ...):
 -----------------------------------
  * Peter Boesecke
  * Manuel Sánchez del Río
  * Vicente Armando Solé
  * Brian Pauw
- * Veijo Honkimaki 
+ * Veijo Honkimaki

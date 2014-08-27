@@ -28,27 +28,64 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2014"
+__date__ = "03/07/2014"
 __status__ = "production"
 
 import os, sys, threading, logging, gc, types
 import operator
-from math                   import ceil, sqrt, pi
+from math import sqrt
 import numpy
-from scipy.optimize         import fmin
-from scipy.ndimage.filters  import median_filter
-from scipy.ndimage          import label
-import pylab
+from .gui_utils import pylab, update_fig, maximize_fig, QtGui, backend
+from . import gui_utils
 import fabio
-from .utils import gaussian_filter, binning, unBinning, deprecated, relabel, percentile
-from .bilinear import Bilinear
+from .utils import deprecated, percentile
 from .reconstruct import reconstruct
 from .calibrant import Calibrant, ALL_CALIBRANTS
 from .blob_detection import BlobDetection
-logger = logging.getLogger("pyFAI.peakPicker")
+from .massif import Massif
+logger = logging.getLogger("pyFAI.peak_picker")
 if os.name != "nt":
     WindowsError = RuntimeError
-TARGET_SIZE = 1024
+
+################################################################################
+# Toolbar widget
+################################################################################
+#class PeakPickerToolbar(backend.NavigationToolbar2QT):
+#    def __init__(self, canvas, parent, coordinates=True):
+#        backend.NavigationToolbar2QT.__init__(self, canvas, parent, False)
+#        self.append_mode = None
+#
+#
+##    def _init_toolbar(self):
+##        backend.NavigationToolbar2QT._init_toolbar(self)
+##        self.addSeparator()
+##        a = self.addAction('+pts', self.on_plus_pts_clicked)
+##        a.setToolTip('Add more points to group')
+##        a = self.addAction('-pts', self.on_minus_pts_clicked)
+##        a.setToolTip('Remove points from group')
+#
+#    def pan(self):
+#        self.append_mode = None
+#        backend.NavigationToolbar2QT.pan(self)
+#
+#    def zoom(self):
+#        self.append_mode = None
+#        backend.NavigationToolbar2QT.zoom(self)
+#
+#
+#    def on_plus_pts_clicked(self, *args):
+#        """
+#        callback function
+#        """
+#        self.append_mode = True
+#        print(self.append_mode)
+#
+#    def on_minus_pts_clicked(self, *args):
+#        """
+#        callback function
+#        """
+#        self.append_mode = False
+#        print(self.append_mode)
 
 
 ################################################################################
@@ -56,10 +93,10 @@ TARGET_SIZE = 1024
 ################################################################################
 class PeakPicker(object):
     """
-    
+
     This class is in charge of peak picking, i.e. find bragg spots in the image
     Two methods can be used : massif or blob
-    
+
     """
     VALID_METHODS = ["massif", "blob"]
 
@@ -69,7 +106,7 @@ class PeakPicker(object):
         @param strFilename: input image filename
         @param reconst: shall masked part or negative values be reconstructed (wipe out problems with pilatus gaps)
         @param mask: area in which keypoints will not be considered as valid
-        @param pointfile: 
+        @param pointfile:
         """
         self.strFilename = strFilename
         self.data = fabio.open(strFilename).data.astype("float32")
@@ -88,6 +125,11 @@ class PeakPicker(object):
         self.ax = None
         self.ct = None
         self.msp = None
+        self.append_mode = None
+        self.spinbox = None
+        self.refine_btn = None
+        self.ref_action = None
+        self.sb_action = None
         self.reconstruct = reconst
         self.mask = mask
         self.massif = None  #used for massif detection
@@ -97,6 +139,8 @@ class PeakPicker(object):
         self.mpl_connectId = None
         self.defaultNbPoints = 100
         self._init_thread = None
+        self.point_filename = None
+        self.callback = None
         if method in self.VALID_METHODS:
             self.method = method
         else:
@@ -158,10 +202,10 @@ class PeakPicker(object):
         """
         Return the list of peaks within an area
 
-        @param mask: 2d array with mask. 
+        @param mask: 2d array with mask.
         @param Imin: minimum of intensity above the background to keep the point
         @param keep: maximum number of points to keep
-        @param method: enforce the use of detection using "massif" or "blob" 
+        @param method: enforce the use of detection using "massif" or "blob"
         @return: list of peaks [y,x], [y,x], ...]
         """
         if not method:
@@ -181,14 +225,15 @@ class PeakPicker(object):
         if self.fig and self.ax:
             #empty annotation and plots
             if len(self.ax.texts) > 0:
-               self.ax.texts = []
+                self.ax.texts = []
             if len(self.ax.lines) > 0:
-               self.ax.lines = []
+                self.ax.lines = []
             #Redraw the image
-            self.fig.show()
-            self.fig.canvas.draw()
+            if not gui_utils.main_loop:
+                self.fig.show()
+            update_fig(self.fig)
 
-    def gui(self, log=False, maximize=False):
+    def gui(self, log=False, maximize=False, pick=True):
         """
         @param log: show z in log scale
         """
@@ -198,6 +243,24 @@ class PeakPicker(object):
             self.ax = self.fig.add_subplot(111)
             self.ct = self.fig.add_subplot(111)
             self.msp = self.fig.add_subplot(111)
+            toolbar = self.fig.canvas.toolbar
+            toolbar.addSeparator()
+
+            a = toolbar.addAction('Opts', self.on_option_clicked)
+            a.setToolTip('open options window')
+            if pick:
+                label = QtGui.QLabel("Ring #", toolbar)
+                toolbar.addWidget(label)
+                self.spinbox = QtGui.QSpinBox(toolbar)
+                self.spinbox.setMinimum(0)
+                self.sb_action = toolbar.addWidget(self.spinbox)
+                a = toolbar.addAction('Refine', self.on_refine_clicked)
+                a.setToolTip('switch to refinement mode')
+                self.ref_action = a
+                self.mpl_connectId = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
+
+
+
         if log:
             showData = numpy.log1p(self.data - self.data.min())
             self.ax.set_title('Log colour scale (skipping lowest/highest per mille)')
@@ -211,19 +274,12 @@ class PeakPicker(object):
         im = self.ax.imshow(showData, vmin=showMin, vmax=showMax, origin="lower", interpolation="nearest")
 
         self.ax.autoscale_view(False, False, False)
-        self.fig.colorbar(im)
-        self.fig.show()
+        self.fig.colorbar(im)#, self.ax)
+        update_fig(self.fig)
         if maximize:
-            mng = pylab.get_current_fig_manager()
-            # attempt to maximize the figure ... lost hopes.
-            win_shape = (1920, 1080)
-            event = Event(*win_shape)
-            try:
-                mng.resize(event)
-            except TypeError:
-                 mng.resize(*win_shape)
-            self.fig.canvas.draw()
-        self.mpl_connectId = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
+            maximize_fig(self.fig)
+        if not gui_utils.main_loop:
+            self.fig.show()
 
     def load(self, filename):
         """
@@ -262,20 +318,21 @@ class PeakPicker(object):
             else:
                 self.ax.annotate("%i" % (len(self.points)), xy=(x[1], x[0]), xytext=(x0[1], x0[0]), color="white",
                      arrowprops=dict(facecolor='white', edgecolor='white'),)
-                self.fig.canvas.draw()
+                update_fig(self.fig)
 
         with self._sem:
             x0 = event.xdata
             y0 = event.ydata
+            ring = self.spinbox.value()
             if event.button == 3:  # right click: add points (1 or many) to new or existing group
                 logger.debug("Button: %i, Key modifier: %s" % (event.button, event.key))
                 if event.key == 'shift':  # if 'shift' pressed add nearest maximum to the current group
-                    points = self.points.pop() or []
+                    points = self.points.pop(ring) or []
                     # no, keep annotation! if len(self.ax.texts) > 0: self.ax.texts.pop()
                     if len(self.ax.lines) > 0:
                         self.ax.lines.pop()
 
-                    self.fig.show()
+                    update_fig(self.fig)
                     newpeak = self.massif.nearest_peak([y0, x0])
                     if newpeak:
                         if not points:
@@ -296,11 +353,11 @@ class PeakPicker(object):
                     else:
                         logger.warning("No peak found !!!")
                 elif event.key == 'm':  # if 'm' pressed add new group to current  group ...  ?
-                    points = self.points.pop() or []
+                    points = self.points.pop(ring) or []
                     # no, keep annotation! if len(self.ax.texts) > 0: self.ax.texts.pop()
                     if len(self.ax.lines) > 0:
                         self.ax.lines.pop()
-                    self.fig.show()
+                    update_fig(self.fig)
                     # need to annotate only if a new group:
                     localAnn = None if points else annontate
                     listpeak = self.massif.find_peaks([y0, x0], self.defaultNbPoints, localAnn, self.massif_contour)
@@ -317,14 +374,14 @@ class PeakPicker(object):
                         logger.info("Created group #%i with %i points" % (len(self.points), len(points)))
                 if not points:
                     return
-                self.points.append(points)
+                self.points.append(points, ring=ring)
                 npl = numpy.array(points)
                 self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
-                self.fig.show()
+                update_fig(self.fig)
                 sys.stdout.flush()
             elif event.button == 2:  # center click: remove 1 or all points from current group
                 logger.debug("Button: %i, Key modifier: %s" % (event.button, event.key))
-                poped_points = self.points.pop() or []
+                poped_points = self.points.pop(ring) or []
                 # in case not the full group is removed, would like to keep annotation
                 # _except_ if the annotation is close to the removed point... too complicated!
                 if len(self.ax.texts) > 0:
@@ -341,19 +398,17 @@ class PeakPicker(object):
                     # annotate (new?) 1st point and add remaining points back
                     pt = (poped_points[0][0], poped_points[0][1])
                     annontate(pt, (pt[0] + 10, pt[1] + 10))
-                    self.points.append(poped_points)
+                    self.points.append(poped_points, ring=ring)
                     npl = numpy.array(poped_points)
                     self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
                 elif len(poped_points) > 0:  # not '1' pressed or only 1 point left: remove complete group
                     logger.info("Removing group #%i containing %i points" % (len(self.points), len(poped_points)))
                 else:
                     logger.info("No groups to remove")
-
-                self.fig.show()
-                self.fig.canvas.draw()
+                update_fig(self.fig)
                 sys.stdout.flush()
 
-    def finish(self, filename=None,):
+    def finish(self, filename=None, callback=None):
         """
         Ask the ring number for the given points
 
@@ -366,17 +421,23 @@ class PeakPicker(object):
                                       " 4) Right-click + m:     find more points for current group",
                                       " 5) Center-click:     erase current group",
                                       " 6) Center-click + 1: erase closest point from current group"]))
+        if not callback:
+            raw_input("Please press enter when you are happy with your selection" + os.linesep)
+            # need to disconnect 'button_press_event':
+            self.fig.canvas.mpl_disconnect(self.mpl_connectId)
+            self.mpl_connectId = None
+            print("Now fill in the ring number. Ring number starts at 0, like point-groups.")
+            self.points.readRingNrFromKeyboard()  # readAngleFromKeyboard()
+            if filename is not None:
+                self.points.save(filename)
+            return self.points.getWeightedList(self.data)
+        else:
+            self.point_filename = filename
+            self.callback = callback
+            gui_utils.main_loop = True
+            #MAIN LOOP
+            pylab.show()
 
-        raw_input("Please press enter when you are happy with your selection" + os.linesep)
-        # need to disconnect 'button_press_event':
-        self.fig.canvas.mpl_disconnect(self.mpl_connectId)
-        self.mpl_connectId = None
-        print("Now fill in the ring number. Ring number starts at 0, like point-groups.")
-        self.points.readRingNrFromKeyboard()  # readAngleFromKeyboard()
-        if filename is not None:
-            self.points.save(filename)
-#        self.lstPoints = self.points.getList()
-        return self.points.getWeightedList(self.data)
 
 
     def contour(self, data):
@@ -408,12 +469,12 @@ class PeakPicker(object):
                 print("Check also for correct indexing of rings")
             except MemoryError:
                 logging.error("Sorry but your computer does NOT have enough memory to display the 2-theta contour plot")
-            self.fig.show()
+            update_fig(self.fig)
 
     def massif_contour(self, data):
         """
         Overlays a mask over a diffraction image
-        
+
         @param data: mask to be overlaid
         """
 
@@ -435,14 +496,62 @@ class PeakPicker(object):
                 self.ax.set_xlim(xlim);self.ax.set_ylim(ylim);
             except MemoryError:
                 logging.error("Sorry but your computer does NOT have enough memory to display the massif plot")
-            # self.fig.show()
-            self.fig.canvas.draw()
+            update_fig(self.fig)
 
     def closeGUI(self):
         if self.fig is not None:
             self.fig.clear()
             self.fig = None
             gc.collect()
+
+
+#    def format_coord(self, x, y):
+#        """
+#        Print coordinated in matplotlib toolbar
+#        """
+#        col = int(x + 0.5)
+#        row = int(y + 0.5)
+#        if col >= 0 and col < self.shape[1] and row >= 0 and row < self.shape[0]:
+#            z = self.data[row, col]
+#            return 'x=%.2f \t y=%.2f \t I=%1.4f' % (x, y, z)
+#        else:
+#            return 'x=%.2f \t y=%.2f \t I=None' % (x, y)
+
+    def on_plus_pts_clicked(self, *args):
+        """
+        callback function
+        """
+        self.append_mode = True
+        print(self.append_mode)
+
+    def on_minus_pts_clicked(self, *args):
+        """
+        callback function
+        """
+        self.append_mode = False
+        print(self.append_mode)
+
+    def on_option_clicked(self, *args):
+        """
+        callback function
+        """
+        print("Option!")
+
+    def on_refine_clicked(self, *args):
+        """
+        callback function
+        """
+        print("refine, now!")
+        self.sb_action.setDisabled(True)
+        self.ref_action.setDisabled(True)
+        self.spinbox.setEnabled(False)
+        self.mpl_connectId = None
+        self.fig.canvas.mpl_disconnect(self.mpl_connectId)
+        pylab.ion()
+        if self.point_filename:
+            self.points.save(self.point_filename)
+        if self.callback:
+            self.callback(self.points.getWeightedList(self.data))
 
 ################################################################################
 # ControlPoints
@@ -544,10 +653,11 @@ class ControlPoints(object):
     def pop(self, idx=None):
         """
         Remove the set of points at given index (by default the last)
-        @param idx: position of the point to remove
+
+        @param idx: number of the ring to remove
         """
         out = None
-        if idx is None:
+        if (idx is None) or (idx not in self._ring):
             with self._sem:
                 if self._angles:
                     self._angles.pop()
@@ -555,10 +665,10 @@ class ControlPoints(object):
                     out = self._points.pop()
         else:
             with self._sem:
-                if idx <= len(self._angles):
-                    self._angles.pop(idx)
-                    self._ring.pop()
-                    out = self._points.pop(idx)
+                i = self._ring.index(idx)
+                self._angles.pop(i)
+                self._ring.pop(i)
+                out = self._points.pop(i)
         return out
 
     def save(self, filename):
@@ -583,7 +693,7 @@ class ControlPoints(object):
                 for point in points:
                     lstOut.append("point: x=%s y=%s" % (point[1], point[0]))
             with open(filename, "w") as f:
-                f.write(os.linesep.join(lstOut))
+                f.write("\n".join(lstOut))
 
     def load(self, filename):
         """
@@ -802,242 +912,6 @@ class ControlPoints(object):
         self.calibrant.dSpacing = lst
     dSpacing = property(get_dSpacing, set_dSpacing)
 
-################################################################################
-# Massif
-################################################################################
-class Massif(object):
-    """
-    A massif is defined as an area around a peak, it is used to find neighbouring peaks
-    """
-    def __init__(self, data=None):
-        """
-
-        """
-        if isinstance(data, (str, unicode)) and os.path.isfile(data):
-            self.data = fabio.open(data).data.astype("float32")
-        elif  isinstance(data, fabio.fabioimage.fabioimage):
-            self.data = data.data.astype("float32")
-        else:
-            try:
-                self.data = data.astype("float32")
-            except Exception as error:
-                logger.error("Unable to understand this type of data %s: %s", data, error)
-        self._bilin = Bilinear(self.data)
-        self._blured_data = None
-        self._median_data = None
-        self._labeled_massif = None
-        self._number_massif = None
-        self._valley_size = None
-        self._binned_data = None
-        self.binning = None  # Binning is 2-list usually
-        self._sem = threading.Semaphore()
-        self._sem_label = threading.Semaphore()
-        self._sem_binning = threading.Semaphore()
-        self._sem_median = threading.Semaphore()
-
-
-    def nearest_peak(self, x):
-        """
-        @param x: coordinates of the peak
-        @returns the coordinates of the nearest peak
-        """
-#        x = numpy.array(x, dtype="float32")
-#        out = fmin(self._bilin.f_cy, x, disp=0).round().astype(numpy.int)
-        out = self._bilin.local_maxi(x)
-        if isinstance(out, tuple):
-            res = out
-        elif isinstance(out, numpy.ndarray):
-            res = tuple(out)
-        else:
-            res = [int(i) for idx, i in enumerate(out) if 0 <= i < self.data.shape[idx] ]
-        if (len(res) != 2) or not((0 <= out[0] < self.data.shape[0]) and (0 <= res[1] < self.data.shape[1])):
-            logger.error("in nearest_peak %s -> %s" % (x, out))
-            return
-        else:
-            return res
-
-
-    def calculate_massif(self, x):
-        """
-        defines a map of the massif around x and returns the mask
-        """
-        labeled = self.getLabeledMassif()
-        if labeled[x[0], x[1]] != labeled.max():
-            return (labeled == labeled[x[0], x[1]])
-
-
-    def find_peaks(self, x, nmax=200, annotate=None, massif_contour=None, stdout=sys.stdout):
-        """
-        All in one function that finds a maximum from the given seed (x)
-        then calculates the region extension and extract position of the neighboring peaks.
-        @param x: seed for the calculation, input coordinates
-        @param nmax: maximum number of peak per region
-        @param annotate: call back method taking number of points + coordinate as input.
-        @param massif_contour: callback to show the contour of a massif with the given index.
-        @param stdout: this is the file where output is written by default.
-        @return: list of peaks
-        """
-        listpeaks = []
-        region = self.calculate_massif(x)
-        if region is None:
-            logger.error("You picked a background point at %s", x)
-            return listpeaks
-        xinit = self.nearest_peak(x)
-        if xinit is None:
-            logger.error("Unable to find peak in the vinicy of %s", x)
-            return listpeaks
-        else:
-            if not region[int(xinit[0] + 0.5), int(xinit[1] + 0.5)]:
-                logger.error("Nearest peak %s is not in the same region  %s", xinit, x)
-                return listpeaks
-
-            if annotate is not None:
-                try:
-                    annotate(xinit, x)
-                except Exception as error:
-                    logger.error("Error in annotate %i: %i %i. %s" , len(listpeaks), xinit[0], xinit[1], error)
-
-        listpeaks.append(xinit)
-        mean = self.data[region].mean(dtype=numpy.float64)
-        region2 = region * (self.data > mean)
-        idx = numpy.vstack(numpy.where(region2)).T
-        numpy.random.shuffle(idx)
-        nmax = min(nmax, int(ceil(sqrt(idx.shape[0]))))
-        if massif_contour is not None:
-            try:
-                massif_contour(region)
-            except (WindowsError, MemoryError) as error:
-                logger.error("Error in plotting region: %s", error)
-        nbFailure = 0
-        for j in idx:
-            xopt = self.nearest_peak(j)
-            if xopt is None:
-                nbFailure += 1
-                continue
-            if (region2[xopt[0], xopt[1]]) and not (xopt in listpeaks):
-                stdout.write("[ %4i, %4i ] --> [ %5.1f, %5.1f ] after %3i iterations %s" % (tuple(j) + tuple(xopt) + (nbFailure, os.linesep)))
-                listpeaks.append(xopt)
-                nbFailure = 0
-            else:
-                nbFailure += 1
-            if (len(listpeaks) > nmax) or (nbFailure > 2 * nmax):
-                break
-        return listpeaks
-
-    def peaks_from_area(self, mask, Imin=None, keep=1000, **kwarg):
-        """
-        Return the list of peaks within an area
-
-        @param mask: 2d array with mask. 
-        @param Imin: minimum of intensity above the background to keep the point
-        @param keep: maximum number of points to keep
-        @param kwarg: ignored parameters
-        @return: list of peaks [y,x], [y,x], ...]
-        """
-        all_points = numpy.vstack(numpy.where(mask)).T
-        res = []
-        cnt = 0
-        numpy.random.shuffle(all_points)
-        for idx in all_points:
-            out = self.nearest_peak(idx)
-            if out is not None:
-                print("[ %3i, %3i ] -> [ %.1f, %.1f ]" %
-                      (idx[1], idx[0], out[1], out[0]))
-                p0, p1 = int(out[0]), int(out[1])
-                if mask[p0, p1]:
-                    if (out not in res) and\
-                        (self.data[p0, p1] > Imin):
-                        res.append(out)
-                        cnt = 0
-            if len(res) >= keep or cnt > keep:
-                break
-            else:
-                cnt += 1
-        return res
-
-    def initValleySize(self):
-        if self._valley_size is None:
-            self.valley_size = max(5., max(self.data.shape) / 50.)
-
-
-    def getValleySize(self):
-        if self._valley_size is None:
-            self.initValleySize()
-        return self._valley_size
-    def setValleySize(self, size):
-        new_size = float(size)
-        if self._valley_size != new_size:
-            self._valley_size = new_size
-#            self.getLabeledMassif()
-            t = threading.Thread(target=self.getLabeledMassif)
-            t.start()
-    def delValleySize(self):
-        self._valley_size = None
-        self._blured_data = None
-    valley_size = property(getValleySize, setValleySize, delValleySize, "Defines the minimum distance between two massifs")
-
-    def getBinnedData(self):
-        """
-        @return binned data
-        """
-        if self._binned_data is None:
-            with self._sem_binning:
-                if self._binned_data is None:
-                    logger.info("Image size is %s", self.data.shape)
-                    self.binning = []
-                    for i in self.data.shape:
-                        if i % TARGET_SIZE == 0:
-                            self.binning.append(max(1, i // TARGET_SIZE))
-                        else:
-                            for j in range(i // TARGET_SIZE - 1, 0, -1):
-                                if i % j == 0:
-                                    self.binning.append(max(1, j))
-                                    break
-                            else:
-                                self.binning.append(1)
-#                    self.binning = max([max(1, i // TARGET_SIZE) for i in self.data.shape])
-                    logger.info("Binning size is %s", self.binning)
-                    self._binned_data = binning(self.data, self.binning)
-        return self._binned_data
-
-    def getMedianData(self):
-        if self._median_data is None:
-            with self._sem_median:
-                if self._median_data is None:
-                    self._median_data = median_filter(self.data, 3)
-                    if logger.getEffectiveLevel() == logging.DEBUG:
-                        fabio.edfimage.edfimage(data=self._median_data).write("median_data.edf")
-        return self._median_data
-
-    def getBluredData(self):
-        if self._blured_data is None:
-            with self._sem:
-                if self._blured_data is None:
-                    logger.debug("Blurring image with kernel size: %s" , self.valley_size)
-                    self._blured_data = gaussian_filter(self.getBinnedData(), [self.valley_size / i for i in  self.binning], mode="reflect")
-                    if logger.getEffectiveLevel() == logging.DEBUG:
-                        fabio.edfimage.edfimage(data=self._blured_data).write("blured_data.edf")
-        return self._blured_data
-
-    def getLabeledMassif(self, pattern=None):
-        if self._labeled_massif is None:
-            with self._sem_label:
-                if self._labeled_massif is None:
-                    if pattern is None:
-                        pattern = [[1] * 3] * 3  # [[0, 1, 0], [1, 1, 1], [0, 1, 0]]#[[1] * 3] * 3
-                    logger.debug("Labeling all massifs. This takes some time !!!")
-                    labeled_massif, self._number_massif = label((self.getBinnedData() > self.getBluredData()), pattern)
-                    logger.info("Labeling found %s massifs." % self._number_massif)
-                    if logger.getEffectiveLevel() == logging.DEBUG:
-                        fabio.edfimage.edfimage(data=labeled_massif).write("labeled_massif_small.edf")
-                    relabeled = relabel(labeled_massif, self.getBinnedData(), self.getBluredData())
-                    if logger.getEffectiveLevel() == logging.DEBUG:
-                            fabio.edfimage.edfimage(data=relabeled).write("relabeled_massif_small.edf")
-                    self._labeled_massif = unBinning(relabeled, self.binning, False)
-                    if logger.getEffectiveLevel() == logging.DEBUG:
-                        fabio.edfimage.edfimage(data=self._labeled_massif).write("labeled_massif.edf")
-                    logger.info("Labeling found %s massifs." % self._number_massif)
-        return self._labeled_massif
 
 
 class Event(object):

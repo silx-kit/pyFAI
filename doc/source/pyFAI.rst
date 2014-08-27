@@ -145,7 +145,8 @@ The drawback of this is the correlation introduced between two adjacent bins.
 To simplify 
 calculations, this was initially done by abstracting the pixel shape 
 with a bounding box that circumscribes the pixel. In an effort to better
-the quality of the results this method was dropped in favo2r of a full 
+the quality of the results this method was dropped in favoor of a full 
+
 pixel splitting scheme that actually uses the actual pixel geometry 
 for its calculations.
 
@@ -188,7 +189,7 @@ This look-up table size depends on whether pixels are split over multiple
 bins and to exploit the sparse structure, both index and weight of the pixel
 have to be stored.
 We measured that 500 Mbytes are needed to store the LUT to integrate a 16 
-megapixel image, which fits onto a reasonable quality graphics card nowadays 
+megapixels image, which fits onto a reasonable quality graphics card nowadays 
 but can still be too large to fit on an entry-level graphics card.
 
 By making this change we switched from a “linear read / random write” forward algorithm

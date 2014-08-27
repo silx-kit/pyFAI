@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: Azimuthal integration
-#             https://forge.epn-campus.eu/projects/azimuthal
-#
-#    File: "$Id$"
+#    Project: Fast Azimuthal Integration
+#             https://github.com/kif/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -28,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/11/2013"
+__date__ = "23/07/2014"
 __status__ = "stable"
 
 import os, logging
@@ -50,8 +48,9 @@ NVIDIA_FLOP_PER_CORE = {(1, 0): 24,  # Guessed !
                          (1, 3): 24,  # measured on a GT285 (GT200)
                          (2, 0): 64,  # Measured on a 580 (GF110)
                          (2, 1): 96,  # Measured on Quadro2000 GF106GL
-                         (3, 0): 384,  # Guessed!
-                         (3, 5): 384}  # Measured on K20
+                         (3, 0): 384, # Guessed!
+                         (3, 5): 384, # Measured on K20
+                         (5, 0): 256} # Maxwell 4 warps/SM 2 flops/ CU
 AMD_FLOP_PER_CORE = 160  # Measured on a M7820 10 core, 700MHz 1120GFlops
 
 class Device(object):
@@ -81,6 +80,23 @@ class Device(object):
 
     def __repr__(self):
         return "%s" % self.name
+
+    def pretty_print(self):
+        """
+        Complete device description
+        
+        @return: string
+        """
+        lst = ["Name\t\t:\t%s" % self.name,
+               "Type\t\t:\t%s" % self.type,
+               "Memory\t\t:\t%.3f MB" % (self.memory / 2.0 ** 20),
+               "Cores\t\t:\t%s CU" % self.cores,
+               "Frequency\t:\t%s MHz"%self.frequency,
+               "Speed\t\t:\t%.3f GFLOPS" % (self.flops / 1000.),
+               "Version\t\t:\t%s" % self.version,
+               "Available\t:\t%s" % self.available]
+        return os.linesep.join(lst)
+
 
 class Platform(object):
     """

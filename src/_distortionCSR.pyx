@@ -42,6 +42,9 @@ cdef struct lut_point:
     numpy.int32_t idx
     numpy.float32_t coef
 
+cdef bint NEED_DECREF = sys.version_info<(2,7) and numpy.version.version<"1.5"
+
+
 cdef inline float min4f(float a, float b, float c, float d) nogil:
     """Calculates the min of 4 float numbers"""
     if (a <= b) and (a <= c) and (a <= d):
@@ -438,7 +441,7 @@ class Distortion(object):
     def correctHost(self, image):
         """
         Correct an image based on the look-up table calculated ...
-        Caclulation takes place on the Host
+        Calculation takes place on the Host
 
         @param image: 2D-array with the image
         @return: corrected 2D image
@@ -464,12 +467,7 @@ class Distortion(object):
         lout = out.ravel()
         lin = numpy.ascontiguousarray(image.ravel(),dtype=numpy.float32)
         size = lin.size
-        
-#        cdef threadlocal(int) j = 0
- #       cdef threadlocal(int) idx = 0
-  #      cdef threadlocal(float) coef = 0.0
-   #     cdef threadlocal(float) tmp = 0.0
-        
+
         for i in prange(bins, nogil=True, schedule="static"):
             for j in range(indptr[i],indptr[i+1]):
                 idx = indices[j]

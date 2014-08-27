@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
-#             https://forge.epn-campus.eu/projects/azimuthal
-#
-#    File: "$Id$"
+#             https://github.com/kif/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -32,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/11/2013"
+__date__ = "22/07/2014"
 __status__ = "stable"
 
 
@@ -40,47 +38,225 @@ import os
 import sys
 import glob
 import shutil
+import os.path
 import platform
-import os.path as op
-from os.path import join
-from distutils.core import setup, Extension, Command
-from numpy.distutils.misc_util import get_numpy_include_dirs
-from distutils.sysconfig import get_python_lib
+import subprocess
+
+from distutils.core import setup, Command
 from distutils.command.install_data import install_data
+from distutils.command.build_ext import build_ext
+from numpy.distutils.core import Extension as _Extension
 
-################################################################################
-# Remove MANIFEST file ... it needs to be re-generated on the fly
-################################################################################
-if op.isfile("MANIFEST"):
-    os.unlink("MANIFEST")
+cmdclass = {}
 
-################################################################################
-# Check for Cython
-################################################################################
-try:
-    from Cython.Distutils import build_ext
-    CYTHON = True
-except ImportError:
-    CYTHON = False
-if CYTHON:
+
+# ################ #
+# pyFAI extensions #
+# ################ #
+
+def check_cython():
+    """
+    Check if cython must be activated fron te command line or the environment.
+    """
     try:
         import Cython.Compiler.Version
     except ImportError:
-        CYTHON = False
+        return False
     else:
         if Cython.Compiler.Version.version < "0.17":
-            CYTHON = False
-if ("--no-cython" in sys.argv):
-    CYTHON = False
-    sys.argv.remove("--no-cython")
+            return False
 
+    if "WITH_CYTHON" in os.environ and os.environ["WITH_CYTHON"] == "False":
+        print("No Cython requested by environment")
+        return False
+
+    if ("--no-cython" in sys.argv):
+        sys.argv.remove("--no-cython")
+        os.environ["WITH_CYTHON"] = "False"
+        print("No Cython requested by command line")
+        return False
+
+    return True
+
+CYTHON = check_cython()
+
+
+def Extension(name, extra_sources=None, **kwargs):
+    cython_c_ext = ".pyx" if CYTHON else ".c"
+    sources = [os.path.join("src", name + cython_c_ext)]
+    if extra_sources:
+        sources.extend(extra_sources)
+    return _Extension(name=name, sources=sources, **kwargs)
+
+ext_modules = [
+    Extension("_geometry",
+              extra_compile_args=["openmp"],
+              extra_link_args=["openmp"]),
+
+    Extension("reconstruct",
+              extra_compile_args=["openmp"],
+              extra_link_args=["openmp"]),
+
+    Extension('histogram',
+              extra_compile_args=['openmp'],
+              extra_link_args=['openmp']),
+
+    Extension('splitPixel'),
+
+    Extension('splitPixelFull'),
+
+    Extension('splitPixelFullLUT'),
+
+    Extension('splitPixelFullLUT_double'),
+
+    Extension('splitBBox'),
+
+    Extension('splitBBoxLUT',
+              extra_compile_args=['openmp'],
+              extra_link_args=['openmp']),
+
+    Extension('splitBBoxCSR',
+              extra_compile_args=['openmp'],
+              extra_link_args=['openmp']),
+
+    Extension('relabel'),
+
+    Extension("bilinear",
+              extra_compile_args=['openmp'],
+              extra_link_args=['openmp']),
+
+    Extension('_distortion',
+              extra_compile_args=['openmp'],
+              extra_link_args=['openmp']),
+
+    Extension('_distortionCSR',
+              extra_compile_args=['openmp'],
+              extra_link_args=['openmp']),
+
+    Extension('_bispev',
+              extra_compile_args=['openmp'],
+              extra_link_args=['openmp']),
+
+    Extension('_convolution',
+              extra_compile_args=["openmp"],
+              extra_link_args=["openmp"]),
+
+    Extension('_blob'),
+
+    Extension('morphology'),
+
+    Extension('marchingsquares')
+]
+
+if (os.name == "posix") and ("x86" in platform.machine()):
+    ext_modules.append(
+        Extension('fastcrc', [os.path.join("src", "crc32.c")])
+    )
 
 if CYTHON:
-    cython_c_ext = ".pyx"
-else:
-    cython_c_ext = ".c"
-    from distutils.command.build_ext import build_ext
+    from Cython.Build import cythonize
+    ext_modules = cythonize(ext_modules)
 
+
+class build_ext_pyFAI(build_ext):
+    """
+    We subclass the build_ext class in order to handle compiler flags
+    for openmp and opencl etc in a cross platform way
+    """
+    translator = {
+        # Compiler
+        # name, compileflag, linkflag
+        'msvc': {
+            'openmp': ('/openmp', ' '),
+            'debug': ('/Zi', ' '),
+            'OpenCL': 'OpenCL',
+        },
+        'mingw32': {
+            'openmp': ('-fopenmp', '-fopenmp'),
+            'debug': ('-g', '-g'),
+            'stdc++': 'stdc++',
+            'OpenCL': 'OpenCL'
+        },
+        'default': {
+            'openmp': ('-fopenmp', '-fopenmp'),
+            'debug': ('-g', '-g'),
+            'stdc++': 'stdc++',
+            'OpenCL': 'OpenCL'
+        }
+    }
+
+    def build_extensions(self):
+        if self.compiler.compiler_type in self.translator:
+            trans = self.translator[self.compiler.compiler_type]
+        else:
+            trans = self.translator['default']
+
+        for e in self.extensions:
+            e.extra_compile_args = [trans[arg][0] if arg in trans else arg
+                                    for arg in e.extra_compile_args]
+            e.extra_link_args = [trans[arg][1] if arg in trans else arg
+                                 for arg in e.extra_link_args]
+            e.libraries = filter(None, [trans[arg] if arg in trans else None
+                                        for arg in e.libraries])
+
+            # If you are confused look here:
+            # print e, e.libraries
+            # print e.extra_compile_args
+            # print e.extra_link_args
+        build_ext.build_extensions(self)
+
+cmdclass['build_ext'] = build_ext_pyFAI
+
+
+# ############################# #
+# scripts and data installation #
+# ############################# #
+
+installDir = "pyFAI"
+
+data_files = [(installDir, glob.glob("openCL/*.cl")),
+              (os.path.join(installDir, "gui"), glob.glob("gui/*.ui")),
+              (os.path.join(installDir, "calibration"), glob.glob("calibration/*.D"))]
+
+if sys.platform == "win32":
+    # This is for mingw32/gomp
+    if tuple.__itemsize__ == 4:
+        data_files[0][1].append(os.path.join("dll", "pthreadGC2.dll"))
+    root = os.path.dirname(os.path.abspath(__file__))
+    tocopy_files = []
+    script_files = []
+    for i in os.listdir(os.path.join(root, "scripts")):
+        if os.path.isfile(os.path.join(root, "scripts", i)):
+            if i.endswith(".py"):
+                script_files.append(os.path.join("scripts", i))
+            else:
+                tocopy_files.append(os.path.join("scripts", i))
+    for i in tocopy_files:
+        filein = os.path.join(root, i)
+        if (filein + ".py") not in script_files:
+            shutil.copyfile(filein, filein + ".py")
+            script_files.append(filein + ".py")
+
+else:
+    script_files = glob.glob("scripts/*")
+
+
+class smart_install_data(install_data):
+    def run(self):
+        global installDir
+
+        install_cmd = self.get_finalized_command('install')
+#        self.install_dir = join(getattr(install_cmd,'install_lib'), "data")
+        self.install_dir = getattr(install_cmd, 'install_lib')
+        print("DATA to be installed in %s" % self.install_dir)
+        installDir = os.path.join(self.install_dir, installDir)
+        return install_data.run(self)
+cmdclass['install_data'] = smart_install_data
+
+
+# #################################### #
+# Test part and sdist with test images #
+# #################################### #
 
 def rewriteManifest(with_testimages=False):
     """
@@ -89,29 +265,32 @@ def rewriteManifest(with_testimages=False):
     @param with_testimages: include
     """
     base = os.path.dirname(os.path.abspath(__file__))
-    manifest_file = join(base, "MANIFEST.in")
-    if not os.path.isfile(manifest_file):
-        print("MANIFEST file is missing !!!")
+    manifest_in = os.path.join(base, "MANIFEST.in")
+    if not os.path.isfile(manifest_in):
+        print("%s file is missing !!!" % manifest_in)
         return
-    manifest = [i.strip() for i in open(manifest_file)]
-    changed = False
 
+    manifest = None
+    with open(manifest_in) as f:
+        manifest = [line.strip() for line in f]
+
+    # get rid of all test images in the manifest_in
+    manifest_new = [line for line in manifest
+                    if not line.startswith("include test/testimages")]
+
+    # add the testimages if required
     if with_testimages:
-        testimages = ["test/testimages/" + i for i in os.listdir(join(base, "test", "testimages"))]
-        for image in testimages:
-            if image not in manifest:
-                manifest.append("include " + image)
-                changed = True
-    else:
-        for line in manifest[:]:
-            if line.startswith("include test/testimages"):
-                changed = True
-                manifest.remove(line)
-    if changed:
-        with open(manifest_file, "w") as f:
-            f.write(os.linesep.join(manifest))
+        testimages = ["include test/testimages/" + image for image in
+                      os.listdir(os.path.join(base, "test", "testimages"))]
+        manifest_new.extend(testimages)
+
+    if manifest_new != manifest:
+        with open(manifest_in, "w") as f:
+            f.write(os.linesep.join(manifest_new))
+
         # remove MANIFEST: will be re generated !
-        os.unlink(manifest_file[:-3])
+        if os.path.isfile("MANIFEST"):
+            os.unlink("MANIFEST")
 
 if ("sdist" in sys.argv):
     if ("--with-testimages" in sys.argv):
@@ -120,209 +299,17 @@ if ("sdist" in sys.argv):
     else:
         rewriteManifest(with_testimages=False)
 
-# ###############################################################################
-# pyFAI extensions
-# ###############################################################################
-cython_modules = [os.path.splitext(os.path.basename(i))[0] for i in glob.glob("src/*.pyx")]
-
-src = dict([(ext, join("src", ext + cython_c_ext)) for ext in cython_modules])
-
-_geometry_dic = dict(name="_geometry",
-                     include_dirs=get_numpy_include_dirs(),
-                     sources=[src['_geometry']],
-                     extra_compile_args=['openmp'],
-                     extra_link_args=['openmp'])
-
-reconstruct_dic = dict(name="reconstruct",
-                       include_dirs=get_numpy_include_dirs(),
-                       sources=[src['reconstruct']],
-                       extra_compile_args=['openmp'],
-                       extra_link_args=['openmp'])
-
-histogram_dic = dict(name="histogram",
-                include_dirs=get_numpy_include_dirs(),
-                sources=[src['histogram']],
-                extra_compile_args=['openmp'],
-                extra_link_args=['openmp'],
-                )
-
-splitPixel_dic = dict(name="splitPixel",
-                 include_dirs=get_numpy_include_dirs(),
-                 sources=[src['splitPixel']],
-                 )
-
-splitBBox_dic = dict(name="splitBBox",
-                     include_dirs=get_numpy_include_dirs(),
-                     sources=[src['splitBBox']],
-                     )
-splitBBoxLUT_dic = dict(name="splitBBoxLUT",
-                        include_dirs=get_numpy_include_dirs(),
-                        sources=[src['splitBBoxLUT']],
-                        extra_compile_args=['openmp'],
-                        extra_link_args=['openmp'],
-                        )
-
-splitBBoxCSR_dic = dict(name="splitBBoxCSR",
-                        include_dirs=get_numpy_include_dirs(),
-                        sources=[src['splitBBoxCSR']],
-                        extra_compile_args=['openmp'],
-                        extra_link_args=['openmp'],
-                        )
-
-relabel_dic = dict(name="relabel",
-                   include_dirs=get_numpy_include_dirs(),
-                   sources=[src['relabel']])
-
-bilinear_dic = dict(name="bilinear",
-                    include_dirs=get_numpy_include_dirs(),
-                    sources=[src['bilinear']])
-
-fastcrc_dic = dict(name="fastcrc",
-                        include_dirs=get_numpy_include_dirs(),
-                        sources=[src['fastcrc'] , join("src", "crc32.c")],
-                        )
-_distortion_dic = dict(name="_distortion",
-                        include_dirs=get_numpy_include_dirs(),
-                        sources=[src['_distortion'] ],
-                        extra_compile_args=['openmp'],
-                        extra_link_args=['openmp'],
-
-                        )
-_distortionCSR_dic = dict(name="_distortionCSR",
-                        include_dirs=get_numpy_include_dirs(),
-                        sources=[src['_distortionCSR'] ],
-                        extra_compile_args=['openmp'],
-                        extra_link_args=['openmp'],
-
-                        )
-_bispev_dic = dict(name="_bispev",
-                        include_dirs=get_numpy_include_dirs(),
-                        sources=[src['_bispev'] ],
-                        extra_compile_args=['openmp'],
-                        extra_link_args=['openmp'],
-                        )
-
-_convolution_dic = dict(name="_convolution",
-                    include_dirs=get_numpy_include_dirs(),
-                    sources=[src['_convolution']],
-                    extra_compile_args=["openmp"],
-                    extra_link_args=["openmp"]
-                    )
-
-_blob_dic = dict(name="_blob",
-                    include_dirs=get_numpy_include_dirs(),
-                    sources=[src['_blob']],
-#                    extra_compile_args=["openmp"],
-#                    extra_link_args=["openmp"]
-                    )
-
-morphology_dic = dict(name="morphology",
-                    include_dirs=get_numpy_include_dirs(),
-                    sources=[src['morphology']],
-#                    extra_compile_args=["openmp"],
-#                    extra_link_args=["openmp"]
-                    )
-
-
-ext_modules = [globals()[i + "_dic"] for i in cython_modules if i + "_dic" in dir()]
-
-
-if (os.name != "posix") or ("x86" not in platform.machine()):
-    ext_modules.remove(fastcrc_dic)
-
-
-# ###############################################################################
-# scripts and data installation
-# ###############################################################################
-global installDir
-installDir = "pyFAI"
-
-data_files = [(installDir, glob.glob("openCL/*.cl")),
-              (join(installDir, "gui"), glob.glob("gui/*.ui")),
-              (join(installDir, "calibration"), glob.glob("calibration/*.D"))]
-
-if sys.platform == "win32":
-    # This is for mingw32/gomp
-    if tuple.__itemsize__ == 4:
-        data_files[0][1].append(join("dll", "pthreadGC2.dll"))
-    root = os.path.dirname(os.path.abspath(__file__))
-    tocopy_files = []
-    script_files = []
-    for i in os.listdir(join(root, "scripts")):
-        if os.path.isfile(join(root, "scripts", i)):
-            if i.endswith(".py"):
-                script_files.append(join("scripts", i))
-            else:
-                tocopy_files.append(join("scripts", i))
-    for i in tocopy_files:
-        filein = join(root, i)
-        if (filein + ".py") not in script_files:
-            shutil.copyfile(filein, filein + ".py")
-            script_files.append(filein + ".py")
-else:
-    script_files = glob.glob("scripts/*")
-
-version = [eval(l.split("=")[1]) for l in open(join(os.path.dirname(
-    os.path.abspath(__file__)), "pyFAI-src", "__init__.py"))
-    if l.strip().startswith("version")][0]
-
-
-# We subclass the build_ext class in order to handle compiler flags
-# for openmp and opencl etc in a cross platform way
-translator = {
-        # Compiler
-            # name, compileflag, linkflag
-        'msvc' : {
-            'openmp' : ('/openmp', ' '),
-            'debug'  : ('/Zi', ' '),
-            'OpenCL' : 'OpenCL',
-            },
-        'mingw32':{
-            'openmp' : ('-fopenmp', '-fopenmp'),
-            'debug'  : ('-g', '-g'),
-            'stdc++' : 'stdc++',
-            'OpenCL' : 'OpenCL'
-            },
-        'default':{
-            'openmp' : ('-fopenmp', '-fopenmp'),
-            'debug'  : ('-g', '-g'),
-            'stdc++' : 'stdc++',
-            'OpenCL' : 'OpenCL'
-            }
-        }
-
-cmdclass = {}
-
-class build_ext_pyFAI(build_ext):
-    def build_extensions(self):
-        if self.compiler.compiler_type in translator:
-            trans = translator[self.compiler.compiler_type]
-        else:
-            trans = translator['default']
-
-        for e in self.extensions:
-            e.extra_compile_args = [ trans[a][0] if a in trans else a
-                                    for a in e.extra_compile_args]
-            e.extra_link_args = [ trans[a][1] if a in trans else a
-                                 for a in e.extra_link_args]
-            e.libraries = filter(None, [ trans[a] if a in trans else None
-                                        for a in e.libraries])
-
-            # If you are confused look here:
-            # print e, e.libraries
-            # print e.extra_compile_args
-            # print e.extra_link_args
-        build_ext.build_extensions(self)
-cmdclass['build_ext'] = build_ext_pyFAI
 
 class PyTest(Command):
     user_options = []
+
     def initialize_options(self):
         pass
+
     def finalize_options(self):
         pass
+
     def run(self):
-        import sys, subprocess
         os.chdir("test")
         errno = subprocess.call([sys.executable, 'test_all.py'])
         if errno != 0:
@@ -330,9 +317,10 @@ class PyTest(Command):
         else:
             os.chdir("..")
 cmdclass['test'] = PyTest
-#######################
+
+# ################### #
 # build_doc commandes #
-#######################
+# ################### #
 
 try:
     import sphinx
@@ -357,37 +345,35 @@ if sphinx:
             # Build the Users Guide in HTML and TeX format
             for builder in ('html', 'latex'):
                 self.builder = builder
-                self.builder_target_dir = join(self.build_dir, builder)
+                self.builder_target_dir = os.path.join(self.build_dir, builder)
                 self.mkpath(self.builder_target_dir)
-                builder_index = 'index_{0}.txt'.format(builder)
                 BuildDoc.run(self)
             sys.path.pop(0)
     cmdclass['build_doc'] = build_doc
 
-class smart_install_data(install_data):
-    def run(self):
-        install_cmd = self.get_finalized_command('install')
-#        self.install_dir = join(getattr(install_cmd,'install_lib'), "data")
-        self.install_dir = getattr(install_cmd, 'install_lib')
-        print("DATA to be installed in %s" % self.install_dir)
-        global installDir
-        installDir = join(self.install_dir, installDir)
-        return install_data.run(self)
-cmdclass['install_data'] = smart_install_data
 
+# get the version without importing pyFAI
+def get_version():
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           "pyFAI-src", "__init__.py")) as f:
+        for line in f:
+            if line.strip().startswith("version"):
+                return eval(line.split("=")[1])
 
 setup(name='pyFAI',
-      version=version,
+      version=get_version(),
       author="Jérôme Kieffer (python), \
-      Peter Boesecke (geometry), Manuel Sanchez del Rio (algorithm), Vicente Armando Sole (algorithm), \
-      Dimitris Karkoulis (GPU), Jon Wright (adaptations) and Frederic-Emmanuel Picca",
+      Peter Boesecke (geometry), Manuel Sanchez del Rio (algorithm), \
+      Vicente Armando Sole (algorithm), \
+      Dimitris Karkoulis (GPU), Jon Wright (adaptations) \
+      and Frederic-Emmanuel Picca",
       author_email="jerome.kieffer@esrf.fr",
       description='Python implementation of fast azimuthal integration',
       url="http://forge.epn-campus.eu/azimuthal",
       download_url="http://forge.epn-campus.eu/projects/azimuthal/files",
       ext_package="pyFAI",
       scripts=script_files,
-      ext_modules=[Extension(**dico) for dico in ext_modules],
+      ext_modules=ext_modules,
       packages=["pyFAI"],
       package_dir={"pyFAI": "pyFAI-src" },
       test_suite="test",
@@ -395,9 +381,9 @@ setup(name='pyFAI',
       data_files=data_files
       )
 
-# ###############################################################################
-# Check for Fabio to be present of the system
-# ###############################################################################
+# ########################################### #
+# Check for Fabio to be present of the system #
+# ########################################### #
 try:
     import fabio
 except ImportError:
@@ -412,31 +398,3 @@ except ImportError:
 This python module can be found on:
 http://pypi.python.org/pypi/pyopencl
 """)
-
-"""
-################################################################################
-# check if OpenMP modules, freshly installed can import
-################################################################################
-pyFAI = None
-sys.path.insert(0, os.path.dirname(installDir))
-# print installDir
-for loc in ["", ".", os.getcwd()]:
-    if loc in sys.path:
-        sys.path.pop(sys.path.index(loc))
-for mod in sys.modules.copy():
-    if mod.startswith("pyFAI"):
-        sys.modules.pop(mod)
-try:
-    import pyFAI
-except ImportError as E:
-    print("Unable to import pyFAI from system: %s" % E)
-else:
-    print("PyFAI is installed in %s" % pyFAI.__file__)
-    try:
-        import pyFAI.histogram
-    except ImportError as E:
-        print("PyFAI.histogram failed to import. It is likely there is an OpenMP error: %s" % E)
-    else:
-        print("OpenMP libraries were found and pyFAI.histogram was successfully imported")
-
-"""

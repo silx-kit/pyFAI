@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: Azimuthal integration
-#             https://github.com/kif
+#    Project: Fast Azimuthal Integration
+#             https://github.com/kif/
 #
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
@@ -29,15 +29,15 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2013"
+__date__ = "22/07/2014"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 __doc__ = """
 
-Module for "high-performance" writing in either 1D with Ascii , or 2D with FabIO 
-or even nD with n varying from  2 to 4 using HDF5 
+Module for "high-performance" writing in either 1D with Ascii , or 2D with FabIO
+or even nD with n varying from  2 to 4 using HDF5
 
-Stand-alone module which tries to offer interface to HDF5 via H5Py and 
+Stand-alone module which tries to offer interface to HDF5 via H5Py and
 capabilities to write EDF or other formats using fabio.
 
 Can be imported without h5py but then limited to fabio & ascii formats.
@@ -45,31 +45,43 @@ Can be imported without h5py but then limited to fabio & ascii formats.
 TODO:
 * add monitor to HDF5
 """
-import sys
-import os
-import time
-import threading
-import logging
-logger = logging.getLogger("pyFAI.io")
-import types
-import numpy
-import posixpath
+import fabio
 import json
+import logging
+import numpy
+import os
+import posixpath
+import sys
+import threading
+import time
+import types
+
+from . import units
+from . import version
+
+
+logger = logging.getLogger("pyFAI.io")
 try:
     import h5py
-except ImportError:
+except ImportError as error:
     h5py = None
-    logger.error("h5py is missing")
+    logger.error("h5py module missing")
+else:
+    try:
+        h5py._errors.silence_errors()
+    except AttributeError: #old h5py
+        pass
 
-import fabio
-from . import units
 
-def getIsoTime(forceTime=None):
+
+
+
+def get_isotime(forceTime=None):
     """
     @param forceTime: enforce a given time (current by default)
     @type forceTime: float
     @return: the current time as an ISO8601 string
-    @rtype: string  
+    @rtype: string
     """
     if forceTime is None:
         forceTime = time.time()
@@ -79,14 +91,41 @@ def getIsoTime(forceTime=None):
     tz_m = localtime.tm_min - gmtime.tm_min
     return "%s%+03i:%02i" % (time.strftime("%Y-%m-%dT%H:%M:%S", localtime), tz_h, tz_m)
 
+def from_isotime(text, use_tz=False):
+    """
+    @param text: string representing the time is iso format
+    """
+    text = str(text)
+    base = text[:19]
+    if use_tz and len(text) == 25:
+        sgn = 1 if  text[:19] == "+" else -1
+        tz = 60 * (60 * int(text[20:22]) + int(text[23:25])) * sgn
+    else:
+        tz = 0
+    return time.mktime(time.strptime(base, "%Y-%m-%dT%H:%M:%S")) + tz
+
+def is_hdf5(filename):
+    """
+    Check if a file is actually a HDF5 file
+
+    @param filename: this file has better to exist
+    """
+    signature = [137, 72, 68, 70, 13, 10, 26, 10]
+    if not os.path.exists(filename):
+        raise IOError("No such file %s" % (filename))
+    with open(filename, "rb") as f:
+        sig = [ord(i) for i in f.read(8)]
+    return sig == signature
+
+
 class Writer(object):
     """
-    Abstract class for writers. 
+    Abstract class for writers.
     """
     CONFIG_ITEMS = ["filename", "dirname", "extension", "subdir", "hpath"]
     def __init__(self, filename=None, extension=None):
         """
-        
+
         """
         self.filename = filename
         if os.path.exists(filename):
@@ -104,9 +143,9 @@ class Writer(object):
 
     def init(self, fai_cfg=None, lima_cfg=None):
         """
-        Creates the directory that will host the output file(s) 
+        Creates the directory that will host the output file(s)
         @param fai_cfg: configuration for worker
-        @param lima_cfg: configuration for acquisition 
+        @param lima_cfg: configuration for acquisition
         """
 
         with self._sem:
@@ -152,17 +191,17 @@ class Writer(object):
 class HDF5Writer(Writer):
     """
     Class allowing to write HDF5 Files.
-    
+
     """
     CONFIG = "pyFAI"
     DATASET_NAME = "data"
     def __init__(self, filename, hpath="data", fast_scan_width=None):
         """
         Constructor of an HDF5 writer:
-        
+
         @param filename: name of the file
         @param hpath: name of the group: it will contain data (2-4D dataset), [tth|q|r] and pyFAI, group containing the configuration
-        @param fast_scan_width: set it to define the width of 
+        @param fast_scan_width: set it to define the width of
         """
         Writer.__init__(self, filename)
         self.hpath = hpath
@@ -279,12 +318,12 @@ class HDF5Writer(Writer):
             name += " experiment"
             self.group["title"] = name
             self.group["program"] = "PyFAI"
-            self.group["start_time"] = getIsoTime()
+            self.group["start_time"] = get_isotime()
 
     def flush(self, radial=None, azimuthal=None):
         """
         Update some data like axis units and so on.
-        
+
         @param radial: position in radial direction
         @param  azimuthal: position in azimuthal direction
         """
@@ -361,11 +400,11 @@ class HDF5Writer(Writer):
 
 class AsciiWriter(Writer):
     """
-    Ascii file writer (.xy or .dat) 
+    Ascii file writer (.xy or .dat)
     """
     def __init__(self, filename=None, prefix="fai_", extension=".dat"):
         """
-        
+
         """
         Writer.__init__(self, filename, extension)
         self.header = None
@@ -382,8 +421,8 @@ class AsciiWriter(Writer):
 
     def init(self, fai_cfg=None, lima_cfg=None):
         """
-        Creates the directory that will host the output file(s) 
-        
+        Creates the directory that will host the output file(s)
+
         """
         Writer.init(self, fai_cfg, lima_cfg)
         with self._sem:
@@ -440,18 +479,18 @@ class AsciiWriter(Writer):
         filename = os.path.join(self.directory, self.prefix + (self.index_format % (self.start_index + index)) + self.extension)
         if filename:
             with open(filename, "w") as f:
-                f.write("# Processing time: %s%s" % (getIsoTime(), self.header))
+                f.write("# Processing time: %s%s" % (get_isotime(), self.header))
                 numpy.savetxt(f, data)
 
 class FabioWriter(Writer):
     """
-    Image file writer based on FabIO 
-    
+    Image file writer based on FabIO
+
     TODO !!!
     """
     def __init__(self, filename=None):
         """
-        
+
         """
         Writer.__init__(self, filename)
         self.header = None
@@ -466,8 +505,8 @@ class FabioWriter(Writer):
 
     def init(self, fai_cfg=None, lima_cfg=None):
         """
-        Creates the directory that will host the output file(s) 
-        
+        Creates the directory that will host the output file(s)
+
         """
         Writer.init(self, fai_cfg, lima_cfg)
         with self._sem:
@@ -531,5 +570,170 @@ class FabioWriter(Writer):
         filename = os.path.join(self.directory, self.prefix + (self.index_format % (self.start_index + index)) + self.extension)
         if filename:
             with open(filename, "w") as f:
-                f.write("# Processing time: %s%s" % (getIsoTime(), self.header))
+                f.write("# Processing time: %s%s" % (get_isotime(), self.header))
                 numpy.savetxt(f, data)
+
+
+class Nexus(object):
+    """
+    Writer class to handle Nexus/HDF5 data
+    Manages:
+    entry
+        pyFAI-subentry
+            detector
+
+    #TODO: make it thread-safe !!!
+    """
+    def __init__(self, filename, mode="r"):
+        """
+        Constructor
+
+        @param filename: name of the hdf5 file containing the nexus
+        @param mode: can be r or a
+        """
+        self.filename = os.path.abspath(filename)
+        self.mode = mode
+        if not h5py:
+            logger.error("h5py module missing: NeXus not supported")
+            raise RuntimeError("H5py module is missing")
+        if os.path.exists(self.filename) and self.mode == "r":
+            self.h5 = h5py.File(self.filename, mode=self.mode)
+        else:
+            self.h5 = h5py.File(self.filename)
+        self.to_close = []
+
+    def close(self):
+        """
+        close the filename and update all entries
+        """
+        end_time = get_isotime()
+        for entry in self.to_close:
+            entry["end_time"] = end_time
+        self.h5.close()
+
+    def get_entry(self, name):
+        """
+        Retrieves an entry from its name
+        
+        @param name: name of the entry to retrieve
+        @return: HDF5 group of NXclass == NXentry
+        """
+        for grp_name in self.h5:
+            if  grp_name == name:
+                grp = self.h5[grp_name]
+                if isinstance(grp, h5py.Group) and \
+                    "start_time" in grp and  \
+                    "NX_class" in grp.attrs and \
+                    grp.attrs["NX_class"] == "NXentry" :
+                        return grp
+
+    def get_entries(self):
+        """
+        retrieves all entry sorted the latest first.
+        
+        @return: list of HDF5 groups
+        """
+        entries = [(grp, from_isotime(self.h5[grp + "/start_time"].value))
+                    for grp in self.h5
+                    if (isinstance(self.h5[grp], h5py.Group) and \
+                        "start_time" in self.h5[grp] and  \
+                        "NX_class" in self.h5[grp].attrs and \
+                        self.h5[grp].attrs["NX_class"] == "NXentry")]
+        entries.sort(cmp=lambda a, b: 1 if a[1] < b[1] else -1) #sort entries in decreasing time
+        return [self.h5[i[0]] for i in entries]
+
+    def find_detector(self, all=False):
+        """
+        Tries to find a detector within a NeXus file, takes the first compatible detector
+
+        @param all: return all detectors found as a list
+        """
+        result = []
+        for entry in self.get_entries():
+            for instrument in self.get_class(entry, "NXsubentry"):
+                for detector in self.get_class(instrument, "NXdetector"):
+                    if all:
+                        result.append(detector)
+                    else:
+                        return detector
+        return result
+
+    def new_entry(self, entry="entry"):
+        """
+        Create a new entry
+
+        @param entry: name of the entry
+        @return: the corresponding HDF5 group
+        """
+        nb_entries = len(self.get_entries())
+        entry_grp = self.h5.require_group("%s_%04i" % (entry, nb_entries))
+        entry_grp.attrs["NX_class"] = "NXentry"
+        entry_grp["start_time"] = numpy.string_(get_isotime())
+        entry_grp["title"] = numpy.string_("description of experiment")
+        entry_grp["program_name"] = numpy.string_("pyFAI")
+        self.to_close.append(entry_grp)
+        return entry_grp
+
+    def new_instrument(self, entry="entry", instrument_name="id00",):
+        """
+        Create an instrument in an entry or create both the entry and the instrument if
+        """
+        if not isinstance(entry, h5py.Group):
+            entry = self.new_entry(entry)
+        return self.new_class(entry, instrument_name, "NXinstrument")
+#        howto external link
+        #myfile['ext link'] = h5py.ExternalLink("otherfile.hdf5", "/path/to/resource")
+
+    def new_class(self, grp, name, class_type="NXcollection"):
+        """
+        create a new sub-group with  type class_type
+        @param grp: parent group
+        @param name: name of the sub-group
+        @param class_type: NeXus class name
+        @return: subgroup created
+        """
+        sub = grp.require_group(name)
+        sub.attrs["NX_class"] = class_type
+        return sub
+
+    def new_detector(self, name="detector", entry="entry", subentry="pyFAI"):
+        """
+        Create a new entry/pyFAI/Detector
+
+        @param detector: name of the detector
+        @param entry: name of the entry
+        @param subentry: all pyFAI description of detectors should be in a pyFAI sub-entry
+        """
+        entry_grp = self.new_entry(entry)
+        pyFAI_grp = self.new_class(entry_grp, subentry, "NXsubentry")
+        pyFAI_grp["definition_local"] = numpy.string_("pyFAI")
+        pyFAI_grp["definition_local"].attrs["version"] = version
+        det_grp = self.new_class(pyFAI_grp, name, "NXdetector")
+        return det_grp
+
+
+    def get_class(self, grp, class_type="NXcollection"):
+        """
+        return all sub-groups of the given type within a group
+
+        @param grp: HDF5 group
+        @param class_type: name of the NeXus class
+        """
+        coll = [grp[name] for name in grp
+               if (isinstance(grp[name], h5py.Group) and \
+                   "NX_class" in grp[name].attrs and \
+                   grp[name].attrs["NX_class"] == class_type)]
+        return coll
+
+    def get_data(self, grp, class_type="NXdata"):
+        """
+        return all dataset of the the NeXus class NXdata
+
+        @param grp: HDF5 group
+        @param class_type: name of the NeXus class
+        """
+        coll = [grp[name] for name in grp
+               if (isinstance(grp[name], h5py.Dataset) and \
+                   "NX_class" in grp[name].attrs and \
+                   grp[name].attrs["NX_class"] == class_type)]
+        return coll

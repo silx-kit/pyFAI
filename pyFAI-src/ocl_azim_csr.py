@@ -25,7 +25,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "GPLv3"
-__date__ = "04/04/2014"
+__date__ = "21/07/2014"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -58,6 +58,7 @@ class OCL_CSR_Integrator(object):
             indptr: row pointer indicates the start of a given row. len nbin+1
         @param image_size: size of the image (for pre-processing)
         @param devicetype: can be "cpu","gpu","acc" or "all"
+        @param block_size: the chosen size for WORKGROUP_SIZE
         @param platformid: number of the platform as given by clinfo
         @type platformid: int
         @param deviceid: number of the device as given by clinfo
@@ -112,7 +113,7 @@ class OCL_CSR_Integrator(object):
             self._allocate_buffers()
             self._compile_kernels()
             self._set_kernel_arguments()
-        except pyopencl.MemoryError as error:
+        except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             raise MemoryError(error)
         ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["data"], self._data)
         if self.profile: self.events.append(("copy Coefficient data", ev))
@@ -171,7 +172,7 @@ class OCL_CSR_Integrator(object):
             self._cl_mem["flat"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
             self._cl_mem["polarization"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
             self._cl_mem["solidangle"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
-        except pyopencl.MemoryError as error:
+        except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             self._free_buffers()
             raise MemoryError(error)
 
@@ -184,10 +185,8 @@ class OCL_CSR_Integrator(object):
                 try:
                     self._cl_mem[buffer_name].release()
                     self._cl_mem[buffer_name] = None
-                except pyopencl.LogicError:
-                    logger.error("Error while freeing buffer %s" % buffer_name)
-
-
+                except (pyopencl.MemoryError, pyopencl.LogicError) as error:
+                    logger.error("Error while freeing buffer %s: %s" % (buffer_name, error))
 
     def _compile_kernels(self, kernel_file=None):
         """
@@ -210,7 +209,7 @@ class OCL_CSR_Integrator(object):
         logger.info("Compiling file %s with options %s" % (kernel_file, compile_options))
         try:
             self._program = pyopencl.Program(self._ctx, kernel_src).build(options=compile_options)
-        except pyopencl.MemoryError as error:
+        except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             raise MemoryError(error)
 
     def _free_kernels(self):

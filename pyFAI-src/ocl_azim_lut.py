@@ -25,7 +25,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
-__date__ = "18/10/2012"
+__date__ = "21/07/2014"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -103,7 +103,7 @@ class OCL_LUT_Integrator(object):
             self._allocate_buffers()
             self._compile_kernels()
             self._set_kernel_arguments()
-        except pyopencl.MemoryError as error:
+        except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             raise MemoryError(error)
         if self.device_type == "CPU":
             ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["lut"], lut)
@@ -157,7 +157,7 @@ class OCL_LUT_Integrator(object):
             self._cl_mem["flat"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
             self._cl_mem["polarization"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
             self._cl_mem["solidangle"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
-        except pyopencl.MemoryError as error:
+        except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             self._free_buffers()
             raise MemoryError(error)
 
@@ -170,10 +170,8 @@ class OCL_LUT_Integrator(object):
                 try:
                     self._cl_mem[buffer_name].release()
                     self._cl_mem[buffer_name] = None
-                except pyopencl.LogicError:
-                    logger.error("Error while freeing buffer %s" % buffer_name)
-
-
+                except (pyopencl.MemoryError, pyopencl.LogicError) as error:
+                    logger.error("Error while freeing buffer %s: %s" % (buffer_name, error))
 
     def _compile_kernels(self, kernel_file=None):
         """
@@ -196,7 +194,7 @@ class OCL_LUT_Integrator(object):
         logger.info("Compiling file %s with options %s" % (kernel_file, compile_options))
         try:
             self._program = pyopencl.Program(self._ctx, kernel_src).build(options=compile_options)
-        except pyopencl.MemoryError as error:
+        except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             raise MemoryError(error)
 
     def _free_kernels(self):
@@ -226,7 +224,8 @@ class OCL_LUT_Integrator(object):
         self._cl_kernel_args["s32_to_float"] = [self._cl_mem[i] for i in ["image", "image"]]
 
     def integrate(self, data, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None,
-                            dark_checksum=None, flat_checksum=None, solidAngle_checksum=None, polarization_checksum=None):
+                            dark_checksum=None, flat_checksum=None, solidAngle_checksum=None, polarization_checksum=None,
+                            preprocess_only=False):
         events = []
         with self._sem:
             if data.dtype == numpy.uint16:
@@ -310,6 +309,12 @@ class OCL_LUT_Integrator(object):
             if do_dummy + do_polarization + do_solidAngle + do_flat + do_dark > 0:
                 ev = self._program.corrections(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["corrections"])
                 events.append(("corrections", ev))
+            if preprocess_only:
+                image = numpy.empty(data.shape, dtype=numpy.float32)
+                ev = pyopencl.enqueue_copy(self._queue, image, self._cl_mem["image"])
+                events.append(("copy D->H image", ev))
+                ev, wait()
+                return image
             integrate = self._program.lut_integrate(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["lut_integrate"])
             events.append(("integrate", integrate))
             outMerge = numpy.empty(self.bins, dtype=numpy.float32)

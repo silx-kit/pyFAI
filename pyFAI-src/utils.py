@@ -32,8 +32,8 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/07/2013"
-__status__ = "development"
+__date__ = "29/06/2014"
+__status__ = "production"
 
 import logging, sys, types, os, glob
 import threading
@@ -130,7 +130,12 @@ def timeit(func):
         a decorator that logs the execution time'''
         t1 = time.time()
         res = func(*arg, **kw)
-        timelog.warning("%s took %.3fs" % (func.func_name, time.time() - t1))
+        t2 = time.time()
+        if "func_name" in dir(func):
+            name = func.func_name
+        else:
+            name = str(func)
+        timelog.warning("%s took %.3fs" % (name, t2 - t1))
         return res
     wrapper.__name__ = func.__name__
     wrapper.__doc__ = func.__doc__
@@ -548,9 +553,9 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
                 else:
                     break
             if filter_ == "max":
-                output = "maxfilt%02i-%s.%s" % (ld,prefix,format)
+                output = "maxfilt%02i-%s.%s" % (ld, prefix, format)
             elif filter_ == "median":
-                output = "medfilt%02i-%s.%s" % (ld,prefix,format)
+                output = "medfilt%02i-%s.%s" % (ld, prefix, format)
             elif filter_ == "median":
                 output = "meanfilt%02i-%s.%s" % (ld, prefix, format)
             else:
@@ -573,7 +578,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
                               header=header)
 #            if "header_keys" in dir(fimg):
             fimg.header_keys = header_list
-                                      
+
             fimg.write(output)
             logger.info("Wrote %s" % output)
         return output
@@ -947,16 +952,16 @@ class lazy_property(object):
     property should represent non-mutable data, as it replaces itself.
     '''
 
-    def __init__(self,fget):
+    def __init__(self, fget):
         self.fget = fget
         self.func_name = fget.__name__
 
 
-    def __get__(self,obj,cls):
+    def __get__(self, obj, cls):
         if obj is None:
             return None
         value = self.fget(obj)
-        setattr(obj,self.func_name,value)
+        setattr(obj, self.func_name, value)
         return value
 
 try:
@@ -966,9 +971,9 @@ except ImportError: #backport percentile from numpy 1.6.2
     def percentile(a, q, axis=None, out=None, overwrite_input=False):
         """
         Compute the qth percentile of the data along the specified axis.
-    
+
         Returns the qth percentile of the array elements.
-    
+
         Parameters
         ----------
         a : array_like
@@ -990,7 +995,7 @@ except ImportError: #backport percentile from numpy 1.6.2
            but it will probably be fully or partially sorted.
            Default is False. Note that, if `overwrite_input` is True and the
            input is not already an array, an error will be raised.
-    
+
         Returns
         -------
         pcntile : ndarray
@@ -999,11 +1004,11 @@ except ImportError: #backport percentile from numpy 1.6.2
             integers, or floats of smaller precision than 64, then the output
             data-type is float64.  Otherwise, the output data-type is the same
             as that of the input.
-    
+
         See Also
         --------
         mean, median
-    
+
         Notes
         -----
         Given a vector V of length N, the qth percentile of V is the qth ranked
@@ -1011,7 +1016,7 @@ except ImportError: #backport percentile from numpy 1.6.2
         neighbors is used if the normalized ranking does not match q exactly.
         The same as the median if ``q=0.5``, the same as the minimum if ``q=0``
         and the same as the maximum if ``q=1``.
-    
+
         Examples
         --------
         >>> a = np.array([[10, 7, 4], [3, 2, 1]])
@@ -1024,14 +1029,14 @@ except ImportError: #backport percentile from numpy 1.6.2
         array([ 6.5,  4.5,  2.5])
         >>> np.percentile(a, 50, axis=1)
         array([ 7.,  2.])
-    
+
         >>> m = np.percentile(a, 50, axis=0)
         >>> out = np.zeros_like(m)
         >>> np.percentile(a, 50, axis=0, out=m)
         array([ 6.5,  4.5,  2.5])
         >>> m
         array([ 6.5,  4.5,  2.5])
-    
+
         >>> b = a.copy()
         >>> np.percentile(b, 50, axis=1, overwrite_input=True)
         array([ 7.,  2.])
@@ -1039,7 +1044,7 @@ except ImportError: #backport percentile from numpy 1.6.2
         >>> b = a.copy()
         >>> np.percentile(b, 50, axis=None, overwrite_input=True)
         3.5
-    
+
         """
         a = np.asarray(a)
 
@@ -1109,7 +1114,7 @@ def convert_CamelCase(name):
 def readFloatFromKeyboard(text, dictVar):
     """
     Read float from the keyboard ....
-    
+
     @param text: string to be displayed
     @param dictVar: dict of this type: {1: [set_dist_min],3: [set_dist_min, set_dist_guess, set_dist_max]}
     """

@@ -66,6 +66,7 @@ but it is expensive in calculation time)
 Peak-picking
 ------------
 
+
 The Peak-picking consists in the identification of peaks and groups of peaks 
 belonging to same ring. It can be performed by two methods : blob detection or 
 massif detection.

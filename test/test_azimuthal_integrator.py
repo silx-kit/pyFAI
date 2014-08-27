@@ -46,7 +46,21 @@ from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 
-class test_azim_halfFrelon(unittest.TestCase):
+class TestAzimPilatus(unittest.TestCase):
+    img = UtilsTest.getimage("1884/Pilatus6M.cbf")
+
+    def setUp(self):
+        """Download files"""
+        self.data = fabio.open(self.img).data
+        self.ai = AzimuthalIntegrator(detector="pilatus6m")
+        self.ai.setFit2D(300, 1326, 1303)
+    def test_separate(self):
+        maxi = self.data.max()
+        mini = self.data.min()
+        bragg, amorphous = self.ai.separate(self.data)
+        self.assert_(amorphous.max()<bragg.max(), "bragg is more intense than amorphous")
+
+class TestAzimHalfFrelon(unittest.TestCase):
     """basic test"""
     fit2dFile = '1460/fit2d.dat'
     halfFrelon = "1464/LaB6_0020.edf"
@@ -205,7 +219,7 @@ class test_azim_halfFrelon(unittest.TestCase):
 
         assert rwp < 3
 
-class test_flatimage(unittest.TestCase):
+class TestFlatimage(unittest.TestCase):
     """test the caking of a flat image"""
     epsilon = 1e-4
     def test_splitPixel(self):
@@ -272,7 +286,7 @@ class test_saxs(unittest.TestCase):
         assert abs(self.ai.makeMask(data, mask=mask).astype(int) - fabio.open(self.maskRef).data).max() == 0
         assert abs(self.ai.makeMask(data, mask=mask, dummy= -2, delta_dummy=1.1).astype(int) - fabio.open(self.maskDummy).data).max() == 0
 
-class test_setter(unittest.TestCase):
+class TestSetter(unittest.TestCase):
     tmp_dir = os.environ.get("PYFAI_TEMPDIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp"))
 
     def setUp(self):
@@ -305,14 +319,15 @@ class test_setter(unittest.TestCase):
 
 def test_suite_all_AzimuthalIntegration():
     testSuite = unittest.TestSuite()
-    testSuite.addTest(test_azim_halfFrelon("test_cython_vs_fit2d"))
-    testSuite.addTest(test_azim_halfFrelon("test_numpy_vs_fit2d"))
-    testSuite.addTest(test_azim_halfFrelon("test_cythonSP_vs_fit2d"))
-    testSuite.addTest(test_azim_halfFrelon("test_cython_vs_numpy"))
-    testSuite.addTest(test_flatimage("test_splitPixel"))
-    testSuite.addTest(test_flatimage("test_splitBBox"))
-    testSuite.addTest(test_setter("test_flat"))
-    testSuite.addTest(test_setter("test_dark"))
+    testSuite.addTest(TestAzimHalfFrelon("test_cython_vs_fit2d"))
+    testSuite.addTest(TestAzimHalfFrelon("test_numpy_vs_fit2d"))
+    testSuite.addTest(TestAzimHalfFrelon("test_cythonSP_vs_fit2d"))
+    testSuite.addTest(TestAzimHalfFrelon("test_cython_vs_numpy"))
+    testSuite.addTest(TestFlatimage("test_splitPixel"))
+    testSuite.addTest(TestFlatimage("test_splitBBox"))
+    testSuite.addTest(TestSetter("test_flat"))
+    testSuite.addTest(TestSetter("test_dark"))
+    testSuite.addTest(TestAzimPilatus("test_separate"))
 # This test is known to be broken ...
 #    testSuite.addTest(test_saxs("test_mask"))
 

@@ -29,16 +29,19 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/06/2012"
+__date__ = "17/07/2014"
 
 
-import unittest
-import os
-import numpy
-import logging, time
-import sys
 import fabio
+import logging, time
+import numpy
+import os
+import sys
+import unittest
+
 from utilstest import UtilsTest, Rwp, getLogger
+
+
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 
@@ -67,7 +70,7 @@ def testExport(direct=100, centerX=900, centerY=1000, tilt=0, tpr=0, pixelX=50, 
                     res += "%s: %s != %s" % (key, refv, obtv)
     return res
 
-class test_fit2d(unittest.TestCase):
+class TestFIT2D(unittest.TestCase):
     poniFile = "1893/Pilatus1M.poni"
 
     def setUp(self):
@@ -96,10 +99,38 @@ class test_fit2d(unittest.TestCase):
         res = testExport(tilt=20, tpr=580)
         self.assertFalse(res, res)
 
+
+class TestSPD(unittest.TestCase):
+    poniFile = "1893/Pilatus1M.poni"
+
+    def setUp(self):
+        """Download files"""
+        self.poniFile = UtilsTest.getimage(self.__class__.poniFile)
+
+    def test_simple(self):
+        ref = pyFAI.load(self.poniFile)
+#        ref.rot1 = 0
+#        ref.rot2 = 0
+#        ref.rot3 = 0
+        obt = pyFAI.AzimuthalIntegrator()
+#        print ref.getFit2D()
+#        print ref.getSPD()
+        obt.setSPD(**ref.getSPD())
+#        print obt.getSPD()
+        for key in ["dist", "poni1", "poni2", "rot3", "pixel1", "pixel2", "splineFile"]:
+            refv = ref.__getattribute__(key)
+            obtv = obt.__getattribute__(key)
+            if refv is  None:
+                self.assertEqual(refv, obtv , "%s: %s != %s" % (key, refv, obtv))
+            else:
+                self.assertAlmostEqual(refv, obtv , 4, "%s: %s != %s" % (key, refv, obtv))
+
+
 def test_suite_all_Export():
     testSuite = unittest.TestSuite()
-    testSuite.addTest(test_fit2d("test_simple"))
-    testSuite.addTest(test_fit2d("test_export"))
+    testSuite.addTest(TestFIT2D("test_simple"))
+    testSuite.addTest(TestFIT2D("test_export"))
+    testSuite.addTest(TestSPD("test_simple"))
     return testSuite
 
 if __name__ == '__main__':

@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/05/2014"
+__date__ = "09/07/2014"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -47,12 +47,11 @@ logger = logging.getLogger("pyFAI.calibration")
 import numpy, scipy.ndimage
 from scipy.stats import linregress
 import fabio
-import matplotlib
-import pylab
+from .gui_utils import pylab, update_fig, matplotlib
 from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
-from .peakPicker import PeakPicker
-from . import units
+from .peak_picker import PeakPicker
+from . import units, gui_utils
 from .utils import averageImages, measure_offset, expand_args, readFloatFromKeyboard
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import hc
@@ -72,7 +71,6 @@ except ImportError:
 else:
     pyFAI_morphology = True
 
-matplotlib.interactive(True)
 
 class AbstractCalibration(object):
 
@@ -95,12 +93,14 @@ class AbstractCalibration(object):
             'refine': "performs a new cycle of refinement",
             'recalib': "extract a new set of rings and re-perform the calibration. One can specify how many rings to extract and the algorithm to use (blob or massif)",
             'done': "finishes the processing, performs an integration and quits",
-            'validate': "measures the offset between the calibrated image and the back-projected image"
+            'validate': "measures the offset between the calibrated image and the back-projected image",
+            'integrate': "perform the azimuthal integration and display results",
+            'abort': "quit immediately, discarding any unsaved changes"
             }
-    PARAMETERS = ["dist","poni1","poni2","rot1","rot2","rot3","wavelength"]
+    PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
     UNITS = {"dist":"meter", "poni1":"meter", "poni2":"meter", "rot1":"radian",
              "rot2":"radian", "rot3":"radian", "wavelength":"meter"}
-    
+
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None,
                  splineFile=None, detector=None, wavelength=None, calibrant=None):
         """
@@ -174,6 +174,7 @@ class AbstractCalibration(object):
         self.unit = None
         self.keep = True
         self.check_calib = None
+        self.fig3 = self.ax_xrpd_1d = self.ax_xrpd_2d = None
 
     def __repr__(self):
         lst = ["Calibration object:"]
@@ -222,7 +223,7 @@ class AbstractCalibration(object):
                           action="store_true", dest="debug", default=False,
                           help="switch to debug/verbose mode")
         self.parser.add_argument("-c", "--calibrant", dest="spacing", metavar="FILE",
-                      help="Calibrant name or file containing d-spacing of the reference sample (MANDATORY)",
+                      help="Calibrant name or file containing d-spacing of the reference sample (MANDATORY, case sensitive !)",
                       default=None)
         self.parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
                       help="wavelength of the X-Ray beam in Angstrom", default=None)
@@ -546,10 +547,6 @@ class AbstractCalibration(object):
             self.read_wavelength()
             self.peakPicker.points.calibrant.wavelength = self.wavelength
 
-        if self.gui:
-            self.peakPicker.gui(log=True, maximize=True)
-            self.peakPicker.fig.canvas.draw()
-
     def extract_cpt(self, method="massif"):
         """
         Performs an automatic keypoint extraction:
@@ -595,7 +592,7 @@ class AbstractCalibration(object):
                 rings += 1
                 self.peakPicker.massif_contour(mask)
                 if self.gui:
-                    self.peakPicker.fig.canvas.draw()
+                    update_fig(self.peakPicker.fig)
                 sub_data = self.peakPicker.data.ravel()[numpy.where(mask.ravel())]
                 mean = sub_data.mean(dtype=numpy.float64)
                 std = sub_data.std(dtype=numpy.float64)
@@ -617,7 +614,7 @@ class AbstractCalibration(object):
                 if self.gui:
                     # minIndex: skip redrawing of previous rings
                     self.peakPicker.display_points(minIndex=i)
-                    self.peakPicker.fig.canvas.draw()
+                    update_fig(self.peakPicker.fig)
 
         self.peakPicker.points.save(self.basename + ".npt")
         if self.weighted:
@@ -685,26 +682,28 @@ class AbstractCalibration(object):
                             im.autoscale()
 
                         fig2.show()
+                        update_fig(fig2)
+
             if self.interactive:
                 finished = self.prompt()
             else:
                 finished = True
             if not finished:
                 previous = sys.maxint
-                
+
     def prompt(self):
         """
         prompt for commands to guide the calibration process
-        
-        @return: True when the user is happy with what he has, False to request another refinement 
-        """ 
-        
+
+        @return: True when the user is happy with what he has, False to request another refinement
+        """
+
         while True:
             help = False
             print("Fixed: " + ", ".join(self.fixed))
             ans = raw_input("Modify parameters (or ? for help)?\t ").strip().lower()
             if "?" in ans:
-                help=True
+                help = True
             if not ans:
                 print("'done' to continue")
                 continue
@@ -730,8 +729,8 @@ class AbstractCalibration(object):
                 else:
                     print(self.HELP[action])
 
-            elif action=="set": #set wavelength 1e-10
-                if (len(words)==3) and  words[1] in self.PARAMETERS:
+            elif action == "set": #set wavelength 1e-10
+                if (len(words) == 3) and  words[1] in self.PARAMETERS:
                     param = words[1]
                     try:
                         value = float(words[2])
@@ -741,14 +740,14 @@ class AbstractCalibration(object):
                         setattr(self.geoRef, param, value)
                 else:
                     print(self.HELP[action])
-            elif action=="fix": #fix wavelength
+            elif action == "fix": #fix wavelength
                 if (len(words) == 2) and  (words[1] in self.PARAMETERS) and (words[1] not in self.fixed):
                     param = words[1]
                     print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
                     self.fixed.append(param)
                 else:
                     print(self.HELP[action])
-            elif action=="free": #free wavelength
+            elif action == "free": #free wavelength
                 if (len(words) == 2) and  (words[1] in self.PARAMETERS) and (words[1] in self.fixed):
                     param = words[1]
                     print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
@@ -772,21 +771,21 @@ class AbstractCalibration(object):
                     self.extract_cpt("blob")
                 self.geoRef.data = numpy.array(self.data, dtype=numpy.float64)
                 return False
-            elif action=="bound": #bound dist
+            elif action == "bound": #bound dist
                 if len(words) >= 2 and  words[1] in self.PARAMETERS:
                     param = words[1]
                     if len(words) == 2:
                         readFloatFromKeyboard("Enter %s in %s " % (param, self.UNITS[param]) +
-                             "(or %s_min[%.3f] %s[%.3f] %s_max[%.3f]):\t " %(
+                             "(or %s_min[%.3f] %s[%.3f] %s_max[%.3f]):\t " % (
                               param, self.geoRef.__getattribute__("get_%s_min" % param)(),
                               param, self.geoRef.__getattribute__("get_%s" % param)(),
                               param, self.geoRef.__getattribute__("get_%s_max" % param)()),
-                             {1:[self.geoRef.__getattribute__("set_%s"%param)],
-                              2:[self.geoRef.__getattribute__("set_%s_min"%param),
-                                 self.geoRef.__getattribute__("set_%s_max"%param)],
-                              3:[self.geoRef.__getattribute__("set_%s_min"%param),
-                                 self.geoRef.__getattribute__("set_%s"%param),
-                                 self.geoRef.__getattribute__("set_%s_max"%param)]})
+                             {1:[self.geoRef.__getattribute__("set_%s" % param)],
+                              2:[self.geoRef.__getattribute__("set_%s_min" % param),
+                                 self.geoRef.__getattribute__("set_%s_max" % param)],
+                              3:[self.geoRef.__getattribute__("set_%s_min" % param),
+                                 self.geoRef.__getattribute__("set_%s" % param),
+                                 self.geoRef.__getattribute__("set_%s_max" % param)]})
                     elif len(words) == 3:
                         try:
                             value = float(words[2])
@@ -859,7 +858,12 @@ class AbstractCalibration(object):
                 return False
             elif action == "validate":
                 self.validate_calibration()
-
+            elif action == "integrate":
+                self.postProcess()
+            elif action == "abort":
+                sys.exit()
+            else:
+                logger.warning("Unrecognized action: %s, type 'quit' to leave " % action)
     def postProcess(self):
         """
         Common part: shows the result of the azimuthal integration in 1D and 2D
@@ -884,9 +888,12 @@ class AbstractCalibration(object):
         self.geoRef.cornerArray(self.peakPicker.shape)
         t2b = time.time()
         if self.gui:
-            fig3 = pylab.plt.figure()
-            xrpd = fig3.add_subplot(1, 2, 1)
-            xrpd2 = fig3.add_subplot(1, 2, 2)
+            if self.fig3 is None:
+                self.fig3 = pylab.plt.figure()
+            else:
+                self.fig3.clf()
+            self.ax_xrpd_1d = self.fig3.add_subplot(1, 2, 1)
+            self.ax_xrpd_2d = self.fig3.add_subplot(1, 2, 2)
         t3 = time.time()
         a, b = self.geoRef.integrate1d(self.peakPicker.data, self.nPt_1D,
                                 filename=self.basename + ".xy", unit=self.unit,
@@ -898,7 +905,7 @@ class AbstractCalibration(object):
                                 polarization_factor=self.polarization_factor,
                                 method="splitbbox")
         t5 = time.time()
-        print (os.linesep.join(["Timings:",
+        logger.info(os.linesep.join(["Timings:",
                                 " * two theta array generation %.3fs" % (t1 - t0),
                                 " * diff Solid Angle           %.3fs" % (t2 - t1),
                                 " * chi array generation       %.3fs" % (t2a - t2),
@@ -906,7 +913,7 @@ class AbstractCalibration(object):
                                 " * 1D Azimuthal integration   %.3fs" % (t4 - t3),
                                 " * 2D Azimuthal integration   %.3fs" % (t5 - t4)]))
         if self.gui:
-            xrpd.plot(a, b)
+            self.ax_xrpd_1d.plot(a, b)
             # GF: Add vertical line for each used calibration ring:
             xValues = None
             twoTheta = numpy.array([i for i in self.peakPicker.points.calibrant.get_2th() if i])  # in radian
@@ -926,19 +933,21 @@ class AbstractCalibration(object):
                 logger.warning('Unknown unit %s, do not plot calibration rings' % str(self.unit))
             if xValues is not None:
                 for x in xValues:
-                    line = matplotlib.lines.Line2D([x, x], xrpd.axis()[2:4],
+                    line = matplotlib.lines.Line2D([x, x], self.ax_xrpd_1d.axis()[2:4],
                                                    color='red', linestyle='--')
-                    xrpd.add_line(line)
-            xrpd.set_title("1D integration")
-            xrpd.set_xlabel(self.unit)
-            xrpd.set_ylabel("Intensity")
-            xrpd2.imshow(numpy.log(img - img.min() + 1e-3), origin="lower",
+                    self.ax_xrpd_1d.add_line(line)
+            self.ax_xrpd_1d.set_title("1D integration")
+            self.ax_xrpd_1d.set_xlabel(self.unit)
+            self.ax_xrpd_1d.set_ylabel("Intensity")
+            self.ax_xrpd_2d.imshow(numpy.log(img - img.min() + 1e-3), origin="lower",
                          extent=[pos_rad.min(), pos_rad.max(), pos_azim.min(), pos_azim.max()],
                          aspect="auto")
-            xrpd2.set_title("2D regrouping")
-            xrpd2.set_xlabel(self.unit)
-            xrpd2.set_ylabel("Azimuthal angle (deg)")
-            fig3.show()
+            self.ax_xrpd_2d.set_title("2D regrouping")
+            self.ax_xrpd_2d.set_xlabel(self.unit)
+            self.ax_xrpd_2d.set_ylabel("Azimuthal angle (deg)")
+            if not gui_utils.main_loop:
+                self.fig3.show()
+            update_fig(self.fig3)
 
     def validate_calibration(self):
         """
@@ -960,6 +969,15 @@ class AbstractCalibration(object):
 ################################################################################
 # Calibration
 ################################################################################
+
+    def set_data(self, data):
+        """
+        call-back function for the peak-picker
+        """
+        self.data = data
+        if not self.weighted:
+            self.data = numpy.array(self.data)[:, :-1]
+        self.refine()
 
 class Calibration(AbstractCalibration):
     """
@@ -1002,9 +1020,9 @@ class Calibration(AbstractCalibration):
         """
         description = """Calibrate the diffraction setup geometry based on Debye-Sherrer rings images
 without a priori knowledge of your setup.
-Most standard calibrants are directly installed together with pyFAI. 
+Most standard calibrants are directly installed together with pyFAI.
 If you prefer using your own, you can provide a "d-spacing" file
-containing the spacing of Miller plans in Angstrom (in decreasing order). 
+containing the spacing of Miller plans in Angstrom (in decreasing order).
 Most crystal powders used for calibration are available in the American
 Mineralogist database: http://rruff.geo.arizona.edu/AMS/amcsd.php"""
 
@@ -1054,7 +1072,9 @@ decrease the value if arcs are mixed together.""", default=None)
             self.peakPicker.massif.setValleySize(self.gaussianWidth)
         else:
             self.peakPicker.massif.initValleySize()
-
+        if self.gui:
+            self.peakPicker.gui(log=True, maximize=True, pick=True)
+            update_fig(self.peakPicker.fig)
 
     def gui_peakPicker(self):
         if self.peakPicker is None:
@@ -1063,11 +1083,13 @@ decrease the value if arcs are mixed together.""", default=None)
         if os.path.isfile(self.pointfile):
             self.peakPicker.load(self.pointfile)
         if self.gui:
-            self.peakPicker.fig.canvas.draw()
-        self.data = self.peakPicker.finish(self.pointfile)
-        if not self.weighted:
-            self.data = numpy.array(self.data)[:, :-1]
-
+            update_fig(self.peakPicker.fig)
+#        self.peakPicker.finish(self.pointfile, callback=self.set_data)
+        self.set_data(self.peakPicker.finish(self.pointfile))
+#        raw_input("Please press enter when you are happy with your selection" + os.linesep)
+#        while self.data is None:
+#            update_fig(self.peakPicker.fig)
+#            time.sleep(0.1)
 
     def refine(self):
         """
@@ -1182,6 +1204,16 @@ without human intervention (--no-gui and --no-interactive options).
         AbstractCalibration.read_dSpacingFile(self, verbose=False)
 
 
+    def preprocess(self):
+        """
+        do dark, flat correction thresholding, ...
+        """
+        AbstractCalibration.preprocess(self)
+
+        if self.gui:
+            self.peakPicker.gui(log=True, maximize=True, pick=False)
+            update_fig(self.peakPicker.fig)
+
 
 
     def refine(self):
@@ -1193,7 +1225,7 @@ without human intervention (--no-gui and --no-interactive options).
                                          poni2=self.ai.poni2, rot1=self.ai.rot1,
                                          rot2=self.ai.rot2, rot3=self.ai.rot3,
                                          detector=self.ai.detector, calibrant=self.calibrant,
-                                         wavelength=self.ai._wavelength)
+                                         wavelength=self.wavelength)
         self.ai = self.geoRef
         self.geoRef.set_tolerance(10)
         AbstractCalibration.refine(self)
@@ -1539,14 +1571,14 @@ class MultiCalib(object):
             centerX = self.centerX
             centerY = self.centerY
             if "_array_data.header_contents" in fabimg.header:
-                headers = fabimg.header["_array_data.header_contents"].split()
-                if "Detector_distance" in headers:
-                    dist = float(headers[headers.index("Detector_distance") + 1])
-                if "Wavelength" in headers:
-                    wavelength = float(headers[headers.index("Wavelength") + 1]) * 1e-10
-                if "Beam_xy" in headers:
-                    centerX = float(headers[headers.index("Beam_xy") + 1][1:-1])
-                    centerY = float(headers[headers.index("Beam_xy") + 2][:-1])
+                headers = fabimg.header["_array_data.header_contents"].lower().split()
+                if "detector_distance" in headers:
+                    dist = float(headers[headers.index("detector_distance") + 1])
+                if "wavelength" in headers:
+                    wavelength = float(headers[headers.index("wavelength") + 1]) * 1e-10
+                if "beam_xy" in headers:
+                    centerX = float(headers[headers.index("beam_xy") + 1][1:-1])
+                    centerY = float(headers[headers.index("beam_xy") + 2][:-1])
             if dist is None:
                 digits = ""
                 for i in os.path.basename(fn):
@@ -1733,7 +1765,7 @@ correction, at a sub-pixel level.
     def rebuild(self):
         """
         Rebuild the diffraction image and measures the offset with the reference
-        @return: offset  
+        @return: offset
         """
         logger.debug("in rebuild")
         if self.r is None:
@@ -1780,9 +1812,9 @@ correction, at a sub-pixel level.
         """
         if self.fig is None:
             self.fig = pylab.figure()
-            draw = False
+            if not gui_utils.main_loop:
+                self.fig.show()
         else:
-            draw = True
             self.fig.clf()
         ax1 = self.fig.add_subplot(2, 2, 3)
         ax1.imshow(self.delta, aspect="auto", interpolation="nearest", origin="bottom")
@@ -1798,8 +1830,7 @@ correction, at a sub-pixel level.
         ax4.set_title("powder pattern")
         ax4.set_xlabel(r"2$\theta$ ($^o$)")
         ax4.set_ylabel("Intensity")
-        if draw:
-            self.fig.canvas.draw()
-        else:
-            self.fig.show()
+        update_fig(self.fig)
+
+
 
