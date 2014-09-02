@@ -3136,7 +3136,7 @@ class AzimuthalIntegrator(Geometry):
                 polarization_factor = self._polarization_factor
             headerLst.append("Polarization factor: %s" % polarization_factor)
             headerLst.append("Normalization factor: %s" % normalization_factor)
-            self.header = os.linesep.join([hdr + " " + i for i in headerLst])
+            self.header = "\n".join([hdr + " " + i for i in headerLst])
         return self.header
 
     def save1D(self, filename, dim1, I, error=None, dim1_unit=units.TTH,
@@ -3169,15 +3169,15 @@ class AzimuthalIntegrator(Geometry):
                 f.write(self.makeHeaders(dark=dark, flat=flat,
                                          polarization_factor=polarization_factor,
                                          normalization_factor=normalization_factor))
-                f.write("%s# --> %s%s" % (os.linesep, filename, os.linesep))
+                f.write("\n# --> %s\n" % (filename))
                 if error is None:
-                    f.write("#%14s %14s %s" % (dim1_unit.REPR, "I ", os.linesep))
-                    f.write(os.linesep.join(["%14.6e  %14.6e" % (t, i) for t, i in zip(dim1, I)]))
+                    f.write("#%14s %14s\n" % (dim1_unit.REPR, "I "))
+                    f.write("\n".join(["%14.6e  %14.6e" % (t, i) for t, i in zip(dim1, I)]))
                 else:
-                    f.write("#%14s  %14s  %14s%s" %
-                            (dim1_unit.REPR, "I ", "sigma ", os.linesep))
-                    f.write(os.linesep.join(["%14.6e  %14.6e %14.6e" % (t, i, s) for t, i, s in zip(dim1, I, error)]))
-                f.write(os.linesep)
+                    f.write("#%14s  %14s  %14s\n" %
+                            (dim1_unit.REPR, "I ", "sigma "))
+                    f.write("\n".join(["%14.6e  %14.6e %14.6e" % (t, i, s) for t, i, s in zip(dim1, I, error)]))
+                f.write("\n")
 
     def save2D(self, filename, I, dim1, dim2, error=None, dim1_unit=units.TTH,
                dark=None, flat=None, polarization_factor=None, normalization_factor=None):

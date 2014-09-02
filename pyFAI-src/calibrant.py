@@ -99,7 +99,7 @@ class Calibrant(object):
         with open(filename) as f:
             f.write("# %s Calibrant" % filename)
             for i in self.dSpacing:
-                f.write("%s%s" % (i, os.linesep))
+                f.write("%s\n" % i)
 
     def get_dSpacing(self):
         if not self._dSpacing and self._filename:
@@ -206,11 +206,11 @@ class Calibrant(object):
     def fake_calibration_image(self, ai, shape=None, Imax=1.0, U=0, V=0, W=0.0001):
         """
         Generates a fake calibration image from an azimuthal integrator
-        
+
         @param ai: azimuthal integrator
         @param Imax: maximum intensity of rings
-        @param U, V, W: width of the peak (FWHM = Utan(th)^2 + Vtan(th) + W)  
-        
+        @param U, V, W: width of the peak (FWHM = Utan(th)^2 + Vtan(th) + W)
+
         """
         if shape is None:
             if ai.detector.shape:
