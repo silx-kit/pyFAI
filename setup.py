@@ -321,6 +321,7 @@ cmdclass = {}
 
 class build_ext_pyFAI(build_ext):
     def build_extensions(self):
+        print("Compiler: %s"% self.compiler.compiler_type)
         if self.compiler.compiler_type in translator:
             trans = translator[self.compiler.compiler_type]
         else:
