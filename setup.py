@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/07/2014"
+__date__ = "02/09/2014"
 __status__ = "stable"
 
 
@@ -186,6 +186,7 @@ class build_ext_pyFAI(build_ext):
     }
 
     def build_extensions(self):
+        print("Compiler: %s" % self.compiler.compiler_type)
         if self.compiler.compiler_type in self.translator:
             trans = self.translator[self.compiler.compiler_type]
         else:
@@ -375,7 +376,7 @@ setup(name='pyFAI',
       scripts=script_files,
       ext_modules=ext_modules,
       packages=["pyFAI"],
-      package_dir={"pyFAI": "pyFAI-src" },
+      package_dir={"pyFAI": "pyFAI-src"},
       test_suite="test",
       cmdclass=cmdclass,
       data_files=data_files
