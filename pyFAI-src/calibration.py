@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/07/2014"
+__date__ = "04/09/2014"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -95,7 +95,9 @@ class AbstractCalibration(object):
             'done': "finishes the processing, performs an integration and quits",
             'validate': "measures the offset between the calibrated image and the back-projected image",
             'integrate': "perform the azimuthal integration and display results",
-            'abort': "quit immediately, discarding any unsaved changes"
+            'abort': "quit immediately, discarding any unsaved changes",
+            'show': "Just print out the current parameter set",
+            'reset': "Reset the geometry to the initial guess (rotation to zero, distance to 1m, poni at the center of the image)"
             }
     PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
     UNITS = {"dist":"meter", "poni1":"meter", "poni2":"meter", "rot1":"radian",
@@ -862,8 +864,45 @@ class AbstractCalibration(object):
                 self.postProcess()
             elif action == "abort":
                 sys.exit()
+            elif action == "show":
+                print("The current parameter set is:")
+                print(self.geoRef)
+            elif action == "reset":
+                self.ai.dist = 0.1
+                self.ai.poni1 = self.detector.pixel1 * (self.peakPicker.shape[0] / 2.)
+                self.ai.poni2 = self.detector.pixel2 * (self.peakPicker.shape[1] / 2.)
+                self.ai.rot1 = 0.0
+                self.ai.rot2 = 0.0
+                self.ai.rot3 = 0.0
+
+                self.geoRef.set_dist_min(0)
+                self.geoRef.set_dist_max(100)
+                self.geoRef.set_dist(self.ai.dist)
+
+                self.geoRef.set_poni1_min(-10.0 * self.ai.poni1)
+                self.geoRef.set_poni1_max(10.0 * self.ai.poni1)
+                self.geoRef.set_poni1(self.ai.poni1)
+
+                self.geoRef.set_poni2_min(-10.0 * self.ai.poni2)
+                self.geoRef.set_poni2_max(10.0 * self.ai.poni2)
+                self.geoRef.set_poni2(self.ai.poni2)
+
+                self.geoRef.set_rot1_min(-math.pi)
+                self.geoRef.set_rot1_max(math.pi)
+                self.geoRef.set_rot1(self.ai.rot1)
+
+                self.geoRef.set_rot2_min(-math.pi)
+                self.geoRef.set_rot2_max(math.pi)
+                self.geoRef.set_rot2(self.ai.rot2)
+
+                self.geoRef.set_rot3_min(-math.pi)
+                self.geoRef.set_rot3_max(math.pi)
+                self.geoRef.set_rot3(self.ai.rot3)
+
+
             else:
                 logger.warning("Unrecognized action: %s, type 'quit' to leave " % action)
+
     def postProcess(self):
         """
         Common part: shows the result of the azimuthal integration in 1D and 2D
