@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 """
+Test suites for sparse matrix multiplication modules 
 """
 
 
@@ -13,7 +14,6 @@ from pyFAI import splitBBox
 from pyFAI import splitBBoxCSR
 from pyFAI import splitBBoxLUT
 import fabio
-
 
 
 class TestSparseBBox(unittest.TestCase):
@@ -47,12 +47,13 @@ class TestSparseBBox(unittest.TestCase):
             logger.debug("delta on cython result: %s" % (abs(obt - ref) / ref).max())
             self.assert_(numpy.allclose(obt, ref))
 
+
 def test_suite_all_sparse():
     testSuite = unittest.TestSuite()
     testSuite.addTest(TestSparseBBox("test_LUT"))
     testSuite.addTest(TestSparseBBox("test_CSR"))
-
     return testSuite
+
 
 if __name__ == '__main__':
     mysuite = test_suite_all_sparse()

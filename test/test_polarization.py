@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/04/2013"
+__date__ = "08/09/2014"
 
 
 import unittest
@@ -85,7 +85,7 @@ class TestPolarization(unittest.TestCase):
         self.assert_(abs(self.ai.polarization(factor=1, axis_offset=numpy.pi / 2)[:, 6] - (numpy.cos((2 * self.rotX)) + 1) / 2).max() < 1e-15, "cos(2th)^2 like in the verical plane")
 
 
-def test_suite_all_Polarization():
+def test_suite_all_polarization():
     testSuite = unittest.TestSuite()
     testSuite.addTest(TestPolarization("testNoPol"))
     testSuite.addTest(TestPolarization("testCircularPol"))
@@ -97,6 +97,6 @@ def test_suite_all_Polarization():
     return testSuite
 
 if __name__ == '__main__':
-    mysuite = test_suite_all_Polarization()
+    mysuite = test_suite_all_polarization()
     runner = unittest.TextTestRunner()
     runner.run(mysuite)
