@@ -215,7 +215,10 @@ data = fabio.open(r"%s").data
                     results[size ] = tmin
                     self.update_mp()
                     if first:
-                        self.new_curve(results, label)
+                        if opencl:
+                            self.new_curve(results, label, style="--")
+                        else:
+                            self.new_curve(results, label, style="-")
                         first = False
                     else:
                         self.new_point(size, tmin)
@@ -389,7 +392,7 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
             self.ax.set_title(self.get_cpu() + " / " + self.get_gpu())
             update_fig(self.fig)
 
-    def new_curve(self, results, label):
+    def new_curve(self, results, label, style="-"):
         """
         Create a new curve within the current graph
         """
@@ -399,7 +402,7 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
         self.plot_x = list(results.keys())
         self.plot_x.sort()
         self.plot_y = [1000.0 / results[i] for i in self.plot_x]
-        self.plot = self.ax.plot(self.plot_x, self.plot_y, "o-", label=label)[0]
+        self.plot = self.ax.plot(self.plot_x, self.plot_y, "o" + style, label=label)[0]
         self.ax.legend()
         update_fig(self.fig)
 
