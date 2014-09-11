@@ -31,7 +31,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__data__ = "2014-03-08"
+__data__ = "2014-09-08"
 
 import sys
 import unittest
@@ -39,28 +39,29 @@ import unittest
 from utilstest import UtilsTest, getLogger
 logger = getLogger("test_all")
 
-from test_geometry_refinement  import test_suite_all_GeometryRefinement
+from test_geometry_refinement import test_suite_all_GeometryRefinement
 from test_azimuthal_integrator import test_suite_all_AzimuthalIntegration
-from test_histogram            import test_suite_all_Histogram
-from test_peak_picking         import test_suite_all_PeakPicking
-from test_geometry             import test_suite_all_Geometry
-from test_mask                 import test_suite_all_Mask
-from test_openCL               import test_suite_all_OpenCL
-from test_export               import test_suite_all_Export
-from test_saxs                 import test_suite_all_Saxs
-from test_integrate            import test_suite_all_Integrate1d
-from test_bilinear             import test_suite_all_bilinear
-from test_distortion           import test_suite_all_distortion
-from test_flat                 import test_suite_all_Flat
-from test_utils                import test_suite_all_Utils
-from test_polarization         import test_suite_all_Polarization
-from test_detector             import test_suite_all_detectors
-from test_convolution          import test_suite_all_convolution
-from test_sparse               import test_suite_all_sparse
-from test_csr                  import test_suite_all_OpenCL_CSR
-from test_blob_detection       import test_suite_all_blob_detection
-from test_marchingsquares      import test_suite_all_marchingsquares
+from test_histogram import test_suite_all_Histogram
+from test_peak_picking import test_suite_all_PeakPicking
+from test_geometry import test_suite_all_Geometry
+from test_mask import test_suite_all_Mask
+from test_openCL import test_suite_all_OpenCL
+from test_export import test_suite_all_Export
+from test_saxs import test_suite_all_Saxs
+from test_integrate import test_suite_all_Integrate1d
+from test_bilinear import test_suite_all_bilinear
+from test_distortion import test_suite_all_distortion
+from test_flat import test_suite_all_Flat
+from test_utils import test_suite_all_Utils
+from test_polarization import test_suite_all_polarization
+from test_detector import test_suite_all_detectors
+from test_convolution import test_suite_all_convolution
+from test_sparse import test_suite_all_sparse
+from test_csr import test_suite_all_OpenCL_CSR
+from test_blob_detection import test_suite_all_blob_detection
+from test_marchingsquares import test_suite_all_marchingsquares
 from test_io import test_suite_all_io
+from test_calibrant import test_suite_all_calibrant
 
 def test_suite_all():
     testSuite = unittest.TestSuite()
@@ -85,6 +86,8 @@ def test_suite_all():
     testSuite.addTest(test_suite_all_blob_detection())
     testSuite.addTest(test_suite_all_marchingsquares())
     testSuite.addTest(test_suite_all_io())
+    testSuite.addTest(test_suite_all_calibrant())
+    testSuite.addTest(test_suite_all_polarization())
     return testSuite
 
 if __name__ == '__main__':

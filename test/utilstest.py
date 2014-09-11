@@ -29,17 +29,21 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "2014-03-25"
-import os, imp, sys, subprocess, threading
+__date__ = "2014-08-08"
+
+import os
+import imp
+import sys
+import subprocess
+import threading
 import distutils.util
 import logging
 import urllib2
-import bz2
-import gzip
 import numpy
 import shutil
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("pyFAI.utilstest")
+
 
 def copy(infile, outfile):
     "link or copy file according to the OS"
@@ -48,14 +52,15 @@ def copy(infile, outfile):
     else:
         shutil.copy(infile, outfile)
 
+
 class UtilsTest(object):
     """
     Static class providing useful stuff for preparing tests.
     """
     options = None
-    timeout = 60        #timeout in seconds for downloading images
+    timeout = 60        # timeout in seconds for downloading images
     url_base = "http://forge.epn-campus.eu/attachments/download"
-    #Nota https crashes with error 501 under windows.
+    # Nota https crashes with error 501 under windows.
 #    url_base = "https://forge.epn-campus.eu/attachments/download"
     test_home = os.path.dirname(os.path.abspath(__file__))
     sem = threading.Semaphore()
@@ -67,12 +72,12 @@ class UtilsTest(object):
         os.makedirs(image_home)
     platform = distutils.util.get_platform()
     architecture = "lib.%s-%i.%i" % (platform,
-                                    sys.version_info[0], sys.version_info[1])
+                                     sys.version_info[0], sys.version_info[1])
     if os.environ.get("BUILDPYTHONPATH"):
         pyFAI_home = os.path.abspath(os.environ.get("BUILDPYTHONPATH", ""))
     else:
         pyFAI_home = os.path.join(os.path.dirname(test_home),
-                                                    "build", architecture)
+                                  "build", architecture)
     logger.info("pyFAI Home is: " + pyFAI_home)
     if "pyFAI" in sys.modules:
         logger.info("pyFAI module was already loaded from  %s" % sys.modules["pyFAI"])
@@ -87,13 +92,20 @@ class UtilsTest(object):
             if not os.path.isdir(pyFAI_home):
                 logger.warning("Building pyFAI to %s" % pyFAI_home)
                 p = subprocess.Popen([sys.executable, "setup.py", "build"],
-                                 shell=False, cwd=os.path.dirname(test_home))
+                                     shell=False, cwd=os.path.dirname(test_home))
                 logger.info("subprocess ended with rc= %s" % p.wait())
                 recompiled = True
     opencl = os.path.join(os.path.dirname(test_home), "openCL")
     for clf in os.listdir(opencl):
         if clf.endswith(".cl") and clf not in os.listdir(os.path.join(pyFAI_home, "pyFAI")):
             copy(os.path.join(opencl, clf), os.path.join(pyFAI_home, "pyFAI", clf))
+    calib_dir = os.path.join(os.path.dirname(test_home), "calibration")
+    dest = os.path.join(pyFAI_home, "pyFAI", "calibration")
+    if not os.path.exists(dest):
+        os.makedirs(dest)
+    for clf in os.listdir(calib_dir):
+        if clf.endswith(".D") and clf not in os.listdir(dest):
+            copy(os.path.join(calib_dir, clf), os.path.join(dest, clf))
 
     logger.info("Loading pyFAI")
     try:
@@ -103,7 +115,6 @@ class UtilsTest(object):
         if "-r" not in sys.argv:
             logger.warning("Remove build and start from scratch %s" % error)
             sys.argv.append("-r")
-
 
     @classmethod
     def deep_reload(cls):
@@ -140,12 +151,20 @@ class UtilsTest(object):
                     if remove_first:
                         recursive_delete(cls.pyFAI_home)
                     p = subprocess.Popen([sys.executable, "setup.py", "build"],
-                                     shell=False, cwd=os.path.dirname(cls.test_home))
+                                         shell=False, cwd=os.path.dirname(cls.test_home))
                     logger.info("subprocess ended with rc= %s" % p.wait())
                     opencl = os.path.join(os.path.dirname(cls.test_home), "openCL")
                     for clf in os.listdir(opencl):
                         if clf.endswith(".cl") and clf not in os.listdir(os.path.join(cls.pyFAI_home, "pyFAI")):
                             copy(os.path.join(opencl, clf), os.path.join(cls.pyFAI_home, "pyFAI", clf))
+                    calib_dir = os.path.join(os.path.dirname(cls.test_home), "calibration")
+                    dest = os.path.join(cls.pyFAI_home, "pyFAI", "calibration")
+                    if not os.path.exists(dest):
+                        os.makedirs(dest)
+                    for clf in os.listdir(calib_dir):
+                        if clf.endswith(".D") and clf not in os.listdir(dest):
+                            copy(os.path.join(calib_dir, clf), os.path.join(dest, clf))
+
                     cls.pyFAI = cls.deep_reload()
                     cls.recompiled = True
 
@@ -162,8 +181,6 @@ class UtilsTest(object):
                 please set both environment variable http_proxy and https_proxy.\
                 This even works under windows ! \n \
                 Otherwise please try to download the images manually from \n %s/%s and put it in in test/testimages." % (cls.url_base, imagename))
-
-
 
     @classmethod
     def getimage(cls, imagename):
@@ -232,14 +249,14 @@ class UtilsTest(object):
 
             parser = ArgumentParser(usage="Tests for PyFAI")
             parser.add_argument("-d", "--debug", dest="debug", help="run in debugging mode",
-                              default=False, action="store_true")
+                                default=False, action="store_true")
             parser.add_argument("-i", "--info", dest="info", help="run in more verbose mode ",
-                              default=False, action="store_true")
+                                default=False, action="store_true")
             parser.add_argument("-f", "--force", dest="force", help="force the build of the library",
-                              default=False, action="store_true")
+                                default=False, action="store_true")
             parser.add_argument("-r", "--really-force", dest="remove",
-                              help="remove existing build and force the build of the library",
-                              default=False, action="store_true")
+                                help="remove existing build and force the build of the library",
+                                default=False, action="store_true")
             parser.add_argument(dest="args", type=str, nargs='*')
             cls.options = parser.parse_args()
         return cls.options
@@ -299,6 +316,7 @@ def Rwp(obt, ref, comment="Rwp"):
     non_null = abs(big_mean) > 1e-10
     return numpy.sqrt(((big_delta[non_null]) ** 2 / ((big_mean[non_null]) ** 2)).sum())
 
+
 def recursive_delete(strDirname):
     """
     Delete everything reachable from the directory named in "top",
@@ -316,4 +334,3 @@ def recursive_delete(strDirname):
     os.rmdir(strDirname)
 
 getLogger = UtilsTest.get_logger
-

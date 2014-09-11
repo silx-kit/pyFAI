@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/02/2014"
+__date__ = "08/09/2014"
 __status__ = "production"
 
 import os
@@ -171,12 +171,17 @@ class Calibrant(object):
             logger.error("Cannot calculate 2theta angle without knowing wavelength")
             return
         self._2th = []
-        for ds in self.dSpacing:
+        for ds in self._dSpacing:
             try:
                 tth = 2.0 * asin(5.0e9 * self._wavelength / ds)
             except ValueError:
                 tth = None
-            self._2th.append(tth)
+                if self._2th:
+                    self._dSpacing = self._dSpacing[:len(self._2th)]
+                    #avoid turning around...
+                    break
+            else:
+                self._2th.append(tth)
 
     def _calc_dSpacing(self):
         if self._wavelength is None:
@@ -238,10 +243,57 @@ class Calibrant(object):
         return res
 
 
-CALIBRANT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "calibration")
-if os.path.isdir(CALIBRANT_DIR):
-    ALL_CALIBRANTS = dict([(os.path.splitext(i)[0], Calibrant(os.path.join(CALIBRANT_DIR, i)))
-                           for i in os.listdir(CALIBRANT_DIR)
-                           if i.endswith(".D")])
-else:
-    ALL_CALIBRANTS = {}
+class calibrant_factory(object):
+    """
+    Behaves like a dict but is actually a factory:
+    Each time one retrieves an object it is a new geniune new calibrant (unmodified)  
+    """
+    def __init__(self, basedir=None):
+        """
+        Constructor
+        
+        @param basedir: directory name where to search for the calibrants 
+        """
+        if basedir is None:
+            basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "calibration")
+        self.directory = basedir
+        if not os.path.isdir(self.directory):
+            logger.warning("No calibrant directory: %s" % self.directory)
+            self.all = {}
+        else:
+            self.all = dict([(os.path.splitext(i)[0], os.path.join(self.directory, i))
+                             for i in os.listdir(self.directory)
+                             if i.endswith(".D")])
+
+    def __getitem__(self, what):
+        return Calibrant(self.all[what])
+
+    def get(self, what, notfound=None):
+        if what in self.all:
+            return Calibrant(self.all[what])
+        else:
+            return notfound
+
+    def __contains__(self, k):
+        return k in self.all
+
+    def __repr__(self):
+        return "Calibrant factory: %s" % (", ".join(self.all.keys()))
+
+    def __len__(self):
+        return len(self.all)
+
+    def keys(self):
+        return self.all.keys()
+
+    def values(self):
+        return map(Calibrant, self.all.values())
+
+    def items(self):
+        return [(i, calibran(j)) for i, j in self.all.items()]
+
+    __call__ = __getitem__
+
+    has_key = __contains__
+
+ALL_CALIBRANTS = calibrant_factory()
