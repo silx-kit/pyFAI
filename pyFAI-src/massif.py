@@ -32,7 +32,7 @@ __status__ = "production"
 import sys, os, threading
 from math import ceil, sqrt
 import logging
-logger = logging.getLogger("pyFAI.peakPicker")
+logger = logging.getLogger("pyFAI.massif")
 import numpy
 import fabio
 from scipy.ndimage import label

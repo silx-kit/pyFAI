@@ -28,24 +28,64 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/05/2014"
+__date__ = "03/07/2014"
 __status__ = "production"
 
 import os, sys, threading, logging, gc, types
 import operator
 from math import sqrt
 import numpy
-from .gui_utils import pylab, update_fig, maximize_fig
+from .gui_utils import pylab, update_fig, maximize_fig, QtGui, backend
+from . import gui_utils
 import fabio
 from .utils import deprecated, percentile
 from .reconstruct import reconstruct
 from .calibrant import Calibrant, ALL_CALIBRANTS
 from .blob_detection import BlobDetection
 from .massif import Massif
-logger = logging.getLogger("pyFAI.peakPicker")
+logger = logging.getLogger("pyFAI.peak_picker")
 if os.name != "nt":
     WindowsError = RuntimeError
 
+################################################################################
+# Toolbar widget
+################################################################################
+#class PeakPickerToolbar(backend.NavigationToolbar2QT):
+#    def __init__(self, canvas, parent, coordinates=True):
+#        backend.NavigationToolbar2QT.__init__(self, canvas, parent, False)
+#        self.append_mode = None
+#
+#
+##    def _init_toolbar(self):
+##        backend.NavigationToolbar2QT._init_toolbar(self)
+##        self.addSeparator()
+##        a = self.addAction('+pts', self.on_plus_pts_clicked)
+##        a.setToolTip('Add more points to group')
+##        a = self.addAction('-pts', self.on_minus_pts_clicked)
+##        a.setToolTip('Remove points from group')
+#
+#    def pan(self):
+#        self.append_mode = None
+#        backend.NavigationToolbar2QT.pan(self)
+#
+#    def zoom(self):
+#        self.append_mode = None
+#        backend.NavigationToolbar2QT.zoom(self)
+#
+#
+#    def on_plus_pts_clicked(self, *args):
+#        """
+#        callback function
+#        """
+#        self.append_mode = True
+#        print(self.append_mode)
+#
+#    def on_minus_pts_clicked(self, *args):
+#        """
+#        callback function
+#        """
+#        self.append_mode = False
+#        print(self.append_mode)
 
 
 ################################################################################
@@ -85,6 +125,11 @@ class PeakPicker(object):
         self.ax = None
         self.ct = None
         self.msp = None
+        self.append_mode = None
+        self.spinbox = None
+        self.refine_btn = None
+        self.ref_action = None
+        self.sb_action = None
         self.reconstruct = reconst
         self.mask = mask
         self.massif = None  #used for massif detection
@@ -94,6 +139,8 @@ class PeakPicker(object):
         self.mpl_connectId = None
         self.defaultNbPoints = 100
         self._init_thread = None
+        self.point_filename = None
+        self.callback = None
         if method in self.VALID_METHODS:
             self.method = method
         else:
@@ -182,10 +229,11 @@ class PeakPicker(object):
             if len(self.ax.lines) > 0:
                 self.ax.lines = []
             #Redraw the image
-            self.fig.show()
+            if not gui_utils.main_loop:
+                self.fig.show()
             update_fig(self.fig)
 
-    def gui(self, log=False, maximize=False):
+    def gui(self, log=False, maximize=False, pick=True):
         """
         @param log: show z in log scale
         """
@@ -195,7 +243,24 @@ class PeakPicker(object):
             self.ax = self.fig.add_subplot(111)
             self.ct = self.fig.add_subplot(111)
             self.msp = self.fig.add_subplot(111)
-            self.fig.show()
+            toolbar = self.fig.canvas.toolbar
+            toolbar.addSeparator()
+
+            a = toolbar.addAction('Opts', self.on_option_clicked)
+            a.setToolTip('open options window')
+            if pick:
+                label = QtGui.QLabel("Ring #", toolbar)
+                toolbar.addWidget(label)
+                self.spinbox = QtGui.QSpinBox(toolbar)
+                self.spinbox.setMinimum(0)
+                self.sb_action = toolbar.addWidget(self.spinbox)
+                a = toolbar.addAction('Refine', self.on_refine_clicked)
+                a.setToolTip('switch to refinement mode')
+                self.ref_action = a
+                self.mpl_connectId = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
+
+
+
         if log:
             showData = numpy.log1p(self.data - self.data.min())
             self.ax.set_title('Log colour scale (skipping lowest/highest per mille)')
@@ -209,11 +274,12 @@ class PeakPicker(object):
         im = self.ax.imshow(showData, vmin=showMin, vmax=showMax, origin="lower", interpolation="nearest")
 
         self.ax.autoscale_view(False, False, False)
-        self.fig.colorbar(im)
+        self.fig.colorbar(im)#, self.ax)
         update_fig(self.fig)
         if maximize:
             maximize_fig(self.fig)
-        self.mpl_connectId = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
+        if not gui_utils.main_loop:
+            self.fig.show()
 
     def load(self, filename):
         """
@@ -257,10 +323,11 @@ class PeakPicker(object):
         with self._sem:
             x0 = event.xdata
             y0 = event.ydata
+            ring = self.spinbox.value()
             if event.button == 3:  # right click: add points (1 or many) to new or existing group
                 logger.debug("Button: %i, Key modifier: %s" % (event.button, event.key))
                 if event.key == 'shift':  # if 'shift' pressed add nearest maximum to the current group
-                    points = self.points.pop() or []
+                    points = self.points.pop(ring) or []
                     # no, keep annotation! if len(self.ax.texts) > 0: self.ax.texts.pop()
                     if len(self.ax.lines) > 0:
                         self.ax.lines.pop()
@@ -286,7 +353,7 @@ class PeakPicker(object):
                     else:
                         logger.warning("No peak found !!!")
                 elif event.key == 'm':  # if 'm' pressed add new group to current  group ...  ?
-                    points = self.points.pop() or []
+                    points = self.points.pop(ring) or []
                     # no, keep annotation! if len(self.ax.texts) > 0: self.ax.texts.pop()
                     if len(self.ax.lines) > 0:
                         self.ax.lines.pop()
@@ -307,14 +374,14 @@ class PeakPicker(object):
                         logger.info("Created group #%i with %i points" % (len(self.points), len(points)))
                 if not points:
                     return
-                self.points.append(points)
+                self.points.append(points, ring=ring)
                 npl = numpy.array(points)
                 self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
                 update_fig(self.fig)
                 sys.stdout.flush()
             elif event.button == 2:  # center click: remove 1 or all points from current group
                 logger.debug("Button: %i, Key modifier: %s" % (event.button, event.key))
-                poped_points = self.points.pop() or []
+                poped_points = self.points.pop(ring) or []
                 # in case not the full group is removed, would like to keep annotation
                 # _except_ if the annotation is close to the removed point... too complicated!
                 if len(self.ax.texts) > 0:
@@ -331,19 +398,17 @@ class PeakPicker(object):
                     # annotate (new?) 1st point and add remaining points back
                     pt = (poped_points[0][0], poped_points[0][1])
                     annontate(pt, (pt[0] + 10, pt[1] + 10))
-                    self.points.append(poped_points)
+                    self.points.append(poped_points, ring=ring)
                     npl = numpy.array(poped_points)
                     self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
                 elif len(poped_points) > 0:  # not '1' pressed or only 1 point left: remove complete group
                     logger.info("Removing group #%i containing %i points" % (len(self.points), len(poped_points)))
                 else:
                     logger.info("No groups to remove")
-
-#                self.fig.show()
                 update_fig(self.fig)
                 sys.stdout.flush()
 
-    def finish(self, filename=None,):
+    def finish(self, filename=None, callback=None):
         """
         Ask the ring number for the given points
 
@@ -356,17 +421,23 @@ class PeakPicker(object):
                                       " 4) Right-click + m:     find more points for current group",
                                       " 5) Center-click:     erase current group",
                                       " 6) Center-click + 1: erase closest point from current group"]))
+        if not callback:
+            raw_input("Please press enter when you are happy with your selection" + os.linesep)
+            # need to disconnect 'button_press_event':
+            self.fig.canvas.mpl_disconnect(self.mpl_connectId)
+            self.mpl_connectId = None
+            print("Now fill in the ring number. Ring number starts at 0, like point-groups.")
+            self.points.readRingNrFromKeyboard()  # readAngleFromKeyboard()
+            if filename is not None:
+                self.points.save(filename)
+            return self.points.getWeightedList(self.data)
+        else:
+            self.point_filename = filename
+            self.callback = callback
+            gui_utils.main_loop = True
+            #MAIN LOOP
+            pylab.show()
 
-        raw_input("Please press enter when you are happy with your selection" + os.linesep)
-        # need to disconnect 'button_press_event':
-        self.fig.canvas.mpl_disconnect(self.mpl_connectId)
-        self.mpl_connectId = None
-        print("Now fill in the ring number. Ring number starts at 0, like point-groups.")
-        self.points.readRingNrFromKeyboard()  # readAngleFromKeyboard()
-        if filename is not None:
-            self.points.save(filename)
-#        self.lstPoints = self.points.getList()
-        return self.points.getWeightedList(self.data)
 
 
     def contour(self, data):
@@ -432,6 +503,55 @@ class PeakPicker(object):
             self.fig.clear()
             self.fig = None
             gc.collect()
+
+
+#    def format_coord(self, x, y):
+#        """
+#        Print coordinated in matplotlib toolbar
+#        """
+#        col = int(x + 0.5)
+#        row = int(y + 0.5)
+#        if col >= 0 and col < self.shape[1] and row >= 0 and row < self.shape[0]:
+#            z = self.data[row, col]
+#            return 'x=%.2f \t y=%.2f \t I=%1.4f' % (x, y, z)
+#        else:
+#            return 'x=%.2f \t y=%.2f \t I=None' % (x, y)
+
+    def on_plus_pts_clicked(self, *args):
+        """
+        callback function
+        """
+        self.append_mode = True
+        print(self.append_mode)
+
+    def on_minus_pts_clicked(self, *args):
+        """
+        callback function
+        """
+        self.append_mode = False
+        print(self.append_mode)
+
+    def on_option_clicked(self, *args):
+        """
+        callback function
+        """
+        print("Option!")
+
+    def on_refine_clicked(self, *args):
+        """
+        callback function
+        """
+        print("refine, now!")
+        self.sb_action.setDisabled(True)
+        self.ref_action.setDisabled(True)
+        self.spinbox.setEnabled(False)
+        self.mpl_connectId = None
+        self.fig.canvas.mpl_disconnect(self.mpl_connectId)
+        pylab.ion()
+        if self.point_filename:
+            self.points.save(self.point_filename)
+        if self.callback:
+            self.callback(self.points.getWeightedList(self.data))
 
 ################################################################################
 # ControlPoints
@@ -533,10 +653,11 @@ class ControlPoints(object):
     def pop(self, idx=None):
         """
         Remove the set of points at given index (by default the last)
-        @param idx: position of the point to remove
+
+        @param idx: number of the ring to remove
         """
         out = None
-        if idx is None:
+        if (idx is None) or (idx not in self._ring):
             with self._sem:
                 if self._angles:
                     self._angles.pop()
@@ -544,10 +665,10 @@ class ControlPoints(object):
                     out = self._points.pop()
         else:
             with self._sem:
-                if idx <= len(self._angles):
-                    self._angles.pop(idx)
-                    self._ring.pop()
-                    out = self._points.pop(idx)
+                i = self._ring.index(idx)
+                self._angles.pop(i)
+                self._ring.pop(i)
+                out = self._points.pop(i)
         return out
 
     def save(self, filename):
@@ -572,7 +693,7 @@ class ControlPoints(object):
                 for point in points:
                     lstOut.append("point: x=%s y=%s" % (point[1], point[0]))
             with open(filename, "w") as f:
-                f.write(os.linesep.join(lstOut))
+                f.write("\n".join(lstOut))
 
     def load(self, filename):
         """

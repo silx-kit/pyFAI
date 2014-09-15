@@ -72,10 +72,10 @@
     :undoc-members:
     :show-inheritance:
 
-:mod:`peakPicker` Module
+:mod:`peak_picker` Module
 ------------------------
 
-.. automodule:: pyFAI.peakPicker
+.. automodule:: pyFAI.peak_picker
     :members:
     :undoc-members:
     :show-inheritance:

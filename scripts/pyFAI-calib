@@ -61,6 +61,6 @@ if __name__ == "__main__":
 #    c.read_wavelength()
     c.preprocess()
     c.gui_peakPicker()
-    c.refine()
-    c.postProcess()
+#    c.refine()
+#    c.postProcess()
     raw_input("Press enter to quit")

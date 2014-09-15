@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/12/2011"
+__date__ = "04/09/2014"
 __status__ = "development"
 
 import os
@@ -283,8 +283,8 @@ class GeometryRefinement(AzimuthalIntegrator):
                               bounds=bounds,
                               acc=1.0e-12,
                               iprint=(logger.getEffectiveLevel() <= logging.INFO))
-        oldDeltaSq = self.chi2()
-        newDeltaSq = self.chi2(newParam)
+        oldDeltaSq = self.chi2() / self.data.shape[0]
+        newDeltaSq = self.chi2(newParam) / self.data.shape[0]
         logger.info("Constrained Least square %s --> %s",
                     oldDeltaSq, newDeltaSq)
         if newDeltaSq < oldDeltaSq:
@@ -341,8 +341,8 @@ class GeometryRefinement(AzimuthalIntegrator):
                                  bounds=bounds,
                                  acc=1.0e-12,
                                  iprint=(logger.getEffectiveLevel() <= logging.INFO))
-        oldDeltaSq = self.chi2_wavelength()
-        newDeltaSq = self.chi2_wavelength(newParam)
+        oldDeltaSq = self.chi2_wavelength() / self.data.shape[0]
+        newDeltaSq = self.chi2_wavelength(newParam) / self.data.shape[0]
         logger.info("Constrained Least square %s --> %s",
                     oldDeltaSq, newDeltaSq)
         if newDeltaSq < oldDeltaSq:
@@ -367,8 +367,8 @@ class GeometryRefinement(AzimuthalIntegrator):
                               self.data[:, 2]),
                         maxiter=maxiter,
                         xtol=1.0e-12)
-        oldDeltaSq = self.chi2(tuple(self.param))
-        newDeltaSq = self.chi2(tuple(newParam))
+        oldDeltaSq = self.chi2(tuple(self.param)) / self.data.shape[0]
+        newDeltaSq = self.chi2(tuple(newParam)) / self.data.shape[0]
         logger.info("Simplex %s --> %s", oldDeltaSq, newDeltaSq)
         if newDeltaSq < oldDeltaSq:
             i = abs(self.param - newParam).argmax()
@@ -403,8 +403,8 @@ class GeometryRefinement(AzimuthalIntegrator):
                                self._rot3_max],
                         maxiter=maxiter)
         newParam = result[0]
-        oldDeltaSq = self.chi2()
-        newDeltaSq = self.chi2(newParam)
+        oldDeltaSq = self.chi2() / self.data.shape[0]
+        newDeltaSq = self.chi2(newParam) / self.data.shape[0]
         logger.info("Anneal  %s --> %s", oldDeltaSq, newDeltaSq)
         if newDeltaSq < oldDeltaSq:
             i = abs(self.param - newParam).argmax()
@@ -464,7 +464,7 @@ class GeometryRefinement(AzimuthalIntegrator):
                     newParam[4] = float(word[1])
                 if word[0] == "rot3":
                     newParam[5] = float(word[1])
-        print "Roca", self.chi2(), "--> ", self.chi2(newParam)
+        print("Roca %s --> %s" % (self.chi2() / self.data.shape[0], self.chi2(newParam) / self.data.shape[0]))
         if self.chi2(tuple(newParam)) < self.chi2(tuple(self.param)):
             self.param = newParam
             self.dist, self.poni1, self.poni2, \

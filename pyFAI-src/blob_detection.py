@@ -52,7 +52,7 @@ else:
 
 from .bilinear import Bilinear
 
-from math import sqrt
+from math import sqrt, cos, sin, pow
 
 from .utils import binning, timeit
 
@@ -202,6 +202,7 @@ class BlobDetection(object):
         self.ref_kp = []
         self.dtype = numpy.dtype([('x', numpy.float32), ('y', numpy.float32), ('sigma', numpy.float32), ('I', numpy.float32)])
         self.bilinear = None
+        self.already_blurred = []
 
     def __repr__(self):
         lststr = ["Blob detection, shape=%s, processed=%s." % (self.raw.shape, self.detection_started)]
@@ -298,9 +299,13 @@ class BlobDetection(object):
         previous = self.data
         dog_shape = (len(self.sigmas) - 1,) + self.data.shape
         self.dogs = numpy.zeros(dog_shape, dtype=numpy.float32)
-
+                
         idx = 0
+        i = 0
         for sigma_abs, sigma_rel in self.sigmas:
+#             if self.already_blurred != [] and i < 3:
+#                 sigma_rel = 0
+#                 if i > 0 : previous = self.already_blurred[i-1]
             if  sigma_rel == 0:
                 self.blurs.append(previous)
             else:
@@ -309,17 +314,19 @@ class BlobDetection(object):
                 self.dogs[idx] = previous - new_blur
                 previous = new_blur
                 idx += 1
+            i += 1
 
 
         if self.dogs[0].shape == self.raw.shape:
             self.dogs_init = self.dogs
-
+        
         if _blob:
             valid_points = _blob.local_max(self.dogs, self.cur_mask, n_5)
         else:
             valid_points = local_max(self.dogs, self.cur_mask, n_5)
         kps, kpy, kpx = numpy.where(valid_points)
         self.raw_kp.append((kps, kpy, kpx))
+#        self.raw_kp.append((kps, (kpy+0.5)*self.curr_reduction-0.5, (kpx+0.5)*self.curr_reduction-0.5))
 
         print ('Before refinement : %i keypoints' % kpx.size)
         if refine:
@@ -336,11 +343,11 @@ class BlobDetection(object):
                 self.ref_kp.append((kps, kpy, kpx))
             print ('After refinement : %i keypoints' % l)
         else:
-            print kpx
-            print kpy
-            print kps
+#             print kpx
+#             print kpy
+#             print kps
             peak_val = self.dogs[kps, kpy, kpx]
-            print peak_val
+#             print peak_val
             l = kpx.size
             valid = numpy.ones(l, bool)
 
@@ -351,7 +358,7 @@ class BlobDetection(object):
         if l != 0:
             keypoints[:].x = (kpx[valid] + 0.5) * self.curr_reduction - 0.5 # Place ourselves at the center of the pixel, and back
             keypoints[:].y = (kpy[valid] + 0.5) * self.curr_reduction - 0.5 # Place ourselves at the center of the pixel, and back
-            sigmas = self.init_sigma * (self.dest_sigma / self.init_sigma) ** ((kps[valid] + 0.5) / (self.scale_per_octave))
+            sigmas = self.init_sigma * (self.dest_sigma / self.init_sigma) ** ((kps[valid]) / (self.scale_per_octave))
             keypoints[:].sigma = (self.curr_reduction * sigmas)
             keypoints[:].I = peak_val[valid]
 
@@ -360,6 +367,8 @@ class BlobDetection(object):
             #shrink data so that they can be treated by next octave
             logger.debug("In shrink")
             last = self.blurs[self.scale_per_octave]
+#             last1 = self.blurs[self.scale_per_octave+1]
+#             last2 = self.blurs[self.scale_per_octave+2]
             ty, tx = last.shape
             if ty % 2 != 0 or tx % 2 != 0:
                 new_tx = 2 * ((tx + 1) // 2)
@@ -373,6 +382,7 @@ class BlobDetection(object):
                     self.cur_mask = new_msk
 #            print last.shape, tx, ty
             self.data = binning(last, 2) / 4.0
+#             self.already_blurred = [binning(last1,2)/4.0 , binning(last2,2)/4.0]
             self.curr_reduction *= 2.0
             self.octave += 1
             self.blurs = []
@@ -390,6 +400,7 @@ class BlobDetection(object):
             new_keypoints[:old_size] = self.keypoints
             new_keypoints[old_size:] = keypoints
             self.keypoints = new_keypoints
+
 
     def refine_Hessian(self, kpx, kpy, kps):
         """
@@ -545,6 +556,9 @@ class BlobDetection(object):
         """
         import pylab
         i = 0
+        j = 0
+        vals = []
+        vects = []
         kpx = self.keypoints.x
         kpy = self.keypoints.y
         sigma = self.keypoints.sigma
@@ -580,20 +594,113 @@ class BlobDetection(object):
                 dxy = (Hxy.ravel() * patch.ravel()).sum()
                 H = numpy.array([[d2y, dxy], [dxy, d2x]])
                 val, vect = numpy.linalg.eig(H)
-                print 'new point'
-                print x, y
-                print val
-                print vect
-                e = numpy.abs(val[0] - val[1]) / numpy.abs(val[0] + val[1])
-                print e
-                pylab.plot(x, y, 'og')
 
-#                 if val[0] < val[1]:
+#                 print 'new point'
+#                 print x, y
+#                 print val
+#                 print vect
+#                 print numpy.dot(vect[0],vect[1])
+                e = numpy.abs(val[0] - val[1]) / numpy.abs(val[0] + val[1])
+                j += 1
+#                 print j
+#                 print e
+                if numpy.abs(val[1]) < numpy.abs(val[0]): # reorganisation des valeurs propres et vecteurs propres
+                    val[0],val[1] = val[1],val[0]
+                    vect = vect[-1::-1,:]
+
+                    
                 pylab.annotate("", xy=(x + vect[0][0] * val[0], y + vect[0][1] * val[0]), xytext=(x, y),
-                                   arrowprops=dict(facecolor='red', shrink=0.05),)
-#                 else:
+                                       arrowprops=dict(facecolor='red', shrink=0.05),)
+
                 pylab.annotate("", xy=(x + vect[1][0] * val[1], y + vect[1][1] * val[1]), xytext=(x, y),
-                    arrowprops=dict(facecolor='red', shrink=0.05),)
+                                       arrowprops=dict(facecolor='red', shrink=0.05),)
+                pylab.plot(x, y, 'og')
+                vals.append(val)
+                vects.append(vect)
+        return vals, vects
+
+    def refinement(self):
+        from numpy import sqrt, cos, sin, power, arctan2, abs,pi
+        val,vect = self.direction()
+        
+        L = 0.114
+#         L = 1.0
+         
+        poni1 = self.raw.shape[0]/2.0
+        poni2 = self.raw.shape[1]/2.0
+#         poni1 = 0.0599/100.0 * power(10,6)
+#         poni2 = -0.07623/100.0 * power(10,6)
+
+        d1 = self.keypoints.y - poni1
+        d2 = self.keypoints.x - poni2
+        rot1 = rot2 = rot3 = 0
+#         rot1 = -0.22466
+#         rot2 = -0.07476
+#         rot3 = 0.00000005
+
+        valy,valx = numpy.transpose(vect)[0]
+        phi_exp = arctan2(valy,valx) % pi
+#         print "phi exp"
+#         print phi_exp * 180/ pi
+
+        
+        cosrot1 = cos(rot1)
+        cosrot2 = cos(rot2)
+        cosrot3 = cos(rot3)
+        sinrot1 = sin(rot1)
+        sinrot2 = sin(rot2)
+        sinrot3 = sin(rot3)
+        
+        L = -L
+        dy = ((L*cosrot1*cosrot2 + d2*cosrot2*sinrot1 - d1*sinrot2)*(2*cosrot2*cosrot3*(d1*cosrot2*cosrot3 + \
+                        d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + L*(cosrot1*cosrot3*sinrot2 + \
+                        sinrot1*sinrot3)) + 2*cosrot2*sinrot3*(d1*cosrot2*sinrot3 + \
+                        L*(-(cosrot3*sinrot1) + cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + \
+                        sinrot1*sinrot2*sinrot3))))/(2.*sqrt( (d1*cosrot2*cosrot3 + d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + \
+                        L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3) )**2 +  (d1*cosrot2*sinrot3 + \
+                        L*(-(cosrot3*sinrot1) + cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + \
+                        sinrot1*sinrot2*sinrot3) )**2)*( (L*cosrot1*cosrot2 + \
+                        d2*cosrot2*sinrot1 - d1*sinrot2 )**2 +  (d1*cosrot2*cosrot3 + \
+                        d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3) )**2 + \
+                         (d1*cosrot2*sinrot3 + L*(-(cosrot3*sinrot1) + cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + \
+                        sinrot1*sinrot2*sinrot3) )**2))+ (sinrot2*sqrt( (d1*cosrot2*cosrot3 + \
+                        d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3) )**2 +  \
+                         (d1*cosrot2*sinrot3 + L*(-(cosrot3*sinrot1) + cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + \
+                        sinrot1*sinrot2*sinrot3) )**2))/( (L*cosrot1*cosrot2 + d2*cosrot2*sinrot1 - d1*sinrot2 )**2 + \
+                         (d1*cosrot2*cosrot3 + d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + \
+                        L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3) )**2 +  (d1*cosrot2*sinrot3 + L*(-(cosrot3*sinrot1) +  \
+                        cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + sinrot1*sinrot2*sinrot3) )**2)
+                        
+        dx = ((L*cosrot1*cosrot2 + d2*cosrot2*sinrot1 - d1*sinrot2)*(2*(cosrot3*sinrot1*sinrot2 - \
+                        cosrot1*sinrot3)* (d1*cosrot2*cosrot3 + d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + \
+                        L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3)) + 2*(cosrot1*cosrot3 + \
+                        sinrot1*sinrot2*sinrot3)*(d1*cosrot2*sinrot3 + L*(-(cosrot3*sinrot1) + cosrot1*sinrot2*sinrot3) + \
+                        d2*(cosrot1*cosrot3 + sinrot1*sinrot2*sinrot3))))/(2.*sqrt( (d1*cosrot2*cosrot3 + d2*(cosrot3*sinrot1*sinrot2 - \
+                        cosrot1*sinrot3) + L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3) )**2 +  (d1*cosrot2*sinrot3 + \
+                        L*(-(cosrot3*sinrot1) + cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + \
+                        sinrot1*sinrot2*sinrot3) )**2)*( (L*cosrot1*cosrot2 + d2*cosrot2*sinrot1 - d1*sinrot2 )**2 + \
+                         (d1*cosrot2*cosrot3 + d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + \
+                        L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3) )**2 +  (d1*cosrot2*sinrot3 + \
+                        L*(-(cosrot3*sinrot1) + cosrot1*sinrot2*sinrot3) + \
+                        d2*(cosrot1*cosrot3 + sinrot1*sinrot2*sinrot3) )**2)) - (cosrot2*sinrot1*sqrt( (d1*cosrot2*cosrot3 + \
+                        d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + \
+                        L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3) )**2 +  (d1*cosrot2*sinrot3 + L*(-(cosrot3*sinrot1) + \
+                        cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + sinrot1*sinrot2*sinrot3) )**2))/( (L*cosrot1*cosrot2 + \
+                        d2*cosrot2*sinrot1 - d1*sinrot2 )**2 +  (d1*cosrot2*cosrot3 + d2*(cosrot3*sinrot1*sinrot2 - \
+                        cosrot1*sinrot3) + L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3) )**2 +  (d1*cosrot2*sinrot3 + \
+                        L*(-(cosrot3*sinrot1) + cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + sinrot1*sinrot2*sinrot3) )**2)
+                        
+        
+        phi_th = arctan2(d1,d2)
+#         print "phi th"
+#         print phi_th_2
+        err = numpy.sum((phi_th - phi_exp)**2)/self.keypoints.x.size
+        print "err"
+        print err
+        
+        return val,vect
+
+
     @timeit
     def process(self, max_octave=None):
         """
@@ -692,6 +799,28 @@ class BlobDetection(object):
         ax.set_ylabel("Intensity")
         ax.set_title("Peak repartition")
         f.show()
+        
+    def show_neighboor(self):
+        import pylab
+        nghx = []
+        nghy = []
+        
+        for i in range(self.keypoints.x.size):
+            y,x = self.nearest_peak((self.keypoints.y[i],self.keypoints.x[i]))
+            nghx.append(x)
+            nghy.append(y)
+            
+        nghx = numpy.asarray(nghx)
+        nghy = numpy.asarray(nghy)
+        
+        pylab.figure()
+        pylab.imshow(self.raw, interpolation='nearest')
+        pylab.plot(self.keypoints.x,self.keypoints.y,'og')
+        
+        for i in range(self.keypoints.x.size):
+            pylab.annotate("", xy=(nghx[i], nghy[i]), 
+                           xytext=(self.keypoints.x[i],self.keypoints.y[i]),arrowprops=dict(facecolor='red', shrink=0.05),)
+        
 
 if __name__ == "__main__":
 

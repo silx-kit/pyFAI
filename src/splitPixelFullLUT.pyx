@@ -43,10 +43,10 @@ EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
 
 cdef struct Function:
-    double slope
-    double intersect
+    float slope
+    float intersect
 
-cdef double area4(double a0, double a1, double b0, double b1, double c0, double c1, double d0, double d1) nogil:
+cdef float area4(float a0, float a1, float b0, float b1, float c0, float c1, float d0, float d1) nogil:
     """
     Calculate the area of the ABCD quadrilataire  with corners:
     A(a0,a1)
@@ -58,7 +58,7 @@ cdef double area4(double a0, double a1, double b0, double b1, double c0, double 
     return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
     
 @cython.cdivision(True)
-cdef inline double getBinNr( double x0, double pos0_min, double delta) nogil:
+cdef inline float getBinNr( float x0, float pos0_min, float delta) nogil:
     """
     calculate the bin number for any point
     param x0: current position
@@ -67,7 +67,7 @@ cdef inline double getBinNr( double x0, double pos0_min, double delta) nogil:
     """
     return (x0 - pos0_min) / delta
 
-cdef double integrate( double A0, double B0, Function AB) nogil:
+cdef float integrate( float A0, float B0, Function AB) nogil:
     """
     integrates the line defined by AB, from A0 to B0
     param A0: first limit
@@ -99,7 +99,8 @@ class HistoLUT1dFullSplit(object):
                  mask=None,
                  mask_checksum=None,
                  allow_pos0_neg=False,
-                 unit="undefined"): 
+                 unit="undefined"): #,
+                                    #bad_pixel=False): 
         """
         @param pos: 3D or 4D array with the coordinates of each pixel point
         @param bins: number of output bins, 100 by default
@@ -119,6 +120,7 @@ class HistoLUT1dFullSplit(object):
         self.pos = pos
         self.size = pos.shape[0]
         self.bins = bins
+        #self.bad_pixel = bad_pixel
         self.lut_size = 0
         self.allow_pos0_neg = allow_pos0_neg
         if  mask is not None:
@@ -152,15 +154,16 @@ class HistoLUT1dFullSplit(object):
         cdef numpy.int8_t[:] cmask
         cdef numpy.ndarray[numpy.int32_t, ndim = 1] outMax = numpy.zeros(self.bins, dtype=numpy.int32)
         cdef numpy.ndarray[numpy.int32_t, ndim = 1] indptr = numpy.zeros(self.bins+1, dtype=numpy.int32)
-        cdef double pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0
-        cdef double max0, min0
-        cdef double areaPixel=0, delta=0
-        cdef double A0=0, B0=0, C0=0, D0=0, A1=0, B1=0, C1=0, D1=0
-        cdef double A_lim=0, B_lim=0, C_lim=0, D_lim=0
-        cdef double oneOverArea=0, partialArea=0, tmp=0
+        cdef float pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0
+        cdef float max0, min0
+        cdef float areaPixel=0, delta=0, areaPixel2=0
+        cdef float A0=0, B0=0, C0=0, D0=0, A1=0, B1=0, C1=0, D1=0
+        cdef float A_lim=0, B_lim=0, C_lim=0, D_lim=0
+        cdef float oneOverArea=0, partialArea=0, tmp=0
         cdef Function AB, BC, CD, DA
-        cdef int bins, i=0, idx=0, bin=0, bin0_max=0, bin0_min=0, pixel_bins=0, k=0, size=0
+        cdef int bins, i=0, idx=0, bin=0, bin0=0, bin0_max=0, bin0_min=0, bin1_min, pixel_bins=0, k=0, size=0
         cdef bint check_pos1=False, check_mask=False
+        #cdef int range1=0, range2=0
         
         bins = self.bins
         if self.pos0Range is not None and len(self.pos0Range) > 1:
@@ -179,7 +182,7 @@ class HistoLUT1dFullSplit(object):
             self.pos1_maxin = self.pos[:, :, 1].max()
         self.pos1_max = self.pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
 
-        self.delta = (self.pos0_max - self.pos0_min) / (< double > (bins))
+        self.delta = (self.pos0_max - self.pos0_min) / (< float > (bins))
         
         pos0_min = self.pos0_min
         pos0_max = self.pos0_max
@@ -192,23 +195,59 @@ class HistoLUT1dFullSplit(object):
         if check_mask:
             cmask = self.cmask
         
+        
+        
+        #if self.bad_pixel:
+            #range1 = self.bad_pixel
+            #range2 = self.bad_pixel + 1
+        #else:
+            #range1 = 0
+            #range2 = size
+            
+        #print "FLOAT 32"
+        #print "++++++++"
+        #print "Space bounds: %e  -  %e" % (pos0_min, pos0_max)
+        
         with nogil:
             for idx in range(size):
+            #for idx in range(range1,range2):
+                
+                #with gil:
+                    #print "Pixel %d" % idx
+                    #print "==========="
+                    #print "==========="
 
                 if (check_mask) and (cmask[idx]):
                     continue
 
-                A0 = getBinNr(< double > cpos[idx, 0, 0], pos0_min, delta)
-                A1 = < double > cpos[idx, 0, 1]
-                B0 = getBinNr(< double > cpos[idx, 1, 0], pos0_min, delta)
-                B1 = < double > cpos[idx, 1, 1]
-                C0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, delta)
-                C1 = < double > cpos[idx, 2, 1]
-                D0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, delta)
-                D1 = < double > cpos[idx, 3, 1]
+                A0 = getBinNr(< float > cpos[idx, 0, 0], pos0_min, delta)
+                A1 = < float > cpos[idx, 0, 1]
+                B0 = getBinNr(< float > cpos[idx, 1, 0], pos0_min, delta)
+                B1 = < float > cpos[idx, 1, 1]
+                C0 = getBinNr(< float > cpos[idx, 2, 0], pos0_min, delta)
+                C1 = < float > cpos[idx, 2, 1]
+                D0 = getBinNr(< float > cpos[idx, 3, 0], pos0_min, delta)
+                D1 = < float > cpos[idx, 3, 1]
+                
+                #with gil:
+                    #print "Pixel in 2-th"
+                    #print "============="
+                    #print "A: %e --> %e  %e" % (< double > cpos[idx, 0, 0], A0, A1)
+                    #print "B: %e --> %e  %e" % (< double > cpos[idx, 1, 0], B0, B1)
+                    #print "C: %e --> %e  %e" % (< double > cpos[idx, 2, 0], C0, C1)
+                    #print "D: %e --> %e  %e" % (< double > cpos[idx, 3, 0], D0, D1)
+                    #print " "
+
+                
 
                 min0 = min(A0, B0, C0, D0)
                 max0 = max(A0, B0, C0, D0)
+                
+                #with gil:
+                    #print "Min 2-th: %e" % min0
+                    #print "Max 2-th: %e" % max0
+                    #print " "
+                
                 if (max0<0) or (min0 >=bins):
                     continue
                 if check_pos1:
@@ -217,6 +256,10 @@ class HistoLUT1dFullSplit(object):
 
                 bin0_min = < int > floor(min0)
                 bin0_max = < int > floor(max0)
+                
+                #with gil:
+                    #print "Bin span: %d - %d" % (bin0_min, bin0_max)
+                    #print " "
 
                 for bin in range(bin0_min, bin0_max+1):
                     outMax[bin] += 1
@@ -230,23 +273,43 @@ class HistoLUT1dFullSplit(object):
         #just recycle the outMax array
         memset(&outMax[0], 0, bins * sizeof(numpy.int32_t))
         
+        #cdef float area_sum, corr, y, t  # kahan summation vars
+        
         with nogil:
             for idx in range(size):
 
                 if (check_mask) and (cmask[idx]):
                     continue
 
-                A0 = getBinNr(< double > cpos[idx, 0, 0], pos0_min, delta)
-                A1 = < double > cpos[idx, 0, 1]
-                B0 = getBinNr(< double > cpos[idx, 1, 0], pos0_min, delta)
-                B1 = < double > cpos[idx, 1, 1]
-                C0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, delta)
-                C1 = < double > cpos[idx, 2, 1]
-                D0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, delta)
-                D1 = < double > cpos[idx, 3, 1]
+                A0 = getBinNr(< float > cpos[idx, 0, 0], pos0_min, delta)
+                A1 = < float > cpos[idx, 0, 1]
+                B0 = getBinNr(< float > cpos[idx, 1, 0], pos0_min, delta)
+                B1 = < float > cpos[idx, 1, 1]
+                C0 = getBinNr(< float > cpos[idx, 2, 0], pos0_min, delta)
+                C1 = < float > cpos[idx, 2, 1]
+                D0 = getBinNr(< float > cpos[idx, 3, 0], pos0_min, delta)
+                D1 = < float > cpos[idx, 3, 1]
+                
+                #with gil:
+                    #print "...and again..."
+                    #print "Pixel in 2-th"
+                    #print "============="
+                    #print "A: %e --> %e  %e" % (< double > cpos[idx, 0, 0], A0, A1)
+                    #print "B: %e --> %e  %e" % (< double > cpos[idx, 1, 0], B0, B1)
+                    #print "C: %e --> %e  %e" % (< double > cpos[idx, 2, 0], C0, C1)
+                    #print "D: %e --> %e  %e" % (< double > cpos[idx, 3, 0], D0, D1)
+                    #print " "
+
+
 
                 min0 = min(A0, B0, C0, D0)
                 max0 = max(A0, B0, C0, D0)
+                
+                #with gil:
+                    #print "Min 2-th: %e" % min0
+                    #print "Max 2-th: %e" % max0
+                    #print " "
+                
                 if (max0<0) or (min0 >=bins):
                     continue
                 if check_pos1:
@@ -255,6 +318,14 @@ class HistoLUT1dFullSplit(object):
 
                 bin0_min = < int > floor(min0)
                 bin0_max = < int > floor(max0)
+                
+                # Naming it bin1_min because of the similarity with bin0_min
+                #bin1_min = < int > min(A1, B1, C1, D1)
+                
+                
+                #with gil:
+                    #print "Bin span: %d - %d" % (bin0_min, bin0_max)
+                    #print " "
 
                 if bin0_min == bin0_max:
                     #All pixel is within a single bin
@@ -263,6 +334,17 @@ class HistoLUT1dFullSplit(object):
                     data[indptr[bin0_min]+k] = 1.0
                     outMax[bin0_min] += 1 #k+1
                 else:  #else we have pixel spliting.
+                    # offseting the min bin of the pixel to be zero to avoid percision problems
+                    A0 -= bin0_min
+                    B0 -= bin0_min
+                    C0 -= bin0_min
+                    D0 -= bin0_min
+                    
+                    #A1 -= bin1_min
+                    #B1 -= bin1_min
+                    #C1 -= bin1_min
+                    #D1 -= bin1_min
+                    
                     AB.slope=(B1-A1)/(B0-A0)
                     AB.intersect= A1 - AB.slope*A0
                     BC.slope=(C1-B1)/(C0-B0)
@@ -271,26 +353,115 @@ class HistoLUT1dFullSplit(object):
                     CD.intersect= C1 - CD.slope*C0
                     DA.slope=(A1-D1)/(A0-D0)
                     DA.intersect= D1 - DA.slope*D0
+                    
+                    #with gil:
+                        #print "The lines that make up the pixel:"
+                        #print "================================="
+                        #print "AB: %e  %e" % (AB.slope, AB.intersect)
+                        #print "BC: %e  %e" % (BC.slope, BC.intersect)
+                        #print "CD: %e  %e" % (CD.slope, CD.intersect)
+                        #print "DA: %e  %e" % (DA.slope, DA.intersect)
+                        #print " "
+                    
                     areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
+                    
+                    #with gil:
+                        #print "Area with the 4 point formula: %e" % areaPixel
+                        #print " "
+                    
+                    areaPixel2  = integrate(A0, B0, AB)
+                    areaPixel2 += integrate(B0, C0, BC)
+                    areaPixel2 += integrate(C0, D0, CD)
+                    areaPixel2 += integrate(D0, A0, DA)
+                    
+                    #with gil:
+                        #print "(Area with integration: %e)" % areaPixel2
+                        #print " "
+                    
                     oneOverPixelArea = 1.0 / areaPixel
-                    partialArea2 = 0.0
+                    
+                    #with gil:
+                        #print "1 over area: %e" % oneOverPixelArea
+                        #print " "
+                    
+                    
                     for bin in range(bin0_min, bin0_max+1):
-                        A_lim = (A0<=bin)*(A0<=(bin+1))*bin + (A0>bin)*(A0<=(bin+1))*A0 + (A0>bin)*(A0>(bin+1))*(bin+1)
-                        B_lim = (B0<=bin)*(B0<=(bin+1))*bin + (B0>bin)*(B0<=(bin+1))*B0 + (B0>bin)*(B0>(bin+1))*(bin+1)
-                        C_lim = (C0<=bin)*(C0<=(bin+1))*bin + (C0>bin)*(C0<=(bin+1))*C0 + (C0>bin)*(C0>(bin+1))*(bin+1)
-                        D_lim = (D0<=bin)*(D0<=(bin+1))*bin + (D0>bin)*(D0<=(bin+1))*D0 + (D0>bin)*(D0>(bin+1))*(bin+1)
+                        
+                        #with gil:
+                            #print "Bin: %d" % bin
+                            #print "======="
+                            #print "  "
+                        #A_lim = (A0<=bin)*(A0<=(bin+1))*bin + (A0>bin)*(A0<=(bin+1))*A0 + (A0>bin)*(A0>(bin+1))*(bin+1)
+                        #B_lim = (B0<=bin)*(B0<=(bin+1))*bin + (B0>bin)*(B0<=(bin+1))*B0 + (B0>bin)*(B0>(bin+1))*(bin+1)
+                        #C_lim = (C0<=bin)*(C0<=(bin+1))*bin + (C0>bin)*(C0<=(bin+1))*C0 + (C0>bin)*(C0>(bin+1))*(bin+1)
+                        #D_lim = (D0<=bin)*(D0<=(bin+1))*bin + (D0>bin)*(D0<=(bin+1))*D0 + (D0>bin)*(D0>(bin+1))*(bin+1)
+                        bin0 = bin - bin0_min
+                        A_lim = (A0<=bin0)*(A0<=(bin0+1))*bin0 + (A0>bin0)*(A0<=(bin0+1))*A0 + (A0>bin0)*(A0>(bin0+1))*(bin0+1)
+                        B_lim = (B0<=bin0)*(B0<=(bin0+1))*bin0 + (B0>bin0)*(B0<=(bin0+1))*B0 + (B0>bin0)*(B0>(bin0+1))*(bin0+1)
+                        C_lim = (C0<=bin0)*(C0<=(bin0+1))*bin0 + (C0>bin0)*(C0<=(bin0+1))*C0 + (C0>bin0)*(C0>(bin0+1))*(bin0+1)
+                        D_lim = (D0<=bin0)*(D0<=(bin0+1))*bin0 + (D0>bin0)*(D0<=(bin0+1))*D0 + (D0>bin0)*(D0>(bin0+1))*(bin0+1)
+
+                        
+                        
+                        #with gil:
+                            #print "Limits:"
+                            #print "======="
+                            #print "A_lim = %d*bin + %d*A0 + %d*(bin+1) = %e" % ((A0<=bin)*(A0<=(bin+1)),(A0>bin)*(A0<=(bin+1)),(A0>bin)*(A0>(bin+1)),A_lim)
+                            #print "B_lim = %d*bin + %d*B0 + %d*(bin+1) = %e" % ((B0<=bin)*(B0<=(bin+1)),(B0>bin)*(B0<=(bin+1)),(B0>bin)*(B0>(bin+1)),B_lim)
+                            #print "C_lim = %d*bin + %d*C0 + %d*(bin+1) = %e" % ((C0<=bin)*(C0<=(bin+1)),(C0>bin)*(C0<=(bin+1)),(C0>bin)*(C0>(bin+1)),C_lim)
+                            #print "D_lim = %d*bin + %d*D0 + %d*(bin+1) = %e" % ((D0<=bin)*(D0<=(bin+1)),(D0>bin)*(D0<=(bin+1)),(D0>bin)*(D0>(bin+1)),D_lim)
+                            #print "  "
+                        
+                        # khan summation
+                        #area_sum = 0.0
+                        #corr = 0.0
+                        
+                        #partialArea = integrate(A_lim, B_lim, AB)
+                        #y = partialArea - corr
+                        #t = area_sum + y
+                        #corr = (t - area_sum) - y
+                        #area_sum = t
+
+                        #partialArea = integrate(B_lim, C_lim, BC)
+                        #y = partialArea - corr
+                        #t = area_sum + y
+                        #corr = (t - area_sum) - y
+                        #area_sum = t
+                        
+                        #partialArea = integrate(C_lim, D_lim, CD)
+                        #y = partialArea - corr
+                        #t = area_sum + y
+                        #corr = (t - area_sum) - y
+                        #area_sum = t
+                        
+                        #partialArea = integrate(D_lim, A_lim, DA)
+                        #y = partialArea - corr
+                        #t = area_sum + y
+                        #corr = (t - area_sum) - y
+                        #area_sum = t
+                        
+                        #tmp = fabs(area_sum) * oneOverPixelArea
+                        
                         partialArea  = integrate(A_lim, B_lim, AB)
                         partialArea += integrate(B_lim, C_lim, BC)
                         partialArea += integrate(C_lim, D_lim, CD)
                         partialArea += integrate(D_lim, A_lim, DA)
+                        
                         tmp = fabs(partialArea) * oneOverPixelArea
+                        #with gil:
+                            #print "Partial Area: %e" % fabs(partialArea)
+                            #print "Contribution: %e" % tmp
+                            #print "  "
+                        
                         k = outMax[bin]
                         indices[indptr[bin]+k] = idx
                         data[indptr[bin]+k] = tmp
                         outMax[bin] += 1 #k+1
+                        
         self.data = data
         self.indices = indices
-                            
+        self.outMax = outMax
+                           
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -317,7 +488,7 @@ class HistoLUT1dFullSplit(object):
 
         """
         cdef numpy.int32_t i=0, j=0, idx=0, bins=self.bins, size=self.size
-        cdef double sum_data=0.0, sum_count=0.0, epsilon=1e-10
+        cdef float sum_data=0.0, sum_count=0.0, epsilon=1e-10
         cdef float data=0, coef=0, cdummy=0, cddummy=0
         cdef bint do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
@@ -868,7 +1039,7 @@ class HistoLUT1dFullSplit(object):
 
         #"""
         #cdef int i=0, j=0, idx=0, bins0=self.bins[0], bins1=self.bins[1], bins=bins0*bins1, size=self.size
-        #cdef double sum_data=0.0, sum_count=0.0, epsilon=1e-10
+        #cdef float sum_data=0.0, sum_count=0.0, epsilon=1e-10
         #cdef float data=0, coef=0, cdummy=0, cddummy=0
         #cdef bint do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
         #cdef numpy.ndarray[numpy.float64_t, ndim = 2] outData = numpy.zeros(self.bins, dtype=numpy.float64)

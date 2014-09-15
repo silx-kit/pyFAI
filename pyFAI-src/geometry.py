@@ -28,20 +28,24 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2013"
+__date__ = "17/07/2014"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
-import os
-import time
-import threading
 import logging
-import types
+from numpy import radians, degrees, arccos, arctan2, sin, cos, sqrt
 import numpy
+import os
+import threading
+import time
+import types
+
+from . import detectors
+from . import units
+
+
 logger = logging.getLogger("pyFAI.geometry")
 
-from numpy import radians, degrees, arccos, arctan2, sin, cos, sqrt
-from . import detectors
 
 try:
     from . import _geometry
@@ -58,7 +62,6 @@ try:
     from .fastcrc import crc32
 except ImportError:
     from zlib import crc32
-from . import units
 
 
 class Geometry(object):
@@ -218,7 +221,7 @@ class Geometry(object):
         self._polarization_axis_offset = 0
         self._polarization = None
         self._polarization_crc = None  # checksum associated with _polarization
-        self._cosa = None      #cosine of the incidance angle
+        self._cosa = None  # cosine of the incidance angle
         self._transmission_normal = None
         self._transmission_corr = None
         self._transmission_crc = None
@@ -275,6 +278,49 @@ class Geometry(object):
         p1, p2 = self.detector.calc_cartesian_positions(d1, d2)
         return p1 - poni1, p2 - poni2
 
+    def calc_pos_zyx(self, d0=None, d1=None, d2=None, param=None):
+        """
+        Allows you to calculate the position of a set of points in space in the sample
+        re
+
+
+        @param d0: altitude on the point compared to the detector (i.e. z)
+        @param d1: position on the detector along the slow dimention (i.e. y)
+        @param d2: position on the detector along the fastest dimention (i.e. x)
+        @return zyx array, so 3D array with dim0=along the beam,
+                                            dim1=along slowest dimension
+                                            dim2=along fastest dimension
+                                            unless rotations are too large
+        """
+        if param is None:
+            param = self.param
+        if (d1 is None) or (d2 is None):
+            raise RuntimeError("input corrdiate d1 and d2 are mandatory")
+        p1, p2 = self._calcCartesianPositions(d1, d2, param[1], param[2])
+        if d0 is None:
+            L = param[0]
+        else:
+            L = param[0] + d0
+        cosRot1 = cos(param[3])
+        cosRot2 = cos(param[4])
+        cosRot3 = cos(param[5])
+        sinRot1 = sin(param[3])
+        sinRot2 = sin(param[4])
+        sinRot3 = sin(param[5])
+        t1 = p1 * cosRot2 * cosRot3 + \
+            p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - \
+            L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
+        t2 = p1 * cosRot2 * sinRot3 + \
+            p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - \
+            L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
+        t3 = p1 * sinRot2 - p2 * cosRot2 * sinRot1 + L * cosRot1 * cosRot2
+        shape = 3, d1.shape[0], d1.shape[1]
+        zyx = numpy.zeros(shape)
+        zyx[0] = t3
+        zyx[1] = t1
+        zyx[2] = t2
+        return zyx
+
     def tth(self, d1, d2, param=None, path="cython"):
         """
         Calculates the 2theta value for the center of a given pixel
@@ -288,11 +334,13 @@ class Geometry(object):
         @return: 2theta in radians
         @rtype: floar or array of floats.
         """
-        if param is None:
-            param = self.param
-        p1, p2 = self._calcCartesianPositions(d1, d2, param[1], param[2])
 
         if path == "cython" and _geometry:
+            if param is None:
+                param = self.param
+
+            p1, p2 = self._calcCartesianPositions(d1, d2, param[1], param[2])
+
             tmp = _geometry.calc_tth(L=param[0],
                                      rot1=param[3],
                                      rot2=param[4],
@@ -301,20 +349,27 @@ class Geometry(object):
                                      pos2=p2)
             tmp.shape = p1.shape
         else:
-            L = param[0]
-            cosRot1 = cos(param[3])
-            cosRot2 = cos(param[4])
-            cosRot3 = cos(param[5])
-            sinRot1 = sin(param[3])
-            sinRot2 = sin(param[4])
-            sinRot3 = sin(param[5])
-            t1 = p1 * cosRot2 * cosRot3 + \
-                p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - \
-                L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
-            t2 = p1 * cosRot2 * sinRot3 + \
-                p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - \
-                L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
-            t3 = p1 * sinRot2 - p2 * cosRot2 * sinRot1 + L * cosRot1 * cosRot2
+#             if param is None:
+#                 param = self.param
+#             p1, p2 = self._calcCartesianPositions(d1, d2, param[1], param[2])
+#             L = param[0]
+#             cosRot1 = cos(param[3])
+#             cosRot2 = cos(param[4])
+#             cosRot3 = cos(param[5])
+#             sinRot1 = sin(param[3])
+#             sinRot2 = sin(param[4])
+#             sinRot3 = sin(param[5])
+#             t1 = p1 * cosRot2 * cosRot3 + \
+#                 p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - \
+#                 L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
+#             t2 = p1 * cosRot2 * sinRot3 + \
+#                 p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - \
+#                 L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
+#             t3 = p1 * sinRot2 - p2 * cosRot2 * sinRot1 + L * cosRot1 * cosRot2
+            zyx = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, param=param)
+            t1 = zyx[1]
+            t2 = zyx[2]
+            t3 = zyx[0]
             if path == "cos":
                 tmp = arccos(t3 / sqrt(t1 ** 2 + t2 ** 2 + t3 ** 2))
             else:
@@ -706,7 +761,7 @@ class Geometry(object):
                         delta[:, :, 3] = \
                             numpy.minimum(((chi_corner[:-1, 1: ] - chi_center) % twoPi),
                                           ((chi_center - chi_corner[:-1, 1: ]) % twoPi))
-                    self._dchia = delta.max(axis= -1)
+                    self._dchia = delta.max(axis=-1)
         return self._dchia
 
     def deltaQ(self, shape):
@@ -738,7 +793,7 @@ class Geometry(object):
                         delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
                         delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
                         delta[:, :, 3] = abs(q_corner[:-1, 1:] - q_center)
-                    self._dqa = delta.max(axis= -1)
+                    self._dqa = delta.max(axis=-1)
         return self._dqa
 
     def deltaR(self, shape):
@@ -769,7 +824,7 @@ class Geometry(object):
                         delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
                         delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
                         delta[:, :, 3] = abs(q_corner[:-1, 1:] - q_center)
-                    self._dra = delta.max(axis= -1)
+                    self._dra = delta.max(axis=-1)
         return self._dra
 
     def cosIncidance(self, d1, d2):
@@ -850,23 +905,21 @@ class Geometry(object):
         try:
             with open(filename, "a") as f:
                 f.write(("# Nota: C-Order, 1 refers to the Y axis,"
-                         " 2 to the X axis %s") % os.linesep)
-                f.write("# Calibration done at %s%s" % (time.ctime(), os.linesep))
+                         " 2 to the X axis \n"))
+                f.write("# Calibration done at %s\n" % time.ctime())
                 if self.detector.name != "Detector":
-                    f.write("Detector: %s%s" % (self.detector.__class__.__name__,
-                                                os.linesep))
-                f.write("PixelSize1: %s%s" % (self.pixel1, os.linesep))
-                f.write("PixelSize2: %s%s" % (self.pixel2, os.linesep))
-                f.write("Distance: %s%s" % (self._dist, os.linesep))
-                f.write("Poni1: %s%s" % (self._poni1, os.linesep))
-                f.write("Poni2: %s%s" % (self._poni2, os.linesep))
-                f.write("Rot1: %s%s" % (self._rot1, os.linesep))
-                f.write("Rot2: %s%s" % (self._rot2, os.linesep))
-                f.write("Rot3: %s%s" % (self._rot3, os.linesep))
-                f.write("SplineFile: %s%s" % (self.splineFile, os.linesep))
+                    f.write("Detector: %s\n" % self.detector.__class__.__name__)
+                f.write("PixelSize1: %s\n" % self.pixel1)
+                f.write("PixelSize2: %s\n" % self.pixel2)
+                f.write("Distance: %s\n" % self._dist)
+                f.write("Poni1: %s\n" % self._poni1)
+                f.write("Poni2: %s\n" % self._poni2)
+                f.write("Rot1: %s\n" % self._rot1)
+                f.write("Rot2: %s\n" % self._rot2)
+                f.write("Rot3: %s\n" % self._rot3)
+                f.write("SplineFile: %s\n" % self.splineFile)
                 if self._wavelength is not None:
-                    f.write("Wavelength: %s%s" % (self._wavelength,
-                                                  os.linesep))
+                    f.write("Wavelength: %s\n" % self._wavelength)
         except IOError:
             logger.error("IOError while writing to file %s" % filename)
     write = save
@@ -1067,6 +1120,93 @@ class Geometry(object):
             self._rot2 = rot2
             self._rot3 = rot3
             self.reset()
+
+    def setSPD(self, SampleDistance, Center_1, Center_2, Rot_1=0, Rot_2=0, Rot_3=0,
+               PSize_1=None, PSize_2=None, splineFile=None, BSize_1=1, BSize_2=1,
+               WaveLength=None):
+        """
+        Set the SPD like parameter set: For geometry description see
+        Peter Boesecke J.Appl.Cryst.(2007).40, s423–s427
+
+        Basically the main difference with pyFAI is the order of the axis which are flipped
+
+        @param SampleDistance: distance from sample to detector at the PONI (orthogonal projection)
+        @param Center_1, pixel position of the PONI along fastest axis
+        @param Center_2: pixel position of the PONI along slowest axis
+        @param Rot_1: rotation around the fastest axis (x)
+        @param Rot_2: rotation around the slowest axis (y)
+        @param Rot_3: rotation around the axis ORTHOGONAL to the detector plan
+        @param PSize_1: pixel size in meter along the fastest dimention
+        @param PSize_2: pixel size in meter along the slowst dimention
+        @param splineFile: name of the file containing the spline
+        @param BSize_1: pixel binning factor along the fastest dimention
+        @param BSize_2: pixel binning factor along the slowst dimention
+        @param WaveLength: wavelength used
+        """
+        #first define the detector
+        if splineFile:
+            #let's assume the spline file is for unbinned detectors ...
+            self.detector = detectors.FReLoN(splineFile)
+            self.detector.binning = (int(BSize_2), int(BSize_1))
+        elif PSize_1 and PSize_2:
+            self.detector = detectors.Detector(PSize_2, PSize_1)
+            if BSize_2 > 1 or BSize_1 > 1:
+                #set binning factor without changing pixel size
+                self.detector._binning = (int(BSize_2), int(BSize_1))
+
+        #then the geometry
+        self._dist = float(SampleDistance)
+        self._poni1 = float(Center_2) * self.detector.pixel1
+        self._poni2 = float(Center_1) * self.detector.pixel2
+        #This is WRONG ... correct it
+        self._rot1 = Rot_2 or 0
+        self._rot2 = Rot_1 or 0
+        self._rot3 = -(Rot_3 or 0)
+        if Rot_1  or Rot_2  or Rot_3 :
+            raise NotImplementedError("rotation axis not yet implemented for SPD")
+        #and finally the wavelength
+        if WaveLength:
+            self.wavelength = float(WaveLength)
+        self.reset()
+
+    def getSPD(self):
+        """
+        get the SPD like parameter set: For geometry description see
+        Peter Boesecke J.Appl.Cryst.(2007).40, s423–s427
+
+        Basically the main difference with pyFAI is the order of the axis which are flipped
+
+        @return: dictionnary with those parameters:
+            SampleDistance: distance from sample to detector at the PONI (orthogonal projection)
+            Center_1, pixel position of the PONI along fastest axis
+            Center_2: pixel position of the PONI along slowest axis
+            Rot_1: rotation around the fastest axis (x)
+            Rot_2: rotation around the slowest axis (y)
+            Rot_3: rotation around the axis ORTHOGONAL to the detector plan
+            PSize_1: pixel size in meter along the fastest dimention
+            PSize_2: pixel size in meter along the slowst dimention
+            splineFile: name of the file containing the spline
+            BSize_1: pixel binning factor along the fastest dimention
+            BSize_2: pixel binning factor along the slowst dimention
+            WaveLength: wavelength used in meter
+        """
+        res = {"PSize_1": self.detector.pixel2,
+               "PSize_2": self.detector.pixel1,
+               "BSize_1":self.detector.binning[1],
+               "BSize_2":self.detector.binning[0],
+               "splineFile":self.detector.splineFile,
+               "Rot_3": None,
+               "Rot_2": None,
+               "Rot_1":None,
+               "Center_2" : self._poni1 / self.detector.pixel1,
+               "Center_1" : self._poni2 / self.detector.pixel2,
+               "SampleDistance": self.dist
+               }
+        if self._wavelength:
+            res["WaveLength"] = self._wavelength
+        if abs(self.rot1) > 1e-6 or abs(self.rot2) > 1e-6 or abs(self.rot3) > 1e-6:
+            logger.warning("Rotation conversion from pyFAI to SPD is not yet implemented")
+        return res
 
     def setChiDiscAtZero(self):
         """

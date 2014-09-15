@@ -25,7 +25,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "GPLv3"
-__date__ = "04/04/2014"
+__date__ = "04/09/2014"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -113,7 +113,7 @@ class OCL_CSR_Integrator(object):
             self._allocate_buffers()
             self._compile_kernels()
             self._set_kernel_arguments()
-        except pyopencl.MemoryError as error:
+        except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             raise MemoryError(error)
         ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["data"], self._data)
         if self.profile: self.events.append(("copy Coefficient data", ev))
@@ -149,8 +149,7 @@ class OCL_CSR_Integrator(object):
         size_of_int = numpy.dtype(numpy.int32).itemsize
         size_of_long = numpy.dtype(numpy.int64).itemsize
 
-        ualloc = (self.size * size_of_float) * 5
-        ualloc += (self.size * size_of_short)
+        ualloc = (self.size * size_of_float) * 6
         ualloc += (self.data_size * (size_of_float + size_of_int))
         ualloc += ((self.bins + 1) * size_of_int)
         ualloc += (self.bins * size_of_float) * 3
@@ -166,13 +165,13 @@ class OCL_CSR_Integrator(object):
             self._cl_mem["outData"] = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, size_of_float * self.bins)
             self._cl_mem["outCount"] = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, size_of_float * self.bins)
             self._cl_mem["outMerge"] = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, size_of_float * self.bins)
-            self._cl_mem["image_u16"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_short * self.size)
+            self._cl_mem["image_raw"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
             self._cl_mem["image"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size=size_of_float * self.size)
             self._cl_mem["dark"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
             self._cl_mem["flat"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
             self._cl_mem["polarization"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
             self._cl_mem["solidangle"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
-        except pyopencl.MemoryError as error:
+        except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             self._free_buffers()
             raise MemoryError(error)
 
@@ -185,16 +184,16 @@ class OCL_CSR_Integrator(object):
                 try:
                     self._cl_mem[buffer_name].release()
                     self._cl_mem[buffer_name] = None
-                except pyopencl.LogicError:
-                    logger.error("Error while freeing buffer %s" % buffer_name)
-
-
+                except (pyopencl.MemoryError, pyopencl.LogicError) as error:
+                    logger.error("Error while freeing buffer %s: %s" % (buffer_name, error))
 
     def _compile_kernels(self, kernel_file=None):
         """
         Call the OpenCL compiler
-        @param kernel_file: path tothe
+        @param kernel_file: path to the kernel (by default use the one in the src directory)
         """
+        # concatenate all needed source files into a single openCL module
+        kernel_src = open(get_cl_file("preprocess.cl"), "r").read()
         kernel_name = "ocl_azim_CSR.cl"
         if kernel_file is None:
             if os.path.isfile(kernel_name):
@@ -204,14 +203,14 @@ class OCL_CSR_Integrator(object):
         else:
             kernel_file = str(kernel_file)
         with open(kernel_file, "r") as kernelFile:
-            kernel_src = kernelFile.read()
+            kernel_src += kernelFile.read()
 
         compile_options = "-D NBINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i -D ON_CPU=%i" % \
                 (self.bins, self.size, self.BLOCK_SIZE, int(self.device_type == "CPU"))
         logger.info("Compiling file %s with options %s" % (kernel_file, compile_options))
         try:
             self._program = pyopencl.Program(self._ctx, kernel_src).build(options=compile_options)
-        except pyopencl.MemoryError as error:
+        except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             raise MemoryError(error)
 
     def _free_kernels(self):
@@ -238,26 +237,48 @@ class OCL_CSR_Integrator(object):
                                                 numpy.int32(0), numpy.float32(0), \
                                                 self._cl_mem["outData"], self._cl_mem["outCount"], self._cl_mem["outMerge"]]
         self._cl_kernel_args["memset_out"] = [self._cl_mem[i] for i in ["outData", "outCount", "outMerge"]]
-        self._cl_kernel_args["u16_to_float"] = [self._cl_mem[i] for i in ["image_u16", "image"]]
-        self._cl_kernel_args["s32_to_float"] = [self._cl_mem[i] for i in ["image", "image"]]
+        self._cl_kernel_args["u8_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image"]]
+        self._cl_kernel_args["s8_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image"]]
+        self._cl_kernel_args["u16_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image"]]
+        self._cl_kernel_args["s16_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image"]]
+        self._cl_kernel_args["u32_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image"]]
+        self._cl_kernel_args["s32_to_float"] = [self._cl_mem[i] for i in ["image_raw", "image"]]
+
 
     def integrate(self, data, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None,
                             dark_checksum=None, flat_checksum=None, solidAngle_checksum=None, polarization_checksum=None):
         events = []
         with self._sem:
-            if data.dtype == numpy.uint16:
-                copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image_u16"], numpy.ascontiguousarray(data))
-                cast_u16_to_float = self._program.u16_to_float(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["u16_to_float"])
-                events += [("copy image", copy_image), ("cast", cast_u16_to_float)]
+            if data.dtype == numpy.uint8:
+                copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image_raw"], numpy.ascontiguousarray(data))
+                cast_to_float = self._program.u8_to_float(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["u8_to_float"])
+                events += [("copy image", copy_image), ("cast", cast_to_float)]
+            elif data.dtype == numpy.int8:
+                copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image_raw"], numpy.ascontiguousarray(data))
+                cast_to_float = self._program.s8_to_float(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["s8_to_float"])
+                events += [("copy image", copy_image), ("cast", cast_to_float)]
+            elif data.dtype == numpy.uint16:
+                copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image_raw"], numpy.ascontiguousarray(data))
+                cast_to_float = self._program.u16_to_float(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["u16_to_float"])
+                events += [("copy image", copy_image), ("cast", cast_to_float)]
+            elif data.dtype == numpy.int16:
+                copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image_raw"], numpy.ascontiguousarray(data))
+                cast_to_float = self._program.s16_to_float(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["s16_to_float"])
+                events += [("copy image", copy_image), ("cast", cast_to_float)]
+            elif data.dtype == numpy.uint32:
+                copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image_raw"], numpy.ascontiguousarray(data))
+                cast_to_float = self._program.u32_to_float(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["u32_to_float"])
+                events += [("copy image", copy_image), ("cast", cast_to_float)]
             elif data.dtype == numpy.int32:
-                copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image"], numpy.ascontiguousarray(data))
-                cast_s32_to_float = self._program.s32_to_float(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["s32_to_float"])
-                events += [("copy image", copy_image), ("cast", cast_s32_to_float)]
+                copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image_raw"], numpy.ascontiguousarray(data))
+                cast_to_float = self._program.s32_to_float(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["s32_to_float"])
+                events += [("copy image", copy_image), ("cast", cast_to_float)]
             else:
                 copy_image = pyopencl.enqueue_copy(self._queue, self._cl_mem["image"], numpy.ascontiguousarray(data, dtype=numpy.float32))
                 events += [("copy image", copy_image)]
             memset = self._program.memset_out(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["memset_out"])
-            events += [("memset", memset)]
+            events.append(("memset", memset))
+
             if dummy is not None:
                 do_dummy = numpy.int32(1)
                 dummy = numpy.float32(dummy)
@@ -267,7 +288,7 @@ class OCL_CSR_Integrator(object):
                     delta_dummy = numpy.float32(abs(delta_dummy))
             else:
                 do_dummy = numpy.int32(0)
-                dummy = numpy.float32(0)
+                dummy = numpy.float32(numpy.nan)
                 delta_dummy = numpy.float32(0)
             self._cl_kernel_args["corrections"][9] = do_dummy
             self._cl_kernel_args["corrections"][10] = dummy

@@ -4,10 +4,17 @@
 
 from __future__ import print_function, division
 
-import json, sys, time, timeit, os, platform, subprocess
+import json
+import sys
+import time
+import timeit
+import os
+import platform
+import subprocess
 import numpy
 import fabio
 import os.path as op
+import logging
 sys.path.append(op.join(op.dirname(op.dirname(op.abspath(__file__))), "test"))
 import utilstest
 
@@ -81,8 +88,6 @@ data = fabio.open(r"%s").data
         self.stmt_1d = "ai.integrate1d(data, N, safe=False, unit='" + self.unit + "', method='%s')"
         self.stmt_2d = ("ai.integrate2d(data, %i, %i, unit='" % self.out_2d) + self.unit + "', method='%s')"
 
-
-
     def get_cpu(self):
         if self._cpu is None:
             if os.name == "nt":
@@ -119,19 +124,16 @@ data = fabio.open(r"%s").data
             mem = 0
         return mem
 
-
     def print_init(self, t):
         print(" * Initialization time: %.1f ms" % (1000.0 * t))
         self.update_mp()
-
 
     def print_exec(self, t):
         print(" * Execution time rep : %.1f ms" % (1000.0 * t))
         self.update_mp()
 
-
     def print_sep(self):
-        print("*"*80)
+        print("*" * 80)
         self.update_mp()
 
     def get_ref(self, param):
@@ -212,15 +214,18 @@ data = fabio.open(r"%s").data
                 print("%sResults are bad with R=%.3f%s" % (self.WARNING, R, self.ENDC) if R > self.LIMIT else"%sResults are good with R=%.3f%s" % (self.OKGREEN, R, self.ENDC))
                 self.update_mp()
                 if R < self.LIMIT:
-                    results[size ] = tmin
+                    results[size] = tmin
                     self.update_mp()
                     if first:
-                        self.new_curve(results, label)
+                        if opencl:
+                            self.new_curve(results, label, style="--")
+                        else:
+                            self.new_curve(results, label, style="-")
                         first = False
                     else:
                         self.new_point(size, tmin)
             else:
-                results[size ] = tmin
+                results[size] = tmin
                 if first:
                     self.new_curve(results, label)
                     first = False
@@ -263,7 +268,7 @@ data = fabio.open(r"%s").data
             stmt = self.stmt_2d % method
             exec setup
             size = data.size / 1.0e6
-            print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), size , N))
+            print("2D integration of %s %.1f Mpixel -> %s bins" % (op.basename(fn), size, N))
             try:
                 t0 = time.time()
                 res = eval(stmt)
@@ -299,7 +304,6 @@ data = fabio.open(r"%s").data
         self.results[label] = results
         self.update_mp()
 
-
     def bench_gpu1d(self, devicetype="gpu", useFp64=True, platformid=None, deviceid=None):
         self.update_mp()
         print("Working on %s, in " % devicetype + ("64 bits mode" if useFp64 else"32 bits mode") + "(%s.%s)" % (platformid, deviceid))
@@ -307,7 +311,7 @@ data = fabio.open(r"%s").data
             print("No pyopencl or no such device: skipping benchmark")
             return
         results = {}
-        label = "Forward_OpenCL_%s_%s_bits" % (devicetype , ("64" if useFp64 else"32"))
+        label = "Forward_OpenCL_%s_%s_bits" % (devicetype, ("64" if useFp64 else"32"))
         first = True
         for param in ds_list:
             self.update_mp()
@@ -389,9 +393,13 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
             self.ax.set_title(self.get_cpu() + " / " + self.get_gpu())
             update_fig(self.fig)
 
-    def new_curve(self, results, label):
+    def new_curve(self, results, label, style="-"):
         """
         Create a new curve within the current graph
+        
+        @param results: dict with execution time in function of size
+        @param label: string with the title of the curve
+        @param style: the style of the line: "-" for plain line, "--" for dashed
         """
         self.update_mp()
         if not self.fig:
@@ -399,7 +407,7 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
         self.plot_x = list(results.keys())
         self.plot_x.sort()
         self.plot_y = [1000.0 / results[i] for i in self.plot_x]
-        self.plot = self.ax.plot(self.plot_x, self.plot_y, "o-", label=label)[0]
+        self.plot = self.ax.plot(self.plot_x, self.plot_y, "o" + style, label=label)[0]
         self.ax.legend()
         update_fig(self.fig)
 
@@ -487,36 +495,36 @@ if __name__ == "__main__":
     parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
     parser.add_argument("-v", "--version", action='version', version=version)
     parser.add_argument("-d", "--debug",
-                          action="store_true", dest="debug", default=False,
-                          help="switch to verbose/debug mode")
+                        action="store_true", dest="debug", default=False,
+                        help="switch to verbose/debug mode")
     parser.add_argument("-c", "--cpu",
-                      action="store_true", dest="opencl_cpu", default=False,
-                      help="perform benchmark using OpenCL on the CPU")
+                        action="store_true", dest="opencl_cpu", default=False,
+                        help="perform benchmark using OpenCL on the CPU")
     parser.add_argument("-g", "--gpu",
-                      action="store_true", dest="opencl_gpu", default=False,
-                      help="perform benchmark using OpenCL on the GPU")
+                        action="store_true", dest="opencl_gpu", default=False,
+                        help="perform benchmark using OpenCL on the GPU")
     parser.add_argument("-a", "--acc",
-                      action="store_true", dest="opencl_acc", default=False,
-                      help="perform benchmark using OpenCL on the Accelerator (like XeonPhi/MIC)")
+                        action="store_true", dest="opencl_acc", default=False,
+                        help="perform benchmark using OpenCL on the Accelerator (like XeonPhi/MIC)")
     parser.add_argument("-s", "--small",
-                      action="store_true", dest="small", default=False,
-                      help="Limit the size of the dataset to 6 Mpixel images (for computer with limited memory)")
+                        action="store_true", dest="small", default=False,
+                        help="Limit the size of the dataset to 6 Mpixel images (for computer with limited memory)")
     parser.add_argument("-n", "--number",
-                      dest="number", default=10, type=int,
-                      help="Number of repetition of the test, by default 10")
+                        dest="number", default=10, type=int,
+                        help="Number of repetition of the test, by default 10")
     parser.add_argument("-2d", "--2dimention",
-                      action="store_true", dest="twodim", default=False,
-                      help="Benchmark also algorithm for 2D-regrouping")
+                        action="store_true", dest="twodim", default=False,
+                        help="Benchmark also algorithm for 2D-regrouping")
     parser.add_argument("--no-1dimention",
-                      action="store_false", dest="onedim", default=True,
-                      help="Do not benchmark algorithms for 1D-regrouping")
+                        action="store_false", dest="onedim", default=True,
+                        help="Do not benchmark algorithms for 1D-regrouping")
 
     parser.add_argument("-m", "--memprof",
-                      action="store_true", dest="memprof", default=False,
-                      help="Perfrom memory profiling (Linux only)")
+                        action="store_true", dest="memprof", default=False,
+                        help="Perfrom memory profiling (Linux only)")
     parser.add_argument("-r", "--repeat",
-                      dest="repeat", default=1, type=int,
-                      help="Repeat each benchmark x times to take the best")
+                        dest="repeat", default=1, type=int,
+                        help="Repeat each benchmark x times to take the best")
 
     options = parser.parse_args()
     if options.small:
@@ -531,24 +539,24 @@ if __name__ == "__main__":
         bench.bench_1d("lut", True)
         bench.bench_1d("csr", True)
         if options.opencl_cpu:
-            bench.bench_1d("lut_ocl", True, {"devicetype":"CPU"})
-            bench.bench_1d("csr_ocl", True, {"devicetype":"CPU"})
+            bench.bench_1d("lut_ocl", True, {"devicetype": "CPU"})
+            bench.bench_1d("csr_ocl", True, {"devicetype": "CPU"})
         if options.opencl_gpu:
-            bench.bench_1d("lut_ocl", True, {"devicetype":"GPU"})
-            bench.bench_1d("csr_ocl", True, {"devicetype":"GPU"})
+            bench.bench_1d("lut_ocl", True, {"devicetype": "GPU"})
+            bench.bench_1d("csr_ocl", True, {"devicetype": "GPU"})
         if options.opencl_acc:
-            bench.bench_1d("lut_ocl", True, {"devicetype":"ACC"})
-            bench.bench_1d("csr_ocl", True, {"devicetype":"ACC"})
+            bench.bench_1d("lut_ocl", True, {"devicetype": "ACC"})
+            bench.bench_1d("csr_ocl", True, {"devicetype": "ACC"})
 
     if options.twodim:
         bench.bench_2d("splitBBox")
         bench.bench_2d("lut", True)
         if options.opencl_cpu:
-            bench.bench_2d("lut_ocl", True, {"devicetype":"CPU"})
+            bench.bench_2d("lut_ocl", True, {"devicetype": "CPU"})
         if options.opencl_gpu:
-            bench.bench_2d("lut_ocl", True, {"devicetype":"GPU"})
+            bench.bench_2d("lut_ocl", True, {"devicetype": "GPU"})
         if options.opencl_acc:
-            bench.bench_2d("lut_ocl", True, {"devicetype":"ACC"})
+            bench.bench_2d("lut_ocl", True, {"devicetype": "ACC"})
 
     bench.save()
     bench.print_res()

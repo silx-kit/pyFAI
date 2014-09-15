@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/05/2014"
+__date__ = "04/09/2014"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -50,8 +50,8 @@ import fabio
 from .gui_utils import pylab, update_fig, matplotlib
 from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
-from .peakPicker import PeakPicker
-from . import units
+from .peak_picker import PeakPicker
+from . import units, gui_utils
 from .utils import averageImages, measure_offset, expand_args, readFloatFromKeyboard
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import hc
@@ -95,7 +95,9 @@ class AbstractCalibration(object):
             'done': "finishes the processing, performs an integration and quits",
             'validate': "measures the offset between the calibrated image and the back-projected image",
             'integrate': "perform the azimuthal integration and display results",
-            'abort': "quit immediately, discarding any unsaved changes"
+            'abort': "quit immediately, discarding any unsaved changes",
+            'show': "Just print out the current parameter set",
+            'reset': "Reset the geometry to the initial guess (rotation to zero, distance to 1m, poni at the center of the image)"
             }
     PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
     UNITS = {"dist":"meter", "poni1":"meter", "poni2":"meter", "rot1":"radian",
@@ -223,7 +225,7 @@ class AbstractCalibration(object):
                           action="store_true", dest="debug", default=False,
                           help="switch to debug/verbose mode")
         self.parser.add_argument("-c", "--calibrant", dest="spacing", metavar="FILE",
-                      help="Calibrant name or file containing d-spacing of the reference sample (MANDATORY)",
+                      help="Calibrant name or file containing d-spacing of the reference sample (MANDATORY, case sensitive !)",
                       default=None)
         self.parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
                       help="wavelength of the X-Ray beam in Angstrom", default=None)
@@ -547,10 +549,6 @@ class AbstractCalibration(object):
             self.read_wavelength()
             self.peakPicker.points.calibrant.wavelength = self.wavelength
 
-        if self.gui:
-            self.peakPicker.gui(log=True, maximize=True)
-            update_fig(self.peakPicker.fig)
-
     def extract_cpt(self, method="massif"):
         """
         Performs an automatic keypoint extraction:
@@ -866,8 +864,45 @@ class AbstractCalibration(object):
                 self.postProcess()
             elif action == "abort":
                 sys.exit()
+            elif action == "show":
+                print("The current parameter set is:")
+                print(self.geoRef)
+            elif action == "reset":
+                self.ai.dist = 0.1
+                self.ai.poni1 = self.detector.pixel1 * (self.peakPicker.shape[0] / 2.)
+                self.ai.poni2 = self.detector.pixel2 * (self.peakPicker.shape[1] / 2.)
+                self.ai.rot1 = 0.0
+                self.ai.rot2 = 0.0
+                self.ai.rot3 = 0.0
+
+                self.geoRef.set_dist_min(0)
+                self.geoRef.set_dist_max(100)
+                self.geoRef.set_dist(self.ai.dist)
+
+                self.geoRef.set_poni1_min(-10.0 * self.ai.poni1)
+                self.geoRef.set_poni1_max(10.0 * self.ai.poni1)
+                self.geoRef.set_poni1(self.ai.poni1)
+
+                self.geoRef.set_poni2_min(-10.0 * self.ai.poni2)
+                self.geoRef.set_poni2_max(10.0 * self.ai.poni2)
+                self.geoRef.set_poni2(self.ai.poni2)
+
+                self.geoRef.set_rot1_min(-math.pi)
+                self.geoRef.set_rot1_max(math.pi)
+                self.geoRef.set_rot1(self.ai.rot1)
+
+                self.geoRef.set_rot2_min(-math.pi)
+                self.geoRef.set_rot2_max(math.pi)
+                self.geoRef.set_rot2(self.ai.rot2)
+
+                self.geoRef.set_rot3_min(-math.pi)
+                self.geoRef.set_rot3_max(math.pi)
+                self.geoRef.set_rot3(self.ai.rot3)
+
+
             else:
                 logger.warning("Unrecognized action: %s, type 'quit' to leave " % action)
+
     def postProcess(self):
         """
         Common part: shows the result of the azimuthal integration in 1D and 2D
@@ -949,7 +984,8 @@ class AbstractCalibration(object):
             self.ax_xrpd_2d.set_title("2D regrouping")
             self.ax_xrpd_2d.set_xlabel(self.unit)
             self.ax_xrpd_2d.set_ylabel("Azimuthal angle (deg)")
-            self.fig3.show()
+            if not gui_utils.main_loop:
+                self.fig3.show()
             update_fig(self.fig3)
 
     def validate_calibration(self):
@@ -972,6 +1008,15 @@ class AbstractCalibration(object):
 ################################################################################
 # Calibration
 ################################################################################
+
+    def set_data(self, data):
+        """
+        call-back function for the peak-picker
+        """
+        self.data = data
+        if not self.weighted:
+            self.data = numpy.array(self.data)[:, :-1]
+        self.refine()
 
 class Calibration(AbstractCalibration):
     """
@@ -1066,7 +1111,9 @@ decrease the value if arcs are mixed together.""", default=None)
             self.peakPicker.massif.setValleySize(self.gaussianWidth)
         else:
             self.peakPicker.massif.initValleySize()
-
+        if self.gui:
+            self.peakPicker.gui(log=True, maximize=True, pick=True)
+            update_fig(self.peakPicker.fig)
 
     def gui_peakPicker(self):
         if self.peakPicker is None:
@@ -1076,10 +1123,12 @@ decrease the value if arcs are mixed together.""", default=None)
             self.peakPicker.load(self.pointfile)
         if self.gui:
             update_fig(self.peakPicker.fig)
-        self.data = self.peakPicker.finish(self.pointfile)
-        if not self.weighted:
-            self.data = numpy.array(self.data)[:, :-1]
-
+#        self.peakPicker.finish(self.pointfile, callback=self.set_data)
+        self.set_data(self.peakPicker.finish(self.pointfile))
+#        raw_input("Please press enter when you are happy with your selection" + os.linesep)
+#        while self.data is None:
+#            update_fig(self.peakPicker.fig)
+#            time.sleep(0.1)
 
     def refine(self):
         """
@@ -1193,6 +1242,16 @@ without human intervention (--no-gui and --no-interactive options).
         """Read the name of the file with d-spacing"""
         AbstractCalibration.read_dSpacingFile(self, verbose=False)
 
+
+    def preprocess(self):
+        """
+        do dark, flat correction thresholding, ...
+        """
+        AbstractCalibration.preprocess(self)
+
+        if self.gui:
+            self.peakPicker.gui(log=True, maximize=True, pick=False)
+            update_fig(self.peakPicker.fig)
 
 
 
@@ -1792,7 +1851,8 @@ correction, at a sub-pixel level.
         """
         if self.fig is None:
             self.fig = pylab.figure()
-            self.fig.show()
+            if not gui_utils.main_loop:
+                self.fig.show()
         else:
             self.fig.clf()
         ax1 = self.fig.add_subplot(2, 2, 3)

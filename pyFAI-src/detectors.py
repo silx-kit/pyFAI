@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://forge.epn-campus.eu/projects/azimuthal
-#
-#    File: "$Id$"
+#             https://github.com/kif/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -24,28 +22,33 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 from __future__ import print_function
+
+import logging
+import numpy
+import os
+import posixpath
+import threading
+
+from . import io
+from . import spline
+from .utils import lazy_property
+from .utils import timeit, binning
+
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/06/2014"
+__date__ = "11/07/2014"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instanciate them
 """
 
-import os
-import logging
-import threading
-import numpy
-import posixpath
 
-from .utils import timeit
 
 logger = logging.getLogger("pyFAI.detectors")
 
-from . import spline
-from .utils import lazy_property
 try:
     from .fastcrc import crc32
 except ImportError:
@@ -58,7 +61,6 @@ try:
     import fabio
 except ImportError:
     fabio = None
-from . import io
 
 epsilon = 1e-6
 
@@ -144,6 +146,10 @@ class Detector(object):
         self._maskfile = None
         self._splineFile = None
         self.spline = None
+        self._dx = None
+        self._dy = None
+        self.flat = None
+        self.dark = None
         self._splineCache = {}  # key=(dx,xpoints,ypoints) value: ndarray
         self._sem = threading.Semaphore()
         if splineFile:
@@ -187,6 +193,30 @@ class Detector(object):
             self.spline = None
             self.uniform_pixel = True
     splineFile = property(get_splineFile, set_splineFile)
+
+    def set_dx(self, dx=None):
+        """
+        set the pixel-wise displacement along X (dim2):
+        """
+        if dx is not None:
+            assert dx.shape == self.max_shape
+            self._dx = dx
+            self.uniform_pixel = False
+        else:
+            self._dx = None
+            self.uniform_pixel = True
+
+    def set_dy(self, dy=None):
+        """
+        set the pixel-wise displacement along Y (dim1):
+        """
+        if dy is not None:
+            assert dy.shape == self.max_shape
+            self._dy = dy
+            self.uniform_pixel = False
+        else:
+            self._dy = None
+            self.uniform_pixel = True
 
     def get_binning(self):
         return self._binning
@@ -301,10 +331,7 @@ class Detector(object):
             if d2.ndim == 2:
                 self.shape = d2.shape
 
-        if self.spline is None:
-            dX = 0.
-            dY = 0.
-        else:
+        if self.spline is not None:
             if d2.ndim == 1:
                 keyX = ("dX", tuple(d1), tuple(d2))
                 keyY = ("dY", tuple(d1), tuple(d2))
@@ -323,6 +350,19 @@ class Detector(object):
             else:
                 dX = self.spline.splineFuncX(d2 + 0.5, d1 + 0.5)
                 dY = self.spline.splineFuncY(d2 + 0.5, d1 + 0.5)
+        elif self._dx is not None:
+            if self._binning == (1, 1):
+                binned_x = self._dx
+                binned_y = self._dy
+            else:
+                binned_x = binning(self._dx, self._binning)
+                binned_y = binning(self._dy, self._binning)
+            dX = numpy.interp(d2, numpy.arange(binned_x.shape[1]), binned_x, left=0, right=0)
+            dY = numpy.interp(d1, numpy.arange(binned_y.shape[0]), binned_y, left=0, right=0)
+        else:
+            dX = 0.
+            dY = 0.
+
         p1 = (self._pixel1 * (dY + 0.5 + d1))
         p2 = (self._pixel2 * (dX + 0.5 + d2))
         return p1, p2

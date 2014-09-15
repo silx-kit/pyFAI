@@ -82,9 +82,15 @@ class Distortion(object):
         self.lut = None
         self.delta0 = self.delta1 = None  # max size of an pixel on a regular grid ...
         self.integrator = None
-        self.method = method.lower()
+        if not method:
+            self.method = "lut"
+        else:
+            self.method = method.lower()
         self.device = device
-        self.workgroup = int(workgroup)
+        if not workgroup:
+            self.workgroup = 8
+        else:
+            self.workgroup = int(workgroup)
 
     def __repr__(self):
         return os.linesep.join(["Distortion correction %s on device %s for detector shape %s:" % (self.method, self.device, self.shape),

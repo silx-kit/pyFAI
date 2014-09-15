@@ -140,19 +140,13 @@ PyFAI solves this problem by pixel
 splitting : in addition to the pixel position, its
 spatial extension is calculated and each pixel is then split and
 distributed over the corresponding bins, the intensity being considered
-<<<<<<< HEAD
 as homogeneous within a pixel and spread accordingly.
 The drawback of this is the correlation introduced between two adjacent bins.
 To simplify 
 calculations, this was initially done by abstracting the pixel shape 
 with a bounding box that circumscribes the pixel. In an effort to better
-the quality of the results this method was dropped in favo2r of a full 
-=======
-as homogeneous within a pixel and spread accordingly. To simplify 
-calculations, this was initially done by abstracting the pixel shape 
-with a bounding box that circumscribes the pixel. In an effort to better
-the quality of the results this method was dropped in favour of a full 
->>>>>>> giannis/master
+the quality of the results this method was dropped in favoor of a full 
+
 pixel splitting scheme that actually uses the actual pixel geometry 
 for its calculations.
 
@@ -195,13 +189,12 @@ This look-up table size depends on whether pixels are split over multiple
 bins and to exploit the sparse structure, both index and weight of the pixel
 have to be stored.
 We measured that 500 Mbytes are needed to store the LUT to integrate a 16 
-megapixel image, which fits onto a reasonable quality graphics card nowadays 
+megapixels image, which fits onto a reasonable quality graphics card nowadays 
 but can still be too large to fit on an entry-level graphics card.
 
 By making this change we switched from a “linear read / random write” forward algorithm
 to a “random read / linear write” backward algorithm which is more suitable for parallelization.
 As a farther improvement on the algorithm, the use of compressed sparse row (CSR) format was 
-<<<<<<< HEAD
 introduced, to store the LUT data.
 This algorithm was implemented both in [Cython]_-OpenMP and OpenCL.
 The CSR approach has a double benefit: 
@@ -214,14 +207,6 @@ This makes it very well suited to run on GPUs and accelerators
 where hundreds to thousands of simultaneous threads are available.
 
 When using OpenCL for the GPU we used a compensated (or Kahan_summation_), to reduce
-=======
-introduced, to store the LUT data. This reduced its size even more, giving this way the 
-opportunity of working with bigger images on the same hardware, when memory space is of concern, 
-as well as making the code better suited to be run on GPUs or accelerators, as transferring 
-data to the device is one of the most important bottlenecks of such computations.
-This algorithm was implemented in Cython-OpenMP and OpenCL.
-When using OpenCL for the GPU we used a compensated, or Kahan summation to reduce
->>>>>>> giannis/master
 the error accumulation in the histogram summation (at the cost of more operations to be done).
 This allows accurate results to be obtained on cheap hardware that performs calculations
 in single precision floating-point arithmetic (32 bits) which are available on consumer
@@ -230,17 +215,12 @@ Double precision operations are currently limited to high price and performance 
 The additional cost of Kahan summation, 4x more arithmetic operations, is hidden by smaller data types,
 the higher number of single precision units and that the GPU is usually limited by the memory bandwidth anyway.
 
-<<<<<<< HEAD
 .. _Kahan_summation: http://en.wikipedia.org/wiki/Kahan_summation_algorithm
 
 The performances of the parallel implementation based on a LUT, stored in CSR format, can reach 750 MPix/s 
 on recent multi-core computer with a mid-range graphics card. 
 On multi-socket server featuring high-end GPUs like Tesla cards, the performances are similar with 
 the additional capability to work on multiple detector simultaneously.
-=======
-The perfomances of the parallel implementation based on a LUT, stored in CSR format, can reach 750 MPix/s 
-on recent multi-socket, multi-core computer or on high-end GPUs like Tesla cards.
->>>>>>> giannis/master
 
 .. figure:: img/benchmark.png
    :align: center
