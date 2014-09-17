@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/10/2011"
+__date__ = "2014-09-17"
 
 import unittest
 import time
@@ -48,8 +48,8 @@ if logger.getEffectiveLevel() == logging.DEBUG:
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 class test_histogram1d(unittest.TestCase):
     """basic test"""
-    shape = (2048, 2048)#(numpy.random.randint(1000, 4000), numpy.random.randint(1000, 4000))
-    npt = 1500#numpy.random.randint(1000, 4000)
+    shape = (512, 512)#(numpy.random.randint(1000, 4000), numpy.random.randint(1000, 4000))
+    npt = 500#numpy.random.randint(1000, 4000)
     size = shape[0] * shape[1]
     epsilon = 1.0e-4
     tth = (numpy.random.random(shape).astype("float64"))
@@ -83,6 +83,10 @@ class test_histogram1d(unittest.TestCase):
         v = abs(intensity_obt - intensity_exp) / intensity_exp
         logger.info("Numpy: Total Intensity: %s (%s expected), variation = %s", intensity_obt, intensity_exp, v)
         self.assertEquals(delta, 0, msg="check all pixels were counted")
+        summed_weight_hist = self.weight_numpy.sum(dtype="float64")
+        summed_data = self.data.sum(dtype="float64")
+        self.assertEquals(summed_weight_hist, summed_data, msg="check all intensity is counted expected %s got %s" % (summed_data, summed_weight_hist))
+
         self.assertTrue(v < self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
 
 
@@ -98,7 +102,10 @@ class test_histogram1d(unittest.TestCase):
         logger.info("Cython: Total number of points: %s (%s expected), delta = %s", sump, self.size, delta)
         v = abs(intensity_obt - intensity_exp) / intensity_exp
         logger.info("Cython: Total Intensity: %s (%s expected), variation = %s", intensity_obt, intensity_exp, v)
-        self.assertEquals(delta, 0, msg="check all pixels were counted")
+        self.assertEquals(delta, 0, msg="check all pixels were counted expected %s got %s" % (self.size, sump))
+        summed_weight_hist = self.weight_cython.sum(dtype="float64")
+        summed_data = self.data.sum(dtype="float64")
+        self.assertEquals(summed_weight_hist, summed_data, msg="check all intensity is counted expected %s got %s" % (summed_data, summed_weight_hist))
         self.assertTrue(v < self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
 
 

@@ -29,6 +29,7 @@ __date__ = "20140917"
 import cython
 from cython.parallel cimport prange
 import numpy
+from cython.view cimport array as cvarray
 cimport numpy
 import sys
 
@@ -89,13 +90,21 @@ def histogram(numpy.ndarray pos not None, \
     cdef double tmp_count, tmp_data = 0.0
     cdef double epsilon = 1e-10
 
-    cdef long   bin = 0
-    cdef long   i, idx, t, dest = 0
+    cdef long   bin = 0, thread
+    cdef long   i, t, dest = 0
     if nthread is not None:
         if isinstance(nthread, int) and (nthread > 0):
             omp_set_num_threads(< int > nthread)
-    cdef double[:] bigCount = numpy.empty(bins * omp_get_max_threads(), dtype=numpy.float64)
-    cdef double[:] bigData = numpy.empty(bins * omp_get_max_threads(), dtype=numpy.float64)
+        else:
+            nthread = omp_get_max_threads()
+    else:
+        nthread = omp_get_max_threads()
+    cdef double[:,:] big_count = cvarray(shape=(nthread, bins), itemsize=sizeof(double), format="d")
+    cdef double[:,:] big_data = cvarray(shape=(nthread, bins), itemsize=sizeof(double), format="d")
+
+    big_count[:,:] = 0.0
+    big_data[:,:] = 0.0
+
     if pixelSize_in_Pos is None:
         dbin = 0.5
         inv_dbin2 = 4.0
@@ -121,40 +130,40 @@ def histogram(numpy.ndarray pos not None, \
             fbin = (a - bin_edge_min) * inv_bin_width
             ffbin = floor(fbin)
             bin = < long > ffbin
-            dest = omp_get_thread_num() * bins + bin
+            thread = omp_get_thread_num()
             dInt = 1.0
             if  bin > 0 :
                 dtmp = ffbin - (fbin - dbin)
                 if dtmp > 0:
                     dIntL = 0.5 * dtmp * dtmp * inv_dbin2
                     dInt = dInt - dIntL
-                    bigCount[dest - 1] += dIntL
-                    bigData[dest - 1] += d * dIntL
+                    big_count[thread, bin - 1] += dIntL
+                    big_data[thread, bin - 1] += d * dIntL
 
             if bin < bins - 1 :
                 dtmp = fbin + dbin - ffbin - 1
                 if dtmp > 0 :
                     dIntR = 0.5 * dtmp * dtmp * inv_dbin2
                     dInt = dInt - dIntR
-                    bigCount[dest + 1] += dIntR
-                    bigData[dest + 1] += d * dIntR
-            bigCount[dest] += dInt
-            bigData[dest] += d * dInt
+                    big_count[thread, bin + 1] += dIntR
+                    big_data[thread, bin + 1] += d * dIntR
+            big_count[thread, bin] += dInt
+            big_data[thread, bin] += d * dInt
 
-        for idx in prange(bins):
-            outPos[idx] = bin_edge_min + (0.5 +< double > idx) * bin_width
+        for bin in prange(bins):
+            #Nota: += is for cython reduction only !
+            outPos[bin] += bin_edge_min + (0.5 +< double > bin) * bin_width
             tmp_count = 0.0
             tmp_data = 0.0
-            for t in range(omp_get_max_threads()):
-                dest = t * bins + idx
-                tmp_count += bigCount[dest]
-                tmp_data += bigData[dest]
-            out_count[idx] += tmp_count
-            out_data[idx] += tmp_data
-            if out_count[idx] > epsilon:
-                out_merge[idx] += tmp_data / tmp_count
+            for thread in range(omp_get_max_threads()):
+                tmp_count = tmp_count + big_count[thread, bin]
+                tmp_data = tmp_data + big_data[thread, bin]
+            out_count[bin] += tmp_count
+            out_data[bin] += tmp_data
+            if out_count[bin] > epsilon:
+                out_merge[bin] += tmp_data / tmp_count
             else:
-                out_merge[idx] += dummy
+                out_merge[bin] += dummy
 
     return  outPos, out_merge, out_data, out_count
 
