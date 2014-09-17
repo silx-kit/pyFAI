@@ -47,6 +47,19 @@ from distutils.command.install_data import install_data
 from distutils.command.build_ext import build_ext
 from numpy.distutils.core import Extension as _Extension
 
+def copy(infile, outfile, folder=None):
+    "link or copy file according to the OS in the given folder"
+    if folder:
+        infile = os.path.join(folder, infile)
+        outfile = os.path.join(folder, outfile)
+    if os.path.exists(outfile):
+        os.unlink(outfile)
+    if "link" in dir(os):
+        os.link(infile, outfile)
+    else:
+        shutil.copy(infile, outfile)
+
+
 cmdclass = {}
 
 
@@ -171,11 +184,15 @@ if (os.name == "posix") and ("x86" in platform.machine()):
     )
 
 if openmp == "openmp":
-    ext_modules.append(Extension('histogram', 'histogram_omp',
+    copy('histogram_omp.pyx', 'histogram.pyx', "src")
+    copy('histogram_omp.c', 'histogram.c', "src")
+    ext_modules.append(Extension('histogram',
                                  extra_compile_args=[openmp],
                                  extra_link_args=[openmp]))
 else:
-    ext_modules.append(Extension('histogram', 'histogram_nomp'))
+    copy('histogram_nomp.pyx', 'histogram.pyx', "src")
+    copy('histogram_nomp.c', 'histogram.c', "src")
+    ext_modules.append(Extension('histogram'))
 
 if CYTHON:
     from Cython.Build import cythonize
