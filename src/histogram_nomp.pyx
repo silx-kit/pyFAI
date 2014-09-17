@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: Azimuthal integration
+#    Project: Fast Azimuthal integration
 #             https://github.com/kif/pyFAI
-#
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -27,13 +26,11 @@ __author__ = "Jerome Kieffer"
 __date__ = "20140917"
 
 import cython
-from cython.parallel cimport prange
 import numpy
 cimport numpy
 import sys
 
 from libc.math cimport floor,fabs
-from openmp cimport omp_set_num_threads, omp_get_max_threads, omp_get_thread_num
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
 @cython.cdivision(True)
@@ -53,8 +50,7 @@ def histogram(numpy.ndarray pos not None, \
     @param weights: array with intensities
     @param bins: number of output bins
     @param pixelSize_in_Pos: size of a pixels in 2theta
-    @param nthread: maximum number of thread to use. By default: maximum available.
-        One can also limit this with OMP_NUM_THREADS environment variable
+    @param nthread: OpenMP is disabled. unused
 
     @return 2theta, I, weighted histogram, raw histogram
     """
@@ -64,10 +60,10 @@ def histogram(numpy.ndarray pos not None, \
     cdef long  size = pos.size
     cdef double[:] cpos = numpy.ascontiguousarray(pos.ravel(),dtype=numpy.float64)
     cdef double[:] cdata = numpy.ascontiguousarray(weights.ravel(),dtype=numpy.float64)
-    cdef numpy.ndarray[numpy.float64_t, ndim = 1] out_data = numpy.zeros(bins, dtype="float64")
-    cdef numpy.ndarray[numpy.float64_t, ndim = 1] out_count = numpy.zeros(bins, dtype="float64")
-    cdef numpy.ndarray[numpy.float64_t, ndim = 1] out_merge = numpy.zeros(bins, dtype="float64")
-    cdef numpy.ndarray[numpy.float64_t, ndim = 1] outPos = numpy.zeros(bins, dtype="float64")
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] out_data = numpy.empty(bins, dtype="float64")
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] out_count = numpy.empty(bins, dtype="float64")
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] out_merge = numpy.empty(bins, dtype="float64")
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] out_pos = numpy.empty(bins, dtype="float64")
     cdef double bin_edge_min, bin_edge_max
     if bin_range is not None:
         bin_edge_min = bin_range[0]
@@ -90,12 +86,8 @@ def histogram(numpy.ndarray pos not None, \
     cdef double epsilon = 1e-10
 
     cdef long   bin = 0
-    cdef long   i, idx, t, dest = 0
-    if nthread is not None:
-        if isinstance(nthread, int) and (nthread > 0):
-            omp_set_num_threads(< int > nthread)
-    cdef double[:] bigCount = numpy.empty(bins * omp_get_max_threads(), dtype=numpy.float64)
-    cdef double[:] bigData = numpy.empty(bins * omp_get_max_threads(), dtype=numpy.float64)
+    cdef long   i, idx, t
+
     if pixelSize_in_Pos is None:
         dbin = 0.5
         inv_dbin2 = 4.0
@@ -113,7 +105,7 @@ def histogram(numpy.ndarray pos not None, \
         inv_dbin2 = 0.0
 
     with nogil:
-        for i in prange(size):
+        for i in range(size):
             d = cdata[i]
             a = cpos[i]
             if (a < bin_edge_min) or (a > bin_edge_max):
@@ -121,42 +113,32 @@ def histogram(numpy.ndarray pos not None, \
             fbin = (a - bin_edge_min) * inv_bin_width
             ffbin = floor(fbin)
             bin = < long > ffbin
-            dest = omp_get_thread_num() * bins + bin
             dInt = 1.0
             if  bin > 0 :
                 dtmp = ffbin - (fbin - dbin)
                 if dtmp > 0:
                     dIntL = 0.5 * dtmp * dtmp * inv_dbin2
                     dInt = dInt - dIntL
-                    bigCount[dest - 1] += dIntL
-                    bigData[dest - 1] += d * dIntL
+                    out_count[bin - 1] += dIntL
+                    out_data[bin - 1] += d * dIntL
 
             if bin < bins - 1 :
                 dtmp = fbin + dbin - ffbin - 1
                 if dtmp > 0 :
                     dIntR = 0.5 * dtmp * dtmp * inv_dbin2
                     dInt = dInt - dIntR
-                    bigCount[dest + 1] += dIntR
-                    bigData[dest + 1] += d * dIntR
-            bigCount[dest] += dInt
-            bigData[dest] += d * dInt
+                    out_count[bin + 1] += dIntR
+                    out_data[bin + 1] += d * dIntR
+            out_count[bin] += dInt
+            out_data[bin] += d * dInt
 
-        for idx in prange(bins):
-            outPos[idx] = bin_edge_min + (0.5 +< double > idx) * bin_width
-            tmp_count = 0.0
-            tmp_data = 0.0
-            for t in range(omp_get_max_threads()):
-                dest = t * bins + idx
-                tmp_count += bigCount[dest]
-                tmp_data += bigData[dest]
-            out_count[idx] += tmp_count
-            out_data[idx] += tmp_data
+        for idx in range(bins):
+            out_pos[idx] = bin_edge_min + (0.5 +< double > idx) * bin_width
             if out_count[idx] > epsilon:
-                out_merge[idx] += tmp_data / tmp_count
+                out_merge[idx] = out_data[idx]/out_count[idx] / tmp_count
             else:
-                out_merge[idx] += dummy
-
-    return  outPos, out_merge, out_data, out_count
+                out_merge[idx] = dummy
+    return  out_pos, out_merge, out_data, out_count
 
 
 @cython.cdivision(True)
@@ -199,9 +181,9 @@ def histogram2d(numpy.ndarray pos0 not None,
     cdef double[:] cpos0 = numpy.ascontiguousarray(pos0.ravel(),dtype=numpy.float64)
     cdef double[:] cpos1 = numpy.ascontiguousarray(pos1.ravel(),dtype=numpy.float64)
     cdef double[:] data = numpy.ascontiguousarray(weights.ravel(),dtype=numpy.float64)
-    cdef numpy.ndarray[numpy.float64_t, ndim = 2] out_data = numpy.zeros((bin0, bin1), dtype="float64")
-    cdef numpy.ndarray[numpy.float64_t, ndim = 2] out_count = numpy.zeros((bin0, bin1), dtype="float64")
-    cdef numpy.ndarray[numpy.float64_t, ndim = 2] out_merge = numpy.zeros((bin0, bin1), dtype="float64")
+    cdef numpy.ndarray[numpy.float64_t, ndim = 2] out_data = numpy.empty((bin0, bin1), dtype="float64")
+    cdef numpy.ndarray[numpy.float64_t, ndim = 2] out_count = numpy.empty((bin0, bin1), dtype="float64")
+    cdef numpy.ndarray[numpy.float64_t, ndim = 2] out_merge = numpy.empty((bin0, bin1), dtype="float64")
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] edges0, edges1
     cdef double min0 = pos0.min()
     cdef double max0 = pos0.max() * EPS32

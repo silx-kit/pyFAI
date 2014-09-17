@@ -97,9 +97,14 @@ def check_openmp():
 CYTHON = check_cython()
 openmp = "openmp" if check_openmp() else ""
 
-def Extension(name, extra_sources=None, **kwargs):
+def Extension(name, source=None, extra_sources=None, **kwargs):
+    """
+    Wrapper for distutils' Extension
+    """
+    if source is None:
+        source = name
     cython_c_ext = ".pyx" if CYTHON else ".c"
-    sources = [os.path.join("src", name + cython_c_ext)]
+    sources = [os.path.join("src", source + cython_c_ext)]
     if extra_sources:
         sources.extend(extra_sources)
     return _Extension(name=name, sources=sources, **kwargs)
@@ -162,15 +167,15 @@ ext_modules = [
 
 if (os.name == "posix") and ("x86" in platform.machine()):
     ext_modules.append(
-        Extension('fastcrc', [os.path.join("src", "crc32.c")])
+        Extension('fastcrc', extra_sources=[os.path.join("src", "crc32.c")])
     )
 
-if (openmp == "openmp"):
-    ext_modules.append(Extension('histogram_omp',
+if openmp == "openmp":
+    ext_modules.append(Extension('histogram', 'histogram_omp',
                                  extra_compile_args=[openmp],
                                  extra_link_args=[openmp]))
 else:
-    ext_modules.append(Extension('histogram_nomp'))
+    ext_modules.append(Extension('histogram', 'histogram_nomp'))
 
 if CYTHON:
     from Cython.Build import cythonize
