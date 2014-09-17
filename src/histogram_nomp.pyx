@@ -293,7 +293,7 @@ def histogram2d(numpy.ndarray pos0 not None,
             out_count[b0, b1] += rest
             out_data[b0, b1] += d * rest
 
-        for i in prange(bin0):
+        for i in range(bin0):
             for j in range(bin1):
                 if out_count[i, j] > epsilon:
                     out_merge[i, j] += out_data[i, j] / out_count[i, j]
