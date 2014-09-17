@@ -82,7 +82,6 @@ def histogram(numpy.ndarray pos not None, \
     cdef double dIntL = 0.0
     cdef double dtmp = 0.0
     cdef double dbin, inv_dbin2 = 0.0
-    cdef double tmp_count, tmp_data = 0.0
     cdef double epsilon = 1e-10
 
     cdef long   bin = 0
@@ -135,7 +134,7 @@ def histogram(numpy.ndarray pos not None, \
         for idx in range(bins):
             out_pos[idx] = bin_edge_min + (0.5 +< double > idx) * bin_width
             if out_count[idx] > epsilon:
-                out_merge[idx] = out_data[idx]/out_count[idx] / tmp_count
+                out_merge[idx] = out_data[idx] / out_count[idx]
             else:
                 out_merge[idx] = dummy
     return  out_pos, out_merge, out_data, out_count
