@@ -196,9 +196,6 @@ def histogram2d(numpy.ndarray pos0 not None,
 
     edges0 = numpy.linspace(min0+(0.5/idp0),max0-(0.5/idp0),bin0)
     edges1 = numpy.linspace(min1+(0.5/idp1),max1-(0.5/idp1),bin1)
-    if nthread is not None:
-        if isinstance(nthread, int) and (nthread > 0):
-            omp_set_num_threads(< int > nthread)
     with nogil:
         for i in range(size):
             p0 = cpos0[i]
