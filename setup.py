@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/09/2014"
+__date__ = "17/09/2014"
 __status__ = "stable"
 
 
@@ -78,8 +78,24 @@ def check_cython():
 
     return True
 
-CYTHON = check_cython()
+def check_openmp():
+    """
+    Do we compile with OpenMP ?
+    """
+    if "WITH_OPENMP" in os.environ and os.environ["WITH_OPENMP"] == "False":
+        print("No OpenMP requested by environment")
+        return False
 
+    if ("--no-openmp" in sys.argv):
+        sys.argv.remove("--no-openmp")
+        os.environ["WITH_OPENMP"] = "False"
+        print("No OpenMP requested by command line")
+        return False
+
+    return True
+
+CYTHON = check_cython()
+openmp = "openmp" if check_openmp() else ""
 
 def Extension(name, extra_sources=None, **kwargs):
     cython_c_ext = ".pyx" if CYTHON else ".c"
@@ -90,16 +106,12 @@ def Extension(name, extra_sources=None, **kwargs):
 
 ext_modules = [
     Extension("_geometry",
-              extra_compile_args=["openmp"],
-              extra_link_args=["openmp"]),
+              extra_compile_args=[openmp],
+              extra_link_args=[openmp]),
 
     Extension("reconstruct",
-              extra_compile_args=["openmp"],
-              extra_link_args=["openmp"]),
-
-    Extension('histogram',
-              extra_compile_args=['openmp'],
-              extra_link_args=['openmp']),
+              extra_compile_args=[openmp],
+              extra_link_args=[openmp]),
 
     Extension('splitPixel'),
 
@@ -112,34 +124,34 @@ ext_modules = [
     Extension('splitBBox'),
 
     Extension('splitBBoxLUT',
-              extra_compile_args=['openmp'],
-              extra_link_args=['openmp']),
+              extra_compile_args=[openmp],
+              extra_link_args=[openmp]),
 
     Extension('splitBBoxCSR',
-              extra_compile_args=['openmp'],
-              extra_link_args=['openmp']),
+              extra_compile_args=[openmp],
+              extra_link_args=[openmp]),
 
     Extension('relabel'),
 
     Extension("bilinear",
-              extra_compile_args=['openmp'],
-              extra_link_args=['openmp']),
+              extra_compile_args=[openmp],
+              extra_link_args=[openmp]),
 
     Extension('_distortion',
-              extra_compile_args=['openmp'],
-              extra_link_args=['openmp']),
+              extra_compile_args=[openmp],
+              extra_link_args=[openmp]),
 
     Extension('_distortionCSR',
-              extra_compile_args=['openmp'],
-              extra_link_args=['openmp']),
+              extra_compile_args=[openmp],
+              extra_link_args=[openmp]),
 
     Extension('_bispev',
-              extra_compile_args=['openmp'],
-              extra_link_args=['openmp']),
+              extra_compile_args=[openmp],
+              extra_link_args=[openmp]),
 
     Extension('_convolution',
-              extra_compile_args=["openmp"],
-              extra_link_args=["openmp"]),
+              extra_compile_args=[openmp],
+              extra_link_args=[openmp]),
 
     Extension('_blob'),
 
@@ -152,6 +164,13 @@ if (os.name == "posix") and ("x86" in platform.machine()):
     ext_modules.append(
         Extension('fastcrc', [os.path.join("src", "crc32.c")])
     )
+
+if (openmp == "openmp"):
+    ext_modules.append(Extension('histogram_omp',
+                                 extra_compile_args=[openmp],
+                                 extra_link_args=[openmp]))
+else:
+    ext_modules.append(Extension('histogram_nomp'))
 
 if CYTHON:
     from Cython.Build import cythonize
