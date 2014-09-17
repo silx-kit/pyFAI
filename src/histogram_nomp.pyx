@@ -23,7 +23,7 @@
 #
 
 __author__ = "Jerome Kieffer"
-__date__ = "20140917"
+__date__ = "2014-09-17"
 __name__ = "histogram"
 
 import cython
@@ -61,8 +61,8 @@ def histogram(numpy.ndarray pos not None, \
     cdef long  size = pos.size
     cdef double[:] cpos = numpy.ascontiguousarray(pos.ravel(),dtype=numpy.float64)
     cdef double[:] cdata = numpy.ascontiguousarray(weights.ravel(),dtype=numpy.float64)
-    cdef numpy.ndarray[numpy.float64_t, ndim = 1] out_data = numpy.empty(bins, dtype="float64")
-    cdef numpy.ndarray[numpy.float64_t, ndim = 1] out_count = numpy.empty(bins, dtype="float64")
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] out_data = numpy.zeros(bins, dtype="float64")
+    cdef numpy.ndarray[numpy.float64_t, ndim = 1] out_count = numpy.zeros(bins, dtype="float64")
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] out_merge = numpy.empty(bins, dtype="float64")
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] out_pos = numpy.empty(bins, dtype="float64")
     cdef double bin_edge_min, bin_edge_max
@@ -181,8 +181,8 @@ def histogram2d(numpy.ndarray pos0 not None,
     cdef double[:] cpos0 = numpy.ascontiguousarray(pos0.ravel(),dtype=numpy.float64)
     cdef double[:] cpos1 = numpy.ascontiguousarray(pos1.ravel(),dtype=numpy.float64)
     cdef double[:] data = numpy.ascontiguousarray(weights.ravel(),dtype=numpy.float64)
-    cdef numpy.ndarray[numpy.float64_t, ndim = 2] out_data = numpy.empty((bin0, bin1), dtype="float64")
-    cdef numpy.ndarray[numpy.float64_t, ndim = 2] out_count = numpy.empty((bin0, bin1), dtype="float64")
+    cdef numpy.ndarray[numpy.float64_t, ndim = 2] out_data = numpy.zeros((bin0, bin1), dtype="float64")
+    cdef numpy.ndarray[numpy.float64_t, ndim = 2] out_count = numpy.zeros((bin0, bin1), dtype="float64")
     cdef numpy.ndarray[numpy.float64_t, ndim = 2] out_merge = numpy.empty((bin0, bin1), dtype="float64")
     cdef numpy.ndarray[numpy.float64_t, ndim = 1] edges0, edges1
     cdef double min0 = pos0.min()
@@ -293,9 +293,9 @@ def histogram2d(numpy.ndarray pos0 not None,
         for i in range(bin0):
             for j in range(bin1):
                 if out_count[i, j] > epsilon:
-                    out_merge[i, j] += out_data[i, j] / out_count[i, j]
+                    out_merge[i, j] = out_data[i, j] / out_count[i, j]
                 else:
-                    out_merge[i, j] += dummy
+                    out_merge[i, j] = dummy
 
 
     return out_merge, edges0, edges1, out_data, out_count
