@@ -24,6 +24,7 @@
 
 __author__ = "Jerome Kieffer"
 __date__ = "20140917"
+__name__ = "histogram"
 
 import cython
 import numpy
