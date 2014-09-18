@@ -125,6 +125,7 @@ class TestDetector(unittest.TestCase):
         sx165.binning = 10
         self.assertAlmostEqual(sx165.pixel1, sx165.pixel2)
 
+
     def test_nexus_detector(self):
         tmpdir = tempfile.mkdtemp()
         known_fail = [] #TODO: fix broken detectors
@@ -165,6 +166,7 @@ class TestDetector(unittest.TestCase):
 
         shutil.rmtree(tmpdir)
 
+
     def test_guess_binning(self):
 
         #Mar 345 2300 pixels with 150 micron size
@@ -173,11 +175,24 @@ class TestDetector(unittest.TestCase):
         mar.guess_binning(shape)
         self.assertEqual(shape, mar.mask.shape, "Mar345 detector has right mask shape")
         self.assertEqual(mar.pixel1, 150e-6, "Mar345 detector has pixel size 150µ")
+
         mar = detector_factory("mar345")
         shape = 3450, 3450
         mar.guess_binning(shape)
         self.assertEqual(shape, mar.mask.shape, "Mar345 detector has right mask shape")
         self.assertEqual(mar.pixel1, 100e-6, "Mar345 detector has pixel size 100µ")
+
+        mar = detector_factory("mar165")
+        shape = 1364, 1364
+        mar.guess_binning(shape)
+        self.assertEqual(shape, mar.mask.shape, "Mar165 detector has right mask shape")
+        self.assertEqual(mar.pixel1, 118.616e-6, "Mar166 detector has pixel size 118.616µ")
+        self.assertEqual(mar.binning, (3, 3), "Mar165 has 3x3 binning")
+
+        mar = detector_factory("RayonixLx170")
+        shape = 192, 384
+        mar.guess_binning(shape)
+        self.assertEqual(mar.binning, (10, 10), "RayonixLx170 has 10x10 binning")
 
 
 def test_suite_all_detectors():

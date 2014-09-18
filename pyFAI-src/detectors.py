@@ -517,7 +517,6 @@ class Detector(object):
         Guess the binning/mode depending on the image shape
         @param data: 2-tuple with the shape of the image or the image with a .shape attribute.
         """
-        logger.warning("guess_binning is not implemented for generic detectors !")
         if self.force_pixel:
             if "shape" in dir(data):
                 shape = data.shape
@@ -1488,7 +1487,7 @@ class Perkin(Detector):
 class Rayonix(Detector):
     force_pixel = True
     BINNED_PIXEL_SIZE = {}
-
+    MAX_SHAPE = (4096 , 4096)
     def __init__(self, pixel1=None, pixel2=None):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
@@ -1523,6 +1522,26 @@ class Rayonix(Detector):
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
             (self.name, self._pixel1, self._pixel2)
+
+    def guess_binning(self, data):
+        """
+        Guess the binning/mode depending on the image shape
+        @param data: 2-tuple with the shape of the image or the image with a .shape attribute.
+        """
+        if "shape" in dir(data):
+            shape = data.shape
+        else:
+            shape = tuple(data[:2])
+        bin1 = self.MAX_SHAPE[0] // shape[0]
+        bin2 = self.MAX_SHAPE[1] // shape[1]
+        self._binning = (bin1, bin2)
+        self.shape = shape
+        self.max_shape = shape
+        self._pixel1 = self.BINNED_PIXEL_SIZE[bin1]
+        self._pixel2 = self.BINNED_PIXEL_SIZE[bin2]
+        self._mask = False
+        self._mask_crc = None
+
 
 
 class Rayonix133(Rayonix):
