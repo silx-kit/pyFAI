@@ -27,7 +27,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/06/2014"
+__date__ = "2014-09-18"
 
 import sys, os, tempfile, shutil
 import unittest
@@ -158,12 +158,26 @@ class TestDetector(unittest.TestCase):
                 self.assert_(err2 < 1e-6, "%s precision on pixel position 2 is better than 1µm, got %e" % (det_name, err2))
             if (det.mask is not None) or (new_det.mask is not None):
                 self.assert_(numpy.allclose(det.mask, new_det.mask), "%s mask is not the same" % det_name)
-            
+
         #check Pilatus with displacement maps
         #check spline
         #check SPD sisplacement
 
         shutil.rmtree(tmpdir)
+
+    def test_guess_binning(self):
+
+        #Mar 345 2300 pixels with 150 micron size
+        mar = detector_factory("mar345")
+        shape = 2300, 2300
+        mar.guess_binning(shape)
+        self.assertEqual(shape, mar.mask.shape, "Mar345 detector has right mask shape")
+        self.assertEqual(mar.pixel1, 150e-6, "Mar345 detector has pixel size 150µ")
+        mar = detector_factory("mar345")
+        shape = 3450, 3450
+        mar.guess_binning(shape)
+        self.assertEqual(shape, mar.mask.shape, "Mar345 detector has right mask shape")
+        self.assertEqual(mar.pixel1, 100e-6, "Mar345 detector has pixel size 100µ")
 
 
 def test_suite_all_detectors():
@@ -172,6 +186,7 @@ def test_suite_all_detectors():
     testSuite.addTest(TestDetector("test_detector_imxpad_s140"))
     testSuite.addTest(TestDetector("test_detector_rayonix_sx165"))
     testSuite.addTest(TestDetector("test_nexus_detector"))
+    testSuite.addTest(TestDetector("test_guess_binning"))
 
     return testSuite
 
