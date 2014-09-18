@@ -72,6 +72,30 @@ else:
     pyFAI_morphology = True
 
 
+def get_detector(detector, datafiles=None):
+    """
+    Detector factory taking into account the binning knowing the datafiles
+    @param detector: string or detector or other junk
+    @param datafiles: can be a list of images to be opened and their shape used.
+    @return pyFAI.detector.Detector instance
+    """
+    res = None
+    if type(detector) in types.StringTypes:
+        try:
+            res = detector_factory(detector)
+        except RuntimeError:
+            print("Not a valid detector: %s" % detector)
+            sys.exit(-1)
+    elif isinstance(detector, Detector):
+        res = detector
+    else:
+        res = Detector()
+    if datafiles and os.path.exists(datafiles[0]):
+        shape = fabio.open(datafiles[0]).data.shape
+        res.guess_binning(shape)
+    return res
+
+
 class AbstractCalibration(object):
 
     """
@@ -122,7 +146,7 @@ class AbstractCalibration(object):
         self.flatFiles = flatFiles
         self.pointfile = None
 
-        self.detector = self.get_detector(detector)
+        self.detector = get_detector(detector, dataFiles)
 
         if splineFile and os.path.isfile(splineFile):
             self.detector.splineFile = os.path.abspath(splineFile)
@@ -151,7 +175,7 @@ class AbstractCalibration(object):
                 self.calibrant = calibrant
             elif calibrant in ALL_CALIBRANTS:
                 self.calibrant = ALL_CALIBRANTS[calibrant]
-            elif os.path.isfile(celibrant) and os.path.isfile(calibrant):
+            elif os.path.isfile(calibrant) and os.path.isfile(calibrant):
                 self.calibrant = Calibrant(calibrant)
             else:
                 logger.error("Unable to handle such calibrant %s" % calibrant)
@@ -198,17 +222,6 @@ class AbstractCalibration(object):
             lst.append("fixed= None")
         lst.append(self.detector.__repr__())
         return os.linesep.join(lst)
-
-    def get_detector(self, detector):
-        if type(detector) in types.StringTypes:
-            try:
-                return detector_factory(detector)
-            except RuntimeError:
-                sys.exit(-1)
-        elif isinstance(detector, Detector):
-            return detector
-        else:
-            return Detector()
 
     def configure_parser(self, version="calibration from pyFAI  version %s: %s" % (PyFAI_VERSION, PyFAI_DATE),
                          usage="pyFAI-calib [options] input_image.edf",
@@ -353,7 +366,7 @@ class AbstractCalibration(object):
 
 
         if options.detector_name:
-            self.detector = self.get_detector(options.detector_name)
+            self.detector = get_detector(options.detector_name, args)
             self.ai.detector = self.detector
         if options.spline:
             if "Pilatus" in self.detector.name:
@@ -1279,17 +1292,12 @@ class MultiCalib(object):
         self.flatFiles = flatFiles or []
         self.data = {}
 
-        if type(detector) in types.StringTypes:
-            self.detector = detector_factory(detector)
-        elif isinstance(detector, Detector):
-            self.detector = detector
-        else:
-            self.detector = Detector()
+        self.detector = get_detector(detector, dataFiles)
 
         if splineFile and os.path.isfile(splineFile):
             self.detector.splineFile = os.path.abspath(splineFile)
         if pixelSize:
-            if __len__ in pixelSize and len(pixelSize) >= 2:
+            if "__len__" in dir(pixelSize) and len(pixelSize) >= 2:
                 self.detector.pixel1 = float(pixelSize[0])
                 self.detector.pixel2 = float(pixelSize[1])
             else:
@@ -1482,7 +1490,7 @@ class MultiCalib(object):
             self.mask = fabio.open(options.mask).data
 
         if options.detector_name:
-            self.detector = detector_factory(options.detector_name)
+            self.detector = get_detector(options.detector_name, options.args)
         if options.spline:
             if os.path.isfile(options.spline):
                 self.detector.splineFile = os.path.abspath(options.spline)
