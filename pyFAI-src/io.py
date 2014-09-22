@@ -29,7 +29,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/07/2014"
+__date__ = "22/09/2014"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -187,6 +187,7 @@ class Writer(object):
         for k, v in  config.items():
             if k in self.CONFIG_ITEMS:
                 self.__setattr__(k, v)
+
 
 class HDF5Writer(Writer):
     """
@@ -398,6 +399,7 @@ class HDF5Writer(Writer):
                 self.radial_values[:] = radial
                 self.has_radial_values = True
 
+
 class AsciiWriter(Writer):
     """
     Ascii file writer (.xy or .dat)
@@ -510,48 +512,49 @@ class FabioWriter(Writer):
         """
         Writer.init(self, fai_cfg, lima_cfg)
         with self._sem:
-            dim1_unit = units.to_unit(fai_cfg["unit"])
+#            dim1_unit = units.to_unit(fai_cfg.get("unit", "r_mm"))
             header_keys = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3",
-                           "chi_min", "chi_max",
-                           dim1_unit.REPR + "_min",
-                           dim1_unit.REPR + "_max",
-                           "pixelX", "pixelY",
-                           "dark", "flat", "polarization_factor", "normalization_factor"]
+#                           "chi_min", "chi_max",
+#                           dim1_unit.REPR + "_min",
+#                           dim1_unit.REPR + "_max",
+#                           "pixelX", "pixelY",
+#                           "dark", "flat", "polarization_factor", "normalization_factor"
+                            ]
             header = {"dist": str(fai_cfg.get("dist")),
                       "poni1": str(fai_cfg.get("poni1")),
                       "poni2": str(fai_cfg.get("poni2")),
                       "rot1": str(fai_cfg.get("rot1")),
-                      "rot2": str(fai_cfg.get("rot1")),
-                      "rot3": str(fai_cfg.get("dist")),
-                      "chi_min": str(fai_cfg.get("dist")),
-                      "chi_max": str(fai_cfg.get("dist")),
-                      dim1_unit.REPR + "_min": str(fai_cfg.get("dist")),
-                      dim1_unit.REPR + "_max": str(fai_cfg.get("dist")),
-                      "pixelX": str(fai_cfg.get("dist")),  # this is not a bug ... most people expect dim1 to be X
-                      "pixelY": str(fai_cfg.get("dist")),  # this is not a bug ... most people expect dim2 to be Y
-                      "polarization_factor": str(fai_cfg.get("dist")),
-                      "normalization_factor":str(fai_cfg.get("dist")),
+                      "rot2": str(fai_cfg.get("rot2")),
+                      "rot3": str(fai_cfg.get("rot3")),
+#                      "chi_min": str(fai_cfg.get("chi_min")),
+#                      "chi_max": str(fai_cfg.get("chi_max")),
+#                      dim1_unit.REPR + "_min": str(fai_cfg.get("dist")),
+#                      dim1_unit.REPR + "_max": str(fai_cfg.get("dist")),
+#                      "pixelX": str(fai_cfg.get("dist")),  # this is not a bug ... most people expect dim1 to be X
+#                      "pixelY": str(fai_cfg.get("dist")),  # this is not a bug ... most people expect dim2 to be Y
+#                      "polarization_factor": str(fai_cfg.get("dist")),
+#                      "normalization_factor":str(fai_cfg.get("dist")),
                       }
 
-            if self.splineFile:
-                header["spline"] = str(self.splineFile)
-
-            if dark is not None:
-                if self.darkfiles:
-                    header["dark"] = self.darkfiles
-                else:
-                    header["dark"] = 'unknown dark applied'
-            if flat is not None:
-                if self.flatfiles:
-                    header["flat"] = self.flatfiles
-                else:
-                    header["flat"] = 'unknown flat applied'
-            f2d = self.getFit2D()
-            for key in f2d:
-                header["key"] = f2d[key]
-        self.prefix = prefix
-        self.index_format = index_format
-        self.start_index = start_index
+#            if self.splineFile:
+#                header["spline"] = str(self.splineFile)
+#
+#            if dark is not None:
+#                if self.darkfiles:
+#                    header["dark"] = self.darkfiles
+#                else:
+#                    header["dark"] = 'unknown dark applied'
+#            if flat is not None:
+#                if self.flatfiles:
+#                    header["flat"] = self.flatfiles
+#                else:
+#                    header["flat"] = 'unknown flat applied'
+#            f2d = self.getFit2D()
+#            for key in f2d:
+#                header["key"] = f2d[key]
+        self.prefix = fai_cfg.get("prefix", "")
+        self.index_format = fai_cfg.get("index_format", "%04i")
+        self.start_index = fai_cfg.get("start_index", 0)
         if not self.subdir:
             self.directory = directory
         elif self.subdir.startswith("/"):
