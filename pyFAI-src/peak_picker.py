@@ -28,10 +28,16 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/07/2014"
+__date__ = "22/09/2014"
 __status__ = "production"
 
-import os, sys, threading, logging, gc, types
+import os
+import sys
+import threading
+import logging
+import gc
+import types
+import array
 import operator
 from math import sqrt
 import numpy
@@ -582,7 +588,7 @@ class ControlPoints(object):
                     self.calibrant = Calibrant(calibrant)
                 else:
                     logger.error("Unable to handle such calibrant: %s" % calibrant)
-            elif isinstance(dSpacing, (numpy.ndarray, list, tuple, array)):
+            elif isinstance(self.dSpacing, (numpy.ndarray, list, tuple, array)):
                 self.calibrant = Calibrant(dSpacing=list(calibrant))
             else:
                 logger.error("Unable to handle such calibrant: %s" % calibrant)
@@ -914,8 +920,3 @@ class ControlPoints(object):
 
 
 
-class Event(object):
-    "Dummy class for dummy things"
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height

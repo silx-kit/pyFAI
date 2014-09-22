@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/07/2014"
+__date__ = "22/09/2014"
 __status__ = "production"
 
 import matplotlib
@@ -59,6 +59,13 @@ def update_fig(fig=None):
                                                     fig.canvas.size()))
             if not main_loop:
                 QtCore.QCoreApplication.processEvents()
+
+class Event(object):
+    "Dummy class for dummy things"
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+
 
 def maximize_fig(fig=None):
     """

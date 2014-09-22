@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/07/2014"
+__date__ = "22/09/2014"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1612,7 +1612,7 @@ class AzimuthalIntegrator(Geometry):
             data /= self.solidAngleArray(shape, correctSolidAngle)[mask]
 
         if tthRange is not None:
-            tthRange = [deg2rad(tthRange[0]), deg2rad(tthRange[-1])]
+            tthRange = [utils.deg2rad(tthRange[0]), utils.deg2rad(tthRange[-1])]
         else:
             tthRange = [tth.min(), tth.max() * EPS32]
 

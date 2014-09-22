@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2014"
+__date__ = "22/09/2014"
 __status__ = "production"
 
 import os
@@ -140,12 +140,11 @@ class Calibrant(object):
         This is probably not a good idea, but who knows !
         """
         with self._sem:
-            if value :
+            if value:
                 self._wavelength = float(value)
                 if self._wavelength < 1e-15 or self._wavelength > 1e-6:
                     logger.warning("This is an unlikely wavelength (in meter): %s" % self._wavelength)
                 self._calc_dSpacing()
-                self._ring = [self.dSpacing.index(i) for i in d]
 
     def set_wavelength(self, value=None):
         updated = False
@@ -290,7 +289,7 @@ class calibrant_factory(object):
         return map(Calibrant, self.all.values())
 
     def items(self):
-        return [(i, calibran(j)) for i, j in self.all.items()]
+        return [(i, Calibrant(j)) for i, j in self.all.items()]
 
     __call__ = __getitem__
 
