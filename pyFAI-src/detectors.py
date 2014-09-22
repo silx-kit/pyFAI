@@ -22,19 +22,6 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 from __future__ import print_function
-
-import logging
-import numpy
-import os
-import posixpath
-import threading
-
-from . import io
-from . import spline
-from .utils import lazy_property
-from .utils import timeit, binning
-
-
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
@@ -45,7 +32,15 @@ __doc__ = """
 Module containing the description of all detectors with a factory to instanciate them
 """
 
+import logging
+import numpy
+import os
+import posixpath
+import threading
 
+from . import io
+from . import spline
+from .utils import binning
 
 logger = logging.getLogger("pyFAI.detectors")
 
@@ -538,7 +533,7 @@ class NexusDetector(Detector):
         if filename is not None:
             self.load(filename)
         self._filename = filename
-        uniform_pixel = True
+        self.uniform_pixel = True
 
     def __repr__(self):
         return "%s detector from NeXus file: %s\t PixelSize= %.3e, %.3e m" % \
@@ -805,7 +800,7 @@ class Pilatus(Detector):
                     delta1 = delta1 / 100.0  # Offsets are in percent of pixel
                     delta2 = delta2 / 100.0  # former arrays were integers
                 else:
-                    logger.warning("Surprizing situation !!! please investigate: offset has shape %s and input array have %s" % (self.offset1.shape, d1, shape))
+                    logger.warning("Surprizing situation !!! please investigate: offset has shape %s and input array have %s" % (self.offset1.shape, d1.shape))
                     delta1 = delta2 = 0.
         # For pilatus,
         p1 = (self._pixel1 * (delta1 + 0.5 + d1))
@@ -964,7 +959,7 @@ class Eiger(Detector):
                     delta1 = delta1 / 100.0  # Offsets are in percent of pixel
                     delta2 = delta2 / 100.0  # former arrays were integers
                 else:
-                    logger.warning("Surprising situation !!! please investigate: offset has shape %s and input array have %s" % (self.offset1.shape, d1, shape))
+                    logger.warning("Surprising situation !!! please investigate: offset has shape %s and input array have %s" % (self.offset1.shape, d1.shape))
                     delta1 = delta2 = 0.
         # For pilatus,
         p1 = (self._pixel1 * (delta1 + 0.5 + d1))
