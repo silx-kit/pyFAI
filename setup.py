@@ -71,13 +71,6 @@ def check_cython():
     """
     Check if cython must be activated fron te command line or the environment.
     """
-    try:
-        import Cython.Compiler.Version
-    except ImportError:
-        return False
-    else:
-        if Cython.Compiler.Version.version < "0.17":
-            return False
 
     if "WITH_CYTHON" in os.environ and os.environ["WITH_CYTHON"] == "False":
         print("No Cython requested by environment")
@@ -89,6 +82,13 @@ def check_cython():
         print("No Cython requested by command line")
         return False
 
+    try:
+        import Cython.Compiler.Version
+    except ImportError:
+        return False
+    else:
+        if Cython.Compiler.Version.version < "0.17":
+            return False
     return True
 
 def check_openmp():
