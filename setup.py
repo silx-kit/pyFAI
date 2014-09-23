@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/09/2014"
+__date__ = "23/09/2014"
 __status__ = "stable"
 
 
@@ -38,7 +38,6 @@ import os
 import sys
 import glob
 import shutil
-import os.path
 import platform
 import subprocess
 
@@ -46,6 +45,7 @@ from distutils.core import setup, Command
 from distutils.command.install_data import install_data
 from distutils.command.build_ext import build_ext
 from numpy.distutils.core import Extension as _Extension
+
 
 def copy(infile, outfile, folder=None):
     "link or copy file according to the OS in the given folder"
@@ -91,6 +91,7 @@ def check_cython():
             return False
     return True
 
+
 def check_openmp():
     """
     Do we compile with OpenMP ?
@@ -109,6 +110,7 @@ def check_openmp():
 
 CYTHON = check_cython()
 openmp = "openmp" if check_openmp() else ""
+
 
 def Extension(name, source=None, extra_sources=None, **kwargs):
     """
@@ -312,7 +314,6 @@ def rewriteManifest(with_testimages=False):
         print("%s file is missing !!!" % manifest_in)
         return
 
-    manifest = None
     with open(manifest_in) as f:
         manifest = [line.strip() for line in f]
 
