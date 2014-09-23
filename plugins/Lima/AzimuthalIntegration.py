@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# coding: utf8
+# coding: utf-8
 """
 Tango device server for setting up pyFAI azimuthal integrator in a LImA ProcessLib.
 
@@ -156,14 +156,14 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
         indexFormat = sav_parms.indexFormat
         kwarg["filename"] = os.path.join(directory, prefix + indexFormat % (nextNumber + data.frameNumber))
         if self.do_2D():
-            kwarg["nbPt_rad"] = self.nbpt_rad
-            kwarg["nbPt_azim"] = self.nbpt_azim
+            kwarg["npt_rad"] = self.nbpt_rad
+            kwarg["npt_azim"] = self.nbpt_azim
             if self.extension:
                 kwarg["filename"] += self.extension
             else:
                 kwarg["filename"] += ".azim"
         else:
-            kwarg["nbPt"] = self.nbpt_rad
+            kwarg["npt"] = self.nbpt_rad
             if self.extension:
                 kwarg["filename"] += self.extension
             else:

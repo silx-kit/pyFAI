@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/10/2013"
+__date__ = "22/09/2014"
 __status__ = "development"
 __doc__ = """
 
@@ -190,7 +190,12 @@ class Worker(object):
     def process(self, data) :
         """
         Process a frame
+        #TODO: 
+        dark, flat, sa are missing
+        
+        @param: data: numpy array containing the input image
         """
+        
         with self._sem:
             monitor = self._normalization_factor
         kwarg = {"unit": self.unit,
@@ -206,15 +211,15 @@ class Worker(object):
 
 
         if self.do_2D():
-            kwarg["nbPt_rad"] = self.nbpt_rad
-            kwarg["nbPt_azim"] = self.nbpt_azim
+            kwarg["npt_rad"] = self.nbpt_rad
+            kwarg["npt_azim"] = self.nbpt_azim
             if "filename" in kwarg:
                 if self.extension:
                     kwarg["filename"] += self.extension
                 else:
                     kwarg["filename"] += ".azim"
         else:
-            kwarg["nbPt"] = self.nbpt_rad
+            kwarg["npt"] = self.nbpt_rad
             if "filename" in kwarg:
                 if self.extension:
                     kwarg["filename"] += self.extension
@@ -425,3 +430,77 @@ class Worker(object):
     def set_normalization_factor(self, value):
         with self._sem:
             self._normalization_factor = value
+
+class PixelwiseWorker(object):
+    """
+    Simple worker doing dark, flat, solid angle and polarization correction
+    """
+    def __init__(self, dark=None, flat=None, solidangle=None, polarization=None, 
+                 mask=None, dummy=None, delta_dummy=None, device=None):
+        """
+        @param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context 
+        """
+        self.ctx = None
+        if dark is not None:
+            self.dark = numpy.ascontiguousarray(dark, dtype=numpy.float32)
+        else:
+            self.dark = None
+        if flat is not None:
+            self.flat = numpy.ascontiguousarray(flat, dtype=numpy.float32)
+        else:
+            self.flat = None
+        if solidangle is not None:
+            self.solidangle = numpy.ascontiguousarray(solidangle, dtype=numpy.float32)
+        else:
+            self.solidangle = None
+        if polarization is not None:
+            self.polarization = numpy.ascontiguousarray(polarization, dtype=numpy.float32)
+        else:
+            self.polarization = None
+
+        if mask is None:
+            self.mask = False
+        elif mask.min() < 0 and mask.max() == 0:  # 0 is valid, <0 is invalid
+            self.mask = (mask < 0)
+        else:
+            self.mask = mask.astype(bool)
+
+        self.dummy = dummy
+        self.delta_dummy = delta_dummy
+        if device is not None:
+            logger.warning("GPU is not yet implemented")
+
+    def process(self, data, normalization=None):
+        """
+        Process the data and apply a normalization factor
+        @param data: input data
+        @param normalization: normalization factor
+        @return processed data
+        """
+        shape = data.shape
+        #       ^^^^   this is why data is mandatory !
+        if self.dummy is not None:
+            if self.delta_dummy is None:
+                mask = numpy.logical_or((data == self.dummy), self.mask)
+            else:
+                mask = numpy.logical_or(abs(data - self.dummy) <= self.delta_dummy,
+                                        self.mask)
+            do_mask = True
+        else:
+            do_mask = (self.mask is not False)
+        data = numpy.ascontiguousarray(data, dtype=numpy.float32)
+        if self.dark:
+            data -= self.dark
+        if self.flat:
+            data /= self.flat
+        if self.solidangle:
+            data /= self.solidangle
+        if self.polarization:
+            data /= self.polarization
+        
+        if do_mask:
+            data[self.mask] = self.dummy or 0
+        return data
+
+
+

@@ -1,5 +1,5 @@
-version = "0.9.3"
-date = "2014-02"
+version = "0.9.4"
+date = "2014-06"
 import sys, logging
 logging.basicConfig()
 

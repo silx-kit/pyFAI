@@ -30,21 +30,25 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/05/2013"
-__status__ = "development"
+__date__ = "29/06/2014"
+__status__ = "production"
 
 import os
 import sys
 import fabio
 import logging
 import pyFAI, pyFAI.utils
-from optparse import OptionParser
+try:
+    from argparse import ArgumentParser
+except ImportError:
+    from pyFAI.argparse import  ArgumentParser
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("average")
 
 def main():
-    usage = "usage: %prog [options] [options] -o output.edf file1.edf file2.edf ..."
-    version = "%prog " + pyFAI.version
+    usage = "usage: pyFAI-average [options] [options] -o output.edf file1.edf file2.edf ..."
+    version = "pyFAI-average version %s from %s" % (pyFAI.version, pyFAI.date)
     description = """
     This tool can be used to average out a set of dark current images using
     mean or median filter (along the image stack). One can also reject outliers
@@ -54,36 +58,55 @@ def main():
     and reduce the spotty-ness of Debye-Sherrer rings. In this case the "max-filter" is usually
     recommended.
     """
-    parser = OptionParser(usage=usage, version=version,
-                          description=description, epilog=epilog)
-    parser.add_option("-o", "--output", dest="output",
-                      type='string', default=None,
+    parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
+    parser.add_argument("-V", "--version", action='version', version=version)
+    parser.add_argument("-o", "--output", dest="output",
+                      type=str, default=None,
                       help="Output/ destination of average image")
-    parser.add_option("-m","--method", dest="method",
-                      type='string', default="mean",
+    parser.add_argument("-m", "--method", dest="method",
+                      type=str, default="mean",
                       help="Method used for averaging, can be 'mean'(default) or 'median', 'min' or 'max'")
-    parser.add_option("-c", "--cutoff", dest="cutoff", type="float",default=None,
+    parser.add_argument("-c", "--cutoff", dest="cutoff", type=float, default=None,
                   help="Take the mean of the average +/- cutoff * std_dev.")
-    parser.add_option("-f", "--format", dest="format", type="string", default="edf",
+    parser.add_argument("-F", "--format", dest="format", type=str, default="edf",
                   help="Output file/image format (by default EDF)")
-    parser.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False,
+    parser.add_argument("-d", "--dark", dest="dark", type=str, default=None,
+                  help="Dark noise to be subtracted")
+    parser.add_argument("-f", "--flat", dest="flat", type=str, default=None,
+                  help="Flat field correction")
+    parser.add_argument("-v", "--verbose", action="store_true", dest="verbose", default=False,
                       help="switch to verbose/debug mode")
-    (options, args) = parser.parse_args()
+    parser.add_argument("args", metavar='FILE', type=str, nargs='+',
+                        help="Files to be processed")
+
+    options = parser.parse_args()
+
+    # Analyse aruments and options
+    images = pyFAI.utils.expand_args(options.args)
+
     if options.verbose:
         pyFAI.utils.logger.setLevel(logging.DEBUG)
     else:
         pyFAI.utils.logger.setLevel(logging.INFO)
-
-    images = pyFAI.utils.expand_args(args)
     if  options.output:
         output = options.output
     else:
-        output = "%s_%s" % (os.path.commonprefix(args), options.method)
+        output = "%s_%s" % (os.path.commonprefix(images), options.method)
         if options.cutoff:
             output += "_cutoff_%s_std" % options.cutoff
-        output += "_%s_frames.%s" % (len(args), options.format)
+        output += "_%s_frames.%s" % (len(images), options.format)
+    if options.flat:
+        flats = pyFAI.utils.expand_args([options.flat])
+    else:
+        flats = None
+    if options.dark:
+        darks = pyFAI.utils.expand_args([options.dark])
+    else:
+        darks = None
+
     if images:
         dataout = pyFAI.utils.averageImages(images, filter_=options.method, cutoff=options.cutoff,
-                                            threshold=0, format=options.format, output=output)
+                                            threshold=0, format=options.format, output=output,
+                                            flats=flats, darks=darks)
 if __name__ == "__main__":
     main()

@@ -6,13 +6,17 @@
 Welcome to pyFAI's documentation!
 =================================
 
-Contents:
+This document starts with a general descriptions of the pyFAI library in the first chapter. 
+This first chapter contains an introduction to pyFAI, what it is, what it aims at and how it works 
+(for scientists). Especially, geometry, calibration, azimuthal integration algorithms are described 
+and pixel splitting schemes are explained. 
 
-This documentation is starts with a mix of various publication describing pyFAI, what it aims at and how it works 
-(for scientists); 
-then the usage of the scripts provided with pyFAI are described (for users)
-before the programming interface is described (for programmer).    
-The last chapter correspond to software project management.
+The second chapter is the concatenation of the manual pages of all (relevant) scripts. Those are programs to be launched at the 
+command line allowing the treatment of a  diffraction experiment without knowing anything about Python.  
+
+The third chapter contains a comprehensive description of most Python modules contained in pyFAI. 
+Some minor submodules as well as the documentation of the Cython sub-modules are not included for concision purposes.  
+The last chapter is an appendix giving some figures about the project and its management.
 
 .. toctree::
    :maxdepth: 2
@@ -21,6 +25,7 @@ The last chapter correspond to software project management.
    man/scripts
    api/modules
    project
+   biblio
 
 
 Indices and tables

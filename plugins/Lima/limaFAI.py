@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# coding: utf8
+# coding: utf-8
 from __future__ import with_statement, print_function
 """
 LImA ProcessLib example of pyFAI azimuthal integrator Link and Sink 
@@ -236,14 +236,14 @@ class SinkPyFAI(Core.Processlib.SinkTaskBase):
 #        indexFormat = sav_parms.indexFormat
 #        kwarg["filename"] = os.path.join(directory, prefix + indexFormat % (nextNumber + data.frameNumber))
 #        if self.do_2D():
-#            kwarg["nbPt_rad"] = self.nbpt_rad
-#            kwarg["nbPt_azim"] = self.nbpt_azim
+#            kwarg["npt_rad"] = self.nbpt_rad
+#            kwarg["npt_azim"] = self.nbpt_azim
 #            if self.extension:
 #                kwarg["filename"] += self.extension
 #            else:
 #                kwarg["filename"] += ".azim"
 #        else:
-#            kwarg["nbPt"] = self.nbpt_rad
+#            kwarg["npt"] = self.nbpt_rad
 #            if self.extension:
 #                kwarg["filename"] += self.extension
 #            else:

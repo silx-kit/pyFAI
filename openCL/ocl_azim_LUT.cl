@@ -3,11 +3,11 @@
  *            Kernel with full pixel-split using a LUT
  *
  *
- *   Copyright (C) 2012 European Synchrotron Radiation Facility
+ *   Copyright (C) 2012-2014 European Synchrotron Radiation Facility
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 26/10/2012
+ *   Last revision: 04/09/2014
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published
@@ -27,160 +27,19 @@
 /**
  * \file
  * \brief OpenCL kernels for 1D azimuthal integration
+ *
+ * Needed constant:
+ *   NIMAGE: size of the image
+ *   NBINS:  number of output bins for histograms
  */
 
-//OpenCL extensions are silently defined by opencl compiler at compile-time:
-#ifdef cl_amd_printf
-  #pragma OPENCL EXTENSION cl_amd_printf : enable
-  //#define printf(...)
-#elif defined(cl_intel_printf)
-  #pragma OPENCL EXTENSION cl_intel_printf : enable
-#else
-  #define printf(...)
-#endif
 
-
-#ifdef ENABLE_FP64
-//	#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-	typedef double bigfloat_t;
-#else
-//	#pragma OPENCL EXTENSION cl_khr_fp64 : disable
-	typedef float bigfloat_t;
-#endif
-
-#define GROUP_SIZE BLOCK_SIZE
 
 struct lut_point_t
 {
 	int idx;
 	float coef;
 };
-
-
-/**
- * \brief cast values of an array of uint16 into a float output array.
- *
- * @param array_u16: Pointer to global memory with the input data as unsigned16 array
- * @param array_float:  Pointer to global memory with the output data as float array
- */
-__kernel void
-u16_to_float(__global unsigned short  *array_u16,
-		     __global float *array_float
-)
-{
-  int i = get_global_id(0);
-  //Global memory guard for padding
-  if(i < NIMAGE)
-	array_float[i]=(float)array_u16[i];
-}
-
-
-/**
- * \brief convert values of an array of int32 into a float output array.
- *
- * @param array_int:  Pointer to global memory with the data in int
- * @param array_float:  Pointer to global memory with the data in float
- */
-__kernel void
-s32_to_float(	__global int  *array_int,
-				__global float  *array_float
-		)
-{
-  int i = get_global_id(0);
-  //Global memory guard for padding
-  if(i < NIMAGE)
-	array_float[i] = (float)(array_int[i]);
-}
-
-
-
-/**
- * \brief Sets the values of 3 float output arrays to zero.
- *
- * Gridsize = size of arrays + padding.
- *
- * @param array0: float Pointer to global memory with the outMerge array
- * @param array1: float Pointer to global memory with the outCount array
- * @param array2: float Pointer to global memory with the outData array
- */
-__kernel void
-memset_out(__global float *array0,
-		   __global float *array1,
-		   __global float *array2
-)
-{
-  int i = get_global_id(0);
-  //Global memory guard for padding
-  if(i < NBINS)
-  {
-	array0[i]=0.0f;
-	array1[i]=0.0f;
-	array2[i]=0.0f;
-  }
-}
-
-
-/**
- * \brief Performs Normalization of input image
- *
- * Intensities of images are corrected by:
- *  - dark (read-out) noise subtraction
- *  - Solid angle correction (division)
- *  - polarization correction (division)
- *  - flat fiels correction (division)
- * Corrections are made in place unless the pixel is dummy.
- * Dummy pixels are left untouched so that they remain dummy
- *
- * @param image	          Float pointer to global memory storing the input image.
- * @param do_dark         Bool/int: shall dark-current correction be applied ?
- * @param dark            Float pointer to global memory storing the dark image.
- * @param do_flat         Bool/int: shall flat-field correction be applied ?
- * @param flat            Float pointer to global memory storing the flat image.
- * @param do_solidangle   Bool/int: shall flat-field correction be applied ?
- * @param solidangle      Float pointer to global memory storing the solid angle of each pixel.
- * @param do_polarization Bool/int: shall flat-field correction be applied ?
- * @param polarization    Float pointer to global memory storing the polarization of each pixel.
- * @param do_dummy    	  Bool/int: shall the dummy pixel be checked. Dummy pixel are pixels marked as bad and ignored
- * @param dummy       	  Float: value for bad pixels
- * @param delta_dummy 	  Float: precision for bad pixel value
- *
-**/
-__kernel void
-corrections( 		__global float 	*image,
-			const			 int 	do_dark,
-			const 	__global float 	*dark,
-			const			 int	do_flat,
-			const 	__global float 	*flat,
-			const			 int	do_solidangle,
-			const 	__global float 	*solidangle,
-			const			 int	do_polarization,
-			const 	__global float 	*polarization,
-			const		 	 int   	do_dummy,
-			const			 float 	dummy,
-			const		 	 float 	delta_dummy
-			)
-{
-	float data;
-	int i= get_global_id(0);
-	if(i < NIMAGE)
-	{
-		data = image[i];
-		if( (!do_dummy) || ((delta_dummy!=0.0f) && (fabs(data-dummy) > delta_dummy))|| ((delta_dummy==0.0f) && (data!=dummy)))
-		{
-			if(do_dark)
-				data-=dark[i];
-			if(do_flat)
-				data/=flat[i];
-			if(do_solidangle)
-				data/=solidangle[i];
-			if(do_polarization)
-				data/=polarization[i];
-			image[i] = data;
-		}else{
-			image[i] = dummy;
-		}//end if do_dummy
-	};//end if NIMAGE
-};//end kernel
 
 
 

@@ -57,16 +57,18 @@ def _copy_files(source, dest, extn):
     """
     copy all files with a given extension from source to destination 
     """
+    if not os.path.isdir(dest):
+        os.makedirs(dest)
     full_src = os.path.join(os.path.dirname(__file__), source)
     for clf in os.listdir(full_src):
         if clf.endswith(extn) and clf not in os.listdir(dest):
             _copy(os.path.join(full_src, clf), os.path.join(dest, clf))
 
-
-SCRIPTSPATH = os.path.join(os.path.dirname(__file__),
+home = os.path.dirname(os.path.abspath(__file__))
+SCRIPTSPATH = os.path.join(home,
                            'build', _distutils_scripts_name())
-LIBPATH = os.path.join(os.path.dirname(__file__),
-                       'build', _distutils_dir_name('lib'))
+LIBPATH = (os.path.join(home,
+                       'build', _distutils_dir_name('lib')))
 
 if (not os.path.isdir(SCRIPTSPATH)) or (not os.path.isdir(LIBPATH)):
     build = subprocess.Popen([sys.executable, "setup.py", "build"],
@@ -74,7 +76,7 @@ if (not os.path.isdir(SCRIPTSPATH)) or (not os.path.isdir(LIBPATH)):
     print("Build process ended with rc= %s" % build.wait())
 _copy_files("openCL", os.path.join(LIBPATH, "pyFAI"), ".cl")
 _copy_files("gui", os.path.join(LIBPATH, "pyFAI"), ".ui")
-
+_copy_files("calibration", os.path.join(LIBPATH, "pyFAI", "calibration"), ".D")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -82,7 +84,7 @@ if __name__ == "__main__":
         print("Available scripts : %s\n" %
               _get_available_scripts(SCRIPTSPATH))
         sys.exit(1)
-
+    os.system("cd %s;python setup.py build; cd -" % home)
     print("Executing %s from source checkout" % (sys.argv[1]))
 
     sys.path.insert(0, LIBPATH)
@@ -96,4 +98,16 @@ if __name__ == "__main__":
     print("03. patch the sys.argv : ", sys.argv)
 
     print("04. Executing %s.main()" % (script,))
-    execfile(os.path.join(SCRIPTSPATH, script))
+    fullpath = os.path.join(SCRIPTSPATH, script)
+    if os.path.exists(fullpath):
+        execfile(fullpath)
+    else:
+        if os.path.exists(script):
+            execfile(script)
+        else:
+            for dirname in os.environ.get("PATH", "").split(os.pathsep):
+                fullpath = os.path.join(dirname, script)
+                if os.path.exists(fullpath):
+                    execfile(fullpath)
+                    break
+

@@ -1,5 +1,3 @@
-pyFAI Package
-=============
 
 :mod:`pyFAI` Package
 --------------------
@@ -57,6 +55,15 @@ pyFAI Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`ocl_azim_csr` Module
+--------------------------
+
+.. automodule:: pyFAI.ocl_azim_csr
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 :mod:`opencl` Module
 --------------------
 
@@ -65,21 +72,62 @@ pyFAI Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`peakPicker` Module
+:mod:`peak_picker` Module
 ------------------------
 
-.. automodule:: pyFAI.peakPicker
+.. automodule:: pyFAI.peak_picker
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`refinment2D` Module
--------------------------
+:mod:`blob_detection` Module
+------------------------
 
-.. automodule:: pyFAI.refinment2D
+.. automodule:: pyFAI.blob_detection
     :members:
     :undoc-members:
     :show-inheritance:
+
+:mod:`worker` Module
+------------------------
+
+.. automodule:: pyFAI.worker
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`io` Module
+------------------------
+
+.. automodule:: pyFAI.io
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`calibration` Module
+------------------------
+
+.. automodule:: pyFAI.calibration
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. :mod:`refinment2D` Module
+   -------------------------
+   
+   .. automodule:: pyFAI.refinment2D
+       :members:
+       :undoc-members:
+       :show-inheritance:
+
+:mod:`distortion` Module
+--------------------
+
+.. automodule:: pyFAI.distortion
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 :mod:`spline` Module
 --------------------

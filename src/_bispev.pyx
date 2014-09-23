@@ -81,13 +81,9 @@ def bisplev(x,y,tck,dx=0,dy=0):
 
     z = cy_bispev(tx, ty, c, kx, ky, cy_x, cy_y)
     z.shape = len(y),len(x)
-    return z.T #this is a trick as we transpose again afterwards to retrieve a memory-contiguous object
-#    if len(z)>1:
-#        return z
-#    elif len(z[0])>1:
-#        return z[0]
-#    else:
-#        return z[0][0]
+    return z.T 
+#this is a trick as we transpose again afterwards to retrieve a memory-contiguous object
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)
@@ -102,6 +98,7 @@ cdef void fpbspl(float[:]t,
     subroutine fpbspl evaluates the (k+1) non-zero b-splines of
     degree k at t(l) <= x < t(l+1) using the stable recurrence
     relation of de boor and cox.
+    
     """
     cdef int i, j, li, lj#, n=t.shape 
     cdef float f
@@ -117,6 +114,15 @@ cdef void fpbspl(float[:]t,
             h[i+1] = f*(x-t[l+i-j])     
 
 cdef void init_w(float[:]t, int k, float[:]x, numpy.int32_t[:]lx, float[:,:]w):
+    """
+    Initialize w array for a 1D array
+    
+    @param t:
+    @param k: order of the spline
+    @param x: position of the evaluation
+    
+    @param w: 
+    """
     cdef int i, l, l1, n=t.size, m=x.size
     cdef float arg  
     cdef float tb = t[k]
@@ -146,12 +152,18 @@ cdef void init_w(float[:]t, int k, float[:]x, numpy.int32_t[:]lx, float[:,:]w):
 @cython.wraparound(False)
 @cython.cdivision(True)
 cdef cy_bispev(float[:] tx,
-                        float[:] ty,
-                        float[:] c,
-                        int kx,
-                        int ky,
-                        float[:] x,
-                        float[:] y):
+               float[:] ty,
+               float[:] c,
+               int kx,
+               int ky,
+               float[:] x,
+               float[:] y):
+    """
+    Actual implementation of bispev in Cython
+    
+    @param tx: array of float size nx containing position of knots in x
+    @param ty: array of float size ny containing position of knots in y
+    """
     cdef int nx = tx.size
     cdef int ny = ty.size
     cdef int mx = x.size
