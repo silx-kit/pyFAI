@@ -29,7 +29,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/09/2014"
+__date__ = "24/09/2014"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -305,7 +305,12 @@ class HDF5Writer(Writer):
                     size[0] = 1 + self.lima_cfg["number_of_frames"] // self.fast_scan_width
                 else:
                     size[0] = self.lima_cfg["number_of_frames"]
-            self.dataset = self.group.require_dataset(self.DATASET_NAME, shape, dtype=numpy.float32, chunks=chunk,
+            dtype = self.lima_cfg.get("dtype") or self.fai_cfg.get("dtype")
+            if dtype is None:
+                dtype = numpy.float32
+            else:
+                dtype = numpy.dtype(dtype)
+            self.dataset = self.group.require_dataset(self.DATASET_NAME, shape, dtype=dtype, chunks=chunk,
                                                       maxshape=(None,) + chunk[1:])
             if self.fai_cfg.get("nbpt_azim", 0) > 1:
                 self.dataset.attrs["interpretation"] = "image"

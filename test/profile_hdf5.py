@@ -64,7 +64,7 @@ def bench_hdf5(n=1024, shape=(1024, 1024), dtype="float32", dirname=None, bsize=
     nmbytes = nbytes / 1e6
     t0 = time.time()
     writer = io.HDF5Writer(filename=h5file, hpath="data")
-    writer.init({"nbpt_azim": shape[0], "nbpt_rad": shape[1]})
+    writer.init({"nbpt_azim": shape[0], "nbpt_rad": shape[1], "dtype": dtype.name})
     for i in range(n):
         writer.write(data[i % bsize], i)
     writer.close()
