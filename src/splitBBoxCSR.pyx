@@ -650,7 +650,7 @@ class HistoBBox2d(object):
             bins0 = 1
         if bins1 <= 0:
             bins1 = 1
-        self.bins = (int(bins0),int(bins1))
+        self.bins = (int(bins0), int(bins1))
         self.lut_size = 0
         if mask is not None:
             assert mask.size == self.size
@@ -674,6 +674,7 @@ class HistoBBox2d(object):
             self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=numpy.float32)
             self.cpos0_sup = numpy.empty_like(self.cpos0)  # self.cpos0 + self.dpos0
             self.cpos0_inf = numpy.empty_like(self.cpos0)  # self.cpos0 - self.dpos0
+            self.calc_boundaries(pos0Range, pos1Range)
         else:
             self.calc_boundaries_nosplit(pos0Range, pos1Range)
 
