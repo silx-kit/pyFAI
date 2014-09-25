@@ -27,10 +27,13 @@ __authors__ = ["Aurore Deschildre", "Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/05/2014"
+__date__ = "25/09/2014"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
-import os, itertools, logging
+
+import os
+import itertools
+import logging
 logger = logging.getLogger("pyFAI.blob_detection")
 import numpy
 try:
@@ -54,7 +57,7 @@ from .bilinear import Bilinear
 
 from math import sqrt, cos, sin, pow
 
-from .utils import binning, timeit
+from .utils import binning #, timeit
 
 def image_test():
     img = numpy.zeros((128 * 4, 128 * 4))
@@ -78,7 +81,6 @@ def make_gaussian(im, sigma, xc, yc):
     im[xc - size / 2:xc + size / 2 + 1, yc - size / 2:yc + size / 2 + 1] = gaus
     return im
 
-@timeit
 def local_max(dogs, mask=None, n_5=True):
     """
     @param dogs: 3d array with (sigma,y,x) containing difference of gaussians
@@ -273,9 +275,8 @@ class BlobDetection(object):
             increase = previous * sqrt((self.dest_sigma / self.init_sigma) ** (2.0 / self.scale_per_octave) - 1.0)
             self.sigmas.append((sigma_abs, increase))
             previous = sigma_abs
-        print(self.sigmas)
+        logger.debug("Sigma= %s" % self.sigmas)
 
-    @timeit
     def _one_octave(self, shrink=True, refine=True, n_5=False):
         """
         Return the blob coordinates for an octave
@@ -700,8 +701,6 @@ class BlobDetection(object):
         
         return val,vect
 
-
-    @timeit
     def process(self, max_octave=None):
         """
         Perform the keypoint extraction for max_octave cycles or until all octaves have been processed.
