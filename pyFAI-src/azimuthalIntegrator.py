@@ -2582,7 +2582,7 @@ class AzimuthalIntegrator(Geometry):
                 chi = self.chiArray(shape)
                 mask *= (chi >= chiMin) * (chi <= chiMax)
             mask = numpy.where(mask)
-            pos0 = numpy.ascontiguousarray(pos0[mask], dtype=numpy.float32)
+            pos0 = pos0[mask]
             if dark is not None:
                 data -= dark
             if flat is not None:
@@ -2591,7 +2591,7 @@ class AzimuthalIntegrator(Geometry):
                 data /= polarization
             if solidangle is not None:
                 data /= solidangle
-            data = numpy.ascontiguousarray(data[mask], dtype=numpy.float32)
+            data = data[mask]
             if variance is not None:
                 variance = variance[mask]
             if radial_range is None:
@@ -3024,9 +3024,9 @@ class AzimuthalIntegrator(Geometry):
             if solidangle is not None:
                 data /= solidangle
 
-            data = numpy.ascontiguousarray(data[mask], dtype=numpy.float32)
-            pos0 = numpy.ascontiguousarray(pos0[mask], dtype=numpy.float32)
-            pos1 = numpy.ascontiguousarray(pos1[mask], dtype=numpy.float32)
+            data = data[mask]
+            pos0 = pos0[mask]
+            pos1 = pos1[mask]
             if ("cython" in method):
                 if histogram is None:
                     logger.warning("Cython histogram is not available;"
