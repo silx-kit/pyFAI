@@ -674,6 +674,9 @@ class HistoBBox2d(object):
             self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=numpy.float32)
             self.cpos0_sup = numpy.empty_like(self.cpos0)  # self.cpos0 + self.dpos0
             self.cpos0_inf = numpy.empty_like(self.cpos0)  # self.cpos0 - self.dpos0
+            self.dpos1 = numpy.ascontiguousarray((delta_pos1).ravel(), dtype=numpy.float32)
+            self.cpos1_sup = numpy.empty_like(self.cpos1)  # self.cpos1 + self.dpos1
+            self.cpos1_inf = numpy.empty_like(self.cpos1)  # self.cpos1 - self.dpos1
             self.calc_boundaries(pos0Range, pos1Range)
         else:
             self.calc_boundaries_nosplit(pos0Range, pos1Range)
@@ -906,7 +909,7 @@ class HistoBBox2d(object):
                     for j in range(bin1_min, bin1_max + 1):
                         outMax[i, j] += 1
 
-        indptr[1:] = outMax.flat.cumsum()
+        indptr[1:] = outMax.ravel().cumsum()
         self.nnz = nnz = indptr[bins0 * bins1]
         self.indptr = indptr
         # Just recycle the outMax array
@@ -1111,7 +1114,7 @@ class HistoBBox2d(object):
 
                 outMax[bin0, bin1] += 1
 
-        indptr[1:] = outMax.flat.cumsum()
+        indptr[1:] = outMax.ravel().cumsum()
         self.nnz = nnz = indptr[bins0 * bins1]
         self.indptr = indptr
         # Just recycle the outMax array
@@ -1176,7 +1179,7 @@ class HistoBBox2d(object):
 
         """
         cdef:
-            int i = 0, j = 0, idx = 0, bins0 = self.bins[0], bins1 = self.bins[1], bins = bins0*bins1, size = self.size
+            int i = 0, j = 0, idx = 0, bins0 = self.bins[0], bins1 = self.bins[1], bins = bins0 * bins1, size = self.size
             double sum_data = 0.0, sum_count = 0.0, epsilon = 1e-10
             float data = 0, coef = 0, cdummy = 0, cddummy = 0
             bint do_dummy = False, do_dark = False, do_flat = False, do_polarization = False, do_solidAngle = False

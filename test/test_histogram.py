@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "2014-09-17"
+__date__ = "2014-09-26"
 
 import unittest
 import time
@@ -41,24 +41,24 @@ from utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI.histogram import histogram, histogram2d
-#histogram = sys.modules["pyFAI.histogram"].histogram
-#histogram2d = sys.modules["pyFAI.histogram"].histogram2d
 if logger.getEffectiveLevel() == logging.DEBUG:
     import pylab
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
+
 class test_histogram1d(unittest.TestCase):
     """basic test"""
     shape = (512, 512)#(numpy.random.randint(1000, 4000), numpy.random.randint(1000, 4000))
     npt = 500#numpy.random.randint(1000, 4000)
     size = shape[0] * shape[1]
+    maxI = 65000
     epsilon = 1.0e-4
-    tth = (numpy.random.random(shape).astype("float64"))
-    data = numpy.random.random_integers(1, 65000, size=shape).astype("uint16")
+    tth = (numpy.random.random(shape).astype("float32"))
+    data = numpy.random.random_integers(1, maxI, size=shape).astype("uint16")
     t0 = time.time()
     drange = (tth.min(), tth.max() * EPS32)
     unweight_numpy, bin_edges = numpy.histogram(tth, npt, range=drange)
     t1 = time.time()
-    weight_numpy, bin_edges = numpy.histogram(tth, npt, weights=data.astype("float64"), range=drange)
+    weight_numpy, bin_edges = numpy.histogram(tth, npt, weights=data.astype("float32"), range=drange)
     t2 = time.time()
     logger.info("Timing for Numpy   raw    histogram: %.3f", t1 - t0)
     logger.info("Timing for Numpy weighted histogram: %.3f", t2 - t1)
@@ -108,7 +108,6 @@ class test_histogram1d(unittest.TestCase):
         self.assertEquals(summed_weight_hist, summed_data, msg="check all intensity is counted expected %s got %s" % (summed_data, summed_weight_hist))
         self.assertTrue(v < self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
 
-
     def test_numpy_vs_cython_1d(self):
         """
         Compare numpy histogram with cython simple implementation
@@ -135,7 +134,7 @@ class test_histogram1d(unittest.TestCase):
         self.assert_(delta_max < 2, "numpy_vs_cython_1d max delta unweight = %s" % delta_max)
         delta_max = abs(self.I_cython - self.I_numpy).max()
         logger.info("Intensity count difference numpy/cython : max delta=%s", delta_max)
-        self.assert_(delta_max < self.epsilon, "Intensity count difference numpy/cython : max delta=%s" % delta_max)
+        self.assert_(delta_max < self.maxI * self.epsilon, "Intensity count difference numpy/cython : max delta=%s" % delta_max)
 
 
 class test_histogram2d(unittest.TestCase):
@@ -143,10 +142,11 @@ class test_histogram2d(unittest.TestCase):
     shape = (2048, 2048)#(numpy.random.randint(1000, 4000), numpy.random.randint(1000, 4000))
     npt = (400, 360)
     size = shape[0] * shape[1]
+    maxI = 65000
     epsilon = 3.0e-4
-    tth = (numpy.random.random(shape).astype("float64"))
-    chi = (numpy.random.random(shape).astype("float64"))
-    data = numpy.random.random_integers(1, 65000, size=shape).astype("uint16")
+    tth = (numpy.random.random(shape).astype("float32"))
+    chi = (numpy.random.random(shape).astype("float32"))
+    data = numpy.random.random_integers(1, maxI, size=shape).astype("uint16")
     t0 = time.time()
     drange = [[tth.min(), tth.max() * EPS32], [chi.min(), chi.max() * EPS32]]
     unweight_numpy, tth_edges, chi_edges = numpy.histogram2d(tth.flatten(), chi.flatten(), npt,range=drange)
@@ -175,9 +175,8 @@ class test_histogram2d(unittest.TestCase):
         logger.info("Numpy: Total number of points: %s (%s expected), delta = %s", sump, self.size, delta)
         v = abs(intensity_obt - intensity_exp) / intensity_exp
         logger.info("Numpy: Total Intensity: %s (%s expected), variation = %s", intensity_obt, intensity_exp, v)
-        self.assert_( delta == 0,"Numpy: Total number of points: %s (%s expected), delta = %s"%(sump, self.size, delta))
-        self.assert_(v < self.epsilon,"Numpy: Total Intensity: %s (%s expected), variation = %s"%( intensity_obt, intensity_exp, v))
-
+        self.assert_(delta == 0, "Numpy: Total number of points: %s (%s expected), delta = %s" % (sump, self.size, delta))
+        self.assert_(v < self.epsilon, "Numpy: Total Intensity: %s (%s expected), variation = %s" % (intensity_obt, intensity_exp, v))
 
     def test_count_cython(self):
         """
@@ -194,7 +193,6 @@ class test_histogram2d(unittest.TestCase):
         self.assertEquals(delta, 0, msg="check all pixels were counted")
         self.assertTrue(v < self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
 
-
     def test_numpy_vs_cython_2d(self):
         """
         Compare numpy histogram with cython simple implementation
@@ -204,14 +202,14 @@ class test_histogram2d(unittest.TestCase):
         self.assert_(max_delta < self.epsilon, "Bin-center position for cython/numpy tth, max delta=%s" % max_delta)
         max_delta = abs(self.chi_numpy - self.chi_cython).max()
         logger.info("Bin-center position for cython/numpy chi, max delta=%s", max_delta)
-        self.assert_(max_delta < self.epsilon,"Bin-center position for cython/numpy chi, max delta=%s"% max_delta)
+        self.assert_(max_delta < self.epsilon, "Bin-center position for cython/numpy chi, max delta=%s" % max_delta)
 
         delta_max = abs(self.unweight_numpy - self.unweight_cython).max()
         logger.info("pixel count difference numpy/cython : max delta=%s", delta_max)
         self.assert_(delta_max < 2, "pixel count difference numpy/cython : max delta=%s" % delta_max)
         delta_max = abs(self.I_cython - self.I_numpy).max()
         logger.info("Intensity count difference numpy/cython : max delta=%s", delta_max)
-        self.assert_(delta_max < self.epsilon, "Intensity count difference numpy/cython : max delta=%s" % delta_max)
+        self.assert_(delta_max < self.epsilon * self.maxI, "Intensity count difference numpy/cython : max delta=%s" % delta_max)
 
 
 def test_suite_all_Histogram():

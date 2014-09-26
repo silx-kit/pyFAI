@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/09/2014"
+__date__ = "26/09/2014"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2372,14 +2372,13 @@ class AzimuthalIntegrator(Geometry):
                                  " CSR's azimuth_range don't match")
                 if reset:
                     logger.info("AI.integrate1d: Resetting integrator because %s" % reset)
-                    try:
+                    if "no" in method:
+                        split = "no"
+                    elif "full" in method:
+                        split = "full"
+                    else:
                         split = "bbox"
-                        if "no" in method:
-                            split = "no"
-                        elif "full" in method:
-                            split = "full"
-                        else:
-                            split = "bbox"
+                    try:
                         self._csr_integrator = self.setup_CSR(shape, npt, mask,
                                                               radial_range, azimuth_range,
                                                               mask_checksum=mask_crc,
@@ -2583,7 +2582,7 @@ class AzimuthalIntegrator(Geometry):
                 chi = self.chiArray(shape)
                 mask *= (chi >= chiMin) * (chi <= chiMax)
             mask = numpy.where(mask)
-            pos0 = pos0[mask]
+            pos0 = numpy.ascontiguousarray(pos0[mask], dtype=numpy.float32)
             if dark is not None:
                 data -= dark
             if flat is not None:
@@ -2592,7 +2591,7 @@ class AzimuthalIntegrator(Geometry):
                 data /= polarization
             if solidangle is not None:
                 data /= solidangle
-            data = data[mask]
+            data = numpy.ascontiguousarray(data[mask], dtype=numpy.float32)
             if variance is not None:
                 variance = variance[mask]
             if radial_range is None:
@@ -2882,8 +2881,17 @@ class AzimuthalIntegrator(Geometry):
                 error = False
                 if reset:
                     logger.info("AI.integrate2d: Resetting integrator because %s" % reset)
+                    if "no" in method:
+                        split = "no"
+                    elif "full" in method:
+                        split = "full"
+                    else:
+                        split = "bbox"
                     try:
-                        self._csr_integrator = self.setup_CSR(shape, npt, mask, radial_range, azimuth_range, mask_checksum=mask_crc, unit=unit)
+                        self._csr_integrator = self.setup_CSR(shape, npt, mask,
+                                                              radial_range, azimuth_range,
+                                                              mask_checksum=mask_crc,
+                                                              unit=unit, split=split)
                         error = False
                     except MemoryError:
                         logger.warning("MemoryError: falling back on forward implementation")
@@ -3016,9 +3024,9 @@ class AzimuthalIntegrator(Geometry):
             if solidangle is not None:
                 data /= solidangle
 
-            data = data[mask]
-            pos0 = pos0[mask]
-            pos1 = pos1[mask]
+            data = numpy.ascontiguousarray(data[mask], dtype=numpy.float32)
+            pos0 = numpy.ascontiguousarray(pos0[mask], dtype=numpy.float32)
+            pos1 = numpy.ascontiguousarray(pos1[mask], dtype=numpy.float32)
             if ("cython" in method):
                 if histogram is None:
                     logger.warning("Cython histogram is not available;"

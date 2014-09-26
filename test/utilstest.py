@@ -334,3 +334,52 @@ def recursive_delete(strDirname):
     os.rmdir(strDirname)
 
 getLogger = UtilsTest.get_logger
+
+
+def diff_img(ref, obt, comment=""):
+    """
+    Highlight the difference in images
+    """
+    assert ref.shape == obt.shape
+    delta = abs(obt - ref)
+    if delta.max() > 0:
+        from pyFAI.gui_utils import pyplot as plt
+        fig = plt.figure()
+        ax1 = fig.add_subplot(2, 2, 1)
+        ax2 = fig.add_subplot(2, 2, 2)
+        ax3 = fig.add_subplot(2, 2, 3)
+        im_ref = ax1.imshow(ref)
+        plt.colorbar(im_ref)
+        ax1.set_title("%s ref" % comment)
+        im_obt = ax2.imshow(obt)
+        plt.colorbar(im_obt)
+        ax2.set_title("%s obt" % comment)
+        im_delta = ax3.imshow(delta)
+        plt.colorbar(im_delta)
+        ax3.set_title("delta")
+        imax = delta.argmax()
+        x = imax % ref.shape[-1]
+        y = imax // ref.shape[-1]
+        ax3.plot([x], [y], "o", scalex=False, scaley=False)
+        fig.show()
+        raw_input()
+
+
+def diff_crv(ref, obt, comment=""):
+    """
+    Highlight the difference in vectors
+    """
+    assert ref.shape == obt.shape
+    delta = abs(obt - ref)
+    if delta.max() > 0:
+        from pyFAI.gui_utils import pyplot as plt
+        fig = plt.figure()
+        ax1 = fig.add_subplot(1, 2, 1)
+        ax2 = fig.add_subplot(1, 2, 2)
+        im_ref = ax1.plot(ref, label="%s ref" % comment)
+        im_obt = ax1.plot(obt, label="%s obt" % comment)
+        im_delta = ax2.plot(delta, label="delta")
+        fig.show()
+        raw_input()
+
+    
