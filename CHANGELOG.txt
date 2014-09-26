@@ -82,13 +82,12 @@
 		pixelwise worker
 		correct both LUT & OCL for memory error
 		replace os.linsep with "\n" when file file opened in text mode (not binary)
-		pep8 and flakes correction
 		rework the Extension part to be explicit instead of "black magic" :)
-		implement Kahan summation in Cython
-		Pre-processing kernel containing all conversion int->float related to issue #120
+		implement Kahan summation in Cython (default still use Doubles: faster)
+		Preprocessing kernel containing all cast to float kernels  #120
 		update setup for no-openmp option related to issue #127
 		Add read-out mode for mar345 as "guess_binning" method for detector. Also for MAR and Rayonix #125
 		tool to benchmark HDF5 writing
 		try to be compatible with both PySide and PyQt4 ... the uic stuff is untested and probably buggy #130
-		
+		Deactivate the automatic saturation correction by default. now it is opt-in #131
 0.10.0:	10/2014
