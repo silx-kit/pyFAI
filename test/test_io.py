@@ -27,13 +27,15 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/06/2014"
+__date__ = "22/09/2014"
 
 
 import unittest
-import os, shutil
+import os
+import shutil
 import numpy
-import logging, time
+import logging
+import time
 import sys
 import fabio
 import tempfile
@@ -41,6 +43,7 @@ from utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import io
+
 
 class TestIsoTime(unittest.TestCase):
     def test_get(self):
@@ -51,10 +54,13 @@ class TestIsoTime(unittest.TestCase):
         isotime = io.get_isotime(t0)
         self.assert_(abs(t0 - io.from_isotime(isotime)) < 1, "timing are precise to the second")
 
+
 class TestNexus(unittest.TestCase):
+
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.tmpdir = tempfile.mkdtemp()
+
     def test_new_detector(self):
         fname = os.path.join(self.tmpdir, "nxs.h5")
         nxs = io.Nexus(fname, "r+")
@@ -64,17 +70,77 @@ class TestNexus(unittest.TestCase):
         self.assert_(io.is_hdf5(fname), "nexus file is an HDF5")
 #        os.system("h5ls -r -a %s" % fname)
 
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        shutil.rmtree(self.tmpdir)
+
+
+class testHDF5Writer(unittest.TestCase):
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.tmpdir = tempfile.mkdtemp()
+
+    def test_writer(self):
+        if io.h5py is None:
+            logger.warning("H5py is absent on the system, skip HDF5 writing test")
+            return
+        h5file = os.path.join(self.tmpdir, "junk.h5")
+        shape = 1024, 1024
+        n = 100
+        m = 10  # number of frames in memory
+        data = numpy.random.random((m, shape[0], shape[1])).astype(numpy.float32)
+        nmbytes = data.nbytes / 1e6 * n / m
+        t0 = time.time()
+        writer = io.HDF5Writer(filename=h5file, hpath="data")
+        writer.init({"nbpt_azim": shape[0], "nbpt_rad": shape[1]})
+        for i in range(n):
+            writer.write(data[i % m], i)
+        writer.close()
+        t = time.time() - t0
+        logger.info("Writing of HDF5 of %ix%s (%.3fMB) took %.3f (%.3fMByte/s)" % (n, shape, nmbytes, t, nmbytes / t))
+        statinfo = os.stat(h5file)
+        self.assert_(statinfo.st_size / 1e6 > nmbytes, "file size (%s) is larger than dataset" % statinfo.st_size)
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
         shutil.rmtree(self.tmpdir)
+
+
+class testFabIOWriter(unittest.TestCase):
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.tmpdir = tempfile.mkdtemp()
+            
+    def test_writer(self):
+        h5file = os.path.join(self.tmpdir)
+        shape = 1024, 1024
+        n = 100
+        m = 10  # number of frames in memory
+        data = numpy.random.random((m, shape[0], shape[1])).astype(numpy.float32)
+        nmbytes = data.nbytes / 1e6 * n / m
+        t0 = time.time()
+        writer = io.FabioWriter(filename=h5file)
+        writer.init({"nbpt_azim": shape[0], "nbpt_rad": shape[1], "prefix": "test"})
+        for i in range(n):
+            writer.write(data[i % m], i)
+        writer.close()
+        t = time.time() - t0
+        logger.info("Writing of HDF5 of %ix%s (%.3fMB) took %.3f (%.3fMByte/s)" % (n, shape, nmbytes, t, nmbytes / t))
+        statinfo = os.stat(h5file)
+        self.assert_(statinfo.st_size / 1e6 > nmbytes, "file size (%s) is larger than dataset" % statinfo.st_size)
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        shutil.rmtree(self.tmpdir)
+
+
 def test_suite_all_io():
     testSuite = unittest.TestSuite()
     testSuite.addTest(TestIsoTime("test_get"))
     testSuite.addTest(TestIsoTime("test_from"))
     testSuite.addTest(TestNexus("test_new_detector"))
-
-
+    testSuite.addTest(testHDF5Writer("test_writer"))
+#    testSuite.addTest(testFabIOWriter("test_writer"))
     return testSuite
 
 if __name__ == '__main__':
