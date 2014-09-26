@@ -36,7 +36,7 @@ from libc.math cimport floor
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
 @cython.cdivision(True)
-cdef inline double getBinNr(float x0, float pos0_min, float delta) nogil:
+cdef inline double getBinNr(double x0, double pos0_min, double delta) nogil:
     """
     calculate the bin number for any point
     param x0: current position
@@ -90,8 +90,8 @@ def histogram(numpy.ndarray pos not None, \
         double dtmp = 0.0
         double dbin, inv_dbin2 = 0.0
         double epsilon = 1e-10
-        int   bin = 0
-        int   i, idx, t
+        int bin = 0
+        int i, idx, t
 
     if bin_range is not None:
         bin_edge_min = bin_range[0]
