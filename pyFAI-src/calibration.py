@@ -1074,7 +1074,7 @@ class Calibration(AbstractCalibration):
 without a priori knowledge of your setup.
 You will need to provide a calibrant or a "d-spacing" file containing the spacing of Miller plans in
 Angstrom (in decreasing order).
-If you are using a standart calibrant, look at
+If you are using a standard calibrant, look at
 https://github.com/kif/pyFAI/tree/master/calibration
 or search in the American Mineralogist database:
 http://rruff.geo.arizona.edu/AMS/amcsd.php
@@ -1213,7 +1213,7 @@ class Recalibration(AbstractCalibration):
 with a priori knowledge of your setup (an input PONI-file).
 You will need to provide a calibrant or a "d-spacing" file containing the spacing of Miller plans in
 Angstrom (in decreasing order).
-If you are using a standart calibrant, look at
+If you are using a standardt calibrant, look at
 https://github.com/kif/pyFAI/tree/master/calibration
 or search in the American Mineralogist database:
 http://rruff.geo.arizona.edu/AMS/amcsd.php
