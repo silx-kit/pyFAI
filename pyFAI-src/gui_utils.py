@@ -39,8 +39,10 @@ __status__ = "production"
 import sys
 import matplotlib
 if ('PySide' in sys.modules):
-    from PySide import QtGui, QtCore, QtUiTools
-    from PyQt4.QtCore import SIGNAL, Signal
+    from PySide import QtGui, QtCore, QtUiTools, QtWebKit
+    from PySide.QtCore import SIGNAL, Signal
+
+
     #we need to handle uic !!!
     """
     loadUi(uifile, baseinstance=None, package='') -> widget
@@ -66,7 +68,7 @@ imports of custom widgets.
             base class is automatically created.
             package is the optional package which is used as the base for any relative
             imports of custom widgets.
-            
+
             Totally untested !
             """
             loader = QtUiTools.QUiLoader()
@@ -82,8 +84,9 @@ imports of custom widgets.
     sys.modules["PySide.uic"] = uic
     matplotlib.rcParams['backend.qt4'] = 'PySide'
 else:
-    from PyQt4 import QtGui, QtCore, uic
+    from PyQt4 import QtGui, QtCore, uic, QtWebKit
     from PyQt4.QtCore import SIGNAL, pyqtSignal as Signal
+
 matplotlib.use('Qt4Agg')
 from matplotlib.backends import backend_qt4 as backend
 from matplotlib import pyplot
