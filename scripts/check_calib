@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://forge.epn-campus.eu/projects/azimuthal
+#             https://github.com/kif/pyFAI
 #
 #    File: "$Id$"
 #
@@ -35,15 +35,14 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/05/2014"
+__date__ = "29/09/2014"
 __satus__ = "production"
 
-import pyFAI, pyFAI.calibration
 import pylab
 import logging
 logger = logging.getLogger("check_calib")
 
-from pyFAI.calibration import  CheckCalib
+from pyFAI.calibration import CheckCalib
 
 
 cc = None

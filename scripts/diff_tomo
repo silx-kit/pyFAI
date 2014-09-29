@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://forge.epn-campus.eu/projects/azimuthal
-#
-#    File: "$Id$"
+#             https://github.com/kif/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -35,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/05/2014"
+__date__ = "29/09/2014"
 __satus__ = "Production"
 
 import logging
@@ -45,7 +43,9 @@ import posixpath
 import numpy
 import fabio
 import h5py
-import pyFAI, pyFAI.utils
+import glob
+import pyFAI
+import pyFAI.utils
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("diff_tomo")
 from pyFAI import version as PyFAI_VERSION
@@ -115,39 +115,39 @@ If the number of files is too large, use double quotes like "*.edf" """
         parser.add_argument("-V", "--version", action='version', version=version)
         parser.add_argument("args", metavar="FILE", help="List of files to calibrate", nargs='+')
         parser.add_argument("-o", "--output", dest="outfile",
-                          help="HDF5 File where processed sinogram was saved",
-                          metavar="FILE", default="diff_tomo.h5")
+                            help="HDF5 File where processed sinogram was saved, by default diff_tomo.h5",
+                            metavar="FILE", default="diff_tomo.h5")
         parser.add_argument("-v", "--verbose",
-                          action="store_true", dest="verbose", default=False,
-                          help="switch to verbose/debug mode")
+                            action="store_true", dest="verbose", default=False,
+                            help="switch to verbose/debug mode, defaut: quiet")
         parser.add_argument("-P", "--prefix", dest="prefix",
-                          help="Prefix or common base for all files",
-                          metavar="FILE", default="", type=str)
+                            help="Prefix or common base for all files",
+                            metavar="FILE", default="", type=str)
         parser.add_argument("-e", "--extension", dest="extension",
-                          help="Process all files with this extension",
-                          default="")
+                            help="Process all files with this extension",
+                            default="")
         parser.add_argument("-t", "--nTrans", dest="nTrans",
-                          help="number of points in translation", default=None)
+                            help="number of points in translation. Mandatory", default=None)
         parser.add_argument("-r", "--nRot", dest="nRot",
-                          help="number of points in rotation", default=None)
+                            help="number of points in rotation. Mandatory", default=None)
         parser.add_argument("-c", "--nDiff", dest="nDiff",
-                          help="number of points in diffraction powder pattern",
-                          default=None)
+                            help="number of points in diffraction powder pattern, Mandatory",
+                            default=None)
         parser.add_argument("-d", "--dark", dest="dark", metavar="FILE",
-                          help="list of dark images to average and subtract",
-                          default=None)
+                            help="list of dark images to average and subtract",
+                            default=None)
         parser.add_argument("-f", "--flat", dest="flat", metavar="FILE",
-                          help="list of flat images to average and divide",
-                          default=None)
+                            help="list of flat images to average and divide",
+                            default=None)
         parser.add_argument("-m", "--mask", dest="mask", metavar="FILE",
-                          help="file containing the mask", default=None)
+                            help="file containing the mask, no mask by default", default=None)
         parser.add_argument("-p", "--poni", dest="poni", metavar="FILE",
-                          help="file containing the diffraction parameter (poni-file)",
-                          default=None)
+                            help="file containing the diffraction parameter (poni-file), Mandatory",
+                            default=None)
         parser.add_argument("-O", "--offset", dest="offset",
-                          help="do not process the first files", default=None)
+                            help="do not process the first files", default=None)
         parser.add_argument("-g", "--gpu", dest="gpu", action="store_true",
-                          help="process using OpenCL on GPU ", default=False)
+                            help="process using OpenCL on GPU ", default=False)
         options = parser.parse_args()
         args = options.args
 

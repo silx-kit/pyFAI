@@ -34,7 +34,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/09/2014"
+__date__ = "29/09/2014"
 __satus__ = "development"
 
 import os, sys, logging
@@ -55,10 +55,6 @@ if __name__ == "__main__":
     c = Calibration()
     c.parse()
     c.read_pixelsSize()
-#    c.read_dSpacingFile()
-#    c.read_wavelength()
     c.preprocess()
     c.gui_peakPicker()
-#    c.refine()
-#    c.postProcess()
     raw_input("Press enter to quit")
