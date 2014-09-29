@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/09/2014"
+__date__ = "29/09/2014"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -1741,6 +1741,10 @@ class CheckCalib(object):
         description = """Check_calib is a research tool aiming at validating both the geometric
 calibration and everything else like flat-field correction, distortion
 correction, at a sub-pixel level.
+
+Note that `check_calib` program is obsolete as the same functionnality is 
+available from within pyFAI-calib, using the `validate` command in the 
+refinement process.  
         """
         version = "check_calib from pyFAI version %s: %s" % (PyFAI_VERSION, PyFAI_DATE)
         parser = ArgumentParser(usage=usage,

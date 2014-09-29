@@ -8,7 +8,11 @@ Check_calib is a research tool aiming at validating both the geometric
 calibration and everything else like flat-field correction, distortion
 correction, at a sub-pixel level.
 
-Usage: 
+Note that `check_calib` program is obsolete as the same functionnality is
+available from within pyFAI-calib, using the `validate` command in the
+refinement process.
+
+Usage:
 ------
 
 check_calib [options] -p param.poni image.edf
@@ -31,4 +35,3 @@ Options:
 Arguments:
 ----------
   FILE                  Image file to check calibration for
-                        
