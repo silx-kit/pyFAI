@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "2014-08-08"
+__date__ = "2014-09-29"
 
 import os
 import imp
@@ -41,6 +41,7 @@ import logging
 import urllib2
 import numpy
 import shutil
+import json
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("pyFAI.utilstest")
 
@@ -60,6 +61,7 @@ class UtilsTest(object):
     options = None
     timeout = 60        # timeout in seconds for downloading images
     url_base = "http://forge.epn-campus.eu/attachments/download"
+    
     # Nota https crashes with error 501 under windows.
 #    url_base = "https://forge.epn-campus.eu/attachments/download"
     test_home = os.path.dirname(os.path.abspath(__file__))
@@ -70,6 +72,12 @@ class UtilsTest(object):
     image_home = os.path.join(test_home, "testimages")
     if not os.path.isdir(image_home):
         os.makedirs(image_home)
+    testimages = os.path.join(test_home, "all_testimages.json")
+    if os.path.exists(testimages):
+        with open(testimages) as f:
+            ALL_DOWNLOADED_FILES = set(json.load(f))
+    else:
+        ALL_DOWNLOADED_FILES = set()
     platform = distutils.util.get_platform()
     architecture = "lib.%s-%i.%i" % (platform,
                                      sys.version_info[0], sys.version_info[1])
@@ -186,16 +194,22 @@ class UtilsTest(object):
     def getimage(cls, imagename):
         """
         Downloads the requested image from Forge.EPN-campus.eu
+        
         @param: name of the image.
         For the RedMine forge, the filename contains a directory name that is removed
         @return: full path of the locally saved file
         """
+        if imagename not in cls.ALL_DOWNLOADED_FILES:
+            cls.ALL_DOWNLOADED_FILES.add(imagename)
+            with open(cls.testimages, "w") as fp:
+                json.dump(list(cls.ALL_DOWNLOADED_FILES), fp)
+
         baseimage = os.path.basename(imagename)
         logger.info("UtilsTest.getimage('%s')" % baseimage)
         fullimagename = os.path.abspath(os.path.join(cls.image_home, baseimage))
         if not os.path.isfile(fullimagename):
-            logger.info("Trying to download image %s, timeout set to %ss"
-                          % (imagename, cls.timeout))
+            logger.info("Trying to download image %s, timeout set to %ss",
+                        imagename, cls.timeout)
             dictProxies = {}
             if "http_proxy" in os.environ:
                 dictProxies['http'] = os.environ["http_proxy"]
@@ -235,6 +249,19 @@ class UtilsTest(object):
                 Otherwise please try to download the images manually from \n%s/%s" % (imagename, cls.url_base, imagename))
 
         return fullimagename
+
+    @classmethod
+    def download_images(cls, imgs=None):
+        """
+        Download all images needed for the test/benchmarks
+        
+        @param imgs: list of files to download
+        """
+        if not imgs:
+            imgs = cls.ALL_DOWNLOADED_FILES
+        for fn in imgs:
+            print("Downloading from internet: %s" % fn)
+            cls.getimage(fn)
 
     @classmethod
     def get_options(cls):

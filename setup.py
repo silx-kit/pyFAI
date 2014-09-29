@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/09/2014"
+__date__ = "29/09/2014"
 __status__ = "stable"
 
 
@@ -338,6 +338,10 @@ def rewriteManifest(with_testimages=False):
 if ("sdist" in sys.argv):
     if ("--with-testimages" in sys.argv):
         sys.argv.remove("--with-testimages")
+        test_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test")
+        sys.path.insert(0, test_dir)
+        from utilstest import UtilsTest
+        UtilsTest.download_images()
         rewriteManifest(with_testimages=True)
     else:
         rewriteManifest(with_testimages=False)
