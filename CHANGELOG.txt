@@ -61,3 +61,33 @@
         Tight pixel splitting: #43
         Update documentation
 0.9.4:  06/2014
+		include spec of Maxwell GPU
+		fix issues with intel OpenCL icd v4.4
+		introduce shape & max_shape in detectors
+		work on marchingsquares/sorted controurplot for calibration
+		Enforce the use the Qt4Agg for Matplotlib and other GUI stuff.
+		Update shape of detector in case of binning
+		unified distortion class: merge OpenCL & OpenMP implementation #108
+		Benchmarks for distortion
+		Raise the level to warning when inverting the mask
+		set of new ImXpad detectors Related issue #111
+		Fix issue with recalib within MX-calibrate
+		saving detector description in Nexus files issue #110
+		Update some calibrants: gold
+		about to make peak-picking more user-friendly
+		test for bragg separation
+		work on PEP8 compliance
+		Do not re-cythonize: makes debian package generation able to benefit from ccache
+		conversion to SPD (rotation is missing)
+		pixelwise worker
+		correct both LUT & OCL for memory error
+		replace os.linsep with "\n" when file file opened in text mode (not binary)
+		rework the Extension part to be explicit instead of "black magic" :)
+		implement Kahan summation in Cython (default still use Doubles: faster)
+		Preprocessing kernel containing all cast to float kernels  #120
+		update setup for no-openmp option related to issue #127
+		Add read-out mode for mar345 as "guess_binning" method for detector. Also for MAR and Rayonix #125
+		tool to benchmark HDF5 writing
+		try to be compatible with both PySide and PyQt4 ... the uic stuff is untested and probably buggy #130
+		Deactivate the automatic saturation correction by default. now it is opt-in #131
+0.10.0:	10/2014

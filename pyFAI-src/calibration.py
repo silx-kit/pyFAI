@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/09/2014"
+__date__ = "26/09/2014"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -72,6 +72,30 @@ else:
     pyFAI_morphology = True
 
 
+def get_detector(detector, datafiles=None):
+    """
+    Detector factory taking into account the binning knowing the datafiles
+    @param detector: string or detector or other junk
+    @param datafiles: can be a list of images to be opened and their shape used.
+    @return pyFAI.detector.Detector instance
+    """
+    res = None
+    if type(detector) in types.StringTypes:
+        try:
+            res = detector_factory(detector)
+        except RuntimeError:
+            print("Not a valid detector: %s" % detector)
+            sys.exit(-1)
+    elif isinstance(detector, Detector):
+        res = detector
+    else:
+        res = Detector()
+    if datafiles and os.path.exists(datafiles[0]):
+        shape = fabio.open(datafiles[0]).data.shape
+        res.guess_binning(shape)
+    return res
+
+
 class AbstractCalibration(object):
 
     """
@@ -97,7 +121,7 @@ class AbstractCalibration(object):
             'integrate': "perform the azimuthal integration and display results",
             'abort': "quit immediately, discarding any unsaved changes",
             'show': "Just print out the current parameter set",
-            'reset': "Reset the geometry to the initial guess (rotation to zero, distance to 1m, poni at the center of the image)"
+            'reset': "Reset the geometry to the initial guess (rotation to zero, distance to 0.1m, poni at the center of the image)"
             }
     PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
     UNITS = {"dist":"meter", "poni1":"meter", "poni2":"meter", "rot1":"radian",
@@ -122,7 +146,7 @@ class AbstractCalibration(object):
         self.flatFiles = flatFiles
         self.pointfile = None
 
-        self.detector = self.get_detector(detector)
+        self.detector = get_detector(detector, dataFiles)
 
         if splineFile and os.path.isfile(splineFile):
             self.detector.splineFile = os.path.abspath(splineFile)
@@ -151,7 +175,7 @@ class AbstractCalibration(object):
                 self.calibrant = calibrant
             elif calibrant in ALL_CALIBRANTS:
                 self.calibrant = ALL_CALIBRANTS[calibrant]
-            elif os.path.isfile(celibrant) and os.path.isfile(calibrant):
+            elif os.path.isfile(calibrant) and os.path.isfile(calibrant):
                 self.calibrant = Calibrant(calibrant)
             else:
                 logger.error("Unable to handle such calibrant %s" % calibrant)
@@ -159,7 +183,7 @@ class AbstractCalibration(object):
         else:
             self.calibrant = None
         self.mask = None
-        self.saturation = 0.1
+        self.saturation = 0
         self.fixed = ["wavelength"]  # parameter fixed during optimization
         self.max_rings = None
         self.max_iter = 1000
@@ -199,17 +223,6 @@ class AbstractCalibration(object):
         lst.append(self.detector.__repr__())
         return os.linesep.join(lst)
 
-    def get_detector(self, detector):
-        if type(detector) in types.StringTypes:
-            try:
-                return detector_factory(detector)
-            except RuntimeError:
-                sys.exit(-1)
-        elif isinstance(detector, Detector):
-            return detector
-        else:
-            return Detector()
-
     def configure_parser(self, version="calibration from pyFAI  version %s: %s" % (PyFAI_VERSION, PyFAI_DATE),
                          usage="pyFAI-calib [options] input_image.edf",
                          description=None, epilog=None):
@@ -228,9 +241,9 @@ class AbstractCalibration(object):
                       help="Calibrant name or file containing d-spacing of the reference sample (MANDATORY, case sensitive !)",
                       default=None)
         self.parser.add_argument("-w", "--wavelength", dest="wavelength", type=float,
-                      help="wavelength of the X-Ray beam in Angstrom", default=None)
+                      help="wavelength of the X-Ray beam in Angstrom. Mandatory ", default=None)
         self.parser.add_argument("-e", "--energy", dest="energy", type=float,
-                      help="energy of the X-Ray beam in keV (hc=%skeV.A)" % hc, default=None)
+                      help="energy of the X-Ray beam in keV (hc=%skeV.A)." % hc, default=None)
         self.parser.add_argument("-P", "--polarization", dest="polarization_factor",
                       type=float, default=None,
                       help="polarization factor, from -1 (vertical) to +1 (horizontal),"\
@@ -239,9 +252,9 @@ class AbstractCalibration(object):
                       help="Automatic background subtraction if no value are provided",
                       default=None)
         self.parser.add_argument("-d", "--dark", dest="dark",
-                      help="list of dark images to average and subtract", default=None)
+                      help="list of comma separated dark images to average and subtract", default=None)
         self.parser.add_argument("-f", "--flat", dest="flat",
-                      help="list of flat images to average and divide", default=None)
+                      help="list of comma separated flat images to average and divide", default=None)
         self.parser.add_argument("-s", "--spline", dest="spline",
                       help="spline file describing the detector distortion", default=None)
         self.parser.add_argument("-D", "--detector", dest="detector_name",
@@ -254,57 +267,57 @@ class AbstractCalibration(object):
                       help="select the filter, either mean(default), max or median",
                        default="mean")
         self.parser.add_argument("-l", "--distance", dest="distance", type=float,
-                      help="sample-detector distance in millimeter", default=None)
+                      help="sample-detector distance in millimeter. Default: 0.1m", default=None)
         self.parser.add_argument("--poni1", dest="poni1", type=float,
-                      help="poni1 coordinate in meter", default=None)
+                      help="poni1 coordinate in meter. Default: center of detector", default=None)
         self.parser.add_argument("--poni2", dest="poni2", type=float,
-                      help="poni2 coordinate in meter", default=None)
+                      help="poni2 coordinate in meter. Default: center of detector", default=None)
         self.parser.add_argument("--rot1", dest="rot1", type=float,
-                      help="rot1 in radians", default=None)
+                      help="rot1 in radians. default: 0", default=None)
         self.parser.add_argument("--rot2", dest="rot2", type=float,
-                      help="rot2 in radians", default=None)
+                      help="rot2 in radians. default: 0", default=None)
         self.parser.add_argument("--rot3", dest="rot3", type=float,
-                      help="rot3 in radians", default=None)
+                      help="rot3 in radians. default: 0", default=None)
 
         self.parser.add_argument("--fix-dist", dest="fix_dist",
                       help="fix the distance parameter", default=None, action="store_true")
         self.parser.add_argument("--free-dist", dest="fix_dist",
-                      help="free the distance parameter", default=None, action="store_false")
+                      help="free the distance parameter. Default: Activated", default=None, action="store_false")
 
         self.parser.add_argument("--fix-poni1", dest="fix_poni1",
                       help="fix the poni1 parameter", default=None, action="store_true")
         self.parser.add_argument("--free-poni1", dest="fix_poni1",
-                      help="free the poni1 parameter", default=None, action="store_false")
+                      help="free the poni1 parameter. Default: Activated", default=None, action="store_false")
 
         self.parser.add_argument("--fix-poni2", dest="fix_poni2",
                       help="fix the poni2 parameter", default=None, action="store_true")
         self.parser.add_argument("--free-poni2", dest="fix_poni2",
-                      help="free the poni2 parameter", default=None, action="store_false")
+                      help="free the poni2 parameter. Default: Activated", default=None, action="store_false")
 
         self.parser.add_argument("--fix-rot1", dest="fix_rot1",
                       help="fix the rot1 parameter", default=None, action="store_true")
         self.parser.add_argument("--free-rot1", dest="fix_rot1",
-                      help="free the rot1 parameter", default=None, action="store_false")
+                      help="free the rot1 parameter. Default: Activated", default=None, action="store_false")
 
         self.parser.add_argument("--fix-rot2", dest="fix_rot2",
                       help="fix the rot2 parameter", default=None, action="store_true")
         self.parser.add_argument("--free-rot2", dest="fix_rot2",
-                      help="free the rot2 parameter", default=None, action="store_false")
+                      help="free the rot2 parameter. Default: Activated", default=None, action="store_false")
 
         self.parser.add_argument("--fix-rot3", dest="fix_rot3",
                       help="fix the rot3 parameter", default=None, action="store_true")
         self.parser.add_argument("--free-rot3", dest="fix_rot3",
-                      help="free the rot3 parameter", default=None, action="store_false")
+                      help="free the rot3 parameter. Default: Activated", default=None, action="store_false")
 
         self.parser.add_argument("--fix-wavelength", dest="fix_wavelength",
-                      help="fix the wavelength parameter", default=True, action="store_true")
+                      help="fix the wavelength parameter. Default: Activated", default=True, action="store_true")
         self.parser.add_argument("--free-wavelength", dest="fix_wavelength",
-                      help="free the wavelength parameter", default=True, action="store_false")
+                      help="free the wavelength parameter. Default: Deactivated ", default=True, action="store_false")
 
         self.parser.add_argument("--saturation", dest="saturation",
                       help="consider all pixel>max*(1-saturation) as saturated and "\
-                      "reconstruct them",
-                      default=0.1, type=float)
+                      "reconstruct them, default: 0 (deactivated)",
+                      default=0, type=float)
         self.parser.add_argument("--weighted", dest="weighted",
                       help="weight fit by intensity, by default not.",
                        default=False, action="store_true")
@@ -353,7 +366,7 @@ class AbstractCalibration(object):
 
 
         if options.detector_name:
-            self.detector = self.get_detector(options.detector_name)
+            self.detector = get_detector(options.detector_name, args)
             self.ai.detector = self.detector
         if options.spline:
             if "Pilatus" in self.detector.name:
@@ -1279,17 +1292,12 @@ class MultiCalib(object):
         self.flatFiles = flatFiles or []
         self.data = {}
 
-        if type(detector) in types.StringTypes:
-            self.detector = detector_factory(detector)
-        elif isinstance(detector, Detector):
-            self.detector = detector
-        else:
-            self.detector = Detector()
+        self.detector = get_detector(detector, dataFiles)
 
         if splineFile and os.path.isfile(splineFile):
             self.detector.splineFile = os.path.abspath(splineFile)
         if pixelSize:
-            if __len__ in pixelSize and len(pixelSize) >= 2:
+            if "__len__" in dir(pixelSize) and len(pixelSize) >= 2:
                 self.detector.pixel1 = float(pixelSize[0])
                 self.detector.pixel2 = float(pixelSize[1])
             else:
@@ -1482,7 +1490,7 @@ class MultiCalib(object):
             self.mask = fabio.open(options.mask).data
 
         if options.detector_name:
-            self.detector = detector_factory(options.detector_name)
+            self.detector = get_detector(options.detector_name, options.args)
         if options.spline:
             if os.path.isfile(options.spline):
                 self.detector.splineFile = os.path.abspath(options.spline)

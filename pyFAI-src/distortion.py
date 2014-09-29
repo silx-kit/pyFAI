@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/06/2014"
+__date__ = "22/09/2014"
 __status__ = "development"
 
 import logging, threading
@@ -59,7 +59,7 @@ class Distortion(object):
         @param detector: detector instance or detector name
         @param shape: shape of the output image
         @param method: "lut" or "csr", the former is faster
-        @param device: Name of the device: None for OpenMP, "cpu" or "gou" or the id of the OpenCL device a 2-tuple of integer
+        @param device: Name of the device: None for OpenMP, "cpu" or "gpu" or the id of the OpenCL device a 2-tuple of integer
         @param workgroup: workgroup size for CSR on OpenCL
         """
         if type(detector) in types.StringTypes:
@@ -177,7 +177,7 @@ class Distortion(object):
                                     max1 = pos1max[i, j] - pos1min[i, j]
                                     print old, "new max1", max1, i, j
 
-                                lut_size[pos0min[i, j]:pos0max[i, j], pos1min[i, j]:pos1max[i, j]] += 1
+                                self.bin_size[pos0min[i, j]:pos0max[i, j], pos1min[i, j]:pos1max[i, j]] += 1
                     self.max_size = self.bin_size.max()
 
     def calc_init(self):

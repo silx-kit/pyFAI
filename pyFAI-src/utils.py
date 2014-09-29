@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2014"
+__date__ = "22/09/2014"
 __status__ = "production"
 
 import logging, sys, types, os, glob
@@ -42,7 +42,7 @@ import numpy
 import fabio
 from scipy import ndimage
 from scipy.interpolate import interp1d
-from math import  ceil, sin, cos, atan2, pi
+from math import ceil, sin, cos, atan2, pi
 
 try:
     from . import relabel as relabelCython

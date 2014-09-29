@@ -33,15 +33,61 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/07/2014"
+__date__ = "26/09/2014"
 __status__ = "production"
 
+import sys
 import matplotlib
+if ('PySide' in sys.modules):
+    from PySide import QtGui, QtCore, QtUiTools
+    #we need to handle uic !!!
+    """
+    loadUi(uifile, baseinstance=None, package='') -> widget
+
+Load a Qt Designer .ui file and return an instance of the user interface.
+
+uifile is a file name or file-like object containing the .ui file.
+baseinstance is an optional instance of the Qt base class.  If specified
+then the user interface is created in it.  Otherwise a new instance of the
+base class is automatically created.
+package is the optional package which is used as the base for any relative
+imports of custom widgets.
+
+    """
+    class uic(object):
+        @staticmethod
+        def loadUi(uifile, baseinstance=None, package=''):
+            """Load a Qt Designer .ui file and return an instance of the user interface.
+
+            uifile is a file name or file-like object containing the .ui file.
+            baseinstance is an optional instance of the Qt base class.  If specified
+            then the user interface is created in it.  Otherwise a new instance of the
+            base class is automatically created.
+            package is the optional package which is used as the base for any relative
+            imports of custom widgets.
+            
+            Totally untested !
+            """
+            loader = QtUiTools.QUiLoader()
+            file = QtCore.QFile(uifile)
+            file.open(QtCore.QFile.ReadOnly)
+            myWidget = loader.load(file, self)
+            file.close()
+            if baseinstance is not None:
+                baseinstance = myWidget
+            else:
+                return myWidget
+
+    sys.modules["PySide.uic"] = uic
+    matplotlib.rcParams['backend.qt4'] = 'PySide'
+else:
+    from PyQt4 import QtGui, QtCore, uic
+
 matplotlib.use('Qt4Agg')
 from matplotlib.backends import backend_qt4 as backend
+from matplotlib import pyplot
 import pylab
 
-from PyQt4 import QtGui, QtCore, uic
 
 main_loop = False
 
@@ -59,6 +105,13 @@ def update_fig(fig=None):
                                                     fig.canvas.size()))
             if not main_loop:
                 QtCore.QCoreApplication.processEvents()
+
+class Event(object):
+    "Dummy class for dummy things"
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+
 
 def maximize_fig(fig=None):
     """

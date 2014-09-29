@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/07/2014"
+__date__ = "26/09/2014"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1051,7 +1051,7 @@ class AzimuthalIntegrator(Geometry):
                                             allow_pos0_neg=False,
                                             unit=unit)
 
-    def setup_CSR(self, shape, npt, mask=None, pos0_range=None, pos1_range=None, mask_checksum=None, unit=units.TTH):
+    def setup_CSR(self, shape, npt, mask=None, pos0_range=None, pos1_range=None, mask_checksum=None, unit=units.TTH, split="bbox"):
         """
         Prepare a look-up-table
 
@@ -1069,6 +1069,7 @@ class AzimuthalIntegrator(Geometry):
         @type mask_checksum: int (or anything else ...)
         @param unit: use to propagate the LUT object for further checkings
         @type unit: pyFAI.units.Enum
+        @param split: Splitting scheme: valid options are "no", "bbox", "full"
 
         This method is called when a look-up table needs to be set-up.
         The *shape* parameter, correspond to the shape of the original
@@ -1101,14 +1102,23 @@ class AzimuthalIntegrator(Geometry):
             int2d = True
         else:
             int2d = False
-        pos0 = self.array_from_unit(shape, "center", unit)
-        dpos0 = self.array_from_unit(shape, "delta", unit)
-        if (pos1_range is None) and (not int2d):
-            pos1 = None
-            dpos1 = None
+        if split == "full":
+            pos = self.array_from_unit(shape, "corner", unit)
         else:
-            pos1 = self.chiArray(shape)
-            dpos1 = self.deltaChi(shape)
+            pos0 = self.array_from_unit(shape, "center", unit)
+            if split == "no":
+                dpos0 = None
+            else:
+                dpos0 = self.array_from_unit(shape, "delta", unit)
+            if (pos1_range is None) and (not int2d):
+                pos1 = None
+                dpos1 = None
+            else:
+                pos1 = self.chiArray(shape)
+                if split == "no":
+                    dpos1 = None
+                else:
+                    dpos1 = self.deltaChi(shape)
         if ("__len__" in dir(pos0_range)) and (len(pos0_range) > 1):
             pos0_min = min(pos0_range)
             pos0_maxin = max(pos0_range)
@@ -1125,25 +1135,47 @@ class AzimuthalIntegrator(Geometry):
             mask_checksum = None
         else:
             assert mask.shape == shape
-        if int2d:
-            return splitBBoxCSR.HistoBBox2d(pos0, dpos0, pos1, dpos1,         #not yet implemented
-                                            bins=npt,
-                                            pos0Range=pos0Range,
-                                            pos1Range=pos1Range,
-                                            mask=mask,
-                                            mask_checksum=mask_checksum,
-                                            allow_pos0_neg=False,
-                                            unit=unit)
+        if split == "full":
+            raise RuntimeError("Full pixel splitting using CSR is not yet available")
+#            if int2d:
+#                return splitBBoxCSR.HistoBBox2d(pos0, dpos0, pos1, dpos1,
+#                                                bins=npt,
+#                                                pos0Range=pos0Range,
+#                                                pos1Range=pos1Range,
+#                                                mask=mask,
+#                                                mask_checksum=mask_checksum,
+#                                                allow_pos0_neg=False,
+#                                                unit=unit)
+#            else:
+#                return splitBBoxCSR.HistoBBox1d(pos0, dpos0, pos1, dpos1,
+#                                                bins=npt,
+#                                                pos0Range=pos0Range,
+#                                                pos1Range=pos1Range,
+#                                                mask=mask,
+#                                                mask_checksum=mask_checksum,
+#                                                allow_pos0_neg=False,
+#                                                unit=unit,
+#                                                )
         else:
-            return splitBBoxCSR.HistoBBox1d(pos0, dpos0, pos1, dpos1,
-                                            bins=npt,
-                                            pos0Range=pos0Range,
-                                            pos1Range=pos1Range,
-                                            mask=mask,
-                                            mask_checksum=mask_checksum,
-                                            allow_pos0_neg=False,
-                                            unit=unit,
-                                            )
+            if int2d:
+                return splitBBoxCSR.HistoBBox2d(pos0, dpos0, pos1, dpos1,
+                                                bins=npt,
+                                                pos0Range=pos0Range,
+                                                pos1Range=pos1Range,
+                                                mask=mask,
+                                                mask_checksum=mask_checksum,
+                                                allow_pos0_neg=False,
+                                                unit=unit)
+            else:
+                return splitBBoxCSR.HistoBBox1d(pos0, dpos0, pos1, dpos1,
+                                                bins=npt,
+                                                pos0Range=pos0Range,
+                                                pos1Range=pos1Range,
+                                                mask=mask,
+                                                mask_checksum=mask_checksum,
+                                                allow_pos0_neg=False,
+                                                unit=unit,
+                                                )
 
     def xrpd_LUT(self, data, npt, filename=None, correctSolidAngle=True,
                  tthRange=None, chiRange=None, mask=None,
@@ -1612,7 +1644,7 @@ class AzimuthalIntegrator(Geometry):
             data /= self.solidAngleArray(shape, correctSolidAngle)[mask]
 
         if tthRange is not None:
-            tthRange = [deg2rad(tthRange[0]), deg2rad(tthRange[-1])]
+            tthRange = [utils.deg2rad(tthRange[0]), utils.deg2rad(tthRange[-1])]
         else:
             tthRange = [tth.min(), tth.max() * EPS32]
 
@@ -2108,7 +2140,7 @@ class AzimuthalIntegrator(Geometry):
         @type dark: ndarray
         @param flat: flat field image
         @type flat: ndarray
-        @param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr; "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"
+        @param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr", "nosplit_csr", "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"
         @type method: str
         @param unit: Output units, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
         @type unit: pyFAI.units.Enum
@@ -2340,11 +2372,18 @@ class AzimuthalIntegrator(Geometry):
                                  " CSR's azimuth_range don't match")
                 if reset:
                     logger.info("AI.integrate1d: Resetting integrator because %s" % reset)
+                    if "no" in method:
+                        split = "no"
+                    elif "full" in method:
+                        split = "full"
+                    else:
+                        split = "bbox"
                     try:
                         self._csr_integrator = self.setup_CSR(shape, npt, mask,
                                                               radial_range, azimuth_range,
-                                                              mask_checksum=mask_crc, unit=unit)
-                    except MemoryError:  # LUT method is hungry...
+                                                              mask_checksum=mask_crc,
+                                                              unit=unit, split=split)
+                    except MemoryError:  # CSR method is hungry...
                         logger.warning("MemoryError: falling back on forward implementation")
                         self._ocl_csr_integr = None
                         self._csr_integrator = None
@@ -2842,8 +2881,17 @@ class AzimuthalIntegrator(Geometry):
                 error = False
                 if reset:
                     logger.info("AI.integrate2d: Resetting integrator because %s" % reset)
+                    if "no" in method:
+                        split = "no"
+                    elif "full" in method:
+                        split = "full"
+                    else:
+                        split = "bbox"
                     try:
-                        self._csr_integrator = self.setup_CSR(shape, npt, mask, radial_range, azimuth_range, mask_checksum=mask_crc, unit=unit)
+                        self._csr_integrator = self.setup_CSR(shape, npt, mask,
+                                                              radial_range, azimuth_range,
+                                                              mask_checksum=mask_crc,
+                                                              unit=unit, split=split)
                         error = False
                     except MemoryError:
                         logger.warning("MemoryError: falling back on forward implementation")

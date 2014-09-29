@@ -25,7 +25,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
-__date__ = "04/09/2014"
+__date__ = "22/09/2014"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -335,7 +335,7 @@ class OCL_LUT_Integrator(object):
                 image = numpy.empty(data.shape, dtype=numpy.float32)
                 ev = pyopencl.enqueue_copy(self._queue, image, self._cl_mem["image"])
                 events.append(("copy D->H image", ev))
-                ev, wait()
+                ev.wait()
                 return image
             integrate = self._program.lut_integrate(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["lut_integrate"])
             events.append(("integrate", integrate))

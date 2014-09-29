@@ -38,6 +38,7 @@ import numpy
 
 from crc32 cimport crc32 as C_crc32
 
+
 def crc32(numpy.ndarray data not None):
     """
     Calculate the CRC32 checksum of a numpy array

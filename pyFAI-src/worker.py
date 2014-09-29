@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/07/2014"
+__date__ = "22/09/2014"
 __status__ = "development"
 __doc__ = """
 
@@ -466,6 +466,7 @@ class PixelwiseWorker(object):
             self.mask = mask.astype(bool)
 
         self.dummy = dummy
+        self.delta_dummy = delta_dummy
         if device is not None:
             logger.warning("GPU is not yet implemented")
 
@@ -482,7 +483,7 @@ class PixelwiseWorker(object):
             if self.delta_dummy is None:
                 mask = numpy.logical_or((data == self.dummy), self.mask)
             else:
-                mask = numpy.logical_or(abs(data - dummy) <= delta_dummy,
+                mask = numpy.logical_or(abs(data - self.dummy) <= self.delta_dummy,
                                         self.mask)
             do_mask = True
         else:

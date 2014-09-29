@@ -22,6 +22,15 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 from __future__ import print_function
+__author__ = "Jérôme Kieffer"
+__contact__ = "Jerome.Kieffer@ESRF.eu"
+__license__ = "GPLv3+"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "2014-09-18"
+__status__ = "stable"
+__doc__ = """
+Module containing the description of all detectors with a factory to instanciate them
+"""
 
 import logging
 import numpy
@@ -31,21 +40,7 @@ import threading
 
 from . import io
 from . import spline
-from .utils import lazy_property
-from .utils import timeit, binning
-
-
-__author__ = "Jérôme Kieffer"
-__contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
-__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/07/2014"
-__status__ = "stable"
-__doc__ = """
-Module containing the description of all detectors with a factory to instanciate them
-"""
-
-
+from .utils import binning
 
 logger = logging.getLogger("pyFAI.detectors")
 
@@ -512,7 +507,21 @@ class Detector(object):
             det_grp["pixel_corners"].attrs["interpretation"] = "vertex"
         nxs.close()
 
-
+    def guess_binning(self, data):
+        """
+        Guess the binning/mode depending on the image shape
+        @param data: 2-tuple with the shape of the image or the image with a .shape attribute.
+        """
+        if self.force_pixel:
+            if "shape" in dir(data):
+                shape = data.shape
+            else:
+                shape = tuple(data[:2])
+            if shape != self.max_shape:
+                logger.warning("guess_binning is not implemented for %s detectors!\
+                 and image size %s! is wrong, expected %s!" % (self.name, shape, self.shape))
+        else:
+            logger.debug("guess_binning is not implemented for generic detectors !")
 
 class NexusDetector(Detector):
     """
@@ -524,7 +533,7 @@ class NexusDetector(Detector):
         if filename is not None:
             self.load(filename)
         self._filename = filename
-        uniform_pixel = True
+        self.uniform_pixel = True
 
     def __repr__(self):
         return "%s detector from NeXus file: %s\t PixelSize= %.3e, %.3e m" % \
@@ -791,7 +800,7 @@ class Pilatus(Detector):
                     delta1 = delta1 / 100.0  # Offsets are in percent of pixel
                     delta2 = delta2 / 100.0  # former arrays were integers
                 else:
-                    logger.warning("Surprizing situation !!! please investigate: offset has shape %s and input array have %s" % (self.offset1.shape, d1, shape))
+                    logger.warning("Surprizing situation !!! please investigate: offset has shape %s and input array have %s" % (self.offset1.shape, d1.shape))
                     delta1 = delta2 = 0.
         # For pilatus,
         p1 = (self._pixel1 * (delta1 + 0.5 + d1))
@@ -950,12 +959,13 @@ class Eiger(Detector):
                     delta1 = delta1 / 100.0  # Offsets are in percent of pixel
                     delta2 = delta2 / 100.0  # former arrays were integers
                 else:
-                    logger.warning("Surprising situation !!! please investigate: offset has shape %s and input array have %s" % (self.offset1.shape, d1, shape))
+                    logger.warning("Surprising situation !!! please investigate: offset has shape %s and input array have %s" % (self.offset1.shape, d1.shape))
                     delta1 = delta2 = 0.
         # For pilatus,
         p1 = (self._pixel1 * (delta1 + 0.5 + d1))
         p2 = (self._pixel2 * (delta2 + 0.5 + d2))
         return p1, p2
+
 
 class Eiger1M(Eiger):
     """
@@ -1099,9 +1109,21 @@ class Mar345(Detector):
     """
     Mar345 Imaging plate detector
 
+    In this detector, pixels are always square
+    The valid image size are 2300, 2000, 1600, 1200, 3450, 3000, 2400, 1800
     """
-    force_pixel = False
+    force_pixel = True
     MAX_SHAPE = (3450, 3450)
+    #Valid image width with corresponding pixel size
+    VALID_SIZE = {2300:150e-6,
+                  2000:150e-6,
+                  1600:150e-6,
+                  1200:150e-6,
+                  3450:100e-6,
+                  3000:100e-6,
+                  2400:100e-6,
+                  1800:100e-6}
+
     aliases = ["MAR 345", "Mar3450"]
     def __init__(self, pixel1=100e-6, pixel2=100e-6):
         Detector.__init__(self, pixel1, pixel2)
@@ -1119,6 +1141,25 @@ class Mar345(Detector):
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
             (self.name, self._pixel1, self._pixel2)
+
+    def guess_binning(self, data):
+        """
+        Guess the binning/mode depending on the image shape
+        @param data: 2-tuple with the shape of the image or the image with a .shape attribute.
+        """
+        if "shape" in dir(data):
+            shape = data.shape
+        else:
+            shape = data[:2]
+
+        dim1, dim2 = shape
+        self._pixel1 = self.VALID_SIZE[dim1]
+        self._pixel2 = self.VALID_SIZE[dim1]
+        self.max_shape = shape
+        self.shape = shape
+        self._binning = (1, 1)
+        self._mask = False
+        self._mask_crc = None
 
 
 class ImXPadS10(Detector):
@@ -1422,7 +1463,6 @@ class Xpad_flat(ImXPadS10):
         return self._pixel_corners
 
 
-
 class Perkin(Detector):
     """
     Perkin detector
@@ -1438,10 +1478,11 @@ class Perkin(Detector):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
             (self.name, self._pixel1, self._pixel2)
 
+
 class Rayonix(Detector):
     force_pixel = True
     BINNED_PIXEL_SIZE = {}
-
+    MAX_SHAPE = (4096 , 4096)
     def __init__(self, pixel1=None, pixel2=None):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
@@ -1477,6 +1518,27 @@ class Rayonix(Detector):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
             (self.name, self._pixel1, self._pixel2)
 
+    def guess_binning(self, data):
+        """
+        Guess the binning/mode depending on the image shape
+        @param data: 2-tuple with the shape of the image or the image with a .shape attribute.
+        """
+        if "shape" in dir(data):
+            shape = data.shape
+        else:
+            shape = tuple(data[:2])
+        bin1 = self.MAX_SHAPE[0] // shape[0]
+        bin2 = self.MAX_SHAPE[1] // shape[1]
+        self._binning = (bin1, bin2)
+        self.shape = shape
+        self.max_shape = shape
+        self._pixel1 = self.BINNED_PIXEL_SIZE[bin1]
+        self._pixel2 = self.BINNED_PIXEL_SIZE[bin2]
+        self._mask = False
+        self._mask_crc = None
+
+
+
 class Rayonix133(Rayonix):
     """
     Rayonix 133 2D CCD detector detector also known as mar133
@@ -1507,7 +1569,6 @@ class Rayonix133(Rayonix):
         x, y = numpy.ogrid[:self.shape[0], :self.shape[1]]
         mask = ((x + 0.5 - c[0]) ** 2 + (y + 0.5 - c[1]) ** 2) > (c[0]) ** 2
         return mask
-
 
 class RayonixSx165(Rayonix):
     """

@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/10/2011"
+__date__ = "2014-09-26"
 
 import unittest
 import time
@@ -37,23 +37,28 @@ import os
 import numpy
 import logging
 import sys
+from numpy import cos
 from utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI.histogram import histogram, histogram2d
-#histogram = sys.modules["pyFAI.histogram"].histogram
-#histogram2d = sys.modules["pyFAI.histogram"].histogram2d
+from pyFAI.splitBBoxCSR import HistoBBox1d, HistoBBox2d
 if logger.getEffectiveLevel() == logging.DEBUG:
     import pylab
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
-class test_histogram1d(unittest.TestCase):
+
+class TestHistogram1d(unittest.TestCase):
     """basic test"""
-    shape = (2048, 2048)#(numpy.random.randint(1000, 4000), numpy.random.randint(1000, 4000))
-    npt = 1500#numpy.random.randint(1000, 4000)
+    shape = (512, 512)
+    npt = 500
     size = shape[0] * shape[1]
+    maxI = 1000
     epsilon = 1.0e-4
-    tth = (numpy.random.random(shape).astype("float64"))
-    data = numpy.random.random_integers(1, 65000, size=shape).astype("uint16")
+    y, x = numpy.ogrid[:shape[0], :shape[1]]
+    tth = numpy.sqrt(x * x + y * y).astype("float32")
+    mod = 0.5 + 0.5 * cos(tth / 12) + 0.25 * cos(tth / 6) + 0.1 * cos(tth / 4)
+    data = (numpy.random.poisson(maxI, shape) * mod).astype("uint16")
+    data_sum = data.sum(dtype="float64")
     t0 = time.time()
     drange = (tth.min(), tth.max() * EPS32)
     unweight_numpy, bin_edges = numpy.histogram(tth, npt, range=drange)
@@ -68,23 +73,29 @@ class test_histogram1d(unittest.TestCase):
     bins_cython, I_cython, weight_cython, unweight_cython = histogram(tth, data, npt, pixelSize_in_Pos=0)
     t4 = time.time()
     logger.info("Timing for Cython  both   histogram: %.3f", t4 - t3)
-
+    t3 = time.time()
+    integrator = HistoBBox1d(tth, delta_pos0=None, pos1=None, delta_pos1=None,
+                 bins=npt, pos0Range=drange, allow_pos0_neg=False, unit="undefined",)
+    t2 = time.time()
+    bins_csr, I_csr, weight_csr, unweight_csr = integrator.integrate(data)
+    t4 = time.time()
+    logger.info("Timing for CSR  init: %.3fs, integrate: %0.3fs, both: %.3f", (t2 - t3), (t4 - t2), (t4 - t3))
 
     def test_count_numpy(self):
         """
         Test that the pixel count and the total intensity is conserved
         in numpy implementation
         """
-        sump = int(self.unweight_numpy.sum(dtype="int64"))
-        intensity_obt = self.I_numpy.sum(dtype="float64") * self.size / self.npt
-        intensity_exp = self.data.sum(dtype="float64")
+        sump = self.unweight_numpy.sum(dtype="int64")
+        intensity_obt = self.weight_numpy.sum(dtype="float64")
         delta = abs(sump - self.size)
         logger.info("Numpy: Total number of points: %s (%s expected), delta = %s", sump, self.size, delta)
-        v = abs(intensity_obt - intensity_exp) / intensity_exp
-        logger.info("Numpy: Total Intensity: %s (%s expected), variation = %s", intensity_obt, intensity_exp, v)
-        self.assertEquals(delta, 0, msg="check all pixels were counted")
-        self.assertTrue(v < self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
-
+        v = abs(intensity_obt - self.data_sum) / self.data_sum
+        logger.info("Numpy: Total Intensity: %s (%s expected), variation = %s", intensity_obt, self.data_sum, v)
+        self.assert_(delta == 0, msg="check all pixels were counted")
+        summed_weight_hist = self.weight_numpy.sum(dtype="float64")
+        self.assert_(summed_weight_hist == self.data_sum, msg="check all intensity is counted expected %s got %s" % (self.data_sum, summed_weight_hist))
+        self.assert_(v < self.epsilon, msg="checks delta is lower than %s, got %s" % (self.epsilon, v))
 
     def test_count_cython(self):
         """
@@ -92,56 +103,100 @@ class test_histogram1d(unittest.TestCase):
         in cython implementation
         """
         sump = int(self.unweight_cython.sum(dtype="float64"))
-        intensity_obt = self.I_cython.sum(dtype="float64") * self.size / self.npt
-        intensity_exp = self.data.sum(dtype="float64")
+        intensity_obt = self.weight_cython.sum(dtype="float64")
         delta = abs(sump - self.size)
         logger.info("Cython: Total number of points: %s (%s expected), delta = %s", sump, self.size, delta)
-        v = abs(intensity_obt - intensity_exp) / intensity_exp
-        logger.info("Cython: Total Intensity: %s (%s expected), variation = %s", intensity_obt, intensity_exp, v)
-        self.assertEquals(delta, 0, msg="check all pixels were counted")
+        v = abs(intensity_obt - self.data_sum) / self.data_sum
+        logger.info("Cython: Total Intensity: %s (%s expected), variation = %s", intensity_obt, self.data_sum, v)
+        self.assert_(delta == 0, msg="check all pixels were counted expected %s got %s" % (self.size, sump))
+        summed_weight_hist = self.weight_cython.sum(dtype="float64")
+        self.assert_(summed_weight_hist == self.data_sum, msg="check all intensity is counted expected %s got %s" % (self.data_sum, summed_weight_hist))
         self.assertTrue(v < self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
 
 
-    def test_numpy_vs_cython_1d(self):
+    def test_count_csr(self):
         """
-        Compare numpy histogram with cython simple implementation
+        Test that the pixel count and the total intensity is conserved
+        in cSR sparse matrix multiplacation implementation
+        """
+        sump = int(self.unweight_csr.sum(dtype="float64"))
+        intensity_obt = self.weight_csr.sum(dtype="float64")
+        delta = abs(sump - self.size)
+        logger.info("CSR: Total number of points: %s (%s expected), delta = %s", sump, self.size, delta)
+        v = abs(intensity_obt - self.data_sum) / self.data_sum
+        logger.info("CSR: Total Intensity: %s (%s expected), variation = %s", intensity_obt, self.data_sum, v)
+        self.assert_(delta == 0, msg="check all pixels were counted expected %s got %s" % (self.size, sump))
+        summed_weight_hist = self.weight_csr.sum(dtype="float64")
+        self.assert_(summed_weight_hist == self.data_sum, msg="check all intensity is counted expected %s got %s" % (self.data_sum, summed_weight_hist))
+        self.assertTrue(v < self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
+
+    def test_numpy_vs_cython_vs_csr_1d(self):
+        """
+        Compare numpy histogram with cython simple implementation ans CSR
         """
         max_delta = abs(self.bins_numpy - self.bins_cython).max()
         logger.info("Bin-center position for cython/numpy, max delta=%s", max_delta)
         self.assert_(max_delta < self.epsilon,"Bin-center position for cython/numpy, max delta=%s"% max_delta)
-        rwp = Rwp((self.bins_cython, self.I_cython), (self.bins_numpy, self.I_numpy))
-        logger.info("Rwp Cython/Numpy = %.3f" % rwp)
-        self.assert_(rwp < 5.0, "Rwp Cython/Numpy = %.3f" % rwp)
+
+        max_delta = abs(self.bins_numpy - self.bins_csr).max()
+        logger.info("Bin-center position for csr/numpy, max delta=%s", max_delta)
+        self.assert_(max_delta < self.epsilon, "Bin-center position for csr/numpy, max delta=%s" % max_delta)
+
+
+
+        rwp1 = Rwp((self.bins_cython, self.I_cython), (self.bins_numpy, self.I_numpy))
+        logger.info("Rwp Cython/Numpy = %.3f" % rwp1)
+        self.assert_(rwp1 < self.epsilon, "Rwp Cython/Numpy = %.3f" % rwp1)
+
+        rwp2 = Rwp((self.bins_csr, self.I_csr), (self.bins_numpy, self.I_numpy))
+        logger.info("Rwp CSR/Numpy = %.3f" % rwp2)
+        self.assert_(rwp2 < 3, "Rwp Cython/Numpy = %.3f" % rwp2)
+
         if logger.getEffectiveLevel() == logging.DEBUG:
             logger.info("Plotting results")
             fig = pylab.figure()
-            fig.suptitle('Numpy vs Cython XRPD R=%.3f' % rwp)
+            fig.suptitle('Numpy /Cython R=%.3f, Numpy/CSR R=%.3f' % (rwp1, rwp2))
             sp = fig.add_subplot(111)
             sp.plot(self.bins_numpy, self.I_numpy, "-b", label='numpy')
             sp.plot(self.bins_cython, self.I_cython, "-r", label="cython")
+            sp.plot(self.bins_csr, self.I_csr, "-g", label="CSR")
             handles, labels = sp.get_legend_handles_labels()
             fig.legend(handles, labels)
             fig.show()
             raw_input("Press enter to quit")
+
         delta_max = abs(self.unweight_numpy - self.unweight_cython).max()
         logger.info("pixel count difference numpy/cython : max delta=%s", delta_max)
-        self.assert_(delta_max < 2, "numpy_vs_cython_1d max delta unweight = %s" % delta_max)
+        self.assert_(delta_max < 1, "numpy_vs_cython_1d max delta unweight = %s" % delta_max)
         delta_max = abs(self.I_cython - self.I_numpy).max()
         logger.info("Intensity count difference numpy/cython : max delta=%s", delta_max)
         self.assert_(delta_max < self.epsilon, "Intensity count difference numpy/cython : max delta=%s" % delta_max)
 
+        #TODO: fix this !!!
+        delta_max = abs(self.unweight_numpy - self.unweight_csr).max()
+        logger.warning("pixel count difference numpy/csr : max delta=%s", delta_max)
+        self.assert_(delta_max < 10, "numpy_vs_csr_1d max delta unweight = %s" % delta_max)
+        delta_max = abs(self.I_csr - self.I_numpy).max()
+        logger.warning("Intensity count difference numpy/csr : max delta=%s", delta_max)
+        self.assert_(delta_max < 0.41, "Intensity count difference numpy/csr : max delta=%s" % delta_max)
 
-class test_histogram2d(unittest.TestCase):
+
+class TestHistogram2d(unittest.TestCase):
     """basic test for 2D histogram"""
-    shape = (2048, 2048)#(numpy.random.randint(1000, 4000), numpy.random.randint(1000, 4000))
-    npt = (400, 360)
+    shape = (512, 512)
     size = shape[0] * shape[1]
-    epsilon = 3.0e-4
-    tth = (numpy.random.random(shape).astype("float64"))
-    chi = (numpy.random.random(shape).astype("float64"))
-    data = numpy.random.random_integers(1, 65000, size=shape).astype("uint16")
-    t0 = time.time()
+    maxI = 1000
+    epsilon = 1.0e-4
+    y, x = numpy.ogrid[:shape[0], :shape[1]]
+    tth = numpy.sqrt(x * x + y * y).astype("float32")
+    mod = 0.5 + 0.5 * cos(tth / 12) + 0.25 * cos(tth / 6) + 0.1 * cos(tth / 4)
+    data = (numpy.random.poisson(maxI, shape) * mod).astype("uint16")
+    data_sum = data.sum(dtype="float64")
+    npt = (400, 360)
+#    epsilon = 3.0e-4
+    chi = numpy.arctan2(y, x).astype("float32")
     drange = [[tth.min(), tth.max() * EPS32], [chi.min(), chi.max() * EPS32]]
+    t0 = time.time()
     unweight_numpy, tth_edges, chi_edges = numpy.histogram2d(tth.flatten(), chi.flatten(), npt,range=drange)
     t1 = time.time()
     weight_numpy, tth_edges, chi_edges = numpy.histogram2d(tth.flatten(), chi.flatten(), npt, weights=data.astype("float64").flatten(),range=drange)
@@ -155,22 +210,27 @@ class test_histogram2d(unittest.TestCase):
     I_cython, tth_cython, chi_cython, weight_cython, unweight_cython = histogram2d(tth.flatten(), chi.flatten(), npt, data.flatten(), split=0)
     t4 = time.time()
     logger.info("Timing for Cython  both   histogram2d: %.3f", t4 - t3)
+    t3 = time.time()
+    integrator = HistoBBox2d(tth, None, chi, delta_pos1=None,
+                 bins=npt, allow_pos0_neg=False, unit="undefined",)
+    t2 = time.time()
+    I_csr, tth_csr, chi_csr, weight_csr, unweight_csr = integrator.integrate(data)
+    t4 = time.time()
+    logger.info("Timing for CSR  init: %.3fs, integrate: %0.3fs, both: %.3f", (t2 - t3), (t4 - t2), (t4 - t3))
 
     def test_count_numpy(self):
         """
         Test that the pixel count and the total intensity is conserved
         in numpy implementation
         """
-        sump = int(self.unweight_numpy.sum(dtype="int64"))
-        intensity_obt = self.I_numpy.sum(dtype="float64") * self.size / float(self.npt[0] * self.npt[1])
-        intensity_exp = self.data.sum(dtype="float64")
+        sump = self.unweight_numpy.sum(dtype="int64")
+        intensity_obt = self.weight_numpy.sum(dtype="float64")
         delta = abs(sump - self.size)
         logger.info("Numpy: Total number of points: %s (%s expected), delta = %s", sump, self.size, delta)
-        v = abs(intensity_obt - intensity_exp) / intensity_exp
-        logger.info("Numpy: Total Intensity: %s (%s expected), variation = %s", intensity_obt, intensity_exp, v)
-        self.assert_( delta == 0,"Numpy: Total number of points: %s (%s expected), delta = %s"%(sump, self.size, delta))
-        self.assert_(v < self.epsilon,"Numpy: Total Intensity: %s (%s expected), variation = %s"%( intensity_obt, intensity_exp, v))
-
+        v = abs(intensity_obt - self.data_sum) / self.data_sum
+        logger.info("Numpy: Total Intensity: %s (%s expected), variation = %s", intensity_obt, self.data_sum, v)
+        self.assert_(delta == 0, "Numpy: Total number of points: %s (%s expected), delta = %s" % (sump, self.size, delta))
+        self.assert_(v < self.epsilon, "Numpy: Total Intensity: %s (%s expected), variation = %s" % (intensity_obt, self.data_sum, v))
 
     def test_count_cython(self):
         """
@@ -178,17 +238,29 @@ class test_histogram2d(unittest.TestCase):
         in cython implementation
         """
         sump = int(self.unweight_cython.sum(dtype="int64"))
-        intensity_obt = self.I_cython.sum(dtype="float64") * self.size / float(self.npt[0] * self.npt[1])
-        intensity_exp = self.data.sum(dtype="float64")
+        intensity_obt = self.weight_cython.sum(dtype="float64")
         delta = abs(sump - self.size)
         logger.info("Cython: Total number of points: %s (%s expected), delta = %s", sump, self.size, delta)
-        v = abs(intensity_obt - intensity_exp) / intensity_exp
-        logger.info("Cython: Total Intensity: %s (%s expected), variation = %s", intensity_obt, intensity_exp, v)
-        self.assertEquals(delta, 0, msg="check all pixels were counted")
-        self.assertTrue(v < self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
+        v = abs(intensity_obt - self.data_sum) / self.data_sum
+        logger.info("Cython: Total Intensity: %s (%s expected), variation = %s", intensity_obt, self.data_sum, v)
+        self.assert_(delta == 0, msg="check all pixels were counted")
+        self.assert_(v < self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
 
+    def test_count_csr(self):
+        """
+        Test that the pixel count and the total intensity is conserved
+        in csr implementation
+        """
+        sump = int(self.unweight_csr.sum(dtype="int64"))
+        intensity_obt = self.weight_csr.sum(dtype="float64")
+        delta = abs(sump - self.size)
+        logger.info("CSR: Total number of points: %s (%s expected), delta = %s", sump, self.size, delta)
+        v = abs(intensity_obt - self.data_sum) / self.data_sum
+        logger.info("CSR: Total Intensity: %s (%s expected), variation = %s", intensity_obt, self.data_sum, v)
+        self.assert_(delta == 0, msg="check all pixels were counted")
+        self.assert_(v < self.epsilon, msg="checks delta is lower than %s" % self.epsilon)
 
-    def test_numpy_vs_cython_2d(self):
+    def test_numpy_vs_cython_vs_csr_2d(self):
         """
         Compare numpy histogram with cython simple implementation
         """
@@ -197,24 +269,40 @@ class test_histogram2d(unittest.TestCase):
         self.assert_(max_delta < self.epsilon, "Bin-center position for cython/numpy tth, max delta=%s" % max_delta)
         max_delta = abs(self.chi_numpy - self.chi_cython).max()
         logger.info("Bin-center position for cython/numpy chi, max delta=%s", max_delta)
-        self.assert_(max_delta < self.epsilon,"Bin-center position for cython/numpy chi, max delta=%s"% max_delta)
+        self.assert_(max_delta < self.epsilon, "Bin-center position for cython/numpy chi, max delta=%s" % max_delta)
 
         delta_max = abs(self.unweight_numpy - self.unweight_cython).max()
         logger.info("pixel count difference numpy/cython : max delta=%s", delta_max)
-        self.assert_(delta_max < 2, "pixel count difference numpy/cython : max delta=%s" % delta_max)
+        self.assert_(delta_max == 0, "pixel count difference numpy/cython : max delta=%s" % delta_max)
         delta_max = abs(self.I_cython - self.I_numpy).max()
         logger.info("Intensity count difference numpy/cython : max delta=%s", delta_max)
-        self.assert_(delta_max < self.epsilon, "Intensity count difference numpy/cython : max delta=%s" % delta_max)
+        self.assert_(delta_max < self.epsilon * self.maxI, "Intensity count difference numpy/cython : max delta=%s" % delta_max)
+
+        max_delta = abs(self.tth_numpy - self.tth_csr).max()
+        logger.info("Bin-center position for csr/numpy tth, max delta=%s", max_delta)
+        self.assert_(max_delta < self.epsilon, "Bin-center position for csr/numpy tth, max delta=%s" % max_delta)
+        max_delta = abs(self.chi_numpy - self.chi_csr).max()
+        logger.info("Bin-center position for csr/numpy chi, max delta=%s", max_delta)
+        self.assert_(max_delta < self.epsilon, "Bin-center position for csr/numpy chi, max delta=%s" % max_delta)
+
+        delta_max = abs(self.unweight_numpy - self.unweight_csr.T).max()
+        logger.warning("pixel count difference numpy/csr : max delta=%s", delta_max)
+        self.assert_(delta_max < 2, "pixel count difference numpy/csr : max delta=%s" % delta_max)
+        delta_max = abs(self.I_csr.T - self.I_numpy).max()
+        logger.warning("Intensity count difference numpy/csr : max delta=%s", delta_max)
+        self.assert_(delta_max < 23, "Intensity count difference numpy/csr : max delta=%s" % delta_max)
 
 
 def test_suite_all_Histogram():
     testSuite = unittest.TestSuite()
-    testSuite.addTest(test_histogram1d("test_count_numpy"))
-    testSuite.addTest(test_histogram1d("test_count_cython"))
-    testSuite.addTest(test_histogram1d("test_numpy_vs_cython_1d"))
-    testSuite.addTest(test_histogram2d("test_count_numpy"))
-    testSuite.addTest(test_histogram2d("test_count_cython"))
-    testSuite.addTest(test_histogram2d("test_numpy_vs_cython_2d"))
+    testSuite.addTest(TestHistogram1d("test_count_numpy"))
+    testSuite.addTest(TestHistogram1d("test_count_cython"))
+    testSuite.addTest(TestHistogram1d("test_count_csr"))
+    testSuite.addTest(TestHistogram1d("test_numpy_vs_cython_vs_csr_1d"))
+    testSuite.addTest(TestHistogram2d("test_count_numpy"))
+    testSuite.addTest(TestHistogram2d("test_count_cython"))
+    testSuite.addTest(TestHistogram2d("test_count_csr"))
+    testSuite.addTest(TestHistogram2d("test_numpy_vs_cython_vs_csr_2d"))
 
     return testSuite
 

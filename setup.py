@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/09/2014"
+__date__ = "29/09/2014"
 __status__ = "stable"
 
 
@@ -38,7 +38,6 @@ import os
 import sys
 import glob
 import shutil
-import os.path
 import platform
 import subprocess
 
@@ -46,6 +45,20 @@ from distutils.core import setup, Command
 from distutils.command.install_data import install_data
 from distutils.command.build_ext import build_ext
 from numpy.distutils.core import Extension as _Extension
+
+
+def copy(infile, outfile, folder=None):
+    "link or copy file according to the OS in the given folder"
+    if folder:
+        infile = os.path.join(folder, infile)
+        outfile = os.path.join(folder, outfile)
+    if os.path.exists(outfile):
+        os.unlink(outfile)
+    if "link" in dir(os):
+        os.link(infile, outfile)
+    else:
+        shutil.copy(infile, outfile)
+
 
 cmdclass = {}
 
@@ -58,13 +71,6 @@ def check_cython():
     """
     Check if cython must be activated fron te command line or the environment.
     """
-    try:
-        import Cython.Compiler.Version
-    except ImportError:
-        return False
-    else:
-        if Cython.Compiler.Version.version < "0.17":
-            return False
 
     if "WITH_CYTHON" in os.environ and os.environ["WITH_CYTHON"] == "False":
         print("No Cython requested by environment")
@@ -76,30 +82,56 @@ def check_cython():
         print("No Cython requested by command line")
         return False
 
+    try:
+        import Cython.Compiler.Version
+    except ImportError:
+        return False
+    else:
+        if Cython.Compiler.Version.version < "0.17":
+            return False
+    return True
+
+
+def check_openmp():
+    """
+    Do we compile with OpenMP ?
+    """
+    if "WITH_OPENMP" in os.environ and os.environ["WITH_OPENMP"] == "False":
+        print("No OpenMP requested by environment")
+        return False
+
+    if ("--no-openmp" in sys.argv):
+        sys.argv.remove("--no-openmp")
+        os.environ["WITH_OPENMP"] = "False"
+        print("No OpenMP requested by command line")
+        return False
+
     return True
 
 CYTHON = check_cython()
+openmp = "openmp" if check_openmp() else ""
 
 
-def Extension(name, extra_sources=None, **kwargs):
+def Extension(name, source=None, extra_sources=None, **kwargs):
+    """
+    Wrapper for distutils' Extension
+    """
+    if source is None:
+        source = name
     cython_c_ext = ".pyx" if CYTHON else ".c"
-    sources = [os.path.join("src", name + cython_c_ext)]
+    sources = [os.path.join("src", source + cython_c_ext)]
     if extra_sources:
         sources.extend(extra_sources)
     return _Extension(name=name, sources=sources, **kwargs)
 
 ext_modules = [
     Extension("_geometry",
-              extra_compile_args=["openmp"],
-              extra_link_args=["openmp"]),
+              extra_compile_args=[openmp],
+              extra_link_args=[openmp]),
 
     Extension("reconstruct",
-              extra_compile_args=["openmp"],
-              extra_link_args=["openmp"]),
-
-    Extension('histogram',
-              extra_compile_args=['openmp'],
-              extra_link_args=['openmp']),
+              extra_compile_args=[openmp],
+              extra_link_args=[openmp]),
 
     Extension('splitPixel'),
 
@@ -112,34 +144,34 @@ ext_modules = [
     Extension('splitBBox'),
 
     Extension('splitBBoxLUT',
-              extra_compile_args=['openmp'],
-              extra_link_args=['openmp']),
+              extra_compile_args=[openmp],
+              extra_link_args=[openmp]),
 
     Extension('splitBBoxCSR',
-              extra_compile_args=['openmp'],
-              extra_link_args=['openmp']),
+              extra_compile_args=[openmp],
+              extra_link_args=[openmp]),
 
     Extension('relabel'),
 
     Extension("bilinear",
-              extra_compile_args=['openmp'],
-              extra_link_args=['openmp']),
+              extra_compile_args=[openmp],
+              extra_link_args=[openmp]),
 
     Extension('_distortion',
-              extra_compile_args=['openmp'],
-              extra_link_args=['openmp']),
+              extra_compile_args=[openmp],
+              extra_link_args=[openmp]),
 
     Extension('_distortionCSR',
-              extra_compile_args=['openmp'],
-              extra_link_args=['openmp']),
+              extra_compile_args=[openmp],
+              extra_link_args=[openmp]),
 
     Extension('_bispev',
-              extra_compile_args=['openmp'],
-              extra_link_args=['openmp']),
+              extra_compile_args=[openmp],
+              extra_link_args=[openmp]),
 
     Extension('_convolution',
-              extra_compile_args=["openmp"],
-              extra_link_args=["openmp"]),
+              extra_compile_args=[openmp],
+              extra_link_args=[openmp]),
 
     Extension('_blob'),
 
@@ -150,8 +182,19 @@ ext_modules = [
 
 if (os.name == "posix") and ("x86" in platform.machine()):
     ext_modules.append(
-        Extension('fastcrc', [os.path.join("src", "crc32.c")])
+        Extension('fastcrc', extra_sources=[os.path.join("src", "crc32.c")])
     )
+
+if openmp == "openmp":
+    copy('histogram_omp.pyx', 'histogram.pyx', "src")
+    copy('histogram_omp.c', 'histogram.c', "src")
+    ext_modules.append(Extension('histogram',
+                                 extra_compile_args=[openmp],
+                                 extra_link_args=[openmp]))
+else:
+    copy('histogram_nomp.pyx', 'histogram.pyx', "src")
+    copy('histogram_nomp.c', 'histogram.c', "src")
+    ext_modules.append(Extension('histogram'))
 
 if CYTHON:
     from Cython.Build import cythonize
@@ -271,7 +314,6 @@ def rewriteManifest(with_testimages=False):
         print("%s file is missing !!!" % manifest_in)
         return
 
-    manifest = None
     with open(manifest_in) as f:
         manifest = [line.strip() for line in f]
 
@@ -296,6 +338,10 @@ def rewriteManifest(with_testimages=False):
 if ("sdist" in sys.argv):
     if ("--with-testimages" in sys.argv):
         sys.argv.remove("--with-testimages")
+        test_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test")
+        sys.path.insert(0, test_dir)
+        from utilstest import UtilsTest
+        UtilsTest.download_images()
         rewriteManifest(with_testimages=True)
     else:
         rewriteManifest(with_testimages=False)
