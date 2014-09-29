@@ -2,7 +2,7 @@ graft doc
 recursive-include openCL *.cl
 recursive-include src  *.c *.h *.pyx *.pxd
 recursive-include benchmark *.py *.spline *.poni
-recursive-include pyFAI-src *.py 
+recursive-include pyFAI-src *.py
 recursive-include gui *.ui
 recursive-include calibration *.D
 include stdeb.cfg
@@ -40,4 +40,3 @@ include scripts/pyFAI-waxs
 include scripts/pyFAI-average
 include scripts/check_calib
 include scripts/diff_tomo
-

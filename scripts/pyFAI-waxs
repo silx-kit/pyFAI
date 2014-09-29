@@ -120,7 +120,7 @@ def main():
                         help="Perform 2D integration in addition to 1D")
 
     parser.add_argument("args", metavar='FILE', type=str, nargs='+',
-                        help="Files to be processed")
+                        help="Files to integrated")
     options = parser.parse_args()
     if len(options.args) < 1:
         logger.error("incorrect number of arguments")

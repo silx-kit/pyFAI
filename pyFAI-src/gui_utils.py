@@ -33,13 +33,14 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/09/2014"
+__date__ = "29/09/2014"
 __status__ = "production"
 
 import sys
 import matplotlib
 if ('PySide' in sys.modules):
     from PySide import QtGui, QtCore, QtUiTools
+    from PyQt4.QtCore import SIGNAL, Signal
     #we need to handle uic !!!
     """
     loadUi(uifile, baseinstance=None, package='') -> widget
@@ -82,7 +83,7 @@ imports of custom widgets.
     matplotlib.rcParams['backend.qt4'] = 'PySide'
 else:
     from PyQt4 import QtGui, QtCore, uic
-
+    from PyQt4.QtCore import SIGNAL, pyqtSignal as Signal
 matplotlib.use('Qt4Agg')
 from matplotlib.backends import backend_qt4 as backend
 from matplotlib import pyplot

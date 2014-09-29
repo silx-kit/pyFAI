@@ -61,7 +61,7 @@ def main():
     axis in q space."""
     parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
     parser.add_argument("-v", "--version", action='version', version=version)
-    parser.add_argument("args", metavar="FILE", help="List of files to calibrate", nargs='+')
+    parser.add_argument("args", metavar="FILE", help="Files to integrated", nargs='+')
     parser.add_argument("-p", dest="ponifile",
                       type=str, default=None,
                       help="PyFAI parameter file (.poni)")

@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2014"
+__date__ = "29/09/2014"
 __satus__ = "production"
 import sys, logging, json, os, time, types, threading
 import os.path as op
@@ -95,7 +95,7 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
                       dest="gui", default=True, action="store_false",
                       help="Process the dataset without showing the user interface.")
     parser.add_argument("args", metavar='FILE', type=str, nargs='+',
-                        help="Files to be processed")
+                        help="Files to be integrated")
     options = parser.parse_args()
 
     # Analyse aruments and options

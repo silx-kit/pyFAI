@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/03/2013"
+__date__ = "29/09/2014"
 __satus__ = "development"
 
 import sys, logging, json, os, time, types, threading
@@ -43,8 +43,7 @@ import os.path as op
 import numpy
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI.integrate_widget")
-from PyQt4 import QtCore, QtGui, uic
-from PyQt4.QtCore import SIGNAL
+from .gui_utils import QtCore, QtGui, uic, SIGNAL
 import pyFAI
 import fabio
 from .opencl import ocl
@@ -144,6 +143,19 @@ class AIWidget(QtGui.QWidget):
             else:
                 kwarg["polarization_factor"] = None
 
+            nbpt_rad = str(self.nbpt_rad.text()).strip()
+            if not nbpt_rad:
+#                mb = QtGui.QMessageBox()
+#                mb.setText("You must provide the number of output radial bins !")
+#
+#                icon=QtGui.QMessageBox.Warning, buttons=QtGui.QMessageBox.Warning)
+#
+#                msgBox.exec_()
+                ret = QMessageBox.warning(self, u"PyFAI integrate",
+                                          u"You must provide the number of output radial bins !",
+                                          )
+                return {}
+                #raise RuntimeError("The number of output point is undefined !")
             kwarg["npt_rad"] = int(str(self.nbpt_rad.text()).strip())
             if self.do_2D.isChecked():
                 kwarg["npt_azim"] = int(str(self.nbpt_azim.text()).strip())
