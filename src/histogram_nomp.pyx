@@ -32,7 +32,7 @@ import numpy
 cimport numpy
 import sys
 import logging
-logger = logging.getLogger("pyFAI.histogram_omp")
+logger = logging.getLogger("pyFAI.histogram_nomp")
 from libc.math cimport floor
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
