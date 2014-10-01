@@ -27,15 +27,19 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "2014-09-18"
+__date__ = "01/10/2014"
 
-import sys, os, tempfile, shutil
+import sys
+import os
+import tempfile
+import shutil
 import unittest
 import numpy
 from utilstest import getLogger  # UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI.detectors import detector_factory, ALL_DETECTORS
+from pyFAI import io
 
 
 class TestDetector(unittest.TestCase):
@@ -125,24 +129,21 @@ class TestDetector(unittest.TestCase):
         sx165.binning = 10
         self.assertAlmostEqual(sx165.pixel1, sx165.pixel2)
 
-
     def test_nexus_detector(self):
         tmpdir = tempfile.mkdtemp()
-        known_fail = [] #TODO: fix broken detectors
-#        print(tmpdir)
+        known_fail = []
+        if io.h5py is None:
+            logger.warning("H5py not present, skipping test_detector.TestDetector.test_nexus_detector")
+            return
         for det_name in ALL_DETECTORS:
             fname = os.path.join(tmpdir, det_name + ".h5")
             if os.path.exists(fname): #already tested with another alias
                 continue
-#            print fname
             det = detector_factory(det_name)
             if (det.pixel1 is None) or (det.shape is None):
                 continue
-#            print(det)
-
             det.save(fname)
             new_det = detector_factory(fname)
-#            print new_det
             for what in ("pixel1", "pixel2", "name", "max_shape", "shape", "binning"):
                 if "__len__" in dir(det.__getattribute__(what)):
                     self.assertEqual(det.__getattribute__(what), new_det.__getattribute__(what), "%s is the same for %s" % (what, fname))
@@ -165,7 +166,6 @@ class TestDetector(unittest.TestCase):
         #check SPD sisplacement
 
         shutil.rmtree(tmpdir)
-
 
     def test_guess_binning(self):
 
