@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/09/2014"
+__date__ = "01/10/2014"
 __status__ = "stable"
 
 
@@ -123,11 +123,12 @@ def Extension(name, source=None, extra_sources=None, **kwargs):
     if extra_sources:
         sources.extend(extra_sources)
     if "include_dirs" in kwargs:
-        include_dirs = set(kwargs["include_dirs"])
+        include_dirs = set(kwargs.pop("include_dirs"))
         include_dirs.add(numpy.get_include())
+        include_dirs = list(include_dirs)
     else:
-        include_dirs = {numpy.get_include()}
-    return _Extension(name=name, sources=sources, include_dirs=list(include_dirs), **kwargs)
+        include_dirs = [numpy.get_include()]
+    return _Extension(name=name, sources=sources, include_dirs=include_dirs, **kwargs)
 
 ext_modules = [
     Extension("_geometry",
