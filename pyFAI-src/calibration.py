@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2014"
+__date__ = "01/10/2014"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -1074,11 +1074,10 @@ class Calibration(AbstractCalibration):
 without a priori knowledge of your setup.
 You will need to provide a calibrant or a "d-spacing" file containing the spacing of Miller plans in
 Angstrom (in decreasing order).
-If you are using a standard calibrant, look at
-https://github.com/kif/pyFAI/tree/master/calibration
+%s
 or search in the American Mineralogist database:
 http://rruff.geo.arizona.edu/AMS/amcsd.php
-The --calibrant option is mandatory !"""
+The --calibrant option is mandatory !""" % str(ALL_CALIBRANTS)
 
         epilog = """The output of this program is a "PONI" file containing the detector description
 and the 6 refined parameters (distance, center, rotation) and wavelength.
@@ -1213,12 +1212,11 @@ class Recalibration(AbstractCalibration):
 with a priori knowledge of your setup (an input PONI-file).
 You will need to provide a calibrant or a "d-spacing" file containing the spacing of Miller plans in
 Angstrom (in decreasing order).
-If you are using a standardt calibrant, look at
-https://github.com/kif/pyFAI/tree/master/calibration
+%s
 or search in the American Mineralogist database:
 http://rruff.geo.arizona.edu/AMS/amcsd.php
 The --calibrant option is mandatory !  
-"""
+""" % str(ALL_CALIBRANTS)
 
         epilog = """The main difference with pyFAI-calib is the way control-point hence Debye-Sherrer
 rings are extracted. While pyFAI-calib relies on the contiguity of a region of peaks
