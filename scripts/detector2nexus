@@ -30,22 +30,24 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2014"
+__date__ = "29/09/2014"
 __status__ = "development"
 
 import os
 import sys
 import fabio
 import logging
-import pyFAI, pyFAI.utils
+import pyFAI
+import pyFAI.utils
 import numpy
 try:
     from argparse import ArgumentParser
 except ImportError:
-    from pyFAI.argparse import  ArgumentParser
+    from pyFAI.argparse import ArgumentParser
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("detector")
+
 
 def main():
     usage = "usage: detector2nexus [options] [options] -o nxs.h5"
@@ -60,14 +62,14 @@ def main():
     parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
     parser.add_argument("-V", "--version", action='version', version=version)
     parser.add_argument("-o", "--output", dest="output",
-                      type=str, default=None,
-                      help="Output nexus file")
+                        type=str, default=None,
+                        help="Output nexus file, unless detector_name.h5")
     parser.add_argument("-n", "--name", dest="name",
-                      type=str, default=None,
-                      help="name of the detector")
+                        type=str, default=None,
+                        help="name of the detector")
     parser.add_argument("-m", "--mask", dest="mask",
-                      type=str, default=None,
-                      help="mask corresponding to the detector")
+                        type=str, default=None,
+                        help="mask corresponding to the detector")
     parser.add_argument("-D", "--detector", dest="detector", type=str, 
                         default="Detector",
                         help="Base detector name (see documentation of pyFAI.detectors")
@@ -99,17 +101,17 @@ def main():
         logger.setLevel(logging.INFO)
 
     detector = pyFAI.detectors.detector_factory(options.detector)
-    if  options.output:
+    if options.output:
         output = options.output
     else:
-        output = detector.name+".h5"
+        output = detector.name + ".h5"
 
     if options.mask:
         mask = fabio.open(options.mask).data.astype(bool)
         if detector.mask is None:
             detector.mask = mask
         else:
-            detector.mask = numpy.logical_or(mask,detector.mask)
+            detector.mask = numpy.logical_or(mask, detector.mask)
             
     if options.flat:
         detector.flat = fabio.open(options.flat).data
@@ -121,29 +123,29 @@ def main():
         if options.pixel:
             p = options.pixel.split(",")
             psize = float(p[0])
-            if len(p)==1: 
+            if len(p) == 1:
                 detector.pixel1 = psize
                 detector.pixel2 = psize
             else:
-                detector.pixel1 =float(p[1]) 
+                detector.pixel1 = float(p[1])
                 detector.pixel2 = psize
         if options.shape:
             p = options.shape.split(",")
             psize = int(p[0])
-            if len(p)==1: 
-                detector.shape = psize,psize
+            if len(p) == 1:
+                detector.shape = psize, psize
             else:
-                detector.shape  = int(p[1]),psize 
+                detector.shape = int(p[1]), psize
         if options.dx and options.dy:
             dx = fabio.open(options.dx).data 
             dy = fabio.open(options.dy).data
-            #pilatus give displaceemt in percent of pixel ... 
+            # pilatus give displaceemt in percent of pixel ... 
             if ".cbf" in options.dx: 
-                dx=dx*0.01
+                dx *= 0.01
             if ".cbf" in options.dy:
-                dy=dy*0.01
-            # TODO : assign to detector !!!  
-           
+                dy *= 0.01
+            detector.set_dx(dx)
+            detector.set_dy(dy)
     detector.save(output)
     
 if __name__ == "__main__":

@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/09/2014"
+__date__ = "29/09/2014"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -1072,11 +1072,13 @@ class Calibration(AbstractCalibration):
         """
         description = """Calibrate the diffraction setup geometry based on Debye-Sherrer rings images
 without a priori knowledge of your setup.
-Most standard calibrants are directly installed together with pyFAI.
-If you prefer using your own, you can provide a "d-spacing" file
-containing the spacing of Miller plans in Angstrom (in decreasing order).
-Most crystal powders used for calibration are available in the American
-Mineralogist database: http://rruff.geo.arizona.edu/AMS/amcsd.php"""
+You will need to provide a calibrant or a "d-spacing" file containing the spacing of Miller plans in
+Angstrom (in decreasing order).
+If you are using a standard calibrant, look at
+https://github.com/kif/pyFAI/tree/master/calibration
+or search in the American Mineralogist database:
+http://rruff.geo.arizona.edu/AMS/amcsd.php
+The --calibrant option is mandatory !"""
 
         epilog = """The output of this program is a "PONI" file containing the detector description
 and the 6 refined parameters (distance, center, rotation) and wavelength.
@@ -1209,12 +1211,13 @@ class Recalibration(AbstractCalibration):
         """
         description = """Calibrate the diffraction setup geometry based on Debye-Sherrer rings images
 with a priori knowledge of your setup (an input PONI-file).
-You will need a "d-spacing" file containing the spacing of Miller plans in
+You will need to provide a calibrant or a "d-spacing" file containing the spacing of Miller plans in
 Angstrom (in decreasing order).
-If you are using a standart calibrant, look at
+If you are using a standardt calibrant, look at
 https://github.com/kif/pyFAI/tree/master/calibration
 or search in the American Mineralogist database:
 http://rruff.geo.arizona.edu/AMS/amcsd.php
+The --calibrant option is mandatory !  
 """
 
         epilog = """The main difference with pyFAI-calib is the way control-point hence Debye-Sherrer
@@ -1224,6 +1227,12 @@ the region where the ring should be. From this region it selects automatically
 the various peaks; making pyFAI-recalib able to run without graphical interface and
 without human intervention (--no-gui and --no-interactive options).
 
+
+Note that `pyFAI-recalib` program is obsolete as the same functionnality is 
+available from within pyFAI-calib, using the `recalib` command in the 
+refinement process.  
+Two option are available for recalib: the numbe of rings to extract (similar to the -r option of this program) 
+and a new option which lets you choose between the original `massif` algorithm and the new `blob` detection.
         """
         usage = "pyFAI-recalib [options] -p ponifile -w 1 -c calibrant.D imagefile.edf"
         self.configure_parser(usage=usage, description=description, epilog=epilog)
@@ -1741,6 +1750,10 @@ class CheckCalib(object):
         description = """Check_calib is a research tool aiming at validating both the geometric
 calibration and everything else like flat-field correction, distortion
 correction, at a sub-pixel level.
+
+Note that `check_calib` program is obsolete as the same functionnality is 
+available from within pyFAI-calib, using the `validate` command in the 
+refinement process.  
         """
         version = "check_calib from pyFAI version %s: %s" % (PyFAI_VERSION, PyFAI_DATE)
         parser = ArgumentParser(usage=usage,

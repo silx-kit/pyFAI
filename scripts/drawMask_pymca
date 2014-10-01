@@ -1,20 +1,22 @@
 #!/usr/bin/env python
-import sys, os
-import  PyQt4
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+import sys
+import os
+from pyFAI.gui_utils import QtCore, QtGui
 import pyFAI, pyFAI.utils
 import PyMca
 from PyMca import MaskImageWidget
 import fabio
 import numpy
 
-from optparse import OptionParser
+try:
+    from argparse import ArgumentParser
+except ImportError:
+    from pyFAI.argparse import ArgumentParser
 
 
 def main():
     usage = "usage: %prog file1.edf file2.edf ..."
-    version = "%prog " + pyFAI.version
+    version = "pyFAI-average version %s from %s" % (pyFAI.version, pyFAI.date)
     description = """
     Draw a mask, i.e. an image containing the list of pixels which are considered invalid
     (no scintillator, module gap, beam stop shadow, ...).
@@ -25,15 +27,18 @@ def main():
     epilog = """The mask image is saved into file1-masked.edf.
     Optionally the script will print the number of pixel masked
     and the intensity masked (as well on other files provided in input)"""
-    parser = OptionParser(usage=usage, version=version,
-                          description=description, epilog=epilog)
-    (options, args) = parser.parse_args()
-    if len(args) < 1:
+    parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
+    parser.add_argument("-v", "--version", action='version', version=version)
+    parser.add_argument("args", metavar='FILE', type=str, nargs='+',
+                        help="Files to be processed")
+
+    options = parser.parse_args()
+    if len(options.args) < 1:
         parser.error("Incorrect number of arguments: please provide an image to draw a mask")
 
-    processFile = pyFAI.utils.expand_args(args)
+    processFile = pyFAI.utils.expand_args(options.args)
 
-    qapp = QApplication([])
+    qapp = QtGui.QApplication([])
     w = PyMca.MaskImageWidget.MaskImageWidget()
     e = fabio.open(processFile[0]).data
     w.setImageData(e)

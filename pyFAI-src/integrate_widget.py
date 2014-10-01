@@ -35,16 +35,24 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/03/2013"
+__date__ = "29/09/2014"
 __satus__ = "development"
 
-import sys, logging, json, os, time, types, threading
+import sys
+import logging
+import json
+import os
+import time
+import types
+import threading
+import math
+
 import os.path as op
 import numpy
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI.integrate_widget")
-from PyQt4 import QtCore, QtGui, uic
-from PyQt4.QtCore import SIGNAL
+from .gui_utils import QtCore, QtGui, uic, SIGNAL, QtWebKit
+
 import pyFAI
 import fabio
 from .opencl import ocl
@@ -53,6 +61,61 @@ from .io import HDF5Writer
 UIC = get_ui_file("integration.ui")
 
 FROM_PYMCA = "From PyMca"
+
+class Browser(QtGui.QMainWindow):
+
+    def __init__(self, default_url="http://google.com"):
+        """
+            Initialize the browser GUI and connect the events
+        """
+        QtGui.QMainWindow.__init__(self)
+        self.resize(800, 600)
+        self.centralwidget = QtGui.QWidget(self)
+
+        self.mainLayout = QtGui.QHBoxLayout(self.centralwidget)
+        self.mainLayout.setSpacing(0)
+        self.mainLayout.setMargin(1)
+
+        self.frame = QtGui.QFrame(self.centralwidget)
+
+        self.gridLayout = QtGui.QVBoxLayout(self.frame)
+        self.gridLayout.setMargin(0)
+        self.gridLayout.setSpacing(0)
+
+        self.horizontalLayout = QtGui.QHBoxLayout()
+        self.tb_url = QtGui.QLineEdit(self.frame)
+        self.bt_back = QtGui.QPushButton(self.frame)
+        self.bt_ahead = QtGui.QPushButton(self.frame)
+
+        self.bt_back.setIcon(QtGui.QIcon().fromTheme("go-previous"))
+        self.bt_ahead.setIcon(QtGui.QIcon().fromTheme("go-next"))
+        self.horizontalLayout.addWidget(self.bt_back)
+        self.horizontalLayout.addWidget(self.bt_ahead)
+        self.horizontalLayout.addWidget(self.tb_url)
+        self.gridLayout.addLayout(self.horizontalLayout)
+
+        self.html = QtWebKit.QWebView()
+        self.gridLayout.addWidget(self.html)
+        self.mainLayout.addWidget(self.frame)
+        self.setCentralWidget(self.centralwidget)
+
+        self.connect(self.tb_url, QtCore.SIGNAL("returnPressed()"), self.browse)
+        self.connect(self.bt_back, QtCore.SIGNAL("clicked()"), self.html.back)
+        self.connect(self.bt_ahead, QtCore.SIGNAL("clicked()"), self.html.forward)
+
+        self.default_url = default_url
+        self.tb_url.setText(self.default_url)
+        self.browse()
+
+    def browse(self):
+        """
+            Make a web browse on a specific url and show the page on the
+            Webview widget.
+        """
+
+        url = self.tb_url.text() if self.tb_url.text() else self.default_url
+        self.html.load(QtCore.QUrl(url))
+        self.html.show()
 
 class AIWidget(QtGui.QWidget):
     """
@@ -95,10 +158,40 @@ class AIWidget(QtGui.QWidget):
         self.connect(self.detector, SIGNAL("currentIndexChanged(int)"), self.detector_changed)
         self.connect(self.do_OpenCL, SIGNAL("clicked()"), self.openCL_changed)
         self.connect(self.platform, SIGNAL("currentIndexChanged(int)"), self.platform_changed)
-
+        self.set_validators()
         self.restore()
         self.progressBar.setValue(0)
         self.hdf5_path = None
+
+    def set_validators(self):
+        """
+        Set all validators for text entries
+        """
+        npt_validator = QtGui.QIntValidator()
+        npt_validator.setBottom(1)
+        self.nbpt_rad.setValidator(npt_validator)
+        self.nbpt_azim.setValidator(npt_validator)
+
+        wl_validator = QtGui.QDoubleValidator()
+        wl_validator.setBottom(1e-15)
+        wl_validator.setTop(1e-6)
+        self.wavelength.setValidator(wl_validator)
+
+        distance_validator = QtGui.QDoubleValidator()
+        distance_validator.setBottom(0)
+        self.pixel1.setValidator(distance_validator)
+        self.pixel2.setValidator(distance_validator)
+        self.poni1.setValidator(distance_validator)
+        self.poni2.setValidator(distance_validator)
+
+        angle_validator = QtGui.QDoubleValidator()
+        distance_validator.setBottom(-math.pi)
+        distance_validator.setTop(math.pi)
+        self.rot1.setValidator(angle_validator)
+        self.rot2.setValidator(angle_validator)
+        self.rot3.setValidator(angle_validator)
+#        self.polarization_factor.setValidator(QtGui.QDoubleValidator(-1, 1, 3))
+
 
     def proceed(self):
         with self._sem:
@@ -144,6 +237,19 @@ class AIWidget(QtGui.QWidget):
             else:
                 kwarg["polarization_factor"] = None
 
+            nbpt_rad = str(self.nbpt_rad.text()).strip()
+            if not nbpt_rad:
+#                mb = QtGui.QMessageBox()
+#                mb.setText("You must provide the number of output radial bins !")
+#
+#                icon=QtGui.QMessageBox.Warning, buttons=QtGui.QMessageBox.Warning)
+#
+#                msgBox.exec_()
+                ret = QtGui.QMessageBox.warning(self, u"PyFAI integrate",
+                                          u"You must provide the number of output radial bins !",
+                                          )
+                return {}
+                #raise RuntimeError("The number of output point is undefined !")
             kwarg["npt_rad"] = int(str(self.nbpt_rad.text()).strip())
             if self.do_2D.isChecked():
                 kwarg["npt_azim"] = int(str(self.nbpt_azim.text()).strip())
@@ -297,6 +403,8 @@ class AIWidget(QtGui.QWidget):
 
     def help(self):
         logger.debug("Please, help")
+        self.help_browser = Browser("http://pyfai.readthedocs.org/en/latest/pyFAI.html")
+        self.help_browser.show()
 
     def dump(self, filename=".azimint.json"):
         """

@@ -30,18 +30,19 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/06/2014"
+__date__ = "29/09/2014"
 __status__ = "production"
 
 import os
 import sys
 import fabio
 import logging
-import pyFAI, pyFAI.utils
+import pyFAI
+import pyFAI.utils
 try:
     from argparse import ArgumentParser
 except ImportError:
-    from pyFAI.argparse import  ArgumentParser
+    from pyFAI.argparse import ArgumentParser
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("average")
@@ -108,5 +109,7 @@ def main():
         dataout = pyFAI.utils.averageImages(images, filter_=options.method, cutoff=options.cutoff,
                                             threshold=0, format=options.format, output=output,
                                             flats=flats, darks=darks)
+        return dataout
+
 if __name__ == "__main__":
     main()

@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
-#             https://forge.epn-campus.eu/projects/azimuthal
-#
-#    File: "$Id$"
+#             https://github.com/kif/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -32,15 +30,21 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/02/2013"
+__date__ = "29/09/2014"
 __status__ = "production"
 
 import os
 import sys
 import time
 import fabio
-import pyFAI, pyFAI.units, pyFAI.utils
+import pyFAI
+import pyFAI.units
+import pyFAI.utils
 hc = pyFAI.units.hc
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("PyFAI")
+
 
 try:
     from argparse import ArgumentParser
@@ -57,7 +61,7 @@ def main():
     axis in q space."""
     parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
     parser.add_argument("-v", "--version", action='version', version=version)
-    parser.add_argument("args", metavar="FILE", help="List of files to calibrate", nargs='+')
+    parser.add_argument("args", metavar="FILE", help="Files to integrated", nargs='+')
     parser.add_argument("-p", dest="ponifile",
                       type=str, default=None,
                       help="PyFAI parameter file (.poni)")

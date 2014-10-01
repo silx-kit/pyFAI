@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2014"
+__date__ = "01/10/2014"
 __status__ = "stable"
 
 
@@ -40,7 +40,7 @@ import glob
 import shutil
 import platform
 import subprocess
-
+import numpy
 from distutils.core import setup, Command
 from distutils.command.install_data import install_data
 from distutils.command.build_ext import build_ext
@@ -122,7 +122,13 @@ def Extension(name, source=None, extra_sources=None, **kwargs):
     sources = [os.path.join("src", source + cython_c_ext)]
     if extra_sources:
         sources.extend(extra_sources)
-    return _Extension(name=name, sources=sources, **kwargs)
+    if "include_dirs" in kwargs:
+        include_dirs = set(kwargs.pop("include_dirs"))
+        include_dirs.add(numpy.get_include())
+        include_dirs = list(include_dirs)
+    else:
+        include_dirs = [numpy.get_include()]
+    return _Extension(name=name, sources=sources, include_dirs=include_dirs, **kwargs)
 
 ext_modules = [
     Extension("_geometry",

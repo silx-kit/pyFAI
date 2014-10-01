@@ -6,11 +6,13 @@ Purpose
 
 Calibrate the diffraction setup geometry based on Debye-Sherrer rings images
 without a priori knowledge of your setup.
-Most standard calibrants are directly installed together with pyFAI. 
-If you prefer using your own, you can provide a "d-spacing" file
-containing the spacing of Miller plans in Angstrom (in decreasing order). 
-Most crystal powders used for calibration are available in the American Mineralogist 
-database [AMD]_ or in the [COD]_.
+You will need to provide a calibrant or a "d-spacing" file containing the spacing of Miller plans in
+Angstrom (in decreasing order).
+If you are using a standard calibrant, look at
+https://github.com/kif/pyFAI/tree/master/calibration
+or search in the American Mineralogist database:
+[AMD]_ or in the [COD]_.
+The --calibrant option is mandatory !
 
 You will need in addition:
  * The radiation energy (in keV) or its wavelength (in A)
@@ -138,9 +140,9 @@ Half a FReLoN CCD image of Lantanide hexaboride taken at ESRF-ID11:
 	pyFAI-calib -s test/testimages/halfccd.spline -c LaB6 -w 0.3 test/testimages/halfccd.edf -g 250
 
 
-This image is rather spotty. We need to blur a lot to get the continuity of the rings. 
+This image is rather spotty. We need to blur a lot to get the continuity of the rings.
 This is achieved by the -g parameter.
-While the sample is well diffracting and well known, the wavelength has been guessed. 
+While the sample is well diffracting and well known, the wavelength has been guessed.
 One should refine the wavelength when the peaks extracted are correct
 
 

@@ -15,10 +15,10 @@
     :undoc-members:
     :show-inheritance:
 
-:mod:`detectors` Module
------------------------
+:mod:`integrate_widget` Module
+------------------------------
 
-.. automodule:: pyFAI.detectors
+.. automodule:: pyFAI.integrate_widget
     :members:
     :undoc-members:
     :show-inheritance:
@@ -35,6 +35,30 @@
 --------------------------------
 
 .. automodule:: pyFAI.geometryRefinement
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`detectors` Module
+-----------------------
+
+.. automodule:: pyFAI.detectors
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`spline` Module
+--------------------
+
+.. automodule:: pyFAI.spline
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`opencl` Module
+--------------------
+
+.. automodule:: pyFAI.opencl
     :members:
     :undoc-members:
     :show-inheritance:
@@ -62,34 +86,18 @@
     :members:
     :undoc-members:
     :show-inheritance:
+    
+:mod:`ocl_azim_csr_dis` Module
+------------------------------
 
-
-:mod:`opencl` Module
---------------------
-
-.. automodule:: pyFAI.opencl
+.. automodule:: pyFAI.ocl_azim_csr_dis
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`peak_picker` Module
-------------------------
-
-.. automodule:: pyFAI.peak_picker
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`blob_detection` Module
-------------------------
-
-.. automodule:: pyFAI.blob_detection
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 :mod:`worker` Module
-------------------------
+--------------------
 
 .. automodule:: pyFAI.worker
     :members:
@@ -97,7 +105,7 @@
     :show-inheritance:
 
 :mod:`io` Module
-------------------------
+----------------
 
 .. automodule:: pyFAI.io
     :members:
@@ -105,23 +113,48 @@
     :show-inheritance:
 
 :mod:`calibration` Module
-------------------------
+-------------------------
 
 .. automodule:: pyFAI.calibration
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. :mod:`refinment2D` Module
-   -------------------------
-   
-   .. automodule:: pyFAI.refinment2D
-       :members:
-       :undoc-members:
-       :show-inheritance:
+:mod:`peak_picker` Module
+-------------------------
+
+.. automodule:: pyFAI.peak_picker
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`massif` Module
+--------------------
+
+.. automodule:: pyFAI.massif
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`blob_detection` Module
+----------------------------
+
+.. automodule:: pyFAI.blob_detection
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`calibrant` Module
+-----------------------
+
+.. automodule:: pyFAI.calibrant
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 :mod:`distortion` Module
---------------------
+------------------------
 
 .. automodule:: pyFAI.distortion
     :members:
@@ -129,10 +162,10 @@
     :show-inheritance:
 
 
-:mod:`spline` Module
---------------------
+:mod:`units` Module
+-------------------
 
-.. automodule:: pyFAI.spline
+.. automodule:: pyFAI.units
     :members:
     :undoc-members:
     :show-inheritance:
@@ -145,3 +178,11 @@
     :undoc-members:
     :show-inheritance:
 
+:mod:`gui_utils` Module
+-----------------------
+
+.. automodule:: pyFAI.gui_utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    

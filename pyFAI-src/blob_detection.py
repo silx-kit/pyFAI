@@ -300,7 +300,7 @@ class BlobDetection(object):
         previous = self.data
         dog_shape = (len(self.sigmas) - 1,) + self.data.shape
         self.dogs = numpy.zeros(dog_shape, dtype=numpy.float32)
-                
+
         idx = 0
         i = 0
         for sigma_abs, sigma_rel in self.sigmas:
@@ -320,16 +320,14 @@ class BlobDetection(object):
 
         if self.dogs[0].shape == self.raw.shape:
             self.dogs_init = self.dogs
-        
+
         if _blob:
             valid_points = _blob.local_max(self.dogs, self.cur_mask, n_5)
         else:
             valid_points = local_max(self.dogs, self.cur_mask, n_5)
         kps, kpy, kpx = numpy.where(valid_points)
         self.raw_kp.append((kps, kpy, kpx))
-#        self.raw_kp.append((kps, (kpy+0.5)*self.curr_reduction-0.5, (kpx+0.5)*self.curr_reduction-0.5))
 
-        print ('Before refinement : %i keypoints' % kpx.size)
         if refine:
             if "startswith" in dir(refine) and refine.startswith("SG"):
                 kpx, kpy, kps, delta_s = self.refine_Hessian_SG(kpx, kpy, kps)
@@ -344,16 +342,11 @@ class BlobDetection(object):
                 self.ref_kp.append((kps, kpy, kpx))
             print ('After refinement : %i keypoints' % l)
         else:
-#             print kpx
-#             print kpy
-#             print kps
             peak_val = self.dogs[kps, kpy, kpx]
-#             print peak_val
             l = kpx.size
             valid = numpy.ones(l, bool)
 
         keypoints = numpy.recarray((l,), dtype=self.dtype)
-#        sigmas = numpy.array([s[0] for s in self.sigmas])
 
 
         if l != 0:
@@ -368,8 +361,6 @@ class BlobDetection(object):
             #shrink data so that they can be treated by next octave
             logger.debug("In shrink")
             last = self.blurs[self.scale_per_octave]
-#             last1 = self.blurs[self.scale_per_octave+1]
-#             last2 = self.blurs[self.scale_per_octave+2]
             ty, tx = last.shape
             if ty % 2 != 0 or tx % 2 != 0:
                 new_tx = 2 * ((tx + 1) // 2)
@@ -381,9 +372,7 @@ class BlobDetection(object):
                     new_msk = numpy.ones((new_ty, new_tx), numpy.int8)
                     new_msk[:ty, :tx] = self.cur_mask
                     self.cur_mask = new_msk
-#            print last.shape, tx, ty
             self.data = binning(last, 2) / 4.0
-#             self.already_blurred = [binning(last1,2)/4.0 , binning(last2,2)/4.0]
             self.curr_reduction *= 2.0
             self.octave += 1
             self.blurs = []
@@ -609,7 +598,7 @@ class BlobDetection(object):
                     val[0],val[1] = val[1],val[0]
                     vect = vect[-1::-1,:]
 
-                    
+
                 pylab.annotate("", xy=(x + vect[0][0] * val[0], y + vect[0][1] * val[0]), xytext=(x, y),
                                        arrowprops=dict(facecolor='red', shrink=0.05),)
 
@@ -623,10 +612,10 @@ class BlobDetection(object):
     def refinement(self):
         from numpy import sqrt, cos, sin, power, arctan2, abs,pi
         val,vect = self.direction()
-        
+
         L = 0.114
 #         L = 1.0
-         
+
         poni1 = self.raw.shape[0]/2.0
         poni2 = self.raw.shape[1]/2.0
 #         poni1 = 0.0599/100.0 * power(10,6)
@@ -644,14 +633,14 @@ class BlobDetection(object):
 #         print "phi exp"
 #         print phi_exp * 180/ pi
 
-        
+
         cosrot1 = cos(rot1)
         cosrot2 = cos(rot2)
         cosrot3 = cos(rot3)
         sinrot1 = sin(rot1)
         sinrot2 = sin(rot2)
         sinrot3 = sin(rot3)
-        
+
         L = -L
         dy = ((L*cosrot1*cosrot2 + d2*cosrot2*sinrot1 - d1*sinrot2)*(2*cosrot2*cosrot3*(d1*cosrot2*cosrot3 + \
                         d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + L*(cosrot1*cosrot3*sinrot2 + \
@@ -671,7 +660,7 @@ class BlobDetection(object):
                          (d1*cosrot2*cosrot3 + d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + \
                         L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3) )**2 +  (d1*cosrot2*sinrot3 + L*(-(cosrot3*sinrot1) +  \
                         cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + sinrot1*sinrot2*sinrot3) )**2)
-                        
+
         dx = ((L*cosrot1*cosrot2 + d2*cosrot2*sinrot1 - d1*sinrot2)*(2*(cosrot3*sinrot1*sinrot2 - \
                         cosrot1*sinrot3)* (d1*cosrot2*cosrot3 + d2*(cosrot3*sinrot1*sinrot2 - cosrot1*sinrot3) + \
                         L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3)) + 2*(cosrot1*cosrot3 + \
@@ -690,15 +679,15 @@ class BlobDetection(object):
                         d2*cosrot2*sinrot1 - d1*sinrot2 )**2 +  (d1*cosrot2*cosrot3 + d2*(cosrot3*sinrot1*sinrot2 - \
                         cosrot1*sinrot3) + L*(cosrot1*cosrot3*sinrot2 + sinrot1*sinrot3) )**2 +  (d1*cosrot2*sinrot3 + \
                         L*(-(cosrot3*sinrot1) + cosrot1*sinrot2*sinrot3) + d2*(cosrot1*cosrot3 + sinrot1*sinrot2*sinrot3) )**2)
-                        
-        
+
+
         phi_th = arctan2(d1,d2)
 #         print "phi th"
 #         print phi_th_2
         err = numpy.sum((phi_th - phi_exp)**2)/self.keypoints.x.size
         print "err"
         print err
-        
+
         return val,vect
 
     def process(self, max_octave=None):
@@ -798,28 +787,28 @@ class BlobDetection(object):
         ax.set_ylabel("Intensity")
         ax.set_title("Peak repartition")
         f.show()
-        
+
     def show_neighboor(self):
         import pylab
         nghx = []
         nghy = []
-        
+
         for i in range(self.keypoints.x.size):
             y,x = self.nearest_peak((self.keypoints.y[i],self.keypoints.x[i]))
             nghx.append(x)
             nghy.append(y)
-            
+
         nghx = numpy.asarray(nghx)
         nghy = numpy.asarray(nghy)
-        
+
         pylab.figure()
         pylab.imshow(self.raw, interpolation='nearest')
         pylab.plot(self.keypoints.x,self.keypoints.y,'og')
-        
+
         for i in range(self.keypoints.x.size):
-            pylab.annotate("", xy=(nghx[i], nghy[i]), 
+            pylab.annotate("", xy=(nghx[i], nghy[i]),
                            xytext=(self.keypoints.x[i],self.keypoints.y[i]),arrowprops=dict(facecolor='red', shrink=0.05),)
-        
+
 
 if __name__ == "__main__":
 
