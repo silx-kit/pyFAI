@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/10/2014"
+__date__ = "02/10/2014"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -864,6 +864,7 @@ class AbstractCalibration(object):
                               {1:[self.geoRef.set_rot3], 2:[ self.geoRef.set_rot3_min, self.geoRef.set_rot3_max],
                                3:[ self.geoRef.set_rot3_min, self.geoRef.set_rot3, self.geoRef.set_rot3_max]})
             elif action == "done":
+                self.postProcess()
                 return True
             elif action == "quit":
                 return True
