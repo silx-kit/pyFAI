@@ -4,8 +4,12 @@ pyFAI: Fast Azimuthal Integration in Python
 pyFAI is an azimuthal integration library that tries to be fast (as fast as C
 and even more using OpenCL and GPU).
 It is based on histogramming of the 2theta/Q positions of each (center of)
-pixel weighted by the intensity of each pixel.
-Neighboring output bins get also a contribution of pixels next to the border ...
+pixel weighted by the intensity of each pixel, but parallel version use a
+SparseMatrix-DenseVector multiplication.
+Neighboring output bins get also a contribution of pixels next to the border
+thanks to pixel splitting.
+Finally pyFAI provides also tools to calibrate the experimental setup using Debye-Scherrer
+rings of a reference compound.
 
 References:
 -----------
@@ -28,31 +32,33 @@ tarball. Download either one and unpack it.
 Developement is done on Github: https://github.com/kif/pyFAI
 
 e.g.
-tar xvzf pyFAI-0.10.0.tar.gz
+::
+    tar xvzf pyFAI-0.10.0.tar.gz
 or
-unzip pyFAI-0.10.0.zip
+::
+    unzip pyFAI-0.10.0.zip
 
 All files are unpacked into the directory pyFAI-0.10.0.
-
-cd pyFAI-0.10.0
+::
+    cd pyFAI-0.10.0
 
 Build it & test it. For test pyFAI downloads test images (you may have to setup a proxy configuration like export http_proxy=http://proxy.site.org:3128):
-
-python setup.py build test
+::
+    python setup.py build test
 
 and install pyFAI with
-
-python setup.py install
+::
+    python setup.py install
 
 Most likely you will need to do this with root privileges (e.g. put sudo
 in front of the command).
 
 
 The newest development version can be obtained by checking it out from the git repository.
-
-git clone https://github.com/kif/pyFAI.git
-cd pyFAI
-sudo python setup.py install
+::
+    git clone https://github.com/kif/pyFAI.git
+    cd pyFAI
+    sudo python setup.py install
 
 If you want pyFAI to make use of your graphic card, please install pyopencl from:
 http://mathema.tician.de/software/pyopencl
@@ -61,8 +67,11 @@ If you are using MS Windows you can also download a binary version packaged as e
 installation files (Chose the one corresponding to your python version).
 
 For MacOSX users with MacOS version>10.7, the default compiler switched from gcc
-to clang and dropped the OpenMP support. While clang does not support OpenMP, the
-use of gcc is advised for MacOSX users.
+to clang and dropped the OpenMP support. Three options for you:
+
+* Use the new Xcode6 (with clang3.5) or Xcode4 (with gcc)
+* Install a version of gcc (>4.2) on MacOSX
+* use the "--no-openmp" option to setup.py if you are enforced to use Xcode4
 
 Documentation
 -------------
@@ -105,8 +114,8 @@ The extra ubuntu packages needed are:
     * python-qt4
 
 using apt-get these can be installed as:
-
-sudo apt-get install python-numpy python-scipy python-matplotlib  python-dev python-fabio python-pyopencl python-fftw python-qt4
+::
+    sudo apt-get install python-numpy python-scipy python-matplotlib  python-dev python-fabio python-pyopencl python-fftw python-qt4
 
 MacOSX
 ------
