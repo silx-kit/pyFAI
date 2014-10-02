@@ -38,10 +38,6 @@ Collaboration is done via Pull-Requests in github's web interface:
 Anybody can `fork the project <https://github.com/kif/pyFAI/fork>`_ and adapt it to his own needs (people from CEA-saclay, Synchrotron Soleil or APS did it).
 If developments are useful to other, new developments can be merged into the main branch.
 
-Noticeable scientific development based on pyFAI:
-
-* "Dioptas" is a graphical user interface for calibrating and processing high pressure Xray diffraction experiment, developped by Clemens Perscher (APS, USA).
-* "NanoPeakCell" allows the pre-treatement of serial crystallography written by Nicolas Coquelle (IBS, France)
 
 Run dependencies
 ----------------
@@ -109,24 +105,24 @@ pyFAI runs under linux, MacOSX and Windows (in each case in 32 and 64 bits)
    :header: "Name", "Stmts", "Miss", "Cover"
    :widths: 50, 8, 8, 8
 
-    "pyFAI.__init__            ",   "  10",    "  3",    "70%",
-    "pyFAI.azimuthalIntegrator ",   "1194",    "417",    "65%",
-    "pyFAI.blob_detection      ",   " 521",    "323",    "38%",
-    "pyFAI.calibrant           ",   " 196",    " 69",    "65%",
-    "pyFAI.detectors           ",   " 993",    "248",    "75%",
-    "pyFAI.geometry            ",   " 768",    "182",    "76%",
-    "pyFAI.geometryRefinement  ",   " 371",    "205",    "45%",
-    "pyFAI.gui_utils           ",   "  53",    " 33",    "38%",
-    "pyFAI.io                  ",   " 421",    "189",    "55%",
-    "pyFAI.massif              ",   " 187",    " 59",    "68%",
-    "pyFAI.ocl_azim            ",   " 307",    " 91",    "70%",
-    "pyFAI.ocl_azim_csr        ",   " 264",    " 73",    "72%",
-    "pyFAI.ocl_azim_lut        ",   " 260",    " 57",    "78%",
-    "pyFAI.opencl              ",   " 143",    " 40",    "72%",
-    "pyFAI.peak_picker         ",   " 566",    "413",    "27%",
-    "pyFAI.spline              ",   " 329",    "220",    "33%",
-    "pyFAI.units               ",   "  40",    "  5",    "88%",
-    "pyFAI.utils               ",   " 664",    "300",    "55%",
+   "pyFAI.__init__", "  10","  3","70%"
+   "pyFAI.azimuthalIntegrator ", "1194","417","65%"
+   "pyFAI.blob_detection", " 521","323","38%"
+   "pyFAI.calibrant ", " 196"," 69","65%"
+   "pyFAI.detectors ", " 993","248","75%"
+   "pyFAI.geometry", " 768","182","76%"
+   "pyFAI.geometryRefinement", " 371","205","45%"
+   "pyFAI.gui_utils ", "  53"," 33","38%"
+   "pyFAI.io", " 421","189","55%"
+   "pyFAI.massif", " 187"," 59","68%"
+   "pyFAI.ocl_azim", " 307"," 91","70%"
+   "pyFAI.ocl_azim_csr", " 264"," 73","72%"
+   "pyFAI.ocl_azim_lut", " 260"," 57","78%"
+   "pyFAI.opencl", " 143"," 40","72%"
+   "pyFAI.peak_picker ", " 566","413","27%"
+   "pyFAI.spline", " 329","220","33%"
+   "pyFAI.units ", "  40","  5","88%"
+   "pyFAI.utils ", " 664","300","55%"
 
 Note that the test coverage tool does not count lines of Cython, nor those of OpenCL
 
