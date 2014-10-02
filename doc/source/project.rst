@@ -51,7 +51,7 @@ Run dependencies
 * SciPy
 * Matplotlib
 * FabIO
-* h5py
+* h5py (optional)
 * pyopencl (optional)
 * fftw (optional)
 * PyQt4 or PySide (for the graphical user interface)
