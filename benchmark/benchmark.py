@@ -363,7 +363,7 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
 
     def save(self, filename="benchmark.json"):
         self.update_mp()
-        json.dump(self.results, open(filename, "w"))
+        json.dump(self.results, open(filename, "w"), indent=4)
 
     def print_res(self):
         self.update_mp()
@@ -396,7 +396,7 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
     def new_curve(self, results, label, style="-"):
         """
         Create a new curve within the current graph
-        
+
         @param results: dict with execution time in function of size
         @param label: string with the title of the curve
         @param style: the style of the line: "-" for plain line, "--" for dashed
