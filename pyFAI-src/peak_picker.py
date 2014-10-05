@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/09/2014"
+__date__ = "05/10/2014"
 __status__ = "production"
 
 import os
@@ -37,7 +37,6 @@ import gc
 import types
 import array
 import operator
-from math import sqrt
 import numpy
 from .gui_utils import pylab, update_fig, maximize_fig, QtGui, backend
 from . import gui_utils
@@ -103,6 +102,13 @@ class PeakPicker(object):
 
     """
     VALID_METHODS = ["massif", "blob"]
+    help = ["Please select rings on the diffraction image. In parenthesis, some modified shortcuts for single button mouse (Apple):",
+            " * Right-click (click+n):         try an auto find for a ring",
+            " * Right-click + Ctrl (click+b):  create new group with one point",
+            " * Right-click + Shift (click+v): add one point to current group",
+            " * Right-click + m (click+m):     find more points for current group",
+            " * Center-click or (click+d):     erase current group",
+            " * Center-click + 1 or (click+1): erase closest point from current group"]
 
     def __init__(self, strFilename, reconst=False, mask=None,
                  pointfile=None, calibrant=None, wavelength=None, method="massif"):
@@ -311,6 +317,9 @@ class PeakPicker(object):
                     self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
 
     def onclick(self, event):
+        """
+        Called when a mouse is clicked
+        """
         def annontate(x, x0=None, idx=None):
             """
             Call back method to annotate the figure while calculation are going on ...
@@ -324,93 +333,140 @@ class PeakPicker(object):
                      arrowprops=dict(facecolor='white', edgecolor='white'),)
                 update_fig(self.fig)
 
-        with self._sem:
-            x0 = event.xdata
-            y0 = event.ydata
-            ring = self.spinbox.value()
-            if event.button == 3:  # right click: add points (1 or many) to new or existing group
-                logger.debug("Button: %i, Key modifier: %s" % (event.button, event.key))
-                if event.key == 'shift':  # if 'shift' pressed add nearest maximum to the current group
-                    points = self.points.pop(ring) or []
-                    # no, keep annotation! if len(self.ax.texts) > 0: self.ax.texts.pop()
-                    if len(self.ax.lines) > 0:
-                        self.ax.lines.pop()
-
-                    update_fig(self.fig)
-                    newpeak = self.massif.nearest_peak([y0, x0])
-                    if newpeak:
-                        if not points:
-                            # if new group, need annotation (before points.append!)
-                            annontate(newpeak, [y0, x0])
-                        points.append(newpeak)
-                        logger.info("x=%5.1f, y=%5.1f added to group #%i" % (newpeak[1], newpeak[0], len(self.points)))
-                    else:
-                        logger.warning("No peak found !!!")
-
-                elif event.key == 'control':  # if 'control' pressed add nearest maximum to a new group
-                    points = []
-                    newpeak = self.massif.nearest_peak([y0, x0])
-                    if newpeak:
-                        points.append(newpeak)
-                        annontate(newpeak, [y0, x0])
-                        logger.info("Create group #%i with single point x=%5.1f, y=%5.1f" % (len(self.points), newpeak[1], newpeak[0]))
-                    else:
-                        logger.warning("No peak found !!!")
-                elif event.key == 'm':  # if 'm' pressed add new group to current  group ...  ?
-                    points = self.points.pop(ring) or []
-                    # no, keep annotation! if len(self.ax.texts) > 0: self.ax.texts.pop()
-                    if len(self.ax.lines) > 0:
-                        self.ax.lines.pop()
-                    update_fig(self.fig)
-                    # need to annotate only if a new group:
-                    localAnn = None if points else annontate
-                    listpeak = self.massif.find_peaks([y0, x0], self.defaultNbPoints, localAnn, self.massif_contour)
-                    if len(listpeak) == 0:
-                        logger.warning("No peak found !!!")
-                    else:
-                        points += listpeak
-                        logger.info("Added %i points to group #%i (now %i points)" % (len(listpeak), len(self.points), len(points)))
-                else:  # create new group
-                    points = self.massif.find_peaks([y0, x0], self.defaultNbPoints, annontate, self.massif_contour)
-                    if not points:
-                        logger.warning("No peak found !!!")
-                    else:
-                        logger.info("Created group #%i with %i points" % (len(self.points), len(points)))
-                if not points:
-                    return
-                self.points.append(points, ring=ring)
+        def common_creation(points):
+            if points:
+                self.points.append(points, ring=self.spinbox.value())
                 npl = numpy.array(points)
                 self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
                 update_fig(self.fig)
-                sys.stdout.flush()
-            elif event.button == 2:  # center click: remove 1 or all points from current group
-                logger.debug("Button: %i, Key modifier: %s" % (event.button, event.key))
-                poped_points = self.points.pop(ring) or []
-                # in case not the full group is removed, would like to keep annotation
-                # _except_ if the annotation is close to the removed point... too complicated!
-                if len(self.ax.texts) > 0:
-                    self.ax.texts.pop()
-                if len(self.ax.lines) > 0:
-                    self.ax.lines.pop()
-                if event.key == '1' and len(poped_points) > 1:  # if '1' pressed AND > 1 point left:
-                    # delete single closest point from current group
-                    dists = [sqrt((p[1] - x0) ** 2 + (p[0] - y0) ** 2) for p in poped_points]  # p[1],p[0]!
-                    # index and distance of smallest distance:
-                    indexMin = min(enumerate(dists), key=operator.itemgetter(1))
-                    removedPt = poped_points.pop(indexMin[0])
-                    logger.info("x=%5.1f, y=%5.1f removed from group #%i (%i points left)" % (removedPt[1], removedPt[0], len(self.points), len(poped_points)))
-                    # annotate (new?) 1st point and add remaining points back
-                    pt = (poped_points[0][0], poped_points[0][1])
-                    annontate(pt, (pt[0] + 10, pt[1] + 10))
-                    self.points.append(poped_points, ring=ring)
-                    npl = numpy.array(poped_points)
-                    self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
-                elif len(poped_points) > 0:  # not '1' pressed or only 1 point left: remove complete group
-                    logger.info("Removing group #%i containing %i points" % (len(self.points), len(poped_points)))
-                else:
-                    logger.info("No groups to remove")
-                update_fig(self.fig)
-                sys.stdout.flush()
+            sys.stdout.flush()
+
+        def new_grp(event):
+            " * Right-click (click+n):         try an auto find for a ring"
+            points = self.massif.find_peaks([event.ydata, event.xdata],
+                                            self.defaultNbPoints,
+                                            annontate, self.massif_contour)
+            if points:
+                logger.info("Created group #%i with %i points" % (len(self.points), len(points)))
+                common_creation(points)
+            else:
+                logger.warning("No peak found !!!")
+
+        def single_point(event):
+            " * Right-click + Ctrl (click+b):  create new group with one single point"
+            points = []
+            newpeak = self.massif.nearest_peak([event.ydata, event.xdata])
+            if newpeak:
+                points.append(newpeak)
+                annontate(newpeak, [event.ydata, event.xdata])
+                logger.info("Create group #%i with single point x=%5.1f, y=%5.1f" % (len(self.points), newpeak[1], newpeak[0]))
+                common_creation(points)
+            else:
+                logger.warning("No peak found !!!")
+
+
+        def append_more_points(event):
+            " * Right-click + m (click+m):     find more points for current group"
+            points = self.points.pop(self.spinbox.value()) or []
+            if len(self.ax.lines) > 0:
+                self.ax.lines.pop()
+            update_fig(self.fig)
+            # need to annotate only if a new group:
+            localAnn = None if points else annontate
+            listpeak = self.massif.find_peaks([event.ydata, event.xdata],
+                                              self.defaultNbPoints, localAnn,
+                                              self.massif_contour)
+            if listpeak:
+                points += listpeak
+                logger.info("Added %i points to group #%i (now %i points)" % (len(listpeak), len(self.points), len(points)))
+            else:
+                logger.warning("No peak found !!!")
+            common_creation(points)
+
+        def append_1_point(event):
+            " * Right-click + Shift (click+v): add one point to current group"
+            points = self.points.pop(self.spinbox.value()) or []
+            if len(self.ax.lines) > 0:
+                self.ax.lines.pop()
+            update_fig(self.fig)
+            newpeak = self.massif.nearest_peak([event.ydata, event.xdata])
+            if newpeak:
+                if not points:
+                    annontate(newpeak, [event.ydata, event.xdata])
+                points.append(newpeak)
+                logger.info("x=%5.1f, y=%5.1f added to group #%i" % (newpeak[1], newpeak[0], len(self.points)))
+            else:
+                logger.warning("No peak found !!!")
+            common_creation(points)
+
+        def erase_grp(event):
+            " * Center-click or (click+d):     erase current group"
+            poped_points = self.points.pop(self.spinbox.value()) or []
+            # in case not the full group is removed, would like to keep annotation
+            # _except_ if the annotation is close to the removed point... too complicated!
+            if len(self.ax.texts) > 0:
+                self.ax.texts.pop()
+            if len(self.ax.lines) > 0:
+                self.ax.lines.pop()
+            if len(poped_points) > 0:  # not '1' pressed or only 1 point left: remove complete group
+                logger.info("Removing group #%i containing %i points" % (len(self.points), len(poped_points)))
+            else:
+                logger.info("No groups to remove")
+            update_fig(self.fig)
+            sys.stdout.flush()
+
+        def erase_1_point(event):
+            " * Center-click + 1 or (click+1): erase closest point from current group"
+            poped_points = self.points.pop(self.spinbox.value()) or []
+            if len(self.ax.texts) > 0:
+                self.ax.texts.pop()
+            if len(self.ax.lines) > 0:
+                self.ax.lines.pop()
+            if len(poped_points) > 1:
+                # delete single closest point from current group
+                x0 = event.xdata
+                y0 = event.ydata
+                distsq = [((p[1] - x0) ** 2 + (p[0] - y0) ** 2) for p in poped_points]
+                # index and distance of smallest distance:
+                indexMin = min(enumerate(distsq), key=operator.itemgetter(1))
+                removedPt = poped_points.pop(indexMin[0])
+                logger.info("x=%5.1f, y=%5.1f removed from group #%i (%i points left)" % (removedPt[1], removedPt[0], len(self.points), len(poped_points)))
+                # annotate (new?) 1st point and add remaining points back
+                pt = (poped_points[0][0], poped_points[0][1])
+                annontate(pt, (pt[0] + 10, pt[1] + 10))
+                self.points.append(poped_points, ring=self.spinbox.value())
+                npl = numpy.array(poped_points)
+                self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
+            elif len(poped_points) > 0:  # not '1' pressed or only 1 point left: remove complete group
+                logger.info("Removing group #%i containing %i points" % (len(self.points), len(poped_points)))
+            else:
+                logger.info("No groups to remove")
+            update_fig(self.fig)
+            sys.stdout.flush()
+
+        with self._sem:
+            logger.debug("Button: %i, Key modifier: %s" % (event.button, event.key))
+
+            if ((event.button == 3) and (event.key == 'shift')) or \
+               ((event.button == 1) and (event.key == 'v')):
+                # if 'shift' pressed add nearest maximum to the current group
+                append_1_point(event)
+            elif ((event.button == 3) and (event.key == 'control')) or\
+                 ((event.button == 1) and (event.key == 'b')):
+                # if 'control' pressed add nearest maximum to a new group
+                single_point(event)
+            elif (event.button in [1, 3]) and (event.key == 'm'):
+                append_more_points(event)
+            elif (event.button == 3) or ((event.button == 1) and (event.key == 'n')):
+                # create new group
+                new_grp(event)
+
+            elif (event.key == "1") and (event.button in [1, 2]):
+                erase_1_point(event)
+            elif (event.button == 2) or (event.button == 1  and event.key == "d"):
+                erase_1_point(event)
+            else:
+                logger.info("Unknown combination: Button: %i, Key modifier: %s" % (event.button, event.key))
 
     def finish(self, filename=None, callback=None):
         """
@@ -418,13 +474,7 @@ class PeakPicker(object):
 
         @param filename: file with the point coordinates saved
         """
-        logging.info(os.linesep.join(["Please use the GUI and:",
-                                      " 1) Right-click:         try an auto find for a ring",
-                                      " 2) Right-click + Ctrl:  create new group with one point",
-                                      " 3) Right-click + Shift: add one point to current group",
-                                      " 4) Right-click + m:     find more points for current group",
-                                      " 5) Center-click:     erase current group",
-                                      " 6) Center-click + 1: erase closest point from current group"]))
+        logging.info(os.linesep.join(self.help))
         if not callback:
             raw_input("Please press enter when you are happy with your selection" + os.linesep)
             # need to disconnect 'button_press_event':
