@@ -8,6 +8,8 @@ then
 else  
    export CC="ccache gcc"; 
 fi
+export PYBUILD_DISABLE_python2=test
+export PYBUILD_DISABLE_python3=test
 rm -rf dist
 python setup.py sdist
 cd dist
