@@ -152,9 +152,9 @@ class FullSplitCSR_1d(object):
         self.lut = (self.data, self.indices, self.indptr)
         self.lut_nbytes = sum([i.nbytes for i in self.lut])
 
-#    @cython.cdivision(True)
-#    @cython.boundscheck(False)
-#    @cython.wraparound(False)
+    @cython.cdivision(True)
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def calc_lut(self):
         """
         Actually calculate the Look-Up table (saved as CSR)
@@ -328,9 +328,9 @@ class FullSplitCSR_1d(object):
         self.indices = indices
         self.outMax = outMax
 
-#    @cython.cdivision(True)
-#    @cython.boundscheck(False)
-#    @cython.wraparound(False)
+    @cython.cdivision(True)
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def integrate(self, weights, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None):
         """
         Actually perform the integration which in this case looks more like a matrix-vector product
