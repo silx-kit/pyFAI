@@ -156,7 +156,9 @@ ext_modules = [
     Extension('splitBBoxCSR',
               extra_compile_args=[openmp],
               extra_link_args=[openmp]),
-
+    Extension('splitPixelFullCSR',
+              extra_compile_args=[openmp],
+              extra_link_args=[openmp]),
     Extension('relabel'),
 
     Extension("bilinear",

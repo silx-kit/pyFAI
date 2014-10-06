@@ -25,7 +25,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2014"
+__date__ = "06/10/2014"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -108,7 +108,14 @@ try:
 except ImportError as error:
     logger.error("Unable to import pyFAI.splitBBoxCSR"
                  " CSR based azimuthal integration: %s" % error)
-    histogram = None
+    splitBBoxCSR = None
+
+try:
+    from . import splitPixelFullCSR  # IGNORE:F0401
+except ImportError as error:
+    logger.error("Unable to import pyFAI.splitPixelFullCSR"
+                 " CSR based azimuthal integration: %s" % error)
+    splitPixelFullCSR = None
 
 try:
     from . import ocl_azim_csr  # IGNORE:F0401
@@ -1134,8 +1141,9 @@ class AzimuthalIntegrator(Geometry):
         else:
             assert mask.shape == shape
         if split == "full":
-            raise RuntimeError("Full pixel splitting using CSR is not yet available")
-#            if int2d:
+
+            if int2d:
+                raise NotImplementedError("Full pixel splitting using CSR is not yet available in 2D")
 #                return splitBBoxCSR.HistoBBox2d(pos0, dpos0, pos1, dpos1,
 #                                                bins=npt,
 #                                                pos0Range=pos0Range,
@@ -1144,16 +1152,15 @@ class AzimuthalIntegrator(Geometry):
 #                                                mask_checksum=mask_checksum,
 #                                                allow_pos0_neg=False,
 #                                                unit=unit)
-#            else:
-#                return splitBBoxCSR.HistoBBox1d(pos0, dpos0, pos1, dpos1,
-#                                                bins=npt,
-#                                                pos0Range=pos0Range,
-#                                                pos1Range=pos1Range,
-#                                                mask=mask,
-#                                                mask_checksum=mask_checksum,
-#                                                allow_pos0_neg=False,
-#                                                unit=unit,
-#                                                )
+            else:
+                return splitPixelFullCSR.FullSplitCSR_1d(pos,
+                                                         bins=npt,
+                                                         pos0Range=pos0Range,
+                                                         pos1Range=pos1Range,
+                                                         mask=mask,
+                                                         mask_checksum=mask_checksum,
+                                                         allow_pos0_neg=False,
+                                                         unit=unit)
         else:
             if int2d:
                 return splitBBoxCSR.HistoBBox2d(pos0, dpos0, pos1, dpos1,
