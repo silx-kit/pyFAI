@@ -25,7 +25,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "GPLv3"
-__date__ = "04/09/2014"
+__date__ = "09/10/2014"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -302,7 +302,7 @@ class OCL_CSR_Integrator(object):
                     dark_checksum = crc32(dark)
                 if dark_checksum != self.on_device["dark"]:
                     ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["dark"], numpy.ascontiguousarray(dark, dtype=numpy.float32))
-                    events.append("copy dark", ev)
+                    events.append(("copy dark", ev))
                     self.on_device["dark"] = dark_checksum
             else:
                 do_dark = numpy.int32(0)
