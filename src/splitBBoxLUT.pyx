@@ -35,16 +35,28 @@ from cython cimport view
 import numpy
 cimport numpy
 from libc.math cimport fabs, M_PI
+
 cdef struct lut_point:
     numpy.int32_t idx
     numpy.float32_t coef
-dtype_lut=numpy.dtype([("idx",numpy.int32),("coef",numpy.float32)])
+    
+dtype_lut = numpy.dtype([("idx",numpy.int32), ("coef",numpy.float32)])
+
 try:
     from fastcrc import crc32
 except:
     from zlib import crc32
 cdef double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
-cdef bint NEED_DECREF = (sys.version_info < (2,7)) and (numpy.version.version < "1.5")
+
+
+def int0(a):
+    try:
+        res = int(a)
+    except ValueError:
+        res = 0
+    return res
+numpy_version = tuple(int0(i) for i in numpy.version.version.split("."))
+cdef bint NEED_DECREF = (sys.version_info < (2, 7)) and (numpy_version < (1, 5))
 
 cdef float pi = <float> M_PI
 cdef float onef = <float> 1.0
@@ -139,12 +151,11 @@ class HistoBBox1d(object):
         self.lut_max_idx = None
         self._lut_checksum = None
         self.calc_lut()   
-        self.outPos = numpy.linspace(self.pos0_min+0.5*self.delta, self.pos0_maxin-0.5*self.delta, self.bins)
+        self.outPos = numpy.linspace(self.pos0_min + 0.5 * self.delta, self.pos0_maxin - 0.5*self.delta, self.bins)
         
         self.unit = unit
         self.lut_nbytes = self._lut.nbytes
         
-
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def calc_boundaries(self, pos0Range):
@@ -356,7 +367,7 @@ class HistoBBox1d(object):
         if self._lut_checksum is None:
             self.get_lut()
         return self._lut_checksum
-    lut_checksum = property(get_lut)
+    lut_checksum = property(get_lut_checksum)
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
@@ -904,7 +915,7 @@ class HistoBBox2d(object):
                         outMax[i, j] += 1
 
         self.lut_size = lut_size = outMax.max()
-        #just recycle the outMax array
+        # just recycle the outMax array
         memset(&outMax[0,0], 0, bins0 * bins1 * sizeof(numpy.int32_t))
 
         lut_nbytes = bins0 * bins1 * lut_size * sizeof(lut_point)
@@ -916,7 +927,7 @@ class HistoBBox2d(object):
         lut = view.array(shape=(bins0, bins1, lut_size), itemsize=sizeof(lut_point), format="if")
         memset(&lut[0, 0, 0], 0, lut_nbytes)
         
-        #NOGIL
+        # NOGIL
         with nogil:
             for idx in range(size):
                 if (check_mask) and cmask[idx]:
@@ -1091,7 +1102,7 @@ class HistoBBox2d(object):
         if self._lut_checksum is None:
             self.get_lut()
         return self._lut_checksum
-    lut_checksum = property(get_lut)
+    lut_checksum = property(get_lut_checksum)
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
