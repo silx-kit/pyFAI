@@ -313,7 +313,7 @@ class OCL_CSR_Integrator(object):
                     flat_checksum = crc32(flat)
                 if self.on_device["flat"] != flat_checksum:
                     ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["flat"], numpy.ascontiguousarray(flat, dtype=numpy.float32))
-                    events.append("copy flat", ev)
+                    events.append(("copy flat", ev))
                     self.on_device["flat"] = flat_checksum
             else:
                 do_flat = numpy.int32(0)
