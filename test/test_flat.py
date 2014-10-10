@@ -59,7 +59,7 @@ class TestFlat1D(unittest.TestCase):
         r, I = self.ai.integrate1d(self.raw, self.bins, unit="r_mm", correctSolidAngle=False)
         logger.info("1D Without correction Imin=%s Imax=%s <I>=%s std=%s" % (I.min(), I.max(), I.mean(), I.std()))
         self.assertNotAlmostEqual(I.mean(), 1, 2, "Mean should not be 1")
-        self.assertFalse(I.max() - I.min() < self.eps, "deviation shaould be large")
+        self.assertFalse(I.max() - I.min() < self.eps, "deviation should be large")
     def test_correct(self):
         for meth in ["numpy", "cython", "splitbbox", "splitpix", "lut", "lut_ocl" ]:
             r, I = self.ai.integrate1d(self.raw, self.bins, unit="r_mm", method=meth, correctSolidAngle=False, dark=self.dark, flat=self.flat)
@@ -104,8 +104,11 @@ class TestFlat2D(unittest.TestCase):
                   "splitbbox": self.eps,
                   "splitpix": self.eps,
                   "lut": self.eps,
-                  "lut_ocl": self.eps}
-
+                  "lut_ocl_cpu": self.eps,
+                  "lut_ocl_gpu": self.eps,
+                  "csr_ocl_cpu": self.eps,
+                  "csr_ocl_gpu": self.eps,
+                  }
         test2d_direct = {"xrpd2_numpy": 0.3, # histograms are very noisy in 2D
                          "xrpd2_histogram": 0.3,   # histograms are very noisy in 2D
                          "xrpd2_splitBBox": self.eps,
