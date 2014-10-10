@@ -377,7 +377,7 @@ out=ai.xrpd_OpenCL(data,N, devicetype=r"%s", useFp64=%s, platformid=%s, deviceid
         if self.fig:
             print("Already initialized")
             return
-        if "DISPLAY" in os.environ:
+        if (sys.platform in ["win32", "darwin"]) or ("DISPLAY" in os.environ):
             self.fig = pylab.figure()
             self.fig.show()
             self.ax = self.fig.add_subplot(1, 1, 1)
