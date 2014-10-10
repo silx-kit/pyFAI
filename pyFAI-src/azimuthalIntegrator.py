@@ -25,7 +25,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/10/2014"
+__date__ = "10/10/2014"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2289,28 +2289,34 @@ class AzimuthalIntegrator(Geometry):
                                 devicetype = "all"
                             if (self._ocl_lut_integr is None) or\
                                     (self._ocl_lut_integr.on_device["lut"] != self._lut_integrator.lut_checksum):
-                                self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut,
-                                                                                       self._lut_integrator.size,
-                                                                                       devicetype=devicetype,
-                                                                                       platformid=platformid,
-                                                                                       deviceid=deviceid,
-                                                                                       checksum=self._lut_integrator.lut_checksum)
-                            I, _, _ = self._ocl_lut_integr.integrate(data, dark=dark, flat=flat,
-                                                                     solidAngle=solidangle,
-                                                                     solidAngle_checksum=self._dssa_crc,
-                                                                     dummy=dummy,
-                                                                     delta_dummy=delta_dummy,
-                                                                     polarization=polarization,
-                                                                     polarization_checksum=self._polarization_crc)
-                            qAxis = self._lut_integrator.outPos  # this will be copied later
-                            if error_model == "azimuthal":
-                                variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
-                            if variance is not None:
-                                var1d, a, b = self._ocl_lut_integr.integrate(variance,
-                                                                             solidAngle=None,
-                                                                             dummy=dummy,
-                                                                             delta_dummy=delta_dummy)
-                                sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
+                                try:
+                                    self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut,
+                                                                                           self._lut_integrator.size,
+                                                                                           devicetype=devicetype,
+                                                                                           platformid=platformid,
+                                                                                           deviceid=deviceid,
+                                                                                           checksum=self._lut_integrator.lut_checksum)
+                                except (MemoryError, RuntimeError):
+                                    logger.warning("Issue with LUT integrator, trying CSR")
+                                    self._ocl_lut_integr = None
+                                    method = method.replace("lut", "csr")
+                            if self._ocl_lut_integr is not None:
+                                I, _, _ = self._ocl_lut_integr.integrate(data, dark=dark, flat=flat,
+                                                                         solidAngle=solidangle,
+                                                                         solidAngle_checksum=self._dssa_crc,
+                                                                         dummy=dummy,
+                                                                         delta_dummy=delta_dummy,
+                                                                         polarization=polarization,
+                                                                         polarization_checksum=self._polarization_crc)
+                                qAxis = self._lut_integrator.outPos  # this will be copied later
+                                if error_model == "azimuthal":
+                                    variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
+                                if variance is not None:
+                                    var1d, a, b = self._ocl_lut_integr.integrate(variance,
+                                                                                 solidAngle=None,
+                                                                                 dummy=dummy,
+                                                                                 delta_dummy=delta_dummy)
+                                    sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
                     else:
                         qAxis, I, a, b = self._lut_integrator.integrate(data, dark=dark, flat=flat,
                                                            solidAngle=solidangle,
