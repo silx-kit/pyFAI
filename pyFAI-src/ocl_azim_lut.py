@@ -23,7 +23,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
-__date__ = "29/09/2014"
+__date__ = "10/10/2014"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -89,9 +89,14 @@ class OCL_LUT_Integrator(object):
         if (self.device_type == "CPU") and (self.platform.vendor == "Apple"):
             logger.warning("This is a workaround for Apple's OpenCL on CPU: enforce BLOCK_SIZE=1")
             self.BLOCK_SIZE = 1
+        if (self.device_type == "GPU") and (self.platform.vendor == "Apple") and self.device.name == "Iris":
+            err = "Apple OpenCL on Iris GPU from Intel: Incompatible kernel"
+            logger.warning(err)
+            raise MemoryError(err)
         self.workgroup_size = self.BLOCK_SIZE,
         self.wdim_bins = (self.bins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
         self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
+
         try:
             self._ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
             if self.profile:
