@@ -140,6 +140,7 @@ class AzimuthalIntegrator(Geometry):
         >>> q, I, sigma = ai.integrate1d(data, npt, unit="q_nm^-1", error_model="poisson")
         >>> regrouped = ai.integrate2d(data, npt_rad, npt_azim, unit="q_nm^-1")[0]
     """
+    DEFAULT_METHOD = "splitbbox"
 
     def __init__(self, dist=1, poni1=0, poni2=0,
                  rot1=0, rot2=0, rot3=0,
@@ -2265,7 +2266,7 @@ class AzimuthalIntegrator(Geometry):
                         self._lut_integrator = None
                         self._ocl_lut_integr = None
                         gc.collect()
-                        method = "splitbbox"
+                        method = self.DEFAULT_METHOD
 
                 if self._lut_integrator:
                     if ("ocl" in method) and ocl_azim_lut:
@@ -2299,7 +2300,7 @@ class AzimuthalIntegrator(Geometry):
                                 except (MemoryError, RuntimeError):
                                     logger.warning("Issue with LUT integrator, trying CSR")
                                     self._ocl_lut_integr = None
-                                    method = method.replace("lut", "csr")
+                                    method = self.DEFAULT_METHOD
                             if self._ocl_lut_integr is not None:
                                 I, _, _ = self._ocl_lut_integr.integrate(data, dark=dark, flat=flat,
                                                                          solidAngle=solidangle,
@@ -2399,7 +2400,7 @@ class AzimuthalIntegrator(Geometry):
                         self._ocl_csr_integr = None
                         self._csr_integrator = None
                         gc.collect()
-                        method = "splitbbox"
+                        method = self.DEFAULT_METHOD
                 if self._csr_integrator:
                     if ("ocl" in method) and ocl_azim_csr:
                         with self._ocl_csr_sem:
@@ -2468,7 +2469,7 @@ class AzimuthalIntegrator(Geometry):
                 if splitPixel is None:
                     logger.warning("SplitPixelFull is not available,"
                                 " falling back on splitbbox histogram !")
-                    method = "splitbbox"
+                    method = self.DEFAULT_METHOD
                 else:
                     logger.debug("integrate1d uses SplitPixel implementation")
                     pos = self.array_from_unit(shape, "corner", unit)
@@ -2502,7 +2503,7 @@ class AzimuthalIntegrator(Geometry):
                 if splitPixel is None:
                     logger.warning("SplitPixel is not available,"
                                 " falling back on splitbbox histogram !")
-                    method = "splitbbox"
+                    method = self.DEFAULT_METHOD
                 else:
                     logger.debug("integrate1d uses SplitPixel implementation")
                     pos = self.array_from_unit(shape, "corner", unit)
@@ -2804,9 +2805,9 @@ class AzimuthalIntegrator(Geometry):
                         logger.warning("MemoryError: falling back on forward implementation")
                         self._ocl_lut_integr = None
                         gc.collect()
-                        method = "splitbbox"
+                        method = self.DEFAULT_METHOD
                         error = True
-                if not error:  # not yet implemented...
+                if not error:
                     if  ("ocl" in method) and ocl_azim_lut:
                         with self._ocl_lut_sem:
                             if "," in method:
@@ -2827,23 +2828,32 @@ class AzimuthalIntegrator(Geometry):
                                 deviceid = None
                                 devicetype = "all"
                             if (self._ocl_lut_integr is None) or (self._ocl_lut_integr.on_device["lut"] != self._lut_integrator.lut_checksum):
-                                self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut,
-                                                                                       self._lut_integrator.size,
-                                                                                       devicetype=devicetype,
-                                                                                       platformid=platformid,
-                                                                                       deviceid=deviceid,
-                                                                                       checksum=self._lut_integrator.lut_checksum)
-                            I, _, _ = self._ocl_lut_integr.integrate(data, dark=dark, flat=flat,
-                                                                     solidAngle=solidangle,
-                                                                     solidAngle_checksum=self._dssa_crc,
-                                                                     dummy=dummy,
-                                                                     delta_dummy=delta_dummy,
-                                                                     polarization=polarization,
-                                                                     polarization_checksum=self._polarization_crc)
-                            I.shape = npt
-                            I = I.T
-                            bins_rad = self._lut_integrator.outPos0  # this will be copied later
-                            bins_azim = self._lut_integrator.outPos1
+                                try:
+                                    self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut,
+                                                                                           self._lut_integrator.size,
+                                                                                           devicetype=devicetype,
+                                                                                           platformid=platformid,
+                                                                                           deviceid=deviceid,
+                                                                                           checksum=self._lut_integrator.lut_checksum)
+                                except (MemoryError, RuntimeError) as err:
+                                    logger.warning("Error: %s, falling back on forward implementation" % err)
+                                    self._lut_integrator = None
+                                    self._ocl_lut_integr = None
+                                    gc.collect()
+                                    method = self.DEFAULT_METHOD
+                                    error = True
+                            if not error:
+                                I, _, _ = self._ocl_lut_integr.integrate(data, dark=dark, flat=flat,
+                                                                         solidAngle=solidangle,
+                                                                         solidAngle_checksum=self._dssa_crc,
+                                                                         dummy=dummy,
+                                                                         delta_dummy=delta_dummy,
+                                                                         polarization=polarization,
+                                                                         polarization_checksum=self._polarization_crc)
+                                I.shape = npt
+                                I = I.T
+                                bins_rad = self._lut_integrator.outPos0  # this will be copied later
+                                bins_azim = self._lut_integrator.outPos1
                     else:
                         I, bins_rad, bins_azim, _, _ = self._lut_integrator.integrate(data, dark=dark, flat=flat,
                                                                                       solidAngle=solidangle,
@@ -2908,7 +2918,7 @@ class AzimuthalIntegrator(Geometry):
                         logger.warning("MemoryError: falling back on forward implementation")
                         self._ocl_csr_integr = None
                         gc.collect()
-                        method = "splitbbox"
+                        method = self.DEFAULT_METHOD
                         error = True
                 if not error:  # not yet implemented...
                     if  ("ocl" in method) and ocl_azim_lut:
@@ -2931,23 +2941,32 @@ class AzimuthalIntegrator(Geometry):
                                 deviceid = None
                                 devicetype = "all"
                             if (self._ocl_csr_integr is None) or (self._ocl_csr_integr.on_device["data"] != self._csr_integrator.lut_checksum):
-                                self._ocl_csr_integr = ocl_azim_csr.OCL_CSR_Integrator(self._csr_integrator.lut,
-                                                                                       self._csr_integrator.size,
-                                                                                       devicetype=devicetype,
-                                                                                       platformid=platformid,
-                                                                                       deviceid=deviceid,
-                                                                                       checksum=self._csr_integrator.lut_checksum)
-                            I, _, _ = self._ocl_csr_integr.integrate(data, dark=dark, flat=flat,
-                                                                     solidAngle=solidangle,
-                                                                     solidAngle_checksum=self._dssa_crc,
-                                                                     dummy=dummy,
-                                                                     delta_dummy=delta_dummy,
-                                                                     polarization=polarization,
-                                                                     polarization_checksum=self._polarization_crc)
-                            I.shape = npt
-                            I = I.T
-                            bins_rad = self._csr_integrator.outPos0  # this will be copied later
-                            bins_azim = self._csr_integrator.outPos1
+                                try:
+                                    self._ocl_csr_integr = ocl_azim_csr.OCL_CSR_Integrator(self._csr_integrator.lut,
+                                                                                           self._csr_integrator.size,
+                                                                                           devicetype=devicetype,
+                                                                                           platformid=platformid,
+                                                                                           deviceid=deviceid,
+                                                                                           checksum=self._csr_integrator.lut_checksum)
+                                except (MemoryError, RuntimeError) as err:  # LUT method is hungry...
+                                    logger.warning("Error: %s, falling back on forward implementation" % err)
+                                    self._csr_integrator = None
+                                    self._ocl_csr_integr = None
+                                    gc.collect()
+                                    method = self.DEFAULT_METHOD
+                                    error = True
+                            if not error:
+                                I, _, _ = self._ocl_csr_integr.integrate(data, dark=dark, flat=flat,
+                                                                         solidAngle=solidangle,
+                                                                         solidAngle_checksum=self._dssa_crc,
+                                                                         dummy=dummy,
+                                                                         delta_dummy=delta_dummy,
+                                                                         polarization=polarization,
+                                                                         polarization_checksum=self._polarization_crc)
+                                I.shape = npt
+                                I = I.T
+                                bins_rad = self._csr_integrator.outPos0  # this will be copied later
+                                bins_azim = self._csr_integrator.outPos1
                     else:
                         I, bins_rad, bins_azim, _, _ = self._csr_integrator.integrate(data, dark=dark, flat=flat,
                                                                                       solidAngle=solidangle,
