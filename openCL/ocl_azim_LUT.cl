@@ -7,7 +7,7 @@
  *                           Grenoble, France
  *
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
- *   Last revision: 04/09/2014
+ *   Last revision: 11/10/2014
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published
@@ -29,8 +29,9 @@
  * \brief OpenCL kernels for 1D azimuthal integration
  *
  * Needed constant:
- *   NIMAGE: size of the image
- *   NBINS:  number of output bins for histograms
+ *   NLUT: maximum size of the LUT
+ *   NBINS: number of output bins for histograms
+ *   ON_CPU: 0 for GPU, 1 for CPU and probably Xeon Phi 
  */
 
 
