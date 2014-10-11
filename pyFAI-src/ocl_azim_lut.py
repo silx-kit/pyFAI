@@ -89,10 +89,10 @@ class OCL_LUT_Integrator(object):
         if (self.device_type == "CPU") and (self.platform.vendor == "Apple"):
             logger.warning("This is a workaround for Apple's OpenCL on CPU: enforce BLOCK_SIZE=1")
             self.BLOCK_SIZE = 1
-        if (self.device_type == "GPU") and (self.platform.vendor == "Apple") and self.device.name == "Iris":
-            err = "Apple OpenCL on Iris GPU from Intel: Incompatible kernel"
-            logger.warning(err)
-            raise MemoryError(err)
+        #if (self.device_type == "GPU") and (self.platform.vendor == "Apple") and self.device.name == "Iris":
+            #err = "Apple OpenCL on Iris GPU from Intel: Incompatible kernel"
+            #logger.warning(err)
+            #raise MemoryError(err)
         self.workgroup_size = self.BLOCK_SIZE,
         self.wdim_bins = (self.bins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
         self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
