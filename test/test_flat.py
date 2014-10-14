@@ -99,6 +99,7 @@ class TestFlat2D(unittest.TestCase):
         self.assertFalse(I.max() - I.min() < self.eps, "deviation should be large")
 
     def test_correct(self):
+        #TODO: perform csr_ocl_cpu only if device is available ...
         test2d = {"numpy": self.eps,
                   "cython": self.eps,
                   "splitbbox": self.eps,
