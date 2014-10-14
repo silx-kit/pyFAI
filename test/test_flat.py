@@ -40,6 +40,7 @@ import fabio
 from utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
+from pyFAI.opencl import ocl
 
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
@@ -61,7 +62,14 @@ class TestFlat1D(unittest.TestCase):
         self.assertNotAlmostEqual(I.mean(), 1, 2, "Mean should not be 1")
         self.assertFalse(I.max() - I.min() < self.eps, "deviation should be large")
     def test_correct(self):
-        for meth in ["numpy", "cython", "splitbbox", "splitpix", "lut", "lut_ocl" ]:
+        all_methods = ["numpy", "cython", "splitbbox", "splitpix", "lut", "csr"]
+        if ocl:
+            for device in ["cpu","gpu","acc"]:
+                if ocl.select_device(dtype=device):
+                    all_methods.append("lut_ocl_%s" % device)
+                    all_methods.append("csr_ocl_%s" % device)
+
+        for meth in all_methods:
             r, I = self.ai.integrate1d(self.raw, self.bins, unit="r_mm", method=meth, correctSolidAngle=False, dark=self.dark, flat=self.flat)
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s" % (meth, I.min(), I.max(), I.mean(), I.std()))
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
@@ -71,7 +79,7 @@ class TestFlat1D(unittest.TestCase):
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s" % (meth, I.min(), I.max(), I.mean(), I.std()))
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
             self.assert_(I.max() - I.min() < self.eps, "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
-        if pyFAI.opencl.ocl and pyFAI.opencl.ocl.select_device("gpu", extensions=["cl_khr_fp64"]):
+        if ocl and pyFAI.opencl.ocl.select_device("gpu", extensions=["cl_khr_fp64"]):
             meth = "xrpd_OpenCL"
             r, I = self.ai.__getattribute__(meth)(self.raw, self.bins, correctSolidAngle=False, dark=self.dark, flat=self.flat)
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s" % (meth, I.min(), I.max(), I.mean(), I.std()))
@@ -99,17 +107,17 @@ class TestFlat2D(unittest.TestCase):
         self.assertFalse(I.max() - I.min() < self.eps, "deviation should be large")
 
     def test_correct(self):
-        #TODO: perform csr_ocl_cpu only if device is available ...
         test2d = {"numpy": self.eps,
                   "cython": self.eps,
                   "splitbbox": self.eps,
                   "splitpix": self.eps,
                   "lut": self.eps,
-                  "lut_ocl_cpu": self.eps,
-                  "lut_ocl_gpu": self.eps,
-                  "csr_ocl_cpu": self.eps,
-                  "csr_ocl_gpu": self.eps,
                   }
+        if ocl:
+            for device in ["cpu","gpu","acc"]:
+                if ocl.select_device(dtype=device):
+                    test2d["lut_ocl_%s" % device] = self.eps
+                    test2d["csr_ocl_%s" % device] = self.eps
         test2d_direct = {"xrpd2_numpy": 0.3, # histograms are very noisy in 2D
                          "xrpd2_histogram": 0.3,   # histograms are very noisy in 2D
                          "xrpd2_splitBBox": self.eps,
