@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/07/2014"
+__date__ = "15/10/2014"
 __status__ = "stable"
 
 import os, logging
@@ -59,7 +59,23 @@ class Device(object):
     """
     def __init__(self, name="None", dtype=None, version=None, driver_version=None,
                  extensions="", memory=None, available=None,
-                 cores=None, frequency=None, flop_core=None, idx=0):
+                 cores=None, frequency=None, flop_core=None, idx=0, workgroup=1):
+        """
+        Simple container with some important data for the OpenCL device description:
+        
+        @param name: name of the device
+        @param dtype: device type: CPU/GPU/ACC...
+        @param version: driver version
+        @param driver_version: 
+        @param extensions: List of opencl extensions
+        @param memory: maximum memory available on the device
+        @param available: is the device desactivated or not 
+        @param cores: number of SM/cores
+        @param frequency: frequency of the device
+        @param flop_cores: Flopating Point operation per core per cycle
+        @param idx: index of the device within the platform
+        @param workgroup: max workgroup size
+        """
         self.name = name.strip()
         self.type = dtype
         self.version = version
@@ -70,6 +86,7 @@ class Device(object):
         self.cores = cores
         self.frequency = frequency
         self.id = idx
+        self.max_work_group_size = workgroup
         if not flop_core:
             flop_core = FLOP_PER_CORE.get(dtype, 1)
         if cores and frequency:
@@ -103,6 +120,15 @@ class Platform(object):
     Simple class that contains the structure of an OpenCL platform
     """
     def __init__(self, name="None", vendor="None", version=None, extensions=None, idx=0):
+        """
+        Class containing all descriptions of a platform and all devices description within that platform.
+        
+        @param name: platform name
+        @param vendor: name of the brand/vendor
+        @param version:
+        @param extension: list of the extension provided by the platform to all of its devices
+        @param idx: index of the platform
+        """
         self.name = name.strip()
         self.vendor = vendor.strip()
         self.version = version
@@ -114,6 +140,11 @@ class Platform(object):
         return "%s" % self.name
 
     def add_device(self, device):
+        """
+        Add new device to the platform
+
+        @param device: Device instance
+        """
         self.devices.append(device)
 
     def get_device(self, key):
@@ -139,6 +170,9 @@ class Platform(object):
 class OpenCL(object):
     """
     Simple class that wraps the structure ocl_tools_extended.h
+
+    This is a static class.
+    ocl should be the only instance and shared among all python modules. 
     """
     platforms = []
     if pyopencl:
@@ -152,7 +186,11 @@ class OpenCL(object):
                 extensions = device.extensions
                 if (pypl.vendor == "NVIDIA Corporation") and ('cl_khr_fp64' in extensions):
                                 extensions += ' cl_khr_int64_base_atomics cl_khr_int64_extended_atomics'
-                devtype = pyopencl.device_type.to_string(device.type).upper()
+                try:
+                    devtype = pyopencl.device_type.to_string(device.type).upper()
+                except ValueError:
+                    # pocl does not describe itself as a CPU !
+                    devtype = "CPU"
                 if len(devtype) > 3:
                     devtype = devtype[:3]
                 if (pypl.vendor == "NVIDIA Corporation") and (devtype == "GPU") and "compute_capability_major_nv" in dir(device):
@@ -164,9 +202,14 @@ class OpenCL(object):
                     flop_core = FLOP_PER_CORE.get(devtype, 1)
                 else:
                      flop_core = 1
+                workgroup = device.max_work_group_size   
+                if (devtype == "CPU") and (pypl.vendor == "Apple"):
+                    logger.info("For Apple's OpenCL on CPU: enforce max_work_goup_size=1")
+                    workgroup = 1
+  
                 pydev = Device(device.name, devtype, device.version, device.driver_version, extensions,
                                device.global_mem_size, bool(device.available), device.max_compute_units,
-                               device.max_clock_frequency, flop_core, idd)
+                               device.max_clock_frequency, flop_core, idd, workgroup)
                 pypl.add_device(pydev)
             platforms.append(pypl)
         del platform, device, pypl, devtype, extensions, pydev

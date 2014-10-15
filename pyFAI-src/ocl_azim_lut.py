@@ -45,6 +45,7 @@ except:
 logger = logging.getLogger("pyFAI.ocl_azim_lut")
 
 class OCL_LUT_Integrator(object):
+    BLOCK_SIZE = 16
     def __init__(self, lut, image_size, devicetype="all",
                  platformid=None, deviceid=None,
                  checksum=None, profile=False):
@@ -59,7 +60,6 @@ class OCL_LUT_Integrator(object):
         @param checksum: pre - calculated checksum to prevent re - calculating it :)
         @param profile: store profiling elements
         """
-        self.BLOCK_SIZE = 16
         self._sem = threading.Semaphore()
         self._lut = lut
         self.nbytes = lut.nbytes
@@ -86,14 +86,8 @@ class OCL_LUT_Integrator(object):
         self.platform = ocl.platforms[platformid]
         self.device = self.platform.devices[deviceid]
         self.device_type = self.device.type
-        if (self.device_type == "CPU") and (self.platform.vendor == "Apple"):
-            logger.warning("This is a workaround for Apple's OpenCL on CPU: enforce BLOCK_SIZE=1")
-            self.BLOCK_SIZE = 1
-        #if (self.device_type == "GPU") and (self.platform.vendor == "Apple") and self.device.name == "Iris":
-            #err = "Apple OpenCL on Iris GPU from Intel: Incompatible kernel"
-            #logger.warning(err)
-            #raise MemoryError(err)
-        self.workgroup_size = self.BLOCK_SIZE,
+        self.BLOCK_SIZE = min(self.BLOCK_SIZE, self.device.max_work_group_size)
+        self.workgroup_size = self.BLOCK_SIZE,  # Note this is a tuple
         self.wdim_bins = (self.bins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
         self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
 

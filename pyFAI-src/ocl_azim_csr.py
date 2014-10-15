@@ -66,7 +66,6 @@ class OCL_CSR_Integrator(object):
         @param checksum: pre - calculated checksum to prevent re - calculating it :)
         @param profile: store profiling elements
         """
-        self.BLOCK_SIZE = block_size  # query for warp size
         self._sem = threading.Semaphore()
         self._data = lut[0]
         self._indices = lut[1]
@@ -98,10 +97,8 @@ class OCL_CSR_Integrator(object):
         self.platform = ocl.platforms[platformid]
         self.device = self.platform.devices[deviceid]
         self.device_type = self.device.type
-        if (self.device_type == "CPU") and (self.platform.vendor == "Apple"):
-            logger.warning("This is a workaround for Apple's OpenCL on CPU: enforce BLOCK_SIZE=1")
-            self.BLOCK_SIZE = 1
-        self.workgroup_size = self.BLOCK_SIZE,
+        self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)  
+        self.workgroup_size = self.BLOCK_SIZE,  # Note this is a tuple
         self.wdim_bins = (self.bins * self.BLOCK_SIZE),
         self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
         try:
