@@ -23,7 +23,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
-__date__ = "29/09/2014"
+__date__ = "10/10/2014"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -45,6 +45,7 @@ except:
 logger = logging.getLogger("pyFAI.ocl_azim_lut")
 
 class OCL_LUT_Integrator(object):
+    BLOCK_SIZE = 16
     def __init__(self, lut, image_size, devicetype="all",
                  platformid=None, deviceid=None,
                  checksum=None, profile=False):
@@ -59,7 +60,6 @@ class OCL_LUT_Integrator(object):
         @param checksum: pre - calculated checksum to prevent re - calculating it :)
         @param profile: store profiling elements
         """
-        self.BLOCK_SIZE = 16
         self._sem = threading.Semaphore()
         self._lut = lut
         self.nbytes = lut.nbytes
@@ -86,12 +86,11 @@ class OCL_LUT_Integrator(object):
         self.platform = ocl.platforms[platformid]
         self.device = self.platform.devices[deviceid]
         self.device_type = self.device.type
-        if (self.device_type == "CPU") and (self.platform.vendor == "Apple"):
-            logger.warning("This is a workaround for Apple's OpenCL on CPU: enforce BLOCK_SIZE=1")
-            self.BLOCK_SIZE = 1
-        self.workgroup_size = self.BLOCK_SIZE,
+        self.BLOCK_SIZE = min(self.BLOCK_SIZE, self.device.max_work_group_size)
+        self.workgroup_size = self.BLOCK_SIZE,  # Note this is a tuple
         self.wdim_bins = (self.bins + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
         self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
+
         try:
             self._ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
             if self.profile:

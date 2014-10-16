@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/10/2014"
+__date__ = "06/10/2014"
 __status__ = "production"
 
 import os
@@ -213,7 +213,7 @@ class Calibrant(object):
 
         @param ai: azimuthal integrator
         @param Imax: maximum intensity of rings
-        @param U, V, W: width of the peak (FWHM = Utan(th)^2 + Vtan(th) + W)
+        @param U, V, W: width of the peak from Caglioti's law (FWHM^2 = Utan(th)^2 + Vtan(th) + W)
 
         """
         if shape is None:
@@ -229,8 +229,8 @@ class Calibrant(object):
         dim = int(numpy.sqrt(shape[0] * shape[0] + shape[1] * shape[1]))
         tth_1d = numpy.linspace(tth_min, tth_max, dim)
         tanth = numpy.tan(tth_1d / 2.0)
-        fwhm = U * tanth ** 2 + V * tanth + W
-        sigma2 = 8.0 * numpy.log(2.0) * fwhm * fwhm
+        fwhm2 = U * tanth ** 2 + V * tanth + W
+        sigma2 = 8.0 * numpy.log(2.0) * fwhm2
         signal = numpy.zeros_like(sigma2)
         for t in self.get_2th():
             if t >= tth_max:

@@ -156,7 +156,9 @@ ext_modules = [
     Extension('splitBBoxCSR',
               extra_compile_args=[openmp],
               extra_link_args=[openmp]),
-
+    Extension('splitPixelFullCSR',
+              extra_compile_args=[openmp],
+              extra_link_args=[openmp]),
     Extension('relabel'),
 
     Extension("bilinear",
@@ -413,6 +415,20 @@ def get_version():
             if line.strip().startswith("version"):
                 return eval(line.split("=")[1])
 
+classifiers = """\
+Development Status :: 5 - Production/Stable
+Intended Audience :: Developers
+License :: OSI Approved :: GPL
+Programming Language :: Python
+Topic :: Crystallography
+Topic :: Software Development :: Libraries :: Python Modules
+Operating System :: Microsoft :: Windows
+Operating System :: Unix
+Operating System :: MacOS :: MacOS X
+Operating System :: POSIX
+
+"""
+
 setup(name='pyFAI',
       version=get_version(),
       author="Jérôme Kieffer (python), \
@@ -422,7 +438,7 @@ setup(name='pyFAI',
       and Frederic-Emmanuel Picca",
       author_email="jerome.kieffer@esrf.fr",
       description='Python implementation of fast azimuthal integration',
-      url="http://forge.epn-campus.eu/azimuthal",
+      url="https://github.com/kif/pyFAI",
       download_url="http://forge.epn-campus.eu/projects/azimuthal/files",
       ext_package="pyFAI",
       scripts=script_files,
@@ -431,7 +447,19 @@ setup(name='pyFAI',
       package_dir={"pyFAI": "pyFAI-src"},
       test_suite="test",
       cmdclass=cmdclass,
-      data_files=data_files
+      data_files=data_files,
+      classifiers=filter(None, classifiers.split("\n")),
+      long_description="""PyFAI is an azimuthal integration library that tries to be fast (as fast as C
+and even more using OpenCL and GPU).
+It is based on histogramming of the 2theta/Q positions of each (center of)
+pixel weighted by the intensity of each pixel, but parallel version use a
+SparseMatrix-DenseVector multiplication.
+Neighboring output bins get also a contribution of pixels next to the border
+thanks to pixel splitting.
+Finally pyFAI provides also tools to calibrate the experimental setup using Debye-Scherrer
+rings of a reference compound.
+      """,
+      license="GPL"
       )
 
 # ########################################### #
