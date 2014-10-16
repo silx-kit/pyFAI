@@ -2146,7 +2146,7 @@ class AzimuthalIntegrator(Geometry):
         @type dark: ndarray
         @param flat: flat field image
         @type flat: ndarray
-        @param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr", "nosplit_csr", "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"
+        @param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr", "nosplit_csr", "full_csr", "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"
         @type method: str
         @param unit: Output units, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
         @type unit: pyFAI.units.Enum
