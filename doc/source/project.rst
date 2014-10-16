@@ -30,13 +30,24 @@ Repository:
 -----------
 
 The project is hosted by GitHub:
-https://github.com/kif/pyFAI
+https://github.com/pyFAI/pyFAI
 
 Which provides the `issue tracker <https://github.com/kif/pyFAI/issues>`_ in addition to Git hosting.
 Collaboration is done via Pull-Requests in github's web interface:
 
-Anybody can `fork the project <https://github.com/kif/pyFAI/fork>`_ and adapt it to his own needs (people from CEA-saclay, Synchrotron Soleil or APS did it).
-If developments are useful to other, new developments can be merged into the main branch.
+Everybody is welcome to `fork the project <https://github.com/pyFAI/pyFAI/fork>`_ and adapt it to his own needs:
+CEA-saclay,  Synchrotrons Soleil, Desy and APS have already done so.
+Collaboration is encouraged and new developments can be submitted and merged into the main branch
+via pull-requests.
+
+Getting help
+------------
+
+A mailing list: pyfai@esrf.fr is publicly available. To subscribe to it, please send an email to sympa@esrf.fr with "subscribe pyfai" as subject.
+On this mailing list, you will have information about release of the software, new features available and meet
+experts to help you solve issues related to azimuthal integration.
+This mailing list is archived and can be consulted at:
+http://www.edna-site.org/lurker/list/pyfai.en.html
 
 
 Run dependencies
@@ -137,12 +148,12 @@ List of contributors in code
 
     $ git log  --pretty='%aN##%s' | grep -v 'Merge pull' | grep -Po '^[^#]+' | sort | uniq -c | sort -rn
 
-As of 09/2014:
+As of 10/2014:
  * Jérôme Kieffer (ESRF)
  * Aurore Deschildre (ESRF)
  * Frédéric-Emmanuel Picca (Soleil)
  * Giannis Ashiotis (ESRF)
- * Dimitris Karkoulis (ESRF)
+ * Dimitrios Karkoulis (ESRF)
  * Jon Wright (ESRF)
  * Zubair Nawaz (Sesame)
  * Amund Hov (ESRF)
