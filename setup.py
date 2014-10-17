@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/10/2014"
+__date__ = "17/10/2014"
 __status__ = "stable"
 
 
@@ -156,7 +156,9 @@ ext_modules = [
     Extension('splitBBoxCSR',
               extra_compile_args=[openmp],
               extra_link_args=[openmp]),
-
+    Extension('splitPixelFullCSR',
+              extra_compile_args=[openmp],
+              extra_link_args=[openmp]),
     Extension('relabel'),
 
     Extension("bilinear",
@@ -394,6 +396,17 @@ if sphinx:
 
             build = self.get_finalized_command('build')
             sys.path.insert(0, os.path.abspath(build.build_lib))
+
+            # Copy gui files to the path:
+            dst = os.path.join(os.path.abspath(build.build_lib), "pyFAI", "gui")
+            if not os.path.isdir(dst):
+                os.makedirs(dst)
+            for i in os.listdir("gui"):
+                if i.endswith(".ui"):
+                    src = os.path.join("gui", i)
+                    idst = os.path.join(dst, i)
+                    if not os.path.exists(idst):
+                        shutil.copy(src, idst)
 
             # Build the Users Guide in HTML and TeX format
             for builder in ('html', 'latex'):

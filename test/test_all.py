@@ -31,7 +31,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__data__ = "2014-09-08"
+__data__ = "2014-10-06"
 
 import sys
 import unittest
@@ -62,6 +62,7 @@ from test_blob_detection import test_suite_all_blob_detection
 from test_marchingsquares import test_suite_all_marchingsquares
 from test_io import test_suite_all_io
 from test_calibrant import test_suite_all_calibrant
+from test_split_pixel import test_suite_all_split
 
 def test_suite_all():
     testSuite = unittest.TestSuite()
@@ -88,6 +89,7 @@ def test_suite_all():
     testSuite.addTest(test_suite_all_io())
     testSuite.addTest(test_suite_all_calibrant())
     testSuite.addTest(test_suite_all_polarization())
+    testSuite.addTest(test_suite_all_split())
     return testSuite
 
 if __name__ == '__main__':

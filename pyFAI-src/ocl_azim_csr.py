@@ -25,7 +25,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "GPLv3"
-__date__ = "04/09/2014"
+__date__ = "09/10/2014"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -66,7 +66,6 @@ class OCL_CSR_Integrator(object):
         @param checksum: pre - calculated checksum to prevent re - calculating it :)
         @param profile: store profiling elements
         """
-        self.BLOCK_SIZE = block_size  # query for warp size
         self._sem = threading.Semaphore()
         self._data = lut[0]
         self._indices = lut[1]
@@ -98,10 +97,8 @@ class OCL_CSR_Integrator(object):
         self.platform = ocl.platforms[platformid]
         self.device = self.platform.devices[deviceid]
         self.device_type = self.device.type
-        if (self.device_type == "CPU") and (self.platform.vendor == "Apple"):
-            logger.warning("This is a workaround for Apple's OpenCL on CPU: enforce BLOCK_SIZE=1")
-            self.BLOCK_SIZE = 1
-        self.workgroup_size = self.BLOCK_SIZE,
+        self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)  
+        self.workgroup_size = self.BLOCK_SIZE,  # Note this is a tuple
         self.wdim_bins = (self.bins * self.BLOCK_SIZE),
         self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
         try:
@@ -302,7 +299,7 @@ class OCL_CSR_Integrator(object):
                     dark_checksum = crc32(dark)
                 if dark_checksum != self.on_device["dark"]:
                     ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["dark"], numpy.ascontiguousarray(dark, dtype=numpy.float32))
-                    events.append("copy dark", ev)
+                    events.append(("copy dark", ev))
                     self.on_device["dark"] = dark_checksum
             else:
                 do_dark = numpy.int32(0)
@@ -313,7 +310,7 @@ class OCL_CSR_Integrator(object):
                     flat_checksum = crc32(flat)
                 if self.on_device["flat"] != flat_checksum:
                     ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["flat"], numpy.ascontiguousarray(flat, dtype=numpy.float32))
-                    events.append("copy flat", ev)
+                    events.append(("copy flat", ev))
                     self.on_device["flat"] = flat_checksum
             else:
                 do_flat = numpy.int32(0)

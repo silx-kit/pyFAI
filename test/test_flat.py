@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://forge.epn-campus.eu/projects/azimuthal
-#
-#    File: "$Id$"
+#             https://github.com/kif/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -29,21 +27,24 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/04/2013"
+__date__ = "09/10/2014"
 
 
 import unittest
 import os
 import numpy
-import logging, time
+import logging
+import time
 import sys
 import fabio
 from utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
+from pyFAI.opencl import ocl
 
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
+
 
 class TestFlat1D(unittest.TestCase):
     shape = 640, 480
@@ -59,9 +60,16 @@ class TestFlat1D(unittest.TestCase):
         r, I = self.ai.integrate1d(self.raw, self.bins, unit="r_mm", correctSolidAngle=False)
         logger.info("1D Without correction Imin=%s Imax=%s <I>=%s std=%s" % (I.min(), I.max(), I.mean(), I.std()))
         self.assertNotAlmostEqual(I.mean(), 1, 2, "Mean should not be 1")
-        self.assertFalse(I.max() - I.min() < self.eps, "deviation shaould be large")
+        self.assertFalse(I.max() - I.min() < self.eps, "deviation should be large")
     def test_correct(self):
-        for meth in ["numpy", "cython", "splitbbox", "splitpix", "lut", "lut_ocl" ]:
+        all_methods = ["numpy", "cython", "splitbbox", "splitpix", "lut", "csr"]
+        if ocl:
+            for device in ["cpu","gpu","acc"]:
+                if ocl.select_device(dtype=device):
+                    all_methods.append("lut_ocl_%s" % device)
+                    all_methods.append("csr_ocl_%s" % device)
+
+        for meth in all_methods:
             r, I = self.ai.integrate1d(self.raw, self.bins, unit="r_mm", method=meth, correctSolidAngle=False, dark=self.dark, flat=self.flat)
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s" % (meth, I.min(), I.max(), I.mean(), I.std()))
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
@@ -71,12 +79,13 @@ class TestFlat1D(unittest.TestCase):
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s" % (meth, I.min(), I.max(), I.mean(), I.std()))
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
             self.assert_(I.max() - I.min() < self.eps, "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
-        if pyFAI.opencl.ocl and pyFAI.opencl.ocl.select_device("gpu", extensions=["cl_khr_fp64"]):
+        if ocl and pyFAI.opencl.ocl.select_device("gpu", extensions=["cl_khr_fp64"]):
             meth = "xrpd_OpenCL"
             r, I = self.ai.__getattribute__(meth)(self.raw, self.bins, correctSolidAngle=False, dark=self.dark, flat=self.flat)
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s" % (meth, I.min(), I.max(), I.mean(), I.std()))
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
             self.assert_(I.max() - I.min() < self.eps, "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
+
 
 class TestFlat2D(unittest.TestCase):
     shape = 640, 480
@@ -88,6 +97,7 @@ class TestFlat2D(unittest.TestCase):
     ai.setFit2D(directDist=1, centerX=shape[1] // 2, centerY=shape[0] // 2, pixelX=1, pixelY=1)
     bins = 500
     azim = 360
+
     def test_no_correct(self):
         I, _ , _ = self.ai.integrate2d(self.raw, self.bins, self.azim, unit="r_mm", correctSolidAngle=False)
         I = I[numpy.where(I > 0)]
@@ -97,32 +107,41 @@ class TestFlat2D(unittest.TestCase):
         self.assertFalse(I.max() - I.min() < self.eps, "deviation should be large")
 
     def test_correct(self):
-        test2d = {"numpy":self.eps,
-                  "cython":self.eps,
-                  "splitbbox":self.eps,
-                  "splitpix":self.eps,
-                  "lut":self.eps,
-                  "lut_ocl":self.eps}
-        test2d_direct = {"xrpd2_numpy":0.3,#histograms are very noisy in 2D
-                  "xrpd2_histogram":0.3,   #histograms are very noisy in 2D
-                  "xrpd2_splitBBox":self.eps,
-                  "xrpd2_splitPixel":self.eps}
+        test2d = {"numpy": self.eps,
+                  "cython": self.eps,
+                  "splitbbox": self.eps,
+                  "splitpix": self.eps,
+                  "lut": self.eps,
+                  }
+        if ocl:
+            for device in ["cpu","gpu","acc"]:
+                if ocl.select_device(dtype=device):
+                    test2d["lut_ocl_%s" % device] = self.eps
+                    test2d["csr_ocl_%s" % device] = self.eps
+        test2d_direct = {"xrpd2_numpy": 0.3, # histograms are very noisy in 2D
+                         "xrpd2_histogram": 0.3,   # histograms are very noisy in 2D
+                         "xrpd2_splitBBox": self.eps,
+                         "xrpd2_splitPixel": self.eps}
+
         for meth in test2d:
+            logger.info("About to test2d %s" % meth)
             try:
-                 I, _, _ = self.ai.integrate2d(self.raw, self.bins, self.azim, unit="r_mm", method=meth, correctSolidAngle=False, dark=self.dark, flat=self.flat)
+                I, _, _ = self.ai.integrate2d(self.raw, self.bins, self.azim, unit="r_mm", method=meth, correctSolidAngle=False, dark=self.dark, flat=self.flat)
             except (MemoryError, pyFAI.opencl.pyopencl.MemoryError):
-                 logger.warning("Got MemoryError from OpenCL device")
-                 continue
+                logger.warning("Got MemoryError from OpenCL device")
+                continue
             I = I[numpy.where(I > 0)]
             logger.info("2D method:%s Imin=%s Imax=%s <I>=%s std=%s" % (meth, I.min(), I.max(), I.mean(), I.std()))
             self.assertAlmostEqual(I.mean(), 1, 2, "Mean should be 1 in %s" % meth)
             self.assert_(I.max() - I.min() < test2d[meth], "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
         for meth in test2d_direct:
+            logger.info("About to test2d_direct %s" % meth)
             I, _, _ = self.ai.__getattribute__(meth)(self.raw, self.bins, self.azim, correctSolidAngle=False, dark=self.dark, flat=self.flat)
             I = I[numpy.where(I > 0)]
             logger.info("1D method:%s Imin=%s Imax=%s <I>=%s std=%s" % (meth, I.min(), I.max(), I.mean(), I.std()))
             self.assert_(abs(I.mean() - 1) < test2d_direct[meth], "Mean should be 1 in %s" % meth)
             self.assert_(I.max() - I.min() < test2d_direct[meth], "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
+
 
 def test_suite_all_Flat():
     testSuite = unittest.TestSuite()

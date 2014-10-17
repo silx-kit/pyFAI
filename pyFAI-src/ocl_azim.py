@@ -57,7 +57,7 @@ class Integrator1d(object):
     """
     Attempt to implements ocl_azim using pyopencl
     """
-
+    BLOCK_SIZE = 128
     def __init__(self, filename=None):
         """
 

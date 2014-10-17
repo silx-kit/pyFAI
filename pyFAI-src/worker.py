@@ -92,6 +92,7 @@ import threading, os
 import logging
 logger = logging.getLogger("pyFAI.worker")
 import numpy
+import fabio
 from .detectors import detector_factory
 from .azimuthalIntegrator import AzimuthalIntegrator
 from . import units
@@ -281,7 +282,7 @@ class Worker(object):
         if "poni" in config:
             poni = config["poni"]
             if poni and os.path.isfile(poni):
-                self.ai = pyFAI.load(poni)
+                self.ai = AzimuthalIntegrator.sload(poni)
 
         detector = config.get("detector", "detector")
         self.ai.detector = detector_factory(detector)
@@ -431,6 +432,7 @@ class Worker(object):
         with self._sem:
             self._normalization_factor = value
 
+
 class PixelwiseWorker(object):
     """
     Simple worker doing dark, flat, solid angle and polarization correction
@@ -481,14 +483,93 @@ class PixelwiseWorker(object):
         #       ^^^^   this is why data is mandatory !
         if self.dummy is not None:
             if self.delta_dummy is None:
-                mask = numpy.logical_or((data == self.dummy), self.mask)
+                self.mask = numpy.logical_or((data == self.dummy), self.mask)
             else:
-                mask = numpy.logical_or(abs(data - self.dummy) <= self.delta_dummy,
+                self.mask = numpy.logical_or(abs(data - self.dummy) <= self.delta_dummy,
                                         self.mask)
             do_mask = True
         else:
             do_mask = (self.mask is not False)
-        data = numpy.ascontiguousarray(data, dtype=numpy.float32)
+        data = numpy.array(data, dtype=numpy.float32) #Explicitely make an copy !
+        if self.dark:
+            data -= self.dark
+        if self.flat:
+            data /= self.flat
+        if self.solidangle:
+            data /= self.solidangle
+        if self.polarization:
+            data /= self.polarization
+        if normalization:
+            data /= normalization
+        if do_mask:
+            data[self.mask] = self.dummy or 0
+        return data
+
+
+class DistortionWorker(object):
+    """
+    Simple worker doing dark, flat, solid angle and polarization correction
+    """
+    def __init__(self, detector=None, dark=None, flat=None, solidangle=None, polarization=None, 
+                 mask=None, dummy=None, delta_dummy=None, device=None):
+        """
+        @param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context 
+        """
+        
+        self.ctx = None
+        if detector is None:
+            self.distortion = None
+        else:
+            self.distortion = pyFAI.distortion()
+            #TODO
+        if dark is not None:
+            self.dark = numpy.ascontiguousarray(dark, dtype=numpy.float32)
+        else:
+            self.dark = None
+        if flat is not None:
+            self.flat = numpy.ascontiguousarray(flat, dtype=numpy.float32)
+        else:
+            self.flat = None
+        if solidangle is not None:
+            self.solidangle = numpy.ascontiguousarray(solidangle, dtype=numpy.float32)
+        else:
+            self.solidangle = None
+        if polarization is not None:
+            self.polarization = numpy.ascontiguousarray(polarization, dtype=numpy.float32)
+        else:
+            self.polarization = None
+
+        if mask is None:
+            self.mask = False
+        elif mask.min() < 0 and mask.max() == 0:  # 0 is valid, <0 is invalid
+            self.mask = (mask < 0)
+        else:
+            self.mask = mask.astype(bool)
+
+        self.dummy = dummy
+        self.delta_dummy = delta_dummy
+        if device is not None:
+            logger.warning("GPU is not yet implemented")
+
+    def process(self, data, normalization=None):
+        """
+        Process the data and apply a normalization factor
+        @param data: input data
+        @param normalization: normalization factor
+        @return processed data
+        """
+        shape = data.shape
+        #       ^^^^   this is why data is mandatory !
+        if self.dummy is not None:
+            if self.delta_dummy is None:
+                self.mask = numpy.logical_or((data == self.dummy), self.mask)
+            else:
+                self.mask = numpy.logical_or(abs(data - self.dummy) <= self.delta_dummy,
+                                        self.mask)
+            do_mask = True
+        else:
+            do_mask = (self.mask is not False)
+        data = numpy.array(data, dtype=numpy.float32) #Explicitely make an copy !
         if self.dark:
             data -= self.dark
         if self.flat:
