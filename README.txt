@@ -29,7 +29,7 @@ Installation
 pyFAI can be downloaded from the http://forge.epn-campus.eu/projects/azimuthal/files.
 Presently the source code has been distributed as a zip package and a compressed
 tarball. Download either one and unpack it.
-Developement is done on Github: https://github.com/kif/pyFAI
+Developement is done on Github: https://github.com/pyFAI/pyFAI
 
 e.g.
 ::
@@ -48,15 +48,14 @@ Build it & test it. For test pyFAI downloads test images (you may have to setup 
 
 and install pyFAI with
 ::
-    python setup.py install
+    sudo python setup.py install
 
-Most likely you will need to do this with root privileges (e.g. put sudo
-in front of the command).
+Most likely you will need to do this with root privileges, sudo requests a passwors to do-so
 
 
 The newest development version can be obtained by checking it out from the git repository.
 ::
-    git clone https://github.com/kif/pyFAI.git
+    git clone https://github.com/pyFAI/pyFAI.git
     cd pyFAI
     sudo python setup.py install
 
@@ -121,7 +120,7 @@ MacOSX
 ------
 
 You are advised to build pyFAI with the GCC compiler, clang (<3.5) laking the support of OpenMP.
-If you use Xcode5, append the "--no-openmp" option to desactivate multithreading in binary modules
+If you use Xcode5, append the "--no-openmp" option to deactivate multithreading in binary modules
 
 Windows
 -------
@@ -130,6 +129,13 @@ Under 32 bits windows, pyFAI can be built using The MinGW compiler. Unfortunatel
 pyFAI will be limited to small images as the memory consumption, limited to 2GB
 under windows, easy easily reached. The VisualStudio C++ compiler works as well.
 With 64 bits windows, the Visual Studio C++ compiler is the only one known to work correctly.
+
+Getting help
+============
+
+A mailing-list, pyfai@esrf.fr, is available to get help on the program and how to use it. 
+One needs to subscribe by sending an email to sympa@esrf.fr with a subject "subscribe pyfai".
+
 
 Maintainer
 ==========

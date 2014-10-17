@@ -91,3 +91,7 @@
 		try to be compatible with both PySide and PyQt4 ... the uic stuff is untested and probably buggy #130
 		Deactivate the automatic saturation correction by default. now it is opt-in #131
 0.10.0:	10/2014
+		Correct Caglioti's formula
+		Update tests and OpenCL
+		Compatibility with MacOSX
+0.10.1: 
