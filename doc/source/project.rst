@@ -25,6 +25,7 @@ The OpenCL code has been tested using:
 * AMD OpenCL v1.2 on Linux and Windows (CPU and GPU device)
 * Apple OpenCL v1.2 on MacOSX  (CPU and GPU)
 * Beignet OpenCL v1.2 on Linux (GPU device)
+* Pocl OpenCL v1.2 on Linux (CPU device)
 
 Repository:
 -----------
@@ -36,18 +37,19 @@ Which provides the `issue tracker <https://github.com/kif/pyFAI/issues>`_ in add
 Collaboration is done via Pull-Requests in github's web interface:
 
 Everybody is welcome to `fork the project <https://github.com/pyFAI/pyFAI/fork>`_ and adapt it to his own needs:
-CEA-saclay,  Synchrotrons Soleil, Desy and APS have already done so.
+CEA-Saclay, Synchrotrons Soleil, Desy and APS have already done so.
 Collaboration is encouraged and new developments can be submitted and merged into the main branch
 via pull-requests.
 
 Getting help
 ------------
 
-A mailing list: pyfai@esrf.fr is publicly available. To subscribe to it, please send an email to sympa@esrf.fr with "subscribe pyfai" as subject.
+A mailing list: pyfai@esrf.fr is publicly available.
+To subscribe, send an email to sympa@esrf.fr with "subscribe pyfai" as subject.
 On this mailing list, you will have information about release of the software, new features available and meet
 experts to help you solve issues related to azimuthal integration.
 This mailing list is archived and can be consulted at:
-http://www.edna-site.org/lurker/list/pyfai.en.html
+`http://www.edna-site.org/lurker <http://www.edna-site.org/lurker/list/pyfai.en.html>`_
 
 
 Run dependencies
@@ -61,6 +63,7 @@ Run dependencies
 * h5py (optional)
 * pyopencl (optional)
 * fftw (optional)
+* pymca (optional)
 * PyQt4 or PySide (for the graphical user interface)
 
 Build dependencies:
@@ -99,7 +102,6 @@ Test suites
 
 To run the test an internet connection is needed as 200MB of test images will be downloaded.
 ............................................................................................
-
     python setup.py build test
 
 Setting the environment variable http_proxy can be necessary (depending on your network):
@@ -116,24 +118,24 @@ pyFAI runs under linux, MacOSX and Windows (in each case in 32 and 64 bits)
    :header: "Name", "Stmts", "Miss", "Cover"
    :widths: 50, 8, 8, 8
 
-   "pyFAI.__init__", "  10","  3","70%"
-   "pyFAI.azimuthalIntegrator ", "1194","417","65%"
-   "pyFAI.blob_detection", " 521","323","38%"
-   "pyFAI.calibrant ", " 196"," 69","65%"
-   "pyFAI.detectors ", " 993","248","75%"
-   "pyFAI.geometry", " 768","182","76%"
-   "pyFAI.geometryRefinement", " 371","205","45%"
-   "pyFAI.gui_utils ", "  53"," 33","38%"
-   "pyFAI.io", " 421","189","55%"
-   "pyFAI.massif", " 187"," 59","68%"
-   "pyFAI.ocl_azim", " 307"," 91","70%"
-   "pyFAI.ocl_azim_csr", " 264"," 73","72%"
-   "pyFAI.ocl_azim_lut", " 260"," 57","78%"
-   "pyFAI.opencl", " 143"," 40","72%"
-   "pyFAI.peak_picker ", " 566","413","27%"
-   "pyFAI.spline", " 329","220","33%"
-   "pyFAI.units ", "  40","  5","88%"
-   "pyFAI.utils ", " 664","300","55%"
+   "pyFAI.__init__", "10", "3", "70%"
+   "pyFAI.azimuthalIntegrator", "1205", "330", "73%"
+   "pyFAI.blob_detection", "521", "323", "38%"
+   "pyFAI.calibrant ", "196", "69", "65%"
+   "pyFAI.detectors ", "993", "248", "75%"
+   "pyFAI.geometry", "768", "182", "76%"
+   "pyFAI.geometryRefinement", "371", "205", "45%"
+   "pyFAI.gui_utils", "53", "33", "38%"
+   "pyFAI.io", "421", "189", "55%"
+   "pyFAI.massif", "187", "59", "68%"
+   "pyFAI.ocl_azim", "307", "91", "70%"
+   "pyFAI.ocl_azim_csr", "261", "55", "79%"
+   "pyFAI.ocl_azim_lut", "258", "55", "79%"
+   "pyFAI.opencl", "151", "44", "71%"
+   "pyFAI.peak_picker ", "592", "439", "26%"
+   "pyFAI.spline", "329", "220", "33%"
+   "pyFAI.units ", "40", "5", "88%"
+   "pyFAI.utils ", "664", "300", "55%"
 
 Note that the test coverage tool does not count lines of Cython, nor those of OpenCL
 
