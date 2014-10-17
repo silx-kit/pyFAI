@@ -16,4 +16,4 @@ Done list
 * port spline calculation to opencl
 * add mask on calibration/recalibration tools (Done v0.8)
 * implement LUT on 2D caking as well + OpenCL version
-* binning at the Azimuthal Integrator level ?
+* binning at the Azimuthal Integrator level

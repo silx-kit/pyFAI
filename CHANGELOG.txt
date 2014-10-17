@@ -92,6 +92,6 @@
 		Deactivate the automatic saturation correction by default. now it is opt-in #131
 0.10.0:	10/2014
 		Correct Caglioti's formula
-		Update tests and OpenCL
-		Compatibility with MacOSX
-0.10.1: 
+		Update tests and OpenCL -> works with Beignet and pocl open source drivers
+		Compatibility with MacOSX and windows
+0.10.1: 10/2014

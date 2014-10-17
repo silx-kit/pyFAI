@@ -33,14 +33,14 @@ Developement is done on Github: https://github.com/pyFAI/pyFAI
 
 e.g.
 ::
-    tar xvzf pyFAI-0.10.0.tar.gz
+    tar xvzf pyFAI-0.10.1.tar.gz
 or
 ::
-    unzip pyFAI-0.10.0.zip
+    unzip pyFAI-0.10.1.zip
 
-All files are unpacked into the directory pyFAI-0.10.0.
+All files are unpacked into the directory pyFAI-0.10.1.
 ::
-    cd pyFAI-0.10.0
+    cd pyFAI-0.10.1
 
 Build it & test it. For test pyFAI downloads test images (you may have to setup a proxy configuration like export http_proxy=http://proxy.site.org:3128):
 ::
