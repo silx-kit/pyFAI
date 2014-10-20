@@ -1,28 +1,38 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: Azimuthal integration
-#             https://github.com/kif/pyFAI
+#    Project: Fast Azimuthal integration
+#             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+# 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+# 
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
+__doc__ = """
+Calculates histograms of pos0 (tth) weighted by Intensity
+
+Splitting is done on the pixel's bounding box like fit2D, 
+reverse implementation based on a sparse matrix multiplication
+"""
+__author__ = "Jerome Kieffer"
+__contact__ = "Jerome.kieffer@esrf.fr"
+__date__ = "20141020"
+__status__ = "stable"
+__license__ = "GPLv3+"
 import cython
 import os
 import sys
@@ -40,7 +50,7 @@ cdef struct lut_point:
     numpy.int32_t idx
     numpy.float32_t coef
     
-dtype_lut = numpy.dtype([("idx",numpy.int32), ("coef",numpy.float32)])
+dtype_lut = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])
 
 try:
     from fastcrc import crc32
@@ -271,7 +281,7 @@ class HistoBBox1d(object):
                         outMax[i] += 1
 
         lut_size = outMax.max()
-        #just recycle the outMax array
+        # just recycle the outMax array
         memset(&outMax[0], 0, bins * sizeof(numpy.int32_t))
 
         self.lut_size = lut_size
@@ -404,7 +414,7 @@ class HistoBBox1d(object):
             numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
             float[:] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
 
-            #Ugly hack against bug #89: https://github.com/kif/pyFAI/issues/89
+            #Ugly hack against bug #89: https://github.com/pyFAI/pyFAI/issues/89
             int rc_before, rc_after
         rc_before = sys.getrefcount(self._lut)
         cdef lut_point[:, :] lut = self._lut
@@ -549,7 +559,7 @@ class HistoBBox1d(object):
             float c_data, y_data, t_data
             float c_count, y_count, t_count
 
-        #Ugly hack against bug #89: https://github.com/kif/pyFAI/issues/89
+        #Ugly hack against bug #89: https://github.com/pyFAI/pyFAI/issues/89
         cdef int rc_before, rc_after
         rc_before = sys.getrefcount(self._lut)
         cdef lut_point[:,:] lut = self._lut

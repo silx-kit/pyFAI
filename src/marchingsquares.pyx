@@ -25,6 +25,15 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+"""
+Cythonized version of the marching square function for "isocontour" plot
+"""
+__authors__ = ["Almar Klein", "Jerome Kieffer"]
+__contact__ = "Jerome.kieffer@esrf.fr"
+__date__ = "20/10/2014"
+__status__ = "stable"
+__license__ = "BSD-3 clauses"
+
 # Cython specific imports
 
 import numpy 
