@@ -48,6 +48,11 @@ try:
     from . import relabel as relabelCython
 except:
     relabelCython = None
+try:
+    from .directories import data_dir
+except ImportError:
+    data_dir = None
+
 from scipy.optimize.optimize import fmin, fminbound
 import scipy.ndimage.filters
 logger = logging.getLogger("pyFAI.utils")
@@ -889,6 +894,11 @@ def _get_data_path(filename):
     @param filename: the name of the requested data file.
     @type filename: str
 
+    Can search root of data directory in:
+    - Environment variable PYFAI_DATA
+    - path hard coded into pyFAI.directories.data_dir
+    - where this file is installed.
+
     In the future ....
     This method try to find the requested ui-name following the
     xfreedesktop recommendations. First the source directory then
@@ -904,7 +914,7 @@ def _get_data_path(filename):
 #                                                 'data',
 #                                                 filename))
 #    if not os.path.exists(real_filename):
-    resources = [os.path.dirname(__file__)]
+    resources = [os.environ.get("PYFAI_DATA"), data_dir, os.path.dirname(__file__)]
     try:
         import xdg.BaseDirectory
         resources += xdg.BaseDirectory.load_data_paths("pyFAI")
@@ -912,14 +922,14 @@ def _get_data_path(filename):
         pass
 
     for resource in resources:
+        if not resource:
+            continue
         real_filename = os.path.join(resource, filename)
         if os.path.exists(real_filename):
             return real_filename
     else:
-        raise Exception("Can not find the [%s] resource, "
+        raise RuntimeError("Can not find the [%s] resource, "
                         " something went wrong !!!" % (real_filename,))
-#    else:
-#        return real_filename
 
 
 def get_ui_file(filename):
