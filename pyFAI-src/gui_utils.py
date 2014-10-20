@@ -38,7 +38,7 @@ __status__ = "production"
 
 import sys
 import matplotlib
-has_gui = True
+has_Qt = True
 if ('PySide' in sys.modules):
     from PySide import QtGui, QtCore, QtUiTools, QtWebKit
     from PySide.QtCore import SIGNAL, Signal
@@ -89,13 +89,18 @@ else:
         from PyQt4 import QtGui, QtCore, uic, QtWebKit
         from PyQt4.QtCore import SIGNAL, pyqtSignal as Signal
     except ImportError:
-        has_gui = False
-if has_gui:
+        has_Qt = False
+if has_Qt:
     matplotlib.use('Qt4Agg')
     from matplotlib.backends import backend_qt4 as backend
-from matplotlib import pyplot
-import pylab
-
+    from matplotlib import pyplot
+    from matplotlib import pylab
+else:
+    from matplotlib import pyplot
+    from matplotlib import pylab
+    from matplotlib.backends import backend
+    QtGui = QtCore = QtUiTools = QtWebKit = loadUi = None
+    SIGNAL = Signal = None
 
 main_loop = False
 

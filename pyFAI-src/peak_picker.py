@@ -38,8 +38,10 @@ import types
 import array
 import operator
 import numpy
-from .gui_utils import pylab, update_fig, maximize_fig, QtGui, backend
 from . import gui_utils
+if gui_utils.has_Qt:
+    from .gui_utils import pylab, update_fig, maximize_fig, QtGui, backend
+
 import fabio
 from .utils import deprecated, percentile
 from .reconstruct import reconstruct
