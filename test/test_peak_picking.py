@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: Azimuthal integration
-#             https://forge.epn-campus.eu/projects/azimuthal
-#
-#    File: "$Id$"
+#    Project: Fast Azimuthal Integration
+#             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -22,6 +20,8 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
 #
 "test suite for peak picking class"
 

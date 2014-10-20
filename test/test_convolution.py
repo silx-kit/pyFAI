@@ -1,9 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: PyFAI: https://github.com/kif/pyFAI
+#    Project: Fast Azimuthal Integration
+#             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#
+#    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 
 "test suite for convolution cython code"
 
@@ -11,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme Kieffer"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/03/2014"
+__date__ = "20/10/2014"
 
 import sys
 import unittest

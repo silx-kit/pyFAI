@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: Azimuthal integration
-#             https://github.com/kif/pyFAI
+#    Project: Fast Azimuthal Integration
+#             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
-#    author: Picca Frédéric-Emmanuel <picca@synchrotron-soleil.fr>
+#    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -21,13 +21,14 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+
 "test suite for masked arrays"
 
 __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/10/2014"
+__date__ = "20/10/2014"
 
 import sys
 import os

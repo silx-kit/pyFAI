@@ -2,36 +2,44 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
-#             https://github.com/kif/pyFAI
+#             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+# 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+# 
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+__author__ = "Jerome Kieffer"
+__license__ = "GPLv3+"
+__date__ = "20/10/2014"
+__copyright__ = "2011-2014, ESRF"
+__contact__ = "jerome.kieffer@esrf.fr"
 
 import cython
 cimport numpy
 import numpy
-from cython.parallel import prange  #, threadlocal
-from libc.math cimport floor,ceil, fabs
-from libc.string cimport memset
-import logging, threading
-import types, os, sys, time
-logger = logging.getLogger("pyFAI._distortion")
+from cython.parallel import prange  
+from libc.math cimport floor, ceil, fabs
+import logging
+import threading
+import types
+import os
+import sys
+import time
+logger = logging.getLogger("pyFAI._distortionCSR")
 from .detectors import detector_factory
 from .utils import timeit
 import fabio
@@ -42,41 +50,20 @@ cdef struct lut_point:
     numpy.int32_t idx
     numpy.float32_t coef
 
-cdef bint NEED_DECREF = sys.version_info<(2,7) and numpy.version.version<"1.5"
+cdef bint NEED_DECREF = sys.version_info < (2, 7) and numpy.version.version < "1.5"
 
-
-cdef inline float min4f(float a, float b, float c, float d) nogil:
-    """Calculates the min of 4 float numbers"""
-    if (a <= b) and (a <= c) and (a <= d):
-        return a
-    if (b <= a) and (b <= c) and (b <= d):
-        return b
-    if (c <= a) and (c <= b) and (c <= d):
-        return c
-    else:
-        return d
-
-cdef inline float max4f(float a, float b, float c, float d) nogil:
-    """Calculates the max of 4 float numbers"""
-    if (a >= b) and (a >= c) and (a >= d):
-        return a
-    if (b >= a) and (b >= c) and (b >= d):
-        return b
-    if (c >= a) and (c >= b) and (c >= d):
-        return c
-    else:
-        return d
 
 cpdef inline float calc_area(float I1, float I2, float slope, float intercept) nogil:
     "Calculate the area between I1 and I2 of a line with a given slope & intercept"
     return 0.5 * (I2 - I1) * (slope * (I2 + I1) + 2 * intercept)
 
+
 @cython.cdivision(True)
 @cython.boundscheck(False)
-cdef inline void integrate(float[:,:] box, float start, float stop, float slope, float intercept) nogil:
+cdef inline void integrate(float[:, :] box, float start, float stop, float slope, float intercept) nogil:
     "Integrate in a box a line between start and stop, line defined by its slope & intercept "
     cdef int i, h = 0
-    cdef float P,dP, A, AA, dA, sign
+    cdef float P, dP, A, AA, dA, sign
     if start < stop:  # positive contribution
         P = ceil(start)
         dP = P - start
@@ -122,7 +109,7 @@ cdef inline void integrate(float[:,:] box, float start, float stop, float slope,
                         if dA > AA:
                             dA = AA
                             AA = -1
-                        box[i , h] += sign * dA
+                        box[i, h] += sign * dA
                         AA -= dA
                         h += 1
             # Section Pn->B
@@ -142,7 +129,7 @@ cdef inline void integrate(float[:,:] box, float start, float stop, float slope,
                         box[(<int> floor(P)), h] += sign * dA
                         AA -= dA
                         h += 1
-    elif    start > stop:  # negative contribution. Nota is start=stop: no contribution
+    elif start > stop:  # negative contribution. Nota is start=stop: no contribution
         P = floor(start)
         if stop > P:  # start and stop are in the same unit
             A = calc_area(start, stop, slope, intercept)
@@ -215,7 +202,7 @@ class Distortion(object):
     It is also able to apply an inversion of the correction.
 
     """
-    def __init__(self, detector="detector", shape=None, compute_device="Host", foo=32): # padding=1):
+    def __init__(self, detector="detector", shape=None, compute_device="Host", workgroup_size=32):
         """
         @param detector: detector instance or detector name
         """
@@ -237,14 +224,11 @@ class Distortion(object):
         self.delta0 = self.delta1 = None  # max size of an pixel on a regular grid ...
         self.integrator = None
         self.compute_device = compute_device
-        self.workgroup_size = foo
-#        self.padding = padding
-
+        self.workgroup_size = workgroup_size
 
     def __repr__(self):
         return os.linesep.join(["Distortion correction for detector:",
                                 self.detector.__repr__()])
-
 
     def calc_pos(self):
         if self.pos is None:
@@ -258,9 +242,9 @@ class Distortion(object):
                     pos_corners[:, :, 1] /= self.detector.pixel2
                     pos = numpy.empty((self.shape[0], self.shape[1], 4, 2), dtype=numpy.float32)
                     pos[:, :, 0, :] = pos_corners[:-1, :-1]
-                    pos[:, :, 1, :] = pos_corners[:-1, 1: ]
-                    pos[:, :, 2, :] = pos_corners[1: , 1: ]
-                    pos[:, :, 3, :] = pos_corners[1: , :-1]
+                    pos[:, :, 1, :] = pos_corners[:-1, 1:]
+                    pos[:, :, 2, :] = pos_corners[1:, 1:]
+                    pos[:, :, 3, :] = pos_corners[1:, :-1]
                     self.pos = pos
                     self.delta0 = int((numpy.ceil(pos_corners[1:, :, 0]) - numpy.floor(pos_corners[:-1, :, 0])).max())
                     self.delta1 = int((numpy.ceil(pos_corners[:, 1:, 1]) - numpy.floor(pos_corners[:, :-1, 1])).max())
@@ -280,7 +264,7 @@ class Distortion(object):
         """
         cdef int i, j, k, l, shape0, shape1
         cdef numpy.ndarray[numpy.float32_t, ndim = 4] pos
-        cdef int[:,:] pos0min, pos1min, pos0max, pos1max
+        cdef int[:, :] pos0min, pos1min, pos0max, pos1max
         cdef numpy.ndarray[numpy.int32_t, ndim = 2] lut_size
         if self.pos is None:
             pos = self.calc_pos()
@@ -290,24 +274,18 @@ class Distortion(object):
             with self._sem:
                 if self.lut_size is None:
                     shape0, shape1 = self.shape
-                    pos0min = numpy.floor(pos[:, :, :, 0].min(axis= -1)).astype(numpy.int32).clip(0, self.shape[0])
-                    pos1min = numpy.floor(pos[:, :, :, 1].min(axis= -1)).astype(numpy.int32).clip(0, self.shape[1])
-                    pos0max = (numpy.ceil(pos[:, :, :, 0].max(axis= -1)).astype(numpy.int32) + 1).clip(0, self.shape[0])
-                    pos1max = (numpy.ceil(pos[:, :, :, 1].max(axis= -1)).astype(numpy.int32) + 1).clip(0, self.shape[1])
+                    pos0min = numpy.floor(pos[:, :, :, 0].min(axis=-1)).astype(numpy.int32).clip(0, self.shape[0])
+                    pos1min = numpy.floor(pos[:, :, :, 1].min(axis=-1)).astype(numpy.int32).clip(0, self.shape[1])
+                    pos0max = (numpy.ceil(pos[:, :, :, 0].max(axis=-1)).astype(numpy.int32) + 1).clip(0, self.shape[0])
+                    pos1max = (numpy.ceil(pos[:, :, :, 1].max(axis=-1)).astype(numpy.int32) + 1).clip(0, self.shape[1])
                     lut_size = numpy.zeros(self.shape, dtype=numpy.int32)
                     with nogil:
                         for i in range(shape0):
                             for j in range(shape1):
-                                for k in range(pos0min[i, j],pos0max[i, j]):
-                                    for l in range(pos1min[i, j],pos1max[i, j]):
-                                        lut_size[k,l] += 1
+                                for k in range(pos0min[i, j], pos0max[i, j]):
+                                    for l in range(pos1min[i, j], pos1max[i, j]):
+                                        lut_size[k, l] += 1
                     self.bin_size = lut_size.ravel()
-                    #self.bin_size_padded = numpy.empty(shape=self.bin_size.shape, dtype=numpy.int32)
-                    #for i in range(self.bins):
-                        #self.bin_size_padded[i] = (self.bin_size[i] + self.padding - 1) & ~(self.padding - 1)
-
-                    
-                    #self.lut_size = self.bin_size_padded.sum()
                     self.lut_size = self.bin_size.sum()
                     return lut_size
 
@@ -315,57 +293,51 @@ class Distortion(object):
     @cython.boundscheck(False)
     @cython.cdivision(True)
     def calc_LUT(self):
-        cdef int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1, size
-        cdef int offset0, offset1, box_size0, box_size1, bins, tmp_index  #, index_tmp_index
-        cdef numpy.int32_t k, idx=0
-        cdef float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area, value
-#        cdef numpy.ndarray[numpy.float32_t, ndim = 3]  pos
-        cdef float[:,:,:,:] pos
-#        cdef numpy.ndarray[lut_point, ndim = 3] lut
-        cdef numpy.ndarray[numpy.int32_t, ndim = 2] outMax = numpy.zeros(self.shape, dtype=numpy.int32)
-        cdef  float[:,:] buffer
-        cdef numpy.ndarray[numpy.int32_t, ndim = 1] indptr
-        cdef numpy.ndarray[numpy.int32_t, ndim = 1] indices 
-        cdef numpy.ndarray[numpy.float32_t, ndim = 1] data
-        cdef numpy.ndarray[numpy.int32_t, ndim = 1] bin_size
-#        cdef numpy.ndarray[numpy.int32_t, ndim = 1] bin_size_padded
-        
+        cdef:
+            int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1, size
+            int offset0, offset1, box_size0, box_size1, bins, tmp_index  
+            numpy.int32_t k, idx=0
+            float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area, value
+            float[:, :, :, :] pos
+            numpy.ndarray[numpy.int32_t, ndim = 2] outMax = numpy.zeros(self.shape, dtype=numpy.int32)
+            float[:, :] buffer
+            numpy.ndarray[numpy.int32_t, ndim = 1] indptr
+            numpy.ndarray[numpy.int32_t, ndim = 1] indices 
+            numpy.ndarray[numpy.float32_t, ndim = 1] data
+            numpy.ndarray[numpy.int32_t, ndim = 1] bin_size
 
-        #cdef float[:,:,:] pos
         shape0, shape1 = self.shape
  
         bin_size = self.bin_size
-#        bin_size_padded = self.bin_size_padded
 
         if self.lut_size is None:
             self.calc_LUT_size()
         if self.LUT is None:
             with self._sem:
                 if self.LUT is None:
-                    pos = self.pos#.reshape(shape0,shape1,4*sizeof(float))
+                    pos = self.pos
                     
                     indices = numpy.zeros(shape=self.lut_size, dtype=numpy.int32)
                     data = numpy.zeros(shape=self.lut_size, dtype=numpy.float32)
                     
-                    bins = shape0*shape1
-                    indptr = numpy.zeros(bins+1, dtype=numpy.int32)
-                    #indptr[1:] = self.bin_size_padded.cumsum(dtype=numpy.int32)
+                    bins = shape0 * shape1
+                    indptr = numpy.zeros(bins + 1, dtype=numpy.int32)
                     indptr[1:] = bin_size.cumsum(dtype=numpy.int32)
                     
-                    indices_size = self.lut_size*sizeof(numpy.int32)
-                    data_size = self.lut_size*sizeof(numpy.float32)
-                    indptr_size = bins*sizeof(numpy.int32)
+                    indices_size = self.lut_size * sizeof(numpy.int32)
+                    data_size = self.lut_size * sizeof(numpy.float32)
+                    indptr_size = bins * sizeof(numpy.int32)
                     
-                    logger.info("CSR matrix: %.3f MByte"%((indices_size+data_size+indptr_size)/1.0e6))
+                    logger.info("CSR matrix: %.3f MByte" % ((indices_size+data_size+indptr_size)/1.0e6))
                     buffer = numpy.empty((self.delta0, self.delta1),dtype=numpy.float32)
                     buffer_size = self.delta0 * self.delta1 * sizeof(float)
-                    logger.info("Max pixel size: %ix%i; Max source pixel in target: %i"%(buffer.shape[1],buffer.shape[0], self.lut_size))
+                    logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (buffer.shape[1],buffer.shape[0], self.lut_size))
                     with nogil:
                         # i,j, idx are indices of the raw image uncorrected
                         for i in range(shape0):
                             for j in range(shape1):
-                                #reinit of buffer
-                                memset(&buffer[0,0], 0, buffer_size)
+                                # reinit of buffer
+                                buffer[:, :] = 0
                                 A0 = pos[i, j, 0, 0]
                                 A1 = pos[i, j, 0, 1]
                                 B0 = pos[i, j, 1, 0]
@@ -374,10 +346,10 @@ class Distortion(object):
                                 C1 = pos[i, j, 2, 1]
                                 D0 = pos[i, j, 3, 0]
                                 D1 = pos[i, j, 3, 1]
-                                offset0 = (<int> floor(min4f(A0, B0, C0, D0)))
-                                offset1 = (<int> floor(min4f(A1, B1, C1, D1)))
-                                box_size0 = (<int> ceil(max4f(A0, B0, C0, D0))) - offset0
-                                box_size1 = (<int> ceil(max4f(A1, B1, C1, D1))) - offset1
+                                offset0 = (<int> floor(min(A0, B0, C0, D0)))
+                                offset1 = (<int> floor(min(A1, B1, C1, D1)))
+                                box_size0 = (<int> ceil(max(A0, B0, C0, D0))) - offset0
+                                box_size1 = (<int> ceil(max(A1, B1, C1, D1))) - offset1
                                 A0 -= <float> offset0
                                 A1 -= <float> offset1
                                 B0 -= <float> offset0
@@ -446,7 +418,7 @@ class Distortion(object):
         @param image: 2D-array with the image
         @return: corrected 2D image
         """
-        cdef int i,j, idx, size, bins
+        cdef int i, j, idx, size, bins
         cdef float coef, tmp
         cdef float[:] lout, lin, data
         cdef int[:] indices, indptr
@@ -457,30 +429,30 @@ class Distortion(object):
         indptr = self.LUT[2]
         bins = self.bins
         img_shape = image.shape
-        if (img_shape[0]<self.shape[0]) or (img_shape[1]<self.shape[1]):
+        if (img_shape[0] < self.shape[0]) or (img_shape[1] < self.shape[1]):
             new_image = numpy.zeros(self.shape, dtype=numpy.float32)
-            new_image[:img_shape[0],:img_shape[1]] = image
+            new_image[:img_shape[0], :img_shape[1]] = image
             image = new_image
-            logger.warning("Patching image as image is %ix%i and spline is %ix%i"%(img_shape[1],img_shape[0],self.shape[1],self.shape[0]))
+            logger.warning("Patching image as image is %ix%i and spline is %ix%i" % (img_shape[1], img_shape[0], self.shape[1], self.shape[0]))
 
         out = numpy.zeros(self.shape, dtype=numpy.float32)
         lout = out.ravel()
-        lin = numpy.ascontiguousarray(image.ravel(),dtype=numpy.float32)
+        lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
         size = lin.size
 
         for i in prange(bins, nogil=True, schedule="static"):
-            for j in range(indptr[i],indptr[i+1]):
+            for j in range(indptr[i], indptr[i + 1]):
                 idx = indices[j]
                 coef = data[j]
-                if coef<=0:
+                if coef <= 0:
                     continue
-                if idx>=size:
+                if idx >= size:
                     with gil:
-                        logger.warning("Accessing %i >= %i !!!"%(idx,size))
+                        logger.warning("Accessing %i >= %i !!!" % (idx, size))
                         continue
                 tmp = lout[i] + lin[idx] * coef
                 lout[i] = tmp 
-        return out[:img_shape[0],:img_shape[1]]
+        return out[:img_shape[0], :img_shape[1]]
 
     @cython.wraparound(False)
     @cython.boundscheck(False)
@@ -497,15 +469,15 @@ class Distortion(object):
                 self.calc_LUT()
             self.integrator = ocl_azim_csr_dis.OCL_CSR_Integrator(self.LUT, self.bins, "GPU", block_size=self.workgroup_size)
         img_shape = image.shape
-        if (img_shape[0]<self.shape[0]) or (img_shape[1]<self.shape[1]):
+        if (img_shape[0] < self.shape[0]) or (img_shape[1] < self.shape[1]):
             new_image = numpy.zeros(self.shape, dtype=numpy.float32)
-            new_image[:img_shape[0],:img_shape[1]] = image
+            new_image[:img_shape[0], :img_shape[1]] = image
             image = new_image
-            logger.warning("Patching image as image is %ix%i and spline is %ix%i"%(img_shape[1],img_shape[0],self.shape[1],self.shape[0]))
+            logger.warning("Patching image as image is %ix%i and spline is %ix%i" % (img_shape[1], img_shape[0], self.shape[1], self.shape[0]))
 
         out = self.integrator.integrate(image)
         out[1].shape = self.shape
-        return out[1][:img_shape[0],:img_shape[1]]
+        return out[1][:img_shape[0], :img_shape[1]]
     
     @cython.wraparound(False)
     @cython.boundscheck(False)
@@ -517,7 +489,6 @@ class Distortion(object):
         else:
             logger.warning("Please select a compute device (Host or Device)")
         return out
-        
         
     def setHost(self):
         self.compute_device = "Host"
@@ -540,7 +511,7 @@ class Distortion(object):
             with self._sem:
                 if self.LUT is None:
                     self.calc_LUT()
-        out = numpy.zeros(self.shape,dtype=numpy.float32)
+        out = numpy.zeros(self.shape, dtype=numpy.float32)
         mask = numpy.zeros(self.shape, dtype=numpy.int8)
         lmask = mask.ravel()
         lout = out.ravel()
@@ -556,7 +527,7 @@ class Distortion(object):
             if idx1 == idx2:
                 lmask[idx] = 1
                 continue
-            val = lin[idx]/data[idx1:idx2].sum()
+            val = lin[idx] / data[idx1:idx2].sum()
             lout[indices[idx1:idx2]] += val * data[idx1:idx2]
                                
         return out, mask

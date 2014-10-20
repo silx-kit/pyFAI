@@ -2262,7 +2262,7 @@ class AzimuthalIntegrator(Geometry):
                                                               radial_range, azimuth_range,
                                                               mask_checksum=mask_crc, unit=unit)
                     except MemoryError:  # LUT method is hungry...
-                        logger.warning("MemoryError: falling back on forward implementation")
+                        logger.warning("MemoryError: falling back on default forward implementation")
                         self._lut_integrator = None
                         self._ocl_lut_integr = None
                         gc.collect()
@@ -2290,17 +2290,17 @@ class AzimuthalIntegrator(Geometry):
                                 devicetype = "all"
                             if (self._ocl_lut_integr is None) or\
                                     (self._ocl_lut_integr.on_device["lut"] != self._lut_integrator.lut_checksum):
-                                try:
-                                    self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut,
+#                                 try:
+                                self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut,
                                                                                            self._lut_integrator.size,
                                                                                            devicetype=devicetype,
                                                                                            platformid=platformid,
                                                                                            deviceid=deviceid,
                                                                                            checksum=self._lut_integrator.lut_checksum)
-                                except (MemoryError, RuntimeError):
-                                    logger.warning("Issue with LUT integrator, trying CSR")
-                                    self._ocl_lut_integr = None
-                                    method = self.DEFAULT_METHOD
+#                                 except (MemoryError, RuntimeError):
+#                                     logger.warning("Issue with LUT integrator, trying CSR")
+#                                     self._ocl_lut_integr = None
+#                                     method = self.DEFAULT_METHOD
                             if self._ocl_lut_integr is not None:
                                 I, _, _ = self._ocl_lut_integr.integrate(data, dark=dark, flat=flat,
                                                                          solidAngle=solidangle,
@@ -2828,20 +2828,20 @@ class AzimuthalIntegrator(Geometry):
                                 deviceid = None
                                 devicetype = "all"
                             if (self._ocl_lut_integr is None) or (self._ocl_lut_integr.on_device["lut"] != self._lut_integrator.lut_checksum):
-                                try:
-                                    self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut,
+#                                 try:
+                                self._ocl_lut_integr = ocl_azim_lut.OCL_LUT_Integrator(self._lut_integrator.lut,
                                                                                            self._lut_integrator.size,
                                                                                            devicetype=devicetype,
                                                                                            platformid=platformid,
                                                                                            deviceid=deviceid,
                                                                                            checksum=self._lut_integrator.lut_checksum)
-                                except (MemoryError, RuntimeError) as err:
-                                    logger.warning("Error: %s, falling back on forward implementation" % err)
-                                    self._lut_integrator = None
-                                    self._ocl_lut_integr = None
-                                    gc.collect()
-                                    method = self.DEFAULT_METHOD
-                                    error = True
+#                                 except (MemoryError, RuntimeError) as err:
+#                                     logger.warning("Error: %s, falling back on forward implementation" % err)
+#                                     self._lut_integrator = None
+#                                     self._ocl_lut_integr = None
+#                                     gc.collect()
+#                                     method = self.DEFAULT_METHOD
+#                                     error = True
                             if not error:
                                 I, _, _ = self._ocl_lut_integr.integrate(data, dark=dark, flat=flat,
                                                                          solidAngle=solidangle,
@@ -2915,7 +2915,7 @@ class AzimuthalIntegrator(Geometry):
                                                               unit=unit, split=split)
                         error = False
                     except MemoryError:
-                        logger.warning("MemoryError: falling back on forward implementation")
+                        logger.warning("MemoryError: falling back on default forward implementation")
                         self._ocl_csr_integr = None
                         gc.collect()
                         method = self.DEFAULT_METHOD
@@ -2941,20 +2941,20 @@ class AzimuthalIntegrator(Geometry):
                                 deviceid = None
                                 devicetype = "all"
                             if (self._ocl_csr_integr is None) or (self._ocl_csr_integr.on_device["data"] != self._csr_integrator.lut_checksum):
-                                try:
-                                    self._ocl_csr_integr = ocl_azim_csr.OCL_CSR_Integrator(self._csr_integrator.lut,
+#                                 try:
+                                self._ocl_csr_integr = ocl_azim_csr.OCL_CSR_Integrator(self._csr_integrator.lut,
                                                                                            self._csr_integrator.size,
                                                                                            devicetype=devicetype,
                                                                                            platformid=platformid,
                                                                                            deviceid=deviceid,
                                                                                            checksum=self._csr_integrator.lut_checksum)
-                                except (MemoryError, RuntimeError) as err:  # LUT method is hungry...
-                                    logger.warning("Error: %s, falling back on forward implementation" % err)
-                                    self._csr_integrator = None
-                                    self._ocl_csr_integr = None
-                                    gc.collect()
-                                    method = self.DEFAULT_METHOD
-                                    error = True
+#                                 except (MemoryError, RuntimeError) as err:  # LUT method is hungry...
+#                                     logger.warning("Error: %s, falling back on forward implementation" % err)
+#                                     self._csr_integrator = None
+#                                     self._ocl_csr_integr = None
+#                                     gc.collect()
+#                                     method = self.DEFAULT_METHOD
+#                                     error = True
                             if not error:
                                 I, _, _ = self._ocl_csr_integr.integrate(data, dark=dark, flat=flat,
                                                                          solidAngle=solidangle,

@@ -33,11 +33,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2014"
+__date__ = "20/10/2014"
 __status__ = "production"
 
 import sys
 import matplotlib
+has_gui = True
 if ('PySide' in sys.modules):
     from PySide import QtGui, QtCore, QtUiTools, QtWebKit
     from PySide.QtCore import SIGNAL, Signal
@@ -84,11 +85,14 @@ imports of custom widgets.
     sys.modules["PySide.uic"] = uic
     matplotlib.rcParams['backend.qt4'] = 'PySide'
 else:
-    from PyQt4 import QtGui, QtCore, uic, QtWebKit
-    from PyQt4.QtCore import SIGNAL, pyqtSignal as Signal
-
-matplotlib.use('Qt4Agg')
-from matplotlib.backends import backend_qt4 as backend
+    try:
+        from PyQt4 import QtGui, QtCore, uic, QtWebKit
+        from PyQt4.QtCore import SIGNAL, pyqtSignal as Signal
+    except ImportError:
+        has_gui = False
+if has_gui:
+    matplotlib.use('Qt4Agg')
+    from matplotlib.backends import backend_qt4 as backend
 from matplotlib import pyplot
 import pylab
 
