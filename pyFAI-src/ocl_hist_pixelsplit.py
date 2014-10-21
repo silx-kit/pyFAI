@@ -35,7 +35,7 @@ import hashlib
 import numpy
 from .opencl import ocl, pyopencl
 from .splitBBoxLUT import HistoBBox1d
-from .utils import get_cl_file
+from .utils import concatenate_cl_kernel
 from pyopencl import array
 if pyopencl:
     mf = pyopencl.mem_flags
@@ -211,16 +211,8 @@ class OCL_Hist_Pixelsplit(object):
         Call the OpenCL compiler
         @param kernel_file: path tothe
         """
-        kernel_name = "ocl_hist_pixelsplit.cl"
-        if kernel_file is None:
-            if os.path.isfile(kernel_name):
-                kernel_file = os.path.abspath(kernel_name)
-            else:
-                kernel_file = get_cl_file(kernel_name)
-        else:
-            kernel_file = str(kernel_file)
-        with open(kernel_file, "r") as kernelFile:
-            kernel_src = kernelFile.read()
+        kernel_file = kernel_file or "ocl_hist_pixelsplit.cl"
+        kernel_src = concatenate_cl_kernel([kernel_file])
 
         compile_options = "-D BINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i -D EPS=%f" % \
                 (self.bins, self.size, self.BLOCK_SIZE, numpy.finfo(numpy.float32).eps)

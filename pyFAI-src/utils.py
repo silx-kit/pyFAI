@@ -941,6 +941,22 @@ def get_cl_file(filename):
 #    return _get_data_path(os.path.join("openCL", filename))
     return _get_data_path(filename)
 
+
+def concatenate_cl_kernel(filenames):
+    """
+    @param filenames: filenames containing the kernels
+    @type kernel@: list of str which can be filename of kernel as a string.
+
+    this method concatenates all the kernel from the list
+    """
+    kernel = ""
+    for filename in filenames:
+        with open(get_cl_file(filename), "r") as f:
+            kernel += f.read()
+
+    return kernel
+
+
 def deg2rad(dd):
     """
     Convert degrees to radian in the range -pi->pi

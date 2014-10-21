@@ -44,7 +44,7 @@ import os
 import logging
 import threading
 import numpy
-from .utils import get_cl_file
+from .utils import concatenate_cl_kernel
 from .opencl import ocl, pyopencl
 if pyopencl:
     mf = pyopencl.mem_flags
@@ -283,17 +283,8 @@ class Integrator1d(object):
         
         @param kernel_file: filename of the kernel (to test other kernels)
         """
-        kernel_name = "ocl_azim_kernel_2.cl"
-        if kernel_file is None:
-            if os.path.isfile(kernel_name):
-                kernel_file = os.path.abspath(kernel_name)
-            else:
-                kernel_file = get_cl_file(kernel_name)
-        else:
-            kernel_file = str(kernel_file)
-
-        with open(kernel_file, "r") as kernelFile:
-            kernel_src = kernelFile.read()
+        kernel_file = kernel_file or "ocl_azim_kernel_2.cl"
+        kernel_src = concatenate_cl_kernel([kernel_file])
 
         compile_options = "-D BLOCK_SIZE=%i  -D BINS=%i -D NN=%i" % \
                             (self.BLOCK_SIZE, self.nBins, self.nData)

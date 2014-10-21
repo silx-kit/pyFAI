@@ -33,7 +33,7 @@ import hashlib
 import numpy
 from .opencl import ocl, pyopencl
 from .splitBBoxLUT import HistoBBox1d
-from .utils import get_cl_file
+from .utils import concatenate_cl_kernel
 if pyopencl:
     mf = pyopencl.mem_flags
 else:
@@ -176,17 +176,8 @@ class OCL_LUT_Integrator(object):
         @param kernel_file: path to the kernel (by default use the one in the src directory)
         """
         # concatenate all needed source files into a single openCL module
-        kernel_src = open(get_cl_file("preprocess.cl"), "r").read()
-        kernel_name = "ocl_azim_LUT.cl"
-        if kernel_file is None:
-            if os.path.isfile(kernel_name):
-                kernel_file = os.path.abspath(kernel_name)
-            else:
-                kernel_file = get_cl_file(kernel_name)
-        else:
-            kernel_file = str(kernel_file)
-        with open(kernel_file, "r") as kernelFile:
-            kernel_src += kernelFile.read()
+        kernel_file = kernel_file or "ocl_azim_LUT.cl"
+        kernel_src = concatenate_cl_kernel(["preprocess.cl", kernel_file])
 
         compile_options = "-D NBINS=%i  -D NIMAGE=%i -D NLUT=%i -D ON_CPU=%i" % \
                 (self.bins, self.size, self.lut_size, int(self.device_type == "CPU"))
