@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/10/2014"
+__date__ = "21/10/2014"
 __status__ = "stable"
 
 import os, logging
@@ -176,6 +176,7 @@ class OpenCL(object):
     """
     platforms = []
     if pyopencl:
+        platform = device = pypl = devtype = extensions = pydev = None
         for idx, platform in enumerate(pyopencl.get_platforms()):
             pypl = Platform(platform.name, platform.vendor, platform.version, platform.extensions, idx)
             for idd, device in enumerate(platform.get_devices()):
