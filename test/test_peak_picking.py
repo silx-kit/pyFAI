@@ -97,7 +97,7 @@ class test_peak_picking(unittest.TestCase):
             pts = self.pp.massif.find_peaks(self.ctrlPt[i], stdout=open(self.logfile, "a"))
             logger.info("point %s at ring #%i (tth=%.1f deg) generated %i points", self.ctrlPt[i], i, self.tth[i], len(pts))
             if len(pts) > 0:
-                self.pp.points.append(pts, angle=self.tth[i], ring=i)
+                self.pp.points.append(pts, ring=i)
             else:
                 logger.error("point %s caused error (%s) ", i, self.ctrlPt[i])
 
