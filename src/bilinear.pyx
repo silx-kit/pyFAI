@@ -11,19 +11,19 @@
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
-# 
+#
 #   This program is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #   GNU General Public License for more details.
-# 
+#
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3+"
-__date__ = "20/10/2014"
+__date__ = "21/10/2014"
 __copyright__ = "2011-2014, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -106,18 +106,26 @@ cdef class Bilinear:
         """
         Return the local maximum ... with sub-pixel refinement
 
-        @param x: 2-tuple of int
-        @param w: half with of the window: 1 or 2 are adviced
+        @param x: 2-tuple of integers
+        @param w: half with of the window: 1 or 2 are advised
         @return: 2-tuple of int with the nearest local maximum
 
+
         Sub-pixel refinement:
-        Second order taylor expansion of the function; first derivative is nul
+        Second order Taylor expansion of the function; first derivative is null
         delta = x-i = -Inverse[Hessian].gradient
+
+        if Hessian is singular or |delta|>1: use a center of mass.
+
         """
-        cdef int current0 = x[0]
-        cdef int current1 = x[1]
-        cdef int i0, i1, start0, stop0, start1, stop1, new0, new1, cnt=0, width0=w, width1=w
-        cdef float tmp, value, current_value, sum0=0,  sum1=0, sum=0
+        cdef:
+            int current0 = x[0]
+            int current1 = x[1]
+            int i0, i1, start0, stop0, start1, stop1, new0, new1, cnt=0, width0=w, width1=w
+            float tmp, value, current_value, sum0=0,  sum1=0, sum=0
+            float a00, a01, a02, a10, a11, a12, a20, a21, a22
+            float d00, d11, d01, denom, delta0, delta1
+
         value = self.data[current0,current1]
         current_value = value-1.0
         new0,new1 = current0,current1
@@ -149,12 +157,8 @@ cdef class Bilinear:
                             value = tmp
                 current0,current1=new0,new1
 
-        cdef float a00, a01, a02, a10, a11, a12, a20, a21, a22 # coefficients of the array
-#        cdef float g0, g1       # gradient values
-        cdef float d00, d11, d01, denom # Hessian coefficient
-#        print(current0,current1)
         if (stop0>current0) and (current0>start0) and (stop1>current1) and (current1>start1):
-            #Use second order polynomial taylor expansion
+            # Use second order polynomial Taylor expansion
             a00 = self.data[current0-1,current1-1]
             a01 = self.data[current0-1,current1  ]
             a02 = self.data[current0-1,current1+1]
@@ -164,8 +168,6 @@ cdef class Bilinear:
             a20 = self.data[current0+1,current1-1]
             a21 = self.data[current0+1,current1  ]
             a22 = self.data[current0+1,current1-1]
-#            g0 = (a21 - a01)/2.0
-#            g1 = (a12 - a10)/2.0
             d00 = a12 - 2.0*a11 + a10
             d11 = a21 - 2.0*a11 + a01
             d01 = (a00 - a02 - a20 + a22)/4.0
@@ -197,7 +199,7 @@ cdef class Bilinear:
 @cython.cdivision(True)
 def calc_cartesian_positions(float32_64[:] d1, float32_64[:] d2, float[:,:,:,:] pos):
     """
-    Calculate the cartesian position for array of position (d1, d2)
+    Calculate the Cartesian position for array of position (d1, d2)
     with pixel coordinated stored in array pos
     This is bilinear interpolation
 
