@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/09/2014"
+__date__ = "21/10/2014"
 __status__ = "production"
 
 import logging, sys, types, os, glob
@@ -491,8 +491,6 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             listImages[idx] = fn
         logger.debug("Intensity range for %s is %s --> %s", fn, ds.min(), ds.max())
         shape = ds.shape
-        if sumImg is None:
-            sumImg = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
         if do_dark and (dark is None):
             if "ndim" in dir(darks) and darks.ndim == 3:
                 dark = averageDark(darks, center_method="mean", cutoff=4)
@@ -525,11 +523,20 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
                 big_img = numpy.zeros((ld, shape[0], shape[1]), dtype=numpy.float32)
             big_img[idx, :, :] = correctedImg
         elif filter_ == "max":
-            sumImg = numpy.maximum(correctedImg, sumImg)
+            if sumImg is None:
+                sumImg = correctedImg
+            else:
+                sumImg = numpy.maximum(correctedImg, sumImg)
         elif filter_ == "min":
-            sumImg = numpy.minimum(correctedImg, sumImg)
+            if sumImg is None:
+                sumImg = correctedImg
+            else:
+                sumImg = numpy.minimum(correctedImg, sumImg)
         elif filter_ == "mean":
-            sumImg += correctedImg
+            if sumImg is None:
+                sumImg = correctedImg
+            else:
+                sumImg += correctedImg
     if cutoff or (filter_ == "median"):
         datared = averageDark(big_img, filter_, cutoff)
     else:
