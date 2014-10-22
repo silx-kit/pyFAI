@@ -22,6 +22,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
@@ -326,6 +327,7 @@ class PeakPicker(object):
                                             None, self.massif_contour)
             if points:
                 gpt = common_creation(points)
+                annontate(points[0], [event.ydata, event.xdata], gpt=gpt)
                 logger.info("Created group #%2s with %i points" % (gpt.label, len(gpt)))
             else:
                 logger.warning("No peak found !!!")
@@ -723,7 +725,8 @@ class ControlPoints(object):
         with self._sem:
             lstOut = ["# set of control point used by pyFAI to calibrate the geometry of a scattering experiment",
                       "#angles are in radians, wavelength in meter and positions in pixels"]
-
+            if self.calibrant:
+                lstOut.append("calibrant: %s"%self.calibrant)
             if self.calibrant.wavelength is not None:
                 lstOut.append("wavelength: %s" % self.calibrant.wavelength)
             lstOut.append("dspacing:" + " ".join([str(i) for i in self.calibrant.dSpacing]))
@@ -735,6 +738,7 @@ class ControlPoints(object):
                 ring = gpt.ring
                 lstOut.append("")
                 lstOut.append("New group of points: %i" % idx)
+                print(gpt,ring)
                 if ring < len(tth):
                     lstOut.append("2theta: %s" % tth[ring])
                 lstOut.append("ring: %s" % ring)
@@ -754,6 +758,10 @@ class ControlPoints(object):
         tth = None
         ring = None
         points = []
+        calibrant = None
+        wavelength = None
+        dspacing = []
+        
         for line in open(filename, "r"):
             if line.startswith("#"):
                 continue
@@ -761,27 +769,28 @@ class ControlPoints(object):
                 key, value = line.split(":", 1)
                 value = value.strip()
                 key = key.strip().lower()
-                if key == "wavelength":
+                if key == "calibrant":
+                    words = value.split()
+                    if words[0] in ALL_CALIBRANTS:
+                        calibrant = ALL_CALIBRANTS[words[0]]
                     try:
-                        self.calibrant.set_wavelength(float(value))
+                        wavelength = float(words[-1])
+                        calibrant.set_wavelength(wavelength)
                     except Exception as error:
                         logger.error("ControlPoints.load: unable to convert to float %s (wavelength): %s", value, error)
-                elif key == "2theta":
-                    if value.lower() == "none":
-                        tth = None
-                    else:
-                        try:
-                            tth = float(value)
-                        except Exception as error:
-                            logger.error("ControlPoints.load: unable to convert to float %s (2theta): %s", value, error)
-                elif key == "dspacing":
-                    self.dSpacing = []
+                    
+                if key == "wavelength":
+                    try:
+                        wavelength=float(value)
+                    except Exception as error:
+                        logger.error("ControlPoints.load: unable to convert to float %s (wavelength): %s", value, error)
+                elif key == "dspacing" and not calibrant:
                     for val in value.split():
                         try:
                             fval = float(val)
                         except Exception:
                             fval = None
-                        self.calibrant.append_dSpacing(fval)
+                        dspacing.append(fval)
                 elif key == "ring":
                     if value.lower() == "none":
                         ring = None
@@ -817,7 +826,15 @@ class ControlPoints(object):
             with self._sem:
                 gpt = PointGroup(points, ring)
                 self._groups[gpt.label] = gpt
-
+        # Update calibrant if needed.
+        if not calibrant and dspacing:
+            calibrant = Calibrant()
+            calibrant.dSpacing = dspacing        
+        if calibrant and calibrant.wavelength is None and wavelength:
+            calibrant.wavelength = wavelength
+        if calibrant:
+            self.calibrant = calibrant
+        
     def getList2theta(self):
         """
         Retrieve the list of control points suitable for geometry refinement
@@ -845,9 +862,11 @@ class ControlPoints(object):
         Retrieve the list of control points suitable for geometry refinement with ring number and intensities
         @param image:
         @return: a (x,4) array with pos0, pos1, ring nr and intensity
+        
+        #TODO: refine the value of the intensity using 2nd order polynomia
         """
         lstOut = []
-        for gpt in self._groups:
+        for gpt in self._groups.values():
             lstOut += [[pt[0], pt[1], gpt.ring, image[int(pt[0] + 0.5), int(pt[1] + 0.5)]] for pt in gpt.points]
         return lstOut
 
@@ -858,7 +877,7 @@ class ControlPoints(object):
         lastRing = None
         lst = self._groups.keys()
         lst.sort(PointGroup.cmp)
-        for idx, lbl in enumerate(self._groups):
+        for idx, lbl in enumerate(lst):
             bOk = False
             gpt = self._groups[lbl]
             while not bOk:
@@ -987,8 +1006,10 @@ class PointGroup(object):
             self.set_label(force_label)
         else:
             self.label = self.get_label()
-        self.ring = ring
-
+        if ring:
+            self._ring = int(ring)
+        else:
+            self._ring = None
         #placeholder of matplotlib references...
         self.annotation = annotation
         self.plot = plot
@@ -999,3 +1020,14 @@ class PointGroup(object):
     def __repr__(self):
         return "%s %s: %s" % (self.label, self.ring, len(self.points))
 
+    def get_ring(self):
+        return self._ring
+
+    def set_ring(self, value):
+        if type(value) != int:
+            print("Ring: %s"%value)
+            import traceback
+            traceback.print_stack()
+            self._ring = int(value)
+        self._ring = value
+    ring = property(get_ring, set_ring)
