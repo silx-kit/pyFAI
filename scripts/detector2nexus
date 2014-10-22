@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2014"
+__date__ = "21/10/2014"
 __status__ = "development"
 
 import os
@@ -57,7 +57,7 @@ def main():
     into a single NeXus detector definition together with the mask (and much more in the future)
     """
     epilog = """
-    This summarizes  
+    This summarizes detector2nexus
     """
     parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
     parser.add_argument("-V", "--version", action='version', version=version)
@@ -70,10 +70,10 @@ def main():
     parser.add_argument("-m", "--mask", dest="mask",
                         type=str, default=None,
                         help="mask corresponding to the detector")
-    parser.add_argument("-D", "--detector", dest="detector", type=str, 
+    parser.add_argument("-D", "--detector", dest="detector", type=str,
                         default="Detector",
                         help="Base detector name (see documentation of pyFAI.detectors")
-    parser.add_argument("-s", "--splinefile", dest="splinefile", type=str, 
+    parser.add_argument("-s", "--splinefile", dest="splinefile", type=str,
                         default=None,
                         help="Geometric distortion file from FIT2D")
     parser.add_argument("-dx", "--x-corr", dest="dx", type=str, default=None,
@@ -112,7 +112,7 @@ def main():
             detector.mask = mask
         else:
             detector.mask = numpy.logical_or(mask, detector.mask)
-            
+
     if options.flat:
         detector.flat = fabio.open(options.flat).data
     if options.dark:
@@ -137,16 +137,16 @@ def main():
             else:
                 detector.shape = int(p[1]), psize
         if options.dx and options.dy:
-            dx = fabio.open(options.dx).data 
+            dx = fabio.open(options.dx).data
             dy = fabio.open(options.dy).data
-            # pilatus give displaceemt in percent of pixel ... 
-            if ".cbf" in options.dx: 
+            # pilatus give displaceemt in percent of pixel ...
+            if ".cbf" in options.dx:
                 dx *= 0.01
             if ".cbf" in options.dy:
                 dy *= 0.01
             detector.set_dx(dx)
             detector.set_dy(dy)
     detector.save(output)
-    
+
 if __name__ == "__main__":
     main()
