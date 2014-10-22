@@ -25,7 +25,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "GPLv3"
-__date__ = "09/10/2014"
+__date__ = "22/10/2014"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -144,8 +144,8 @@ class OCL_CSR_Integrator(object):
         """
         buffers = [
             ("data", mf.READ_WRITE, numpy.float32, self.data_size),
-            ("indices", mf.READ_WRITE, numpy.int32 * self.data_size),
-            ("indptr", mf.READ_WRITE, numpy.int32 * (self.bins + 1)),
+            ("indices", mf.READ_WRITE, numpy.int32, self.data_size),
+            ("indptr", mf.READ_WRITE, numpy.int32, (self.bins + 1)),
             ("outData", mf.WRITE_ONLY, numpy.float32, self.bins),
             ("outCount", mf.WRITE_ONLY, numpy.float32, self.bins),
             ("outMerge", mf.WRITE_ONLY, numpy.float32, self.bins),
