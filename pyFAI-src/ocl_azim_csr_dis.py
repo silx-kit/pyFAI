@@ -32,7 +32,7 @@ import logging
 import threading
 import numpy
 
-from .opencl import ocl, pyopencl
+from .opencl import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
 from .utils import concatenate_cl_kernel
 if pyopencl:
     mf = pyopencl.mem_flags
@@ -164,37 +164,14 @@ class OCL_CSR_Integrator(object):
         if self.size < self.BLOCK_SIZE:
             raise RuntimeError("Fatal error in _allocate_buffers. size (%d) must be >= BLOCK_SIZE (%d)\n", self.size, self.BLOCK_SIZE)  # noqa
 
-        # check if enough memory is available on the device
-        ualloc = 0
-        for _, _, dtype, size in buffers:
-            ualloc += numpy.dtype(dtype).itemsize * size
-        memory = self.device.memory
-        logger.info("%.3fMB are needed on device which has %.3fMB",
-                    ualloc / 1.0e6, memory / 1.0e6)
-        if ualloc >= memory:
-            raise MemoryError("Fatal error in _allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))  # noqa
-
-        # now actually allocate:
-        try:
-            for name, flag, dtype, size in buffers:
-                self._cl_mem[name] = \
-                    pyopencl.Buffer(self._ctx, flag,
-                                    numpy.dtype(dtype).itemsize * size)
-        except pyopencl.MemoryError as error:
-            self._free_buffers()
-            raise MemoryError(error)
+        self._cl_mem = allocate_cl_buffers(buffers, self.device, self._ctx)
 
     def _free_buffers(self):
         """
         free all memory allocated on the device
         """
-        for buffer_name in self._cl_mem:
-            if self._cl_mem[buffer_name] is not None:
-                try:
-                    self._cl_mem[buffer_name].release()
-                    self._cl_mem[buffer_name] = None
-                except pyopencl.LogicError:
-                    logger.error("Error while freeing buffer %s", buffer_name)
+        self._cl_mem = release_cl_buffers(self._cl_mem)
+
 
     def _compile_kernels(self, kernel_file=None):
         """

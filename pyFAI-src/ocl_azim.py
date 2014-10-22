@@ -45,7 +45,7 @@ import logging
 import threading
 import numpy
 from .utils import concatenate_cl_kernel
-from .opencl import ocl, pyopencl
+from .opencl import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
 if pyopencl:
     mf = pyopencl.mem_flags
 else:
@@ -178,96 +178,45 @@ class Integrator1d(object):
         Unfortunately, OpenCL does NOT have a built-in way to check
         the actual free memory on a device, only the total memory.
         """
+        utype = None
+        if self.useFp64:
+            utype = numpy.int64
+        else:
+            utype = numpy.int32
+
+        buffers = [
+            ("tth", mf.READ_ONLY, numpy.float32, self.nData),
+            ("tth_delta", mf.READ_ONLY, numpy.float32, self.nData),
+            ("tth_min_max", mf.READ_ONLY, numpy.float32, 2),
+            ("tth_range", mf.READ_ONLY, numpy.float32, 2),
+            ("mask", mf.READ_ONLY, numpy.int32, self.nData),
+            ("image", mf.READ_ONLY, numpy.float32, self.nData),
+            ("solidangle", mf.READ_ONLY, numpy.float32, self.nData),
+            ("dark", mf.READ_ONLY, numpy.float32, self.nData),
+            ("histogram", mf.READ_WRITE, numpy.float32, self.nBins),
+            ("uhistogram", mf.READ_WRITE, utype, self.nBins),
+            ("weights", mf.READ_WRITE, numpy.float32, self.nBins),
+            ("uweights", mf.READ_WRITE, utype, self.nBins),
+            ("span_ranges", mf.READ_WRITE, numpy.float32, self.nData),
+            ("dummyval", mf.READ_ONLY, numpy.float32, 1),
+            ("dummyval_delta", mf.READ_ONLY, numpy.float32, 1),
+        ]
+
         if self.nData < self.BLOCK_SIZE:
             raise RuntimeError(("Fatal error in allocate_CL_buffers."
                                 " nData (%d) must be >= BLOCK_SIZE (%d)\n"),
                                self.nData, self.BLOCK_SIZE)
-        size_of_float = numpy.dtype(numpy.float32).itemsize
-        size_of_int = numpy.dtype(numpy.int32).itemsize
-        size_of_long = numpy.dtype(numpy.int64).itemsize
 
-        ualloc = (self.nData * size_of_float) * 7
-        ualloc += (self.nBins * size_of_float) * 2
-        if self.useFp64:
-            ualloc += (self.nBins * size_of_long) * 2
-        else:
-            ualloc += (self.nBins * size_of_int) * 2
-        ualloc += 6 * size_of_float
-        memory = ocl.platforms[self.platformid].devices[self.deviceid].memory
-        if ualloc >= memory:
-            raise RuntimeError(("Fatal error in allocate_CL_buffers."
-                                " Not enough device memory for buffers"
-                                " (%lu requested, %lu available)") %
-                               (ualloc, memory))
-        #now actually allocate:
-        try:
-            self._cl_mem["tth"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY,
-                                                  size_of_float * self.nData)
-            self._cl_mem["tth_delta"] = \
-                pyopencl.Buffer(self._ctx, mf.READ_ONLY,
-                                size_of_float * self.nData)
-            self._cl_mem["mask"] = \
-                pyopencl.Buffer(self._ctx, mf.READ_ONLY,
-                                size_of_int * self.nData)
-            self._cl_mem["image"] = \
-                pyopencl.Buffer(self._ctx, mf.READ_ONLY,
-                                size_of_float * self.nData)
-            self._cl_mem["solidangle"] = \
-                pyopencl.Buffer(self._ctx, mf.READ_ONLY,
-                                size_of_float * self.nData)
-            self._cl_mem["dark"] = \
-                pyopencl.Buffer(self._ctx, mf.READ_ONLY,
-                                size_of_float * self.nData)
-            self._cl_mem["histogram"] = \
-                pyopencl.Buffer(self._ctx, mf.READ_WRITE,
-                                size_of_float * self.nBins)
-            self._cl_mem["weights"] = \
-                pyopencl.Buffer(self._ctx, mf.READ_WRITE,
-                                size_of_float * self.nBins)
-            if self.useFp64:
-                self._cl_mem["uhistogram"] = \
-                    pyopencl.Buffer(self._ctx, mf.READ_WRITE,
-                                    size_of_long * self.nBins)
-                self._cl_mem["uweights"] = \
-                    pyopencl.Buffer(self._ctx, mf.READ_WRITE,
-                                    size_of_long * self.nBins)
-            else:
-                self._cl_mem["uhistogram"] = \
-                    pyopencl.Buffer(self._ctx, mf.READ_WRITE,
-                                    size_of_int * self.nBins)
-                self._cl_mem["uweights"] = \
-                    pyopencl.Buffer(self._ctx, mf.READ_WRITE,
-                                    size_of_int * self.nBins)
-            self._cl_mem["span_ranges"] = \
-                pyopencl.Buffer(self._ctx, mf.READ_WRITE,
-                                size_of_float * self.nData)
-            self._cl_mem["tth_min_max"] = \
-                pyopencl.Buffer(self._ctx, mf.READ_ONLY,
-                                size_of_float * 2)
-            self._cl_mem["tth_range"] = \
-                pyopencl.Buffer(self._ctx, mf.READ_ONLY,
-                                size_of_float * 2)
-            self._cl_mem["dummyval"] = \
-                pyopencl.Buffer(self._ctx, mf.READ_ONLY,
-                                size_of_float * 1)
-            self._cl_mem["dummyval_delta"] = \
-                pyopencl.Buffer(self._ctx, mf.READ_ONLY,
-                                size_of_float * 1)
-        except pyopencl.MemoryError as error:
-            self._free_buffers()
-            raise MemoryError(error)
+        # TODO it seems that the device should be a member parameter
+        # like in the most recent code
+        device = ocl.platforms[self.platformid].devices[self.deviceid]
+        self._cl_mem = allocate_cl_buffers(buffers, device, self._ctx)
 
     def _free_buffers(self):
         """
         free all memory allocated on the device
         """
-        for buffer_name in self._cl_mem:
-            if self._cl_mem[buffer_name] is not None:
-                try:
-                    self._cl_mem[buffer_name].release()
-                    self._cl_mem[buffer_name] = None
-                except pyopencl.LogicError:
-                    logger.error("Error while freeing buffer %s" % buffer_name)
+        self._cl_mem = release_cl_buffers(self._cl_mem)
 
     def _free_kernels(self):
         """

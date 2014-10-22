@@ -29,7 +29,11 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "21/10/2014"
 __status__ = "stable"
 
-import os, logging
+import os
+import logging
+
+import numpy
+
 logger = logging.getLogger("pyFAI.opencl")
 
 try:
@@ -307,6 +311,58 @@ class OpenCL(object):
             logger.warn("Last chance to get an OpenCL device ... probably not the one requested")
             ctx = pyopencl.create_some_context(interactive=False)
         return ctx
+
+
+def release_cl_buffers(cl_buffers):
+    """
+    @param cl_buffer: the buffer you want to release
+    @type cl_buffer: dict(str, pyopencl.Buffer)
+
+    This method release the memory of the buffers store in the dict
+    """
+    for key in cl_buffers:
+        if cl_buffers[key] is not None:
+            try:
+                cl_buffers[key].release()
+                cl_buffers[key] = None
+            except pyopencl.LogicError:
+                logger.error("Error while freeing buffer %s", key)
+    return cl_buffers
+
+
+def allocate_cl_buffers(buffers, device, context):
+    """
+    @param buffers: the buffers info use to create the pyopencl.Buffer
+    @type buffer: list(std, flag, numpy.dtype, int)
+    @return: a dict containing the instanciated pyopencl.Buffer
+    @rtype: dict(str, pyopencl.Buffer)
+
+    This method instanciate the pyopencl.Buffer from the buffers
+    description.
+    """
+    mem = {}
+
+    # check if enough memory is available on the device
+    ualloc = 0
+    for _, _, dtype, size in buffers:
+        ualloc += numpy.dtype(dtype).itemsize * size
+    memory = device.memory
+    logger.info("%.3fMB are needed on device which has %.3fMB",
+                ualloc / 1.0e6, memory / 1.0e6)
+    if ualloc >= memory:
+        raise MemoryError("Fatal error in _allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))  # noqa
+
+    # do the allocation
+    try:
+        for name, flag, dtype, size in buffers:
+            mem[name] = \
+                pyopencl.Buffer(context, flag,
+                                numpy.dtype(dtype).itemsize * size)
+    except pyopencl.MemoryError as error:
+        release_cl_buffers(mem)
+        raise MemoryError(error)
+
+    return mem
 
 if pyopencl:
     ocl = OpenCL()

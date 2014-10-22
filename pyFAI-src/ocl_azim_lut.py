@@ -31,7 +31,7 @@ import os, gc, logging
 import threading
 import hashlib
 import numpy
-from .opencl import ocl, pyopencl
+from .opencl import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
 from .splitBBoxLUT import HistoBBox1d
 from .utils import concatenate_cl_kernel
 if pyopencl:
@@ -122,53 +122,38 @@ class OCL_LUT_Integrator(object):
         """
         Allocate OpenCL buffers required for a specific configuration
 
-        Note that an OpenCL context also requires some memory, as well as Event and other OpenCL functionalities which cannot and
-        are not taken into account here.
-        The memory required by a context varies depending on the device. Typical for GTX580 is 65Mb but for a 9300m is ~15Mb
-        In addition, a GPU will always have at least 3-5Mb of memory in use.
-        Unfortunately, OpenCL does NOT have a built-in way to check the actual free memory on a device, only the total memory.
+        Note that an OpenCL context also requires some memory, as well
+        as Event and other OpenCL functionalities which cannot and are
+        not taken into account here.  The memory required by a context
+        varies depending on the device. Typical for GTX580 is 65Mb but
+        for a 9300m is ~15Mb In addition, a GPU will always have at
+        least 3-5Mb of memory in use.  Unfortunately, OpenCL does NOT
+        have a built-in way to check the actual free memory on a
+        device, only the total memory.
         """
+        buffers = [
+            ("lut", mf.READ_WRITE, [("bins", numpy.float32), ("lut_size", numpy.int32)], self.bins * self.lut_size),  # noqa
+            ("outData", mf.WRITE_ONLY, numpy.float32, self.bins),
+            ("outCount", mf.WRITE_ONLY, numpy.float32, self.bins),
+            ("outMerge", mf.WRITE_ONLY, numpy.float32, self.bins),
+            ("image_raw", mf.READ_ONLY, numpy.float32, self.size),
+            ("image", mf.READ_WRITE, numpy.float32, self.size),
+            ("dark", mf.READ_ONLY, numpy.float32, self.size),
+            ("flat", mf.READ_ONLY, numpy.float32, self.size),
+            ("polarization", mf.READ_ONLY, numpy.float32, self.size),
+            ("solidangle", mf.READ_ONLY, numpy.float32, self.size),
+        ]
+
         if self.size < self.BLOCK_SIZE:
             raise RuntimeError("Fatal error in _allocate_buffers. size (%d) must be >= BLOCK_SIZE (%d)\n", self.size, self.BLOCK_SIZE)
-        size_of_float = numpy.dtype(numpy.float32).itemsize
-        size_of_short = numpy.dtype(numpy.int16).itemsize
-        size_of_int = numpy.dtype(numpy.int32).itemsize
-        size_of_long = numpy.dtype(numpy.int64).itemsize
 
-        ualloc = (self.size * size_of_float) * 6
-        ualloc += (self.bins * self.lut_size * (size_of_float + size_of_int))
-        ualloc += (self.bins * size_of_float) * 3
-        memory = self.device.memory
-        logger.info("%.3fMB are needed on device which has %.3fMB" % (ualloc / 1.0e6, memory / 1.0e6))
-        if ualloc >= memory:
-            raise MemoryError("Fatal error in _allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))
-        # now actually allocate:
-        try:
-            self._cl_mem["lut"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, (size_of_float + size_of_int) * self.bins * self.lut_size)
-            self._cl_mem["outData"] = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, size_of_float * self.bins)
-            self._cl_mem["outCount"] = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, size_of_float * self.bins)
-            self._cl_mem["outMerge"] = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, size_of_float * self.bins)
-            self._cl_mem["image_raw"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
-            self._cl_mem["image"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size=size_of_float * self.size)
-            self._cl_mem["dark"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
-            self._cl_mem["flat"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
-            self._cl_mem["polarization"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
-            self._cl_mem["solidangle"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
-        except (pyopencl.MemoryError, pyopencl.LogicError) as error:
-            self._free_buffers()
-            raise MemoryError(error)
+        self._cl_mem = allocate_cl_buffers(buffers, self.device, self._ctx)
 
     def _free_buffers(self):
         """
         free all memory allocated on the device
         """
-        for buffer_name in self._cl_mem:
-            if self._cl_mem[buffer_name] is not None:
-                try:
-                    self._cl_mem[buffer_name].release()
-                    self._cl_mem[buffer_name] = None
-                except (pyopencl.MemoryError, pyopencl.LogicError) as error:
-                    logger.error("Error while freeing buffer %s: %s" % (buffer_name, error))
+        self._cl_mem = release_cl_buffers(self._cl_mem)
 
     def _compile_kernels(self, kernel_file=None):
         """
