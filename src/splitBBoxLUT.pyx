@@ -30,7 +30,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "20141020"
+__date__ = "22/102014"
 __status__ = "stable"
 __license__ = "GPLv3+"
 import cython
@@ -288,9 +288,15 @@ class HistoBBox1d(object):
 
         lut_nbytes = bins * lut_size * sizeof(lut_point)
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
-            memsize = os.sysconf("SC_PAGE_SIZE")*os.sysconf("SC_PHYS_PAGES")
-            if memsize < lut_nbytes:
-                raise MemoryError("Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %s"%(bins, lut_size, lut_nbytes, memsize))
+            try:
+                memsize = os.sysconf("SC_PAGE_SIZE")*os.sysconf("SC_PHYS_PAGES")
+            except OSError:
+                pass
+            else:
+                if memsize < lut_nbytes:
+                    raise MemoryError("Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %s" % 
+                                      (bins, lut_size, lut_nbytes, memsize))
+                
         # else hope we have enough memory
         lut = view.array(shape=(bins, lut_size), itemsize=sizeof(lut_point), format="if")
         memset(&lut[0,0], 0, lut_nbytes)
@@ -930,9 +936,14 @@ class HistoBBox2d(object):
 
         lut_nbytes = bins0 * bins1 * lut_size * sizeof(lut_point)
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
-            memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
-            if memsize < lut_nbytes:
-                raise MemoryError("Lookup-table (%i, %i, %i) is %.3fGB whereas the memory of the system is only %s" % (bins0, bins1, lut_size, lut_nbytes, memsize))
+            try:
+                memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+            except OSError:
+                pass
+            else:
+                if memsize < lut_nbytes:
+                    raise MemoryError("Lookup-table (%i, %i, %i) is %.3fGB whereas the memory of the system is only %s" % 
+                                      (bins0, bins1, lut_size, lut_nbytes, memsize))
         # else hope we have enough memory
         lut = view.array(shape=(bins0, bins1, lut_size), itemsize=sizeof(lut_point), format="if")
         memset(&lut[0, 0, 0], 0, lut_nbytes)

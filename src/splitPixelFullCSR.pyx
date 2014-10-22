@@ -28,7 +28,7 @@ Sparse matrix represented using the CompressedSparseROw.
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "20/10/2014"
+__date__ = "22/10/2014" 
 __status__ = "stable"
 __license__ = "GPLv3+"
 
@@ -293,7 +293,7 @@ class FullSplitCSR_1d(object):
                     CD.slope = (D1 - C1) / (D0 - C0)
                     CD.intersect = C1 - CD.slope * C0
                     DA.slope = (A1 - D1) / (A0 - D0)
-                    DA.intersect = D1 - DA.slope*D0
+                    DA.intersect = D1 - DA.slope * D0
 
                     areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
 
@@ -421,7 +421,7 @@ class FullSplitCSR_1d(object):
                         data = data / cpolarization[i]
                     if do_solidAngle:
                         data = data / csolidAngle[i]
-                    cdata[i]+=data
+                    cdata[i] += data
         else:
             if do_dummy:
                 tdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)

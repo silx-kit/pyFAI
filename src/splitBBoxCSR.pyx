@@ -326,10 +326,14 @@ class HistoBBox1d(object):
 
         lut_nbytes = nnz * (sizeof(numpy.int32_t) + sizeof(numpy.float32_t))
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
-            memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
-            if memsize < lut_nbytes:
-                raise MemoryError("CSR Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %.3fGB" % 
-                                  (bins, self.nnz, lut_nbytes / 2. ** 30, memsize / 2. ** 30))
+            try:
+                memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+            except OSError:
+                pass
+            else:
+                if memsize < lut_nbytes:
+                    raise MemoryError("CSR Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %.3fGB" % 
+                                      (bins, self.nnz, lut_nbytes / 2. ** 30, memsize / 2. ** 30))
         # else hope that enough memory is available
         data = numpy.empty(nnz, dtype=numpy.float32)
         indices = numpy.empty(nnz, dtype=numpy.int32)
@@ -448,10 +452,14 @@ class HistoBBox1d(object):
 
         lut_nbytes = nnz * (sizeof(numpy.int32_t) + sizeof(numpy.float32_t))
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
-            memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
-            if memsize < lut_nbytes:
-                raise MemoryError("CSR Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %.3fGB" % 
-                                  (bins, self.nnz, lut_nbytes / 2. ** 30, memsize / 2. ** 30))
+            try:
+                memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+            except OSError:
+                pass
+            else:
+                if memsize < lut_nbytes:
+                    raise MemoryError("CSR Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %.3fGB" % 
+                                      (bins, self.nnz, lut_nbytes / 2. ** 30, memsize / 2. ** 30))
         # else hope that enough memory is available
         data = numpy.empty(nnz, dtype=numpy.float32)
         indices = numpy.empty(nnz, dtype=numpy.int32)
@@ -925,10 +933,15 @@ class HistoBBox2d(object):
         # Just recycle the outMax array
         outMax[:, :] = 0
         lut_nbytes = nnz * (sizeof(numpy.float32_t) + sizeof(numpy.int32_t)) + bins0 * bins1 * sizeof(numpy.int32_t)
+        
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
-            memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
-            if memsize < lut_nbytes:
-                raise MemoryError("CSR Matrix is %.3fGB whereas the memory of the system is only %s" % (lut_nbytes / 2. ** 30, memsize / 2. ** 30))
+            try:
+                memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+            except OSError:  # see bug 152
+                pass
+            else:
+                if memsize < lut_nbytes:
+                    raise MemoryError("CSR Matrix is %.3fGB whereas the memory of the system is only %s" % (lut_nbytes / 2. ** 30, memsize / 2. ** 30))
         # else hope that enough memory is available
         data = numpy.zeros(nnz, dtype=numpy.float32)
         indices = numpy.zeros(nnz, dtype=numpy.int32)
@@ -1131,9 +1144,13 @@ class HistoBBox2d(object):
         outMax[:, :] = 0
         lut_nbytes = nnz * (sizeof(numpy.float32_t) + sizeof(numpy.int32_t)) + bins0 * bins1 * sizeof(numpy.int32_t)
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
-            memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
-            if memsize < lut_nbytes:
-                raise MemoryError("CSR Matrix is %.3fGB whereas the memory of the system is only %s" % (lut_nbytes / 2. ** 30, memsize / 2. ** 30))
+            try:
+                memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+            except OSError:
+                pass
+            else:
+                if memsize < lut_nbytes:
+                    raise MemoryError("CSR Matrix is %.3fGB whereas the memory of the system is only %s" % (lut_nbytes / 2. ** 30, memsize / 2. ** 30))
         # else hope that enough memory is available
         data = numpy.zeros(nnz, dtype=numpy.float32)
         indices = numpy.zeros(nnz, dtype=numpy.int32)

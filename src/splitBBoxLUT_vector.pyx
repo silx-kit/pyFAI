@@ -30,7 +30,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "20141020"
+__date__ = "22/10/2014"
 __status__ = "stable"
 __license__ = "GPLv3+"
 
@@ -790,17 +790,18 @@ class HistoBBox2d(object):
                         outMax[i, j] +=  1
 
         self.lut_size = lut_size = outMax.max()
-        #just recycle the outMax array
-        #outMax = numpy.zeros((bins0,bins1), dtype=numpy.int32)
-        memset(&outMax[0,0], 0, bins0*bins1*sizeof(numpy.int32_t))
+        outMax[:, :] = 0
 
         lut_nbytes = bins0 * bins1 * lut_size * sizeof(lut_point)
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
-            memsize =  os.sysconf("SC_PAGE_SIZE")*os.sysconf("SC_PHYS_PAGES")
-            if memsize <  lut_nbytes:
-                raise MemoryError("Lookup-table (%i, %i, %i) is %.3fGB whereas the memory of the system is only %s"%(bins0, bins1, lut_size, lut_nbytes, memsize))
-        #else hope we have enough memory
-        lut = view.array(shape=(bins0, bins1, lut_size),itemsize=sizeof(lut_point), format="if")
+            try:
+                memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+            except OSError:
+                pass
+                if memsize < lut_nbytes:
+                    raise MemoryError("Lookup-table (%i, %i, %i) is %.3fGB whereas the memory of the system is only %s"%(bins0, bins1, lut_size, lut_nbytes, memsize))
+        # else hope we have enough memory
+        lut = view.array(shape=(bins0, bins1, lut_size), itemsize=sizeof(lut_point), format="if")
 #        lut = numpy.recarray(shape=(bins0, bins1, lut_size),dtype=[("idx",numpy.int32),("coef",numpy.float32)])
         memset(&lut[0,0,0], 0, lut_nbytes)
         
