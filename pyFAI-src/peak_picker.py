@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/10/2014"
+__date__ = "22/10/2014"
 __status__ = "production"
 
 import os
@@ -615,7 +615,8 @@ class ControlPoints(object):
         if self.calibrant:
             lstOut.append(self.calibrant.__repr__())
         labels = self._groups.keys()
-        labels.sort()
+        labels.sort(PointGroup.cmp)
+        lstOut.append("Containing %s groups of points:" % len(labels))
         for lbl in labels:
             lstOut.append(str(self._groups[lbl]))
         return os.linesep.join(lstOut)
@@ -635,6 +636,7 @@ class ControlPoints(object):
         """
         with self._sem:
             self._groups = {}
+            PointGroup.reset_label()
 
     def append(self, points, ring=None, annotation=None, plot=None):
         """
@@ -682,7 +684,7 @@ class ControlPoints(object):
                     return
                 lbl = lst[-1]
             if lbl in self._groups:
-                out = self._points.get(lbl)
+                out = self._groups.get(lbl)
             else:
                 logger.warning("No such group %s in ControlPoints.pop" % (lbl))
         return out
@@ -778,13 +780,12 @@ class ControlPoints(object):
                         calibrant.set_wavelength(wavelength)
                     except Exception as error:
                         logger.error("ControlPoints.load: unable to convert to float %s (wavelength): %s", value, error)
-                    
-                if key == "wavelength":
+                elif key == "wavelength":
                     try:
                         wavelength=float(value)
                     except Exception as error:
                         logger.error("ControlPoints.load: unable to convert to float %s (wavelength): %s", value, error)
-                elif key == "dspacing" and not calibrant:
+                elif key == "dspacing":
                     for val in value.split():
                         try:
                             fval = float(val)
@@ -820,6 +821,10 @@ class ControlPoints(object):
                             gpt = PointGroup(points, ring)
                             self._groups[gpt.label] = gpt
                             points = []
+                            ring = None
+                elif key in ["2theta"]:
+                    # Deprecated keys
+                    pass
                 else:
                     logger.error("Unknown key: %s", key)
         if len(points) > 0:
@@ -971,6 +976,12 @@ class PointGroup(object):
             code = (ord(label[0]) - 96) * 26 + (ord(label[1]) - 97)
         if cls.last_label <= code:
             cls.last_label = code + 1
+    @classmethod
+    def reset_label(cls):
+        """
+        reset intenal counter
+        """
+        cls.last_label = 0
 
     @staticmethod
     def cmp(a,b):
@@ -1006,7 +1017,7 @@ class PointGroup(object):
             self.set_label(force_label)
         else:
             self.label = self.get_label()
-        if ring:
+        if ring is not None:
             self._ring = int(ring)
         else:
             self._ring = None
@@ -1018,7 +1029,7 @@ class PointGroup(object):
         return len(self.points)
 
     def __repr__(self):
-        return "%s %s: %s" % (self.label, self.ring, len(self.points))
+        return "#%2s ring %s: %s points" % (self.label, self.ring, len(self.points))
 
     def get_ring(self):
         return self._ring
