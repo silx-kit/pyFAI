@@ -22,7 +22,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-version = "0.10.1"
+version = "0.10.2"
 date = "2014-10"
 import sys, logging
 logging.basicConfig()
