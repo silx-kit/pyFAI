@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/10/2014"
+__date__ = "22/10/2014"
 __status__ = "stable"
 
 import os
@@ -179,6 +179,7 @@ class OpenCL(object):
     ocl should be the only instance and shared among all python modules. 
     """
     platforms = []
+    nb_devices = 0
     if pyopencl:
         platform = device = pypl = devtype = extensions = pydev = None
         for idx, platform in enumerate(pyopencl.get_platforms()):
@@ -216,6 +217,7 @@ class OpenCL(object):
                                device.global_mem_size, bool(device.available), device.max_compute_units,
                                device.max_clock_frequency, flop_core, idd, workgroup)
                 pypl.add_device(pydev)
+                nb_devices += 1
             platforms.append(pypl)
         del platform, device, pypl, devtype, extensions, pydev
 
@@ -366,6 +368,8 @@ def allocate_cl_buffers(buffers, device, context):
 
 if pyopencl:
     ocl = OpenCL()
+    if ocl.nb_devices == 0:
+        ocl = None
 else:
     ocl = None
 
