@@ -30,11 +30,13 @@ Test suites for calibrants
 import unittest
 import numpy
 import sys
+
 from utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 
-from pyFAI import calibrant
+from pyFAI.calibrant import Calibrant, ALL_CALIBRANTS
+from pyFAI.detectors import ALL_DETECTORS
 
 
 class TestCalibrant(unittest.TestCase):
@@ -43,19 +45,23 @@ class TestCalibrant(unittest.TestCase):
     """
     def test_factory(self):
         # by default we provide 11 calibrants
-        l = len(calibrant.ALL_CALIBRANTS)
+        l = len(ALL_CALIBRANTS)
         self.assert_(l > 10, "at least 11 calibrants are available, got %s" % l)
 
-        self.assert_("LaB6" in calibrant.ALL_CALIBRANTS, "LaB6 is a calibrant")
+        self.assert_("LaB6" in ALL_CALIBRANTS, "LaB6 is a calibrant")
 
         #ensure each calibrant instance is uniq
-        cal1 = calibrant.ALL_CALIBRANTS["LaB6"]
+        cal1 = ALL_CALIBRANTS["LaB6"]
         cal1.wavelength = 1e-10
-        cal2 = calibrant.ALL_CALIBRANTS["LaB6"]
+        cal2 = ALL_CALIBRANTS["LaB6"]
         self.assert_(cal2.wavelength is None, "calibrant is delivered without wavelength")
 
+        # check that it is possible to instanciate all calibrant
+        for k, v, in ALL_CALIBRANTS.items():
+            self.assertTrue(isinstance(v, Calibrant))
+
     def test_2th(self):
-        lab6 = calibrant.ALL_CALIBRANTS["LaB6"]
+        lab6 = ALL_CALIBRANTS["LaB6"]
         lab6.wavelength = 1.54e-10
         tth = lab6.get_2th()
         self.assert_(len(tth) == 25, "We expect 25 rings for LaB6")
@@ -68,14 +74,48 @@ class TestCalibrant(unittest.TestCase):
 
     def test_fake(self):
         """test for fake image generation"""
-        det = pyFAI.detectors.detector_factory("pilatus1m")
-        ai = pyFAI.AzimuthalIntegrator(dist=0.1, poni1=0.1, poni2=0.1, detector=det)
-        lab6 = pyFAI.calibrant.ALL_CALIBRANTS["LaB6"]
-        lab6.set_wavelength(1e-10)
-        img = lab6.fake_calibration_image(ai)
-        self.assert_(img.max() > 0.8, "Image contains some data")
-        self.assert_(img.min() == 0, "Image contains some data")
+        with_plot = False
+        if with_plot:
+            import matplotlib
+            matplotlib.use('Agg')
 
+            import matplotlib.pyplot as plt
+
+            from matplotlib.backends.backend_pdf import PdfPages
+            from matplotlib import rcParams
+
+            pp = PdfPages('fake.pdf')
+            rcParams['font.size'] = 6
+            plt.clf()
+
+        detectors = set(ALL_DETECTORS.itervalues())
+        for idx, detector in enumerate(detectors):
+            det = detector()
+            # skip the big detecteors for now
+            if det.MAX_SHAPE[0] > 5000 or det.MAX_SHAPE[1] > 5000:
+                continue
+            ai = pyFAI.AzimuthalIntegrator(dist=0.1, poni1=0.1, poni2=0.1,
+                                           detector=detector())
+            calibrant = ALL_CALIBRANTS["LaB6"]
+            calibrant.set_wavelength(1e-10)
+            img = calibrant.fake_calibration_image(ai)
+
+            if with_plot:
+                plt.clf
+                plt.subplot(3, 4, idx % 12)
+                plt.title(det.name)
+                plt.imshow(img, interpolation='nearest')
+
+                if idx != 0 and idx % 12 == 0:
+                    pp.savefig()
+                    plt.clf()
+                print det.name, img.min(), img.max()
+            #self.assert_(img.max() != 0., "Image (%s) contains some data" % (det.name,))
+            #self.assert_(img.min() == 0., "Image (%s) contains some data" % (det.name,))
+
+        if with_plot:
+            pp.savefig()
+            pp.close()
 
 def test_suite_all_calibrant():
     testSuite = unittest.TestSuite()

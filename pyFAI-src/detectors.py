@@ -68,11 +68,13 @@ class DetectorMeta(type):
     # to modify attributes of the class *after* they have been
     # created
     def __init__(cls, name, bases, dct):
-        cls.registry[name.lower()] = cls
-        if hasattr(cls, "aliases"):
-            for alias in cls.aliases:
-                cls.registry[alias.lower().replace(" ", "_")] = cls
-                cls.registry[alias.lower().replace(" ", "")] = cls
+        if hasattr(cls, 'MAX_SHAPE'):
+            cls.registry[name.lower()] = cls
+            if hasattr(cls, "aliases"):
+                for alias in cls.aliases:
+                    cls.registry[alias.lower().replace(" ", "_")] = cls
+                    cls.registry[alias.lower().replace(" ", "")] = cls
+
         super(DetectorMeta, cls).__init__(name, bases, dct)
 
 
@@ -1482,7 +1484,7 @@ class Perkin(Detector):
 class Rayonix(Detector):
     force_pixel = True
     BINNED_PIXEL_SIZE = {}
-    MAX_SHAPE = (4096 , 4096)
+
     def __init__(self, pixel1=None, pixel2=None):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
