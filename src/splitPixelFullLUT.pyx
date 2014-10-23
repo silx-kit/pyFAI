@@ -68,17 +68,20 @@ cdef inline float getBinNr( float x0, float pos0_min, float delta) nogil:
     return (x0 - pos0_min) / delta
 
 @cython.cdivision(True)
-cdef inline float getBin1Nr( float x0, float pos0_min, float delta) nogil:
+cdef inline float getBin1Nr( float x0, float pos0_min, float delta, float var) nogil:
     """
     calculate the bin number for any point
     param x0: current position
     param pos0_min: position minimum
     param delta: bin width
     """
-    if x0 >= 0:
-        return (x0 - pos0_min) / delta
+    if var:
+        if x0 >= 0:
+            return (x0 - pos0_min) / delta
+        else:
+            return (x0 + 2*3.141592653589793 - pos0_min) / delta   # temporary fix....
     else:
-        return (x0 + 2*3.141592653589793 - pos0_min) / delta   # temporary fix....
+        return (x0 - pos0_min) / delta
    
     
     
@@ -655,7 +658,16 @@ cdef float area_n(MyPoly poly) nogil:
             return 0.5*fabs(poly.data[0].i*poly.data[1].j+poly.data[1].i*poly.data[2].j+poly.data[2].i*poly.data[3].j+poly.data[3].i*poly.data[4].j+poly.data[4].i*poly.data[5].j+poly.data[5].i*poly.data[6].j+poly.data[6].i*poly.data[7].j+poly.data[7].i*poly.data[0].j- 
                            poly.data[1].i*poly.data[0].j-poly.data[2].i*poly.data[1].j-poly.data[3].i*poly.data[2].j-poly.data[4].i*poly.data[3].j-poly.data[5].i*poly.data[4].j-poly.data[6].i*poly.data[5].j-poly.data[7].i*poly.data[6].j-poly.data[0].i*poly.data[7].j)
                            
+cdef float var_4(float A, float B, float C, float D) nogil:
+    cdef float mean = (A + B + C + D)*0.25
+    return ((A-mean)*(A-mean)+(B-mean)*(B-mean)+(C-mean)*(C-mean)+(D-mean)*(D-mean))*0.25
 
+cdef int foo(float A, float B, float C, float D) nogil:
+    if (A > 0.5*3.141592653589793) and (B > 0.5*3.141592653589793) and (C < -0.5*3.141592653589793) and (D < -0.5*3.141592653589793):
+        return 1
+    else:
+        return 0
+                           
 class HistoLUT2dFullSplit(object):
     """
     Now uses CSR (Compressed Sparse raw) with main attributes:
@@ -736,7 +748,7 @@ class HistoLUT2dFullSplit(object):
         cdef float areaPixel=0, delta0=0, delta1=0, areaPixel2=0
         cdef float A0=0, B0=0, C0=0, D0=0, A1=0, B1=0, C1=0, D1=0
         cdef float A_lim=0, B_lim=0, C_lim=0, D_lim=0
-        cdef float oneOverArea=0, partialArea=0, tmp_f=0
+        cdef float oneOverArea=0, partialArea=0, tmp_f=0, var=0
         cdef Function AB, BC, CD, DA
         cdef MyPoint A, B, C, D, S, E
         cdef MyPoly list1, list2
@@ -790,10 +802,11 @@ class HistoLUT2dFullSplit(object):
                 C0 = getBinNr(< float > cpos[idx, 2, 0], pos0_min, delta0)
                 D0 = getBinNr(< float > cpos[idx, 3, 0], pos0_min, delta0)
                 
-                A1 = getBin1Nr(< float > cpos[idx, 0, 1], pos1_min, delta1)
-                B1 = getBin1Nr(< float > cpos[idx, 1, 1], pos1_min, delta1)
-                C1 = getBin1Nr(< float > cpos[idx, 2, 1], pos1_min, delta1)
-                D1 = getBin1Nr(< float > cpos[idx, 3, 1], pos1_min, delta1)
+                var = foo(cpos[idx, 0, 1], cpos[idx, 1, 1], cpos[idx, 2, 1], cpos[idx, 3, 1])
+                A1 = getBin1Nr(< float > cpos[idx, 0, 1], pos1_min, delta1, var)
+                B1 = getBin1Nr(< float > cpos[idx, 1, 1], pos1_min, delta1, var)
+                C1 = getBin1Nr(< float > cpos[idx, 2, 1], pos1_min, delta1, var)
+                D1 = getBin1Nr(< float > cpos[idx, 3, 1], pos1_min, delta1, var)
                 
                 min0 = min(A0, B0, C0, D0)
                 max0 = max(A0, B0, C0, D0)
@@ -877,10 +890,11 @@ class HistoLUT2dFullSplit(object):
                 C0 = getBinNr(< float > cpos[idx, 2, 0], pos0_min, delta0)
                 D0 = getBinNr(< float > cpos[idx, 3, 0], pos0_min, delta0)
                 
-                A1 = getBin1Nr(< float > cpos[idx, 0, 1], pos1_min, delta1)
-                B1 = getBin1Nr(< float > cpos[idx, 1, 1], pos1_min, delta1)
-                C1 = getBin1Nr(< float > cpos[idx, 2, 1], pos1_min, delta1)
-                D1 = getBin1Nr(< float > cpos[idx, 3, 1], pos1_min, delta1)
+                var = foo(cpos[idx, 0, 1], cpos[idx, 1, 1], cpos[idx, 2, 1], cpos[idx, 3, 1])
+                A1 = getBin1Nr(< float > cpos[idx, 0, 1], pos1_min, delta1, var)
+                B1 = getBin1Nr(< float > cpos[idx, 1, 1], pos1_min, delta1, var)
+                C1 = getBin1Nr(< float > cpos[idx, 2, 1], pos1_min, delta1, var)
+                D1 = getBin1Nr(< float > cpos[idx, 3, 1], pos1_min, delta1, var)
                 
 
                 #if idx is 257027 or idx is 257026:
