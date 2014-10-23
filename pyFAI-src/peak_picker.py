@@ -196,7 +196,8 @@ class PeakPicker(object):
                 pt0x = gpt.points[0][1]
                 pt0y = gpt.points[0][0]
                 gpt.annotate = self.ax.annotate(gpt.label, xy=(pt0x, pt0y), xytext=(pt0x + 10, pt0y + 10),
-                                                color="white", arrowprops=dict(facecolor='white', edgecolor='white'))
+                                                weight="bold", size="large", color="black",
+                                                arrowprops=dict(facecolor='white', edgecolor='white'))
                 update_fig(self.fig)
         return points
 
@@ -285,7 +286,8 @@ class PeakPicker(object):
                     pt0x = gpt.points[0][1]
                     pt0y = gpt.points[0][0]
                     gpt.annotate = self.ax.annotate(gpt.label, xy=(pt0x, pt0y), xytext=(pt0x + 10, pt0y + 10),
-                                                    color="white", arrowprops=dict(facecolor='white', edgecolor='white'))
+                                                    weight="bold", size="large", color="black",
+                                                    arrowprops=dict(facecolor='white', edgecolor='white'))
 
                     npl = numpy.array(gpt.points)
                     gpt.plot = self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
@@ -303,15 +305,17 @@ class PeakPicker(object):
             TODO
             """
             if x0 is None:
-                annot = self.ax.annotate(".", xy=(x[1], x[0]), color="black")
+                annot = self.ax.annotate(".", xy=(x[1], x[0]), weight="bold", size="large", color="black")
             else:
                 if gpt:
-                     annot = self.ax.annotate(gpt.label, xy=(x[1], x[0]), xytext=(x0[1], x0[0]), color="white",
-                     arrowprops=dict(facecolor='white', edgecolor='white'),)
+                     annot = self.ax.annotate(gpt.label, xy=(x[1], x[0]), xytext=(x0[1], x0[0]),
+                                              weight="bold", size="large", color="black",
+                                              arrowprops=dict(facecolor='white', edgecolor='white'),)
                      gpt.annotate = annot
                 else:
-                    annot = self.ax.annotate("%i" % (len(self.points)), xy=(x[1], x[0]), xytext=(x0[1], x0[0]), color="white",
-                                                  arrowprops=dict(facecolor='white', edgecolor='white'),)
+                    annot = self.ax.annotate("%i" % (len(self.points)), xy=(x[1], x[0]), xytext=(x0[1], x0[0]),
+                                             weight="bold", size="large", color="black",
+                                             arrowprops=dict(facecolor='white', edgecolor='white'),)
                 update_fig(self.fig)
             return annot
 
@@ -345,10 +349,9 @@ class PeakPicker(object):
 
         def single_point(event):
             " * Right-click + Ctrl (click+b):  create new group with one single point"
-            points = []
             newpeak = self.massif.nearest_peak([event.ydata, event.xdata])
             if newpeak:
-                gpt = common_creation(points)
+                gpt = common_creation([newpeak])
                 annontate(newpeak, [event.ydata, event.xdata], gpt=gpt)
                 logger.info("Create group #%2s with single point x=%5.1f, y=%5.1f" % (gpt.label, newpeak[1], newpeak[0]))
             else:
@@ -361,7 +364,10 @@ class PeakPicker(object):
             if not gpt:
                 new_grp(event)
                 return
-            self.ax.lines.remove(gpt.plot)
+            if gpt.plot:
+                if gpt.plot[0] in self.ax.lines:
+                      self.ax.lines.remove(gpt.plot[0])
+
             update_fig(self.fig)
             # need to annotate only if a new group:
             listpeak = self.massif.find_peaks([event.ydata, event.xdata],
