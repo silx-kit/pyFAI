@@ -567,7 +567,7 @@ class AbstractCalibration(object):
         Performs an automatic keypoint extraction:
         Can be used in recalib or in calib after a first calibration has been performed
         """
-        print("in extract_cpt with method %s" % method)
+        logger.info("in extract_cpt with method %s" % method)
         assert self.ai
         assert self.calibrant
         assert self.peakPicker
@@ -577,13 +577,16 @@ class AbstractCalibration(object):
             self.ai.setPyFAI(**self.geoRef.getPyFAI())
         tth = numpy.array([ i for i in self.calibrant.get_2th() if i is not None])
         tth = numpy.unique(tth)
-        dtth = numpy.zeros((tth.size, 2))
-        delta = tth[1:] - tth[:-1]
-        dtth[:-1, 0] = delta
-        dtth[-1, 0] = delta[-1]
-        dtth[1:, 1] = delta
-        dtth[0, 1] = delta[0]
-        dtth = dtth.min(axis= -1)
+        tth_min = numpy.zeros_like(tth)
+        tth_max = numpy.zeros_like(tth)
+        delta = (tth[1:] - tth[:-1]) / 4.0
+        tth_max[:-1] = delta
+        tth_max[-1] = delta[-1]
+        tth_min[1:] = -delta
+        tth_max[0] = -delta[0]
+        tth_max += tth
+        tth_min += tth
+
         if self.geoRef:
             ary = self.geoRef.get_ttha()
             if (ary is not None) and (ary.shape == self.peakPicker.data.shape):
@@ -599,7 +602,7 @@ class AbstractCalibration(object):
         for i in range(tth.size):
             if rings >= self.max_rings:
                 break
-            mask = abs(ttha - tth[i]) <= (dtth[i] / 4.0)
+            mask = numpy.logical_and(ttha >= tth_min[i], ttha < tth_max[i])
             if self.mask is not None:
                 mask = numpy.logical_and(mask, numpy.logical_not(self.mask))
             size = mask.sum(dtype=int)
@@ -624,12 +627,8 @@ class AbstractCalibration(object):
                             "searching for %i pts out of %i with I>%.1f" %
                             (i, numpy.degrees(tth[i]), keep, size2, upper_limit))
 
-                res = self.peakPicker.peaks_from_area(mask2, Imin=upper_limit, keep=keep, method=method)
-                self.peakPicker.points.append(res, tth[i], i)
-                if self.gui:
-                    # minIndex: skip redrawing of previous rings
-                    self.peakPicker.display_points(minIndex=i)
-                    update_fig(self.peakPicker.fig)
+                res = self.peakPicker.peaks_from_area(mask2, Imin=upper_limit, keep=keep, method=method, ring=i)
+
 
         self.peakPicker.points.save(self.basename + ".npt")
         if self.weighted:
@@ -1216,7 +1215,7 @@ Angstrom (in decreasing order).
 %s
 or search in the American Mineralogist database:
 http://rruff.geo.arizona.edu/AMS/amcsd.php
-The --calibrant option is mandatory !  
+The --calibrant option is mandatory !
 """ % str(ALL_CALIBRANTS)
 
         epilog = """The main difference with pyFAI-calib is the way control-point hence Debye-Sherrer
@@ -1227,10 +1226,10 @@ the various peaks; making pyFAI-recalib able to run without graphical interface 
 without human intervention (--no-gui and --no-interactive options).
 
 
-Note that `pyFAI-recalib` program is obsolete as the same functionnality is 
-available from within pyFAI-calib, using the `recalib` command in the 
-refinement process.  
-Two option are available for recalib: the numbe of rings to extract (similar to the -r option of this program) 
+Note that `pyFAI-recalib` program is obsolete as the same functionnality is
+available from within pyFAI-calib, using the `recalib` command in the
+refinement process.
+Two option are available for recalib: the numbe of rings to extract (similar to the -r option of this program)
 and a new option which lets you choose between the original `massif` algorithm and the new `blob` detection.
         """
         usage = "pyFAI-recalib [options] -p ponifile -w 1 -c calibrant.D imagefile.edf"
@@ -1750,9 +1749,9 @@ class CheckCalib(object):
 calibration and everything else like flat-field correction, distortion
 correction, at a sub-pixel level.
 
-Note that `check_calib` program is obsolete as the same functionnality is 
-available from within pyFAI-calib, using the `validate` command in the 
-refinement process.  
+Note that `check_calib` program is obsolete as the same functionnality is
+available from within pyFAI-calib, using the `validate` command in the
+refinement process.
         """
         version = "check_calib from pyFAI version %s: %s" % (PyFAI_VERSION, PyFAI_DATE)
         parser = ArgumentParser(usage=usage,
