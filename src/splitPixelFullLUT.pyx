@@ -917,10 +917,10 @@ class HistoLUT2dFullSplit(object):
                         k = outMax[bin0_min,bin1_min]
                         index = bin0_min*all_bins1 + bin1_min
                         if index > all_bins:
-                            printf("index = %d > %d!! \n",index,all_bins)
+                            printf("0 index = %d > %d!! \n",index,all_bins)
                             fflush(stdout)
                         if indptr[index] > indptr[all_bins]:
-                            printf("indptr = %d > %d!! \n",indptr[index],indptr[all_bins])
+                            printf("0 indptr = %d > %d!! \n",indptr[index],indptr[all_bins])
                             fflush(stdout)
                         indices[indptr[index]+k] = idx
                         data[indptr[index]+k] = 1.0
@@ -965,6 +965,12 @@ class HistoLUT2dFullSplit(object):
                                                         
                             k = outMax[bin0_min,bin1_min+bin1]
                             index = bin0_min*all_bins1 + bin1_min + bin1
+                            if index > all_bins:
+                                printf("1 index = %d > %d!! \n",index,all_bins)
+                                fflush(stdout)
+                            if indptr[index] > indptr[all_bins]:
+                                printf("1 indptr = %d > %d!! \n",indptr[index],indptr[all_bins])
+                                fflush(stdout)
                             indices[indptr[index]+k] = idx
                             data[indptr[index]+k] = fabs(partialArea) * oneOverPixelArea
                             outMax[bin0_min,bin1_min+bin1] += 1 #k+1
@@ -1009,6 +1015,12 @@ class HistoLUT2dFullSplit(object):
                                                     
                         k = outMax[bin0_min+bin0,bin1_min]
                         index = (bin0_min+bin0)*all_bins1 + bin1_min
+                        if index > all_bins:
+                            printf("2 index = %d > %d!! \n",index,all_bins)
+                            fflush(stdout)
+                        if indptr[index] > indptr[all_bins]:
+                            printf("2 indptr = %d > %d!! \n",indptr[index],indptr[all_bins])
+                            fflush(stdout)
                         indices[indptr[index]+k] = idx
                         data[indptr[index]+k] = fabs(partialArea) * oneOverPixelArea
                         outMax[bin0_min+bin0,bin1_min] += 1 #k+1
@@ -1050,12 +1062,17 @@ class HistoLUT2dFullSplit(object):
                             if tmp_i is 4:
                                 k = outMax[bin0_min+i,bin1_min+j]
                                 index = (i+bin0_min)*all_bins1 + j+bin1_min 
+                                if index > all_bins:
+                                    printf("3 index = %d > %d!! \n",index,all_bins)
+                                    fflush(stdout)
+                                if indptr[index] > indptr[all_bins]:
+                                    printf("3 indptr = %d > %d!! \n",indptr[index],indptr[all_bins])
+                                    fflush(stdout)
                                 indices[indptr[index]+k] = idx
                                 data[indptr[index]+k] = oneOverPixelArea
                                 outMax[bin0_min+i,bin1_min+j] += 1 #k+1
                                 
                             elif tmp_i is 1 or tmp_i is 2 or tmp_i is 3:
-                                pass
                                 A.i = A0
                                 A.j = A1
                                 B.i = B0
@@ -1135,6 +1152,12 @@ class HistoLUT2dFullSplit(object):
                                 
                                 k = outMax[bin0_min+i,bin1_min+j]
                                 index = (i+bin0_min)*all_bins1 + j+bin1_min 
+                                if index > all_bins:
+                                    printf("3.1 index = %d > %d!! \n",index,all_bins)
+                                    fflush(stdout)
+                                if indptr[index] > indptr[all_bins]:
+                                    printf("3.1 indptr = %d > %d!! \n",indptr[index],indptr[all_bins])
+                                    fflush(stdout)
                                 indices[indptr[index]+k] = idx
                                 data[indptr[index]+k] = partialArea * oneOverPixelArea
                                 outMax[bin0_min+i,bin1_min+j] += 1 #k+1
