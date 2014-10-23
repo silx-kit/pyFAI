@@ -33,14 +33,14 @@ Developement is done on Github: https://github.com/pyFAI/pyFAI
 
 e.g.
 ::
-    tar xvzf pyFAI-0.10.1.tar.gz
+    tar xvzf pyFAI-0.10.2.tar.gz
 or
 ::
-    unzip pyFAI-0.10.1.zip
+    unzip pyFAI-0.10.2.zip
 
-All files are unpacked into the directory pyFAI-0.10.1.
+All files are unpacked into the directory pyFAI-0.10.2.
 ::
-    cd pyFAI-0.10.1
+    cd pyFAI-0.10.2
 
 Build it & test it. For test pyFAI downloads test images (you may have to setup a proxy configuration like export http_proxy=http://proxy.site.org:3128):
 ::
@@ -133,7 +133,7 @@ With 64 bits windows, the Visual Studio C++ compiler is the only one known to wo
 Getting help
 ============
 
-A mailing-list, pyfai@esrf.fr, is available to get help on the program and how to use it. 
+A mailing-list, pyfai@esrf.fr, is available to get help on the program and how to use it.
 One needs to subscribe by sending an email to sympa@esrf.fr with a subject "subscribe pyfai".
 
 
