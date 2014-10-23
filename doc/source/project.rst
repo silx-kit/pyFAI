@@ -70,16 +70,15 @@ Build dependencies:
 -------------------
 
 In addition to the run dependencies, pyFAI needs a C compiler.
-There is an issue with MacOSX (v10.8 and 10.9) where the default compiler (Xcode5) switched from gcc 4.2 to clang (v<3.5) which
-dropped the support for OpenMP.
+There is an issue with MacOSX (v10.8 onwards) where the default compiler (Xcode5 or 6) switched from gcc 4.2 to clang which
+dropped the support for OpenMP (clang v3.5 supports OpenMP under linux but not directly under MacOSX).
 Multiple solution exist, pick any of those:
 
-* install a recent version of GCC (>=4.2)
-* install Xcode6 (instead of Xcode5) which provides clang 3.5 (with OpenMP support)
-* install pyFAI without OpenMP support using the --no-openmp flag.
+* Install a recent version of GCC (>=4.2)
+* Use Xcode without OpenMP, using the --no-openmp flag for setup.py.
 
 C files are generated from cython source and distributed. Cython is only needed for developing new binary modules.
-If you want to generate your own C files, make sure your local cython version supports memory-views (available from Cython v0.17 and newer),
+If you want to generate your own C files, make sure your local Cython version supports memory-views (available from Cython v0.17 and newer),
 unless your Cython files will not be compiled or used.
 
 Building procedure
@@ -93,7 +92,7 @@ As most of the python projects:
 There are few specific options to setup.py:
 
 * --no-cython: do not use cython (even if present) and use the C source code provided by the development team
-* --no-openmp: if you compiler lacks OpenMP support, like Xcode5 on MacOSX 10.9
+* --no-openmp: if you compiler lacks OpenMP support, like Xcode on MacOSX
 * --with-testimages: build the source distribution including all test images. Download 200MB of test images to create a self consistent tar-ball.
 
 
