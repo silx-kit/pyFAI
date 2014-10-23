@@ -50,14 +50,14 @@ class TestCalibrant(unittest.TestCase):
 
         self.assert_("LaB6" in ALL_CALIBRANTS, "LaB6 is a calibrant")
 
-        #ensure each calibrant instance is uniq
+        # ensure each calibrant instance is unique
         cal1 = ALL_CALIBRANTS["LaB6"]
         cal1.wavelength = 1e-10
         cal2 = ALL_CALIBRANTS["LaB6"]
         self.assert_(cal2.wavelength is None, "calibrant is delivered without wavelength")
 
         # check that it is possible to instanciate all calibrant
-        for k, v, in ALL_CALIBRANTS.items():
+        for k, v in ALL_CALIBRANTS.items():
             self.assertTrue(isinstance(v, Calibrant))
 
     def test_2th(self):
@@ -91,11 +91,14 @@ class TestCalibrant(unittest.TestCase):
         detectors = set(ALL_DETECTORS.itervalues())
         for idx, detector in enumerate(detectors):
             det = detector()
-            # skip the big detecteors for now
-            if det.MAX_SHAPE[0] > 5000 or det.MAX_SHAPE[1] > 5000:
+            # Skip generic detectors
+            if "MAX_SHAPE" not in dir(det):
                 continue
-            ai = pyFAI.AzimuthalIntegrator(dist=0.1, poni1=0.1, poni2=0.1,
-                                           detector=detector())
+            # skip the big detectors for now
+            if max(det.MAX_SHAPE) > 2000:
+                continue
+            ai = pyFAI.AzimuthalIntegrator(dist=0.01, poni1=0, poni2=0,
+                                           detector=det)
             calibrant = ALL_CALIBRANTS["LaB6"]
             calibrant.set_wavelength(1e-10)
             img = calibrant.fake_calibration_image(ai)
@@ -110,12 +113,14 @@ class TestCalibrant(unittest.TestCase):
                     pp.savefig()
                     plt.clf()
                 print det.name, img.min(), img.max()
-            #self.assert_(img.max() != 0., "Image (%s) contains some data" % (det.name,))
-            #self.assert_(img.min() == 0., "Image (%s) contains some data" % (det.name,))
+            self.assert_(img.shape == det.shape, "Image (%s) has the right size" % (det.name,))
+            self.assert_(img.sum() > 0, "Image (%s) contains some data" % (det.name,))
+            sys.stderr.write(".")
 
         if with_plot:
             pp.savefig()
             pp.close()
+
 
 def test_suite_all_calibrant():
     testSuite = unittest.TestSuite()
