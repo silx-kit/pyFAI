@@ -1,4 +1,5 @@
 TODO list:
+==========
 
 * include Raster Orientation of images (in pyFAI? in fabio?)
 * have geometries as pluggable classes (!!!) --> Version 2
@@ -10,10 +11,11 @@ Refactor _geometry.pyx
 ----------------------
 * add Fused-types (template) with float/double for all calculations
 * propose the output dtype as parameter
-* refactor cdef st
+* refactor cdef stuf
  
 
 Done list
+=========
 * migrate forward version of histogramming on GPU to PyOpenCL (Done in v0.8.0)
 * recalibration tool (Done in v.0.8.0) using a poni file and a d-spacing file and an image
 * prepare 2 packages one without OpenCL and one with GPU enabled (no more needed with pyopencl)
