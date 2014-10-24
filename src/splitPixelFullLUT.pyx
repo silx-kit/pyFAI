@@ -33,6 +33,7 @@ from libc.math cimport fabs, M_PI, floor, sqrt
 from libc.stdio cimport printf, fflush, stdout
 
 cdef float pi = <float> M_PI 
+cdef float piover2 = pi * 0.5 
 cdef float onef = <float> 1.0
 try:
     from fastcrc import crc32
@@ -79,7 +80,7 @@ cdef inline float getBin1Nr( float x0, float pos0_min, float delta, float var) n
         if x0 >= 0:
             return (x0 - pos0_min) / delta
         else:
-            return (x0 + 2*3.141592653589793 - pos0_min) / delta   # temporary fix....
+            return (x0 + 2*pi - pos0_min) / delta   # temporary fix....
     else:
         return (x0 - pos0_min) / delta
    
@@ -657,17 +658,44 @@ cdef float area_n(MyPoly poly) nogil:
     elif poly.size is 8:
             return 0.5*fabs(poly.data[0].i*poly.data[1].j+poly.data[1].i*poly.data[2].j+poly.data[2].i*poly.data[3].j+poly.data[3].i*poly.data[4].j+poly.data[4].i*poly.data[5].j+poly.data[5].i*poly.data[6].j+poly.data[6].i*poly.data[7].j+poly.data[7].i*poly.data[0].j- 
                            poly.data[1].i*poly.data[0].j-poly.data[2].i*poly.data[1].j-poly.data[3].i*poly.data[2].j-poly.data[4].i*poly.data[3].j-poly.data[5].i*poly.data[4].j-poly.data[6].i*poly.data[5].j-poly.data[7].i*poly.data[6].j-poly.data[0].i*poly.data[7].j)
+
+#cdef float area_n(MyPoly poly) nogil:
+    #cdef float area = 0
+    #for i in range(poly.size):
+        
+    #if   poly.size is 3:
+            #return 0.5*fabs(poly.data[0].i*poly.data[1].j+poly.data[1].i*poly.data[2].j+poly.data[2].i*poly.data[0].j- 
+                           #poly.data[1].i*poly.data[0].j-poly.data[2].i*poly.data[1].j-poly.data[0].i*poly.data[2].j)
+    #elif poly.size is 4:
+            #return 0.5*fabs(poly.data[0].i*poly.data[1].j+poly.data[1].i*poly.data[2].j+poly.data[2].i*poly.data[3].j+poly.data[3].i*poly.data[0].j- 
+                           #poly.data[1].i*poly.data[0].j-poly.data[2].i*poly.data[1].j-poly.data[3].i*poly.data[2].j-poly.data[0].i*poly.data[3].j)
+    #elif poly.size is 5:
+            #return 0.5*fabs(poly.data[0].i*poly.data[1].j+poly.data[1].i*poly.data[2].j+poly.data[2].i*poly.data[3].j+poly.data[3].i*poly.data[4].j+poly.data[4].i*poly.data[0].j- 
+                           #poly.data[1].i*poly.data[0].j-poly.data[2].i*poly.data[1].j-poly.data[3].i*poly.data[2].j-poly.data[4].i*poly.data[3].j-poly.data[0].i*poly.data[4].j)
+    #elif poly.size is 6:
+            #return 0.5*fabs(poly.data[0].i*poly.data[1].j+poly.data[1].i*poly.data[2].j+poly.data[2].i*poly.data[3].j+poly.data[3].i*poly.data[4].j+poly.data[4].i*poly.data[5].j+poly.data[5].i*poly.data[0].j- 
+                           #poly.data[1].i*poly.data[0].j-poly.data[2].i*poly.data[1].j-poly.data[3].i*poly.data[2].j-poly.data[4].i*poly.data[3].j-poly.data[5].i*poly.data[4].j-poly.data[0].i*poly.data[5].j)
+    #elif poly.size is 7:
+            #return 0.5*fabs(poly.data[0].i*poly.data[1].j+poly.data[1].i*poly.data[2].j+poly.data[2].i*poly.data[3].j+poly.data[3].i*poly.data[4].j+poly.data[4].i*poly.data[5].j+poly.data[5].i*poly.data[6].j+poly.data[6].i*poly.data[0].j- 
+                           #poly.data[1].i*poly.data[0].j-poly.data[2].i*poly.data[1].j-poly.data[3].i*poly.data[2].j-poly.data[4].i*poly.data[3].j-poly.data[5].i*poly.data[4].j-poly.data[6].i*poly.data[5].j-poly.data[0].i*poly.data[6].j)
+    #elif poly.size is 8:
+            #return 0.5*fabs(poly.data[0].i*poly.data[1].j+poly.data[1].i*poly.data[2].j+poly.data[2].i*poly.data[3].j+poly.data[3].i*poly.data[4].j+poly.data[4].i*poly.data[5].j+poly.data[5].i*poly.data[6].j+poly.data[6].i*poly.data[7].j+poly.data[7].i*poly.data[0].j- 
+                           #poly.data[1].i*poly.data[0].j-poly.data[2].i*poly.data[1].j-poly.data[3].i*poly.data[2].j-poly.data[4].i*poly.data[3].j-poly.data[5].i*poly.data[4].j-poly.data[6].i*poly.data[5].j-poly.data[7].i*poly.data[6].j-poly.data[0].i*poly.data[7].j)
+                           
+                           
                            
 cdef float var_4(float A, float B, float C, float D) nogil:
     cdef float mean = (A + B + C + D)*0.25
     return ((A-mean)*(A-mean)+(B-mean)*(B-mean)+(C-mean)*(C-mean)+(D-mean)*(D-mean))*0.25
 
 cdef int foo(float A, float B, float C, float D) nogil:
-    if (A > 0.5*3.141592653589793) and (B > 0.5*3.141592653589793) and (C < -0.5*3.141592653589793) and (D < -0.5*3.141592653589793):
-        return 1
-    else:
-        return 0
-                           
+    return (((A > piover2) and (B > piover2) and (C < -piover2) and (D < -piover2)) or
+            ((A < -piover2) and (B < -piover2) and (C > piover2) and (D > piover2)) or
+            ((A > piover2) and (B < -piover2) and (C > piover2) and (D < -piover2)) or
+            ((A < -piover2) and (B > piover2) and (C < -piover2) and (D > piover2)) or
+            ((A > piover2) and (B < -piover2) and (C < -piover2) and (D > piover2)) or
+            ((A < -piover2) and (B > piover2) and (C > piover2) and (D < -piover2)))
+                                   
 class HistoLUT2dFullSplit(object):
     """
     Now uses CSR (Compressed Sparse raw) with main attributes:
@@ -814,7 +842,6 @@ class HistoLUT2dFullSplit(object):
                 max1 = max(A1, B1, C1, D1)
                 
                 if (max0<0) or (min0 >= all_bins0) or (max1<0): # or (min1 >= all_bins1+2):
-                    printf("AAA\n")
                     continue
 
                 bin0_min = < int > floor(min0)
@@ -967,10 +994,10 @@ class HistoLUT2dFullSplit(object):
                         #for bin in range(bin0_min, bin0_max+1):
                         for bin1 in range(bin1_max+1 - bin1_min):
                             #bin1 = bin - bin1_min
-                            A_lim = (A0<=bin1)*(A0<=(bin1+1))*bin1 + (A0>bin1)*(A0<=(bin1+1))*A0 + (A0>bin1)*(A0>(bin1+1))*(bin1+1)
-                            B_lim = (B0<=bin1)*(B0<=(bin1+1))*bin1 + (B0>bin1)*(B0<=(bin1+1))*B0 + (B0>bin1)*(B0>(bin1+1))*(bin1+1)
-                            C_lim = (C0<=bin1)*(C0<=(bin1+1))*bin1 + (C0>bin1)*(C0<=(bin1+1))*C0 + (C0>bin1)*(C0>(bin1+1))*(bin1+1)
-                            D_lim = (D0<=bin1)*(D0<=(bin1+1))*bin1 + (D0>bin1)*(D0<=(bin1+1))*D0 + (D0>bin1)*(D0>(bin1+1))*(bin1+1)
+                            A_lim = (A1<=bin1)*(A1<=(bin1+1))*bin1 + (A1>bin1)*(A1<=(bin1+1))*A1 + (A1>bin1)*(A1>(bin1+1))*(bin1+1)
+                            B_lim = (B1<=bin1)*(B1<=(bin1+1))*bin1 + (B1>bin1)*(B1<=(bin1+1))*B1 + (B1>bin1)*(B1>(bin1+1))*(bin1+1)
+                            C_lim = (C1<=bin1)*(C1<=(bin1+1))*bin1 + (C1>bin1)*(C1<=(bin1+1))*C1 + (C1>bin1)*(C1>(bin1+1))*(bin1+1)
+                            D_lim = (D1<=bin1)*(D1<=(bin1+1))*bin1 + (D1>bin1)*(D1<=(bin1+1))*D1 + (D1>bin1)*(D1>(bin1+1))*(bin1+1)
 
                             partialArea  = integrate(A_lim, B_lim, AB)
                             partialArea += integrate(B_lim, C_lim, BC)
