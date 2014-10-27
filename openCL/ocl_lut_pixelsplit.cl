@@ -160,7 +160,6 @@ memset_out_int(__global int *array0)
 
 __kernel
 void reduce1(__global float2* buffer,
-             __const int length,
              __global float4* preresult) {
     
     
@@ -173,7 +172,7 @@ void reduce1(__global float2* buffer,
     accumulator.w = -INFINITY;
     
     // Loop sequentially over chunks of input vector
-    while (global_index < length/2) {
+    while (global_index < POS_SIZE/2) {
         float2 element = buffer[global_index];
         accumulator.x = (accumulator.x < element.s0) ? accumulator.x : element.s0;
         accumulator.y = (accumulator.y > element.s0) ? accumulator.y : element.s0;
@@ -288,7 +287,7 @@ void reduce2(__global float4* preresult,
  * @param dummy           Float: value for bad pixels
  * @param delta_dummy     Float: precision for bad pixel value
  *
-**/
+
 __kernel void
 corrections(        __global float  *image,
             const            int    do_dark,
@@ -317,7 +316,7 @@ corrections(        __global float  *image,
         image[i] = dummy_condition ? data : dummy;
     };//end if NIMAGE
 };//end kernel
-
+**/
 
 
 
@@ -326,19 +325,22 @@ void lut1(__global float8* pos,
 //             __global int*    mask,
 //             __const  int     check_mask,
           __global float4* minmax,
-          const    int     length,
-//                   float2  pos0Range,
-//                   float2  pos1Range,
+                   float2  pos0Range,
+                   float2  pos1Range,
           __global int*  outMax)
 {
     int global_index = get_global_id(0);
-    if (global_index < length)
+    if (global_index < SIZE)
     {
-//         float pos0_min = fmax(fmin(pos0Range.x,pos0Range.y),minmax[0].s0);
-//         float pos0_max = fmin(fmax(pos0Range.x,pos0Range.y),minmax[0].s1);
-        float pos0_min = minmax[0].s0;
-        float pos0_maxin = minmax[0].s1;
+        int tmp_bool = (pos0Range.x == pos0Range.y); //(== 0)
+        float pos0_min = !tmp_bool*fmin(pos0Range.x,pos0Range.y) + tmp_bool*minmax[0].s0;
+        float pos0_max = !tmp_bool*fmax(pos0Range.x,pos0Range.y) + tmp_bool*minmax[0].s1);
+//        float pos0_min = minmax[0].s0;
+//        float pos0_maxin = minmax[0].s1;
         float pos0_max = pos0_maxin*( 1 + EPS);
+
+
+
         
         float delta = (pos0_max - pos0_min) / BINS;
         
@@ -356,6 +358,8 @@ void lut1(__global float8* pos,
         
         int bin0_min = floor(min0);
         int bin0_max = floor(max0);
+        
+//        if (bin0_min >= 0) && (bin0_max < BINS) // do i count half pixels
         
         for (int bin=bin0_min; bin < bin0_max+1; bin++)
         {
@@ -410,7 +414,6 @@ void lut3(__global float8* pos,
 //             __global int*    mask,
 //             __const  int     check_mask,
           __global float4* minmax,
-          const    int     length,
 //                   float2  pos0Range,
 //                   float2  pos1Range,
           __global int*    outMax,
@@ -419,7 +422,7 @@ void lut3(__global float8* pos,
           __global float*  data)
 {
     int global_index = get_global_id(0);
-    if (global_index < length)
+    if (global_index < SIZE)
     {
 //         float pos0_min = fmax(fmin(pos0Range.x,pos0Range.y),minmax[0].s0);
 //         float pos0_max = fmin(fmax(pos0Range.x,pos0Range.y),minmax[0].s1);
