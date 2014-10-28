@@ -343,6 +343,8 @@ csr_integrate_dis(  const   __global    float   *weights,
                     const   __global    float   *coefs,
                     const   __global    int     *row_ind,
                     const   __global    int     *col_ptr,
+                    const               int     do_dummy,
+                    const               float   dummy,
                             __global    float   *outData
                  )
 {
