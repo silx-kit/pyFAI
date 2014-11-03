@@ -1,7 +1,12 @@
+__status__ = "deprecated"
+import numpy
+from zlib import crc32
+
+
 class OCLFullSplit1d(object):
     def __init__(self,
                  pos,
-                 int bins=100,
+                 bins=100,
                  pos0Range=None,
                  pos1Range=None,
                  mask=None,
@@ -107,6 +112,7 @@ class OCLFullSplit1d(object):
         
         
     def _minMax(self):
+        pass
         #check memory of d_pos + d_preresult + d_minmax
         #load d_pos
         #allocate d_preresult
@@ -118,6 +124,7 @@ class OCLFullSplit1d(object):
         
         
     def _calcLUT(self):
+        pass
         #check memory of d_pos + d_minmax + d_outMax + d_lutsize
         #allocate d_outMax
         #allocate d_lutsize
