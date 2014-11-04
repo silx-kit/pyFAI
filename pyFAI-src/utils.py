@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
-#             https://github.com/kif/pyFAI
+#             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/10/2014"
+__date__ = "04/11/2014"
 __status__ = "production"
 
 import logging, sys, types, os, glob
@@ -409,7 +409,7 @@ def relabel(label, data, blured, max_size=None):
         logger.warning("relabel Cython module is not available...")
         return label
 
-def averageDark(lstimg, center_method="mean", cutoff=None):
+def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5,0.5)):
     """
     Averages a serie of dark (or flat) images.
     Centers the result on the mean or the median ...
@@ -418,6 +418,8 @@ def averageDark(lstimg, center_method="mean", cutoff=None):
     @param lstimg: list of 2D images or a 3D stack
     @param center_method: is the center calculated by a "mean" or a "median"
     @param cutoff: keep all data where (I-center)/std < cutoff
+    @param quantiles: 2-tuple of floats average out data between the two quantiles
+    
     @return: 2D image averaged
     """
     if "ndim" in dir(lstimg) and lstimg.ndim == 3:
@@ -436,6 +438,11 @@ def averageDark(lstimg, center_method="mean", cutoff=None):
         center = stack.__getattribute__(center_method)(axis=0)
     elif center_method == "median":
         center = numpy.median(stack, axis=0)
+    elif center_method == "quantile":
+        sorted = numpy.sort(stack, axis=0)
+        lower = max(0, int(min(quantils) * length))
+        upper = min(length, int(max(quantils) * length) + 1)
+        output = sorted[lower:upper].mean(axis=0)
     else:
         raise RuntimeError("Cannot understand method: %s in averageDark" % center_method)
     if cutoff is None or cutoff <= 0:

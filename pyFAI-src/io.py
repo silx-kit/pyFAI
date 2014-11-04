@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal Integration
-#             https://github.com/kif/
+#             https://github.com/pyFAI/pyFAI
 #
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
@@ -29,7 +29,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/09/2014"
+__date__ = "04/11/2014"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -618,6 +618,11 @@ class Nexus(object):
         for entry in self.to_close:
             entry["end_time"] = end_time
         self.h5.close()
+
+    # for with statement compatibility
+    __enter__ = __init__
+    __exit__ = close
+
 
     def get_entry(self, name):
         """
