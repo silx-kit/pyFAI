@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/kif
+#             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -121,7 +121,8 @@ class AbstractCalibration(object):
             'integrate': "perform the azimuthal integration and display results",
             'abort': "quit immediately, discarding any unsaved changes",
             'show': "Just print out the current parameter set",
-            'reset': "Reset the geometry to the initial guess (rotation to zero, distance to 0.1m, poni at the center of the image)"
+            'reset': "Reset the geometry to the initial guess (rotation to zero, distance to 0.1m, poni at the center of the image)",
+            'assign': "Change the assignment of a group of points to a rings"
             }
     PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
     UNITS = {"dist":"meter", "poni1":"meter", "poni2":"meter", "rot1":"radian",
@@ -911,8 +912,15 @@ class AbstractCalibration(object):
                 self.geoRef.set_rot3_min(-math.pi)
                 self.geoRef.set_rot3_max(math.pi)
                 self.geoRef.set_rot3(self.ai.rot3)
-
-
+            elif action == "assign":
+                #Re assign a group of point to a ring ...
+                if self.peakPicker and self.peakPicker.points:
+                    self.peakPicker.points.readRingNrFromKeyboard()
+                    if self.weighted:
+                        self.data = self.peakPicker.points.getList(self.peakPicker.data)
+                    else:
+                        self.data = self.peakPicker.points.getList()
+                    self.geoRef.data = numpy.array(self.data, dtype=numpy.float64)
             else:
                 logger.warning("Unrecognized action: %s, type 'quit' to leave " % action)
 
