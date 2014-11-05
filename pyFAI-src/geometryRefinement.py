@@ -22,6 +22,8 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function, division
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
@@ -40,6 +42,8 @@ from . import azimuthalIntegrator
 from .calibrant import Calibrant, ALL_CALIBRANTS
 AzimuthalIntegrator = azimuthalIntegrator.AzimuthalIntegrator
 from scipy.optimize import fmin, leastsq, fmin_slsqp, anneal, curve_fit
+
+from .utils import timeit
 
 if os.name != "nt":
     WindowsError = RuntimeError
@@ -428,7 +432,7 @@ class GeometryRefinement(AzimuthalIntegrator):
             if len(param) == 6:
                 param.append(1e10 * self.wavelength)
         return self.residu2_wavelength(param,
-                            self.data[:, 0], self.data[:, 1], self.data[:, 2].astype(numpy.int32))
+                            self.data[:, 0], self.data[:, 1], self.data[:, 2])
 
     def curve_fit(self):
         """Refine the geometry and provide confidence interval
@@ -448,6 +452,69 @@ class GeometryRefinement(AzimuthalIntegrator):
         print("p1: %s" % popt)
         print(pcov)
         err = numpy.sqrt(numpy.diag(pcov))
+        print("err: %s" % err)
+        return err
+
+    @timeit
+    def confidence(self, with_rot=True):
+        """Confidence interval obtained from the inverse of the hessian matrix
+        of the error function next to its minimum value.
+
+        @param with_rot: if true include rot1 & rot2 in the parameter set.
+        @return: inverse of the Hessian array
+        """
+        epsilon = 1e-5
+        y = self.data[:, 0]
+        x = self.data[:, 1]
+        r = self.data[:, 2].astype(numpy.int32)
+        param0 = numpy.array([self.dist, self.poni1, self.poni2, self.rot1, self.rot2, self.rot3], dtype=numpy.float64)
+        ref = self.residu2(param0, y, x, r)
+        print(ref)
+        if with_rot:
+            size = 5
+        else:
+            size = 3
+        hessian = numpy.zeros((size,size), dtype=numpy.float64)
+
+        delta = abs(epsilon * param0)
+        delta[abs(param0) < epsilon] = epsilon
+        print(delta)
+        for i in range(size):
+            # Diagonal terms:
+            deltai = delta[i]
+            param = param0.copy()
+            param[i] += deltai
+            value_plus = self.residu2(param, y, x, r)
+            param = param0.copy()
+            param[i] -= deltai
+            value_moins = self.residu2(param, y, x, r)
+            hessian[i, i] = (value_plus + value_moins - 2.0 * ref) / (deltai ** 2)
+
+        for i in range(size):
+            for j in range(i + 1, size):
+                deltai = delta[i]
+                deltaj = delta[j]
+                param = param0.copy()
+                param[i] += deltai
+                param[j] += deltaj
+                value_plus_plus = self.residu2(param, y, x, r)
+                param = param0.copy()
+                param[i] -= deltai
+                param[j] -= deltaj
+                value_moins_moins = self.residu2(param, y, x, r)
+                param = param0.copy()
+                param[i] += deltai
+                param[j] -= deltaj
+                value_plus_moins = self.residu2(param, y, x, r)
+                param = param0.copy()
+                param[i] -= deltai
+                param[j] += deltaj
+                value_moins_plus = self.residu2(param, y, x, r)
+                hessian[j, i] = hessian[i, j] = (value_plus_plus + value_moins_moins - value_plus_moins - value_moins_plus) / (deltai * deltaj)
+        print(hessian)
+        cov = numpy.linalg.inv(hessian)
+        print(cov)
+        err = numpy.sqrt(numpy.diag(cov))
         print("err: %s" % err)
         return err
 
