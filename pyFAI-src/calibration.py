@@ -122,7 +122,8 @@ class AbstractCalibration(object):
             'abort': "quit immediately, discarding any unsaved changes",
             'show': "Just print out the current parameter set",
             'reset': "Reset the geometry to the initial guess (rotation to zero, distance to 0.1m, poni at the center of the image)",
-            'assign': "Change the assignment of a group of points to a rings"
+            'assign': "Change the assignment of a group of points to a rings",
+            "weight": "toggle from weighted to unweighted mode..."
             }
     PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
     UNITS = {"dist":"meter", "poni1":"meter", "poni2":"meter", "rot1":"radian",
@@ -917,7 +918,26 @@ class AbstractCalibration(object):
                 if self.peakPicker and self.peakPicker.points:
                     self.peakPicker.points.readRingNrFromKeyboard()
                     if self.weighted:
-                        self.data = self.peakPicker.points.getList(self.peakPicker.data)
+                        self.data = self.peakPicker.points.getWeightedList(self.peakPicker.data)
+                    else:
+                        self.data = self.peakPicker.points.getList()
+                    self.geoRef.data = numpy.array(self.data, dtype=numpy.float64)
+            elif action == "weight":
+                old = self.weighted
+                if len(words)==2:
+                    value = words[1].lower()
+                    if value in ("0", "off","no","none","false"):
+                        self.weighted = False
+                    elif value in ("1", "on","yes","true"):
+                        self.weighted = True
+                    else:
+                        logger.warning("Unrecognized argument for weight: %s" % value)
+                        continue
+
+                print("Weights: %s" % self.weighted)
+                if (old != self.weighted):
+                    if self.weighted:
+                        self.data = self.peakPicker.points.getWeightedList(self.peakPicker.data)
                     else:
                         self.data = self.peakPicker.points.getList()
                     self.geoRef.data = numpy.array(self.data, dtype=numpy.float64)
