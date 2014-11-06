@@ -199,7 +199,7 @@ class AbstractCalibration(object):
         self.nPt_1D = 1024
         self.nPt_2D_azim = 360
         self.nPt_2D_rad = 400
-        self.unit = None
+        self.unit = "2th_deg"
         self.keep = True
         self.check_calib = None
         self.fig3 = self.ax_xrpd_1d = self.ax_xrpd_2d = None
