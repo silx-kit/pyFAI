@@ -437,7 +437,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         Use curve_fit from scipy.optimize to not only refine the geometry (unconstrained fit)
 
         @param with_rot: include rotation intro error measurment
-        @return errors
+        @return: std_dev, confidence
         """
         d1 = self.data[:, 0]
         d2 = self.data[:, 1]
@@ -451,10 +451,10 @@ class GeometryRefinement(AzimuthalIntegrator):
         ref = self.residu2(param0, d1, d2, rings)
         print("param0: %s %s" % (param0, ref))
         if with_rot:
-            popt, pcov = curve_fit(f, x, y, param0[:-1])
+            popt, pcov = curve_fit(f_with_rot, x, y, param0[:-1])
             popt = numpy.concatenate((popt, [self.rot3]))
         else:
-            popt, pcov = curve_fit(f, x, y, param0[:-1])
+            popt, pcov = curve_fit(f_no_rot, x, y, param0[:-3])
             popt = numpy.concatenate((popt, [self.rot1, self.rot2, self.rot3]))
         obt = self.residu2(popt, d1, d2, rings)
         print("param1: %s %s" % (popt, obt))
@@ -469,18 +469,20 @@ class GeometryRefinement(AzimuthalIntegrator):
         confidence = {}
         for k, v in zip(("dist", "poni1", "poni2", "rot1", "rot2", "rot3"), err):
             error[k] = v
-            confidence[k] = 1.96 * err / numpy.sqrt(size)
+            confidence[k] = 1.96 * v / numpy.sqrt(size)
 
-        print("Error as sqrt of the diag of covariance:\n%s" % error)
+        print("Std dev  as sqrt of the diag of covariance:\n%s" % error)
         print("Confidence as 1.95 sigma/sqrt(n):\n%s" % confidence)
         return error, confidence
 
     def confidence(self, with_rot=True):
-        """Confidence interval obtained from the inverse of the hessian matrix
-        of the error function next to its minimum value.
+        """Confidence interval obtained from the second derivative of the error function
+        next to its minimum value.
+
+        Note the confidence interval increases with the number of points which is "surprizing"
 
         @param with_rot: if true include rot1 & rot2 in the parameter set.
-        @return: inverse of the Hessian array
+        @return: std_dev, confidence
         """
         epsilon = 1e-5
         d1 = self.data[:, 0]
@@ -544,7 +546,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         for i, k in enumerate(("dist", "poni1", "poni2", "rot1", "rot2", "rot3")):
             if i < size:
                 confidence[k] = numpy.sqrt(ref / hessian[i, i])
-        print("Error as sqrt of the diag of inv hessian:\n%s" % error)
+        print("std_dev as sqrt of the diag of inv hessian:\n%s" % error)
         print("Convidence as sqrt of the error function /  hessian:\n%s" % confidence)
         return error, confidence
 
