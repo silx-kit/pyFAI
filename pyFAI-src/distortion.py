@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/kif/pyFAI
+#             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2014"
+__date__ = "06/11/2014"
 __status__ = "development"
 
 import logging, threading
@@ -35,8 +35,13 @@ import numpy
 logger = logging.getLogger("pyFAI.distortion")
 logging.basicConfig(level=logging.INFO)
 from math import ceil, floor
-from pyFAI import detectors, ocl_azim_lut, ocl_azim_csr
-from pyFAI.utils import timeit
+from . import detectors
+from .opencl import ocl
+if ocl:
+    from . import ocl_azim_lut, ocl_azim_csr
+else:
+    ocl_azim_lut = ocl_azim_csr = None
+from .utils import timeit
 import fabio
 
 try:
@@ -185,7 +190,7 @@ class Distortion(object):
         self.calc_pos()
         self.calc_size()
         self.calc_LUT()
-        if self.device is not None:
+        if ocl and self.device is not None:
             if "lower" in dir(self.device):
                 self.device = self.device.lower()
                 if self.method == "lut":
@@ -201,6 +206,7 @@ class Distortion(object):
                     self.integrator = ocl_azim_csr.OCL_CSR_Integrator(self.lut, self.shape[0] * self.shape[1],
                                                                 platformid=self.device[0], deviceid=self.device[1],
                                                                 block_size=self.workgroup)
+
     @timeit
     def calc_LUT(self):
         if self.max_size is None:

@@ -950,7 +950,7 @@ class HistoLUT2dFullSplit(object):
                 max1 = max(A1, B1, C1, D1)
 
                 if (max0<0) or (min0 >= all_bins0) or (max1<0): # or (min1 >= all_bins1 + 2 ):
-                    printf("BBB\n")
+                    printf("BBB out of bound %f %f %f %f\n",min0, max0, min1, max1)
                     continue
 
                 bin0_min = < int > floor(min0)
