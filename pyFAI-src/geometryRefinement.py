@@ -210,10 +210,8 @@ class GeometryRefinement(AzimuthalIntegrator):
     def residu1(self, param, d1, d2, rings):
         return self.tth(d1, d2, param) - self.calc_2th(rings, self.wavelength)
 
-
     def residu1_wavelength(self, param, d1, d2, rings):
         return self.tth(d1, d2, param) - self.calc_2th(rings, param[6] * 1e-10)
-
 
     def residu2(self, param, d1, d2, rings):
         return (self.residu1(param, d1, d2, rings) ** 2).sum()
@@ -443,16 +441,23 @@ class GeometryRefinement(AzimuthalIntegrator):
         d1 = self.data[:, 0]
         d2 = self.data[:, 1]
         x = d1, d2
-        rings = self.data[:, 2]
-        f = lambda x, *param: self.tth(x[0], x[1], param)
+        rings = self.data[:, 2].astype(numpy.int32)
+        f = lambda x, *param: self.tth(x[0], x[1], numpy.concatenate(param, [0]))
         y = self.calc_2th(rings, self.wavelength)
-        p0 = numpy.array([self.dist, self.poni1, self.poni2, self.rot1, self.rot2, self.rot3], dtype=numpy.float64)
-        print("p0: %s" % p0)
-        popt, pcov = curve_fit(f, x, y, p0)
-        print("p1: %s" % popt)
+        param0 = numpy.array([self.dist, self.poni1, self.poni2, self.rot1, self.rot2, self.rot3], dtype=numpy.float64)
+        ref = self.residu2(param0, d1, d2, rings)
+        print("param0: %s %s" % (param0, ref))
+        popt, pcov = curve_fit(f, x, y, param0[:-1])
+        popt = numpy.concatenate(param, self.rot3)
+        obt = self.residu2(popt, d1, d2, rings)
+        print("param1: %s %s" % (popt, obt))
         print(pcov)
         err = numpy.sqrt(numpy.diag(pcov))
         print("err: %s" % err)
+        if obt<ref:
+            self.param = popt
+            self.dist, self.poni1, self.poni2, \
+                    self.rot1, self.rot2, self.rot3 = tuple(popt)
         return err
 
     @timeit
@@ -464,11 +469,11 @@ class GeometryRefinement(AzimuthalIntegrator):
         @return: inverse of the Hessian array
         """
         epsilon = 1e-5
-        y = self.data[:, 0]
-        x = self.data[:, 1]
+        d1 = self.data[:, 0]
+        d2 = self.data[:, 1]
         r = self.data[:, 2].astype(numpy.int32)
         param0 = numpy.array([self.dist, self.poni1, self.poni2, self.rot1, self.rot2, self.rot3], dtype=numpy.float64)
-        ref = self.residu2(param0, y, x, r)
+        ref = self.residu2(param0, d1, d2, r)
         print(ref)
         if with_rot:
             size = 5
@@ -484,34 +489,36 @@ class GeometryRefinement(AzimuthalIntegrator):
             deltai = delta[i]
             param = param0.copy()
             param[i] += deltai
-            value_plus = self.residu2(param, y, x, r)
+            value_plus = self.residu2(param, d1, d2, r)
             param = param0.copy()
             param[i] -= deltai
-            value_moins = self.residu2(param, y, x, r)
+            value_moins = self.residu2(param, d1, d2, r)
             hessian[i, i] = (value_plus + value_moins - 2.0 * ref) / (deltai ** 2)
 
-        for i in range(size):
             for j in range(i + 1, size):
-                deltai = delta[i]
+                #if i == j: continue
                 deltaj = delta[j]
                 param = param0.copy()
                 param[i] += deltai
                 param[j] += deltaj
-                value_plus_plus = self.residu2(param, y, x, r)
+                value_plus_plus = self.residu2(param, d1, d2, r)
                 param = param0.copy()
                 param[i] -= deltai
                 param[j] -= deltaj
-                value_moins_moins = self.residu2(param, y, x, r)
+                value_moins_moins = self.residu2(param, d1, d2, r)
                 param = param0.copy()
                 param[i] += deltai
                 param[j] -= deltaj
-                value_plus_moins = self.residu2(param, y, x, r)
+                value_plus_moins = self.residu2(param, d1, d2, r)
                 param = param0.copy()
                 param[i] -= deltai
                 param[j] += deltaj
-                value_moins_plus = self.residu2(param, y, x, r)
-                hessian[j, i] = hessian[i, j] = (value_plus_plus + value_moins_moins - value_plus_moins - value_moins_plus) / (deltai * deltaj)
+                value_moins_plus = self.residu2(param, d1, d2, r)
+                hessian[j, i] = hessian[i, j] = (value_plus_plus + value_moins_moins - value_plus_moins - value_moins_plus) / (4.0 * deltai * deltaj)
         print(hessian)
+        w, v = numpy.linalg.eigh(hessian)
+        print("eigen val: %s" % w)
+        print("eigen vec: %s" % v)
         cov = numpy.linalg.inv(hessian)
         print(cov)
         err = numpy.sqrt(numpy.diag(cov))
