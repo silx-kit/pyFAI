@@ -8,9 +8,23 @@
 void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx);
 #else
 static inline void cpuid(uint32_t op, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx){
-  __asm__ __volatile__
+#if defined(__x86_64__) || defined(_M_AMD64) || defined (_M_X64)
+	__asm__ __volatile__
     ("cpuid": "=a" (*eax), "=b" (*ebx), "=c" (*ecx), "=d" (*edx) : "a" (op) : "cc");
-
+#else
+	  unsigned int tmp;
+	  __asm volatile
+	    ("push %%ebx\n\t"
+	     "cpuid\n\t"
+	     "mov %%ebx, (%1)\n\t"
+	     "pop %%ebx"
+	     : "=a" (*eax),
+	       "=S" (tmp),
+	       "=c" (*ecx),
+	       "=d" (*edx)
+	     : "0" (*eax));
+	  *ebx = tmp;
+#endif
 }
 #endif
 

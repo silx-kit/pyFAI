@@ -33,9 +33,9 @@ import os, gc, logging
 import threading
 import hashlib
 import numpy
-from .opencl import ocl, pyopencl
+from .opencl import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
 from .splitBBoxLUT import HistoBBox1d
-from .utils import get_cl_file
+from .utils import concatenate_cl_kernel
 from pyopencl import array
 if pyopencl:
     mf = pyopencl.mem_flags
@@ -50,12 +50,12 @@ logger = logging.getLogger("pyFAI.ocl_azim_csr")
 class OCL_Hist_Pixelsplit(object):
     def __init__(self, pos, bins, image_size, pos0Range=None, pos1Range=None, devicetype="all",
                  padded=False, block_size=32,
-                 platformid=None, deviceid=None, 
+                 platformid=None, deviceid=None,
                  checksum=None, profile=False):
         """
-        @param lut: 3-tuple of arrays 
+        @param lut: 3-tuple of arrays
             data: coefficient of the matrix in a 1D vector of float32 - size of nnz
-            indices: Column index position for the data (same size as data) 
+            indices: Column index position for the data (same size as data)
             indptr: row pointer indicates the start of a given row. len nbin+1
         @param image_size: size of the image (for pre-processing)
         @param devicetype: can be "cpu","gpu","acc" or "all"
@@ -74,7 +74,7 @@ class OCL_Hist_Pixelsplit(object):
         self.size = image_size
         if self.pos_size != 8 * self.size:
             raise RuntimeError("pos.size != 8 * image_size")
-        self.pos0Range = numpy.zeros(1, pyopencl.array.vec.float2) 
+        self.pos0Range = numpy.zeros(1, pyopencl.array.vec.float2)
         self.pos1Range = numpy.zeros(1, pyopencl.array.vec.float2)
         if (pos0Range is not None) and (len(pos0Range) is 2):
             self.pos0Range[0][0] = min(pos0Range)
@@ -82,14 +82,14 @@ class OCL_Hist_Pixelsplit(object):
         else:
             self.pos0Range[0][0] = -float("inf")
             self.pos0Range[0][1] =  float("inf")
-            
+
         if (pos1Range is not None) and (len(pos1Range) is 2):
             self.pos1Range[0][0] = min(pos1Range)
             self.pos1Range[0][1] = max(pos1Range)
         else:
             self.pos1Range[0][0] = -float("inf")
             self.pos1Range[0][1] =  float("inf")
-            
+
         self.profile = profile
         if not checksum:
             checksum = crc32(self.pos)
@@ -113,7 +113,7 @@ class OCL_Hist_Pixelsplit(object):
         try:
             #self._ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
             self._ctx = pyopencl.create_some_context()
-            if self.profile:         
+            if self.profile:
                 self._queue = pyopencl.CommandQueue(self._ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
             else:
                 self._queue = pyopencl.CommandQueue(self._ctx)
@@ -129,7 +129,7 @@ class OCL_Hist_Pixelsplit(object):
         self.events.append(("reduce1",reduce1))
         reduce2 = self._program.reduce2(self._queue, (reduction_wg_size,), (reduction_wg_size,), *self._cl_kernel_args["reduce2"])
         self.events.append(("reduce2",reduce2))
-        
+
         result = numpy.ndarray(4,dtype=numpy.float32)
         pyopencl.enqueue_copy(self._queue,result, self._cl_mem["minmax"])
         print result
@@ -140,7 +140,7 @@ class OCL_Hist_Pixelsplit(object):
         minmax=(min0,max0,min1,max1)
 
         print minmax
-       
+
     def __del__(self):
         """
         Destructor: release all buffers
@@ -155,72 +155,49 @@ class OCL_Hist_Pixelsplit(object):
         """
         Allocate OpenCL buffers required for a specific configuration
 
-        Note that an OpenCL context also requires some memory, as well as Event and other OpenCL functionalities which cannot and
-        are not taken into account here.
-        The memory required by a context varies depending on the device. Typical for GTX580 is 65Mb but for a 9300m is ~15Mb
-        In addition, a GPU will always have at least 3-5Mb of memory in use.
-        Unfortunately, OpenCL does NOT have a built-in way to check the actual free memory on a device, only the total memory.
+        Note that an OpenCL context also requires some memory, as well
+        as Event and other OpenCL functionalities which cannot and are
+        not taken into account here.  The memory required by a context
+        varies depending on the device. Typical for GTX580 is 65Mb but
+        for a 9300m is ~15Mb In addition, a GPU will always have at
+        least 3-5Mb of memory in use.  Unfortunately, OpenCL does NOT
+        have a built-in way to check the actual free memory on a
+        device, only the total memory.
         """
-        if self.size < self.BLOCK_SIZE:
-            raise RuntimeError("Fatal error in _allocate_buffers. size (%d) must be >= BLOCK_SIZE (%d)\n", self.size, self.BLOCK_SIZE)
-        size_of_float = numpy.dtype(numpy.float32).itemsize
-        size_of_short = numpy.dtype(numpy.int16).itemsize
-        size_of_int = numpy.dtype(numpy.int32).itemsize
-        size_of_long = numpy.dtype(numpy.int64).itemsize
 
-        ualloc  = (self.pos_size * size_of_float)
-        ualloc += (4 * self.BLOCK_SIZE * size_of_float)
-        ualloc += (self.size * size_of_float) * 5
-        ualloc += (self.bins * size_of_float) * 3
-        memory = self.device.memory
-        logger.info("%.3fMB are needed on device which has %.3fMB" % (ualloc / 1.0e6, memory / 1.0e6))
-        if ualloc >= memory:
-            raise MemoryError("Fatal error in _allocate_buffers. Not enough device memory for buffers (%lu requested, %lu available)" % (ualloc, memory))
-        # now actually allocate:
-        try:
-            self._cl_mem["pos"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.pos_size)
-            self._cl_mem["preresult"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size=size_of_float * 4 * self.BLOCK_SIZE)
-            self._cl_mem["minmax"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size=size_of_float * 4)
-            self._cl_mem["outData"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size=size_of_float * self.bins)
-            self._cl_mem["outCount"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size=size_of_float * self.bins)
-            self._cl_mem["outMerge"] = pyopencl.Buffer(self._ctx, mf.WRITE_ONLY, size=size_of_float * self.bins)
-            self._cl_mem["image_u16"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_short * self.size)
-            self._cl_mem["image"] = pyopencl.Buffer(self._ctx, mf.READ_WRITE, size=size_of_float * self.size)
-            self._cl_mem["dark"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
-            self._cl_mem["flat"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
-            self._cl_mem["polarization"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
-            self._cl_mem["solidangle"] = pyopencl.Buffer(self._ctx, mf.READ_ONLY, size=size_of_float * self.size)
-        except pyopencl.MemoryError as error:
-            self._free_buffers()
-            raise MemoryError(error)
+        buffers = [
+            ("pos", mf.READ_ONLY, numpy.float32, self.pos_size),
+            ("preresult", mf.READ_WRITE, numpy.float32, self.BLOCK_SIZE * 4),
+            ("minmax", mf.READ_WRITE, numpy.float32, 4),
+            ("outData", mf.READ_WRITE, numpy.float32, self.bins),
+            ("outCount", mf.READ_WRITE, numpy.float32, self.bins),
+            ("outMerge", mf.WRITE_ONLY, numpy.float32, self.bins),
+            ("image_u16", mf.READ_ONLY, numpy.int16, self.size),
+            ("image", mf.READ_WRITE, numpy.float32, self.size),
+            ("dark", mf.READ_ONLY, numpy.float32, self.size),
+            ("flat", mf.READ_ONLY, numpy.float32, self.size),
+            ("polarization", mf.READ_ONLY, numpy.float32, self.size),
+            ("solidangle", mf.READ_ONLY, numpy.float32, self.size),
+        ]
+
+        if self.size < self.BLOCK_SIZE:
+            raise RuntimeError("Fatal error in _allocate_buffers. size (%d) must be >= BLOCK_SIZE (%d)\n", self.size, self.BLOCK_SIZE)  # noqa
+
+        self._cl_mem = allocate_cl_buffers(buffers, self.device, self._ctx)
 
     def _free_buffers(self):
         """
         free all memory allocated on the device
         """
-        for buffer_name in self._cl_mem:
-            if self._cl_mem[buffer_name] is not None:
-                try:
-                    self._cl_mem[buffer_name].release()
-                    self._cl_mem[buffer_name] = None
-                except pyopencl.LogicError:
-                    logger.error("Error while freeing buffer %s" % buffer_name)
+        self._cl_mem = release_cl_buffers(self._cl_mem)
 
     def _compile_kernels(self, kernel_file=None):
         """
         Call the OpenCL compiler
         @param kernel_file: path tothe
         """
-        kernel_name = "ocl_hist_pixelsplit.cl"
-        if kernel_file is None:
-            if os.path.isfile(kernel_name):
-                kernel_file = os.path.abspath(kernel_name)
-            else:
-                kernel_file = get_cl_file(kernel_name)
-        else:
-            kernel_file = str(kernel_file)
-        with open(kernel_file, "r") as kernelFile:
-            kernel_src = kernelFile.read()
+        kernel_file = kernel_file or "ocl_hist_pixelsplit.cl"
+        kernel_src = concatenate_cl_kernel([kernel_file])
 
         compile_options = "-D BINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i -D EPS=%f" % \
                 (self.bins, self.size, self.BLOCK_SIZE, numpy.finfo(numpy.float32).eps)
@@ -357,8 +334,8 @@ class OCL_Hist_Pixelsplit(object):
             ev=pyopencl.enqueue_copy(self._queue, outMerge, self._cl_mem["outMerge"])
             events.append(("copy D->H outMerge",ev))
             ev.wait()
-        if self.profile: 
-            self.events+=events        
+        if self.profile:
+            self.events+=events
         return outMerge, outData, outCount
 
     def  log_profile(self):

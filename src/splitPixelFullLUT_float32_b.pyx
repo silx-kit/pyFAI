@@ -1,30 +1,39 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: Azimuthal integration
-#             https://github.com/kif/pyFAI
+#    Project: Fast Azimuthal Integration
+#             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+# 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+# 
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
+__doc__ = """
+Full pixel Splitting implemented using Sparse-matrix Dense-Vector multiplication,
+Sparse matrix represented using the CompressedSparseROw.
+"""
+__author__ = "Jerome Kieffer"
+__contact__ = "Jerome.kieffer@esrf.fr"
+__date__ = "20/10/2014"
+__status__ = "stable"
+__license__ = "GPLv3+"
 import cython
-import os, sys
+import os
+import sys
 from cython.parallel import prange
 from libc.string cimport memset
 import numpy
@@ -39,8 +48,6 @@ try:
 except:
     from zlib import crc32
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
-
-
 
 cdef struct Function:
     float slope
@@ -58,7 +65,7 @@ cdef float area4(float a0, float a1, float b0, float b1, float c0, float c1, flo
     return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
     
 @cython.cdivision(True)
-cdef inline float getBinNr( float x0, float pos0_min, float delta) nogil:
+cdef inline float getBinNr(float x0, float pos0_min, float delta) nogil:
     """
     calculate the bin number for any point
     param x0: current position
@@ -67,17 +74,17 @@ cdef inline float getBinNr( float x0, float pos0_min, float delta) nogil:
     """
     return (x0 - pos0_min) / delta
 
-cdef float integrate( float A0, float B0, Function AB) nogil:
+cdef float integrate(float A0, float B0, Function AB) nogil:
     """
     integrates the line defined by AB, from A0 to B0
     param A0: first limit
     param B0: second limit
     param AB: struct with the slope and point of intersection of the line
     """    
-    if A0==B0:
+    if A0 == B0:
         return 0.0
     else:
-        return AB.slope*(B0*B0 - A0*A0)*0.5 + AB.intersect*(B0-A0)
+        return AB.slope * (B0 * B0 - A0 * A0) * 0.5 + AB.intersect * (B0 - A0)
     
     
 class HistoLUT1dFullSplit(object):

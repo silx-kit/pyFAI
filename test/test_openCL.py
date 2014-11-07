@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: Azimuthal integration
-#             https://forge.epn-campus.eu/projects/azimuthal
-#
-#    File: "$Id$"
+#    Project: Fast Azimuthal Integration
+#             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -29,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/04/2014"
+__date__ = "22/10/2014"
 
 
 import unittest
@@ -50,18 +48,27 @@ else:
 
 pyFAI = sys.modules["pyFAI"]
 from pyFAI.opencl import ocl
-# = sys.modules["pyFAI.opencl"].ocl
+if ocl is None:
+    skip = True
+
 
 class test_mask(unittest.TestCase):
     tmp_dir = os.environ.get("PYFAI_TEMPDIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp"))
     N = 1000
-    def setUp(self):
 
-        self.datasets = [{"img":UtilsTest.getimage("1883/Pilatus1M.edf"), "poni":UtilsTest.getimage("1893/Pilatus1M.poni"), "spline": None},
-            {"img":UtilsTest.getimage("1882/halfccd.edf"), "poni":UtilsTest.getimage("1895/halfccd.poni"), "spline": UtilsTest.getimage("1461/halfccd.spline")},
-            {"img":UtilsTest.getimage("1881/Frelon2k.edf"), "poni":UtilsTest.getimage("1896/Frelon2k.poni"), "spline": UtilsTest.getimage("1900/frelon.spline")},
-            {"img":UtilsTest.getimage("1884/Pilatus6M.cbf"), "poni":UtilsTest.getimage("1897/Pilatus6M.poni"), "spline": None},
-#            {"img":UtilsTest.getimage("1880/Fairchild.edf"), "poni":UtilsTest.getimage("1898/Fairchild.poni"), "spline": None},
+    def setUp(self):
+        self.datasets = [{"img": UtilsTest.getimage("1883/Pilatus1M.edf"),
+                          "poni": UtilsTest.getimage("1893/Pilatus1M.poni"),
+                          "spline": None},
+                         {"img": UtilsTest.getimage("1882/halfccd.edf"),
+                          "poni": UtilsTest.getimage("1895/halfccd.poni"),
+                          "spline": UtilsTest.getimage("1461/halfccd.spline")},
+                         {"img": UtilsTest.getimage("1881/Frelon2k.edf"),
+                          "poni": UtilsTest.getimage("1896/Frelon2k.poni"),
+                          "spline": UtilsTest.getimage("1900/frelon.spline")},
+                         {"img": UtilsTest.getimage("1884/Pilatus6M.cbf"),
+                          "poni": UtilsTest.getimage("1897/Pilatus6M.poni"),
+                          "spline": None},
             ]
         for ds in self.datasets:
             if ds["spline"] is not None:
@@ -159,10 +166,11 @@ class test_mask(unittest.TestCase):
                 del ai, data
                 gc.collect()
 
+
 def test_suite_all_OpenCL():
     testSuite = unittest.TestSuite()
     if skip:
-        logger.warning("OpenCL module (pyopencl) is not present, skip tests")
+        logger.warning("OpenCL module (pyopencl) is not present or no device available: skip tests")
     else:
         testSuite.addTest(test_mask("test_OpenCL"))
         testSuite.addTest(test_mask("test_OpenCL_LUT"))

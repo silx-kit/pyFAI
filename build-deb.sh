@@ -2,11 +2,11 @@
 
 # Script that builds a debian package from this library 
  
-if [ -z $(which  ccache) ];
+if [ -d /usr/lib/ccache ];
 then 
-   unset CC; 
+   CCPATH=/usr/lib/ccache:$PATH 
 else  
-   export CC="ccache gcc"; 
+   CCPATH=$PATH
 fi
 export PYBUILD_DISABLE_python2=test
 export PYBUILD_DISABLE_python3=test
@@ -15,6 +15,6 @@ python setup.py sdist
 cd dist
 tar -xzf pyFAI-*.tar.gz
 cd pyFAI*
-python setup.py --command-packages=stdeb.command bdist_deb --no-cython
+PATH=$CCPATH python setup.py --command-packages=stdeb.command bdist_deb --no-cython
 sudo su -c  "dpkg -i deb_dist/pyfai*.deb"
 cd ../..

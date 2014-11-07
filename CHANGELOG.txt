@@ -9,9 +9,9 @@
 0.7: 	Implementation of look-up table based integration and OpenCL version of it
 0.8:	Detector object is member of the geometry
 		Binning of the detector, propagation to the spline if needed(10/2012)
-		Detector object know about their masks. 
+		Detector object know about their masks.
 		Automatic mask for some detectors like Pilatus or XPad
-		Implementation of sub-pixel position correction for Pilatus detectors 
+		Implementation of sub-pixel position correction for Pilatus detectors
  		LUT implementation in 1D & 2D (fully tested) both with OpenMP and with OpenCL
 		Switch from C++/Cython OpenCL framework to PyOpenCL
 		Port opencl code to both Windows 32/64 bits and MacOSX
@@ -26,8 +26,8 @@
 		Easy calibration for pixel detector (reconstruction of inter-module space)
 		Error-bar generation using Poisson law
 		Unified programming interface for all integration methods in 2theta, q or radius unit
-		Graphical interface for azimuthal integration (pyFAI-integrate) 
-		Lots of test to prevent non regression 
+		Graphical interface for azimuthal integration (pyFAI-integrate)
+		Lots of test to prevent non regression
 		Tool for merging images using various method (mean, median) and with outlayer rejection
 		LImA plugin which can perform azimuthal integration live during the acquisition
 		Distortion correction is available alone and as LImA plugin
@@ -36,14 +36,14 @@
 		Selection by hand of single peaks for calibration
 		New detectors: Dexela and Perkin-Elmer flat panel
 		Automatic refinement of multiple images at various geometries (for MX)
-		Many improvements requested by ID11 and ID13  
+		Many improvements requested by ID11 and ID13
 0.9:	10/2013
         Add detector S140 from ImXpad, Titan from Agilent, Rayonix
         Fix issues: 61, 62, 68, 76, 81, 82, 85, 86, 87
         Enhancement in LImA plugins (better structure)
-        IO module with Ascii/EDF/HDF5 writers 
+        IO module with Ascii/EDF/HDF5 writers
         Switch some GUI to pyQtGraph in addition to Qt
-        Correction for solid-angle formula  
+        Correction for solid-angle formula
 0.9.2:  (01/2014)
         Fix memory leak in Cython part of the look-up table generation
         Benchmarks with memory profiling
@@ -95,3 +95,7 @@
 		Update tests and OpenCL -> works with Beignet and pocl open source drivers
 		Compatibility with MacOSX and windows
 0.10.1: 10/2014
+                Fix issue in peak-picking
+                Improve doc & manpages
+                Compatibility with PyMca5
+

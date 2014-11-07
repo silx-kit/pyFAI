@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
-#             https://github.com/kif/pyFAI
+#             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/09/2014"
+__date__ = "04/11/2014"
 __status__ = "production"
 
 import logging, sys, types, os, glob
@@ -48,6 +48,11 @@ try:
     from . import relabel as relabelCython
 except:
     relabelCython = None
+try:
+    from .directories import data_dir
+except ImportError:
+    data_dir = None
+
 from scipy.optimize.optimize import fmin, fminbound
 import scipy.ndimage.filters
 logger = logging.getLogger("pyFAI.utils")
@@ -404,7 +409,7 @@ def relabel(label, data, blured, max_size=None):
         logger.warning("relabel Cython module is not available...")
         return label
 
-def averageDark(lstimg, center_method="mean", cutoff=None):
+def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5,0.5)):
     """
     Averages a serie of dark (or flat) images.
     Centers the result on the mean or the median ...
@@ -413,6 +418,8 @@ def averageDark(lstimg, center_method="mean", cutoff=None):
     @param lstimg: list of 2D images or a 3D stack
     @param center_method: is the center calculated by a "mean" or a "median"
     @param cutoff: keep all data where (I-center)/std < cutoff
+    @param quantiles: 2-tuple of floats average out data between the two quantiles
+    
     @return: 2D image averaged
     """
     if "ndim" in dir(lstimg) and lstimg.ndim == 3:
@@ -431,6 +438,11 @@ def averageDark(lstimg, center_method="mean", cutoff=None):
         center = stack.__getattribute__(center_method)(axis=0)
     elif center_method == "median":
         center = numpy.median(stack, axis=0)
+    elif center_method == "quantile":
+        sorted = numpy.sort(stack, axis=0)
+        lower = max(0, int(min(quantils) * length))
+        upper = min(length, int(max(quantils) * length) + 1)
+        output = sorted[lower:upper].mean(axis=0)
     else:
         raise RuntimeError("Cannot understand method: %s in averageDark" % center_method)
     if cutoff is None or cutoff <= 0:
@@ -486,8 +498,6 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             listImages[idx] = fn
         logger.debug("Intensity range for %s is %s --> %s", fn, ds.min(), ds.max())
         shape = ds.shape
-        if sumImg is None:
-            sumImg = numpy.zeros((shape[0], shape[1]), dtype=numpy.float32)
         if do_dark and (dark is None):
             if "ndim" in dir(darks) and darks.ndim == 3:
                 dark = averageDark(darks, center_method="mean", cutoff=4)
@@ -520,11 +530,20 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
                 big_img = numpy.zeros((ld, shape[0], shape[1]), dtype=numpy.float32)
             big_img[idx, :, :] = correctedImg
         elif filter_ == "max":
-            sumImg = numpy.maximum(correctedImg, sumImg)
+            if sumImg is None:
+                sumImg = correctedImg
+            else:
+                sumImg = numpy.maximum(correctedImg, sumImg)
         elif filter_ == "min":
-            sumImg = numpy.minimum(correctedImg, sumImg)
+            if sumImg is None:
+                sumImg = correctedImg
+            else:
+                sumImg = numpy.minimum(correctedImg, sumImg)
         elif filter_ == "mean":
-            sumImg += correctedImg
+            if sumImg is None:
+                sumImg = correctedImg
+            else:
+                sumImg += correctedImg
     if cutoff or (filter_ == "median"):
         datared = averageDark(big_img, filter_, cutoff)
     else:
@@ -889,6 +908,11 @@ def _get_data_path(filename):
     @param filename: the name of the requested data file.
     @type filename: str
 
+    Can search root of data directory in:
+    - Environment variable PYFAI_DATA
+    - path hard coded into pyFAI.directories.data_dir
+    - where this file is installed.
+
     In the future ....
     This method try to find the requested ui-name following the
     xfreedesktop recommendations. First the source directory then
@@ -904,7 +928,7 @@ def _get_data_path(filename):
 #                                                 'data',
 #                                                 filename))
 #    if not os.path.exists(real_filename):
-    resources = [os.path.dirname(__file__)]
+    resources = [os.environ.get("PYFAI_DATA"), data_dir, os.path.dirname(__file__)]
     try:
         import xdg.BaseDirectory
         resources += xdg.BaseDirectory.load_data_paths("pyFAI")
@@ -912,14 +936,14 @@ def _get_data_path(filename):
         pass
 
     for resource in resources:
+        if not resource:
+            continue
         real_filename = os.path.join(resource, filename)
         if os.path.exists(real_filename):
             return real_filename
     else:
-        raise Exception("Can not find the [%s] resource, "
+        raise RuntimeError("Can not find the [%s] resource, "
                         " something went wrong !!!" % (real_filename,))
-#    else:
-#        return real_filename
 
 
 def get_ui_file(filename):
@@ -930,6 +954,22 @@ def get_ui_file(filename):
 def get_cl_file(filename):
 #    return _get_data_path(os.path.join("openCL", filename))
     return _get_data_path(filename)
+
+
+def concatenate_cl_kernel(filenames):
+    """
+    @param filenames: filenames containing the kernels
+    @type kernel@: list of str which can be filename of kernel as a string.
+
+    this method concatenates all the kernel from the list
+    """
+    kernel = ""
+    for filename in filenames:
+        with open(get_cl_file(filename), "r") as f:
+            kernel += f.read()
+
+    return kernel
+
 
 def deg2rad(dd):
     """

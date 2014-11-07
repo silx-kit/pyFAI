@@ -1,35 +1,41 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: Azimuthal integration 
-#             https://forge.epn-campus.eu/projects/azimuthal
-#
-#    File: "$Id$"
+#    Project: Fast Azimuthal Integration 
+#             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+# 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+# 
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-
+__doc__ = """
+Calculate bounding box around   
+"""
+__author__ = "Jerome Kieffer"
+__contact__ = "Jerome.kieffer@esrf.fr"
+__date__ = "20/10/2014"
+__status__ = "stable"
+__license__ = "GPLv3+"
 import cython
 cimport numpy
 import numpy
 
 ctypedef numpy.int64_t DTYPE_int64_t
 ctypedef numpy.float64_t DTYPE_float64_t
+
 
 def boundingBox(data):
     """
@@ -45,19 +51,14 @@ def boundingBox(data):
     cdef numpy.ndarray[long, ndim = 1] shape = numpy.array(data.shape)
     cdef long ndims = data.ndim
 
-#    cdef numpy.ndarray[float, ndim = ndims] fdata = data.astype(float)
     cdef numpy.ndarray[long, ndim = 1] mins = numpy.array(shape)
     cdef numpy.ndarray[long, ndim = 1] maxs = numpy.zeros(ndims, dtype=int)
-
 
     cdef long  i = 0
     cdef long  j = 0
     cdef long  k = 0
     cdef long  l = 0
-#    cdef DTYPE_float64_t x = 0.0
-#    cdef DTYPE_float64_t zero64 = 0.0
     if ndims == 1:
-#        with nogil:
             for i in range(shape[0]):
                 if data[i] > 0.0:
                     if i < mins[0]:
@@ -65,7 +66,6 @@ def boundingBox(data):
                     if i > maxs[0]:
                         maxs[0] = i
     elif ndims == 2:
-#        with nogil:
             for i in range(shape[0]):
                 for j in range(shape[1]):
                     if data[i, j] > 0.0 :
@@ -78,7 +78,6 @@ def boundingBox(data):
                         if j > maxs[1]:
                             maxs[1] = i
     elif ndims == 3:
-#        with nogil:
             for i in range(shape[0]):
                 for j in range(shape[1]):
                     for k in range(shape[2]):
@@ -96,12 +95,11 @@ def boundingBox(data):
                             if k > maxs[2]:
                                 maxs[2] = i
     elif ndims == 4:
-#        with nogil:
             for i in range(shape[0]):
                 for j in range(shape[1]):
                     for k in range(shape[2]):
                         for l in range(shape[3]):
-                            if  data[i, j, k, l] > 0.0:
+                            if data[i, j, k, l] > 0.0:
                                 if i < mins[0]:
                                     mins[0] = i
                                 if i > maxs[0]:

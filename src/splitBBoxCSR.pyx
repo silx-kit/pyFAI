@@ -1,28 +1,38 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: Azimuthal integration
-#             https://github.com/kif/pyFAI
+#    Project: Fast Azimuthal Integration
+#             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+# 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+# 
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-#
+__doc__ = """
+Calculates histograms of pos0 (tth) weighted by Intensity
 
+Splitting is done on the pixel's bounding box like fit2D, 
+reverse implementation based on a sparse matrix multiplication
+"""
+__author__ = "Jerome Kieffer"
+__contact__ = "Jerome.kieffer@esrf.fr"
+__date__ = "20141020"
+__status__ = "stable"
+__license__ = "GPLv3+"
 import cython
 import os
 import sys
@@ -316,10 +326,14 @@ class HistoBBox1d(object):
 
         lut_nbytes = nnz * (sizeof(numpy.int32_t) + sizeof(numpy.float32_t))
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
-            memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
-            if memsize < lut_nbytes:
-                raise MemoryError("CSR Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %.3fGB" % 
-                                  (bins, self.nnz, lut_nbytes / 2. ** 30, memsize / 2. ** 30))
+            try:
+                memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+            except OSError:
+                pass
+            else:
+                if memsize < lut_nbytes:
+                    raise MemoryError("CSR Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %.3fGB" % 
+                                      (bins, self.nnz, lut_nbytes / 2. ** 30, memsize / 2. ** 30))
         # else hope that enough memory is available
         data = numpy.empty(nnz, dtype=numpy.float32)
         indices = numpy.empty(nnz, dtype=numpy.int32)
@@ -438,10 +452,14 @@ class HistoBBox1d(object):
 
         lut_nbytes = nnz * (sizeof(numpy.int32_t) + sizeof(numpy.float32_t))
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
-            memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
-            if memsize < lut_nbytes:
-                raise MemoryError("CSR Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %.3fGB" % 
-                                  (bins, self.nnz, lut_nbytes / 2. ** 30, memsize / 2. ** 30))
+            try:
+                memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+            except OSError:
+                pass
+            else:
+                if memsize < lut_nbytes:
+                    raise MemoryError("CSR Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %.3fGB" % 
+                                      (bins, self.nnz, lut_nbytes / 2. ** 30, memsize / 2. ** 30))
         # else hope that enough memory is available
         data = numpy.empty(nnz, dtype=numpy.float32)
         indices = numpy.empty(nnz, dtype=numpy.int32)
@@ -915,10 +933,15 @@ class HistoBBox2d(object):
         # Just recycle the outMax array
         outMax[:, :] = 0
         lut_nbytes = nnz * (sizeof(numpy.float32_t) + sizeof(numpy.int32_t)) + bins0 * bins1 * sizeof(numpy.int32_t)
+        
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
-            memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
-            if memsize < lut_nbytes:
-                raise MemoryError("CSR Matrix is %.3fGB whereas the memory of the system is only %s" % (lut_nbytes / 2. ** 30, memsize / 2. ** 30))
+            try:
+                memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+            except OSError:  # see bug 152
+                pass
+            else:
+                if memsize < lut_nbytes:
+                    raise MemoryError("CSR Matrix is %.3fGB whereas the memory of the system is only %s" % (lut_nbytes / 2. ** 30, memsize / 2. ** 30))
         # else hope that enough memory is available
         data = numpy.zeros(nnz, dtype=numpy.float32)
         indices = numpy.zeros(nnz, dtype=numpy.int32)
@@ -1121,9 +1144,13 @@ class HistoBBox2d(object):
         outMax[:, :] = 0
         lut_nbytes = nnz * (sizeof(numpy.float32_t) + sizeof(numpy.int32_t)) + bins0 * bins1 * sizeof(numpy.int32_t)
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
-            memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
-            if memsize < lut_nbytes:
-                raise MemoryError("CSR Matrix is %.3fGB whereas the memory of the system is only %s" % (lut_nbytes / 2. ** 30, memsize / 2. ** 30))
+            try:
+                memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+            except OSError:
+                pass
+            else:
+                if memsize < lut_nbytes:
+                    raise MemoryError("CSR Matrix is %.3fGB whereas the memory of the system is only %s" % (lut_nbytes / 2. ** 30, memsize / 2. ** 30))
         # else hope that enough memory is available
         data = numpy.zeros(nnz, dtype=numpy.float32)
         indices = numpy.zeros(nnz, dtype=numpy.int32)

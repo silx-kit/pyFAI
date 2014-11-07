@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: Azimuthal integration
-#             https://forge.epn-campus.eu/projects/azimuthal
-#
-#    File: "$Id$"
+#    Project: Fast Azimuthal Integration
+#             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -22,6 +20,8 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
 #
 "test suite for peak picking class"
 
@@ -97,7 +97,7 @@ class test_peak_picking(unittest.TestCase):
             pts = self.pp.massif.find_peaks(self.ctrlPt[i], stdout=open(self.logfile, "a"))
             logger.info("point %s at ring #%i (tth=%.1f deg) generated %i points", self.ctrlPt[i], i, self.tth[i], len(pts))
             if len(pts) > 0:
-                self.pp.points.append(pts, angle=self.tth[i], ring=i)
+                self.pp.points.append(pts, ring=i)
             else:
                 logger.error("point %s caused error (%s) ", i, self.ctrlPt[i])
 

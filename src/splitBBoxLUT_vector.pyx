@@ -1,38 +1,45 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Project: Azimuthal integration
-#             https://forge.epn-campus.eu/projects/azimuthal
-#
-#    File: "$Id$"
+#    Project: Fast Azimuthal Integration
+#             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+# 
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+# 
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
+__doc__ = """
+Calculates histograms of pos0 (tth) weighted by Intensity
+
+Splitting is done on the pixel's bounding box like fit2D, 
+reverse implementation based on a sparse matrix multiplication
+"""
+__author__ = "Jerome Kieffer"
+__contact__ = "Jerome.kieffer@esrf.fr"
+__date__ = "22/10/2014"
+__status__ = "stable"
+__license__ = "GPLv3+"
+
 import cython
 import os
 import sys
-#import time
 from cpython.ref cimport PyObject, Py_XDECREF
 from cython.parallel import prange
-from libc.string cimport memset,memcpy
-#from libc.stdlib cimport malloc, free 
+from libc.string cimport memset, memcpy 
 from cython cimport view
 import numpy
 cimport numpy
@@ -43,15 +50,17 @@ cdef float pi=<float> M_PI
 cdef struct lut_point:
     numpy.int32_t idx
     numpy.float32_t coef
-dtype_lut=numpy.dtype([("idx",numpy.int32),("coef",numpy.float32)])
+dtype_lut = numpy.dtype([("idx" ,numpy.int32), ("coef", numpy.float32)])
 try:
     from fastcrc import crc32
 except:
     from zlib import crc32
 cdef double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 cdef bint NEED_DECREF = sys.version_info<(2,7) and numpy.version.version<"1.5"
+
+
 @cython.cdivision(True)
-cdef inline float getBinNr( float x0, float pos0_min, float delta) nogil:
+cdef inline float getBinNr(float x0, float pos0_min, float delta) nogil:
     """
     calculate the bin number for any point
     param x0: current position
@@ -435,7 +444,7 @@ class HistoBBox1d(object):
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
         cdef float[:] cdata, tdata, cflat, cdark, csolidAngle, cpolarization
 
-        #Ugly hack against bug #89: https://github.com/kif/pyFAI/issues/89
+        #Ugly hack against bug #89: https://github.com/pyFAI/pyFAI/issues/89
         cdef int rc_before, rc_after
         rc_before = sys.getrefcount(self._lut)
         cdef vector[ vector[lut_point] ] lut = self._lut
@@ -781,17 +790,18 @@ class HistoBBox2d(object):
                         outMax[i, j] +=  1
 
         self.lut_size = lut_size = outMax.max()
-        #just recycle the outMax array
-        #outMax = numpy.zeros((bins0,bins1), dtype=numpy.int32)
-        memset(&outMax[0,0], 0, bins0*bins1*sizeof(numpy.int32_t))
+        outMax[:, :] = 0
 
         lut_nbytes = bins0 * bins1 * lut_size * sizeof(lut_point)
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
-            memsize =  os.sysconf("SC_PAGE_SIZE")*os.sysconf("SC_PHYS_PAGES")
-            if memsize <  lut_nbytes:
-                raise MemoryError("Lookup-table (%i, %i, %i) is %.3fGB whereas the memory of the system is only %s"%(bins0, bins1, lut_size, lut_nbytes, memsize))
-        #else hope we have enough memory
-        lut = view.array(shape=(bins0, bins1, lut_size),itemsize=sizeof(lut_point), format="if")
+            try:
+                memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+            except OSError:
+                pass
+                if memsize < lut_nbytes:
+                    raise MemoryError("Lookup-table (%i, %i, %i) is %.3fGB whereas the memory of the system is only %s"%(bins0, bins1, lut_size, lut_nbytes, memsize))
+        # else hope we have enough memory
+        lut = view.array(shape=(bins0, bins1, lut_size), itemsize=sizeof(lut_point), format="if")
 #        lut = numpy.recarray(shape=(bins0, bins1, lut_size),dtype=[("idx",numpy.int32),("coef",numpy.float32)])
         memset(&lut[0,0,0], 0, lut_nbytes)
         

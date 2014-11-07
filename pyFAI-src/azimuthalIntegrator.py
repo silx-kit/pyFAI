@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/kif/pyFAI
+#             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -25,7 +25,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2014"
+__date__ = "04/11/2014"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -46,15 +46,6 @@ from . import units
 from . import utils
 import fabio
 error = None
-try:
-    from . import ocl_azim  # IGNORE:F0401
-    from . import opencl
-except ImportError as error:  # IGNORE:W0703
-    logger.warning("Unable to import pyFAI.ocl_azim")
-    ocl_azim = None
-    ocl = None
-else:
-    ocl = opencl.OpenCL()
 
 try:
     from . import splitBBoxLUT
@@ -62,13 +53,6 @@ except ImportError as error:  # IGNORE:W0703
     logger.warning("Unable to import pyFAI.splitBBoxLUT for"
                  " Look-up table based azimuthal integration")
     splitBBoxLUT = None
-
-try:
-    from . import ocl_azim_lut
-except ImportError as error:  # IGNORE:W0703
-    logger.error("Unable to import pyFAI.ocl_azim_lut for"
-                 " Look-up table based azimuthal integration on GPU")
-    ocl_azim_lut = None
 
 try:
     from .fastcrc import crc32
@@ -117,11 +101,28 @@ except ImportError as error:
                  " CSR based azimuthal integration: %s" % error)
     splitPixelFullCSR = None
 
-try:
-    from . import ocl_azim_csr  # IGNORE:F0401
-except ImportError as error:
-    logger.error("Unable to import pyFAI.ocl_azim_csr: %s" % error)
-    histogram = None
+from .opencl import ocl
+if ocl:
+    try:
+        from . import ocl_azim  # IGNORE:F0401
+    except ImportError as error:  # IGNORE:W0703
+        logger.warning("Unable to import pyFAI.ocl_azim"
+                       ": %s" % error)
+        ocl_azim = None
+    try:
+        from . import ocl_azim_csr  # IGNORE:F0401
+    except ImportError as error:
+        logger.error("Unable to import pyFAI.ocl_azim_csr"
+                     ": %s" % error)
+        ocl_azim_csr = None
+    try:
+        from . import ocl_azim_lut # IGNORE:F0401
+    except ImportError as error:  # IGNORE:W0703
+        logger.error("Unable to import pyFAI.ocl_azim_lut for"
+                     ": %s" % error)
+        ocl_azim_lut = None
+else:
+    ocl_azim = ocl_azim_csr = ocl_azim_lut = None
 del error  # just to see how clever pylint is !
 
 
@@ -2146,7 +2147,7 @@ class AzimuthalIntegrator(Geometry):
         @type dark: ndarray
         @param flat: flat field image
         @type flat: ndarray
-        @param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr", "nosplit_csr", "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"
+        @param method: can be "numpy", "cython", "BBox" or "splitpixel", "lut", "csr", "nosplit_csr", "full_csr", "lut_ocl" and "csr_ocl" if you want to go on GPU. To Specify the device: "csr_ocl_1,2"
         @type method: str
         @param unit: Output units, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
         @type unit: pyFAI.units.Enum

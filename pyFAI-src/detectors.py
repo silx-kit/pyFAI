@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "2014-09-18"
+__date__ = "23/10/2014"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instanciate them
@@ -68,11 +68,14 @@ class DetectorMeta(type):
     # to modify attributes of the class *after* they have been
     # created
     def __init__(cls, name, bases, dct):
-        cls.registry[name.lower()] = cls
-        if hasattr(cls, "aliases"):
-            for alias in cls.aliases:
-                cls.registry[alias.lower().replace(" ", "_")] = cls
-                cls.registry[alias.lower().replace(" ", "")] = cls
+        # "Detector" is a bit peculiar: while abstract it may be needed by the GUI, so adding it to the repository
+        if hasattr(cls, 'MAX_SHAPE') or name == "Detector":
+            cls.registry[name.lower()] = cls
+            if hasattr(cls, "aliases"):
+                for alias in cls.aliases:
+                    cls.registry[alias.lower().replace(" ", "_")] = cls
+                    cls.registry[alias.lower().replace(" ", "")] = cls
+
         super(DetectorMeta, cls).__init__(name, bases, dct)
 
 
@@ -1482,7 +1485,7 @@ class Perkin(Detector):
 class Rayonix(Detector):
     force_pixel = True
     BINNED_PIXEL_SIZE = {}
-    MAX_SHAPE = (4096 , 4096)
+
     def __init__(self, pixel1=None, pixel2=None):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
 

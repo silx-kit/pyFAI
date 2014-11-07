@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/kif/pyFAI
+#             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -22,11 +22,12 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/10/2014"
+__date__ = "04/11/2014"
 __status__ = "production"
 
 import os
@@ -38,10 +39,11 @@ import types
 import array
 import operator
 import numpy
-from .gui_utils import pylab, update_fig, maximize_fig, QtGui, backend
 from . import gui_utils
+if gui_utils.has_Qt:
+    from .gui_utils import pylab, update_fig, maximize_fig, QtGui
 import fabio
-from .utils import deprecated, percentile
+from .utils import percentile
 from .reconstruct import reconstruct
 from .calibrant import Calibrant, ALL_CALIBRANTS
 from .blob_detection import BlobDetection
@@ -49,46 +51,6 @@ from .massif import Massif
 logger = logging.getLogger("pyFAI.peak_picker")
 if os.name != "nt":
     WindowsError = RuntimeError
-
-################################################################################
-# Toolbar widget
-################################################################################
-#class PeakPickerToolbar(backend.NavigationToolbar2QT):
-#    def __init__(self, canvas, parent, coordinates=True):
-#        backend.NavigationToolbar2QT.__init__(self, canvas, parent, False)
-#        self.append_mode = None
-#
-#
-##    def _init_toolbar(self):
-##        backend.NavigationToolbar2QT._init_toolbar(self)
-##        self.addSeparator()
-##        a = self.addAction('+pts', self.on_plus_pts_clicked)
-##        a.setToolTip('Add more points to group')
-##        a = self.addAction('-pts', self.on_minus_pts_clicked)
-##        a.setToolTip('Remove points from group')
-#
-#    def pan(self):
-#        self.append_mode = None
-#        backend.NavigationToolbar2QT.pan(self)
-#
-#    def zoom(self):
-#        self.append_mode = None
-#        backend.NavigationToolbar2QT.zoom(self)
-#
-#
-#    def on_plus_pts_clicked(self, *args):
-#        """
-#        callback function
-#        """
-#        self.append_mode = True
-#        print(self.append_mode)
-#
-#    def on_minus_pts_clicked(self, *args):
-#        """
-#        callback function
-#        """
-#        self.append_mode = False
-#        print(self.append_mode)
 
 
 ################################################################################
@@ -208,7 +170,7 @@ class PeakPicker(object):
         if sync:
             self._init_thread.join()
 
-    def peaks_from_area(self, mask, Imin, keep=1000, refine=True, method=None):
+    def peaks_from_area(self, mask, Imin, keep=1000, refine=True, method=None, ring=None):
         """
         Return the list of peaks within an area
 
@@ -225,7 +187,19 @@ class PeakPicker(object):
 
         obj = self.__getattribute__(method)
 
-        return obj.peaks_from_area(mask, Imin=Imin, keep=keep, refine=refine)
+        points = obj.peaks_from_area(mask, Imin=Imin, keep=keep, refine=refine)
+        if points:
+            gpt = self.points.append(points, ring)
+            if self.fig:
+                npl = numpy.array(points)
+                gpt.plot = self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
+                pt0x = gpt.points[0][1]
+                pt0y = gpt.points[0][0]
+                gpt.annotate = self.ax.annotate(gpt.label, xy=(pt0x, pt0y), xytext=(pt0x + 10, pt0y + 10),
+                                                weight="bold", size="large", color="black",
+                                                arrowprops=dict(facecolor='white', edgecolor='white'))
+                update_fig(self.fig)
+        return points
 
     def reset(self):
         """
@@ -233,7 +207,7 @@ class PeakPicker(object):
         """
         self.points.reset()
         if self.fig and self.ax:
-            #empty annotation and plots
+            #empty annotate and plots
             if len(self.ax.texts) > 0:
                 self.ax.texts = []
             if len(self.ax.lines) > 0:
@@ -304,112 +278,142 @@ class PeakPicker(object):
         @param minIndex: ring index to start with
         """
         if self.ax is not None:
-            for idx, points in enumerate(self.points._points):
+            for lbl, gpt in self.points._groups.items():
+                idx = gpt.ring
                 if idx < minIndex:
                     continue
-                if len(points) > 0:
-                    pt0x = points[0][1]
-                    pt0y = points[0][0]
-                    self.ax.annotate("%i" % (idx), xy=(pt0x, pt0y), xytext=(pt0x + 10, pt0y + 10),
-                                     color="white", arrowprops=dict(facecolor='white', edgecolor='white'))
+                if len(gpt) > 0:
+                    pt0x = gpt.points[0][1]
+                    pt0y = gpt.points[0][0]
+                    gpt.annotate = self.ax.annotate(gpt.label, xy=(pt0x, pt0y), xytext=(pt0x + 10, pt0y + 10),
+                                                    weight="bold", size="large", color="black",
+                                                    arrowprops=dict(facecolor='white', edgecolor='white'))
 
-                    npl = numpy.array(points)
-                    self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
+                    npl = numpy.array(gpt.points)
+                    gpt.plot = self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
 
     def onclick(self, event):
         """
         Called when a mouse is clicked
         """
-        def annontate(x, x0=None, idx=None):
+        def annontate(x, x0=None, idx=None, gpt=None):
             """
             Call back method to annotate the figure while calculation are going on ...
             @param x: coordinates
             @param x0: coordinates of the starting point
+            @param gpt: group of point, instance of PointGroup
+            TODO
             """
             if x0 is None:
-                self.ax.annotate(".", xy=(x[1], x[0]), color="black")
+                annot = self.ax.annotate(".", xy=(x[1], x[0]), weight="bold", size="large", color="black")
             else:
-                self.ax.annotate("%i" % (len(self.points)), xy=(x[1], x[0]), xytext=(x0[1], x0[0]), color="white",
-                     arrowprops=dict(facecolor='white', edgecolor='white'),)
+                if gpt:
+                     annot = self.ax.annotate(gpt.label, xy=(x[1], x[0]), xytext=(x0[1], x0[0]),
+                                              weight="bold", size="large", color="black",
+                                              arrowprops=dict(facecolor='white', edgecolor='white'),)
+                     gpt.annotate = annot
+                else:
+                    annot = self.ax.annotate("%i" % (len(self.points)), xy=(x[1], x[0]), xytext=(x0[1], x0[0]),
+                                             weight="bold", size="large", color="black",
+                                             arrowprops=dict(facecolor='white', edgecolor='white'),)
                 update_fig(self.fig)
+            return annot
 
-        def common_creation(points):
+        def common_creation(points, gpt=None):
+            """
+            plot new set of points
+
+            @param points: list of points
+            @param gpt: : group of point, instance of PointGroup
+            """
             if points:
-                self.points.append(points, ring=self.spinbox.value())
+                if not gpt:
+                    gpt = self.points.append(points, ring=self.spinbox.value())
                 npl = numpy.array(points)
-                self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
+                gpt.plot = self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
                 update_fig(self.fig)
             sys.stdout.flush()
+            return gpt
 
         def new_grp(event):
             " * Right-click (click+n):         try an auto find for a ring"
             points = self.massif.find_peaks([event.ydata, event.xdata],
                                             self.defaultNbPoints,
-                                            annontate, self.massif_contour)
+                                            None, self.massif_contour)
             if points:
-                logger.info("Created group #%i with %i points" % (len(self.points), len(points)))
-                common_creation(points)
+                gpt = common_creation(points)
+                annontate(points[0], [event.ydata, event.xdata], gpt=gpt)
+                logger.info("Created group #%2s with %i points" % (gpt.label, len(gpt)))
             else:
                 logger.warning("No peak found !!!")
 
         def single_point(event):
             " * Right-click + Ctrl (click+b):  create new group with one single point"
-            points = []
             newpeak = self.massif.nearest_peak([event.ydata, event.xdata])
             if newpeak:
-                points.append(newpeak)
-                annontate(newpeak, [event.ydata, event.xdata])
-                logger.info("Create group #%i with single point x=%5.1f, y=%5.1f" % (len(self.points), newpeak[1], newpeak[0]))
-                common_creation(points)
+                gpt = common_creation([newpeak])
+                annontate(newpeak, [event.ydata, event.xdata], gpt=gpt)
+                logger.info("Create group #%2s with single point x=%5.1f, y=%5.1f" % (gpt.label, newpeak[1], newpeak[0]))
             else:
                 logger.warning("No peak found !!!")
 
 
         def append_more_points(event):
             " * Right-click + m (click+m):     find more points for current group"
-            points = self.points.pop(self.spinbox.value()) or []
-            if len(self.ax.lines) > 0:
-                self.ax.lines.pop()
+            gpt = self.points.get(self.spinbox.value())
+            if not gpt:
+                new_grp(event)
+                return
+            if gpt.plot:
+                if gpt.plot[0] in self.ax.lines:
+                      self.ax.lines.remove(gpt.plot[0])
+
             update_fig(self.fig)
             # need to annotate only if a new group:
-            localAnn = None if points else annontate
             listpeak = self.massif.find_peaks([event.ydata, event.xdata],
-                                              self.defaultNbPoints, localAnn,
+                                              self.defaultNbPoints, None,
                                               self.massif_contour)
             if listpeak:
-                points += listpeak
-                logger.info("Added %i points to group #%i (now %i points)" % (len(listpeak), len(self.points), len(points)))
+                gpt.points += listpeak
+                logger.info("Added %i points to group #%2s (now %i points)" % (len(listpeak), len(gpt.label), len(gpt)))
             else:
                 logger.warning("No peak found !!!")
-            common_creation(points)
+            common_creation(gpt.points, gpt)
 
         def append_1_point(event):
             " * Right-click + Shift (click+v): add one point to current group"
-            points = self.points.pop(self.spinbox.value()) or []
-            if len(self.ax.lines) > 0:
-                self.ax.lines.pop()
+            gpt = self.points.get(self.spinbox.value())
+            if not gpt:
+                new_grp(event)
+                return
+            if gpt.plot:
+                if gpt.plot[0] in self.ax.lines:
+                      self.ax.lines.remove(gpt.plot[0])
             update_fig(self.fig)
             newpeak = self.massif.nearest_peak([event.ydata, event.xdata])
             if newpeak:
-                if not points:
-                    annontate(newpeak, [event.ydata, event.xdata])
-                points.append(newpeak)
-                logger.info("x=%5.1f, y=%5.1f added to group #%i" % (newpeak[1], newpeak[0], len(self.points)))
+                gpt.points.append(newpeak)
+                logger.info("x=%5.1f, y=%5.1f added to group #%2s" % (newpeak[1], newpeak[0], gpt.label))
             else:
                 logger.warning("No peak found !!!")
-            common_creation(points)
+            common_creation(gpt.points, gpt)
 
         def erase_grp(event):
             " * Center-click or (click+d):     erase current group"
-            poped_points = self.points.pop(self.spinbox.value()) or []
-            # in case not the full group is removed, would like to keep annotation
-            # _except_ if the annotation is close to the removed point... too complicated!
-            if len(self.ax.texts) > 0:
-                self.ax.texts.pop()
-            if len(self.ax.lines) > 0:
-                self.ax.lines.pop()
-            if len(poped_points) > 0:  # not '1' pressed or only 1 point left: remove complete group
-                logger.info("Removing group #%i containing %i points" % (len(self.points), len(poped_points)))
+            ring = self.spinbox.value()
+            gpt = self.points.pop(ring)
+            if not gpt:
+                logger.warning("No group of points for ring %s" % ring)
+                return
+#            print("Remove group from ring %s label %s" % (ring, gpt.label))
+            if gpt.annotate:
+                if gpt.annotate in  self.ax.texts:
+                    self.ax.texts.remove(gpt.annotate)
+            if gpt.plot:
+                if gpt.plot[0] in self.ax.lines:
+                      self.ax.lines.remove(gpt.plot[0])
+            if len(gpt) > 0:
+                logger.info("Removing group #%2s containing %i points" % (gpt.label, len(gpt)))
             else:
                 logger.info("No groups to remove")
             update_fig(self.fig)
@@ -417,28 +421,35 @@ class PeakPicker(object):
 
         def erase_1_point(event):
             " * Center-click + 1 or (click+1): erase closest point from current group"
-            poped_points = self.points.pop(self.spinbox.value()) or []
-            if len(self.ax.texts) > 0:
-                self.ax.texts.pop()
-            if len(self.ax.lines) > 0:
-                self.ax.lines.pop()
-            if len(poped_points) > 1:
+            ring = self.spinbox.value()
+            gpt = self.points.get(ring)
+            if not gpt:
+                logger.warning("No group of points for ring %s" % ring)
+                return
+#            print("Remove 1 point from group from ring %s label %s" % (ring, gpt.label))
+            if gpt.annotate:
+                if gpt.annotate in  self.ax.texts:
+                    self.ax.texts.remove(gpt.annotate)
+            if gpt.plot:
+                if gpt.plot[0] in self.ax.lines:
+                      self.ax.lines.remove(gpt.plot[0])
+            if len(gpt) > 1:
                 # delete single closest point from current group
                 x0 = event.xdata
                 y0 = event.ydata
-                distsq = [((p[1] - x0) ** 2 + (p[0] - y0) ** 2) for p in poped_points]
+                distsq = [((p[1] - x0) ** 2 + (p[0] - y0) ** 2) for p in gpt.points]
                 # index and distance of smallest distance:
                 indexMin = min(enumerate(distsq), key=operator.itemgetter(1))
-                removedPt = poped_points.pop(indexMin[0])
-                logger.info("x=%5.1f, y=%5.1f removed from group #%i (%i points left)" % (removedPt[1], removedPt[0], len(self.points), len(poped_points)))
+                removedPt = gpt.points.pop(indexMin[0])
+                logger.info("x=%5.1f, y=%5.1f removed from group #%2s (%i points left)" % (removedPt[1], removedPt[0], gpt.label, len(gpt)))
                 # annotate (new?) 1st point and add remaining points back
-                pt = (poped_points[0][0], poped_points[0][1])
-                annontate(pt, (pt[0] + 10, pt[1] + 10))
-                self.points.append(poped_points, ring=self.spinbox.value())
-                npl = numpy.array(poped_points)
-                self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
-            elif len(poped_points) > 0:  # not '1' pressed or only 1 point left: remove complete group
-                logger.info("Removing group #%i containing %i points" % (len(self.points), len(poped_points)))
+                pt = (gpt.points[0][0], gpt.points[0][1])
+                gpt.annotate = annontate(pt, (pt[0] + 10, pt[1] + 10))
+                npl = numpy.array(gpt.points)
+                gpt.plot = self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
+            elif len(gpt) == 1:
+                logger.info("Removing group #%2s containing 1 point" % (gpt.label))
+                gpt = self.points.pop(ring)
             else:
                 logger.info("No groups to remove")
             update_fig(self.fig)
@@ -464,7 +475,7 @@ class PeakPicker(object):
             elif (event.key == "1") and (event.button in [1, 2]):
                 erase_1_point(event)
             elif (event.button == 2) or (event.button == 1  and event.key == "d"):
-                erase_1_point(event)
+                erase_grp(event)
             else:
                 logger.info("Unknown combination: Button: %i, Key modifier: %s" % (event.button, event.key))
 
@@ -481,7 +492,7 @@ class PeakPicker(object):
             self.fig.canvas.mpl_disconnect(self.mpl_connectId)
             self.mpl_connectId = None
             print("Now fill in the ring number. Ring number starts at 0, like point-groups.")
-            self.points.readRingNrFromKeyboard()  # readAngleFromKeyboard()
+            self.points.readRingNrFromKeyboard()
             if filename is not None:
                 self.points.save(filename)
             return self.points.getWeightedList(self.data)
@@ -559,18 +570,6 @@ class PeakPicker(object):
             gc.collect()
 
 
-#    def format_coord(self, x, y):
-#        """
-#        Print coordinated in matplotlib toolbar
-#        """
-#        col = int(x + 0.5)
-#        row = int(y + 0.5)
-#        if col >= 0 and col < self.shape[1] and row >= 0 and row < self.shape[0]:
-#            z = self.data[row, col]
-#            return 'x=%.2f \t y=%.2f \t I=%1.4f' % (x, y, z)
-#        else:
-#            return 'x=%.2f \t y=%.2f \t I=None' % (x, y)
-
     def on_plus_pts_clicked(self, *args):
         """
         callback function
@@ -615,11 +614,8 @@ class ControlPoints(object):
     This class contains a set of control points with (optionally) their ring number hence d-spacing and diffraction  2Theta angle ...
     """
     def __init__(self, filename=None, calibrant=None, wavelength=None):
-#        self.dSpacing = []
         self._sem = threading.Semaphore()
-        self._angles = []  # angles are enforced in radians, conversion from degrees or q-space nm-1 are done on the fly
-        self._points = []
-        self._ring = []  # ring number ...
+        self._groups = {}
         self.calibrant = Calibrant(wavelength=wavelength)
         if filename is not None:
             self.load(filename)
@@ -643,56 +639,47 @@ class ControlPoints(object):
         if not self.calibrant.wavelength:
             self.calibrant.set_wavelength(wavelength)
 
-
     def __repr__(self):
         self.check()
         lstOut = ["ControlPoints instance containing %i group of point:" % len(self)]
         if self.calibrant:
             lstOut.append(self.calibrant.__repr__())
-        for ring, angle, points in zip(self._ring, self._angles, self._points):
-            lstOut.append("%s %s: %s" % (ring, angle, points))
+        labels = self._groups.keys()
+        labels.sort(PointGroup.cmp)
+        lstOut.append("Containing %s groups of points:" % len(labels))
+        for lbl in labels:
+            lstOut.append(str(self._groups[lbl]))
         return os.linesep.join(lstOut)
 
     def __len__(self):
-        return len(self._angles)
+        return len(self._groups)
 
     def check(self):
         """
         check internal consistency of the class
         """
-        if len(self._angles) != len(self._points):
-            logger.error("in ControlPoints: length of the two arrays are not consistent!!! angle: %i points: %s ",
-                           len(self._angles), len(self._points))
+        pass
+
     def reset(self):
         """
         remove all stored values and resets them to default
         """
         with self._sem:
-#            self.calibrant = Calibrant()
-            self._angles = []  # angles are enforced in radians, conversion from degrees or q-space nm-1 are done on the fly
-            self._points = []
-            self._ring = []
+            self._groups = {}
+            PointGroup.reset_label()
 
-
-    def append(self, points, angle=None, ring=None):
+    def append(self, points, ring=None, annotate=None, plot=None):
         """
         @param point: list of points
-        @param angle: 2-theta angle in radians
+        @param ring: ring number
+        @param annotate: matplotlib.annotate reference
+        @param plot: matplotlib.plot reference
+        @return: PointGroup instance
         """
         with self._sem:
-            self._angles.append(angle)
-            self._points.append(points)
-            if ring is None:
-                if angle in self.calibrant.get_2th():
-                    self._ring.append(self.calibrant.get_2th().index(angle))
-                else:
-                    if angle and (angle not in self.calibrant.get_2th()):
-                        self.calibrant.append_2th(angle)
-                        self.rings = [self.calibrant.get_2th_index(a) for a in self._angles]
-                    else:
-                        self._ring.append(None)
-            else:
-                self._ring.append(ring)
+            gpt = PointGroup(points, ring, annotate, plot)
+            self._groups[gpt.label] = gpt
+        return gpt
 
     def append_2theta_deg(self, points, angle=None, ring=None):
         """
@@ -704,25 +691,60 @@ class ControlPoints(object):
         else:
             self.append(points, None, ring)
 
-    def pop(self, idx=None):
+    def get(self, ring=None):
         """
-        Remove the set of points at given index (by default the last)
+        retireves the last set of points for a given ring (by default the last)
 
-        @param idx: number of the ring to remove
+        @param ring: index of ring to search for
         """
         out = None
-        if (idx is None) or (idx not in self._ring):
-            with self._sem:
-                if self._angles:
-                    self._angles.pop()
-                    self._ring.pop()
-                    out = self._points.pop()
-        else:
-            with self._sem:
-                i = self._ring.index(idx)
-                self._angles.pop(i)
-                self._ring.pop(i)
-                out = self._points.pop(i)
+        with self._sem:
+            if (ring is None):
+                lst = self._groups.keys()
+                lst.sort(PointGroup.cmp)
+                if not lst:
+                    logger.warning("No group in ControlPoints.get")
+                    return
+                lbl = lst[-1]
+            else:
+                lst = [l for l, gpt in self._groups.items() if gpt.ring == ring]
+                lst.sort(PointGroup.cmp)
+                if not lst:
+                    logger.warning("No group for ring %s in ControlPoints.get" % (ring))
+                    return
+                lbl = lst[-1]
+            if lbl in self._groups:
+                out = self._groups.get(lbl)
+            else:
+                logger.warning("No such group %s in ControlPoints.pop" % (lbl))
+        return out
+
+    def pop(self, ring=None):
+        """
+        Remove the set of points for a given ring (by default the last)
+
+        @param ring: index of ring of which remove the last group
+        """
+        out = None
+        with self._sem:
+            if (ring is None):
+                lst = self._groups.keys()
+                lst.sort(PointGroup.cmp)
+                if not lst:
+                    logger.warning("No group in ControlPoints.pop")
+                    return
+                lbl = lst[-1]
+            else:
+                lst = [l for l, gpt in self._groups.items() if gpt.ring == ring]
+                lst.sort(PointGroup.cmp)
+                if not lst:
+                    logger.warning("No group for ring %s in ControlPoints.pop" % (ring))
+                    return
+                lbl = lst[-1]
+            if lbl in self._groups:
+                out = self._groups.pop(lbl)
+            else:
+                logger.warning("No such group %s in ControlPoints.pop" % (lbl))
         return out
 
     def save(self, filename):
@@ -735,16 +757,23 @@ class ControlPoints(object):
         with self._sem:
             lstOut = ["# set of control point used by pyFAI to calibrate the geometry of a scattering experiment",
                       "#angles are in radians, wavelength in meter and positions in pixels"]
-
+            if self.calibrant:
+                lstOut.append("calibrant: %s"%self.calibrant)
             if self.calibrant.wavelength is not None:
                 lstOut.append("wavelength: %s" % self.calibrant.wavelength)
             lstOut.append("dspacing:" + " ".join([str(i) for i in self.calibrant.dSpacing]))
-            for idx, angle, points, ring in zip(range(self.__len__()), self._angles, self._points, self._ring):
+            lst = self._groups.keys()
+            lst.sort(PointGroup.cmp)
+            tth = self.calibrant.get_2th()
+            for idx, lbl in enumerate(lst):
+                gpt = self._groups[lbl]
+                ring = gpt.ring
                 lstOut.append("")
                 lstOut.append("New group of points: %i" % idx)
-                lstOut.append("2theta: %s" % angle)
+                if ring < len(tth):
+                    lstOut.append("2theta: %s" % tth[ring])
                 lstOut.append("ring: %s" % ring)
-                for point in points:
+                for point in gpt.points:
                     lstOut.append("point: x=%s y=%s" % (point[1], point[0]))
             with open(filename, "w") as f:
                 f.write("\n".join(lstOut))
@@ -757,9 +786,12 @@ class ControlPoints(object):
             logger.error("ControlPoint.load: No such file %s", filename)
             return
         self.reset()
-        tth = None
         ring = None
         points = []
+        calibrant = None
+        wavelength = None
+        dspacing = []
+
         for line in open(filename, "r"):
             if line.startswith("#"):
                 continue
@@ -767,27 +799,27 @@ class ControlPoints(object):
                 key, value = line.split(":", 1)
                 value = value.strip()
                 key = key.strip().lower()
-                if key == "wavelength":
+                if key == "calibrant":
+                    words = value.split()
+                    if words[0] in ALL_CALIBRANTS:
+                        calibrant = ALL_CALIBRANTS[words[0]]
                     try:
-                        self.calibrant.set_wavelength(float(value))
+                        wavelength = float(words[-1])
+                        calibrant.set_wavelength(wavelength)
                     except Exception as error:
                         logger.error("ControlPoints.load: unable to convert to float %s (wavelength): %s", value, error)
-                elif key == "2theta":
-                    if value.lower() == "none":
-                        tth = None
-                    else:
-                        try:
-                            tth = float(value)
-                        except Exception as error:
-                            logger.error("ControlPoints.load: unable to convert to float %s (2theta): %s", value, error)
+                elif key == "wavelength":
+                    try:
+                        wavelength=float(value)
+                    except Exception as error:
+                        logger.error("ControlPoints.load: unable to convert to float %s (wavelength): %s", value, error)
                 elif key == "dspacing":
-                    self.dSpacing = []
                     for val in value.split():
                         try:
                             fval = float(val)
                         except Exception:
                             fval = None
-                        self.calibrant.append_dSpacing(fval)
+                        dspacing.append(fval)
                 elif key == "ring":
                     if value.lower() == "none":
                         ring = None
@@ -814,43 +846,38 @@ class ControlPoints(object):
                 elif key.startswith("new"):
                     if len(points) > 0:
                         with self._sem:
-                            self._angles.append(tth)
-                            self._ring.append(ring)
-                            self._points.append(points)
-                            tth = None
+                            gpt = PointGroup(points, ring)
+                            self._groups[gpt.label] = gpt
                             points = []
+                            ring = None
+                elif key in ["2theta"]:
+                    # Deprecated keys
+                    pass
                 else:
                     logger.error("Unknown key: %s", key)
         if len(points) > 0:
-            self._angles.append(tth)
-            self._points.append(points)
-            self._ring.append(ring)
-
-    @deprecated
-    def load_dSpacing(self, filename):
-        """
-        Load a d-spacing file containing the inter-reticular plan distance in Angstrom
-
-        DEPRECATED: use a calibrant object
-        """
-        self.calibrant.load_file(filename)
-        return self.calibrant.dSpacing
-    @deprecated
-    def save_dSpacing(self, filename):
-        """
-        save the d-spacing to a file
-
-        DEPRECATED: use a calibrant object
-        """
-        self.calibrant.save_dSpacing(filename)
+            with self._sem:
+                gpt = PointGroup(points, ring)
+                self._groups[gpt.label] = gpt
+        # Update calibrant if needed.
+        if not calibrant and dspacing:
+            calibrant = Calibrant()
+            calibrant.dSpacing = dspacing
+        if calibrant and calibrant.wavelength is None and wavelength:
+            calibrant.wavelength = wavelength
+        if calibrant:
+            self.calibrant = calibrant
 
     def getList2theta(self):
         """
         Retrieve the list of control points suitable for geometry refinement
         """
         lstOut = []
-        for tth, points in zip(self._angles, self._points):
-            lstOut += [[pt[0], pt[1], tth] for pt in points]
+        tth = self.calibrant.get_2th()
+        for gpt in self._groups:
+            if gpt.ring < len(tth):
+                tthi = tth[gpt.ring]
+                lstOut += [[pt[0], pt[1], tthi] for pt in gpt.points]
         return lstOut
 
     def getListRing(self):
@@ -858,8 +885,8 @@ class ControlPoints(object):
         Retrieve the list of control points suitable for geometry refinement with ring number
         """
         lstOut = []
-        for ring, points in zip(self._ring, self._points):
-            lstOut += [[pt[0], pt[1], ring] for pt in points]
+        for gpt in self._groups.values():
+            lstOut += [[pt[0], pt[1], gpt.ring] for pt in gpt.points]
         return lstOut
     getList = getListRing
 
@@ -868,49 +895,32 @@ class ControlPoints(object):
         Retrieve the list of control points suitable for geometry refinement with ring number and intensities
         @param image:
         @return: a (x,4) array with pos0, pos1, ring nr and intensity
+
+        #TODO: refine the value of the intensity using 2nd order polynomia
         """
         lstOut = []
-        for ring, points in zip(self._ring, self._points):
-            lstOut += [[pt[0], pt[1], ring, image[int(pt[0] + 0.5), int(pt[1] + 0.5)]] for pt in points]
+        for gpt in self._groups.values():
+            lstOut += [[pt[0], pt[1], gpt.ring, image[int(pt[0] + 0.5), int(pt[1] + 0.5)]] for pt in gpt.points]
         return lstOut
-
-    def readAngleFromKeyboard(self):
-        """
-        Ask the 2theta values for the given points
-        """
-        last2Theta = None
-        for idx, tth, point in zip(range(self.__len__()), self._angles, self._points):
-            bOk = False
-            while not bOk:
-                if tth is not None:
-                    last2Theta = numpy.rad2deg(tth)
-                res = raw_input("Point group #%2i (%i points)\t (%6.1f,%6.1f) \t [default=%s] 2Theta= " % (idx, len(point), point[0][1], point[0][0], last2Theta)).strip()
-                if res == "":
-                    res = last2Theta
-                try:
-                    tth = float(res)
-                except (ValueError, TypeError):
-                    logging.error("I did not understand your 2theta value")
-                else:
-                    if tth > 0:
-                        last2Theta = tth
-                        self._angles[idx] = numpy.deg2rad(tth)
-                        bOk = True
 
     def readRingNrFromKeyboard(self):
         """
         Ask the ring number values for the given points
         """
         lastRing = None
-        for idx, ring, point in zip(range(self.__len__()), self._ring, self._points):
+        lst = self._groups.keys()
+        lst.sort(PointGroup.cmp)
+        for idx, lbl in enumerate(lst):
             bOk = False
+            gpt = self._groups[lbl]
             while not bOk:
                 defaultRing = 0
+                ring = gpt.ring
                 if ring is not None:
                     defaultRing = ring
                 elif lastRing is not None:
                     defaultRing = lastRing + 1
-                res = raw_input("Point group #%2i (%i points)\t (%6.1f,%6.1f) \t [default=%s] Ring# " % (idx, len(point), point[0][1], point[0][0], defaultRing)).strip()
+                res = raw_input("Point group #%2s (%i points)\t (%6.1f,%6.1f) \t [default=%s] Ring# " % (lbl, len(gpt), gpt.points[0][1], gpt.points[0][0], defaultRing)).strip()
                 if res == "":
                     res = defaultRing
                 try:
@@ -920,20 +930,16 @@ class ControlPoints(object):
                 else:
                     if inputRing >= 0 and inputRing < len(self.calibrant.dSpacing):
                         lastRing = ring
-                        self._ring[idx] = inputRing
-                        self._angles[idx] = self.calibrant.get_2th()[inputRing]
+                        gpt.ring = inputRing
                         bOk = True
                     else:
                         logging.error("Invalid ring number %i (range 0 -> %2i)" % (inputRing, len(self.calibrant.dSpacing) - 1))
-
-
 
     def setWavelength_change2th(self, value=None):
         with self._sem:
             if self.calibrant is None:
                 self.calibrant = Calibrant()
             self.calibrant.setWavelength_change2th(value)
-            self._angles = [self.calibrant.get_2th()[i] for i in self._ring]
 
     def setWavelength_changeDs(self, value=None):
         """
@@ -967,4 +973,100 @@ class ControlPoints(object):
     dSpacing = property(get_dSpacing, set_dSpacing)
 
 
+class PointGroup(object):
+    """
+    Class contains a group of points ...
+    They all belong to the same Debye-Scherrer ring
+    """
+    last_label = 0
 
+    @classmethod
+    def get_label(cls):
+        """
+        return the next label
+        """
+        code = cls.last_label
+        cls.last_label += 1
+        if code < 26:
+            label = chr(97 + code)
+        else:
+            label = chr(96 + code // 26) + chr(97 + code % 26)
+        return label
+
+    @classmethod
+    def set_label(cls, label):
+        """
+        update the internal counter if needed
+        """
+        if len(label) == 1:
+            code = ord(label) - 97
+        else:
+            code = (ord(label[0]) - 96) * 26 + (ord(label[1]) - 97)
+        if cls.last_label <= code:
+            cls.last_label = code + 1
+    @classmethod
+    def reset_label(cls):
+        """
+        reset intenal counter
+        """
+        cls.last_label = 0
+
+    @staticmethod
+    def cmp(a,b):
+        """
+        Comparison for 2 PointGroup labels
+        """
+        if len(a) < len(b):
+            return -1
+        elif len(a) > len(b):
+            return 1
+        elif a < b:
+            return -1
+        elif  a > b:
+            return 1
+        return 0
+
+    def __init__(self, points=None, ring=None, annotate=None, plot=None, force_label=None):
+        """
+        Constructor
+
+        @param points: list of points
+        @param ring: ring number
+        @param annotate: reference to the matplotlib annotate output
+        @param plot: reference to the matplotlib plot
+        @param force_label: allows to enforce the label
+        """
+        if points:
+            self.points = points
+        else:
+            self.points = []
+        if force_label:
+            self.label = force_label
+            self.set_label(force_label)
+        else:
+            self.label = self.get_label()
+        if ring is not None:
+            self._ring = int(ring)
+        else:
+            self._ring = None
+        #placeholder of matplotlib references...
+        self.annotate = annotate
+        self.plot = plot
+
+    def __len__(self):
+        return len(self.points)
+
+    def __repr__(self):
+        return "#%2s ring %s: %s points" % (self.label, self.ring, len(self.points))
+
+    def get_ring(self):
+        return self._ring
+
+    def set_ring(self, value):
+        if type(value) != int:
+            logger.error("Ring: %s" % value)
+            import traceback
+            traceback.print_stack()
+            self._ring = int(value)
+        self._ring = value
+    ring = property(get_ring, set_ring)

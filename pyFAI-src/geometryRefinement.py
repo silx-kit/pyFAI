@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/kif/pyFAI
+#             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -22,11 +22,13 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function, division
+
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2014"
+__date__ = "04/11/2014"
 __status__ = "development"
 
 import os
@@ -39,7 +41,9 @@ from math import pi
 from . import azimuthalIntegrator
 from .calibrant import Calibrant, ALL_CALIBRANTS
 AzimuthalIntegrator = azimuthalIntegrator.AzimuthalIntegrator
-from scipy.optimize import fmin, leastsq, fmin_slsqp, anneal
+from scipy.optimize import fmin, leastsq, fmin_slsqp, anneal, curve_fit
+
+from .utils import timeit
 
 if os.name != "nt":
     WindowsError = RuntimeError
@@ -74,7 +78,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         @param splineFile: file describing the detector as 2 cubic splines. Replaces pixel1 & pixel2
         @param detector: name of the detector or Detector instance. Replaces splineFile, pixel1 & pixel2
         @param wavelength: wavelength in m (1.54e-10)
-        @param calibrant: instance of pyFAI.calibrant.Calibrant containing the d-Spacing 
+        @param calibrant: instance of pyFAI.calibrant.Calibrant containing the d-Spacing
 
         """
         self.data = numpy.array(data, dtype=numpy.float64)
@@ -148,7 +152,7 @@ class GeometryRefinement(AzimuthalIntegrator):
 
     def set_tolerance(self, value=10):
         """
-        Set the tolerance for a refinement of the geometry; in percent of the original value 
+        Set the tolerance for a refinement of the geometry; in percent of the original value
 
         @param value: Tolerance as a percentage
 
@@ -200,7 +204,7 @@ class GeometryRefinement(AzimuthalIntegrator):
             wavelength = self.wavelength
         rings = numpy.ascontiguousarray(rings, dtype=numpy.int32)
         if wavelength != self.calibrant.wavelength:
-            self.calibrant.setWavelength_change2th(wavelength)       
+            self.calibrant.setWavelength_change2th(wavelength)
         return numpy.array(self.calibrant.get_2th(), dtype=numpy.float64)[rings]
 
     def residu1(self, param, d1, d2, rings):
@@ -227,7 +231,7 @@ class GeometryRefinement(AzimuthalIntegrator):
     def refine1(self):
         self.param = numpy.array([self._dist, self._poni1, self._poni2,
                                   self._rot1, self._rot2, self._rot3],
-                                 dtype="float64")
+                                 dtype=numpy.float64)
         newParam, rc = leastsq(self.residu1, self.param,
                                args=(self.data[:, 0],
                                      self.data[:, 1],
@@ -302,7 +306,7 @@ class GeometryRefinement(AzimuthalIntegrator):
 
         self.param = numpy.array([self.dist, self.poni1, self.poni2,
                                   self.rot1, self.rot2, self.rot3, self.wavelength],
-                                 dtype="float64")
+                                 dtype=numpy.float64)
         param = []
         bounds = []
         for i in d:
@@ -358,7 +362,7 @@ class GeometryRefinement(AzimuthalIntegrator):
     def simplex(self, maxiter=1000000):
         self.param = numpy.array([self.dist, self.poni1, self.poni2,
                                   self.rot1, self.rot2, self.rot3],
-                                 dtype="float64")
+                                 dtype=numpy.float64)
         newParam = fmin(self.residu2, self.param,
                         args=(self.data[:, 0],
                               self.data[:, 1],
@@ -428,8 +432,91 @@ class GeometryRefinement(AzimuthalIntegrator):
             if len(param) == 6:
                 param.append(1e10 * self.wavelength)
         return self.residu2_wavelength(param,
-                            self.data[:, 0], self.data[:, 1], self.data[:, 2].astype(numpy.int32))
+                            self.data[:, 0], self.data[:, 1], self.data[:, 2])
 
+    def curve_fit(self):
+        """Refine the geometry and provide confidence interval
+        Use curve_fit from scipy.optimize to not only refine the geometry (unconstrained fit)
+
+        @return errors
+        """
+        d1 = self.data[:, 0]
+        d2 = self.data[:, 1]
+        x = d1, d2
+        rings = self.data[:, 2]
+        f = lambda x, *param: self.tth(x[0], x[1], param)
+        y = self.calc_2th(rings, self.wavelength)
+        p0 = numpy.array([self.dist, self.poni1, self.poni2, self.rot1, self.rot2, self.rot3], dtype=numpy.float64)
+        print("p0: %s" % p0)
+        popt, pcov = curve_fit(f, x, y, p0)
+        print("p1: %s" % popt)
+        print(pcov)
+        err = numpy.sqrt(numpy.diag(pcov))
+        print("err: %s" % err)
+        return err
+
+    @timeit
+    def confidence(self, with_rot=True):
+        """Confidence interval obtained from the inverse of the hessian matrix
+        of the error function next to its minimum value.
+
+        @param with_rot: if true include rot1 & rot2 in the parameter set.
+        @return: inverse of the Hessian array
+        """
+        epsilon = 1e-5
+        y = self.data[:, 0]
+        x = self.data[:, 1]
+        r = self.data[:, 2].astype(numpy.int32)
+        param0 = numpy.array([self.dist, self.poni1, self.poni2, self.rot1, self.rot2, self.rot3], dtype=numpy.float64)
+        ref = self.residu2(param0, y, x, r)
+        print(ref)
+        if with_rot:
+            size = 5
+        else:
+            size = 3
+        hessian = numpy.zeros((size,size), dtype=numpy.float64)
+
+        delta = abs(epsilon * param0)
+        delta[abs(param0) < epsilon] = epsilon
+        print(delta)
+        for i in range(size):
+            # Diagonal terms:
+            deltai = delta[i]
+            param = param0.copy()
+            param[i] += deltai
+            value_plus = self.residu2(param, y, x, r)
+            param = param0.copy()
+            param[i] -= deltai
+            value_moins = self.residu2(param, y, x, r)
+            hessian[i, i] = (value_plus + value_moins - 2.0 * ref) / (deltai ** 2)
+
+        for i in range(size):
+            for j in range(i + 1, size):
+                deltai = delta[i]
+                deltaj = delta[j]
+                param = param0.copy()
+                param[i] += deltai
+                param[j] += deltaj
+                value_plus_plus = self.residu2(param, y, x, r)
+                param = param0.copy()
+                param[i] -= deltai
+                param[j] -= deltaj
+                value_moins_moins = self.residu2(param, y, x, r)
+                param = param0.copy()
+                param[i] += deltai
+                param[j] -= deltaj
+                value_plus_moins = self.residu2(param, y, x, r)
+                param = param0.copy()
+                param[i] -= deltai
+                param[j] += deltaj
+                value_moins_plus = self.residu2(param, y, x, r)
+                hessian[j, i] = hessian[i, j] = (value_plus_plus + value_moins_moins - value_plus_moins - value_moins_plus) / (deltai * deltaj)
+        print(hessian)
+        cov = numpy.linalg.inv(hessian)
+        print(cov)
+        err = numpy.sqrt(numpy.diag(cov))
+        print("err: %s" % err)
+        return err
 
     def roca(self):
         """

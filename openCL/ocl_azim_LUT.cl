@@ -9,19 +9,18 @@
  *   Principal authors: J. Kieffer (kieffer@esrf.fr)
  *   Last revision: 11/10/2014
  *
- *   This program is free software: you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published
- *   by the Free Software Foundation, either version 3 of the License, or
- *   (at your option) any later version.
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
  *
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU Lesser General Public License for more details.
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
  *
- *   You should have received a copy of the GNU General Public License
- *   and the GNU Lesser General Public License  along with this program.
- *   If not, see <http://www.gnu.org/licenses/>.
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /**
@@ -34,6 +33,27 @@
  *   ON_CPU: 0 for GPU, 1 for CPU and probably Xeon Phi 
  */
 
+
+#ifndef __OPENCL_VERSION__
+//This is for Eclipse to stop seeing errors everywhere ...
+#define __kernel
+#define __global
+#define __constant
+#define __local
+
+typedef struct float2 {
+  float x, y;
+} float2;
+typedef struct float3 {
+  float x, y, z;
+  float2 xy, xz, yx, yz, zx, zy;
+} float3;
+typedef struct float4 {
+  float x, y, z, w;
+  float2 xy, yx;
+  float3 xyz, xzy, yxz, yzx, zxy, zyx;
+} float4;
+#endif
 
 
 struct lut_point_t
