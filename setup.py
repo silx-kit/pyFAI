@@ -248,8 +248,8 @@ class build_ext_pyFAI(build_ext):
                                     for arg in e.extra_compile_args]
             e.extra_link_args = [trans[arg][1] if arg in trans else arg
                                  for arg in e.extra_link_args]
-            e.libraries = filter(None, [trans[arg] if arg in trans else None
-                                        for arg in e.libraries])
+            e.libraries = list(filter(None, [trans[arg] if arg in trans else None
+                                        for arg in e.libraries]))
 
             # If you are confused look here:
             # print e, e.libraries
@@ -440,6 +440,7 @@ Operating System :: POSIX
 
 """
 
+print(ext_modules)
 setup(name='pyFAI',
       version=get_version(),
       author="Jérôme Kieffer (python), \
