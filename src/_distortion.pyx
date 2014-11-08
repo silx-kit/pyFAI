@@ -367,41 +367,41 @@ cdef class Quad:
                 value = self.box[i0, i1] / area
                 self.box[i0, i1] = value
                 if value < 0.0:
-                    print self.box
+                    print(self.box)
                     self.box[:, :] = 0
-                    print "AB"
+                    print("AB")
                     self.integrate(self.B0, self.A0, self.pAB, self.cAB)
-                    print self.box
+                    print(self.box)
                     self.box[:, :] = 0
-                    print "DA"
+                    print("DA")
                     self.integrate(self.A0, self.D0, self.pDA, self.cDA)
-                    print self.box
+                    print(self.box)
                     self.box[:, :] = 0
-                    print "CD"
+                    print("CD")
                     self.integrate(self.D0, self.C0, self.pCD, self.cCD)
-                    print self.box
+                    print(self.box)
                     self.box[:, :] = 0
-                    print "BC"
+                    print("BC")
                     self.integrate(self.C0, self.B0, self.pBC, self.cBC)
-                    print self.box
-                    print self
+                    print(self.box)
+                    print(self)
                     raise RuntimeError()
 
     def integrate(self, float start, float stop, float slope, float intercept):
         cdef int i, h = 0
         cdef float P, dP, A, AA, dA, sign
-#        print start, stop, calc_area(start, stop)
+#        print(start, stop, calc_area(start, stop)
         if start < stop:  # positive contribution
             P = ceil(start)
             dP = P - start
-#            print "Integrate", start, P, stop, calc_area(start, stop)
+#            print("Integrate", start, P, stop, calc_area(start, stop)
             if P > stop:  # start and stop are in the same unit
                 A = calc_area(start, stop, slope, intercept)
                 if A != 0:
                     AA = fabs(A)
                     sign = A / AA
                     dA = (stop - start)  # always positive
-#                    print AA, sign, dA
+#                    print(AA, sign, dA
                     h = 0
                     while AA > 0:
                         if dA > AA:

@@ -905,7 +905,7 @@ class HistoLUT2dFullSplit(object):
         cdef numpy.ndarray[numpy.int32_t, ndim = 1] indices = numpy.zeros(indptr[all_bins], dtype=numpy.int32)
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] data = numpy.zeros(indptr[all_bins], dtype=numpy.float32)
 
-        print self.size, indptr[all_bins]
+        print(self.size, indptr[all_bins])
         #just recycle the outMax array
         memset(&outMax[0,0], 0, all_bins * sizeof(numpy.int32_t))
 
