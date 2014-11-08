@@ -956,6 +956,17 @@ def get_cl_file(filename):
     return _get_data_path(filename)
 
 
+def read_cl_file(filename):
+    """
+    @param filename: read an OpenCL file and apply a preprocessor
+    @return: preprocessed source code 
+    """
+    with open(get_cl_file(filename), "r") as f:
+        # Dummy preprocessor which pops the #include
+        lines = [i for i in f.readlines() if not i.startswith("#include ")]
+    return os.linesep.join(lines)
+
+
 def concatenate_cl_kernel(filenames):
     """
     @param filenames: filenames containing the kernels
@@ -965,8 +976,7 @@ def concatenate_cl_kernel(filenames):
     """
     kernel = ""
     for filename in filenames:
-        with open(get_cl_file(filename), "r") as f:
-            kernel += f.read()
+            kernel += read_cl_file(filename)
 
     return kernel
 
