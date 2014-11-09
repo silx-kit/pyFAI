@@ -45,11 +45,10 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("PyFAI")
 
-
 try:
     from argparse import ArgumentParser
 except ImportError:
-    from pyFAI.argparse import  ArgumentParser
+    from pyFAI.third_party.argparse import ArgumentParser
 
 
 def main():

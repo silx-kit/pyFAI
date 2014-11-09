@@ -28,19 +28,19 @@ pyFAI-calib
 A tool for determining the geometry of a detector using a reference sample.
 
 """
-
+from __future__ import print_function, division
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/11/2014"
+__date__ = "09/11/2014"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
 try:
     from argparse import ArgumentParser
 except ImportError:
-    from .argparse import ArgumentParser
+    from .third_party.argparse import ArgumentParser
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI.calibration")
@@ -52,7 +52,7 @@ from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
 from .peak_picker import PeakPicker
 from . import units, gui_utils
-from .utils import averageImages, measure_offset, expand_args, readFloatFromKeyboard
+from .utils import averageImages, measure_offset, expand_args, readFloatFromKeyboard, raw_input
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import hc
 from . import version as PyFAI_VERSION
@@ -657,7 +657,7 @@ class AbstractCalibration(object):
 #                print self.geoRef.calibrant
                 while (previous > self.geoRef.chi2()) and (count < self.max_iter):
                     if (count == 0):
-                        previous = sys.maxint
+                        previous = sys.maxsize
                     else:
                         previous = self.geoRef.chi2()
                     self.geoRef.refine2(1000000, fix=self.fixed)
@@ -666,7 +666,7 @@ class AbstractCalibration(object):
             else:
                 while previous > self.geoRef.chi2_wavelength() and (count < self.max_iter):
                     if (count == 0):
-                        previous = sys.maxint
+                        previous = sys.maxsize
                     else:
                         previous = self.geoRef.chi2()
                     self.geoRef.refine2_wavelength(1000000, fix=self.fixed)
@@ -705,7 +705,7 @@ class AbstractCalibration(object):
             else:
                 finished = True
             if not finished:
-                previous = sys.maxint
+                previous = sys.maxsize
 
     def prompt(self):
         """
@@ -1700,7 +1700,7 @@ class MultiCalib(object):
             self.results[fn]["ai"] = rec.ai
 
     def regression(self):
-        print self.results
+        print(self.results)
         dist = numpy.zeros(len(self.results))
         x = dist.copy()
         poni1 = dist.copy()
@@ -1716,9 +1716,9 @@ class MultiCalib(object):
         idx = 0
         print("")
         print("Results of linear regression for distance in mm")
-        for key, dico in  self.results.iteritems():
-            print key, dico["dist"]
-            print dico["ai"]
+        for key, dico in  self.results.items():
+            print(key, dico["dist"])
+            print(dico["ai"])
             x[idx] = dico["dist"] * 1000
             dist[idx] = dico["ai"].dist
             poni1[idx] = dico["ai"].poni1

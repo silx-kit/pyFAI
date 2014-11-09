@@ -49,7 +49,7 @@ from pyFAI.integrate_widget import AIWidget
 try:
     from argparse import ArgumentParser
 except ImportError:
-    from pyFAI.argparse import  ArgumentParser
+    from pyFAI.third_party.argparse import ArgumentParser
 
 try:
     from rfoo.utils import rconsole
