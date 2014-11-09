@@ -2,11 +2,9 @@
 # coding: utf-8
 #
 #    Project: pyFAI tests class utilities
-#             http://forge.epn-campus.eu/projects/azimuthal
+#             https://github.com/pyFAI/pyFAI
 #
-#    File: "$Id:$"
-#
-#    Copyright (C) 2010-2012 European Synchrotron Radiation Facility
+#    Copyright (C) 2010-2014 European Synchrotron Radiation Facility
 #                       Grenoble, France
 #
 #    Principal authors: Jérôme KIEFFER (jerome.kieffer@esrf.fr)
@@ -52,8 +50,6 @@ IN_SOURCES = "pyFAI-src" in os.listdir(os.path.dirname(TEST_HOME))
 
 if IN_SOURCES:
     os.environ["PYFAI_DATA"] = os.path.dirname(TEST_HOME)
-# else:
-#     if "PYFAI_DATA" not in os.environ:
         
 
 def copy(infile, outfile):
@@ -74,7 +70,6 @@ class UtilsTest(object):
     
     # Nota https crashes with error 501 under windows.
 #    url_base = "https://forge.epn-campus.eu/attachments/download"
-#     TEST_HOME = os.path.dirname(os.path.abspath(__file__))
     sem = threading.Semaphore()
     recompiled = False
     reloaded = False
@@ -113,18 +108,6 @@ class UtilsTest(object):
                                      shell=False, cwd=os.path.dirname(TEST_HOME))
                 logger.info("subprocess ended with rc= %s" % p.wait())
                 recompiled = True
-#     opencl = os.path.join(os.path.dirname(TEST_HOME), "openCL")
-#     for clf in os.listdir(opencl):
-#         if clf.endswith(".cl") and clf not in os.listdir(os.path.join(pyFAI_home, "pyFAI")):
-#             copy(os.path.join(opencl, clf), os.path.join(pyFAI_home, "pyFAI", clf))
-#     calib_dir = os.path.join(os.path.dirname(TEST_HOME), "calibration")
-#     dest = os.path.join(pyFAI_home, "pyFAI", "calibration")
-#     if not os.path.exists(dest):
-#         os.makedirs(dest)
-#     for clf in os.listdir(calib_dir):
-#         if clf.endswith(".D") and clf not in os.listdir(dest):
-#             copy(os.path.join(calib_dir, clf), os.path.join(dest, clf))
-
     logger.info("Loading pyFAI")
     try:
         pyFAI = imp.load_module(*((name,) + imp.find_module(name, [pyFAI_home])))
@@ -171,17 +154,6 @@ class UtilsTest(object):
                     p = subprocess.Popen([sys.executable, "setup.py", "build"],
                                          shell=False, cwd=os.path.dirname(TEST_HOME))
                     logger.info("subprocess ended with rc= %s" % p.wait())
-#                     opencl = os.path.join(os.path.dirname(TEST_HOME), "openCL")
-#                     for clf in os.listdir(opencl):
-#                         if clf.endswith(".cl") and clf not in os.listdir(os.path.join(cls.pyFAI_home, "pyFAI")):
-#                             copy(os.path.join(opencl, clf), os.path.join(cls.pyFAI_home, "pyFAI", clf))
-#                     calib_dir = os.path.join(os.path.dirname(TEST_HOME), "calibration")
-#                     dest = os.path.join(cls.pyFAI_home, "pyFAI", "calibration")
-#                     if not os.path.exists(dest):
-#                         os.makedirs(dest)
-#                     for clf in os.listdir(calib_dir):
-#                         if clf.endswith(".D") and clf not in os.listdir(dest):
-#                             copy(os.path.join(calib_dir, clf), os.path.join(dest, clf))
                     cls.pyFAI = cls.deep_reload()
                     cls.recompiled = True
 
