@@ -262,7 +262,7 @@ cmdclass['build_ext'] = build_ext_pyFAI
 
 installDir = "pyFAI"
 
-data_files = [(installDir, glob.glob("openCL/*.cl")),
+data_files = [(os.path.join(installDir, "openCL"), glob.glob("openCL/*.cl")),
               (os.path.join(installDir, "gui"), glob.glob("gui/*.ui")),
               (os.path.join(installDir, "calibration"), glob.glob("calibration/*.D"))]
 

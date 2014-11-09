@@ -958,15 +958,29 @@ def _get_data_path(filename):
         raise RuntimeError("Can not find the [%s] resource, "
                         " something went wrong !!!" % (real_filename,))
 
-
-def get_ui_file(filename):
-    return _get_data_path(os.path.join("gui", filename))
-#    return _get_data_path(filename)
+def get_calibration_dir():
+    """get the full path of a calibration directory
+    
+    @return: the full path of the calibrant file 
+    """
+    return _get_data_path("calibration")
 
 
 def get_cl_file(filename):
-#    return _get_data_path(os.path.join("openCL", filename))
-    return _get_data_path(filename)
+    """get the full path of a openCL file
+    
+    @return: the full path of the openCL source file    
+    """
+    return _get_data_path(os.path.join("openCL", filename))
+
+
+def get_ui_file(filename):
+    """get the full path of a user-interface file
+    
+    @return: the full path of the ui    
+    """
+    return _get_data_path(os.path.join("gui", filename))
+
 
 
 def read_cl_file(filename):

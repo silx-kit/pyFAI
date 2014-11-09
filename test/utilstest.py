@@ -24,12 +24,14 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import print_function, division
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "2014-09-29"
+__date__ = "2014-11-09"
+
 
 import os
 import imp
@@ -45,6 +47,14 @@ import json
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("pyFAI.utilstest")
 
+TEST_HOME = os.path.dirname(os.path.abspath(__file__))
+IN_SOURCES = "pyFAI-src" in os.listdir(os.path.dirname(TEST_HOME))
+
+if IN_SOURCES:
+    os.environ["PYFAI_DATA"] = os.path.dirname(TEST_HOME)
+# else:
+#     if "PYFAI_DATA" not in os.environ:
+        
 
 def copy(infile, outfile):
     "link or copy file according to the OS"
@@ -64,15 +74,15 @@ class UtilsTest(object):
     
     # Nota https crashes with error 501 under windows.
 #    url_base = "https://forge.epn-campus.eu/attachments/download"
-    test_home = os.path.dirname(os.path.abspath(__file__))
+#     TEST_HOME = os.path.dirname(os.path.abspath(__file__))
     sem = threading.Semaphore()
     recompiled = False
     reloaded = False
     name = "pyFAI"
-    image_home = os.path.join(test_home, "testimages")
+    image_home = os.path.join(TEST_HOME, "testimages")
     if not os.path.isdir(image_home):
         os.makedirs(image_home)
-    testimages = os.path.join(test_home, "all_testimages.json")
+    testimages = os.path.join(TEST_HOME, "all_testimages.json")
     if os.path.exists(testimages):
         with open(testimages) as f:
             ALL_DOWNLOADED_FILES = set(json.load(f))
@@ -84,7 +94,7 @@ class UtilsTest(object):
     if os.environ.get("BUILDPYTHONPATH"):
         pyFAI_home = os.path.abspath(os.environ.get("BUILDPYTHONPATH", ""))
     else:
-        pyFAI_home = os.path.join(os.path.dirname(test_home),
+        pyFAI_home = os.path.join(os.path.dirname(TEST_HOME),
                                   "build", architecture)
     logger.info("pyFAI Home is: " + pyFAI_home)
     if "pyFAI" in sys.modules:
@@ -100,20 +110,20 @@ class UtilsTest(object):
             if not os.path.isdir(pyFAI_home):
                 logger.warning("Building pyFAI to %s" % pyFAI_home)
                 p = subprocess.Popen([sys.executable, "setup.py", "build"],
-                                     shell=False, cwd=os.path.dirname(test_home))
+                                     shell=False, cwd=os.path.dirname(TEST_HOME))
                 logger.info("subprocess ended with rc= %s" % p.wait())
                 recompiled = True
-    opencl = os.path.join(os.path.dirname(test_home), "openCL")
-    for clf in os.listdir(opencl):
-        if clf.endswith(".cl") and clf not in os.listdir(os.path.join(pyFAI_home, "pyFAI")):
-            copy(os.path.join(opencl, clf), os.path.join(pyFAI_home, "pyFAI", clf))
-    calib_dir = os.path.join(os.path.dirname(test_home), "calibration")
-    dest = os.path.join(pyFAI_home, "pyFAI", "calibration")
-    if not os.path.exists(dest):
-        os.makedirs(dest)
-    for clf in os.listdir(calib_dir):
-        if clf.endswith(".D") and clf not in os.listdir(dest):
-            copy(os.path.join(calib_dir, clf), os.path.join(dest, clf))
+#     opencl = os.path.join(os.path.dirname(TEST_HOME), "openCL")
+#     for clf in os.listdir(opencl):
+#         if clf.endswith(".cl") and clf not in os.listdir(os.path.join(pyFAI_home, "pyFAI")):
+#             copy(os.path.join(opencl, clf), os.path.join(pyFAI_home, "pyFAI", clf))
+#     calib_dir = os.path.join(os.path.dirname(TEST_HOME), "calibration")
+#     dest = os.path.join(pyFAI_home, "pyFAI", "calibration")
+#     if not os.path.exists(dest):
+#         os.makedirs(dest)
+#     for clf in os.listdir(calib_dir):
+#         if clf.endswith(".D") and clf not in os.listdir(dest):
+#             copy(os.path.join(calib_dir, clf), os.path.join(dest, clf))
 
     logger.info("Loading pyFAI")
     try:
@@ -159,20 +169,19 @@ class UtilsTest(object):
                     if remove_first:
                         recursive_delete(cls.pyFAI_home)
                     p = subprocess.Popen([sys.executable, "setup.py", "build"],
-                                         shell=False, cwd=os.path.dirname(cls.test_home))
+                                         shell=False, cwd=os.path.dirname(TEST_HOME))
                     logger.info("subprocess ended with rc= %s" % p.wait())
-                    opencl = os.path.join(os.path.dirname(cls.test_home), "openCL")
-                    for clf in os.listdir(opencl):
-                        if clf.endswith(".cl") and clf not in os.listdir(os.path.join(cls.pyFAI_home, "pyFAI")):
-                            copy(os.path.join(opencl, clf), os.path.join(cls.pyFAI_home, "pyFAI", clf))
-                    calib_dir = os.path.join(os.path.dirname(cls.test_home), "calibration")
-                    dest = os.path.join(cls.pyFAI_home, "pyFAI", "calibration")
-                    if not os.path.exists(dest):
-                        os.makedirs(dest)
-                    for clf in os.listdir(calib_dir):
-                        if clf.endswith(".D") and clf not in os.listdir(dest):
-                            copy(os.path.join(calib_dir, clf), os.path.join(dest, clf))
-
+#                     opencl = os.path.join(os.path.dirname(TEST_HOME), "openCL")
+#                     for clf in os.listdir(opencl):
+#                         if clf.endswith(".cl") and clf not in os.listdir(os.path.join(cls.pyFAI_home, "pyFAI")):
+#                             copy(os.path.join(opencl, clf), os.path.join(cls.pyFAI_home, "pyFAI", clf))
+#                     calib_dir = os.path.join(os.path.dirname(TEST_HOME), "calibration")
+#                     dest = os.path.join(cls.pyFAI_home, "pyFAI", "calibration")
+#                     if not os.path.exists(dest):
+#                         os.makedirs(dest)
+#                     for clf in os.listdir(calib_dir):
+#                         if clf.endswith(".D") and clf not in os.listdir(dest):
+#                             copy(os.path.join(calib_dir, clf), os.path.join(dest, clf))
                     cls.pyFAI = cls.deep_reload()
                     cls.recompiled = True
 
