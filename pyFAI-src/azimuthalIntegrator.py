@@ -44,8 +44,10 @@ from . import geometry
 Geometry = geometry.Geometry
 from . import units
 from . import utils
+from .utils import StringTypes
 import fabio
 error = None
+
 
 try:
     from . import splitBBoxLUT
@@ -3427,7 +3429,7 @@ class AzimuthalIntegrator(Geometry):
         Set the dark current from one or mutliple files, avaraged
         according to the method provided
         """
-        if type(files) in types.StringTypes:
+        if type(files) in StringTypes:
             files = [i.strip() for i in files.split(",")]
         elif not files:
             files = []
@@ -3450,7 +3452,7 @@ class AzimuthalIntegrator(Geometry):
         Set the flat field from one or mutliple files, averaged
         according to the method provided
         """
-        if type(files) in types.StringTypes:
+        if type(files) in StringTypes:
             files = [i.strip() for i in files.split(",")]
         elif not files:
             files = []

@@ -88,7 +88,7 @@ class OCLFullSplit1d(object):
             if (not self.allow_pos0_neg) and (self.pos0Range[0] < 0):
                 self.pos0Range[0] = 0.0
                 if self.pos0Range[1] < 0:
-                    print "Warning: Invalid 0-dim range! Using the data derived range instead"
+                    print("Warning: Invalid 0-dim range! Using the data derived range instead")
                     self.pos0Range[1] = 0.0
             #self.pos0Range[0] = pos0Range[0]
             #self.pos0Range[1] = pos0Range[1]

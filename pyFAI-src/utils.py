@@ -81,6 +81,19 @@ def deprecated(func):
         return func(*arg, **kw)
     return wrapper
 
+#Python  compatibility functions.
+try:
+    # if Python2
+    from types import StringTypes
+except NameError:
+    # Python3
+    StringTypes = (str, bytes)
+
+try:
+    input = raw_input
+except NameError:
+    pass
+
 def gaussian(M, std):
     """
     Return a Gaussian window of length M with standard-deviation std.
@@ -708,8 +721,8 @@ def binning(input_img, binsize):
 
     if numpy.array(binsize).prod() < 50:
         out = numpy.zeros(tuple(outputSize))
-        for i in xrange(binsize[0]):
-            for j in xrange(binsize[1]):
+        for i in range(binsize[0]):
+            for j in range(binsize[1]):
                 out += input_img[i::binsize[0], j::binsize[1]]
     else:
         temp = input_img.copy()
@@ -730,8 +743,8 @@ def unBinning(binnedArray, binsize, norm=True):
     for i, j in zip(binnedArray.shape, binsize):
         outputShape.append(i * j)
     out = numpy.zeros(tuple(outputShape), dtype=binnedArray.dtype)
-    for i in xrange(binsize[0]):
-        for j in xrange(binsize[1]):
+    for i in range(binsize[0]):
+        for j in range(binsize[1]):
             out[i::binsize[0], j::binsize[1]] += binnedArray
     if norm:
         out /= binsize[0] * binsize[1]
@@ -1130,7 +1143,7 @@ except ImportError: #backport percentile from numpy 1.6.2
 
         q = q / 100.0
         if (q < 0) or (q > 1):
-            raise ValueError, "percentile must be either in the range [0,100]"
+            raise ValueError("percentile must be either in the range [0,100]")
 
         indexer = [slice(None)] * sorted.ndim
         Nx = sorted.shape[axis]

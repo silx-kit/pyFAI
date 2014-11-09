@@ -634,7 +634,7 @@ def main():
         if os.path.isfile(keyword):
             spline_file = keyword
         elif keyword.lower().find("center=") in [0, 1, 2]:
-            center = map(float, keyword.split("=")[1].split("x"))
+            center = [float(i) for i in  keyword.split("=")[1].split("x")]
         elif keyword.lower().find("dist=") in [0, 1, 2]:
             distance = float(keyword.split("=")[1])
         elif keyword.lower().find("tilt=") in [0, 1, 2]:

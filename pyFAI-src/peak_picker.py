@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2014"
+__date__ = "09/11/2014"
 __status__ = "production"
 
 import os
@@ -43,7 +43,7 @@ from . import gui_utils
 if gui_utils.has_Qt:
     from .gui_utils import pylab, update_fig, maximize_fig, QtGui
 import fabio
-from .utils import percentile
+from .utils import percentile, input
 from .reconstruct import reconstruct
 from .calibrant import Calibrant, ALL_CALIBRANTS
 from .blob_detection import BlobDetection
@@ -487,7 +487,7 @@ class PeakPicker(object):
         """
         logging.info(os.linesep.join(self.help))
         if not callback:
-            raw_input("Please press enter when you are happy with your selection" + os.linesep)
+            input("Please press enter when you are happy with your selection" + os.linesep)
             # need to disconnect 'button_press_event':
             self.fig.canvas.mpl_disconnect(self.mpl_connectId)
             self.mpl_connectId = None
@@ -700,7 +700,7 @@ class ControlPoints(object):
         out = None
         with self._sem:
             if (ring is None):
-                lst = self._groups.keys()
+                lst = list(self._groups.keys())
                 lst.sort(PointGroup.cmp)
                 if not lst:
                     logger.warning("No group in ControlPoints.get")
@@ -728,7 +728,7 @@ class ControlPoints(object):
         out = None
         with self._sem:
             if (ring is None):
-                lst = self._groups.keys()
+                lst = list(self._groups.keys())
                 lst.sort(PointGroup.cmp)
                 if not lst:
                     logger.warning("No group in ControlPoints.pop")
@@ -762,7 +762,7 @@ class ControlPoints(object):
             if self.calibrant.wavelength is not None:
                 lstOut.append("wavelength: %s" % self.calibrant.wavelength)
             lstOut.append("dspacing:" + " ".join([str(i) for i in self.calibrant.dSpacing]))
-            lst = self._groups.keys()
+            lst = list(self._groups.keys())
             lst.sort(PointGroup.cmp)
             tth = self.calibrant.get_2th()
             for idx, lbl in enumerate(lst):
@@ -908,7 +908,7 @@ class ControlPoints(object):
         Ask the ring number values for the given points
         """
         lastRing = None
-        lst = self._groups.keys()
+        lst = list(self._groups.keys())
         lst.sort(PointGroup.cmp)
         for idx, lbl in enumerate(lst):
             bOk = False
@@ -920,7 +920,7 @@ class ControlPoints(object):
                     defaultRing = ring
                 elif lastRing is not None:
                     defaultRing = lastRing + 1
-                res = raw_input("Point group #%2s (%i points)\t (%6.1f,%6.1f) \t [default=%s] Ring# " % (lbl, len(gpt), gpt.points[0][1], gpt.points[0][0], defaultRing)).strip()
+                res = input("Point group #%2s (%i points)\t (%6.1f,%6.1f) \t [default=%s] Ring# " % (lbl, len(gpt), gpt.points[0][1], gpt.points[0][0], defaultRing)).strip()
                 if res == "":
                     res = defaultRing
                 try:

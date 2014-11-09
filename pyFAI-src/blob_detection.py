@@ -340,7 +340,7 @@ class BlobDetection(object):
                 kpx, kpy, kps, peak_val, valid = self.refine_Hessian(kpx, kpy, kps)
                 l = valid.sum()
                 self.ref_kp.append((kps, kpy, kpx))
-            print ('After refinement : %i keypoints' % l)
+            print('After refinement : %i keypoints' % l)
         else:
             peak_val = self.dogs[kps, kpy, kpx]
             l = kpx.size
@@ -485,7 +485,7 @@ class BlobDetection(object):
 #         SGX0Y2 = [0.0, 0.33333333 , 0.0 , 0.0 , -0.66666667,0.0, 0.0 , 0.33333333 , 0.0]
 
 
-        for y, x, sigma in itertools.izip(kpy, kpx, kps):
+        for y, x, sigma in zip(kpy, kpx, kps):
 
             curr_dog = self.dogs[sigma]
             prev_dog = self.dogs[sigma - 1]
@@ -519,13 +519,13 @@ class BlobDetection(object):
             dxs = (dx_next - dx_prev) / 2.0
             dys = (dy_next - dy_prev) / 2.0
 
-            print dx,dy,ds
-            print d2x,d2y,d2s,dxy,dxs,dys
+            print(dx,dy,ds)
+            print(d2x,d2y,d2s,dxy,dxs,dys)
 
             lap = numpy.array([[d2y, dxy, dys], [dxy, d2x, dxs], [dys, dxs, d2s]])
             delta = -(numpy.dot(numpy.linalg.inv(lap), [dy, dx, ds]))
-            print y,x
-            print delta
+            print(y,x)
+            print(delta)
 #                 err = numpy.linalg.norm(delta[:-1])
             if  numpy.abs(delta[0]) <= self.tresh and numpy.abs(delta[1]) <= self.tresh and numpy.abs(delta[2]) <= self.tresh:
                 k2x.append(x + delta[1])
@@ -556,7 +556,7 @@ class BlobDetection(object):
         pylab.figure()
         pylab.imshow(img, interpolation='nearest')
 
-        for y, x, s in itertools.izip(kpy, kpx, sigma):
+        for y, x, s in zip(kpy, kpx, sigma):
             s_patch = numpy.trunc(s * 2)
 
             if s_patch % 2 == 0 :
@@ -685,8 +685,8 @@ class BlobDetection(object):
 #         print "phi th"
 #         print phi_th_2
         err = numpy.sum((phi_th - phi_exp)**2)/self.keypoints.x.size
-        print "err"
-        print err
+        print("err")
+        print(err)
 
         return val,vect
 
@@ -830,7 +830,7 @@ if __name__ == "__main__":
 
     bd = BlobDetection(img)
     kx, ky, dx, dy, sigma = bd._one_octave()
-    print bd.sigmas
+    print(bd.sigmas)
 #
 #     #building histogram with the corrected sigmas
 #     sigma = numpy.asarray(sigma)

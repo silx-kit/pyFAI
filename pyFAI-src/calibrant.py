@@ -277,16 +277,16 @@ class calibrant_factory(object):
         return k in self.all
 
     def __repr__(self):
-        return "Calibrants available: %s" % (", ".join(self.all.keys()))
+        return "Calibrants available: %s" % (", ".join(list(self.all.keys())))
 
     def __len__(self):
         return len(self.all)
 
     def keys(self):
-        return self.all.keys()
+        return list(self.all.keys())
 
     def values(self):
-        return map(Calibrant, self.all.values())
+        return [Calibrant(i) for i in  self.all.values()]
 
     def items(self):
         return [(i, Calibrant(j)) for i, j in self.all.items()]

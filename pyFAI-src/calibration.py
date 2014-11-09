@@ -52,7 +52,7 @@ from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
 from .peak_picker import PeakPicker
 from . import units, gui_utils
-from .utils import averageImages, measure_offset, expand_args, readFloatFromKeyboard, raw_input
+from .utils import averageImages, measure_offset, expand_args, readFloatFromKeyboard, input
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import hc
 from . import version as PyFAI_VERSION
@@ -482,7 +482,7 @@ class AbstractCalibration(object):
         """Read the pixel size from prompt if not available"""
         if (self.detector.pixel1 is None) and (self.detector.splineFile is None):
             pixelSize = [15, 15]
-            ans = raw_input("Please enter the pixel size (in micron, comma separated X,Y "\
+            ans = input("Please enter the pixel size (in micron, comma separated X,Y "\
                             " i.e. %.2e,%.2e) or a spline file: " % tuple(pixelSize)).strip()
             if os.path.isfile(ans):
                 self.detector.splineFile = ans
@@ -504,7 +504,7 @@ class AbstractCalibration(object):
                 print(os.linesep.join(comments))
             valid = False
             while valid:
-                ans = raw_input("Please enter the calibrant name or the file"
+                ans = input("Please enter the calibrant name or the file"
                                 " containing the d-spacing:\t").strip()
                 if ans in ALL_CALIBRANTS:
                     self.calibrant = ALL_CALIBRANTS[ans]
@@ -516,7 +516,7 @@ class AbstractCalibration(object):
     def read_wavelength(self):
         """Read the wavelength"""
         while not self.wavelength:
-            ans = raw_input("Please enter wavelength in Angstrom:\t").strip()
+            ans = input("Please enter wavelength in Angstrom:\t").strip()
             try:
                 self.wavelength = self.ai.wavelength = 1e-10 * float(ans)
             except Exception:
@@ -717,7 +717,7 @@ class AbstractCalibration(object):
         while True:
             help = False
             print("Fixed: " + ", ".join(self.fixed))
-            ans = raw_input("Modify parameters (or ? for help)?\t ").strip().lower()
+            ans = input("Modify parameters (or ? for help)?\t ").strip().lower()
             if "?" in ans:
                 help = True
             if not ans:
@@ -1167,7 +1167,7 @@ decrease the value if arcs are mixed together.""", default=None)
             update_fig(self.peakPicker.fig)
 #        self.peakPicker.finish(self.pointfile, callback=self.set_data)
         self.set_data(self.peakPicker.finish(self.pointfile))
-#        raw_input("Please press enter when you are happy with your selection" + os.linesep)
+#        input("Please press enter when you are happy with your selection" + os.linesep)
 #        while self.data is None:
 #            update_fig(self.peakPicker.fig)
 #            time.sleep(0.1)
@@ -1598,7 +1598,7 @@ class MultiCalib(object):
         """Read the pixel size from prompt if not available"""
         if (self.detector.pixel1 is None) and (self.detector.splineFile is None):
             pixelSize = [15, 15]
-            ans = raw_input("Please enter the pixel size (in micron, comma separated X, Y "
+            ans = input("Please enter the pixel size (in micron, comma separated X, Y "
                             "i.e. %.2e,%.2e) or a spline file: " % tuple(pixelSize)).strip()
             if os.path.isfile(ans):
                 self.detector.splineFile = ans
@@ -1624,7 +1624,7 @@ class MultiCalib(object):
             print(os.linesep.join(comments))
             ans = ""
             while not self.calibrant:
-                ans = raw_input("Please enter the name of the calibrant"
+                ans = input("Please enter the name of the calibrant"
                                 " or the file containing the d-spacing:\t").strip()
                 if ans in ALL_CALIBRANTS:
                     self.calibrant = ALL_CALIBRANTS[ans]
@@ -1635,7 +1635,7 @@ class MultiCalib(object):
     def read_wavelength(self):
         """Read the wavelength"""
         while not self.wavelength:
-            ans = raw_input("Please enter wavelength in Angstrom:\t").strip()
+            ans = input("Please enter wavelength in Angstrom:\t").strip()
             try:
                 self.wavelength = 1e-10 * float(ans)
             except:
