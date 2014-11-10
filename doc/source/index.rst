@@ -3,8 +3,12 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to pyFAI's documentation!
-=================================
+Fast Azimuthal Integration using Python
+=======================================
+
+PyFAI A Python libary for high performance azimuthal integration which can use on GPU,
+which was presented at EuroScipy 2014: `the video is online <https://www.youtube.com/watch?v=QSlo_Nyzeig>`_ 
+as well as the proceedings (soon).
 
 This document starts with a general descriptions of the pyFAI library in the first chapter. 
 This first chapter contains an introduction to pyFAI, what it is, what it aims at and how it works 
