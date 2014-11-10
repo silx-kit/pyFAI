@@ -281,7 +281,10 @@ class UtilsTest(object):
                                 help="remove existing build and force the build of the library",
                                 default=False, action="store_true")
             parser.add_argument(dest="args", type=str, nargs='*')
-            cls.options = parser.parse_args()
+            if IN_SOURCES:
+                cls.options = parser.parse_args()
+            else:
+                cls.options = parser.parse_args([])
         return cls.options
 
     @classmethod
