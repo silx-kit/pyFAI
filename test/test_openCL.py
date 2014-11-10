@@ -36,6 +36,7 @@ import time
 import sys
 import fabio
 import gc
+import tempfile
 from utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 try:
@@ -53,7 +54,7 @@ if ocl is None:
 
 
 class test_mask(unittest.TestCase):
-    tmp_dir = os.environ.get("PYFAI_TEMPDIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp"))
+    tmp_dir = tempfile.mkdtemp(prefix="pyFAI_test_OpenCL")
     N = 1000
 
     def setUp(self):

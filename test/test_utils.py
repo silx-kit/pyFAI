@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20140106"
+__date__ = "20141110"
 
 
 import unittest
@@ -36,6 +36,7 @@ import logging
 import sys
 import os
 import fabio
+import tempfile
 from utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
@@ -64,7 +65,7 @@ class test_utils(unittest.TestCase):
     dark = unbinned.astype("float32")
     flat = 1 + numpy.random.random((64, 32))
     raw = flat + dark
-    tmp_dir = os.environ.get("PYFAI_TEMPDIR",os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp"))
+    tmp_dir = tempfile.mkdtemp(prefix="pyFAI_test_utils")
     tmp_file = os.path.join(tmp_dir, "testUtils_average.edf")
     def setUp(self):
         """Download files & create tmp directory if needed"""
