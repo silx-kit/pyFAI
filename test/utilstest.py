@@ -42,6 +42,7 @@ import urllib2
 import numpy
 import shutil
 import json
+import tempfile
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("pyFAI.utilstest")
 
@@ -74,51 +75,65 @@ class UtilsTest(object):
     recompiled = False
     reloaded = False
     name = "pyFAI"
-    image_home = os.path.join(TEST_HOME, "testimages")
-    if not os.path.isdir(image_home):
-        os.makedirs(image_home)
-    testimages = os.path.join(TEST_HOME, "all_testimages.json")
-    if os.path.exists(testimages):
-        with open(testimages) as f:
-            ALL_DOWNLOADED_FILES = set(json.load(f))
+    if IN_SOURCES:
+        image_home = os.path.join(TEST_HOME, "testimages")
+        if not os.path.isdir(image_home):
+            os.makedirs(image_home)
+        testimages = os.path.join(TEST_HOME, "all_testimages.json")
+        if os.path.exists(testimages):
+            with open(testimages) as f:
+                ALL_DOWNLOADED_FILES = set(json.load(f))
+        else:
+            ALL_DOWNLOADED_FILES = set()
+        platform = distutils.util.get_platform()
+        architecture = "lib.%s-%i.%i" % (platform,
+                                         sys.version_info[0], sys.version_info[1])
+        if os.environ.get("BUILDPYTHONPATH"):
+            pyFAI_home = os.path.abspath(os.environ.get("BUILDPYTHONPATH", ""))
+        else:
+            pyFAI_home = os.path.join(os.path.dirname(TEST_HOME),
+                                      "build", architecture)
+        logger.info("pyFAI Home is: " + pyFAI_home)
+        if "pyFAI" in sys.modules:
+            logger.info("pyFAI module was already loaded from  %s" % sys.modules["pyFAI"])
+            pyFAI = None
+            sys.modules.pop("pyFAI")
+            for key in sys.modules.copy():
+                if key.startswith("pyFAI."):
+                    sys.modules.pop(key)
+    
+        if not os.path.isdir(pyFAI_home):
+            with sem:
+                if not os.path.isdir(pyFAI_home):
+                    logger.warning("Building pyFAI to %s" % pyFAI_home)
+                    p = subprocess.Popen([sys.executable, "setup.py", "build"],
+                                         shell=False, cwd=os.path.dirname(TEST_HOME))
+                    logger.info("subprocess ended with rc= %s" % p.wait())
+                    recompiled = True
+        logger.info("Loading pyFAI")
+        try:
+            pyFAI = imp.load_module(*((name,) + imp.find_module(name, [pyFAI_home])))
+        except Exception as error:
+            logger.warning("Unable to loading pyFAI %s" % error)
+            if "-r" not in sys.argv:
+                logger.warning("Remove build and start from scratch %s" % error)
+                sys.argv.append("-r")
     else:
-        ALL_DOWNLOADED_FILES = set()
-    platform = distutils.util.get_platform()
-    architecture = "lib.%s-%i.%i" % (platform,
-                                     sys.version_info[0], sys.version_info[1])
-    if os.environ.get("BUILDPYTHONPATH"):
-        pyFAI_home = os.path.abspath(os.environ.get("BUILDPYTHONPATH", ""))
-    else:
-        pyFAI_home = os.path.join(os.path.dirname(TEST_HOME),
-                                  "build", architecture)
-    logger.info("pyFAI Home is: " + pyFAI_home)
-    if "pyFAI" in sys.modules:
-        logger.info("pyFAI module was already loaded from  %s" % sys.modules["pyFAI"])
-        pyFAI = None
-        sys.modules.pop("pyFAI")
-        for key in sys.modules.copy():
-            if key.startswith("pyFAI."):
-                sys.modules.pop(key)
-
-    if not os.path.isdir(pyFAI_home):
-        with sem:
-            if not os.path.isdir(pyFAI_home):
-                logger.warning("Building pyFAI to %s" % pyFAI_home)
-                p = subprocess.Popen([sys.executable, "setup.py", "build"],
-                                     shell=False, cwd=os.path.dirname(TEST_HOME))
-                logger.info("subprocess ended with rc= %s" % p.wait())
-                recompiled = True
-    logger.info("Loading pyFAI")
-    try:
-        pyFAI = imp.load_module(*((name,) + imp.find_module(name, [pyFAI_home])))
-    except Exception as error:
-        logger.warning("Unable to loading pyFAI %s" % error)
-        if "-r" not in sys.argv:
-            logger.warning("Remove build and start from scratch %s" % error)
-            sys.argv.append("-r")
+        image_home = os.path.join(tempfile.gettempdir(),"pyFAI_testimages_%s"%os.getlogin())
+        if not os.path.exists(image_home):
+            os.makedirs(image_home)
+        testimages = os.path.join(image_home, "all_testimages.json")
+        if os.path.exists(testimages):
+            with open(testimages) as f:
+                ALL_DOWNLOADED_FILES = set(json.load(f))
+        else:
+            ALL_DOWNLOADED_FILES = set()
 
     @classmethod
     def deep_reload(cls):
+        if not IN_SOURCES:
+            cls.pyFAI = __import__(cls.name)
+            return cls.pyFAI
         if cls.reloaded:
             return cls.pyFAI
         logger.info("Loading pyFAI")
@@ -128,9 +143,7 @@ class UtilsTest(object):
         for key in sys.modules.copy():
             if key.startswith("pyFAI"):
                 sys.modules.pop(key)
-
-        import pyFAI
-        cls.pyFAI = pyFAI
+        cls.pyFAI = __import__(cls.name)
         logger.info("pyFAI loaded from %s" % cls.pyFAI.__file__)
         sys.modules[cls.name] = cls.pyFAI
         cls.reloaded = True
@@ -141,6 +154,8 @@ class UtilsTest(object):
         """
         force the recompilation of pyFAI
         """
+        if not IN_SOURCES:
+            return
         if not cls.recompiled:
             with cls.sem:
                 if not cls.recompiled:
