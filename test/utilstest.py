@@ -22,13 +22,13 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-from __future__ import print_function, division
+from __future__ import print_function, division, absolute_import
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "2014-11-09"
+__date__ = "2014-11-11"
 
 
 import os
@@ -38,7 +38,11 @@ import subprocess
 import threading
 import distutils.util
 import logging
-import urllib2
+try: #Python3
+    from urllib.request import urlopen, ProxyHandler, build_opener
+except ImportError: #Python2
+    from urllib2 import urlopen, ProxyHandler, build_opener
+#import urllib2
 import numpy
 import shutil
 import json
@@ -51,7 +55,7 @@ IN_SOURCES = "pyFAI-src" in os.listdir(os.path.dirname(TEST_HOME))
 
 if IN_SOURCES:
     os.environ["PYFAI_DATA"] = os.path.dirname(TEST_HOME)
-        
+
 
 def copy(infile, outfile):
     "link or copy file according to the OS"
@@ -68,7 +72,7 @@ class UtilsTest(object):
     options = None
     timeout = 60        # timeout in seconds for downloading images
     url_base = "http://forge.epn-campus.eu/attachments/download"
-    
+
     # Nota https crashes with error 501 under windows.
 #    url_base = "https://forge.epn-campus.eu/attachments/download"
     sem = threading.Semaphore()
@@ -101,7 +105,7 @@ class UtilsTest(object):
             for key in sys.modules.copy():
                 if key.startswith("pyFAI."):
                     sys.modules.pop(key)
-    
+
         if not os.path.isdir(pyFAI_home):
             with sem:
                 if not os.path.isdir(pyFAI_home):
@@ -190,7 +194,7 @@ class UtilsTest(object):
     def getimage(cls, imagename):
         """
         Downloads the requested image from Forge.EPN-campus.eu
-        
+
         @param: name of the image.
         For the RedMine forge, the filename contains a directory name that is removed
         @return: full path of the locally saved file
@@ -213,10 +217,15 @@ class UtilsTest(object):
             if "https_proxy" in os.environ:
                 dictProxies['https'] = os.environ["https_proxy"]
             if dictProxies:
-                proxy_handler = urllib2.ProxyHandler(dictProxies)
+                proxy_handler = ProxyHandler(dictProxies)
                 opener = urllib2.build_opener(proxy_handler).open
             else:
-                opener = urllib2.urlopen
+                opener = urlopen
+
+#>>> url = 'http://docs.python.org/library/'
+#>>> parts = urlparse(url)
+#>>> parts = parts._replace(path='/3.0'+parts.path)
+#>>> page = urlopen(parts.geturl())
 
 #           Nota: since python2.6 there is a timeout in the urllib2
             timer = threading.Timer(cls.timeout + 1, cls.timeoutDuringDownload, args=[imagename])
@@ -250,7 +259,7 @@ class UtilsTest(object):
     def download_images(cls, imgs=None):
         """
         Download all images needed for the test/benchmarks
-        
+
         @param imgs: list of files to download
         """
         if not imgs:
@@ -388,7 +397,8 @@ def diff_img(ref, obt, comment=""):
         y = imax // ref.shape[-1]
         ax3.plot([x], [y], "o", scalex=False, scaley=False)
         fig.show()
-        raw_input()
+        from pyFAI.utils import input
+        input()
 
 
 def diff_crv(ref, obt, comment=""):
@@ -406,6 +416,6 @@ def diff_crv(ref, obt, comment=""):
         im_obt = ax1.plot(obt, label="%s obt" % comment)
         im_delta = ax2.plot(delta, label="delta")
         fig.show()
-        raw_input()
+        from pyFAI.utils import input
+        input()
 
-    

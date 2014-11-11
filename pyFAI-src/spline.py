@@ -21,7 +21,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # #######################################################################################
 
-"""
+
+from __future__ import print_function, division
+__doc__ = """
 This is piece of software aims at manipulating spline files
 describing for geometric corrections of the 2D detectors using cubic-spline.
 
@@ -31,6 +33,7 @@ Mainly used at ESRF with FReLoN CCD camera.
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "GPLv3+"
+__date__ = "11/11/2014"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import os
@@ -172,7 +175,7 @@ class Spline(object):
                     databloc = []
                     for line in stringSpline[indexLine + 2:]:
                         if len(line) > 0:
-                            for i in range(len(line) / self.lenStrFloat):
+                            for i in range(len(line) // self.lenStrFloat):
                                 databloc.append(float(line[i * self.lenStrFloat: (i + 1) * self.lenStrFloat]))
                         else:
                             break
@@ -185,7 +188,7 @@ class Spline(object):
                     databloc = []
                     for line in stringSpline[indexLine + 2:]:
                         if len(line) > 0:
-                            for i in range(len(line) / self.lenStrFloat):
+                            for i in range(len(line) // self.lenStrFloat):
                                 databloc.append(float(line[i * self.lenStrFloat:(i + 1) * self.lenStrFloat]))
                         else:
                             break

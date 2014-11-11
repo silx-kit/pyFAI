@@ -21,11 +21,13 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import absolute_import, print_function, with_statement, division
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2014"
+__date__ = "11/11/2014"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 

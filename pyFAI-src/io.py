@@ -24,12 +24,13 @@
 #
 
 
+from __future__ import absolute_import, print_function, division
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2014"
+__date__ = "11/11/2014"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -54,8 +55,8 @@ import posixpath
 import sys
 import threading
 import time
-import types
 
+from .utils import StringTypes
 from . import units
 from . import version
 
@@ -177,7 +178,7 @@ class Writer(object):
         Sets the JSON configuration
         """
 
-        if type(json_config) in types.StringTypes:
+        if type(json_config) in StringTypes:
             if os.path.isfile(json_config):
                 config = json.load(open(json_config, "r"))
             else:
@@ -627,7 +628,7 @@ class Nexus(object):
     def get_entry(self, name):
         """
         Retrieves an entry from its name
-        
+
         @param name: name of the entry to retrieve
         @return: HDF5 group of NXclass == NXentry
         """
@@ -643,7 +644,7 @@ class Nexus(object):
     def get_entries(self):
         """
         retrieves all entry sorted the latest first.
-        
+
         @return: list of HDF5 groups
         """
         entries = [(grp, from_isotime(self.h5[grp + "/start_time"].value))
@@ -652,7 +653,7 @@ class Nexus(object):
                         "start_time" in self.h5[grp] and  \
                         "NX_class" in self.h5[grp].attrs and \
                         self.h5[grp].attrs["NX_class"] == "NXentry")]
-        entries.sort(cmp=lambda a, b: 1 if a[1] < b[1] else -1) #sort entries in decreasing time
+        entries.sort(key=lambda a: a[1], reverse=True) #sort entries in decreasing time
         return [self.h5[i[0]] for i in entries]
 
     def find_detector(self, all=False):

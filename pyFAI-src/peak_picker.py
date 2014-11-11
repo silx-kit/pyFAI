@@ -22,12 +22,12 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/11/2014"
+__date__ = "11/11/2014"
 __status__ = "production"
 
 import os
@@ -644,8 +644,8 @@ class ControlPoints(object):
         lstOut = ["ControlPoints instance containing %i group of point:" % len(self)]
         if self.calibrant:
             lstOut.append(self.calibrant.__repr__())
-        labels = self._groups.keys()
-        labels.sort(PointGroup.cmp)
+        labels = list(self._groups.keys())
+        labels.sort(key=lambda item: self._groups[item].value)
         lstOut.append("Containing %s groups of points:" % len(labels))
         for lbl in labels:
             lstOut.append(str(self._groups[lbl]))
@@ -701,14 +701,14 @@ class ControlPoints(object):
         with self._sem:
             if (ring is None):
                 lst = list(self._groups.keys())
-                lst.sort(PointGroup.cmp)
+                lst.sort(key=lambda item: self._groups[item].value)
                 if not lst:
                     logger.warning("No group in ControlPoints.get")
                     return
                 lbl = lst[-1]
             else:
                 lst = [l for l, gpt in self._groups.items() if gpt.ring == ring]
-                lst.sort(PointGroup.cmp)
+                lst.sort(key=lambda item: self._groups[item].value)
                 if not lst:
                     logger.warning("No group for ring %s in ControlPoints.get" % (ring))
                     return
@@ -729,14 +729,14 @@ class ControlPoints(object):
         with self._sem:
             if (ring is None):
                 lst = list(self._groups.keys())
-                lst.sort(PointGroup.cmp)
+                lst.sort(key=lambda item: self._groups[item].value)
                 if not lst:
                     logger.warning("No group in ControlPoints.pop")
                     return
                 lbl = lst[-1]
             else:
                 lst = [l for l, gpt in self._groups.items() if gpt.ring == ring]
-                lst.sort(PointGroup.cmp)
+                lst.sort(key=lambda item: self._groups[item].value)
                 if not lst:
                     logger.warning("No group for ring %s in ControlPoints.pop" % (ring))
                     return
@@ -763,7 +763,7 @@ class ControlPoints(object):
                 lstOut.append("wavelength: %s" % self.calibrant.wavelength)
             lstOut.append("dspacing:" + " ".join([str(i) for i in self.calibrant.dSpacing]))
             lst = list(self._groups.keys())
-            lst.sort(PointGroup.cmp)
+            lst.sort(key=lambda item: self._groups[item].value)
             tth = self.calibrant.get_2th()
             for idx, lbl in enumerate(lst):
                 gpt = self._groups[lbl]
@@ -909,7 +909,7 @@ class ControlPoints(object):
         """
         lastRing = None
         lst = list(self._groups.keys())
-        lst.sort(PointGroup.cmp)
+        lst.sort(key=lambda item: self._groups[item].value)
         for idx, lbl in enumerate(lst):
             bOk = False
             gpt = self._groups[lbl]
@@ -1011,21 +1011,6 @@ class PointGroup(object):
         """
         cls.last_label = 0
 
-    @staticmethod
-    def cmp(a,b):
-        """
-        Comparison for 2 PointGroup labels
-        """
-        if len(a) < len(b):
-            return -1
-        elif len(a) > len(b):
-            return 1
-        elif a < b:
-            return -1
-        elif  a > b:
-            return 1
-        return 0
-
     def __init__(self, points=None, ring=None, annotate=None, plot=None, force_label=None):
         """
         Constructor
@@ -1070,3 +1055,12 @@ class PointGroup(object):
             self._ring = int(value)
         self._ring = value
     ring = property(get_ring, set_ring)
+
+    def value(self):
+        """
+        Numerical value for the label: mainly for sorting
+        """
+        if len(self.label) == 1:
+            return ord(label) - 97
+        else:
+            return (ord(label[0]) - 96) * 26 + (ord(label[1]) - 97)
