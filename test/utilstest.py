@@ -123,7 +123,7 @@ class UtilsTest(object):
                 logger.warning("Remove build and start from scratch %s" % error)
                 sys.argv.append("-r")
     else:
-        image_home = os.path.join(tempfile.gettempdir(),"pyFAI_testimages_%s"%os.getlogin())
+        image_home = os.path.join(tempfile.gettempdir(), "pyFAI_testimages_%s" % os.getlogin())
         if not os.path.exists(image_home):
             os.makedirs(image_home)
         testimages = os.path.join(image_home, "all_testimages.json")
@@ -218,14 +218,9 @@ class UtilsTest(object):
                 dictProxies['https'] = os.environ["https_proxy"]
             if dictProxies:
                 proxy_handler = ProxyHandler(dictProxies)
-                opener = urllib2.build_opener(proxy_handler).open
+                opener = build_opener(proxy_handler).open
             else:
                 opener = urlopen
-
-#>>> url = 'http://docs.python.org/library/'
-#>>> parts = urlparse(url)
-#>>> parts = parts._replace(path='/3.0'+parts.path)
-#>>> page = urlopen(parts.geturl())
 
 #           Nota: since python2.6 there is a timeout in the urllib2
             timer = threading.Timer(cls.timeout + 1, cls.timeoutDuringDownload, args=[imagename])
@@ -241,7 +236,8 @@ class UtilsTest(object):
             logger.info("Image %s successfully downloaded." % baseimage)
 
             try:
-                open(fullimagename, "wb").write(data)
+                with open(fullimagename, "wb") as outfile:
+                    outfile.write(data)
             except IOError:
                 raise IOError("unable to write downloaded \
                     data to disk at %s" % cls.image_home)
