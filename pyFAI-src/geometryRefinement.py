@@ -22,13 +22,13 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function, division
+from __future__ import print_function, division, absolute_import
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2014"
+__date__ = "12/11/2014"
 __status__ = "development"
 
 import os
@@ -41,7 +41,11 @@ from math import pi
 from . import azimuthalIntegrator
 from .calibrant import Calibrant, ALL_CALIBRANTS
 AzimuthalIntegrator = azimuthalIntegrator.AzimuthalIntegrator
-from scipy.optimize import fmin, leastsq, fmin_slsqp, anneal, curve_fit
+from scipy.optimize import fmin, leastsq, fmin_slsqp, anneal
+try:
+    from scipy.optimize import curve_fit
+except ImportError:
+    curve_fit = None
 
 from .utils import timeit
 
@@ -439,6 +443,8 @@ class GeometryRefinement(AzimuthalIntegrator):
         @param with_rot: include rotation intro error measurment
         @return: std_dev, confidence
         """
+        if not curve_fit:
+            logger.error("curve_fit method needs a newer scipy: at lease scipy 0.9, you are running: %s" % scipy.version.version)
         d1 = self.data[:, 0]
         d2 = self.data[:, 1]
         size = d1.size
