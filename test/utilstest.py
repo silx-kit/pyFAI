@@ -277,7 +277,7 @@ class UtilsTest(object):
             try:
                 from argparse import ArgumentParser
             except:
-                from pyFAI.argparse import ArgumentParser
+                from pyFAI.third_party.argparse import ArgumentParser
 
             parser = ArgumentParser(usage="Tests for PyFAI")
             parser.add_argument("-d", "--debug", dest="debug", help="run in debugging mode",
