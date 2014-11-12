@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/11/2014"
+__date__ = "12/11/2014"
 __status__ = "production"
 
 import os
@@ -645,7 +645,7 @@ class ControlPoints(object):
         if self.calibrant:
             lstOut.append(self.calibrant.__repr__())
         labels = list(self._groups.keys())
-        labels.sort(key=lambda item: self._groups[item].value)
+        labels.sort(key=lambda item: self._groups[item].code)
         lstOut.append("Containing %s groups of points:" % len(labels))
         for lbl in labels:
             lstOut.append(str(self._groups[lbl]))
@@ -701,14 +701,14 @@ class ControlPoints(object):
         with self._sem:
             if (ring is None):
                 lst = list(self._groups.keys())
-                lst.sort(key=lambda item: self._groups[item].value)
+                lst.sort(key=lambda item: self._groups[item].code)
                 if not lst:
                     logger.warning("No group in ControlPoints.get")
                     return
                 lbl = lst[-1]
             else:
                 lst = [l for l, gpt in self._groups.items() if gpt.ring == ring]
-                lst.sort(key=lambda item: self._groups[item].value)
+                lst.sort(key=lambda item: self._groups[item].code)
                 if not lst:
                     logger.warning("No group for ring %s in ControlPoints.get" % (ring))
                     return
@@ -729,14 +729,14 @@ class ControlPoints(object):
         with self._sem:
             if (ring is None):
                 lst = list(self._groups.keys())
-                lst.sort(key=lambda item: self._groups[item].value)
+                lst.sort(key=lambda item: self._groups[item].code)
                 if not lst:
                     logger.warning("No group in ControlPoints.pop")
                     return
                 lbl = lst[-1]
             else:
                 lst = [l for l, gpt in self._groups.items() if gpt.ring == ring]
-                lst.sort(key=lambda item: self._groups[item].value)
+                lst.sort(key=lambda item: self._groups[item].code)
                 if not lst:
                     logger.warning("No group for ring %s in ControlPoints.pop" % (ring))
                     return
@@ -763,7 +763,7 @@ class ControlPoints(object):
                 lstOut.append("wavelength: %s" % self.calibrant.wavelength)
             lstOut.append("dspacing:" + " ".join([str(i) for i in self.calibrant.dSpacing]))
             lst = list(self._groups.keys())
-            lst.sort(key=lambda item: self._groups[item].value)
+            lst.sort(key=lambda item: self._groups[item].code)
             tth = self.calibrant.get_2th()
             for idx, lbl in enumerate(lst):
                 gpt = self._groups[lbl]
@@ -909,7 +909,7 @@ class ControlPoints(object):
         """
         lastRing = None
         lst = list(self._groups.keys())
-        lst.sort(key=lambda item: self._groups[item].value)
+        lst.sort(key=lambda item: self._groups[item].code)
         for idx, lbl in enumerate(lst):
             bOk = False
             gpt = self._groups[lbl]
@@ -991,7 +991,7 @@ class PointGroup(object):
             label = chr(97 + code)
         else:
             label = chr(96 + code // 26) + chr(97 + code % 26)
-        return label
+        return label, code
 
     @classmethod
     def set_label(cls, label):
@@ -1004,6 +1004,8 @@ class PointGroup(object):
             code = (ord(label[0]) - 96) * 26 + (ord(label[1]) - 97)
         if cls.last_label <= code:
             cls.last_label = code + 1
+        return code
+
     @classmethod
     def reset_label(cls):
         """
@@ -1026,10 +1028,10 @@ class PointGroup(object):
         else:
             self.points = []
         if force_label:
-            self.label = force_label
-            self.set_label(force_label)
+            self.__label = force_label
+            self.__code = self.set_label(force_label)
         else:
-            self.label = self.get_label()
+            self.__label, self.__code = self.get_label()
         if ring is not None:
             self._ring = int(ring)
         else:
@@ -1056,11 +1058,13 @@ class PointGroup(object):
         self._ring = value
     ring = property(get_ring, set_ring)
 
-    def value(self):
+    @property
+    def code(self):
         """
         Numerical value for the label: mainly for sorting
         """
-        if len(self.label) == 1:
-            return ord(label) - 97
-        else:
-            return (ord(label[0]) - 96) * 26 + (ord(label[1]) - 97)
+        return self.__code
+
+    @property
+    def label(self):
+        return self.__label
