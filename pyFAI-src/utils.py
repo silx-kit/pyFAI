@@ -455,7 +455,7 @@ def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5,0.5)):
         sorted = numpy.sort(stack, axis=0)
         lower = max(0, int(min(quantiles) * length))
         upper = min(length, int(max(quantiles) * length) + 1)
-        output = sorted[lower:upper].mean(axis=0)
+        center = sorted[lower:upper].mean(axis=0)
     else:
         raise RuntimeError("Cannot understand method: %s in averageDark" % center_method)
     if cutoff is None or cutoff <= 0:
