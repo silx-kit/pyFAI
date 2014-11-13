@@ -621,9 +621,11 @@ class Nexus(object):
         self.h5.close()
 
     # for with statement compatibility
-    __enter__ = __init__
-    __exit__ = close
+    @classmethod
+    def __enter__(cls, filename, mode="r"):
+        return cls(filename, mode)
 
+    __exit__ = close
 
     def get_entry(self, name):
         """
