@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/11/2014"
+__date__ = "13/11/2014"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -620,12 +620,12 @@ class Nexus(object):
             entry["end_time"] = end_time
         self.h5.close()
 
-    # for with statement compatibility
-    @classmethod
-    def __enter__(cls, filename, mode="r"):
-        return cls(filename, mode)
+    # Context manager for "with" statement compatibility
+    def __enter__(self, *arg, **kwarg):
+        return self
 
-    __exit__ = close
+    def __exit__(self, *arg, **kwarg):
+        self.close()
 
     def get_entry(self, name):
         """
