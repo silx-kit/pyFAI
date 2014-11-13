@@ -429,7 +429,7 @@ def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5,0.5)):
     but averages all frames within  cutoff*std
 
     @param lstimg: list of 2D images or a 3D stack
-    @param center_method: is the center calculated by a "mean" or a "median"
+    @param center_method: is the center calculated by a "mean" or a "median", or "quantile"
     @param cutoff: keep all data where (I-center)/std < cutoff
     @param quantiles: 2-tuple of floats average out data between the two quantiles
     
@@ -451,7 +451,7 @@ def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5,0.5)):
         center = stack.__getattribute__(center_method)(axis=0)
     elif center_method == "median":
         center = numpy.median(stack, axis=0)
-    elif center_method == "quantile":
+    elif center_method.startswith("quantil"):
         sorted = numpy.sort(stack, axis=0)
         lower = max(0, int(min(quantils) * length))
         upper = min(length, int(max(quantils) * length) + 1)
