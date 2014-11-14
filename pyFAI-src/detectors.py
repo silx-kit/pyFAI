@@ -163,8 +163,19 @@ class Detector(with_metaclass(DetectorMeta, object)):
         return "Detector %s\t Spline= %s\t PixelSize= %.3e, %.3e m" % \
             (self.name, self.splineFile, self._pixel1, self._pixel2)
 
-    def copy(self):
-        "@return a copy of itself"
+    def __copy__(self):
+        "@return a shallow copy of itself"
+        new = self.__class__()
+        numerical = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning', '_mask_crc', '_maskfile']
+        array = ['_mask', '_dx', '_dy', 'flat', 'dark']
+        for key in numerical + array:
+            new.__setattr__(key, self.__getattribute__(key))
+        if self._splineFile:
+            new.set_splineFile(self._splineFile)
+        return new
+
+    def __deepcopy__(self):
+        "@return a deep copy of itself"
         new = self.__class__()
         numerical = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning', '_mask_crc', '_maskfile']
         for key in numerical:

@@ -759,7 +759,7 @@ class Geometry(object):
                         delta[:, :, 3] = \
                             numpy.minimum(((chi_corner[:-1, 1: ] - chi_center) % twoPi),
                                           ((chi_center - chi_corner[:-1, 1: ]) % twoPi))
-                    self._dchia = delta.max(axis=-1)
+                    self._dchia = delta.max(axis= -1)
         return self._dchia
 
     def deltaQ(self, shape):
@@ -791,7 +791,7 @@ class Geometry(object):
                         delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
                         delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
                         delta[:, :, 3] = abs(q_corner[:-1, 1:] - q_center)
-                    self._dqa = delta.max(axis=-1)
+                    self._dqa = delta.max(axis= -1)
         return self._dqa
 
     def deltaR(self, shape):
@@ -822,7 +822,7 @@ class Geometry(object):
                         delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
                         delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
                         delta[:, :, 3] = abs(q_corner[:-1, 1:] - q_center)
-                    self._dra = delta.max(axis=-1)
+                    self._dra = delta.max(axis= -1)
         return self._dra
 
     def cosIncidance(self, d1, d2):
@@ -1414,10 +1414,30 @@ class Geometry(object):
             calcimage[numpy.where(mask)] = 0
         return calcimage
 
-    def copy(self):
-        """return a copy of itself.
+    def __copy__(self):
+        """return a shallow copy of itself.
         """
-        new = self.__class__()
+        new = self.__class__(detector=self.detector)
+        #transfer numerical values:
+        numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
+                     "chiDiscAtPi", "_dssa_crc", "_dssa_order", "_wavelength",
+                     '_oversampling', '_correct_solid_angle_for_spline',
+                     '_polarization_factor', '_polarization_axis_offset',
+                     '_polarization_crc', '_transmission_crc', '_transmission_normal']
+        array = ["_ttha", "_dttha", "_dssa", "_chia", "_dchia", "_qa", "_dqa",
+                 "_ra", "_dra", "_corner4Da", "_corner4Dqa", "_corner4Dra",
+                 '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
+        for key in numerical + array:
+            new.__setattr__(key, self.__getattribute__(key))
+        new.param = [new._dist, new._poni1, new._poni2,
+                      new._rot1, new._rot2, new._rot3]
+        return new
+
+
+    def __deepcopy__(self):
+        """return a deep copy of itself.
+        """
+        new = self.__class__(detector=self.detector.copy())
         #transfer numerical values:
         numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
                      "chiDiscAtPi", "_dssa_crc", "_dssa_order", "_wavelength",
@@ -1433,10 +1453,8 @@ class Geometry(object):
             value = self.__getattribute__(key)
             if value is not None:
                 new.__setattr__(key, 1 * value)
-
         new.param = [new._dist, new._poni1, new._poni2,
                       new._rot1, new._rot2, new._rot3]
-        new.detector = self.detector.copy()
         return new
 
 # ############################################
