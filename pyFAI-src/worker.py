@@ -517,11 +517,6 @@ class DistortionWorker(object):
         """
         
         self.ctx = None
-        if detector is None:
-            self.distortion = None
-        else:
-            self.distortion = pyFAI.distortion()
-            #TODO
         if dark is not None:
             self.dark = numpy.ascontiguousarray(dark, dtype=numpy.float32)
         else:
@@ -538,6 +533,12 @@ class DistortionWorker(object):
             self.polarization = numpy.ascontiguousarray(polarization, dtype=numpy.float32)
         else:
             self.polarization = None
+
+        if detector is None:
+            self.distortion = None
+        else:
+            self.distortion = pyFAI.distortion.Distortion(detector)
+            #TODO
 
         if mask is None:
             self.mask = False
