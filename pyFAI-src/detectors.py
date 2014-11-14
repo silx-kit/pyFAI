@@ -156,10 +156,27 @@ class Detector(with_metaclass(DetectorMeta, object)):
             self.set_splineFile(splineFile)
 
     def __repr__(self):
+        """Nice representation of the instance
+        """
         if (self._pixel1 is None) or (self._pixel2 is None):
             return "Undefined detector"
         return "Detector %s\t Spline= %s\t PixelSize= %.3e, %.3e m" % \
             (self.name, self.splineFile, self._pixel1, self._pixel2)
+
+    def copy(self):
+        "@return a copy of itself"
+        new = self.__class__()
+        numerical = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning', '_mask_crc', '_maskfile']
+        for key in numerical:
+            new.__setattr__(key, self.__getattribute__(key))
+        array = ['_mask', '_dx', '_dy', 'flat', 'dark']
+        for key in array:
+            value = self.__getattribute__(key)
+            if value is not None:
+                new.__setattr__(key, 1 * value)
+        if self._splineFile:
+            new.set_splineFile(self._splineFile)
+        return new
 
     def set_config(self, config):
         """
