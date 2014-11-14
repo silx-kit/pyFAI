@@ -492,15 +492,15 @@ class PixelwiseWorker(object):
         else:
             do_mask = (self.mask is not False)
         data = numpy.array(data, dtype=numpy.float32) #Explicitely make an copy !
-        if self.dark:
+        if self.dark is not None:
             data -= self.dark
-        if self.flat:
+        if self.flat is not None:
             data /= self.flat
-        if self.solidangle:
+        if self.solidangle is not None:
             data /= self.solidangle
-        if self.polarization:
+        if self.polarization is not None:
             data /= self.polarization
-        if normalization:
+        if normalization is not None:
             data /= normalization
         if do_mask:
             data[self.mask] = self.dummy or 0
