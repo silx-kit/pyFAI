@@ -1437,7 +1437,7 @@ class Geometry(object):
     def __deepcopy__(self):
         """return a deep copy of itself.
         """
-        new = self.__class__(detector=self.detector.copy())
+        new = self.__class__(detector=self.detector.__deepcopy__())
         #transfer numerical values:
         numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
                      "chiDiscAtPi", "_dssa_crc", "_dssa_order", "_wavelength",
