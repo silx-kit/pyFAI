@@ -95,6 +95,7 @@ import numpy
 import fabio
 from .detectors import detector_factory
 from .azimuthalIntegrator import AzimuthalIntegrator
+from .distortion import Distortion
 from . import units
 import json
 #from .io import h5py, HDF5Writer
@@ -537,7 +538,7 @@ class DistortionWorker(object):
         if detector is None:
             self.distortion = None
         else:
-            self.distortion = pyFAI.distortion.Distortion(detector)
+            self.distortion = Distortion(detector)
             #TODO
 
         if mask is None:
