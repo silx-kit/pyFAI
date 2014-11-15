@@ -1,6 +1,3 @@
-Geometry
-========
-
 PyFAI uses a 6-parameter geometry definition similar, while not rigorously
 identical to SPD:
 One distance, 2 coordinates to define the point of normal incidence and 3 rotations
@@ -13,12 +10,16 @@ Image representation in Python
 PyFAI takes diffraction images as 2D numpy arrays, those are usually read
 using the FabIO library:
 
-..
-    data = fabio.open("image.edf").data
+.. code-block:: python
+
+   import fabio
+   data = fabio.open("image.edf").data
 
 But data can also be extracted from HDF5 files with h5py and displayed using matplotlib:
 
-..
+.. code-block:: python
+
+   %pylab
    imshow(data, origin="lower")
 
 Because Python is written in C language, data are stored lines by lines, this means to go
@@ -54,6 +55,7 @@ Default geometry in pyFAI
 -------------------------
 
 In the (most common) case of *transmission diffraction setup* on synchrotrons (like ESRF, Soleil, Petra3, SLS...) this makes looks like:
+
 * Observer looking at the detector from the sample position:
 * Origin at the lower left of the detector
 * Axis 1 (i.e. *y*) being vertical, pointing upwards
