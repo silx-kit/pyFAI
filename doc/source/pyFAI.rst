@@ -60,13 +60,37 @@ only when needed (lazy_evaluation_).
 .. _memoization: http://en.wikipedia.org/wiki/Memoization
 .. _lazy_evaluation: http://en.wikipedia.org/wiki/Lazy_evaluation
 
+Experiment description
+----------------------
 
-Geometry and calibration
-------------------------
+In pyFAI, the basic experiment is defined by a description of an area-detector whose
+position in space is defined through the sample position and the incident X-ray
+beam, and can be calibrated using Debye-Scherrer rings of a reference compound.
+
+Detector
+........
+
+.. toctree::
+   :maxdepth: 4
+
+   detector
+
+Geometry
+........
+
+.. toctree::
+   :maxdepth: 4
+
+   geometry
+
+calibration
+...........
+
 .. toctree::
    :maxdepth: 4
 
    calibration
+
 
 PyFAI executables
 .................
