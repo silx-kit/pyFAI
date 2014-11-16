@@ -250,7 +250,9 @@ class Massif(object):
                 if self._median_data is None:
                     self._median_data = median_filter(self.data, 3)
                     if logger.getEffectiveLevel() == logging.DEBUG:
-                        fabio.edfimage.edfimage(data=self._median_data).write("median_data.edf")
+                        with open("median_data.npy", "wb") as f:
+                            numpy.save(f, self._median_data)
+                        #fabio.edfimage.edfimage(data=self._median_data).write("median_data.edf")
         return self._median_data
 
     def getBluredData(self):

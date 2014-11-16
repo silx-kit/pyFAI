@@ -37,7 +37,7 @@ import sys
 import fabio
 import gc
 import tempfile
-from utilstest import UtilsTest, Rwp, getLogger
+from utilstest import UtilsTest, Rwp, getLogger, recursive_delete
 logger = getLogger(__file__)
 try:
     import pyopencl
@@ -54,7 +54,7 @@ if ocl is None:
 
 
 class test_mask(unittest.TestCase):
-    tmp_dir = tempfile.mkdtemp(prefix="pyFAI_test_OpenCL")
+    tmp_dir = tempfile.mkdtemp(prefix="pyFAI_test_OpenCL_")
     N = 1000
 
     def setUp(self):
@@ -71,6 +71,8 @@ class test_mask(unittest.TestCase):
                           "poni": UtilsTest.getimage("1897/Pilatus6M.poni"),
                           "spline": None},
             ]
+        if not os.path.isdir(self.tmp_dir):
+            os.makedirs(self.tmp_dir)
         for ds in self.datasets:
             if ds["spline"] is not None:
                 data = open(ds["poni"], "r").read()
@@ -87,11 +89,7 @@ class test_mask(unittest.TestCase):
                     f.write(os.linesep.join(data))
 
     def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        for ds in self.datasets:
-            if ds["spline"] is not None:
-                if os.path.isfile(ds["poni"]):
-                    os.unlink(ds["poni"])
+        recursive_delete(self.tmp_dir)
 
     def test_OpenCL(self):
         logger.info("Testing histogram-based algorithm (forward-integration)")
