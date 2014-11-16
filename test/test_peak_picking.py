@@ -38,6 +38,7 @@ import numpy
 import logging, time
 import sys
 import fabio
+import tempfile
 from utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
@@ -70,7 +71,7 @@ class test_peak_picking(unittest.TestCase):
     ds = wavelength * 5e9 / numpy.sin(tth / 2)
     calibrant = Calibrant(dSpacing=ds)
     maxiter = 100
-    tmp_dir = os.environ.get("PYFAI_TEMPDIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp"))
+    tmp_dir = tempfile.mkdtemp(prefix="pyFAI_test_peak_picking")
     logfile = os.path.join(tmp_dir, "testpeakPicking.log")
     nptfile = os.path.join(tmp_dir, "testpeakPicking.npt")
     def setUp(self):

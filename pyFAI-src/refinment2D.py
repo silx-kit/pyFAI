@@ -190,7 +190,7 @@ class Refinment2D(object):
 #            print ax
             ref = Refinment2D(self.img, ax)
             res = ref.diff_tth_X()
-            print "x= %.3f mean= %e" % (x, res)
+            print("x= %.3f mean= %e" % (x, res))
             out.append(res)
         return numpy.linspace(f["centerX"] - width / 2.0,
                               f["centerX"] + width / 2.0,
@@ -220,7 +220,7 @@ class Refinment2D(object):
 #            print ax
             ref = Refinment2D(self.img, ax)
             res = ref.diff_tth_tilt()
-            print "x= %.3f mean= %e" % (x, res)
+            print("x= %.3f mean= %e" % (x, res))
             out.append(res)
         return numpy.linspace(f["tilt"] - width / 2.0,
                               f["tilt"] + width / 2.0,
@@ -255,6 +255,6 @@ class Refinment2D(object):
             ax.setFit2D(**fx)
             ref = Refinment2D(self.img, ax)
             res = ref.diff_Fit2D(axis=axis, dx=dx)
-            print "x= %.3f mean= %e" % (x, res)
+            print("x= %.3f mean= %e" % (x, res))
             out.append(res)
         return meas_pts, out

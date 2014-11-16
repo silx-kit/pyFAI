@@ -50,7 +50,7 @@ import numpy
 try:
     from argparse import ArgumentParser
 except ImportError:
-    from pyFAI.argparse import ArgumentParser
+    from pyFAI.third_party.argparse import ArgumentParser
 
 
 def main():

@@ -95,6 +95,7 @@ import numpy
 import fabio
 from .detectors import detector_factory
 from .azimuthalIntegrator import AzimuthalIntegrator
+from .distortion import Distortion
 from . import units
 import json
 #from .io import h5py, HDF5Writer
@@ -491,15 +492,15 @@ class PixelwiseWorker(object):
         else:
             do_mask = (self.mask is not False)
         data = numpy.array(data, dtype=numpy.float32) #Explicitely make an copy !
-        if self.dark:
+        if self.dark is not None:
             data -= self.dark
-        if self.flat:
+        if self.flat is not None:
             data /= self.flat
-        if self.solidangle:
+        if self.solidangle is not None:
             data /= self.solidangle
-        if self.polarization:
+        if self.polarization is not None:
             data /= self.polarization
-        if normalization:
+        if normalization is not None:
             data /= normalization
         if do_mask:
             data[self.mask] = self.dummy or 0
@@ -517,11 +518,6 @@ class DistortionWorker(object):
         """
         
         self.ctx = None
-        if detector is None:
-            self.distortion = None
-        else:
-            self.distortion = pyFAI.distortion()
-            #TODO
         if dark is not None:
             self.dark = numpy.ascontiguousarray(dark, dtype=numpy.float32)
         else:
@@ -538,6 +534,12 @@ class DistortionWorker(object):
             self.polarization = numpy.ascontiguousarray(polarization, dtype=numpy.float32)
         else:
             self.polarization = None
+
+        if detector is None:
+            self.distortion = None
+        else:
+            self.distortion = Distortion(detector)
+            #TODO
 
         if mask is None:
             self.mask = False
@@ -570,13 +572,13 @@ class DistortionWorker(object):
         else:
             do_mask = (self.mask is not False)
         data = numpy.array(data, dtype=numpy.float32) #Explicitely make an copy !
-        if self.dark:
+        if self.dark is not None:
             data -= self.dark
-        if self.flat:
+        if self.flat is not None:
             data /= self.flat
-        if self.solidangle:
+        if self.solidangle is not None:
             data /= self.solidangle
-        if self.polarization:
+        if self.polarization is not None:
             data /= self.polarization
         
         if do_mask:

@@ -21,7 +21,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-from __future__ import print_function
+from __future__ import print_function, division, absolute_import, with_statement
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
@@ -31,6 +32,7 @@ __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instanciate them
 """
+
 
 import logging
 import numpy
@@ -56,6 +58,7 @@ try:
     import fabio
 except ImportError:
     fabio = None
+from .third_party.six import with_metaclass
 
 epsilon = 1e-6
 
@@ -79,11 +82,10 @@ class DetectorMeta(type):
         super(DetectorMeta, cls).__init__(name, bases, dct)
 
 
-class Detector(object):
+class Detector(with_metaclass(DetectorMeta, object)):
     """
     Generic class representing a 2D detector
     """
-    __metaclass__ = DetectorMeta
     force_pixel = False     # Used to specify pixel size should be defined by the class itself.
     aliases = []            # list of alternative names
     registry = {}           # list of  detectors ...
@@ -154,10 +156,38 @@ class Detector(object):
             self.set_splineFile(splineFile)
 
     def __repr__(self):
+        """Nice representation of the instance
+        """
         if (self._pixel1 is None) or (self._pixel2 is None):
             return "Undefined detector"
         return "Detector %s\t Spline= %s\t PixelSize= %.3e, %.3e m" % \
             (self.name, self.splineFile, self._pixel1, self._pixel2)
+
+    def __copy__(self):
+        "@return a shallow copy of itself"
+        new = self.__class__()
+        numerical = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning', '_mask_crc', '_maskfile']
+        array = ['_mask', '_dx', '_dy', 'flat', 'dark']
+        for key in numerical + array:
+            new.__setattr__(key, self.__getattribute__(key))
+        if self._splineFile:
+            new.set_splineFile(self._splineFile)
+        return new
+
+    def __deepcopy__(self):
+        "@return a deep copy of itself"
+        new = self.__class__()
+        numerical = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning', '_mask_crc', '_maskfile']
+        for key in numerical:
+            new.__setattr__(key, self.__getattribute__(key))
+        array = ['_mask', '_dx', '_dy', 'flat', 'dark']
+        for key in array:
+            value = self.__getattribute__(key)
+            if value is not None:
+                new.__setattr__(key, 1 * value)
+        if self._splineFile:
+            new.set_splineFile(self._splineFile)
+        return new
 
     def set_config(self, config):
         """

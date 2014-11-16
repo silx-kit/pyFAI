@@ -67,7 +67,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
     poniFile = "1463/LaB6.poni"
     ai = None
     fit2d = None
-    tmp_dir = os.environ.get("PYFAI_TEMPDIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp"))
+    tmp_dir = tempfile.mkdtemp(prefix="pyFAI_test_azimuthal_integrator")
     tmpfiles = {"cython":os.path.join(tmp_dir, "cython.dat"),
                "cythonSP":os.path.join(tmp_dir, "cythonSP.dat"),
                "numpy": os.path.join(tmp_dir, "numpy.dat")}
@@ -264,7 +264,7 @@ class test_saxs(unittest.TestCase):
     maskDummy = "1488/bioSaxsMaskDummy.edf"
     poniFile = "1489/bioSaxs.poni"
     ai = None
-    tmp_dir = os.environ.get("PYFAI_TEMPDIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp"))
+    tmp_dir = tempfile.mkdtemp(prefix="pyFAI_test_azimuthal_integrator")
 
     def setUp(self):
         self.edfPilatus = UtilsTest.getimage(self.__class__.saxsPilatus)
@@ -286,8 +286,7 @@ class test_saxs(unittest.TestCase):
         assert abs(self.ai.makeMask(data, mask=mask, dummy= -2, delta_dummy=1.1).astype(int) - fabio.open(self.maskDummy).data).max() == 0
 
 class TestSetter(unittest.TestCase):
-    tmp_dir = os.environ.get("PYFAI_TEMPDIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp"))
-
+    tmp_dir = tempfile.mkdtemp(prefix="pyFAI_test_azimuthal_integrator")
     def setUp(self):
         self.ai = AzimuthalIntegrator()
         shape = (10, 15)

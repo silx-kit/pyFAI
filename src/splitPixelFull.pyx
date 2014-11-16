@@ -286,7 +286,7 @@ def fullSplit1D(numpy.ndarray pos not None,
             else:
                 outMerge[i] = cdummy
 
-    print lut_size
+    print(lut_size)
     return outPos, outMerge, outData, outCount
 
 

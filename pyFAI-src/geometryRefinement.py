@@ -22,13 +22,13 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function, division
+from __future__ import print_function, division, absolute_import
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2014"
+__date__ = "12/11/2014"
 __status__ = "development"
 
 import os
@@ -41,7 +41,11 @@ from math import pi
 from . import azimuthalIntegrator
 from .calibrant import Calibrant, ALL_CALIBRANTS
 AzimuthalIntegrator = azimuthalIntegrator.AzimuthalIntegrator
-from scipy.optimize import fmin, leastsq, fmin_slsqp, anneal, curve_fit
+from scipy.optimize import fmin, leastsq, fmin_slsqp, anneal
+try:
+    from scipy.optimize import curve_fit
+except ImportError:
+    curve_fit = None
 
 from .utils import timeit
 
@@ -84,7 +88,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         self.data = numpy.array(data, dtype=numpy.float64)
         assert self.data.ndim == 2
         assert self.data.shape[1] in [ 3, 4] #3 for non weighted, 4 for weighted refinement
-        assert self.data.shape[0]>0
+        assert self.data.shape[0] > 0
 
         if (pixel1 is None) and (pixel2 is None) and (splineFile is None) and (detector is None):
             raise RuntimeError("Setting up the geometry refinement without knowing the detector makes little sense")
@@ -210,10 +214,8 @@ class GeometryRefinement(AzimuthalIntegrator):
     def residu1(self, param, d1, d2, rings):
         return self.tth(d1, d2, param) - self.calc_2th(rings, self.wavelength)
 
-
     def residu1_wavelength(self, param, d1, d2, rings):
         return self.tth(d1, d2, param) - self.calc_2th(rings, param[6] * 1e-10)
-
 
     def residu2(self, param, d1, d2, rings):
         return (self.residu1(param, d1, d2, rings) ** 2).sum()
@@ -434,47 +436,72 @@ class GeometryRefinement(AzimuthalIntegrator):
         return self.residu2_wavelength(param,
                             self.data[:, 0], self.data[:, 1], self.data[:, 2])
 
-    def curve_fit(self):
+    def curve_fit(self, with_rot=True):
         """Refine the geometry and provide confidence interval
         Use curve_fit from scipy.optimize to not only refine the geometry (unconstrained fit)
 
-        @return errors
+        @param with_rot: include rotation intro error measurment
+        @return: std_dev, confidence
         """
+        if not curve_fit:
+            logger.error("curve_fit method needs a newer scipy: at lease scipy 0.9, you are running: %s" % scipy.version.version)
         d1 = self.data[:, 0]
         d2 = self.data[:, 1]
+        size = d1.size
         x = d1, d2
-        rings = self.data[:, 2]
-        f = lambda x, *param: self.tth(x[0], x[1], param)
+        rings = self.data[:, 2].astype(numpy.int32)
+        f_with_rot = lambda x, *param: self.tth(x[0], x[1], numpy.concatenate((param, [self.rot3])))
+        f_no_rot = lambda x, *param: self.tth(x[0], x[1], numpy.concatenate((param, [self.rot1, self.rot2, self.rot3])))
         y = self.calc_2th(rings, self.wavelength)
-        p0 = numpy.array([self.dist, self.poni1, self.poni2, self.rot1, self.rot2, self.rot3], dtype=numpy.float64)
-        print("p0: %s" % p0)
-        popt, pcov = curve_fit(f, x, y, p0)
-        print("p1: %s" % popt)
+        param0 = numpy.array([self.dist, self.poni1, self.poni2, self.rot1, self.rot2, self.rot3], dtype=numpy.float64)
+        ref = self.residu2(param0, d1, d2, rings)
+        print("param0: %s %s" % (param0, ref))
+        if with_rot:
+            popt, pcov = curve_fit(f_with_rot, x, y, param0[:-1])
+            popt = numpy.concatenate((popt, [self.rot3]))
+        else:
+            popt, pcov = curve_fit(f_no_rot, x, y, param0[:-3])
+            popt = numpy.concatenate((popt, [self.rot1, self.rot2, self.rot3]))
+        obt = self.residu2(popt, d1, d2, rings)
+        print("param1: %s %s" % (popt, obt))
         print(pcov)
         err = numpy.sqrt(numpy.diag(pcov))
         print("err: %s" % err)
-        return err
+        if obt < ref:
+            self.param = popt
+            self.dist, self.poni1, self.poni2, \
+                    self.rot1, self.rot2, self.rot3 = tuple(popt)
+        error = {}
+        confidence = {}
+        for k, v in zip(("dist", "poni1", "poni2", "rot1", "rot2", "rot3"), err):
+            error[k] = v
+            confidence[k] = 1.96 * v / numpy.sqrt(size)
 
-    @timeit
+        print("Std dev  as sqrt of the diag of covariance:\n%s" % error)
+        print("Confidence as 1.95 sigma/sqrt(n):\n%s" % confidence)
+        return error, confidence
+
     def confidence(self, with_rot=True):
-        """Confidence interval obtained from the inverse of the hessian matrix
-        of the error function next to its minimum value.
+        """Confidence interval obtained from the second derivative of the error function
+        next to its minimum value.
+
+        Note the confidence interval increases with the number of points which is "surprizing"
 
         @param with_rot: if true include rot1 & rot2 in the parameter set.
-        @return: inverse of the Hessian array
+        @return: std_dev, confidence
         """
         epsilon = 1e-5
-        y = self.data[:, 0]
-        x = self.data[:, 1]
+        d1 = self.data[:, 0]
+        d2 = self.data[:, 1]
         r = self.data[:, 2].astype(numpy.int32)
         param0 = numpy.array([self.dist, self.poni1, self.poni2, self.rot1, self.rot2, self.rot3], dtype=numpy.float64)
-        ref = self.residu2(param0, y, x, r)
+        ref = self.residu2(param0, d1, d2, r)
         print(ref)
         if with_rot:
             size = 5
         else:
             size = 3
-        hessian = numpy.zeros((size,size), dtype=numpy.float64)
+        hessian = numpy.zeros((size, size), dtype=numpy.float64)
 
         delta = abs(epsilon * param0)
         delta[abs(param0) < epsilon] = epsilon
@@ -484,39 +511,50 @@ class GeometryRefinement(AzimuthalIntegrator):
             deltai = delta[i]
             param = param0.copy()
             param[i] += deltai
-            value_plus = self.residu2(param, y, x, r)
+            value_plus = self.residu2(param, d1, d2, r)
             param = param0.copy()
             param[i] -= deltai
-            value_moins = self.residu2(param, y, x, r)
+            value_moins = self.residu2(param, d1, d2, r)
             hessian[i, i] = (value_plus + value_moins - 2.0 * ref) / (deltai ** 2)
 
-        for i in range(size):
             for j in range(i + 1, size):
-                deltai = delta[i]
+                #if i == j: continue
                 deltaj = delta[j]
                 param = param0.copy()
                 param[i] += deltai
                 param[j] += deltaj
-                value_plus_plus = self.residu2(param, y, x, r)
+                value_plus_plus = self.residu2(param, d1, d2, r)
                 param = param0.copy()
                 param[i] -= deltai
                 param[j] -= deltaj
-                value_moins_moins = self.residu2(param, y, x, r)
+                value_moins_moins = self.residu2(param, d1, d2, r)
                 param = param0.copy()
                 param[i] += deltai
                 param[j] -= deltaj
-                value_plus_moins = self.residu2(param, y, x, r)
+                value_plus_moins = self.residu2(param, d1, d2, r)
                 param = param0.copy()
                 param[i] -= deltai
                 param[j] += deltaj
-                value_moins_plus = self.residu2(param, y, x, r)
-                hessian[j, i] = hessian[i, j] = (value_plus_plus + value_moins_moins - value_plus_moins - value_moins_plus) / (deltai * deltaj)
+                value_moins_plus = self.residu2(param, d1, d2, r)
+                hessian[j, i] = hessian[i, j] = (value_plus_plus + value_moins_moins - value_plus_moins - value_moins_plus) / (4.0 * deltai * deltaj)
         print(hessian)
+        w, v = numpy.linalg.eigh(hessian)
+        print("eigen val: %s" % w)
+        print("eigen vec: %s" % v)
         cov = numpy.linalg.inv(hessian)
         print(cov)
         err = numpy.sqrt(numpy.diag(cov))
         print("err: %s" % err)
-        return err
+        error = {}
+        for k, v in zip(("dist", "poni1", "poni2", "rot1", "rot2", "rot3"), err):
+            error[k] = v
+        confidence = {}
+        for i, k in enumerate(("dist", "poni1", "poni2", "rot1", "rot2", "rot3")):
+            if i < size:
+                confidence[k] = numpy.sqrt(ref / hessian[i, i])
+        print("std_dev as sqrt of the diag of inv hessian:\n%s" % error)
+        print("Convidence as sqrt of the error function /  hessian:\n%s" % confidence)
+        return error, confidence
 
     def roca(self):
         """

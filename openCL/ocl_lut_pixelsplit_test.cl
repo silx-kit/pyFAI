@@ -24,32 +24,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//#pragma OPENCL EXTENSION cl_amd_printf : enable
-//#pragma OPENCL EXTENSION cl_intel_printf : enable
 
-
-#ifndef __OPENCL_VERSION__
-//This is for Eclipse to stop seeing errors everywhere ...
-#define __kernel
-#define __global
-#define __constant
-#define __local
-
-typedef struct float2 {
-  float x, y;
-} float2;
-typedef struct float3 {
-  float x, y, z;
-  float2 xy, xz, yx, yz, zx, zy;
-} float3;
-typedef struct float4 {
-  float x, y, z, w;
-  float2 xy, yx;
-  float3 xyz, xzy, yxz, yzx, zxy, zyx;
-} float4;
-#endif
-
-
+#include "for_eclipse.h"
 
 
 float area4(float a0, float a1, float b0, float b1, float c0, float c1, float d0, float d1)

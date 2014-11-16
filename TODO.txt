@@ -12,7 +12,7 @@ Refactor _geometry.pyx
 * add Fused-types (template) with float/double for all calculations
 * propose the output dtype as parameter
 * refactor cdef stuf
- 
+
 
 Done list
 =========
@@ -26,3 +26,14 @@ Done list
 * add mask on calibration/recalibration tools (Done v0.8)
 * implement LUT on 2D caking as well + OpenCL version
 * binning at the Azimuthal Integrator level
+
+Python3
+=======
+List of modifications that needs to be done for python3 compatibility:
+
+
+Done:
+-----
+* cmp function in sort:
+  - in io.py & peakpickeruse the key argument
+* Metaclass in detector via six

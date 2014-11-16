@@ -21,11 +21,13 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import absolute_import, print_function, with_statement, division
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2014"
+__date__ = "11/11/2014"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -44,8 +46,10 @@ from . import geometry
 Geometry = geometry.Geometry
 from . import units
 from . import utils
+from .utils import StringTypes
 import fabio
 error = None
+
 
 try:
     from . import splitBBoxLUT
@@ -3427,7 +3431,7 @@ class AzimuthalIntegrator(Geometry):
         Set the dark current from one or mutliple files, avaraged
         according to the method provided
         """
-        if type(files) in types.StringTypes:
+        if type(files) in StringTypes:
             files = [i.strip() for i in files.split(",")]
         elif not files:
             files = []
@@ -3450,7 +3454,7 @@ class AzimuthalIntegrator(Geometry):
         Set the flat field from one or mutliple files, averaged
         according to the method provided
         """
-        if type(files) in types.StringTypes:
+        if type(files) in StringTypes:
             files = [i.strip() for i in files.split(",")]
         elif not files:
             files = []

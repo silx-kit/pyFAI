@@ -41,6 +41,7 @@ import logging
 import numpy
 from math import sin, asin
 import threading
+from .utils import get_calibration_dir
 logger = logging.getLogger("pyFAI.calibrant")
 epsilon = 1.0e-6 # for floating point comparison
 
@@ -254,7 +255,7 @@ class calibrant_factory(object):
         @param basedir: directory name where to search for the calibrants
         """
         if basedir is None:
-            basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "calibration")
+            basedir = get_calibration_dir()
         self.directory = basedir
         if not os.path.isdir(self.directory):
             logger.warning("No calibrant directory: %s" % self.directory)
@@ -277,16 +278,16 @@ class calibrant_factory(object):
         return k in self.all
 
     def __repr__(self):
-        return "Calibrants available: %s" % (", ".join(self.all.keys()))
+        return "Calibrants available: %s" % (", ".join(list(self.all.keys())))
 
     def __len__(self):
         return len(self.all)
 
     def keys(self):
-        return self.all.keys()
+        return list(self.all.keys())
 
     def values(self):
-        return map(Calibrant, self.all.values())
+        return [Calibrant(i) for i in  self.all.values()]
 
     def items(self):
         return [(i, Calibrant(j)) for i, j in self.all.items()]

@@ -81,6 +81,19 @@ def deprecated(func):
         return func(*arg, **kw)
     return wrapper
 
+#Python  compatibility functions.
+try:
+    # if Python2
+    from types import StringTypes
+except NameError:
+    # Python3
+    StringTypes = (str, bytes)
+
+try:
+    input = raw_input
+except NameError:
+    pass
+
 def gaussian(M, std):
     """
     Return a Gaussian window of length M with standard-deviation std.
@@ -416,7 +429,7 @@ def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5,0.5)):
     but averages all frames within  cutoff*std
 
     @param lstimg: list of 2D images or a 3D stack
-    @param center_method: is the center calculated by a "mean" or a "median"
+    @param center_method: is the center calculated by a "mean" or a "median", or "quantile"
     @param cutoff: keep all data where (I-center)/std < cutoff
     @param quantiles: 2-tuple of floats average out data between the two quantiles
     
@@ -438,11 +451,11 @@ def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5,0.5)):
         center = stack.__getattribute__(center_method)(axis=0)
     elif center_method == "median":
         center = numpy.median(stack, axis=0)
-    elif center_method == "quantile":
+    elif center_method.startswith("quantil"):
         sorted = numpy.sort(stack, axis=0)
-        lower = max(0, int(min(quantils) * length))
-        upper = min(length, int(max(quantils) * length) + 1)
-        output = sorted[lower:upper].mean(axis=0)
+        lower = max(0, int(min(quantiles) * length))
+        upper = min(length, int(max(quantiles) * length) + 1)
+        center = sorted[lower:upper].mean(axis=0)
     else:
         raise RuntimeError("Cannot understand method: %s in averageDark" % center_method)
     if cutoff is None or cutoff <= 0:
@@ -708,8 +721,8 @@ def binning(input_img, binsize):
 
     if numpy.array(binsize).prod() < 50:
         out = numpy.zeros(tuple(outputSize))
-        for i in xrange(binsize[0]):
-            for j in xrange(binsize[1]):
+        for i in range(binsize[0]):
+            for j in range(binsize[1]):
                 out += input_img[i::binsize[0], j::binsize[1]]
     else:
         temp = input_img.copy()
@@ -730,8 +743,8 @@ def unBinning(binnedArray, binsize, norm=True):
     for i, j in zip(binnedArray.shape, binsize):
         outputShape.append(i * j)
     out = numpy.zeros(tuple(outputShape), dtype=binnedArray.dtype)
-    for i in xrange(binsize[0]):
-        for j in xrange(binsize[1]):
+    for i in range(binsize[0]):
+        for j in range(binsize[1]):
             out[i::binsize[0], j::binsize[1]] += binnedArray
     if norm:
         out /= binsize[0] * binsize[1]
@@ -945,15 +958,40 @@ def _get_data_path(filename):
         raise RuntimeError("Can not find the [%s] resource, "
                         " something went wrong !!!" % (real_filename,))
 
-
-def get_ui_file(filename):
-    return _get_data_path(os.path.join("gui", filename))
-#    return _get_data_path(filename)
+def get_calibration_dir():
+    """get the full path of a calibration directory
+    
+    @return: the full path of the calibrant file 
+    """
+    return _get_data_path("calibration")
 
 
 def get_cl_file(filename):
-#    return _get_data_path(os.path.join("openCL", filename))
-    return _get_data_path(filename)
+    """get the full path of a openCL file
+    
+    @return: the full path of the openCL source file    
+    """
+    return _get_data_path(os.path.join("openCL", filename))
+
+
+def get_ui_file(filename):
+    """get the full path of a user-interface file
+    
+    @return: the full path of the ui    
+    """
+    return _get_data_path(os.path.join("gui", filename))
+
+
+
+def read_cl_file(filename):
+    """
+    @param filename: read an OpenCL file and apply a preprocessor
+    @return: preprocessed source code 
+    """
+    with open(get_cl_file(filename), "r") as f:
+        # Dummy preprocessor which pops the #include
+        lines = [i for i in f.readlines() if not i.startswith("#include ")]
+    return os.linesep.join(lines)
 
 
 def concatenate_cl_kernel(filenames):
@@ -965,8 +1003,7 @@ def concatenate_cl_kernel(filenames):
     """
     kernel = ""
     for filename in filenames:
-        with open(get_cl_file(filename), "r") as f:
-            kernel += f.read()
+            kernel += read_cl_file(filename)
 
     return kernel
 
@@ -1120,7 +1157,7 @@ except ImportError: #backport percentile from numpy 1.6.2
 
         q = q / 100.0
         if (q < 0) or (q > 1):
-            raise ValueError, "percentile must be either in the range [0,100]"
+            raise ValueError("percentile must be either in the range [0,100]")
 
         indexer = [slice(None)] * sorted.ndim
         Nx = sorted.shape[axis]

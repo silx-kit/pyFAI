@@ -132,14 +132,14 @@ class OCL_Hist_Pixelsplit(object):
 
         result = numpy.ndarray(4,dtype=numpy.float32)
         pyopencl.enqueue_copy(self._queue,result, self._cl_mem["minmax"])
-        print result
+        print(result)
         min0 = pos[:, :, 0].min()
         max0 = pos[:, :, 0].max()
         min1 = pos[:, :, 1].min()
         max1 = pos[:, :, 1].max()
         minmax=(min0,max0,min1,max1)
 
-        print minmax
+        print(minmax)
 
     def __del__(self):
         """

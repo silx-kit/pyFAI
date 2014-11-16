@@ -21,28 +21,29 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-"test suite for utilities library"
 
+from __future__ import division, print_function
+__doc__ = "test suite for utilities library"
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20140106"
+__date__ = "20141112"
 
 
 import unittest
 import numpy
-import logging
 import sys
 import os
 import fabio
+import tempfile
 from utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 import pyFAI.utils
 
-if logger.getEffectiveLevel() <= logging.INFO:
-    import pylab
+#if logger.getEffectiveLevel() <= logging.INFO:
+#    from pyFAI.gui_utils import pylab
 import scipy.ndimage
 
 # TODO Test:
@@ -59,32 +60,34 @@ import scipy.ndimage
 # # averageDark
 # # averageImages
 
+
 class test_utils(unittest.TestCase):
     unbinned = numpy.random.random((64, 32))
     dark = unbinned.astype("float32")
     flat = 1 + numpy.random.random((64, 32))
     raw = flat + dark
-    tmp_dir = os.environ.get("PYFAI_TEMPDIR",os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp"))
+    tmp_dir = tempfile.mkdtemp(prefix="pyFAI_test_utils")
     tmp_file = os.path.join(tmp_dir, "testUtils_average.edf")
+
     def setUp(self):
         """Download files & create tmp directory if needed"""
         if not os.path.isdir(self.tmp_dir):
             os.makedirs(self.tmp_dir)
-            
+
     def tearDown(self):
         """Remove tmp files if needed"""
         if os.path.isfile(self.tmp_file):
             try:
                 os.unlink(self.tmp_file)
             except OSError as error:
-                logger.error("Unable to remove file %s" % self.tmp_file)
+                logger.error("Unable to remove file %s: %s" % (self.tmp_file, error))
 
     def test_binning(self):
         """
         test the binning and unbinning functions
         """
         binned = pyFAI.utils.binning(self.unbinned, (4, 2))
-        self.assertEqual(binned.shape, (64 / 4, 32 / 2), "binned size is OK")
+        self.assertEqual(binned.shape, (64 // 4, 32 // 2), "binned size is OK")
         unbinned = pyFAI.utils.unBinning(binned, (4, 2))
         self.assertEqual(unbinned.shape, self.unbinned.shape, "unbinned size is OK")
         self.assertAlmostEqual(unbinned.sum(), self.unbinned.sum(), 2, "content is the same")
@@ -99,16 +102,16 @@ class test_utils(unittest.TestCase):
         two = pyFAI.utils.averageDark([self.dark, self.dark])
         self.assertEqual(abs(self.dark - two).max(), 0, "data are the same: mean test")
 
-        three = pyFAI.utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark) ], "median")
+        three = pyFAI.utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark)], "median")
         self.assertEqual(abs(self.dark - three).max(), 0, "data are the same: median test")
 
-        four = pyFAI.utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark) ], "min")
+        four = pyFAI.utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark)], "min")
         self.assertEqual(abs(numpy.zeros_like(self.dark) - four).max(), 0, "data are the same: min test")
 
-        five = pyFAI.utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark) ], "max")
+        five = pyFAI.utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark)], "max")
         self.assertEqual(abs(numpy.ones_like(self.dark) - five).max(), 0, "data are the same: max test")
 
-        six = pyFAI.utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark), self.dark, self.dark ], "median", .001)
+        six = pyFAI.utils.averageDark([numpy.ones_like(self.dark), self.dark, numpy.zeros_like(self.dark), self.dark, self.dark], "median", .001)
         self.assert_(abs(self.dark - six).max() < 1e-4, "data are the same: test threshold")
 
         seven = pyFAI.utils.averageImages([self.raw], darks=[self.dark], flats=[self.flat], threshold=0, output=self.tmp_file)
@@ -132,7 +135,7 @@ class test_utils(unittest.TestCase):
         Check gaussian filters applied via FFT
         """
         for sigma in [2, 9.0 / 8.0]:
-            for mode in ["wrap", "reflect", "constant", "nearest", "mirror" ]:
+            for mode in ["wrap", "reflect", "constant", "nearest", "mirror"]:
                 blurred1 = scipy.ndimage.filters.gaussian_filter(self.flat, sigma, mode=mode)
                 blurred2 = pyFAI.utils.gaussian_filter(self.flat, sigma, mode=mode)
                 delta = abs((blurred1 - blurred2) / (blurred1)).max()

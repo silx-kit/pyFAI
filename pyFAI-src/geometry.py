@@ -759,7 +759,7 @@ class Geometry(object):
                         delta[:, :, 3] = \
                             numpy.minimum(((chi_corner[:-1, 1: ] - chi_center) % twoPi),
                                           ((chi_center - chi_corner[:-1, 1: ]) % twoPi))
-                    self._dchia = delta.max(axis=-1)
+                    self._dchia = delta.max(axis= -1)
         return self._dchia
 
     def deltaQ(self, shape):
@@ -791,7 +791,7 @@ class Geometry(object):
                         delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
                         delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
                         delta[:, :, 3] = abs(q_corner[:-1, 1:] - q_center)
-                    self._dqa = delta.max(axis=-1)
+                    self._dqa = delta.max(axis= -1)
         return self._dqa
 
     def deltaR(self, shape):
@@ -822,7 +822,7 @@ class Geometry(object):
                         delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
                         delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
                         delta[:, :, 3] = abs(q_corner[:-1, 1:] - q_center)
-                    self._dra = delta.max(axis=-1)
+                    self._dra = delta.max(axis= -1)
         return self._dra
 
     def cosIncidance(self, d1, d2):
@@ -873,15 +873,18 @@ class Geometry(object):
 
         return dsa
 
-    def solidAngleArray(self, shape, order=3):
-        """
-        Generate an array of the given shape with the solid angle of
-        the current element two-theta(i,j) for all elements.
+    def solidAngleArray(self, shape, order=3, absolute=False):
+        """Generate an array for the solid angle correction 
+        given the shape of the detector.
 
-
-
+        solid_angle = cos(incidence)^3 
+        
         @param shape: shape of the array expected
-        @param order:
+        @param order: should be 3, power of the formula just obove
+        @param absolute: the absolute solid angle is calculated as: 
+        
+        SA = pix1*pix2/dist^2 * cos(incidence)^3
+        
         """
         if self._dssa is None:
             if order is True:
@@ -891,7 +894,11 @@ class Geometry(object):
             self._dssa = numpy.fromfunction(self.diffSolidAngle,
                                             shape, dtype=numpy.float32)
             self._dssa_crc = crc32(self._dssa)
-        return self._dssa
+        if absolute:
+            return self._dssa * self.pixel1 * self.pixel2 / (self.dist ** 2)
+        else:
+            return self._dssa
+
 
     def save(self, filename):
         """
@@ -1406,6 +1413,49 @@ class Geometry(object):
             assert mask.shape == tuple(shape)
             calcimage[numpy.where(mask)] = 0
         return calcimage
+
+    def __copy__(self):
+        """return a shallow copy of itself.
+        """
+        new = self.__class__(detector=self.detector)
+        #transfer numerical values:
+        numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
+                     "chiDiscAtPi", "_dssa_crc", "_dssa_order", "_wavelength",
+                     '_oversampling', '_correct_solid_angle_for_spline',
+                     '_polarization_factor', '_polarization_axis_offset',
+                     '_polarization_crc', '_transmission_crc', '_transmission_normal']
+        array = ["_ttha", "_dttha", "_dssa", "_chia", "_dchia", "_qa", "_dqa",
+                 "_ra", "_dra", "_corner4Da", "_corner4Dqa", "_corner4Dra",
+                 '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
+        for key in numerical + array:
+            new.__setattr__(key, self.__getattribute__(key))
+        new.param = [new._dist, new._poni1, new._poni2,
+                      new._rot1, new._rot2, new._rot3]
+        return new
+
+
+    def __deepcopy__(self):
+        """return a deep copy of itself.
+        """
+        new = self.__class__(detector=self.detector.__deepcopy__())
+        #transfer numerical values:
+        numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
+                     "chiDiscAtPi", "_dssa_crc", "_dssa_order", "_wavelength",
+                     '_oversampling', '_correct_solid_angle_for_spline',
+                     '_polarization_factor', '_polarization_axis_offset',
+                     '_polarization_crc', '_transmission_crc', '_transmission_normal']
+        array = ["_ttha", "_dttha", "_dssa", "_chia", "_dchia", "_qa", "_dqa",
+                 "_ra", "_dra", "_corner4Da", "_corner4Dqa", "_corner4Dra",
+                 '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
+        for key in numerical:
+            new.__setattr__(key, self.__getattribute__(key))
+        for key in array:
+            value = self.__getattribute__(key)
+            if value is not None:
+                new.__setattr__(key, 1 * value)
+        new.param = [new._dist, new._poni1, new._poni2,
+                      new._rot1, new._rot2, new._rot3]
+        return new
 
 # ############################################
 # Accessors and public properties of the class

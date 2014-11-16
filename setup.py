@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/10/2014"
+__date__ = "09/10/2014"
 __status__ = "stable"
 
 
@@ -237,7 +237,7 @@ class build_ext_pyFAI(build_ext):
     }
 
     def build_extensions(self):
-        print("Compiler: %s" % self.compiler.compiler_type)
+#         print("Compiler: %s" % self.compiler.compiler_type)
         if self.compiler.compiler_type in self.translator:
             trans = self.translator[self.compiler.compiler_type]
         else:
@@ -248,13 +248,9 @@ class build_ext_pyFAI(build_ext):
                                     for arg in e.extra_compile_args]
             e.extra_link_args = [trans[arg][1] if arg in trans else arg
                                  for arg in e.extra_link_args]
-            e.libraries = filter(None, [trans[arg] if arg in trans else None
-                                        for arg in e.libraries])
-
-            # If you are confused look here:
-            # print e, e.libraries
-            # print e.extra_compile_args
-            # print e.extra_link_args
+            e.libraries = [trans[arg] for arg in e.libraries if arg in trans]
+#             e.libraries = list(filter(None, [trans[arg] if arg in trans else None
+#                                         for arg in e.libraries]))
         build_ext.build_extensions(self)
 
 cmdclass['build_ext'] = build_ext_pyFAI
@@ -266,7 +262,7 @@ cmdclass['build_ext'] = build_ext_pyFAI
 
 installDir = "pyFAI"
 
-data_files = [(installDir, glob.glob("openCL/*.cl")),
+data_files = [(os.path.join(installDir, "openCL"), glob.glob("openCL/*.cl")),
               (os.path.join(installDir, "gui"), glob.glob("gui/*.ui")),
               (os.path.join(installDir, "calibration"), glob.glob("calibration/*.D"))]
 
@@ -454,12 +450,15 @@ setup(name='pyFAI',
       ext_package="pyFAI",
       scripts=script_files,
       ext_modules=ext_modules,
-      packages=["pyFAI"],
-      package_dir={"pyFAI": "pyFAI-src"},
+      packages=["pyFAI", "pyFAI.third_party", "pyFAI.test"],
+      package_dir={"pyFAI": "pyFAI-src", 
+                   "pyFAI.third_party": "third_party",
+                   "pyFAI.test": "test",
+                   },
       test_suite="test",
       cmdclass=cmdclass,
       data_files=data_files,
-      classifiers=filter(None, classifiers.split("\n")),
+      classifiers=[i for i in classifiers.split("\n") if i],
       long_description="""PyFAI is an azimuthal integration library that tries to be fast (as fast as C
 and even more using OpenCL and GPU).
 It is based on histogramming of the 2theta/Q positions of each (center of)

@@ -210,17 +210,17 @@ class HistoLUT1dFullSplit(object):
             range1 = 0
             range2 = size
             
-        print "FLOAT 64"
-        print "++++++++"
-        print "Space bounds: %e  -  %e" % (pos0_min, pos0_max)        
+        print( "FLOAT 64")
+        print( "++++++++")
+        print( "Space bounds: %e  -  %e" % (pos0_min, pos0_max))        
                 
         with nogil:
             for idx in range(range1,range2):
  
-                with gil:
-                    print "Pixel %d" % idx
-                    print "==========="
-                    print "==========="
+#                 with gil:
+#                     print "Pixel %d" % idx
+#                     print "==========="
+#                     print "==========="
 
                 if (check_mask) and (cmask[idx]):
                     continue
@@ -234,24 +234,24 @@ class HistoLUT1dFullSplit(object):
                 D0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, delta)
                 D1 = < double > cpos[idx, 3, 1]
                 
-                with gil:
-                    print "Pixel in 2-th"
-                    print "============="
-                    print "A: %e --> %e  %e" % (< double > cpos[idx, 0, 0], A0, A1)
-                    print "B: %e --> %e  %e" % (< double > cpos[idx, 1, 0], B0, B1)
-                    print "C: %e --> %e  %e" % (< double > cpos[idx, 2, 0], C0, C1)
-                    print "D: %e --> %e  %e" % (< double > cpos[idx, 3, 0], D0, D1)
-                    print " "
-                
+#                 with gil:
+#                     print "Pixel in 2-th"
+#                     print "============="
+#                     print "A: %e --> %e  %e" % (< double > cpos[idx, 0, 0], A0, A1)
+#                     print "B: %e --> %e  %e" % (< double > cpos[idx, 1, 0], B0, B1)
+#                     print "C: %e --> %e  %e" % (< double > cpos[idx, 2, 0], C0, C1)
+#                     print "D: %e --> %e  %e" % (< double > cpos[idx, 3, 0], D0, D1)
+#                     print " "
+#                 
 
 
                 min0 = min(A0, B0, C0, D0)
                 max0 = max(A0, B0, C0, D0)
                 
-                with gil:
-                    print "Min 2-th: %e" % min0
-                    print "Max 2-th: %e" % max0
-                    print " "
+#                 with gil:
+#                     print "Min 2-th: %e" % min0
+#                     print "Max 2-th: %e" % max0
+#                     print " "
                 
                 if (max0<0) or (min0 >=bins):
                     continue
@@ -262,9 +262,9 @@ class HistoLUT1dFullSplit(object):
                 bin0_min = < int > floor(min0)
                 bin0_max = < int > floor(max0)
                 
-                with gil:
-                    print "Bin span: %d - %d" % (bin0_min, bin0_max)
-                    print " "
+#                 with gil:
+#                     print "Bin span: %d - %d" % (bin0_min, bin0_max)
+#                     print " "
 
 
                 for bin in range(bin0_min, bin0_max+1):
@@ -296,15 +296,15 @@ class HistoLUT1dFullSplit(object):
                 D0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, delta)
                 D1 = < double > cpos[idx, 3, 1]
                 
-                with gil:
-                    print "...and again..."
-                    print "Pixel in 2-th"
-                    print "============="
-                    print "A: %e --> %e  %e" % (< double > cpos[idx, 0, 0], A0, A1)
-                    print "B: %e --> %e  %e" % (< double > cpos[idx, 1, 0], B0, B1)
-                    print "C: %e --> %e  %e" % (< double > cpos[idx, 2, 0], C0, C1)
-                    print "D: %e --> %e  %e" % (< double > cpos[idx, 3, 0], D0, D1)
-                    print " "
+#                 with gil:
+#                     print "...and again..."
+#                     print "Pixel in 2-th"
+#                     print "============="
+#                     print "A: %e --> %e  %e" % (< double > cpos[idx, 0, 0], A0, A1)
+#                     print "B: %e --> %e  %e" % (< double > cpos[idx, 1, 0], B0, B1)
+#                     print "C: %e --> %e  %e" % (< double > cpos[idx, 2, 0], C0, C1)
+#                     print "D: %e --> %e  %e" % (< double > cpos[idx, 3, 0], D0, D1)
+#                     print " "
 
 
 
@@ -312,11 +312,11 @@ class HistoLUT1dFullSplit(object):
                 min0 = min(A0, B0, C0, D0)
                 max0 = max(A0, B0, C0, D0)
                  
-                with gil:
-                    print "Min 2-th: %e" % min0
-                    print "Max 2-th: %e" % max0
-                    print " "
-                
+#                 with gil:
+#                     print "Min 2-th: %e" % min0
+#                     print "Max 2-th: %e" % max0
+#                     print " "
+#                 
                 if (max0<0) or (min0 >=bins):
                     continue
                 if check_pos1:
@@ -326,9 +326,9 @@ class HistoLUT1dFullSplit(object):
                 bin0_min = < int > floor(min0)
                 bin0_max = < int > floor(max0)
                 
-                with gil:
-                    print "Bin span: %d - %d" % (bin0_min, bin0_max)
-                    print " "
+#                 with gil:
+#                     print "Bin span: %d - %d" % (bin0_min, bin0_max)
+#                     print " "
 
 
                 if bin0_min == bin0_max:
@@ -348,66 +348,66 @@ class HistoLUT1dFullSplit(object):
                     DA.slope=(A1-D1)/(A0-D0)
                     DA.intersect= D1 - DA.slope*D0
                     
-                    with gil:
-                        print "The lines that make up the pixel:"
-                        print "================================="
-                        print "AB: %e  %e" % (AB.slope, AB.intersect)
-                        print "BC: %e  %e" % (BC.slope, BC.intersect)
-                        print "CD: %e  %e" % (CD.slope, CD.intersect)
-                        print "DA: %e  %e" % (DA.slope, DA.intersect)
-                        print " "
+#                     with gil:
+#                         print "The lines that make up the pixel:"
+#                         print "================================="
+#                         print "AB: %e  %e" % (AB.slope, AB.intersect)
+#                         print "BC: %e  %e" % (BC.slope, BC.intersect)
+#                         print "CD: %e  %e" % (CD.slope, CD.intersect)
+#                         print "DA: %e  %e" % (DA.slope, DA.intersect)
+#                         print " "
                     
                     areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
                     
-                    with gil:
-                        print "Area with the 4 point formula: %e" % areaPixel
-                        print " "
+#                     with gil:
+#                         print "Area with the 4 point formula: %e" % areaPixel
+#                         print " "
                     
                     areaPixel2  = integrate(A0, B0, AB)
                     areaPixel2 += integrate(B0, C0, BC)
                     areaPixel2 += integrate(C0, D0, CD)
                     areaPixel2 += integrate(D0, A0, DA)
                     
-                    with gil:
-                        print "(Area with integration: %e)" % areaPixel2
-                        print " "
+#                     with gil:
+#                         print "(Area with integration: %e)" % areaPixel2
+#                         print " "
                     
                     oneOverPixelArea = 1.0 / areaPixel
                     
-                    with gil:
-                        print "1 over area: %e" % oneOverPixelArea
-                        print " "
+#                     with gil:
+#                         print "1 over area: %e" % oneOverPixelArea
+#                         print " "
                     
                     partialArea2 = 0.0
                     for bin in range(bin0_min, bin0_max+1):
-                        with gil:
-                            print "Bin: %d" % bin
-                            print "======="
-                            print "  "
+#                         with gil:
+#                             print "Bin: %d" % bin
+#                             print "======="
+#                             print "  "
                         A_lim = (A0<=bin)*(A0<=(bin+1))*bin + (A0>bin)*(A0<=(bin+1))*A0 + (A0>bin)*(A0>(bin+1))*(bin+1)
                         B_lim = (B0<=bin)*(B0<=(bin+1))*bin + (B0>bin)*(B0<=(bin+1))*B0 + (B0>bin)*(B0>(bin+1))*(bin+1)
                         C_lim = (C0<=bin)*(C0<=(bin+1))*bin + (C0>bin)*(C0<=(bin+1))*C0 + (C0>bin)*(C0>(bin+1))*(bin+1)
                         D_lim = (D0<=bin)*(D0<=(bin+1))*bin + (D0>bin)*(D0<=(bin+1))*D0 + (D0>bin)*(D0>(bin+1))*(bin+1)
                         
                         
-                        with gil:
-                            print "Limits:"
-                            print "======="
-                            print "A_lim = %d*bin + %d*A0 + %d*(bin+1) = %e" % ((A0<=bin)*(A0<=(bin+1)),(A0>bin)*(A0<=(bin+1)),(A0>bin)*(A0>(bin+1)),A_lim)
-                            print "B_lim = %d*bin + %d*B0 + %d*(bin+1) = %e" % ((B0<=bin)*(B0<=(bin+1)),(B0>bin)*(B0<=(bin+1)),(B0>bin)*(B0>(bin+1)),B_lim)
-                            print "C_lim = %d*bin + %d*C0 + %d*(bin+1) = %e" % ((C0<=bin)*(C0<=(bin+1)),(C0>bin)*(C0<=(bin+1)),(C0>bin)*(C0>(bin+1)),C_lim)
-                            print "D_lim = %d*bin + %d*D0 + %d*(bin+1) = %e" % ((D0<=bin)*(D0<=(bin+1)),(D0>bin)*(D0<=(bin+1)),(D0>bin)*(D0>(bin+1)),D_lim)
-                            print "  "
-                        
+#                         with gil:
+#                             print "Limits:"
+#                             print "======="
+#                             print "A_lim = %d*bin + %d*A0 + %d*(bin+1) = %e" % ((A0<=bin)*(A0<=(bin+1)),(A0>bin)*(A0<=(bin+1)),(A0>bin)*(A0>(bin+1)),A_lim)
+#                             print "B_lim = %d*bin + %d*B0 + %d*(bin+1) = %e" % ((B0<=bin)*(B0<=(bin+1)),(B0>bin)*(B0<=(bin+1)),(B0>bin)*(B0>(bin+1)),B_lim)
+#                             print "C_lim = %d*bin + %d*C0 + %d*(bin+1) = %e" % ((C0<=bin)*(C0<=(bin+1)),(C0>bin)*(C0<=(bin+1)),(C0>bin)*(C0>(bin+1)),C_lim)
+#                             print "D_lim = %d*bin + %d*D0 + %d*(bin+1) = %e" % ((D0<=bin)*(D0<=(bin+1)),(D0>bin)*(D0<=(bin+1)),(D0>bin)*(D0>(bin+1)),D_lim)
+#                             print "  "
+#                         
                         partialArea  = integrate(A_lim, B_lim, AB)
                         partialArea += integrate(B_lim, C_lim, BC)
                         partialArea += integrate(C_lim, D_lim, CD)
                         partialArea += integrate(D_lim, A_lim, DA)
                         tmp = fabs(partialArea) * oneOverPixelArea
-                        with gil:
-                            print "Partial Area: %e" % fabs(partialArea)
-                            print "Contribution: %e" % tmp
-                            print "  "
+#                         with gil:
+#                             print "Partial Area: %e" % fabs(partialArea)
+#                             print "Contribution: %e" % tmp
+#                             print "  "
                         k = outMax[bin]
                         indices[indptr[bin]+k] = idx
                         data[indptr[bin]+k] = tmp

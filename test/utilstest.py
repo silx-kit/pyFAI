@@ -2,11 +2,9 @@
 # coding: utf-8
 #
 #    Project: pyFAI tests class utilities
-#             http://forge.epn-campus.eu/projects/azimuthal
+#             https://github.com/pyFAI/pyFAI
 #
-#    File: "$Id:$"
-#
-#    Copyright (C) 2010-2012 European Synchrotron Radiation Facility
+#    Copyright (C) 2010-2014 European Synchrotron Radiation Facility
 #                       Grenoble, France
 #
 #    Principal authors: Jérôme KIEFFER (jerome.kieffer@esrf.fr)
@@ -24,12 +22,14 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import print_function, division, absolute_import
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "2014-09-29"
+__date__ = "2014-11-11"
+
 
 import os
 import imp
@@ -38,12 +38,23 @@ import subprocess
 import threading
 import distutils.util
 import logging
-import urllib2
+try: #Python3
+    from urllib.request import urlopen, ProxyHandler, build_opener
+except ImportError: #Python2
+    from urllib2 import urlopen, ProxyHandler, build_opener
+#import urllib2
 import numpy
 import shutil
 import json
+import tempfile
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("pyFAI.utilstest")
+
+TEST_HOME = os.path.dirname(os.path.abspath(__file__))
+IN_SOURCES = "pyFAI-src" in os.listdir(os.path.dirname(TEST_HOME))
+
+if IN_SOURCES:
+    os.environ["PYFAI_DATA"] = os.path.dirname(TEST_HOME)
 
 
 def copy(infile, outfile):
@@ -61,71 +72,72 @@ class UtilsTest(object):
     options = None
     timeout = 60        # timeout in seconds for downloading images
     url_base = "http://forge.epn-campus.eu/attachments/download"
-    
+
     # Nota https crashes with error 501 under windows.
 #    url_base = "https://forge.epn-campus.eu/attachments/download"
-    test_home = os.path.dirname(os.path.abspath(__file__))
     sem = threading.Semaphore()
     recompiled = False
     reloaded = False
     name = "pyFAI"
-    image_home = os.path.join(test_home, "testimages")
-    if not os.path.isdir(image_home):
-        os.makedirs(image_home)
-    testimages = os.path.join(test_home, "all_testimages.json")
-    if os.path.exists(testimages):
-        with open(testimages) as f:
-            ALL_DOWNLOADED_FILES = set(json.load(f))
-    else:
-        ALL_DOWNLOADED_FILES = set()
-    platform = distutils.util.get_platform()
-    architecture = "lib.%s-%i.%i" % (platform,
-                                     sys.version_info[0], sys.version_info[1])
-    if os.environ.get("BUILDPYTHONPATH"):
-        pyFAI_home = os.path.abspath(os.environ.get("BUILDPYTHONPATH", ""))
-    else:
-        pyFAI_home = os.path.join(os.path.dirname(test_home),
-                                  "build", architecture)
-    logger.info("pyFAI Home is: " + pyFAI_home)
-    if "pyFAI" in sys.modules:
-        logger.info("pyFAI module was already loaded from  %s" % sys.modules["pyFAI"])
-        pyFAI = None
-        sys.modules.pop("pyFAI")
-        for key in sys.modules.copy():
-            if key.startswith("pyFAI."):
-                sys.modules.pop(key)
+    if IN_SOURCES:
+        image_home = os.path.join(TEST_HOME, "testimages")
+        if not os.path.isdir(image_home):
+            os.makedirs(image_home)
+        testimages = os.path.join(TEST_HOME, "all_testimages.json")
+        if os.path.exists(testimages):
+            with open(testimages) as f:
+                ALL_DOWNLOADED_FILES = set(json.load(f))
+        else:
+            ALL_DOWNLOADED_FILES = set()
+        platform = distutils.util.get_platform()
+        architecture = "lib.%s-%i.%i" % (platform,
+                                         sys.version_info[0], sys.version_info[1])
+        if os.environ.get("BUILDPYTHONPATH"):
+            pyFAI_home = os.path.abspath(os.environ.get("BUILDPYTHONPATH", ""))
+        else:
+            pyFAI_home = os.path.join(os.path.dirname(TEST_HOME),
+                                      "build", architecture)
+        logger.info("pyFAI Home is: " + pyFAI_home)
+        if "pyFAI" in sys.modules:
+            logger.info("pyFAI module was already loaded from  %s" % sys.modules["pyFAI"])
+            pyFAI = None
+            sys.modules.pop("pyFAI")
+            for key in sys.modules.copy():
+                if key.startswith("pyFAI."):
+                    sys.modules.pop(key)
 
-    if not os.path.isdir(pyFAI_home):
-        with sem:
-            if not os.path.isdir(pyFAI_home):
-                logger.warning("Building pyFAI to %s" % pyFAI_home)
-                p = subprocess.Popen([sys.executable, "setup.py", "build"],
-                                     shell=False, cwd=os.path.dirname(test_home))
-                logger.info("subprocess ended with rc= %s" % p.wait())
-                recompiled = True
-    opencl = os.path.join(os.path.dirname(test_home), "openCL")
-    for clf in os.listdir(opencl):
-        if clf.endswith(".cl") and clf not in os.listdir(os.path.join(pyFAI_home, "pyFAI")):
-            copy(os.path.join(opencl, clf), os.path.join(pyFAI_home, "pyFAI", clf))
-    calib_dir = os.path.join(os.path.dirname(test_home), "calibration")
-    dest = os.path.join(pyFAI_home, "pyFAI", "calibration")
-    if not os.path.exists(dest):
-        os.makedirs(dest)
-    for clf in os.listdir(calib_dir):
-        if clf.endswith(".D") and clf not in os.listdir(dest):
-            copy(os.path.join(calib_dir, clf), os.path.join(dest, clf))
-
-    logger.info("Loading pyFAI")
-    try:
-        pyFAI = imp.load_module(*((name,) + imp.find_module(name, [pyFAI_home])))
-    except Exception as error:
-        logger.warning("Unable to loading pyFAI %s" % error)
-        if "-r" not in sys.argv:
-            logger.warning("Remove build and start from scratch %s" % error)
-            sys.argv.append("-r")
+        if not os.path.isdir(pyFAI_home):
+            with sem:
+                if not os.path.isdir(pyFAI_home):
+                    logger.warning("Building pyFAI to %s" % pyFAI_home)
+                    p = subprocess.Popen([sys.executable, "setup.py", "build"],
+                                         shell=False, cwd=os.path.dirname(TEST_HOME))
+                    logger.info("subprocess ended with rc= %s" % p.wait())
+                    recompiled = True
+        logger.info("Loading pyFAI")
+        try:
+            pyFAI = imp.load_module(*((name,) + imp.find_module(name, [pyFAI_home])))
+        except Exception as error:
+            logger.warning("Unable to loading pyFAI %s" % error)
+            if "-r" not in sys.argv:
+                logger.warning("Remove build and start from scratch %s" % error)
+                sys.argv.append("-r")
+    else:
+        image_home = os.path.join(tempfile.gettempdir(), "pyFAI_testimages_%s" % os.getlogin())
+        if not os.path.exists(image_home):
+            os.makedirs(image_home)
+        testimages = os.path.join(image_home, "all_testimages.json")
+        if os.path.exists(testimages):
+            with open(testimages) as f:
+                ALL_DOWNLOADED_FILES = set(json.load(f))
+        else:
+            ALL_DOWNLOADED_FILES = set()
 
     @classmethod
     def deep_reload(cls):
+        if not IN_SOURCES:
+            cls.pyFAI = __import__(cls.name)
+            return cls.pyFAI
         if cls.reloaded:
             return cls.pyFAI
         logger.info("Loading pyFAI")
@@ -135,9 +147,7 @@ class UtilsTest(object):
         for key in sys.modules.copy():
             if key.startswith("pyFAI"):
                 sys.modules.pop(key)
-
-        import pyFAI
-        cls.pyFAI = pyFAI
+        cls.pyFAI = __import__(cls.name)
         logger.info("pyFAI loaded from %s" % cls.pyFAI.__file__)
         sys.modules[cls.name] = cls.pyFAI
         cls.reloaded = True
@@ -148,6 +158,8 @@ class UtilsTest(object):
         """
         force the recompilation of pyFAI
         """
+        if not IN_SOURCES:
+            return
         if not cls.recompiled:
             with cls.sem:
                 if not cls.recompiled:
@@ -159,20 +171,8 @@ class UtilsTest(object):
                     if remove_first:
                         recursive_delete(cls.pyFAI_home)
                     p = subprocess.Popen([sys.executable, "setup.py", "build"],
-                                         shell=False, cwd=os.path.dirname(cls.test_home))
+                                         shell=False, cwd=os.path.dirname(TEST_HOME))
                     logger.info("subprocess ended with rc= %s" % p.wait())
-                    opencl = os.path.join(os.path.dirname(cls.test_home), "openCL")
-                    for clf in os.listdir(opencl):
-                        if clf.endswith(".cl") and clf not in os.listdir(os.path.join(cls.pyFAI_home, "pyFAI")):
-                            copy(os.path.join(opencl, clf), os.path.join(cls.pyFAI_home, "pyFAI", clf))
-                    calib_dir = os.path.join(os.path.dirname(cls.test_home), "calibration")
-                    dest = os.path.join(cls.pyFAI_home, "pyFAI", "calibration")
-                    if not os.path.exists(dest):
-                        os.makedirs(dest)
-                    for clf in os.listdir(calib_dir):
-                        if clf.endswith(".D") and clf not in os.listdir(dest):
-                            copy(os.path.join(calib_dir, clf), os.path.join(dest, clf))
-
                     cls.pyFAI = cls.deep_reload()
                     cls.recompiled = True
 
@@ -194,7 +194,7 @@ class UtilsTest(object):
     def getimage(cls, imagename):
         """
         Downloads the requested image from Forge.EPN-campus.eu
-        
+
         @param: name of the image.
         For the RedMine forge, the filename contains a directory name that is removed
         @return: full path of the locally saved file
@@ -217,10 +217,10 @@ class UtilsTest(object):
             if "https_proxy" in os.environ:
                 dictProxies['https'] = os.environ["https_proxy"]
             if dictProxies:
-                proxy_handler = urllib2.ProxyHandler(dictProxies)
-                opener = urllib2.build_opener(proxy_handler).open
+                proxy_handler = ProxyHandler(dictProxies)
+                opener = build_opener(proxy_handler).open
             else:
-                opener = urllib2.urlopen
+                opener = urlopen
 
 #           Nota: since python2.6 there is a timeout in the urllib2
             timer = threading.Timer(cls.timeout + 1, cls.timeoutDuringDownload, args=[imagename])
@@ -236,7 +236,8 @@ class UtilsTest(object):
             logger.info("Image %s successfully downloaded." % baseimage)
 
             try:
-                open(fullimagename, "wb").write(data)
+                with open(fullimagename, "wb") as outfile:
+                    outfile.write(data)
             except IOError:
                 raise IOError("unable to write downloaded \
                     data to disk at %s" % cls.image_home)
@@ -254,7 +255,7 @@ class UtilsTest(object):
     def download_images(cls, imgs=None):
         """
         Download all images needed for the test/benchmarks
-        
+
         @param imgs: list of files to download
         """
         if not imgs:
@@ -272,7 +273,7 @@ class UtilsTest(object):
             try:
                 from argparse import ArgumentParser
             except:
-                from pyFAI.argparse import ArgumentParser
+                from pyFAI.third_party.argparse import ArgumentParser
 
             parser = ArgumentParser(usage="Tests for PyFAI")
             parser.add_argument("-d", "--debug", dest="debug", help="run in debugging mode",
@@ -285,7 +286,10 @@ class UtilsTest(object):
                                 help="remove existing build and force the build of the library",
                                 default=False, action="store_true")
             parser.add_argument(dest="args", type=str, nargs='*')
-            cls.options = parser.parse_args()
+            if IN_SOURCES:
+                cls.options = parser.parse_args()
+            else:
+                cls.options = parser.parse_args([])
         return cls.options
 
     @classmethod
@@ -389,7 +393,8 @@ def diff_img(ref, obt, comment=""):
         y = imax // ref.shape[-1]
         ax3.plot([x], [y], "o", scalex=False, scaley=False)
         fig.show()
-        raw_input()
+        from pyFAI.utils import input
+        input()
 
 
 def diff_crv(ref, obt, comment=""):
@@ -407,6 +412,6 @@ def diff_crv(ref, obt, comment=""):
         im_obt = ax1.plot(obt, label="%s obt" % comment)
         im_delta = ax2.plot(delta, label="delta")
         fig.show()
-        raw_input()
+        from pyFAI.utils import input
+        input()
 
-    

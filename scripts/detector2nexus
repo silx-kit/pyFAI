@@ -43,7 +43,7 @@ import numpy
 try:
     from argparse import ArgumentParser
 except ImportError:
-    from pyFAI.argparse import ArgumentParser
+    from pyFAI.third_party.argparse import ArgumentParser
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("detector")

@@ -1,5 +1,5 @@
 graft doc
-recursive-include openCL *.cl
+recursive-include openCL *.cl *.h
 recursive-include src  *.c *.h *.pyx *.pxd
 recursive-include benchmark *.py *.spline *.poni
 recursive-include pyFAI-src *.py
