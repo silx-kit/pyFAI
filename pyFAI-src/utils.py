@@ -704,10 +704,11 @@ def removeSaturatedPixel(ds, threshold=0.1, minimum=None, maximum=None):
     return ds
 
 
-def binning(input_img, binsize):
+def binning(input_img, binsize, norm=True):
     """
     @param input_img: input ndarray
     @param binsize: int or 2-tuple representing the size of the binning
+    @param norm: if False, do average instead of sum
     @return: binned input ndarray
     """
     inputSize = input_img.shape
@@ -728,6 +729,8 @@ def binning(input_img, binsize):
         temp = input_img.copy()
         temp.shape = (outputSize[0], binsize[0], outputSize[1], binsize[1])
         out = temp.sum(axis=3).sum(axis=1)
+    if not norm:
+        out /= binsize[0] * binsize[1]
     return out
 
 
@@ -735,6 +738,7 @@ def unBinning(binnedArray, binsize, norm=True):
     """
     @param binnedArray: input ndarray
     @param binsize: 2-tuple representing the size of the binning
+    @param norm: if True (default) decrease the intensity by binning factor. If False, it is non-conservative
     @return: unBinned input ndarray
     """
     if isinstance(binsize, int):
