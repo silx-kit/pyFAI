@@ -183,8 +183,10 @@ class Detector(with_metaclass(DetectorMeta, object)):
         array = ['_mask', '_dx', '_dy', 'flat', 'dark']
         for key in array:
             value = self.__getattribute__(key)
-            if value is not None:
+            if value not in (None, False):
                 new.__setattr__(key, 1 * value)
+            else:
+                new.__setattr__(key, value)
         if self._splineFile:
             new.set_splineFile(self._splineFile)
         return new
