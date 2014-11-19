@@ -28,11 +28,10 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "2014-09-26"
+__date__ = "19/11/2014"
 
 import unittest
 import time
-import os
 import numpy
 import logging
 import sys
@@ -45,6 +44,7 @@ from pyFAI.splitBBoxCSR import HistoBBox1d, HistoBBox2d
 if logger.getEffectiveLevel() == logging.DEBUG:
     import pylab
 EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
+
 
 class TestHistogram1d(unittest.TestCase):
     """basic test"""
@@ -176,7 +176,7 @@ class TestHistogram1d(unittest.TestCase):
         delta_max = abs(self.I_csr - self.I_numpy).max()
         if delta_max > self.epsilon:
             logger.warning("Intensity count difference numpy/csr : max delta=%s", delta_max)
-        self.assert_(delta_max < 0.55, "Intensity count difference numpy/csr : max delta=%s" % delta_max)
+        self.assert_(delta_max < 0.555, "Intensity count difference numpy/csr : max delta=%s" % delta_max)
 
 
 class TestHistogram2d(unittest.TestCase):
