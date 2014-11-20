@@ -792,4 +792,4 @@ def fullSplit2D(numpy.ndarray pos not None,
                     
             
                     
-    return outMerge.T, edges0, edges1, outData.T, outCount.T
+    return outMerge, edges0, edges1, outData, outCount
