@@ -37,7 +37,7 @@ import sys
 import os
 import fabio
 import tempfile
-from utilstest import UtilsTest, getLogger
+from utilstest import UtilsTest, getLogger, recursive_delete
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 import pyFAI.utils
@@ -66,7 +66,7 @@ class test_utils(unittest.TestCase):
     dark = unbinned.astype("float32")
     flat = 1 + numpy.random.random((64, 32))
     raw = flat + dark
-    tmp_dir = tempfile.mkdtemp(prefix="pyFAI_test_utils")
+    tmp_dir = tempfile.mkdtemp(prefix="pyFAI_test_utils_")
     tmp_file = os.path.join(tmp_dir, "testUtils_average.edf")
 
     def setUp(self):
@@ -76,11 +76,7 @@ class test_utils(unittest.TestCase):
 
     def tearDown(self):
         """Remove tmp files if needed"""
-        if os.path.isfile(self.tmp_file):
-            try:
-                os.unlink(self.tmp_file)
-            except OSError as error:
-                logger.error("Unable to remove file %s: %s" % (self.tmp_file, error))
+        recursive_delete(self.tmp_dir)
 
     def test_binning(self):
         """

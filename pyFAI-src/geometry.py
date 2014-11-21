@@ -1437,7 +1437,8 @@ class Geometry(object):
     def __deepcopy__(self):
         """return a deep copy of itself.
         """
-        new = self.__class__(detector=self.detector.__deepcopy__())
+        new = self.__class__()
+        new.detector = self.detector.__deepcopy__()
         #transfer numerical values:
         numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
                      "chiDiscAtPi", "_dssa_crc", "_dssa_order", "_wavelength",
@@ -1453,6 +1454,8 @@ class Geometry(object):
             value = self.__getattribute__(key)
             if value is not None:
                 new.__setattr__(key, 1 * value)
+            else:
+                new.__setattr__(key, None)
         new.param = [new._dist, new._poni1, new._poni2,
                       new._rot1, new._rot2, new._rot3]
         return new
@@ -1650,3 +1653,19 @@ class Geometry(object):
 
     correct_SA_spline = property(get_correct_solid_angle_for_spline,
                                  set_correct_solid_angle_for_spline)
+
+    def set_maskfile(self, maskfile):
+        self.detector.set_maskfile(maskfile)
+
+    def get_maskfile(self):
+        return self.detector.get_maskfile()
+
+    maskfile = property(get_maskfile, set_maskfile)
+
+    def set_mask(self, mask):
+        self.detector.set_mask(mask)
+
+    def get_mask(self):
+        return self.detector.get_mask()
+
+    mask = property(get_mask, set_mask)

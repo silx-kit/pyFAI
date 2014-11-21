@@ -39,7 +39,7 @@ import logging, time
 import sys
 import fabio
 import tempfile
-from utilstest import UtilsTest, Rwp, getLogger
+from utilstest import UtilsTest, Rwp, getLogger, recursive_delete
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 import pyFAI.peak_picker
@@ -71,11 +71,13 @@ class test_peak_picking(unittest.TestCase):
     ds = wavelength * 5e9 / numpy.sin(tth / 2)
     calibrant = Calibrant(dSpacing=ds)
     maxiter = 100
-    tmp_dir = tempfile.mkdtemp(prefix="pyFAI_test_peak_picking")
+    tmp_dir = tempfile.mkdtemp(prefix="pyFAI_test_peak_picking_")
     logfile = os.path.join(tmp_dir, "testpeakPicking.log")
     nptfile = os.path.join(tmp_dir, "testpeakPicking.npt")
     def setUp(self):
         """Download files"""
+        if not os.path.isdir(self.tmp_dir):
+            os.makedirs(self.tmp_dir)
         self.img = UtilsTest.getimage(self.__class__.calibFile)
         self.pp = PeakPicker(self.img, calibrant=self.calibrant, wavelength=self.wavelength)
         if not os.path.isdir(self.tmp_dir):
@@ -86,11 +88,7 @@ class test_peak_picking(unittest.TestCase):
             os.unlink(self.nptfile)
     def tearDown(self):
         """Remove temporary files"""
-        unittest.TestCase.tearDown(self)
-        if os.path.isfile(self.logfile):
-            os.unlink(self.logfile)
-        if os.path.isfile(self.nptfile):
-            os.unlink(self.nptfile)
+        recursive_delete(self.tmp_dir)
 
     def test_peakPicking(self):
         """first test peak-picking then checks the geometry found is OK"""
@@ -127,9 +125,11 @@ class test_peak_picking(unittest.TestCase):
         self.assertAlmostEquals(gr.rot3, 0, 2, "rot3 is OK, got %s, expected 0" % gr.rot3)
 
 #        print self.pp.points
+
 class test_Massif(unittest.TestCase):
     """test for ring extraction algorithm with image which needs binning (non regression test)"""
     calibFile = "1788/moke.tif"
+    #TODO !!!
 
 def test_suite_all_PeakPicking():
     testSuite = unittest.TestSuite()

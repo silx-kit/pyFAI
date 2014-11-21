@@ -3381,21 +3381,21 @@ class AzimuthalIntegrator(Geometry):
 # Some properties
 ################################################################################
 
-    def set_maskfile(self, maskfile):
-        self.detector.set_maskfile(maskfile)
-
-    def get_maskfile(self):
-        return self.detector.get_maskfile()
-
-    maskfile = property(get_maskfile, set_maskfile)
-
-    def set_mask(self, mask):
-        self.detector.set_mask(mask)
-
-    def get_mask(self):
-        return self.detector.get_mask()
-
-    mask = property(get_mask, set_mask)
+#     def set_maskfile(self, maskfile):
+#         self.detector.set_maskfile(maskfile)
+# 
+#     def get_maskfile(self):
+#         return self.detector.get_maskfile()
+# 
+#     maskfile = property(get_maskfile, set_maskfile)
+# 
+#     def set_mask(self, mask):
+#         self.detector.set_mask(mask)
+# 
+#     def get_mask(self):
+#         return self.detector.get_mask()
+# 
+#     mask = property(get_mask, set_mask)
 
     def set_darkcurrent(self, dark):
         self._darkcurrent = dark
