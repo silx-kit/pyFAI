@@ -30,7 +30,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Giannis Ashiotis"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "20141020"
+__date__ = "25/11/2014"
 __status__ = "stable"
 __license__ = "GPLv3+"
 
@@ -57,29 +57,12 @@ cdef inline double area4(double a0, double a1, double b0, double b1, double c0, 
     """
     return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
 
-# cdef double area4(point2D *pixel):
-    # """
-    # Calculate the area of the ABCD quadrilataire  with corners:
-    # A(a0,a1)
-    # B(b0,b1)
-    # C(c0,c1)
-    # D(d0,d1)
-    # @return: area, i.e. 1/2 * (AC ^ BD)
-    # """
-    # return 0.5 * abs(((pixel[2].x - pixel[0].x) * (pixel[3].y - pixel[1].y)) - ((pixel[2].y - pixel[0].y) * (pixel[3].x - pixel[1].x)))
-
-# cdef struct point2D:
-    # numpy.float64_t x
-    # numpy.float64_t y
-    
-# cdef struct min_max:
-    # numpy.float64_t pos
-    # numpy.int32_t point
-    
+   
 cdef struct Function:
     double slope
     double intersect
            
+
 cdef inline double integrate(double A0, double B0, Function AB) nogil:
     """
     integrates the line defined by AB, from A0 to B0
@@ -91,6 +74,7 @@ cdef inline double integrate(double A0, double B0, Function AB) nogil:
         return 0.0
     else:
         return AB.slope * (B0 * B0 - A0 * A0) * 0.5 + AB.intersect * (B0 - A0)
+
     
 @cython.cdivision(True)
 cdef inline double getBinNr(double x0, double pos0_min, double dpos) nogil:
@@ -103,12 +87,13 @@ cdef inline double getBinNr(double x0, double pos0_min, double dpos) nogil:
     return (x0 - pos0_min) / dpos
 
 @cython.cdivision(True)
-cdef inline double getBin1Nr(double x0, double pos0_min, double delta,double var) nogil:
+cdef inline double getBin1Nr(double x0, double pos0_min, double delta, double var) nogil:
     """
     calculate the bin number for any point
-    param x0: current position
-    param pos0_min: position minimum
-    param delta: bin width
+    @param x0: current position
+    @param pos0_min: position minimum
+    @param delta: bin width
+    @param var: splits over a discontinuity...
     """
     if var:
         if x0 >= 0:
@@ -118,13 +103,16 @@ cdef inline double getBin1Nr(double x0, double pos0_min, double delta,double var
     else:
         return (x0 - pos0_min) / delta
     
+
 cdef struct MyPoint:
     double i
     double j
 
+
 cdef struct MyPoly:
     int size
     MyPoint[8] data
+
 
 cdef inline MyPoint ComputeIntersection0(MyPoint S, MyPoint E, double clipEdge) nogil:
     cdef MyPoint intersection
@@ -132,17 +120,20 @@ cdef inline MyPoint ComputeIntersection0(MyPoint S, MyPoint E, double clipEdge) 
     intersection.j = (E.j-S.j)*(clipEdge-S.i)/(E.i-S.i) + S.j
     return intersection
 
+
 cdef inline MyPoint ComputeIntersection1(MyPoint S, MyPoint E, double clipEdge) nogil:
     cdef MyPoint intersection
     intersection.i = (E.i-S.i)*(clipEdge-S.j)/(E.j-S.j) + S.i
     intersection.j = clipEdge
     return intersection
     
+
 cdef inline int point_and_line(double x0, double y0, double x1, double y1, double x, double y) nogil:
     cdef double tmp = (y-y0)*(x1-x0) - (x-x0)*(y1-y0)
     return (tmp > 0) - (tmp < 0)
     
-cdef inline int foo(double A, double B, double C, double D) nogil:    # safeguard for pixel crossing from -pi to pi
+
+cdef inline int on_boundary(double A, double B, double C, double D) nogil:    # safeguard for pixel crossing from -pi to pi
     return (((A > piover2) and (B > piover2) and (C < -piover2) and (D < -piover2)) or
             ((A < -piover2) and (B < -piover2) and (C > piover2) and (D > piover2)) or
             ((A > piover2) and (B < -piover2) and (C > piover2) and (D < -piover2)) or
@@ -290,12 +281,6 @@ def fullSplit1D(numpy.ndarray pos not None,
         do_solidangle = True
         assert solidangle.size == size
         csolidangle = numpy.ascontiguousarray(solidangle.ravel(), dtype=numpy.float64)
-
-    #pixel = cvarray(shape=4, itemsize=sizeof(point2D))
-    #AB = Function()
-    #BC = Function()
-    #CD = Function()
-    #DA = Function()
         
     with nogil:
         for idx in range(size):
@@ -551,31 +536,18 @@ def fullSplit2D(numpy.ndarray pos not None,
             C0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, delta0)
             D0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, delta0)
 
-            var = foo(cpos[idx, 0, 1], cpos[idx, 1, 1], cpos[idx, 2, 1], cpos[idx, 3, 1])
+            var = on_boundary(cpos[idx, 0, 1], cpos[idx, 1, 1], cpos[idx, 2, 1], cpos[idx, 3, 1])
             A1 = getBin1Nr(< double > cpos[idx, 0, 1], pos1_min, delta1, var)
             B1 = getBin1Nr(< double > cpos[idx, 1, 1], pos1_min, delta1, var)
             C1 = getBin1Nr(< double > cpos[idx, 2, 1], pos1_min, delta1, var)
             D1 = getBin1Nr(< double > cpos[idx, 3, 1], pos1_min, delta1, var)
-
-
-            #if idx is 257027 or idx is 257026:
-                #printf("%f %f \n", cpos[idx, 0, 0], cpos[idx, 0, 1])
-                #printf("%f %f \n", cpos[idx, 1, 0], cpos[idx, 1, 1])
-                #printf("%f %f \n", cpos[idx, 2, 0], cpos[idx, 2, 1])
-                #printf("%f %f \n", cpos[idx, 3, 0], cpos[idx, 3, 1])
-                #printf(" \n")
-                #printf("%f %f \n", A0, A1)
-                #printf("%f %f \n", B0, B1)
-                #printf("%f %f \n", C0, C1)
-                #printf("%f %f \n", D0, D1)
-                #fflush(stdout)
 
             min0 = min(A0, B0, C0, D0)
             max0 = max(A0, B0, C0, D0)
             min1 = min(A1, B1, C1, D1)
             max1 = max(A1, B1, C1, D1)
 
-            if (max0<0) or (min0 >= all_bins0) or (max1<0): # or (min1 >= all_bins1 + 2 ):
+            if (max0 < 0) or (min0 >= all_bins0) or (max1 < 0): # or (min1 >= all_bins1 + 2 ):
                 printf("DB out of bound %f %f %f %f\n",min0, max0, min1, max1)  # for DB
                 continue
             
@@ -588,26 +560,21 @@ def fullSplit2D(numpy.ndarray pos not None,
             if do_solidangle:
                 data /= csolidangle[idx]
 
-
             bin0_min = < int > floor(min0)
             bin0_max = < int > floor(max0)
             bin1_min = < int > floor(min1)
             bin1_max = < int > floor(max1)
 
-            #printf("  0 %d  %d \n",bin0_min,bin0_max)
-            #fflush(stdout)
             if bin0_min == bin0_max:
                 if bin1_min == bin1_max:
                     #Whole pixel is within a single bin
-                    index = bin0_min*all_bins1 + bin1_min
+                    index = bin0_min * all_bins1 + bin1_min
                     if index > all_bins:   # for DB
                         printf("DB 0 index = %d > %d!! \n",index,all_bins)
                         fflush(stdout)
                     outCount[bin0_min,bin1_min] += 1.0
                     outData[bin0_min,bin1_min] += data
                 else:
-                    #printf("  1 %d  %d \n",bin1_min,bin1_max)
-                    #fflush(stdout)
                     # transpose of 1D code
                     #A0 -= bin0_min
                     A1 -= bin1_min
@@ -618,14 +585,14 @@ def fullSplit2D(numpy.ndarray pos not None,
                     #D0 -= bin0_min
                     D1 -= bin1_min
 
-                    AB.slope=(B0-A0)/(B1-A1)
-                    AB.intersect= A0 - AB.slope*A1
-                    BC.slope=(C0-B0)/(C1-B1)
-                    BC.intersect= B0 - BC.slope*B1
-                    CD.slope=(D0-C0)/(D1-C1)
-                    CD.intersect= C0 - CD.slope*C1
-                    DA.slope=(A0-D0)/(A1-D1)
-                    DA.intersect= D0 - DA.slope*D1
+                    AB.slope = (B0-A0)/(B1-A1)
+                    AB.intersect = A0 - AB.slope*A1
+                    BC.slope = (C0-B0)/(C1-B1)
+                    BC.intersect = B0 - BC.slope*B1
+                    CD.slope = (D0-C0)/(D1-C1)
+                    CD.intersect = C0 - CD.slope*C1
+                    DA.slope = (A0-D0)/(A1-D1)
+                    DA.intersect = D0 - DA.slope*D1
 
                     areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
                     oneOverPixelArea = 1.0 / areaPixel
