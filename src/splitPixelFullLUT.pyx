@@ -1122,6 +1122,13 @@ class HistoLUT2dFullSplit(object):
                                 outMax[bin0_min+i,bin1_min+j] += 1 #k+1
 
                             elif tmp_i is 1 or tmp_i is 2 or tmp_i is 3:
+                                ###################################################
+                                #  Sutherland-Hodgman polygon clipping algorithm  # 
+                                ###################################################
+                                #
+                                #  ...adjusted to utilise the peculiarities of our problem
+                                #
+                                
                                 A.i = A0
                                 A.j = A1
                                 B.i = B0
