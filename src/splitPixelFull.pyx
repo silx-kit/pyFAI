@@ -41,12 +41,17 @@ from libc.math cimport fabs, M_PI, floor, sqrt
 from libc.stdio cimport printf, fflush, stdout
 from cython.view cimport array as cvarray
 
-cdef double pi = M_PI
-cdef double piover2 = pi * 0.5
-cdef double onef = 1.0
+ctypedef float data_t
+ctypedef double position_t
+cdef:
+    position_t pi = M_PI
+    double piover2 = pi * 0.5
+#    float onef = 1.0
 
 
-cdef inline double area4(double a0, double a1, double b0, double b1, double c0, double c1, double d0, double d1) nogil:
+
+
+cdef inline position_t area4(position_t a0, position_t a1, position_t b0, position_t b1, position_t c0, position_t c1, position_t d0, position_t d1) nogil:
     """
     Calculate the area of the ABCD quadrilataire  with corners:
     A(a0,a1)
@@ -59,11 +64,11 @@ cdef inline double area4(double a0, double a1, double b0, double b1, double c0, 
 
    
 cdef struct Function:
-    double slope
-    double intersect
+    position_t slope
+    position_t intersect
            
 
-cdef inline double integrate(double A0, double B0, Function AB) nogil:
+cdef inline position_t integrate(position_t A0, position_t B0, Function AB) nogil:
     """
     integrates the line defined by AB, from A0 to B0
     param A0: first limit
@@ -77,7 +82,7 @@ cdef inline double integrate(double A0, double B0, Function AB) nogil:
 
     
 @cython.cdivision(True)
-cdef inline double getBinNr(double x0, double pos0_min, double dpos) nogil:
+cdef inline position_t getBinNr(position_t x0, position_t pos0_min, position_t dpos) nogil:
     """
     calculate the bin number for any point
     param x0: current position
@@ -87,19 +92,19 @@ cdef inline double getBinNr(double x0, double pos0_min, double dpos) nogil:
     return (x0 - pos0_min) / dpos
 
 @cython.cdivision(True)
-cdef inline double getBin1Nr(double x0, double pos0_min, double delta, double var) nogil:
+cdef inline position_t getBin1Nr(position_t x0, position_t pos0_min, position_t delta, int on_boundary) nogil:
     """
     calculate the bin number for any point
     @param x0: current position
     @param pos0_min: position minimum
     @param delta: bin width
-    @param var: splits over a discontinuity...
+    @param on_boundary: splits over a discontinuity...
     """
-    if var:
+    if on_boundary:
         if x0 >= 0:
             return (x0 - pos0_min) / delta
         else:
-            return (x0 + 2*pi - pos0_min) / delta   # temporary fix....
+            return (x0 + 2 * pi - pos0_min) / delta   # temporary fix....
     else:
         return (x0 - pos0_min) / delta
     
@@ -117,13 +122,13 @@ cdef struct MyPoly:
 cdef inline MyPoint ComputeIntersection0(MyPoint S, MyPoint E, double clipEdge) nogil:
     cdef MyPoint intersection
     intersection.i = clipEdge
-    intersection.j = (E.j-S.j)*(clipEdge-S.i)/(E.i-S.i) + S.j
+    intersection.j = (E.j - S.j) * (clipEdge - S.i) / (E.i - S.i) + S.j
     return intersection
 
 
 cdef inline MyPoint ComputeIntersection1(MyPoint S, MyPoint E, double clipEdge) nogil:
     cdef MyPoint intersection
-    intersection.i = (E.i-S.i)*(clipEdge-S.j)/(E.j-S.j) + S.i
+    intersection.i = (E.i - S.i) * (clipEdge - S.j) / (E.j - S.j) + S.i
     intersection.j = clipEdge
     return intersection
     
@@ -200,22 +205,23 @@ def fullSplit1D(numpy.ndarray pos not None,
     @return 2theta, I, weighted histogram, unweighted histogram
     """
     cdef size_t  size = weights.size
-    if pos.ndim > 3: #create a view
-        pos = pos.reshape((-1,4,2))
+    if pos.ndim > 3:  
+        # create a view
+        pos = pos.reshape((-1, 4, 2))
     assert pos.shape[0] == size
     assert pos.shape[1] == 4
     assert pos.shape[2] == 2
     assert pos.ndim == 3
     assert bins > 1
     cdef:
-        numpy.ndarray[numpy.float64_t, ndim = 3] cpos = numpy.ascontiguousarray(pos,dtype=numpy.float64)
-        numpy.ndarray[numpy.float64_t, ndim = 1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)
-        numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(bins, dtype=numpy.float64)
-        numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype=numpy.float64)
-        numpy.ndarray[numpy.float64_t, ndim = 1] outMerge = numpy.zeros(bins, dtype=numpy.float64)
+        numpy.ndarray[numpy.float64_t, ndim = 3] cpos = numpy.ascontiguousarray(pos, dtype=numpy.float64)
+        data_t[:] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
+        numpy.ndarray[numpy.float32_t, ndim = 1] outData = numpy.zeros(bins, dtype=numpy.float32)
+        numpy.ndarray[numpy.float32_t, ndim = 1] outCount = numpy.zeros(bins, dtype=numpy.float32)
+        numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(bins, dtype=numpy.float32)
         numpy.int8_t[:] cmask
-        double[:] cflat, cdark, cpolarization, csolidangle
-        double cdummy=0, cddummy=0, data=0
+        data_t[:] cflat, cdark, cpolarization, csolidangle
+        data_t cdummy=0, cddummy=0, data=0
         double pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0
         double areaPixel=0, dpos=0, fbin0_min=0, fbin0_max=0#, fbin1_min, fbin1_max 
         double A0=0, B0=0, C0=0, D0=0, A1=0, B1=0, C1=0, D1=0
@@ -332,7 +338,6 @@ def fullSplit1D(numpy.ndarray pos not None,
             bin0_min = < int > floor(min0)
             bin0_max = < int > floor(max0)
 
-            #printf("%d - [(%f %f) (%f %f) (%f %f) (%f %f)] (%f %f) (%d %d)\n",idx, A0, A1, B0, B1, C0, C1, D0, D1, min0, max0, bin0_min, bin0_max)
             if bin0_min == bin0_max:
                 # All pixel is within a single bin
                 outCount[bin0_min] += 1
@@ -375,7 +380,6 @@ def fullSplit1D(numpy.ndarray pos not None,
                 #if fabs(partialArea2-areaPixel) > epsilon:
                     #printf("%d -  %f \n",idx,(partialArea2-areaPixel)/areaPixel)
                 
-
         for i in range(bins):
             if outCount[i] > epsilon:
                 outMerge[i] = outData[i] / outCount[i]
@@ -384,7 +388,6 @@ def fullSplit1D(numpy.ndarray pos not None,
 
 #    print(lut_size)
     return outPos, outMerge, outData, outCount
-
 
 
 @cython.cdivision(True)
