@@ -64,18 +64,20 @@ except ImportError:
     from zlib import crc32
 
 try:
+    # Used fro 1D integration
     from . import splitPixel  # IGNORE:F0401
 except ImportError as error:
     logger.error("Unable to import pyFAI.splitPixel"
                   " full pixel splitting: %s" % error)
     splitPixel = None
 
-try:
-    from . import splitPixelFull  # IGNORE:F0401
-except ImportError as error:
-    logger.error("Unable to import pyFAI.splitPixelFull"
-                  " full pixel splitting: %s" % error)
-    splitPixelFull = None
+#try:
+#    # Used fro 2D integration
+#    from . import splitPixelFull  # IGNORE:F0401
+#except ImportError as error:
+#    logger.error("Unable to import pyFAI.splitPixelFull"
+#                  " full pixel splitting: %s" % error)
+#    splitPixelFull = None
 
 try:
     from . import splitBBox  # IGNORE:F0401
@@ -2470,43 +2472,9 @@ class AzimuthalIntegrator(Geometry):
 
 
         if (I is None) and ("splitpix" in method):
-            if "full" in method:
+#            if "full" in method:
                 if splitPixel is None:
                     logger.warning("SplitPixelFull is not available,"
-                                " falling back on splitbbox histogram !")
-                    method = self.DEFAULT_METHOD
-                else:
-                    logger.debug("integrate1d uses SplitPixel implementation")
-                    pos = self.array_from_unit(shape, "corner", unit)
-                    qAxis, I, a, b = splitPixelFull.fullSplit1D(pos=pos,
-                                                            weights=data,
-                                                            bins=npt,
-                                                            pos0Range=radial_range,
-                                                            pos1Range=azimuth_range,
-                                                            dummy=dummy,
-                                                            delta_dummy=delta_dummy,
-                                                            mask=mask,
-                                                            dark=dark,
-                                                            flat=flat,
-                                                            solidangle=solidangle,
-                                                            polarization=polarization
-                                                            )
-                    if error_model == "azimuthal":
-                        variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
-                    if variance is not None:
-                        _, var1d, a, b = splitPixelFull.fullSplit1D(pos=pos,
-                                                                weights=variance,
-                                                                bins=npt,
-                                                                pos0Range=radial_range,
-                                                                pos1Range=azimuth_range,
-                                                                dummy=dummy,
-                                                                delta_dummy=delta_dummy,
-                                                                mask=mask,
-                                                                )
-                        sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
-            else:
-                if splitPixel is None:
-                    logger.warning("SplitPixel is not available,"
                                 " falling back on splitbbox histogram !")
                     method = self.DEFAULT_METHOD
                 else:
@@ -2538,6 +2506,40 @@ class AzimuthalIntegrator(Geometry):
                                                                 mask=mask,
                                                                 )
                         sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
+#            else:
+#                if splitPixel is None:
+#                    logger.warning("SplitPixel is not available,"
+#                                " falling back on splitbbox histogram !")
+#                    method = self.DEFAULT_METHOD
+#                else:
+#                    logger.debug("integrate1d uses SplitPixel implementation")
+#                    pos = self.array_from_unit(shape, "corner", unit)
+#                    qAxis, I, a, b = splitPixel.fullSplit1D(pos=pos,
+#                                                            weights=data,
+#                                                            bins=npt,
+#                                                            pos0Range=radial_range,
+#                                                            pos1Range=azimuth_range,
+#                                                            dummy=dummy,
+#                                                            delta_dummy=delta_dummy,
+#                                                            mask=mask,
+#                                                            dark=dark,
+#                                                            flat=flat,
+#                                                            solidangle=solidangle,
+#                                                            polarization=polarization
+#                                                            )
+#                    if error_model == "azimuthal":
+#                        variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
+#                    if variance is not None:
+#                        _, var1d, a, b = splitPixel.fullSplit1D(pos=pos,
+#                                                                weights=variance,
+#                                                                bins=npt,
+#                                                                pos0Range=radial_range,
+#                                                                pos1Range=azimuth_range,
+#                                                                dummy=dummy,
+#                                                                delta_dummy=delta_dummy,
+#                                                                mask=mask,
+#                                                                )
+#                        sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
 
         if (I is None) and ("bbox" in method):
             if splitBBox is None:
@@ -2982,8 +2984,8 @@ class AzimuthalIntegrator(Geometry):
         if (I is None) and ("splitpix" in method):
             if splitPixel is None:
                 logger.warning("splitPixel is not available;"
-                               " falling back on splitBBox method")
-                method = "bbox"
+                               " falling back on default method")
+                method = self.DEFAULT_METHOD
             else:
                 logger.debug("integrate2d uses SplitPixel implementation")
                 pos = self.array_from_unit(shape, "corner", unit)
@@ -3383,18 +3385,18 @@ class AzimuthalIntegrator(Geometry):
 
 #     def set_maskfile(self, maskfile):
 #         self.detector.set_maskfile(maskfile)
-# 
+#
 #     def get_maskfile(self):
 #         return self.detector.get_maskfile()
-# 
+#
 #     maskfile = property(get_maskfile, set_maskfile)
-# 
+#
 #     def set_mask(self, mask):
 #         self.detector.set_mask(mask)
-# 
+#
 #     def get_mask(self):
 #         return self.detector.get_mask()
-# 
+#
 #     mask = property(get_mask, set_mask)
 
     def set_darkcurrent(self, dark):
