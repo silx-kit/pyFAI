@@ -28,8 +28,11 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "2014-11-11"
+__date__ = "27/11/2014"
 
+PACKAGE = "pyFAI"
+SOURCES = PACKAGE + "-src"
+DATA_KEY = "PYFAI_DATA"
 
 import os
 import imp
@@ -38,23 +41,23 @@ import subprocess
 import threading
 import distutils.util
 import logging
-try: #Python3
+try:  # Python3
     from urllib.request import urlopen, ProxyHandler, build_opener
-except ImportError: #Python2
+except ImportError:  # Python2
     from urllib2 import urlopen, ProxyHandler, build_opener
-#import urllib2
+# import urllib2
 import numpy
 import shutil
 import json
 import tempfile
 logging.basicConfig(level=logging.WARNING)
-logger = logging.getLogger("pyFAI.utilstest")
+logger = logging.getLogger("%s.utilstest" % PACKAGE)
 
 TEST_HOME = os.path.dirname(os.path.abspath(__file__))
-IN_SOURCES = "pyFAI-src" in os.listdir(os.path.dirname(TEST_HOME))
+IN_SOURCES = SOURCES in os.listdir(os.path.dirname(TEST_HOME))
 
 if IN_SOURCES:
-    os.environ["PYFAI_DATA"] = os.path.dirname(TEST_HOME)
+    os.environ[DATA_KEY] = os.path.dirname(TEST_HOME)
 
 
 def copy(infile, outfile):
@@ -70,7 +73,7 @@ class UtilsTest(object):
     Static class providing useful stuff for preparing tests.
     """
     options = None
-    timeout = 60        # timeout in seconds for downloading images
+    timeout = 60  # timeout in seconds for downloading images
     url_base = "http://forge.epn-campus.eu/attachments/download"
 
     # Nota https crashes with error 501 under windows.
@@ -78,7 +81,7 @@ class UtilsTest(object):
     sem = threading.Semaphore()
     recompiled = False
     reloaded = False
-    name = "pyFAI"
+    name = PACKAGE
     if IN_SOURCES:
         image_home = os.path.join(TEST_HOME, "testimages")
         if not os.path.isdir(image_home):
@@ -93,30 +96,30 @@ class UtilsTest(object):
         architecture = "lib.%s-%i.%i" % (platform,
                                          sys.version_info[0], sys.version_info[1])
         if os.environ.get("BUILDPYTHONPATH"):
-            pyFAI_home = os.path.abspath(os.environ.get("BUILDPYTHONPATH", ""))
+            home = os.path.abspath(os.environ.get("BUILDPYTHONPATH", ""))
         else:
-            pyFAI_home = os.path.join(os.path.dirname(TEST_HOME),
+            home = os.path.join(os.path.dirname(TEST_HOME),
                                       "build", architecture)
-        logger.info("pyFAI Home is: " + pyFAI_home)
-        if "pyFAI" in sys.modules:
-            logger.info("pyFAI module was already loaded from  %s" % sys.modules["pyFAI"])
+        logger.info("%s Home is: %s" % (name, home))
+        if name in sys.modules:
+            logger.info("%s module was already loaded from  %s" % (name, sys.modules[name]))
             pyFAI = None
-            sys.modules.pop("pyFAI")
+            sys.modules.pop(name)
             for key in sys.modules.copy():
-                if key.startswith("pyFAI."):
+                if key.startswith(name + "."):
                     sys.modules.pop(key)
 
-        if not os.path.isdir(pyFAI_home):
+        if not os.path.isdir(home):
             with sem:
-                if not os.path.isdir(pyFAI_home):
-                    logger.warning("Building pyFAI to %s" % pyFAI_home)
+                if not os.path.isdir(home):
+                    logger.warning("Building pyFAI to %s" % home)
                     p = subprocess.Popen([sys.executable, "setup.py", "build"],
                                          shell=False, cwd=os.path.dirname(TEST_HOME))
                     logger.info("subprocess ended with rc= %s" % p.wait())
                     recompiled = True
         logger.info("Loading pyFAI")
         try:
-            pyFAI = imp.load_module(*((name,) + imp.find_module(name, [pyFAI_home])))
+            pyFAI = imp.load_module(*((name,) + imp.find_module(name, [home])))
         except Exception as error:
             logger.warning("Unable to loading pyFAI %s" % error)
             if "-r" not in sys.argv:
@@ -143,12 +146,12 @@ class UtilsTest(object):
         logger.info("Loading pyFAI")
         cls.pyFAI = None
         pyFAI = None
-        sys.path.insert(0, cls.pyFAI_home)
+        sys.path.insert(0, cls.home)
         for key in sys.modules.copy():
-            if key.startswith("pyFAI"):
+            if key.startswith(cls.name):
                 sys.modules.pop(key)
         cls.pyFAI = __import__(cls.name)
-        logger.info("pyFAI loaded from %s" % cls.pyFAI.__file__)
+        logger.info("%s loaded from %s" % (cls.name, cls.pyFAI.__file__))
         sys.modules[cls.name] = cls.pyFAI
         cls.reloaded = True
         return cls.pyFAI
@@ -163,13 +166,13 @@ class UtilsTest(object):
         if not cls.recompiled:
             with cls.sem:
                 if not cls.recompiled:
-                    logger.info("Building pyFAI to %s" % cls.pyFAI_home)
-                    if "pyFAI" in sys.modules:
-                        logger.info("pyFAI module was already loaded from  %s" % sys.modules["pyFAI"])
+                    logger.info("Building %s to %s" % (cls.name, cls.home))
+                    if cls.name in sys.modules:
+                        logger.info("%s module was already loaded from  %s" % (cls.name, sys.modules[cls.name]))
                         cls.pyFAI = None
-                        sys.modules.pop("pyFAI")
+                        sys.modules.pop(cls.name)
                     if remove_first:
-                        recursive_delete(cls.pyFAI_home)
+                        recursive_delete(cls.home)
                     p = subprocess.Popen([sys.executable, "setup.py", "build"],
                                          shell=False, cwd=os.path.dirname(TEST_HOME))
                     logger.info("subprocess ended with rc= %s" % p.wait())

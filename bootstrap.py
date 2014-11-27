@@ -3,8 +3,8 @@
 
 """
 
-Bootstrap helps you to test pyFAI scipts without installing them 
-by patching your PYTONPATH on the fly
+Bootstrap helps you to test pyFAI scripts without installing them 
+by patching your PYTHONPATH on the fly
 
 example: ./bootstrap.py pyFAI-integrate test/testimages/Pilatus1M.edf
 
@@ -13,7 +13,9 @@ example: ./bootstrap.py pyFAI-integrate test/testimages/Pilatus1M.edf
 __authors__ = ["Frédéric-Emmanuel Picca", "Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
-__date__ = "2013-07-15"
+__date__ = "27/11/2014"
+
+TARGET = "pyFAI"
 
 import sys
 import os
@@ -77,8 +79,8 @@ if (not os.path.isdir(SCRIPTSPATH)) or (not os.path.isdir(LIBPATH)):
     build = subprocess.Popen([sys.executable, "setup.py", "build"],
                      shell=False, cwd=os.path.dirname(__file__))
     print("Build process ended with rc= %s" % build.wait())
-_copy_files("openCL", os.path.join(LIBPATH, "pyFAI"), ".cl")
-_copy_files("gui", os.path.join(LIBPATH, "pyFAI"), ".ui")
+_copy_files("openCL", os.path.join(LIBPATH, "pyFAI", "openCL"), ".cl")
+_copy_files("gui", os.path.join(LIBPATH, "pyFAI", "gui"), ".ui")
 _copy_files("calibration", os.path.join(LIBPATH, "pyFAI", "calibration"), ".D")
 
 if __name__ == "__main__":
