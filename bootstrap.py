@@ -21,12 +21,14 @@ import shutil
 import distutils.util
 import subprocess
 
+
 def _copy(infile, outfile):
     "link or copy file according to the OS. Nota those are HARD_LINKS"
     if "link" in dir(os):
         os.link(infile, outfile)
     else:
         shutil.copy(infile, outfile)
+
 
 def _distutils_dir_name(dname="lib"):
     """
@@ -52,6 +54,7 @@ def _get_available_scripts(path):
         res = ["no script available, did you ran "
                "'python setup.py build' before bootstrapping ?"]
     return res
+
 
 def _copy_files(source, dest, extn):
     """
