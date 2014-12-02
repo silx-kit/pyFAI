@@ -70,7 +70,7 @@ except ImportError as error:
 else:
     try:
         h5py._errors.silence_errors()
-    except AttributeError: #old h5py
+    except AttributeError:  # old h5py
         pass
 
 
@@ -238,14 +238,14 @@ class HDF5Writer(Writer):
         logger.debug("in init")
         Writer.init(self, fai_cfg, lima_cfg)
         with self._sem:
-            #TODO: this is Debug statement
+            # TODO: this is Debug statement
             open("fai_cfg.json", "w").write(json.dumps(self.fai_cfg, indent=4))
             open("lima_cfg.json", "w").write(json.dumps(self.lima_cfg, indent=4))
             self.fai_cfg["nbpt_rad"] = self.fai_cfg.get("nbpt_rad", 1000)
             if h5py:
                 try:
                     self.hdf5 = h5py.File(self.filename)
-                except IOError: #typically a corrupted HDF5 file !
+                except IOError:  # typically a corrupted HDF5 file !
                     os.unlink(self.filename)
                     self.hdf5 = h5py.File(self.filename)
             else:
@@ -323,9 +323,9 @@ class HDF5Writer(Writer):
             name = "Mapping " if self.fast_scan_width else "Scanning "
             name += "2D" if self.fai_cfg.get("nbpt_azim", 0) > 1 else "1D"
             name += " experiment"
-            self.group["title"] = name
-            self.group["program"] = "PyFAI"
-            self.group["start_time"] = get_isotime()
+            self.group["title"] = numpy.string_(name)
+            self.group["program"] = numpy.string_("PyFAI")
+            self.group["start_time"] = numpy.string_(get_isotime())
 
     def flush(self, radial=None, azimuthal=None):
         """
@@ -655,7 +655,7 @@ class Nexus(object):
                         "start_time" in self.h5[grp] and  \
                         "NX_class" in self.h5[grp].attrs and \
                         self.h5[grp].attrs["NX_class"] == "NXentry")]
-        entries.sort(key=lambda a: a[1], reverse=True) #sort entries in decreasing time
+        entries.sort(key=lambda a: a[1], reverse=True)  # sort entries in decreasing time
         return [self.h5[i[0]] for i in entries]
 
     def find_detector(self, all=False):
@@ -698,7 +698,7 @@ class Nexus(object):
             entry = self.new_entry(entry)
         return self.new_class(entry, instrument_name, "NXinstrument")
 #        howto external link
-        #myfile['ext link'] = h5py.ExternalLink("otherfile.hdf5", "/path/to/resource")
+        # myfile['ext link'] = h5py.ExternalLink("otherfile.hdf5", "/path/to/resource")
 
     def new_class(self, grp, name, class_type="NXcollection"):
         """
@@ -753,3 +753,10 @@ class Nexus(object):
                    "NX_class" in grp[name].attrs and \
                    grp[name].attrs["NX_class"] == class_type)]
         return coll
+
+    def deep_copy(self, name, obj, where="/"):
+        """
+        perform a deep copy:
+        create a "name" entry in self containing a copy ofthe object 
+        """
+        raise NotImplementedError
