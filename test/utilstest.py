@@ -22,13 +22,13 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-from __future__ import print_function, division, absolute_import
+from __future__ import print_function, division, absolute_import, with_statement
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/11/2014"
+__date__ = "28/11/2014"
 
 PACKAGE = "pyFAI"
 SOURCES = PACKAGE + "-src"
@@ -75,9 +75,6 @@ class UtilsTest(object):
     options = None
     timeout = 60  # timeout in seconds for downloading images
     url_base = "http://forge.epn-campus.eu/attachments/download"
-
-    # Nota https crashes with error 501 under windows.
-#    url_base = "https://forge.epn-campus.eu/attachments/download"
     sem = threading.Semaphore()
     recompiled = False
     reloaded = False
@@ -117,16 +114,16 @@ class UtilsTest(object):
                                          shell=False, cwd=os.path.dirname(TEST_HOME))
                     logger.info("subprocess ended with rc= %s" % p.wait())
                     recompiled = True
-        logger.info("Loading pyFAI")
+        logger.info("Loading %s" % name)
         try:
             pyFAI = imp.load_module(*((name,) + imp.find_module(name, [home])))
         except Exception as error:
-            logger.warning("Unable to loading pyFAI %s" % error)
+            logger.warning("Unable to loading %s %s" % (name, error))
             if "-r" not in sys.argv:
                 logger.warning("Remove build and start from scratch %s" % error)
                 sys.argv.append("-r")
     else:
-        image_home = os.path.join(tempfile.gettempdir(), "pyFAI_testimages_%s" % os.getlogin())
+        image_home = os.path.join(tempfile.gettempdir(), "%s_testimages_%s" % (name, os.getlogin()))
         if not os.path.exists(image_home):
             os.makedirs(image_home)
         testimages = os.path.join(image_home, "all_testimages.json")
@@ -136,6 +133,8 @@ class UtilsTest(object):
         else:
             ALL_DOWNLOADED_FILES = set()
 
+    tempdir = tempfile.mkdtemp(os.getlogin(), name)
+
     @classmethod
     def deep_reload(cls):
         if not IN_SOURCES:
@@ -143,7 +142,7 @@ class UtilsTest(object):
             return cls.pyFAI
         if cls.reloaded:
             return cls.pyFAI
-        logger.info("Loading pyFAI")
+        logger.info("Loading %s" % cls.name)
         cls.pyFAI = None
         pyFAI = None
         sys.path.insert(0, cls.home)
@@ -278,7 +277,7 @@ class UtilsTest(object):
             except:
                 from pyFAI.third_party.argparse import ArgumentParser
 
-            parser = ArgumentParser(usage="Tests for PyFAI")
+            parser = ArgumentParser(usage="Tests for %s" % cls.name)
             parser.add_argument("-d", "--debug", dest="debug", help="run in debugging mode",
                                 default=False, action="store_true")
             parser.add_argument("-i", "--info", dest="info", help="run in more verbose mode ",
