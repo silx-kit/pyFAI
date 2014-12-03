@@ -781,9 +781,9 @@ class Nexus(object):
             if name in toplevel:
                 if overwrite:
                     del toplevel[name]
-                    logger.warning("Overwriting %s in %s" % (toplevel[name].name, self.fileneme))
+                    logger.warning("Overwriting %s in %s" % (toplevel[name].name, self.filename))
                 else:
-                    logger.warning("Not overwriting %s in %s" % (toplevel[name].name, self.fileneme))
+                    logger.warning("Not overwriting %s in %s" % (toplevel[name].name, self.filename))
                     return
             toplevel[name] = obj.value
             for k, v in obj.attrs.items():
