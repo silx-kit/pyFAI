@@ -760,7 +760,7 @@ class Nexus(object):
                    grp[name].attrs["NX_class"] == class_type)]
         return coll
 
-    def deep_copy(self, name, obj, where="/", toplevel=None, excluded=None):
+    def deep_copy(self, name, obj, where="/", toplevel=None, excluded=None, overwrite=False):
         """
         perform a deep copy:
         create a "name" entry in self containing a copy of the object
@@ -768,6 +768,7 @@ class Nexus(object):
         @param where: path to the toplevel object (i.e. root)
         @param  toplevel: firectly the top level Group
         @param excluded: list of keys to be excluded
+        @param overwrite: replace content if already existing
         """
         if (excluded is not None) and (name in excluded):
             return
@@ -778,8 +779,13 @@ class Nexus(object):
                 toplevel.require_group(name)
         elif isinstance(obj, h5py.Dataset):
             if name in toplevel:
-                logger.warning("Not overwriting %s in %s" % (toplevel[name].name, self.fileneme))
+                if overwrite:
+                    del toplevel[name]
+                    logger.warning("Overwriting %s in %s" % (toplevel[name].name, self.fileneme))
+                else:
+                    logger.warning("Not overwriting %s in %s" % (toplevel[name].name, self.fileneme))
+                    return
             toplevel[name] = obj.value
-            for k, v in obj.attr.items():
+            for k, v in obj.attrs.items():
                 toplevel[name].attrs[k] = v
 
