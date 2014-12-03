@@ -777,6 +777,8 @@ class Nexus(object):
         if isinstance(obj, h5py.Group):
             if not name in toplevel:
                 toplevel.require_group(name)
+                for k, v in obj.attrs.items():
+                        toplevel.attrs[k] = v
         elif isinstance(obj, h5py.Dataset):
             if name in toplevel:
                 if overwrite:
