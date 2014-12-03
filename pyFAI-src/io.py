@@ -674,19 +674,25 @@ class Nexus(object):
                         return detector
         return result
 
-    def new_entry(self, entry="entry"):
+    def new_entry(self, entry="entry", program_name="pyFAI", title="description of experiment", force_time=None):
         """
         Create a new entry
 
         @param entry: name of the entry
+        @param program_name: value of the field as string
+        @param title: value of the field as string
+        @force_time: enforce the start_time (as string!)
         @return: the corresponding HDF5 group
         """
         nb_entries = len(self.get_entries())
         entry_grp = self.h5.require_group("%s_%04i" % (entry, nb_entries))
         entry_grp.attrs["NX_class"] = "NXentry"
-        entry_grp["start_time"] = numpy.string_(get_isotime())
-        entry_grp["title"] = numpy.string_("description of experiment")
-        entry_grp["program_name"] = numpy.string_("pyFAI")
+        entry_grp["title"] = numpy.string_(title)
+        entry_grp["program_name"] = numpy.string_(program_name)
+        if force_time:
+            entry_grp["start_time"] = numpy.string_(force_time)
+        else:
+            entry_grp["start_time"] = numpy.string_(get_isotime())
         self.to_close.append(entry_grp)
         return entry_grp
 
