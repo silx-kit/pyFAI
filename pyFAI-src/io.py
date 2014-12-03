@@ -777,6 +777,8 @@ class Nexus(object):
             if not name in toplevel:
                 toplevel.require_group(name)
         elif isinstance(obj, h5py.Dataset):
+            if name in toplevel:
+                logger.warning("Not overwriting %s in %s" % (toplevel[name].name, self.fileneme))
             toplevel[name] = obj.value
             for k, v in obj.attr.items():
                 toplevel[name].attrs[k] = v
