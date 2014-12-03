@@ -666,7 +666,7 @@ class Nexus(object):
         """
         result = []
         for entry in self.get_entries():
-            for instrument in self.get_class(entry, "NXsubentry"):
+            for instrument in self.get_class(entry, "NXsubentry") + self.get_class(entry, "NXinstrument"):
                 for detector in self.get_class(instrument, "NXdetector"):
                     if all:
                         result.append(detector)
@@ -754,9 +754,24 @@ class Nexus(object):
                    grp[name].attrs["NX_class"] == class_type)]
         return coll
 
-    def deep_copy(self, name, obj, where="/"):
+    def deep_copy(self, name, obj, where="/", toplevel=None, excluded=None):
         """
         perform a deep copy:
-        create a "name" entry in self containing a copy ofthe object 
+        create a "name" entry in self containing a copy of the object
+        
+        @param where: path to the toplevel object (i.e. root)
+        @param  toplevel: firectly the top level Group
+        @param excluded: list of keys to be excluded
         """
-        raise NotImplementedError
+        if (excluded is not None) and (name in excluded):
+            return
+        if not toplevel:
+            toplevel = self.h5[where]
+        if isinstance(obj, h5py.Group):
+            if not name in toplevel:
+                toplevel.require_group(name)
+        elif isinstance(obj, h5py.Dataset):
+            toplevel[name] = obj.value
+            for k, v in obj.attr.items():
+                toplevel[name].attrs[k] = v
+
