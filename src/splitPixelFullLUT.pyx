@@ -41,14 +41,16 @@ cimport numpy
 from libc.math cimport fabs, M_PI, floor, sqrt
 from libc.stdio cimport printf, fflush, stdout
 
-cdef float pi = <float> M_PI
-cdef float piover2 = pi * 0.5
-cdef float onef = <float> 1.0
+cdef:
+    float pi = <float> M_PI
+    float piover2 = <float> (pi * 0.5)
+    float onef = <float> 1.0
+    double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 try:
     from fastcrc import crc32
 except:
     from zlib import crc32
-EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
+
 
 
 
@@ -1122,6 +1124,13 @@ class HistoLUT2dFullSplit(object):
                                 outMax[bin0_min+i,bin1_min+j] += 1 #k+1
 
                             elif tmp_i is 1 or tmp_i is 2 or tmp_i is 3:
+                                ###################################################
+                                #  Sutherland-Hodgman polygon clipping algorithm  # 
+                                ###################################################
+                                #
+                                #  ...adjusted to utilise the peculiarities of our problem
+                                #
+                                
                                 A.i = A0
                                 A.j = A1
                                 B.i = B0

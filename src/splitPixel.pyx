@@ -12,19 +12,19 @@
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
-# 
+#
 #   This program is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #   GNU General Public License for more details.
-# 
+#
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 __doc__ = """
 Calculates histograms of pos0 (tth) weighted by Intensity
 
-Splitting is done by full pixel splitting 
+Splitting is done by full pixel splitting
 Histogram (direct) implementation
 """
 __author__ = "Jerome Kieffer"
@@ -41,15 +41,17 @@ from libc.string cimport memset
 from cython cimport view
 
 EPS32 = (1 + numpy.finfo(numpy.float32).eps)
+ctypedef double position_t
+ctypedef double data_t
 
-cdef inline double area4(double a0,
-                         double a1,
-                         double b0,
-                         double b1,
-                         double c0,
-                         double c1,
-                         double d0,
-                         double d1) nogil:
+cdef inline position_t area4(position_t a0,
+                             position_t a1,
+                             position_t b0,
+                             position_t b1,
+                             position_t c0,
+                             position_t c1,
+                             position_t d0,
+                             position_t d1) nogil:
     """
     Calculate the area of the ABCD polygon with 4 with corners:
     A(a0,a1)
@@ -61,7 +63,7 @@ cdef inline double area4(double a0,
     return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
 
 @cython.cdivision(True)
-cdef inline double  getBinNr( double x0,  double pos0_min,  double dpos) nogil:
+cdef inline position_t  getBinNr(position_t x0,  position_t pos0_min,  position_t dpos) nogil:
     """
     calculate the bin number for any point
     param x0: current position
@@ -70,22 +72,21 @@ cdef inline double  getBinNr( double x0,  double pos0_min,  double dpos) nogil:
     """
     return (x0 - pos0_min) / dpos
 
-    
-#def calc_area(double I1, double I2, double slope, double intercept):
-cdef inline double calc_area(double I1, double I2, double slope, double intercept) nogil:
+
+cdef inline position_t calc_area(position_t I1, position_t I2, position_t slope, position_t intercept) nogil:
     "Calculate the area between I1 and I2 of a line with a given slope & intercept"
     return 0.5 * ((I2 - I1) * (slope * (I2 + I1) + 2 * intercept))
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)
-cdef inline void integrate(double[:] buffer, int buffer_size, double start0, double start1, double stop0, double stop1) nogil:
+cdef inline void integrate(position_t[:] buffer, int buffer_size, position_t start0, position_t start1, position_t stop0, position_t stop1) nogil:
     "Integrate in a box a line between start and stop"
-    
+
     if stop0 == start0:
         #slope is infinite, area is null: no change to the buffer
         return
-    cdef double slope, intercept
+    cdef position_t slope, intercept
     cdef int i, istart0 = <int> floor(start0), istop0 = <int> floor(stop0)
     slope = (stop1 - start1) / (stop0 - start0)
     intercept = start1 - slope * start0
@@ -106,8 +107,8 @@ cdef inline void integrate(double[:] buffer, int buffer_size, double start0, dou
                 buffer[i] += calc_area(i+1, i, slope, intercept)
             if buffer_size > stop0 >= 0:
                 buffer[istop0] += calc_area(floor(stop0+1), stop0, slope, intercept)
-                      
-                       
+
+
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -154,25 +155,26 @@ def fullSplit1D(numpy.ndarray pos not None,
     assert pos.ndim == 3
     assert bins > 1
     cdef:
-        numpy.ndarray[numpy.float64_t, ndim = 3] cpos = numpy.ascontiguousarray(pos,dtype=numpy.float64)
-        numpy.ndarray[numpy.float64_t, ndim = 1] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)
+        position_t[:,:,:] cpos = numpy.ascontiguousarray(pos,dtype=numpy.float64)
+        data_t[:] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float64)
         numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(bins, dtype=numpy.float64)
         numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype=numpy.float64)
         numpy.ndarray[numpy.float64_t, ndim = 1] outMerge = numpy.zeros(bins, dtype=numpy.float64)
         numpy.int8_t[:] cmask
-        double[:] cflat, cdark, cpolarization, csolidangle, buffer
-    
-        double cdummy=0, cddummy=0, data=0
-        double deltaR=0, deltaL=0, one_over_area=0
-        double pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0
-        double aera_pixel=0, sum_area=0, sub_area=0,  dpos=0, fbin0_min=0, fbin0_max=0#, fbin1_min, fbin1_max 
-        double a0=0, b0=0, c0=0, d0=0, max0=0, min0=0, a1=0, b1=0, c1=0, d1=0, max1=0, min1=0
+        data_t[:] cflat, cdark, cpolarization, csolidangle
+        position_t[:] buffer
+
+        data_t cdummy=0, cddummy=0, data=0
+        position_t deltaR=0, deltaL=0, one_over_area=0
+        position_t pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0
+        position_t aera_pixel=0, sum_area=0, sub_area=0,  dpos=0, fbin0_min=0, fbin0_max=0
+        position_t a0=0, b0=0, c0=0, d0=0, max0=0, min0=0, a1=0, b1=0, c1=0, d1=0, max1=0, min1=0
         double epsilon=1e-10
 
         bint check_pos1=False, check_mask=False, do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
         int i=0, b=0, idx=0, bin=0, bin0_max=0, bin0_min=0
-    buffer = view.array(shape=(bins,),itemsize=sizeof(double), format="d") 
-    memset(&buffer[0], 0, sizeof(double)*bins)
+    buffer = view.array(shape=(bins,),itemsize=sizeof(position_t), format="d")
+    buffer[:] = 0
 
     if mask is not None:
         check_mask = True
@@ -214,14 +216,14 @@ def fullSplit1D(numpy.ndarray pos not None,
                     pos1_min = min1
 
             pos0_maxin = pos0_max
-    if pos0_min<0: 
+    if pos0_min<0:
         pos0_min=0
     pos0_max = pos0_maxin * EPS32
 
     if pos1Range is not None and len(pos1Range) > 1:
         pos1_min = min(pos1Range)
         pos1_maxin = max(pos1Range)
-        do_pos1 = True
+        check_pos1 = True
     else:
         if min1==max1==0:
             pos1_min = pos[:, :, 1].min()
@@ -303,7 +305,7 @@ def fullSplit1D(numpy.ndarray pos not None,
 
             bin0_min = < int > floor(min0)
             bin0_max = < int > floor(max0)
-            
+
             if bin0_min == bin0_max:
                 # All pixel is within a single bin
                 outCount[bin0_min] += 1.0
@@ -322,14 +324,14 @@ def fullSplit1D(numpy.ndarray pos not None,
                 integrate(buffer, bins, d0, d1, a0, a1) #D-A
 
                 #Distribute pixel area
-                sum_area = 0.0 
+                sum_area = 0.0
                 for i in range(bin0_min, bin0_max):
                     sub_area = fabs(buffer[i])
                     sum_area += sub_area
                     sub_area = sub_area * one_over_area
                     outCount[i] += sub_area
-                    outData[i] += sub_area * data 
-                    
+                    outData[i] += sub_area * data
+
                 #check the total area:
                 if fabs(sum_area - aera_pixel) / aera_pixel>1e-6 and bin0_min != 0 and bin0_max != bins:
                     with gil:
@@ -439,7 +441,7 @@ def fullSplit2D(numpy.ndarray pos not None,
     cdef double dpos1 = (pos1_max - pos1_min) / (< double > (bins1))
     edges0 = numpy.linspace(pos0_min + 0.5 * dpos0, pos0_maxin - 0.5 * dpos0, bins0)
     edges1 = numpy.linspace(pos1_min + 0.5 * dpos1, pos1_maxin - 0.5 * dpos1, bins1)
-    
+
     if (dummy is not None) and (delta_dummy is not None):
         check_dummy = True
         cdummy = float(dummy)
@@ -564,7 +566,7 @@ def fullSplit2D(numpy.ndarray pos not None,
                             outCount[bin0_min, j] += one_over_area
                             outData[bin0_min, j] += data * one_over_area
 
-            else: 
+            else:
                 # spread on more than 2 bins in dim 0
                 if bin1_min == bin1_max:
                     # All pixel fall on 1 bins in dim 1

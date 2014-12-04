@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/10/2014"
+__date__ = "04/12/2014"
 __satus__ = "Production"
 import os
 from pyFAI.gui_utils import QtCore, QtGui
@@ -78,7 +78,7 @@ def main():
     processFile = pyFAI.utils.expand_args(options.args)
 
     qapp = QtGui.QApplication([])
-    w = PyMca.MaskImageWidget.MaskImageWidget()
+    w = MaskImageWidget.MaskImageWidget()
     e = fabio.open(processFile[0]).data
     w.setImageData(e)
     w.show()

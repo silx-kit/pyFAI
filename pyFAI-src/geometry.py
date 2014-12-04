@@ -345,25 +345,7 @@ class Geometry(object):
                                      rot3=param[5],
                                      pos1=p1,
                                      pos2=p2)
-            tmp.shape = p1.shape
         else:
-#             if param is None:
-#                 param = self.param
-#             p1, p2 = self._calcCartesianPositions(d1, d2, param[1], param[2])
-#             L = param[0]
-#             cosRot1 = cos(param[3])
-#             cosRot2 = cos(param[4])
-#             cosRot3 = cos(param[5])
-#             sinRot1 = sin(param[3])
-#             sinRot2 = sin(param[4])
-#             sinRot3 = sin(param[5])
-#             t1 = p1 * cosRot2 * cosRot3 + \
-#                 p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - \
-#                 L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
-#             t2 = p1 * cosRot2 * sinRot3 + \
-#                 p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - \
-#                 L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
-#             t3 = p1 * sinRot2 - p2 * cosRot2 * sinRot1 + L * cosRot1 * cosRot2
             zyx = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, param=param)
             t1 = zyx[1]
             t2 = zyx[2]
@@ -402,7 +384,6 @@ class Geometry(object):
                                    pos1=p1,
                                    pos2=p2,
                                    wavelength=self.wavelength)
-            out.shape = p1.shape
         else:
             out = 4.0e-9 * numpy.pi / self.wavelength * \
                 numpy.sin(self.tth(d1=d1, d2=d2, param=param) / 2.0)
@@ -433,7 +414,6 @@ class Geometry(object):
                                    rot3=self._rot3,
                                    pos1=p1,
                                    pos2=p2)
-            out.shape = p1.shape
         else:
             out = directDist * numpy.tan(self.tth(d1=d1, d2=d2, param=param))
         return out
@@ -825,14 +805,21 @@ class Geometry(object):
                     self._dra = delta.max(axis= -1)
         return self._dra
 
-    def cosIncidance(self, d1, d2):
+    def cosIncidance(self, d1, d2, path="cython"):
         """
         Calculate the incidence angle (alpha) for current pixels (P).
-        The poni is at incidence angle=1 so cos(alpha) = 1
-
+        The poni being the point of normal incidence,
+        it's incidence angle is $\alpha = 0$ hence $cos(\alpha) = 1$
+        
+        @param d1: 1d or 2d set of points in pixel coord
+        @param d2:  1d or 2d set of points in pixel coord
+        @return: cosine of the incidence angle
         """
         p1, p2 = self._calcCartesianPositions(d1, d2)
-        cosa = self._dist / numpy.sqrt(self._dist * self._dist + p1 * p1 + p2 * p2)
+        if path == "cython":
+            cosa = _geometry.calc_cosa(self._dist, p1, p2)
+        else:
+            cosa = self._dist / numpy.sqrt(self._dist * self._dist + p1 * p1 + p2 * p2)
         return cosa
 
     def diffSolidAngle(self, d1, d2):
@@ -1148,28 +1135,28 @@ class Geometry(object):
         @param BSize_2: pixel binning factor along the slowst dimention
         @param WaveLength: wavelength used
         """
-        #first define the detector
+        # first define the detector
         if splineFile:
-            #let's assume the spline file is for unbinned detectors ...
+            # let's assume the spline file is for unbinned detectors ...
             self.detector = detectors.FReLoN(splineFile)
             self.detector.binning = (int(BSize_2), int(BSize_1))
         elif PSize_1 and PSize_2:
             self.detector = detectors.Detector(PSize_2, PSize_1)
             if BSize_2 > 1 or BSize_1 > 1:
-                #set binning factor without changing pixel size
+                # set binning factor without changing pixel size
                 self.detector._binning = (int(BSize_2), int(BSize_1))
 
-        #then the geometry
+        # then the geometry
         self._dist = float(SampleDistance)
         self._poni1 = float(Center_2) * self.detector.pixel1
         self._poni2 = float(Center_1) * self.detector.pixel2
-        #This is WRONG ... correct it
+        # This is WRONG ... correct it
         self._rot1 = Rot_2 or 0
         self._rot2 = Rot_1 or 0
         self._rot3 = -(Rot_3 or 0)
         if Rot_1  or Rot_2  or Rot_3 :
             raise NotImplementedError("rotation axis not yet implemented for SPD")
-        #and finally the wavelength
+        # and finally the wavelength
         if WaveLength:
             self.wavelength = float(WaveLength)
         self.reset()
@@ -1418,7 +1405,7 @@ class Geometry(object):
         """return a shallow copy of itself.
         """
         new = self.__class__(detector=self.detector)
-        #transfer numerical values:
+        # transfer numerical values:
         numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
                      "chiDiscAtPi", "_dssa_crc", "_dssa_order", "_wavelength",
                      '_oversampling', '_correct_solid_angle_for_spline',
@@ -1439,7 +1426,7 @@ class Geometry(object):
         """
         new = self.__class__()
         new.detector = self.detector.__deepcopy__()
-        #transfer numerical values:
+        # transfer numerical values:
         numerical = ["_dist", "_poni1", "_poni2", "_rot1", "_rot2", "_rot3",
                      "chiDiscAtPi", "_dssa_crc", "_dssa_order", "_wavelength",
                      '_oversampling', '_correct_solid_angle_for_spline',
