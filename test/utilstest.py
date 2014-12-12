@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2014"
+__date__ = "12/12/2014"
 
 PACKAGE = "pyFAI"
 SOURCES = PACKAGE + "-src"
@@ -92,7 +92,10 @@ class UtilsTest(object):
         platform = distutils.util.get_platform()
         architecture = "lib.%s-%i.%i" % (platform,
                                          sys.version_info[0], sys.version_info[1])
-        if os.environ.get("BUILDPYTHONPATH"):
+        if os.environ.get("PYBUILD_NAME") == name:
+            # we are in the debian packaging way
+            home = os.environ.get("PYTHONPATH", "").split(os.pathsep)[-1]
+        elif os.environ.get("BUILDPYTHONPATH"):
             home = os.path.abspath(os.environ.get("BUILDPYTHONPATH", ""))
         else:
             home = os.path.join(os.path.dirname(TEST_HOME),
@@ -105,7 +108,7 @@ class UtilsTest(object):
             for key in sys.modules.copy():
                 if key.startswith(name + "."):
                     sys.modules.pop(key)
-
+        print(home)
         if not os.path.isdir(home):
             with sem:
                 if not os.path.isdir(home):
@@ -132,7 +135,7 @@ class UtilsTest(object):
                 ALL_DOWNLOADED_FILES = set(json.load(f))
         else:
             ALL_DOWNLOADED_FILES = set()
-
+    print("Call tempfile.mkdtemp(os.getlogin(), name) with %s %s" % (os.getlogin(), name))
     tempdir = tempfile.mkdtemp(os.getlogin(), name)
 
     @classmethod
