@@ -35,6 +35,7 @@ SOURCES = PACKAGE + "-src"
 DATA_KEY = "PYFAI_DATA"
 
 import os
+import pwd
 import imp
 import sys
 import subprocess
@@ -58,7 +59,7 @@ IN_SOURCES = SOURCES in os.listdir(os.path.dirname(TEST_HOME))
 
 if IN_SOURCES:
     os.environ[DATA_KEY] = os.path.dirname(TEST_HOME)
-
+login = pwd.getpwuid(os.getuid())[0]
 
 def copy(infile, outfile):
     "link or copy file according to the OS"
@@ -126,7 +127,7 @@ class UtilsTest(object):
                 logger.warning("Remove build and start from scratch %s" % error)
                 sys.argv.append("-r")
     else:
-        image_home = os.path.join(tempfile.gettempdir(), "%s_testimages_%s" % (name, os.getlogin()))
+        image_home = os.path.join(tempfile.gettempdir(), "%s_testimages_%s" % (name, login))
         if not os.path.exists(image_home):
             os.makedirs(image_home)
         testimages = os.path.join(image_home, "all_testimages.json")
@@ -135,8 +136,9 @@ class UtilsTest(object):
                 ALL_DOWNLOADED_FILES = set(json.load(f))
         else:
             ALL_DOWNLOADED_FILES = set()
-    print("Call tempfile.mkdtemp(os.getlogin(), name) with %s %s" % (os.getlogin(), name))
-    tempdir = tempfile.mkdtemp(os.getlogin(), name)
+
+    print("Call tempfile.mkdtemp(os.getlogin(), name) with %s %s" % (login, name))
+    tempdir = tempfile.mkdtemp(login, name)
 
     @classmethod
     def deep_reload(cls):
