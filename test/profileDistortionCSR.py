@@ -23,12 +23,12 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-
+from __future__ import absolute_import, print_function, with_statement, division
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/02/2013"
+__date__ = "15/12/2014"
 __status__ = "development"
 
 import unittest
@@ -68,7 +68,7 @@ def test():
 #    det = detectors.FReLoN("frelon.spline")
 
 
-    print det, det.max_shape
+    print(det, det.max_shape)
     disLUT = _distortion.Distortion(det)
     print disLUT
     lut = disLUT.calc_LUT_size()
@@ -82,7 +82,7 @@ def test():
     print("*"*50)
 
 
-    print det, det.max_shape
+    print( det, det.max_shape)
     disCSR = _distortionCSR.Distortion(det,foo=64)
     print disCSR
     lut = disCSR.calc_LUT_size()
@@ -101,7 +101,7 @@ def test():
 
     print("*"*50)
     
-    print det, det.max_shape
+    print( det, det.max_shape)
     disLUTpy = distortion.Distortion(det)
     print disLUTpy
     lut = disLUTpy.calc_LUT_size()
@@ -117,7 +117,7 @@ def test():
 #    x, y = numpy.ogrid[:2048, :2048]
 #    grid = numpy.logical_or(x % 100 == 0, y % 100 == 0)
 #    det = detectors.FReLoN("frelon.spline")
-#    print det, det.max_shape
+#    print( det, det.max_shape)
 #    dis = Distortion(det)
 #    print dis
 #    lut = dis.calc_LUT_size()
