@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/10/2014"
+__date__ = "15/12/2014"
 
 
 import unittest
@@ -37,7 +37,10 @@ import numpy
 import logging, time
 import sys
 import fabio
-from utilstest import UtilsTest, Rwp, getLogger
+if __name__ == '__main__':
+    import pkgutil, os
+    __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
+from .utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 
@@ -105,7 +108,7 @@ class TestIntegrate2D(unittest.TestCase):
 
     def testQ(self):
         res = {}
-        for m in ("numpy", "cython", "BBox" , "splitpixel"):#, "lut", "lut_ocl"):
+        for m in ("numpy", "cython", "BBox" , "splitpixel"):  # , "lut", "lut_ocl"):
             res[m] = self.ai.integrate2d(self.data, self.npt, method=m)
         mask = (res["numpy"][0] != 0)
         self.assertTrue(mask.sum() > 36 * self.npt, "10%% of the pixels are valid at least")
@@ -125,8 +128,8 @@ class TestIntegrate2D(unittest.TestCase):
 
     def testR(self):
         res = {}
-        for m in ("numpy", "cython", "BBox" , "splitpixel"):#, "lut", "lut_ocl"):
-            res[m] = self.ai.integrate2d(self.data, self.npt, method=m, unit="r_mm")#, radial_range=(20, 150))
+        for m in ("numpy", "cython", "BBox" , "splitpixel"):  # , "lut", "lut_ocl"):
+            res[m] = self.ai.integrate2d(self.data, self.npt, method=m, unit="r_mm")  # , radial_range=(20, 150))
         mask = (res["numpy"][0] != 0)
         self.assertTrue(mask.sum() > 36 * self.npt, "10%% of the pixels are valid at least")
         for a in res:
@@ -144,8 +147,8 @@ class TestIntegrate2D(unittest.TestCase):
                 self.assertTrue(R <= self.Rmax, mesg)
     def test2th(self):
         res = {}
-        for m in ("numpy", "cython", "BBox" , "splitpixel"):#, "lut", "lut_ocl"):
-            res[m] = self.ai.integrate2d(self.data, self.npt, method=m, unit="2th_deg")#, radial_range=(0.5, 5.5))
+        for m in ("numpy", "cython", "BBox" , "splitpixel"):  # , "lut", "lut_ocl"):
+            res[m] = self.ai.integrate2d(self.data, self.npt, method=m, unit="2th_deg")  # , radial_range=(0.5, 5.5))
         mask = (res["numpy"][0] != 0)
         self.assertTrue(mask.sum() > 36 * self.npt, "10%% of the pixels are valid at least")
         for a in res:

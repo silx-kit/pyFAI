@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20140106"
+__date__ = "15/12/2014"
 
 
 import unittest
@@ -38,7 +38,10 @@ import logging, time
 import sys
 import fabio
 import tempfile
-from utilstest import UtilsTest, Rwp, getLogger, recursive_delete
+if __name__ == '__main__':
+    import pkgutil, os
+    __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
+from .utilstest import UtilsTest, Rwp, getLogger, recursive_delete
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
@@ -59,7 +62,7 @@ class TestAzimPilatus(unittest.TestCase):
         maxi = self.data.max()
         mini = self.data.min()
         bragg, amorphous = self.ai.separate(self.data)
-        self.assert_(amorphous.max()<bragg.max(), "bragg is more intense than amorphous")
+        self.assert_(amorphous.max() < bragg.max(), "bragg is more intense than amorphous")
 
 class TestAzimHalfFrelon(unittest.TestCase):
     """basic test"""
@@ -221,7 +224,7 @@ class TestFlatimage(unittest.TestCase):
     def test_splitPixel(self):
         data = numpy.ones((2000, 2000), dtype="float64")
         ai = AzimuthalIntegrator(0.1, 1e-2, 1e-2, pixel1=1e-5, pixel2=1e-5)
-        I = ai.xrpd2_splitPixel(data, 2048, 2048, correctSolidAngle=False, dummy= -1.0)[0]
+        I = ai.xrpd2_splitPixel(data, 2048, 2048, correctSolidAngle=False, dummy=-1.0)[0]
 #        I = ai.xrpd2(data, 2048, 2048, correctSolidAngle=False, dummy= -1.0)
 
         if logger.getEffectiveLevel() == logging.DEBUG:
@@ -239,7 +242,7 @@ class TestFlatimage(unittest.TestCase):
     def test_splitBBox(self):
         data = numpy.ones((2000, 2000), dtype="float64")
         ai = AzimuthalIntegrator(0.1, 1e-2, 1e-2, pixel1=1e-5, pixel2=1e-5)
-        I = ai.xrpd2_splitBBox(data, 2048, 2048, correctSolidAngle=False, dummy= -1.0)[0]
+        I = ai.xrpd2_splitBBox(data, 2048, 2048, correctSolidAngle=False, dummy=-1.0)[0]
 #        I = ai.xrpd2(data, 2048, 2048, correctSolidAngle=False, dummy= -1.0)
 
         if logger.getEffectiveLevel() == logging.DEBUG:
@@ -280,7 +283,7 @@ class test_saxs(unittest.TestCase):
         data = fabio.open(self.edfPilatus).data
         mask = fabio.open(self.maskFile).data
         assert abs(self.ai.makeMask(data, mask=mask).astype(int) - fabio.open(self.maskRef).data).max() == 0
-        assert abs(self.ai.makeMask(data, mask=mask, dummy= -2, delta_dummy=1.1).astype(int) - fabio.open(self.maskDummy).data).max() == 0
+        assert abs(self.ai.makeMask(data, mask=mask, dummy=-2, delta_dummy=1.1).astype(int) - fabio.open(self.maskDummy).data).max() == 0
 
     def tearDown(self):
         recursive_delete(tmp_dir)
@@ -306,14 +309,14 @@ class TestSetter(unittest.TestCase):
         recursive_delete(tmp_dir)
 
     def test_flat(self):
-        self.ai.set_flatfiles((self.edf1,self.edf2), method="mean")
+        self.ai.set_flatfiles((self.edf1, self.edf2), method="mean")
         self.assert_(self.ai.flatfiles == "%s(%s,%s)" % ("mean", self.edf1, self.edf2), "flatfiles string is OK")
-        self.assert_(abs(self.ai.flatfield-0.5*(self.rnd1+self.rnd2)).max() == 0, "Flat array is OK")
+        self.assert_(abs(self.ai.flatfield - 0.5 * (self.rnd1 + self.rnd2)).max() == 0, "Flat array is OK")
 
     def test_dark(self):
         self.ai.set_darkfiles((self.edf1, self.edf2), method="mean")
         self.assert_(self.ai.darkfiles == "%s(%s,%s)" % ("mean", self.edf1, self.edf2), "darkfiles string is OK")
-        self.assert_(abs(self.ai.darkcurrent-0.5*(self.rnd1+self.rnd2)).max() == 0, "Dark array is OK")
+        self.assert_(abs(self.ai.darkcurrent - 0.5 * (self.rnd1 + self.rnd2)).max() == 0, "Dark array is OK")
 
 
 def test_suite_all_AzimuthalIntegration():

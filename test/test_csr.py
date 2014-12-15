@@ -33,7 +33,10 @@ import numpy
 import os
 import sys
 import time
-from utilstest import UtilsTest, getLogger, diff_img, diff_crv
+if __name__ == '__main__':
+    import pkgutil, os
+    __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
+from .utilstest import UtilsTest, getLogger, diff_img, diff_crv
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import opencl
@@ -103,12 +106,12 @@ class TestOpenclCSR(ParameterisedTestCase):
                 self.assertTrue(numpy.allclose(ref, ocl), cmt + ": hist vs ocl_csr")
                 self.assertTrue(numpy.allclose(ref, cyth), cmt + ": hist vs csr")
                 self.assertTrue(numpy.allclose(cyth, ocl), cmt + ": csr vs ocl_csr")
-        csr=None
-        ocl_csr=None
-        out_ocl_csr=None
-        out_ref=None
+        csr = None
+        ocl_csr = None
+        out_ocl_csr = None
+        out_ref = None
 
-TESTCASES = [8 * 2 ** i for i in range(6)]#[8, 16, 32, 64, 128, 256]
+TESTCASES = [8 * 2 ** i for i in range(6)]  # [8, 16, 32, 64, 128, 256]
 
 
 class Test_CSR(unittest.TestCase):
@@ -118,7 +121,7 @@ class Test_CSR(unittest.TestCase):
         img_csr, tth_csr, chi_csr = ai.integrate2d(data, N, unit="2th_deg", method="splitbbox_csr")
         self.assertTrue(numpy.allclose(tth, tth_csr), " 2Th are the same")
         self.assertTrue(numpy.allclose(chi, chi_csr), " Chi are the same")
-        #TODO: align on splitbbox rather then splitbbox_csr
+        # TODO: align on splitbbox rather then splitbbox_csr
         diff_img(img, img_csr, "splitbbox")
         self.assertTrue(numpy.allclose(img, img_csr), " img are the same")
 
@@ -131,7 +134,7 @@ class Test_CSR(unittest.TestCase):
 #        self.assertTrue(numpy.allclose(chi, chi_csr), " Chi are the same")
         diff_img(img, img_csr, "no split")
         self.assertTrue(numpy.allclose(img, img_csr), " img are the same")
-        
+
 
 def test_suite_all_OpenCL_CSR():
     testSuite = unittest.TestSuite()

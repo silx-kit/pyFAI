@@ -28,15 +28,18 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/11/2014"
+__date__ = "15/12/2014"
 
 
 import unittest
 import os
 import numpy
 import sys
-#Nota: UtilsTest is a static class with initialization at import.
-from utilstest import UtilsTest, Rwp, getLogger
+# Nota: UtilsTest is a static class with initialization at import.
+if __name__ == '__main__':
+    import pkgutil, os
+    __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
+from .utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import geometryRefinement
@@ -118,10 +121,10 @@ class test_geometryRefinement(unittest.TestCase):
         0.571001  , 0.56568924, 0.55549581, 0.55060148, 0.54583428,
         0.54118879, 0.53224291, 0.52793318, 0.52372647, 0.51961875,
         0.51560619, 0.51168517, 0.50785227, 0.50410423, 0.50043797,
-        0.49685056]#LaB6
+        0.49685056]  # LaB6
         wavelength = 1.54e-10
         calibrant = pyFAI.calibrant.Calibrant(dSpacing=ds, wavelength=wavelength)
-        #calibrant = pyFAI.calibrant.ALL_CALIBRANTS["LaB6"]
+        # calibrant = pyFAI.calibrant.ALL_CALIBRANTS["LaB6"]
         data[:, 2] = ring
 
         r = GeometryRefinement(data, pixel1=pixelSize[0], pixel2=pixelSize[1],

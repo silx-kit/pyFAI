@@ -29,7 +29,10 @@ Test suites for sparse matrix multiplication modules
 
 
 import unittest, numpy, os, sys, time
-from utilstest import UtilsTest, getLogger
+if __name__ == '__main__':
+    import pkgutil, os
+    __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
+from .utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 
