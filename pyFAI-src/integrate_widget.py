@@ -22,6 +22,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import absolute_import, print_function, with_statement, division
 
 """
 pyFAI-integrate
@@ -35,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2014"
+__date__ = "15/12/2014"
 __satus__ = "development"
 
 import sys
@@ -53,11 +54,14 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI.integrate_widget")
 from .gui_utils import QtCore, QtGui, uic, SIGNAL, QtWebKit
 
-import pyFAI
 import fabio
+from .detectors import ALL_DETECTORS
 from .opencl import ocl
 from .utils import float_, int_, str_, get_ui_file
 from .io import HDF5Writer
+from .azimuthalIntegrator import AzimuthalIntegrator
+from .third_party import six
+
 UIC = get_ui_file("integration.ui")
 
 FROM_PYMCA = "From PyMca"
@@ -135,7 +139,7 @@ class AIWidget(QtGui.QWidget):
         except AttributeError as error:
             logger.error("I looks like your installation suffers from this bug: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348")
             raise RuntimeError("Please upgrade your installation of PyQt (or apply the patch)")
-        self.all_detectors = pyFAI.detectors.ALL_DETECTORS.keys()
+        self.all_detectors = list(ALL_DETECTORS.keys())
         self.all_detectors.sort()
         self.detector.addItems([i.capitalize() for i in self.all_detectors])
         self.detector.setCurrentIndex(self.all_detectors.index("detector"))
@@ -249,7 +253,7 @@ class AIWidget(QtGui.QWidget):
                                           u"You must provide the number of output radial bins !",
                                           )
                 return {}
-                #raise RuntimeError("The number of output point is undefined !")
+                # raise RuntimeError("The number of output point is undefined !")
             kwarg["npt_rad"] = int(str(self.nbpt_rad.text()).strip())
             if self.do_2D.isChecked():
                 kwarg["npt_azim"] = int(str(self.nbpt_azim.text()).strip())
@@ -346,7 +350,7 @@ class AIWidget(QtGui.QWidget):
                 for i, item in enumerate(self.input_data):
                     self.progressBar.setValue(100.0 * i / len(self.input_data))
                     logger.debug("processing %s" % item)
-                    if (type(item) in types.StringTypes) and op.exists(item):
+                    if isinstance(item, (six.text_type, six.binary_type)) and op.exists(item):
                         fab_img = fabio.open(item)
                         multiframe = (fab_img.nframes > 1)
                         kwarg["data"] = fab_img.data
@@ -414,7 +418,7 @@ class AIWidget(QtGui.QWidget):
         @type filename: str
 
         """
-        print "Dump!"
+        logger.info("Dump!")
         to_save = { "poni": str(self.poni.text()).strip(),
                     "detector": str(self.detector.currentText()).lower(),
                     "wavelength":float_(self.wavelength.text()),
@@ -580,7 +584,6 @@ class AIWidget(QtGui.QWidget):
     def set_ponifile(self, ponifile=None):
         if ponifile is None:
             ponifile = self.poni.text()
-            print ponifile
         try:
             self.ai = pyFAI.load(ponifile)
         except Exception as error:
@@ -695,7 +698,6 @@ class AIWidget(QtGui.QWidget):
                       if op.isfile(i.strip())]
         if flat_files and bool(self.do_flat.isChecked()):
             self.ai.set_flatfiles(flat_files)
-        print self.ai
 
     def detector_changed(self):
         logger.debug("detector_changed")

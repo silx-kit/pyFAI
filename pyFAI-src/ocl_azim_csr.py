@@ -25,7 +25,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "GPLv3"
-__date__ = "22/10/2014"
+__date__ = "15/12/2014"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -97,7 +97,7 @@ class OCL_CSR_Integrator(object):
         self.platform = ocl.platforms[platformid]
         self.device = self.platform.devices[deviceid]
         self.device_type = self.device.type
-        self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)  
+        self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)
         self.workgroup_size = self.BLOCK_SIZE,  # Note this is a tuple
         self.wdim_bins = (self.bins * self.BLOCK_SIZE),
         self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
@@ -296,7 +296,7 @@ class OCL_CSR_Integrator(object):
                     solidAngle_checksum = crc32(solidAngle)
                 if solidAngle_checksum != self.on_device["solidangle"]:
                     ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["solidangle"], numpy.ascontiguousarray(solidAngle, dtype=numpy.float32))
-	            events.append(("copy solidangle", ev))
+                    events.append(("copy solidangle", ev))
                     self.on_device["solidangle"] = solidAngle_checksum
             else:
                 do_solidAngle = numpy.int32(0)

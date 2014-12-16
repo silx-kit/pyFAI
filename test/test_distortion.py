@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/10/2014"
+__date__ = "15/12/2014"
 
 
 import unittest
@@ -37,13 +37,15 @@ import numpy
 # import logging, time
 import sys
 import fabio
-
-from utilstest import UtilsTest, getLogger
+if __name__ == '__main__':
+    import pkgutil, os
+    __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
+from .utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import _distortion, detectors
-#_distortion = sys.modules["pyFAI._distortion"]
-#detectors = sys.modules["pyFAI.detectors"]
+# _distortion = sys.modules["pyFAI._distortion"]
+# detectors = sys.modules["pyFAI.detectors"]
 
 class test_halfccd(unittest.TestCase):
     """basic test"""

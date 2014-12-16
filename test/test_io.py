@@ -28,19 +28,23 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/10/2014"
+__date__ = "15/12/2014"
 
 
 import unittest
 import os
 import shutil
 import numpy
-import logging
 import time
 import sys
 import fabio
 import tempfile
-from utilstest import UtilsTest, Rwp, getLogger
+is_main = (__name__ == '__main__')
+if is_main:
+    import pkgutil
+    __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
+from .utilstest import UtilsTest, Rwp, getLogger
+
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import io
@@ -114,7 +118,7 @@ class testFabIOWriter(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.tmpdir = tempfile.mkdtemp()
-            
+
     def test_writer(self):
         h5file = os.path.join(self.tmpdir)
         shape = 1024, 1024
@@ -147,7 +151,8 @@ def test_suite_all_io():
 #    testSuite.addTest(testFabIOWriter("test_writer"))
     return testSuite
 
-if __name__ == '__main__':
+if is_main:
     mysuite = test_suite_all_io()
     runner = unittest.TextTestRunner()
     runner.run(mysuite)
+    UtilsTest.clean_up()

@@ -1,8 +1,9 @@
 #!/usr/bin/python
-
+from __future__ import absolute_import, print_function, with_statement, division
 # this is a very simple tool that checks the calibratation
 import pyFAI, fabio, numpy, sys, os, optparse, time
 import pylab
+
 
 def shift(input, shift):
     """
@@ -22,6 +23,7 @@ def shift(input, shift):
     re[d0:, :d1] = input[:r0, r1:]
     re[:d0, :d1] = input[r0:, r1:]
     return re
+
 
 def shiftFFT(inp, shift, method="fftw"):
     """
@@ -142,6 +144,7 @@ def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
         else:
             return offset
 
+
 class CheckCalib(object):
     def __init__(self, poni, img):
         self.ponifile = poni
@@ -151,6 +154,7 @@ class CheckCalib(object):
         self.I = None
         self.resynth = None
         self.delta = None
+
     def __repr__(self, *args, **kwargs):
         return self.ai.__repr__()
 
@@ -164,8 +168,8 @@ class CheckCalib(object):
                    dim1_unit="q_nm^-1", correctSolidAngle=True)
         self.delta = self.resynth - self.img.data
         self.offset, log = measure_offset(self.resynth, self.img.data, withLog=1)
-        print os.linesep.join(log)
-        print self.offset
+        print(os.linesep.join(log))
+        print(self.offset)
 if __name__ == "__main__":
     cc = CheckCalib(sys.argv[1], sys.argv[2])
     cc.integrate()

@@ -21,38 +21,39 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# print(
-"""
-Test module pyFAI.
-"""
-# )
-__authors__ = ["Jérôme Kieffer"]
-__contact__ = "jerome.kieffer@esrf.eu"
+
+"Dummy test to run first to check for relative imports"
+
+__author__ = "Jérôme Kieffer"
+__contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__data__ = "2014-11-10"
-import os
-import sys
+__date__ = "15/12/2014"
+
+
 import unittest
-
-# if __path__ not in dir():
-#     print("Create the package to allow relative imports")
-#     __name__ = "pyFAI.test"
-#     dirname = os.path.dirname(__file__)
-
-
-
-from . import utilstest
-from .test_all import test_suite_all
+import sys
+if __name__ == '__main__':
+    import pkgutil, os
+    __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
+from .utilstest import UtilsTest, Rwp, getLogger
+logger = getLogger(__file__)
+pyFAI = sys.modules["pyFAI"]
 
 
-def run_tests():
-    """Run test complete test_suite"""
-    mysuite = test_suite_all()
+class TestDummy(unittest.TestCase):
+    def test_dummy(self):
+        print(__name__)
+        print(pyFAI)
+
+
+def test_suite_all_dummy():
+    testSuite = unittest.TestSuite()
+    testSuite.addTest(TestDummy("test_dummy"))
+    return testSuite
+
+if __name__ == '__main__':
+    mysuite = test_suite_all_dummy()
     runner = unittest.TextTestRunner()
-    if not runner.run(mysuite).wasSuccessful():
-        print("Test suite failed")
-        return 1
-    else:
-        print("Test suite succeeded")
-        return 0
+    runner.run(mysuite)
+    UtilsTest.clean_up()

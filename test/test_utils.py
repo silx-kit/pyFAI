@@ -37,12 +37,15 @@ import sys
 import os
 import fabio
 import tempfile
-from utilstest import UtilsTest, getLogger, recursive_delete
+if __name__ == '__main__':
+    import pkgutil, os
+    __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
+from .utilstest import UtilsTest, getLogger, recursive_delete
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 import pyFAI.utils
 
-#if logger.getEffectiveLevel() <= logging.INFO:
+# if logger.getEffectiveLevel() <= logging.INFO:
 #    from pyFAI.gui_utils import pylab
 import scipy.ndimage
 

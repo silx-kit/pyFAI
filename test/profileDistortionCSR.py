@@ -23,12 +23,12 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-
+from __future__ import print_function, with_statement, division
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/02/2013"
+__date__ = "15/12/2014"
 __status__ = "development"
 
 import unittest
@@ -44,8 +44,8 @@ from pyFAI import detectors, ocl_azim_lut, _distortion, _distortionCSR, distorti
 from pyFAI.utils import timeit
 import fabio
 
-#import pyFAI._distortion
-#import pyFAI._distortionCSR
+# import pyFAI._distortion
+# import pyFAI._distortionCSR
 
 
 def test():
@@ -58,9 +58,9 @@ def test():
 #    # working with halfccd spline
     x, y = numpy.ogrid[:1024, :2048]
     grid = numpy.logical_or(x % 100 == 0, y % 100 == 0) + numpy.ones((1024, 2048), numpy.float32)
-    
+
     splineFilePath = "1461/halfccd.spline"
-    splineFile = UtilsTest.getimage(splineFilePath)  
+    splineFile = UtilsTest.getimage(splineFilePath)
     det = detectors.FReLoN(splineFile)
     # working with halfccd spline
 #    x, y = numpy.ogrid[:2048, :2048]
@@ -68,12 +68,12 @@ def test():
 #    det = detectors.FReLoN("frelon.spline")
 
 
-    print det, det.max_shape
+    print(det, det.max_shape)
     disLUT = _distortion.Distortion(det)
-    print disLUT
+    print(disLUT)
     lut = disLUT.calc_LUT_size()
-    print disLUT.lut_size
-    print lut.mean()
+    print(disLUT.lut_size)
+    print(lut.mean())
 
     disLUT.calc_LUT()
     outLUT = disLUT.correct(grid)
@@ -82,12 +82,12 @@ def test():
     print("*"*50)
 
 
-    print det, det.max_shape
-    disCSR = _distortionCSR.Distortion(det,foo=64)
-    print disCSR
+    print(det, det.max_shape)
+    disCSR = _distortionCSR.Distortion(det, foo=64)
+    print(disCSR)
     lut = disCSR.calc_LUT_size()
-    print disCSR.lut_size
-    print lut.mean()
+    print(disCSR.lut_size)
+    print(lut.mean())
 
     disCSR.calc_LUT()
     outCSR = disCSR.correct(grid)
@@ -100,13 +100,13 @@ def test():
     fabio.edfimage.edfimage(data=outCSRocl.astype("float32")).write("test_correct_CSR.edf")
 
     print("*"*50)
-    
-    print det, det.max_shape
+
+    print(det, det.max_shape)
     disLUTpy = distortion.Distortion(det)
-    print disLUTpy
+    print(disLUTpy)
     lut = disLUTpy.calc_LUT_size()
-    print disLUTpy.lut_size
-    print lut.mean()
+    print(disLUTpy.lut_size)
+    print(lut.mean())
 
     disLUTpy.calc_LUT()
     outLUTpy = disLUTpy.correct(grid)
@@ -117,27 +117,27 @@ def test():
 #    x, y = numpy.ogrid[:2048, :2048]
 #    grid = numpy.logical_or(x % 100 == 0, y % 100 == 0)
 #    det = detectors.FReLoN("frelon.spline")
-#    print det, det.max_shape
+#    print( det, det.max_shape)
 #    dis = Distortion(det)
-#    print dis
+#    print(dis
 #    lut = dis.calc_LUT_size()
-#    print dis.lut_size
-#    print "LUT mean & max", lut.mean(), lut.max()
+#    print(dis.lut_size
+#    print("LUT mean & max", lut.mean(), lut.max()
 #    dis.calc_LUT()
 #    out = dis.correct(grid)
 #    fabio.edfimage.edfimage(data=out.astype("float32")).write("test2048.edf")
     import pylab
-    #pylab.imshow(outLUT)
-    #pylab.show()
-    #pylab.imshow(outCSR)  # , interpolation="nearest")
+    # pylab.imshow(outLUT)
+    # pylab.show()
+    # pylab.imshow(outCSR)  # , interpolation="nearest")
 # , interpolation="nearest")
 #    pylab.show()
     pylab.imshow(outCSRocl)
     pylab.show()
-    #pylab.imshow(outLUTpy)
-    #pylab.show()
-    
-    assert numpy.allclose(outLUT,outCSRocl)
+    # pylab.imshow(outLUTpy)
+    # pylab.show()
+
+    assert numpy.allclose(outLUT, outCSRocl)
 
 if __name__ == "__main__":
     det = dis = lut = None

@@ -28,13 +28,17 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/11/2014"
+__date__ = "15/12/2014"
 
 PACKAGE = "pyFAI"
 SOURCES = PACKAGE + "-src"
 DATA_KEY = "PYFAI_DATA"
 
+if __name__ == "__main__":
+    __name__ = "pyFAI.test"
+
 import os
+import pwd
 import imp
 import sys
 import subprocess
@@ -58,6 +62,7 @@ IN_SOURCES = SOURCES in os.listdir(os.path.dirname(TEST_HOME))
 
 if IN_SOURCES:
     os.environ[DATA_KEY] = os.path.dirname(TEST_HOME)
+login = pwd.getpwuid(os.getuid())[0]
 
 
 def copy(infile, outfile):
@@ -92,7 +97,10 @@ class UtilsTest(object):
         platform = distutils.util.get_platform()
         architecture = "lib.%s-%i.%i" % (platform,
                                          sys.version_info[0], sys.version_info[1])
-        if os.environ.get("BUILDPYTHONPATH"):
+        if os.environ.get("PYBUILD_NAME") == name:
+            # we are in the debian packaging way
+            home = os.environ.get("PYTHONPATH", "").split(os.pathsep)[-1]
+        elif os.environ.get("BUILDPYTHONPATH"):
             home = os.path.abspath(os.environ.get("BUILDPYTHONPATH", ""))
         else:
             home = os.path.join(os.path.dirname(TEST_HOME),
@@ -105,7 +113,7 @@ class UtilsTest(object):
             for key in sys.modules.copy():
                 if key.startswith(name + "."):
                     sys.modules.pop(key)
-
+        print(home)
         if not os.path.isdir(home):
             with sem:
                 if not os.path.isdir(home):
@@ -123,7 +131,7 @@ class UtilsTest(object):
                 logger.warning("Remove build and start from scratch %s" % error)
                 sys.argv.append("-r")
     else:
-        image_home = os.path.join(tempfile.gettempdir(), "%s_testimages_%s" % (name, os.getlogin()))
+        image_home = os.path.join(tempfile.gettempdir(), "%s_testimages_%s" % (name, login))
         if not os.path.exists(image_home):
             os.makedirs(image_home)
         testimages = os.path.join(image_home, "all_testimages.json")
@@ -133,7 +141,12 @@ class UtilsTest(object):
         else:
             ALL_DOWNLOADED_FILES = set()
 
-    tempdir = tempfile.mkdtemp(os.getlogin(), name)
+#     print("Call tempfile.mkdtemp(os.getlogin(), name) with %s %s" % (login, name))
+    tempdir = tempfile.mkdtemp(login, name)
+
+    @classmethod
+    def clean_up(cls):
+        recursive_delete(cls.tempdir)
 
     @classmethod
     def deep_reload(cls):

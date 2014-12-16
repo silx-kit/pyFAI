@@ -28,11 +28,15 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme Kieffer"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/10/2014"
+__date__ = "15/12/2014"
 
 import sys
 import unittest
 import numpy
+
+if __name__ == '__main__':
+    import pkgutil, os
+    __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
 from utilstest import getLogger  # UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
@@ -62,11 +66,11 @@ def image_test_rings():
 
 class TestBlobDetection(unittest.TestCase):
     img = None
-    
+
     def setUp(self):
         if self.img is None:
             self.img = image_test_rings()
-        
+
     def test_local_max(self):
         bd = BlobDetection(self.img)
         bd._one_octave(shrink=False, refine=False, n_5=False)
@@ -88,4 +92,4 @@ if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     runner.run(mysuite)
 
-        
+
