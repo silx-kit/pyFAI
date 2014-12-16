@@ -204,7 +204,7 @@ class OCL_LUT_Integrator(object):
 
     def integrate(self, data, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None,
                             dark_checksum=None, flat_checksum=None, solidAngle_checksum=None, polarization_checksum=None,
-                            preprocess_only=False):
+                            preprocess_only=False, do_checksum=True):
         events = []
         with self._sem:
             if data.dtype == numpy.uint8:

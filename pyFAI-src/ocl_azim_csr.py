@@ -217,7 +217,8 @@ class OCL_CSR_Integrator(object):
 
 
     def integrate(self, data, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None,
-                            dark_checksum=None, flat_checksum=None, solidAngle_checksum=None, polarization_checksum=None):
+                            dark_checksum=None, flat_checksum=None, solidAngle_checksum=None, polarization_checksum=None,
+                            preprocess_only=False, do_checksum=True):
         events = []
         with self._sem:
             if data.dtype == numpy.uint8:
@@ -269,6 +270,7 @@ class OCL_CSR_Integrator(object):
 
             if dark is not None:
                 do_dark = numpy.int32(1)
+                #TODO: what is do_checksum=False and image not on device ...
                 if not dark_checksum:
                     dark_checksum = crc32(dark)
                 if dark_checksum != self.on_device["dark"]:
@@ -317,9 +319,14 @@ class OCL_CSR_Integrator(object):
             if do_dummy + do_polarization + do_solidAngle + do_flat + do_dark > 0:
                 ev = self._program.corrections(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["corrections"])
                 events.append(("corrections", ev))
-#            if self.padded:
-#                integrate = self._program.csr_integrate_padded(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["csr_integrate"])
-#            else:
+
+            if preprocess_only:
+                image = numpy.empty(data.shape, dtype=numpy.float32)
+                ev = pyopencl.enqueue_copy(self._queue, image, self._cl_mem["image"])
+                events.append(("copy D->H image", ev))
+                ev.wait()
+                return image
+
             integrate = self._program.csr_integrate(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["csr_integrate"])
             events.append(("integrate", integrate))
             outMerge = numpy.empty(self.bins, dtype=numpy.float32)
