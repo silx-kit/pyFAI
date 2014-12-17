@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/09/2014"
+__date__ = "15/12/2014"
 
 
 import unittest
@@ -37,7 +37,10 @@ import numpy
 import logging, time
 import sys
 import fabio
-from utilstest import UtilsTest, Rwp, getLogger
+if __name__ == '__main__':
+    import pkgutil, os
+    __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
+from .utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 
@@ -47,8 +50,8 @@ if logger.getEffectiveLevel() <= logging.INFO:
 class TestPolarization(unittest.TestCase):
     shape = (13, 13)
     Y, X = numpy.ogrid[-6:7, -6:7]
-    rotY =numpy.radians(30.0*Y)
-    rotX =numpy.radians(30.0*X)
+    rotY = numpy.radians(30.0 * Y)
+    rotX = numpy.radians(30.0 * X)
     tth = numpy.sqrt(rotY ** 2 + rotX ** 2)
     chi = numpy.arctan2(rotY, rotX)
 #    print numpy.degrees(tth[6])
@@ -76,8 +79,8 @@ class TestPolarization(unittest.TestCase):
 
     def testVertPol(self):
         "Vertical polarization should decay in (cos2θ)**2 in vertical plane and no correction in horizontal one"
-        self.assert_(abs(self.ai.polarization(factor= -1)[6] - numpy.ones(13)).max() == 0, "No correction in the horizontal plane")
-        self.assert_(abs(self.ai.polarization(factor= -1)[:, 6] - (numpy.cos((2 * self.rotX)) + 1) / 2).max() < 1e-15, "cos(2th)^2 like in the verical plane")
+        self.assert_(abs(self.ai.polarization(factor=-1)[6] - numpy.ones(13)).max() == 0, "No correction in the horizontal plane")
+        self.assert_(abs(self.ai.polarization(factor=-1)[:, 6] - (numpy.cos((2 * self.rotX)) + 1) / 2).max() < 1e-15, "cos(2th)^2 like in the verical plane")
 
     def testoffsetPol(self):
         "test for the rotation of the polarization axis"

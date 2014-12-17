@@ -28,7 +28,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/10/2014"
+__date__ = "15/12/2014"
 
 import sys
 import os
@@ -36,7 +36,10 @@ import tempfile
 import shutil
 import unittest
 import numpy
-from utilstest import getLogger  # UtilsTest, Rwp, getLogger
+if __name__ == '__main__':
+    import pkgutil, os
+    __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
+from .utilstest import getLogger  # UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI.detectors import detector_factory, ALL_DETECTORS
@@ -138,7 +141,7 @@ class TestDetector(unittest.TestCase):
             return
         for det_name in ALL_DETECTORS:
             fname = os.path.join(tmpdir, det_name + ".h5")
-            if os.path.exists(fname): #already tested with another alias
+            if os.path.exists(fname):  # already tested with another alias
                 continue
             det = detector_factory(det_name)
             if (det.pixel1 is None) or (det.shape is None):
@@ -157,20 +160,20 @@ class TestDetector(unittest.TestCase):
             err1 = abs(r1 - o1).max()
             err2 = abs(r2 - o2).max()
             if det.name not in known_fail:
-                self.assert_(err1 < 1e-6, "%s precision on pixel position 1 is better than 1µm, got %e" % (det_name,err2))
+                self.assert_(err1 < 1e-6, "%s precision on pixel position 1 is better than 1µm, got %e" % (det_name, err2))
                 self.assert_(err2 < 1e-6, "%s precision on pixel position 2 is better than 1µm, got %e" % (det_name, err2))
             if (det.mask is not None) or (new_det.mask is not None):
                 self.assert_(numpy.allclose(det.mask, new_det.mask), "%s mask is not the same" % det_name)
 
-        #check Pilatus with displacement maps
-        #check spline
-        #check SPD sisplacement
+        # check Pilatus with displacement maps
+        # check spline
+        # check SPD sisplacement
 
         shutil.rmtree(tmpdir)
 
     def test_guess_binning(self):
 
-        #Mar 345 2300 pixels with 150 micron size
+        # Mar 345 2300 pixels with 150 micron size
         mar = detector_factory("mar345")
         shape = 2300, 2300
         mar.guess_binning(shape)

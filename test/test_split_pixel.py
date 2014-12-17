@@ -30,7 +30,10 @@ see debug_split_pixel.py for visual validation
 """
 
 import unittest, numpy, os, sys, time, numpy
-from utilstest import UtilsTest, getLogger, Rwp
+if __name__ == '__main__':
+    import pkgutil, os
+    __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
+from .utilstest import UtilsTest, getLogger, Rwp
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 
@@ -55,7 +58,7 @@ class TestSplitPixel(unittest.TestCase):
         """
         Validate that all non splitting algo give the same result...
         """
-        thres=7
+        thres = 7
         self.assert_(Rwp(self.results["numpy"], self.results["cython"]) < thres, "Cython/Numpy")
         self.assert_(Rwp(self.results["csr_no"], self.results["cython"]) < thres, "Cython/CSR")
         self.assert_(Rwp(self.results["csr_no"], self.results["numpy"]) < thres, "CSR/numpy")
