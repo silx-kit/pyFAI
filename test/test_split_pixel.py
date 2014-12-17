@@ -29,9 +29,9 @@ Test suites for pixel splitting scheeme balidation
 see debug_split_pixel.py for visual validation
 """
 
-import unittest, numpy, os, sys, time, numpy
+import unittest, numpy, os, sys, time
 if __name__ == '__main__':
-    import pkgutil, os
+    import pkgutil
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
 from .utilstest import UtilsTest, getLogger, Rwp
 logger = getLogger(__file__)
@@ -122,3 +122,4 @@ if __name__ == '__main__':
     mysuite = test_suite_all_split()
     runner = unittest.TextTestRunner()
     runner.run(mysuite)
+    UtilsTest.clean_up()
