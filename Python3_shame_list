@@ -1,0 +1,101 @@
+  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_ocl_lut_pixelsplit.py", line 13
+    print "#"*50
+            ^
+SyntaxError: invalid syntax
+
+  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_pixelsplitFullLUT.py", line 13
+    print "#"*50
+            ^
+SyntaxError: invalid syntax
+
+  File "/usr/lib/python3/dist-packages/pyFAI/test/test_bispev.py", line 79
+    print self.spline.xSplineKnotsX.dtype
+             ^
+SyntaxError: invalid syntax
+
+  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_ocl_hist_pixelsplit.py", line 13
+    print "#"*50
+            ^
+SyntaxError: invalid syntax
+
+  File "/usr/lib/python3/dist-packages/pyFAI/test/deepreload.py", line 83
+    raise ImportError, "No module named " + qname
+                     ^
+SyntaxError: invalid syntax
+
+  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_ocl_lut.py", line 29
+    print "#"*50
+            ^
+SyntaxError: invalid syntax
+
+  File "/usr/lib/python3/dist-packages/pyFAI/test/test_calibrant.py", line 118
+    print det.name, img.min(), img.max()
+            ^
+SyntaxError: invalid syntax
+
+  File "/usr/lib/python3/dist-packages/pyFAI/test/bug-ocl-cpu.py", line 6
+    print ai
+           ^
+SyntaxError: invalid syntax
+
+  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_ocl_lut_pixelsplit2.py", line 13
+    print "#"*50
+            ^
+SyntaxError: invalid syntax
+
+  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_pixelsplitFullLUT2.py", line 13
+    print "#"*50
+            ^
+SyntaxError: invalid syntax
+
+  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_pixelsplitFull.py", line 13
+    print "#"*50
+            ^
+SyntaxError: invalid syntax
+
+  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_csr_padded_csr.py", line 12
+    print "#"*50
+            ^
+SyntaxError: invalid syntax
+
+  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_csr_all_platforms.py", line 12
+    print "#"*50
+            ^
+SyntaxError: invalid syntax
+
+  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_lut_pixelsplitFull.py", line 13
+    print "#"*50
+            ^
+SyntaxError: invalid syntax
+
+  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_OCLFullSplit.py", line 13
+    print "#"*50
+            ^
+SyntaxError: invalid syntax
+
+  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_csr_2d.py", line 12
+    print "#"*50
+            ^
+SyntaxError: invalid syntax
+
+  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_ocl_lut_pixelsplit3.py", line 13
+    print "#"*50
+            ^
+SyntaxError: invalid syntax
+
+  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_csr_fullsplit.py", line 12
+    print "#"*50
+            ^
+SyntaxError: invalid syntax
+
+  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_csr.py", line 12
+    print "#"*50
+            ^
+SyntaxError: invalid syntax
+
+  File "/usr/lib/python3/dist-packages/pyFAI/integrate_widget.py", line 252
+    ret = QtGui.QMessageBox.warning(self, u"PyFAI integrate",
+                                                           ^
+SyntaxError: invalid syntax
+
+Sorry: TabError: inconsistent use of tabs and spaces in indentation (ocl_hist_pixelsplit.py, line 301)
