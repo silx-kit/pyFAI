@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/12/2014"
+__date__ = "17/12/2014"
 
 
 import unittest
@@ -108,8 +108,9 @@ def test_suite_all_bispev():
     testSuite.addTest(TestBispev("test_bispev"))
     return testSuite
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     mysuite = test_suite_all_bispev()
     runner = unittest.TextTestRunner()
     runner.run(mysuite)
+    UtilsTest.clean_up()

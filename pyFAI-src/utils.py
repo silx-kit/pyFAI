@@ -43,11 +43,11 @@ import fabio
 from scipy import ndimage
 from scipy.interpolate import interp1d
 from math import ceil, sin, cos, atan2, pi
-
+from .third_party import six
 try:
-    from . import relabel as relabelCython
+    from . import relabel as _relabel
 except:
-    relabelCython = None
+    _relabel = None
 try:
     from .directories import data_dir
 except ImportError:
@@ -81,14 +81,8 @@ def deprecated(func):
         return func(*arg, **kw)
     return wrapper
 
-# Python  compatibility functions.
-try:
-    # if Python2
-    from types import StringTypes
-except NameError:
-    # Python3
-    StringTypes = (str, bytes)
 
+StringTypes = (six.binary_type, six.text_type)
 try:
     input = raw_input
 except NameError:
@@ -421,9 +415,9 @@ def relabel(label, data, blured, max_size=None):
     @param max_size: the max number of label wanted
     @return array like label
     """
-    if relabelCython:
+    if _relabel:
         max_label = label.max()
-        a, b, c, d = relabelCython.countThem(label, data, blured)
+        a, b, c, d = _relabel.countThem(label, data, blured)
         count = d
         sortCount = count.argsort()
         invSortCount = sortCount[-1::-1]
