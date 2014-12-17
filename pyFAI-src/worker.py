@@ -538,8 +538,7 @@ class DistortionWorker(object):
         if detector is None:
             self.distortion = None
         else:
-            self.distortion = Distortion(detector)
-            #TODO
+            self.distortion = Distortion(detector, method="CSR", device=device)
 
         if mask is None:
             self.mask = False
@@ -583,7 +582,10 @@ class DistortionWorker(object):
         
         if do_mask:
             data[self.mask] = self.dummy or 0
-        return data
+        if self.distortion is not None:
+            return self.distortion.correct(data)
+        else:
+            return data
 
 
 

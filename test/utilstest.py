@@ -28,11 +28,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/12/2014"
+__date__ = "15/12/2014"
 
 PACKAGE = "pyFAI"
 SOURCES = PACKAGE + "-src"
 DATA_KEY = "PYFAI_DATA"
+
+if __name__ == "__main__":
+    __name__ = "pyFAI.test"
 
 import os
 import pwd
@@ -60,6 +63,7 @@ IN_SOURCES = SOURCES in os.listdir(os.path.dirname(TEST_HOME))
 if IN_SOURCES:
     os.environ[DATA_KEY] = os.path.dirname(TEST_HOME)
 login = pwd.getpwuid(os.getuid())[0]
+
 
 def copy(infile, outfile):
     "link or copy file according to the OS"
@@ -137,8 +141,12 @@ class UtilsTest(object):
         else:
             ALL_DOWNLOADED_FILES = set()
 
-    print("Call tempfile.mkdtemp(os.getlogin(), name) with %s %s" % (login, name))
+#     print("Call tempfile.mkdtemp(os.getlogin(), name) with %s %s" % (login, name))
     tempdir = tempfile.mkdtemp(login, name)
+
+    @classmethod
+    def clean_up(cls):
+        recursive_delete(cls.tempdir)
 
     @classmethod
     def deep_reload(cls):

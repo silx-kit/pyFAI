@@ -22,13 +22,13 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import division, print_function
-__doc__ = "test suite for utilities library"
+from __future__ import division, print_function, absolute_import
+"test suite for utilities library"
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20141112"
+__date__ = "17/12/2014"
 
 
 import unittest
@@ -37,12 +37,15 @@ import sys
 import os
 import fabio
 import tempfile
-from utilstest import UtilsTest, getLogger, recursive_delete
+if __name__ == '__main__':
+    import pkgutil
+    __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
+from .utilstest import UtilsTest, getLogger, recursive_delete
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 import pyFAI.utils
 
-#if logger.getEffectiveLevel() <= logging.INFO:
+# if logger.getEffectiveLevel() <= logging.INFO:
 #    from pyFAI.gui_utils import pylab
 import scipy.ndimage
 
@@ -148,7 +151,7 @@ def test_suite_all_Utils():
     return testSuite
 
 if __name__ == '__main__':
-
     mysuite = test_suite_all_Utils()
     runner = unittest.TextTestRunner()
     runner.run(mysuite)
+    UtilsTest.clean_up()

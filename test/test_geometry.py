@@ -29,7 +29,10 @@ FIXME : make some tests that the functions do what is expected
 
 
 import unittest, numpy, os, sys, time
-from utilstest import UtilsTest, getLogger
+if __name__ == '__main__':
+    import pkgutil, os
+    __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
+from .utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 
@@ -67,7 +70,7 @@ class TestSolidAngle(unittest.TestCase):
                                       pixel1=172e-6,
                                       pixel2=172e-6)
         self.data = fabio.open(self.pilatusFile).data
-        self.data[self.data < 0] = 0 #discard negative pixels
+        self.data[self.data < 0] = 0  # discard negative pixels
 
     def testSolidAngle(self):
         """

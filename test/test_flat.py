@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/10/2014"
+__date__ = "15/12/2014"
 
 
 import unittest
@@ -38,7 +38,10 @@ import logging
 import time
 import sys
 import fabio
-from utilstest import UtilsTest, Rwp, getLogger
+if __name__ == '__main__':
+    import pkgutil, os
+    __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
+from .utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI.opencl import ocl
@@ -65,7 +68,7 @@ class TestFlat1D(unittest.TestCase):
     def test_correct(self):
         all_methods = ["numpy", "cython", "splitbbox", "splitpix", "lut", "csr"]
         if ocl:
-            for device in ["cpu","gpu","acc"]:
+            for device in ["cpu", "gpu", "acc"]:
                 if ocl.select_device(dtype=device):
                     all_methods.append("lut_ocl_%s" % device)
                     all_methods.append("csr_ocl_%s" % device)
@@ -115,12 +118,12 @@ class TestFlat2D(unittest.TestCase):
                   "lut": self.eps,
                   }
         if ocl:
-            for device in ["cpu","gpu","acc"]:
+            for device in ["cpu", "gpu", "acc"]:
                 if ocl.select_device(dtype=device):
                     test2d["lut_ocl_%s" % device] = self.eps
                     test2d["csr_ocl_%s" % device] = self.eps
-        test2d_direct = {"xrpd2_numpy": 0.3, # histograms are very noisy in 2D
-                         "xrpd2_histogram": 0.3,   # histograms are very noisy in 2D
+        test2d_direct = {"xrpd2_numpy": 0.3,  # histograms are very noisy in 2D
+                         "xrpd2_histogram": 0.3,  # histograms are very noisy in 2D
                          "xrpd2_splitBBox": self.eps,
                          "xrpd2_splitPixel": self.eps}
 

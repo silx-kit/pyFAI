@@ -25,7 +25,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "GPLv3"
-__date__ = "22/10/2014"
+__date__ = "17/12/2014"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -35,16 +35,14 @@ import hashlib
 import numpy
 from .opencl import ocl, pyopencl, allocate_cl_buffers, release_cl_buffers
 from .splitBBoxLUT import HistoBBox1d
-from .utils import concatenate_cl_kernel
+from .utils import concatenate_cl_kernel, calc_checksum
 if pyopencl:
     mf = pyopencl.mem_flags
 else:
     raise ImportError("pyopencl is not installed")
-try:
-    from .fastcrc import crc32
-except:
-    from zlib import crc32
 logger = logging.getLogger("pyFAI.ocl_azim_csr")
+
+
 
 class OCL_CSR_Integrator(object):
     def __init__(self, lut, image_size, devicetype="all",
@@ -78,7 +76,7 @@ class OCL_CSR_Integrator(object):
         self.size = image_size
         self.profile = profile
         if not checksum:
-            checksum = crc32(self._data)
+            checksum = calc_checksum(self._data)
         self.on_device = {"data":checksum, "dark":None, "flat":None, "polarization":None, "solidangle":None}
         self._cl_kernel_args = {}
         self._cl_mem = {}
@@ -97,7 +95,7 @@ class OCL_CSR_Integrator(object):
         self.platform = ocl.platforms[platformid]
         self.device = self.platform.devices[deviceid]
         self.device_type = self.device.type
-        self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)  
+        self.BLOCK_SIZE = min(block_size, self.device.max_work_group_size)
         self.workgroup_size = self.BLOCK_SIZE,  # Note this is a tuple
         self.wdim_bins = (self.bins * self.BLOCK_SIZE),
         self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
@@ -217,7 +215,27 @@ class OCL_CSR_Integrator(object):
 
 
     def integrate(self, data, dummy=None, delta_dummy=None, dark=None, flat=None, solidAngle=None, polarization=None,
-                            dark_checksum=None, flat_checksum=None, solidAngle_checksum=None, polarization_checksum=None):
+                            dark_checksum=None, flat_checksum=None, solidAngle_checksum=None, polarization_checksum=None,
+                            preprocess_only=False, safe=True):
+        """
+        Before performing azimuthal integration, the preprocessing is :
+        
+        data = (data - dark) / (flat*solidAngle*polarization)
+        
+        Integration is performed using the CSR representation of the look-up table
+        
+        @param dark: array of same shape as data for pre-processing
+        @param flat: array of same shape as data for pre-processing
+        @param solidAngle: array of same shape as data for pre-processing
+        @param polarization: array of same shape as data for pre-processing
+        @param dark_checksum: CRC32 checksum of the given array
+        @param flat_checksum: CRC32 checksum of the given array
+        @param solidAngle_checksum: CRC32 checksum of the given array
+        @param polarization_checksum: CRC32 checksum of the given array
+        @param safe: if True (default) compares arrays on GPU according to their checksum, unless, use the buffer location is used
+        @param preprocess_only: return the dark subtracted; flat field & solidAngle & polarization corrected image, else
+        @return averaged data, weighted histogram, unweighted histogram
+        """
         events = []
         with self._sem:
             if data.dtype == numpy.uint8:
@@ -269,8 +287,9 @@ class OCL_CSR_Integrator(object):
 
             if dark is not None:
                 do_dark = numpy.int32(1)
+                # TODO: what is do_checksum=False and image not on device ...
                 if not dark_checksum:
-                    dark_checksum = crc32(dark)
+                    dark_checksum = calc_checksum(dark, safe)
                 if dark_checksum != self.on_device["dark"]:
                     ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["dark"], numpy.ascontiguousarray(dark, dtype=numpy.float32))
                     events.append(("copy dark", ev))
@@ -281,7 +300,7 @@ class OCL_CSR_Integrator(object):
             if flat is not None:
                 do_flat = numpy.int32(1)
                 if not flat_checksum:
-                    flat_checksum = crc32(flat)
+                    flat_checksum = calc_checksum(flat, safe)
                 if self.on_device["flat"] != flat_checksum:
                     ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["flat"], numpy.ascontiguousarray(flat, dtype=numpy.float32))
                     events.append(("copy flat", ev))
@@ -293,10 +312,10 @@ class OCL_CSR_Integrator(object):
             if solidAngle is not None:
                 do_solidAngle = numpy.int32(1)
                 if not solidAngle_checksum:
-                    solidAngle_checksum = crc32(solidAngle)
+                    solidAngle_checksum = calc_checksum(solidAngle, safe)
                 if solidAngle_checksum != self.on_device["solidangle"]:
                     ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["solidangle"], numpy.ascontiguousarray(solidAngle, dtype=numpy.float32))
-	            events.append(("copy solidangle", ev))
+                    events.append(("copy solidangle", ev))
                     self.on_device["solidangle"] = solidAngle_checksum
             else:
                 do_solidAngle = numpy.int32(0)
@@ -305,7 +324,7 @@ class OCL_CSR_Integrator(object):
             if polarization is not None:
                 do_polarization = numpy.int32(1)
                 if not polarization_checksum:
-                    polarization_checksum = crc32(polarization)
+                    polarization_checksum = calc_checksum(polarization, safe)
                 if polarization_checksum != self.on_device["polarization"]:
                     ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["polarization"], numpy.ascontiguousarray(polarization, dtype=numpy.float32))
                     events.append(("copy polarization", ev))
@@ -317,9 +336,14 @@ class OCL_CSR_Integrator(object):
             if do_dummy + do_polarization + do_solidAngle + do_flat + do_dark > 0:
                 ev = self._program.corrections(self._queue, self.wdim_data, self.workgroup_size, *self._cl_kernel_args["corrections"])
                 events.append(("corrections", ev))
-#            if self.padded:
-#                integrate = self._program.csr_integrate_padded(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["csr_integrate"])
-#            else:
+
+            if preprocess_only:
+                image = numpy.empty(data.shape, dtype=numpy.float32)
+                ev = pyopencl.enqueue_copy(self._queue, image, self._cl_mem["image"])
+                events.append(("copy D->H image", ev))
+                ev.wait()
+                return image
+
             integrate = self._program.csr_integrate(self._queue, self.wdim_bins, self.workgroup_size, *self._cl_kernel_args["csr_integrate"])
             events.append(("integrate", integrate))
             outMerge = numpy.empty(self.bins, dtype=numpy.float32)

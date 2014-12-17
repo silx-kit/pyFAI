@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/11/2014"
+__date__ = "17/12/2014"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -71,10 +71,10 @@ except ImportError as error:
                   " full pixel splitting: %s" % error)
     splitPixel = None
 
-#try:
+# try:
 #    # Used fro 2D integration
 #    from . import splitPixelFull  # IGNORE:F0401
-#except ImportError as error:
+# except ImportError as error:
 #    logger.error("Unable to import pyFAI.splitPixelFull"
 #                  " full pixel splitting: %s" % error)
 #    splitPixelFull = None
@@ -122,7 +122,7 @@ if ocl:
                      ": %s" % error)
         ocl_azim_csr = None
     try:
-        from . import ocl_azim_lut # IGNORE:F0401
+        from . import ocl_azim_lut  # IGNORE:F0401
     except ImportError as error:  # IGNORE:W0703
         logger.error("Unable to import pyFAI.ocl_azim_lut for"
                      ": %s" % error)
@@ -467,7 +467,7 @@ class AzimuthalIntegrator(Geometry):
         data = data[mask]
 
         if tthRange is not None:
-            tthRange = (utils.deg2rad(tthRange[0]),utils.deg2rad(tthRange[-1]))
+            tthRange = (utils.deg2rad(tthRange[0]), utils.deg2rad(tthRange[-1]))
         if dummy is None:
             dummy = 0.0
         tthAxis, I, _, _ = histogram.histogram(pos=tth,
@@ -590,7 +590,7 @@ class AzimuthalIntegrator(Geometry):
         dtth = self.delta2Theta(data.shape)
 
         if tthRange is not None:
-            tthRange = (utils.deg2rad(tthRange[0]),utils.deg2rad(tthRange[-1]))
+            tthRange = (utils.deg2rad(tthRange[0]), utils.deg2rad(tthRange[-1]))
 
         if chiRange is not None:
              chiRange = [utils.deg2rad(chiRange[0]), utils.deg2rad(chiRange[-1])]
@@ -748,7 +748,7 @@ class AzimuthalIntegrator(Geometry):
             polarization = self.polarization(data.shape, polarization_factor)
 
         if tthRange is not None:
-            tthRange = (utils.deg2rad(tthRange[0]),utils.deg2rad(tthRange[-1]))
+            tthRange = (utils.deg2rad(tthRange[0]), utils.deg2rad(tthRange[-1]))
 
         if chiRange is not None:
             chiRange = [utils.deg2rad(chiRange[0]), utils.deg2rad(chiRange[-1])]
@@ -2589,7 +2589,7 @@ class AzimuthalIntegrator(Geometry):
                     sigma = numpy.sqrt(a) / b
 
         if I is None:
-            #Common part for  Numpy and Cython
+            # Common part for  Numpy and Cython
             data = data.astype(numpy.float32)
             mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
             pos0 = self.array_from_unit(shape, "center", unit)
@@ -2856,7 +2856,8 @@ class AzimuthalIntegrator(Geometry):
                                                                          dummy=dummy,
                                                                          delta_dummy=delta_dummy,
                                                                          polarization=polarization,
-                                                                         polarization_checksum=self._polarization_crc)
+                                                                         polarization_checksum=self._polarization_crc,
+                                                                         safe=safe)
                                 I.shape = npt
                                 I = I.T
                                 bins_rad = self._lut_integrator.outPos0  # this will be copied later
@@ -2866,7 +2867,8 @@ class AzimuthalIntegrator(Geometry):
                                                                                       solidAngle=solidangle,
                                                                                       dummy=dummy,
                                                                                       delta_dummy=delta_dummy,
-                                                                                      polarization=polarization)
+                                                                                      polarization=polarization,
+                                                                                      )
 
         if (I is None) and ("csr" in method):
             logger.debug("in csr")
@@ -2969,7 +2971,8 @@ class AzimuthalIntegrator(Geometry):
                                                                          dummy=dummy,
                                                                          delta_dummy=delta_dummy,
                                                                          polarization=polarization,
-                                                                         polarization_checksum=self._polarization_crc)
+                                                                         polarization_checksum=self._polarization_crc,
+                                                                         safe=safe)
                                 I.shape = npt
                                 I = I.T
                                 bins_rad = self._csr_integrator.outPos0  # this will be copied later
@@ -3030,7 +3033,7 @@ class AzimuthalIntegrator(Geometry):
 
         if (I is None):
             logger.debug("integrate2d uses cython implementation")
-            data = data.astype(numpy.float32) # it is important to make a copy see issue #88
+            data = data.astype(numpy.float32)  # it is important to make a copy see issue #88
             mask = self.makeMask(data, mask, dummy, delta_dummy,
                                  mode="numpy")
             pos0 = self.array_from_unit(shape, "center", unit)
@@ -3366,8 +3369,8 @@ class AzimuthalIntegrator(Geometry):
         dummies = (integ2d == dummy).sum(axis=0)
         sorted = numpy.sort(integ2d, axis=0)
         pos = (dummies + (percentile / 100.) * (npt_azim - dummies)).astype(int)
-        assert (pos>=0).all()
-        assert (pos<npt_azim).all()
+        assert (pos >= 0).all()
+        assert (pos < npt_azim).all()
         spectrum = sorted[(pos, numpy.arange(npt_rad))]
         amorphous = self.calcfrom1d(radial, spectrum, data.shape, mask=None,
                    dim1_unit=unit, correctSolidAngle=True)

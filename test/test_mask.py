@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/10/2014"
+__date__ = "15/12/2014"
 
 
 import unittest
@@ -35,7 +35,10 @@ import numpy
 import logging
 import sys
 import fabio
-from utilstest import UtilsTest, getLogger
+if __name__ == '__main__':
+    import pkgutil, os
+    __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
+from .utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 
@@ -62,7 +65,7 @@ class test_mask(unittest.TestCase):
         """
         x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg")
         x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg")
-        x3 = self.ai.integrate1d(self.data, 1000, dummy= -20.0, delta_dummy=19.5, unit="2th_deg")
+        x3 = self.ai.integrate1d(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg")
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
@@ -89,7 +92,7 @@ class test_mask(unittest.TestCase):
 #        print self.ai._lut_integrator.lut_checksum
         x2 = self.ai.xrpd_LUT(self.data, 1000, mask=self.mask)
 #        print self.ai._lut_integrator.lut_checksum
-        x3 = self.ai.xrpd_LUT(self.data, 1000, mask=numpy.zeros(shape=self.mask.shape, dtype="uint8"), dummy= -20.0, delta_dummy=19.5)
+        x3 = self.ai.xrpd_LUT(self.data, 1000, mask=numpy.zeros(shape=self.mask.shape, dtype="uint8"), dummy=-20.0, delta_dummy=19.5)
 #        print self.ai._lut_integrator.lut_checksum
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
@@ -115,7 +118,7 @@ class test_mask(unittest.TestCase):
 #        print self.ai._lut_integrator.lut_checksum
         x2 = self.ai.xrpd_LUT_OCL(self.data, 1000, mask=self.mask)
 #        print self.ai._lut_integrator.lut_checksum
-        x3 = self.ai.xrpd_LUT_OCL(self.data, 1000, dummy= -20.0, delta_dummy=19.5)
+        x3 = self.ai.xrpd_LUT_OCL(self.data, 1000, dummy=-20.0, delta_dummy=19.5)
 #        print self.ai._lut_integrator.lut_checksum
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)

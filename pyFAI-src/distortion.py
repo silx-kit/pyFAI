@@ -21,16 +21,17 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import absolute_import, print_function, division, with_statement
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/11/2014"
+__date__ = "15/12/2014"
 __status__ = "development"
 
 import logging, threading
-import types, os, sys
+import os, sys
 import numpy
 logger = logging.getLogger("pyFAI.distortion")
 logging.basicConfig(level=logging.INFO)
@@ -42,6 +43,7 @@ if ocl:
 else:
     ocl_azim_lut = ocl_azim_csr = None
 from .utils import timeit
+from .third_party import six
 import fabio
 
 try:
@@ -65,7 +67,7 @@ class Distortion(object):
         @param device: Name of the device: None for OpenMP, "cpu" or "gpu" or the id of the OpenCL device a 2-tuple of integer
         @param workgroup: workgroup size for CSR on OpenCL
         """
-        if type(detector) in types.StringTypes:
+        if isinstance(detector, (six.text_type, six.binary_type)):
             self.detector = detectors.detector_factory(detector)
         else:  # we assume it is a Detector instance
             self.detector = detector
@@ -162,10 +164,10 @@ class Distortion(object):
                     if _distortion:
                         self.bin_size = _distortion.calc_size(self.pos, self.shape)
                     else:
-                        pos0min = numpy.floor(pos[:, :, :, 0].min(axis= -1)).astype(numpy.int32).clip(0, self.shape[0])
-                        pos1min = numpy.floor(pos[:, :, :, 1].min(axis= -1)).astype(numpy.int32).clip(0, self.shape[1])
-                        pos0max = (numpy.ceil(pos[:, :, :, 0].max(axis= -1)).astype(numpy.int32) + 1).clip(0, self.shape[0])
-                        pos1max = (numpy.ceil(pos[:, :, :, 1].max(axis= -1)).astype(numpy.int32) + 1).clip(0, self.shape[1])
+                        pos0min = numpy.floor(pos[:, :, :, 0].min(axis=-1)).astype(numpy.int32).clip(0, self.shape[0])
+                        pos1min = numpy.floor(pos[:, :, :, 1].min(axis=-1)).astype(numpy.int32).clip(0, self.shape[1])
+                        pos0max = (numpy.ceil(pos[:, :, :, 0].max(axis=-1)).astype(numpy.int32) + 1).clip(0, self.shape[0])
+                        pos1max = (numpy.ceil(pos[:, :, :, 1].max(axis=-1)).astype(numpy.int32) + 1).clip(0, self.shape[1])
                         self.bin_size = numpy.zeros(self.shape, dtype=numpy.int32)
                         max0 = 0
                         max1 = 0
@@ -174,11 +176,11 @@ class Distortion(object):
                                 if (pos0max[i, j] - pos0min[i, j]) > max0:
                                     old = max0
                                     max0 = pos0max[i, j] - pos0min[i, j]
-                                    print old, "new max0", max0, i, j
+                                    print(old, "new max0", max0, i, j)
                                 if (pos1max[i, j] - pos1min[i, j]) > max1:
                                     old = max1
                                     max1 = pos1max[i, j] - pos1min[i, j]
-                                    print old, "new max1", max1, i, j
+                                    print(old, "new max1", max1, i, j)
 
                                 self.bin_size[pos0min[i, j]:pos0max[i, j], pos1min[i, j]:pos1max[i, j]] += 1
                     self.max_size = self.bin_size.max()
@@ -231,14 +233,14 @@ class Distortion(object):
                             for j in range(self.shape[1]):
                                 # i,j, idx are indexes of the raw image uncorrected
                                 quad.reinit(*list(self.pos[i, j, :, :].ravel()))
-                                # print self.pos[i, j, 0, :], self.pos[i, j, 1, :], self.pos[i, j, 2, :], self.pos[i, j, 3, :]
+                                # print(self.pos[i, j, 0, :], self.pos[i, j, 1, :], self.pos[i, j, 2, :], self.pos[i, j, 3, :]
                                 try:
                                     quad.populate_box()
                                 except Exception as error:
-                                    print "error in quad.populate_box of pixel %i, %i: %s" % (i, j, error)
-                                    print "calc_area_vectorial", quad.calc_area_vectorial()
-                                    print self.pos[i, j, 0, :], self.pos[i, j, 1, :], self.pos[i, j, 2, :], self.pos[i, j, 3, :]
-                                    print quad
+                                    print("error in quad.populate_box of pixel %i, %i: %s" % (i, j, error))
+                                    print("calc_area_vectorial", quad.calc_area_vectorial())
+                                    print(self.pos[i, j, 0, :], self.pos[i, j, 1, :], self.pos[i, j, 2, :], self.pos[i, j, 3, :])
+                                    print(quad)
                                     raise
                 #                box = quad.get_box()
                                 for ms in range(quad.get_box_size0()):
@@ -252,7 +254,7 @@ class Distortion(object):
                                             continue
                                         val = quad.get_box(ms, ns)
                                         if val <= 0:
-                #                            print "Val ", val, i, j, idx, ms, ns, ml, nl
+                #                            print("Val ", val, i, j, idx, ms, ns, ml, nl
                                             continue
                                         k = outMax[ml, nl]
                                         lut[ml, nl, k].idx = idx
@@ -281,7 +283,7 @@ class Distortion(object):
                     out = _distortion.correct_LUT(image, self.shape, self.lut)
                 else:
                     big = image.ravel().take(self.lut.idx) * self.lut.coef
-                    out = big.sum(axis= -1)
+                    out = big.sum(axis=-1)
             elif self.method == "csr":
                 if _distortion is not None:
                     out = _distortion.correct_CSR(image, self.shape, self.lut)
@@ -312,7 +314,7 @@ class Distortion(object):
                 lmask = mask.ravel()
                 lout = out.ravel()
                 lin = image.ravel()
-                tot = self.lut.coef.sum(axis= -1)
+                tot = self.lut.coef.sum(axis=-1)
                 for idx in range(self.lut.shape[0]):
                     t = tot[idx]
                     if t <= 0:
@@ -481,41 +483,41 @@ class Quad(object):
         self.integrateAB(self.D0, self.C0, self.calc_area_CD)
         self.integrateAB(self.C0, self.B0, self.calc_area_BC)
         if (self.box / self.calc_area()).min() < 0:
-            print self.box
+            print(self.box)
             self.box[:, :] = 0
-            print "AB"
+            print("AB")
             self.integrateAB(self.B0, self.A0, self.calc_area_AB)
-            print self.box
+            print(self.box)
             self.box[:, :] = 0
-            print "DA"
+            print("DA")
             self.integrateAB(self.A0, self.D0, self.calc_area_DA)
-            print self.box
+            print(self.box)
             self.box[:, :] = 0
-            print "CD"
+            print("CD")
             self.integrateAB(self.D0, self.C0, self.calc_area_CD)
-            print self.box
+            print(self.box)
             self.box[:, :] = 0
-            print "BC"
+            print("BC")
             self.integrateAB(self.C0, self.B0, self.calc_area_BC)
-            print self.box
-            print self
+            print(self.box)
+            print(self)
             raise RuntimeError()
         self.box /= self.calc_area_vectorial()
 
     def integrateAB(self, start, stop, calc_area):
         h = 0
-#        print start, stop, calc_area(start, stop)
+#        print(start, stop, calc_area(start, stop)
         if start < stop:  # positive contribution
             P = ceil(start)
             dP = P - start
-#            print "Integrate", start, P, stop, calc_area(start, stop)
+#            print("Integrate", start, P, stop, calc_area(start, stop)
             if P > stop:  # start and stop are in the same unit
                 A = calc_area(start, stop)
                 if A != 0:
                     AA = abs(A)
                     sign = A / AA
                     dA = (stop - start)  # always positive
-#                    print AA, sign, dA
+#                    print(AA, sign, dA
                     h = 0
                     while AA > 0:
                         if dA > AA:
@@ -643,41 +645,41 @@ def test():
     Q = Quad(buffer)
     Q.reinit(7.5, 6.5, 2.5, 5.5, 3.5, 1.5, 8.5, 1.5)
     Q.init_slope()
-#    print Q.calc_area_AB(Q.A0, Q.B0)
-#    print Q.calc_area_BC(Q.B0, Q.C0)
-#    print Q.calc_area_CD(Q.C0, Q.D0)
-#    print Q.calc_area_DA(Q.D0, Q.A0)
-    print Q.calc_area()
+#    print(Q.calc_area_AB(Q.A0, Q.B0)
+#    print(Q.calc_area_BC(Q.B0, Q.C0)
+#    print(Q.calc_area_CD(Q.C0, Q.D0)
+#    print(Q.calc_area_DA(Q.D0, Q.A0)
+    print(Q.calc_area())
     Q.populate_box()
-    print Q
-#    print Q.get_box().sum()
-    print buffer.sum()
+    print(Q)
+#    print(Q.get_box().sum()
+    print(buffer.sum())
     print("#"*50)
 
     Q.reinit(8.5, 1.5, 3.5, 1.5, 2.5, 5.5, 7.5, 6.5)
     Q.init_slope()
-#    print Q.calc_area_AB(Q.A0, Q.B0)
-#    print Q.calc_area_BC(Q.B0, Q.C0)
-#    print Q.calc_area_CD(Q.C0, Q.D0)
-#    print Q.calc_area_DA(Q.D0, Q.A0)
-    print Q.calc_area()
+#    print(Q.calc_area_AB(Q.A0, Q.B0)
+#    print(Q.calc_area_BC(Q.B0, Q.C0)
+#    print(Q.calc_area_CD(Q.C0, Q.D0)
+#    print(Q.calc_area_DA(Q.D0, Q.A0)
+    print(Q.calc_area())
     Q.populate_box()
-    print Q
-#    print Q.get_box().sum()
-    print buffer.sum()
+    print(Q)
+#    print(Q.get_box().sum()
+    print(buffer.sum())
 
     Q.reinit(0.9, 0.9, 0.8, 6.9, 4.3, 3.9, 4.3, 0.9)
 #    Q = Quad((-0.3, 1.9), (-0.4, 2.9), (1.3, 2.9), (1.3, 1.9))
     Q.init_slope()
-    print "calc_area_vectorial", Q.calc_area()
-#    print Q.A0, Q.A1, Q.B0, Q.B1, Q.C0, Q.C1, Q.D0, Q.D1
-#    print "Slope", Q.pAB, Q.pBC, Q.pCD, Q.pDA
-#    print Q.calc_area_AB(Q.A0, Q.B0), Q.calc_area_BC(Q.B0, Q.C0), Q.calc_area_CD(Q.C0, Q.D0), Q.calc_area_DA(Q.D0, Q.A0)
-    print Q.calc_area()
+    print("calc_area_vectorial", Q.calc_area())
+#    print(Q.A0, Q.A1, Q.B0, Q.B1, Q.C0, Q.C1, Q.D0, Q.D1
+#    print("Slope", Q.pAB, Q.pBC, Q.pCD, Q.pDA
+#    print(Q.calc_area_AB(Q.A0, Q.B0), Q.calc_area_BC(Q.B0, Q.C0), Q.calc_area_CD(Q.C0, Q.D0), Q.calc_area_DA(Q.D0, Q.A0)
+    print(Q.calc_area())
     Q.populate_box()
-    print buffer.T
-#    print Q.get_box().sum()
-    print Q.calc_area()
+    print(buffer.T)
+#    print(Q.get_box().sum()
+    print(Q.calc_area())
 
     print("#"*50)
 
@@ -696,12 +698,12 @@ def test():
 #    grid = numpy.logical_or(x % 100 == 0, y % 100 == 0).astype(numpy.float32) + numpy.ones((2048, 2048), numpy.float32)
 #    det = detectors.FReLoN("frelon.spline")
 
-    print det, det.max_shape
+    print(det, det.max_shape)
     dis = Distortion(det)
-    print dis
+    print(dis)
     lut = dis.self.calc_size()
-    print dis.lut_size
-    print lut.mean()
+    print(dis.lut_size)
+    print(lut.mean())
 
     dis.calc_LUT()
     out = dis.correct(grid)
@@ -712,12 +714,12 @@ def test():
 #    x, y = numpy.ogrid[:2048, :2048]
 #    grid = numpy.logical_or(x % 100 == 0, y % 100 == 0)
 #    det = detectors.FReLoN("frelon.spline")
-#    print det, det.max_shape
+#    print(det, det.max_shape
 #    dis = Distortion(det)
-#    print dis
+#    print(dis
 #    lut = dis.self.calc_size()
-#    print dis.lut_size
-#    print "LUT mean & max", lut.mean(), lut.max()
+#    print(dis.lut_size
+#    print("LUT mean & max", lut.mean(), lut.max()
 #    dis.calc_LUT()
 #    out = dis.correct(grid)
 #    fabio.edfimage.edfimage(data=out.astype("float32")).write("test2048.edf")

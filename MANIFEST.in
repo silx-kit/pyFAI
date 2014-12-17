@@ -1,8 +1,12 @@
 graft doc
 recursive-include openCL *.cl *.h
 recursive-include src  *.c *.h *.pyx *.pxd
+recursive-exclude src *.pyc
 recursive-include benchmark *.py *.spline *.poni
 recursive-include pyFAI-src *.py
+recursive-exclude pyFAI-src *.pyc
+recursive-include test *.py *.json  
+recursive-exclude test *.pyc
 recursive-include gui *.ui
 recursive-include calibration *.D
 include stdeb.cfg

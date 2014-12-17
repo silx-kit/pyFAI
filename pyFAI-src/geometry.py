@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2014"
+__date__ = "17/12/2014"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -40,7 +40,8 @@ import types
 
 from . import detectors
 from . import units
-
+from .third_party import six
+StringTypes = (six.binary_type, six.text_type)
 
 logger = logging.getLogger("pyFAI.geometry")
 
@@ -225,7 +226,7 @@ class Geometry(object):
         self._transmission_crc = None
 
         if detector:
-            if type(detector) in types.StringTypes:
+            if isinstance(detector, StringTypes):
                 self.detector = detectors.detector_factory(detector)
             else:
                 self.detector = detector
@@ -739,7 +740,7 @@ class Geometry(object):
                         delta[:, :, 3] = \
                             numpy.minimum(((chi_corner[:-1, 1: ] - chi_center) % twoPi),
                                           ((chi_center - chi_corner[:-1, 1: ]) % twoPi))
-                    self._dchia = delta.max(axis= -1)
+                    self._dchia = delta.max(axis=-1)
         return self._dchia
 
     def deltaQ(self, shape):
@@ -771,7 +772,7 @@ class Geometry(object):
                         delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
                         delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
                         delta[:, :, 3] = abs(q_corner[:-1, 1:] - q_center)
-                    self._dqa = delta.max(axis= -1)
+                    self._dqa = delta.max(axis=-1)
         return self._dqa
 
     def deltaR(self, shape):
@@ -802,7 +803,7 @@ class Geometry(object):
                         delta[:, :, 1] = abs(q_corner[1:, :-1] - q_center)
                         delta[:, :, 2] = abs(q_corner[1:, 1:] - q_center)
                         delta[:, :, 3] = abs(q_corner[:-1, 1:] - q_center)
-                    self._dra = delta.max(axis= -1)
+                    self._dra = delta.max(axis=-1)
         return self._dra
 
     def cosIncidance(self, d1, d2, path="cython"):
