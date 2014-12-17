@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2014"
+__date__ = "17/12/2014"
 __status__ = "production"
 
 import logging, sys, types, os, glob
@@ -81,7 +81,7 @@ def deprecated(func):
         return func(*arg, **kw)
     return wrapper
 
-#Python  compatibility functions.
+# Python  compatibility functions.
 try:
     # if Python2
     from types import StringTypes
@@ -93,6 +93,20 @@ try:
     input = raw_input
 except NameError:
     pass
+
+try:
+    from .fastcrc import crc32
+except:
+    from zlib import crc32
+
+def calc_checksum(ary, safe=True):
+    """
+    Calculate the checksum by default (or returns its buffer location if unsafe) 
+    """
+    if safe:
+        return crc32(ary)
+    else:
+        return ary.__array_interface__['data'][0]
 
 def gaussian(M, std):
     """
@@ -422,7 +436,7 @@ def relabel(label, data, blured, max_size=None):
         logger.warning("relabel Cython module is not available...")
         return label
 
-def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5,0.5)):
+def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5)):
     """
     Averages a serie of dark (or flat) images.
     Centers the result on the mean or the median ...
@@ -670,7 +684,7 @@ def removeSaturatedPixel(ds, threshold=0.1, minimum=None, maximum=None):
         if  minimum is True:  # automatic guess of the best minimum TODO: use the HWHM to guess the minumum...
             data_min = ds.min()
             x, y = numpy.histogram(numpy.log(ds - data_min + 1.0), bins=100)
-            f = interp1d((y[1:] + y[:-1]) / 2.0, -x, bounds_error=False, fill_value= -x.min())
+            f = interp1d((y[1:] + y[:-1]) / 2.0, -x, bounds_error=False, fill_value=-x.min())
             max_low = fmin(f, y[1], disp=0)
             max_hi = fmin(f, y[-1], disp=0)
             if max_hi > max_low:
@@ -1047,7 +1061,7 @@ class lazy_property(object):
 
 try:
     from numpy import percentile
-except ImportError: #backport percentile from numpy 1.6.2
+except ImportError:  # backport percentile from numpy 1.6.2
     np = numpy
     def percentile(a, q, axis=None, out=None, overwrite_input=False):
         """
