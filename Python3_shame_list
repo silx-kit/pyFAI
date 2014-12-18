@@ -1,22 +1,4 @@
-  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_ocl_lut_pixelsplit.py", line 13
-    print "#"*50
-            ^
-SyntaxError: invalid syntax
 
-  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_pixelsplitFullLUT.py", line 13
-    print "#"*50
-            ^
-SyntaxError: invalid syntax
-
-  File "/usr/lib/python3/dist-packages/pyFAI/test/test_bispev.py", line 79
-    print self.spline.xSplineKnotsX.dtype
-             ^
-SyntaxError: invalid syntax
-
-  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_ocl_hist_pixelsplit.py", line 13
-    print "#"*50
-            ^
-SyntaxError: invalid syntax
 
   File "/usr/lib/python3/dist-packages/pyFAI/test/deepreload.py", line 83
     raise ImportError, "No module named " + qname

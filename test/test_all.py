@@ -21,7 +21,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-
+from __future__ import absolute_import, division, print_function
 """
 Test suite for all pyFAI modules.
 """
@@ -30,16 +30,18 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__data__ = "2014-12-15"
+__data__ = "18/12/2014"
 
 import sys
+import os
 import unittest
 if __name__ == '__main__':
-    import pkgutil, os
+    import pkgutil
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
 from .utilstest import UtilsTest, getLogger
 
 logger = getLogger("test_all")
+
 
 from .test_dummy import test_suite_all_dummy
 from .test_geometry_refinement import test_suite_all_GeometryRefinement
@@ -66,6 +68,7 @@ from .test_marchingsquares import test_suite_all_marchingsquares
 from .test_io import test_suite_all_io
 from .test_calibrant import test_suite_all_calibrant
 from .test_split_pixel import test_suite_all_split
+from .test_bispev import test_suite_all_bispev
 
 
 def test_suite_all():
@@ -95,6 +98,7 @@ def test_suite_all():
     testSuite.addTest(test_suite_all_calibrant())
     testSuite.addTest(test_suite_all_polarization())
     testSuite.addTest(test_suite_all_split())
+    testSuite.addTest(test_suite_all_bispev())
     return testSuite
 
 if __name__ == '__main__':

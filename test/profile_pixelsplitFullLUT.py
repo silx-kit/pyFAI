@@ -4,13 +4,15 @@ Created on Fri Mar 07 09:52:51 2014
 
 @author: ashiotis
 """
+from __future__ import absolute_import
+from __future__ import print_function
 
 import sys, numpy, time
-import utilstest
+from . import utilstest
 import fabio
 import pyopencl as cl
 from pylab import *
-print "#"*50
+print("#"*50)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import splitPixelFullLUT
 from pyFAI import splitPixelFullLUT_float32

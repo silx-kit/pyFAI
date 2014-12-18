@@ -21,14 +21,14 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-
+from __future__ import absolute_import, division, print_function
 "test suite for masked arrays"
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2014"
+__date__ = "18/12/2014"
 
 
 import unittest
@@ -40,7 +40,6 @@ import time
 if __name__ == '__main__':
     import pkgutil, os
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
-
 from .utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
@@ -48,6 +47,7 @@ pyFAI = sys.modules["pyFAI"]
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 from pyFAI import spline, _bispev
+from pyFAI.third_party import six
 
 try:
     from scipy.interpolate import fitpack
@@ -63,8 +63,8 @@ class TestBispev(unittest.TestCase):
         self.splineFile = UtilsTest.getimage(self.__class__.spinefile)
         self.spline = spline.Spline(self.splineFile)
         self.spline.spline2array(timing=True)
+
     def test_bispev(self):
-        print
         x_1d_array = numpy.arange(self.spline.xmin, self.spline.xmax + 1)
         y_1d_array = numpy.arange(self.spline.ymin, self.spline.ymax + 1)
         t0 = time.time()
@@ -76,9 +76,9 @@ class TestBispev(unittest.TestCase):
                                          self.spline.splineOrder],
                 dx=0, dy=0)
         t1 = time.time()
-        print self.spline.xSplineKnotsX.dtype
-        print self.spline.xSplineKnotsY.dtype
-        print self.spline.xSplineCoeff.dtype
+        logger.debug(self.spline.xSplineKnotsX.dtype)
+        logger.debug(self.spline.xSplineKnotsY.dtype)
+        logger.debug(self.spline.xSplineCoeff.dtype)
         dx_loc = _bispev.bisplev(
                 x_1d_array, y_1d_array, [self.spline.xSplineKnotsX,
                                          self.spline.xSplineKnotsY,
@@ -87,11 +87,11 @@ class TestBispev(unittest.TestCase):
                                          self.spline.splineOrder],
                 )
         t2 = time.time()
-        print("Scipy timings: %.3fs\t cython timings: %.3fs" % (t1 - t0, t2 - t1))
-        print(dx_ref.shape, dx_loc.shape)
-        print(dx_ref)
-        print(dx_loc)
-        print(abs(dx_loc - dx_ref).max())
+        logger.debug("Scipy timings: %.3fs\t cython timings: %.3fs" % (t1 - t0, t2 - t1))
+        logger.debug(dx_ref.shape, dx_loc.shape)
+        logger.debug(dx_ref)
+        logger.debug(dx_loc)
+        logger.debug(abs(dx_loc - dx_ref).max())
         if logger.getEffectiveLevel() == logging.DEBUG:
             fig = pylab.figure()
             ax1 = fig.add_subplot(121)
@@ -99,7 +99,7 @@ class TestBispev(unittest.TestCase):
             ax1.imshow(dx_ref)
             ax2.imshow(dx_loc)
             fig.show()
-            raw_input()
+            six.move.input()
         self.assert_(abs(dx_loc - dx_ref).max() < 2e-5, "Result are similar")
 
 
