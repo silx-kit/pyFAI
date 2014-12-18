@@ -1,74 +1,35 @@
-
-
-  File "/usr/lib/python3/dist-packages/pyFAI/test/deepreload.py", line 83
-    raise ImportError, "No module named " + qname
-                     ^
-SyntaxError: invalid syntax
-
-  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_ocl_lut.py", line 29
-    print "#"*50
-            ^
-SyntaxError: invalid syntax
-
-
-  File "/usr/lib/python3/dist-packages/pyFAI/test/bug-ocl-cpu.py", line 6
-    print ai
-           ^
-SyntaxError: invalid syntax
-
-  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_ocl_lut_pixelsplit2.py", line 13
-    print "#"*50
-            ^
-SyntaxError: invalid syntax
-
   File "/usr/lib/python3/dist-packages/pyFAI/test/profile_pixelsplitFullLUT2.py", line 13
     print "#"*50
             ^
-SyntaxError: invalid syntax
+SyntaxError: Missing parentheses in call to 'print'
 
   File "/usr/lib/python3/dist-packages/pyFAI/test/profile_pixelsplitFull.py", line 13
     print "#"*50
             ^
-SyntaxError: invalid syntax
+SyntaxError: Missing parentheses in call to 'print'
+
+  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_ocl_lut_pixelsplit2.py", line 13
+    print "#"*50
+            ^
+SyntaxError: Missing parentheses in call to 'print'
 
   File "/usr/lib/python3/dist-packages/pyFAI/test/profile_csr_padded_csr.py", line 12
     print "#"*50
             ^
-SyntaxError: invalid syntax
+SyntaxError: Missing parentheses in call to 'print'
 
-  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_csr_all_platforms.py", line 12
+  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_ocl_lut.py", line 29
     print "#"*50
             ^
-SyntaxError: invalid syntax
-
-  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_lut_pixelsplitFull.py", line 13
-    print "#"*50
-            ^
-SyntaxError: invalid syntax
-
-  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_OCLFullSplit.py", line 13
-    print "#"*50
-            ^
-SyntaxError: invalid syntax
-
-  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_csr_2d.py", line 12
-    print "#"*50
-            ^
-SyntaxError: invalid syntax
-
-  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_ocl_lut_pixelsplit3.py", line 13
-    print "#"*50
-            ^
-SyntaxError: invalid syntax
+SyntaxError: Missing parentheses in call to 'print'
 
   File "/usr/lib/python3/dist-packages/pyFAI/test/profile_csr_fullsplit.py", line 12
     print "#"*50
             ^
-SyntaxError: invalid syntax
+SyntaxError: Missing parentheses in call to 'print'
 
-
-  File "/usr/lib/python3/dist-packages/pyFAI/integrate_widget.py", line 252
-    ret = QtGui.QMessageBox.warning(self, u"PyFAI integrate",
-                                                           ^
-SyntaxError: invalid syntax
+  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_lut_pixelsplitFull.py", line 13
+    print "#"*50
+            ^
+SyntaxError: Missing parentheses in call to 'print'
 
