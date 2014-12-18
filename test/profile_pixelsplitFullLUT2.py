@@ -4,13 +4,16 @@ Created on Fri Mar 07 09:52:51 2014
 
 @author: ashiotis
 """
+from __future__ import absolute_import
+from __future__ import print_function
 
 import sys, numpy, time
-import utilstest
+from . import utilstest
 import fabio
 import pyopencl as cl
 from pylab import *
-print "#"*50
+from six.moves import input
+print("#"*50)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import splitPixelFullLUT
 from pyFAI import ocl_hist_pixelsplit
@@ -99,7 +102,7 @@ plot(out[0], out[1], label="ocl_lut_merge")
 ####plot(abs(ref-outMerge)/outMerge, label="ocl_csr_fullsplit")
 legend()
 show()
-raw_input()
+input()
 
   
 #aaa = 0
