@@ -298,7 +298,7 @@ class OCL_Hist_Pixelsplit(object):
                     solidAngle_checksum = crc32(solidAngle)
                 if solidAngle_checksum != self.on_device["solidangle"]:
                     ev=pyopencl.enqueue_copy(self._queue, self._cl_mem["solidangle"], numpy.ascontiguousarray(solidAngle, dtype=numpy.float32))
-	            events.append(("copy solidangle",ev))
+                    events.append(("copy solidangle",ev))
                     self.on_device["solidangle"] = solidAngle_checksum
             else:
                 do_solidAngle = numpy.int32(0)

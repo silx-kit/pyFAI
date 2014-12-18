@@ -249,9 +249,8 @@ class AIWidget(QtGui.QWidget):
 #                icon=QtGui.QMessageBox.Warning, buttons=QtGui.QMessageBox.Warning)
 #
 #                msgBox.exec_()
-                ret = QtGui.QMessageBox.warning(self, u"PyFAI integrate",
-                                          u"You must provide the number of output radial bins !",
-                                          )
+                ret = QtGui.QMessageBox.warning(self, "PyFAI integrate",
+                                          "You must provide the number of output radial bins !",)
                 return {}
                 # raise RuntimeError("The number of output point is undefined !")
             kwarg["npt_rad"] = int(str(self.nbpt_rad.text()).strip())

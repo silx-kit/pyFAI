@@ -4,12 +4,16 @@ Created on Fri Mar 07 09:52:51 2014
 
 @author: ashiotis
 """
+from __future__ import absolute_import
+from __future__ import print_function
 
 import sys, numpy, time
-import utilstest
+from . import utilstest
 import fabio, pyopencl
 from pylab import *
-print "#"*50
+from six.moves import range
+from six.moves import input
+print("#"*50)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import splitBBox
 from pyFAI import splitBBoxLUT
@@ -47,7 +51,7 @@ if __name__ == "__main__":
                     unit="2th_deg")
     t1 = time.time()
     timimgs={}
-    print "Time to create cython CSR: ", t1-t0
+    print("Time to create cython CSR: ", t1-t0)
     block_sizes = [1,2,4,8,16,32,64,128]
 
     for device in [(0,0),(1,0),(2,0),(2,1)]:
@@ -60,5 +64,5 @@ if __name__ == "__main__":
         plot(block_sizes, timimgs[i], label=str(i))
     legend()
     show()
-    raw_input()
+    input()
 

@@ -4,13 +4,15 @@ Created on Fri Mar 07 09:52:51 2014
 
 @author: ashiotis
 """
+from __future__ import absolute_import
+from __future__ import print_function
 
 import sys, numpy, time
-import utilstest
+from . import utilstest
 import fabio
 import pyopencl as cl
 from pylab import *
-print "#"*50
+print("#"*50)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import OCLFullSplit
 #logger = utilstest.getLogger("profile")
@@ -33,5 +35,5 @@ size = pos_size/8
 
 foo = OCLFullSplit.OCLFullSplit1d(pos,bins)
 
-print foo.pos0Range
-print foo.pos1Range
+print(foo.pos0Range)
+print(foo.pos1Range)

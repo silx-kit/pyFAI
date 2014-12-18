@@ -10,10 +10,6 @@ SyntaxError: invalid syntax
             ^
 SyntaxError: invalid syntax
 
-  File "/usr/lib/python3/dist-packages/pyFAI/test/test_calibrant.py", line 118
-    print det.name, img.min(), img.max()
-            ^
-SyntaxError: invalid syntax
 
   File "/usr/lib/python3/dist-packages/pyFAI/test/bug-ocl-cpu.py", line 6
     print ai
@@ -70,14 +66,9 @@ SyntaxError: invalid syntax
             ^
 SyntaxError: invalid syntax
 
-  File "/usr/lib/python3/dist-packages/pyFAI/test/profile_csr.py", line 12
-    print "#"*50
-            ^
-SyntaxError: invalid syntax
 
   File "/usr/lib/python3/dist-packages/pyFAI/integrate_widget.py", line 252
     ret = QtGui.QMessageBox.warning(self, u"PyFAI integrate",
                                                            ^
 SyntaxError: invalid syntax
 
-Sorry: TabError: inconsistent use of tabs and spaces in indentation (ocl_hist_pixelsplit.py, line 301)
