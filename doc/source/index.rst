@@ -29,9 +29,12 @@ Split into Design (specification,class diagrams) , Usage and Operation
 .. toctree::
    :maxdepth: 2
 
+
    pyFAI
    man/scripts
+   design/index
    api/modules
+   operations/index
    project
    biblio
 
