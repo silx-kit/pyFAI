@@ -4,12 +4,15 @@ Created on Fri Mar 07 09:52:51 2014
 
 @author: ashiotis
 """
+from __future__ import absolute_import
+from __future__ import print_function
 
 import sys, numpy, time
-import utilstest
+from . import utilstest
 import fabio, pyopencl
 from pylab import *
-print "#"*50
+from six.moves import input
+print("#"*50)
 pyFAI = sys.modules["pyFAI"]
 #from pyFAI import splitBBox
 #from pyFAI import splitBBoxLUT
@@ -32,5 +35,5 @@ plot(ref.ravel(), label="ocl_lut")
 plot(obt.ravel(), label="ocl_csr")
 legend()
 show()
-raw_input()
+input()
 

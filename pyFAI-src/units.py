@@ -25,14 +25,15 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2014"
+__date__ = "17/12/2014"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 
 import logging
 logger = logging.getLogger("pyFAI.unit")
 from numpy import pi
-import types
+from .third_party import six
+StringTypes = (six.binary_type, six.text_type)
 hc = 12.398419292004204
 
 class Enum(dict):
@@ -86,7 +87,7 @@ RADIAL_UNITS = (TTH_DEG, TTH_RAD, Q_NM, Q_A, R_MM)
 
 def to_unit(obj):
     rad_unit = None
-    if type(obj) in types.StringTypes:
+    if isinstance(obj, StringTypes):
         for one_unit in RADIAL_UNITS:
             if one_unit.REPR == obj:
                 rad_unit = one_unit

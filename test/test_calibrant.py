@@ -21,6 +21,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import absolute_import, division, print_function
 
 """
 Test suites for calibrants 
@@ -115,7 +116,7 @@ class TestCalibrant(unittest.TestCase):
                 if idx != 0 and idx % 12 == 0:
                     pp.savefig()
                     plt.clf()
-                print det.name, img.min(), img.max()
+                print( det.name, img.min(), img.max())
             self.assert_(img.shape == det.shape, "Image (%s) has the right size" % (det.name,))
             self.assert_(img.sum() > 0, "Image (%s) contains some data" % (det.name,))
             sys.stderr.write(".")

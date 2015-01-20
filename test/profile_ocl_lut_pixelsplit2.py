@@ -4,13 +4,16 @@ Created on Fri Mar 07 09:52:51 2014
 
 @author: ashiotis
 """
+from __future__ import absolute_import
+from __future__ import print_function
 
 import sys, numpy, time
-import utilstest
+from . import utilstest
 import fabio
 import pyopencl as cl
 from pylab import *
-print "#"*50
+from six.moves import input
+print("#"*50)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import splitPixelFullLUT
 from pyFAI import ocl_hist_pixelsplit
@@ -55,7 +58,7 @@ with open("../openCL/ocl_lut_pixelsplit.cl", "r") as kernelFile:
 compile_options = "-D BINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i -D EPS=%e" % \
                 (bins, size, workgroup_size, numpy.finfo(numpy.float32).eps)
             
-print compile_options
+print(compile_options)
 
 program = cl.Program(ctx, kernel_src).build(options=compile_options)
 
@@ -70,8 +73,8 @@ min1 = pos[:, :, 1].min()
 max1 = pos[:, :, 1].max()
 minmax=(min0,max0,min1,max1)
 
-print minmax
-print d_minmax
+print(minmax)
+print(d_minmax)
 
 
 memset_size = (bins + workgroup_size - 1) & ~(workgroup_size - 1),
@@ -181,5 +184,5 @@ plot(*ref, label="ref_merge")
 ###plot(abs(ref-outMerge)/outMerge, label="ocl_csr_fullsplit")
 legend()
 show()
-raw_input()
+input()
 

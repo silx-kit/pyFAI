@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/12/2014"
+__date__ = "12/01/2015"
 __satus__ = "development"
 
 import sys
@@ -55,7 +55,7 @@ logger = logging.getLogger("pyFAI.integrate_widget")
 from .gui_utils import QtCore, QtGui, uic, SIGNAL, QtWebKit
 
 import fabio
-from .detectors import ALL_DETECTORS
+from .detectors import ALL_DETECTORS, detector_factory
 from .opencl import ocl
 from .utils import float_, int_, str_, get_ui_file
 from .io import HDF5Writer
@@ -125,7 +125,7 @@ class AIWidget(QtGui.QWidget):
     """
     """
     def __init__(self, input_data=None):
-        self.ai = pyFAI.AzimuthalIntegrator()
+        self.ai = AzimuthalIntegrator()
         self.input_data = input_data
         self.output_path = None
         self.output_format = None
@@ -249,9 +249,8 @@ class AIWidget(QtGui.QWidget):
 #                icon=QtGui.QMessageBox.Warning, buttons=QtGui.QMessageBox.Warning)
 #
 #                msgBox.exec_()
-                ret = QtGui.QMessageBox.warning(self, u"PyFAI integrate",
-                                          u"You must provide the number of output radial bins !",
-                                          )
+                ret = QtGui.QMessageBox.warning(self, "PyFAI integrate",
+                                          "You must provide the number of output radial bins !",)
                 return {}
                 # raise RuntimeError("The number of output point is undefined !")
             kwarg["npt_rad"] = int(str(self.nbpt_rad.text()).strip())
@@ -585,7 +584,7 @@ class AIWidget(QtGui.QWidget):
         if ponifile is None:
             ponifile = self.poni.text()
         try:
-            self.ai = pyFAI.load(ponifile)
+            self.ai = AzimuthalIntegrator.sload(ponifile)
         except Exception as error:
             logger.error("file %s does not look like a poni-file, error %s" % (ponifile, error))
             return
@@ -647,9 +646,9 @@ class AIWidget(QtGui.QWidget):
     def set_ai(self):
         poni = str(self.poni.text()).strip()
         if poni and op.isfile(poni):
-            self.ai = pyFAI.load(poni)
+            self.ai = AzimuthalIntegrator.sload(poni)
         detector = str(self.detector.currentText()).lower().strip() or "detector"
-        self.ai.detector = pyFAI.detectors.detector_factory(detector)
+        self.ai.detector = detector_factory(detector)
 
         wavelength = str(self.wavelength.text()).strip()
         if wavelength:
@@ -702,7 +701,7 @@ class AIWidget(QtGui.QWidget):
     def detector_changed(self):
         logger.debug("detector_changed")
         detector = str(self.detector.currentText()).lower()
-        inst = pyFAI.detectors.detector_factory(detector)
+        inst = detector_factory(detector)
         if inst.force_pixel:
             self.pixel1.setText(str(inst.pixel1))
             self.pixel2.setText(str(inst.pixel2))

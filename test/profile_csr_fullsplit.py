@@ -4,12 +4,15 @@ Created on Fri Mar 07 09:52:51 2014
 
 @author: ashiotis
 """
+from __future__ import absolute_import
+from __future__ import print_function
 
 import sys, numpy, time
-import utilstest
+from . import utilstest
 import fabio, pyopencl
 from pylab import *
-print "#"*50
+from six.moves import input
+print("#"*50)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import splitPixelFullLUT
 from pyFAI import ocl_azim_csr
@@ -38,5 +41,5 @@ plot(boo, label="csr_fullsplit")
 plot(boo2, label="ocl_csr_fullsplit")
 legend()
 show()
-raw_input()
+input()
 
