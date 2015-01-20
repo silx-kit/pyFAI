@@ -5,9 +5,9 @@ Author: Jérôme Kieffer
 
 Date: 20/01/2015
 
-Keywords: Installation procedure
+Keywords: Calibration
 
-Target: System administrators
+Target: Scientists
 
 Associated video:
   http://www.edna-site.org/pub/calibration/calib.flv

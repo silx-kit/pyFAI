@@ -72,7 +72,7 @@ PyFAI comes with a test suite to ensure all core functionnalities are working as
 ::
     python setup.py build test
 
-Nota: to run the test an internet connection is needed as 200MB of test imagesneed to be downloaded.
+Nota: to run the test an internet connection is needed as 200MB of test images need to be downloaded.
 
 
 .. toctree::
