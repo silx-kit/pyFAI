@@ -31,6 +31,8 @@ Split into Design (specification,class diagrams) , Usage and Operation
 
 
    pyFAI
+   usage/cookbook/index
+   usage/tutorial/index
    man/scripts
    design/index
    api/modules

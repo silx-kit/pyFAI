@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/01/2015"
+__date__ = "20/01/2015"
 __satus__ = "development"
 
 import sys
@@ -103,9 +103,9 @@ class Browser(QtGui.QMainWindow):
         self.mainLayout.addWidget(self.frame)
         self.setCentralWidget(self.centralwidget)
 
-        self.connect(self.tb_url, QtCore.SIGNAL("returnPressed()"), self.browse)
-        self.connect(self.bt_back, QtCore.SIGNAL("clicked()"), self.html.back)
-        self.connect(self.bt_ahead, QtCore.SIGNAL("clicked()"), self.html.forward)
+        self.tb_url.returnPressed.connect(self.browse)
+        self.bt_back.clicked.connect(self.html.back)
+        self.bt_ahead.clicked.connect(self.html.forward)
 
         self.default_url = default_url
         self.tb_url.setText(self.default_url)
@@ -113,13 +113,16 @@ class Browser(QtGui.QMainWindow):
 
     def browse(self):
         """
-            Make a web browse on a specific url and show the page on the
-            Webview widget.
+        Make a web browse on a specific url and show the page on the
+        Webview widget.
         """
+        print("browse " + self.tb_url.text())
+        url = QtCore.QUrl.fromUserInput(self.tb_url.text())
+        print(str(url))
+#         self.html.setUrl(url)
+        self.html.load(url)
+#         self.html.show()
 
-        url = self.tb_url.text() if self.tb_url.text() else self.default_url
-        self.html.load(QtCore.QUrl(url))
-        self.html.show()
 
 class AIWidget(QtGui.QWidget):
     """

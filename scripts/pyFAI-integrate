@@ -35,7 +35,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2014"
+__date__ = "20/01/2015"
 __satus__ = "production"
 import sys, logging, json, os, time, types, threading
 import os.path as op
@@ -94,11 +94,11 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
     parser.add_argument("--no-gui",
                       dest="gui", default=True, action="store_false",
                       help="Process the dataset without showing the user interface.")
-    parser.add_argument("args", metavar='FILE', type=str, nargs='+',
+    parser.add_argument("args", metavar='FILE', type=str, nargs='*',
                         help="Files to be integrated")
     options = parser.parse_args()
 
-    # Analyse aruments and options
+    # Analyse arguments and options
     args = pyFAI.utils.expand_args(options.args)
 #        if len(args) != 1:
 #            parser.error("incorrect number of arguments")
@@ -107,12 +107,17 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
         logger.setLevel(logging.DEBUG)
     if options.gui:
         from PyQt4 import QtCore, QtGui, uic
-        from PyQt4.QtCore import SIGNAL
         app = QtGui.QApplication([])
+        if not args:
+            dia = QtGui.QFileDialog(directory=os.getcwd())
+            dia.setFileMode(QtGui.QFileDialog.ExistingFiles)
+            dia.exec_()
+            args = [str(i) for i in  dia.selectedFiles()]
+
         window = AIWidget()
         window.set_input_data(args)
         window.show()
         sys.exit(app.exec_())
     else:
         # TODO
-        pass
+        raise NotImplemented

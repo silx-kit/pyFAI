@@ -49,6 +49,7 @@ Building procedure
 ------------------
 
 ::
+
     python setup.py build install
 
 There are few specific options to setup.py:
@@ -70,6 +71,7 @@ Test suites
 PyFAI comes with a test suite to ensure all core functionnalities are working as expected:
 
 ::
+
     python setup.py build test
 
 Nota: to run the test an internet connection is needed as 200MB of test images need to be downloaded.
