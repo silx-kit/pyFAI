@@ -1,13 +1,7 @@
 Cookbook recipes
 ================
 
-Author: Jérôme Kieffer
-
-Date: 20/01/2015
-
-Keywords: Short (1 page long) tutorials
-
-Target: Scientists
+Cookbook are short tutorials: 1 page, 5 minutes to read.
 
 
 .. toctree::
