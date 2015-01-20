@@ -1,1 +1,3 @@
-Calibration of diffraction image
+Calibration of a diffraction setup
+==================================
+

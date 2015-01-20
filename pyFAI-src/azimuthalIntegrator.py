@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2014"
+__date__ = "20/01/2015"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -215,7 +215,7 @@ class AzimuthalIntegrator(Geometry):
             self._lut_integrator = None
             self._csr_integrator = None
 
-    def makeMask(self, data, mask=None,
+    def create_mask(self, data, mask=None,
                  dummy=None, delta_dummy=None, mode="normal"):
         """
         Combines various masks into another one.
@@ -390,7 +390,7 @@ class AzimuthalIntegrator(Geometry):
         The *dark* and the *flat* can be provided to correct the data
         before computing the radial integration.
         """
-        mask = self.makeMask(data, mask, dummy, delta_dummy, mode="where")
+        mask = self.create_mask(data, mask, dummy, delta_dummy, mode="where")
         tth = self.twoThetaArray(data.shape)[mask]
         data = numpy.ascontiguousarray(data, dtype=numpy.float32)
 
@@ -451,7 +451,7 @@ class AzimuthalIntegrator(Geometry):
                                    delta_dummy=delta_dummy,
                                    polarization_factor=polarization_factor)
 
-        mask = self.makeMask(data, mask, dummy, delta_dummy, mode="where")
+        mask = self.create_mask(data, mask, dummy, delta_dummy, mode="where")
         tth = self.twoThetaArray(data.shape)[mask]
         data = numpy.ascontiguousarray(data, dtype=numpy.float32)
 
@@ -611,7 +611,7 @@ class AzimuthalIntegrator(Geometry):
         else:
             polarization = self.polarization(data.shape, polarization_factor)
 
-        # ??? what about makeMask like with other methods
+        # ??? what about create_mask like with other methods
         if mask is None:
             mask = self.mask
 
@@ -1645,7 +1645,7 @@ class AzimuthalIntegrator(Geometry):
         delta_dummy=1.5 so that any value between -3.5 and -0.5 are
         considered as bad.
         """
-        mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
+        mask = self.create_mask(data, mask, dummy, delta_dummy, mode="numpy")
         shape = data.shape
         tth = self.twoThetaArray(shape)[mask]
         chi = self.chiArray(shape)[mask]
@@ -1767,7 +1767,7 @@ class AzimuthalIntegrator(Geometry):
                                     dummy=dummy,
                                     delta_dummy=delta_dummy)
 
-        mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
+        mask = self.create_mask(data, mask, dummy, delta_dummy, mode="numpy")
         tth = self.twoThetaArray(data.shape)[mask]
         chi = self.chiArray(data.shape)[mask]
         data = data.astype(numpy.float32)[mask]
@@ -2591,7 +2591,7 @@ class AzimuthalIntegrator(Geometry):
         if I is None:
             # Common part for  Numpy and Cython
             data = data.astype(numpy.float32)
-            mask = self.makeMask(data, mask, dummy, delta_dummy, mode="numpy")
+            mask = self.create_mask(data, mask, dummy, delta_dummy, mode="numpy")
             pos0 = self.array_from_unit(shape, "center", unit)
             if radial_range is not None:
                 mask *= (pos0 >= min(radial_range))
@@ -3034,7 +3034,7 @@ class AzimuthalIntegrator(Geometry):
         if (I is None):
             logger.debug("integrate2d uses cython implementation")
             data = data.astype(numpy.float32)  # it is important to make a copy see issue #88
-            mask = self.makeMask(data, mask, dummy, delta_dummy,
+            mask = self.create_mask(data, mask, dummy, delta_dummy,
                                  mode="numpy")
             pos0 = self.array_from_unit(shape, "center", unit)
             pos1 = self.chiArray(shape)
