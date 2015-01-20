@@ -194,6 +194,59 @@ cdef class Bilinear:
         else:
             return (current0,current1)
 
+    cpdef int cp_local_maxi(self, int x, int w=1):
+        return self.c_local_maxi(x, w)
+
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    @cython.cdivision(True)
+    cdef int c_local_maxi(self, int x, int w=1) nogil:
+        """
+        Return the local maximum ... without sub-pixel refinement
+
+        @param x: start index
+        @param w: half with of the window: 1 or 2 are advised
+        @return: local maximum index
+
+        """
+        cdef:
+            int width = self.data.shape[1]
+            int current0 = x // width
+            int current1 = x % width
+            int i0, i1, start0, stop0, start1, stop1, new0, new1, width0=w, width1=w
+            float tmp, value, current_value
+
+        value = self.data[current0, current1]
+        current_value = value-1.0
+        new0, new1 = current0,current1
+        while value > current_value:
+            current_value = value
+            if current0 < width0:
+                start0 = 0
+            else:
+                start0 = current0 - width0
+            if current0 >= self.d0_max - width0:
+                stop0 = self.d0_max
+            else:
+                stop0 = current0 + width0
+            if current1 < width1:
+                start1 = 0
+            else:
+                start1 = current1 - width1
+            if current1 >= self.d1_max - width1:
+                stop1=self.d1_max
+            else:
+                stop1 = current1 + width1
+            for i0 in range(start0, stop0+1):
+                for i1 in range(start1, stop1+1):
+                    tmp=self.data[i0,i1]
+                    if tmp>current_value:
+                        new0,new1=i0,i1
+                        value = tmp
+            current0, current1 = new0, new1
+        return width * current0 + current1
+
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)
