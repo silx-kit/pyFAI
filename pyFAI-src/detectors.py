@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/10/2014"
+__date__ = "23/01/2015"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instanciate them
@@ -86,10 +86,10 @@ class Detector(with_metaclass(DetectorMeta, object)):
     """
     Generic class representing a 2D detector
     """
-    force_pixel = False     # Used to specify pixel size should be defined by the class itself.
-    aliases = []            # list of alternative names
-    registry = {}           # list of  detectors ...
-    uniform_pixel = True    # tells all pixels have the same size
+    force_pixel = False  # Used to specify pixel size should be defined by the class itself.
+    aliases = []  # list of alternative names
+    registry = {}  # list of  detectors ...
+    uniform_pixel = True  # tells all pixels have the same size
 
     @classmethod
     def factory(cls, name, config=None):
@@ -189,7 +189,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
                 new.__setattr__(key, value.copy())
             else:
                 new.__setattr__(key, 1 * value)
-                
+
         if self._splineFile:
             new.set_splineFile(self._splineFile)
         return new
@@ -498,7 +498,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
                     corner index (A, B, C or D), triangles or hexagons can be handled the same way
                     vertex position (z,y,x)
         """
-        #float32 is ok: precision of 1µm for a detector size of 1m
+        # float32 is ok: precision of 1µm for a detector size of 1m
         corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
         d1 = numpy.outer(numpy.arange(self.shape[0] + 1), numpy.ones(self.shape[1] + 1)) - 0.5
         d2 = numpy.outer(numpy.ones(self.shape[0] + 1), numpy.arange(self.shape[1] + 1)) - 0.5
@@ -540,7 +540,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
         if self.mask is not None:
             det_grp["mask"] = self.mask
         if not self.uniform_pixel:
-            #Get ready for the worse case: 4 corner per pixel, position 3D: z,y,x
+            # Get ready for the worse case: 4 corner per pixel, position 3D: z,y,x
             det_grp["pixel_corners"] = self.get_pixel_corners()
             det_grp["pixel_corners"].attrs["interpretation"] = "vertex"
         nxs.close()
@@ -692,13 +692,13 @@ class NexusDetector(Detector):
             C2 = pixels[:, :, 2, 2]
             D1 = pixels[:, :, 3, 1]
             D2 = pixels[:, :, 3, 2]
-            #points A and D are on the same dim1 (Y), they differ in dim2 (X)
-            #points B and C are on the same dim1 (Y), they differ in dim2 (X)
-            #p1 = mean(A1,D1) + delta1 * (mean(C2,D2)-mean(A2,C2))
+            # points A and D are on the same dim1 (Y), they differ in dim2 (X)
+            # points B and C are on the same dim1 (Y), they differ in dim2 (X)
+            # p1 = mean(A1,D1) + delta1 * (mean(C2,D2)-mean(A2,C2))
             p1 = 0.5 * ((A1 + D1) * (1.0 - delta1) + delta1 * (B1 + C1))
-            #points A and B are on the same dim2 (X), they differ in dim1
-            #points A and B are on the same dim2 (X), they differ in dim1
-            #p2 = mean(A2,B2) + delta2 * (mean(C2,D2)-mean(A2,C2))
+            # points A and B are on the same dim2 (X), they differ in dim1
+            # points A and B are on the same dim2 (X), they differ in dim1
+            # p2 = mean(A2,B2) + delta2 * (mean(C2,D2)-mean(A2,C2))
             p2 = 0.5 * ((A2 + B2) * (1.0 - delta2) + delta2 * (C2 + D2))
         return p1, p2
 
@@ -1152,7 +1152,7 @@ class Mar345(Detector):
     """
     force_pixel = True
     MAX_SHAPE = (3450, 3450)
-    #Valid image width with corresponding pixel size
+    # Valid image width with corresponding pixel size
     VALID_SIZE = {2300:150e-6,
                   2000:150e-6,
                   1600:150e-6,
@@ -1266,7 +1266,7 @@ class ImXPadS10(Detector):
             pos[0] = 1
             pos[-1] = 1
             dims.append(pos)
-        #This is just an "outer sum"
+        # This is just an "outer sum"
         dim1, dim2 = dims
         dim1.shape = -1, 1
         dim1.strides = dim1.strides[0], 0
@@ -1277,7 +1277,7 @@ class ImXPadS10(Detector):
 
     def __init__(self, pixel1=130e-6, pixel2=130e-6):
         Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
-        self._pixel_edges = None # array of size max_shape+1: pixels are contiguous
+        self._pixel_edges = None  # array of size max_shape+1: pixels are contiguous
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -1305,7 +1305,7 @@ class ImXPadS10(Detector):
         edges1, edges2 = self.calc_pixels_edges()
 
         if (d1 is None) or (d2 is None):
-            #Take the center of each pixel
+            # Take the center of each pixel
             d1 = 0.5 * (edges1[:-1] + edges1[1:])
             d2 = 0.5 * (edges2[:-1] + edges2[1:])
             p1 = numpy.outer(d1, numpy.ones(self.shape[1]))
@@ -1326,7 +1326,7 @@ class ImXPadS70(ImXPadS10):
     BORDER_SIZE_RELATIVE = 2.5
     force_pixel = True
     aliases = ["Imxpad S70"]
-    PIXEL_EDGES = None # array of size max_shape+1: pixels are contiguous
+    PIXEL_EDGES = None  # array of size max_shape+1: pixels are contiguous
 
     def __init__(self, pixel1=130e-6, pixel2=130e-6):
         ImXPadS10.__init__(self, pixel1=pixel1, pixel2=pixel2)
@@ -1437,13 +1437,13 @@ class Xpad_flat(ImXPadS10):
             C2 = pixels[:, :, 2, 2]
             D1 = pixels[:, :, 3, 1]
             D2 = pixels[:, :, 3, 2]
-            #points A and D are on the same dim1 (Y), they differ in dim2 (X)
-            #points B and C are on the same dim1 (Y), they differ in dim2 (X)
-            #p1 = mean(A1,D1) + delta1 * (mean(C2,D2)-mean(A2,C2))
+            # points A and D are on the same dim1 (Y), they differ in dim2 (X)
+            # points B and C are on the same dim1 (Y), they differ in dim2 (X)
+            # p1 = mean(A1,D1) + delta1 * (mean(C2,D2)-mean(A2,C2))
             p1 = 0.5 * ((A1 + D1) * (1.0 - delta1) + delta1 * (B1 + C1))
-            #points A and B are on the same dim2 (X), they differ in dim1
-            #points A and B are on the same dim2 (X), they differ in dim1
-            #p2 = mean(A2,B2) + delta2 * (mean(C2,D2)-mean(A2,C2))
+            # points A and B are on the same dim2 (X), they differ in dim1
+            # points A and B are on the same dim2 (X), they differ in dim1
+            # p2 = mean(A2,B2) + delta2 * (mean(C2,D2)-mean(A2,C2))
             p2 = 0.5 * ((A2 + B2) * (1.0 - delta2) + delta2 * (C2 + D2))
         return p1, p2
 
@@ -1463,12 +1463,12 @@ class Xpad_flat(ImXPadS10):
                     pixel_size1 = self._calc_pixels_size(self.MAX_SHAPE[0], self.MODULE_SIZE[0], self.PIXEL_SIZE[0])
                     pixel_size2 = self._calc_pixels_size(self.MAX_SHAPE[1], self.MODULE_SIZE[1], self.PIXEL_SIZE[1])
                     # half pixel offset
-                    pixel_center1 = pixel_size1 / 2.0 # half pixel offset
+                    pixel_center1 = pixel_size1 / 2.0  # half pixel offset
                     pixel_center2 = pixel_size2 / 2.0
-                    #size of all preceeding pixels
+                    # size of all preceeding pixels
                     pixel_center1[1:] += numpy.cumsum(pixel_size1[:-1])
                     pixel_center2[1:] += numpy.cumsum(pixel_size2[:-1])
-                    #gaps
+                    # gaps
                     for i in range(self.MAX_SHAPE[0] // self.MODULE_SIZE[0]):
                         pixel_center1[i * self.MODULE_SIZE[0]:
                            (i + 1) * self.MODULE_SIZE[0]] += i * self.MODULE_GAP[0]
@@ -1508,9 +1508,11 @@ class Perkin(Detector):
     """
     aliases = ["Perkin detector"]
     force_pixel = True
-    MAX_SHAPE = (2048, 2048)
+    MAX_SHAPE = (4096, 4096)
     def __init__(self, pixel=200e-6):
         super(Perkin, self).__init__(pixel1=pixel, pixel2=pixel)
+        self.shape = (2048, 2048)
+        self._binning = (2, 2)
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \

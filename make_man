@@ -3,7 +3,7 @@ if [ ! -d man ]
     then
     mkdir man
     fi
-version=$(./bootstrap.py version.py |tail -n 1)
+version=$(./bootstrap.py ./version.py |tail -n 1)
 echo $version
 for i in scripts/*;
     do

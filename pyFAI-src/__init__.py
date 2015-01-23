@@ -22,10 +22,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-version = "0.10.2"
-date = "2014-11"
 import sys, logging
 logging.basicConfig()
+from ._version import version, version_info, hexversion, date
 
 if sys.version_info < (2, 6):
     logger = logging.getLogger("pyFAI.__init__")

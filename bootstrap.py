@@ -13,7 +13,7 @@ example: ./bootstrap.py pyFAI-integrate test/testimages/Pilatus1M.edf
 __authors__ = ["Frédéric-Emmanuel Picca", "Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
-__date__ = "27/11/2014"
+__date__ = "23/01/2015"
 
 TARGET = "pyFAI"
 
@@ -69,6 +69,17 @@ def _copy_files(source, dest, extn):
         if clf.endswith(extn) and clf not in os.listdir(dest):
             _copy(os.path.join(full_src, clf), os.path.join(dest, clf))
 
+
+def runfile(fname):
+    try:
+        execfile(fname)
+    except SyntaxError:
+        env = os.environ.copy()
+        env.update({"PYTHONPATH": LIBPATH + os.pathsep + os.environ.get("PYTHONPATH", ""),
+                    "PATH": SCRIPTSPATH + os.pathsep + os.environ.get("PATH", "")})
+        run = subprocess.Popen(sys.argv, shell=False, env=env)
+        run.wait()
+
 home = os.path.dirname(os.path.abspath(__file__))
 SCRIPTSPATH = os.path.join(home,
                            'build', _distutils_scripts_name())
@@ -105,14 +116,14 @@ if __name__ == "__main__":
     print("04. Executing %s.main()" % (script,))
     fullpath = os.path.join(SCRIPTSPATH, script)
     if os.path.exists(fullpath):
-        execfile(fullpath)
+        runfile(fullpath)
     else:
         if os.path.exists(script):
-            execfile(script)
+            runfile(script)
         else:
             for dirname in os.environ.get("PATH", "").split(os.pathsep):
                 fullpath = os.path.join(dirname, script)
                 if os.path.exists(fullpath):
-                    execfile(fullpath)
+                    runfile(fullpath)
                     break
 

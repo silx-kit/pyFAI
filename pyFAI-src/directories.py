@@ -28,6 +28,7 @@ Contains the directory name where data are:
  * gui directory with graphical user interface files
  * openCL directory with OpenCL kernels
  * calibrants directory with d-spacing files describing calibrants
+ * testimages: if does not exist: create it.
 
 This file is very short and simple in such a way to be mangled by installers
 It is used by pyFAI.utils._get_data_path
@@ -40,8 +41,39 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/10/2014"
+__date__ = "23/01/2015"
 __status__ = "development"
 
+import os, getpass, tempfile
+import logging
+logger = logging.getLogger("pyFAI.directories")
 
-data_dir = ""
+PYFAI_DATA = "/usr/share/pyFAI"
+PYFAI_TESTIMAGES = "/usr/share/pyFAI/testimages"
+
+# testimage contains the directory name where
+data_dir = None
+if "PYFAI_DATA" in os.environ:
+    data_dir = os.environ.get("PYFAI_DATA")
+    if not os.path.exists(data_dir):
+        logger.warning("data directory %s does not exist" % data_dir)
+elif os.path.isdir(PYFAI_DATA):
+    data_dir = PYFAI_DATA
+else:
+    data_dir = ""
+
+# testimages contains the directory name where test images are located
+testimages = None
+if "PYFAI_TESTIMAGES" in os.environ:
+    testimages = os.environ.get("PYFAI_TESTIMAGES")
+    if not os.path.exists(testimages):
+        logger.warning("testimage directory %s does not exist" % testimages)
+else:
+    testimages = os.path.join(data_dir, "testimages")
+    if not os.path.isdir(testimages):
+        # create a temporary folder
+        testimages = os.path.join(tempfile.gettempdir(), "pyFAI_testimages_%s" % (getpass.getuser()))
+        if not os.path.exists(testimages):
+            os.makedirs(testimages)
+
+
