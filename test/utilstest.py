@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/12/2014"
+__date__ = "20/01/2015"
 
 PACKAGE = "pyFAI"
 SOURCES = PACKAGE + "-src"
@@ -237,17 +237,9 @@ class UtilsTest(object):
             else:
                 opener = urlopen
 
-#           Nota: since python2.6 there is a timeout in the urllib2
-            timer = threading.Timer(cls.timeout + 1, cls.timeoutDuringDownload, args=[imagename])
-            timer.start()
             logger.info("wget %s/%s" % (cls.url_base, imagename))
-            if sys.version > (2, 6):
-                data = opener("%s/%s" % (cls.url_base, imagename),
-                              data=None, timeout=cls.timeout).read()
-            else:
-                data = opener("%s/%s" % (cls.url_base, imagename),
-                              data=None).read()
-            timer.cancel()
+            data = opener("%s/%s" % (cls.url_base, imagename),
+                          data=None, timeout=cls.timeout).read()
             logger.info("Image %s successfully downloaded." % baseimage)
 
             try:

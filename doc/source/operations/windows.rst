@@ -1,7 +1,17 @@
+
+Author: Jérôme Kieffer
+
+Date: 16/01/2015
+
+Keywords: Installation procedure
+
+Target: System administrators
+
+
 Installation procedure on Windows
 =================================
 
-To install pyFAI on a windows PC, you will need a scientific Python,
+To install pyFAI on a windows PC, you will need a scientific Python stack,
 Winpython is a good choice.
 http://winpython.sourceforge.net/
 The Python2.7 in 64 bits is recommended.

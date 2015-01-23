@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2014"
+__date__ = "20/01/2015"
 
 
 import unittest
@@ -203,12 +203,15 @@ class TestAzimHalfFrelon(unittest.TestCase):
 #        logger.info(self.ai.__repr__())
         data = self.data
         tth_np, I_np = self.ai.xrpd_numpy(data,
-                                     len(self.fit2d), correctSolidAngle=False)
+                                          len(self.fit2d),
+                                          correctSolidAngle=False)
         tth_cy, I_cy = self.ai.xrpd_cython(data,
-                                     len(self.fit2d), correctSolidAngle=False)
+                                           len(self.fit2d),
+                                           correctSolidAngle=False)
         logger.info("before xrpd_splitPixel")
         tth_sp, I_sp = self.ai.xrpd_splitPixel(data,
-                                     len(self.fit2d), correctSolidAngle=False)
+                                               len(self.fit2d),
+                                               correctSolidAngle=False)
         logger.info("After xrpd_splitPixel")
         rwp = Rwp((tth_cy, I_cy), (tth_np, I_np))
         logger.info("Rwp = %.3f" % rwp)
@@ -287,8 +290,8 @@ class test_saxs(unittest.TestCase):
         """test the generation of mask"""
         data = fabio.open(self.edfPilatus).data
         mask = fabio.open(self.maskFile).data
-        self.assert_(abs(self.ai.makeMask(data, mask=mask).astype(int) - fabio.open(self.maskRef).data).max() == 0, "test without dummy")
-#         self.assert_(abs(self.ai.makeMask(data, mask=mask, dummy=-48912, delta_dummy=40000).astype(int) - fabio.open(self.maskDummy).data).max() == 0, "test_dummy")
+        self.assert_(abs(self.ai.create_mask(data, mask=mask).astype(int) - fabio.open(self.maskRef).data).max() == 0, "test without dummy")
+#         self.assert_(abs(self.ai.create_mask(data, mask=mask, dummy=-48912, delta_dummy=40000).astype(int) - fabio.open(self.maskDummy).data).max() == 0, "test_dummy")
 
 
 class TestSetter(unittest.TestCase):
