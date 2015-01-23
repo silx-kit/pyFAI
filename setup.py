@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/10/2014"
+__date__ = "23/01/2015"
 __status__ = "stable"
 
 
@@ -414,13 +414,11 @@ if sphinx:
     cmdclass['build_doc'] = build_doc
 
 
-# get the version without importing pyFAI
 def get_version():
-    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                           "pyFAI-src", "__init__.py")) as f:
-        for line in f:
-            if line.strip().startswith("version"):
-                return eval(line.split("=")[1])
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "pyFAI-src"))
+    import _version
+    sys.path.pop(0)
+    return _version.version
 
 classifiers = """\
 Development Status :: 5 - Production/Stable
@@ -435,42 +433,42 @@ Operating System :: MacOS :: MacOS X
 Operating System :: POSIX
 
 """
-
-setup(name='pyFAI',
-      version=get_version(),
-      author="Jérôme Kieffer (python), \
-      Peter Boesecke (geometry), Manuel Sanchez del Rio (algorithm), \
-      Vicente Armando Sole (algorithm), \
-      Dimitris Karkoulis (GPU), Jon Wright (adaptations) \
-      and Frederic-Emmanuel Picca",
-      author_email="jerome.kieffer@esrf.fr",
-      description='Python implementation of fast azimuthal integration',
-      url="https://github.com/kif/pyFAI",
-      download_url="http://forge.epn-campus.eu/projects/azimuthal/files",
-      ext_package="pyFAI",
-      scripts=script_files,
-      ext_modules=ext_modules,
-      packages=["pyFAI", "pyFAI.third_party", "pyFAI.test"],
-      package_dir={"pyFAI": "pyFAI-src",
-                   "pyFAI.third_party": "third_party",
-                   "pyFAI.test": "test",
-                   },
-      test_suite="test",
-      cmdclass=cmdclass,
-      data_files=data_files,
-      classifiers=[i for i in classifiers.split("\n") if i],
-      long_description="""PyFAI is an azimuthal integration library that tries to be fast (as fast as C
-and even more using OpenCL and GPU).
-It is based on histogramming of the 2theta/Q positions of each (center of)
-pixel weighted by the intensity of each pixel, but parallel version use a
-SparseMatrix-DenseVector multiplication.
-Neighboring output bins get also a contribution of pixels next to the border
-thanks to pixel splitting.
-Finally pyFAI provides also tools to calibrate the experimental setup using Debye-Scherrer
-rings of a reference compound.
-      """,
-      license="GPL"
-      )
+if __name__ == "__main__":
+    setup(name='pyFAI',
+          version=get_version(),
+          author="Jérôme Kieffer (python), \
+          Peter Boesecke (geometry), Manuel Sanchez del Rio (algorithm), \
+          Vicente Armando Sole (algorithm), \
+          Dimitris Karkoulis (GPU), Jon Wright (adaptations) \
+          and Frederic-Emmanuel Picca",
+          author_email="jerome.kieffer@esrf.fr",
+          description='Python implementation of fast azimuthal integration',
+          url="https://github.com/kif/pyFAI",
+          download_url="http://forge.epn-campus.eu/projects/azimuthal/files",
+          ext_package="pyFAI",
+          scripts=script_files,
+          ext_modules=ext_modules,
+          packages=["pyFAI", "pyFAI.third_party", "pyFAI.test"],
+          package_dir={"pyFAI": "pyFAI-src",
+                       "pyFAI.third_party": "third_party",
+                       "pyFAI.test": "test",
+                       },
+          test_suite="test",
+          cmdclass=cmdclass,
+          data_files=data_files,
+          classifiers=[i for i in classifiers.split("\n") if i],
+          long_description="""PyFAI is an azimuthal integration library that tries to be fast (as fast as C
+    and even more using OpenCL and GPU).
+    It is based on histogramming of the 2theta/Q positions of each (center of)
+    pixel weighted by the intensity of each pixel, but parallel version use a
+    SparseMatrix-DenseVector multiplication.
+    Neighboring output bins get also a contribution of pixels next to the border
+    thanks to pixel splitting.
+    Finally pyFAI provides also tools to calibrate the experimental setup using Debye-Scherrer
+    rings of a reference compound.
+          """,
+          license="GPL"
+          )
 
 # ########################################### #
 # Check for Fabio to be present of the system #
