@@ -33,7 +33,7 @@ Mainly used at ESRF with FReLoN CCD camera.
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "GPLv3+"
-__date__ = "11/11/2014"
+__date__ = "27/01/2015"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import os
@@ -623,6 +623,63 @@ class Spline(object):
                                          self.splineOrder],
                                  dx=0, dy=0)
         return delta0 + pos[0], delta1 + pos[1]
+
+
+
+    def flipud(self):
+        """
+        Flip the spline up-down
+        @return: new spline object
+        """
+        self.spline2array()
+        other = self.__class__()
+        other.xmin = self.xmin
+        other.ymin = self.ymin
+        other.xmax = self.xmax
+        other.ymax = self.ymax
+        other.xDispArray = numpy.flipud(self.xDispArray)
+        other.yDispArray = -numpy.flipud(self.yDispArray)
+        other.pixelSize = self.pixelSize
+        other.grid = self.grid
+        other.array2spline()
+        return other
+
+    def fliplr(self):
+        """
+        Flip the spline 
+        @return: new spline object
+        """
+        self.spline2array()
+        other = self.__class__()
+        other.xmin = self.xmin
+        other.ymin = self.ymin
+        other.xmax = self.xmax
+        other.ymax = self.ymax
+        other.xDispArray = -numpy.fliplr(self.xDispArray)
+        other.yDispArray = numpy.fliplr(self.yDispArray)
+        other.pixelSize = self.pixelSize
+        other.grid = self.grid
+        other.array2spline()
+        return other
+
+    def fliplrud(self):
+        """
+        Flip the spline left-right and up-down
+        @return: new spline object
+        """
+        self.spline2array()
+        other = self.__class__()
+        other.xmin = self.xmin
+        other.ymin = self.ymin
+        other.xmax = self.xmax
+        other.ymax = self.ymax
+        other.xDispArray = -numpy.flipud(numpy.fliplr(self.xDispArray))
+        other.yDispArray = -numpy.flipud(numpy.fliplr(self.yDispArray))
+        other.pixelSize = self.pixelSize
+        other.grid = self.grid
+        other.array2spline()
+        return other
+
 
 def main():
     """
