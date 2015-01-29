@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/01/2015"
+__date__ = "29/01/2015"
 __status__ = "stable"
 
 
@@ -96,16 +96,28 @@ def check_openmp():
     """
     Do we compile with OpenMP ?
     """
-    if "WITH_OPENMP" in os.environ and os.environ["WITH_OPENMP"] == "False":
-        print("No OpenMP requested by environment")
-        return False
-
+    if "WITH_OPENMP" in os.environ:
+        print("OpenMP requested by environment: " + os.environ["WITH_OPENMP"])
+        if os.environ["WITH_OPENMP"] == "False":
+            return False
+        else:
+            return True
     if ("--no-openmp" in sys.argv):
         sys.argv.remove("--no-openmp")
         os.environ["WITH_OPENMP"] = "False"
         print("No OpenMP requested by command line")
         return False
+    elif ("--openmp" in sys.argv):
+        sys.argv.remove("--openmp")
+        os.environ["WITH_OPENMP"] = "True"
+        print("OpenMP requested by command line")
+        return True
 
+    if platform.system() == "Darwin":
+        # By default Xcode5 & XCode6 do not support OpenMP, Xcode4 is OK.
+        osx = tuple([int(i) for i in platform.mac_ver()[0].split(".")])
+        if osx >= (10, 8):
+            return False
     return True
 
 CYTHON = check_cython()
@@ -185,7 +197,10 @@ ext_modules = [
 
     Extension('morphology'),
 
-    Extension('marchingsquares')
+    Extension('marchingsquares'),
+
+    Extension('watershed')
+
 ]
 
 if (os.name == "posix") and ("x86" in platform.machine()):
@@ -237,7 +252,7 @@ class build_ext_pyFAI(build_ext):
     }
 
     def build_extensions(self):
-#         print("Compiler: %s" % self.compiler.compiler_type)
+        # print("Compiler: %s" % self.compiler.compiler_type)
         if self.compiler.compiler_type in self.translator:
             trans = self.translator[self.compiler.compiler_type]
         else:
@@ -249,8 +264,6 @@ class build_ext_pyFAI(build_ext):
             e.extra_link_args = [trans[arg][1] if arg in trans else arg
                                  for arg in e.extra_link_args]
             e.libraries = [trans[arg] for arg in e.libraries if arg in trans]
-#             e.libraries = list(filter(None, [trans[arg] if arg in trans else None
-#                                         for arg in e.libraries]))
         build_ext.build_extensions(self)
 
 cmdclass['build_ext'] = build_ext_pyFAI

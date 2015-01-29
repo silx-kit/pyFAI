@@ -17,7 +17,7 @@ http://winpython.sourceforge.net/
 The Python2.7 in 64 bits is recommended.
 
 On top of that, you will need FabIO and pyFAI available from
-http://sourceforge.net/projects/fable/files/fabio/0.1.4/
+http://sourceforge.net/projects/fable/files/fabio/0.2.0/
 https://pypi.python.org/pypi/pyFAI/0.10.2
 
 Once all installed, the scripts related to pyFAI are in c:\winpython*\python27\scripts
