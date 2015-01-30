@@ -82,6 +82,17 @@ Nota: to run the test an internet connection is needed as 200MB of test images n
 
    project
 
+Environment variables
+---------------------
+
+PyFAI can use a certain number of environment variable to modify its default behavior:
+
+* PYFAI_OPENCL: set to "0" to disable the use of OpenCL
+* PYFAI_DATA: path with gui, calibrant, ...
+* PYFAI_TESTIMAGES: path wit test images (if absent, they get downloaded from the internet)
+
+
+
 References:
 -----------
 
