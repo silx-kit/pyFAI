@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/11/2014"
+__date__ = "29/01/2015"
 __status__ = "production"
 
 import os
@@ -48,6 +48,7 @@ from .reconstruct import reconstruct
 from .calibrant import Calibrant, ALL_CALIBRANTS
 from .blob_detection import BlobDetection
 from .massif import Massif
+from .watershed import InverseWatershed
 logger = logging.getLogger("pyFAI.peak_picker")
 if os.name != "nt":
     WindowsError = RuntimeError
@@ -63,7 +64,7 @@ class PeakPicker(object):
     Two methods can be used : massif or blob
 
     """
-    VALID_METHODS = ["massif", "blob"]
+    VALID_METHODS = ["massif", "blob", "watershed"]
     help = ["Please select rings on the diffraction image. In parenthesis, some modified shortcuts for single button mouse (Apple):",
             " * Right-click (click+n):         try an auto find for a ring",
             " * Right-click + Ctrl (click+b):  create new group with one point",
@@ -104,8 +105,9 @@ class PeakPicker(object):
         self.sb_action = None
         self.reconstruct = reconst
         self.mask = mask
-        self.massif = None  #used for massif detection
-        self.blob = None    #used for blob   detection
+        self.massif = None  # used for massif detection
+        self.blob = None  # used for blob   detection
+        self.watershed = None  # used for inverse watershed
         self._sem = threading.Semaphore()
 #        self._semGui = threading.Semaphore()
         self.mpl_connectId = None
@@ -113,24 +115,20 @@ class PeakPicker(object):
         self._init_thread = None
         self.point_filename = None
         self.callback = None
-        if method in self.VALID_METHODS:
-            self.method = method
-        else:
+        self.method = None
+        if method not in self.VALID_METHODS:
             logger.error("Not a valid peak-picker method: %s should be part of %s" % (method, self.VALID_METHODS))
-            self.method = self.VALID_METHODS[0]
-
-        if self.method == "massif":
-            self.init_massif(False)
-        elif self.method == "blob":
-            self.init_blob(False)
+            method = self.VALID_METHODS[0]
+        self.init(method, False)
 
     def init(self, method, sync=True):
         """
         Unified initializer
         """
-        assert method in ["blob", "massif"]
+        assert method in self.VALID_METHODS
         if method != self.method:
-            self.__getattribute__("init_" + method)(sync)
+            self.__getattribute__("_init_" + method)(sync)
+            self.method = method
 
     def sync_init(self):
         if self._init_thread:
@@ -138,7 +136,7 @@ class PeakPicker(object):
 
 
 
-    def init_massif(self, sync=True):
+    def _init_massif(self, sync=True):
         """
         Initialize PeakPicker for massif based detection
         """
@@ -151,12 +149,11 @@ class PeakPicker(object):
         self.massif = Massif(data)
         self._init_thread = threading.Thread(target=self.massif.getLabeledMassif, name="massif_process")
         self._init_thread.start()
-        self.method = "massif"
         if sync:
             self._init_thread.join()
 
 
-    def init_blob(self, sync=True):
+    def _init_blob(self, sync=True):
         """
         Initialize PeakPicker for blob based detection
         """
@@ -164,8 +161,17 @@ class PeakPicker(object):
             self.blob = BlobDetection(self.data, mask=self.mask)
         else:
             self.blob = BlobDetection(self.data, mask=(self.data < 0))
-        self.method = "blob"
         self._init_thread = threading.Thread(target=self.blob.process, name="blob_process")
+        self._init_thread.start()
+        if sync:
+            self._init_thread.join()
+
+    def _init_watershed(self, sync=True):
+        """
+        Initialize PeakPicker for watershed based detection
+        """
+        self.watershed = InverseWatershed(self.data)
+        self._init_thread = threading.Thread(target=self.watershed.init, name="iw_init")
         self._init_thread.start()
         if sync:
             self._init_thread.join()
@@ -207,12 +213,12 @@ class PeakPicker(object):
         """
         self.points.reset()
         if self.fig and self.ax:
-            #empty annotate and plots
+            # empty annotate and plots
             if len(self.ax.texts) > 0:
                 self.ax.texts = []
             if len(self.ax.lines) > 0:
                 self.ax.lines = []
-            #Redraw the image
+            # Redraw the image
             if not gui_utils.main_loop:
                 self.fig.show()
             update_fig(self.fig)
@@ -258,7 +264,7 @@ class PeakPicker(object):
         im = self.ax.imshow(showData, vmin=showMin, vmax=showMax, origin="lower", interpolation="nearest")
 
         self.ax.autoscale_view(False, False, False)
-        self.fig.colorbar(im)#, self.ax)
+        self.fig.colorbar(im)  # , self.ax)
         update_fig(self.fig)
         if maximize:
             maximize_fig(self.fig)
@@ -500,7 +506,7 @@ class PeakPicker(object):
             self.point_filename = filename
             self.callback = callback
             gui_utils.main_loop = True
-            #MAIN LOOP
+            # MAIN LOOP
             pylab.show()
 
 
@@ -758,7 +764,7 @@ class ControlPoints(object):
             lstOut = ["# set of control point used by pyFAI to calibrate the geometry of a scattering experiment",
                       "#angles are in radians, wavelength in meter and positions in pixels"]
             if self.calibrant:
-                lstOut.append("calibrant: %s"%self.calibrant)
+                lstOut.append("calibrant: %s" % self.calibrant)
             if self.calibrant.wavelength is not None:
                 lstOut.append("wavelength: %s" % self.calibrant.wavelength)
             lstOut.append("dspacing:" + " ".join([str(i) for i in self.calibrant.dSpacing]))
@@ -810,7 +816,7 @@ class ControlPoints(object):
                         logger.error("ControlPoints.load: unable to convert to float %s (wavelength): %s", value, error)
                 elif key == "wavelength":
                     try:
-                        wavelength=float(value)
+                        wavelength = float(value)
                     except Exception as error:
                         logger.error("ControlPoints.load: unable to convert to float %s (wavelength): %s", value, error)
                 elif key == "dspacing":
@@ -1036,7 +1042,7 @@ class PointGroup(object):
             self._ring = int(ring)
         else:
             self._ring = None
-        #placeholder of matplotlib references...
+        # placeholder of matplotlib references...
         self.annotate = annotate
         self.plot = plot
 

@@ -26,7 +26,7 @@ Inverse watershed for connecting region of high intensity
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "26/01/2015"
+__date__ = "29/01/2015"
 __status__ = "stable"
 __license__ = "GPLv3+"
 
@@ -34,6 +34,8 @@ import cython
 import numpy
 cimport numpy
 import sys 
+import logging
+logger = logging.getLogger("pyFAI.watershed") 
 from pyFAI.bilinear import Bilinear
 from pyFAI.utils import timeit
 cdef bint get_bit(int byteval, int idx) nogil:
@@ -71,21 +73,21 @@ cdef class Region:
             int i, k, imax, imin
             float mini, maxi
         self.maxi = flat[self.index]
-        if  len(self.neighbors)!=len(self.border):
-            print(self.index, len(self.neighbors),len(self.border))
+        if len(self.neighbors) != len(self.border):
+            print(self.index, len(self.neighbors), len(self.border))
             print(self)
             return True
         if self.neighbors:
             imax = imin = 0
             i = self.border[imax]
             val = mini = maxi = flat[i]
-            for k in range(1,len(self.border)):
+            for k in range(1, len(self.border)):
                 i = self.border[k]
                 val = flat[i]
-                if val<mini:
+                if val < mini:
                     mini = val
                     imin = k
-                elif val>maxi:
+                elif val > maxi:
                     maxi = val
                     imax = k
             if self.mini == - 1:
@@ -125,7 +127,8 @@ cdef class Region:
         """
         cdef:
             int i
-            list new_neighbors=[], new_border=[]
+            list new_neighbors = []
+            list new_border = []
             Region region
         if other.maxi > self.maxi:
             region = Region(other.index)
@@ -162,13 +165,15 @@ class InverseWatershed(object):
     * merge region with high pass between them
 
     """
-    def __init__(self, data not None):
+    def __init__(self, data not None, thres=1.0):
         self.data = numpy.ascontiguousarray(data, dtype=numpy.float32)
         self.height, self.width = data.shape
         self.bilinear = Bilinear(data)
         self.regions = dict()
         self.labels = numpy.zeros((self.height, self.width), dtype="int32")
         self.borders = numpy.zeros((self.height, self.width), dtype="uint8")
+        self.thres = thres
+        self._actual_thres = 2
 
     def init(self):
         self.init_labels()
@@ -177,8 +182,8 @@ class InverseWatershed(object):
         self.init_pass()
         self.merge_singleton()
         self.merge_twins()
-        self.merge_intense(1.0)
-        print("found %s regions, after merge remains %s"%(len(self.regions),len(set(self.regions.values()))))
+        self.merge_intense(self.thres)
+        logger.info("found %s regions, after merge remains %s"%(len(self.regions),len(set(self.regions.values()))))
 
     @timeit
     def init_labels(self):
@@ -325,7 +330,7 @@ class InverseWatershed(object):
                                 to_merge = idx
                                 ref = region2.maxi
                 if (to_merge < 0):
-                    print("error in merging %s"%region1)
+                    logger.info("error in merging %s"%region1)
                 else:
                     region2 = regions[to_merge]
                     region = region1.merge(region2)
@@ -333,7 +338,7 @@ class InverseWatershed(object):
                     for key in region.peaks:
                         regions[key] = region
                     cnt += 1
-        print("Did %s merge_singleton" % cnt)
+        logger.info("Did %s merge_singleton" % cnt)
 
     @timeit
     def merge_twins(self):
@@ -360,19 +365,22 @@ class InverseWatershed(object):
             if (region2.pass_to in region1.peaks and region1.pass_to in region2.peaks):
                 idx1 = region1.index
                 idx2 = region2.index
-#                 print("merge %s(%s) %s(%s)" % (idx1, idx1, key2, idx2))
+#                 logger.info("merge %s(%s) %s(%s)" % (idx1, idx1, key2, idx2))
                 region = region1.merge(region2)
                 region.init_values(flat)
                 for key in region.peaks:
                     regions[key] = region
                 cnt += 1
-        print("Did %s merge_twins" % cnt)
+        logger.info("Did %s merge_twins" % cnt)
         
     @timeit
     def merge_intense(self, thres=1.0):
         """
         Merge groups then (pass-mini)/(maxi-mini) >=thres
         """
+        if thres > self._actual_thres:
+            logger.warning("Cannot increase threshold: was %s, requested %s. You should re-init the object." % self._actual_thres, thres)
+        self._actual_thres = thres
         cdef:
             int key1, key2, idx1, idx2
             Region region1, region2, region
@@ -383,8 +391,7 @@ class InverseWatershed(object):
         for key1 in list(regions.keys()):
             region1 = regions[key1]
             if region1.maxi == region1.mini:
-                print("Error with")
-                print region1
+                logger.error(region1)
                 continue
             ratio = (region1.highest_pass - region1.mini) / (region1.maxi - region1.mini)
             if ratio >= thres:
@@ -398,5 +405,44 @@ class InverseWatershed(object):
                 for key in region.peaks:
                     regions[key] = region
                 cnt += 1
-        print("Did %s merge_intense" % cnt)
-        
+        logger.info("Did %s merge_intense" % cnt)
+    
+    def peaks_from_area(self, mask, Imin=None, keep=None, bint refine=True):
+        """
+        @param mask: mask of data points valid
+        @param Imin: Minimum intensity for a peak 
+        @param keep: Number of  points to keep
+        @param refine: refine sub-pixel position
+        """
+        cdef:
+            int i, j, l, x, y, width = self.width
+            int[:] input_points = numpy.where(mask.ravel())[0].astype(numpy.int32)
+            numpy.int32_t[:] labels = self.labels.ravel()
+            dict regions = self.regions
+            Region region
+            list output_points = [], intensities = [], argsort
+            set keep_regions = set()
+            float[:] data = self.data.ravel() 
+        for i in input_points:
+            l = labels[i]
+            region = regions[l]
+            keep_regions.add(region.index)
+        for i in keep_regions:
+            region = regions[i]
+            for j in region.peaks:
+                intensities.append(data[j])
+                x = j % self.width
+                y = j // self.width
+                output_points.append((y, x))
+        if refine:
+            for i in range(len(output_points)):
+                output_points[i] = self.bilinear.local_maxi(output_points[i])
+        if Imin or keep:
+            argsort = sorted(range(len(intensities)), key=intensities.__getitem__, reverse=True)
+            if Imin:
+                argsort = [i for i in argsort if intensities[i] >= Imin]
+            output_points = [output_points[i] for i in argsort]
+            
+            if keep and len(output_points)>keep:
+                output_points = output_points[:keep]
+        return output_points
