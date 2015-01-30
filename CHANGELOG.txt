@@ -95,7 +95,13 @@
 		Update tests and OpenCL -> works with Beignet and pocl open source drivers
 		Compatibility with MacOSX and windows
 0.10.1: 10/2014
-                Fix issue in peak-picking
-                Improve doc & manpages
-                Compatibility with PyMca5
-
+        Fix issue in peak-picking
+        Improve doc & manpages
+        Compatibility with PyMca5
+0.10.2: 11/2014
+		Update documentation
+		Packaging for debian 8
+0.10.3: 
+		* Image segmentation based on inverse watershed (only for recalib, not for calib)
+		* Python3 compatibility
+		* include testimages  into distribution

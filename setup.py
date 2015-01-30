@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2015"
+__date__ = "30/01/2015"
 __status__ = "stable"
 
 
@@ -44,7 +44,16 @@ import numpy
 from distutils.core import setup, Command
 from distutils.command.install_data import install_data
 from distutils.command.build_ext import build_ext
+from distutils.command.sdist import sdist
 from numpy.distutils.core import Extension as _Extension
+
+
+################################################################################
+# Remove MANIFEST file ... it needs to be re-generated on the fly
+################################################################################
+manifest = os.path.join(os.path.dirname(os.path.abspath(__file__)), "MANIFEST")
+if os.path.isfile(manifest):
+    os.unlink(manifest)
 
 
 def copy(infile, outfile, folder=None):
@@ -272,6 +281,15 @@ cmdclass['build_ext'] = build_ext_pyFAI
 # ############################# #
 # scripts and data installation #
 # ############################# #
+def download_images():
+    """
+    Download all test images and  
+    """
+    test_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test")
+    sys.path.insert(0, test_dir)
+    from utilstest import UtilsTest
+    UtilsTest.download_images()
+    return list(UtilsTest.ALL_DOWNLOADED_FILES)
 
 installDir = "pyFAI"
 
@@ -348,20 +366,53 @@ def rewriteManifest(with_testimages=False):
         with open(manifest_in, "w") as f:
             f.write(os.linesep.join(manifest_new))
 
-        # remove MANIFEST: will be re generated !
-        if os.path.isfile("MANIFEST"):
-            os.unlink("MANIFEST")
 
-if ("sdist" in sys.argv):
-    if ("--with-testimages" in sys.argv):
-        sys.argv.remove("--with-testimages")
-        test_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test")
-        sys.path.insert(0, test_dir)
-        from utilstest import UtilsTest
-        UtilsTest.download_images()
-        rewriteManifest(with_testimages=True)
-    else:
-        rewriteManifest(with_testimages=False)
+class sdist_debian(sdist):
+    """
+    Tailor made sdist for debian
+    * remove auto-generated doc
+    * remove cython generated .c files
+    * add image files from test/testimages/*
+    """
+    def prune_file_list(self):
+        sdist.prune_file_list(self)
+        to_remove = ["doc/build", "doc/pdf", "doc/html", "pylint", "epydoc"]
+        print("Removing files for debian")
+        for rm in to_remove:
+            self.filelist.exclude_pattern(pattern="*", anchor=False, prefix=rm)
+        # this is for Cython files specifically
+        self.filelist.exclude_pattern(pattern="*.html", anchor=True, prefix="src")
+        for pyxf in glob.glob("src/*.pyx"):
+            cf = os.path.splitext(pyxf)[0] + ".c"
+            if os.path.isfile(cf):
+                self.filelist.exclude_pattern(pattern=cf)
+
+        print("Adding test_files for debian")
+        self.filelist.allfiles += [os.path.join("test", "testimages", i) \
+                                   for i in download_images()]
+        self.filelist.include_pattern(pattern="*", anchor=True,
+                                      prefix="test/testimages")
+
+    def make_distribution(self):
+        sdist.make_distribution(self)
+        dest = self.archive_files[0]
+        dirname, basename = os.path.split(dest)
+        base, ext = os.path.splitext(basename)
+        while ext in [".zip", ".tar", ".bz2", ".gz", ".Z", ".lz", ".orig"]:
+            base, ext = os.path.splitext(base)
+        if ext:
+            dest = "".join((base, ext))
+        else:
+            dest = base
+        sp = dest.split("-")
+        base = sp[:-1]
+        nr = sp[-1]
+        debian_arch = os.path.join(dirname, "-".join(base) + "_" + nr + ".orig.tar.gz")
+        os.rename(self.archive_files[0], debian_arch)
+        self.archive_files = [debian_arch]
+        print("Building debian .orig.tar.gz in %s" % self.archive_files[0])
+
+cmdclass['debian_src'] = sdist_debian
 
 
 class PyTest(Command):
