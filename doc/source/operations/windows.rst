@@ -11,15 +11,66 @@ Target: System administrators
 Installation procedure on Windows
 =================================
 
-To install pyFAI on a windows PC, you will need a scientific Python stack,
-Winpython is a good choice.
-http://winpython.sourceforge.net/
-The Python2.7 in 64 bits is recommended.
+Get Python
+----------
 
-On top of that, you will need FabIO and pyFAI available from
-http://sourceforge.net/projects/fable/files/fabio/0.2.0/
-https://pypi.python.org/pypi/pyFAI/0.10.2
+Unlike on Unix computers, Python is not available by default on windows computers.
+We recommand you to install Python from http://python.org. The latest version from the 2.7 series
+is currently recommended (But any version between 2.6 and 2.7, 3.2, 3.3 or 3.4 should be OK).
 
-Once all installed, the scripts related to pyFAI are in c:\winpython*\python27\scripts
+The 64bits version is suggested as the 32 bits versions is limited to 2GB of memory, hence unable to treat large images (4096 x 4096).
 
-Canopy or Anaconda are possible alternative but they are still untested.
+Alternative Scientific Python stacks exists, like Enthought Python Distribution, Canopy, Anaconda, PythonXY
+or WinPython. They all offer most of the scientific packages already installed.
+
+Install PIP
+-----------
+
+PIP is the package management system for Python, it connects to http://pypi.python.org,
+download and install software packages from there.
+
+To install it, download:
+https://bootstrap.pypa.io/get-pip.py
+and run it:
+
+::
+   python get-pip.py
+
+Install the scientific stack
+----------------------------
+
+To install the scientific stack, we will massively use pip:
+
+::
+   pip install numpy
+   pip install scipy
+   pip install matplotlib
+   pip install fabio
+   pip install PyQt4
+
+Note that numpy/scipy/matplotlib are already installed in most "Scientific Python distribution"
+
+
+Install pyFAI via PIP
+---------------------
+
+The latest stable release of pyFAI is also PIP-installable
+
+::
+   pip install pyFAI
+
+
+
+Install pyFAI from sources
+==========================
+
+The sources of pyFAI are available at https://github.com/pyFAI/pyFAI/releases
+
+In addition to the Python interpreter, you will need the C compiler compatible with your Python interpreter, for example you can find the one for Python2.7 at:
+http://aka.ms/vcpython27
+
+To upgrade the C-code in pyFAI, one needs in addition Cython:
+
+::
+   pip install cython
+
