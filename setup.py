@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/01/2015"
+__date__ = "02/02/2015"
 __status__ = "stable"
 
 
@@ -41,10 +41,20 @@ import shutil
 import platform
 import subprocess
 import numpy
-from distutils.core import setup, Command
-from distutils.command.install_data import install_data
-from distutils.command.build_ext import build_ext
-from distutils.command.sdist import sdist
+
+try:
+    # setuptools allows the creation of wheels
+    from setuptools import setup, Command
+    from setuptools.command.sdist import sdist
+    from setuptools.command.build_ext import build_ext
+    from setuptools.command.install_data import install_data
+except ImportError:
+    from distutils.core import setup, Command
+    from distutils.core import Extension
+    from distutils.command.sdist import sdist
+    from distutils.command.build_ext import build_ext
+    from distutils.command.install_data import install_data
+
 from numpy.distutils.core import Extension as _Extension
 
 
