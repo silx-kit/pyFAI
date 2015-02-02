@@ -492,7 +492,7 @@ def get_version():
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "pyFAI-src"))
     import _version
     sys.path.pop(0)
-    return _version.version
+    return _version.strictversion
 
 classifiers = """\
 Development Status :: 5 - Production/Stable
