@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "LGPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/01/2015"
+__date__ = "02/02/2015"
 
 PACKAGE = "pyFAI"
 SOURCES = PACKAGE + "-src"
@@ -38,7 +38,6 @@ if __name__ == "__main__":
     __name__ = "pyFAI.test"
 
 import os
-import pwd
 import imp
 import sys
 import subprocess
@@ -62,7 +61,9 @@ IN_SOURCES = SOURCES in os.listdir(os.path.dirname(TEST_HOME))
 
 if IN_SOURCES:
     os.environ[DATA_KEY] = os.path.dirname(TEST_HOME)
-login = pwd.getpwuid(os.getuid())[0]
+
+import getpass
+login = getpass.getuser()
 
 
 def copy(infile, outfile):

@@ -26,7 +26,7 @@ Inverse watershed for connecting region of high intensity
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "29/01/2015"
+__date__ = "30/01/2015"
 __status__ = "stable"
 __license__ = "GPLv3+"
 
@@ -38,8 +38,9 @@ import logging
 logger = logging.getLogger("pyFAI.watershed") 
 from pyFAI.bilinear import Bilinear
 from pyFAI.utils import timeit
+
 cdef bint get_bit(int byteval, int idx) nogil:
-    return ((byteval&(1<<idx))!=0);
+    return ((byteval & (1 << idx)) != 0)
 
 
 cdef class Region:
@@ -51,8 +52,8 @@ cdef class Region:
     def __cinit__(self, int idx):
         self.index = idx
         self.neighbors = []
-        self.border = [] #list of pixel indices of the border
-        self.peaks=[idx]
+        self.border = [] # list of pixel indices of the border
+        self.peaks = [ idx ]
         self.size = 0
         self.pass_to = - 1
         self.mini = - 1
@@ -60,28 +61,33 @@ cdef class Region:
         self.highest_pass = -sys.maxsize
 
     def __repr__(self):
-        return "Region %s of size %s:\n neighbors: %s\n border: %s\n"%(self.index, self.size, self.neighbors, self.border)+\
-               "peaks: %s\n maxi=%s, mini=%s, pass=%s to %s"%(self.peaks, self.maxi, self.mini,self.highest_pass,self.pass_to)
+        return "Region %s of size %s:\n neighbors: %s\n border: %s\n" % (self.index, self.size, self.neighbors, self.border) + \
+               "peaks: %s\n maxi=%s, mini=%s, pass=%s to %s" % (self.peaks, self.maxi, self.mini,self.highest_pass,self.pass_to)
 
+    @cython.cdivision(True)
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def init_values(self, float[:] flat):
         """
-        Initalize the values : maxi, mini and pass both heigth and so on
+        Initalize the values : maxi, mini and pass both height and so on
         @param flat: flat view on the data (intensity)
         @return: True if there is a problem and the region should be removed
         """
         cdef:
             int i, k, imax, imin
-            float mini, maxi
+            float mini, maxi, val
+            int border_size = len(self.border)
+            int neighbors_size = len(self.neighbors)
         self.maxi = flat[self.index]
-        if len(self.neighbors) != len(self.border):
-            print(self.index, len(self.neighbors), len(self.border))
+        if neighbors_size != border_size:
+            print(self.index, neighbors_size, border_size)
             print(self)
             return True
-        if self.neighbors:
+        if neighbors_size:
             imax = imin = 0
             i = self.border[imax]
             val = mini = maxi = flat[i]
-            for k in range(1, len(self.border)):
+            for k in range(1, border_size):
                 i = self.border[k]
                 val = flat[i]
                 if val < mini:
@@ -121,6 +127,9 @@ cdef class Region:
     def get_neighbors(self):
         return self.neighbors
 
+    @cython.cdivision(True)
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def merge(self, Region other):
         """
         merge 2 regions
@@ -188,64 +197,72 @@ class InverseWatershed(object):
     @timeit
     def init_labels(self):
         cdef:
-            int i, j, width=self.width, height=self.height, idx, res
-            numpy.int32_t[:,:] labels = self.labels
+            int i, j, width = self.width, height = self.height, idx, res
+            numpy.int32_t[:, :] labels = self.labels
             dict regions = self.regions
         for i in range(height):
             for j in range(width):
-                idx = j+i*width
+                idx = j + i * width
                 res = self.bilinear.cp_local_maxi(idx)
                 labels[i, j] = res
                 if idx == res:
                     regions[res] = Region(res)
     @timeit
+    @cython.cdivision(True)
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def init_borders(self):
         cdef:
-            int i, j, width=self.width, height=self.height, idx, res
-            
+            int i, j, width = self.width, height = self.height, idx, res
             numpy.int32_t[:, :] labels = self.labels
             numpy.uint8_t[:, :] borders = self.borders
             numpy.uint8_t neighb
         for i in range(height):
             for j in range(width):
                 neighb = 0
-                idx = j+i*width
-                res =  labels[i, j]
-                if i>0 and j>0 and labels[i - 1, j - 1]!=res:
+                idx = j + i * width
+                res = labels[i, j]
+                if (i > 0) and (j > 0) and (labels[i - 1, j - 1] != res):
                     neighb |= 1
-                if i>0 and labels[i - 1, j]!=res:
-                    neighb |= 1<<1
-                if i>0 and j<(width-1) and labels[i - 1, j + 1]!=res:
-                    neighb |= 1<<2
-                if j<(width-1) and labels[i, j + 1]!=res:
-                    neighb |= 1<<3
-                if i<(height-1) and j<(width-1) and labels[i + 1, j + 1]!=res:
-                    neighb |= 1<<4
-                if i<(height-1) and labels[i + 1, j]!=res:
-                    neighb |= 1<<5
-                if i<(height-1) and j>0 and labels[i + 1, j - 1]!=res:
-                    neighb |= 1<<6
-                if j>0 and labels[i, j - 1]!=res:
-                    neighb |= 1<<7
+                if (i > 0) and (labels[i - 1, j] != res):
+                    neighb |= 1 << 1
+                if (i > 0) and (j < (width - 1)) and (labels[i - 1, j + 1] != res):
+                    neighb |= 1 << 2
+                if (j < (width - 1)) and (labels[i, j + 1] != res):
+                    neighb |= 1 << 3
+                if (i < (height - 1)) and (j < (width - 1)) and (labels[i + 1, j + 1] != res):
+                    neighb |= 1 << 4
+                if (i < (height - 1)) and (labels[i + 1, j] != res):
+                    neighb |= 1 << 5
+                if (i < (height - 1)) and (j > 0) and (labels[i + 1, j - 1] != res):
+                    neighb |= 1 << 6
+                if (j > 0) and (labels[i, j - 1] != res):
+                    neighb |= 1 << 7
                 borders[i, j] = neighb
 
     @timeit
+    @cython.cdivision(True)
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def init_regions(self):
         cdef:
-            int i, j, width=self.width, height=self.height, idx, res
-            numpy.int32_t[:,:] labels = self.labels
-            numpy.uint8_t[:,:] borders = self.borders
-            numpy.uint8_t neighb=0
+            int i, j, idx, res
+            numpy.int32_t[:, :] labels = self.labels
+            numpy.uint8_t[:, :] borders = self.borders
+            numpy.uint8_t neighb = 0
             Region region
             dict regions = self.regions
+            int width = self.width
+            int  height = self.height
         for i in range(height):
             for j in range(width):
-                idx = j+i*width
+                idx = j + i * width
                 neighb = borders[i, j]
                 res = labels[i, j]
                 region = regions[res]
-                region.size +=1
-                if neighb==0: continue
+                region.size += 1
+                if neighb == 0: 
+                    continue
                 region.border.append(idx)
                 if get_bit(neighb, 1):
                     region.neighbors.append(labels[i - 1, j])
@@ -265,19 +282,26 @@ class InverseWatershed(object):
                     region.neighbors.append(labels[i + 1, j - 1])
 
     @timeit
+    @cython.cdivision(True)
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def init_pass(self):
         cdef:
-            int i, j, k, width=self.width, imax, imin
+            int i, j, k, imax, imin
             float[:] flat = self.data.ravel()
-            numpy.uint8_t neighb=0
+            numpy.uint8_t neighb = 0
             Region region
             dict regions = self.regions
             float val, maxi, mini
+            int width = self.width
         for region in list(regions.values()):
             if region.init_values(flat):
                 regions.pop(region.index)
 
     @timeit
+    @cython.cdivision(True)
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def merge_singleton(self):
         "merge single pixel region"
         cdef:
@@ -330,7 +354,7 @@ class InverseWatershed(object):
                                 to_merge = idx
                                 ref = region2.maxi
                 if (to_merge < 0):
-                    logger.info("error in merging %s"%region1)
+                    logger.info("error in merging %s" % region1)
                 else:
                     region2 = regions[to_merge]
                     region = region1.merge(region2)
@@ -416,7 +440,8 @@ class InverseWatershed(object):
         """
         cdef:
             int i, j, l, x, y, width = self.width
-            int[:] input_points = numpy.where(mask.ravel())[0].astype(numpy.int32)
+            numpy.uint8_t[:] mask_flat = numpy.ascontiguousarray(mask.ravel(), numpy.uint8)
+            int[:] input_points = numpy.where(mask_flat)[0].astype(numpy.int32)
             numpy.int32_t[:] labels = self.labels.ravel()
             dict regions = self.regions
             Region region
@@ -430,10 +455,11 @@ class InverseWatershed(object):
         for i in keep_regions:
             region = regions[i]
             for j in region.peaks:
-                intensities.append(data[j])
-                x = j % self.width
-                y = j // self.width
-                output_points.append((y, x))
+                if mask_flat[j]:
+                    intensities.append(data[j])
+                    x = j % self.width
+                    y = j // self.width
+                    output_points.append((y, x))
         if refine:
             for i in range(len(output_points)):
                 output_points[i] = self.bilinear.local_maxi(output_points[i])
