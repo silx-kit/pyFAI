@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/01/2015"
+__date__ = "02/02/2015"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instanciate them
@@ -527,23 +527,22 @@ class Detector(with_metaclass(DetectorMeta, object)):
         if not io.h5py:
             logger.error("h5py module missing: NeXus detectors not supported")
             raise RuntimeError("H5py module is missing")
-#        did_exist = os.path.exists(path)
-        nxs = io.Nexus(filename, "+")
-        det_grp = nxs.new_detector(name=self.name.replace(" ", "_"))
-        det_grp["pixel_size"] = numpy.array([self.pixel1, self.pixel2], dtype=numpy.float32)
-        if self.max_shape is not None:
-            det_grp["max_shape"] = numpy.array(self.max_shape, dtype=numpy.int32)
-        if self.shape is not None:
-            det_grp["shape"] = numpy.array(self.shape, dtype=numpy.int32)
-        if self.binning is not None:
-            det_grp["binning"] = numpy.array(self._binning, dtype=numpy.int32)
-        if self.mask is not None:
-            det_grp["mask"] = self.mask
-        if not self.uniform_pixel:
-            # Get ready for the worse case: 4 corner per pixel, position 3D: z,y,x
-            det_grp["pixel_corners"] = self.get_pixel_corners()
-            det_grp["pixel_corners"].attrs["interpretation"] = "vertex"
-        nxs.close()
+
+        with io.Nexus(filename, "+") as nxs:
+            det_grp = nxs.new_detector(name=self.name.replace(" ", "_"))
+            det_grp["pixel_size"] = numpy.array([self.pixel1, self.pixel2], dtype=numpy.float32)
+            if self.max_shape is not None:
+                det_grp["max_shape"] = numpy.array(self.max_shape, dtype=numpy.int32)
+            if self.shape is not None:
+                det_grp["shape"] = numpy.array(self.shape, dtype=numpy.int32)
+            if self.binning is not None:
+                det_grp["binning"] = numpy.array(self._binning, dtype=numpy.int32)
+            if self.mask is not None:
+                det_grp["mask"] = self.mask
+            if not self.uniform_pixel:
+                # Get ready for the worse case: 4 corner per pixel, position 3D: z,y,x
+                det_grp["pixel_corners"] = self.get_pixel_corners()
+                det_grp["pixel_corners"].attrs["interpretation"] = "vertex"
 
     def guess_binning(self, data):
         """
@@ -587,24 +586,24 @@ class NexusDetector(Detector):
         if not io.h5py:
             logger.error("h5py module missing: NeXus detectors not supported")
             raise RuntimeError("H5py module is missing")
-        nxs = io.Nexus(filename, "r")
-        det_grp = nxs.find_detector()
-        name = posixpath.split(det_grp.name)[-1]
-        self.aliases = [name.replace("_", " "), det_grp.name]
-        if "pixel_size" in det_grp:
-            self.pixel1, self.pixel2 = det_grp["pixel_size"]
-        if "binning" in det_grp:
-            self._binning = tuple(i for i in det_grp["binning"].value)
-        for what in ("max_shape", "shape"):
-            if what in det_grp:
-                self.__setattr__(what, tuple(i for i in det_grp[what].value))
-        if "mask" in det_grp:
-            self.mask = det_grp["mask"].value
-        if "pixel_corners" in det_grp:
-            self._pixel_corners = det_grp["pixel_corners"].value
-            self.uniform_pixel = False
-        else:
-            self.uniform_pixel = True
+        with io.Nexus(filename, "r") as nxs:
+            det_grp = nxs.find_detector()
+            name = posixpath.split(det_grp.name)[-1]
+            self.aliases = [name.replace("_", " "), det_grp.name]
+            if "pixel_size" in det_grp:
+                self.pixel1, self.pixel2 = det_grp["pixel_size"]
+            if "binning" in det_grp:
+                self._binning = tuple(i for i in det_grp["binning"].value)
+            for what in ("max_shape", "shape"):
+                if what in det_grp:
+                    self.__setattr__(what, tuple(i for i in det_grp[what].value))
+            if "mask" in det_grp:
+                self.mask = det_grp["mask"].value
+            if "pixel_corners" in det_grp:
+                self._pixel_corners = det_grp["pixel_corners"].value
+                self.uniform_pixel = False
+            else:
+                self.uniform_pixel = True
 
     def get_pixel_corners(self, use_cython=True):
         """
