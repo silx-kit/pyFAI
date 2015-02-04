@@ -23,7 +23,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3+"
-__date__ = "21/10/2014"
+__date__ = "29/01/2015"
 __copyright__ = "2011-2014, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -87,16 +87,16 @@ cdef class Bilinear:
             elif d1 > self.d1_max:
                 res = self.mini - d1 + self.d1_max
             elif (i0 == i1) and (j0 == j1):
-                res = self.data[i0,j0]
+                res = self.data[i0, j0]
             elif i0 == i1:
-                res = (self.data[i0,j0] * (y1 - d1)) + (self.data[i0,j1] * (d1 - y0))
+                res = (self.data[i0, j0] * (y1 - d1)) + (self.data[i0, j1] * (d1 - y0))
             elif j0 == j1:
-                res = (self.data[i0,j0] * (x1 - d0)) + (self.data[i1,j0] * (d0 - x0))
+                res = (self.data[i0, j0] * (x1 - d0)) + (self.data[i1, j0] * (d0 - x0))
             else:
-                res = (self.data[i0,j0] * (x1 - d0) * (y1 - d1))  \
-                    + (self.data[i1,j0] * (d0 - x0) * (y1 - d1))  \
-                    + (self.data[i0,j1] * (x1 - d0) * (d1 - y0))  \
-                    + (self.data[i1,j1] * (d0 - x0) * (d1 - y0))
+                res = (self.data[i0, j0] * (x1 - d0) * (y1 - d1))  \
+                    + (self.data[i1, j0] * (d0 - x0) * (y1 - d1))  \
+                    + (self.data[i0, j1] * (x1 - d0) * (d1 - y0))  \
+                    + (self.data[i1, j1] * (d0 - x0) * (d1 - y0))
         return - res
 
     @cython.boundscheck(False)
@@ -121,18 +121,18 @@ cdef class Bilinear:
         cdef:
             int current0 = x[0]
             int current1 = x[1]
-            int i0, i1, start0, stop0, start1, stop1, new0, new1, cnt=0, width0=w, width1=w
-            float tmp, value, current_value, sum0=0,  sum1=0, sum=0
+            int i0, i1, start0, stop0, start1, stop1, new0, new1, cnt = 0, width0 = w, width1 = w
+            float tmp, value, current_value, sum0 = 0, sum1 = 0, sum = 0
             float a00, a01, a02, a10, a11, a12, a20, a21, a22
             float d00, d11, d01, denom, delta0, delta1
 
-        value = self.data[current0,current1]
-        current_value = value-1.0
-        new0,new1 = current0,current1
+        value = self.data[current0, current1]
+        current_value = value -1.0
+        new0, new1 = current0, current1
         with nogil:
-            while value>current_value:
-                current_value=value
-                cnt+=1
+            while value > current_value:
+                current_value = value
+                cnt += 1
                 if current0 < width0:
                     start0 = 0
                 else:
@@ -146,53 +146,54 @@ cdef class Bilinear:
                 else:
                     start1 = current1 - width1
                 if current1 >= self.d1_max - width1:
-                    stop1=self.d1_max
+                    stop1 = self.d1_max
                 else:
                     stop1 = current1 + width1
-                for i0 in range(start0, stop0+1):
-                    for i1 in range(start1, stop1+1):
-                        tmp=self.data[i0,i1]
-                        if tmp>current_value:
-                            new0,new1=i0,i1
+                for i0 in range(start0, stop0 + 1):
+                    for i1 in range(start1, stop1 + 1):
+                        tmp = self.data[i0, i1]
+                        if tmp > current_value:
+                            new0, new1 = i0, i1
                             value = tmp
-                current0,current1=new0,new1
+                current0, current1 = new0, new1
 
-        if (stop0>current0) and (current0>start0) and (stop1>current1) and (current1>start1):
+        if (stop0 > current0) and (current0 > start0) and (stop1 > current1) and (current1 > start1):
             # Use second order polynomial Taylor expansion
-            a00 = self.data[current0-1,current1-1]
-            a01 = self.data[current0-1,current1  ]
-            a02 = self.data[current0-1,current1+1]
-            a10 = self.data[current0  ,current1-1]
-            a11 = self.data[current0  ,current1  ]
-            a12 = self.data[current0  ,current1+1]
-            a20 = self.data[current0+1,current1-1]
-            a21 = self.data[current0+1,current1  ]
-            a22 = self.data[current0+1,current1-1]
-            d00 = a12 - 2.0*a11 + a10
-            d11 = a21 - 2.0*a11 + a01
+            a00 = self.data[current0 - 1, current1 - 1]
+            a01 = self.data[current0 - 1, current1    ]
+            a02 = self.data[current0 - 1, current1 + 1]
+            a10 = self.data[current0    , current1 - 1]
+            a11 = self.data[current0    , current1    ]
+            a12 = self.data[current0    , current1 + 1]
+            a20 = self.data[current0 + 1, current1 - 1]
+            a21 = self.data[current0 + 1, current1    ]
+            a22 = self.data[current0 + 1, current1 - 1]
+            d00 = a12 - 2.0 * a11 + a10
+            d11 = a21 - 2.0 * a11 + a01
             d01 = (a00 - a02 - a20 + a22)/4.0
-            denom = 2.0*(d00*d11-d01*d01)
-            if abs(denom)<1e-10:
+            denom = 2.0 * (d00 * d11 - d01 * d01)
+            if abs(denom) < 1e-10:
                 logger.debug("Singular determinant, Hessian undefined")
             else:
-                delta0 = ((a12 - a10)*d01 + (a01 - a21)*d11)/denom
-                delta1 = ((a10 - a12)*d00 + (a21 - a01)*d01)/denom
-                if abs(delta0)<=1.0 and abs(delta1)<=1.0: #Result is OK if lower than 0.5.
+                delta0 = ((a12 - a10) * d01 + (a01 - a21) * d11) / denom
+                delta1 = ((a10 - a12) * d00 + (a21 - a01) * d01) / denom
+                if abs(delta0) <= 1.0 and abs(delta1) <= 1.0: 
+                    # Result is OK if lower than 0.5.
                     return (delta0 + float(current0), delta1 + float(current1))
                 else:
                     logger.debug("Failed to find root using second order expansion")
-        #refinement of the position by a simple center of mass of the last valid region used
-        for i0 in range(start0, stop0+1):
-            for i1 in range(start1, stop1+1):
-                tmp = self.data[i0,i1]
+        # refinement of the position by a simple center of mass of the last valid region used
+        for i0 in range(start0, stop0 + 1):
+            for i1 in range(start1, stop1 + 1):
+                tmp = self.data[i0, i1]
                 sum0 += tmp * i0
                 sum1 += tmp * i1
                 sum += tmp
-        if sum>0:
-           #print current0,current1,sum0/sum,sum1/sum
-           return (sum0/sum,sum1/sum)
+        if sum > 0:
+            #  print current0,current1,sum0/sum,sum1/sum
+            return (sum0 / sum, sum1 / sum)
         else:
-            return (current0,current1)
+            return (current0, current1)
 
     cpdef int cp_local_maxi(self, int x, int w=1):
         return self.c_local_maxi(x, w)
@@ -213,12 +214,12 @@ cdef class Bilinear:
             int width = self.data.shape[1]
             int current0 = x // width
             int current1 = x % width
-            int i0, i1, start0, stop0, start1, stop1, new0, new1, width0=w, width1=w
+            int i0, i1, start0, stop0, start1, stop1, new0, new1, width0 = w, width1 = w
             float tmp, value, current_value
 
         value = self.data[current0, current1]
-        current_value = value-1.0
-        new0, new1 = current0,current1
+        current_value = value - 1.0
+        new0, new1 = current0, current1
         while value > current_value:
             current_value = value
             if current0 < width0:
@@ -234,14 +235,14 @@ cdef class Bilinear:
             else:
                 start1 = current1 - width1
             if current1 >= self.d1_max - width1:
-                stop1=self.d1_max
+                stop1 = self.d1_max
             else:
                 stop1 = current1 + width1
-            for i0 in range(start0, stop0+1):
-                for i1 in range(start1, stop1+1):
-                    tmp=self.data[i0,i1]
-                    if tmp>current_value:
-                        new0,new1=i0,i1
+            for i0 in range(start0, stop0 + 1):
+                for i1 in range(start1, stop1 + 1):
+                    tmp = self.data[i0, i1]
+                    if tmp > current_value:
+                        new0, new1 = i0, i1
                         value = tmp
             current0, current1 = new0, new1
         return width * current0 + current1
@@ -250,7 +251,7 @@ cdef class Bilinear:
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)
-def calc_cartesian_positions(float32_64[:] d1, float32_64[:] d2, float[:,:,:,:] pos):
+def calc_cartesian_positions(float32_64[:] d1, float32_64[:] d2, float[:, :, :, :] pos):
     """
     Calculate the Cartesian position for array of position (d1, d2)
     with pixel coordinated stored in array pos
@@ -260,35 +261,37 @@ def calc_cartesian_positions(float32_64[:] d1, float32_64[:] d2, float[:,:,:,:] 
     @param d2: position in dim2
     @param pos: array with position of pixels corners
     """
-    cdef int i, p1, p2, size = d1.size
-    cdef float delta1, delta2, A1, A2, B1, B2, C1, C2, D1, D2
-    cdef numpy.ndarray[numpy.float32_t, ndim = 1] out1 = numpy.empty(size, dtype=numpy.float32)
-    cdef numpy.ndarray[numpy.float32_t, ndim = 1] out2 = numpy.empty(size, dtype=numpy.float32)
+    cdef:
+        int i, p1, p2, size = d1.size
+        float delta1, delta2, A1, A2, B1, B2, C1, C2, D1, D2
+        numpy.ndarray[numpy.float32_t, ndim = 1] out1 = numpy.empty(size, dtype=numpy.float32)
+        numpy.ndarray[numpy.float32_t, ndim = 1] out2 = numpy.empty(size, dtype=numpy.float32)
     assert size == d2.size
     for i in prange(size, nogil=True):
         p1 = <int> d1[i]
-        delta1 = d1[i]-floor(d1[i])
+        delta1 = d1[i] - floor(d1[i])
         p2 = <int> d2[i]
-        delta2 = d2[i]-floor(d2[i])
-        A1 = pos[p1,p2, 0, 1]
-        A2 = pos[p1,p2, 0, 2]
-        B1 = pos[p1,p2, 1, 1]
-        B2 = pos[p1,p2, 1, 2]
-        C1 = pos[p1,p2, 2, 1]
-        C2 = pos[p1,p2, 2, 2]
-        D1 = pos[p1,p2, 3, 1]
-        D2 = pos[p1,p2, 3, 2]
+        delta2 = d2[i] - floor(d2[i])
+        A1 = pos[p1, p2, 0, 1]
+        A2 = pos[p1, p2, 0, 2]
+        B1 = pos[p1, p2, 1, 1]
+        B2 = pos[p1, p2, 1, 2]
+        C1 = pos[p1, p2, 2, 1]
+        C2 = pos[p1, p2, 2, 2]
+        D1 = pos[p1, p2, 3, 1]
+        D2 = pos[p1, p2, 3, 2]
 
         out1[i] = 0.5 * ((A1 + D1) * (1.0 - delta1) + delta1 * (B1 + C1))
         out2[i] = 0.5 * ((A2 + B2) * (1.0 - delta2) + delta2 * (C2 + D2))
     return out1, out2
 
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)
-def convert_corner_2D_to_4D(int ndim, float32_64[:,:] d1, float32_64[:,:] d2):
+def convert_corner_2D_to_4D(int ndim, float32_64[:, :] d1, float32_64[:, :] d2):
     """
-    Convert 2 array of corner position into a 4D array of pixel corner coodinates
+    Convert 2 array of corner position into a 4D array of pixel corner coordinates
 
     @param ndim: 2d or 3D output
     @param d1: 2D position in dim1 (shape +1)
@@ -296,18 +299,19 @@ def convert_corner_2D_to_4D(int ndim, float32_64[:,:] d1, float32_64[:,:] d2):
     @param pos: 4D array with position of pixels corners
     """
     cdef int shape0, shape1, i, j
-    shape0 = d1.shape[0] - 1 #edges position are n+1 compared to number of pixels
+    #  edges position are n+1 compared to number of pixels
+    shape0 = d1.shape[0] - 1 
     shape1 = d1.shape[1] - 1
     cdef numpy.ndarray[numpy.float32_t, ndim = 4] pos = numpy.zeros((shape0, shape1, 4, ndim), dtype=numpy.float32)
 #    assert d1.shape == d2.shape
     for i in prange(shape0, nogil=True):
         for j in range(shape1):
-            pos[i,j, 0, ndim-2] = d1[i, j]
-            pos[i,j, 0, ndim-1] = d2[i, j]
-            pos[i,j, 1, ndim-2] = d1[i+1, j]
-            pos[i,j, 1, ndim-1] = d2[i+1, j]
-            pos[i,j, 2, ndim-2] = d1[i+1, j+1]
-            pos[i,j, 2, ndim-1] = d2[i+1, j+1]
-            pos[i,j, 3, ndim-2] = d1[i, j+1]
-            pos[i,j, 3, ndim-1] = d2[i, j+1]
+            pos[i, j, 0, ndim - 2] = d1[i, j]
+            pos[i, j, 0, ndim - 1] = d2[i, j]
+            pos[i, j, 1, ndim - 2] = d1[i + 1, j]
+            pos[i, j, 1, ndim - 1] = d2[i + 1, j]
+            pos[i, j, 2, ndim - 2] = d1[i + 1, j + 1]
+            pos[i, j, 2, ndim - 1] = d2[i + 1, j + 1]
+            pos[i, j, 3, ndim - 2] = d1[i, j + 1]
+            pos[i, j, 3, ndim - 1] = d2[i, j + 1]
     return pos

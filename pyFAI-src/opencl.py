@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/10/2014"
+__date__ = "30/01/2015"
 __status__ = "stable"
 
 import os
@@ -36,14 +36,17 @@ import numpy
 
 logger = logging.getLogger("pyFAI.opencl")
 
-try:
-    import pyopencl
-#    from pyFAI.opencl import ocl
-except ImportError:
-    logger.warning("Unable to import pyOpenCl. Please install it from: http://pypi.python.org/pypi/pyopencl")
+if os.environ.get("PYFAI_OPENCL") == "0":
+    logger.warning("Use of OpenCL has been disables from environment variable: PYFAI_OPENCL=0")
     pyopencl = None
+else:
+    try:
+        import pyopencl
+    except ImportError:
+        logger.warning("Unable to import pyOpenCl. Please install it from: http://pypi.python.org/pypi/pyopencl")
+        pyopencl = None
 
-FLOP_PER_CORE = { "GPU": 64, # GPU, Fermi at least perform 64 flops per cycle/multicore, G80 were at 24 or 48 ...
+FLOP_PER_CORE = { "GPU": 64,  # GPU, Fermi at least perform 64 flops per cycle/multicore, G80 were at 24 or 48 ...
                   "CPU": 4,  # CPU, at least intel's have 4 operation per cycle
                   "ACC": 8}  # ACC: the Xeon-phi (MIC) appears to be able to process 8 Flops per hyperthreaded-core
 NVIDIA_FLOP_PER_CORE = {(1, 0): 24,  # Guessed !
@@ -52,9 +55,9 @@ NVIDIA_FLOP_PER_CORE = {(1, 0): 24,  # Guessed !
                          (1, 3): 24,  # measured on a GT285 (GT200)
                          (2, 0): 64,  # Measured on a 580 (GF110)
                          (2, 1): 96,  # Measured on Quadro2000 GF106GL
-                         (3, 0): 384, # Guessed!
-                         (3, 5): 384, # Measured on K20
-                         (5, 0): 256} # Maxwell 4 warps/SM 2 flops/ CU
+                         (3, 0): 384,  # Guessed!
+                         (3, 5): 384,  # Measured on K20
+                         (5, 0): 256}  # Maxwell 4 warps/SM 2 flops/ CU
 AMD_FLOP_PER_CORE = 160  # Measured on a M7820 10 core, 700MHz 1120GFlops
 
 class Device(object):
@@ -112,7 +115,7 @@ class Device(object):
                "Type\t\t:\t%s" % self.type,
                "Memory\t\t:\t%.3f MB" % (self.memory / 2.0 ** 20),
                "Cores\t\t:\t%s CU" % self.cores,
-               "Frequency\t:\t%s MHz"%self.frequency,
+               "Frequency\t:\t%s MHz" % self.frequency,
                "Speed\t\t:\t%.3f GFLOPS" % (self.flops / 1000.),
                "Version\t\t:\t%s" % self.version,
                "Available\t:\t%s" % self.available]
@@ -208,11 +211,11 @@ class OpenCL(object):
                     flop_core = FLOP_PER_CORE.get(devtype, 1)
                 else:
                      flop_core = 1
-                workgroup = device.max_work_group_size   
+                workgroup = device.max_work_group_size
                 if (devtype == "CPU") and (pypl.vendor == "Apple"):
                     logger.info("For Apple's OpenCL on CPU: enforce max_work_goup_size=1")
                     workgroup = 1
-  
+
                 pydev = Device(device.name, devtype, device.version, device.driver_version, extensions,
                                device.global_mem_size, bool(device.available), device.max_compute_units,
                                device.max_clock_frequency, flop_core, idd, workgroup)

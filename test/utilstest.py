@@ -26,9 +26,9 @@ from __future__ import print_function, division, absolute_import, with_statement
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
-__license__ = "GPLv3+"
+__license__ = "LGPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/01/2015"
+__date__ = "02/02/2015"
 
 PACKAGE = "pyFAI"
 SOURCES = PACKAGE + "-src"
@@ -38,7 +38,6 @@ if __name__ == "__main__":
     __name__ = "pyFAI.test"
 
 import os
-import pwd
 import imp
 import sys
 import subprocess
@@ -62,7 +61,9 @@ IN_SOURCES = SOURCES in os.listdir(os.path.dirname(TEST_HOME))
 
 if IN_SOURCES:
     os.environ[DATA_KEY] = os.path.dirname(TEST_HOME)
-login = pwd.getpwuid(os.getuid())[0]
+
+import getpass
+login = getpass.getuser()
 
 
 def copy(infile, outfile):
@@ -84,6 +85,7 @@ class UtilsTest(object):
     recompiled = False
     reloaded = False
     name = PACKAGE
+
     if IN_SOURCES:
         image_home = os.path.join(TEST_HOME, "testimages")
         if not os.path.isdir(image_home):
@@ -97,6 +99,7 @@ class UtilsTest(object):
         platform = distutils.util.get_platform()
         architecture = "lib.%s-%i.%i" % (platform,
                                          sys.version_info[0], sys.version_info[1])
+
         if os.environ.get("PYBUILD_NAME") == name:
             # we are in the debian packaging way
             home = os.environ.get("PYTHONPATH", "").split(os.pathsep)[-1]
@@ -217,7 +220,7 @@ class UtilsTest(object):
         if imagename not in cls.ALL_DOWNLOADED_FILES:
             cls.ALL_DOWNLOADED_FILES.add(imagename)
             with open(cls.testimages, "w") as fp:
-                json.dump(list(cls.ALL_DOWNLOADED_FILES), fp)
+                json.dump(list(cls.ALL_DOWNLOADED_FILES), fp, indent=4)
 
         baseimage = os.path.basename(imagename)
         logger.info("UtilsTest.getimage('%s')" % baseimage)

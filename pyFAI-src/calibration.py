@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/11/2014"
+__date__ = "29/01/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -738,14 +738,14 @@ class AbstractCalibration(object):
                     print(self.HELP["help"])
                     print("Valid actions: " + ", ".join(self.HELP.keys()))
                     print("Valid parameters: " + ", ".join(self.PARAMETERS))
-            elif action == "get": #get wavelength
+            elif action == "get":  # get wavelength
                 if (len(words) == 2) and  words[1] in self.PARAMETERS:
                     param = words[1]
                     print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
                 else:
                     print(self.HELP[action])
 
-            elif action == "set": #set wavelength 1e-10
+            elif action == "set":  # set wavelength 1e-10
                 if (len(words) == 3) and  words[1] in self.PARAMETERS:
                     param = words[1]
                     try:
@@ -756,21 +756,20 @@ class AbstractCalibration(object):
                         setattr(self.geoRef, param, value)
                 else:
                     print(self.HELP[action])
-            elif action == "fix": #fix wavelength
+            elif action == "fix":  # fix wavelength
                 if (len(words) == 2) and  (words[1] in self.PARAMETERS) and (words[1] not in self.fixed):
                     param = words[1]
                     print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
                     self.fixed.append(param)
                 else:
                     print(self.HELP[action])
-            elif action == "free": #free wavelength
+            elif action == "free":  # free wavelength
                 if (len(words) == 2) and  (words[1] in self.PARAMETERS) and (words[1] in self.fixed):
                     param = words[1]
                     print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
                     self.fixed.remove(param)
             elif action == "recalib":
                 max_rings = None
-#                 method = "blob"
                 if len(words) >= 2:
                     try:
                        max_rings = int(words[1])
@@ -781,13 +780,14 @@ class AbstractCalibration(object):
                         self.max_rings = max_rings
                 else:
                     self.max_rings = None
-                if len(words) == 3 and words[2] == "massif":
-                    self.extract_cpt("massif")
+                if len(words) == 3 and words[2] in PeakPicker.VALID_METHODS:
+                    method = words[2]
                 else:
-                    self.extract_cpt("blob")
+                    method = "blob"
+                self.extract_cpt(method)
                 self.geoRef.data = numpy.array(self.data, dtype=numpy.float64)
                 return False
-            elif action == "bound": #bound dist
+            elif action == "bound":  # bound dist
                 if len(words) >= 2 and  words[1] in self.PARAMETERS:
                     param = words[1]
                     if len(words) == 2:
@@ -914,7 +914,7 @@ class AbstractCalibration(object):
                 self.geoRef.set_rot3_max(math.pi)
                 self.geoRef.set_rot3(self.ai.rot3)
             elif action == "assign":
-                #Re assign a group of point to a ring ...
+                # Re assign a group of point to a ring ...
                 if self.peakPicker and self.peakPicker.points:
                     self.peakPicker.points.readRingNrFromKeyboard()
                     if self.weighted:
@@ -924,11 +924,11 @@ class AbstractCalibration(object):
                     self.geoRef.data = numpy.array(self.data, dtype=numpy.float64)
             elif action == "weight":
                 old = self.weighted
-                if len(words)==2:
+                if len(words) == 2:
                     value = words[1].lower()
-                    if value in ("0", "off","no","none","false"):
+                    if value in ("0", "off", "no", "none", "false"):
                         self.weighted = False
-                    elif value in ("1", "on","yes","true"):
+                    elif value in ("1", "on", "yes", "true"):
                         self.weighted = True
                     else:
                         logger.warning("Unrecognized argument for weight: %s" % value)
@@ -1007,7 +1007,7 @@ class AbstractCalibration(object):
                 xValues = (4.e-9 * numpy.pi / self.wavelength) * numpy.sin(.5 * twoTheta)
             elif self.unit == units.R_MM:
                 # GF: correct formula?
-                dBeamCentre = self.geoRef.getFit2D()["directDist"] # in mm!!
+                dBeamCentre = self.geoRef.getFit2D()["directDist"]  # in mm!!
                 xValues = dBeamCentre * numpy.tan(twoTheta)
             else:
                 logger.warning('Unknown unit %s, do not plot calibration rings' % str(self.unit))
@@ -1258,7 +1258,7 @@ Note that `pyFAI-recalib` program is obsolete as the same functionnality is
 available from within pyFAI-calib, using the `recalib` command in the
 refinement process.
 Two option are available for recalib: the numbe of rings to extract (similar to the -r option of this program)
-and a new option which lets you choose between the original `massif` algorithm and the new `blob` detection.
+and a new option which lets you choose between the original `massif` algorithm and newer ones like `blob` and `watershed` detection.
         """
         usage = "pyFAI-recalib [options] -p ponifile -w 1 -c calibrant.D imagefile.edf"
         self.configure_parser(usage=usage, description=description, epilog=epilog)
@@ -1395,9 +1395,9 @@ class MultiCalib(object):
                           action="store_true", dest="debug", default=False,
                           help="switch to debug/verbose mode")
 #        parser.add_argument("-g", "--gaussian", dest="gaussian", help="""Size of the gaussian kernel.
-#Size of the gap (in pixels) between two consecutive rings, by default 100
-#Increase the value if the arc is not complete;
-#decrease the value if arcs are mixed together.""", default=None)
+# Size of the gap (in pixels) between two consecutive rings, by default 100
+# Increase the value if the arc is not complete;
+# decrease the value if arcs are mixed together.""", default=None)
 #        parser.add_argument("-c", "--square", dest="square", action="store_true",
 #                      help="Use square kernel shape for neighbor search instead of diamond shape", default=False)
         parser.add_argument("-c", "--calibrant", dest="calibrant", metavar="FILE",
@@ -1505,7 +1505,7 @@ class MultiCalib(object):
                       help="force the program to prompt for refinements",
                       default=True, action="store_true")
         parser.add_argument("--peak-picker", dest="peakPicker",
-                      help="Uses the 'massif' or the 'blob' peak-picker algorithm (default: blob)",
+                      help="Uses the 'massif', 'blob' or 'watershed' peak-picker algorithm (default: blob)",
                       default="blob", type=str)
         options = parser.parse_args()
 
@@ -1569,7 +1569,7 @@ class MultiCalib(object):
             raise RuntimeError("Please provide some calibration images ... "
                                "if you want to analyze them. Try also the --help option to see all options!")
         self.weighted = options.weighted
-        if options.peakPicker.lower() in ["blob", "massif"]:
+        if options.peakPicker.lower() in PeakPicker.VALID_METHODS:
             self.peakPicker = options.peakPicker.lower()
 
     def get_pixelSize(self, ans):
