@@ -5,10 +5,11 @@ recursive-exclude src *.pyc
 recursive-include benchmark *.py *.spline *.poni
 recursive-include pyFAI-src *.py
 recursive-exclude pyFAI-src *.pyc
-recursive-include test *.py *.json  
+recursive-include test *.py *.json
 recursive-exclude test *.pyc
 recursive-include gui *.ui
 recursive-include calibration *.D
+recursive-include dll *.dll
 include stdeb.cfg
 include setup.cfg
 include MANIFEST.in
