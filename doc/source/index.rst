@@ -37,6 +37,7 @@ Split into Design (specification,class diagrams) , Usage and Operation
    design/index
    api/modules
    operations/index
+   ecosystem
    project
    biblio
 
