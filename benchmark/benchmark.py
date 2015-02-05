@@ -93,7 +93,10 @@ data = fabio.open(r"%s").data
             if os.name == "nt":
                 self._cpu = platform.processor()
             elif os.path.exists("/proc/cpuinfo"):
-                self._cpu = [i.split(": ", 1)[1] for i in open("/proc/cpuinfo") if i.startswith("model name")][0].strip()
+                cpuinfo = [i.split(": ", 1)[1] for i in open("/proc/cpuinfo") if i.startswith("model name")]
+                if not cpuinfo:
+                    cpuinfo = [i.split(": ", 1)[1] for i in open("/proc/cpuinfo") if i.startswith("cpu")]
+                self._cpu = cpuinfo[0].strip()
             elif os.path.exists("/usr/sbin/sysctl"):
                 proc = subprocess.Popen(["sysctl", "-n", "machdep.cpu.brand_string"], stdout=subprocess.PIPE)
                 proc.wait()
