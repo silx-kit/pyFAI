@@ -41,6 +41,10 @@ try:
     from argparse import ArgumentParser
 except ImportError:
     from .third_party.argparse import ArgumentParser
+if sys.version_info[0]<3:
+    from urlparse import urlparse
+else:
+    from urllib.parse import urlparse
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI.calibration")
@@ -192,7 +196,6 @@ class AbstractCalibration(object):
         self.gui = True
         self.interactive = True
         self.filter = "mean"
-        self.basename = None
         self.weighted = False
         self.polarization_factor = None
         self.parser = None
@@ -538,6 +541,12 @@ class AbstractCalibration(object):
             self.outfile = self.dataFiles[0]
 
         self.basename = os.path.splitext(self.outfile)[0]
+        if "://" in self.basename:
+            url = urlparse.urlparse(self.outfile)
+            if url.scheme!='hdf5':
+                logger.warning("unexcptected URL: %s"%self.outfile)
+            self.basename = os.path.splitext(url.netloc)[0]
+
         if isinstance(self, Recalibration):
             self.keep = False
             self.pointfile = None
