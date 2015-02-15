@@ -80,6 +80,7 @@ Wavelength: 7e-11
     def tearDown(self):
         if os.path.exists(self.ponifile):
             os.unlink(self.ponifile)
+        self.data = None
 
 def test_suite_bug_regression():
     testSuite = unittest.TestSuite()
