@@ -46,7 +46,7 @@ from . import geometry
 Geometry = geometry.Geometry
 from . import units
 from . import utils
-from .utils import StringTypes
+from .utils import StringTypes, deprecated
 import fabio
 error = None
 
@@ -316,7 +316,7 @@ class AzimuthalIntegrator(Geometry):
         else:
             return data, None
 
-
+    @deprecated
     def xrpd_numpy(self, data, npt, filename=None, correctSolidAngle=True,
                    tthRange=None, mask=None, dummy=None, delta_dummy=None,
                    polarization_factor=None, dark=None, flat=None):
@@ -424,6 +424,7 @@ class AzimuthalIntegrator(Geometry):
                     dark, flat, polarization_factor)
         return tthAxis, I
 
+    @deprecated
     def xrpd_cython(self, data, npt, filename=None, correctSolidAngle=True,
                     tthRange=None, mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=None, dark=None, flat=None,
@@ -481,6 +482,7 @@ class AzimuthalIntegrator(Geometry):
                     dark, flat, polarization_factor)
         return tthAxis, I
 
+    @deprecated
     def xrpd_splitBBox(self, data, npt, filename=None, correctSolidAngle=True,
                        tthRange=None, chiRange=None, mask=None,
                        dummy=None, delta_dummy=None,
@@ -636,6 +638,7 @@ class AzimuthalIntegrator(Geometry):
         self.save1D(filename, tthAxis, I, None, "2th_deg", dark, flat, polarization_factor)
         return tthAxis, I
 
+    @deprecated
     def xrpd_splitPixel(self, data, npt,
                         filename=None, correctSolidAngle=True,
                         tthRange=None, chiRange=None, mask=None,
@@ -776,6 +779,7 @@ class AzimuthalIntegrator(Geometry):
     # Default implementation:
     xrpd = xrpd_splitBBox
 
+    @deprecated
     def xrpd_OpenCL(self, data, npt, filename=None, correctSolidAngle=True,
                     dark=None, flat=None,
                     tthRange=None, mask=None, dummy=None, delta_dummy=None,
@@ -1190,6 +1194,7 @@ class AzimuthalIntegrator(Geometry):
                                                 unit=unit,
                                                 )
 
+    @deprecated
     def xrpd_LUT(self, data, npt, filename=None, correctSolidAngle=True,
                  tthRange=None, chiRange=None, mask=None,
                  dummy=None, delta_dummy=None,
@@ -1268,7 +1273,7 @@ class AzimuthalIntegrator(Geometry):
         you can set it to false if you think the LUT calculated is
         already the correct one (setup, mask, 2theta/chi range).
 
-        TODO: replace with inegrate1D
+        TODO: replace with integrate1D
 
         """
 
@@ -1303,6 +1308,7 @@ class AzimuthalIntegrator(Geometry):
                                 unit="2th_deg",
                                 safe=safe)
 
+    @deprecated
     def xrpd_LUT_OCL(self, data, npt, filename=None, correctSolidAngle=True,
                      tthRange=None, chiRange=None, mask=None,
                      dummy=None, delta_dummy=None,
@@ -1437,7 +1443,11 @@ class AzimuthalIntegrator(Geometry):
                                 unit="2th_deg",
                                 safe=safe)
 
-    def xrpd_CSR_OCL(self, data, npt, filename=None, correctSolidAngle=True, tthRange=None, mask=None, dummy=None, delta_dummy=None, dark=None, flat=None, chiRange=None, safe=True, devicetype="all", platformid=None, deviceid=None, block_size=32, padded=False):
+    @deprecated
+    def xrpd_CSR_OCL(self, data, npt, filename=None, correctSolidAngle=True,
+                     tthRange=None, mask=None, dummy=None, delta_dummy=None,
+                     dark=None, flat=None, chiRange=None, safe=True,
+                     devicetype="all", platformid=None, deviceid=None, block_size=32):
         """
         Calculate the powder diffraction pattern from a set of data,
         an image.
@@ -1477,6 +1487,10 @@ class AzimuthalIntegrator(Geometry):
         @type platformid: int
         @param deviceid: device number
         @type deviceid: int
+        @param block_size: OpenCL grid size
+        @type block_size: int
+        Unused/deprecated arguments:
+        @param padded: deprecated
 
         @return: (2theta, I) in degrees
         @rtype: 2-tuple of 1D arrays
@@ -1572,9 +1586,9 @@ class AzimuthalIntegrator(Geometry):
                                 method=meth,
                                 unit="2th_deg",
                                 safe=safe,
-                                block_size=32,
-                                padded=False)
+                                block_size=block_size)
 
+    @deprecated
     def xrpd2_numpy(self, data, npt_rad, npt_azim=360,
                     filename=None, correctSolidAngle=True,
                     dark=None, flat=None,
@@ -1682,6 +1696,7 @@ class AzimuthalIntegrator(Geometry):
 
         return I, bins2Th, binsChi
 
+    @deprecated
     def xrpd2_histogram(self, data, npt_rad, npt_azim=360,
                         filename=None, correctSolidAngle=True,
                         dark=None, flat=None,
@@ -1798,6 +1813,7 @@ class AzimuthalIntegrator(Geometry):
         self.save2D(filename, I, bins2Th, binsChi)  # , dark, flat, polarization_factor)
         return I, bins2Th, binsChi
 
+    @deprecated
     def xrpd2_splitBBox(self, data, npt_rad, npt_azim=360,
                         filename=None, correctSolidAngle=True,
                         tthRange=None, chiRange=None, mask=None,
@@ -1942,6 +1958,7 @@ class AzimuthalIntegrator(Geometry):
                     polarization_factor=polarization_factor)
         return I, bins2Th, binsChi
 
+    @deprecated
     def xrpd2_splitPixel(self, data, npt_rad, npt_azim=360,
                          filename=None, correctSolidAngle=True,
                          tthRange=None, chiRange=None, mask=None,
@@ -3107,6 +3124,7 @@ class AzimuthalIntegrator(Geometry):
             return I, bins_rad, bins_azim
 
 
+    @deprecated
     def saxs(self, data, npt, filename=None,
              correctSolidAngle=True, variance=None,
              error_model=None, qRange=None, chiRange=None,

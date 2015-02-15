@@ -133,6 +133,9 @@ class UtilsTest(object):
             if "-r" not in sys.argv:
                 logger.warning("Remove build and start from scratch %s" % error)
                 sys.argv.append("-r")
+        else:
+            import pyFAI.utils
+            pyFAI.utils.depreclog.setLevel(logging.ERROR)
     else:
         image_home = os.path.join(tempfile.gettempdir(), "%s_testimages_%s" % (name, login))
         if not os.path.exists(image_home):
@@ -169,6 +172,8 @@ class UtilsTest(object):
         logger.info("%s loaded from %s" % (cls.name, cls.pyFAI.__file__))
         sys.modules[cls.name] = cls.pyFAI
         cls.reloaded = True
+        import pyFAI.utils
+        pyFAI.utils.depreclog.setLevel(logging.ERROR)
         return cls.pyFAI
 
     @classmethod

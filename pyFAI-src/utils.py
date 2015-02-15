@@ -58,6 +58,7 @@ import scipy.ndimage.filters
 logger = logging.getLogger("pyFAI.utils")
 import time
 timelog = logging.getLogger("pyFAI.timeit")
+depreclog = logging.getLogger("DEPRECATION")
 
 cu_fft = None  # No cuda here !
 if sys.platform != "win32":
@@ -77,7 +78,7 @@ def deprecated(func):
         """
         decorator that deprecates the use of a function
         """
-        logger.warning("%s is Deprecated !!! %s" % (func.func_name, os.linesep.join([""] + traceback.format_stack()[:-1])))
+        depreclog.warning("%s is Deprecated !!! %s" % (func.func_name, os.linesep.join([""] + traceback.format_stack()[:-1])))
         return func(*arg, **kw)
     return wrapper
 
@@ -95,7 +96,7 @@ except:
 
 def calc_checksum(ary, safe=True):
     """
-    Calculate the checksum by default (or returns its buffer location if unsafe) 
+    Calculate the checksum by default (or returns its buffer location if unsafe)
     """
     if safe:
         return crc32(ary)
@@ -440,7 +441,7 @@ def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5))
     @param center_method: is the center calculated by a "mean" or a "median", or "quantile"
     @param cutoff: keep all data where (I-center)/std < cutoff
     @param quantiles: 2-tuple of floats average out data between the two quantiles
-    
+
     @return: 2D image averaged
     """
     if "ndim" in dir(lstimg) and lstimg.ndim == 3:
@@ -972,24 +973,24 @@ def _get_data_path(filename):
 
 def get_calibration_dir():
     """get the full path of a calibration directory
-    
-    @return: the full path of the calibrant file 
+
+    @return: the full path of the calibrant file
     """
     return _get_data_path("calibration")
 
 
 def get_cl_file(filename):
     """get the full path of a openCL file
-    
-    @return: the full path of the openCL source file    
+
+    @return: the full path of the openCL source file
     """
     return _get_data_path(os.path.join("openCL", filename))
 
 
 def get_ui_file(filename):
     """get the full path of a user-interface file
-    
-    @return: the full path of the ui    
+
+    @return: the full path of the ui
     """
     return _get_data_path(os.path.join("gui", filename))
 
@@ -998,7 +999,7 @@ def get_ui_file(filename):
 def read_cl_file(filename):
     """
     @param filename: read an OpenCL file and apply a preprocessor
-    @return: preprocessed source code 
+    @return: preprocessed source code
     """
     with open(get_cl_file(filename), "r") as f:
         # Dummy preprocessor which pops the #include
