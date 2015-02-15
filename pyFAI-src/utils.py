@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2014"
+__date__ = "15/02/2015"
 __status__ = "production"
 
 import logging, sys, types, os, glob
@@ -40,6 +40,10 @@ import threading
 sem = threading.Semaphore()  # global lock for image processing initialization
 import numpy
 import fabio
+if fabio.version_info >= (0, 2, 2):
+    from fabio.nexus import exists
+else:
+    from os.path import  exists
 from scipy import ndimage
 from scipy.interpolate import interp1d
 from math import ceil, sin, cos, atan2, pi
@@ -524,14 +528,14 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             if "ndim" in dir(darks) and darks.ndim == 3:
                 dark = averageDark(darks, center_method="mean", cutoff=4)
             elif ("__len__" in dir(darks)) and (type(darks[0]) in types.StringTypes):
-                dark = averageDark([fabio.open(f).data for f in darks if os.path.exists(f)], center_method="mean", cutoff=4)
+                dark = averageDark([fabio.open(f).data for f in darks if exists(f)], center_method="mean", cutoff=4)
             elif ("__len__" in dir(darks)) and ("ndim" in dir(darks[0])) and (darks[0].ndim == 2):
                 dark = averageDark(darks, center_method="mean", cutoff=4)
         if do_flat and (flat is  None):
             if "ndim" in dir(flats) and flats.ndim == 3:
                 flat = averageDark(flats, center_method="mean", cutoff=4)
             elif ("__len__" in dir(flats)) and (type(flats[0]) in types.StringTypes):
-                flat = averageDark([fabio.open(f).data for f in flats if os.path.exists(f)], center_method="mean", cutoff=4)
+                flat = averageDark([fabio.open(f).data for f in flats if exists(f)], center_method="mean", cutoff=4)
             elif ("__len__" in dir(flats)) and ("ndim" in dir(flats[0])) and (flats[0].ndim == 2):
                 flat = averageDark(flats, center_method="mean", cutoff=4)
             else:
@@ -922,7 +926,7 @@ def expand_args(args):
     """
     new = []
     for afile in  args:
-        if os.path.exists(afile):
+        if exists(afile):
             new.append(afile)
         else:
             new += glob.glob(afile)
@@ -946,14 +950,6 @@ def _get_data_path(filename):
 
     For now, just perform a recursive search
     """
-    # when using bootstrap the file is located under the build directory
-#    real_filename = os.path.abspath(os.path.join(os.path.dirname(__file__),
-#                                                 os.path.pardir,
-#                                                 os.path.pardir,
-#                                                 os.path.pardir,
-#                                                 'data',
-#                                                 filename))
-#    if not os.path.exists(real_filename):
     resources = [os.environ.get("PYFAI_DATA"), data_dir, os.path.dirname(__file__)]
     try:
         import xdg.BaseDirectory
