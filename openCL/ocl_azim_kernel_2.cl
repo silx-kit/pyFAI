@@ -297,7 +297,6 @@ create_histo_binarray(const __global float    *tth,
   float x_interp;
   float I_interp;
   float fbinsize;
-  float inrange;
   gid=get_global_id(0);
 
   //Load tth min and max from slow global to fast register cache
@@ -337,7 +336,6 @@ create_histo_binarray(const __global float    *tth,
         {
           fbin = fbin0_min + spreadloop;
           cbin = (int)fbin;
-          inrange = (cbin<=bin0_max);
 
           x_interp = ( ( 1.0f - (fbin - cbin) )* (cbin == bin0_min) ) +
                       ( ( fbin - cbin ) * ( cbin == bin0_max)       ) +
@@ -346,7 +344,7 @@ create_histo_binarray(const __global float    *tth,
           convert0 = (UINTType)((x_interp * I_interp)*UACC);
           convert1 = (UINTType)((x_interp * I_interp * intensity[gid])*UACC);
           //barrier(CLK_LOCAL_MEM_FENCE); //CPU OCLs
-          if(inrange && cbin < BINS){
+          if((cbin<=bin0_max) && (cbin < BINS)){
             atom_add(&binarray[cbin],convert0);
             atom_add(&histogram[cbin],convert1);
           }
