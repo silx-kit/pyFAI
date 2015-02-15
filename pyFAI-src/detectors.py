@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2015"
+__date__ = "15/02/2015"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instanciate them
@@ -453,7 +453,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
         if self._pixel1:
             err = abs(value - self._pixel1) / self._pixel1
             if self.force_pixel and  (err > epsilon):
-                logger.warning("enforcing pixel size 2 for a detector %s" %
+                logger.warning("Enforcing pixel size 1 for a detector %s" %
                                self.__class__.__name__)
         self._pixel1 = value
     pixel1 = property(get_pixel1, set_pixel1)
@@ -470,7 +470,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
         if self._pixel2:
             err = abs(value - self._pixel2) / self._pixel2
             if self.force_pixel and  (err > epsilon):
-                logger.warning("enforcing pixel size 2 for a detector %s" %
+                logger.warning("Enforcing pixel size 2 for a detector %s" %
                                self.__class__.__name__)
         self._pixel2 = value
     pixel2 = property(get_pixel2, set_pixel2)

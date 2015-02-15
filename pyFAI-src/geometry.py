@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2014"
+__date__ = "15/02/2015"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -811,7 +811,7 @@ class Geometry(object):
         Calculate the incidence angle (alpha) for current pixels (P).
         The poni being the point of normal incidence,
         it's incidence angle is $\alpha = 0$ hence $cos(\alpha) = 1$
-        
+
         @param d1: 1d or 2d set of points in pixel coord
         @param d2:  1d or 2d set of points in pixel coord
         @return: cosine of the incidence angle
@@ -862,17 +862,17 @@ class Geometry(object):
         return dsa
 
     def solidAngleArray(self, shape, order=3, absolute=False):
-        """Generate an array for the solid angle correction 
+        """Generate an array for the solid angle correction
         given the shape of the detector.
 
-        solid_angle = cos(incidence)^3 
-        
+        solid_angle = cos(incidence)^3
+
         @param shape: shape of the array expected
         @param order: should be 3, power of the formula just obove
-        @param absolute: the absolute solid angle is calculated as: 
-        
+        @param absolute: the absolute solid angle is calculated as:
+
         SA = pix1*pix2/dist^2 * cos(incidence)^3
-        
+
         """
         if self._dssa is None:
             if order is True:
@@ -952,10 +952,17 @@ class Geometry(object):
             data[key] = value
         if "detector" in data:
             self.detector = detectors.detector_factory(data["detector"])
-        if "pixelsize1" in data:
-            self.detector.pixel1 = float(data["pixelsize1"])
-        if "pixelsize2" in data:
-            self.detector.pixel2 = float(data["pixelsize2"])
+        else:
+            self.detector = detectors.Detector()
+        if self.detector.force_pixel and ("pixelsize1" in data) and ("pixelsize2" in data):
+            pixel1 = float(data["pixelsize1"])
+            pixel2 = float(data["pixelsize2"])
+            self.detector = self.detector.__class__(pixel1=pixel1, pixel2=pixel2)
+        else:
+            if "pixelsize1" in data:
+                self.detector.pixel1 = float(data["pixelsize1"])
+            if "pixelsize2" in data:
+                self.detector.pixel2 = float(data["pixelsize2"])
         if "distance" in data:
             self._dist = float(data["distance"])
         if "poni1" in data:
