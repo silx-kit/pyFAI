@@ -40,7 +40,7 @@ import threading
 sem = threading.Semaphore()  # global lock for image processing initialization
 import numpy
 import fabio
-if fabio.version_info >= (0, 2, 2):
+if "version_info" in dir(fabio) and fabio.version_info >= (0, 2, 2):
     from fabio.nexus import exists
 else:
     from os.path import  exists
