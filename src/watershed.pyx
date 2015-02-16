@@ -26,18 +26,21 @@ Inverse watershed for connecting region of high intensity
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "20/01/2015"
+__date__ = "30/01/2015"
 __status__ = "stable"
 __license__ = "GPLv3+"
 
 import cython
 import numpy
 cimport numpy
-
+import sys 
+import logging
+logger = logging.getLogger("pyFAI.watershed") 
 from pyFAI.bilinear import Bilinear
 from pyFAI.utils import timeit
+
 cdef bint get_bit(int byteval, int idx) nogil:
-    return ((byteval&(1<<idx))!=0);
+    return ((byteval & (1 << idx)) != 0)
 
 
 cdef class Region:
@@ -49,55 +52,68 @@ cdef class Region:
     def __cinit__(self, int idx):
         self.index = idx
         self.neighbors = []
-        self.border = [] #list of pixel indices of the border
-        self.peaks=[idx]
+        self.border = [] # list of pixel indices of the border
+        self.peaks = [ idx ]
         self.size = 0
-        self.pass_to = -1
-        self.mini = -1
-        self.maxi = -1
-        self.highest_pass = -1
+        self.pass_to = - 1
+        self.mini = - 1
+        self.maxi = - 1
+        self.highest_pass = -sys.maxsize
 
     def __repr__(self):
-        return "Region %s of size %s:\n neighbors: %s\n border: %s\n"%(self.index, self.size, self.neighbors, self.border)+\
-               "peaks: %s\n maxi=%s, mini=%s, pass=%s to %s"%(self.peaks, self.maxi, self.mini,self.highest_pass,self.pass_to)
+        return "Region %s of size %s:\n neighbors: %s\n border: %s\n" % (self.index, self.size, self.neighbors, self.border) + \
+               "peaks: %s\n maxi=%s, mini=%s, pass=%s to %s" % (self.peaks, self.maxi, self.mini,self.highest_pass,self.pass_to)
 
+    @cython.cdivision(True)
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def init_values(self, float[:] flat):
         """
-        Initalize the values : maxi, mini and pass both heigth and so on
+        Initalize the values : maxi, mini and pass both height and so on
         @param flat: flat view on the data (intensity)
         @return: True if there is a problem and the region should be removed
         """
         cdef:
             int i, k, imax, imin
-            float mini, maxi
+            float mini, maxi, val
+            int border_size = len(self.border)
+            int neighbors_size = len(self.neighbors)
         self.maxi = flat[self.index]
-        if  len(self.neighbors)!=len(self.border):
-            print(self.index, len(self.neighbors),len(self.border))
+        if neighbors_size != border_size:
+            print(self.index, neighbors_size, border_size)
             print(self)
             return True
-        if self.neighbors:
+        if neighbors_size:
             imax = imin = 0
             i = self.border[imax]
             val = mini = maxi = flat[i]
-            for k in range(1,len(self.border)):
+            for k in range(1, border_size):
                 i = self.border[k]
                 val = flat[i]
-                if val<mini:
+                if val < mini:
                     mini = val
                     imin = k
-                elif val>maxi:
+                elif val > maxi:
                     maxi = val
                     imax = k
-            if self.mini == -1:
+            if self.mini == - 1:
                 self.mini = mini
             self.highest_pass = maxi
             self.pass_to = self.neighbors[imax]
         else:
             return True
 
-
+    def get_size(self):
+        return self.size
+    
     def get_highest_pass(self):
         return self.highest_pass
+
+    def get_maxi(self):
+        return self.maxi
+    
+    def get_mini(self):
+        return self.mini
 
     def get_pass_to(self):
         return self.pass_to
@@ -106,17 +122,24 @@ cdef class Region:
         return self.index
 
     def get_borders(self):
-        return self.borders
+        return self.border
+    
+    def get_neighbors(self):
+        return self.neighbors
 
+    @cython.cdivision(True)
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def merge(self, Region other):
         """
         merge 2 regions
         """
         cdef:
             int i
-            list new_neighbors=[], new_border=[]
+            list new_neighbors = []
+            list new_border = []
             Region region
-        if other.maxi>self.maxi:
+        if other.maxi > self.maxi:
             region = Region(other.index)
             region.maxi = other.maxi
         else:
@@ -139,6 +162,7 @@ cdef class Region:
         region.size = self.size + other.size
         return region
 
+
 class InverseWatershed(object):
     """
     Idea:
@@ -150,135 +174,301 @@ class InverseWatershed(object):
     * merge region with high pass between them
 
     """
-    def __init__(self, data not None):
+    def __init__(self, data not None, thres=1.0):
         self.data = numpy.ascontiguousarray(data, dtype=numpy.float32)
-        self.height, self.width  = data.shape
+        self.height, self.width = data.shape
         self.bilinear = Bilinear(data)
         self.regions = dict()
         self.labels = numpy.zeros((self.height, self.width), dtype="int32")
         self.borders = numpy.zeros((self.height, self.width), dtype="uint8")
+        self.thres = thres
+        self._actual_thres = 2
 
     def init(self):
         self.init_labels()
         self.init_borders()
         self.init_regions()
         self.init_pass()
+        self.merge_singleton()
+        self.merge_twins()
+        self.merge_intense(self.thres)
+        logger.info("found %s regions, after merge remains %s"%(len(self.regions),len(set(self.regions.values()))))
 
     @timeit
     def init_labels(self):
         cdef:
-            int i, j, width=self.width, height=self.height, idx, res
-            numpy.int32_t[:,:] labels = self.labels
+            int i, j, width = self.width, height = self.height, idx, res
+            numpy.int32_t[:, :] labels = self.labels
             dict regions = self.regions
         for i in range(height):
             for j in range(width):
-                idx = j+i*width
+                idx = j + i * width
                 res = self.bilinear.cp_local_maxi(idx)
                 labels[i, j] = res
                 if idx == res:
                     regions[res] = Region(res)
     @timeit
+    @cython.cdivision(True)
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def init_borders(self):
         cdef:
-            int i, j, width=self.width, height=self.height, idx, res
-            numpy.int32_t[:,:] labels = self.labels
-            numpy.uint8_t[:,:] borders = self.borders
+            int i, j, width = self.width, height = self.height, idx, res
+            numpy.int32_t[:, :] labels = self.labels
+            numpy.uint8_t[:, :] borders = self.borders
             numpy.uint8_t neighb
         for i in range(height):
             for j in range(width):
                 neighb = 0
-                idx = j+i*width
-                res =  labels[i,j]
-                if i>0 and j>0 and labels[i-1,j-1]!=res:
+                idx = j + i * width
+                res = labels[i, j]
+                if (i > 0) and (j > 0) and (labels[i - 1, j - 1] != res):
                     neighb |= 1
-                if i>0 and labels[i-1,j]!=res:
-                    neighb |= 1<<1
-                if i>0 and j<(width-1) and labels[i-1,j+1]!=res:
-                    neighb |= 1<<2
-                if j<(width-1) and labels[i,j+1]!=res:
-                    neighb |= 1<<3
-                if i<(height-1) and j<(width-1) and labels[i+1,j+1]!=res:
-                    neighb |= 1<<4
-                if i<(height-1) and labels[i+1,j]!=res:
-                    neighb |= 1<<5
-                if i<(height-1) and j>0 and labels[i+1,j-1]!=res:
-                    neighb |= 1<<6
-                if j>0 and labels[i,j-1]!=res:
-                    neighb |= 1<<7
-                borders[i,j] = neighb
+                if (i > 0) and (labels[i - 1, j] != res):
+                    neighb |= 1 << 1
+                if (i > 0) and (j < (width - 1)) and (labels[i - 1, j + 1] != res):
+                    neighb |= 1 << 2
+                if (j < (width - 1)) and (labels[i, j + 1] != res):
+                    neighb |= 1 << 3
+                if (i < (height - 1)) and (j < (width - 1)) and (labels[i + 1, j + 1] != res):
+                    neighb |= 1 << 4
+                if (i < (height - 1)) and (labels[i + 1, j] != res):
+                    neighb |= 1 << 5
+                if (i < (height - 1)) and (j > 0) and (labels[i + 1, j - 1] != res):
+                    neighb |= 1 << 6
+                if (j > 0) and (labels[i, j - 1] != res):
+                    neighb |= 1 << 7
+                borders[i, j] = neighb
 
     @timeit
+    @cython.cdivision(True)
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def init_regions(self):
         cdef:
-            int i, j, width=self.width, height=self.height, idx, res
-            numpy.int32_t[:,:] labels = self.labels
-            numpy.uint8_t[:,:] borders = self.borders
-            numpy.uint8_t neighb=0
+            int i, j, idx, res
+            numpy.int32_t[:, :] labels = self.labels
+            numpy.uint8_t[:, :] borders = self.borders
+            numpy.uint8_t neighb = 0
             Region region
             dict regions = self.regions
+            int width = self.width
+            int  height = self.height
         for i in range(height):
             for j in range(width):
-                idx = j+i*width
-                neighb = borders[i,j]
-                res =  labels[i,j]
+                idx = j + i * width
+                neighb = borders[i, j]
+                res = labels[i, j]
                 region = regions[res]
-                region.size +=1
-                if neighb==0: continue
+                region.size += 1
+                if neighb == 0: 
+                    continue
                 region.border.append(idx)
-                if get_bit(neighb,1):
-                    region.neighbors.append(labels[i-1,j])
-                elif get_bit(neighb,3):
-                    region.neighbors.append(labels[i,j+1])
-                elif get_bit(neighb,5):
-                    region.neighbors.append(labels[i+1,j])
-                elif get_bit(neighb,7):
-                    region.neighbors.append(labels[i,j-1])
-                elif get_bit(neighb,0):
-                    region.neighbors.append(labels[i-1,j-1])
-                elif get_bit(neighb,2):
-                    region.neighbors.append(labels[i-1,j+1])
-                elif get_bit(neighb,4):
-                    region.neighbors.append(labels[i+1,j+1])
-                elif get_bit(neighb,6):
-                    region.neighbors.append(labels[i+1,j-1])
+                if get_bit(neighb, 1):
+                    region.neighbors.append(labels[i - 1, j])
+                elif get_bit(neighb, 3):
+                    region.neighbors.append(labels[i, j + 1])
+                elif get_bit(neighb, 5):
+                    region.neighbors.append(labels[i + 1, j])
+                elif get_bit(neighb, 7):
+                    region.neighbors.append(labels[i, j - 1])
+                elif get_bit(neighb, 0):
+                    region.neighbors.append(labels[i - 1, j - 1])
+                elif get_bit(neighb, 2):
+                    region.neighbors.append(labels[i - 1, j + 1])
+                elif get_bit(neighb, 4):
+                    region.neighbors.append(labels[i + 1, j + 1])
+                elif get_bit(neighb, 6):
+                    region.neighbors.append(labels[i + 1, j - 1])
+
     @timeit
+    @cython.cdivision(True)
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def init_pass(self):
         cdef:
-            int i, j, k, width=self.width, imax, imin
+            int i, j, k, imax, imin
             float[:] flat = self.data.ravel()
-            numpy.uint8_t neighb=0
+            numpy.uint8_t neighb = 0
             Region region
             dict regions = self.regions
             float val, maxi, mini
+            int width = self.width
         for region in list(regions.values()):
             if region.init_values(flat):
                 regions.pop(region.index)
 
+    @timeit
+    @cython.cdivision(True)
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    def merge_singleton(self):
+        "merge single pixel region"
+        cdef:
+            int idx, i, j, key, key1
+            Region region1, region2, region
+            dict regions = self.regions
+            numpy.uint8_t neighb = 0
+            float ref = 0.0            
+            float[:, :] data = self.data
+            numpy.int32_t[:, :] labels = self.labels
+            numpy.uint8_t[:, :] borders = self.borders
+            int to_merge = -1
+            int width = self.width
+            int cnt = 0
+            float[:] flat = self.data.ravel()
+        for key1 in list(regions.keys()):
+            region1 = regions[key1]
+            if region1.maxi == region1.mini:
+                to_merge = -1
+                if region1.size == 1:
+                    i = region1.index // width
+                    j = region1.index % width                    
+                    neighb = borders[i, j]
+                    if get_bit(neighb, 1) and (region1.maxi == data[i - 1, j]):
+                        to_merge = labels[i - 1, j]
+                    elif get_bit(neighb, 3) and (region1.maxi == data[i, j + 1]):
+                        to_merge = labels[i, j + 1]
+                    elif get_bit(neighb, 5) and (region1.maxi == data[i + 1, j]):
+                        to_merge = labels[i + 1, j]
+                    elif get_bit(neighb, 7) and (region1.maxi == data[i, j - 1]):
+                        to_merge = labels[i, j - 1]
+                    elif get_bit(neighb, 0) and (region1.maxi == data[i - 1, j - 1]):
+                        to_merge = labels[i - 1, j - 1]
+                    elif get_bit(neighb, 2) and (region1.maxi == data[i - 1, j + 1]):
+                        to_merge = labels[i - 1, j + 1]
+                    elif get_bit(neighb, 4) and (region1.maxi == data[i + 1, j + 1]):
+                        to_merge = labels[i + 1, j + 1]
+                    elif get_bit(neighb, 6) and (region1.maxi == data[i + 1, j - 1]):
+                        to_merge = labels[i + 1, j - 1]
+                if to_merge < 0:
+                    if len(region1.neighbors) == 1 or (region1.neighbors == [region1.neighbors[0]] * len(region1.neighbors)):
+                        to_merge = region1.neighbors[0]
+                    else:
+                        to_merge = region1.neighbors[0]
+                        region2 = regions[to_merge]
+                        ref = region2.maxi
+                        for idx in region1.neighbors[1:]:
+                            region2 = regions[to_merge]
+                            if region2.maxi > ref:
+                                to_merge = idx
+                                ref = region2.maxi
+                if (to_merge < 0):
+                    logger.info("error in merging %s" % region1)
+                else:
+                    region2 = regions[to_merge]
+                    region = region1.merge(region2)
+                    region.init_values(flat)
+                    for key in region.peaks:
+                        regions[key] = region
+                    cnt += 1
+        logger.info("Did %s merge_singleton" % cnt)
+
+    @timeit
     def merge_twins(self):
         """
         Twins are two peak region which are best linked together:
         A -> B and B -> A
         """
         cdef:
-            int i, j, k, width=self.width, imax, imin, cnt=0
+            int i, j, k, imax, imin, key1, key2, key
             float[:] flat = self.data.ravel()
-            numpy.uint8_t neighb=0
+            numpy.uint8_t neighb = 0
             Region region1, region2, region
             dict regions = self.regions
             float val, maxi, mini
-            bint found=True
-        while found:
-            for region1 in list(regions.values()): #we make a copy !
-                region2 = regions[region1.pass_to]
-                if (region2!=region1) and (region2.pass_to in region1.peaks or region1.pass_to in region2.peaks):
-                    idx1 = region1.index
-                    idx2 = region2.index
-                    print("merge %s %s"%(idx1, idx2))
-                    region = region1.merge(region2)
-                    region.init_values(flat)
-                    regions[idx1] = region
-                    regions[idx2] = region
-                    cnt+=1
-            else:
-                found = False
-        print("Did %s merges"%cnt)
+            bint found = True
+            int width = self.width
+            int cnt = 0
+        for key1 in list(regions.keys()):
+            region1 = regions[key1]
+            key2 = region1.pass_to
+            region2 = regions[key2]
+            if region1 == region2:
+                continue
+            if (region2.pass_to in region1.peaks and region1.pass_to in region2.peaks):
+                idx1 = region1.index
+                idx2 = region2.index
+#                 logger.info("merge %s(%s) %s(%s)" % (idx1, idx1, key2, idx2))
+                region = region1.merge(region2)
+                region.init_values(flat)
+                for key in region.peaks:
+                    regions[key] = region
+                cnt += 1
+        logger.info("Did %s merge_twins" % cnt)
+        
+    @timeit
+    def merge_intense(self, thres=1.0):
+        """
+        Merge groups then (pass-mini)/(maxi-mini) >=thres
+        """
+        if thres > self._actual_thres:
+            logger.warning("Cannot increase threshold: was %s, requested %s. You should re-init the object." % self._actual_thres, thres)
+        self._actual_thres = thres
+        cdef:
+            int key1, key2, idx1, idx2
+            Region region1, region2, region
+            dict regions = self.regions
+            float ratio
+            float[:] flat = self.data.ravel()
+            int cnt = 0
+        for key1 in list(regions.keys()):
+            region1 = regions[key1]
+            if region1.maxi == region1.mini:
+                logger.error(region1)
+                continue
+            ratio = (region1.highest_pass - region1.mini) / (region1.maxi - region1.mini)
+            if ratio >= thres:
+                key2 = region1.pass_to
+                idx1 = region1.index
+                region2 = regions[key2]
+                idx2 = region2.index
+#                 print("merge %s(%s) %s(%s)" % (idx1, idx1, key2, idx2))
+                region = region1.merge(region2)
+                region.init_values(flat)
+                for key in region.peaks:
+                    regions[key] = region
+                cnt += 1
+        logger.info("Did %s merge_intense" % cnt)
+    
+    def peaks_from_area(self, mask, Imin=None, keep=None, bint refine=True):
+        """
+        @param mask: mask of data points valid
+        @param Imin: Minimum intensity for a peak 
+        @param keep: Number of  points to keep
+        @param refine: refine sub-pixel position
+        """
+        cdef:
+            int i, j, l, x, y, width = self.width
+            numpy.uint8_t[:] mask_flat = numpy.ascontiguousarray(mask.ravel(), numpy.uint8)
+            int[:] input_points = numpy.where(mask_flat)[0].astype(numpy.int32)
+            numpy.int32_t[:] labels = self.labels.ravel()
+            dict regions = self.regions
+            Region region
+            list output_points = [], intensities = [], argsort
+            set keep_regions = set()
+            float[:] data = self.data.ravel() 
+        for i in input_points:
+            l = labels[i]
+            region = regions[l]
+            keep_regions.add(region.index)
+        for i in keep_regions:
+            region = regions[i]
+            for j in region.peaks:
+                if mask_flat[j]:
+                    intensities.append(data[j])
+                    x = j % self.width
+                    y = j // self.width
+                    output_points.append((y, x))
+        if refine:
+            for i in range(len(output_points)):
+                output_points[i] = self.bilinear.local_maxi(output_points[i])
+        if Imin or keep:
+            argsort = sorted(range(len(intensities)), key=intensities.__getitem__, reverse=True)
+            if Imin:
+                argsort = [i for i in argsort if intensities[i] >= Imin]
+            output_points = [output_points[i] for i in argsort]
+            
+            if keep and len(output_points)>keep:
+                output_points = output_points[:keep]
+        return output_points

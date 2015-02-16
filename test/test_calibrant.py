@@ -31,11 +31,15 @@ Test suites for calibrants
 import unittest
 import numpy
 import sys
+
 if __name__ == '__main__':
     import pkgutil, os
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
 
-from utilstest import UtilsTest, getLogger
+try:
+    from .utilstest import UtilsTest, getLogger
+except (ValueError, SystemError):
+    from utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 
@@ -116,7 +120,7 @@ class TestCalibrant(unittest.TestCase):
                 if idx != 0 and idx % 12 == 0:
                     pp.savefig()
                     plt.clf()
-                print( det.name, img.min(), img.max())
+                print(det.name, img.min(), img.max())
             self.assert_(img.shape == det.shape, "Image (%s) has the right size" % (det.name,))
             self.assert_(img.sum() > 0, "Image (%s) contains some data" % (det.name,))
             sys.stderr.write(".")

@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/01/2015"
+__date__ = "02/02/2015"
 __status__ = "stable"
 
 
@@ -41,10 +41,29 @@ import shutil
 import platform
 import subprocess
 import numpy
-from distutils.core import setup, Command
-from distutils.command.install_data import install_data
-from distutils.command.build_ext import build_ext
+
+try:
+    # setuptools allows the creation of wheels
+    from setuptools import setup, Command
+    from setuptools.command.sdist import sdist
+    from setuptools.command.build_ext import build_ext
+    from setuptools.command.install_data import install_data
+except ImportError:
+    from distutils.core import setup, Command
+    from distutils.core import Extension
+    from distutils.command.sdist import sdist
+    from distutils.command.build_ext import build_ext
+    from distutils.command.install_data import install_data
+
 from numpy.distutils.core import Extension as _Extension
+
+
+################################################################################
+# Remove MANIFEST file ... it needs to be re-generated on the fly
+################################################################################
+manifest = os.path.join(os.path.dirname(os.path.abspath(__file__)), "MANIFEST")
+if os.path.isfile(manifest):
+    os.unlink(manifest)
 
 
 def copy(infile, outfile, folder=None):
@@ -96,16 +115,28 @@ def check_openmp():
     """
     Do we compile with OpenMP ?
     """
-    if "WITH_OPENMP" in os.environ and os.environ["WITH_OPENMP"] == "False":
-        print("No OpenMP requested by environment")
-        return False
-
+    if "WITH_OPENMP" in os.environ:
+        print("OpenMP requested by environment: " + os.environ["WITH_OPENMP"])
+        if os.environ["WITH_OPENMP"] == "False":
+            return False
+        else:
+            return True
     if ("--no-openmp" in sys.argv):
         sys.argv.remove("--no-openmp")
         os.environ["WITH_OPENMP"] = "False"
         print("No OpenMP requested by command line")
         return False
+    elif ("--openmp" in sys.argv):
+        sys.argv.remove("--openmp")
+        os.environ["WITH_OPENMP"] = "True"
+        print("OpenMP requested by command line")
+        return True
 
+    if platform.system() == "Darwin":
+        # By default Xcode5 & XCode6 do not support OpenMP, Xcode4 is OK.
+        osx = tuple([int(i) for i in platform.mac_ver()[0].split(".")])
+        if osx >= (10, 8):
+            return False
     return True
 
 CYTHON = check_cython()
@@ -185,7 +216,10 @@ ext_modules = [
 
     Extension('morphology'),
 
-    Extension('marchingsquares')
+    Extension('marchingsquares'),
+
+    Extension('watershed')
+
 ]
 
 if (os.name == "posix") and ("x86" in platform.machine()):
@@ -237,7 +271,7 @@ class build_ext_pyFAI(build_ext):
     }
 
     def build_extensions(self):
-#         print("Compiler: %s" % self.compiler.compiler_type)
+        # print("Compiler: %s" % self.compiler.compiler_type)
         if self.compiler.compiler_type in self.translator:
             trans = self.translator[self.compiler.compiler_type]
         else:
@@ -249,8 +283,6 @@ class build_ext_pyFAI(build_ext):
             e.extra_link_args = [trans[arg][1] if arg in trans else arg
                                  for arg in e.extra_link_args]
             e.libraries = [trans[arg] for arg in e.libraries if arg in trans]
-#             e.libraries = list(filter(None, [trans[arg] if arg in trans else None
-#                                         for arg in e.libraries]))
         build_ext.build_extensions(self)
 
 cmdclass['build_ext'] = build_ext_pyFAI
@@ -259,6 +291,15 @@ cmdclass['build_ext'] = build_ext_pyFAI
 # ############################# #
 # scripts and data installation #
 # ############################# #
+def download_images():
+    """
+    Download all test images and  
+    """
+    test_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test")
+    sys.path.insert(0, test_dir)
+    from utilstest import UtilsTest
+    UtilsTest.download_images()
+    return list(UtilsTest.ALL_DOWNLOADED_FILES)
 
 installDir = "pyFAI"
 
@@ -335,20 +376,53 @@ def rewriteManifest(with_testimages=False):
         with open(manifest_in, "w") as f:
             f.write(os.linesep.join(manifest_new))
 
-        # remove MANIFEST: will be re generated !
-        if os.path.isfile("MANIFEST"):
-            os.unlink("MANIFEST")
 
-if ("sdist" in sys.argv):
-    if ("--with-testimages" in sys.argv):
-        sys.argv.remove("--with-testimages")
-        test_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test")
-        sys.path.insert(0, test_dir)
-        from utilstest import UtilsTest
-        UtilsTest.download_images()
-        rewriteManifest(with_testimages=True)
-    else:
-        rewriteManifest(with_testimages=False)
+class sdist_debian(sdist):
+    """
+    Tailor made sdist for debian
+    * remove auto-generated doc
+    * remove cython generated .c files
+    * add image files from test/testimages/*
+    """
+    def prune_file_list(self):
+        sdist.prune_file_list(self)
+        to_remove = ["doc/build", "doc/pdf", "doc/html", "pylint", "epydoc"]
+        print("Removing files for debian")
+        for rm in to_remove:
+            self.filelist.exclude_pattern(pattern="*", anchor=False, prefix=rm)
+        # this is for Cython files specifically
+        self.filelist.exclude_pattern(pattern="*.html", anchor=True, prefix="src")
+        for pyxf in glob.glob("src/*.pyx"):
+            cf = os.path.splitext(pyxf)[0] + ".c"
+            if os.path.isfile(cf):
+                self.filelist.exclude_pattern(pattern=cf)
+
+        print("Adding test_files for debian")
+        self.filelist.allfiles += [os.path.join("test", "testimages", i) \
+                                   for i in download_images()]
+        self.filelist.include_pattern(pattern="*", anchor=True,
+                                      prefix="test/testimages")
+
+    def make_distribution(self):
+        sdist.make_distribution(self)
+        dest = self.archive_files[0]
+        dirname, basename = os.path.split(dest)
+        base, ext = os.path.splitext(basename)
+        while ext in [".zip", ".tar", ".bz2", ".gz", ".Z", ".lz", ".orig"]:
+            base, ext = os.path.splitext(base)
+        if ext:
+            dest = "".join((base, ext))
+        else:
+            dest = base
+        sp = dest.split("-")
+        base = sp[:-1]
+        nr = sp[-1]
+        debian_arch = os.path.join(dirname, "-".join(base) + "_" + nr + ".orig.tar.gz")
+        os.rename(self.archive_files[0], debian_arch)
+        self.archive_files = [debian_arch]
+        print("Building debian .orig.tar.gz in %s" % self.archive_files[0])
+
+cmdclass['debian_src'] = sdist_debian
 
 
 class PyTest(Command):
@@ -418,7 +492,7 @@ def get_version():
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "pyFAI-src"))
     import _version
     sys.path.pop(0)
-    return _version.version
+    return _version.strictversion
 
 classifiers = """\
 Development Status :: 5 - Production/Stable

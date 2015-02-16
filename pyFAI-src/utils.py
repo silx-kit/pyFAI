@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2014"
+__date__ = "15/02/2015"
 __status__ = "production"
 
 import logging, sys, types, os, glob
@@ -40,6 +40,10 @@ import threading
 sem = threading.Semaphore()  # global lock for image processing initialization
 import numpy
 import fabio
+if "version_info" in dir(fabio) and fabio.version_info >= (0, 2, 2):
+    from fabio.nexus import exists
+else:
+    from os.path import  exists
 from scipy import ndimage
 from scipy.interpolate import interp1d
 from math import ceil, sin, cos, atan2, pi
@@ -58,6 +62,7 @@ import scipy.ndimage.filters
 logger = logging.getLogger("pyFAI.utils")
 import time
 timelog = logging.getLogger("pyFAI.timeit")
+depreclog = logging.getLogger("DEPRECATION")
 
 cu_fft = None  # No cuda here !
 if sys.platform != "win32":
@@ -77,7 +82,7 @@ def deprecated(func):
         """
         decorator that deprecates the use of a function
         """
-        logger.warning("%s is Deprecated !!! %s" % (func.func_name, os.linesep.join([""] + traceback.format_stack()[:-1])))
+        depreclog.warning("%s is Deprecated !!! %s" % (func.func_name, os.linesep.join([""] + traceback.format_stack()[:-1])))
         return func(*arg, **kw)
     return wrapper
 
@@ -95,7 +100,7 @@ except:
 
 def calc_checksum(ary, safe=True):
     """
-    Calculate the checksum by default (or returns its buffer location if unsafe) 
+    Calculate the checksum by default (or returns its buffer location if unsafe)
     """
     if safe:
         return crc32(ary)
@@ -440,7 +445,7 @@ def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5))
     @param center_method: is the center calculated by a "mean" or a "median", or "quantile"
     @param cutoff: keep all data where (I-center)/std < cutoff
     @param quantiles: 2-tuple of floats average out data between the two quantiles
-    
+
     @return: 2D image averaged
     """
     if "ndim" in dir(lstimg) and lstimg.ndim == 3:
@@ -523,14 +528,14 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             if "ndim" in dir(darks) and darks.ndim == 3:
                 dark = averageDark(darks, center_method="mean", cutoff=4)
             elif ("__len__" in dir(darks)) and (type(darks[0]) in types.StringTypes):
-                dark = averageDark([fabio.open(f).data for f in darks if os.path.exists(f)], center_method="mean", cutoff=4)
+                dark = averageDark([fabio.open(f).data for f in darks if exists(f)], center_method="mean", cutoff=4)
             elif ("__len__" in dir(darks)) and ("ndim" in dir(darks[0])) and (darks[0].ndim == 2):
                 dark = averageDark(darks, center_method="mean", cutoff=4)
         if do_flat and (flat is  None):
             if "ndim" in dir(flats) and flats.ndim == 3:
                 flat = averageDark(flats, center_method="mean", cutoff=4)
             elif ("__len__" in dir(flats)) and (type(flats[0]) in types.StringTypes):
-                flat = averageDark([fabio.open(f).data for f in flats if os.path.exists(f)], center_method="mean", cutoff=4)
+                flat = averageDark([fabio.open(f).data for f in flats if exists(f)], center_method="mean", cutoff=4)
             elif ("__len__" in dir(flats)) and ("ndim" in dir(flats[0])) and (flats[0].ndim == 2):
                 flat = averageDark(flats, center_method="mean", cutoff=4)
             else:
@@ -921,7 +926,7 @@ def expand_args(args):
     """
     new = []
     for afile in  args:
-        if os.path.exists(afile):
+        if exists(afile):
             new.append(afile)
         else:
             new += glob.glob(afile)
@@ -945,14 +950,6 @@ def _get_data_path(filename):
 
     For now, just perform a recursive search
     """
-    # when using bootstrap the file is located under the build directory
-#    real_filename = os.path.abspath(os.path.join(os.path.dirname(__file__),
-#                                                 os.path.pardir,
-#                                                 os.path.pardir,
-#                                                 os.path.pardir,
-#                                                 'data',
-#                                                 filename))
-#    if not os.path.exists(real_filename):
     resources = [os.environ.get("PYFAI_DATA"), data_dir, os.path.dirname(__file__)]
     try:
         import xdg.BaseDirectory
@@ -972,24 +969,24 @@ def _get_data_path(filename):
 
 def get_calibration_dir():
     """get the full path of a calibration directory
-    
-    @return: the full path of the calibrant file 
+
+    @return: the full path of the calibrant file
     """
     return _get_data_path("calibration")
 
 
 def get_cl_file(filename):
     """get the full path of a openCL file
-    
-    @return: the full path of the openCL source file    
+
+    @return: the full path of the openCL source file
     """
     return _get_data_path(os.path.join("openCL", filename))
 
 
 def get_ui_file(filename):
     """get the full path of a user-interface file
-    
-    @return: the full path of the ui    
+
+    @return: the full path of the ui
     """
     return _get_data_path(os.path.join("gui", filename))
 
@@ -998,7 +995,7 @@ def get_ui_file(filename):
 def read_cl_file(filename):
     """
     @param filename: read an OpenCL file and apply a preprocessor
-    @return: preprocessed source code 
+    @return: preprocessed source code
     """
     with open(get_cl_file(filename), "r") as f:
         # Dummy preprocessor which pops the #include
