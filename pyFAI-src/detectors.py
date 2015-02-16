@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/02/2015"
+__date__ = "16/02/2015"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instanciate them
@@ -671,8 +671,9 @@ class NexusDetector(Detector):
             d2 = numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1]))
         corners = self.get_pixel_corners()
         if center:
-            d1 += 0.5
-            d2 += 0.5
+            # avoid += modify in place and segfaults
+            d1 = d1 + 0.5
+            d2 = d2 + 0.5
         if bilinear:
             p1, p2 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
             p1.shape = d1.shape
@@ -1416,8 +1417,9 @@ class Xpad_flat(ImXPadS10):
             d2 = numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1]))
         corners = self.get_pixel_corners()
         if center:
-            d1 += 0.5
-            d2 += 0.5
+            # note += would make an increment in place which is bad (segfault !)
+            d1 = d1 + 0.5
+            d2 = d2 + 0.5
         if bilinear:
             p1, p2 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
             p1.shape = d1.shape

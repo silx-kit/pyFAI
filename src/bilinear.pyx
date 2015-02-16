@@ -23,7 +23,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3+"
-__date__ = "29/01/2015"
+__date__ = "16/02/2015"
 __copyright__ = "2011-2014, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -34,7 +34,7 @@ from cython.parallel import prange
 ctypedef fused float32_64:
     cython.float
     cython.double
-from libc.math cimport floor,ceil
+from libc.math cimport floor, ceil
 
 import logging
 logger = logging.getLogger("pyFAI.bilinear")
@@ -44,12 +44,14 @@ from .utils import timeit
 cdef class Bilinear:
     """Bilinear interpolator for finding max"""
 
-    cdef float[:,:] data
+    cdef float[:, :] data
     cdef float maxi, mini
-    cdef size_t d0_max, d1_max, r
+    cdef size_t d0_max, d1_max, width, height
 
     def __cinit__(self, data not None):
         assert data.ndim == 2
+        self.width = data.shape[1]
+        self.height = data.shape[0]
         self.d0_max = data.shape[0] - 1
         self.d1_max = data.shape[1] - 1
         self.maxi = data.max()
@@ -127,7 +129,7 @@ cdef class Bilinear:
             float d00, d11, d01, denom, delta0, delta1
 
         value = self.data[current0, current1]
-        current_value = value -1.0
+        current_value = value - 1.0
         new0, new1 = current0, current1
         with nogil:
             while value > current_value:

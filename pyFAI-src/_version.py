@@ -18,6 +18,7 @@ provides:
 * version = "1.2.3" or "1.2.3-beta4"
 * version_info = named tuple (1,2,3,"beta",4)
 * hexversion: 0x010203B4
+* strictversion = "1.2.3b4
 
 This is called hexversion since it only really looks meaningful when viewed as the 
 result of passing it to the built-in hex() function. 
