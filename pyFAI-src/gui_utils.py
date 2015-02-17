@@ -33,11 +33,12 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/10/2014"
+__date__ = "17/02/2015"
 __status__ = "production"
 
 import sys
 import matplotlib
+import matplotlib.cm
 has_Qt = True
 if ('PySide' in sys.modules):
     from PySide import QtGui, QtCore, QtUiTools, QtWebKit

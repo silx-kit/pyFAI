@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2015"
+__date__ = "17/02/2015"
 __status__ = "production"
 
 import os
@@ -41,7 +41,7 @@ import operator
 import numpy
 from . import gui_utils
 if gui_utils.has_Qt:
-    from .gui_utils import pylab, update_fig, maximize_fig, QtGui
+    from .gui_utils import update_fig, maximize_fig, QtGui, matplotlib, pyplot, pylab
 import fabio
 from .utils import percentile, input
 from .reconstruct import reconstruct
@@ -228,7 +228,7 @@ class PeakPicker(object):
         @param log: show z in log scale
         """
         if self.fig is None:
-            self.fig = pylab.plt.figure()
+            self.fig = pyplot.figure()
             # add 3 subplots at the same position for debye-sherrer image, contour-plot and massif contour
             self.ax = self.fig.add_subplot(111)
             self.ct = self.fig.add_subplot(111)
@@ -511,7 +511,7 @@ class PeakPicker(object):
 
 
 
-    def contour(self, data):
+    def contour(self, data, cmap="autumn", linewidths=2, linestyles="dashed"):
         """
         Overlay a contour-plot
 
@@ -527,16 +527,20 @@ class PeakPicker(object):
             while len(self.ct.collections) > 0:
                 self.ct.collections.pop()
 
+            tth_max = data.max()
+            tth_min = data.min()
             if self.points.calibrant:
                 angles = [ i for i in self.points.calibrant.get_2th()
-                          if i is not None]
+                          if i is not None and i >= tth_min and i <= tth_max]
             else:
                 angles = None
             try:
                 xlim, ylim = self.ax.get_xlim(), self.ax.get_ylim()
-                self.ct.contour(data, levels=angles)
+                if not isinstance(cmap, matplotlib.colors.Colormap):
+                    cmap = matplotlib.cm.get_cmap(cmap)
+                self.ct.contour(data, levels=angles, cmap=cmap, linewidths=linewidths, linestyles=linestyles)
                 self.ax.set_xlim(xlim);self.ax.set_ylim(ylim);
-                print("Visually check that the curve overlays with the Debye-Sherrer rings of the image")
+                print("Visually check that the overlaid dashed curve on the Debye-Sherrer rings of the image")
                 print("Check also for correct indexing of rings")
             except MemoryError:
                 logging.error("Sorry but your computer does NOT have enough memory to display the 2-theta contour plot")
