@@ -502,7 +502,7 @@ class Geometry(object):
         @param path: can be "tan" (i.e via numpy) or "cython"
         @return: chi, the azimuthal angle in rad
         """
-        p1, p2 = self._calcCartesianPositions(d1, d2, self._poni1, self.poni2)
+        p1, p2 = self._calcCartesianPositions(d1, d2, self._poni1, self._poni2)
 
         if path == "cython" and _geometry:
             tmp = _geometry.calc_chi(

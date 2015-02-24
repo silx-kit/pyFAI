@@ -802,13 +802,11 @@ class Pilatus(Detector):
         d1 and d2 must have the same shape, returned array will have
         the same shape.
         """
-        if (d1 is None):
+        if (d1 is None) or (d2 is None):
             d1 = numpy.outer(numpy.arange(self.max_shape[0]), numpy.ones(self.max_shape[1]))
-
-        if (d2 is None):
             d2 = numpy.outer(numpy.ones(self.max_shape[0]), numpy.arange(self.max_shape[1]))
 
-        if self.offset1 is None or self.offset2 is None:
+        if (self.offset1 is None) or (self.offset2 is None):
             delta1 = delta2 = 0.
         else:
             if d2.ndim == 1:
@@ -1411,7 +1409,7 @@ class Xpad_flat(ImXPadS10):
         d1 and d2 must have the same shape, returned array will have
         the same shape.
         """
-        if (d1 is None) or d2 is None:
+        if (d1 is None) or (d2 is None):
 #            d1, d2 = numpy.ogrid[:self.shape[0], :self.shape[1]]
             d1 = numpy.outer(numpy.arange(self.shape[0]), numpy.ones(self.shape[1]))
             d2 = numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1]))
@@ -1421,6 +1419,7 @@ class Xpad_flat(ImXPadS10):
             d1 = d1 + 0.5
             d2 = d2 + 0.5
         if bilinear:
+            print(id(d1), id(d2), d1.max(), d2.max(), corners.shape)
             p1, p2 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
             p1.shape = d1.shape
             p2.shape = d2.shape
