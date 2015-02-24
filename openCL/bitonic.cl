@@ -133,13 +133,45 @@ __kernel void bsort_all(__global float4 *g_data,
 	g_data[global_start+1] = input2;
 }
 
+
 // Perform the sort along the vertical axis
-// TODO !!!!
-__kernel void bsort_vertall(__global float *g_data,
+// dim0 = y: wg=number_of_element/8
+// dim1 = x: wg=1
+// TODO: after horizontal version
+__kernel void bsort_horizontal(__global float4 *g_data,
+                                __local float4 *l_data) {
+  float4 input1, input2;
+  float8 input, output;
+  uint id, global_start;
+  // Find global address
+  id = get_local_id(0) * 2;
+  global_start = get_group_id(0) * get_local_size(0) * 2 + id;
+
+  input1 = g_data[global_start];
+  input2 = g_data[global_start+1];
+  input = (float8) (input1, input2);
+  output = my_sort(get_local_id(0), get_group_id(0), get_local_size(0),
+          input, l_data);
+  input1 = (float4) (output.s0, output.s1, output.s2, output.s3);
+  input2 = (float4) (output.s4, output.s5, output.s6, output.s7);
+  g_data[global_start] = input1;
+  g_data[global_start+1] = input2;
+}
+
+
+// Perform the sort along the vertical axis
+// dim0 = y: wg=number_of_element/8
+// dim1 = x: wg=1
+// TODO: after horizontal version
+
+__kernel void bsort_vertical(__global float *g_data,
 							__local float4 *l_data) {
-	float4 input1, input2;
-	float8 input, output;
+  // we need to read 8 float position from
+  float8 input, output;
 	uint id, global_start;
+
+	get_global_size(1)*
+
 	// Find global address
 	id = get_local_id(0) * 2;
 	global_start = get_group_id(0) * get_local_size(0) * 2 + id;
