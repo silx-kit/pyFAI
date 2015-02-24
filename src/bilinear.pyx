@@ -24,7 +24,7 @@
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3+"
 __date__ = "16/02/2015"
-__copyright__ = "2011-2014, ESRF"
+__copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import cython
@@ -179,7 +179,7 @@ cdef class Bilinear:
             else:
                 delta0 = ((a12 - a10) * d01 + (a01 - a21) * d11) / denom
                 delta1 = ((a10 - a12) * d00 + (a21 - a01) * d01) / denom
-                if abs(delta0) <= 1.0 and abs(delta1) <= 1.0: 
+                if abs(delta0) <= 1.0 and abs(delta1) <= 1.0:
                     # Result is OK if lower than 0.5.
                     return (delta0 + float(current0), delta1 + float(current1))
                 else:
@@ -250,9 +250,9 @@ cdef class Bilinear:
         return width * current0 + current1
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.cdivision(True)
+#@cython.boundscheck(False)
+#@cython.wraparound(False)
+#@cython.cdivision(True)
 def calc_cartesian_positions(float32_64[:] d1, float32_64[:] d2, float[:, :, :, :] pos):
     """
     Calculate the Cartesian position for array of position (d1, d2)
@@ -302,7 +302,7 @@ def convert_corner_2D_to_4D(int ndim, float32_64[:, :] d1, float32_64[:, :] d2):
     """
     cdef int shape0, shape1, i, j
     #  edges position are n+1 compared to number of pixels
-    shape0 = d1.shape[0] - 1 
+    shape0 = d1.shape[0] - 1
     shape1 = d1.shape[1] - 1
     cdef numpy.ndarray[numpy.float32_t, ndim = 4] pos = numpy.zeros((shape0, shape1, 4, ndim), dtype=numpy.float32)
 #    assert d1.shape == d2.shape
