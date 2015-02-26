@@ -80,7 +80,7 @@ class DiffTomo(object):
         self.mask = None
         self.I0 = None
         self.hdf5 = None
-        self.hdf5path = "DiffTomo/NXdata/sinogram"
+        self.hdf5path = "diff_tomo/data/sinogram"
         self.group = None
         self.dataset = None
         self.inputfiles = []
@@ -193,7 +193,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             if os.path.isfile(options.poni):
                 logger.info("Reading PONI file from: %s" % options.poni)
                 self.poni = options.poni
-                self.setup_ai()
+
             else:
                 logger.warning("No such poni file %s" % options.poni)
         if options.nTrans is not None:
@@ -233,6 +233,12 @@ If the number of files is too large, use double quotes like "*.edf" """
                 dtype="float32",
                 chunks=(1, self.nTrans, self.nDiff),
                 maxshape=(None, None, self.nDiff))
+            self.dataset.attrs["signal"] = "1"
+            self.dataset.attrs["interpretation"] = "spectrum"
+            self.dataset.attrs["axes"] = self.unit.split("_")[0]
+            self.dataset.attrs["creator"] = "pyFAI"
+            self.dataset.attrs["long_name"] = "Diffraction tomography/mapping experiment"
+        self.nxs = nxs
 
     def setup_ai(self):
         if self.poni:
@@ -256,6 +262,15 @@ If the number of files is too large, use double quotes like "*.edf" """
             # enforce initialization of azimuthal integrator
             tth, I = self.ai.integrate1d(data, self.nDiff,
                                          method=meth, unit=self.unit)
+            if self.dataset is None:
+                self.makeHDF5()
+            space, unit = self.unit.split("_")
+            if space not in self.group:
+                self.group[space] = tth
+                self.group[space].attrs["axes"] = 3
+                self.group[space].attrs["unit"] = unit
+                self.group[space].attrs["long_name"] = "scattering direction used: %s" % space
+                self.group[space].attrs["interpretation"] = "scalar"
 
     def show_stats(self):
         if not self.stats:
@@ -305,8 +320,7 @@ If the number of files is too large, use double quotes like "*.edf" """
                                      method=meth, unit=self.unit)
 
         self.dataset[pos["rot"], pos["trans"], :] = I
-        if self.unit not in self.group:
-            self.group[self.unit] = tth
+
 
         t -= time.time()
         print("Processing %30s took %6.1fms" %
@@ -319,6 +333,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         t0 = time.time()
         for f in self.inputfiles:
             self.process_one_file(f)
+        self.nxs.close
         tot = time.time() - t0
         cnt = len(self.timing)
         print(("Execution time for %i frames: %.3fs;"
@@ -330,5 +345,6 @@ if __name__ == "__main__":
     dt = DiffTomo()
     dt.parse()
     dt.makeHDF5()
+    dt.setup_ai()
     dt.process()
     dt.show_stats()

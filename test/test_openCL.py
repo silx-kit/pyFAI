@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/12/2014"
+__date__ = "26/02/2015"
 
 
 import unittest
@@ -37,6 +37,7 @@ import sys
 import fabio
 import gc
 import tempfile
+import numpy
 if __name__ == '__main__':
     import pkgutil, os
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
@@ -54,9 +55,12 @@ pyFAI = sys.modules["pyFAI"]
 from pyFAI.opencl import ocl
 if ocl is None:
     skip = True
+else:
+    pyopencl = pyFAI.opencl.pyopencl
+    import pyopencl.array
 
 
-class test_mask(unittest.TestCase):
+class TestMask(unittest.TestCase):
     tmp_dir = tempfile.mkdtemp(prefix="pyFAI_test_OpenCL_")
     N = 1000
 
@@ -169,14 +173,97 @@ class test_mask(unittest.TestCase):
                 gc.collect()
 
 
+class TestSort(unittest.TestCase):
+    """
+    Test the kernels for vector and image sorting
+    """
+    N = 1024
+    ws = N // 8
+
+    def setUp(self):
+        self.h_data = numpy.random.random(self.N).astype("float32")
+        self.h2_data = numpy.random.random((self.N, self.N)).astype("float32").reshape((self.N, self.N))
+
+        self.ctx = ocl.create_context()
+        self.queue = pyopencl.CommandQueue(self.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
+        self.local_mem = pyopencl.LocalMemory(self.ws * 32)  # 2float4 = 2*4*4 bytes per workgroup size
+        src = pyFAI.utils.read_cl_file("bitonic.cl")
+        self.prg = pyopencl.Program(self.ctx, src).build()
+
+    def tearDown(self):
+        self.h_data = None
+        self.queue = None
+        self.ctx = None
+        self.local_mem = None
+        self.h2_data = None
+
+    def test_reference(self):
+        d_data = pyopencl.array.to_device(self.queue, self.h_data)
+        t0 = time.time()
+        hs_data = numpy.sort(self.h_data)
+        t1 = time.time()
+        time_sort = 1e3 * (t1 - t0)
+
+        evt = self.prg.bsort(self.queue, (self.ws,), (self.ws,), d_data.data, self.local_mem)
+        evt.wait()
+        err = abs(hs_data - d_data.get()).max()
+        logger.info("Numpy sort on %s element took %s ms" % (self.N, time_sort))
+        logger.info("Reference sort time: %s ms, err=%s " % (1e-6 * (evt.profile.end - evt.profile.start), err))
+        self.assert_(err == 0.0)
+
+    def test_sort_any(self):
+        d_data = pyopencl.array.to_device(self.queue, self.h_data)
+        t0 = time.time()
+        hs_data = numpy.sort(self.h_data)
+        t1 = time.time()
+        time_sort = 1e3 * (t1 - t0)
+
+        evt = self.prg.bsort_all(self.queue, (self.ws,), (self.ws,), d_data.data, self.local_mem)
+        evt.wait()
+        err = abs(hs_data - d_data.get()).max()
+        logger.info("Numpy sort on %s element took %s ms" % (self.N, time_sort))
+        logger.info("modified function execution time: %s ms, err=%s " % (1e-6 * (evt.profile.end - evt.profile.start), err))
+        self.assert_(err == 0.0)
+
+    def test_sort_horizontal(self):
+        d2_data = pyopencl.array.to_device(self.queue, self.h2_data)
+        t0 = time.time()
+        h2s_data = numpy.sort(self.h2_data, axis=-1)
+        t1 = time.time()
+        time_sort = 1e3 * (t1 - t0)
+        evt = self.prg.bsort_horizontal(self.queue, (self.N, self.ws), (1, self.ws), d2_data.data, self.local_mem)
+        evt.wait()
+        err = abs(h2s_data - d2_data.get()).max()
+        logger.info("Numpy horizontal sort on %sx%s elements took %s ms" % (self.N, self.N, time_sort))
+        logger.info("Horizontal execution time: %s ms, err=%s " % (1e-6 * (evt.profile.end - evt.profile.start), err))
+        self.assert_(err == 0.0)
+
+    def test_sort_vertical(self):
+        d2_data = pyopencl.array.to_device(self.queue, self.h2_data)
+        t0 = time.time()
+        h2s_data = numpy.sort(self.h2_data, axis=0)
+        t1 = time.time()
+        time_sort = 1e3 * (t1 - t0)
+        evt = self.prg.bsort_vertical(self.queue, (self.ws, self.N), (self.ws, 1), d2_data.data, self.local_mem)
+        evt.wait()
+        err = abs(h2s_data - d2_data.get()).max()
+        logger.info("Numpy vertical sort on %sx%s elements took %s ms" % (self.N, self.N, time_sort))
+        logger.info("Vertical execution time: %s ms, err=%s " % (1e-6 * (evt.profile.end - evt.profile.start), err))
+        self.assert_(err == 0.0)
+
+
 def test_suite_all_OpenCL():
     testSuite = unittest.TestSuite()
     if skip:
         logger.warning("OpenCL module (pyopencl) is not present or no device available: skip tests")
     else:
-        testSuite.addTest(test_mask("test_OpenCL"))
-        testSuite.addTest(test_mask("test_OpenCL_LUT"))
-        testSuite.addTest(test_mask("test_OpenCL_CSR"))
+        testSuite.addTest(TestMask("test_OpenCL"))
+        testSuite.addTest(TestMask("test_OpenCL_LUT"))
+        testSuite.addTest(TestMask("test_OpenCL_CSR"))
+        testSuite.addTest(TestSort("test_reference"))
+        testSuite.addTest(TestSort("test_sort_any"))
+        testSuite.addTest(TestSort("test_sort_horizontal"))
+        testSuite.addTest(TestSort("test_sort_vertical"))
     return testSuite
 
 if __name__ == '__main__':
