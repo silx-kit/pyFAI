@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/02/2015"
+__date__ = "26/02/2015"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instanciate them
@@ -201,9 +201,9 @@ class Detector(with_metaclass(DetectorMeta, object)):
         - Binning
         - ROI
 
-        The configuration is either a python dictionnary or a JSON string or a file containing this JSON configuration
+        The configuration is either a python dictionary or a JSON string or a file containing this JSON configuration
 
-        keys in that dictionnary are :
+        keys in that dictionary are :
         "orientation": integers from 0 to 7
         "binning": integer or 2-tuple of integers. If only one integer is provided,
         "offset": coordinate (in pixels) of the start of the detector
@@ -221,6 +221,10 @@ class Detector(with_metaclass(DetectorMeta, object)):
             self._pixel2, self._pixel1 = self.spline.getPixelSize()
             self._splineCache = {}
             self.uniform_pixel = False
+            self.max_shape = (int(self.spline.ymax - self.spline.ymin), int(self.spline.xmax - self.spline.xmin))
+            # assume no binning
+            self.shape = self.max_shape
+            self._binning = (1, 1)
         else:
             self._splineFile = None
             self.spline = None
