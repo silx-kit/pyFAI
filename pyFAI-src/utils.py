@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/02/2015"
+__date__ = "26/02/2015"
 __status__ = "production"
 
 import logging, sys, types, os, glob
@@ -998,9 +998,9 @@ def read_cl_file(filename):
     @return: preprocessed source code
     """
     with open(get_cl_file(filename), "r") as f:
-        # Dummy preprocessor which pops the #include
+        # Dummy preprocessor which removes the #include
         lines = [i for i in f.readlines() if not i.startswith("#include ")]
-    return os.linesep.join(lines)
+    return "".join(lines)
 
 
 def concatenate_cl_kernel(filenames):
@@ -1013,7 +1013,7 @@ def concatenate_cl_kernel(filenames):
     kernel = ""
     for filename in filenames:
             kernel += read_cl_file(filename)
-
+            kernel += os.linesep
     return kernel
 
 
