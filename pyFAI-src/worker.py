@@ -39,10 +39,10 @@ additional saving capabilities like
 - save as 2/3D structure in a HDF5 File
 - read from HDF5 files
 
-Aims at being integrated into a plugin like LImA or as model for the GUI 
+Aims at being integrated into a plugin like LImA or as model for the GUI
 
 The configuration of this class is mainly done via a dictionary transmitted as a JSON string:
-Here are the valid keys:  
+Here are the valid keys:
     "dist",
     "poni1",
     "poni2",
@@ -65,7 +65,7 @@ Here are the valid keys:
     "do_2D"
     "azimuth_range_min"
     "azimuth_range_max"
-     
+
     "polarization_factor"
     "nbpt_rad"
     "do_solid_angle"
@@ -181,7 +181,7 @@ class Worker(object):
     def reconfig(self, shape=(2048, 2048), sync=False):
         """
         This is just to force the integrator to initialize with a given input image shape
-        
+
         @param shape: shape of the input image
         @param sync: return only when synchronized
         """
@@ -192,12 +192,12 @@ class Worker(object):
     def process(self, data) :
         """
         Process a frame
-        #TODO: 
+        #TODO:
         dark, flat, sa are missing
-        
+
         @param: data: numpy array containing the input image
         """
-        
+
         with self._sem:
             monitor = self._normalization_factor
         kwarg = {"unit": self.unit,
@@ -372,7 +372,7 @@ class Worker(object):
                 config[key] = self.__getattribute__(key)
             except:
                 pass
-            
+
         return config
 #
 #    "poni" #path of the file
@@ -438,10 +438,10 @@ class PixelwiseWorker(object):
     """
     Simple worker doing dark, flat, solid angle and polarization correction
     """
-    def __init__(self, dark=None, flat=None, solidangle=None, polarization=None, 
+    def __init__(self, dark=None, flat=None, solidangle=None, polarization=None,
                  mask=None, dummy=None, delta_dummy=None, device=None):
         """
-        @param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context 
+        @param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context
         """
         self.ctx = None
         if dark is not None:
@@ -491,7 +491,8 @@ class PixelwiseWorker(object):
             do_mask = True
         else:
             do_mask = (self.mask is not False)
-        data = numpy.array(data, dtype=numpy.float32) #Explicitely make an copy !
+        # Explicitly make an copy !
+        data = numpy.array(data, dtype=numpy.float32)
         if self.dark is not None:
             data -= self.dark
         if self.flat is not None:
@@ -511,12 +512,12 @@ class DistortionWorker(object):
     """
     Simple worker doing dark, flat, solid angle and polarization correction
     """
-    def __init__(self, detector=None, dark=None, flat=None, solidangle=None, polarization=None, 
+    def __init__(self, detector=None, dark=None, flat=None, solidangle=None, polarization=None,
                  mask=None, dummy=None, delta_dummy=None, device=None):
         """
-        @param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context 
+        @param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context
         """
-        
+
         self.ctx = None
         if dark is not None:
             self.dark = numpy.ascontiguousarray(dark, dtype=numpy.float32)
@@ -570,7 +571,8 @@ class DistortionWorker(object):
             do_mask = True
         else:
             do_mask = (self.mask is not False)
-        data = numpy.array(data, dtype=numpy.float32) #Explicitely make an copy !
+        # Explicitly make an copy !
+        data = numpy.array(data, dtype=numpy.float32)
         if self.dark is not None:
             data -= self.dark
         if self.flat is not None:
@@ -579,7 +581,7 @@ class DistortionWorker(object):
             data /= self.solidangle
         if self.polarization is not None:
             data /= self.polarization
-        
+
         if do_mask:
             data[self.mask] = self.dummy or 0
         if self.distortion is not None:
