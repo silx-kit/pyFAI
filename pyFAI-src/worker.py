@@ -254,8 +254,6 @@ class Worker(object):
             logger.error(err2)
             raise err
 
-        if monitor:
-            rData /= monitor
         if self.output == "numpy":
             return rData
 
