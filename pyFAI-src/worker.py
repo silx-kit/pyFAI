@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2014"
+__date__ = "02/03/2015"
 __status__ = "development"
 __doc__ = """
 
@@ -98,7 +98,7 @@ from .azimuthalIntegrator import AzimuthalIntegrator
 from .distortion import Distortion
 from . import units
 import json
-#from .io import h5py, HDF5Writer
+# from .io import h5py, HDF5Writer
 
 class Worker(object):
     def __init__(self, azimuthalIntgrator=None, shapeIn=(2048, 2048), shapeOut=(360, 500), unit="r_mm"):
@@ -126,7 +126,7 @@ class Worker(object):
 #                self.config = json.loads(config)
 #        if self.config:
 #            self.configure()
-        self._normalization_factor = None #Value of the monitor: divides the intensity by this value for normalization
+        self._normalization_factor = None  # Value of the monitor: divides the intensity by this value for normalization
         self.nbpt_azim, self.nbpt_rad = shapeOut
         self._unit = units.to_unit(unit)
         self.polarization = None
@@ -140,7 +140,7 @@ class Worker(object):
         self.extension = None
         self.do_poisson = None
         self.needs_reset = True
-        self.output = "numpy" #exports as numpy array by default
+        self.output = "numpy"  # exports as numpy array by default
         self.shape = shapeIn
         self.method = "lut"
         self.radial = None
@@ -232,22 +232,30 @@ class Worker(object):
         else:
             kwarg["error_model"] = None
 
-#        try:
-        if 1:
+        try:
+#         if 1:
             if self.do_2D():
                 rData, self.radial, self.azimuthal = self.ai.integrate2d(**kwarg)
             else:
-
                 rData = self.ai.integrate1d(**kwarg)
                 self.radial = rData[0]
                 rData = numpy.vstack(rData).T
 
-#        except:
-#            print(data.shape, data.size)
-#            print(self.ai)
-#            print(self.ai._lut_integrator)
-#            print(self.ai._lut_integrator.size)
-#            raise
+        except Exception as err:
+            err2 = ["error in integration",
+                    str(err),
+                    "data.shape: %s" % data.shape,
+                    "data.size: %s" % data.size,
+                    "ai:",
+                    str(self.ai),
+                    "csr:",
+                    str(self.ai._csr_integrator),
+                    "csr size: %s" % self.ai._lut_integrator.size]
+            logger.error(err2)
+            raise err
+
+        if monitor:
+            rData /= monitor
         if self.output == "numpy":
             return rData
 
@@ -360,13 +368,13 @@ class Worker(object):
     def get_config(self):
         """return configuration as a dictionary"""
         config = {"unit":str(self.unit)}
-        for key in ["dist",    "poni1",    "poni2",    "rot1",    "rot3",    "rot2",    "pixel1",    "pixel2",    "splineFile",    "wavelength"]:
+        for key in ["dist", "poni1", "poni2", "rot1", "rot3", "rot2", "pixel1", "pixel2", "splineFile", "wavelength"]:
             try:
                 config[key] = self.ai.__getattribute__(key)
             except:
                 pass
         for key in ["nbpt_azim", "nbpt_rad", "polarization", "dummy", "delta_dummy", "correct_solid_angle", "dark_current_image", "flat_field_image", "mask_image",
-                  "do_poisson","shape","method"
+                  "do_poisson", "shape", "method"
                   ]:
             try:
                 config[key] = self.__getattribute__(key)
@@ -404,11 +412,11 @@ class Worker(object):
 #    "val_dummy"
 #    "do_dummy"
 #    "method"
-#}
+# }
 
     def get_json_config(self):
         """return configuration as a JSON string"""
-        pass #TODO
+        pass  # TODO
 
     def save_config(self, filename=None):
         if not filename:
@@ -429,9 +437,13 @@ class Worker(object):
         if sync:
             t.join()
 
+    def get_normalization_factor(self):
+        with self._sem:
+            return self._normalization_factor
     def set_normalization_factor(self, value):
         with self._sem:
             self._normalization_factor = value
+    normalization_factor = property(get_normalization_factor, set_normalization_factor)
 
 
 class PixelwiseWorker(object):
