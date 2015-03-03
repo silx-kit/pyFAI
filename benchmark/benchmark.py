@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-#Benchmark for Azimuthal integration of PyFAI
+# Benchmark for Azimuthal integration of PyFAI
 
 from __future__ import print_function, division
 
@@ -24,7 +24,7 @@ try:
 except ImportError:
     print("No socket opened for debugging -> please install rfoo")
 
-#We use the locally build version of PyFAI
+# We use the locally build version of PyFAI
 pyFAI = utilstest.UtilsTest.pyFAI
 ocl = pyFAI.opencl.ocl
 from pyFAI.gui_utils import pylab, update_fig
@@ -40,7 +40,7 @@ datasets = {"Fairchild.poni":utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
 
 
 
-#Handle to the Bench instance: allows debugging from outside if needed
+# Handle to the Bench instance: allows debugging from outside if needed
 bench = None
 
 
@@ -489,7 +489,7 @@ if __name__ == "__main__":
     try:
         from argparse import ArgumentParser
     except:
-        from pyFAI.argparse import ArgumentParser
+        from pyFAI.third_party.argparse import ArgumentParser
     description = """Benchmark for Azimuthal integration
     """
     epilog = """  """
