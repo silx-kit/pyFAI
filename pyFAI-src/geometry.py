@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/02/2015"
+__date__ = "02/03/2015"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -502,7 +502,7 @@ class Geometry(object):
         @param path: can be "tan" (i.e via numpy) or "cython"
         @return: chi, the azimuthal angle in rad
         """
-        p1, p2 = self._calcCartesianPositions(d1, d2, self._poni1, self.poni2)
+        p1, p2 = self._calcCartesianPositions(d1, d2, self._poni1, self._poni2)
 
         if path == "cython" and _geometry:
             tmp = _geometry.calc_chi(
@@ -883,7 +883,7 @@ class Geometry(object):
                                             shape, dtype=numpy.float32)
             self._dssa_crc = crc32(self._dssa)
         if absolute:
-            return self._dssa * self.pixel1 * self.pixel2 / (self.dist ** 2)
+            return self._dssa * self.pixel1 * self.pixel2 / self._dist / self._dist
         else:
             return self._dssa
 

@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/01/2015"
+__date__ = "26/02/2015"
 __status__ = "stable"
 
 import os
@@ -183,6 +183,7 @@ class OpenCL(object):
     """
     platforms = []
     nb_devices = 0
+    context_cache = {}  # key: 2-tuple of int, value: context
     if pyopencl:
         platform = device = pypl = devtype = extensions = pydev = None
         for idx, platform in enumerate(pyopencl.get_platforms()):
@@ -285,7 +286,7 @@ class OpenCL(object):
         if best_found:
             return  best_found[0], best_found[1]
 
-    def create_context(self, devicetype="ALL", useFp64=False, platformid=None, deviceid=None):
+    def create_context(self, devicetype="ALL", useFp64=False, platformid=None, deviceid=None, cached=True):
         """
         Choose a device and initiate a context.
 
@@ -310,10 +311,15 @@ class OpenCL(object):
             if ids:
                 platformid = ids[0]
                 deviceid = ids[1]
-        if (platformid is not None) and  (deviceid is not None):
-            ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
+        if (platformid is not None) and (deviceid is not None):
+            if (platformid, deviceid) in self.context_cache:
+                ctx = self.context_cache[(platformid, deviceid)]
+            else:
+                ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
+                if cached:
+                    self.context_cache[(platformid, deviceid)] = ctx
         else:
-            logger.warn("Last chance to get an OpenCL device ... probably not the one requested")
+            logger.warning("Last chance to get an OpenCL device ... probably not the one requested")
             ctx = pyopencl.create_some_context(interactive=False)
         return ctx
 

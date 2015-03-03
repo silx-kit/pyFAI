@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/02/2015"
+__date__ = "26/02/2015"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instanciate them
@@ -201,9 +201,9 @@ class Detector(with_metaclass(DetectorMeta, object)):
         - Binning
         - ROI
 
-        The configuration is either a python dictionnary or a JSON string or a file containing this JSON configuration
+        The configuration is either a python dictionary or a JSON string or a file containing this JSON configuration
 
-        keys in that dictionnary are :
+        keys in that dictionary are :
         "orientation": integers from 0 to 7
         "binning": integer or 2-tuple of integers. If only one integer is provided,
         "offset": coordinate (in pixels) of the start of the detector
@@ -221,6 +221,10 @@ class Detector(with_metaclass(DetectorMeta, object)):
             self._pixel2, self._pixel1 = self.spline.getPixelSize()
             self._splineCache = {}
             self.uniform_pixel = False
+            self.max_shape = (int(self.spline.ymax - self.spline.ymin), int(self.spline.xmax - self.spline.xmin))
+            # assume no binning
+            self.shape = self.max_shape
+            self._binning = (1, 1)
         else:
             self._splineFile = None
             self.spline = None
@@ -671,8 +675,9 @@ class NexusDetector(Detector):
             d2 = numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1]))
         corners = self.get_pixel_corners()
         if center:
-            d1 += 0.5
-            d2 += 0.5
+            # avoid += modify in place and segfaults
+            d1 = d1 + 0.5
+            d2 = d2 + 0.5
         if bilinear:
             p1, p2 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
             p1.shape = d1.shape
@@ -801,13 +806,11 @@ class Pilatus(Detector):
         d1 and d2 must have the same shape, returned array will have
         the same shape.
         """
-        if (d1 is None):
+        if (d1 is None) or (d2 is None):
             d1 = numpy.outer(numpy.arange(self.max_shape[0]), numpy.ones(self.max_shape[1]))
-
-        if (d2 is None):
             d2 = numpy.outer(numpy.ones(self.max_shape[0]), numpy.arange(self.max_shape[1]))
 
-        if self.offset1 is None or self.offset2 is None:
+        if (self.offset1 is None) or (self.offset2 is None):
             delta1 = delta2 = 0.
         else:
             if d2.ndim == 1:
@@ -1410,15 +1413,17 @@ class Xpad_flat(ImXPadS10):
         d1 and d2 must have the same shape, returned array will have
         the same shape.
         """
-        if (d1 is None) or d2 is None:
+        if (d1 is None) or (d2 is None):
 #            d1, d2 = numpy.ogrid[:self.shape[0], :self.shape[1]]
             d1 = numpy.outer(numpy.arange(self.shape[0]), numpy.ones(self.shape[1]))
             d2 = numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1]))
         corners = self.get_pixel_corners()
         if center:
-            d1 += 0.5
-            d2 += 0.5
+            # note += would make an increment in place which is bad (segfault !)
+            d1 = d1 + 0.5
+            d2 = d2 + 0.5
         if bilinear:
+            print(id(d1), id(d2), d1.max(), d2.max(), corners.shape)
             p1, p2 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
             p1.shape = d1.shape
             p2.shape = d2.shape

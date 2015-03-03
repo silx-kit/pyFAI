@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/11/2014"
+__date__ = "16/02/2015"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -96,7 +96,14 @@ def from_isotime(text, use_tz=False):
     """
     @param text: string representing the time is iso format
     """
+    if len(text) == 1:
+        # just in case someone sets as a list
+        text = text[0]
+
     text = str(text)
+    if len(text) < 19:
+        logger.warning("Not a iso-time string: %s" % text)
+        return
     base = text[:19]
     if use_tz and len(text) == 25:
         sgn = 1 if  text[:19] == "+" else -1

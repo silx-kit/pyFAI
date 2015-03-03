@@ -23,8 +23,8 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3+"
-__date__ = "29/01/2015"
-__copyright__ = "2011-2014, ESRF"
+__date__ = "16/02/2015"
+__copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import cython
@@ -34,7 +34,7 @@ from cython.parallel import prange
 ctypedef fused float32_64:
     cython.float
     cython.double
-from libc.math cimport floor,ceil
+from libc.math cimport floor, ceil
 
 import logging
 logger = logging.getLogger("pyFAI.bilinear")
@@ -44,12 +44,14 @@ from .utils import timeit
 cdef class Bilinear:
     """Bilinear interpolator for finding max"""
 
-    cdef float[:,:] data
+    cdef float[:, :] data
     cdef float maxi, mini
-    cdef size_t d0_max, d1_max, r
+    cdef size_t d0_max, d1_max, width, height
 
     def __cinit__(self, data not None):
         assert data.ndim == 2
+        self.width = data.shape[1]
+        self.height = data.shape[0]
         self.d0_max = data.shape[0] - 1
         self.d1_max = data.shape[1] - 1
         self.maxi = data.max()
@@ -127,7 +129,7 @@ cdef class Bilinear:
             float d00, d11, d01, denom, delta0, delta1
 
         value = self.data[current0, current1]
-        current_value = value -1.0
+        current_value = value - 1.0
         new0, new1 = current0, current1
         with nogil:
             while value > current_value:
@@ -177,7 +179,7 @@ cdef class Bilinear:
             else:
                 delta0 = ((a12 - a10) * d01 + (a01 - a21) * d11) / denom
                 delta1 = ((a10 - a12) * d00 + (a21 - a01) * d01) / denom
-                if abs(delta0) <= 1.0 and abs(delta1) <= 1.0: 
+                if abs(delta0) <= 1.0 and abs(delta1) <= 1.0:
                     # Result is OK if lower than 0.5.
                     return (delta0 + float(current0), delta1 + float(current1))
                 else:
@@ -248,9 +250,9 @@ cdef class Bilinear:
         return width * current0 + current1
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.cdivision(True)
+#@cython.boundscheck(False)
+#@cython.wraparound(False)
+#@cython.cdivision(True)
 def calc_cartesian_positions(float32_64[:] d1, float32_64[:] d2, float[:, :, :, :] pos):
     """
     Calculate the Cartesian position for array of position (d1, d2)
@@ -300,7 +302,7 @@ def convert_corner_2D_to_4D(int ndim, float32_64[:, :] d1, float32_64[:, :] d2):
     """
     cdef int shape0, shape1, i, j
     #  edges position are n+1 compared to number of pixels
-    shape0 = d1.shape[0] - 1 
+    shape0 = d1.shape[0] - 1
     shape1 = d1.shape[1] - 1
     cdef numpy.ndarray[numpy.float32_t, ndim = 4] pos = numpy.zeros((shape0, shape1, 4, ndim), dtype=numpy.float32)
 #    assert d1.shape == d2.shape

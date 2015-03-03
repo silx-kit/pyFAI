@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2014"
+__date__ = "02/03/2015"
 __status__ = "development"
 __doc__ = """
 
@@ -39,10 +39,10 @@ additional saving capabilities like
 - save as 2/3D structure in a HDF5 File
 - read from HDF5 files
 
-Aims at being integrated into a plugin like LImA or as model for the GUI 
+Aims at being integrated into a plugin like LImA or as model for the GUI
 
 The configuration of this class is mainly done via a dictionary transmitted as a JSON string:
-Here are the valid keys:  
+Here are the valid keys:
     "dist",
     "poni1",
     "poni2",
@@ -65,7 +65,7 @@ Here are the valid keys:
     "do_2D"
     "azimuth_range_min"
     "azimuth_range_max"
-     
+
     "polarization_factor"
     "nbpt_rad"
     "do_solid_angle"
@@ -98,7 +98,7 @@ from .azimuthalIntegrator import AzimuthalIntegrator
 from .distortion import Distortion
 from . import units
 import json
-#from .io import h5py, HDF5Writer
+# from .io import h5py, HDF5Writer
 
 class Worker(object):
     def __init__(self, azimuthalIntgrator=None, shapeIn=(2048, 2048), shapeOut=(360, 500), unit="r_mm"):
@@ -126,7 +126,7 @@ class Worker(object):
 #                self.config = json.loads(config)
 #        if self.config:
 #            self.configure()
-        self._normalization_factor = None #Value of the monitor: divides the intensity by this value for normalization
+        self._normalization_factor = None  # Value of the monitor: divides the intensity by this value for normalization
         self.nbpt_azim, self.nbpt_rad = shapeOut
         self._unit = units.to_unit(unit)
         self.polarization = None
@@ -140,7 +140,7 @@ class Worker(object):
         self.extension = None
         self.do_poisson = None
         self.needs_reset = True
-        self.output = "numpy" #exports as numpy array by default
+        self.output = "numpy"  # exports as numpy array by default
         self.shape = shapeIn
         self.method = "lut"
         self.radial = None
@@ -181,7 +181,7 @@ class Worker(object):
     def reconfig(self, shape=(2048, 2048), sync=False):
         """
         This is just to force the integrator to initialize with a given input image shape
-        
+
         @param shape: shape of the input image
         @param sync: return only when synchronized
         """
@@ -192,12 +192,12 @@ class Worker(object):
     def process(self, data) :
         """
         Process a frame
-        #TODO: 
+        #TODO:
         dark, flat, sa are missing
-        
+
         @param: data: numpy array containing the input image
         """
-        
+
         with self._sem:
             monitor = self._normalization_factor
         kwarg = {"unit": self.unit,
@@ -232,22 +232,28 @@ class Worker(object):
         else:
             kwarg["error_model"] = None
 
-#        try:
-        if 1:
+        try:
+#         if 1:
             if self.do_2D():
                 rData, self.radial, self.azimuthal = self.ai.integrate2d(**kwarg)
             else:
-
                 rData = self.ai.integrate1d(**kwarg)
                 self.radial = rData[0]
                 rData = numpy.vstack(rData).T
 
-#        except:
-#            print(data.shape, data.size)
-#            print(self.ai)
-#            print(self.ai._lut_integrator)
-#            print(self.ai._lut_integrator.size)
-#            raise
+        except Exception as err:
+            err2 = ["error in integration",
+                    str(err),
+                    "data.shape: %s" % data.shape,
+                    "data.size: %s" % data.size,
+                    "ai:",
+                    str(self.ai),
+                    "csr:",
+                    str(self.ai._csr_integrator),
+                    "csr size: %s" % self.ai._lut_integrator.size]
+            logger.error(err2)
+            raise err
+
         if self.output == "numpy":
             return rData
 
@@ -360,19 +366,19 @@ class Worker(object):
     def get_config(self):
         """return configuration as a dictionary"""
         config = {"unit":str(self.unit)}
-        for key in ["dist",    "poni1",    "poni2",    "rot1",    "rot3",    "rot2",    "pixel1",    "pixel2",    "splineFile",    "wavelength"]:
+        for key in ["dist", "poni1", "poni2", "rot1", "rot3", "rot2", "pixel1", "pixel2", "splineFile", "wavelength"]:
             try:
                 config[key] = self.ai.__getattribute__(key)
             except:
                 pass
         for key in ["nbpt_azim", "nbpt_rad", "polarization", "dummy", "delta_dummy", "correct_solid_angle", "dark_current_image", "flat_field_image", "mask_image",
-                  "do_poisson","shape","method"
+                  "do_poisson", "shape", "method"
                   ]:
             try:
                 config[key] = self.__getattribute__(key)
             except:
                 pass
-            
+
         return config
 #
 #    "poni" #path of the file
@@ -404,11 +410,11 @@ class Worker(object):
 #    "val_dummy"
 #    "do_dummy"
 #    "method"
-#}
+# }
 
     def get_json_config(self):
         """return configuration as a JSON string"""
-        pass #TODO
+        pass  # TODO
 
     def save_config(self, filename=None):
         if not filename:
@@ -429,19 +435,23 @@ class Worker(object):
         if sync:
             t.join()
 
+    def get_normalization_factor(self):
+        with self._sem:
+            return self._normalization_factor
     def set_normalization_factor(self, value):
         with self._sem:
             self._normalization_factor = value
+    normalization_factor = property(get_normalization_factor, set_normalization_factor)
 
 
 class PixelwiseWorker(object):
     """
     Simple worker doing dark, flat, solid angle and polarization correction
     """
-    def __init__(self, dark=None, flat=None, solidangle=None, polarization=None, 
+    def __init__(self, dark=None, flat=None, solidangle=None, polarization=None,
                  mask=None, dummy=None, delta_dummy=None, device=None):
         """
-        @param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context 
+        @param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context
         """
         self.ctx = None
         if dark is not None:
@@ -491,7 +501,8 @@ class PixelwiseWorker(object):
             do_mask = True
         else:
             do_mask = (self.mask is not False)
-        data = numpy.array(data, dtype=numpy.float32) #Explicitely make an copy !
+        # Explicitly make an copy !
+        data = numpy.array(data, dtype=numpy.float32)
         if self.dark is not None:
             data -= self.dark
         if self.flat is not None:
@@ -511,12 +522,12 @@ class DistortionWorker(object):
     """
     Simple worker doing dark, flat, solid angle and polarization correction
     """
-    def __init__(self, detector=None, dark=None, flat=None, solidangle=None, polarization=None, 
+    def __init__(self, detector=None, dark=None, flat=None, solidangle=None, polarization=None,
                  mask=None, dummy=None, delta_dummy=None, device=None):
         """
-        @param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context 
+        @param device: Used to influance OpenCL behavour: can be "cpu", "GPU", "Acc" or even an OpenCL context
         """
-        
+
         self.ctx = None
         if dark is not None:
             self.dark = numpy.ascontiguousarray(dark, dtype=numpy.float32)
@@ -570,7 +581,8 @@ class DistortionWorker(object):
             do_mask = True
         else:
             do_mask = (self.mask is not False)
-        data = numpy.array(data, dtype=numpy.float32) #Explicitely make an copy !
+        # Explicitly make an copy !
+        data = numpy.array(data, dtype=numpy.float32)
         if self.dark is not None:
             data -= self.dark
         if self.flat is not None:
@@ -579,7 +591,7 @@ class DistortionWorker(object):
             data /= self.solidangle
         if self.polarization is not None:
             data /= self.polarization
-        
+
         if do_mask:
             data[self.mask] = self.dummy or 0
         if self.distortion is not None:

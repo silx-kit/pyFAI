@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/01/2015"
+__date__ = "17/02/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -41,7 +41,7 @@ try:
     from argparse import ArgumentParser
 except ImportError:
     from .third_party.argparse import ArgumentParser
-if sys.version_info[0]<3:
+if sys.version_info[0] < 3:
     from urlparse import urlparse
 else:
     from urllib.parse import urlparse
@@ -132,6 +132,7 @@ class AbstractCalibration(object):
     PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
     UNITS = {"dist":"meter", "poni1":"meter", "poni2":"meter", "rot1":"radian",
              "rot2":"radian", "rot3":"radian", "wavelength":"meter"}
+    VALID_URL = ["", 'file', 'hdf5', "nxs", "h5" ]
 
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None,
                  splineFile=None, detector=None, wavelength=None, calibrant=None):
@@ -540,12 +541,12 @@ class AbstractCalibration(object):
         else:
             self.outfile = self.dataFiles[0]
 
-        self.basename = os.path.splitext(self.outfile)[0]
-        if "://" in self.basename:
-            url = urlparse.urlparse(self.outfile)
-            if url.scheme!='hdf5':
-                logger.warning("unexcptected URL: %s"%self.outfile)
-            self.basename = os.path.splitext(url.netloc)[0]
+        url = urlparse(self.outfile)
+        if url.scheme not in self.VALID_URL:
+            logger.warning("unexpected URL: %s" % self.outfile)
+        self.basename, ext = os.path.splitext(url.path)
+        if ext in [".gz", ".bz2"]:
+            self.basename = os.path.splitext(self.basename)[0]
 
         if isinstance(self, Recalibration):
             self.keep = False
@@ -1898,7 +1899,7 @@ refinement process.
                 big_mask = morphology.binary_dilation(self.mask, grow)
             else:
                 big_mask = morphology.binary_dilation(self.mask.astype(numpy.int8), fwhm)
-            smooth_mask = 1.0 - scipy.ndimage.filters.gaussian_filter(big_mask.astype(numpy.float32), sigma)
+            smooth_mask = 1.0 - gaussian_filter(big_mask.astype(numpy.float32), sigma)
             return smooth_mask
 
     def show(self):

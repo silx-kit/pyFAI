@@ -218,17 +218,24 @@ class GeometryRefinement(AzimuthalIntegrator):
         return self.tth(d1, d2, param) - self.calc_2th(rings, param[6] * 1e-10)
 
     def residu2(self, param, d1, d2, rings):
-        return (self.residu1(param, d1, d2, rings) ** 2).sum()
+        #return (self.residu1(param, d1, d2, rings) ** 2).sum()
+        t = self.residu1(param, d1, d2, rings)
+        return numpy.dot(t,t)
 
     def residu2_weighted(self, param, d1, d2, rings, weight):
-        return (weight * self.residu1(param, d1, d2, rings) ** 2).sum()
+        #return (weight * self.residu1(param, d1, d2, rings) ** 2).sum()
+        t=weight * self.residu1(param, d1, d2, rings)
+        return numpy.dot(t,t)
 
     def residu2_wavelength(self, param, d1, d2, rings):
-        return (self.residu1_wavelength(param, d1, d2, rings) ** 2).sum()
+        #return (self.residu1_wavelength(param, d1, d2, rings) ** 2).sum()
+        t=self.residu1_wavelength(param, d1, d2, rings)
+        return numpy.dot(t,t)
 
     def residu2_wavelength_weighted(self, param, d1, d2, rings, weight):
-        return (weight * self.residu1_wavelength(param, d1, d2, rings) ** 2).sum()
-
+        #return (weight * self.residu1_wavelength(param, d1, d2, rings) ** 2).sum()
+        t = weight * self.residu1_wavelength(param, d1, d2, rings)
+        return numpy.dot(t, t)
 
     def refine1(self):
         self.param = numpy.array([self._dist, self._poni1, self._poni2,
