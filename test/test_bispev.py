@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/12/2014"
+__date__ = "04/03/2015"
 
 
 import unittest
@@ -88,10 +88,10 @@ class TestBispev(unittest.TestCase):
                 )
         t2 = time.time()
         logger.debug("Scipy timings: %.3fs\t cython timings: %.3fs" % (t1 - t0, t2 - t1))
-        logger.debug(dx_ref.shape, dx_loc.shape)
+        logger.debug("%s, %s" % (dx_ref.shape, dx_loc.shape))
         logger.debug(dx_ref)
         logger.debug(dx_loc)
-        logger.debug(abs(dx_loc - dx_ref).max())
+        logger.debug("delta = %s" % abs(dx_loc - dx_ref).max())
         if logger.getEffectiveLevel() == logging.DEBUG:
             fig = pylab.figure()
             ax1 = fig.add_subplot(121)
@@ -99,7 +99,7 @@ class TestBispev(unittest.TestCase):
             ax1.imshow(dx_ref)
             ax2.imshow(dx_loc)
             fig.show()
-            six.move.input()
+            six.moves.input()
         self.assert_(abs(dx_loc - dx_ref).max() < 2e-5, "Result are similar")
 
 

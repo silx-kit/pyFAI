@@ -31,7 +31,7 @@ Created on Nov 4, 2013
 
 __authors__ = ["Zubair Nawaz", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "20/10/2014"
+__date__ = "04/03/2015"
 __status__ = "stable"
 __license__ = "GPLv3+"
 
@@ -40,10 +40,11 @@ cimport numpy
 import cython
 cimport cython
 from cython cimport view
-from cython.parallel import prange
+from cython.parallel import prange, threadid, parallel
 
-#copied bisplev function from fitpack.bisplev
-def bisplev(x,y,tck,dx=0,dy=0):
+
+# copied bisplev function from fitpack.bisplev
+def bisplev(x, y, tck, dx=0, dy=0):
     """
     Evaluate a bivariate B-spline and its derivatives.
 
@@ -92,18 +93,19 @@ def bisplev(x,y,tck,dx=0,dy=0):
        Monographs on Numerical Analysis, Oxford University Press, 1993.
 
     """
-    cdef  int kx,ky
-    cdef float[:] tx, ty, c, cy_x, cy_y
+    cdef:
+        int kx, ky
+        float[:] tx, ty, c, cy_x, cy_y
     tx = numpy.ascontiguousarray(tck[0], dtype=numpy.float32)
     ty = numpy.ascontiguousarray(tck[1], dtype=numpy.float32)
-    c  = numpy.ascontiguousarray(tck[2], dtype=numpy.float32)
+    c = numpy.ascontiguousarray(tck[2], dtype=numpy.float32)
     kx = tck[3]
     ky = tck[4]
 
-    if not (0<=dx<kx):
-        raise ValueError("0 <= dx = %d < kx = %d must hold" % (dx,kx))
-    if not (0<=dy<ky):
-        raise ValueError("0 <= dy = %d < ky = %d must hold" % (dy,ky))
+    if not (0 <= dx < kx):
+        raise ValueError("0 <= dx = %d < kx = %d must hold" % (dx, kx))
+    if not (0 <= dy < ky):
+        raise ValueError("0 <= dy = %d < ky = %d must hold" % (dy, ky))
     if (len(x.shape) != 1) or (len(y.shape) != 1):
         raise ValueError("First two entries should be rank-1 arrays.")
 
@@ -111,9 +113,10 @@ def bisplev(x,y,tck,dx=0,dy=0):
     cy_y = numpy.ascontiguousarray(y, dtype=numpy.float32)
 
     z = cy_bispev(tx, ty, c, kx, ky, cy_x, cy_y)
-    z.shape = len(y),len(x)
+    z.shape = len(y), len(x)
+    # Transpose again afterwards to retrieve a memory-contiguous object
     return z.T 
-#this is a trick as we transpose again afterwards to retrieve a memory-contiguous object
+    
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -131,20 +134,22 @@ cdef void fpbspl(float[:]t,
     relation of de boor and cox.
     
     """
-    cdef int i, j, li, lj#, n=t.shape 
+    cdef int i, j, li, lj 
     cdef float f
 
     h[0] = 1.00
-    for j in range(1,k+1):  #adding +1 in index
+    for j in range(1, k + 1):
         for i in range(j):  
             hh[i] = h[i]    
         h[0] = 0.00
         for i in range(j): 
-            f = hh[i]/(t[l+i]-t[l+i-j]) 
-            h[i] = h[i] + f*(t[l+i]-x)
-            h[i+1] = f*(x-t[l+i-j])     
+            f = hh[i] / (t[l + i] - t[l + i - j]) 
+            h[i] = h[i] + f * (t[l + i] - x)
+            h[i + 1] = f * (x - t[l + i - j])
 
-cdef void init_w(float[:]t, int k, float[:]x, numpy.int32_t[:]lx, float[:,:]w):
+
+@cython.boundscheck(False)
+cdef void init_w(float[:] t, int k, float[:] x, numpy.int32_t[:] lx, float[:, :] w) nogil:
     """
     Initialize w array for a 1D array
     
@@ -154,29 +159,35 @@ cdef void init_w(float[:]t, int k, float[:]x, numpy.int32_t[:]lx, float[:,:]w):
     
     @param w: 
     """
-    cdef int i, l, l1, n=t.size, m=x.size
-    cdef float arg  
-    cdef float tb = t[k]
-    cdef float te = t[n-k-1]
-    cdef float[:] h = view.array(shape=(6,), itemsize=sizeof(float), format="f")
-    cdef float[:] hh = view.array(shape=(5,), itemsize=sizeof(float), format="f")
-
-    l = k+1
-    l1 = l+1
+    cdef:
+        int i, l, l1, n, m 
+        float arg, tb, te  
+        float[:] h, hh
+    
+    tb = t[k]
+    with gil:
+        n = t.size
+        m = x.size
+        h = view.array(shape=(6,), itemsize=sizeof(float), format="f")
+        hh = view.array(shape=(5,), itemsize=sizeof(float), format="f")
+    
+    te = t[n - k - 1]
+    l = k + 1
+    l1 = l + 1
     for i in range(m): 
         arg = x[i]      
         if arg < tb: 
             arg = tb
         if arg > te: 
             arg = te
-        while not( arg < t[l] or l == (n-k-1)):    
+        while not (arg < t[l] or l == (n - k - 1)):
             l = l1
             l1 = l + 1
         fpbspl(t, n, k, arg, l, h, hh)
 
         lx[i] = l - k - 1
         for j in range(k + 1):
-            w[i,j] = h[j]
+            w[i, j] = h[j]
 
 
 @cython.boundscheck(False)
@@ -195,34 +206,40 @@ cdef cy_bispev(float[:] tx,
     @param tx: array of float size nx containing position of knots in x
     @param ty: array of float size ny containing position of knots in y
     """
-    cdef int nx = tx.size
-    cdef int ny = ty.size
-    cdef int mx = x.size
-    cdef int my = y.size
+    cdef:
+        int nx = tx.size
+        int ny = ty.size
+        int mx = x.size
+        int my = y.size
 
-    cdef int kx1 = kx+1
-    cdef int ky1 = ky+1
+        int kx1 = kx + 1
+        int ky1 = ky + 1
 
-    cdef int nkx1 = nx-kx1
-    cdef int nky1 = ny-ky1 
+        int nkx1 = nx - kx1
+        int nky1 = ny - ky1 
 
-    #initializing scratch space
-    cdef float[:,:] wx = view.array(shape=(mx,kx1), itemsize=sizeof(float), format="f")
-    cdef float[:,:] wy = view.array(shape=(my,ky1), itemsize=sizeof(float), format="f")
+        # initializing scratch space
+        float[:, :] wx = view.array(shape=(mx, kx1), itemsize=sizeof(float), format="f")
+        float[:, :] wy = view.array(shape=(my, ky1), itemsize=sizeof(float), format="f")
 
-    cdef numpy.int32_t[:] lx = view.array(shape=(mx,), itemsize=sizeof(numpy.int32_t), format="i")
-    cdef numpy.int32_t[:] ly = view.array(shape=(my,), itemsize=sizeof(numpy.int32_t), format="i")
+        numpy.int32_t[:] lx = view.array(shape=(mx,), itemsize=sizeof(numpy.int32_t), format="i")
+        numpy.int32_t[:] ly = view.array(shape=(my,), itemsize=sizeof(numpy.int32_t), format="i")
 
-    cdef int i, j, m, i1, l2, j1, size_z = mx*my
+        int i, j, m, i1, l2, j1
+        int size_z = mx * my
 
     # initializing z and h
-    cdef numpy.ndarray[numpy.float32_t, ndim=1] z = numpy.zeros(size_z, numpy.float32)
-    cdef float arg, sp, err, tmp, a
-
-    init_w(tx, kx, x, lx, wx)
-    init_w(ty, ky, y, ly, wy)
-
+        numpy.ndarray[numpy.float32_t, ndim = 1] z = numpy.zeros(size_z, numpy.float32)
+        float arg, sp, err, tmp, a
+    
     with nogil:
+
+        with parallel(num_threads=2):
+            if threadid() == 0:
+                init_w(tx, kx, x, lx, wx)
+            else:
+                init_w(ty, ky, y, ly, wy)
+
         for j in prange(my):
             for i in range(mx):
                 sp = 0.0
@@ -231,10 +248,10 @@ cdef cy_bispev(float[:] tx,
                     for j1 in range(ky1):
                         # Implements Kahan summation
                         l2 = lx[i] * nky1 + ly[j] + i1 * nky1 + j1
-                        a = c[l2] * wx[i,i1] * wy[j,j1] - err
+                        a = c[l2] * wx[i, i1] * wy[j, j1] - err
                         tmp = sp + a
                         err = (tmp - sp) - a
                         sp = tmp
-                z[j*mx + i] += sp
+                z[j * mx + i] += sp
     return z
 
