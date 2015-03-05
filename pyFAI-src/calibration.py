@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/02/2015"
+__date__ = "05/03/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -273,7 +273,9 @@ class AbstractCalibration(object):
                       help="select the filter, either mean(default), max or median",
                        default="mean")
         self.parser.add_argument("-l", "--distance", dest="distance", type=float,
-                      help="sample-detector distance in millimeter. Default: 0.1m", default=None)
+                      help="sample-detector distance in millimeter. Default: 100mm", default=None)
+        self.parser.add_argument("--dist", dest="dist", type=float,
+                      help="sample-detector distance in meter. Default: 0.1m", default=None)
         self.parser.add_argument("--poni1", dest="poni1", type=float,
                       help="poni1 coordinate in meter. Default: center of detector", default=None)
         self.parser.add_argument("--poni2", dest="poni2", type=float,
@@ -410,6 +412,9 @@ class AbstractCalibration(object):
 #            pass
         if options.distance:
             self.ai.dist = 1e-3 * options.distance
+        if options.dist:
+            self.ai.dist = options.dist
+
         if options.poni1 is not None:
             self.ai.poni1 = options.poni1
         if options.poni2 is not None:
@@ -894,8 +899,14 @@ class AbstractCalibration(object):
                 print(self.geoRef)
             elif action == "reset":
                 self.ai.dist = 0.1
-                self.ai.poni1 = self.detector.pixel1 * (self.peakPicker.shape[0] / 2.)
-                self.ai.poni2 = self.detector.pixel2 * (self.peakPicker.shape[1] / 2.)
+                try:
+                    p1, p2 = self.detector.calc_cartesian_positions()
+                    self.ai.poni1 = p1.max() / 2.0
+                    self.ai.poni2 = p2.max() / 2.0
+                except Exception as err:
+                    logger.warning(err)
+                    self.ai.poni1 = self.detector.pixel1 * (self.peakPicker.shape[0] / 2.)
+                    self.ai.poni2 = self.detector.pixel2 * (self.peakPicker.shape[1] / 2.)
                 self.ai.rot1 = 0.0
                 self.ai.rot2 = 0.0
                 self.ai.rot3 = 0.0
@@ -1186,7 +1197,53 @@ decrease the value if arcs are mixed together.""", default=None)
         """
         Contains the geometry refinement part specific to Calibration
         """
-        self.geoRef = GeometryRefinement(self.data, dist=0.1, detector=self.detector,
+        if self.ai:
+            # try to guess the inital setup
+            if self.ai.dist:
+                dist = self.ai.dist
+            else:
+                dist = 0.1
+            if self.ai.poni1:
+                poni1 = self.ai.poni1
+            else:
+                try:
+                    poni1 = (self.detector.calc_cartesian_positions()[0]).max() / 2.
+                except Exception as err:
+                    logger.warning(err)
+                    poni1 = 0.0
+            if self.ai.poni2:
+                poni2 = self.ai.poni2
+            else:
+                try:
+                    poni2 = (self.detector.calc_cartesian_positions()[-1]).max() / 2.
+                except Exception as err:
+                    logger.warning(err)
+                    poni2 = 0.0
+            if self.ai.rot1:
+                rot1 = self.ai.rot1
+            else:
+                rot1 = 0.0
+            if self.ai.rot2:
+                rot2 = self.ai.rot2
+            else:
+                rot2 = 0.0
+            if self.ai.rot3:
+                rot3 = self.ai.rot3
+            else:
+                rot3 = 0.0
+        else:
+            dist = 0.1
+            rot1 = rot2 = rot3 = poni1 = poni2 = 0
+            if self.detector:
+                try:
+                    p1, p2 = self.detector.calc_cartesian_positions()
+                    poni1 = p1.max() / 2.0
+                    poni2 = p2.max() / 2.0
+                except Exception as err:
+                    print(err)
+        self.geoRef = GeometryRefinement(self.data, dist=dist, poni1=poni1, poni2=poni2,
+                                         rot1=rot1, rot2=rot2, rot3=rot3,
+                                         detector=self.detector,
                                          wavelength=self.wavelength,
                                          calibrant=self.calibrant)
 #        print self.calibrant
@@ -1196,8 +1253,8 @@ decrease the value if arcs are mixed together.""", default=None)
             if self.wavelength:
                 try:
                     old_wl = self.geoRef.wavelength
-                except:
-                    pass
+                except Exception as err:
+                    logger.warning(err)
                 else:
                     logger.warning("Overwriting wavelength from PONI file (%s) with the one from command line (%s)" % (old_wl, self.wavelength))
                 self.geoRef.wavelength = self.wavelength
