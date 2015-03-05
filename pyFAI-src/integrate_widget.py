@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/01/2015"
+__date__ = "05/03/2015"
 __satus__ = "development"
 
 import sys
@@ -179,24 +179,25 @@ class AIWidget(QtGui.QWidget):
         self.nbpt_rad.setValidator(npt_validator)
         self.nbpt_azim.setValidator(npt_validator)
 
-        wl_validator = QtGui.QDoubleValidator()
+        wl_validator = QtGui.QDoubleValidator(self)
         wl_validator.setBottom(1e-15)
         wl_validator.setTop(1e-6)
         self.wavelength.setValidator(wl_validator)
 
-        distance_validator = QtGui.QDoubleValidator()
+        distance_validator = QtGui.QDoubleValidator(self)
         distance_validator.setBottom(0)
         self.pixel1.setValidator(distance_validator)
         self.pixel2.setValidator(distance_validator)
         self.poni1.setValidator(distance_validator)
         self.poni2.setValidator(distance_validator)
 
-        angle_validator = QtGui.QDoubleValidator()
+        angle_validator = QtGui.QDoubleValidator(self)
         distance_validator.setBottom(-math.pi)
         distance_validator.setTop(math.pi)
         self.rot1.setValidator(angle_validator)
         self.rot2.setValidator(angle_validator)
         self.rot3.setValidator(angle_validator)
+        # done at widget level
 #        self.polarization_factor.setValidator(QtGui.QDoubleValidator(-1, 1, 3))
 
 
