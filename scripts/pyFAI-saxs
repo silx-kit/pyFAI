@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2014"
+__date__ = "05/03/2015"
 __status__ = "production"
 
 import os
@@ -108,9 +108,9 @@ def main():
     options = parser.parse_args()
     if len(options.args) < 1:
         logger.error("incorrect number of arguments")
-    processFile = pyFAI.utils.expand_args(options.args)
+    to_process = pyFAI.utils.expand_args(options.args)
 
-    if options.ponifile and processFile:
+    if options.ponifile and to_process:
         integrator = pyFAI.load(options.ponifile)
         if options.wavelength:
             integrator.wavelength = options.wavelength * 1e-10
@@ -123,25 +123,25 @@ def main():
         if options.flat and os.path.exists(options.flat):  # set Flat field
             integrator.flatfield = fabio.open(options.flat).data
 
-        if len(processFile) > 5:
-            method = "lut"
+        if len(to_process) > 5:
+            method = "csr"
         else:
-            method = "BBox"
+            method = "splitpixel"
         print(integrator)
         print("Mask: %s\tMethod: %s" % (integrator.maskfile, method))
 
-        for oneFile in processFile:
-            sys.stdout.write("Integrating %s --> " % oneFile)
-            outFile = os.path.splitext(oneFile)[0] + options.ext
-            # azimFile = os.path.splitext(oneFile)[0] + ".azim"
-            fabioFile = fabio.open(oneFile)
+        for afile in to_process:
+            sys.stdout.write("Integrating %s --> " % afile)
+            outfile = os.path.splitext(afile)[0] + options.ext
+            # azimFile = os.path.splitext(afile)[0] + ".azim"
+            fabioFile = fabio.open(afile)
             t0 = time.time()
             if fabioFile.nframes > 1:
                 integrator.integrate1d(data=fabioFile.data,
                                 npt=options.npt or min(fabioFile.data.shape),
                                 dummy=options.dummy,
                                 delta_dummy=options.delta_dummy,
-                                filename=outFile,
+                                filename=outfile,
                                 variance=fabioFile.next().data,
                                 method=method,
                                 unit=options.unit,
@@ -153,7 +153,7 @@ def main():
                                 npt=min(fabioFile.data.shape),
                                 dummy=options.dummy,
                                 delta_dummy=options.delta_dummy,
-                                filename=outFile,
+                                filename=outfile,
                                 method=method,
                                 unit=options.unit,
                                 error_model=options.error_model,
@@ -161,7 +161,7 @@ def main():
             t1 = time.time()
 
             print("Integration took %6.3fs %s --> %s" %
-                  (t1 - t0, oneFile, outFile))
+                  (t1 - t0, afile, outfile))
 
 if __name__ == "__main__":
     main()
