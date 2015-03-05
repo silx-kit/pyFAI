@@ -644,7 +644,7 @@ class NexusDetector(Detector):
                     self._pixel_corners = corners
         return self._pixel_corners
 
-    def calc_cartesian_positions(self, d1=None, d2=None, center=True):
+    def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
         Calculate the position of each pixel center in cartesian coordinate
         and in meter of a couple of coordinates.
@@ -656,7 +656,7 @@ class NexusDetector(Detector):
         @param d2: the X pixel positions (fast dimension)
         @type d2: ndarray (1D or 2D)
         @param center: retrieve the coordinate of the center of the pixel
-
+        @param use_cython: set to False to test Python implementeation
         @return: position in meter of the center of each pixels.
         @rtype: ndarray
 
@@ -669,16 +669,16 @@ class NexusDetector(Detector):
             d2 = numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1]))
         corners = self.get_pixel_corners()
         if center:
-            # avoid += modify in place and segfaults
+            # avoid += It modifies in place and segfaults
             d1 = d1 + 0.5
             d2 = d2 + 0.5
-        if bilinear:
+        if bilinear and use_cython:
             p1, p2 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
             p1.shape = d1.shape
             p2.shape = d2.shape
         else:
-            i1 = d1.astype(int)
-            i2 = d2.astype(int)
+            i1 = d1.astype(int).clip(0, corners.shape[0] - 1)
+            i2 = d2.astype(int).clip(0, corners.shape[1] - 1)
             delta1 = d1 - i1
             delta2 = d2 - i2
             pixels = corners[i1, i2]
@@ -692,12 +692,18 @@ class NexusDetector(Detector):
             D2 = pixels[:, :, 3, 2]
             # points A and D are on the same dim1 (Y), they differ in dim2 (X)
             # points B and C are on the same dim1 (Y), they differ in dim2 (X)
-            # p1 = mean(A1,D1) + delta1 * (mean(C2,D2)-mean(A2,C2))
-            p1 = 0.5 * ((A1 + D1) * (1.0 - delta1) + delta1 * (B1 + C1))
-            # points A and B are on the same dim2 (X), they differ in dim1
-            # points A and B are on the same dim2 (X), they differ in dim1
-            # p2 = mean(A2,B2) + delta2 * (mean(C2,D2)-mean(A2,C2))
-            p2 = 0.5 * ((A2 + B2) * (1.0 - delta2) + delta2 * (C2 + D2))
+            # points A and B are on the same dim2 (X), they differ in dim1 (Y)
+            # points C and D are on the same dim2 (X), they differ in dim1 (Y)
+
+            p1 = A1 * (1.0 - delta1) * (1.0 - delta2) \
+               + B1 * delta1 * (1.0 - delta2) \
+               + C1 * delta1 * delta2 \
+               + D1 * (1.0 - delta1) * delta2
+            p2 = A2 * (1.0 - delta1) * (1.0 - delta2) \
+               + B2 * delta1 * (1.0 - delta2) \
+               + C2 * delta1 * delta2 \
+               + D2 * (1.0 - delta1) * delta2
+
         return p1, p2
 
 class Pilatus(Detector):
@@ -1388,7 +1394,7 @@ class Xpad_flat(ImXPadS10):
         return mask
 
 
-    def calc_cartesian_positions(self, d1=None, d2=None, center=True):
+    def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
         """
         Calculate the position of each pixel center in cartesian coordinate
         and in meter of a couple of coordinates.
@@ -1400,7 +1406,7 @@ class Xpad_flat(ImXPadS10):
         @param d2: the X pixel positions (fast dimension)
         @type d2: ndarray (1D or 2D)
         @param center: retrieve the coordinate of the center of the pixel
-
+        @parm use_cython: set to False to test Numpy implementation 
         @return: position in meter of the center of each pixels.
         @rtype: ndarray
 
@@ -1416,14 +1422,13 @@ class Xpad_flat(ImXPadS10):
             # note += would make an increment in place which is bad (segfault !)
             d1 = d1 + 0.5
             d2 = d2 + 0.5
-        if bilinear:
-            print(id(d1), id(d2), d1.max(), d2.max(), corners.shape)
+        if bilinear and use_cython:
             p1, p2 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
             p1.shape = d1.shape
             p2.shape = d2.shape
         else:
-            i1 = d1.astype(int)
-            i2 = d2.astype(int)
+            i1 = d1.astype(int).clip(0, corners.shape[0] - 1)
+            i2 = d2.astype(int).clip(0, corners.shape[1] - 1)
             delta1 = d1 - i1
             delta2 = d2 - i2
             pixels = corners[i1, i2]
@@ -1437,12 +1442,16 @@ class Xpad_flat(ImXPadS10):
             D2 = pixels[:, :, 3, 2]
             # points A and D are on the same dim1 (Y), they differ in dim2 (X)
             # points B and C are on the same dim1 (Y), they differ in dim2 (X)
-            # p1 = mean(A1,D1) + delta1 * (mean(C2,D2)-mean(A2,C2))
-            p1 = 0.5 * ((A1 + D1) * (1.0 - delta1) + delta1 * (B1 + C1))
-            # points A and B are on the same dim2 (X), they differ in dim1
             # points A and B are on the same dim2 (X), they differ in dim1
             # p2 = mean(A2,B2) + delta2 * (mean(C2,D2)-mean(A2,C2))
-            p2 = 0.5 * ((A2 + B2) * (1.0 - delta2) + delta2 * (C2 + D2))
+            p1 = A1 * (1.0 - delta1) * (1.0 - delta2) \
+               + B1 * delta1 * (1.0 - delta2) \
+               + C1 * delta1 * delta2 \
+               + D1 * (1.0 - delta1) * delta2
+            p2 = A2 * (1.0 - delta1) * (1.0 - delta2) \
+               + B2 * delta1 * (1.0 - delta2) \
+               + C2 * delta1 * delta2 \
+               + D2 * (1.0 - delta1) * delta2
         return p1, p2
 
     def get_pixel_corners(self):
