@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2014"
+__date__ = "04/03/2015"
 __status__ = "production"
 
 import os
@@ -109,7 +109,7 @@ def main():
     parser.add_argument("--ext", dest="ext",
                       type=str, default=".xy",
                       help="extension of the regrouped filename (.xy) ")
-    parser.add_argument("--multi", dest="multiframe", #type=bool,
+    parser.add_argument("--multi", dest="multiframe",  # type=bool,
                         default=False, action="store_true",
                         help="Average out all frame in a file before integrating")
     parser.add_argument("--average", dest="average", type=str,
@@ -130,9 +130,9 @@ def main():
     if options.ponifile and processFile:
         integrator = pyFAI.load(options.ponifile)
         if options.wavelength:
-            integrator.wavelength = options.wavelength*1e-10
+            integrator.wavelength = options.wavelength * 1e-10
         elif options.energy:
-            integrator.wavelength = hc / options.energy*1e-10
+            integrator.wavelength = hc / options.energy * 1e-10
         if options.mask and os.path.exists(options.mask):  # override with the command line mask
             integrator.maskfile = options.mask
         if options.dark and os.path.exists(options.dark):  # set dark current
@@ -151,14 +151,14 @@ def main():
             outFile = os.path.splitext(oneFile)[0] + options.ext
             azimFile = os.path.splitext(oneFile)[0] + ".azim"
             t0 = time.time()
-            fabioFile = fabio.open(oneFile)
+            fabimg = fabio.open(oneFile)
             if options.multiframe:
-                data = pyFAI.utils.averageDark([fabioFile.getframe(i).data for i in range(fabioFile.nframes)], center_method=options.average)
+                data = pyFAI.utils.averageDark([fabimg.getframe(i).data for i in range(fabimg.nframes)], center_method=options.average)
             else:
-                data=fabioFile.data
+                data = fabimg.data
             t1 = time.time()
             integrator.integrate1d(data,
-                                   nbPt=options.npt or min(fabioFile.data.shape),
+                                   options.npt or min(fabimg.data.shape),
                                    filename=outFile,
                                    dummy=options.dummy,
                                    delta_dummy=options.delta_dummy,
@@ -170,7 +170,7 @@ def main():
             t2 = time.time()
             if options.do_2d:
                 integrator.integrate2d(data,
-                                       options.npt or min(fabioFile.data.shape),
+                                       options.npt or min(fabimg.data.shape),
                                        360,
                                        filename=azimFile,
                                        dummy=options.dummy,

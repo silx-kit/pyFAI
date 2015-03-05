@@ -1,6 +1,7 @@
 #!/usr/bin/python
-
-#Benchmark for Azimuthal integration of PyFAI
+# Coding: utf-8
+# author: Jérôme Kieffer
+# Benchmark for Azimuthal integration of PyFAI
 
 from __future__ import print_function, division
 
@@ -24,23 +25,21 @@ try:
 except ImportError:
     print("No socket opened for debugging -> please install rfoo")
 
-#We use the locally build version of PyFAI
+# We use the locally build version of PyFAI
 pyFAI = utilstest.UtilsTest.pyFAI
 ocl = pyFAI.opencl.ocl
 from pyFAI.gui_utils import pylab, update_fig
 
 ds_list = ["Pilatus1M.poni", "halfccd.poni", "Frelon2k.poni", "Pilatus6M.poni", "Mar3450.poni", "Fairchild.poni"]
-datasets = {"Fairchild.poni":utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
-            "halfccd.poni":utilstest.UtilsTest.getimage("1882/halfccd.edf"),
-            "Frelon2k.poni":utilstest.UtilsTest.getimage("1881/Frelon2k.edf"),
-            "Pilatus6M.poni":utilstest.UtilsTest.getimage("1884/Pilatus6M.cbf"),
-            "Pilatus1M.poni":utilstest.UtilsTest.getimage("1883/Pilatus1M.edf"),
-            "Mar3450.poni":utilstest.UtilsTest.getimage("2201/LaB6_260210.mar3450")
+datasets = {"Fairchild.poni": utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
+            "halfccd.poni": utilstest.UtilsTest.getimage("1882/halfccd.edf"),
+            "Frelon2k.poni": utilstest.UtilsTest.getimage("1881/Frelon2k.edf"),
+            "Pilatus6M.poni": utilstest.UtilsTest.getimage("1884/Pilatus6M.cbf"),
+            "Pilatus1M.poni": utilstest.UtilsTest.getimage("1883/Pilatus1M.edf"),
+            "Mar3450.poni": utilstest.UtilsTest.getimage("2201/LaB6_260210.mar3450")
             }
 
-
-
-#Handle to the Bench instance: allows debugging from outside if needed
+# Handle to the Bench instance: allows debugging from outside if needed
 bench = None
 
 
@@ -489,7 +488,7 @@ if __name__ == "__main__":
     try:
         from argparse import ArgumentParser
     except:
-        from pyFAI.argparse import ArgumentParser
+        from pyFAI.third_party.argparse import ArgumentParser
     description = """Benchmark for Azimuthal integration
     """
     epilog = """  """

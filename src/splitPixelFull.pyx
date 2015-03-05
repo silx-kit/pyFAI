@@ -30,7 +30,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Giannis Ashiotis"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "25/11/2014"
+__date__ = "03/03/2015"
 __status__ = "stable"
 __license__ = "GPLv3+"
 
@@ -47,8 +47,6 @@ cdef:
     position_t pi = M_PI
     double piover2 = pi * 0.5
 #    float onef = 1.0
-
-
 
 
 cdef inline position_t area4(position_t a0, position_t a1, position_t b0, position_t b1, position_t c0, position_t c1, position_t d0, position_t d1) nogil:
@@ -91,6 +89,7 @@ cdef inline position_t getBinNr(position_t x0, position_t pos0_min, position_t d
     """
     return (x0 - pos0_min) / dpos
 
+
 @cython.cdivision(True)
 cdef inline position_t getBin1Nr(position_t x0, position_t pos0_min, position_t delta, int on_boundary) nogil:
     """
@@ -119,6 +118,7 @@ cdef struct MyPoly:
     MyPoint[8] data
 
 
+@cython.cdivision(True)
 cdef inline MyPoint ComputeIntersection0(MyPoint S, MyPoint E, double clipEdge) nogil:
     cdef MyPoint intersection
     intersection.i = clipEdge
@@ -126,6 +126,7 @@ cdef inline MyPoint ComputeIntersection0(MyPoint S, MyPoint E, double clipEdge) 
     return intersection
 
 
+@cython.cdivision(True)
 cdef inline MyPoint ComputeIntersection1(MyPoint S, MyPoint E, double clipEdge) nogil:
     cdef MyPoint intersection
     intersection.i = (E.i - S.i) * (clipEdge - S.j) / (E.j - S.j) + S.i
@@ -133,8 +134,9 @@ cdef inline MyPoint ComputeIntersection1(MyPoint S, MyPoint E, double clipEdge) 
     return intersection
 
 
+@cython.cdivision(True)
 cdef inline int point_and_line(double x0, double y0, double x1, double y1, double x, double y) nogil:
-    cdef double tmp = (y-y0)*(x1-x0) - (x-x0)*(y1-y0)
+    cdef double tmp = (y - y0) * (x1 - x0) - (x - x0) * (y1 - y0)
     return (tmp > 0) - (tmp < 0)
 
 
@@ -146,8 +148,9 @@ cdef inline bint on_boundary(double A, double B, double C, double D) nogil:    #
             ((A > piover2) and (B < -piover2) and (C < -piover2) and (D > piover2)) or
             ((A < -piover2) and (B > piover2) and (C > piover2) and (D < -piover2)))
 
+
 cdef double area_n(MyPoly poly) nogil:
-    if   poly.size is 3:
+    if poly.size is 3:
             return 0.5*fabs(poly.data[0].i*poly.data[1].j+poly.data[1].i*poly.data[2].j+poly.data[2].i*poly.data[0].j-
                            poly.data[1].i*poly.data[0].j-poly.data[2].i*poly.data[1].j-poly.data[0].i*poly.data[2].j)
     elif poly.size is 4:
