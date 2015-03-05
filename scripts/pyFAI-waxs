@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/03/2015"
+__date__ = "05/03/2015"
 __status__ = "production"
 
 import os
@@ -125,9 +125,9 @@ def main():
     if len(options.args) < 1:
         logger.error("incorrect number of arguments")
 
-    processFile = pyFAI.utils.expand_args(options.args)
+    to_process = pyFAI.utils.expand_args(options.args)
 
-    if options.ponifile and processFile:
+    if options.ponifile and to_process:
         integrator = pyFAI.load(options.ponifile)
         if options.wavelength:
             integrator.wavelength = options.wavelength * 1e-10
@@ -140,18 +140,18 @@ def main():
         if options.flat and os.path.exists(options.flat):  # set Flat field
             integrator.flatfield = fabio.open(options.flat).data
 
-        if len(processFile) > 5:
+        if len(to_process) > 5:
             method = "csr"
         else:
             method = "splitpixel"
         print(integrator)
         print("Mask: %s\tMethod: %s" % (integrator.maskfile, method))
-        for oneFile in processFile:
-            sys.stdout.write("Integrating %s --> " % oneFile)
-            outFile = os.path.splitext(oneFile)[0] + options.ext
-            azimFile = os.path.splitext(oneFile)[0] + ".azim"
+        for afile in to_process:
+            sys.stdout.write("Integrating %s --> " % afile)
+            outfile = os.path.splitext(afile)[0] + options.ext
+            azimFile = os.path.splitext(afile)[0] + ".azim"
             t0 = time.time()
-            fabimg = fabio.open(oneFile)
+            fabimg = fabio.open(afile)
             if options.multiframe:
                 data = pyFAI.utils.averageDark([fabimg.getframe(i).data for i in range(fabimg.nframes)], center_method=options.average)
             else:
@@ -159,7 +159,7 @@ def main():
             t1 = time.time()
             integrator.integrate1d(data,
                                    options.npt or min(fabimg.data.shape),
-                                   filename=outFile,
+                                   filename=outfile,
                                    dummy=options.dummy,
                                    delta_dummy=options.delta_dummy,
                                    method=method,
@@ -181,9 +181,9 @@ def main():
                                        polarization_factor=options.polarization_factor
                                        )
                 print("%s\t reading: %.3fs\t 1D integration: %.3fs,\t 2D integration %.3fs." %
-                      (outFile, t1 - t0, t2 - t1, time.time() - t2))
+                      (outfile, t1 - t0, t2 - t1, time.time() - t2))
             else:
                 print("%s\t reading: %.3fs\t 1D integration: %.3fs." %
-                      (outFile, t1 - t0, t2 - t1))
+                      (outfile, t1 - t0, t2 - t1))
 if __name__ == "__main__":
     main()
