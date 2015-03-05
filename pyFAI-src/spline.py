@@ -33,7 +33,7 @@ Mainly used at ESRF with FReLoN CCD camera.
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.eu"
 __license__ = "GPLv3+"
-__date__ = "27/01/2015"
+__date__ = "05/03/2015"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 
 import os
@@ -44,7 +44,11 @@ import scipy
 import logging
 import scipy.optimize
 import scipy.interpolate
-from scipy.interpolate import fitpack
+try:
+    # multithreaded version in Cython: about 2x faster on large array evaluation
+    from . import _bispev as fitpack
+except ImportError:
+    from scipy.interpolate import fitpack
 import traceback
 logger = logging.getLogger("pyFAI.spline")
 
@@ -286,7 +290,7 @@ class Spline(object):
                       ((intermediateTime - startTime),
                        (time.time() - intermediateTime)))
 
-    def splineFuncX(self, x, y):
+    def splineFuncX(self, x, y, list_of_points=False):
         """
         Calculates the displacement matrix using fitpack for the X
         direction on the given grid.
@@ -295,7 +299,7 @@ class Spline(object):
         @type x: ndarray
         @param y: points of the grid  in the y direction
         @type y: ndarray
-
+        @param list_of_points: if true, consider the zip(x,y) instead of the of the square array
         @return: displacement matrix for the X direction
         @rtype: ndarray
         """
@@ -306,18 +310,29 @@ class Spline(object):
             elif abs(x[:, 1:] - x[:, :-1] - numpy.zeros((x.shape[0], x.shape[1] - 1))).max() < 1e-6:
                 x = x[:, 0]
                 y = y[0]
-
+        if list_of_points and x.ndim == 1 and len(x) == len(y):
+            lx = ly = len(x)
+            x_order = x.argsort()
+            y_order = y.argsort()
+            x = x[x_order]
+            y = y[y_order]
+            x_unordered = numpy.zeros(lx, dtype=int)
+            y_unordered = numpy.zeros(ly, dtype=int)
+            x_unordered[x_order] = numpy.arange(lx)
+            y_unordered[y_order] = numpy.arange(ly)
         xDispArray = fitpack.bisplev(
             x, y, [self.xSplineKnotsX,
                    self.xSplineKnotsY,
                    self.xSplineCoeff,
                    self.splineOrder,
                    self.splineOrder ],
-            dx=0, dy=0).transpose()
+            dx=0, dy=0)
+        if list_of_points and x.ndim == 1:
+            return xDispArray[x_unordered, y_unordered]
+        else:
+            return xDispArray.T
 
-        return xDispArray
-
-    def splineFuncY(self, x, y):
+    def splineFuncY(self, x, y, list_of_points=False):
         """
         calculates the displacement matrix using fitpack for the Y
         direction
@@ -326,7 +341,7 @@ class Spline(object):
         @type x: ndarray
         @param y: points in the y direction
         @type y: ndarray
-
+        @param list_of_points: if true, consider the zip(x,y) instead of the of the square array
         @return: displacement matrix for the Y direction
         @rtype: ndarray
         """
@@ -338,15 +353,28 @@ class Spline(object):
                 x = x[:, 0]
                 y = y[0]
 
+        if list_of_points and x.ndim == 1 and len(x) == len(y):
+            lx = ly = len(x)
+            x_order = x.argsort()
+            y_order = y.argsort()
+            x = x[x_order]
+            y = y[y_order]
+            x_unordered = numpy.zeros(lx, dtype=int)
+            y_unordered = numpy.zeros(ly, dtype=int)
+            x_unordered[x_order] = numpy.arange(lx)
+            y_unordered[y_order] = numpy.arange(ly)
+
         yDispArray = fitpack.bisplev(
             x, y, [self.ySplineKnotsX,
                    self.ySplineKnotsY,
                    self.ySplineCoeff,
                    self.splineOrder,
                    self.splineOrder ],
-            dx=0, dy=0).transpose()
-
-        return yDispArray
+            dx=0, dy=0)
+        if list_of_points and x.ndim == 1:
+            return yDispArray[x_unordered, y_unordered]
+        else:
+            return yDispArray.T
 
     def array2spline(self, smoothing=1000, timing=False):
         """

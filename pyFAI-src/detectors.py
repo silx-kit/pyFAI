@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/02/2015"
+__date__ = "05/03/2015"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instanciate them
@@ -373,15 +373,9 @@ class Detector(with_metaclass(DetectorMeta, object)):
                 keyX = ("dX", tuple(d1), tuple(d2))
                 keyY = ("dY", tuple(d1), tuple(d2))
                 if keyX not in self._splineCache:
-                    self._splineCache[keyX] = \
-                        numpy.array([self.spline.splineFuncX(i2, i1)
-                                     for i1, i2 in zip(d1 + 0.5, d2 + 0.5)],
-                                    dtype="float64")
+                    self._splineCache[keyX] = self.spline.splineFuncX(d2 + 0.5, d1 + 0.5, True).astype(numpy.float64)
                 if keyY not in self._splineCache:
-                    self._splineCache[keyY] = \
-                        numpy.array([self.spline.splineFuncY(i2, i1)
-                                     for i1, i2 in zip(d1 + 0.5, d2 + 0.5)],
-                                    dtype="float64")
+                    self._splineCache[keyY] = self.spline.splineFuncY(d2 + 0.5, d1 + 0.5, True).astype(numpy.float64)
                 dX = self._splineCache[keyX]
                 dY = self._splineCache[keyY]
             else:

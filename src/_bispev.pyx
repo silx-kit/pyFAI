@@ -106,16 +106,25 @@ def bisplev(x, y, tck, dx=0, dy=0):
         raise ValueError("0 <= dx = %d < kx = %d must hold" % (dx, kx))
     if not (0 <= dy < ky):
         raise ValueError("0 <= dy = %d < ky = %d must hold" % (dy, ky))
+
+    x = numpy.atleast_1d(x)
+    y = numpy.atleast_1d(y)
+    
     if (len(x.shape) != 1) or (len(y.shape) != 1):
         raise ValueError("First two entries should be rank-1 arrays.")
-
+    
     cy_x = numpy.ascontiguousarray(x, dtype=numpy.float32)
     cy_y = numpy.ascontiguousarray(y, dtype=numpy.float32)
 
     z = cy_bispev(tx, ty, c, kx, ky, cy_x, cy_y)
     z.shape = len(y), len(x)
+
     # Transpose again afterwards to retrieve a memory-contiguous object
-    return z.T 
+    if len(z) > 1: 
+        return z.T
+    if len(z[0]) > 1:
+        return z[0]
+    return z[0][0]
     
 
 @cython.boundscheck(False)
