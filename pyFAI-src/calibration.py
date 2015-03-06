@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/02/2015"
+__date__ = "06/03/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -48,7 +48,7 @@ else:
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI.calibration")
-import numpy, scipy.ndimage
+import numpy
 from scipy.stats import linregress
 import fabio
 from .gui_utils import pylab, update_fig, matplotlib
@@ -56,7 +56,7 @@ from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
 from .peak_picker import PeakPicker
 from . import units, gui_utils
-from .utils import averageImages, measure_offset, expand_args, readFloatFromKeyboard, input
+from .utils import averageImages, measure_offset, expand_args, readFloatFromKeyboard, input, FixedParameters
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import hc
 from . import version as PyFAI_VERSION
@@ -127,7 +127,8 @@ class AbstractCalibration(object):
             'show': "Just print out the current parameter set",
             'reset': "Reset the geometry to the initial guess (rotation to zero, distance to 0.1m, poni at the center of the image)",
             'assign': "Change the assignment of a group of points to a rings",
-            "weight": "toggle from weighted to unweighted mode..."
+            "weight": "toggle from weighted to unweighted mode...",
+            "define": "Re-define the value for a constant internal parameter of the program like max_iter, nPt_1D, nPt_2D_azim, nPt_2D_rad. Warning: they may be harmful !"
             }
     PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
     UNITS = {"dist":"meter", "poni1":"meter", "poni2":"meter", "rot1":"radian",
@@ -273,7 +274,9 @@ class AbstractCalibration(object):
                       help="select the filter, either mean(default), max or median",
                        default="mean")
         self.parser.add_argument("-l", "--distance", dest="distance", type=float,
-                      help="sample-detector distance in millimeter. Default: 0.1m", default=None)
+                      help="sample-detector distance in millimeter. Default: 100mm", default=None)
+        self.parser.add_argument("--dist", dest="dist", type=float,
+                      help="sample-detector distance in meter. Default: 0.1m", default=None)
         self.parser.add_argument("--poni1", dest="poni1", type=float,
                       help="poni1 coordinate in meter. Default: center of detector", default=None)
         self.parser.add_argument("--poni2", dest="poni2", type=float,
@@ -319,6 +322,11 @@ class AbstractCalibration(object):
                       help="fix the wavelength parameter. Default: Activated", default=True, action="store_true")
         self.parser.add_argument("--free-wavelength", dest="fix_wavelength",
                       help="free the wavelength parameter. Default: Deactivated ", default=True, action="store_false")
+
+        self.parser.add_argument("--tilt", dest="tilt",
+                      help="Allow initially detector tilt to be refined (rot1, rot2, rot3). Default: Activated", default=None, action="store_true")
+        self.parser.add_argument("--no-tilt", dest="tilt",
+                      help="Deactivated tilt refinement", default=None, action="store_false")
 
         self.parser.add_argument("--saturation", dest="saturation",
                       help="consider all pixel>max*(1-saturation) as saturated and "\
@@ -410,6 +418,9 @@ class AbstractCalibration(object):
 #            pass
         if options.distance:
             self.ai.dist = 1e-3 * options.distance
+        if options.dist:
+            self.ai.dist = options.dist
+
         if options.poni1 is not None:
             self.ai.poni1 = options.poni1
         if options.poni2 is not None:
@@ -425,21 +436,18 @@ class AbstractCalibration(object):
             raise RuntimeError("Please provide some calibration images ... "
                                "if you want to analyze them. Try also the "
                                "--help option to see all options!")
-        self.fixed = []
-        if options.fix_dist:
-            self.fixed.append("dist")
-        if options.fix_poni1:
-            self.fixed.append("poni1")
-        if options.fix_poni2:
-            self.fixed.append("poni2")
-        if options.fix_rot1:
-            self.fixed.append("rot1")
-        if options.fix_rot2:
-            self.fixed.append("rot2")
-        if options.fix_rot3:
-            self.fixed.append("rot3")
-        if options.fix_wavelength:
-            self.fixed.append("wavelength")
+        self.fixed = FixedParameters()
+        if options.tilt is not None:
+            for key in ["rot1", "rot2", "rot3"]:
+                self.fixed.add_or_discard(key, not(options.tilt))
+        self.fixed.add_or_discard("dist", options.fix_dist)
+        self.fixed.add_or_discard("poni1", options.fix_poni1)
+        self.fixed.add_or_discard("poni2", options.fix_poni2)
+        self.fixed.add_or_discard("rot1", options.fix_rot1)
+        self.fixed.add_or_discard("rot2", options.fix_rot2)
+        self.fixed.add_or_discard("rot3", options.fix_rot3)
+        self.fixed.add_or_discard("wavelength", options.fix_wavelength)
+        print(self.fixed)
         self.saturation = options.saturation
 
         self.gui = options.gui
@@ -749,9 +757,12 @@ class AbstractCalibration(object):
                     print("Valid actions: " + ", ".join(self.HELP.keys()))
                     print("Valid parameters: " + ", ".join(self.PARAMETERS))
             elif action == "get":  # get wavelength
-                if (len(words) == 2) and  words[1] in self.PARAMETERS:
-                    param = words[1]
-                    print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
+                if (len(words) >= 2):
+                    for param in words[1:]:
+                        if param in self.PARAMETERS:
+                            print("Value of parameter %s: %s  %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
+                        else:
+                            print("No a parameter: %s" % param)
                 else:
                     print(self.HELP[action])
 
@@ -767,17 +778,26 @@ class AbstractCalibration(object):
                 else:
                     print(self.HELP[action])
             elif action == "fix":  # fix wavelength
-                if (len(words) == 2) and  (words[1] in self.PARAMETERS) and (words[1] not in self.fixed):
-                    param = words[1]
-                    print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
-                    self.fixed.append(param)
+                if (len(words) >= 2):
+                    for param  in words[1:]:
+                        if param  in self.PARAMETERS:
+                            print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
+                            self.fixed.add(param)
+                        else:
+                            print("No a parameter: %s" % param)
                 else:
                     print(self.HELP[action])
             elif action == "free":  # free wavelength
-                if (len(words) == 2) and  (words[1] in self.PARAMETERS) and (words[1] in self.fixed):
-                    param = words[1]
-                    print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
-                    self.fixed.remove(param)
+                if (len(words) >= 2):
+                    for param  in words[1:]:
+                        if param in self.PARAMETERS:
+                            print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
+                            self.fixed.discard(param)
+                        else:
+                            print("No a parameter: %s" % param)
+                else:
+                    print(self.HELP[action])
+
             elif action == "recalib":
                 max_rings = None
                 if len(words) >= 2:
@@ -894,8 +914,14 @@ class AbstractCalibration(object):
                 print(self.geoRef)
             elif action == "reset":
                 self.ai.dist = 0.1
-                self.ai.poni1 = self.detector.pixel1 * (self.peakPicker.shape[0] / 2.)
-                self.ai.poni2 = self.detector.pixel2 * (self.peakPicker.shape[1] / 2.)
+                try:
+                    p1, p2 = self.detector.calc_cartesian_positions()
+                    self.ai.poni1 = p1.max() / 2.0
+                    self.ai.poni2 = p2.max() / 2.0
+                except Exception as err:
+                    logger.warning(err)
+                    self.ai.poni1 = self.detector.pixel1 * (self.peakPicker.shape[0] / 2.)
+                    self.ai.poni2 = self.detector.pixel2 * (self.peakPicker.shape[1] / 2.)
                 self.ai.rot1 = 0.0
                 self.ai.rot2 = 0.0
                 self.ai.rot3 = 0.0
@@ -943,7 +969,6 @@ class AbstractCalibration(object):
                     else:
                         logger.warning("Unrecognized argument for weight: %s" % value)
                         continue
-
                 print("Weights: %s" % self.weighted)
                 if (old != self.weighted):
                     if self.weighted:
@@ -951,6 +976,26 @@ class AbstractCalibration(object):
                     else:
                         self.data = self.peakPicker.points.getList()
                     self.geoRef.data = numpy.array(self.data, dtype=numpy.float64)
+            elif action == "define":
+                if len(words) == 3:
+                    param = words[1]
+                    sval = words[2]
+                    for cs_param in dir(self):
+                        if cs_param.lower() == param:
+                            oldval = self.__getattribute__(cs_param)
+                            t = type(oldval)
+                            print("constant %s was %s of type %s, setting to %s" % (cs_param, oldval, t, sval))
+                            try:
+                                newval = t(sval)
+                            except Exception as err:
+                                print("Unable to convert type")
+                                logger.warning(err)
+                            self.__setattr__(cs_param, newval)
+                            break
+                    else:
+                        print("No such parameter %s" % param)
+                else:
+                    print(self.HELP[action])
             else:
                 logger.warning("Unrecognized action: %s, type 'quit' to leave " % action)
 
@@ -1186,7 +1231,53 @@ decrease the value if arcs are mixed together.""", default=None)
         """
         Contains the geometry refinement part specific to Calibration
         """
-        self.geoRef = GeometryRefinement(self.data, dist=0.1, detector=self.detector,
+        if self.ai:
+            # try to guess the inital setup
+            if self.ai.dist:
+                dist = self.ai.dist
+            else:
+                dist = 0.1
+            if self.ai.poni1:
+                poni1 = self.ai.poni1
+            else:
+                try:
+                    poni1 = (self.detector.calc_cartesian_positions()[0]).max() / 2.
+                except Exception as err:
+                    logger.warning(err)
+                    poni1 = 0.0
+            if self.ai.poni2:
+                poni2 = self.ai.poni2
+            else:
+                try:
+                    poni2 = (self.detector.calc_cartesian_positions()[-1]).max() / 2.
+                except Exception as err:
+                    logger.warning(err)
+                    poni2 = 0.0
+            if self.ai.rot1:
+                rot1 = self.ai.rot1
+            else:
+                rot1 = 0.0
+            if self.ai.rot2:
+                rot2 = self.ai.rot2
+            else:
+                rot2 = 0.0
+            if self.ai.rot3:
+                rot3 = self.ai.rot3
+            else:
+                rot3 = 0.0
+        else:
+            dist = 0.1
+            rot1 = rot2 = rot3 = poni1 = poni2 = 0
+            if self.detector:
+                try:
+                    p1, p2 = self.detector.calc_cartesian_positions()
+                    poni1 = p1.max() / 2.0
+                    poni2 = p2.max() / 2.0
+                except Exception as err:
+                    print(err)
+        self.geoRef = GeometryRefinement(self.data, dist=dist, poni1=poni1, poni2=poni2,
+                                         rot1=rot1, rot2=rot2, rot3=rot3,
+                                         detector=self.detector,
                                          wavelength=self.wavelength,
                                          calibrant=self.calibrant)
 #        print self.calibrant
@@ -1196,8 +1287,8 @@ decrease the value if arcs are mixed together.""", default=None)
             if self.wavelength:
                 try:
                     old_wl = self.geoRef.wavelength
-                except:
-                    pass
+                except Exception as err:
+                    logger.warning(err)
                 else:
                     logger.warning("Overwriting wavelength from PONI file (%s) with the one from command line (%s)" % (old_wl, self.wavelength))
                 self.geoRef.wavelength = self.wavelength
@@ -1367,7 +1458,7 @@ class MultiCalib(object):
         self.centerX = None
         self.centerY = None
         self.distance = None
-        self.fixed = []
+        self.fixed = FixedParameters()
         self.max_rings = None
 
 
@@ -1452,8 +1543,10 @@ class MultiCalib(object):
                        default=False, action="store_true")
         parser.add_argument("-l", "--distance", dest="distance", type=float,
                       help="sample-detector distance in millimeter", default=None)
+        parser.add_argument("--tilt", dest="tilt",
+                      help="refine the detector tilt", default=None , action="store_true")
         parser.add_argument("--no-tilt", dest="tilt",
-                      help="refine the detector tilt", default=True , action="store_false")
+                      help="refine the detector tilt", default=None , action="store_false")
         parser.add_argument("--poni1", dest="poni1", type=float,
                       help="poni1 coordinate in meter", default=None)
         parser.add_argument("--poni2", dest="poni2", type=float,
@@ -1556,23 +1649,18 @@ class MultiCalib(object):
         self.gui = options.gui
         self.interactive = options.interactive
         self.max_rings = options.max_rings
-        self.fixed = []
-        if not options.tilt:
-            self.fixed += ["rot1", "rot2", "rot3"]
-        if options.fix_dist:
-            self.fixed.append("dist")
-        if options.fix_poni1:
-            self.fixed.append("poni1")
-        if options.fix_poni2:
-            self.fixed.append("poni2")
-        if options.fix_rot1:
-            self.fixed.append("rot1")
-        if options.fix_rot2:
-            self.fixed.append("rot2")
-        if options.fix_rot3:
-            self.fixed.append("rot3")
-        if options.fix_wavelength:
-            self.fixed.append("wavelength")
+
+        self.fixed = FixedParameters()
+        if options.tilt is not None:
+            for key in ["rot1", "rot2", "rot3"]:
+                self.fixed.add_or_discard(key, not(options.tilt))
+        self.fixed.add_or_discard("dist", options.fix_dist)
+        self.fixed.add_or_discard("poni1", options.fix_poni1)
+        self.fixed.add_or_discard("poni2", options.fix_poni2)
+        self.fixed.add_or_discard("rot1", options.fix_rot1)
+        self.fixed.add_or_discard("rot2", options.fix_rot2)
+        self.fixed.add_or_discard("rot3", options.fix_rot3)
+        self.fixed.add_or_discard("wavelength", options.fix_wavelength)
 
         self.dataFiles = [f for f in options.args if os.path.isfile(f)]
         if not self.dataFiles:

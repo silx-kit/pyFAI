@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2014"
+__date__ = "05/03/2015"
 
 
 import unittest
@@ -51,7 +51,7 @@ from pyFAI import bilinear
 # bilinear = sys.modules["pyFAI.bilinear"]
 
 
-class test_bilinear(unittest.TestCase):
+class TestBilinear(unittest.TestCase):
     """basic maximum search test"""
     N = 10000
 
@@ -92,14 +92,35 @@ class test_bilinear(unittest.TestCase):
             else:
                 logger.debug("Good guess maximum (%i,%i) -> (%.1f,%.1f)" % (i, j, k, l))
                 ok += 1
-        logger.info("Success rate: %.1f" % (100.*ok / self.N))
+        logger.info("Success rate: %.1f" % (100. * ok / self.N))
         self.assertEqual(ok, self.N, "Maximum is always found")
+
+
+class TestConversion(unittest.TestCase):
+    """basic 2d -> 4d transformation and vice-versa"""
+    def test4d(self):
+        Nx = 1000
+        Ny = 1024
+        y, x = numpy.mgrid[:Ny + 1, :Nx + 1]
+        y = y.astype(float)
+        x = x.astype(float)
+        pos = bilinear.convert_corner_2D_to_4D(3, y, x)
+        y1, x1 = bilinear.calc_cartesian_positions(y.ravel(), x.ravel(), pos)
+        self.assert_(numpy.allclose(y.ravel(), y1), "Maximum error on y is %s" % (abs(y.ravel() - y1).max()))
+        self.assert_(numpy.allclose(x.ravel(), x1), "Maximum error on x is %s" % (abs(x.ravel() - x1).max()))
+        x = x[:-1, :-1] + 0.5
+        y = y[:-1, :-1] + 0.5
+        y1, x1 = bilinear.calc_cartesian_positions((y).ravel(), (x).ravel(), pos)
+
+        self.assert_(numpy.allclose(y.ravel(), y1), "Maximum error on y_center is %s" % (abs(y.ravel() - y1).max()))
+        self.assert_(numpy.allclose(x.ravel(), x1), "Maximum error on x_center is %s" % (abs(x.ravel() - x1).max()))
 
 
 def test_suite_all_bilinear():
     testSuite = unittest.TestSuite()
-    testSuite.addTest(test_bilinear("test_max_search_round"))
-    testSuite.addTest(test_bilinear("test_max_search_half"))
+    testSuite.addTest(TestBilinear("test_max_search_round"))
+    testSuite.addTest(TestBilinear("test_max_search_half"))
+    testSuite.addTest(TestConversion("test4d"))
     return testSuite
 
 if __name__ == '__main__':

@@ -28,7 +28,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/12/2014"
+__date__ = "05/03/2015"
 
 import sys
 import os
@@ -37,7 +37,7 @@ import shutil
 import unittest
 import numpy
 if __name__ == '__main__':
-    import pkgutil, os
+    import pkgutil
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
 from .utilstest import getLogger  # UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
@@ -52,7 +52,7 @@ class TestDetector(unittest.TestCase):
         """
         this method try to instanciate all the detectors
         """
-        for k, v in ALL_DETECTORS.iteritems():
+        for k, v in ALL_DETECTORS.items():
             v()
 
     def test_detector_imxpad_s140(self):
@@ -198,6 +198,13 @@ class TestDetector(unittest.TestCase):
         mar.guess_binning(shape)
         self.assertEqual(mar.binning, (10, 10), "RayonixLx170 has 10x10 binning")
 
+    def test_Xpad_flat(self):
+        d = detector_factory("Xpad S540 flat")
+        cy = d.calc_cartesian_positions(use_cython=True)
+        np = d.calc_cartesian_positions(use_cython=False)
+        self.assert_(numpy.allclose(cy[0], np[0]), "max_delta1=" % abs(cy[0] - np[0]).max())
+        self.assert_(numpy.allclose(cy[1], np[1]), "max_delta2=" % abs(cy[1] - np[1]).max())
+
 
 def test_suite_all_detectors():
     testSuite = unittest.TestSuite()
@@ -206,7 +213,7 @@ def test_suite_all_detectors():
     testSuite.addTest(TestDetector("test_detector_rayonix_sx165"))
     testSuite.addTest(TestDetector("test_nexus_detector"))
     testSuite.addTest(TestDetector("test_guess_binning"))
-
+    testSuite.addTest(TestDetector("test_Xpad_flat"))
     return testSuite
 
 if __name__ == '__main__':

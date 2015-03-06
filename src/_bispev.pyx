@@ -31,7 +31,7 @@ Created on Nov 4, 2013
 
 __authors__ = ["Zubair Nawaz", "Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "04/03/2015"
+__date__ = "05/03/2015"
 __status__ = "stable"
 __license__ = "GPLv3+"
 
@@ -40,7 +40,7 @@ cimport numpy
 import cython
 cimport cython
 from cython cimport view
-from cython.parallel import prange, threadid, parallel
+from cython.parallel import prange
 
 
 # copied bisplev function from fitpack.bisplev
@@ -242,12 +242,9 @@ cdef cy_bispev(float[:] tx,
         float arg, sp, err, tmp, a
     
     with nogil:
-
-        with parallel(num_threads=2):
-            if threadid() == 0:
-                init_w(tx, kx, x, lx, wx)
-            else:
-                init_w(ty, ky, y, ly, wy)
+        # cannot be initialized in parallel, why ? segfaults on MacOSX
+        init_w(tx, kx, x, lx, wx)
+        init_w(ty, ky, y, ly, wy)
 
         for j in prange(my):
             for i in range(mx):

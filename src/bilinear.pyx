@@ -23,7 +23,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3+"
-__date__ = "16/02/2015"
+__date__ = "05/03/2015"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -250,9 +250,9 @@ cdef class Bilinear:
         return width * current0 + current1
 
 
-#@cython.boundscheck(False)
-#@cython.wraparound(False)
-#@cython.cdivision(True)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
 def calc_cartesian_positions(float32_64[:] d1, float32_64[:] d2, float[:, :, :, :] pos):
     """
     Calculate the Cartesian position for array of position (d1, d2)
@@ -264,16 +264,47 @@ def calc_cartesian_positions(float32_64[:] d1, float32_64[:] d2, float[:, :, :, 
     @param pos: array with position of pixels corners
     """
     cdef:
-        int i, p1, p2, size = d1.size
-        float delta1, delta2, A1, A2, B1, B2, C1, C2, D1, D2
-        numpy.ndarray[numpy.float32_t, ndim = 1] out1 = numpy.empty(size, dtype=numpy.float32)
-        numpy.ndarray[numpy.float32_t, ndim = 1] out2 = numpy.empty(size, dtype=numpy.float32)
+        int i, p1, p2, dim1, dim2, size = d1.size 
+        float delta1, delta2, f1, f2, A1, A2, B1, B2, C1, C2, D1, D2
+        numpy.ndarray[numpy.float32_t, ndim = 1] out1 = numpy.zeros(size, dtype=numpy.float32)
+        numpy.ndarray[numpy.float32_t, ndim = 1] out2 = numpy.zeros(size, dtype=numpy.float32)
+    
+    dim1 = pos.shape[0]
+    dim2 = pos.shape[1]
     assert size == d2.size
+    
     for i in prange(size, nogil=True):
-        p1 = <int> d1[i]
-        delta1 = d1[i] - floor(d1[i])
-        p2 = <int> d2[i]
-        delta2 = d2[i] - floor(d2[i])
+        f1 = floor(d1[i])
+        f2 = floor(d2[i])
+        
+        p1 = <int> f1
+        p2 = <int> f2
+
+        delta1 = d1[i] - f1 
+        delta2 = d2[i] - f2
+
+        if p1 < 0:
+            with gil:
+                print("f1= %s"%f1)
+
+        if p1 < 0:
+            with gil:
+                print("f2= %s"%f2)
+
+        if p1 >= dim1:
+            if p1>dim1:
+                with gil:
+                    print("d1= %s, f1=%s, p1=%s, delta1=%s" % (d1[i], f1, p1, delta1))
+            p1 = dim1 - 1
+            delta1 = d1[i] - p1
+            
+        if p2 >= dim2:
+            if p2>dim2:
+                with gil:
+                    print("d2= %s, f2=%s, p2=%s, delta2=%s" % (d2[i], f2, p2, delta2))
+            p2 = dim2 - 1
+            delta2 = d2[i] - p2
+            
         A1 = pos[p1, p2, 0, 1]
         A2 = pos[p1, p2, 0, 2]
         B1 = pos[p1, p2, 1, 1]
@@ -283,8 +314,18 @@ def calc_cartesian_positions(float32_64[:] d1, float32_64[:] d2, float[:, :, :, 
         D1 = pos[p1, p2, 3, 1]
         D2 = pos[p1, p2, 3, 2]
 
-        out1[i] = 0.5 * ((A1 + D1) * (1.0 - delta1) + delta1 * (B1 + C1))
-        out2[i] = 0.5 * ((A2 + B2) * (1.0 - delta2) + delta2 * (C2 + D2))
+        # A and D are on the same:  dim1 (Y)
+        # A and B are on the same:  dim2 (X)
+        # nota: += is needed as well as numpy.zero because of prange: avoid reduction
+        out1[i] += A1 * (1.0 - delta1) * (1.0 - delta2) \
+            + B1 * delta1 * (1.0 - delta2) \
+            + C1 * delta1 * delta2 \
+            + D1 * (1.0 - delta1) * delta2 
+        out2[i] += A2 * (1.0 - delta1) * (1.0 - delta2) \
+            + B2 * delta1 * (1.0 - delta2) \
+            + C2 * delta1 * delta2 \
+            + D2 * (1.0 - delta1) * delta2 
+
     return out1, out2
 
 

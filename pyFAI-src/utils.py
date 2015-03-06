@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/02/2015"
+__date__ = "06/03/2015"
 __status__ = "production"
 
 import logging, sys, types, os, glob
@@ -1218,3 +1218,22 @@ def readFloatFromKeyboard(text, dictVar):
                     dictVar[i][j](vals[j])
         if not found:
             logger.error("You should provide the good number of floats")
+
+class FixedParameters(set):
+    """
+    Like a set, made for FixedParameters in geometry refinement
+    """
+
+    def add_or_discard(self, key, value=True):
+        """
+        Add a value to a set if value, else discard it
+        @param key: element to added or discared from set
+        @type value: boolean. If None do nothing !
+        @return: None
+        """
+        if value is None:
+            return
+        if value:
+            self.add(key)
+        else:
+            self.discard(key)
