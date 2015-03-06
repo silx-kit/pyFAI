@@ -326,7 +326,7 @@ class AbstractCalibration(object):
         self.parser.add_argument("--tilt", dest="tilt",
                       help="Allow initially detector tilt to be refined (rot1, rot2, rot3). Default: Activated", default=None, action="store_true")
         self.parser.add_argument("--no-tilt", dest="tilt",
-                      help="Deactivated tilt refinement", default=None, action="store_false")
+                      help="Deactivated tilt refinement and set all rotation to 0", default=None, action="store_false")
 
         self.parser.add_argument("--saturation", dest="saturation",
                       help="consider all pixel>max*(1-saturation) as saturated and "\
@@ -421,6 +421,10 @@ class AbstractCalibration(object):
         if options.dist:
             self.ai.dist = options.dist
 
+        if options.tilt is False:
+            self.ai.rot1 = 0.0
+            self.ai.rot2 = 0.0
+            self.ai.rot3 = 0.0
         if options.poni1 is not None:
             self.ai.poni1 = options.poni1
         if options.poni2 is not None:
@@ -440,6 +444,7 @@ class AbstractCalibration(object):
         if options.tilt is not None:
             for key in ["rot1", "rot2", "rot3"]:
                 self.fixed.add_or_discard(key, not(options.tilt))
+
         self.fixed.add_or_discard("dist", options.fix_dist)
         self.fixed.add_or_discard("poni1", options.fix_poni1)
         self.fixed.add_or_discard("poni2", options.fix_poni2)
@@ -1455,11 +1460,14 @@ class MultiCalib(object):
         self.results = {}
         self.gui = True
         self.interactive = True
-        self.centerX = None
-        self.centerY = None
-        self.distance = None
+        self.poni1 = None
+        self.poni2 = None
+        self.dist = None
         self.fixed = FixedParameters()
         self.max_rings = None
+        self.rot1 = 0.0
+        self.rot2 = 0.0
+        self.rot3 = 0.0
 
 
     def __repr__(self):
@@ -1543,10 +1551,14 @@ class MultiCalib(object):
                        default=False, action="store_true")
         parser.add_argument("-l", "--distance", dest="distance", type=float,
                       help="sample-detector distance in millimeter", default=None)
+
         parser.add_argument("--tilt", dest="tilt",
-                      help="refine the detector tilt", default=None , action="store_true")
+                      help="Allow initially detector tilt to be refined (rot1, rot2, rot3). Default: Activated", default=None, action="store_true")
         parser.add_argument("--no-tilt", dest="tilt",
-                      help="refine the detector tilt", default=None , action="store_false")
+                      help="Deactivated tilt refinement and set all rotation to 0", default=None, action="store_false")
+
+        parser.add_argument("--dist", dest="dist", type=float,
+                      help="sample-detector distance in meter", default=None)
         parser.add_argument("--poni1", dest="poni1", type=float,
                       help="poni1 coordinate in meter", default=None)
         parser.add_argument("--poni2", dest="poni2", type=float,
@@ -1662,6 +1674,21 @@ class MultiCalib(object):
         self.fixed.add_or_discard("rot3", options.fix_rot3)
         self.fixed.add_or_discard("wavelength", options.fix_wavelength)
 
+        if options.distance:
+            self.dist = 1e-3 * float(options.distance)
+        if options.dist:
+            self.dist = float(options.dist)
+        if options.poni1:
+            self.poni1 = float(options.poni1)
+        if options.poni2:
+            self.poni2 = float(options.poni2)
+        if options.rot1:
+            self.rot1 = float(options.rot1)
+        if options.rot2:
+            self.rot2 = float(options.rot2)
+        if options.rot3:
+            self.rot3 = float(options.rot3)
+
         self.dataFiles = [f for f in options.args if os.path.isfile(f)]
         if not self.dataFiles:
             raise RuntimeError("Please provide some calibration images ... "
@@ -1747,9 +1774,15 @@ class MultiCalib(object):
         for fn in self.dataFiles:
             fabimg = fabio.open(fn)
             wavelength = self.wavelength
-            dist = self.distance
-            centerX = self.centerX
-            centerY = self.centerY
+            dist = self.dist
+            if self.poni2:
+                centerX = self.poni2 / self.detector.pixel2
+            else:
+                centerX = None
+            if self.poni1:
+                centerY = self.poni1 / self.detector.pixel1
+            else:
+                centerY = None
             if "_array_data.header_contents" in fabimg.header:
                 headers = fabimg.header["_array_data.header_contents"].lower().split()
                 if "detector_distance" in headers:
@@ -1839,6 +1872,7 @@ class MultiCalib(object):
             slope, intercept, r, two, stderr = linregress(x, elt)
 
             print("%s = %s * dist_mm + %s \t R= %s\t stderr= %s" % (name, slope, intercept, r, stderr))
+
 
 class CheckCalib(object):
     def __init__(self, poni=None, img=None, unit="2th_deg"):

@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/02/2015"
+__date__ = "06/03/2015"
 __status__ = "production"
 
 import os
@@ -532,6 +532,8 @@ class PeakPicker(object):
             if self.points.calibrant:
                 angles = [ i for i in self.points.calibrant.get_2th()
                           if i is not None and i >= tth_min and i <= tth_max]
+                if not angles:
+                    angles = None
             else:
                 angles = None
             try:
@@ -544,6 +546,8 @@ class PeakPicker(object):
                 print("Check also for correct indexing of rings")
             except MemoryError:
                 logging.error("Sorry but your computer does NOT have enough memory to display the 2-theta contour plot")
+            except ValueError:
+                logging.error("No contour-plot to display !")
             update_fig(self.fig)
 
     def massif_contour(self, data):
