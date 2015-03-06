@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2015"
+__date__ = "06/03/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -48,7 +48,7 @@ else:
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI.calibration")
-import numpy, scipy.ndimage
+import numpy
 from scipy.stats import linregress
 import fabio
 from .gui_utils import pylab, update_fig, matplotlib
@@ -56,7 +56,7 @@ from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
 from .peak_picker import PeakPicker
 from . import units, gui_utils
-from .utils import averageImages, measure_offset, expand_args, readFloatFromKeyboard, input
+from .utils import averageImages, measure_offset, expand_args, readFloatFromKeyboard, input, FixedParameters
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import hc
 from . import version as PyFAI_VERSION
@@ -322,6 +322,11 @@ class AbstractCalibration(object):
         self.parser.add_argument("--free-wavelength", dest="fix_wavelength",
                       help="free the wavelength parameter. Default: Deactivated ", default=True, action="store_false")
 
+        self.parser.add_argument("--tilt", dest="tilt",
+                      help="Allow initially detector tilt to be refined (rot1, rot2, rot3). Default: Activated", default=None, action="store_true")
+        self.parser.add_argument("--no-tilt", dest="tilt",
+                      help="Deactivated tilt refinement", default=None, action="store_false")
+
         self.parser.add_argument("--saturation", dest="saturation",
                       help="consider all pixel>max*(1-saturation) as saturated and "\
                       "reconstruct them, default: 0 (deactivated)",
@@ -430,21 +435,18 @@ class AbstractCalibration(object):
             raise RuntimeError("Please provide some calibration images ... "
                                "if you want to analyze them. Try also the "
                                "--help option to see all options!")
-        self.fixed = []
-        if options.fix_dist:
-            self.fixed.append("dist")
-        if options.fix_poni1:
-            self.fixed.append("poni1")
-        if options.fix_poni2:
-            self.fixed.append("poni2")
-        if options.fix_rot1:
-            self.fixed.append("rot1")
-        if options.fix_rot2:
-            self.fixed.append("rot2")
-        if options.fix_rot3:
-            self.fixed.append("rot3")
-        if options.fix_wavelength:
-            self.fixed.append("wavelength")
+        self.fixed = FixedParameters()
+        if options.tilt is not None:
+            for key in ["rot1", "rot2", "rot3"]:
+                self.fixed.add_or_discard(key, not(options.tilt))
+        self.fixed.add_or_discard("dist", options.fix_dist)
+        self.fixed.add_or_discard("poni1", options.fix_poni1)
+        self.fixed.add_or_discard("poni2", options.fix_poni2)
+        self.fixed.add_or_discard("rot1", options.fix_rot1)
+        self.fixed.add_or_discard("rot2", options.fix_rot2)
+        self.fixed.add_or_discard("rot3", options.fix_rot3)
+        self.fixed.add_or_discard("wavelength", options.fix_wavelength)
+        print(self.fixed)
         self.saturation = options.saturation
 
         self.gui = options.gui
@@ -772,17 +774,26 @@ class AbstractCalibration(object):
                 else:
                     print(self.HELP[action])
             elif action == "fix":  # fix wavelength
-                if (len(words) == 2) and  (words[1] in self.PARAMETERS) and (words[1] not in self.fixed):
-                    param = words[1]
-                    print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
-                    self.fixed.append(param)
+                if (len(words) >= 2):
+                    for param  in words[1:]:
+                        if param  in self.PARAMETERS:
+                            print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
+                            self.fixed.add(param)
+                        else:
+                            print("No a parameter: %s" % param)
                 else:
                     print(self.HELP[action])
             elif action == "free":  # free wavelength
-                if (len(words) == 2) and  (words[1] in self.PARAMETERS) and (words[1] in self.fixed):
-                    param = words[1]
-                    print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
-                    self.fixed.remove(param)
+                if (len(words) >= 2):
+                    for param  in words[1:]:
+                        if param in self.PARAMETERS:
+                            print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
+                            self.fixed.discard(param)
+                        else:
+                            print("No a parameter: %s" % param)
+                else:
+                    print(self.HELP[action])
+
             elif action == "recalib":
                 max_rings = None
                 if len(words) >= 2:
@@ -1424,7 +1435,7 @@ class MultiCalib(object):
         self.centerX = None
         self.centerY = None
         self.distance = None
-        self.fixed = []
+        self.fixed = FixedParameters()
         self.max_rings = None
 
 
@@ -1509,8 +1520,10 @@ class MultiCalib(object):
                        default=False, action="store_true")
         parser.add_argument("-l", "--distance", dest="distance", type=float,
                       help="sample-detector distance in millimeter", default=None)
+        parser.add_argument("--tilt", dest="tilt",
+                      help="refine the detector tilt", default=None , action="store_true")
         parser.add_argument("--no-tilt", dest="tilt",
-                      help="refine the detector tilt", default=True , action="store_false")
+                      help="refine the detector tilt", default=None , action="store_false")
         parser.add_argument("--poni1", dest="poni1", type=float,
                       help="poni1 coordinate in meter", default=None)
         parser.add_argument("--poni2", dest="poni2", type=float,
@@ -1613,23 +1626,18 @@ class MultiCalib(object):
         self.gui = options.gui
         self.interactive = options.interactive
         self.max_rings = options.max_rings
-        self.fixed = []
-        if not options.tilt:
-            self.fixed += ["rot1", "rot2", "rot3"]
-        if options.fix_dist:
-            self.fixed.append("dist")
-        if options.fix_poni1:
-            self.fixed.append("poni1")
-        if options.fix_poni2:
-            self.fixed.append("poni2")
-        if options.fix_rot1:
-            self.fixed.append("rot1")
-        if options.fix_rot2:
-            self.fixed.append("rot2")
-        if options.fix_rot3:
-            self.fixed.append("rot3")
-        if options.fix_wavelength:
-            self.fixed.append("wavelength")
+
+        self.fixed = FixedParameters()
+        if options.tilt is not None:
+            for key in ["rot1", "rot2", "rot3"]:
+                self.fixed.add_or_discard(key, not(options.tilt))
+        self.fixed.add_or_discard("dist", options.fix_dist)
+        self.fixed.add_or_discard("poni1", options.fix_poni1)
+        self.fixed.add_or_discard("poni2", options.fix_poni2)
+        self.fixed.add_or_discard("rot1", options.fix_rot1)
+        self.fixed.add_or_discard("rot2", options.fix_rot2)
+        self.fixed.add_or_discard("rot3", options.fix_rot3)
+        self.fixed.add_or_discard("wavelength", options.fix_wavelength)
 
         self.dataFiles = [f for f in options.args if os.path.isfile(f)]
         if not self.dataFiles:
