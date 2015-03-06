@@ -127,7 +127,8 @@ class AbstractCalibration(object):
             'show': "Just print out the current parameter set",
             'reset': "Reset the geometry to the initial guess (rotation to zero, distance to 0.1m, poni at the center of the image)",
             'assign': "Change the assignment of a group of points to a rings",
-            "weight": "toggle from weighted to unweighted mode..."
+            "weight": "toggle from weighted to unweighted mode...",
+            "define": "Re-define the value for a constant internal parameter of the program like max_iter, nPt_1D, nPt_2D_azim, nPt_2D_rad. Warning: they may be harmful !"
             }
     PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
     UNITS = {"dist":"meter", "poni1":"meter", "poni2":"meter", "rot1":"radian",
@@ -756,9 +757,12 @@ class AbstractCalibration(object):
                     print("Valid actions: " + ", ".join(self.HELP.keys()))
                     print("Valid parameters: " + ", ".join(self.PARAMETERS))
             elif action == "get":  # get wavelength
-                if (len(words) == 2) and  words[1] in self.PARAMETERS:
-                    param = words[1]
-                    print("Value of parameter %s: %s %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
+                if (len(words) >= 2):
+                    for param in words[1:]:
+                        if param in self.PARAMETERS:
+                            print("Value of parameter %s: %s  %s" % (param, self.geoRef.__getattribute__(param), self.UNITS[param]))
+                        else:
+                            print("No a parameter: %s" % param)
                 else:
                     print(self.HELP[action])
 
@@ -965,7 +969,6 @@ class AbstractCalibration(object):
                     else:
                         logger.warning("Unrecognized argument for weight: %s" % value)
                         continue
-
                 print("Weights: %s" % self.weighted)
                 if (old != self.weighted):
                     if self.weighted:
@@ -973,6 +976,26 @@ class AbstractCalibration(object):
                     else:
                         self.data = self.peakPicker.points.getList()
                     self.geoRef.data = numpy.array(self.data, dtype=numpy.float64)
+            elif action == "define":
+                if len(words) == 3:
+                    param = words[1]
+                    sval = words[2]
+                    for cs_param in dir(self):
+                        if cs_param.lower() == param:
+                            oldval = self.__getattribute__(cs_param)
+                            t = type(oldval)
+                            print("constant %s was %s of type %s, setting to %s" % (cs_param, oldval, t, sval))
+                            try:
+                                newval = t(sval)
+                            except Exception as err:
+                                print("Unable to convert type")
+                                logger.warning(err)
+                            self.__setattr__(cs_param, newval)
+                            break
+                    else:
+                        print("No such parameter %s" % param)
+                else:
+                    print(self.HELP[action])
             else:
                 logger.warning("Unrecognized action: %s, type 'quit' to leave " % action)
 
