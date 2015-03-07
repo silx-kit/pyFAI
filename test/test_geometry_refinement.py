@@ -212,8 +212,8 @@ class TestGeometryRefinement(unittest.TestCase):
         r2.rot1_min = -0
         r2.rot2_max = 0
         r2.rot2_min = -0
-        r2.rot3_max = 0.1
-        r2.rot3_min = -0.1
+        r2.rot3_max = 0
+        r2.rot3_min = -0
         r2.refine2(10000000)
         ref2 = numpy.array([0.1, 4.917310e-02, 4.722438e-02, 0 , 0.  , 0.00000])
 #        print "ref", ref2
