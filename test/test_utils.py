@@ -64,7 +64,7 @@ import scipy.ndimage
 # # averageImages
 
 
-class test_utils(unittest.TestCase):
+class TestUtils(unittest.TestCase):
     unbinned = numpy.random.random((64, 32))
     dark = unbinned.astype("float32")
     flat = 1 + numpy.random.random((64, 32))
@@ -141,13 +141,28 @@ class test_utils(unittest.TestCase):
                 logger.info("Error for gaussian blur sigma: %s with mode %s is %s" % (sigma, mode, delta))
                 self.assert_(delta < 6e-5, "Gaussian blur sigma: %s  in %s mode are the same, got %s" % (sigma, mode, delta))
 
+    def test_set(self):
+        s = pyFAI.utils.FixedParameters()
+        self.assertEqual(len(s), 0, "initial set is empty")
+        s.add_or_discard("a", True)
+        self.assertEqual(len(s), 1, "a is in set")
+        s.add_or_discard("a", None)
+        self.assertEqual(len(s), 1, "set is untouched")
+        s.add_or_discard("a", False)
+        self.assertEqual(len(s), 0, "set is empty again")
+        s.add_or_discard("a", None)
+        self.assertEqual(len(s), 0, "set is untouched")
+        s.add_or_discard("a", False)
+        self.assertEqual(len(s), 0, "set is still empty")
+
 
 def test_suite_all_Utils():
     testSuite = unittest.TestSuite()
-    testSuite.addTest(test_utils("test_binning"))
-    testSuite.addTest(test_utils("test_averageDark"))
-    testSuite.addTest(test_utils("test_shift"))
-    testSuite.addTest(test_utils("test_gaussian_filter"))
+    testSuite.addTest(TestUtils("test_binning"))
+    testSuite.addTest(TestUtils("test_averageDark"))
+    testSuite.addTest(TestUtils("test_shift"))
+    testSuite.addTest(TestUtils("test_gaussian_filter"))
+    testSuite.addTest(TestUtils("test_set"))
     return testSuite
 
 if __name__ == '__main__':
