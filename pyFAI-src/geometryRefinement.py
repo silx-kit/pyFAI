@@ -218,9 +218,9 @@ class GeometryRefinement(AzimuthalIntegrator):
         return self.tth(d1, d2, param) - self.calc_2th(rings, param[6] * 1e-10)
 
     def residu2(self, param, d1, d2, rings):
-        #return (self.residu1(param, d1, d2, rings) ** 2).sum()
-        t = self.residu1(param, d1, d2, rings)
-        return numpy.dot(t,t)
+        return (self.residu1(param, d1, d2, rings) ** 2).sum()
+        #t = self.residu1(param, d1, d2, rings)
+        #return numpy.dot(t,t)
 
     def residu2_weighted(self, param, d1, d2, rings, weight):
         #return (weight * self.residu1(param, d1, d2, rings) ** 2).sum()
@@ -278,6 +278,14 @@ class GeometryRefinement(AzimuthalIntegrator):
            pos1 = self.data[:, 1]
            ring = self.data[:, 2].astype(numpy.int32)
            weight = None
+           logger.debug("bug180")
+           logger.debug("Residu2: %s" % self.residu2)
+           logger.debug("Param: %s" % self.param)
+           logger.debug("maxiter: %s" % maxiter)
+           logger.debug("pos0: %s" % maxiter)
+           logger.debug("pos1: %s" % pos1)
+           logger.debug("ring: %s" % ring)
+           logger.debug("bounds: %s" % bounds)
            newParam = fmin_slsqp(self.residu2, self.param, iter=maxiter,
                               args=(pos0, pos1, ring),
                               bounds=bounds,
