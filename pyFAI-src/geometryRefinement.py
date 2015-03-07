@@ -218,9 +218,10 @@ class GeometryRefinement(AzimuthalIntegrator):
         return self.tth(d1, d2, param) - self.calc_2th(rings, param[6] * 1e-10)
 
     def residu2(self, param, d1, d2, rings):
-        return (self.residu1(param, d1, d2, rings) ** 2).sum()
-        #t = self.residu1(param, d1, d2, rings)
-        #return numpy.dot(t,t)
+        #dot product is faster ...
+#        return (self.residu1(param, d1, d2, rings) ** 2).sum()
+        t = self.residu1(param, d1, d2, rings)
+        return numpy.dot(t, t)
 
     def residu2_weighted(self, param, d1, d2, rings, weight):
         #return (weight * self.residu1(param, d1, d2, rings) ** 2).sum()
