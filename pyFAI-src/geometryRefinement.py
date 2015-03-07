@@ -282,7 +282,7 @@ class GeometryRefinement(AzimuthalIntegrator):
            print("Residu2: %s" % self.residu2)
            print("Param: %s" % self.param)
            print("maxiter: %s" % maxiter)
-           print("pos0: %s" % maxiter)
+           print("pos0: %s" % pos0)
            print("pos1: %s" % pos1)
            print("ring: %s" % ring)
            print("bounds: %s" % bounds)
