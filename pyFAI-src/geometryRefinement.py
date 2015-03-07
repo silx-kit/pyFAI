@@ -278,19 +278,21 @@ class GeometryRefinement(AzimuthalIntegrator):
            pos1 = self.data[:, 1]
            ring = self.data[:, 2].astype(numpy.int32)
            weight = None
-           logger.debug("bug180")
-           logger.debug("Residu2: %s" % self.residu2)
-           logger.debug("Param: %s" % self.param)
-           logger.debug("maxiter: %s" % maxiter)
-           logger.debug("pos0: %s" % maxiter)
-           logger.debug("pos1: %s" % pos1)
-           logger.debug("ring: %s" % ring)
-           logger.debug("bounds: %s" % bounds)
+           print("bug180")
+           print("Residu2: %s" % self.residu2)
+           print("Param: %s" % self.param)
+           print("maxiter: %s" % maxiter)
+           print("pos0: %s" % maxiter)
+           print("pos1: %s" % pos1)
+           print("ring: %s" % ring)
+           print("bounds: %s" % bounds)
            newParam = fmin_slsqp(self.residu2, self.param, iter=maxiter,
                               args=(pos0, pos1, ring),
                               bounds=bounds,
                               acc=1.0e-12,
-                              iprint=(logger.getEffectiveLevel() <= logging.INFO))
+                              iprint=2
+                              )
+                              #(logger.getEffectiveLevel() <= logging.INFO))
 
         elif self.data.shape[-1] == 4:
            pos0 = self.data[:, 0]
