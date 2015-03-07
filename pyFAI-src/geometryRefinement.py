@@ -221,6 +221,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         #dot product is faster ...
 #        return (self.residu1(param, d1, d2, rings) ** 2).sum()
         t = self.residu1(param, d1, d2, rings)
+        print("r2: %s" % param)
         return numpy.dot(t, t)
 
     def residu2_weighted(self, param, d1, d2, rings, weight):
@@ -287,6 +288,7 @@ class GeometryRefinement(AzimuthalIntegrator):
            print("pos1: %s" % pos1)
            print("ring: %s" % ring)
            print("bounds: %s" % bounds)
+           print("rot3: %s %s %s"%(self.rot3_min, self.rot3, self.rot3_max))
            newParam = fmin_slsqp(self.residu2, self.param, iter=maxiter,
                               args=(pos0, pos1, ring),
                               bounds=bounds,
