@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/02/2015"
+__date__ = "09/03/2015"
 __satus__ = "Production"
 
 import logging
@@ -55,6 +55,28 @@ try:
     from argparse import ArgumentParser
 except ImportError:
     from pyFAI.third_party.argparse import ArgumentParser
+
+DIGITS = [str(i) for i in range(10)]
+
+
+def to_tuple(name):
+    """
+    Extract the number as tuple:
+    
+    to_tuple("IRIS4_1_14749.edf")
+    --> (4, 1, 14749)
+
+    @param name: input string, often a filename
+    """
+    res = []
+    cur = ""
+    for c in name:
+        if c in DIGITS:
+            cur = cur + c
+        elif cur:
+            res.append(cur)
+            cur = ""
+    return tuple(int(i) for i in res)
 
 
 class DiffTomo(object):
@@ -180,7 +202,7 @@ If the number of files is too large, use double quotes like "*.edf" """
                 self.inputfiles += [os.path.abspath(os.path.join(f, g)) for g in os.listdir(f) if g.endswith(options.extension) and g.startswith(options.prefix)]
             else:
                 self.inputfiles += [os.path.abspath(f) for f in glob.glob(f)]
-        self.inputfiles.sort()
+        self.inputfiles.sort(key=to_tuple)
         if not self.inputfiles:
             raise RuntimeError("No input files to process, try --help")
         if options.mask:
@@ -204,6 +226,8 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.nDiff = int(options.nDiff)
         if options.offset is not None:
             self.offset = int(options.offset)
+        else:
+            self.offset = 0
         self.stats = options.stats
 
     def makeHDF5(self, rewrite=True):
@@ -287,24 +311,32 @@ If the number of files is too large, use double quotes like "*.edf" """
         plt.grid(True)
         plt.show()
 
-    def get_pos(self, filename):
+    def get_pos(self, filename, idx=None):
         """
         Calculate the position in the sinogram of the file according
         to it's number
+        
+        @param filename: name of current frame
+        @param idx: index of current frame
         """
-        n = int(filename.split(".")[0].split("_")[-1]) - (self.offset or 0)
+        #         n = int(filename.split(".")[0].split("_")[-1]) - (self.offset or 0)
+        if idx is None:
+            n = self.inputfiles.index(filename) - self.offset
+        else:
+            n = idx - self.offset
         return {"index": n, "rot": n // self.nTrans, "trans": n % self.nTrans}
 
-    def process_one_file(self, filename):
+    def process_one_file(self, filename, idx=None):
         """
         @param filename: name of the input filename
+        @param idx: index of file
         """
         if self.dataset is None:
             self.makeHDF5()
         if self.ai is None:
             self.setup_ai()
         t = time.time()
-        pos = self.get_pos(filename)
+        pos = self.get_pos(filename, idx)
         shape = self.dataset.shape
         if pos["rot"] + 1 > shape[0]:
             self.dataset.resize((pos["rot"] + 1, shape[1], shape[2]))
@@ -321,7 +353,6 @@ If the number of files is too large, use double quotes like "*.edf" """
 
         self.dataset[pos["rot"], pos["trans"], :] = I
 
-
         t -= time.time()
         print("Processing %30s took %6.1fms" %
               (os.path.basename(filename), -1000 * t))
@@ -331,8 +362,8 @@ If the number of files is too large, use double quotes like "*.edf" """
         if self.dataset is None:
             self.makeHDF5()
         t0 = time.time()
-        for f in self.inputfiles:
-            self.process_one_file(f)
+        for i, f in enumerate(self.inputfiles):
+            self.process_one_file(f, i)
         self.nxs.close
         tot = time.time() - t0
         cnt = len(self.timing)
