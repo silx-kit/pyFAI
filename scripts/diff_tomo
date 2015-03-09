@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/02/2015"
+__date__ = "09/03/2015"
 __satus__ = "Production"
 
 import logging
@@ -204,6 +204,8 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.nDiff = int(options.nDiff)
         if options.offset is not None:
             self.offset = int(options.offset)
+        else:
+            self.offset = 0
         self.stats = options.stats
 
     def makeHDF5(self, rewrite=True):
@@ -292,7 +294,8 @@ If the number of files is too large, use double quotes like "*.edf" """
         Calculate the position in the sinogram of the file according
         to it's number
         """
-        n = int(filename.split(".")[0].split("_")[-1]) - (self.offset or 0)
+        #         n = int(filename.split(".")[0].split("_")[-1]) - (self.offset or 0)
+        n = self.inputfiles.index(filename) - self.offset
         return {"index": n, "rot": n // self.nTrans, "trans": n % self.nTrans}
 
     def process_one_file(self, filename):
@@ -320,7 +323,6 @@ If the number of files is too large, use double quotes like "*.edf" """
                                      method=meth, unit=self.unit)
 
         self.dataset[pos["rot"], pos["trans"], :] = I
-
 
         t -= time.time()
         print("Processing %30s took %6.1fms" %
