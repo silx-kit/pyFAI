@@ -110,6 +110,7 @@ class DiffTomo(object):
         self.use_gpu = False
         self.unit = "2th_deg"
         self.stats = False
+        self._idx = -1
 
     def __repr__(self):
         return "Diffraction Tomography with r=%s t: %s, d:%s" % \
@@ -326,7 +327,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             n = idx - self.offset
         return {"index": n, "rot": n // self.nTrans, "trans": n % self.nTrans}
 
-    def process_one_file(self, filename, idx=None):
+    def process_one_file(self, filename):
         """
         @param filename: name of the input filename
         @param idx: index of file
@@ -336,13 +337,15 @@ If the number of files is too large, use double quotes like "*.edf" """
         if self.ai is None:
             self.setup_ai()
         t = time.time()
-        pos = self.get_pos(filename, idx)
+        self._idx += 1
+        pos = self.get_pos(filename, self._idx)
         shape = self.dataset.shape
         if pos["rot"] + 1 > shape[0]:
             self.dataset.resize((pos["rot"] + 1, shape[1], shape[2]))
         elif pos["index"] < 0 or pos["rot"] < 0 or pos["trans"] < 0:
             return
-        data = fabio.open(filename).data
+        fimg = fabio.open(filename)
+        data = fimg.data
 
         if self.use_gpu:
             meth = "csr_ocl_gpu"
@@ -350,20 +353,34 @@ If the number of files is too large, use double quotes like "*.edf" """
             meth = "csr"
         tth, I = self.ai.integrate1d(data, self.nDiff, safe=False,
                                      method=meth, unit=self.unit)
-
         self.dataset[pos["rot"], pos["trans"], :] = I
+
+        if fimg.nframes > 1:
+            # Case of multiframe images:
+            for i in range(fimg.nframes - 1):
+                fimg = fimg.next()
+                data = fimg.data
+                self._idx += 1
+                pos = self.get_pos(filename, self._idx)
+                if pos["rot"] + 1 > shape[0]:
+                    self.dataset.resize((pos["rot"] + 1, shape[1], shape[2]))
+                tth, I = self.ai.integrate1d(data, self.nDiff, safe=False,
+                                             method=meth, unit=self.unit)
+                self.dataset[pos["rot"], pos["trans"], :] = I
 
         t -= time.time()
         print("Processing %30s took %6.1fms" %
               (os.path.basename(filename), -1000 * t))
+
         self.timing.append(-t)
 
     def process(self):
         if self.dataset is None:
             self.makeHDF5()
         t0 = time.time()
-        for i, f in enumerate(self.inputfiles):
-            self.process_one_file(f, i)
+        self._idx = -1
+        for f in self.inputfiles:
+            self.process_one_file(f)
         self.nxs.close
         tot = time.time() - t0
         cnt = len(self.timing)
