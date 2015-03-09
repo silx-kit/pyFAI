@@ -155,8 +155,12 @@ class TestDetector(unittest.TestCase):
                     self.assertAlmostEqual(det.__getattribute__(what), new_det.__getattribute__(what), 4, "%s is the same for %s" % (what, fname))
             if det.shape[0] > 2000:
                 continue
-            r1, r2 = det.calc_cartesian_positions()
-            o1, o2 = new_det.calc_cartesian_positions()
+            try:
+                r1, r2 = det.calc_cartesian_positions()
+                o1, o2 = new_det.calc_cartesian_positions()
+            except MemoryError:
+                logger.warning("Test nexus_detector failed due to short memory on detector %s" % det_name)
+                continue
             err1 = abs(r1 - o1).max()
             err2 = abs(r2 - o2).max()
             if det.name not in known_fail:
