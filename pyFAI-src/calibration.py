@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/03/2015"
+__date__ = "10/03/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -169,7 +169,7 @@ class AbstractCalibration(object):
         self.outfile = "merged.edf"
         self.peakPicker = None
         self.img = None
-        self.ai = AzimuthalIntegrator(dist=1, detector=self.detector)
+        self.ai = AzimuthalIntegrator(dist=0.1, detector=self.detector)
         self.wavelength = wavelength
         if wavelength:
             self.ai.wavelength = wavelength
@@ -1077,14 +1077,14 @@ class AbstractCalibration(object):
                                                    color='red', linestyle='--')
                     self.ax_xrpd_1d.add_line(line)
             self.ax_xrpd_1d.set_title("1D integration")
-            self.ax_xrpd_1d.set_xlabel(self.unit)
+            self.ax_xrpd_1d.set_xlabel(self.unit.label)
             self.ax_xrpd_1d.set_ylabel("Intensity")
             self.ax_xrpd_2d.imshow(numpy.log(img - img.min() + 1e-3), origin="lower",
                          extent=[pos_rad.min(), pos_rad.max(), pos_azim.min(), pos_azim.max()],
                          aspect="auto")
             self.ax_xrpd_2d.set_title("2D regrouping")
-            self.ax_xrpd_2d.set_xlabel(self.unit)
-            self.ax_xrpd_2d.set_ylabel("Azimuthal angle (deg)")
+            self.ax_xrpd_2d.set_xlabel(self.unit.label)
+            self.ax_xrpd_2d.set_ylabel(r"Azimuthal angle $\chi$ ($^{o}$)")
             if not gui_utils.main_loop:
                 self.fig3.show()
             update_fig(self.fig3)

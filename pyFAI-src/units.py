@@ -25,7 +25,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2014"
+__date__ = "10/03/2015"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 
@@ -57,31 +57,36 @@ TTH_DEG = TTH = Enum(REPR="2th_deg",
                      corner="cornerArray",
                      center="twoThetaArray",
                      delta="delta2Theta",
-                     scale=180.0 / pi)
+                     scale=180.0 / pi,
+                     label=r"Scattering angle $2\theta$ ($^{o}$)")
 
 TTH_RAD = Enum(REPR="2th_rad",
                corner="cornerArray",
                center="twoThetaArray",
                delta="delta2Theta",
-               scale=1.0)
+               scale=1.0,
+               label=r"Scattering angle $2\theta$ ($rad$)")
 
 Q = Q_NM = Enum(REPR="q_nm^-1",
                 center="qArray",
                 corner="cornerQArray",
                 delta="deltaQ",
-                scale=1.0)
+                scale=1.0,
+                label=r"Scattering vector $q$ ($nm$^{-1}$)")
 
 Q_A = Enum(REPR="q_A^-1",
            center="qArray",
            corner="cornerQArray",
            delta="deltaQ",
-           scale=0.1)
+           scale=0.1,
+           label=r"Scattering vector $q$ ($\angstrom ^{-1}$)")
 
 R = R_MM = Enum(REPR="r_mm",
                 center="rArray",
                 corner="cornerRArray",
                 delta="deltaR",
-                scale=1000.0)
+                scale=1000.0,
+                label=r"Radius $r$ ($mm$)")
 
 RADIAL_UNITS = (TTH_DEG, TTH_RAD, Q_NM, Q_A, R_MM)
 
