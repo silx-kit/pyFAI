@@ -30,7 +30,7 @@ reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Giannis Ashiotis"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "03/03/2015"
+__date__ = "10/03/2015"
 __status__ = "stable"
 __license__ = "GPLv3+"
 
@@ -184,8 +184,9 @@ def fullSplit1D(numpy.ndarray pos not None,
                 dark=None,
                 flat=None,
                 solidangle=None,
-                polarization=None
-              ):
+                polarization=None,
+                output_dummy=numpy.nan
+                ):
     """
     Calculates histogram of pos weighted by weights
 
@@ -203,9 +204,9 @@ def fullSplit1D(numpy.ndarray pos not None,
     @param mask: array (of int8) with masked pixels with 1 (0=not masked)
     @param dark: array (of float64) with dark noise to be subtracted (or None)
     @param flat: array (of float64) with flat image
-    @param polarization: array (of float64) with polarization correction
     @param solidangle: array (of float64) with flat image
-    @return 2theta, I, weighted histogram, unweighted histogram
+    @param polarization: array (of float64) with polarization correction
+    @param output_dummy: value of output bins without any contribution when dummy is None@return 2theta, I, weighted histogram, unweighted histogram
     """
     cdef size_t  size = weights.size
     if pos.ndim > 3:
@@ -267,7 +268,7 @@ def fullSplit1D(numpy.ndarray pos not None,
         cddummy = 0.0
     else:
         check_dummy = False
-        cdummy = 0.0
+        cdummy = output_dummy
         cddummy = 0.0
 
     if mask is not None:

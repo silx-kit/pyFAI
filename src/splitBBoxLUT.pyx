@@ -165,6 +165,7 @@ class HistoBBox1d(object):
         
         self.unit = unit
         self.lut_nbytes = self._lut.nbytes
+        self.output_dummy = numpy.nan
         
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -432,11 +433,13 @@ class HistoBBox1d(object):
         if dummy is not None:
             do_dummy = True
             cdummy = <float> float(dummy)
+            output_dummy = cdummy
             if delta_dummy is None:
                 cddummy = zerof
             else:
                 cddummy = <float> float(delta_dummy)
-
+        else:
+            cdummy = self.output_dummy
         if flat is not None:
             do_flat = True
             assert flat.size == size

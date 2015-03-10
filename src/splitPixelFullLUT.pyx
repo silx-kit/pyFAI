@@ -174,6 +174,7 @@ class HistoLUT1dFullSplit(object):
         self.unit = unit
         self.lut = (self.data, self.indices, self.indptr)
         self.lut_nbytes = sum([i.nbytes for i in self.lut])
+        self.output_dummy = numpy.nan
 
 
     @cython.cdivision(True)
@@ -519,12 +520,11 @@ class HistoLUT1dFullSplit(object):
             numpy.int32_t i=0, j=0, idx=0, bins=self.bins, size=self.size
             float sum_data=0.0, sum_count=0.0, epsilon=1e-10
             float data=0, coef=0, cdummy=0, cddummy=0
-            bint do_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidAngle=False
+            bint do_dummy=0, do_dark=0, do_flat=0, do_polarization=0, do_solidAngle=0
             numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(self.bins, dtype=numpy.float64)
             numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
             numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
             float[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-
             numpy.int32_t[:] indices = self.indices, indptr = self.indptr
         assert size == weights.size
 
@@ -535,7 +535,9 @@ class HistoLUT1dFullSplit(object):
                 cddummy = <float>0.0
             else:
                 cddummy = <float>float(delta_dummy)
-
+        else:
+            cdummy = self.output_dummy
+            
         if flat is not None:
             do_flat = True
             assert flat.size == size

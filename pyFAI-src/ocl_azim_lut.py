@@ -23,7 +23,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
-__date__ = "17/12/2014"
+__date__ = "10/03/2015"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -103,6 +103,7 @@ class OCL_LUT_Integrator(object):
         else:
             ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["lut"], lut.T.copy())
         if self.profile: self.events.append(("copy LUT", ev))
+        self.output_dummy = numpy.nan
 
     def __del__(self):
         """
@@ -256,13 +257,13 @@ class OCL_LUT_Integrator(object):
                 do_dummy = numpy.int32(1)
                 dummy = numpy.float32(dummy)
                 if delta_dummy == None:
-                    delta_dummy = numpy.float32(0)
+                    delta_dummy = numpy.float32(0.0)
                 else:
                     delta_dummy = numpy.float32(abs(delta_dummy))
             else:
                 do_dummy = numpy.int32(0)
-                dummy = numpy.float32(0)
-                delta_dummy = numpy.float32(0)
+                dummy = numpy.float32(self.output_dummy)
+                delta_dummy = numpy.float32(0.0)
             self._cl_kernel_args["corrections"][9] = do_dummy
             self._cl_kernel_args["corrections"][10] = dummy
             self._cl_kernel_args["corrections"][11] = delta_dummy

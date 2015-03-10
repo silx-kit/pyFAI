@@ -154,7 +154,8 @@ class HistoBBox1d(object):
         self.unit = unit
         self.lut = (self.data, self.indices, self.indptr)
         self.lut_nbytes = sum([i.nbytes for i in self.lut])
-
+        self.output_dummy = numpy.nan
+    
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def calc_boundaries(self, pos0Range):
@@ -526,12 +527,15 @@ class HistoBBox1d(object):
 
         if dummy is not None:
             do_dummy = True
-            cdummy =  <float> float(dummy)
+            cdummy = <float> float(dummy)
+            
             if delta_dummy is None:
                 cddummy = <float>0.0
             else:
                 cddummy = <float> float(delta_dummy)
-
+        else:
+            cdummy = self.output_dummy
+            
         if flat is not None:
             do_flat = True
             assert flat.size == size
