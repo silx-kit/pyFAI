@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2015"
+__date__ = "10/03/2015"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instanciate them
@@ -1516,8 +1516,8 @@ class Perkin(Detector):
     aliases = ["Perkin detector"]
     force_pixel = True
     MAX_SHAPE = (4096, 4096)
-    def __init__(self, pixel=200e-6):
-        super(Perkin, self).__init__(pixel1=pixel, pixel2=pixel)
+    def __init__(self, pixel1=200e-6, pixel2=200e-6):
+        super(Perkin, self).__init__(pixel1=pixel1, pixel2=pixel2)
         self.shape = (2048, 2048)
         self._binning = (2, 2)
 

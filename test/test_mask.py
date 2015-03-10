@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/12/2014"
+__date__ = "10/03/2015"
 
 
 import unittest
@@ -45,7 +45,7 @@ pyFAI = sys.modules["pyFAI"]
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 
-class test_mask(unittest.TestCase):
+class TestMask(unittest.TestCase):
     dataFile = "1894/testMask.edf"
     poniFile = "1893/Pilatus1M.poni"
 
@@ -79,9 +79,8 @@ class test_mask(unittest.TestCase):
             raw_input()
 
         self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
-        self.assertAlmostEqual(res2, 0., 4, msg="With mask the bad pixels are actually at 0 (got %.4f)" % res2)
+        self.assert_(numpy.isnan(res2), msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
         self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
-
 
     def test_mask_LUT(self):
         """
@@ -106,7 +105,7 @@ class test_mask(unittest.TestCase):
             raw_input()
 
         self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
-        self.assertAlmostEqual(res2, 0., 4, msg="With mask the bad pixels are actually at 0 (got %.4f)" % res2)
+        self.assert_(numpy.isnan(res2), msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
         self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
 
     def test_mask_LUT_OCL(self):
@@ -132,10 +131,11 @@ class test_mask(unittest.TestCase):
             raw_input()
 
         self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
-        self.assertAlmostEqual(res2, 0., 4, msg="With mask the bad pixels are actually at 0 (got %.4f)" % res2)
+        self.assert_(numpy.isnan(res2), msg="With mask the bad pixels are actually NaN (got %.4f)" % res2)
         self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
 
-class test_mask_beamstop(unittest.TestCase):
+
+class TestMaskBeamstop(unittest.TestCase):
     """
     Test for https://github.com/kif/pyFAI/issues/76
     """
@@ -201,7 +201,6 @@ class test_mask_beamstop(unittest.TestCase):
         tth, I = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method="lut", radial_range=[1, 10])
         self.assertAlmostEqual(tth[0], 1.0, 1, msg="tth range should start at 1.0 (got %.4f)" % tth[0])
 
-
     def test_nomask_LUT_OCL(self):
         """
         without mask, tth value should start at 0
@@ -214,15 +213,15 @@ class test_mask_beamstop(unittest.TestCase):
 
 def test_suite_all_Mask():
     testSuite = unittest.TestSuite()
-    testSuite.addTest(test_mask("test_mask_splitBBox"))
-    testSuite.addTest(test_mask("test_mask_LUT"))
-    testSuite.addTest(test_mask("test_mask_LUT_OCL"))
-    testSuite.addTest(test_mask_beamstop("test_nomask"))
-    testSuite.addTest(test_mask_beamstop("test_mask_splitBBox"))
-    testSuite.addTest(test_mask_beamstop("test_mask_LUT"))
-    testSuite.addTest(test_mask_beamstop("test_mask_LUT_OCL"))
-    testSuite.addTest(test_mask_beamstop("test_nomask_LUT"))
-    testSuite.addTest(test_mask_beamstop("test_nomask_LUT_OCL"))
+    testSuite.addTest(TestMask("test_mask_splitBBox"))
+    testSuite.addTest(TestMask("test_mask_LUT"))
+    testSuite.addTest(TestMask("test_mask_LUT_OCL"))
+    testSuite.addTest(TestMaskBeamstop("test_nomask"))
+    testSuite.addTest(TestMaskBeamstop("test_mask_splitBBox"))
+    testSuite.addTest(TestMaskBeamstop("test_mask_LUT"))
+    testSuite.addTest(TestMaskBeamstop("test_mask_LUT_OCL"))
+    testSuite.addTest(TestMaskBeamstop("test_nomask_LUT"))
+    testSuite.addTest(TestMaskBeamstop("test_nomask_LUT_OCL"))
     return testSuite
 
 if __name__ == '__main__':

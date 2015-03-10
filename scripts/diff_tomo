@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/03/2015"
+__date__ = "10/03/2015"
 __satus__ = "Production"
 
 import logging
@@ -42,29 +42,39 @@ import os
 import posixpath
 import numpy
 import fabio
-import h5py
+import sys
 import glob
+import collections
 import pyFAI
 import pyFAI.utils
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("diff_tomo")
 from pyFAI import version as PyFAI_VERSION
 from pyFAI import date as PyFAI_DATE
-from pyFAI.io import Nexus
+from pyFAI.io import Nexus, get_isotime
+from pyFAI.units import to_unit
 try:
     from argparse import ArgumentParser
 except ImportError:
     from pyFAI.third_party.argparse import ArgumentParser
 
+if sys.version_info[0] < 3:
+    bytes = str
+    from urlparse import urlparse
+else:
+    from urllib.parse import urlparse
+
+
 DIGITS = [str(i) for i in range(10)]
+Position = collections.namedtuple('Position', 'index, rot, trans')
 
 
 def to_tuple(name):
     """
-    Extract the number as tuple:
+    Extract numbers as tuple:
     
-    to_tuple("IRIS4_1_14749.edf")
-    --> (4, 1, 14749)
+    to_tuple("slice06/IRIS4_1_14749.edf")
+    --> (6, 4, 1, 14749)
 
     @param name: input string, often a filename
     """
@@ -85,7 +95,7 @@ class DiffTomo(object):
     """
     def __init__(self, nTrans=1, nRot=1, nDiff=1000):
         """
-        Contructor of the class
+        Constructor of the class
 
         @param nTrans: number of translations
         @param nRot: number of translations
@@ -108,7 +118,7 @@ class DiffTomo(object):
         self.inputfiles = []
         self.timing = []
         self.use_gpu = False
-        self.unit = "2th_deg"
+        self.unit = to_unit("2th_deg")
         self.stats = False
         self._idx = -1
 
@@ -183,20 +193,27 @@ If the number of files is too large, use double quotes like "*.edf" """
             logger.setLevel(logging.DEBUG)
         self.hdf5 = options.outfile
         if options.dark:
-            darkFiles = [os.path.abspath(f) for f in options.dark.split(",") if os.path.isfile(f)]
-            if not darkFiles:
+            dark_files = [os.path.abspath(urlparse(f).path)
+                          for f in options.dark.split(",")
+                          if os.path.isfile(urlparse(f).path)]
+            if dark_files:
+                self.dark = dark_files
+            else:
                 raise RuntimeError("No such dark files")
-            else:
-                self.dark = pyFAI.utils.averageDark([fabio.open(i).data for i in darkFiles])
+
         if options.flat:
-            darkFiles = [os.path.abspath(f) for f in options.flat.split(",") if os.path.isfile(f)]
-            if not darkFiles:
-                raise RuntimeError("No such flat files")
+            flat_files = [os.path.abspath(urlparse(f).path)
+                          for f in options.flat.split(",")
+                          if os.path.isfile(urlparse(f).path)]
+            if flat_files:
+                self.flat = flat_files
             else:
-                self.flat = pyFAI.utils.averageDark([fabio.open(i).data for i in darkFiles])
+                raise RuntimeError("No such flat files")
+
         self.use_gpu = options.gpu
         self.inputfiles = []
-        for f in args:
+        for fn in args:
+            f = urlparse(fn).path
             if os.path.isfile(f) and f.endswith(options.extension):
                 self.inputfiles.append(os.path.abspath(f))
             elif os.path.isdir(f):
@@ -207,16 +224,16 @@ If the number of files is too large, use double quotes like "*.edf" """
         if not self.inputfiles:
             raise RuntimeError("No input files to process, try --help")
         if options.mask:
-            if os.path.isfile(options.mask):
-                logger.info("Reading Mask file from: %s" % options.mask)
-                self.mask = (fabio.open(options.mask).data != 0)
+            mask = urlparse(options.mask).path
+            if os.path.isfile(mask):
+                logger.info("Reading Mask file from: %s" % mask)
+                self.mask = os.path.abspath(mask)
             else:
-                logger.warning("No such mask file %s" % options.mask)
+                logger.warning("No such mask file %s" % mask)
         if options.poni:
             if os.path.isfile(options.poni):
                 logger.info("Reading PONI file from: %s" % options.poni)
                 self.poni = options.poni
-
             else:
                 logger.warning("No such poni file %s" % options.poni)
         if options.nTrans is not None:
@@ -231,10 +248,11 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.offset = 0
         self.stats = options.stats
 
-    def makeHDF5(self, rewrite=True):
+    def makeHDF5(self, rewrite=False):
         """
         Create the HDF5 structure if needed ...
         """
+        print("Initialization of HDF5 file")
         if os.path.exists(self.hdf5) and rewrite:
             os.unlink(self.hdf5)
 
@@ -245,9 +263,33 @@ If the number of files is too large, use double quotes like "*.edf" """
         grp = entry
         for subgrp in spath[1:-2]:
             grp = nxs.new_class(grp, name=subgrp, class_type="NXcollection")
+
+        processgrp = nxs.new_class(grp, "pyFAI", class_type="NXprocess")
+        processgrp["program"] = numpy.array([numpy.str_(i) for i in sys.argv])
+        processgrp["version"] = numpy.str_(PyFAI_VERSION)
+        processgrp["date"] = numpy.str_(get_isotime())
+        if self.mask:
+            processgrp["maskfile"] = numpy.str_(self.mask)
+        if self.flat:
+            processgrp["flatfiles"] = numpy.array([numpy.str_(i) for i in self.flat])
+        if self.dark:
+            processgrp["darkfiles"] = numpy.array([numpy.str_(i) for i in self.dark])
+        processgrp["inputfiles"] = numpy.array([numpy.str_(i) for i in self.inputfiles])
+        processgrp["PONIfile"] = numpy.str_(self.poni)
+
+        processgrp["dim0"] = self.nRot
+        processgrp["dim0"].attrs["axis"] = "Rotation"
+        processgrp["dim1"] = self.nTrans
+        processgrp["dim1"].attrs["axis"] = "Translation"
+        processgrp["dim2"] = self.nDiff
+        processgrp["dim2"].attrs["axis"] = "Diffraction"
+        for k, v in self.ai.getPyFAI().items():
+            if "__len__" in dir(v):
+                processgrp[k] = numpy.str_(v)
+            elif v:
+                processgrp[k] = v
+
         self.group = nxs.new_class(grp, name=spath[-2], class_type="NXdata")
-#         h = h5py.File(self.hdf5)
-#         self.group = h.require_group(posixpath.dirname(self.hdf5path))
 
         if posixpath.basename(self.hdf5path) in self.group:
             self.dataset = self.group[posixpath.basename(self.hdf5path)]
@@ -260,42 +302,51 @@ If the number of files is too large, use double quotes like "*.edf" """
                 maxshape=(None, None, self.nDiff))
             self.dataset.attrs["signal"] = "1"
             self.dataset.attrs["interpretation"] = "spectrum"
-            self.dataset.attrs["axes"] = self.unit.split("_")[0]
+            self.dataset.attrs["axes"] = str(self.unit).split("_")[0]
             self.dataset.attrs["creator"] = "pyFAI"
-            self.dataset.attrs["long_name"] = "Diffraction tomography/mapping experiment"
+            self.dataset.attrs["long_name"] = "Diffraction imaging experiment"
         self.nxs = nxs
 
     def setup_ai(self):
+        print("Setup of Azimuthal integrator ...")
         if self.poni:
             self.ai = pyFAI.load(self.poni)
         else:
             logger.error(("Unable to setup Azimuthal integrator:"
                           " no poni file provided"))
             raise RuntimeError("You must provide poni a file")
-        if self.dark is not None:
-            self.ai.darkcurrent = self.dark
-        if self.flat is not None:
-            self.ai.flatfield = self.flat
+        if self.dark:
+            self.ai.set_darkfiles(self.dark)
+        if self.flat:
+            self.ai.set_flatfiles(self.flat)
         if self.mask is not None:
-            self.ai.detector.mask = self.mask.astype("int8")
+            self.ai.detector.set_maskfile(self.mask)
+
+    def init_ai(self):
+        if not self.ai:
+            self.setup_ai()
+        if not self.group:
+            self.makeHDF5(rewrite=False)
         if self.ai.detector.shape:
-            data = numpy.empty(self.ai.detector.shape)
-            if self.use_gpu:
-                meth = "csr_ocl_gpu"
-            else:
-                meth = "csr"
+            data = numpy.empty(self.ai.detector.shape, dtype=numpy.float32)
+            meth = "csr_ocl_gpu" if self.use_gpu else "csr"
+            print("Initialization of the Azimuthal Integrator using method %s" % meth)
             # enforce initialization of azimuthal integrator
             tth, I = self.ai.integrate1d(data, self.nDiff,
                                          method=meth, unit=self.unit)
             if self.dataset is None:
                 self.makeHDF5()
-            space, unit = self.unit.split("_")
+            space, unit = str(self.unit).split("_")
             if space not in self.group:
                 self.group[space] = tth
                 self.group[space].attrs["axes"] = 3
                 self.group[space].attrs["unit"] = unit
-                self.group[space].attrs["long_name"] = "scattering direction used: %s" % space
+                self.group[space].attrs["long_name"] = self.unit.label
                 self.group[space].attrs["interpretation"] = "scalar"
+            if self.use_gpu:
+                self.ai._ocl_csr_integr.output_dummy = 0.0
+            else:
+                self.ai._csr_integrator.output_dummy = 0.0
 
     def show_stats(self):
         if not self.stats:
@@ -319,71 +370,69 @@ If the number of files is too large, use double quotes like "*.edf" """
         
         @param filename: name of current frame
         @param idx: index of current frame
+        @return: namedtuple: index, rot, trans
         """
         #         n = int(filename.split(".")[0].split("_")[-1]) - (self.offset or 0)
         if idx is None:
             n = self.inputfiles.index(filename) - self.offset
         else:
             n = idx - self.offset
-        return {"index": n, "rot": n // self.nTrans, "trans": n % self.nTrans}
+        return Position(n, n // self.nTrans, n % self.nTrans)
 
     def process_one_file(self, filename):
         """
         @param filename: name of the input filename
         @param idx: index of file
         """
-        if self.dataset is None:
-            self.makeHDF5()
         if self.ai is None:
             self.setup_ai()
+        if self.dataset is None:
+            self.makeHDF5()
+
         t = time.time()
         self._idx += 1
         pos = self.get_pos(filename, self._idx)
         shape = self.dataset.shape
-        if pos["rot"] + 1 > shape[0]:
-            self.dataset.resize((pos["rot"] + 1, shape[1], shape[2]))
-        elif pos["index"] < 0 or pos["rot"] < 0 or pos["trans"] < 0:
+        if pos.rot + 1 > shape[0]:
+            self.dataset.resize((pos.rot + 1, shape[1], shape[2]))
+        elif pos.index < 0 or pos.rot < 0 or pos.trans < 0:
             return
         fimg = fabio.open(filename)
-        data = fimg.data
 
-        if self.use_gpu:
-            meth = "csr_ocl_gpu"
-        else:
-            meth = "csr"
-        tth, I = self.ai.integrate1d(data, self.nDiff, safe=False,
+        meth = "csr_ocl_gpu" if self.use_gpu else "csr"
+        tth, I = self.ai.integrate1d(fimg.data, self.nDiff, safe=False,
                                      method=meth, unit=self.unit)
-        self.dataset[pos["rot"], pos["trans"], :] = I
+        self.dataset[pos.rot, pos.trans, :] = I
 
         if fimg.nframes > 1:
-            # Case of multiframe images:
+            print("Case of multiframe images")
             for i in range(fimg.nframes - 1):
                 fimg = fimg.next()
                 data = fimg.data
                 self._idx += 1
                 pos = self.get_pos(filename, self._idx)
-                if pos["rot"] + 1 > shape[0]:
-                    self.dataset.resize((pos["rot"] + 1, shape[1], shape[2]))
+                if pos.rot + 1 > shape[0]:
+                    self.dataset.resize((pos.rot + 1, shape[1], shape[2]))
                 tth, I = self.ai.integrate1d(data, self.nDiff, safe=False,
                                              method=meth, unit=self.unit)
-                self.dataset[pos["rot"], pos["trans"], :] = I
+                self.dataset[pos.rot, pos.trans, :] = I
 
         t -= time.time()
         print("Processing %30s took %6.1fms" %
               (os.path.basename(filename), -1000 * t))
-
         self.timing.append(-t)
 
     def process(self):
         if self.dataset is None:
             self.makeHDF5()
+        self.init_ai()
         t0 = time.time()
         self._idx = -1
         for f in self.inputfiles:
             self.process_one_file(f)
         self.nxs.close
         tot = time.time() - t0
-        cnt = len(self.timing)
+        cnt = self._idx + 1
         print(("Execution time for %i frames: %.3fs;"
                " Average execution time: %.1fms") %
               (cnt, tot, 1000. * tot / cnt))
@@ -392,7 +441,7 @@ If the number of files is too large, use double quotes like "*.edf" """
 if __name__ == "__main__":
     dt = DiffTomo()
     dt.parse()
-    dt.makeHDF5()
     dt.setup_ai()
+    dt.makeHDF5()
     dt.process()
     dt.show_stats()

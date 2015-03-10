@@ -68,7 +68,8 @@ def histoBBox1d(numpy.ndarray weights not None,
                 dark=None,
                 flat=None,
                 solidangle=None,
-                polarization=None):
+                polarization=None,
+                output_dummy=numpy.nan):
 
     """
     Calculates histogram of pos0 (tth) weighted by weights
@@ -88,33 +89,35 @@ def histoBBox1d(numpy.ndarray weights not None,
     @param mask: array (of int8) with masked pixels with 1 (0=not masked)
     @param dark: array (of float32) with dark noise to be subtracted (or None)
     @param flat: array (of float32) with flat-field image
-    @param polarization: array (of float32) with polarization corrections
     @param solidangle: array (of float32) with solid angle corrections
+    @param polarization: array (of float32) with polarization corrections
+    @param output_dummy: value of output bins without any contribution when dummy is None
 
     @return 2theta, I, weighted histogram, unweighted histogram
     """
     cdef size_t  size = weights.size
     assert pos0.size == size
     assert delta_pos0.size == size
-    assert  bins > 1
-    cdef ssize_t   bin0_max, bin0_min, bin = 0
-    cdef float data, deltaR, deltaL, deltaA,p1, epsilon = 1e-10, cdummy = 0, ddummy = 0
-    cdef float pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0, min0=0, max0=0, fbin0_min=0, fbin0_max=0
-    cdef bint check_pos1=False, check_mask=False, check_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
+    assert bins > 1
+    cdef:
+        ssize_t   bin0_max, bin0_min, bin = 0
+        float data, deltaR, deltaL, deltaA,p1, epsilon = 1e-10, cdummy = 0, ddummy = 0
+        float pos0_min=0, pos0_max=0, pos0_maxin=0, pos1_min=0, pos1_max=0, pos1_maxin=0, min0=0, max0=0, fbin0_min=0, fbin0_max=0
+        bint check_pos1=False, check_mask=False, check_dummy=False, do_dark=False, do_flat=False, do_polarization=False, do_solidangle=False
 
-    cdef numpy.ndarray[numpy.float32_t, ndim = 1] cdata = numpy.ascontiguousarray(weights.ravel(),dtype=numpy.float32)
-    cdef numpy.ndarray[numpy.float32_t, ndim = 1] cpos0, dpos0, cpos1, dpos1,cpos0_lower, cpos0_upper
-    cdef numpy.int8_t[:] cmask
-    cdef float[:] cflat, cdark, cpolarization, csolidangle
+        numpy.ndarray[numpy.float32_t, ndim = 1] cdata = numpy.ascontiguousarray(weights.ravel(),dtype=numpy.float32)
+        numpy.ndarray[numpy.float32_t, ndim = 1] cpos0, dpos0, cpos1, dpos1,cpos0_lower, cpos0_upper
+        numpy.int8_t[:] cmask
+        float[:] cflat, cdark, cpolarization, csolidangle
 
     cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=numpy.float32)
     dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=numpy.float32)
+    cdef:
+        numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(bins, dtype=numpy.float64)
+        numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype=numpy.float64)
+        numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(bins, dtype=numpy.float32)
 
-    cdef numpy.ndarray[numpy.float64_t, ndim = 1] outData = numpy.zeros(bins, dtype=numpy.float64)
-    cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(bins, dtype=numpy.float64)
-    cdef numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(bins, dtype=numpy.float32)
-
-    if  mask is not None:
+    if mask is not None:
         assert mask.size == size
         check_mask = True
         cmask = numpy.ascontiguousarray(mask.ravel(),dtype=numpy.int8)
@@ -129,7 +132,7 @@ def histoBBox1d(numpy.ndarray weights not None,
         ddummy = 0.0
     else:
         check_dummy = False
-        cdummy = 0.0
+        cdummy = output_dummy
         ddummy = 0.0
     if dark is not None:
         assert dark.size == size

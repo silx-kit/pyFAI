@@ -123,8 +123,9 @@ def fullSplit1D(numpy.ndarray pos not None,
                 dark=None,
                 flat=None,
                 solidangle=None,
-                polarization=None
-              ):
+                polarization=None,
+                output_dummy=numpy.nan
+                ):
     """
     Calculates histogram of pos weighted by weights
 
@@ -144,6 +145,7 @@ def fullSplit1D(numpy.ndarray pos not None,
     @param flat: array (of float64) with flat image
     @param polarization: array (of float64) with polarization correction
     @param solidangle: array (of float64) with flat image
+    @param output_dummy: value of output bins without any contribution when dummy is None
     @return 2theta, I, weighted histogram, unweighted histogram
     """
     cdef int  size = weights.size
@@ -235,15 +237,15 @@ def fullSplit1D(numpy.ndarray pos not None,
 
     if (dummy is not None) and (delta_dummy is not None):
         check_dummy = True
-        cdummy =  float(dummy)
-        cddummy =  float(delta_dummy)
+        cdummy = float(dummy)
+        cddummy = float(delta_dummy)
     elif (dummy is not None):
         check_dummy = True
         cdummy = float(dummy)
         cddummy = 0.0
     else:
         check_dummy = False
-        cdummy = 0.0
+        cdummy = output_dummy
         cddummy = 0.0
 
     if dark is not None:
