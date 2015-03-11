@@ -196,9 +196,16 @@ data = fabio.open(r"%s").data
             self.update_mp()
             if check:
                 if "lut" in method:
-                    print("lut: shape= %s \t nbytes %.3f MB " % (ai._lut_integrator.lut.shape, ai._lut_integrator.lut_nbytes / 2 ** 20))
+                    try:
+                        print("lut: shape= %s \t nbytes %.3f MB " % (ai._lut_integrator.lut.shape, ai._lut_integrator.lut_nbytes / 2 ** 20))
+                    except MemoryError as error:
+                        print(error)
                 elif "csr" in method:
-                    print("csr: size= %s \t nbytes %.3f MB " % (ai._csr_integrator.data.size, ai._csr_integrator.lut_nbytes / 2 ** 20))
+                    try:
+                        print("csr: size= %s \t nbytes %.3f MB " % (ai._csr_integrator.data.size, ai._csr_integrator.lut_nbytes / 2 ** 20))
+                    except MemoryError as error:
+                        print(error)
+
             del ai, data
             self.update_mp()
             try:
