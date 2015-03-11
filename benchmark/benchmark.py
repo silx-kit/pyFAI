@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Coding: utf-8
+# coding: utf-8
 # author: Jérôme Kieffer
 # Benchmark for Azimuthal integration of PyFAI
 
