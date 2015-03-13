@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/03/2015"
+__date__ = "13/03/2015"
 
 import unittest
 import time
@@ -77,7 +77,8 @@ class TestHistogram1d(unittest.TestCase):
     logger.info("Timing for Cython  both   histogram: %.3f", t4 - t3)
     t3 = time.time()
     integrator = HistoBBox1d(tth, delta_pos0=None, pos1=None, delta_pos1=None,
-                 bins=npt, pos0Range=drange, allow_pos0_neg=False, unit="undefined",)
+                             bins=npt, pos0Range=drange, allow_pos0_neg=False,
+                             unit="undefined",)
     t2 = time.time()
     bins_csr, I_csr, weight_csr, unweight_csr = integrator.integrate(data)
     t4 = time.time()
@@ -179,7 +180,7 @@ class TestHistogram1d(unittest.TestCase):
         delta_max = abs(self.I_csr - self.I_numpy).max()
         if delta_max > self.epsilon:
             logger.warning("Intensity count difference numpy/csr : max delta=%s", delta_max)
-        self.assert_(delta_max < 0.569, "Intensity count difference numpy/csr : max delta=%s" % delta_max)
+        self.assert_(delta_max < 0.62, "Intensity count difference numpy/csr : max delta=%s" % delta_max)
 
 
 class TestHistogram2d(unittest.TestCase):
