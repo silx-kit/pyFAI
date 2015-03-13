@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/03/2015"
+__date__ = "13/03/2015"
 __satus__ = "Production"
 
 import logging
@@ -258,7 +258,7 @@ If the number of files is too large, use double quotes like "*.edf" """
 
         spath = self.hdf5path.split("/")
         assert len(spath) > 2
-        nxs = Nexus(self.hdf5)
+        nxs = Nexus(self.hdf5, mode="w")
         entry = nxs.new_entry(entry=spath[0], program_name="pyFAI", title="diff_tomo")
         grp = entry
         for subgrp in spath[1:-2]:
@@ -436,7 +436,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         print(("Execution time for %i frames: %.3fs;"
                " Average execution time: %.1fms") %
               (cnt, tot, 1000. * tot / cnt))
-
+        self.nxs.close()
 
 if __name__ == "__main__":
     dt = DiffTomo()

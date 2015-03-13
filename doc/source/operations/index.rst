@@ -16,6 +16,13 @@ Abstract
 
 Installation procedure
 
+Hardware requirement
+--------------------
+
+PyFAI has been tested on various hardware: i386, x86_64, PPC64le, ARM.
+The main constrain may be the memory requirement: 2GB of memory is a minimal requirement to run the tests.
+The program may run with less but "MemoryError" are expected (appearing sometimes as segmentation faults).
+As a consequence, a 64-bits operating system is strongly advised.
 
 Dependencies
 ------------

@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/03/2015"
+__date__ = "12/03/2015"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instanciate them
@@ -547,16 +547,29 @@ class Detector(with_metaclass(DetectorMeta, object)):
         Guess the binning/mode depending on the image shape
         @param data: 2-tuple with the shape of the image or the image with a .shape attribute.
         """
+        if "shape" in dir(data):
+            shape = data.shape
+        else:
+            shape = tuple(data[:2])
         if self.force_pixel:
-            if "shape" in dir(data):
-                shape = data.shape
-            else:
-                shape = tuple(data[:2])
             if shape != self.max_shape:
                 logger.warning("guess_binning is not implemented for %s detectors!\
                  and image size %s! is wrong, expected %s!" % (self.name, shape, self.shape))
+        elif self.max_shape:
+            bin1 = self.max_shape[0] // shape[0]
+            bin2 = self.max_shape[1] // shape[1]
+            res = self.max_shape[0] % shape[0] + self.max_shape[1] % shape[1]
+            if res != 0:
+                logger.warning("Impossible binning: max_shape is %s, requested shape %s" % (self.max_shape, shape))
+            old_binning = self._binning
+            self._binning = (bin1, bin2)
+            self.shape = shape
+            self._pixel1 *= (1.0 * bin1 / old_binning[0])
+            self._pixel2 *= (1.0 * bin2 / old_binning[1])
+            self._mask = False
+            self._mask_crc = None
         else:
-            logger.debug("guess_binning is not implemented for generic detectors !")
+            logger.debug("guess_binning for generic detectors !")
 
 class NexusDetector(Detector):
     """
