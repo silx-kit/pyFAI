@@ -929,7 +929,7 @@ class Eiger(Detector):
     """
     Eiger detector: generic description containing mask algorithm
     """
-    MODULE_SIZE = (1065, 1030)
+    MODULE_SIZE = (514, 1030)
     MODULE_GAP = (37, 10)
     force_pixel = True
 
@@ -1419,7 +1419,7 @@ class Xpad_flat(ImXPadS10):
         @param d2: the X pixel positions (fast dimension)
         @type d2: ndarray (1D or 2D)
         @param center: retrieve the coordinate of the center of the pixel
-        @parm use_cython: set to False to test Numpy implementation 
+        @parm use_cython: set to False to test Numpy implementation
         @return: position in meter of the center of each pixels.
         @rtype: ndarray
 
