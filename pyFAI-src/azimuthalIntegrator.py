@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/01/2015"
+__date__ = "14/03/2015"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -202,6 +202,7 @@ class AzimuthalIntegrator(Geometry):
         self._csr_sem = threading.Semaphore()
         self._ocl_csr_sem = threading.Semaphore()
         self._ocl_lut_sem = threading.Semaphore()
+        self._empty = 0.0
 
     def reset(self):
         """
@@ -469,14 +470,12 @@ class AzimuthalIntegrator(Geometry):
 
         if tthRange is not None:
             tthRange = (utils.deg2rad(tthRange[0]), utils.deg2rad(tthRange[-1]))
-        if dummy is None:
-            dummy = 0.0
         tthAxis, I, _, _ = histogram.histogram(pos=tth,
                                                weights=data,
                                                bins=npt,
                                                bin_range=tthRange,
                                                pixelSize_in_Pos=pixelSize,
-                                               dummy=dummy)
+                                               empty=dummy or 0.0)
         tthAxis = rad2deg(tthAxis)
         self.save1D(filename, tthAxis, I, None, "2th_deg",
                     dark, flat, polarization_factor)
@@ -1802,12 +1801,11 @@ class AzimuthalIntegrator(Geometry):
             data /= self.solidAngleArray(data.shape)[mask]
 
         if dummy is None:
-            dummy = 0.0
             I, binsChi, bins2Th, _, _ = histogram.histogram2d(pos0=chi, pos1=tth,
-                                      bins=(npt_azim, npt_rad),
-                                      weights=data,
-                                      split=1,
-                                      dummy=dummy)
+                                                              bins=(npt_azim, npt_rad),
+                                                              weights=data,
+                                                              split=1,
+                                                              empty=dummy or 0.0)
         bins2Th = rad2deg(bins2Th)
         binsChi = rad2deg(binsChi)
         self.save2D(filename, I, bins2Th, binsChi)  # , dark, flat, polarization_factor)
@@ -2636,13 +2634,11 @@ class AzimuthalIntegrator(Geometry):
             if ("cython" in method):
                 if histogram is not None:
                     logger.debug("integrate1d uses cython implementation")
-                    if dummy is None:
-                        dummy = 0
                     qAxis, I, a, b = histogram.histogram(pos=pos0,
                                                          weights=data,
                                                          bins=npt,
                                                          pixelSize_in_Pos=0,
-                                                         dummy=dummy)
+                                                         empty=dummy or 0.0)
                     if error_model == "azimuthal":
                         variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
                     if variance is not None:
@@ -2650,7 +2646,7 @@ class AzimuthalIntegrator(Geometry):
                                                              weights=variance,
                                                              bins=npt,
                                                              pixelSize_in_Pos=1,
-                                                             dummy=dummy)
+                                                             empty=dummy or 0.0)
                         sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
                 else:
                     logger.warning("pyFAI.histogram is not available,"
@@ -3090,14 +3086,12 @@ class AzimuthalIntegrator(Geometry):
                                    " falling back on numpy histogram")
                     method = "numpy"
                 else:
-                    if dummy is None:
-                        dummy = 0
                     I, bins_azim, bins_rad, _a, _b = histogram.histogram2d(pos0=pos1,
                                                                            pos1=pos0,
                                                                            weights=data,
                                                                            bins=(npt_azim, npt_rad),
                                                                            split=False,
-                                                                           dummy=dummy)
+                                                                           empty=dummy or 0.0)
 
         if I is None:
             logger.debug("integrate2d uses Numpy implementation")
@@ -3489,3 +3483,14 @@ class AzimuthalIntegrator(Geometry):
         else:
             self.set_flatfield(utils.averageImages(files, filter_=method, format=None, threshold=0))
             self.flatfiles = "%s(%s)" % (method, ",".join(files))
+
+    def get_empty(self):
+        return self._empty
+    def set_empty(self, value):
+        self._empty = float(empty)
+        #propagate empty values to integrators
+        for integrator in (self._ocl_integrator, self._ocl_lut_integr, 
+                           self._ocl_csr_integr,self._lut_integrator,self._csr_integrator):
+            if integrator:
+                integrator.empty = self._empty
+    empty = property(get_empty, set_empty)            

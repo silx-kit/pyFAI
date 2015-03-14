@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/kif/pyFAI
+#             https://github.com/pyFAI
 #
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
@@ -25,7 +25,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "GPLv3"
-__date__ = "10/03/2015"
+__date__ = "14/03/2015"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -48,7 +48,8 @@ class OCL_CSR_Integrator(object):
     def __init__(self, lut, image_size, devicetype="all",
                  block_size=32,
                  platformid=None, deviceid=None,
-                 checksum=None, profile=False):
+                 checksum=None, profile=False,
+                 empty=None):
         """
         @param lut: 3-tuple of arrays
             data: coefficient of the matrix in a 1D vector of float32 - size of nnz
@@ -63,6 +64,7 @@ class OCL_CSR_Integrator(object):
         @type deviceid: int
         @param checksum: pre - calculated checksum to prevent re - calculating it :)
         @param profile: store profiling elements
+        @param empty: value to be assigned to bins without contribution from any pixel
         """
         self._sem = threading.Semaphore()
         self._data = lut[0]
@@ -75,6 +77,8 @@ class OCL_CSR_Integrator(object):
         self.data_size = self._data.shape[0]
         self.size = image_size
         self.profile = profile
+        self.empty = empty or 0.0
+
         if not checksum:
             checksum = calc_checksum(self._data)
         self.on_device = {"data":checksum, "dark":None, "flat":None, "polarization":None, "solidangle":None}
@@ -116,7 +120,6 @@ class OCL_CSR_Integrator(object):
         if self.profile: self.events.append(("copy Row Index data", ev))
         ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["indptr"], self._indptr)
         if self.profile: self.events.append(("copy Column Pointer data", ev))
-        self.output_dummy = numpy.nan
 
     def __del__(self):
         """
@@ -278,7 +281,7 @@ class OCL_CSR_Integrator(object):
                     delta_dummy = numpy.float32(abs(delta_dummy))
             else:
                 do_dummy = numpy.int32(0)
-                dummy = numpy.float32(self.output_dummy)
+                dummy = numpy.float32(self.empty)
                 delta_dummy = numpy.float32(0.0)
             self._cl_kernel_args["corrections"][9] = do_dummy
             self._cl_kernel_args["corrections"][10] = dummy

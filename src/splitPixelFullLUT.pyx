@@ -130,8 +130,8 @@ class HistoLUT1dFullSplit(object):
                  mask=None,
                  mask_checksum=None,
                  allow_pos0_neg=False,
-                 unit="undefined"): #,
-                                    #bad_pixel=False):
+                 unit="undefined",
+                 empty=None): 
         """
         @param pos: 3D or 4D array with the coordinates of each pixel point
         @param bins: number of output bins, 100 by default
@@ -153,6 +153,7 @@ class HistoLUT1dFullSplit(object):
         #self.bad_pixel = bad_pixel
         self.lut_size = 0
         self.allow_pos0_neg = allow_pos0_neg
+        self.empty = empty or 0.0
         if mask is not None:
             assert mask.size == self.size
             self.check_mask = True
@@ -174,8 +175,6 @@ class HistoLUT1dFullSplit(object):
         self.unit = unit
         self.lut = (self.data, self.indices, self.indptr)
         self.lut_nbytes = sum([i.nbytes for i in self.lut])
-        self.output_dummy = numpy.nan
-
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
@@ -536,7 +535,7 @@ class HistoLUT1dFullSplit(object):
             else:
                 cddummy = <float>float(delta_dummy)
         else:
-            cdummy = self.output_dummy
+            cdummy = <float> float(self.empty)
             
         if flat is not None:
             do_flat = True

@@ -21,6 +21,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from Cython.Plex.Regexps import Empty
 
 """
 Full pixel Splitting implemented using Sparse-matrix Dense-Vector multiplication,
@@ -194,8 +195,8 @@ class FullSplitCSR_1d(object):
                  mask=None,
                  mask_checksum=None,
                  allow_pos0_neg=False,
-                 unit="undefined"): #,
-                                    #bad_pixel=False): 
+                 unit="undefined",
+                 empty=None):  
         """
         @param pos: 3D or 4D array with the coordinates of each pixel point
         @param bins: number of output bins, 100 by default
@@ -204,6 +205,8 @@ class FullSplitCSR_1d(object):
         @param mask: array (of int8) with masked pixels with 1 (0=not masked)
         @param allow_pos0_neg: enforce the q<0 is usually not possible  
         @param unit: can be 2th_deg or r_nm^-1 ...
+        @param empty: value of output bins without any contribution when dummy is None
+    
         """
 
 #        self.padding = int(padding)
@@ -218,6 +221,7 @@ class FullSplitCSR_1d(object):
         #self.bad_pixel = bad_pixel
         self.lut_size = 0
         self.allow_pos0_neg = allow_pos0_neg
+        self.empty = empty or 0.0
         if  mask is not None:
             assert mask.size == self.size
             self.check_mask = True
@@ -494,7 +498,9 @@ class FullSplitCSR_1d(object):
                 cddummy = <float>0.0
             else:
                 cddummy = <float>float(delta_dummy)
-
+        else:
+            do_dummy = False
+            cdummy =  <float>float(self.empty)
         if flat is not None:
             do_flat = True
             assert flat.size == size
@@ -602,7 +608,8 @@ class FullSplitCSR_2d(object):
                  mask=None,
                  mask_checksum=None,
                  allow_pos0_neg=False,
-                 unit="undefined"):
+                 unit="undefined",
+                 empty=None):
                      
         """
         @param pos: 3D or 4D array with the coordinates of each pixel point
@@ -612,6 +619,7 @@ class FullSplitCSR_2d(object):
         @param mask: array (of int8) with masked pixels with 1 (0=not masked)
         @param allow_pos0_neg: enforce the q<0 is usually not possible  
         @param unit: can be 2th_deg or r_nm^-1 ...
+        @param empty: value for bins where no pixels are contributing
         """
 
         if pos.ndim > 3:  # create a view
@@ -624,6 +632,7 @@ class FullSplitCSR_2d(object):
         self.bins = bins
         #self.bad_pixel = bad_pixel
         self.lut_size = 0
+        self.empty = empty or 0.0
         self.allow_pos0_neg = allow_pos0_neg
         if  mask is not None:
             assert mask.size == self.size
@@ -1116,6 +1125,9 @@ class FullSplitCSR_2d(object):
                 cddummy = <float>0.0
             else:
                 cddummy = <float>float(delta_dummy)
+        else:
+            do_dummy = False
+            cdummy =  <float>float(self.empty)
 
         if flat is not None:
             do_flat = True

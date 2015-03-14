@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Azimuthal integration
-#             https://github.com/kif/pyFAI
+#             https://github.com/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -23,7 +23,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3"
-__date__ = "10/03/2015"
+__date__ = "14/03/2015"
 __copyright__ = "2012, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -44,7 +44,8 @@ class OCL_LUT_Integrator(object):
     BLOCK_SIZE = 16
     def __init__(self, lut, image_size, devicetype="all",
                  platformid=None, deviceid=None,
-                 checksum=None, profile=False):
+                 checksum=None, profile=False,
+                 empty=None):
         """
         @param lut: array of int32 - float32 with shape (nbins, lut_size) with indexes and coefficients
         @param image_size: Expected image size: image.shape.prod()
@@ -55,6 +56,7 @@ class OCL_LUT_Integrator(object):
         @type deviceid: int
         @param checksum: pre - calculated checksum to prevent re - calculating it :)
         @param profile: store profiling elements
+        @param empty: value to be assigned to bins without contribution from any pixel
         """
         self._sem = threading.Semaphore()
         self._lut = lut
@@ -62,6 +64,8 @@ class OCL_LUT_Integrator(object):
         self.bins, self.lut_size = lut.shape
         self.size = image_size
         self.profile = profile
+        self.empty = empty or 0.0
+
         if not checksum:
             checksum = crc32(self._lut)
         self.on_device = {"lut":checksum, "dark":None, "flat":None, "polarization":None, "solidangle":None}
@@ -103,7 +107,6 @@ class OCL_LUT_Integrator(object):
         else:
             ev = pyopencl.enqueue_copy(self._queue, self._cl_mem["lut"], lut.T.copy())
         if self.profile: self.events.append(("copy LUT", ev))
-        self.output_dummy = numpy.nan
 
     def __del__(self):
         """
@@ -262,7 +265,7 @@ class OCL_LUT_Integrator(object):
                     delta_dummy = numpy.float32(abs(delta_dummy))
             else:
                 do_dummy = numpy.int32(0)
-                dummy = numpy.float32(self.output_dummy)
+                dummy = numpy.float32(self.empty)
                 delta_dummy = numpy.float32(0.0)
             self._cl_kernel_args["corrections"][9] = do_dummy
             self._cl_kernel_args["corrections"][10] = dummy
