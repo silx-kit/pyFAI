@@ -204,7 +204,7 @@ class AbstractCalibration(object):
         self.nPt_1D = 1024
         self.nPt_2D_azim = 360
         self.nPt_2D_rad = 400
-        self.unit = "2th_deg"
+        self.unit = units.to_unit("2th_deg")
         self.keep = True
         self.check_calib = None
         self.fig3 = self.ax_xrpd_1d = self.ax_xrpd_2d = None
@@ -2069,6 +2069,7 @@ def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, 
     c = Calibration()
     c.gui = interactive
     c.detector = detector
+    c.calibrant = calibrant
     c.wavelength = calibrant.wavelength
     c.basename = basename
     c.pointfile = basename+".npt"
@@ -2080,6 +2081,10 @@ def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, 
         c.peakPicker.gui(log=True, maximize=True, pick=True)
         update_fig(c.peakPicker.fig)
     c.gui_peakPicker()
+    c.ai.setPyFAI(**c.geoRef.getPyFAI())
+    c.ai.wavelength = c.geoRef.wavelength
+
+    return c.ai
 
 
 
