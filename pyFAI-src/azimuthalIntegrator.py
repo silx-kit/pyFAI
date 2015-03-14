@@ -129,9 +129,6 @@ if ocl:
         ocl_azim_lut = None
 else:
     ocl_azim = ocl_azim_csr = ocl_azim_lut = None
-del error  # just to see how clever pylint is !
-
-
 
 
 class AzimuthalIntegrator(Geometry):
