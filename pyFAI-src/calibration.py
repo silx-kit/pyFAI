@@ -569,7 +569,8 @@ class AbstractCalibration(object):
         if self.wavelength is None:
             self.wavelength = self.ai.wavelength
 
-        self.peakPicker = PeakPicker(self.outfile, reconst=self.reconstruct, mask=self.mask,
+        data = fabio.open(self.outfile).data
+        self.peakPicker = PeakPicker(data, reconst=self.reconstruct, mask=self.mask,
                                      pointfile=self.pointfile, calibrant=self.calibrant,
                                      wavelength=self.ai.wavelength)
         if not self.keep:
@@ -2049,6 +2050,36 @@ refinement process.
         ax4.set_xlabel(r"2$\theta$ ($^o$)")
         ax4.set_ylabel("Intensity")
         update_fig(self.fig)
+
+
+#Procedural version of calibration
+def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, dist=0.1, interactive=True):
+    """
+    Procedural interfact for calibration
+    
+    @param img: 2d array representing the imagence setup with mask
+    @param calibrant: Instance of Calibrant, set-up with wavelength
+    @param detector: Detector instance containing the mask
+    @param recontruct: perform image reconstruction of masked pixel ?
+    @param interactive: set to false for testing
+    """
+    assert isinstance(detector, Detector)
+    assert isinstance(calibrant, Calibrant)
+    assert calibrant.wavelength
+    c = Calibration()
+    c.gui = interactive
+    c.detector = detector
+    c.wavelength = calibrant.wavelength
+    c.basename = basename
+    c.pointfile = basename+".npt"
+    c.ai = AzimuthalIntegrator(dist=dist, detector=detector, wavelength=calibrant.wavelength)
+    c.peakPicker = PeakPicker(img, reconst=reconstruct, mask=detector.mask,
+                              pointfile=c.pointfile, calibrant=calibrant,
+                              wavelength=calibrant.wavelength)
+    if interactive:
+        c.peakPicker.gui(log=True, maximize=True, pick=True)
+        update_fig(c.peakPicker.fig)
+    c.gui_peakPicker()
 
 
 

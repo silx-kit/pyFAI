@@ -231,8 +231,8 @@ void __Pyx_call_destructor(T* x) {
 #define _USE_MATH_DEFINES
 #endif
 #include <math.h>
-#define __PYX_HAVE__histogram_nomp
-#define __PYX_HAVE_API__histogram_nomp
+#define __PYX_HAVE__histogram
+#define __PYX_HAVE_API__histogram
 #include "string.h"
 #include "stdio.h"
 #include "stdlib.h"
@@ -444,7 +444,7 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "histogram_nomp.pyx",
+  "histogram.pyx",
   "__init__.pxd",
   "stringsource",
   "type.pxd",
@@ -1418,7 +1418,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *, cha
 
 /* Module declarations from 'libc.math' */
 
-/* Module declarations from 'histogram_nomp' */
+/* Module declarations from 'histogram' */
 static PyTypeObject *__pyx_array_type = 0;
 static PyTypeObject *__pyx_MemviewEnum_type = 0;
 static PyTypeObject *__pyx_memoryview_type = 0;
@@ -1428,7 +1428,7 @@ static PyObject *strided = 0;
 static PyObject *indirect = 0;
 static PyObject *contiguous = 0;
 static PyObject *indirect_contiguous = 0;
-static CYTHON_INLINE double __pyx_f_14histogram_nomp_getBinNr(double, double, double); /*proto*/
+static CYTHON_INLINE double __pyx_f_9histogram_getBinNr(double, double, double); /*proto*/
 static struct __pyx_array_obj *__pyx_array_new(PyObject *, Py_ssize_t, char *, char *, char *); /*proto*/
 static void *__pyx_align_pointer(void *, size_t); /*proto*/
 static PyObject *__pyx_memoryview_new(PyObject *, int, int, __Pyx_TypeInfo *); /*proto*/
@@ -1463,10 +1463,10 @@ static void __pyx_memoryview_slice_assign_scalar(__Pyx_memviewslice *, int, size
 static void __pyx_memoryview__slice_assign_scalar(char *, Py_ssize_t *, Py_ssize_t *, int, size_t, void *); /*proto*/
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t = { "float64_t", NULL, sizeof(__pyx_t_5numpy_float64_t), { 0 }, 0, 'R', 0, 0 };
 static __Pyx_TypeInfo __Pyx_TypeInfo_float = { "float", NULL, sizeof(float), { 0 }, 0, 'R', 0, 0 };
-#define __Pyx_MODULE_NAME "histogram_nomp"
-int __pyx_module_is_main_histogram_nomp = 0;
+#define __Pyx_MODULE_NAME "histogram"
+int __pyx_module_is_main_histogram = 0;
 
-/* Implementation of 'histogram_nomp' */
+/* Implementation of 'histogram' */
 static PyObject *__pyx_builtin_min;
 static PyObject *__pyx_builtin_max;
 static PyObject *__pyx_builtin_range;
@@ -1479,8 +1479,8 @@ static PyObject *__pyx_builtin_TypeError;
 static PyObject *__pyx_builtin_xrange;
 static PyObject *__pyx_builtin_id;
 static PyObject *__pyx_builtin_IndexError;
-static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_pos, PyArrayObject *__pyx_v_weights, int __pyx_v_bins, PyObject *__pyx_v_bin_range, PyObject *__pyx_v_pixelSize_in_Pos, CYTHON_UNUSED PyObject *__pyx_v_nthread, float __pyx_v_empty); /* proto */
-static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_pos0, PyArrayObject *__pyx_v_pos1, PyObject *__pyx_v_bins, PyArrayObject *__pyx_v_weights, PyObject *__pyx_v_split, CYTHON_UNUSED PyObject *__pyx_v_nthread, float __pyx_v_empty); /* proto */
+static PyObject *__pyx_pf_9histogram_histogram(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_pos, PyArrayObject *__pyx_v_weights, int __pyx_v_bins, PyObject *__pyx_v_bin_range, PyObject *__pyx_v_pixelSize_in_Pos, CYTHON_UNUSED PyObject *__pyx_v_nthread, float __pyx_v_empty); /* proto */
+static PyObject *__pyx_pf_9histogram_2histogram2d(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_pos0, PyArrayObject *__pyx_v_pos1, PyObject *__pyx_v_bins, PyArrayObject *__pyx_v_weights, PyObject *__pyx_v_split, CYTHON_UNUSED PyObject *__pyx_v_nthread, float __pyx_v_empty); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static int __pyx_array_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
@@ -1642,7 +1642,6 @@ static char __pyx_k_RuntimeError[] = "RuntimeError";
 static char __pyx_k_pyx_getbuffer[] = "__pyx_getbuffer";
 static char __pyx_k_2011_2014_ESRF[] = "2011-2014, ESRF";
 static char __pyx_k_Jerome_Kieffer[] = "Jerome Kieffer";
-static char __pyx_k_histogram_nomp[] = "histogram_nomp";
 static char __pyx_k_allocate_buffer[] = "allocate_buffer";
 static char __pyx_k_dtype_is_object[] = "dtype_is_object";
 static char __pyx_k_pixelSize_in_Pos[] = "pixelSize_in_Pos";
@@ -1666,7 +1665,7 @@ static char __pyx_k_ndarray_is_not_C_contiguous[] = "ndarray is not C contiguous
 static char __pyx_k_unable_to_allocate_array_data[] = "unable to allocate array data.";
 static char __pyx_k_strided_and_direct_or_indirect[] = "<strided and direct or indirect>";
 static char __pyx_k_No_pixel_splitting_in_histogram[] = "No pixel splitting in histogram";
-static char __pyx_k_home_kieffer_workspace_pyFAI_sr[] = "/home/kieffer/workspace/pyFAI/src/histogram_nomp.pyx";
+static char __pyx_k_home_kieffer_workspace_pyFAI_sr[] = "/home/kieffer/workspace/pyFAI/src/histogram.pyx";
 static char __pyx_k_unknown_dtype_code_in_numpy_pxd[] = "unknown dtype code in numpy.pxd (%d)";
 static char __pyx_k_All_dimensions_preceding_dimensi[] = "All dimensions preceding dimension %d must be indexed and not sliced";
 static char __pyx_k_Buffer_view_does_not_expose_stri[] = "Buffer view does not expose strides";
@@ -1762,7 +1761,6 @@ static PyObject *__pyx_n_s_getLogger;
 static PyObject *__pyx_kp_s_got_differing_extents_in_dimensi;
 static PyObject *__pyx_n_s_histogram;
 static PyObject *__pyx_n_s_histogram2d;
-static PyObject *__pyx_n_s_histogram_nomp;
 static PyObject *__pyx_kp_s_home_kieffer_workspace_pyFAI_sr;
 static PyObject *__pyx_n_s_i;
 static PyObject *__pyx_n_s_id;
@@ -1863,7 +1861,7 @@ static PyObject *__pyx_tuple__29;
 static PyObject *__pyx_codeobj__22;
 static PyObject *__pyx_codeobj__24;
 
-/* "histogram_nomp.pyx":44
+/* "histogram.pyx":44
  * 
  * @cython.cdivision(True)
  * cdef inline double getBinNr(double x0, double pos0_min, double delta) nogil:             # <<<<<<<<<<<<<<
@@ -1871,10 +1869,10 @@ static PyObject *__pyx_codeobj__24;
  *     calculate the bin number for any point
  */
 
-static CYTHON_INLINE double __pyx_f_14histogram_nomp_getBinNr(double __pyx_v_x0, double __pyx_v_pos0_min, double __pyx_v_delta) {
+static CYTHON_INLINE double __pyx_f_9histogram_getBinNr(double __pyx_v_x0, double __pyx_v_pos0_min, double __pyx_v_delta) {
   double __pyx_r;
 
-  /* "histogram_nomp.pyx":51
+  /* "histogram.pyx":51
  *     param delta: bin width
  *     """
  *     return (x0 - pos0_min) / delta             # <<<<<<<<<<<<<<
@@ -1884,7 +1882,7 @@ static CYTHON_INLINE double __pyx_f_14histogram_nomp_getBinNr(double __pyx_v_x0,
   __pyx_r = ((__pyx_v_x0 - __pyx_v_pos0_min) / __pyx_v_delta);
   goto __pyx_L0;
 
-  /* "histogram_nomp.pyx":44
+  /* "histogram.pyx":44
  * 
  * @cython.cdivision(True)
  * cdef inline double getBinNr(double x0, double pos0_min, double delta) nogil:             # <<<<<<<<<<<<<<
@@ -1897,7 +1895,7 @@ static CYTHON_INLINE double __pyx_f_14histogram_nomp_getBinNr(double __pyx_v_x0,
   return __pyx_r;
 }
 
-/* "histogram_nomp.pyx":57
+/* "histogram.pyx":57
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def histogram(numpy.ndarray pos not None, \             # <<<<<<<<<<<<<<
@@ -1906,10 +1904,10 @@ static CYTHON_INLINE double __pyx_f_14histogram_nomp_getBinNr(double __pyx_v_x0,
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_14histogram_nomp_1histogram(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_14histogram_nomp_histogram[] = "\n    Calculates histogram of pos weighted by weights\n\n    @param pos: 2Theta array\n    @param weights: array with intensities\n    @param bins: number of output bins\n    @param pixelSize_in_Pos: size of a pixels in 2theta: DESACTIVATED\n    @param nthread: OpenMP is disabled. unused\n\n    @return 2theta, I, weighted histogram, raw histogram\n    ";
-static PyMethodDef __pyx_mdef_14histogram_nomp_1histogram = {"histogram", (PyCFunction)__pyx_pw_14histogram_nomp_1histogram, METH_VARARGS|METH_KEYWORDS, __pyx_doc_14histogram_nomp_histogram};
-static PyObject *__pyx_pw_14histogram_nomp_1histogram(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_9histogram_1histogram(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_9histogram_histogram[] = "\n    Calculates histogram of pos weighted by weights\n\n    @param pos: 2Theta array\n    @param weights: array with intensities\n    @param bins: number of output bins\n    @param pixelSize_in_Pos: size of a pixels in 2theta: DESACTIVATED\n    @param nthread: OpenMP is disabled. unused\n\n    @return 2theta, I, weighted histogram, raw histogram\n    ";
+static PyMethodDef __pyx_mdef_9histogram_1histogram = {"histogram", (PyCFunction)__pyx_pw_9histogram_1histogram, METH_VARARGS|METH_KEYWORDS, __pyx_doc_9histogram_histogram};
+static PyObject *__pyx_pw_9histogram_1histogram(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyArrayObject *__pyx_v_pos = 0;
   PyArrayObject *__pyx_v_weights = 0;
   int __pyx_v_bins;
@@ -1927,7 +1925,7 @@ static PyObject *__pyx_pw_14histogram_nomp_1histogram(PyObject *__pyx_self, PyOb
     static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_pos,&__pyx_n_s_weights,&__pyx_n_s_bins,&__pyx_n_s_bin_range,&__pyx_n_s_pixelSize_in_Pos,&__pyx_n_s_nthread,&__pyx_n_s_empty,0};
     PyObject* values[7] = {0,0,0,0,0,0,0};
 
-    /* "histogram_nomp.pyx":60
+    /* "histogram.pyx":60
  *               numpy.ndarray weights not None, \
  *               int bins=100,
  *               bin_range=None,             # <<<<<<<<<<<<<<
@@ -1936,7 +1934,7 @@ static PyObject *__pyx_pw_14histogram_nomp_1histogram(PyObject *__pyx_self, PyOb
  */
     values[3] = ((PyObject *)Py_None);
 
-    /* "histogram_nomp.pyx":61
+    /* "histogram.pyx":61
  *               int bins=100,
  *               bin_range=None,
  *               pixelSize_in_Pos=None,             # <<<<<<<<<<<<<<
@@ -1945,7 +1943,7 @@ static PyObject *__pyx_pw_14histogram_nomp_1histogram(PyObject *__pyx_self, PyOb
  */
     values[4] = ((PyObject *)Py_None);
 
-    /* "histogram_nomp.pyx":62
+    /* "histogram.pyx":62
  *               bin_range=None,
  *               pixelSize_in_Pos=None,
  *               nthread=None,             # <<<<<<<<<<<<<<
@@ -2039,15 +2037,15 @@ static PyObject *__pyx_pw_14histogram_nomp_1histogram(PyObject *__pyx_self, PyOb
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("histogram", 0, 2, 7, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("histogram_nomp.histogram", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("histogram.histogram", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_pos), __pyx_ptype_5numpy_ndarray, 0, "pos", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_weights), __pyx_ptype_5numpy_ndarray, 0, "weights", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_r = __pyx_pf_14histogram_nomp_histogram(__pyx_self, __pyx_v_pos, __pyx_v_weights, __pyx_v_bins, __pyx_v_bin_range, __pyx_v_pixelSize_in_Pos, __pyx_v_nthread, __pyx_v_empty);
+  __pyx_r = __pyx_pf_9histogram_histogram(__pyx_self, __pyx_v_pos, __pyx_v_weights, __pyx_v_bins, __pyx_v_bin_range, __pyx_v_pixelSize_in_Pos, __pyx_v_nthread, __pyx_v_empty);
 
-  /* "histogram_nomp.pyx":57
+  /* "histogram.pyx":57
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def histogram(numpy.ndarray pos not None, \             # <<<<<<<<<<<<<<
@@ -2064,7 +2062,7 @@ static PyObject *__pyx_pw_14histogram_nomp_1histogram(PyObject *__pyx_self, PyOb
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_pos, PyArrayObject *__pyx_v_weights, int __pyx_v_bins, PyObject *__pyx_v_bin_range, PyObject *__pyx_v_pixelSize_in_Pos, CYTHON_UNUSED PyObject *__pyx_v_nthread, float __pyx_v_empty) {
+static PyObject *__pyx_pf_9histogram_histogram(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_pos, PyArrayObject *__pyx_v_weights, int __pyx_v_bins, PyObject *__pyx_v_bin_range, PyObject *__pyx_v_pixelSize_in_Pos, CYTHON_UNUSED PyObject *__pyx_v_nthread, float __pyx_v_empty) {
   int __pyx_v_size;
   __Pyx_memviewslice __pyx_v_cpos = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_cdata = { 0, 0, { 0 }, { 0 }, { 0 } };
@@ -2134,7 +2132,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
   __pyx_pybuffernd_out_merge.data = NULL;
   __pyx_pybuffernd_out_merge.rcbuffer = &__pyx_pybuffer_out_merge;
 
-  /* "histogram_nomp.pyx":76
+  /* "histogram.pyx":76
  *     """
  * 
  *     assert pos.size == weights.size             # <<<<<<<<<<<<<<
@@ -2159,7 +2157,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
   }
   #endif
 
-  /* "histogram_nomp.pyx":77
+  /* "histogram.pyx":77
  * 
  *     assert pos.size == weights.size
  *     assert bins > 1             # <<<<<<<<<<<<<<
@@ -2175,7 +2173,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
   }
   #endif
 
-  /* "histogram_nomp.pyx":79
+  /* "histogram.pyx":79
  *     assert bins > 1
  *     cdef:
  *         int  size = pos.size             # <<<<<<<<<<<<<<
@@ -2188,7 +2186,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_v_size = __pyx_t_5;
 
-  /* "histogram_nomp.pyx":80
+  /* "histogram.pyx":80
  *     cdef:
  *         int  size = pos.size
  *         float[:] cpos = numpy.ascontiguousarray(pos.ravel(), dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -2246,7 +2244,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
   __pyx_t_8.memview = NULL;
   __pyx_t_8.data = NULL;
 
-  /* "histogram_nomp.pyx":81
+  /* "histogram.pyx":81
  *         int  size = pos.size
  *         float[:] cpos = numpy.ascontiguousarray(pos.ravel(), dtype=numpy.float32)
  *         float[:] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -2304,7 +2302,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
   __pyx_t_9.memview = NULL;
   __pyx_t_9.data = NULL;
 
-  /* "histogram_nomp.pyx":82
+  /* "histogram.pyx":82
  *         float[:] cpos = numpy.ascontiguousarray(pos.ravel(), dtype=numpy.float32)
  *         float[:] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
  *         numpy.ndarray[numpy.float64_t, ndim = 1] out_data = numpy.zeros(bins, dtype="float64")             # <<<<<<<<<<<<<<
@@ -2345,7 +2343,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
   __pyx_v_out_data = ((PyArrayObject *)__pyx_t_3);
   __pyx_t_3 = 0;
 
-  /* "histogram_nomp.pyx":83
+  /* "histogram.pyx":83
  *         float[:] cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
  *         numpy.ndarray[numpy.float64_t, ndim = 1] out_data = numpy.zeros(bins, dtype="float64")
  *         numpy.ndarray[numpy.float64_t, ndim = 1] out_count = numpy.zeros(bins, dtype="float64")             # <<<<<<<<<<<<<<
@@ -2386,7 +2384,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
   __pyx_v_out_count = ((PyArrayObject *)__pyx_t_7);
   __pyx_t_7 = 0;
 
-  /* "histogram_nomp.pyx":84
+  /* "histogram.pyx":84
  *         numpy.ndarray[numpy.float64_t, ndim = 1] out_data = numpy.zeros(bins, dtype="float64")
  *         numpy.ndarray[numpy.float64_t, ndim = 1] out_count = numpy.zeros(bins, dtype="float64")
  *         numpy.ndarray[numpy.float64_t, ndim = 1] out_merge = numpy.zeros(bins, dtype="float64")             # <<<<<<<<<<<<<<
@@ -2427,7 +2425,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
   __pyx_v_out_merge = ((PyArrayObject *)__pyx_t_6);
   __pyx_t_6 = 0;
 
-  /* "histogram_nomp.pyx":86
+  /* "histogram.pyx":86
  *         numpy.ndarray[numpy.float64_t, ndim = 1] out_merge = numpy.zeros(bins, dtype="float64")
  *         double delta, min0, max0
  *         double a = 0.0             # <<<<<<<<<<<<<<
@@ -2436,7 +2434,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
  */
   __pyx_v_a = 0.0;
 
-  /* "histogram_nomp.pyx":87
+  /* "histogram.pyx":87
  *         double delta, min0, max0
  *         double a = 0.0
  *         double d = 0.0             # <<<<<<<<<<<<<<
@@ -2445,7 +2443,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
  */
   __pyx_v_d = 0.0;
 
-  /* "histogram_nomp.pyx":88
+  /* "histogram.pyx":88
  *         double a = 0.0
  *         double d = 0.0
  *         double fbin = 0.0             # <<<<<<<<<<<<<<
@@ -2454,7 +2452,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
  */
   __pyx_v_fbin = 0.0;
 
-  /* "histogram_nomp.pyx":89
+  /* "histogram.pyx":89
  *         double d = 0.0
  *         double fbin = 0.0
  *         double epsilon = 1e-10             # <<<<<<<<<<<<<<
@@ -2463,7 +2461,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
  */
   __pyx_v_epsilon = 1e-10;
 
-  /* "histogram_nomp.pyx":90
+  /* "histogram.pyx":90
  *         double fbin = 0.0
  *         double epsilon = 1e-10
  *         int bin = 0, i, idx             # <<<<<<<<<<<<<<
@@ -2472,7 +2470,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
  */
   __pyx_v_bin = 0;
 
-  /* "histogram_nomp.pyx":91
+  /* "histogram.pyx":91
  *         double epsilon = 1e-10
  *         int bin = 0, i, idx
  *     if pixelSize_in_Pos:             # <<<<<<<<<<<<<<
@@ -2482,7 +2480,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
   __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_v_pixelSize_in_Pos); if (unlikely(__pyx_t_4 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 91; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   if (__pyx_t_4) {
 
-    /* "histogram_nomp.pyx":92
+    /* "histogram.pyx":92
  *         int bin = 0, i, idx
  *     if pixelSize_in_Pos:
  *         logger.warning("No pixel splitting in histogram")             # <<<<<<<<<<<<<<
@@ -2502,7 +2500,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
   }
   __pyx_L3:;
 
-  /* "histogram_nomp.pyx":94
+  /* "histogram.pyx":94
  *         logger.warning("No pixel splitting in histogram")
  * 
  *     if bin_range is not None:             # <<<<<<<<<<<<<<
@@ -2513,7 +2511,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
   __pyx_t_13 = (__pyx_t_4 != 0);
   if (__pyx_t_13) {
 
-    /* "histogram_nomp.pyx":95
+    /* "histogram.pyx":95
  * 
  *     if bin_range is not None:
  *         min0 = min(bin_range)             # <<<<<<<<<<<<<<
@@ -2532,7 +2530,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     __pyx_v_min0 = __pyx_t_14;
 
-    /* "histogram_nomp.pyx":96
+    /* "histogram.pyx":96
  *     if bin_range is not None:
  *         min0 = min(bin_range)
  *         max0 = max(bin_range) * EPS32             # <<<<<<<<<<<<<<
@@ -2560,7 +2558,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
   }
   /*else*/ {
 
-    /* "histogram_nomp.pyx":98
+    /* "histogram.pyx":98
  *         max0 = max(bin_range) * EPS32
  *     else:
  *         min0 = pos.min()             # <<<<<<<<<<<<<<
@@ -2591,7 +2589,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_v_min0 = __pyx_t_14;
 
-    /* "histogram_nomp.pyx":99
+    /* "histogram.pyx":99
  *     else:
  *         min0 = pos.min()
  *         max0 = pos.max() * EPS32             # <<<<<<<<<<<<<<
@@ -2630,7 +2628,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
   }
   __pyx_L4:;
 
-  /* "histogram_nomp.pyx":101
+  /* "histogram.pyx":101
  *         max0 = pos.max() * EPS32
  * 
  *     delta = (max0 - min0) / float(bins)             # <<<<<<<<<<<<<<
@@ -2639,7 +2637,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
  */
   __pyx_v_delta = ((__pyx_v_max0 - __pyx_v_min0) / ((double)__pyx_v_bins));
 
-  /* "histogram_nomp.pyx":104
+  /* "histogram.pyx":104
  * 
  * 
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -2653,7 +2651,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
       #endif
       /*try:*/ {
 
-        /* "histogram_nomp.pyx":105
+        /* "histogram.pyx":105
  * 
  *     with nogil:
  *         for i in range(size):             # <<<<<<<<<<<<<<
@@ -2664,7 +2662,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
         for (__pyx_t_15 = 0; __pyx_t_15 < __pyx_t_5; __pyx_t_15+=1) {
           __pyx_v_i = __pyx_t_15;
 
-          /* "histogram_nomp.pyx":106
+          /* "histogram.pyx":106
  *     with nogil:
  *         for i in range(size):
  *             d = cdata[i]             # <<<<<<<<<<<<<<
@@ -2674,7 +2672,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
           __pyx_t_16 = __pyx_v_i;
           __pyx_v_d = (*((float *) ( /* dim=0 */ (__pyx_v_cdata.data + __pyx_t_16 * __pyx_v_cdata.strides[0]) )));
 
-          /* "histogram_nomp.pyx":107
+          /* "histogram.pyx":107
  *         for i in range(size):
  *             d = cdata[i]
  *             a = cpos[i]             # <<<<<<<<<<<<<<
@@ -2684,16 +2682,16 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
           __pyx_t_17 = __pyx_v_i;
           __pyx_v_a = (*((float *) ( /* dim=0 */ (__pyx_v_cpos.data + __pyx_t_17 * __pyx_v_cpos.strides[0]) )));
 
-          /* "histogram_nomp.pyx":108
+          /* "histogram.pyx":108
  *             d = cdata[i]
  *             a = cpos[i]
  *             fbin = getBinNr(a, min0, delta)             # <<<<<<<<<<<<<<
  *             bin = < int > fbin
  *             if bin<0 or bin>= bins:
  */
-          __pyx_v_fbin = __pyx_f_14histogram_nomp_getBinNr(__pyx_v_a, __pyx_v_min0, __pyx_v_delta);
+          __pyx_v_fbin = __pyx_f_9histogram_getBinNr(__pyx_v_a, __pyx_v_min0, __pyx_v_delta);
 
-          /* "histogram_nomp.pyx":109
+          /* "histogram.pyx":109
  *             a = cpos[i]
  *             fbin = getBinNr(a, min0, delta)
  *             bin = < int > fbin             # <<<<<<<<<<<<<<
@@ -2702,7 +2700,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
  */
           __pyx_v_bin = ((int)__pyx_v_fbin);
 
-          /* "histogram_nomp.pyx":110
+          /* "histogram.pyx":110
  *             fbin = getBinNr(a, min0, delta)
  *             bin = < int > fbin
  *             if bin<0 or bin>= bins:             # <<<<<<<<<<<<<<
@@ -2720,7 +2718,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
           __pyx_L11_bool_binop_done:;
           if (__pyx_t_13) {
 
-            /* "histogram_nomp.pyx":111
+            /* "histogram.pyx":111
  *             bin = < int > fbin
  *             if bin<0 or bin>= bins:
  *                 continue             # <<<<<<<<<<<<<<
@@ -2730,7 +2728,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
             goto __pyx_L8_continue;
           }
 
-          /* "histogram_nomp.pyx":112
+          /* "histogram.pyx":112
  *             if bin<0 or bin>= bins:
  *                 continue
  *             out_count[bin] += 1.0             # <<<<<<<<<<<<<<
@@ -2740,7 +2738,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
           __pyx_t_18 = __pyx_v_bin;
           *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_out_count.rcbuffer->pybuffer.buf, __pyx_t_18, __pyx_pybuffernd_out_count.diminfo[0].strides) += 1.0;
 
-          /* "histogram_nomp.pyx":113
+          /* "histogram.pyx":113
  *                 continue
  *             out_count[bin] += 1.0
  *             out_data[bin] += d             # <<<<<<<<<<<<<<
@@ -2752,7 +2750,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
           __pyx_L8_continue:;
         }
 
-        /* "histogram_nomp.pyx":115
+        /* "histogram.pyx":115
  *             out_data[bin] += d
  * 
  *         for idx in range(bins):             # <<<<<<<<<<<<<<
@@ -2763,7 +2761,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
         for (__pyx_t_15 = 0; __pyx_t_15 < __pyx_t_5; __pyx_t_15+=1) {
           __pyx_v_idx = __pyx_t_15;
 
-          /* "histogram_nomp.pyx":116
+          /* "histogram.pyx":116
  * 
  *         for idx in range(bins):
  *             if out_count[idx] > epsilon:             # <<<<<<<<<<<<<<
@@ -2774,7 +2772,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
           __pyx_t_13 = (((*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_out_count.rcbuffer->pybuffer.buf, __pyx_t_20, __pyx_pybuffernd_out_count.diminfo[0].strides)) > __pyx_v_epsilon) != 0);
           if (__pyx_t_13) {
 
-            /* "histogram_nomp.pyx":117
+            /* "histogram.pyx":117
  *         for idx in range(bins):
  *             if out_count[idx] > epsilon:
  *                 out_merge[idx] = out_data[idx] / out_count[idx]             # <<<<<<<<<<<<<<
@@ -2789,7 +2787,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
           }
           /*else*/ {
 
-            /* "histogram_nomp.pyx":119
+            /* "histogram.pyx":119
  *                 out_merge[idx] = out_data[idx] / out_count[idx]
  *             else:
  *                 out_merge[idx] = empty             # <<<<<<<<<<<<<<
@@ -2803,7 +2801,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
         }
       }
 
-      /* "histogram_nomp.pyx":104
+      /* "histogram.pyx":104
  * 
  * 
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -2821,7 +2819,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
       }
   }
 
-  /* "histogram_nomp.pyx":121
+  /* "histogram.pyx":121
  *                 out_merge[idx] = empty
  * 
  *     out_pos = numpy.linspace(min0 + (0.5 * delta), max0 - (0.5 * delta), bins)             # <<<<<<<<<<<<<<
@@ -2872,7 +2870,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
   __pyx_v_out_pos = __pyx_t_6;
   __pyx_t_6 = 0;
 
-  /* "histogram_nomp.pyx":123
+  /* "histogram.pyx":123
  *     out_pos = numpy.linspace(min0 + (0.5 * delta), max0 - (0.5 * delta), bins)
  * 
  *     return out_pos, out_merge, out_data, out_count             # <<<<<<<<<<<<<<
@@ -2898,7 +2896,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
   __pyx_t_6 = 0;
   goto __pyx_L0;
 
-  /* "histogram_nomp.pyx":57
+  /* "histogram.pyx":57
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def histogram(numpy.ndarray pos not None, \             # <<<<<<<<<<<<<<
@@ -2923,7 +2921,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_out_data.rcbuffer->pybuffer);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_out_merge.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("histogram_nomp.histogram", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("histogram.histogram", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   goto __pyx_L2;
   __pyx_L0:;
@@ -2942,7 +2940,7 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
   return __pyx_r;
 }
 
-/* "histogram_nomp.pyx":129
+/* "histogram.pyx":129
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def histogram2d(numpy.ndarray pos0 not None,             # <<<<<<<<<<<<<<
@@ -2951,10 +2949,10 @@ static PyObject *__pyx_pf_14histogram_nomp_histogram(CYTHON_UNUSED PyObject *__p
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_14histogram_nomp_3histogram2d(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_14histogram_nomp_2histogram2d[] = "\n    Calculate 2D histogram of pos0,pos1 weighted by weights\n\n    @param pos0: 2Theta array\n    @param pos1: Chi array\n    @param weights: array with intensities\n    @param bins: number of output bins int or 2-tuple of int\n\t@param split: pixel splitting is disabled in histogram\n    @param nthread: OpenMP is disabled. unused\n\n    @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)\n    ";
-static PyMethodDef __pyx_mdef_14histogram_nomp_3histogram2d = {"histogram2d", (PyCFunction)__pyx_pw_14histogram_nomp_3histogram2d, METH_VARARGS|METH_KEYWORDS, __pyx_doc_14histogram_nomp_2histogram2d};
-static PyObject *__pyx_pw_14histogram_nomp_3histogram2d(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_9histogram_3histogram2d(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_9histogram_2histogram2d[] = "\n    Calculate 2D histogram of pos0,pos1 weighted by weights\n\n    @param pos0: 2Theta array\n    @param pos1: Chi array\n    @param weights: array with intensities\n    @param bins: number of output bins int or 2-tuple of int\n\t@param split: pixel splitting is disabled in histogram\n    @param nthread: OpenMP is disabled. unused\n\n    @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)\n    ";
+static PyMethodDef __pyx_mdef_9histogram_3histogram2d = {"histogram2d", (PyCFunction)__pyx_pw_9histogram_3histogram2d, METH_VARARGS|METH_KEYWORDS, __pyx_doc_9histogram_2histogram2d};
+static PyObject *__pyx_pw_9histogram_3histogram2d(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyArrayObject *__pyx_v_pos0 = 0;
   PyArrayObject *__pyx_v_pos1 = 0;
   PyObject *__pyx_v_bins = 0;
@@ -2972,7 +2970,7 @@ static PyObject *__pyx_pw_14histogram_nomp_3histogram2d(PyObject *__pyx_self, Py
     static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_pos0,&__pyx_n_s_pos1,&__pyx_n_s_bins,&__pyx_n_s_weights,&__pyx_n_s_split,&__pyx_n_s_nthread,&__pyx_n_s_empty,0};
     PyObject* values[7] = {0,0,0,0,0,0,0};
 
-    /* "histogram_nomp.pyx":133
+    /* "histogram.pyx":133
  *                 bins not None,
  *                 numpy.ndarray weights not None,
  *                 split=False,             # <<<<<<<<<<<<<<
@@ -2981,7 +2979,7 @@ static PyObject *__pyx_pw_14histogram_nomp_3histogram2d(PyObject *__pyx_self, Py
  */
     values[4] = ((PyObject *)Py_False);
 
-    /* "histogram_nomp.pyx":134
+    /* "histogram.pyx":134
  *                 numpy.ndarray weights not None,
  *                 split=False,
  *                 nthread=None,             # <<<<<<<<<<<<<<
@@ -3071,7 +3069,7 @@ static PyObject *__pyx_pw_14histogram_nomp_3histogram2d(PyObject *__pyx_self, Py
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("histogram2d", 0, 4, 7, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 129; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("histogram_nomp.histogram2d", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("histogram.histogram2d", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
@@ -3081,9 +3079,9 @@ static PyObject *__pyx_pw_14histogram_nomp_3histogram2d(PyObject *__pyx_self, Py
     PyErr_Format(PyExc_TypeError, "Argument '%.200s' must not be None", "bins"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 131; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_weights), __pyx_ptype_5numpy_ndarray, 0, "weights", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 132; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_r = __pyx_pf_14histogram_nomp_2histogram2d(__pyx_self, __pyx_v_pos0, __pyx_v_pos1, __pyx_v_bins, __pyx_v_weights, __pyx_v_split, __pyx_v_nthread, __pyx_v_empty);
+  __pyx_r = __pyx_pf_9histogram_2histogram2d(__pyx_self, __pyx_v_pos0, __pyx_v_pos1, __pyx_v_bins, __pyx_v_weights, __pyx_v_split, __pyx_v_nthread, __pyx_v_empty);
 
-  /* "histogram_nomp.pyx":129
+  /* "histogram.pyx":129
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def histogram2d(numpy.ndarray pos0 not None,             # <<<<<<<<<<<<<<
@@ -3100,7 +3098,7 @@ static PyObject *__pyx_pw_14histogram_nomp_3histogram2d(PyObject *__pyx_self, Py
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_pos0, PyArrayObject *__pyx_v_pos1, PyObject *__pyx_v_bins, PyArrayObject *__pyx_v_weights, PyObject *__pyx_v_split, CYTHON_UNUSED PyObject *__pyx_v_nthread, float __pyx_v_empty) {
+static PyObject *__pyx_pf_9histogram_2histogram2d(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_pos0, PyArrayObject *__pyx_v_pos1, PyObject *__pyx_v_bins, PyArrayObject *__pyx_v_weights, PyObject *__pyx_v_split, CYTHON_UNUSED PyObject *__pyx_v_nthread, float __pyx_v_empty) {
   int __pyx_v_bins0;
   int __pyx_v_bins1;
   int __pyx_v_i;
@@ -3194,7 +3192,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   __pyx_pybuffernd_out_merge.data = NULL;
   __pyx_pybuffernd_out_merge.rcbuffer = &__pyx_pybuffer_out_merge;
 
-  /* "histogram_nomp.pyx":148
+  /* "histogram.pyx":148
  *     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
  *     """
  *     assert pos0.size == pos1.size             # <<<<<<<<<<<<<<
@@ -3219,7 +3217,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   }
   #endif
 
-  /* "histogram_nomp.pyx":149
+  /* "histogram.pyx":149
  *     """
  *     assert pos0.size == pos1.size
  *     assert pos0.size == weights.size             # <<<<<<<<<<<<<<
@@ -3244,7 +3242,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   }
   #endif
 
-  /* "histogram_nomp.pyx":152
+  /* "histogram.pyx":152
  *     cdef:
  *         int  bins0, bins1, i, j, bin0, bin1
  *         int  size = pos0.size             # <<<<<<<<<<<<<<
@@ -3257,7 +3255,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_size = __pyx_t_5;
 
-  /* "histogram_nomp.pyx":153
+  /* "histogram.pyx":153
  *         int  bins0, bins1, i, j, bin0, bin1
  *         int  size = pos0.size
  *     try:             # <<<<<<<<<<<<<<
@@ -3271,7 +3269,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
     __Pyx_XGOTREF(__pyx_t_8);
     /*try:*/ {
 
-      /* "histogram_nomp.pyx":154
+      /* "histogram.pyx":154
  *         int  size = pos0.size
  *     try:
  *         bins0, bins1 = tuple(bins)             # <<<<<<<<<<<<<<
@@ -3327,7 +3325,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "histogram_nomp.pyx":155
+    /* "histogram.pyx":155
  *     try:
  *         bins0, bins1 = tuple(bins)
  *     except:             # <<<<<<<<<<<<<<
@@ -3335,13 +3333,13 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
  *     if bins0 <= 0:
  */
     /*except:*/ {
-      __Pyx_AddTraceback("histogram_nomp.histogram2d", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("histogram.histogram2d", __pyx_clineno, __pyx_lineno, __pyx_filename);
       if (__Pyx_GetException(&__pyx_t_2, &__pyx_t_3, &__pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 155; __pyx_clineno = __LINE__; goto __pyx_L5_except_error;}
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_GOTREF(__pyx_t_1);
 
-      /* "histogram_nomp.pyx":156
+      /* "histogram.pyx":156
  *         bins0, bins1 = tuple(bins)
  *     except:
  *         bins0 = bins1 = int(bins)             # <<<<<<<<<<<<<<
@@ -3373,7 +3371,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
     __pyx_L10_try_end:;
   }
 
-  /* "histogram_nomp.pyx":157
+  /* "histogram.pyx":157
  *     except:
  *         bins0 = bins1 = int(bins)
  *     if bins0 <= 0:             # <<<<<<<<<<<<<<
@@ -3383,7 +3381,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   __pyx_t_4 = ((__pyx_v_bins0 <= 0) != 0);
   if (__pyx_t_4) {
 
-    /* "histogram_nomp.pyx":158
+    /* "histogram.pyx":158
  *         bins0 = bins1 = int(bins)
  *     if bins0 <= 0:
  *         bins0 = 1             # <<<<<<<<<<<<<<
@@ -3395,7 +3393,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   }
   __pyx_L13:;
 
-  /* "histogram_nomp.pyx":159
+  /* "histogram.pyx":159
  *     if bins0 <= 0:
  *         bins0 = 1
  *     if bins1 <= 0:             # <<<<<<<<<<<<<<
@@ -3405,7 +3403,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   __pyx_t_4 = ((__pyx_v_bins1 <= 0) != 0);
   if (__pyx_t_4) {
 
-    /* "histogram_nomp.pyx":160
+    /* "histogram.pyx":160
  *         bins0 = 1
  *     if bins1 <= 0:
  *         bins1 = 1             # <<<<<<<<<<<<<<
@@ -3417,7 +3415,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   }
   __pyx_L14:;
 
-  /* "histogram_nomp.pyx":162
+  /* "histogram.pyx":162
  *         bins1 = 1
  *     cdef:
  *         float[:] cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -3475,7 +3473,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   __pyx_t_12.memview = NULL;
   __pyx_t_12.data = NULL;
 
-  /* "histogram_nomp.pyx":163
+  /* "histogram.pyx":163
  *     cdef:
  *         float[:] cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=numpy.float32)
  *         float[:] cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -3533,7 +3531,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   __pyx_t_13.memview = NULL;
   __pyx_t_13.data = NULL;
 
-  /* "histogram_nomp.pyx":164
+  /* "histogram.pyx":164
  *         float[:] cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=numpy.float32)
  *         float[:] cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float32)
  *         float[:] data = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -3591,7 +3589,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   __pyx_t_14.memview = NULL;
   __pyx_t_14.data = NULL;
 
-  /* "histogram_nomp.pyx":165
+  /* "histogram.pyx":165
  *         float[:] cpos1 = numpy.ascontiguousarray(pos1.ravel(), dtype=numpy.float32)
  *         float[:] data = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
  *         numpy.ndarray[numpy.float64_t, ndim = 2] out_data = numpy.zeros((bins0, bins1), dtype="float64")             # <<<<<<<<<<<<<<
@@ -3642,7 +3640,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   __pyx_v_out_data = ((PyArrayObject *)__pyx_t_3);
   __pyx_t_3 = 0;
 
-  /* "histogram_nomp.pyx":166
+  /* "histogram.pyx":166
  *         float[:] data = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
  *         numpy.ndarray[numpy.float64_t, ndim = 2] out_data = numpy.zeros((bins0, bins1), dtype="float64")
  *         numpy.ndarray[numpy.float64_t, ndim = 2] out_count = numpy.zeros((bins0, bins1), dtype="float64")             # <<<<<<<<<<<<<<
@@ -3693,7 +3691,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   __pyx_v_out_count = ((PyArrayObject *)__pyx_t_3);
   __pyx_t_3 = 0;
 
-  /* "histogram_nomp.pyx":167
+  /* "histogram.pyx":167
  *         numpy.ndarray[numpy.float64_t, ndim = 2] out_data = numpy.zeros((bins0, bins1), dtype="float64")
  *         numpy.ndarray[numpy.float64_t, ndim = 2] out_count = numpy.zeros((bins0, bins1), dtype="float64")
  *         numpy.ndarray[numpy.float64_t, ndim = 2] out_merge = numpy.zeros((bins0, bins1), dtype="float64")             # <<<<<<<<<<<<<<
@@ -3744,7 +3742,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   __pyx_v_out_merge = ((PyArrayObject *)__pyx_t_3);
   __pyx_t_3 = 0;
 
-  /* "histogram_nomp.pyx":168
+  /* "histogram.pyx":168
  *         numpy.ndarray[numpy.float64_t, ndim = 2] out_count = numpy.zeros((bins0, bins1), dtype="float64")
  *         numpy.ndarray[numpy.float64_t, ndim = 2] out_merge = numpy.zeros((bins0, bins1), dtype="float64")
  *         double min0 = pos0.min()             # <<<<<<<<<<<<<<
@@ -3775,7 +3773,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_v_min0 = __pyx_t_18;
 
-  /* "histogram_nomp.pyx":169
+  /* "histogram.pyx":169
  *         numpy.ndarray[numpy.float64_t, ndim = 2] out_merge = numpy.zeros((bins0, bins1), dtype="float64")
  *         double min0 = pos0.min()
  *         double max0 = pos0.max() * EPS32             # <<<<<<<<<<<<<<
@@ -3812,7 +3810,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_max0 = __pyx_t_18;
 
-  /* "histogram_nomp.pyx":170
+  /* "histogram.pyx":170
  *         double min0 = pos0.min()
  *         double max0 = pos0.max() * EPS32
  *         double min1 = pos1.min()             # <<<<<<<<<<<<<<
@@ -3843,7 +3841,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_min1 = __pyx_t_18;
 
-  /* "histogram_nomp.pyx":171
+  /* "histogram.pyx":171
  *         double max0 = pos0.max() * EPS32
  *         double min1 = pos1.min()
  *         double max1 = pos1.max() * EPS32             # <<<<<<<<<<<<<<
@@ -3880,7 +3878,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_v_max1 = __pyx_t_18;
 
-  /* "histogram_nomp.pyx":172
+  /* "histogram.pyx":172
  *         double min1 = pos1.min()
  *         double max1 = pos1.max() * EPS32
  *         double delta0 = (max0 - min0) / float(bins0)             # <<<<<<<<<<<<<<
@@ -3889,7 +3887,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
  */
   __pyx_v_delta0 = ((__pyx_v_max0 - __pyx_v_min0) / ((double)__pyx_v_bins0));
 
-  /* "histogram_nomp.pyx":173
+  /* "histogram.pyx":173
  *         double max1 = pos1.max() * EPS32
  *         double delta0 = (max0 - min0) / float(bins0)
  *         double delta1 = (max1 - min1) / float(bins1)             # <<<<<<<<<<<<<<
@@ -3898,7 +3896,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
  */
   __pyx_v_delta1 = ((__pyx_v_max1 - __pyx_v_min1) / ((double)__pyx_v_bins1));
 
-  /* "histogram_nomp.pyx":175
+  /* "histogram.pyx":175
  *         double delta1 = (max1 - min1) / float(bins1)
  *         double fbin0, fbin1, p0, p1, d
  *         double epsilon = 1e-10             # <<<<<<<<<<<<<<
@@ -3907,7 +3905,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
  */
   __pyx_v_epsilon = 1e-10;
 
-  /* "histogram_nomp.pyx":177
+  /* "histogram.pyx":177
  *         double epsilon = 1e-10
  * 
  *     if split:             # <<<<<<<<<<<<<<
@@ -3917,7 +3915,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_v_split); if (unlikely(__pyx_t_4 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 177; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   if (__pyx_t_4) {
 
-    /* "histogram_nomp.pyx":178
+    /* "histogram.pyx":178
  * 
  *     if split:
  *         logger.warning("No pixel splitting in histogram")             # <<<<<<<<<<<<<<
@@ -3937,7 +3935,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   }
   __pyx_L15:;
 
-  /* "histogram_nomp.pyx":180
+  /* "histogram.pyx":180
  *         logger.warning("No pixel splitting in histogram")
  * 
  *     edges0 = numpy.linspace(min0 + (0.5 * delta0), max0 - (0.5 * delta0), bins0)             # <<<<<<<<<<<<<<
@@ -3988,7 +3986,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   __pyx_v_edges0 = __pyx_t_3;
   __pyx_t_3 = 0;
 
-  /* "histogram_nomp.pyx":181
+  /* "histogram.pyx":181
  * 
  *     edges0 = numpy.linspace(min0 + (0.5 * delta0), max0 - (0.5 * delta0), bins0)
  *     edges1 = numpy.linspace(min1 + (0.5 * delta1), max1 - (0.5 * delta1), bins1)             # <<<<<<<<<<<<<<
@@ -4039,7 +4037,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   __pyx_v_edges1 = __pyx_t_3;
   __pyx_t_3 = 0;
 
-  /* "histogram_nomp.pyx":182
+  /* "histogram.pyx":182
  *     edges0 = numpy.linspace(min0 + (0.5 * delta0), max0 - (0.5 * delta0), bins0)
  *     edges1 = numpy.linspace(min1 + (0.5 * delta1), max1 - (0.5 * delta1), bins1)
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -4053,7 +4051,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
       #endif
       /*try:*/ {
 
-        /* "histogram_nomp.pyx":183
+        /* "histogram.pyx":183
  *     edges1 = numpy.linspace(min1 + (0.5 * delta1), max1 - (0.5 * delta1), bins1)
  *     with nogil:
  *         for i in range(size):             # <<<<<<<<<<<<<<
@@ -4064,7 +4062,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
         for (__pyx_t_5 = 0; __pyx_t_5 < __pyx_t_9; __pyx_t_5+=1) {
           __pyx_v_i = __pyx_t_5;
 
-          /* "histogram_nomp.pyx":184
+          /* "histogram.pyx":184
  *     with nogil:
  *         for i in range(size):
  *             p0 = cpos0[i]             # <<<<<<<<<<<<<<
@@ -4074,7 +4072,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
           __pyx_t_22 = __pyx_v_i;
           __pyx_v_p0 = (*((float *) ( /* dim=0 */ (__pyx_v_cpos0.data + __pyx_t_22 * __pyx_v_cpos0.strides[0]) )));
 
-          /* "histogram_nomp.pyx":185
+          /* "histogram.pyx":185
  *         for i in range(size):
  *             p0 = cpos0[i]
  *             p1 = cpos1[i]             # <<<<<<<<<<<<<<
@@ -4084,7 +4082,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
           __pyx_t_23 = __pyx_v_i;
           __pyx_v_p1 = (*((float *) ( /* dim=0 */ (__pyx_v_cpos1.data + __pyx_t_23 * __pyx_v_cpos1.strides[0]) )));
 
-          /* "histogram_nomp.pyx":186
+          /* "histogram.pyx":186
  *             p0 = cpos0[i]
  *             p1 = cpos1[i]
  *             d = data[i]             # <<<<<<<<<<<<<<
@@ -4094,25 +4092,25 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
           __pyx_t_24 = __pyx_v_i;
           __pyx_v_d = (*((float *) ( /* dim=0 */ (__pyx_v_data.data + __pyx_t_24 * __pyx_v_data.strides[0]) )));
 
-          /* "histogram_nomp.pyx":187
+          /* "histogram.pyx":187
  *             p1 = cpos1[i]
  *             d = data[i]
  *             fbin0 = getBinNr(p0, min0, delta0)             # <<<<<<<<<<<<<<
  *             fbin1 = getBinNr(p1, min1, delta1)
  *             bin0 = < int > floor(fbin0)
  */
-          __pyx_v_fbin0 = __pyx_f_14histogram_nomp_getBinNr(__pyx_v_p0, __pyx_v_min0, __pyx_v_delta0);
+          __pyx_v_fbin0 = __pyx_f_9histogram_getBinNr(__pyx_v_p0, __pyx_v_min0, __pyx_v_delta0);
 
-          /* "histogram_nomp.pyx":188
+          /* "histogram.pyx":188
  *             d = data[i]
  *             fbin0 = getBinNr(p0, min0, delta0)
  *             fbin1 = getBinNr(p1, min1, delta1)             # <<<<<<<<<<<<<<
  *             bin0 = < int > floor(fbin0)
  *             bin1 = < int > floor(fbin1)
  */
-          __pyx_v_fbin1 = __pyx_f_14histogram_nomp_getBinNr(__pyx_v_p1, __pyx_v_min1, __pyx_v_delta1);
+          __pyx_v_fbin1 = __pyx_f_9histogram_getBinNr(__pyx_v_p1, __pyx_v_min1, __pyx_v_delta1);
 
-          /* "histogram_nomp.pyx":189
+          /* "histogram.pyx":189
  *             fbin0 = getBinNr(p0, min0, delta0)
  *             fbin1 = getBinNr(p1, min1, delta1)
  *             bin0 = < int > floor(fbin0)             # <<<<<<<<<<<<<<
@@ -4121,7 +4119,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
  */
           __pyx_v_bin0 = ((int)floor(__pyx_v_fbin0));
 
-          /* "histogram_nomp.pyx":190
+          /* "histogram.pyx":190
  *             fbin1 = getBinNr(p1, min1, delta1)
  *             bin0 = < int > floor(fbin0)
  *             bin1 = < int > floor(fbin1)             # <<<<<<<<<<<<<<
@@ -4130,7 +4128,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
  */
           __pyx_v_bin1 = ((int)floor(__pyx_v_fbin1));
 
-          /* "histogram_nomp.pyx":191
+          /* "histogram.pyx":191
  *             bin0 = < int > floor(fbin0)
  *             bin1 = < int > floor(fbin1)
  *             if (bin0<0) or (bin1<0) or (bin0>=bins0) or (bin1>=bins1):             # <<<<<<<<<<<<<<
@@ -4160,7 +4158,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
           __pyx_L22_bool_binop_done:;
           if (__pyx_t_4) {
 
-            /* "histogram_nomp.pyx":192
+            /* "histogram.pyx":192
  *             bin1 = < int > floor(fbin1)
  *             if (bin0<0) or (bin1<0) or (bin0>=bins0) or (bin1>=bins1):
  *                 continue             # <<<<<<<<<<<<<<
@@ -4170,7 +4168,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
             goto __pyx_L19_continue;
           }
 
-          /* "histogram_nomp.pyx":193
+          /* "histogram.pyx":193
  *             if (bin0<0) or (bin1<0) or (bin0>=bins0) or (bin1>=bins1):
  *                 continue
  *             out_count[bin0, bin1] += 1.0             # <<<<<<<<<<<<<<
@@ -4181,7 +4179,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
           __pyx_t_27 = __pyx_v_bin1;
           *__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_out_count.rcbuffer->pybuffer.buf, __pyx_t_26, __pyx_pybuffernd_out_count.diminfo[0].strides, __pyx_t_27, __pyx_pybuffernd_out_count.diminfo[1].strides) += 1.0;
 
-          /* "histogram_nomp.pyx":194
+          /* "histogram.pyx":194
  *                 continue
  *             out_count[bin0, bin1] += 1.0
  *             out_data[bin0, bin1] += d             # <<<<<<<<<<<<<<
@@ -4194,7 +4192,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
           __pyx_L19_continue:;
         }
 
-        /* "histogram_nomp.pyx":196
+        /* "histogram.pyx":196
  *             out_data[bin0, bin1] += d
  * 
  *         for i in range(bins0):             # <<<<<<<<<<<<<<
@@ -4205,7 +4203,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
         for (__pyx_t_5 = 0; __pyx_t_5 < __pyx_t_9; __pyx_t_5+=1) {
           __pyx_v_i = __pyx_t_5;
 
-          /* "histogram_nomp.pyx":197
+          /* "histogram.pyx":197
  * 
  *         for i in range(bins0):
  *             for j in range(bins1):             # <<<<<<<<<<<<<<
@@ -4216,7 +4214,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
           for (__pyx_t_31 = 0; __pyx_t_31 < __pyx_t_30; __pyx_t_31+=1) {
             __pyx_v_j = __pyx_t_31;
 
-            /* "histogram_nomp.pyx":198
+            /* "histogram.pyx":198
  *         for i in range(bins0):
  *             for j in range(bins1):
  *                 if out_count[i, j] > epsilon:             # <<<<<<<<<<<<<<
@@ -4228,7 +4226,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
             __pyx_t_4 = (((*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_out_count.rcbuffer->pybuffer.buf, __pyx_t_32, __pyx_pybuffernd_out_count.diminfo[0].strides, __pyx_t_33, __pyx_pybuffernd_out_count.diminfo[1].strides)) > __pyx_v_epsilon) != 0);
             if (__pyx_t_4) {
 
-              /* "histogram_nomp.pyx":199
+              /* "histogram.pyx":199
  *             for j in range(bins1):
  *                 if out_count[i, j] > epsilon:
  *                     out_merge[i, j] = out_data[i, j] / out_count[i, j]             # <<<<<<<<<<<<<<
@@ -4246,7 +4244,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
             }
             /*else*/ {
 
-              /* "histogram_nomp.pyx":201
+              /* "histogram.pyx":201
  *                     out_merge[i, j] = out_data[i, j] / out_count[i, j]
  *                 else:
  *                     out_merge[i, j] = empty             # <<<<<<<<<<<<<<
@@ -4262,7 +4260,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
         }
       }
 
-      /* "histogram_nomp.pyx":182
+      /* "histogram.pyx":182
  *     edges0 = numpy.linspace(min0 + (0.5 * delta0), max0 - (0.5 * delta0), bins0)
  *     edges1 = numpy.linspace(min1 + (0.5 * delta1), max1 - (0.5 * delta1), bins1)
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -4280,7 +4278,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
       }
   }
 
-  /* "histogram_nomp.pyx":203
+  /* "histogram.pyx":203
  *                     out_merge[i, j] = empty
  * 
  *     return out_merge, edges0, edges1, out_data, out_count             # <<<<<<<<<<<<<<
@@ -4307,7 +4305,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "histogram_nomp.pyx":129
+  /* "histogram.pyx":129
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def histogram2d(numpy.ndarray pos0 not None,             # <<<<<<<<<<<<<<
@@ -4333,7 +4331,7 @@ static PyObject *__pyx_pf_14histogram_nomp_2histogram2d(CYTHON_UNUSED PyObject *
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_out_data.rcbuffer->pybuffer);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_out_merge.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("histogram_nomp.histogram2d", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("histogram.histogram2d", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   goto __pyx_L2;
   __pyx_L0:;
@@ -17103,7 +17101,7 @@ static PyBufferProcs __pyx_tp_as_buffer_array = {
 
 static PyTypeObject __pyx_type___pyx_array = {
   PyVarObject_HEAD_INIT(0, 0)
-  "histogram_nomp.array", /*tp_name*/
+  "histogram.array", /*tp_name*/
   sizeof(struct __pyx_array_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_array, /*tp_dealloc*/
@@ -17208,7 +17206,7 @@ static PyMethodDef __pyx_methods_Enum[] = {
 
 static PyTypeObject __pyx_type___pyx_MemviewEnum = {
   PyVarObject_HEAD_INIT(0, 0)
-  "histogram_nomp.Enum", /*tp_name*/
+  "histogram.Enum", /*tp_name*/
   sizeof(struct __pyx_MemviewEnum_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_Enum, /*tp_dealloc*/
@@ -17454,7 +17452,7 @@ static PyBufferProcs __pyx_tp_as_buffer_memoryview = {
 
 static PyTypeObject __pyx_type___pyx_memoryview = {
   PyVarObject_HEAD_INIT(0, 0)
-  "histogram_nomp.memoryview", /*tp_name*/
+  "histogram.memoryview", /*tp_name*/
   sizeof(struct __pyx_memoryview_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_memoryview, /*tp_dealloc*/
@@ -17578,7 +17576,7 @@ static struct PyGetSetDef __pyx_getsets__memoryviewslice[] = {
 
 static PyTypeObject __pyx_type___pyx_memoryviewslice = {
   PyVarObject_HEAD_INIT(0, 0)
-  "histogram_nomp._memoryviewslice", /*tp_name*/
+  "histogram._memoryviewslice", /*tp_name*/
   sizeof(struct __pyx_memoryviewslice_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc__memoryviewslice, /*tp_dealloc*/
@@ -17652,7 +17650,7 @@ static struct PyModuleDef __pyx_moduledef = {
   #else
     PyModuleDef_HEAD_INIT,
   #endif
-    "histogram_nomp",
+    "histogram",
     0, /* m_doc */
     -1, /* m_size */
     __pyx_methods /* m_methods */,
@@ -17743,7 +17741,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_got_differing_extents_in_dimensi, __pyx_k_got_differing_extents_in_dimensi, sizeof(__pyx_k_got_differing_extents_in_dimensi), 0, 0, 1, 0},
   {&__pyx_n_s_histogram, __pyx_k_histogram, sizeof(__pyx_k_histogram), 0, 0, 1, 1},
   {&__pyx_n_s_histogram2d, __pyx_k_histogram2d, sizeof(__pyx_k_histogram2d), 0, 0, 1, 1},
-  {&__pyx_n_s_histogram_nomp, __pyx_k_histogram_nomp, sizeof(__pyx_k_histogram_nomp), 0, 0, 1, 1},
   {&__pyx_kp_s_home_kieffer_workspace_pyFAI_sr, __pyx_k_home_kieffer_workspace_pyFAI_sr, sizeof(__pyx_k_home_kieffer_workspace_pyFAI_sr), 0, 0, 1, 0},
   {&__pyx_n_s_i, __pyx_k_i, sizeof(__pyx_k_i), 0, 0, 1, 1},
   {&__pyx_n_s_id, __pyx_k_id, sizeof(__pyx_k_id), 0, 0, 1, 1},
@@ -17838,7 +17835,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "histogram_nomp.pyx":92
+  /* "histogram.pyx":92
  *         int bin = 0, i, idx
  *     if pixelSize_in_Pos:
  *         logger.warning("No pixel splitting in histogram")             # <<<<<<<<<<<<<<
@@ -17849,7 +17846,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple_);
   __Pyx_GIVEREF(__pyx_tuple_);
 
-  /* "histogram_nomp.pyx":178
+  /* "histogram.pyx":178
  * 
  *     if split:
  *         logger.warning("No pixel splitting in histogram")             # <<<<<<<<<<<<<<
@@ -18047,7 +18044,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__19);
   __Pyx_GIVEREF(__pyx_tuple__19);
 
-  /* "histogram_nomp.pyx":38
+  /* "histogram.pyx":38
  * import sys
  * import logging
  * logger = logging.getLogger("pyFAI.histogram_nomp")             # <<<<<<<<<<<<<<
@@ -18058,7 +18055,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__20);
   __Pyx_GIVEREF(__pyx_tuple__20);
 
-  /* "histogram_nomp.pyx":57
+  /* "histogram.pyx":57
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def histogram(numpy.ndarray pos not None, \             # <<<<<<<<<<<<<<
@@ -18070,7 +18067,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__21);
   __pyx_codeobj__22 = (PyObject*)__Pyx_PyCode_New(7, 0, 24, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__21, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_kieffer_workspace_pyFAI_sr, __pyx_n_s_histogram, 57, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__22)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "histogram_nomp.pyx":129
+  /* "histogram.pyx":129
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def histogram2d(numpy.ndarray pos0 not None,             # <<<<<<<<<<<<<<
@@ -18155,11 +18152,11 @@ static int __Pyx_InitGlobals(void) {
 }
 
 #if PY_MAJOR_VERSION < 3
-PyMODINIT_FUNC inithistogram_nomp(void); /*proto*/
-PyMODINIT_FUNC inithistogram_nomp(void)
+PyMODINIT_FUNC inithistogram(void); /*proto*/
+PyMODINIT_FUNC inithistogram(void)
 #else
-PyMODINIT_FUNC PyInit_histogram_nomp(void); /*proto*/
-PyMODINIT_FUNC PyInit_histogram_nomp(void)
+PyMODINIT_FUNC PyInit_histogram(void); /*proto*/
+PyMODINIT_FUNC PyInit_histogram(void)
 #endif
 {
   PyObject *__pyx_t_1 = NULL;
@@ -18180,7 +18177,7 @@ PyMODINIT_FUNC PyInit_histogram_nomp(void)
           Py_FatalError("failed to import 'refnanny' module");
   }
   #endif
-  __Pyx_RefNannySetupContext("PyMODINIT_FUNC PyInit_histogram_nomp(void)", 0);
+  __Pyx_RefNannySetupContext("PyMODINIT_FUNC PyInit_histogram(void)", 0);
   if ( __Pyx_check_binary_version() < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_empty_tuple = PyTuple_New(0); if (unlikely(!__pyx_empty_tuple)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_empty_bytes = PyBytes_FromStringAndSize("", 0); if (unlikely(!__pyx_empty_bytes)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -18202,7 +18199,7 @@ PyMODINIT_FUNC PyInit_histogram_nomp(void)
   #endif
   /*--- Module creation code ---*/
   #if PY_MAJOR_VERSION < 3
-  __pyx_m = Py_InitModule4("histogram_nomp", __pyx_methods, 0, 0, PYTHON_API_VERSION); Py_XINCREF(__pyx_m);
+  __pyx_m = Py_InitModule4("histogram", __pyx_methods, 0, 0, PYTHON_API_VERSION); Py_XINCREF(__pyx_m);
   #else
   __pyx_m = PyModule_Create(&__pyx_moduledef);
   #endif
@@ -18219,14 +18216,14 @@ PyMODINIT_FUNC PyInit_histogram_nomp(void)
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   #endif
-  if (__pyx_module_is_main_histogram_nomp) {
+  if (__pyx_module_is_main_histogram) {
     if (PyObject_SetAttrString(__pyx_m, "__name__", __pyx_n_s_main) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    if (!PyDict_GetItemString(modules, "histogram_nomp")) {
-      if (unlikely(PyDict_SetItemString(modules, "histogram_nomp", __pyx_m) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!PyDict_GetItemString(modules, "histogram")) {
+      if (unlikely(PyDict_SetItemString(modules, "histogram", __pyx_m) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
   }
   #endif
@@ -18287,7 +18284,7 @@ PyMODINIT_FUNC PyInit_histogram_nomp(void)
   /*--- Function import code ---*/
   /*--- Execution code ---*/
 
-  /* "histogram_nomp.pyx":26
+  /* "histogram.pyx":26
  * #
  * 
  * __author__ = "Jerome Kieffer"             # <<<<<<<<<<<<<<
@@ -18296,7 +18293,7 @@ PyMODINIT_FUNC PyInit_histogram_nomp(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Jerome_Kieffer) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "histogram_nomp.pyx":27
+  /* "histogram.pyx":27
  * 
  * __author__ = "Jerome Kieffer"
  * __date__ = "20/10/2014"             # <<<<<<<<<<<<<<
@@ -18305,7 +18302,7 @@ PyMODINIT_FUNC PyInit_histogram_nomp(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_20_10_2014) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "histogram_nomp.pyx":28
+  /* "histogram.pyx":28
  * __author__ = "Jerome Kieffer"
  * __date__ = "20/10/2014"
  * __name__ = "histogram"             # <<<<<<<<<<<<<<
@@ -18314,7 +18311,7 @@ PyMODINIT_FUNC PyInit_histogram_nomp(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_name_2, __pyx_n_s_histogram) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "histogram_nomp.pyx":29
+  /* "histogram.pyx":29
  * __date__ = "20/10/2014"
  * __name__ = "histogram"
  * __license__ = "GPLv3+"             # <<<<<<<<<<<<<<
@@ -18323,7 +18320,7 @@ PyMODINIT_FUNC PyInit_histogram_nomp(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_license, __pyx_kp_s_GPLv3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "histogram_nomp.pyx":30
+  /* "histogram.pyx":30
  * __name__ = "histogram"
  * __license__ = "GPLv3+"
  * __copyright__ = "2011-2014, ESRF"             # <<<<<<<<<<<<<<
@@ -18332,7 +18329,7 @@ PyMODINIT_FUNC PyInit_histogram_nomp(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_copyright, __pyx_kp_s_2011_2014_ESRF) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "histogram_nomp.pyx":31
+  /* "histogram.pyx":31
  * __license__ = "GPLv3+"
  * __copyright__ = "2011-2014, ESRF"
  * __contact__ = "jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
@@ -18341,7 +18338,7 @@ PyMODINIT_FUNC PyInit_histogram_nomp(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_contact, __pyx_kp_s_jerome_kieffer_esrf_fr) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "histogram_nomp.pyx":34
+  /* "histogram.pyx":34
  * 
  * import cython
  * import numpy             # <<<<<<<<<<<<<<
@@ -18353,7 +18350,7 @@ PyMODINIT_FUNC PyInit_histogram_nomp(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_numpy, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 34; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "histogram_nomp.pyx":36
+  /* "histogram.pyx":36
  * import numpy
  * cimport numpy
  * import sys             # <<<<<<<<<<<<<<
@@ -18365,7 +18362,7 @@ PyMODINIT_FUNC PyInit_histogram_nomp(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_sys, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "histogram_nomp.pyx":37
+  /* "histogram.pyx":37
  * cimport numpy
  * import sys
  * import logging             # <<<<<<<<<<<<<<
@@ -18377,7 +18374,7 @@ PyMODINIT_FUNC PyInit_histogram_nomp(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_logging, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "histogram_nomp.pyx":38
+  /* "histogram.pyx":38
  * import sys
  * import logging
  * logger = logging.getLogger("pyFAI.histogram_nomp")             # <<<<<<<<<<<<<<
@@ -18395,7 +18392,7 @@ PyMODINIT_FUNC PyInit_histogram_nomp(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_logger, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "histogram_nomp.pyx":40
+  /* "histogram.pyx":40
  * logger = logging.getLogger("pyFAI.histogram_nomp")
  * from libc.math cimport floor
  * EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)             # <<<<<<<<<<<<<<
@@ -18447,31 +18444,31 @@ PyMODINIT_FUNC PyInit_histogram_nomp(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_EPS32, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "histogram_nomp.pyx":57
+  /* "histogram.pyx":57
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def histogram(numpy.ndarray pos not None, \             # <<<<<<<<<<<<<<
  *               numpy.ndarray weights not None, \
  *               int bins=100,
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_14histogram_nomp_1histogram, NULL, __pyx_n_s_histogram_nomp); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_9histogram_1histogram, NULL, __pyx_n_s_histogram); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_histogram, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "histogram_nomp.pyx":129
+  /* "histogram.pyx":129
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def histogram2d(numpy.ndarray pos0 not None,             # <<<<<<<<<<<<<<
  *                 numpy.ndarray pos1 not None,
  *                 bins not None,
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_14histogram_nomp_3histogram2d, NULL, __pyx_n_s_histogram_nomp); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 129; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_9histogram_3histogram2d, NULL, __pyx_n_s_histogram); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 129; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_histogram2d, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 129; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "histogram_nomp.pyx":1
+  /* "histogram.pyx":1
  * #!/usr/bin/env python             # <<<<<<<<<<<<<<
  * # -*- coding: utf-8 -*-
  * #
@@ -18609,11 +18606,11 @@ PyMODINIT_FUNC PyInit_histogram_nomp(void)
   __Pyx_XDECREF(__pyx_t_5);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init histogram_nomp", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init histogram", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     Py_DECREF(__pyx_m); __pyx_m = 0;
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init histogram_nomp");
+    PyErr_SetString(PyExc_ImportError, "init histogram");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();

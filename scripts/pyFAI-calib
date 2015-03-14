@@ -49,7 +49,7 @@ except ImportError:
     logging.debug("No socket opened for debugging. Please install rfoo")
 
 
-# This is for debugin wtih rconsole
+# This is for debugging with rconsole
 c = None
 if __name__ == "__main__":
     c = Calibration()
