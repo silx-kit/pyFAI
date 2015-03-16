@@ -24,11 +24,11 @@
 #
 
 """
-eiger_mask
+eiger-mask
 
 A tool for extracting the mask from an Eiger master file.
 
-$ eiger_mask master.h5 
+$ eiger-mask master.h5 
 """
 
 __author__ = "Jerome Kieffer"
