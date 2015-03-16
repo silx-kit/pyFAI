@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/03/2015"
+__date__ = "16/03/2015"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -472,7 +472,7 @@ class AzimuthalIntegrator(Geometry):
                                                bins=npt,
                                                bin_range=tthRange,
                                                pixelSize_in_Pos=pixelSize,
-                                               empty=dummy or 0.0)
+                                               empty=dummy if dummy is not None else self._empty)
         tthAxis = rad2deg(tthAxis)
         self.save1D(filename, tthAxis, I, None, "2th_deg",
                     dark, flat, polarization_factor)
@@ -1802,7 +1802,7 @@ class AzimuthalIntegrator(Geometry):
                                                               bins=(npt_azim, npt_rad),
                                                               weights=data,
                                                               split=1,
-                                                              empty=dummy or 0.0)
+                                                              empty=dummy if dummy is not None else self._empty)
         bins2Th = rad2deg(bins2Th)
         binsChi = rad2deg(binsChi)
         self.save2D(filename, I, bins2Th, binsChi)  # , dark, flat, polarization_factor)
@@ -2635,7 +2635,7 @@ class AzimuthalIntegrator(Geometry):
                                                          weights=data,
                                                          bins=npt,
                                                          pixelSize_in_Pos=0,
-                                                         empty=dummy or 0.0)
+                                                         empty=dummy if dummy is not None else self._empty)
                     if error_model == "azimuthal":
                         variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
                     if variance is not None:
@@ -2643,7 +2643,7 @@ class AzimuthalIntegrator(Geometry):
                                                              weights=variance,
                                                              bins=npt,
                                                              pixelSize_in_Pos=1,
-                                                             empty=dummy or 0.0)
+                                                             empty=dummy if dummy is not None else self._empty)
                         sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
                 else:
                     logger.warning("pyFAI.histogram is not available,"
@@ -3088,7 +3088,7 @@ class AzimuthalIntegrator(Geometry):
                                                                            weights=data,
                                                                            bins=(npt_azim, npt_rad),
                                                                            split=False,
-                                                                           empty=dummy or 0.0)
+                                                                           empty=dummy if dummy is not None else self._empty)
 
         if I is None:
             logger.debug("integrate2d uses Numpy implementation")
@@ -3485,9 +3485,9 @@ class AzimuthalIntegrator(Geometry):
         return self._empty
     def set_empty(self, value):
         self._empty = float(empty)
-        #propagate empty values to integrators
-        for integrator in (self._ocl_integrator, self._ocl_lut_integr, 
-                           self._ocl_csr_integr,self._lut_integrator,self._csr_integrator):
+        # propagate empty values to integrators
+        for integrator in (self._ocl_integrator, self._ocl_lut_integr,
+                           self._ocl_csr_integr, self._lut_integrator, self._csr_integrator):
             if integrator:
                 integrator.empty = self._empty
-    empty = property(get_empty, set_empty)            
+    empty = property(get_empty, set_empty)
