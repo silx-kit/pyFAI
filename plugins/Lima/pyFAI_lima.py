@@ -13,7 +13,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/10/2013"
+__date__ = "16/03/2015"
 __satus__ = "development"
 
 import sys
@@ -101,14 +101,14 @@ class DoubleView(QtGui.QWidget):
         self.last_frame = self.ctrl.getStatus().ImageCounters.LastImageReady
         raw_img = self.ctrl.ReadBaseImage().buffer
         fai_img = self.ctrl.ReadImage().buffer
-        self.RawImg.setImage(raw_img.T)#, levels=[0, 4096])#, autoLevels=False, autoRange=False)
+        self.RawImg.setImage(raw_img.T)  # , levels=[0, 4096])#, autoLevels=False, autoRange=False)
         if self.cake <= 1:
             for  i in self.variablePlot.plotItem.items[:]:
                 self.variablePlot.plotItem.removeItem(i)
             self.variablePlot.plot(fai_img[:, 0], fai_img[:, 1])
 
         else:
-            self.variablePlot.setImage(fai_img.T)#, levels=[0, 4096])#, autoLevels=False, autoRange=False)
+            self.variablePlot.setImage(fai_img.T)  # , levels=[0, 4096])#, autoLevels=False, autoRange=False)
         self.last = time.time()
         self.timer.start(1000.0 / self.fps)
 
@@ -125,17 +125,14 @@ class DoubleView(QtGui.QWidget):
         if self.is_playing:
             raw_img = self.ctrl.ReadBaseImage().buffer
             fai_img = self.ctrl.ReadImage().buffer
-            self.RawImg.setImage(raw_img.T)#, levels=[0, 4096])#, autoLevels=False, autoRange=False)
+            self.RawImg.setImage(raw_img.T)  # , levels=[0, 4096])#, autoLevels=False, autoRange=False)
             if self.cake <= 1:
                 self.variablePlot.plotItem.plot(fai_img[:, 0], fai_img[:, 1])
                 self.variablePlot.plotItem.removeItem(self.variablePlot.plotItem.items[0])
             else:
-                self.variablePlot.setImage(fai_img.T)#, levels=[0, 4096])#, autoLevels=False, autoRange=False)
+                self.variablePlot.setImage(fai_img.T)  # , levels=[0, 4096])#, autoLevels=False, autoRange=False)
             print("Measured display speed: %5.2f fps" % (1.0 / (time.time() - self.last)))
             self.last = time.time()
-
-
-
 
 
 if __name__ == "__main__":
@@ -180,22 +177,22 @@ on a set of files grabbed from a Basler camera using LImA."""
     if len(args) == 1:
         hurl = args[0]
         if os.path.isdir(hurl):
-            #write .dat or .edf files ...
+            # write .dat or .edf files ...
             if options.cake < 2:
                 writer = io.AsciiWriter(hurl)
-        #Else HDF5
+        # Else HDF5
         else:
             if hurl.startswith("hdf5:"):
                 hurl = hurl[5:]
             if ":" in hurl:
                 hsplit = hurl.split(":")
                 hdfpath = hsplit[-1]
-                hdffile = ":".join(hsplit[:-1]) #special windows
+                hdffile = ":".join(hsplit[:-1])  # special windows
             else:
                 hdfpath = "test_LImA+pyFAI"
                 hdffile = hurl
             writer = io.HDF5Writer(hdffile, hdfpath, options.scan)
-    elif len(args) > 1 :
+    elif len(args) > 1:
         logger.error("Specify the HDF5 output file like hdf5:///home/user/filename.h5:/path/to/group")
         sys.exit(1)
     else:
@@ -209,14 +206,14 @@ on a set of files grabbed from a Basler camera using LImA."""
     try:
         from Lima import Core, Basler
 
-    except ImportError:
-        print("Is the PYTHONPATH correctly setup? I did not manage to import Lima")
+    except ImportError as error:
+        print("Is the PYTHONPATH correctly setup? I did not manage to import Lima and got: %s" % error)
         sys.exit(1)
     from limaFAI import LinkPyFAI, StartAcqCallback
     if options.gui:
         app = QtGui.QApplication([])
         window = DoubleView(ip=options.ip, fps=options.fps, writer=writer, cake=options.cake)
-        #window.set_input_data(args)
+        # window.set_input_data(args)
         window.show()
         sys.exit(app.exec_())
     else:
