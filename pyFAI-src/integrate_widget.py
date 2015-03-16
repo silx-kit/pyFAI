@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2015"
+__date__ = "13/03/2015"
 __satus__ = "development"
 
 import sys
@@ -212,7 +212,6 @@ class AIWidget(QtGui.QWidget):
             kwarg = {"unit": "2th_deg",
                      "dummy": None,
                      "delta_dummy": None,
-                     "method": "lut",
                      "polarization_factor":None,
                      "filename": None,
                      "safe": False,
@@ -266,9 +265,14 @@ class AIWidget(QtGui.QWidget):
                 pid = platform.id
                 did = platform.get_device(self.device.currentText()).id
                 if (pid is not None) and (did is not None):
-                    kwarg["method"] = "lut_ocl_%i,%i" % (pid, did)
+                    kwarg["method"] = "csr_ocl_%i,%i" % (pid, did)
                 else:
-                    kwarg["method"] = "lut_ocl"
+                    kwarg["method"] = "csr_ocl"
+            else:
+                if len(self.input_data) > 5:
+                    kwarg["method"] = "csr"
+                else:
+                    kwarg["method"] = "splitbbox"
 
             if self.do_radial_range.isChecked():
                 try:
