@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/03/2015"
+__date__ = "20/03/2015"
 __status__ = "production"
 
 import os
@@ -39,11 +39,14 @@ import types
 import array
 import operator
 import numpy
-from . import gui_utils
-if gui_utils.has_Qt:
+try:
+    from . import gui_utils
+except ImportError:  # mainly for tests
+    gui_utils = None
+if gui_utils and gui_utils.has_Qt:
     from .gui_utils import update_fig, maximize_fig, QtGui, matplotlib, pyplot, pylab
 import fabio
-from .utils import percentile, input
+from .utils import percentile
 from .reconstruct import reconstruct
 from .calibrant import Calibrant, ALL_CALIBRANTS
 from .blob_detection import BlobDetection
@@ -52,7 +55,8 @@ from .watershed import InverseWatershed
 logger = logging.getLogger("pyFAI.peak_picker")
 if os.name != "nt":
     WindowsError = RuntimeError
-
+if sys.version_info[0] < 3:
+    raw_input = input
 
 ################################################################################
 # PeakPicker
@@ -84,7 +88,7 @@ class PeakPicker(object):
         if isinstance(data, basestring):
             self.data = fabio.open(data).data.astype("float32")
         else:
-            self.data = numpy.ascontiguousarray(data,numpy.float32)
+            self.data = numpy.ascontiguousarray(data, numpy.float32)
         if mask is not None:
             mask = mask.astype(bool)
             view = self.data.ravel()
@@ -495,7 +499,7 @@ class PeakPicker(object):
         """
         logging.info(os.linesep.join(self.help))
         if not callback:
-            input("Please press enter when you are happy with your selection" + os.linesep)
+            raw_input("Please press enter when you are happy with your selection" + os.linesep)
             # need to disconnect 'button_press_event':
             self.fig.canvas.mpl_disconnect(self.mpl_connectId)
             self.mpl_connectId = None
@@ -936,7 +940,7 @@ class ControlPoints(object):
                     defaultRing = ring
                 elif lastRing is not None:
                     defaultRing = lastRing + 1
-                res = input("Point group #%2s (%i points)\t (%6.1f,%6.1f) \t [default=%s] Ring# " % (lbl, len(gpt), gpt.points[0][1], gpt.points[0][0], defaultRing)).strip()
+                res = raw_input("Point group #%2s (%i points)\t (%6.1f,%6.1f) \t [default=%s] Ring# " % (lbl, len(gpt), gpt.points[0][1], gpt.points[0][0], defaultRing)).strip()
                 if res == "":
                     res = defaultRing
                 try:

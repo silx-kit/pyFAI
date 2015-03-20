@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/02/2015"
+__date__ = "20/03/2015"
 __status__ = "beta"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -122,7 +122,8 @@ def is_hdf5(filename):
     if not os.path.exists(filename):
         raise IOError("No such file %s" % (filename))
     with open(filename, "rb") as f:
-        sig = [ord(i) for i in f.read(8)]
+        raw = f.read(8)
+    sig = [ord(i) for i in raw] if sys.version_info[0] < 3 else [int(i) for i in raw]
     return sig == signature
 
 

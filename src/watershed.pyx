@@ -26,7 +26,7 @@ Inverse watershed for connecting region of high intensity
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "30/01/2015"
+__date__ = "20/03/2015"
 __status__ = "stable"
 __license__ = "GPLv3+"
 
@@ -36,8 +36,9 @@ cimport numpy
 import sys 
 import logging
 logger = logging.getLogger("pyFAI.watershed") 
-from pyFAI.bilinear import Bilinear
-from pyFAI.utils import timeit
+from .bilinear import Bilinear
+from .utils import timeit
+from cython.parallel import prange
 
 cdef bint get_bit(int byteval, int idx) nogil:
     return ((byteval & (1 << idx)) != 0)
@@ -52,8 +53,8 @@ cdef class Region:
     def __cinit__(self, int idx):
         self.index = idx
         self.neighbors = []
-        self.border = [] # list of pixel indices of the border
-        self.peaks = [ idx ]
+        self.border = []  # list of pixel indices of the border
+        self.peaks = [idx]
         self.size = 0
         self.pass_to = - 1
         self.mini = - 1
@@ -62,7 +63,7 @@ cdef class Region:
 
     def __repr__(self):
         return "Region %s of size %s:\n neighbors: %s\n border: %s\n" % (self.index, self.size, self.neighbors, self.border) + \
-               "peaks: %s\n maxi=%s, mini=%s, pass=%s to %s" % (self.peaks, self.maxi, self.mini,self.highest_pass,self.pass_to)
+               "peaks: %s\n maxi=%s, mini=%s, pass=%s to %s" % (self.peaks, self.maxi, self.mini, self.highest_pass, self.pass_to)
 
     @cython.cdivision(True)
     @cython.boundscheck(False)
@@ -189,12 +190,15 @@ class InverseWatershed(object):
         self.init_borders()
         self.init_regions()
         self.init_pass()
-        self.merge_singleton()
-        self.merge_twins()
-        self.merge_intense(self.thres)
-        logger.info("found %s regions, after merge remains %s"%(len(self.regions),len(set(self.regions.values()))))
+#        self.merge_singleton()
+#        self.merge_twins()
+#        self.merge_intense(self.thres)
+        logger.info("found %s regions, after merge remains %s" % (len(self.regions), len(set(self.regions.values()))))
 
     @timeit
+    @cython.cdivision(True)
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def init_labels(self):
         cdef:
             int i, j, width = self.width, height = self.height, idx, res
@@ -206,7 +210,8 @@ class InverseWatershed(object):
                 res = self.bilinear.cp_local_maxi(idx)
                 labels[i, j] = res
                 if idx == res:
-                    regions[res] = Region(res)
+                    regions[res] = Region(res) 
+
     @timeit
     @cython.cdivision(True)
     @cython.boundscheck(False)
@@ -299,9 +304,6 @@ class InverseWatershed(object):
                 regions.pop(region.index)
 
     @timeit
-    @cython.cdivision(True)
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
     def merge_singleton(self):
         "merge single pixel region"
         cdef:
@@ -342,7 +344,10 @@ class InverseWatershed(object):
                     elif get_bit(neighb, 6) and (region1.maxi == data[i + 1, j - 1]):
                         to_merge = labels[i + 1, j - 1]
                 if to_merge < 0:
-                    if len(region1.neighbors) == 1 or (region1.neighbors == [region1.neighbors[0]] * len(region1.neighbors)):
+                    if len(region1.neighbors) == 0:
+                        print("no neighbors: %s" % region1)
+                    elif len(region1.neighbors) == 1 or \
+                        (region1.neighbors == [region1.neighbors[0]] * len(region1.neighbors)):
                         to_merge = region1.neighbors[0]
                     else:
                         to_merge = region1.neighbors[0]

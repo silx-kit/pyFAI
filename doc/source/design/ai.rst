@@ -3,7 +3,7 @@ Design of the Python Fast Azimuthal Integrator
 
 Author: Jérôme Kieffer
 
-Date: 18/12/2014
+Date: 20/03/2015
 
 Keywords: Design
 
@@ -16,27 +16,27 @@ Abstract
 
 The core part of pyFAI is the AzimuthalIntegator objects, named
 *ai* hereafter.
-This document describes the two imporants methods of the class,
+This document describes the two importants methods of the class,
 how it is related to Detector, Geometry, and integration engines.
 
 One of the core idea is to have a complete representation of the geometry
-and perform the azimuthal integation as a single geometrical re-binning
+and perform the azimuthal integration as a single geometrical re-binning
 which take into account all effects like:
 
 * Detector distortion
 * Polar transformation
-* assignement to the output space
+* assignment to the output space
 
 
 This document focuses on the core of pyFAI while peripheral code
-dealing with graphical user interfaces, image analaysis online data
+dealing with graphical user interfaces, image analysis online data
 analysis integration are not covered.
 
 AzimuthalIntegrator
 -------------------
 
 This class is the core of pyFAI, and it is the only one likely to be used by
-external developers/users. It is usually instanciated via a function of the
+external developers/users. It is usually instantiated via a function of the
 module to load a poni-file:
 
 ::
@@ -65,11 +65,11 @@ parameters related to the azimuthal dimension of the averaging for *ai.integrate
 Azimuthal integration methods
 _____________________________
 
-Both integration method take as first argument the image coming from the detecteur
+Both integration method take as first argument the image coming from the detector
 as a numpy array. This is the only mandatory parameter.
 
 Important parameters are the number of bins in radial and azimuthal dimensions.
-Other parameters are the preprocessing information like dark and flat pixel wise
+Other parameters are the pre-processing information like dark and flat pixel wise
 correction (as array), the polarization factor and the solid-angle correction to
 be applied.
 
@@ -77,7 +77,7 @@ Because multiple radial output space are possible (q, r, 2\theta) each with mult
 units, if one wants to avoid interpolation, it is important to export directly the data
 in the destination space, specifying the unit="2th_deg" or "q_nm^-1"
 
-Many more option exists, please refer to the documentation of AzimuthalIntegration.integrate_
+Many more option exists, please refer to the documentation of AzimuthalIntegration integrate_
 
 The AzimuthalIntegration class inherits from the Geometry class and hold
 references to configured rebinning engines.
@@ -102,8 +102,8 @@ handle pixel located in a 3D space.
 The *pyFAI.detectors* module contains the master *Detector* class
 which is capable of describing any detector.
 About 40 types of detectors, inheriting and specializing the *Detector*
-class are provided, offering convieniant access to most commercial detectors.
-A factory is provided to easily instanciate a detector from its name.
+class are provided, offering convienient access to most commercial detectors.
+A factory is provided to easily instantiate a detector from its name.
 
 A detector class is responsible for two main tasks:
 
@@ -120,12 +120,12 @@ on the detector, the image from the detector is rebinned into the output space.
 Two types of rebinning engines exists:
 
 Histograms
-	They take each single pixel from the image and tranfer it to the distination bin, like histograms do.
+	They take each single pixel from the image and transfer it to the destination bin, like histograms do.
 	This family of algorithms is rather easy to implement and provides good single threaded performances,
 	but it is hard to parallelize (efficiently) due to the need of atomic operations.
 
 Sparse matrix multiplication
-    By recording where every single ends one can tranform the previous tranformation into a
+    By recording where every single ends one can transform the previous histogram into a
     large sparse matrix multiplication which is either stored as a Look-Up Table (actually an array of struct, also called LIL)
     or more efficiently in the CSR_ format.
     Those rebinning engines are trivially parallel and provide the best performances.
@@ -149,6 +149,6 @@ The main issue with pixel splitting arose from 2D integration and the habdling o
 References:
 -----------
 
-:: _AzimuthalIntegration.integrate: http://pythonhosted.org/pyFAI/api/pyFAI.html#pyFAI.azimuthalIntegrator.AzimuthalIntegrator.integrate1d
+:: _integrate: http://pythonhosted.org/pyFAI/api/pyFAI.html#pyFAI.azimuthalIntegrator.AzimuthalIntegrator.integrate1d
 
 :: _CSR: http://en.wikipedia.org/wiki/Sparse_matrix

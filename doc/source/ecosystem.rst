@@ -24,6 +24,11 @@ HDF5 file browsing and mask drawing.
 Program using pyFAI as a library
 --------------------------------
 
+Bubble
+......
+
+Developed for the SNBL and Dubble beamlines by Vadim DIADKIN.
+
 Dahu
 ....
 Dahu is a lightweight plugin based framework.
