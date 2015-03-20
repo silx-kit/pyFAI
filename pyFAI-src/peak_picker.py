@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/03/2015"
+__date__ = "20/03/2015"
 __status__ = "production"
 
 import os
@@ -84,7 +84,7 @@ class PeakPicker(object):
         if isinstance(data, basestring):
             self.data = fabio.open(data).data.astype("float32")
         else:
-            self.data = numpy.ascontiguousarray(data,numpy.float32)
+            self.data = numpy.ascontiguousarray(data, numpy.float32)
         if mask is not None:
             mask = mask.astype(bool)
             view = self.data.ravel()
