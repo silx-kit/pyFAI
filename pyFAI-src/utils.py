@@ -517,7 +517,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
     flat = None
     big_img = None
     for idx, fn in enumerate(listImages[:]):
-        if type(fn) in types.StringTypes:
+        if isinstance(fn, six.string_types):
             logger.info("Reading %s" % fn)
             ds = fabio.open(fn).data
         else:
@@ -529,14 +529,14 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
         if do_dark and (dark is None):
             if "ndim" in dir(darks) and darks.ndim == 3:
                 dark = averageDark(darks, center_method="mean", cutoff=4)
-            elif ("__len__" in dir(darks)) and (type(darks[0]) in types.StringTypes):
+            elif ("__len__" in dir(darks)) and isinstance(darks[0], six.string_types):
                 dark = averageDark([fabio.open(f).data for f in darks if exists(f)], center_method="mean", cutoff=4)
             elif ("__len__" in dir(darks)) and ("ndim" in dir(darks[0])) and (darks[0].ndim == 2):
                 dark = averageDark(darks, center_method="mean", cutoff=4)
         if do_flat and (flat is  None):
             if "ndim" in dir(flats) and flats.ndim == 3:
                 flat = averageDark(flats, center_method="mean", cutoff=4)
-            elif ("__len__" in dir(flats)) and (type(flats[0]) in types.StringTypes):
+            elif ("__len__" in dir(flats)) and isinstance(flats[0], six.string_types):
                 flat = averageDark([fabio.open(f).data for f in flats if exists(f)], center_method="mean", cutoff=4)
             elif ("__len__" in dir(flats)) and ("ndim" in dir(flats[0])) and (flats[0].ndim == 2):
                 flat = averageDark(flats, center_method="mean", cutoff=4)
