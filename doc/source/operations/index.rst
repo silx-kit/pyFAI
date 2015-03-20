@@ -3,7 +3,7 @@ Installation of Python Fast Azimuthal Integration library
 
 Author: Jérôme Kieffer
 
-Date: 18/12/2014
+Date: 20/03/2015
 
 Keywords: Installation procedure
 
@@ -29,7 +29,7 @@ Dependencies
 
 PyFAI is a Python library which relies on the scientific stack (numpy, scipy, matplotlib)
 
-* Python: version 2.6, 2.7 and soon 3.2 and 3.4
+* Python: version 2.6, 2.7 and 3.2, 3.3 and 3.4
 * NumPy: version 1.4 or newer
 * SciPy: version 0.7 or newer
 * Matplotlib: verson 0.99 or newer
@@ -49,7 +49,7 @@ Build dependencies:
 
 In addition to the run dependencies, pyFAI needs a C compiler.
 
-C files are generated from Cython_ source and distributed. Cython is only needed for developing new binary modules.
+C files are generated from cython_ source and distributed. Cython is only needed for developing new binary modules.
 If you want to generate your own C files, make sure your local Cython version supports memory-views (available from Cython v0.17 and newer).
 
 Building procedure
@@ -62,7 +62,7 @@ Building procedure
 There are few specific options to setup.py:
 
 * --no-cython: do not use cython (even if present) and use the C source code provided by the development team
-* --no-openmp: if you compiler lacks OpenMP support
+* --no-openmp: if you compiler lacks OpenMP support (MacOSX)
 * --with-testimages: build the source distribution including all test images. Download 200MB of test images to create a self consistent tar-ball.
 
 .. toctree::
@@ -75,13 +75,13 @@ There are few specific options to setup.py:
 
 Test suites
 -----------
-PyFAI comes with a test suite to ensure all core functionnalities are working as expected:
+PyFAI comes with a test suite to ensure all core functionalities are working as expected and numerical results are correct:
 
 ::
 
     python setup.py build test
 
-Nota: to run the test an internet connection is needed as 200MB of test images need to be downloaded.
+Nota: to run the test an internet connection is needed as 200MB of test images need to be download.
 
 
 .. toctree::
@@ -103,4 +103,4 @@ PyFAI can use a certain number of environment variable to modify its default beh
 References:
 -----------
 
-:: _Cython: http://cython.org
+:: _cython: http://cython.org

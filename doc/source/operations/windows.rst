@@ -1,7 +1,7 @@
 
 Author: Jérôme Kieffer
 
-Date: 01/02/2015
+Date: 20/03/2015
 
 Keywords: Installation procedure
 
@@ -19,11 +19,13 @@ Get Python
 ----------
 
 Unlike on Unix computers, Python is not available by default on Windows computers.
-We recommend you to install Python from http://python.org, preferably the latest version from the 2.7 series.
+We recommend you to install the 64 bit version of Python from http://python.org, preferably the latest version from the 2.7 series.
 Any version between 2.6, 2.7, 3.2, 3.3 or 3.4 should be OK but 2.7 is the most tested.
 
-The 64bits version is suggested if your hardware and operating system supports it, as the 32 bits versions is
+The 64bits version is strongly advised if your hardware and operating system supports it, as the 32 bits versions is
 limited to 2GB of memory, hence unable to treat large images (4096 x 4096).
+The test suite is not passing on Windows 32 bits due to the limited amount of memory available to the Python process,
+nevertheless, pyFAI is running on Winodws32 bits (but not as well).
 
 Alternative Scientific Python stacks exists, like Enthought Python Distribution, Canopy, Anaconda, PythonXY
 or WinPython. They all offer most of the scientific packages already installed which makes the installation of
