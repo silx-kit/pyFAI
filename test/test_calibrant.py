@@ -96,7 +96,7 @@ class TestCalibrant(unittest.TestCase):
             rcParams['font.size'] = 6
             plt.clf()
 
-        detectors = set(ALL_DETECTORS.itervalues())
+        detectors = set(ALL_DETECTORS.values())
         for idx, detector in enumerate(detectors):
             det = detector()
             # Skip generic detectors

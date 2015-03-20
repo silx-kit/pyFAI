@@ -32,10 +32,14 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/03/2015"
+__date__ = "20/03/2015"
 __status__ = "production"
 
-import logging, sys, types, os, glob
+import logging
+import sys
+import types
+import os
+import glob
 import threading
 sem = threading.Semaphore()  # global lock for image processing initialization
 import numpy
@@ -82,7 +86,8 @@ def deprecated(func):
         """
         decorator that deprecates the use of a function
         """
-        depreclog.warning("%s is Deprecated !!! %s" % (func.func_name, os.linesep.join([""] + traceback.format_stack()[:-1])))
+        name = func.func_name if sys.version_info[0] < 3 else func.__name__
+        depreclog.warning("%s is Deprecated !!! %s" % (name, os.linesep.join([""] + traceback.format_stack()[:-1])))
         return func(*arg, **kw)
     return wrapper
 
@@ -162,10 +167,7 @@ def timeit(func):
         t1 = time.time()
         res = func(*arg, **kw)
         t2 = time.time()
-        if "func_name" in dir(func):
-            name = func.func_name
-        else:
-            name = str(func)
+        name = func.func_name if sys.version_info[0] < 3 else func.__name__
         timelog.warning("%s took %.3fs" % (name, t2 - t1))
         return res
     wrapper.__name__ = func.__name__
@@ -1040,8 +1042,7 @@ class lazy_property(object):
 
     def __init__(self, fget):
         self.fget = fget
-        self.func_name = fget.__name__
-
+        self.func_name = fget.func_name if sys.version_info[0] < 3 else fget.__name__
 
     def __get__(self, obj, cls):
         if obj is None:

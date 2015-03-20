@@ -185,7 +185,19 @@ class TestSort(unittest.TestCase):
         self.h_data = numpy.random.random(self.N).astype("float32")
         self.h2_data = numpy.random.random((self.N, self.N)).astype("float32").reshape((self.N, self.N))
 
-        self.ctx = ocl.create_context()
+        self.ctx = ocl.create_context(devicetype="GPU")
+        device = self.ctx.devices[0]
+        try:
+            devtype = pyopencl.device_type.to_string(device.type).upper()
+        except ValueError:
+            # pocl does not describe itself as a CPU !
+            devtype = "CPU"
+        workgroup = device.max_work_group_size
+        if (devtype == "CPU") and (device.platform.vendor == "Apple"):
+            logger.info("For Apple's OpenCL on CPU: enforce max_work_goup_size=1")
+            workgroup = 1
+
+        self.ws = min(workgroup, self.ws)
         self.queue = pyopencl.CommandQueue(self.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
         self.local_mem = pyopencl.LocalMemory(self.ws * 32)  # 2float4 = 2*4*4 bytes per workgroup size
         src = pyFAI.utils.read_cl_file("bitonic.cl")
