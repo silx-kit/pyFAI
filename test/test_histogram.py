@@ -189,14 +189,13 @@ class TestHistogram2d(unittest.TestCase):
     shape = (512, 512)
     size = shape[0] * shape[1]
     maxI = 1000
-    epsilon = 1.0e-4
+    epsilon = 1.1e-4
     y, x = numpy.ogrid[:shape[0], :shape[1]]
     tth = numpy.sqrt(x * x + y * y).astype("float32")
     mod = 0.5 + 0.5 * cos(tth / 12) + 0.25 * cos(tth / 6) + 0.1 * cos(tth / 4)
     data = (numpy.random.poisson(maxI, shape) * mod).astype("uint16")
     data_sum = data.sum(dtype="float64")
     npt = (400, 360)
-#    epsilon = 3.0e-4
     chi = numpy.arctan2(y, x).astype("float32")
     drange = [[tth.min(), tth.max() * EPS32], [chi.min(), chi.max() * EPS32]]
     t0 = time.time()
