@@ -181,7 +181,7 @@ class TestHistogram1d(unittest.TestCase):
         delta_max = abs(self.I_csr - self.I_numpy).max()
         if delta_max > self.epsilon:
             logger.warning("Intensity count difference numpy/csr : max delta=%s", delta_max)
-        self.assert_(delta_max < 0.62, "Intensity count difference numpy/csr : max delta=%s" % delta_max)
+        self.assert_(delta_max < 0.65, "Intensity count difference numpy/csr : max delta=%s" % delta_max)
 
 
 class TestHistogram2d(unittest.TestCase):

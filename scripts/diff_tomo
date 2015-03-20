@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/03/2015"
+__date__ = "20/03/2015"
 __satus__ = "Production"
 
 import logging
@@ -143,7 +143,7 @@ where the 1d dataset has to be selected as last dimension. This file is not (yet
 This tool can be used for mapping experiments if one considers the slow scan direction as the rotation.
         """
         epilog = """If the number of files is too large, use double quotes "*.edf" """
-        usage = """usage: diff_tomo [options] -p ponifile imagefiles*
+        usage = """diff_tomo [options] -p ponifile imagefiles*
 If the number of files is too large, use double quotes like "*.edf" """
         version = "diff_tomo from pyFAI  version %s: %s" % (PyFAI_VERSION, PyFAI_DATE)
         parser = ArgumentParser(usage=usage, description=description, epilog=epilog)

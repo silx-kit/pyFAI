@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/03/2015"
+__date__ = "20/03/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -1905,7 +1905,7 @@ class CheckCalib(object):
 
     def parse(self):
         logger.debug("in parse")
-        usage = "usage: check_calib [options] -p param.poni image.edf"
+        usage = "check_calib [options] -p param.poni image.edf"
         description = """Check_calib is a research tool aiming at validating both the geometric
 calibration and everything else like flat-field correction, distortion
 correction, at a sub-pixel level.
@@ -2052,7 +2052,7 @@ refinement process.
         update_fig(self.fig)
 
 
-#Procedural version of calibration
+# Procedural version of calibration
 def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, dist=0.1, interactive=True):
     """
     Procedural interfact for calibration
@@ -2072,7 +2072,7 @@ def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, 
     c.calibrant = calibrant
     c.wavelength = calibrant.wavelength
     c.basename = basename
-    c.pointfile = basename+".npt"
+    c.pointfile = basename + ".npt"
     c.ai = AzimuthalIntegrator(dist=dist, detector=detector, wavelength=calibrant.wavelength)
     c.peakPicker = PeakPicker(img, reconst=reconstruct, mask=detector.mask,
                               pointfile=c.pointfile, calibrant=calibrant,
