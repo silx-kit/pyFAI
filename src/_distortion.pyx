@@ -24,7 +24,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3+"
-__date__ = "20/10/2014"
+__date__ = "20/03/2015"
 __copyright__ = "2011-2014, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -45,6 +45,7 @@ import time
 logger = logging.getLogger("pyFAI._distortion")
 from .detectors import detector_factory
 from .utils import timeit
+from .third_party import six
 import fabio
 
 cdef struct lut_point:
@@ -536,7 +537,7 @@ class Distortion(object):
         """
         @param detector: detector instance or detector name
         """
-        if type(detector) in types.StringTypes:
+        if isinstance(detector, six.string_types):
             self.detector = detector_factory(detector)
         else:  # we assume it is a Detector instance
             self.detector = detector

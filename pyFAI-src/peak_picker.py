@@ -52,6 +52,7 @@ from .calibrant import Calibrant, ALL_CALIBRANTS
 from .blob_detection import BlobDetection
 from .massif import Massif
 from .watershed import InverseWatershed
+from .third_party import six
 logger = logging.getLogger("pyFAI.peak_picker")
 if os.name != "nt":
     WindowsError = RuntimeError
@@ -85,7 +86,7 @@ class PeakPicker(object):
         @param mask: area in which keypoints will not be considered as valid
         @param pointfile:
         """
-        if isinstance(data, basestring):
+        if isinstance(data, six.string_types):
             self.data = fabio.open(data).data.astype("float32")
         else:
             self.data = numpy.ascontiguousarray(data, numpy.float32)

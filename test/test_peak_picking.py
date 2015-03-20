@@ -29,18 +29,19 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20140703"
+__date__ = "20/03/2015"
 
 
 import unittest
 import os
 import numpy
-import logging, time
+import logging
+import time
 import sys
 import fabio
 import tempfile
 if __name__ == '__main__':
-    import pkgutil, os
+    import pkgutil
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
 from .utilstest import UtilsTest, Rwp, getLogger, recursive_delete
 logger = getLogger(__file__)
@@ -54,21 +55,18 @@ if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 
 
-class test_peak_picking(unittest.TestCase):
+class testPeakPicking(unittest.TestCase):
     """basic test"""
     calibFile = "1788/moke.tif"
-#    gr = GeometryRefinement()
-
-
-    ctrlPt = {0:(300, 230),
-              1:(300, 212),
-              2:(300, 195),
-              3:(300, 177),
-              4:(300, 159),
-              5:(300, 140),
-              6:(300, 123),
-              7:(300, 105),
-              8:(300, 87)}
+    ctrlPt = {0: (300, 230),
+              1: (300, 212),
+              2: (300, 195),
+              3: (300, 177),
+              4: (300, 159),
+              5: (300, 140),
+              6: (300, 123),
+              7: (300, 105),
+              8: (300, 87)}
     tth = numpy.radians(numpy.arange(4, 13))
     wavelength = 1e-10
     ds = wavelength * 5e9 / numpy.sin(tth / 2)
@@ -77,6 +75,7 @@ class test_peak_picking(unittest.TestCase):
     tmp_dir = tempfile.mkdtemp(prefix="pyFAI_test_peak_picking_")
     logfile = os.path.join(tmp_dir, "testpeakPicking.log")
     nptfile = os.path.join(tmp_dir, "testpeakPicking.npt")
+
     def setUp(self):
         """Download files"""
         if not os.path.isdir(self.tmp_dir):
@@ -111,7 +110,7 @@ class test_peak_picking(unittest.TestCase):
         gr = GeometryRefinement(lstPeak, dist=0.01, pixel1=1e-4, pixel2=1e-4, wavelength=self.wavelength, calibrant=self.calibrant)
         gr.guess_poni()
         logger.info(gr.__repr__())
-        last = sys.maxint
+        last = sys.maxint if sys.version_info[0] < 3 else sys.maxsize
         for i in range(self.maxiter):
             delta2 = gr.refine2()
             logger.info(gr.__repr__())
@@ -129,14 +128,16 @@ class test_peak_picking(unittest.TestCase):
 
 #        print self.pp.points
 
-class test_Massif(unittest.TestCase):
+
+class TestMassif(unittest.TestCase):
     """test for ring extraction algorithm with image which needs binning (non regression test)"""
     calibFile = "1788/moke.tif"
     #TODO !!!
 
+
 def test_suite_all_PeakPicking():
     testSuite = unittest.TestSuite()
-    testSuite.addTest(test_peak_picking("test_peakPicking"))
+    testSuite.addTest(testPeakPicking("test_peakPicking"))
     return testSuite
 
 if __name__ == '__main__':
