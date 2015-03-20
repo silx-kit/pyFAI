@@ -116,7 +116,61 @@ Test may not pass on computer featuring less than 2GB of memory.
 .. csv-table:: Test suite coverage
    :header: "Name", "Stmts", "Miss", "Cover"
    :widths: 50, 8, 8, 8
-
+"Name",                                                       "Stmts",   "Miss",  "Cover"
+/usr/share/pyshared/pyFAI/__init__                            12      3    75%
+/usr/share/pyshared/pyFAI/_version                            31      1    97%
+/usr/share/pyshared/pyFAI/azimuthalIntegrator               1193    311    74%
+/usr/share/pyshared/pyFAI/blob_detection                     520    323    38%
+/usr/share/pyshared/pyFAI/calibrant                          197     60    70%
+/usr/share/pyshared/pyFAI/detectors                         1034    274    74%
+/usr/share/pyshared/pyFAI/directories                         30      8    73%
+/usr/share/pyshared/pyFAI/geometry                           808    203    75%
+/usr/share/pyshared/pyFAI/geometryRefinement                 477    304    36%
+/usr/share/pyshared/pyFAI/gui_utils                           66     41    38%
+/usr/share/pyshared/pyFAI/io                                 453    212    53%
+/usr/share/pyshared/pyFAI/massif                             188     60    68%
+/usr/share/pyshared/pyFAI/ocl_azim                           269     78    71%
+/usr/share/pyshared/pyFAI/ocl_azim_csr                       225     50    78%
+/usr/share/pyshared/pyFAI/ocl_azim_lut                       219     45    79%
+/usr/share/pyshared/pyFAI/opencl                             191     52    73%
+/usr/share/pyshared/pyFAI/peak_picker                        707    516    27%
+/usr/share/pyshared/pyFAI/spline                             397    249    37%
+/usr/share/pyshared/pyFAI/test/__init__                       19      2    89%
+/usr/share/pyshared/pyFAI/test/test_all                       77      7    91%
+/usr/share/pyshared/pyFAI/test/test_azimuthal_integrator     241     67    72%
+/usr/share/pyshared/pyFAI/test/test_bilinear                  80      8    90%
+/usr/share/pyshared/pyFAI/test/test_bispev                    66     16    76%
+/usr/share/pyshared/pyFAI/test/test_blob_detection            54      5    91%
+/usr/share/pyshared/pyFAI/test/test_bug_regression            41      5    88%
+/usr/share/pyshared/pyFAI/test/test_calibrant                 84     25    70%
+/usr/share/pyshared/pyFAI/test/test_convolution               54      6    89%
+/usr/share/pyshared/pyFAI/test/test_csr                       88     23    74%
+/usr/share/pyshared/pyFAI/test/test_detector                 137     12    91%
+/usr/share/pyshared/pyFAI/test/test_distortion                56      8    86%
+/usr/share/pyshared/pyFAI/test/test_dummy                     27      6    78%
+/usr/share/pyshared/pyFAI/test/test_export                    87      9    90%
+/usr/share/pyshared/pyFAI/test/test_flat                     112      9    92%
+/usr/share/pyshared/pyFAI/test/test_geometry                  91      6    93%
+/usr/share/pyshared/pyFAI/test/test_geometry_refinement       64      7    89%
+/usr/share/pyshared/pyFAI/test/test_histogram                228     17    93%
+/usr/share/pyshared/pyFAI/test/test_integrate                139     12    91%
+/usr/share/pyshared/pyFAI/test/test_io                       108     30    72%
+/usr/share/pyshared/pyFAI/test/test_marchingsquares           42      9    79%
+/usr/share/pyshared/pyFAI/test/test_mask                     137     29    79%
+/usr/share/pyshared/pyFAI/test/test_openCL                   196     22    89%
+/usr/share/pyshared/pyFAI/test/test_peak_picking              88     11    88%
+/usr/share/pyshared/pyFAI/test/test_polarization              57      6    89%
+/usr/share/pyshared/pyFAI/test/test_saxs                     105     31    70%
+/usr/share/pyshared/pyFAI/test/test_sparse                    44      5    89%
+/usr/share/pyshared/pyFAI/test/test_split_pixel               74      6    92%
+/usr/share/pyshared/pyFAI/test/test_utils                     96      6    94%
+/usr/share/pyshared/pyFAI/test/utilstest                     281    164    42%
+/usr/share/pyshared/pyFAI/third_party/__init__                 0      0   100%
+/usr/share/pyshared/pyFAI/third_party/six                    393    184    53%
+/usr/share/pyshared/pyFAI/units                               41      5    88%
+/usr/share/pyshared/pyFAI/utils                              718    316    56%
+------------------------------------------------------------------------------
+TOTAL                                                      11142   3864    65%
    "pyFAI.__init__", "10", "3", "70%"
    "pyFAI.azimuthalIntegrator", "1205", "330", "73%"
    "pyFAI.blob_detection", "521", "323", "38%"
