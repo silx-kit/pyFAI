@@ -56,7 +56,7 @@ from .third_party import six
 logger = logging.getLogger("pyFAI.peak_picker")
 if os.name != "nt":
     WindowsError = RuntimeError
-if sys.version_info[0] < 3:
+if sys.version_info[0] >= 3:
     raw_input = input
 
 ################################################################################
