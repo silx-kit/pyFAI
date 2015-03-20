@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/12/2014"
+__date__ = "20/03/2015"
 __status__ = "development"
 
 import logging, threading
@@ -67,7 +67,7 @@ class Distortion(object):
         @param device: Name of the device: None for OpenMP, "cpu" or "gpu" or the id of the OpenCL device a 2-tuple of integer
         @param workgroup: workgroup size for CSR on OpenCL
         """
-        if isinstance(detector, (six.text_type, six.binary_type)):
+        if isinstance(detector, six.string_types):
             self.detector = detectors.detector_factory(detector)
         else:  # we assume it is a Detector instance
             self.detector = detector

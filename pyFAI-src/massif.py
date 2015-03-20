@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/06/2014"
+__date__ = "20/03/2015"
 __status__ = "production"
 
 import sys, os, threading
@@ -40,7 +40,7 @@ from scipy.ndimage.filters  import median_filter
 
 from .bilinear import Bilinear
 from .utils import gaussian_filter, binning, unBinning, relabel
-
+from .third_party import six
 
 if os.name != "nt":
     WindowsError = RuntimeError
@@ -56,7 +56,7 @@ class Massif(object):
         """
 
         """
-        if isinstance(data, (str, unicode)) and os.path.isfile(data):
+        if isinstance(data, six.string_types) and os.path.isfile(data):
             self.data = fabio.open(data).data.astype("float32")
         elif  isinstance(data, fabio.fabioimage.fabioimage):
             self.data = data.data.astype("float32")
@@ -252,7 +252,7 @@ class Massif(object):
                     if logger.getEffectiveLevel() == logging.DEBUG:
                         with open("median_data.npy", "wb") as f:
                             numpy.save(f, self._median_data)
-                        #fabio.edfimage.edfimage(data=self._median_data).write("median_data.edf")
+                        # fabio.edfimage.edfimage(data=self._median_data).write("median_data.edf")
         return self._median_data
 
     def getBluredData(self):

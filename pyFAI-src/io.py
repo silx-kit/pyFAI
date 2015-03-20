@@ -99,8 +99,10 @@ def from_isotime(text, use_tz=False):
     if len(text) == 1:
         # just in case someone sets as a list
         text = text[0]
-
-    text = str(text)
+    try:
+        text = text.decode("ascii")
+    except:
+        text = str(text)
     if len(text) < 19:
         logger.warning("Not a iso-time string: %s" % text)
         return
