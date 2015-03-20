@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/03/2015"
+__date__ = "20/03/2015"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -810,7 +810,7 @@ class Geometry(object):
         """
         Calculate the incidence angle (alpha) for current pixels (P).
         The poni being the point of normal incidence,
-        it's incidence angle is $\alpha = 0$ hence $cos(\alpha) = 1$
+        it's incidence angle is $\{alpha} = 0$ hence $cos(\{alpha}) = 1$
 
         @param d1: 1d or 2d set of points in pixel coord
         @param d2:  1d or 2d set of points in pixel coord
