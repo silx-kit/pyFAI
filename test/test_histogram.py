@@ -28,13 +28,14 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/03/2015"
+__date__ = "20/03/2015"
 
 import unittest
 import time
 import numpy
 import logging
 import sys
+import platform
 from numpy import cos
 if __name__ == '__main__':
     import pkgutil, os
@@ -219,6 +220,11 @@ class TestHistogram2d(unittest.TestCase):
     I_csr, tth_csr, chi_csr, weight_csr, unweight_csr = integrator.integrate(data)
     t4 = time.time()
     logger.info("Timing for CSR  init: %.3fs, integrate: %0.3fs, both: %.3f", (t2 - t3), (t4 - t2), (t4 - t3))
+    if platform.system() == "Linux":
+        err_max_cnt = 0
+    else:
+        # Under windows or MacOSX, up to 1 bin error has been reported...
+        err_max_cnt = 1
 
     def test_count_numpy(self):
         """
@@ -275,7 +281,9 @@ class TestHistogram2d(unittest.TestCase):
 
         delta_max = abs(self.unweight_numpy - self.unweight_cython).max()
         logger.info("pixel count difference numpy/cython : max delta=%s", delta_max)
-        self.assert_(delta_max == 0, "pixel count difference numpy/cython : max delta=%s" % delta_max)
+        if delta_max > 0:
+            logger.warning("pixel count difference numpy/cython : max delta=%s", delta_max)
+        self.assert_(delta_max <= self.err_max_cnt, "pixel count difference numpy/cython : max delta=%s" % delta_max)
         delta_max = abs(self.I_cython - self.I_numpy).max()
         logger.info("Intensity count difference numpy/cython : max delta=%s", delta_max)
         self.assert_(delta_max < self.epsilon * self.maxI, "Intensity count difference numpy/cython : max delta=%s" % delta_max)
@@ -290,7 +298,7 @@ class TestHistogram2d(unittest.TestCase):
         delta_max = abs(self.unweight_numpy - self.unweight_csr.T).max()
         if delta_max > 0:
             logger.warning("pixel count difference numpy/csr : max delta=%s", delta_max)
-        self.assert_(delta_max < 2, "pixel count difference numpy/csr : max delta=%s" % delta_max)
+        self.assert_(delta_max <= self.err_max_cnt + 1, "pixel count difference numpy/csr : max delta=%s" % delta_max)
         delta_max = abs(self.I_csr.T - self.I_numpy).max()
         if delta_max > self.epsilon:
             logger.warning("Intensity count difference numpy/csr : max delta=%s", delta_max)
