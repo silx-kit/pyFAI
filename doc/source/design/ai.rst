@@ -39,7 +39,7 @@ This class is the core of pyFAI, and it is the only one likely to be used by
 external developers/users. It is usually instantiated via a function of the
 module to load a poni-file:
 
-::
+.. code-block:: python
 	>>> import pyFAI
 	>>> ai = pyFAI.load("Pilatus1M.poni")
 	>>> print(ai)
