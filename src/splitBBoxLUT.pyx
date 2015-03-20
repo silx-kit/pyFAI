@@ -104,7 +104,8 @@ class HistoBBox1d(object):
                  mask=None,
                  mask_checksum=None,
                  allow_pos0_neg=False,
-                 unit="undefined"):
+                 unit="undefined",
+                 empty=0.0):
         """
         @param pos0: 1D array with pos0: tth or q_vect or r ...
         @param delta_pos0: 1D array with delta pos0: max center-corner distance
@@ -116,6 +117,7 @@ class HistoBBox1d(object):
         @param mask: array (of int8) with masked pixels with 1 (0=not masked)
         @param allow_pos0_neg: enforce the q<0 is usually not possible  
         @param unit: can be 2th_deg or r_nm^-1 ...
+        @param empty: value for bins without contributing pixels
         """
 
         self.size = pos0.size
@@ -123,6 +125,7 @@ class HistoBBox1d(object):
         self.bins = bins
         self.lut_size = 0
         self.allow_pos0_neg = allow_pos0_neg
+        self.empty = empty
         if mask is not None:
             assert mask.size == self.size
             self.check_mask = True
@@ -165,7 +168,6 @@ class HistoBBox1d(object):
         
         self.unit = unit
         self.lut_nbytes = self._lut.nbytes
-        self.output_dummy = numpy.nan
         
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -439,7 +441,8 @@ class HistoBBox1d(object):
             else:
                 cddummy = <float> float(delta_dummy)
         else:
-            cdummy = self.output_dummy
+            cdummy = self.empty
+            
         if flat is not None:
             do_flat = True
             assert flat.size == size
@@ -584,6 +587,8 @@ class HistoBBox1d(object):
                 cddummy = zerof
             else:
                 cddummy = <float> float(delta_dummy)
+        else:
+            cdummy = <float> float(self.empty)
 
         if flat is not None:
             do_flat = True

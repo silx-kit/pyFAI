@@ -58,14 +58,15 @@ class TestMask(unittest.TestCase):
         self.data = fabio.open(self.dataFile).data
         self.mask = self.data < 0
 
-    def test_mask_splitBBox(self):
+    def test_mask_hist(self):
         """
         The masked image has a masked ring around 1.5deg with value -10
         without mask the pixels should be at -10 ; with mask they are at 0
         """
-        x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg")
-        x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg")
-        x3 = self.ai.integrate1d(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg")
+        meth="cython"
+        x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
+        x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
+        x3 = self.ai.integrate1d(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
@@ -79,7 +80,57 @@ class TestMask(unittest.TestCase):
             raw_input()
 
         self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
-        self.assert_(numpy.isnan(res2), msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
+        self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
+        self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
+
+    def test_mask_splitBBox(self):
+        """
+        The masked image has a masked ring around 1.5deg with value -10
+        without mask the pixels should be at -10 ; with mask they are at 0
+        """
+        meth="splitbbox"
+        x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
+        x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
+        x3 = self.ai.integrate1d(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
+        res1 = numpy.interp(1.5, *x1)
+        res2 = numpy.interp(1.5, *x2)
+        res3 = numpy.interp(1.5, *x3)
+        if logger.getEffectiveLevel() == logging.DEBUG:
+            pylab.plot(*x1, label="no mask")
+            pylab.plot(*x2, label="with mask")
+            pylab.plot(*x3, label="with dummy")
+            pylab.title("test_mask_splitBBox")
+            pylab.legend()
+            pylab.show()
+            raw_input()
+
+        self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
+        self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
+        self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
+
+    def test_mask_splitfull(self):
+        """
+        The masked image has a masked ring around 1.5deg with value -10
+        without mask the pixels should be at -10 ; with mask they are at 0
+        """
+        meth="splitpixel"
+        x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
+        x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
+        x3 = self.ai.integrate1d(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
+        res1 = numpy.interp(1.5, *x1)
+        res2 = numpy.interp(1.5, *x2)
+        res3 = numpy.interp(1.5, *x3)
+        if logger.getEffectiveLevel() == logging.DEBUG:
+            pylab.plot(*x1, label="no mask")
+            pylab.plot(*x2, label="with mask")
+            pylab.plot(*x3, label="with dummy")
+            pylab.title("test_mask_splitBBox")
+            pylab.legend()
+            pylab.show()
+            raw_input()
+
+        self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
+        self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
         self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
 
     def test_mask_LUT(self):
@@ -87,11 +138,12 @@ class TestMask(unittest.TestCase):
         The masked image has a masked ring around 1.5deg with value -10
         without mask the pixels should be at -10 ; with mask they are at 0
         """
-        x1 = self.ai.xrpd_LUT(self.data, 1000)
+        meth="lut"
+        x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
 #        print self.ai._lut_integrator.lut_checksum
-        x2 = self.ai.xrpd_LUT(self.data, 1000, mask=self.mask)
+        x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
 #        print self.ai._lut_integrator.lut_checksum
-        x3 = self.ai.xrpd_LUT(self.data, 1000, mask=numpy.zeros(shape=self.mask.shape, dtype="uint8"), dummy=-20.0, delta_dummy=19.5)
+        x3 = self.ai.integrate1d(self.data, 1000, mask=numpy.zeros(shape=self.mask.shape, dtype="uint8"), dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
 #        print self.ai._lut_integrator.lut_checksum
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
@@ -105,19 +157,48 @@ class TestMask(unittest.TestCase):
             raw_input()
 
         self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
-        self.assert_(numpy.isnan(res2), msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
+        self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
         self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
+
+    def test_mask_CSR(self):
+        """
+        The masked image has a masked ring around 1.5deg with value -10
+        without mask the pixels should be at -10 ; with mask they are at 0
+        """
+        meth="csr"
+        x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
+#        print self.ai._lut_integrator.lut_checksum
+        x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
+#        print self.ai._lut_integrator.lut_checksum
+        x3 = self.ai.integrate1d(self.data, 1000, mask=numpy.zeros(shape=self.mask.shape, dtype="uint8"), dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
+#        print self.ai._lut_integrator.lut_checksum
+        res1 = numpy.interp(1.5, *x1)
+        res2 = numpy.interp(1.5, *x2)
+        res3 = numpy.interp(1.5, *x3)
+        if logger.getEffectiveLevel() == logging.DEBUG:
+            pylab.plot(*x1, label="nomask")
+            pylab.plot(*x2, label="mask")
+            pylab.plot(*x3, label="dummy")
+            pylab.legend()
+            pylab.show()
+            raw_input()
+
+        self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
+        self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually Nan (got %.4f)" % res2)
+        self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
+
 
     def test_mask_LUT_OCL(self):
         """
         The masked image has a masked ring around 1.5deg with value -10
         without mask the pixels should be at -10 ; with mask they are at 0
         """
-        x1 = self.ai.xrpd_LUT_OCL(self.data, 1000)
+        meth = "lut_ocl"
+        x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
 #        print self.ai._lut_integrator.lut_checksum
-        x2 = self.ai.xrpd_LUT_OCL(self.data, 1000, mask=self.mask)
+        x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
 #        print self.ai._lut_integrator.lut_checksum
-        x3 = self.ai.xrpd_LUT_OCL(self.data, 1000, dummy=-20.0, delta_dummy=19.5)
+        x3 = self.ai.integrate1d(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
 #        print self.ai._lut_integrator.lut_checksum
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
@@ -131,7 +212,34 @@ class TestMask(unittest.TestCase):
             raw_input()
 
         self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
-        self.assert_(numpy.isnan(res2), msg="With mask the bad pixels are actually NaN (got %.4f)" % res2)
+        self.assertAlmostEqual(res2, 0, 1,msg="With mask the bad pixels are actually around 0 (got %.4f)" % res2)
+        self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
+
+    def test_mask_CSR_OCL(self):
+        """
+        The masked image has a masked ring around 1.5deg with value -10
+        without mask the pixels should be at -10 ; with mask they are at 0
+        """
+        meth = "CSR_ocl"
+        x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
+#        print self.ai._lut_integrator.lut_checksum
+        x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
+#        print self.ai._lut_integrator.lut_checksum
+        x3 = self.ai.integrate1d(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
+#        print self.ai._lut_integrator.lut_checksum
+        res1 = numpy.interp(1.5, *x1)
+        res2 = numpy.interp(1.5, *x2)
+        res3 = numpy.interp(1.5, *x3)
+        if logger.getEffectiveLevel() == logging.DEBUG:
+            pylab.plot(*x1, label="nomask")
+            pylab.plot(*x2, label="mask")
+            pylab.plot(*x3, label="dummy")
+            pylab.legend()
+            pylab.show()
+            raw_input()
+
+        self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
+        self.assertAlmostEqual(res2, 0, 1,msg="With mask the bad pixels are actually around 0 (got %.4f)" % res2)
         self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
 
 
@@ -213,9 +321,14 @@ class TestMaskBeamstop(unittest.TestCase):
 
 def test_suite_all_Mask():
     testSuite = unittest.TestSuite()
+    testSuite.addTest(TestMask("test_mask_hist"))
     testSuite.addTest(TestMask("test_mask_splitBBox"))
+    testSuite.addTest(TestMask("test_mask_splitfull"))
     testSuite.addTest(TestMask("test_mask_LUT"))
+    testSuite.addTest(TestMask("test_mask_CSR"))
     testSuite.addTest(TestMask("test_mask_LUT_OCL"))
+    testSuite.addTest(TestMask("test_mask_CSR_OCL"))
+    
     testSuite.addTest(TestMaskBeamstop("test_nomask"))
     testSuite.addTest(TestMaskBeamstop("test_mask_splitBBox"))
     testSuite.addTest(TestMaskBeamstop("test_mask_LUT"))

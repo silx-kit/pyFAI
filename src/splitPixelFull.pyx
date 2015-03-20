@@ -185,7 +185,7 @@ def fullSplit1D(numpy.ndarray pos not None,
                 flat=None,
                 solidangle=None,
                 polarization=None,
-                output_dummy=numpy.nan
+                empty=0.0
                 ):
     """
     Calculates histogram of pos weighted by weights
@@ -206,7 +206,8 @@ def fullSplit1D(numpy.ndarray pos not None,
     @param flat: array (of float64) with flat image
     @param solidangle: array (of float64) with flat image
     @param polarization: array (of float64) with polarization correction
-    @param output_dummy: value of output bins without any contribution when dummy is None@return 2theta, I, weighted histogram, unweighted histogram
+    @param empty: value of output bins without any contribution when dummy is None
+    @return 2theta, I, weighted histogram, unweighted histogram
     """
     cdef size_t  size = weights.size
     if pos.ndim > 3:
@@ -268,7 +269,7 @@ def fullSplit1D(numpy.ndarray pos not None,
         cddummy = 0.0
     else:
         check_dummy = False
-        cdummy = output_dummy
+        cdummy = empty
         cddummy = 0.0
 
     if mask is not None:
@@ -408,7 +409,8 @@ def fullSplit2D(numpy.ndarray pos not None,
                 dark=None,
                 flat=None,
                 solidangle=None,
-                polarization=None):
+                polarization=None,
+                empty=None):
     """
     Calculate 2D histogram of pos weighted by weights
 
@@ -426,6 +428,8 @@ def fullSplit2D(numpy.ndarray pos not None,
     @param flat: array (of float64) with flat-field image
     @param polarization: array (of float64) with polarization correction
     @param solidangle: array (of float64)with solid angle corrections
+    @param empty: value of output bins without any contribution when dummy is None
+    
     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
     cdef int all_bins0 = 0, all_bins1 = 0, size = weights.size
@@ -504,7 +508,7 @@ def fullSplit2D(numpy.ndarray pos not None,
         cddummy = 0.0
     else:
         check_dummy = False
-        cdummy = 0.0
+        cdummy = empty
         cddummy = 0.0
 
     if mask is not None:

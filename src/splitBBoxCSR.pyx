@@ -85,6 +85,7 @@ class HistoBBox1d(object):
                  mask_checksum=None,
                  allow_pos0_neg=False,
                  unit="undefined",
+                 empty=0.0
                  ):
         """
         @param pos0: 1D array with pos0: tth or q_vect or r ...
@@ -97,6 +98,8 @@ class HistoBBox1d(object):
         @param mask: array (of int8) with masked pixels with 1 (0=not masked)
         @param allow_pos0_neg: enforce the q<0 is usually not possible
         @param unit: can be 2th_deg or r_nm^-1 ...
+        @param empty: value to be assigned to bins without contribution from any pixel
+
         """
         self.size = pos0.size
         if "size" not in dir(delta_pos0) or delta_pos0.size != self.size:
@@ -105,6 +108,7 @@ class HistoBBox1d(object):
         self.bins = bins
         self.lut_size = 0
         self.allow_pos0_neg = allow_pos0_neg
+        self.empty = empty
         if mask is not None:
             assert mask.size == self.size
             self.check_mask = True
@@ -154,7 +158,6 @@ class HistoBBox1d(object):
         self.unit = unit
         self.lut = (self.data, self.indices, self.indptr)
         self.lut_nbytes = sum([i.nbytes for i in self.lut])
-        self.output_dummy = numpy.nan
     
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -534,7 +537,7 @@ class HistoBBox1d(object):
             else:
                 cddummy = <float> float(delta_dummy)
         else:
-            cdummy = self.output_dummy
+            cdummy = self.empty
             
         if flat is not None:
             do_flat = True
@@ -637,7 +640,8 @@ class HistoBBox2d(object):
                  mask_checksum=None,
                  allow_pos0_neg=False,
                  unit="undefined",
-                 chiDiscAtPi=True
+                 chiDiscAtPi=True,
+                 empty=0.0
                  ):
         """
         @param pos0: 1D array with pos0: tth or q_vect
@@ -663,7 +667,7 @@ class HistoBBox2d(object):
 
         self.chiDiscAtPi = 1 if chiDiscAtPi else 0
         self.allow_pos0_neg = allow_pos0_neg
-
+        self.empty = 0.0
         try:
             bins0, bins1 = tuple(bins)
         except:
@@ -1232,7 +1236,9 @@ class HistoBBox2d(object):
                 cddummy = < float > 0.0
             else:
                 cddummy = < float > float(delta_dummy)
-
+        else:
+            cdummy = < float > float(self.empty)
+            
         if flat is not None:
             do_flat = True
             assert flat.size == size

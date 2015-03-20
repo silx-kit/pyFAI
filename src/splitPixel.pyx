@@ -124,7 +124,7 @@ def fullSplit1D(numpy.ndarray pos not None,
                 flat=None,
                 solidangle=None,
                 polarization=None,
-                output_dummy=numpy.nan
+                empty=0.0
                 ):
     """
     Calculates histogram of pos weighted by weights
@@ -145,7 +145,7 @@ def fullSplit1D(numpy.ndarray pos not None,
     @param flat: array (of float64) with flat image
     @param polarization: array (of float64) with polarization correction
     @param solidangle: array (of float64) with flat image
-    @param output_dummy: value of output bins without any contribution when dummy is None
+    @param empty: value of output bins without any contribution when dummy is None
     @return 2theta, I, weighted histogram, unweighted histogram
     """
     cdef int  size = weights.size
@@ -245,7 +245,7 @@ def fullSplit1D(numpy.ndarray pos not None,
         cddummy = 0.0
     else:
         check_dummy = False
-        cdummy = output_dummy
+        cdummy = <float> float(empty)
         cddummy = 0.0
 
     if dark is not None:
@@ -366,7 +366,8 @@ def fullSplit2D(numpy.ndarray pos not None,
                 dark=None,
                 flat=None,
                 solidangle=None,
-                polarization=None):
+                polarization=None,
+                empty=0.0):
     """
     Calculate 2D histogram of pos weighted by weights
 
@@ -385,6 +386,7 @@ def fullSplit2D(numpy.ndarray pos not None,
     @param flat: array (of float64) with flat-field image
     @param polarization: array (of float64) with polarization correction
     @param solidangle: array (of float64)with solid angle corrections
+    @param empty: value of output bins without any contribution when dummy is None
     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
 
@@ -454,7 +456,7 @@ def fullSplit2D(numpy.ndarray pos not None,
         cddummy = 0.0
     else:
         check_dummy = False
-        cdummy = 0.0
+        cdummy = <float> float(empty)
         cddummy = 0.0
 
     if mask is not None:

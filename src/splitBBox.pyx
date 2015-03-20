@@ -69,7 +69,7 @@ def histoBBox1d(numpy.ndarray weights not None,
                 flat=None,
                 solidangle=None,
                 polarization=None,
-                output_dummy=numpy.nan):
+                empty=None):
 
     """
     Calculates histogram of pos0 (tth) weighted by weights
@@ -91,7 +91,7 @@ def histoBBox1d(numpy.ndarray weights not None,
     @param flat: array (of float32) with flat-field image
     @param solidangle: array (of float32) with solid angle corrections
     @param polarization: array (of float32) with polarization corrections
-    @param output_dummy: value of output bins without any contribution when dummy is None
+    @param empty: value of output bins without any contribution when dummy is None
 
     @return 2theta, I, weighted histogram, unweighted histogram
     """
@@ -132,7 +132,7 @@ def histoBBox1d(numpy.ndarray weights not None,
         ddummy = 0.0
     else:
         check_dummy = False
-        cdummy = output_dummy
+        cdummy = empty or 0.0
         ddummy = 0.0
     if dark is not None:
         assert dark.size == size
@@ -279,7 +279,8 @@ def histoBBox2d(numpy.ndarray weights not None,
                 solidangle=None,
                 polarization=None,
                 bint allow_pos0_neg=0,
-                bint chiDiscAtPi=1):
+                bint chiDiscAtPi=1,
+                empty=0.0):
     """
     Calculate 2D histogram of pos0(tth),pos1(chi) weighted by weights
 
@@ -302,6 +303,7 @@ def histoBBox2d(numpy.ndarray weights not None,
     @param solidangle: array (of float32) with solid angle corrections
     @param polarization: array (of float32) with polarization corrections
     @param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[  
+    @param empty: value of output bins without any contribution when dummy is None
     
     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
@@ -354,7 +356,7 @@ def histoBBox2d(numpy.ndarray weights not None,
     elif (dummy is not None):
         cdummy = float(dummy)
     else:
-        cdummy=0.0
+        cdummy=float(empty)
 
     if dark is not None:
         assert dark.size == size

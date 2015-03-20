@@ -60,7 +60,7 @@ def histogram(numpy.ndarray pos not None, \
               bin_range=None,
               pixelSize_in_Pos=None,
               nthread=None,
-              float dummy=0.0):
+              float empty=0.0):
     """
     Calculates histogram of pos weighted by weights
 
@@ -116,7 +116,7 @@ def histogram(numpy.ndarray pos not None, \
             if out_count[idx] > epsilon:
                 out_merge[idx] = out_data[idx] / out_count[idx]
             else:
-                out_merge[idx] = dummy
+                out_merge[idx] = empty
 
     out_pos = numpy.linspace(min0 + (0.5 * delta), max0 - (0.5 * delta), bins)
 
@@ -132,7 +132,7 @@ def histogram2d(numpy.ndarray pos0 not None,
                 numpy.ndarray weights not None,
                 split=False,
                 nthread=None,
-                float dummy=0.0):
+                float empty=0.0):
     """
     Calculate 2D histogram of pos0,pos1 weighted by weights
 
@@ -198,6 +198,6 @@ def histogram2d(numpy.ndarray pos0 not None,
                 if out_count[i, j] > epsilon:
                     out_merge[i, j] = out_data[i, j] / out_count[i, j]
                 else:
-                    out_merge[i, j] = dummy
+                    out_merge[i, j] = empty
 
     return out_merge, edges0, edges1, out_data, out_count

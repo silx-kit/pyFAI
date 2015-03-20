@@ -73,16 +73,18 @@ class PeakPicker(object):
             " * Center-click or (click+d):     erase current group",
             " * Center-click + 1 or (click+1): erase closest point from current group"]
 
-    def __init__(self, strFilename, reconst=False, mask=None,
+    def __init__(self, data, reconst=False, mask=None,
                  pointfile=None, calibrant=None, wavelength=None, method="massif"):
         """
-        @param strFilename: input image filename
+        @param data: input image as numpy array
         @param reconst: shall masked part or negative values be reconstructed (wipe out problems with pilatus gaps)
         @param mask: area in which keypoints will not be considered as valid
         @param pointfile:
         """
-        self.strFilename = strFilename
-        self.data = fabio.open(strFilename).data.astype("float32")
+        if isinstance(data, basestring):
+            self.data = fabio.open(data).data.astype("float32")
+        else:
+            self.data = numpy.ascontiguousarray(data,numpy.float32)
         if mask is not None:
             mask = mask.astype(bool)
             view = self.data.ravel()
