@@ -286,7 +286,7 @@ class TestHistogram2d(unittest.TestCase):
         self.assert_(delta_max <= self.err_max_cnt, "pixel count difference numpy/cython : max delta=%s" % delta_max)
         delta_max = abs(self.I_cython - self.I_numpy).max()
         logger.info("Intensity count difference numpy/cython : max delta=%s", delta_max)
-        self.assert_(delta_max < self.epsilon * self.maxI, "Intensity count difference numpy/cython : max delta=%s>" % (delta_max, self.epsilon * self.maxI))
+        self.assert_(delta_max < self.epsilon * self.maxI, "Intensity count difference numpy/cython : max delta=%s>%s" % (delta_max, self.epsilon * self.maxI))
 
         max_delta = abs(self.tth_numpy - self.tth_csr).max()
         logger.info("Bin-center position for csr/numpy tth, max delta=%s", max_delta)
