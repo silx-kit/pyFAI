@@ -25,15 +25,14 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/03/2015"
-__status__ = "beta"
+__date__ = "26/03/2015"
+__status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import logging
 logger = logging.getLogger("pyFAI.unit")
 from numpy import pi
 from .third_party import six
-StringTypes = (six.binary_type, six.text_type)
 hc = 12.398419292004204
 
 class Enum(dict):
@@ -50,6 +49,10 @@ class Enum(dict):
             return self["REPR"]
         else:
             return dict.__repr__(self, *args, **kwargs)
+    # ensures hashability
+    def __hash__(self):
+        return self.__repr__().__hash__()
+
 
 UNDEFINED = Enum(REPR='?')
 
@@ -88,17 +91,19 @@ R = R_MM = Enum(REPR="r_mm",
                 scale=1000.0,
                 label=r"Radius $r$ ($mm$)")
 
+
 RADIAL_UNITS = (TTH_DEG, TTH_RAD, Q_NM, Q_A, R_MM)
+
 
 def to_unit(obj):
     rad_unit = None
-    if isinstance(obj, StringTypes):
+    if isinstance(obj, six.string_types):
         for one_unit in RADIAL_UNITS:
             if one_unit.REPR == obj:
                 rad_unit = one_unit
                 break
-    elif obj.__class__.__name__.split(".")[-1] == "Enum":
+    elif isinstance(obj, Enum):
         rad_unit = obj
     if rad_unit is None:
-        logger.error("Unable to recognize this type unit '%s' of type %s. Valid units are 2th_deg, 2th_rad, q_nm^-1, q_A^-1 and r_mm" % (obj, type(obj)))
+        logger.error("Unable to recognize this type unit '%s' of type %s. Valid units are %s" % (obj, type(obj), ", ".join([i.REPR for i in RADIAL_UNITS])))
     return rad_unit
