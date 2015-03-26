@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2015"
+__date__ = "20/03/2015"
 __status__ = "stable"
 
 
@@ -497,16 +497,18 @@ def get_version():
 classifiers = """\
 Development Status :: 5 - Production/Stable
 Intended Audience :: Developers
-License :: OSI Approved :: GPL
 Programming Language :: Python
-Topic :: Crystallography
 Topic :: Software Development :: Libraries :: Python Modules
 Operating System :: Microsoft :: Windows
 Operating System :: Unix
 Operating System :: MacOS :: MacOS X
 Operating System :: POSIX
-
 """
+problematic = """
+License :: OSI Approved :: GPL
+Topic :: Crystallography
+"""
+
 if __name__ == "__main__":
     setup(name='pyFAI',
           version=get_version(),
