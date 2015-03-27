@@ -1,4 +1,6 @@
-// Attempt for a bitonic sort inspired from "OpenCL in Action"
+// Attempt for a bitonic sort inspired from "OpenCL in Action" by Matthew Scarpino which is "public domain", the code, not the book.
+// Copyright 
+// All of the code is public domain, and you can do with it as you please.
 // Each work-item treats 2*4 elements so if max_workgroup_size = 512 up to 4096 items can be sorted (nvidia GPU)
 // Uses local memory:
 //     each work-item stores a 2*sizeof(float4), so the memory used for 512 working-elements is 16k (may not fit into pre-fermi GPUs)
@@ -17,8 +19,8 @@
 
 // Function to be called from an actual kernel.
 
-float8 my_sort(uint local_id, uint group_id, uint local_size,
-                float8 input, __local float4 *l_data){
+static float8 my_sort(uint local_id, uint group_id, uint local_size,
+                      float8 input, __local float4 *l_data){
     float4 input1, input2, temp;
     float8 output;
     uint4 comp, swap, mask1, mask2, add1, add2, add3;
