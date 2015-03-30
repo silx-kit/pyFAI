@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/03/2015"
+__date__ = "26/03/2015"
 __status__ = "stable"
 
 
@@ -397,11 +397,11 @@ class sdist_debian(sdist):
             if os.path.isfile(cf):
                 self.filelist.exclude_pattern(pattern=cf)
 
-        print("Adding test_files for debian")
-        self.filelist.allfiles += [os.path.join("test", "testimages", i) \
-                                   for i in download_images()]
-        self.filelist.include_pattern(pattern="*", anchor=True,
-                                      prefix="test/testimages")
+#         print("Adding test_files for debian")
+#         self.filelist.allfiles += [os.path.join("test", "testimages", i) \
+#                                    for i in download_images()]
+#         self.filelist.include_pattern(pattern="*", anchor=True,
+#                                       prefix="test/testimages")
 
     def make_distribution(self):
         sdist.make_distribution(self)
