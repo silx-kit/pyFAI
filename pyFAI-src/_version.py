@@ -7,7 +7,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/03/2015"
+__date__ = "30/03/2015"
 __status__ = "producton"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -20,8 +20,8 @@ provides:
 * hexversion: 0x010203B4
 * strictversion = "1.2.3b4
 
-This is called hexversion since it only really looks meaningful when viewed as the 
-result of passing it to the built-in hex() function. 
+This is called hexversion since it only really looks meaningful when viewed as the
+result of passing it to the built-in hex() function.
 The version_info value may be used for a more human-friendly encoding of the same information.
 
 The hexversion is a 32-bit number with the following layout:
@@ -45,8 +45,8 @@ RELEASE_LEVEL_VALUE = { "dev": 0,
 
 MAJOR = 0
 MINOR = 10
-MICRO = 3
-RELEV = "final"  # <16
+MICRO = 4
+RELEV = "dev"  # <16
 SERIAL = 0  # <16
 
 date = __date__
