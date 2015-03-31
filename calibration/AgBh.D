@@ -1,5 +1,6 @@
-#Silver Behenate c=58.380 a=inf b=inf
-# doi:10.1107/S0021889899012388
+# Calibrant: Silver Behenate (AgBh)
+# Pseudocrystal a=inf b=inf c=58.380
+# Ref: doi:10.1107/S0021889899012388
 5.83800000e+01 # (0,0,1)
 2.91900000e+01 # (0,0,2)
 1.94600000e+01 # (0,0,3)
