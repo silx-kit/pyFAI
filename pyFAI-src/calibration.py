@@ -2069,6 +2069,10 @@ def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, 
     assert isinstance(detector, Detector)
     assert isinstance(calibrant, Calibrant)
     assert calibrant.wavelength
+
+    if logging.root.level > logging.INFO:
+        logging.warning("Lowering the log-level to INFO")
+        logging.root.setLevel(logging.INFO)
     c = Calibration(wavelength=calibrant.wavelength,
                     detector=detector,
                     calibrant=calibrant,
@@ -2084,6 +2088,7 @@ def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, 
         c.peakPicker.massif.setValleySize(gaussian)
     else:
         c.peakPicker.massif.initValleySize()
+
 
     if interactive:
         c.peakPicker.gui(log=True, maximize=True, pick=True)
