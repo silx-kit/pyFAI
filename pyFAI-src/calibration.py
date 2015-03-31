@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/03/2015"
+__date__ = "31/03/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -2060,7 +2060,9 @@ def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, 
     @param img: 2d array representing the imagence setup with mask
     @param calibrant: Instance of Calibrant, set-up with wavelength
     @param detector: Detector instance containing the mask
+    @param basename: output file base
     @param recontruct: perform image reconstruction of masked pixel ?
+    @param dist: initial distance
     @param interactive: set to false for testing
     """
     assert isinstance(detector, Detector)
