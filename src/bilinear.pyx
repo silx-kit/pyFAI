@@ -49,7 +49,6 @@ cdef class Bilinear:
 
     def __cinit__(self, data not None):
         assert data.ndim == 2
-        print(data.shape)
         self.height = data.shape[0]
         self.width = data.shape[1]
         self.maxi = data.max()
