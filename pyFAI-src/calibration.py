@@ -2057,14 +2057,14 @@ def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, 
     """
     Procedural interfact for calibration
     
-    @param img: 2d array representing the imagence setup with mask
+    @param img: 2d array representing the calibration image
     @param calibrant: Instance of Calibrant, set-up with wavelength
     @param detector: Detector instance containing the mask
     @param basename: output file base
     @param recontruct: perform image reconstruction of masked pixel ?
     @param dist: initial distance
     @param gaussian: width of the gaussian used for difference of gaussian in the "massif" peak-picking algorithm
-    @param interactive: set to false for testing
+    @param interactive: set to False for testing
     """
     assert isinstance(detector, Detector)
     assert isinstance(calibrant, Calibrant)
