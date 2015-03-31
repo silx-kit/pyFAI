@@ -1,4 +1,5 @@
-# Para Bromo Benzoic Acid P21/a  a=29.59(5) b=6.15(1) c=3.98(1) beta=95.5(1)° 
+# Para Bromo Benzoic Acid P21/a  a=29.59(5) b=6.15(1) c=3.98(1) beta=95.5(1)°
+#Ref:  K.Ohkura, S.Kashino, M.Haisa; Bull.Chem.Soc.Jpn. (1972), 45, 2651 
 #  d-spacing      h      k      l      F^2     multiplicity
    14.7269   #    2      0      0    2551.99        2
 #  7.36344   #    4      0      0    654.242        2
