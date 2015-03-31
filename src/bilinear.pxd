@@ -24,7 +24,7 @@ cdef class Bilinear:
 
     cdef readonly float[:, :] data
     cdef readonly float maxi, mini
-    cdef readonly size_t d0_max, d1_max, width, height
+    cdef readonly size_t width, height
 
-    cpdef int cp_local_maxi(self, int )
-    cdef int c_local_maxi(self, int) nogil
+    cpdef size_t cp_local_maxi(self, size_t)
+    cdef size_t c_local_maxi(self, size_t) nogil

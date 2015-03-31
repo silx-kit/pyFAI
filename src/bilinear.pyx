@@ -23,7 +23,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3+"
-__date__ = "05/03/2015"
+__date__ = "31/03/2015"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -34,7 +34,7 @@ from cython.parallel import prange
 ctypedef fused float32_64:
     cython.float
     cython.double
-from libc.math cimport floor, ceil
+from libc.math cimport floor, ceil, round
 
 import logging
 logger = logging.getLogger("pyFAI.bilinear")
@@ -42,14 +42,16 @@ logger = logging.getLogger("pyFAI.bilinear")
 from .utils import timeit
 
 cdef class Bilinear:
-    """Bilinear interpolator for finding max"""
+    """Bilinear interpolator for finding max.
+    
+    Instance attribute defined in pxd file 
+    """
 
     def __cinit__(self, data not None):
         assert data.ndim == 2
-        self.width = data.shape[1]
+        print(data.shape)
         self.height = data.shape[0]
-        self.d0_max = data.shape[0] - 1
-        self.d1_max = data.shape[1] - 1
+        self.width = data.shape[1]
         self.maxi = data.max()
         self.mini = data.min()
         self.data = numpy.ascontiguousarray(data, dtype=numpy.float32)
@@ -81,10 +83,10 @@ cdef class Bilinear:
                 res = self.mini + d0
             elif d1 < 0:
                 res = self.mini + d1
-            elif d0 > self.d0_max:
-                res = self.mini - d0 + self.d0_max
-            elif d1 > self.d1_max:
-                res = self.mini - d1 + self.d1_max
+            elif d0 > (self.height - 1):
+                res = self.mini - d0 + self.height - 1
+            elif d1 > self.width - 1:
+                res = self.mini - d1 + self.width - 1
             elif (i0 == i1) and (j0 == j1):
                 res = self.data[i0, j0]
             elif i0 == i1:
@@ -118,18 +120,17 @@ cdef class Bilinear:
 
         """
         cdef:
-            int res,current0,current1
+            int res, current0, current1
             int i0, i1
             float tmp, sum0 = 0, sum1 = 0, sum = 0
             float a00, a01, a02, a10, a11, a12, a20, a21, a22
             float d00, d11, d01, denom, delta0, delta1
+            
+        res = self.c_local_maxi(<int> (round(x[0])) * self.width + <int> (round(x[1])))
 
-        res = self.c_local_maxi(x[0] * self.width + x[1])
-
-        current0 = res //self.width
+        current0 = res // self.width
         current1 = res % self.width
-
-        if (current0 > 0) and (current0 < self.width - 1) and (current1 > 0) and (current1 < self.height-1):
+        if (current0 > 0) and (current0 < self.height - 1) and (current1 > 0) and (current1 < self.width - 1):
             # Use second order polynomial Taylor expansion
             a00 = self.data[current0 - 1, current1 - 1]
             a01 = self.data[current0 - 1, current1    ]
@@ -142,7 +143,7 @@ cdef class Bilinear:
             a22 = self.data[current0 + 1, current1 - 1]
             d00 = a12 - 2.0 * a11 + a10
             d11 = a21 - 2.0 * a11 + a01
-            d01 = (a00 - a02 - a20 + a22)/4.0
+            d01 = (a00 - a02 - a20 + a22) / 4.0
             denom = 2.0 * (d00 * d11 - d01 * d01)
             if abs(denom) < 1e-10:
                 logger.debug("Singular determinant, Hessian undefined")
@@ -163,15 +164,16 @@ cdef class Bilinear:
                     sum += tmp
             if sum > 0:
                 return (sum0 / sum, sum1 / sum)
+                
         return (float(current0), float(current1))
 
-    cpdef int cp_local_maxi(self, int x):
+    cpdef size_t cp_local_maxi(self, size_t x):
         return self.c_local_maxi(x)
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
     @cython.cdivision(True)
-    cdef int c_local_maxi(self, int x) nogil:
+    cdef size_t c_local_maxi(self, size_t x) nogil:
         """
         Return the local maximum ... without sub-pixel refinement
 
@@ -189,12 +191,13 @@ cdef class Bilinear:
         value = self.data[current0, current1]
         old_value = value - 1.0
         new0, new1 = current0, current1
+
         while value > old_value:
             old_value = value
             start0 = max(0, current0 - 1)
-            stop0 = min(self.height, current0 + 2 )
+            stop0 = min(self.height, current0 + 2)
             start1 = max(0, current1 - 1)
-            stop1 = min(self.width, current1 + 2 )
+            stop1 = min(self.width, current1 + 2)
             for i0 in range(start0, stop0):
                 for i1 in range(start1, stop1):
                     tmp = self.data[i0, i1]
