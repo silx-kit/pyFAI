@@ -1107,10 +1107,6 @@ class AbstractCalibration(object):
         self.check_calib.rebuild()
         self.check_calib.show()
 
-################################################################################
-# Calibration
-################################################################################
-
     def set_data(self, data):
         """
         call-back function for the peak-picker
@@ -1119,6 +1115,10 @@ class AbstractCalibration(object):
         if not self.weighted:
             self.data = numpy.array(self.data)[:, :-1]
         self.refine()
+
+################################################################################
+# Calibration
+################################################################################
 
 class Calibration(AbstractCalibration):
     """
@@ -2053,7 +2053,7 @@ refinement process.
 
 
 # Procedural version of calibration
-def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, dist=0.1, interactive=True):
+def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, dist=0.1, gaussian=None, interactive=True):
     """
     Procedural interfact for calibration
     
@@ -2063,22 +2063,28 @@ def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, 
     @param basename: output file base
     @param recontruct: perform image reconstruction of masked pixel ?
     @param dist: initial distance
+    @param gaussian: width of the gaussian used for difference of gaussian in the "massif" peak-picking algorithm
     @param interactive: set to false for testing
     """
     assert isinstance(detector, Detector)
     assert isinstance(calibrant, Calibrant)
     assert calibrant.wavelength
-    c = Calibration()
+    c = Calibration(wavelength=calibrant.wavelength,
+                    detector=detector,
+                    calibrant=calibrant,
+                    gaussianWidth=gaussian)
     c.gui = interactive
-    c.detector = detector
-    c.calibrant = calibrant
-    c.wavelength = calibrant.wavelength
     c.basename = basename
     c.pointfile = basename + ".npt"
     c.ai = AzimuthalIntegrator(dist=dist, detector=detector, wavelength=calibrant.wavelength)
     c.peakPicker = PeakPicker(img, reconst=reconstruct, mask=detector.mask,
                               pointfile=c.pointfile, calibrant=calibrant,
                               wavelength=calibrant.wavelength)
+    if gaussian is not None:
+        c.peakPicker.massif.setValleySize(gaussian)
+    else:
+        c.peakPicker.massif.initValleySize()
+
     if interactive:
         c.peakPicker.gui(log=True, maximize=True, pick=True)
         update_fig(c.peakPicker.fig)
