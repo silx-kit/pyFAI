@@ -54,17 +54,19 @@ epsilon = 1.0e-6  # for floating point comparison
 class Cell(object):
     """
     This is a cell object, able to calculate the volume and d-spacing according to formula from:
-    
+
     http://geoweb3.princeton.edu/research/MineralPhy/xtalgeometry.pdf
     """
     lattices = ["cubic", "tetragonal", "hexagonal", "rhombohedral", "orthorhombic", "monoclinic", "triclinic"]
-    def __init__(self, a=1, b=1, c=1, alpha=90, beta=90, gamma=90, lattice="triclinic"):
+    types = {"P":"Primitive", "I":"Body centered", "F":"Face centered", "C": "Side centered", "R": "Rhombohedral"}
+
+    def __init__(self, a=1, b=1, c=1, alpha=90, beta=90, gamma=90, lattice="triclinic", lattice_type="P"):
         """
         Crystalographic units are Angstrom for distances and degrees for angles !
 
         @param a,b,c: unit cell length in Angstrom
         @param alpha, beta, gamma: unit cell angle in degrees
-        
+
         """
         self.a = a
         self.b = b
@@ -72,7 +74,8 @@ class Cell(object):
         self.alpha = alpha
         self.beta = beta
         self.gamma = gamma
-        self.lattice = lattice
+        self.lattice = lattice if lattice in self.lattices else "triclinic"
+        self.type = lattice_type if lattice_type in self.types else "P"
         self._volume = None
         self.S11 = None
         self.S12 = None
@@ -81,8 +84,8 @@ class Cell(object):
         self.S23 = None
 
     def __repr__(self, *args, **kwargs):
-        return "%s cell a=%.4f b=%.4f c=%.4f alpha=%.3f beta=%.3f gamma=%.3f" % \
-            (self.lattice.capitalize(), self.a, self.b, self.c, self.alpha, self.beta, self.gamma)
+        return "%s %s cell a=%.4f b=%.4f c=%.4f alpha=%.3f beta=%.3f gamma=%.3f" % \
+            (self.types[self.type], self.lattice, self.a, self.b, self.c, self.alpha, self.beta, self.gamma)
 
     @classmethod
     def cubic(cls, a):
@@ -208,7 +211,7 @@ class Cell(object):
 
     def d(self, hkl):
         """
-        Calculate the actual d-spacing for a 3-tuple of   
+        Calculate the actual d-spacing for a 3-tuple of
         """
         h, k, l = hkl
         if self.lattice in ["cubic", "tetragonal", "orthorhombic"]:
@@ -243,8 +246,8 @@ class Cell(object):
 
     def d_spacing(self, dmin=1.0):
         """
-        @param dmin: minimum value of 
-        @return: dict d-spacing as string, list of tuple with Miller indices preceeded with the numerical value 
+        @param dmin: minimum value of
+        @return: dict d-spacing as string, list of tuple with Miller indices preceded with the numerical value
         """
         hmax = int(ceil(self.a / dmin))
         kmax = int(ceil(self.b / dmin))
@@ -253,8 +256,18 @@ class Cell(object):
         for hkl in itertools.product(range(-hmax, hmax + 1),
                                      range(-kmax, kmax + 1),
                                      range(-lmax, lmax + 1)):
+            h, k, l=hkl
             if hkl == (0, 0, 0):
                 continue
+            if self.type == "I" and ((h + k + l) % 2 != 0):
+                continue
+            if self.type == "C" and ((h + k) % 2 != 0):
+                continue
+            if self.type == "F" and ((h % 2 + k % 2 + l % 2) not in (0, 3)):
+                continue
+            if self.type == "R" and ((h - k + l) % 3 != 0):
+                continue
+
             d = self.d(hkl)
             strd = "%.8e" % d
             if d < dmin:
@@ -268,11 +281,11 @@ class Cell(object):
     def save(self, name, long_name=None, doi=None, dmin=1.0, dest_dir=None):
         """
         Save informations about the cell in a d-spacing file, usable as Calibrant
-        
+
         @param name: name of the calibrant
         @param doi: reference of the publication used to parametrize the cell
-        @param dmin: minimal d-spacing 
-        @param dest_dir: name of the directory where to save the result  
+        @param dmin: minimal d-spacing
+        @param dest_dir: name of the directory where to save the result
         """
         fname = name + ".D"
         if dest_dir:
