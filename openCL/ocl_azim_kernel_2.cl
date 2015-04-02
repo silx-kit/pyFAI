@@ -171,7 +171,7 @@ group_spans(__global float *span_range)
   uint tid = get_local_id(0);
   uint blockId = get_group_id(0);
 
-  int Ngroups, GroupSize;
+  uint Ngroups, GroupSize;
   __local float loc_max[BLOCK_SIZE];
 
   GroupSize = GROUP_SIZE;
