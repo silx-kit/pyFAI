@@ -23,7 +23,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3+"
-__date__ = "31/03/2015"
+__date__ = "02/04/2015"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -125,7 +125,7 @@ cdef class Bilinear:
             float a00, a01, a02, a10, a11, a12, a20, a21, a22
             float d00, d11, d01, denom, delta0, delta1
             
-        res = self.c_local_maxi(<int> (round(x[0])) * self.width + <int> (round(x[1])))
+        res = self.c_local_maxi(<size_t> (int(round(x[0])) * self.width + int(round(x[1]))))
 
         current0 = res // self.width
         current1 = res % self.width
