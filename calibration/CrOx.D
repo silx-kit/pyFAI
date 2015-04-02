@@ -1,3 +1,6 @@
+# Undefined Chromium oxide crystals used as calibrant on some MX beamlines at ESRF.
+# d-spacing measures on the Powder diffraction beamline, formerly ID31.  
+# Ref: Personal communication from scientist, do not use. 
 3.645
 2.672
 2.487
