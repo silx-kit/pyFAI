@@ -44,7 +44,7 @@ static float8 my_sort_file(uint local_id, uint group_id, uint local_size,
     float8 output;
 
 	int dir;
-	uint id, global_start, size, stride;
+	uint id, size, stride;
 	int4 comp;
 
 	uint4 mask1 = (uint4)(1, 0, 3, 2);
@@ -55,7 +55,12 @@ static float8 my_sort_file(uint local_id, uint group_id, uint local_size,
 	int4 add2 = (int4)(2, 3, 2, 3);
 	int4 add3 = (int4)(1, 2, 2, 3);
 
-	id = local_id * 2;
+    // retrieve input data
+    input1 = (float4)(input.s0, input.s1, input.s2, input.s3);
+    input2 = (float4)(input.s4, input.s5, input.s6, input.s7);
+
+    // Find global address
+    id = local_id * 2;
 
 	/* Sort input 1 - ascending */
 	comp = input1 < shuffle(input1, mask1);
@@ -249,8 +254,8 @@ __kernel void bsort_all(__global float4 *g_data,
     input1 = g_data[global_start];
     input2 = g_data[global_start+1];
     input = (float8) (input1, input2);
-    output = my_sort_book(get_local_id(0), get_group_id(0), get_local_size(0),
-                    input, l_data);
+    output = my_sort_file(get_local_id(0), get_group_id(0), get_local_size(0),
+                          input, l_data);
     input1 = (float4) (output.s0, output.s1, output.s2, output.s3);
     input2 = (float4) (output.s4, output.s5, output.s6, output.s7);
     g_data[global_start] = input1;
@@ -280,8 +285,8 @@ __kernel void bsort_horizontal(__global float *g_data,
                      g_data[global_start + 6],
                      g_data[global_start + 7]);
 
-    output = my_sort_book(get_local_id(1), get_group_id(1), get_local_size(1),
-                   input, l_data);
+    output = my_sort_file(get_local_id(1), get_group_id(1), get_local_size(1),
+                          input, l_data);
 
     g_data[global_start    ] = output.s0;
     g_data[global_start + 1] = output.s1;
@@ -319,8 +324,8 @@ __kernel void bsort_vertical(__global float *g_data,
                      g_data[global_start + 6*padding],
                      g_data[global_start + 7*padding]);
 
-      output = my_sort_book(get_local_id(0), get_group_id(0), get_local_size(0),
-                       input, l_data);
+      output = my_sort_file(get_local_id(0), get_group_id(0), get_local_size(0),
+                            input, l_data);
       g_data[global_start             ] = output.s0;
       g_data[global_start + padding   ] = output.s1;
       g_data[global_start + 2*padding ] = output.s2;
@@ -332,7 +337,7 @@ __kernel void bsort_vertical(__global float *g_data,
 }
 
 
-//Tested working reference kernel
+//Tested working reference kernel frm the book. This only works under Linux
 __kernel void bsort_book(__global float4 *g_data,
                          __local float4 *l_data) {
     float4 input1, input2, temp;
@@ -425,7 +430,7 @@ __kernel void bsort_book(__global float4 *g_data,
     g_data[global_start+1] = input2;
     }
 
-
+//Tested working reference kernel from the addition files. This only works under any operating system
 /* Perform initial sort */
 __kernel void bsort_file(__global float4 *g_data, __local float4 *l_data) {
 
