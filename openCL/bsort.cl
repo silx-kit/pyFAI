@@ -1,16 +1,19 @@
-# Taken from "OpenCL in Action" by Matthew Scarpino. License: "public domain"
+// Taken from "OpenCL in Action" by Matthew Scarpino. License: "public domain"
 /* Sort elements within a vector */
+
 #define VECTOR_SORT(input, dir)                                   \
-   comp = input < shuffle(input, mask2) ^ dir;                    \
-   input = shuffle(input, as_uint4(comp * 2 + add2));             \
-   comp = input < shuffle(input, mask1) ^ dir;                    \
-   input = shuffle(input, as_uint4(comp + add1));                 \
+        comp = (input < shuffle(input, mask2)) ^ dir;             \
+        input = shuffle(input, as_uint4(comp * 2 + add2));        \
+        comp = (input < shuffle(input, mask1)) ^ dir;             \
+        input = shuffle(input, as_uint4(comp + add1));            \
+
 
 #define VECTOR_SWAP(input1, input2, dir)                          \
-   temp = input1;                                                 \
-   comp = (input1 < input2 ^ dir) * 4 + add3;                     \
-   input1 = shuffle2(input1, input2, as_uint4(comp));             \
-   input2 = shuffle2(input2, temp, as_uint4(comp));               \
+        temp = input1;                                            \
+        comp = ((input1 < input2) ^ dir) * 4 + add3;              \
+        input1 = shuffle2(input1, input2, as_uint4(comp));        \
+        input2 = shuffle2(input2, temp, as_uint4(comp));          \
+
 
 /* Perform initial sort */
 __kernel void bsort_init(__global float4 *g_data, __local float4 *l_data) {
