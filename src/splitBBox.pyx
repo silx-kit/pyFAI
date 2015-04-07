@@ -28,28 +28,11 @@ Calculates histograms of pos0 (tth) weighted by Intensity
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "20141020"
+__date__ = "07/04/2015"
 __status__ = "stable"
 __license__ = "GPLv3+"
 
-import cython
-cimport numpy
-import numpy
-from libc.math cimport fabs, M_PI
-cdef float pi=<float> M_PI 
-
-EPS32 = (1 + numpy.finfo(numpy.float32).eps)
-
-@cython.cdivision(True)
-cdef float  getBinNr(float x0, float pos0_min, float delta) nogil:
-    """
-    calculate the bin number for any point
-    param x0: current position
-    param pos0_min: position minimum
-    param delta: bin width
-    """
-    return (x0 - pos0_min) / delta
-
+include "regrid_common.pxi"
 
 @cython.cdivision(True)
 @cython.boundscheck(False)
@@ -205,8 +188,8 @@ def histoBBox1d(numpy.ndarray weights not None,
             if check_pos1 and (((cpos1[idx]+dpos1[idx]) < pos1_min) or ((cpos1[idx]-dpos1[idx]) > pos1_max)):
                     continue
 
-            fbin0_min = getBinNr(min0, pos0_min, delta)
-            fbin0_max = getBinNr(max0, pos0_min, delta)
+            fbin0_min = get_bin_number(min0, pos0_min, delta)
+            fbin0_max = get_bin_number(max0, pos0_min, delta)
             if (fbin0_max<0) or (fbin0_min>=bins):
                 continue
             if fbin0_max>=bins:
@@ -475,10 +458,10 @@ def histoBBox2d(numpy.ndarray weights not None,
                 max1 = pos1_maxin
 
 
-            fbin0_min = getBinNr(min0, pos0_min, delta0)
-            fbin0_max = getBinNr(max0, pos0_min, delta0)
-            fbin1_min = getBinNr(min1, pos1_min, delta1)
-            fbin1_max = getBinNr(max1, pos1_min, delta1)
+            fbin0_min = get_bin_number(min0, pos0_min, delta0)
+            fbin0_max = get_bin_number(max0, pos0_min, delta0)
+            fbin1_min = get_bin_number(min1, pos1_min, delta1)
+            fbin1_max = get_bin_number(max1, pos1_min, delta1)
 
             bin0_min = <ssize_t> fbin0_min
             bin0_max = <ssize_t> fbin0_max

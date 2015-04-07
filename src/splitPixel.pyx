@@ -40,7 +40,8 @@ from libc.math cimport fabs, ceil, floor
 from libc.string cimport memset
 from cython cimport view
 
-EPS32 = (1 + numpy.finfo(numpy.float32).eps)
+include "regrid_common.pxi"
+
 ctypedef double position_t
 ctypedef double data_t
 
@@ -61,16 +62,6 @@ cdef inline position_t area4(position_t a0,
     @return: area, i.e. 1/2 * (AC ^ BD)
     """
     return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
-
-@cython.cdivision(True)
-cdef inline position_t  getBinNr(position_t x0,  position_t pos0_min,  position_t dpos) nogil:
-    """
-    calculate the bin number for any point
-    param x0: current position
-    param pos0_min: position minimum
-    param dpos: bin width
-    """
-    return (x0 - pos0_min) / dpos
 
 
 cdef inline position_t calc_area(position_t I1, position_t I2, position_t slope, position_t intercept) nogil:
@@ -277,13 +268,13 @@ def fullSplit1D(numpy.ndarray pos not None,
 
             # a0, b0, c0 and d0 are in bin number (2theta, q or r)
             # a1, b1, c1 and d1 are in Chi angle in radians ...
-            a0 = getBinNr(cpos[idx, 0, 0], pos0_min, dpos)
+            a0 = get_bin_number(cpos[idx, 0, 0], pos0_min, dpos)
             a1 = <  double > cpos[idx, 0, 1]
-            b0 = getBinNr(cpos[idx, 1, 0], pos0_min, dpos)
+            b0 = get_bin_number(cpos[idx, 1, 0], pos0_min, dpos)
             b1 = <  double > cpos[idx, 1, 1]
-            c0 = getBinNr(cpos[idx, 2, 0], pos0_min, dpos)
+            c0 = get_bin_number(cpos[idx, 2, 0], pos0_min, dpos)
             c1 = <  double > cpos[idx, 2, 1]
-            d0 = getBinNr(cpos[idx, 3, 0], pos0_min, dpos)
+            d0 = get_bin_number(cpos[idx, 3, 0], pos0_min, dpos)
             d1 = <  double > cpos[idx, 3, 1]
             min0 = min(a0, b0, c0, d0)
             max0 = max(a0, b0, c0, d0)
@@ -538,10 +529,10 @@ def fullSplit2D(numpy.ndarray pos not None,
                     max1 = min1
                     min1 = pos1_min
 
-            fbin0_min = getBinNr(min0, pos0_min, dpos0)
-            fbin0_max = getBinNr(max0, pos0_min, dpos0)
-            fbin1_min = getBinNr(min1, pos1_min, dpos1)
-            fbin1_max = getBinNr(max1, pos1_min, dpos1)
+            fbin0_min = get_bin_number(min0, pos0_min, dpos0)
+            fbin0_max = get_bin_number(max0, pos0_min, dpos0)
+            fbin1_min = get_bin_number(min1, pos1_min, dpos1)
+            fbin1_max = get_bin_number(max1, pos1_min, dpos1)
 
             bin0_min = < int > fbin0_min
             bin0_max = < int > fbin0_max
