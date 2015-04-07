@@ -30,7 +30,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/02/2015"
+__date__ = "07/04/2015"
 
 import sys
 import os
@@ -70,6 +70,7 @@ from .test_calibrant import test_suite_all_calibrant
 from .test_split_pixel import test_suite_all_split
 from .test_bispev import test_suite_all_bispev
 from .test_bug_regression import test_suite_bug_regression
+from .test_watershed import test_suite_all_watershed
 
 
 def test_suite_all():
@@ -101,6 +102,7 @@ def test_suite_all():
     testSuite.addTest(test_suite_all_split())
     testSuite.addTest(test_suite_all_bispev())
     testSuite.addTest(test_suite_bug_regression())
+    testSuite.addTest(test_suite_all_watershed())
     return testSuite
 
 if __name__ == '__main__':

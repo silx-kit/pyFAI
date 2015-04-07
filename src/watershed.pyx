@@ -26,7 +26,7 @@ Inverse watershed for connecting region of high intensity
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "20/03/2015"
+__date__ = "07/04/2015"
 __status__ = "stable"
 __license__ = "GPLv3+"
 
@@ -36,9 +36,11 @@ cimport numpy
 import sys 
 import logging
 logger = logging.getLogger("pyFAI.watershed") 
-from .bilinear import Bilinear
 from .utils import timeit
 from cython.parallel import prange
+
+include "numpy_common.pxi"
+include "bilinear.pxi"
 
 cdef bint get_bit(int byteval, int idx) nogil:
     return ((byteval & (1 << idx)) != 0)
@@ -46,9 +48,9 @@ cdef bint get_bit(int byteval, int idx) nogil:
 
 cdef class Region:
     cdef:
-        int index, size, pass_to
-        float mini, maxi, highest_pass
-        list neighbors, border, peaks
+        readonly int index, size, pass_to
+        readonly float mini, maxi, highest_pass
+        readonly list neighbors, border, peaks
 
     def __cinit__(self, int idx):
         self.index = idx
@@ -60,6 +62,13 @@ cdef class Region:
         self.mini = - 1
         self.maxi = - 1
         self.highest_pass = -sys.maxsize
+
+    def __dealloc__(self):
+        """Destructor"""
+        self.neighbors = None
+        self.border = None
+        self.peaks = None
+        
 
     def __repr__(self):
         return "Region %s of size %s:\n neighbors: %s\n border: %s\n" % (self.index, self.size, self.neighbors, self.border) + \
@@ -175,15 +184,39 @@ class InverseWatershed(object):
     * merge region with high pass between them
 
     """
+#     cdef:
+#         readonly float[:, :]  data
+#         readonly size_t width, height
+#         readonly dict regions
+#         readonly numpy.int32_t[:, :] labels
+#         readonly numpy.uint8_t[:, :] borders
+#         readonly float  thres, _actual_thres
+#         readonly Bilinear bilinear
+        
     def __init__(self, data not None, thres=1.0):
+        """
+        @param data: 2d image as numpy array
+
+        """
+        assert data.ndim == 2
         self.data = numpy.ascontiguousarray(data, dtype=numpy.float32)
+        
         self.height, self.width = data.shape
         self.bilinear = Bilinear(data)
-        self.regions = dict()
+        self.regions = {}
         self.labels = numpy.zeros((self.height, self.width), dtype="int32")
         self.borders = numpy.zeros((self.height, self.width), dtype="uint8")
         self.thres = thres
         self._actual_thres = 2
+
+    def __dealloc__(self):
+        """destructor"""
+        self.data = None
+        self.bilinear = None
+        self.regions = None
+        self.labels = None
+        self.borders = None
+        self.dict = None
 
     def init(self):
         self.init_labels()
@@ -204,15 +237,16 @@ class InverseWatershed(object):
             int i, j, width = self.width, height = self.height, idx, res
             numpy.int32_t[:, :] labels = self.labels
             dict regions = self.regions
+            Bilinear bilinear = self.bilinear
         for i in range(height):
             for j in range(width):
                 idx = j + i * width
-                res = self.bilinear.cp_local_maxi(idx)
-                labels[i, j] = res
+                res = bilinear.c_local_maxi(idx)
+                labels[i, j] += res
                 if idx == res:
                     regions[res] = Region(res) 
 
-    @timeit
+    @timeit 
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -346,8 +380,8 @@ class InverseWatershed(object):
                 if to_merge < 0:
                     if len(region1.neighbors) == 0:
                         print("no neighbors: %s" % region1)
-                    elif len(region1.neighbors) == 1 or \
-                        (region1.neighbors == [region1.neighbors[0]] * len(region1.neighbors)):
+                    elif (len(region1.neighbors) == 1) or \
+                         (region1.neighbors == [region1.neighbors[0]] * len(region1.neighbors)):
                         to_merge = region1.neighbors[0]
                     else:
                         to_merge = region1.neighbors[0]

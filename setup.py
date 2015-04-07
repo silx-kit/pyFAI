@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/03/2015"
+__date__ = "07/04/2015"
 __status__ = "stable"
 
 
@@ -156,9 +156,10 @@ def Extension(name, source=None, extra_sources=None, **kwargs):
     if "include_dirs" in kwargs:
         include_dirs = set(kwargs.pop("include_dirs"))
         include_dirs.add(numpy.get_include())
+        include_dirs.add("src")
         include_dirs = list(include_dirs)
     else:
-        include_dirs = [numpy.get_include()]
+        include_dirs = ["src", numpy.get_include()]
     return _Extension(name=name, sources=sources, include_dirs=include_dirs, **kwargs)
 
 ext_modules = [
@@ -218,7 +219,9 @@ ext_modules = [
 
     Extension('marchingsquares'),
 
-    Extension('watershed')
+    Extension('watershed',
+#             extra_compile_args=[openmp], extra_link_args=[openmp],
+              )
 
 ]
 
