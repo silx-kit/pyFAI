@@ -255,6 +255,9 @@ class AbstractCalibration(object):
                       type=float, default=None,
                       help="polarization factor, from -1 (vertical) to +1 (horizontal),"\
                       " default is None (no correction), synchrotrons are around 0.95")
+        self.parser.add_argument("-i", "--poni", dest="poni", metavar="FILE",
+              help="file containing the diffraction parameter (poni-file).",
+              default=None)
         self.parser.add_argument("-b", "--background", dest="background",
                       help="Automatic background subtraction if no value are provided",
                       default=None)
@@ -407,6 +410,9 @@ class AbstractCalibration(object):
 
         if self.calibrant is None:
             self.read_dSpacingFile(True)
+
+        if options.poni:
+            self.ai.load(options.poni)
 
         if options.wavelength:
             self.ai.wavelength = self.wavelength = 1e-10 * options.wavelength
@@ -2057,7 +2063,7 @@ refinement process.
 def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, dist=0.1, gaussian=None, interactive=True):
     """
     Procedural interfact for calibration
-    
+
     @param img: 2d array representing the calibration image
     @param calibrant: Instance of Calibrant, set-up with wavelength
     @param detector: Detector instance containing the mask
