@@ -1379,7 +1379,8 @@ and a new option which lets you choose between the original `massif` algorithm a
                       help="Keep existing control point and append new",
                       default=False, action="store_true")
 
-        options, args = self.parser.parse_args()
+        options = self.parser.parse_args()
+        args = options.args
         # Analyse aruments and options
         if (not options.poni) or (not os.path.isfile(options.poni)):
             logger.error("You should provide a PONI file as starting point !!")
