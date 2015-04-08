@@ -414,7 +414,7 @@ body.cython { font-family: courier; font-size: 12; }
   if (<span class='py_c_api'>PyDict_SetItem</span>(__pyx_d, __pyx_n_s_numpy, __pyx_t_1) &lt; 0) <span class='error_goto'>{__pyx_filename = __pyx_f[0]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L1_error;}</span>
   <span class='pyx_macro_api'>__Pyx_DECREF</span>(__pyx_t_1); __pyx_t_1 = 0;
 </pre><pre class='cython line score-0'>&#xA0;0041: <span class="k">cimport</span> <span class="nn">numpy</span></pre>
-<pre class='cython line score-0'>&#xA0;0042: <span class="k">from</span> <span class="nn">libc.math</span> <span class="k">cimport</span> <span class="n">fabs</span><span class="p">,</span> <span class="n">M_PI</span><span class="p">,</span> <span class="n">floor</span><span class="p">,</span> <span class="n">sqrt</span></pre>
+<pre class='cython line score-0'>&#xA0;0042: <span class="k">from</span> <span class="nn">libc.math</span> <span class="k">cimport</span> <span class="n">fabs</span><span class="p">,</span> <span class="n">floor</span><span class="p">,</span> <span class="n">sqrt</span></pre>
 <pre class='cython line score-0'>&#xA0;0043: <span class="k">from</span> <span class="nn">libc.stdio</span> <span class="k">cimport</span> <span class="n">printf</span><span class="p">,</span> <span class="n">fflush</span><span class="p">,</span> <span class="n">stdout</span></pre>
 <pre class='cython line score-0'>&#xA0;0044: </pre>
 <pre class='cython line score-0'>&#xA0;0045: <span class="k">include</span> <span class="s">&quot;regrid_common.pxi&quot;</span></pre>
@@ -4090,7 +4090,7 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_1d_4integrate(
                                 goto __pyx_L27;
                                 __pyx_L27:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates0)
+                                #pragma omp critical(__pyx_parallel_lastprivates20)
                                 #endif /* _OPENMP */
                                 {
                                     __pyx_parallel_temp0 = __pyx_v_data;
@@ -4279,7 +4279,7 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_1d_4integrate(
                                 goto __pyx_L40;
                                 __pyx_L40:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates1)
+                                #pragma omp critical(__pyx_parallel_lastprivates21)
                                 #endif /* _OPENMP */
                                 {
                                     __pyx_parallel_temp0 = __pyx_v_data;
@@ -4604,18 +4604,18 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_1d_4integrate(
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
-                    #pragma omp for lastprivate(__pyx_v_j) lastprivate(__pyx_v_sum_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_data) lastprivate(__pyx_v_idx) lastprivate(__pyx_v_coef) lastprivate(__pyx_v_sum_count) schedule(guided)
+                    #pragma omp for lastprivate(__pyx_v_sum_count) lastprivate(__pyx_v_j) lastprivate(__pyx_v_idx) lastprivate(__pyx_v_sum_data) lastprivate(__pyx_v_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_coef) schedule(guided)
                     #endif /* _OPENMP */
                     for (__pyx_t_15 = 0; __pyx_t_15 &lt; __pyx_t_2; __pyx_t_15++){
                         {
                             __pyx_v_i = 0 + 1 * __pyx_t_15;
                             /* Initialize private variables to invalid values */
+                            __pyx_v_sum_count = ((float)__PYX_NAN());
                             __pyx_v_j = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
+                            __pyx_v_idx = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
                             __pyx_v_sum_data = ((float)__PYX_NAN());
                             __pyx_v_data = ((float)__PYX_NAN());
-                            __pyx_v_idx = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
                             __pyx_v_coef = ((float)__PYX_NAN());
-                            __pyx_v_sum_count = ((float)__PYX_NAN());
 /* … */
       /*finally:*/ {
         /*normal exit:*/{
@@ -8586,7 +8586,7 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_2d_4integrate(
                     #endif /* _OPENMP */
                     {
                         #ifdef _OPENMP
-                        #pragma omp for lastprivate(__pyx_v_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
+                        #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_data) schedule(static)
                         #endif /* _OPENMP */
                         for (__pyx_t_15 = 0; __pyx_t_15 &lt; __pyx_t_16; __pyx_t_15++){
                             {
@@ -8720,11 +8720,11 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_2d_4integrate(
                                 goto __pyx_L27;
                                 __pyx_L27:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates2)
+                                #pragma omp critical(__pyx_parallel_lastprivates22)
                                 #endif /* _OPENMP */
                                 {
-                                    __pyx_parallel_temp0 = __pyx_v_data;
-                                    __pyx_parallel_temp1 = __pyx_v_i;
+                                    __pyx_parallel_temp0 = __pyx_v_i;
+                                    __pyx_parallel_temp1 = __pyx_v_data;
                                 }
                                 __pyx_L28:;
                                 #ifdef _OPENMP
@@ -8754,8 +8754,8 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_2d_4integrate(
                   __pyx_parallel_why = 4;
                 }
                 if (__pyx_parallel_why) {
-                  __pyx_v_data = __pyx_parallel_temp0;
-                  __pyx_v_i = __pyx_parallel_temp1;
+                  __pyx_v_i = __pyx_parallel_temp0;
+                  __pyx_v_data = __pyx_parallel_temp1;
                   switch (__pyx_parallel_why) {
                         case 3: goto __pyx_L11_return;
                         case 4:
@@ -8806,7 +8806,7 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_2d_4integrate(
                     #endif /* _OPENMP */
                     {
                         #ifdef _OPENMP
-                        #pragma omp for lastprivate(__pyx_v_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
+                        #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_data) schedule(static)
                         #endif /* _OPENMP */
                         for (__pyx_t_15 = 0; __pyx_t_15 &lt; __pyx_t_4; __pyx_t_15++){
                             {
@@ -8909,11 +8909,11 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_2d_4integrate(
                                 goto __pyx_L40;
                                 __pyx_L40:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates3)
+                                #pragma omp critical(__pyx_parallel_lastprivates23)
                                 #endif /* _OPENMP */
                                 {
-                                    __pyx_parallel_temp0 = __pyx_v_data;
-                                    __pyx_parallel_temp1 = __pyx_v_i;
+                                    __pyx_parallel_temp0 = __pyx_v_i;
+                                    __pyx_parallel_temp1 = __pyx_v_data;
                                 }
                                 __pyx_L41:;
                                 #ifdef _OPENMP
@@ -8943,8 +8943,8 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_2d_4integrate(
                   __pyx_parallel_why = 4;
                 }
                 if (__pyx_parallel_why) {
-                  __pyx_v_data = __pyx_parallel_temp0;
-                  __pyx_v_i = __pyx_parallel_temp1;
+                  __pyx_v_i = __pyx_parallel_temp0;
+                  __pyx_v_data = __pyx_parallel_temp1;
                   switch (__pyx_parallel_why) {
                         case 3: goto __pyx_L29_return;
                         case 4:
@@ -9082,7 +9082,7 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_2d_4integrate(
                     #endif /* _OPENMP */
                     {
                         #ifdef _OPENMP
-                        #pragma omp for lastprivate(__pyx_v_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
+                        #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_data) schedule(static)
                         #endif /* _OPENMP */
                         for (__pyx_t_15 = 0; __pyx_t_15 &lt; __pyx_t_16; __pyx_t_15++){
                             {
@@ -9234,18 +9234,18 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_2d_4integrate(
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
-                    #pragma omp for lastprivate(__pyx_v_sum_count) lastprivate(__pyx_v_sum_data) lastprivate(__pyx_v_idx) lastprivate(__pyx_v_coef) lastprivate(__pyx_v_j) lastprivate(__pyx_v_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(guided)
+                    #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_j) lastprivate(__pyx_v_idx) lastprivate(__pyx_v_coef) lastprivate(__pyx_v_data) lastprivate(__pyx_v_sum_data) lastprivate(__pyx_v_sum_count) schedule(guided)
                     #endif /* _OPENMP */
                     for (__pyx_t_15 = 0; __pyx_t_15 &lt; __pyx_t_4; __pyx_t_15++){
                         {
                             __pyx_v_i = 0 + 1 * __pyx_t_15;
                             /* Initialize private variables to invalid values */
-                            __pyx_v_sum_count = ((float)__PYX_NAN());
-                            __pyx_v_sum_data = ((float)__PYX_NAN());
+                            __pyx_v_j = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
                             __pyx_v_idx = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
                             __pyx_v_coef = ((float)__PYX_NAN());
-                            __pyx_v_j = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
                             __pyx_v_data = ((float)__PYX_NAN());
+                            __pyx_v_sum_data = ((float)__PYX_NAN());
+                            __pyx_v_sum_count = ((float)__PYX_NAN());
 /* … */
       /*finally:*/ {
         /*normal exit:*/{

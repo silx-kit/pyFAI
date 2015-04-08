@@ -7362,7 +7362,7 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_1d_4integrate(
                 if (__pyx_t_16 > 0)
                 {
                     #ifdef _OPENMP
-                    #pragma omp parallel private(__pyx_t_19, __pyx_t_13, __pyx_t_12, __pyx_t_17, __pyx_t_18, __pyx_t_20, __pyx_t_22, __pyx_t_23, __pyx_t_21) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
+                    #pragma omp parallel private(__pyx_t_17, __pyx_t_21, __pyx_t_19, __pyx_t_22, __pyx_t_23, __pyx_t_18, __pyx_t_13, __pyx_t_20, __pyx_t_12) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
                     #endif /* _OPENMP */
                     {
                         #ifdef _OPENMP
@@ -7563,7 +7563,7 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_1d_4integrate(
                                 goto __pyx_L27;
                                 __pyx_L27:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates0)
+                                #pragma omp critical(__pyx_parallel_lastprivates20)
                                 #endif /* _OPENMP */
                                 {
                                     __pyx_parallel_temp0 = __pyx_v_data;
@@ -7690,7 +7690,7 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_1d_4integrate(
                 if (__pyx_t_2 > 0)
                 {
                     #ifdef _OPENMP
-                    #pragma omp parallel private(__pyx_t_29, __pyx_t_12, __pyx_t_24, __pyx_t_26, __pyx_t_27, __pyx_t_25, __pyx_t_28) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
+                    #pragma omp parallel private(__pyx_t_25, __pyx_t_24, __pyx_t_27, __pyx_t_28, __pyx_t_26, __pyx_t_12, __pyx_t_29) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
                     #endif /* _OPENMP */
                     {
                         #ifdef _OPENMP
@@ -7846,7 +7846,7 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_1d_4integrate(
                                 goto __pyx_L40;
                                 __pyx_L40:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates1)
+                                #pragma omp critical(__pyx_parallel_lastprivates21)
                                 #endif /* _OPENMP */
                                 {
                                     __pyx_parallel_temp0 = __pyx_v_data;
@@ -8077,7 +8077,7 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_1d_4integrate(
                 if (__pyx_t_16 > 0)
                 {
                     #ifdef _OPENMP
-                    #pragma omp parallel private(__pyx_t_12, __pyx_t_31, __pyx_t_32, __pyx_t_30, __pyx_t_13)
+                    #pragma omp parallel private(__pyx_t_31, __pyx_t_12, __pyx_t_32, __pyx_t_30, __pyx_t_13)
                     #endif /* _OPENMP */
                     {
                         #ifdef _OPENMP
@@ -8275,22 +8275,22 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_1d_4integrate(
             if (__pyx_t_2 > 0)
             {
                 #ifdef _OPENMP
-                #pragma omp parallel private(__pyx_t_40, __pyx_t_41, __pyx_t_13, __pyx_t_12, __pyx_t_37, __pyx_t_35, __pyx_t_33, __pyx_t_34, __pyx_t_39, __pyx_t_38, __pyx_t_36)
+                #pragma omp parallel private(__pyx_t_33, __pyx_t_36, __pyx_t_40, __pyx_t_41, __pyx_t_35, __pyx_t_34, __pyx_t_39, __pyx_t_38, __pyx_t_13, __pyx_t_37, __pyx_t_12)
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
-                    #pragma omp for lastprivate(__pyx_v_j) lastprivate(__pyx_v_sum_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_data) lastprivate(__pyx_v_idx) lastprivate(__pyx_v_coef) lastprivate(__pyx_v_sum_count) schedule(guided)
+                    #pragma omp for lastprivate(__pyx_v_sum_count) lastprivate(__pyx_v_j) lastprivate(__pyx_v_idx) lastprivate(__pyx_v_sum_data) lastprivate(__pyx_v_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_coef) schedule(guided)
                     #endif /* _OPENMP */
                     for (__pyx_t_15 = 0; __pyx_t_15 < __pyx_t_2; __pyx_t_15++){
                         {
                             __pyx_v_i = 0 + 1 * __pyx_t_15;
                             /* Initialize private variables to invalid values */
+                            __pyx_v_sum_count = ((float)__PYX_NAN());
                             __pyx_v_j = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
+                            __pyx_v_idx = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
                             __pyx_v_sum_data = ((float)__PYX_NAN());
                             __pyx_v_data = ((float)__PYX_NAN());
-                            __pyx_v_idx = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
                             __pyx_v_coef = ((float)__PYX_NAN());
-                            __pyx_v_sum_count = ((float)__PYX_NAN());
 
                             /* "src/splitPixelFullCSR.pyx":550
  * 
@@ -15226,8 +15226,8 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_2d_4integrate(
             __pyx_t_4 = __pyx_v_size;
             if (1 == 0) abort();
             {
-                float __pyx_parallel_temp0 = __PYX_NAN();
-                __pyx_t_5numpy_int32_t __pyx_parallel_temp1 = 0xbad0bad0;
+                __pyx_t_5numpy_int32_t __pyx_parallel_temp0 = 0xbad0bad0;
+                float __pyx_parallel_temp1 = __PYX_NAN();
                 const char *__pyx_parallel_filename = NULL; int __pyx_parallel_lineno = 0, __pyx_parallel_clineno = 0;
                 PyObject *__pyx_parallel_exc_type = NULL, *__pyx_parallel_exc_value = NULL, *__pyx_parallel_exc_tb = NULL;
                 int __pyx_parallel_why;
@@ -15242,7 +15242,7 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_2d_4integrate(
                 if (__pyx_t_16 > 0)
                 {
                     #ifdef _OPENMP
-                    #pragma omp parallel private(__pyx_t_19, __pyx_t_13, __pyx_t_12, __pyx_t_17, __pyx_t_18, __pyx_t_20, __pyx_t_22, __pyx_t_23, __pyx_t_21) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
+                    #pragma omp parallel private(__pyx_t_17, __pyx_t_21, __pyx_t_19, __pyx_t_22, __pyx_t_23, __pyx_t_18, __pyx_t_13, __pyx_t_20, __pyx_t_12) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
                     #endif /* _OPENMP */
                     {
                         #ifdef _OPENMP
@@ -15252,7 +15252,7 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_2d_4integrate(
                         Py_BEGIN_ALLOW_THREADS
                         #endif /* _OPENMP */
                         #ifdef _OPENMP
-                        #pragma omp for lastprivate(__pyx_v_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
+                        #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_data) schedule(static)
                         #endif /* _OPENMP */
                         for (__pyx_t_15 = 0; __pyx_t_15 < __pyx_t_16; __pyx_t_15++){
                             if (__pyx_parallel_why < 2)
@@ -15443,11 +15443,11 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_2d_4integrate(
                                 goto __pyx_L27;
                                 __pyx_L27:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates2)
+                                #pragma omp critical(__pyx_parallel_lastprivates22)
                                 #endif /* _OPENMP */
                                 {
-                                    __pyx_parallel_temp0 = __pyx_v_data;
-                                    __pyx_parallel_temp1 = __pyx_v_i;
+                                    __pyx_parallel_temp0 = __pyx_v_i;
+                                    __pyx_parallel_temp1 = __pyx_v_data;
                                 }
                                 __pyx_L28:;
                                 #ifdef _OPENMP
@@ -15477,8 +15477,8 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_2d_4integrate(
                   __pyx_parallel_why = 4;
                 }
                 if (__pyx_parallel_why) {
-                  __pyx_v_data = __pyx_parallel_temp0;
-                  __pyx_v_i = __pyx_parallel_temp1;
+                  __pyx_v_i = __pyx_parallel_temp0;
+                  __pyx_v_data = __pyx_parallel_temp1;
                   switch (__pyx_parallel_why) {
                         case 3: goto __pyx_L11_return;
                         case 4:
@@ -15554,8 +15554,8 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_2d_4integrate(
             __pyx_t_16 = __pyx_v_size;
             if (1 == 0) abort();
             {
-                float __pyx_parallel_temp0 = __PYX_NAN();
-                __pyx_t_5numpy_int32_t __pyx_parallel_temp1 = 0xbad0bad0;
+                __pyx_t_5numpy_int32_t __pyx_parallel_temp0 = 0xbad0bad0;
+                float __pyx_parallel_temp1 = __PYX_NAN();
                 const char *__pyx_parallel_filename = NULL; int __pyx_parallel_lineno = 0, __pyx_parallel_clineno = 0;
                 PyObject *__pyx_parallel_exc_type = NULL, *__pyx_parallel_exc_value = NULL, *__pyx_parallel_exc_tb = NULL;
                 int __pyx_parallel_why;
@@ -15570,7 +15570,7 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_2d_4integrate(
                 if (__pyx_t_4 > 0)
                 {
                     #ifdef _OPENMP
-                    #pragma omp parallel private(__pyx_t_29, __pyx_t_12, __pyx_t_24, __pyx_t_26, __pyx_t_27, __pyx_t_25, __pyx_t_28) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
+                    #pragma omp parallel private(__pyx_t_25, __pyx_t_24, __pyx_t_27, __pyx_t_28, __pyx_t_26, __pyx_t_12, __pyx_t_29) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
                     #endif /* _OPENMP */
                     {
                         #ifdef _OPENMP
@@ -15580,7 +15580,7 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_2d_4integrate(
                         Py_BEGIN_ALLOW_THREADS
                         #endif /* _OPENMP */
                         #ifdef _OPENMP
-                        #pragma omp for lastprivate(__pyx_v_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
+                        #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_data) schedule(static)
                         #endif /* _OPENMP */
                         for (__pyx_t_15 = 0; __pyx_t_15 < __pyx_t_4; __pyx_t_15++){
                             if (__pyx_parallel_why < 2)
@@ -15726,11 +15726,11 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_2d_4integrate(
                                 goto __pyx_L40;
                                 __pyx_L40:;
                                 #ifdef _OPENMP
-                                #pragma omp critical(__pyx_parallel_lastprivates3)
+                                #pragma omp critical(__pyx_parallel_lastprivates23)
                                 #endif /* _OPENMP */
                                 {
-                                    __pyx_parallel_temp0 = __pyx_v_data;
-                                    __pyx_parallel_temp1 = __pyx_v_i;
+                                    __pyx_parallel_temp0 = __pyx_v_i;
+                                    __pyx_parallel_temp1 = __pyx_v_data;
                                 }
                                 __pyx_L41:;
                                 #ifdef _OPENMP
@@ -15760,8 +15760,8 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_2d_4integrate(
                   __pyx_parallel_why = 4;
                 }
                 if (__pyx_parallel_why) {
-                  __pyx_v_data = __pyx_parallel_temp0;
-                  __pyx_v_i = __pyx_parallel_temp1;
+                  __pyx_v_i = __pyx_parallel_temp0;
+                  __pyx_v_data = __pyx_parallel_temp1;
                   switch (__pyx_parallel_why) {
                         case 3: goto __pyx_L29_return;
                         case 4:
@@ -15957,11 +15957,11 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_2d_4integrate(
                 if (__pyx_t_16 > 0)
                 {
                     #ifdef _OPENMP
-                    #pragma omp parallel private(__pyx_t_12, __pyx_t_31, __pyx_t_32, __pyx_t_30, __pyx_t_13)
+                    #pragma omp parallel private(__pyx_t_31, __pyx_t_12, __pyx_t_32, __pyx_t_30, __pyx_t_13)
                     #endif /* _OPENMP */
                     {
                         #ifdef _OPENMP
-                        #pragma omp for lastprivate(__pyx_v_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
+                        #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_data) schedule(static)
                         #endif /* _OPENMP */
                         for (__pyx_t_15 = 0; __pyx_t_15 < __pyx_t_16; __pyx_t_15++){
                             {
@@ -16155,22 +16155,22 @@ static PyObject *__pyx_pf_3src_17splitPixelFullCSR_15FullSplitCSR_2d_4integrate(
             if (__pyx_t_4 > 0)
             {
                 #ifdef _OPENMP
-                #pragma omp parallel private(__pyx_t_40, __pyx_t_41, __pyx_t_13, __pyx_t_12, __pyx_t_37, __pyx_t_35, __pyx_t_33, __pyx_t_34, __pyx_t_39, __pyx_t_38, __pyx_t_36)
+                #pragma omp parallel private(__pyx_t_33, __pyx_t_36, __pyx_t_40, __pyx_t_41, __pyx_t_35, __pyx_t_34, __pyx_t_39, __pyx_t_38, __pyx_t_13, __pyx_t_37, __pyx_t_12)
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
-                    #pragma omp for lastprivate(__pyx_v_sum_count) lastprivate(__pyx_v_sum_data) lastprivate(__pyx_v_idx) lastprivate(__pyx_v_coef) lastprivate(__pyx_v_j) lastprivate(__pyx_v_data) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(guided)
+                    #pragma omp for firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_j) lastprivate(__pyx_v_idx) lastprivate(__pyx_v_coef) lastprivate(__pyx_v_data) lastprivate(__pyx_v_sum_data) lastprivate(__pyx_v_sum_count) schedule(guided)
                     #endif /* _OPENMP */
                     for (__pyx_t_15 = 0; __pyx_t_15 < __pyx_t_4; __pyx_t_15++){
                         {
                             __pyx_v_i = 0 + 1 * __pyx_t_15;
                             /* Initialize private variables to invalid values */
-                            __pyx_v_sum_count = ((float)__PYX_NAN());
-                            __pyx_v_sum_data = ((float)__PYX_NAN());
+                            __pyx_v_j = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
                             __pyx_v_idx = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
                             __pyx_v_coef = ((float)__PYX_NAN());
-                            __pyx_v_j = ((__pyx_t_5numpy_int32_t)0xbad0bad0);
                             __pyx_v_data = ((float)__PYX_NAN());
+                            __pyx_v_sum_data = ((float)__PYX_NAN());
+                            __pyx_v_sum_count = ((float)__PYX_NAN());
 
                             /* "src/splitPixelFullCSR.pyx":1178
  * 
@@ -30818,7 +30818,7 @@ PyMODINIT_FUNC PyInit_splitPixelFullCSR(void)
  * from libc.string cimport memset
  * import numpy             # <<<<<<<<<<<<<<
  * cimport numpy
- * from libc.math cimport fabs, M_PI, floor, sqrt
+ * from libc.math cimport fabs, floor, sqrt
  */
   __pyx_t_1 = __Pyx_Import(__pyx_n_s_numpy, 0, -1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);

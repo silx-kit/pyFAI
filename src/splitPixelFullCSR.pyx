@@ -39,7 +39,7 @@ from cython.parallel import prange
 from libc.string cimport memset
 import numpy
 cimport numpy
-from libc.math cimport fabs, M_PI, floor, sqrt
+from libc.math cimport fabs, floor, sqrt
 from libc.stdio cimport printf, fflush, stdout
 
 include "regrid_common.pxi"

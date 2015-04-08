@@ -12,12 +12,12 @@
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
-# 
+#
 #   This program is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #   GNU General Public License for more details.
-# 
+#
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -38,16 +38,15 @@ from cython.parallel import prange
 from libc.string cimport memset
 import numpy
 cimport numpy
-from libc.math cimport fabs, M_PI, floor
+from libc.math cimport fabs, floor
 from libc.stdio cimport printf
 
-cdef float pi = <float> M_PI 
-cdef float onef = <float> 1.0
+include "regrid_common.pxi"
+
 try:
     from fastcrc import crc32
 except:
     from zlib import crc32
-EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
 cdef struct Function:
     float slope
@@ -55,7 +54,7 @@ cdef struct Function:
 
 cdef float area4(float a0, float a1, float b0, float b1, float c0, float c1, float d0, float d1) nogil:
     """
-    Calculate the area of the ABCD quadrilataire  with corners:
+    Calculate the area of the ABCD quadrilataire with corners:
     A(a0,a1)
     B(b0,b1)
     C(c0,c1)
@@ -63,16 +62,7 @@ cdef float area4(float a0, float a1, float b0, float b1, float c0, float c1, flo
     @return: area, i.e. 1/2 * (AC ^ BD)
     """
     return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
-    
-@cython.cdivision(True)
-cdef inline float getBinNr(float x0, float pos0_min, float delta) nogil:
-    """
-    calculate the bin number for any point
-    param x0: current position
-    param pos0_min: position minimum
-    param delta: bin width
-    """
-    return (x0 - pos0_min) / delta
+
 
 cdef float integrate(float A0, float B0, Function AB) nogil:
     """
@@ -80,21 +70,21 @@ cdef float integrate(float A0, float B0, Function AB) nogil:
     param A0: first limit
     param B0: second limit
     param AB: struct with the slope and point of intersection of the line
-    """    
+    """
     if A0 == B0:
         return 0.0
     else:
         return AB.slope * (B0 * B0 - A0 * A0) * 0.5 + AB.intersect * (B0 - A0)
-    
-    
+
+
 class HistoLUT1dFullSplit(object):
     """
     Now uses CSR (Compressed Sparse raw) with main attributes:
     * nnz: number of non zero elements
     * data: coefficient of the matrix in a 1D vector of float32
-    * indices: Column index position for the data (same size as  
+    * indices: Column index position for the data (same size as
     * indptr: row pointer indicates the start of a given row. len nrow+1
-    
+
     Nota: nnz = indptr[-1]
     """
     @cython.boundscheck(False)
@@ -106,14 +96,14 @@ class HistoLUT1dFullSplit(object):
                  mask=None,
                  mask_checksum=None,
                  allow_pos0_neg=False,
-                 unit="undefined"): 
+                 unit="undefined"):
         """
         @param pos: 3D or 4D array with the coordinates of each pixel point
         @param bins: number of output bins, 100 by default
         @param pos0Range: minimum and maximum  of the 2th range
         @param pos1Range: minimum and maximum  of the chi range
         @param mask: array (of int8) with masked pixels with 1 (0=not masked)
-        @param allow_pos0_neg: enforce the q<0 is usually not possible  
+        @param allow_pos0_neg: enforce the q<0 is usually not possible
         @param unit: can be 2th_deg or r_nm^-1 ...
         """
 
@@ -149,8 +139,8 @@ class HistoLUT1dFullSplit(object):
         self.unit=unit
         self.lut=(self.data,self.indices,self.indptr)
         self.lut_nbytes = sum([i.nbytes for i in self.lut])
-                 
-                 
+
+
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -168,7 +158,7 @@ class HistoLUT1dFullSplit(object):
         cdef Function AB, BC, CD, DA
         cdef int bins, i=0, idx=0, bin=0, bin0_max=0, bin0_min=0, pixel_bins=0, k=0, size=0
         cdef bint check_pos1=False, check_mask=False
-        
+
         bins = self.bins
         if self.pos0Range is not None and len(self.pos0Range) > 1:
             self.pos0_min = min(self.pos0Range)
@@ -187,31 +177,31 @@ class HistoLUT1dFullSplit(object):
         self.pos1_max = self.pos1_maxin * (1 + numpy.finfo(numpy.float32).eps)
 
         self.delta = (self.pos0_max - self.pos0_min) / (< float > (bins))
-        
+
         pos0_min = self.pos0_min
         pos0_max = self.pos0_max
         pos1_min = self.pos1_min
         pos1_max = self.pos1_max
         delta = self.delta
-        
+
         size = self.size
         check_mask = self.check_mask
         if check_mask:
             cmask = self.cmask
-        
+
         with nogil:
             for idx in range(size):
 
                 if (check_mask) and (cmask[idx]):
                     continue
 
-                A0 = getBinNr(< float > cpos[idx, 0, 0], pos0_min, delta)
+                A0 = get_bin_number(< float > cpos[idx, 0, 0], pos0_min, delta)
                 A1 = < float > cpos[idx, 0, 1]
-                B0 = getBinNr(< float > cpos[idx, 1, 0], pos0_min, delta)
+                B0 = get_bin_number(< float > cpos[idx, 1, 0], pos0_min, delta)
                 B1 = < float > cpos[idx, 1, 1]
-                C0 = getBinNr(< float > cpos[idx, 2, 0], pos0_min, delta)
+                C0 = get_bin_number(< float > cpos[idx, 2, 0], pos0_min, delta)
                 C1 = < float > cpos[idx, 2, 1]
-                D0 = getBinNr(< float > cpos[idx, 3, 0], pos0_min, delta)
+                D0 = get_bin_number(< float > cpos[idx, 3, 0], pos0_min, delta)
                 D1 = < float > cpos[idx, 3, 1]
 
                 min0 = min(A0, B0, C0, D0)
@@ -227,32 +217,32 @@ class HistoLUT1dFullSplit(object):
 
                 for bin in range(bin0_min, bin0_max+1):
                     outMax[bin] += 1
-    
+
         indptr[1:] = outMax.cumsum()
         self.indptr = indptr
-        
+
         cdef numpy.ndarray[numpy.int32_t, ndim = 1] indices = numpy.zeros(indptr[bins], dtype=numpy.int32)
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] data = numpy.zeros(indptr[bins], dtype=numpy.float32)
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] areas = numpy.zeros(indptr[bins], dtype=numpy.float32)
-        
+
         #just recycle the outMax array
         memset(&outMax[0], 0, bins * sizeof(numpy.int32_t))
-        
+
         #cdef float area_sum, corr, y, t  # kahan summation vars
-        
+
         with nogil:
             for idx in range(size):
 
                 if (check_mask) and (cmask[idx]):
                     continue
 
-                A0 = getBinNr(< float > cpos[idx, 0, 0], pos0_min, delta)
+                A0 = get_bin_number(< float > cpos[idx, 0, 0], pos0_min, delta)
                 A1 = < float > cpos[idx, 0, 1]
-                B0 = getBinNr(< float > cpos[idx, 1, 0], pos0_min, delta)
+                B0 = get_bin_number(< float > cpos[idx, 1, 0], pos0_min, delta)
                 B1 = < float > cpos[idx, 1, 1]
-                C0 = getBinNr(< float > cpos[idx, 2, 0], pos0_min, delta)
+                C0 = get_bin_number(< float > cpos[idx, 2, 0], pos0_min, delta)
                 C1 = < float > cpos[idx, 2, 1]
-                D0 = getBinNr(< float > cpos[idx, 3, 0], pos0_min, delta)
+                D0 = get_bin_number(< float > cpos[idx, 3, 0], pos0_min, delta)
                 D1 = < float > cpos[idx, 3, 1]
 
                 min0 = min(A0, B0, C0, D0)
@@ -282,14 +272,14 @@ class HistoLUT1dFullSplit(object):
                     CD.intersect= C1 - CD.slope*C0
                     DA.slope=(A1-D1)/(A0-D0)
                     DA.intersect= D1 - DA.slope*D0
-                    
+
                     areaPixel = area4(A0, A1, B0, B1, C0, C1, D0, D1)
-                    
+
                     #areaPixel  = integrate(A0, B0, AB)
                     #areaPixel += integrate(B0, C0, BC)
                     #areaPixel += integrate(C0, D0, CD)
                     #areaPixel += integrate(D0, A0, DA)
-                    
+
                     oneOverPixelArea = 1.0 / areaPixel
                     partialArea2 = 0.0
                     for bin in range(bin0_min, bin0_max+1):
@@ -297,11 +287,11 @@ class HistoLUT1dFullSplit(object):
                         B_lim = (B0<=bin)*(B0<=(bin+1))*bin + (B0>bin)*(B0<=(bin+1))*B0 + (B0>bin)*(B0>(bin+1))*(bin+1)
                         C_lim = (C0<=bin)*(C0<=(bin+1))*bin + (C0>bin)*(C0<=(bin+1))*C0 + (C0>bin)*(C0>(bin+1))*(bin+1)
                         D_lim = (D0<=bin)*(D0<=(bin+1))*bin + (D0>bin)*(D0<=(bin+1))*D0 + (D0>bin)*(D0>(bin+1))*(bin+1)
-                        
+
                         # khan summation
                         #area_sum = 0.0
                         #corr = 0.0
-                        
+
                         #partialArea = integrate(A_lim, B_lim, AB)
                         #y = partialArea - corr
                         #t = area_sum + y
@@ -313,38 +303,38 @@ class HistoLUT1dFullSplit(object):
                         #t = area_sum + y
                         #corr = (t - area_sum) - y
                         #area_sum = t
-                        
+
                         #partialArea = integrate(C_lim, D_lim, CD)
                         #y = partialArea - corr
                         #t = area_sum + y
                         #corr = (t - area_sum) - y
                         #area_sum = t
-                        
+
                         #partialArea = integrate(D_lim, A_lim, DA)
                         #y = partialArea - corr
                         #t = area_sum + y
                         #corr = (t - area_sum) - y
                         #area_sum = t
-                        
+
                         #tmp = fabs(area_sum) * oneOverPixelArea
-                        
+
                         partialArea  = integrate(A_lim, B_lim, AB)
                         partialArea += integrate(B_lim, C_lim, BC)
                         partialArea += integrate(C_lim, D_lim, CD)
                         partialArea += integrate(D_lim, A_lim, DA)
                         tmp = fabs(partialArea) * oneOverPixelArea
-                        
+
                         k = outMax[bin]
                         indices[indptr[bin]+k] = idx
                         data[indptr[bin]+k] = tmp
                         areas[indptr[bin]+k] = fabs(partialArea)
                         outMax[bin] += 1 #k+1
-                        
+
         self.data = data
         self.indices = indices
         self.outMax = outMax
         self.areas = areas
-                           
+
     @cython.cdivision(True)
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -378,10 +368,10 @@ class HistoLUT1dFullSplit(object):
         cdef numpy.ndarray[numpy.float64_t, ndim = 1] outCount = numpy.zeros(self.bins, dtype=numpy.float64)
         cdef numpy.ndarray[numpy.float32_t, ndim = 1] outMerge = numpy.zeros(self.bins, dtype=numpy.float32)
         cdef float[:] ccoef = self.data, cdata, tdata, cflat, cdark, csolidAngle, cpolarization
-                      
+
         cdef numpy.int32_t[:] indices = self.indices, indptr = self.indptr
         assert size == weights.size
-        
+
         if dummy is not None:
             do_dummy = True
             cdummy =  <float>float(dummy)
@@ -450,7 +440,7 @@ class HistoLUT1dFullSplit(object):
                         cdata[i]+=cdummy
             else:
                 cdata = numpy.ascontiguousarray(weights.ravel(), dtype=numpy.float32)
-        
+
         for i in prange(bins, nogil=True, schedule="guided"):
             sum_data = 0.0
             sum_count = 0.0
@@ -503,7 +493,7 @@ class HistoLUT1dFullSplit(object):
         #@param pos0Range: minimum and maximum  of the 2th range
         #@param pos1Range: minimum and maximum  of the chi range
         #@param mask: array (of int8) with masked pixels with 1 (0=not masked)
-        #@param allow_pos0_neg: enforce the q<0 is usually not possible  
+        #@param allow_pos0_neg: enforce the q<0 is usually not possible
         #@param chiDiscAtPi: boolean; by default the chi_range is in the range ]-pi,pi[ set to 0 to have the range ]0,2pi[
         #"""
         #cdef int i, size, bin0, bin1
@@ -535,7 +525,7 @@ class HistoLUT1dFullSplit(object):
         #else:
             #self.check_mask = False
             #self.mask_checksum = None
-            
+
         #self.data = self.nnz = self.indices = self.indptr = None
         #self.cpos0 = numpy.ascontiguousarray(pos0.ravel(), dtype=numpy.float32)
         #self.dpos0 = numpy.ascontiguousarray(delta_pos0.ravel(), dtype=numpy.float32)
@@ -570,7 +560,7 @@ class HistoLUT1dFullSplit(object):
         #cdef float upper1, lower1, pos1_max, pos1_min, c1, d1
         #cdef bint allow_pos0_neg=self.allow_pos0_neg
         #cdef bint chiDiscAtPi = self.chiDiscAtPi
-        
+
         #cpos0_sup = self.cpos0_sup
         #cpos0_inf = self.cpos0_inf
         #cpos0 = self.cpos0
@@ -658,7 +648,7 @@ class HistoLUT1dFullSplit(object):
         #cdef float[:] cpos1_sup = self.cpos1_sup
         #cdef numpy.ndarray[numpy.int32_t, ndim = 2] outMax = numpy.zeros((bins0,bins1), dtype=numpy.int32)
         #cdef numpy.ndarray[numpy.int32_t, ndim = 1] indptr = numpy.zeros((bins0*bins1)+1, dtype=numpy.int32)
-        #cdef numpy.ndarray[numpy.int32_t, ndim = 1] indices 
+        #cdef numpy.ndarray[numpy.int32_t, ndim = 1] indices
         #cdef numpy.ndarray[numpy.float32_t, ndim = 1] data
         #cdef numpy.int8_t[:] cmask
         #if self.check_mask:
@@ -678,11 +668,11 @@ class HistoLUT1dFullSplit(object):
                 #min1 = cpos1_inf[idx]
                 #max1 = cpos1_sup[idx]
 
-                #bin0_min = < int > getBinNr(min0, pos0_min, delta0)
-                #bin0_max = < int > getBinNr(max0, pos0_min, delta0)
+                #bin0_min = < int > get_bin_number(min0, pos0_min, delta0)
+                #bin0_max = < int > get_bin_number(max0, pos0_min, delta0)
 
-                #bin1_min = < int > getBinNr(min1, pos1_min, delta1)
-                #bin1_max = < int > getBinNr(max1, pos1_min, delta1)
+                #bin1_min = < int > get_bin_number(min1, pos1_min, delta1)
+                #bin1_max = < int > get_bin_number(max1, pos1_min, delta1)
 
                 #if (bin0_max < 0) or (bin0_min >= bins0) or (bin1_max < 0) or (bin1_min >= bins1):
                     #continue
@@ -728,10 +718,10 @@ class HistoLUT1dFullSplit(object):
                 #min1 = cpos1_inf[idx]
                 #max1 = cpos1_sup[idx]
 
-                #fbin0_min = getBinNr(min0, pos0_min, delta0)
-                #fbin0_max = getBinNr(max0, pos0_min, delta0)
-                #fbin1_min = getBinNr(min1, pos1_min, delta1)
-                #fbin1_max = getBinNr(max1, pos1_min, delta1)
+                #fbin0_min = get_bin_number(min0, pos0_min, delta0)
+                #fbin0_max = get_bin_number(max0, pos0_min, delta0)
+                #fbin1_min = get_bin_number(min1, pos1_min, delta1)
+                #fbin1_max = get_bin_number(max1, pos1_min, delta1)
 
                 #bin0_min = <int> fbin0_min
                 #bin0_max = <int> fbin0_max
