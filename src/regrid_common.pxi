@@ -12,12 +12,12 @@
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
-# 
+#
 #   This program is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #   GNU General Public License for more details.
-# 
+#
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -41,6 +41,7 @@ cdef:
     float pi = <float> M_PI
     float piover2 = <float> (pi * 0.5)
     float onef = <float> 1.0
+    float zerof = <float> 1.0
     double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
 
@@ -48,7 +49,7 @@ cdef:
 cdef inline floating  get_bin_number(floating x0, floating pos0_min, floating delta) nogil:
     """
     calculate the bin number for any point (as floating)
-    
+
     @param x0: current position
     @param pos0_min: position minimum
     @param delta: bin width
