@@ -256,8 +256,8 @@ class AbstractCalibration(object):
                       help="polarization factor, from -1 (vertical) to +1 (horizontal),"\
                       " default is None (no correction), synchrotrons are around 0.95")
         self.parser.add_argument("-i", "--poni", dest="poni", metavar="FILE",
-              help="file containing the diffraction parameter (poni-file).",
-              default=None)
+                      help="file containing the diffraction parameter (poni-file). MANDATORY for pyFAI-recalib!",
+                      default=None)
         self.parser.add_argument("-b", "--background", dest="background",
                       help="Automatic background subtraction if no value are provided",
                       default=None)
@@ -1373,14 +1373,11 @@ refinement process.
 Two option are available for recalib: the numbe of rings to extract (similar to the -r option of this program)
 and a new option which lets you choose between the original `massif` algorithm and newer ones like `blob` and `watershed` detection.
         """
-        usage = "pyFAI-recalib [options] -p ponifile -w 1 -c calibrant.D imagefile.edf"
+        usage = "pyFAI-recalib [options] -i ponifile -w 1 -c calibrant.D imagefile.edf"
         self.configure_parser(usage=usage, description=description, epilog=epilog)
 
         self.parser.add_argument("-r", "--ring", dest="max_rings", type=int,
                       help="maximum number of rings to extract. Default: all accessible", default=None)
-        self.parser.add_argument("-p", "--poni", dest="poni", metavar="FILE",
-                      help="file containing the diffraction parameter (poni-file). MANDATORY",
-                      default=None)
         self.parser.add_argument("-k", "--keep", dest="keep",
                       help="Keep existing control point and append new",
                       default=False, action="store_true")
