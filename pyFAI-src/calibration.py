@@ -1274,7 +1274,6 @@ decrease the value if arcs are mixed together.""", default=None)
                                          **defaults)
         self.geoRef.refine2(1000000, fix= self.fixed)
         scor = self.geoRef.chi2()
-        print ("SCORE %s"%(str(scor)))
         pars = [getattr(self.geoRef, p) for p in self.PARAMETERS]
 
         scores = [ (scor, pars), ]
