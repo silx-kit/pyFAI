@@ -1239,60 +1239,55 @@ decrease the value if arcs are mixed together.""", default=None)
 #            update_fig(self.peakPicker.fig)
 #            time.sleep(0.1)
 
+    def initgeoRef(self):
+        """
+        Tries to initialise the GeometryRefinement (dist, poni, rot)
+        Returns a dictionary of key value pairs
+        """
+        defaults = { "dist" : 0.1,  "poni1" : 0.0,  "poni2" : 0.0,
+                        "rot1" : 0.0, "rot2" : 0.0, "rot3" : 0.0 }
+        if self.detector:
+            try:
+                p1, p2 = self.detector.calc_cartesian_positions()
+                defaults["poni1"] = p1.max() / 2.
+                defaults["poni2"] = p2.max() / 2.
+            except Exception as err:
+                logger.warning(err)
+        if self.ai:
+            for key in defaults.keys(): # not PARAMETERS which holds wavelength
+                val = getattr(self.ai, key, None)
+                if val is not None:
+                    defaults[key] = val
+        return defaults
+
     def refine(self):
         """
         Contains the geometry refinement part specific to Calibration
+        Sets up the initial guess when starting pyFAI-calib
         """
-        if self.ai:
-            # try to guess the inital setup
-            if self.ai.dist:
-                dist = self.ai.dist
-            else:
-                dist = 0.1
-            if self.ai.poni1:
-                poni1 = self.ai.poni1
-            else:
-                try:
-                    poni1 = (self.detector.calc_cartesian_positions()[0]).max() / 2.
-                except Exception as err:
-                    logger.warning(err)
-                    poni1 = 0.0
-            if self.ai.poni2:
-                poni2 = self.ai.poni2
-            else:
-                try:
-                    poni2 = (self.detector.calc_cartesian_positions()[-1]).max() / 2.
-                except Exception as err:
-                    logger.warning(err)
-                    poni2 = 0.0
-            if self.ai.rot1:
-                rot1 = self.ai.rot1
-            else:
-                rot1 = 0.0
-            if self.ai.rot2:
-                rot2 = self.ai.rot2
-            else:
-                rot2 = 0.0
-            if self.ai.rot3:
-                rot3 = self.ai.rot3
-            else:
-                rot3 = 0.0
-        else:
-            dist = 0.1
-            rot1 = rot2 = rot3 = poni1 = poni2 = 0
-            if self.detector:
-                try:
-                    p1, p2 = self.detector.calc_cartesian_positions()
-                    poni1 = p1.max() / 2.0
-                    poni2 = p2.max() / 2.0
-                except Exception as err:
-                    print(err)
-        self.geoRef = GeometryRefinement(self.data, dist=dist, poni1=poni1, poni2=poni2,
-                                         rot1=rot1, rot2=rot2, rot3=rot3,
+        # First attempt
+        defaults = self.initgeoRef()
+        self.geoRef = GeometryRefinement(self.data, 
                                          detector=self.detector,
                                          wavelength=self.wavelength,
-                                         calibrant=self.calibrant)
-#        print self.calibrant
+                                         calibrant=self.calibrant,
+                                         **defaults)
+        self.geoRef.refine2(1000000, fix= self.fixed)
+        scor = self.geoRef.chi2()
+        print ("SCORE %s"%(str(scor)))
+        pars = [getattr(self.geoRef, p) for p in self.PARAMETERS]
+
+        scores = [ (scor, pars), ]
+
+        # Second attempt
+        self.geoRef.guess_poni()
+        self.geoRef.refine2(1000000, fix= self.fixed)
+        scor = self.geoRef.chi2()
+        pars = [getattr(self.geoRef, p) for p in self.PARAMETERS]
+
+        scores.append( (scor, pars) )
+
+        # Third attempt (can be from when a program bombed last time)
         paramfile = self.basename + ".poni"
         if os.path.isfile(paramfile):
             self.geoRef.load(paramfile)
@@ -1302,15 +1297,32 @@ decrease the value if arcs are mixed together.""", default=None)
                 except Exception as err:
                     logger.warning(err)
                 else:
-                    logger.warning("Overwriting wavelength from PONI file (%s) with the one from command line (%s)" % (old_wl, self.wavelength))
+                    logger.warning("Overwriting wavelength from PONI file (%s) with the one from command line (%s)" % 
+                                    (old_wl, self.wavelength))
                 self.geoRef.wavelength = self.wavelength
             if self.detector:
                 gr_det = str(self.geoRef.detector)
                 nw_det = str(self.detector)
                 if gr_det != nw_det:
-                    logger.warning("Overwriting detector from PONI file: %s%s with the one from command line %s%s" % (os.linesep, gr_det, os.linesep, nw_det))
+                    logger.warning("Overwriting detector from PONI file: %s%s with the one from command line %s%s" % 
+                                    (os.linesep, gr_det, os.linesep, nw_det))
                     self.geoRef.detector = self.detector
 
+        # Third attempt
+        self.geoRef.refine2(1000000, fix= self.fixed)
+        scor = self.geoRef.chi2()
+        pars = [getattr(self.geoRef, p) for p in self.PARAMETERS]
+
+        scores.append( (scor, pars) )
+
+        # Choose the best scoring method: At this point we might also ask
+        # a user to just type the numbers in?
+        scores.sort()
+        scor, pars = scores[0]
+        for parval, parname in zip(pars, self.PARAMETERS):
+            setattr( self.geoRef, parname, parval )
+
+        # Now continue as before
         AbstractCalibration.refine(self)
 
 
