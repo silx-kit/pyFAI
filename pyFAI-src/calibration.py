@@ -1280,6 +1280,12 @@ decrease the value if arcs are mixed together.""", default=None)
         scores = [ (scor, pars), ]
 
         # Second attempt
+        defaults = self.initgeoRef()
+        self.geoRef = GeometryRefinement(self.data, 
+                                         detector=self.detector,
+                                         wavelength=self.wavelength,
+                                         calibrant=self.calibrant,
+                                         **defaults)
         self.geoRef.guess_poni()
         self.geoRef.refine2(1000000, fix= self.fixed)
         scor = self.geoRef.chi2()
