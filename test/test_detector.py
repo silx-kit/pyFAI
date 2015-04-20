@@ -202,6 +202,13 @@ class TestDetector(unittest.TestCase):
         mar.guess_binning(shape)
         self.assertEqual(mar.binning, (10, 10), "RayonixLx170 has 10x10 binning")
 
+        p = detector_factory("Perkin")
+        self.assertEqual(p.pixel1, 200e-6, "raw detector has good pixel size")
+        self.assertEqual(p.binning, (2, 2), "raw detector has good pixel binning")
+        p.guess_binning((4096, 4096))
+        self.assertEqual(p.pixel1, 100e-6, "unbinned detector has good pixel size")
+        self.assertEqual(p.binning, (1, 1), "unbinned detector has good pixel binning")
+
     def test_Xpad_flat(self):
         d = detector_factory("Xpad S540 flat")
         cy = d.calc_cartesian_positions(use_cython=True)
