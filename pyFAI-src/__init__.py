@@ -22,6 +22,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import absolute_import, print_function, with_statement, division
 import sys, logging
 logging.basicConfig()
 from ._version import version, version_info, hexversion, date
@@ -30,6 +31,8 @@ if sys.version_info < (2, 6):
     logger = logging.getLogger("pyFAI.__init__")
     logger.error("pyFAI required a python version >= 2.6")
     raise RuntimeError("pyFAI required a python version >= 2.6, now we are running: %s" % sys.version)
+
+from . import utils
 from .azimuthalIntegrator import AzimuthalIntegrator
 load = AzimuthalIntegrator.sload
 

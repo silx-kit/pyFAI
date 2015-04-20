@@ -43,7 +43,7 @@ except (ValueError, SystemError):
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 
-from pyFAI.calibrant import Calibrant, ALL_CALIBRANTS
+from pyFAI.calibrant import Calibrant, ALL_CALIBRANTS, Cell
 from pyFAI.detectors import ALL_DETECTORS
 
 
@@ -130,11 +130,64 @@ class TestCalibrant(unittest.TestCase):
             pp.close()
 
 
+class TestCell(unittest.TestCase):
+    """
+    Test generation of a calibrant from a cell
+    """
+    def test_class(self):
+        c = Cell()
+        self.assertAlmostEqual(c.volume, 1.0, msg="Volume of triclinic 1,1,1,90,90,90 == 1.0, got %s" % c.volume)
+        c = Cell(1, 2, 3)
+        self.assertAlmostEqual(c.volume, 6.0, msg="Volume of triclinic 1,2,3,90,90,90 == 6.0, got %s" % c.volume)
+        c = Cell(1, 2, 3, 90, 30, 90)
+        self.assertAlmostEqual(c.volume, 3.0, msg="Volume of triclinic 1,2,3,90,30,90 == 3.0, got %s" % c.volume)
+
+    def test_classmethods(self):
+        c = Cell.cubic(1)
+        self.assertAlmostEqual(c.volume, 1.0, msg="Volume of cubic 1 == 1.0, got %s" % c.volume)
+        c = Cell.tetragonal(2, 3)
+        self.assertAlmostEqual(c.volume, 12.0, msg="Volume of tetragonal 2,3 == 12.0, got %s" % c.volume)
+        c = Cell.orthorhombic(1, 2, 3)
+        self.assertAlmostEqual(c.volume, 6.0, msg="Volume of orthorhombic 1,2,3 == 6.0, got %s" % c.volume)
+
+    def test_dspacing(self):
+        c = Cell.cubic(1)
+        cd = c.d_spacing(0.1)
+        cds = cd.keys()
+        cds.sort()
+
+        t = Cell()
+        td = t.d_spacing(0.1)
+        tds = td.keys()
+        tds.sort()
+
+        self.assertEquals(cds, tds, msg="d-spacings are the same")
+        for k in cds:
+            self.assertEquals(cd[k], td[k], msg="plans are the same for d=%s" % k)
+
+    def test_helium(self):
+        a = 4.242
+        href = "A.F. Schuch and R.L. Mills, Phys. Rev. Lett., 1961, 6, 596."
+        he = Cell.cubic(a)
+        self.assert_(len(he.d_spacing(1)) == 15, msg="got 15 lines for He")
+        he.save("He", "Helium", href, 1.0, UtilsTest.tempdir)
+
+    def test_hydrogen(self):
+        href = "DOI: 10.1126/science.239.4844.1131"
+        h = Cell.hexagonal(2.6590, 4.3340)
+        self.assertAlmostEqual(h.volume, 26.537, msg="Volume for H cell is correct")
+        self.assert_(len(h.d_spacing(1)) == 14, msg="got 14 lines for H")
+        h.save("H", "Hydrogen", href, 1.0, UtilsTest.tempdir)
+
+
 def test_suite_all_calibrant():
     testSuite = unittest.TestSuite()
     testSuite.addTest(TestCalibrant("test_factory"))
     testSuite.addTest(TestCalibrant("test_2th"))
     testSuite.addTest(TestCalibrant("test_fake"))
+    testSuite.addTest(TestCell("test_class"))
+    testSuite.addTest(TestCell("test_classmethods"))
+    testSuite.addTest(TestCell("test_dspacing"))
     return testSuite
 
 

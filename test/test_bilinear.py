@@ -66,7 +66,7 @@ class TestBilinear(unittest.TestCase):
         ok = 0
         for s in range(self.N):
             i, j = numpy.random.randint(100), numpy.random.randint(100)
-            k, l = b.local_maxi((i, j), 1)
+            k, l = b.local_maxi((i, j))
             if abs(k - 40) > 1e-4 or abs(l - 60) > 1e-4:
                 logger.warning("Wrong guess maximum (%i,%i) -> (%.1f,%.1f)" % (i, j, k, l))
             else:
@@ -86,7 +86,7 @@ class TestBilinear(unittest.TestCase):
         ok = 0
         for s in range(self.N):
             i, j = numpy.random.randint(100), numpy.random.randint(100)
-            k, l = b.local_maxi((i, j), 1)
+            k, l = b.local_maxi((i, j))
             if abs(k - 40.5) > 0.5 or abs(l - 60.5) > 0.5:
                 logger.warning("Wrong guess maximum (%i,%i) -> (%.1f,%.1f)" % (i, j, k, l))
             else:

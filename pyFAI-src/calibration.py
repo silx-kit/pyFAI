@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/03/2015"
+__date__ = "31/03/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -128,7 +128,8 @@ class AbstractCalibration(object):
             'reset': "Reset the geometry to the initial guess (rotation to zero, distance to 0.1m, poni at the center of the image)",
             'assign': "Change the assignment of a group of points to a rings",
             "weight": "toggle from weighted to unweighted mode...",
-            "define": "Re-define the value for a constant internal parameter of the program like max_iter, nPt_1D, nPt_2D_azim, nPt_2D_rad. Warning: they may be harmful !"
+            "define": "Re-define the value for a constant internal parameter of the program like max_iter, nPt_1D, nPt_2D_azim, nPt_2D_rad. Warning: they may be harmful !",
+            "chiplot": "plot control point as function of azimuthal and radial angle"
             }
     PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
     UNITS = {"dist":"meter", "poni1":"meter", "poni2":"meter", "rot1":"radian",
@@ -208,6 +209,7 @@ class AbstractCalibration(object):
         self.keep = True
         self.check_calib = None
         self.fig3 = self.ax_xrpd_1d = self.ax_xrpd_2d = None
+        self.fig_chiplot = self.ax_chiplot=None
 
     def __repr__(self):
         lst = ["Calibration object:"]
@@ -255,6 +257,9 @@ class AbstractCalibration(object):
                       type=float, default=None,
                       help="polarization factor, from -1 (vertical) to +1 (horizontal),"\
                       " default is None (no correction), synchrotrons are around 0.95")
+        self.parser.add_argument("-i", "--poni", dest="poni", metavar="FILE",
+                      help="file containing the diffraction parameter (poni-file). MANDATORY for pyFAI-recalib!",
+                      default=None)
         self.parser.add_argument("-b", "--background", dest="background",
                       help="Automatic background subtraction if no value are provided",
                       default=None)
@@ -407,6 +412,9 @@ class AbstractCalibration(object):
 
         if self.calibrant is None:
             self.read_dSpacingFile(True)
+
+        if options.poni:
+            self.ai.load(options.poni)
 
         if options.wavelength:
             self.ai.wavelength = self.wavelength = 1e-10 * options.wavelength
@@ -1002,8 +1010,60 @@ class AbstractCalibration(object):
                         print("No such parameter %s" % param)
                 else:
                     print(self.HELP[action])
+            elif action == "chiplot":
+                    print(self.HELP[action])    
+                    self.chiplot()
             else:
                 logger.warning("Unrecognized action: %s, type 'quit' to leave " % action)
+
+    def chiplot(self, fit=False):
+        """
+        plot 2theta = f(chi) and fit the curve.
+        """
+        from scipy.optimize import curve_fit
+        sqrt2 = numpy.sqrt(2.)
+        if self.gui:
+            if self.fig_chiplot:
+                self.fig_chiplot.clf()
+            else:
+                self.fig_chiplot = pylab.plt.figure()
+            self.ax_chiplot = self.fig_chiplot.add_subplot(1, 1, 1)
+        else:
+            print("chiplot display only possible with GUI")
+        rings = list(set(i[2]for i in self.data))
+        rings.sort()
+        for ring in rings:
+            print("Fitting ring #%x"%ring)
+            d1 = []
+            d2 = []
+            for i in self.data:
+                if i[2] == ring:
+                    d1.append(i[0])
+                    d2.append(i[1])
+            d1 = numpy.array(d1)
+            d2 = numpy.array(d2)
+            tth = numpy.rad2deg(self.geoRef.tth(d1,d2))
+            chi = self.geoRef.chi(d1,d2)
+            mean = tth.mean()
+            amp = tth.std()*sqrt2
+            phase = 0.0
+            model = lambda x,mean,amp,phase:mean + amp * numpy.sin(x+phase)
+            print(" initial guess mean=%s\tampl=%s\tphase=%s"%(mean,amp,phase))
+            popt, pcov = curve_fit(model, chi, tth, [mean,amp,phase])
+            print(" Fitted  mean=%s\tampl=%s\tphase=%s"%tuple(popt))
+            print(" Fitted  covariance: %s"%pcov)
+            chi = numpy.rad2deg(chi)
+            if self.ax_chiplot:                
+                self.ax_chiplot.plot(chi,tth,"o",label="ring #%s"%ring)
+                chi2 = numpy.linspace(-180, 180, 360)
+                self.ax_chiplot.plot(chi2, model(numpy.deg2rad(chi2), *popt),label=str(popt))
+                self.fig_chiplot.canvas.update()
+        self.ax_chiplot.set_xlim(-180, 180)
+        self.ax_chiplot.set_xlabel("Azimuthal angle Chi (deg)")
+        self.ax_chiplot.set_ylabel("Radial angle (deg)")
+        self.ax_chiplot.set_title("Chi plot")
+        self.ax_chiplot.legend()
+        self.fig_chiplot.show() 
 
     def postProcess(self):
         """
@@ -1107,10 +1167,6 @@ class AbstractCalibration(object):
         self.check_calib.rebuild()
         self.check_calib.show()
 
-################################################################################
-# Calibration
-################################################################################
-
     def set_data(self, data):
         """
         call-back function for the peak-picker
@@ -1119,6 +1175,10 @@ class AbstractCalibration(object):
         if not self.weighted:
             self.data = numpy.array(self.data)[:, :-1]
         self.refine()
+
+################################################################################
+# Calibration
+################################################################################
 
 class Calibration(AbstractCalibration):
     """
@@ -1367,19 +1427,17 @@ refinement process.
 Two option are available for recalib: the numbe of rings to extract (similar to the -r option of this program)
 and a new option which lets you choose between the original `massif` algorithm and newer ones like `blob` and `watershed` detection.
         """
-        usage = "pyFAI-recalib [options] -p ponifile -w 1 -c calibrant.D imagefile.edf"
+        usage = "pyFAI-recalib [options] -i ponifile -w 1 -c calibrant.D imagefile.edf"
         self.configure_parser(usage=usage, description=description, epilog=epilog)
 
         self.parser.add_argument("-r", "--ring", dest="max_rings", type=int,
                       help="maximum number of rings to extract. Default: all accessible", default=None)
-        self.parser.add_argument("-p", "--poni", dest="poni", metavar="FILE",
-                      help="file containing the diffraction parameter (poni-file). MANDATORY",
-                      default=None)
         self.parser.add_argument("-k", "--keep", dest="keep",
                       help="Keep existing control point and append new",
                       default=False, action="store_true")
 
-        options, args = self.parser.parse_args()
+        options = self.parser.parse_args()
+        args = options.args
         # Analyse aruments and options
         if (not options.poni) or (not os.path.isfile(options.poni)):
             logger.error("You should provide a PONI file as starting point !!")
@@ -2053,30 +2111,43 @@ refinement process.
 
 
 # Procedural version of calibration
-def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, dist=0.1, interactive=True):
+def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, dist=0.1, gaussian=None, interactive=True):
     """
     Procedural interfact for calibration
-    
-    @param img: 2d array representing the imagence setup with mask
+
+    @param img: 2d array representing the calibration image
     @param calibrant: Instance of Calibrant, set-up with wavelength
     @param detector: Detector instance containing the mask
+    @param basename: output file base
     @param recontruct: perform image reconstruction of masked pixel ?
-    @param interactive: set to false for testing
+    @param dist: initial distance
+    @param gaussian: width of the gaussian used for difference of gaussian in the "massif" peak-picking algorithm
+    @param interactive: set to False for testing
     """
     assert isinstance(detector, Detector)
     assert isinstance(calibrant, Calibrant)
     assert calibrant.wavelength
-    c = Calibration()
+
+    if logging.root.level > logging.INFO:
+        logging.warning("Lowering the log-level to INFO")
+        logging.root.setLevel(logging.INFO)
+    c = Calibration(wavelength=calibrant.wavelength,
+                    detector=detector,
+                    calibrant=calibrant,
+                    gaussianWidth=gaussian)
     c.gui = interactive
-    c.detector = detector
-    c.calibrant = calibrant
-    c.wavelength = calibrant.wavelength
     c.basename = basename
     c.pointfile = basename + ".npt"
     c.ai = AzimuthalIntegrator(dist=dist, detector=detector, wavelength=calibrant.wavelength)
     c.peakPicker = PeakPicker(img, reconst=reconstruct, mask=detector.mask,
                               pointfile=c.pointfile, calibrant=calibrant,
                               wavelength=calibrant.wavelength)
+    if gaussian is not None:
+        c.peakPicker.massif.setValleySize(gaussian)
+    else:
+        c.peakPicker.massif.initValleySize()
+
+
     if interactive:
         c.peakPicker.gui(log=True, maximize=True, pick=True)
         update_fig(c.peakPicker.fig)

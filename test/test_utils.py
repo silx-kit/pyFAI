@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/12/2014"
+__date__ = "07/04/2015"
 
 
 import unittest
@@ -69,17 +69,8 @@ class TestUtils(unittest.TestCase):
     dark = unbinned.astype("float32")
     flat = 1 + numpy.random.random((64, 32))
     raw = flat + dark
-    tmp_dir = tempfile.mkdtemp(prefix="pyFAI_test_utils_")
+    tmp_dir = UtilsTest.tempdir
     tmp_file = os.path.join(tmp_dir, "testUtils_average.edf")
-
-    def setUp(self):
-        """Download files & create tmp directory if needed"""
-        if not os.path.isdir(self.tmp_dir):
-            os.makedirs(self.tmp_dir)
-
-    def tearDown(self):
-        """Remove tmp files if needed"""
-        recursive_delete(self.tmp_dir)
 
     def test_binning(self):
         """

@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/03/2015"
+__date__ = "02/04/2015"
 
 
 import unittest
@@ -210,23 +210,42 @@ class TestSort(unittest.TestCase):
         self.local_mem = None
         self.h2_data = None
 
-    def test_reference(self):
+    def test_reference_book(self):
         d_data = pyopencl.array.to_device(self.queue, self.h_data)
         t0 = time.time()
         hs_data = numpy.sort(self.h_data)
         t1 = time.time()
         time_sort = 1e3 * (t1 - t0)
 
-        evt = self.prg.bsort(self.queue, (self.ws,), (self.ws,), d_data.data, self.local_mem)
+        evt = self.prg.bsort_book(self.queue, (self.ws,), (self.ws,), d_data.data, self.local_mem)
         evt.wait()
         err = abs(hs_data - d_data.get()).max()
+        logger.info("test_reference_book")
         logger.info("Numpy sort on %s element took %s ms" % (self.N, time_sort))
         logger.info("Reference sort time: %s ms, err=%s " % (1e-6 * (evt.profile.end - evt.profile.start), err))
         # this test works under linux:
         if platform.system() == "Linux":
             self.assert_(err == 0.0)
+        else:
+            logger.warning("Measured error on %s is %s" % (platform.system(), err))
 
-    def test_sort_any(self):
+    def test_reference_file(self):
+        d_data = pyopencl.array.to_device(self.queue, self.h_data)
+        t0 = time.time()
+        hs_data = numpy.sort(self.h_data)
+        t1 = time.time()
+        time_sort = 1e3 * (t1 - t0)
+
+        evt = self.prg.bsort_file(self.queue, (self.ws,), (self.ws,), d_data.data, self.local_mem)
+        evt.wait()
+        err = abs(hs_data - d_data.get()).max()
+        logger.info("test_reference_file")
+        logger.info("Numpy sort on %s element took %s ms" % (self.N, time_sort))
+        logger.info("Reference sort time: %s ms, err=%s " % (1e-6 * (evt.profile.end - evt.profile.start), err))
+        # this test works anywhere !
+        self.assert_(err == 0.0)
+
+    def test_sort_all(self):
         d_data = pyopencl.array.to_device(self.queue, self.h_data)
         t0 = time.time()
         hs_data = numpy.sort(self.h_data)
@@ -236,11 +255,10 @@ class TestSort(unittest.TestCase):
         evt = self.prg.bsort_all(self.queue, (self.ws,), (self.ws,), d_data.data, self.local_mem)
         evt.wait()
         err = abs(hs_data - d_data.get()).max()
+        logger.info("test_sort_all")
         logger.info("Numpy sort on %s element took %s ms" % (self.N, time_sort))
         logger.info("modified function execution time: %s ms, err=%s " % (1e-6 * (evt.profile.end - evt.profile.start), err))
-        # this test works under linux:
-        if platform.system() == "Linux":
-            self.assert_(err == 0.0)
+        self.assert_(err == 0.0)
 
     def test_sort_horizontal(self):
         d2_data = pyopencl.array.to_device(self.queue, self.h2_data)
@@ -253,9 +271,7 @@ class TestSort(unittest.TestCase):
         err = abs(h2s_data - d2_data.get()).max()
         logger.info("Numpy horizontal sort on %sx%s elements took %s ms" % (self.N, self.N, time_sort))
         logger.info("Horizontal execution time: %s ms, err=%s " % (1e-6 * (evt.profile.end - evt.profile.start), err))
-        # this test works under linux:
-        if platform.system() == "Linux":
-            self.assert_(err == 0.0)
+        self.assert_(err == 0.0)
 
     def test_sort_vertical(self):
         d2_data = pyopencl.array.to_device(self.queue, self.h2_data)
@@ -268,9 +284,7 @@ class TestSort(unittest.TestCase):
         err = abs(h2s_data - d2_data.get()).max()
         logger.info("Numpy vertical sort on %sx%s elements took %s ms" % (self.N, self.N, time_sort))
         logger.info("Vertical execution time: %s ms, err=%s " % (1e-6 * (evt.profile.end - evt.profile.start), err))
-        # this test works under linux:
-        if platform.system() == "Linux":
-            self.assert_(err == 0.0)
+        self.assert_(err == 0.0)
 
 
 def test_suite_all_OpenCL():
@@ -281,8 +295,9 @@ def test_suite_all_OpenCL():
         testSuite.addTest(TestMask("test_OpenCL"))
         testSuite.addTest(TestMask("test_OpenCL_LUT"))
         testSuite.addTest(TestMask("test_OpenCL_CSR"))
-        testSuite.addTest(TestSort("test_reference"))
-        testSuite.addTest(TestSort("test_sort_any"))
+        testSuite.addTest(TestSort("test_reference_book"))
+        testSuite.addTest(TestSort("test_reference_file"))
+        testSuite.addTest(TestSort("test_sort_all"))
         testSuite.addTest(TestSort("test_sort_horizontal"))
         testSuite.addTest(TestSort("test_sort_vertical"))
     return testSuite

@@ -12,12 +12,12 @@
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
-# 
+#
 #   This program is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #   GNU General Public License for more details.
-# 
+#
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -25,12 +25,12 @@
 __doc__ = """
 Calculates histograms of pos0 (tth) weighted by Intensity
 
-Splitting is done on the pixel's bounding box like fit2D, 
+Splitting is done on the pixel's bounding box like fit2D,
 reverse implementation based on a sparse matrix multiplication
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "20141020"
+__date__ = "08/04/2015"
 __status__ = "stable"
 __license__ = "GPLv3+"
 import cython
@@ -41,26 +41,11 @@ logger = logging.getLogger("pyFAI.splitBBoxCSR")
 from cython.parallel import prange
 import numpy
 cimport numpy
-from libc.math cimport fabs, M_PI
-cdef float pi = <float> M_PI
-cdef float onef = <float> 1.0
+include "regrid_common.pxi"
 try:
     from fastcrc import crc32
 except:
     from zlib import crc32
-EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
-
-
-@cython.cdivision(True)
-cdef inline float getBinNr(float x0, float pos0_min, float delta) nogil:
-    """
-    calculate the bin number for any point
-    param x0: current position
-    param pos0_min: position minimum
-    param delta: bin width
-    """
-    return (x0 - pos0_min) / delta
-
 
 class HistoBBox1d(object):
     """
@@ -131,7 +116,7 @@ class HistoBBox1d(object):
             self.calc_boundaries(pos0Range)
         else:
             self.calc_boundaries_nosplit(pos0Range)
-        
+
         if pos1Range is not None and len(pos1Range) > 1:
             assert pos1.size == self.size
             assert delta_pos1.size == self.size
@@ -151,21 +136,21 @@ class HistoBBox1d(object):
             self.calc_lut()
         else:
             self.calc_lut_nosplit()
-        self.outPos = numpy.linspace(self.pos0_min + 0.5 * self.delta, 
-                                     self.pos0_maxin - 0.5 * self.delta, 
+        self.outPos = numpy.linspace(self.pos0_min + 0.5 * self.delta,
+                                     self.pos0_maxin - 0.5 * self.delta,
                                      self.bins)
         self.lut_checksum = crc32(self.data)
         self.unit = unit
         self.lut = (self.data, self.indices, self.indptr)
         self.lut_nbytes = sum([i.nbytes for i in self.lut])
-    
+
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def calc_boundaries(self, pos0Range):
         """
         Calculate self.pos0_min and self.pos0_max
-        
-        @param pos0Range: 2-tuple containing the requested range 
+
+        @param pos0Range: 2-tuple containing the requested range
         """
         cdef:
             int size = self.cpos0.size
@@ -215,8 +200,8 @@ class HistoBBox1d(object):
     def calc_boundaries_nosplit(self, pos0Range):
         """
         Calculate self.pos0_min and self.pos0_max when no splitting is requested
-        
-        @param pos0Range: 2-tuple containing the requested range 
+
+        @param pos0Range: 2-tuple containing the requested range
         """
         cdef:
             int size = self.cpos0.size
@@ -230,15 +215,15 @@ class HistoBBox1d(object):
             self.pos0_min = min(pos0Range)
             self.pos0_maxin = max(pos0Range)
         else:
-            cpos0 = self.cpos0           
+            cpos0 = self.cpos0
             pos0_min = pos0_max = cpos0[0]
-    
+
             if not allow_pos0_neg and pos0_min < 0:
                 pos0_min = pos0_max = 0
-    
+
             if check_mask:
                 cmask = self.cmask
-            
+
             with nogil:
                 for idx in range(size):
                     c = cpos0[idx]
@@ -251,7 +236,7 @@ class HistoBBox1d(object):
                             pos0_min = c
             self.pos0_min = pos0_min
             self.pos0_maxin = pos0_max
-            
+
         if (not allow_pos0_neg) and self.pos0_min < 0:
             self.pos0_min = 0
         self.pos0_max = self.pos0_maxin * EPS32
@@ -273,7 +258,7 @@ class HistoBBox1d(object):
             numpy.ndarray[numpy.float32_t, ndim = 1] data
             float[:] cpos0_sup = self.cpos0_sup, cpos0_inf = self.cpos0_inf, cpos1_min, cpos1_max,
             numpy.int8_t[:] cmask
-            
+
         size = self.size
         if self.check_mask:
             cmask = self.cmask
@@ -301,8 +286,8 @@ class HistoBBox1d(object):
                 if check_pos1 and ((cpos1_max[idx] < pos1_min) or (cpos1_min[idx] > pos1_max)):
                     continue
 
-                fbin0_min = getBinNr(min0, pos0_min, delta)
-                fbin0_max = getBinNr(max0, pos0_min, delta)
+                fbin0_min = get_bin_number(min0, pos0_min, delta)
+                fbin0_max = get_bin_number(max0, pos0_min, delta)
                 bin0_min = < int > fbin0_min
                 bin0_max = < int > fbin0_max
 
@@ -336,7 +321,7 @@ class HistoBBox1d(object):
                 pass
             else:
                 if memsize < lut_nbytes:
-                    raise MemoryError("CSR Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %.3fGB" % 
+                    raise MemoryError("CSR Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %.3fGB" %
                                       (bins, self.nnz, lut_nbytes / 2. ** 30, memsize / 2. ** 30))
         # else hope that enough memory is available
         data = numpy.empty(nnz, dtype=numpy.float32)
@@ -353,8 +338,8 @@ class HistoBBox1d(object):
                 if check_pos1 and ((cpos1_max[idx] < pos1_min) or (cpos1_min[idx] > pos1_max)):
                     continue
 
-                fbin0_min = getBinNr(min0, pos0_min, delta)
-                fbin0_max = getBinNr(max0, pos0_min, delta)
+                fbin0_min = get_bin_number(min0, pos0_min, delta)
+                fbin0_max = get_bin_number(max0, pos0_min, delta)
                 bin0_min = < int > fbin0_min
                 bin0_max = < int > fbin0_max
 
@@ -414,7 +399,7 @@ class HistoBBox1d(object):
             numpy.ndarray[numpy.float32_t, ndim = 1] data
             float[:] cpos0 = self.cpos0, cpos1_min, cpos1_max,
             numpy.int8_t[:] cmask
-            
+
         size = self.size
         if self.check_mask:
             cmask = self.cmask
@@ -437,11 +422,11 @@ class HistoBBox1d(object):
                     continue
 
                 pos0 = cpos0[idx]
-                
+
                 if check_pos1 and ((cpos1_max[idx] < pos1_min) or (cpos1_min[idx] > pos1_max)):
                     continue
 
-                fbin0 = getBinNr(pos0, pos0_min, delta)
+                fbin0 = get_bin_number(pos0, pos0_min, delta)
                 bin0 = < int > fbin0
 
                 if (bin0 >= 0) and (bin0 < bins):
@@ -462,7 +447,7 @@ class HistoBBox1d(object):
                 pass
             else:
                 if memsize < lut_nbytes:
-                    raise MemoryError("CSR Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %.3fGB" % 
+                    raise MemoryError("CSR Lookup-table (%i, %i) is %.3fGB whereas the memory of the system is only %.3fGB" %
                                       (bins, self.nnz, lut_nbytes / 2. ** 30, memsize / 2. ** 30))
         # else hope that enough memory is available
         data = numpy.empty(nnz, dtype=numpy.float32)
@@ -472,22 +457,22 @@ class HistoBBox1d(object):
             for idx in range(size):
                 if (check_mask) and (cmask[idx]):
                     continue
-                
+
                 pos0 = cpos0[idx]
-                
+
                 if check_pos1 and ((cpos1_max[idx] < pos1_min) or (cpos1_min[idx] > pos1_max)):
                     continue
 
-                fbin0 = getBinNr(pos0, pos0_min, delta)
+                fbin0 = get_bin_number(pos0, pos0_min, delta)
                 bin0 = < int > fbin0
-                
+
                 if (bin0 < 0) or (bin0 >= bins):
                     continue
                 k = outMax[bin0]
                 indices[indptr[bin0] + k] = idx
                 data[indptr[bin0] + k] = onef
                 outMax[bin0] += 1  # k+1
-            
+
         self.data = data
         self.indices = indices
 
@@ -531,14 +516,14 @@ class HistoBBox1d(object):
         if dummy is not None:
             do_dummy = True
             cdummy = <float> float(dummy)
-            
+
             if delta_dummy is None:
                 cddummy = <float>0.0
             else:
                 cddummy = <float> float(delta_dummy)
         else:
             cdummy = self.empty
-            
+
         if flat is not None:
             do_flat = True
             assert flat.size == size
@@ -726,9 +711,9 @@ class HistoBBox2d(object):
     def calc_boundaries(self, pos0Range, pos1Range):
         """
         Calculate self.pos0_min/max and self.pos1_min/max
-        
+
         @param pos0Range: 2-tuple containing the requested range
-        @param pos1Range: 2-tuple containing the requested range 
+        @param pos1Range: 2-tuple containing the requested range
         """
         cdef:
             int size = self.cpos0.size
@@ -813,9 +798,9 @@ class HistoBBox2d(object):
     def calc_boundaries_nosplit(self, pos0Range, pos1Range):
         """
         Calculate self.pos0_min/max and self.pos1_min/max
-        
+
         @param pos0Range: 2-tuple containing the requested range
-        @param pos1Range: 2-tuple containing the requested range 
+        @param pos1Range: 2-tuple containing the requested range
         """
         cdef:
             int size = self.cpos0.size
@@ -913,11 +898,11 @@ class HistoBBox2d(object):
                 min1 = cpos1_inf[idx]
                 max1 = cpos1_sup[idx]
 
-                bin0_min = < int > getBinNr(min0, pos0_min, delta0)
-                bin0_max = < int > getBinNr(max0, pos0_min, delta0)
+                bin0_min = < int > get_bin_number(min0, pos0_min, delta0)
+                bin0_max = < int > get_bin_number(max0, pos0_min, delta0)
 
-                bin1_min = < int > getBinNr(min1, pos1_min, delta1)
-                bin1_max = < int > getBinNr(max1, pos1_min, delta1)
+                bin1_min = < int > get_bin_number(min1, pos1_min, delta1)
+                bin1_max = < int > get_bin_number(max1, pos1_min, delta1)
 
                 if (bin0_max < 0) or (bin0_min >= bins0) or (bin1_max < 0) or (bin1_min >= bins1):
                     continue
@@ -941,7 +926,7 @@ class HistoBBox2d(object):
         # Just recycle the outMax array
         outMax[:, :] = 0
         lut_nbytes = nnz * (sizeof(numpy.float32_t) + sizeof(numpy.int32_t)) + bins0 * bins1 * sizeof(numpy.int32_t)
-        
+
         if (os.name == "posix") and ("SC_PAGE_SIZE" in os.sysconf_names) and ("SC_PHYS_PAGES" in os.sysconf_names):
             try:
                 memsize = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
@@ -963,10 +948,10 @@ class HistoBBox2d(object):
                 min1 = cpos1_inf[idx]
                 max1 = cpos1_sup[idx]
 
-                fbin0_min = getBinNr(min0, pos0_min, delta0)
-                fbin0_max = getBinNr(max0, pos0_min, delta0)
-                fbin1_min = getBinNr(min1, pos1_min, delta1)
-                fbin1_max = getBinNr(max1, pos1_min, delta1)
+                fbin0_min = get_bin_number(min0, pos0_min, delta0)
+                fbin0_max = get_bin_number(max0, pos0_min, delta0)
+                fbin1_min = get_bin_number(min1, pos1_min, delta1)
+                fbin1_max = get_bin_number(max1, pos1_min, delta1)
 
                 bin0_min = < int > fbin0_min
                 bin0_max = < int > fbin0_max
@@ -1097,16 +1082,16 @@ class HistoBBox2d(object):
 
         self.data = data
         self.indices = indices
-    
+
     @cython.boundscheck(False)
     @cython.wraparound(False)
     @cython.cdivision(True)
     def calc_lut_nosplit(self):
         """
         "calculate the max number of elements in the LUT and populate it
-        
-        This is the version which does not split pixels. 
-        
+
+        This is the version which does not split pixels.
+
         """
         cdef:
             float delta0 = self.delta0, pos0_min = self.pos0_min, c0, fbin0
@@ -1137,8 +1122,8 @@ class HistoBBox2d(object):
                 c0 = cpos0[idx]
                 c1 = cpos1[idx]
 
-                bin0 = < int > getBinNr(c0, pos0_min, delta0)
-                bin1 = < int > getBinNr(c1, pos1_min, delta1)
+                bin0 = < int > get_bin_number(c0, pos0_min, delta0)
+                bin1 = < int > get_bin_number(c1, pos1_min, delta1)
 
                 if (bin0 < 0) or (bin0 >= bins0) or (bin1 < 0) or (bin1 >= bins1):
                     continue
@@ -1170,8 +1155,8 @@ class HistoBBox2d(object):
                 c0 = cpos0[idx]
                 c1 = cpos1[idx]
 
-                fbin0 = getBinNr(c0, pos0_min, delta0)
-                fbin1 = getBinNr(c1, pos1_min, delta1)
+                fbin0 = get_bin_number(c0, pos0_min, delta0)
+                fbin1 = get_bin_number(c1, pos1_min, delta1)
 
                 bin0 = < int > fbin0
                 bin1 = < int > fbin1
@@ -1238,7 +1223,7 @@ class HistoBBox2d(object):
                 cddummy = < float > float(delta_dummy)
         else:
             cdummy = < float > float(self.empty)
-            
+
         if flat is not None:
             do_flat = True
             assert flat.size == size
@@ -1273,7 +1258,7 @@ class HistoBBox2d(object):
                         if do_solidAngle:
                             data = data / csolidAngle[i]
                         cdata[i] += data
-                    else:  
+                    else:
                         # set all dummy_like values to cdummy. simplifies further processing
                         cdata[i] += cdummy
             else:

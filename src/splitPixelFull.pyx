@@ -37,17 +37,14 @@ __license__ = "GPLv3+"
 import cython
 cimport numpy
 import numpy
-from libc.math cimport fabs, M_PI, floor, sqrt
+from libc.math cimport floor, sqrt
 from libc.stdio cimport printf, fflush, stdout
 from cython.view cimport array as cvarray
 
 ctypedef float data_t
 ctypedef double position_t
-cdef:
-    position_t pi = M_PI
-    double piover2 = pi * 0.5
-#    float onef = 1.0
 
+include "regrid_common.pxi"
 
 cdef inline position_t area4(position_t a0, position_t a1, position_t b0, position_t b1, position_t c0, position_t c1, position_t d0, position_t d1) nogil:
     """
@@ -77,17 +74,6 @@ cdef inline position_t integrate(position_t A0, position_t B0, Function AB) nogi
         return 0.0
     else:
         return AB.slope * (B0 * B0 - A0 * A0) * 0.5 + AB.intersect * (B0 - A0)
-
-
-@cython.cdivision(True)
-cdef inline position_t getBinNr(position_t x0, position_t pos0_min, position_t dpos) nogil:
-    """
-    calculate the bin number for any point
-    param x0: current position
-    param pos0_min: position minimum
-    param dpos: bin width
-    """
-    return (x0 - pos0_min) / dpos
 
 
 @cython.cdivision(True)
@@ -303,22 +289,22 @@ def fullSplit1D(numpy.ndarray pos not None,
             if check_dummy and ((cddummy == 0.0 and data == cdummy) or (cddummy != 0.0 and fabs(data - cdummy) <= cddummy)):
                 continue
 
-            # pixel[0].x = getBinNr(< double > cpos[idx, 0, 0], pos0_min, dpos)
+            # pixel[0].x = get_bin_number(< double > cpos[idx, 0, 0], pos0_min, dpos)
             # pixel[0].y = < double > cpos[idx, 0, 1]
-            # pixel[1].x = getBinNr(< double > cpos[idx, 1, 0], pos0_min, dpos)
+            # pixel[1].x = get_bin_number(< double > cpos[idx, 1, 0], pos0_min, dpos)
             # pixel[1].y = < double > cpos[idx, 1, 1]
-            # pixel[2].x = getBinNr(< double > cpos[idx, 2, 0], pos0_min, dpos)
+            # pixel[2].x = get_bin_number(< double > cpos[idx, 2, 0], pos0_min, dpos)
             # pixel[2].y = < double > cpos[idx, 2, 1]
-            # pixel[3].x = getBinNr(< double > cpos[idx, 3, 0], pos0_min, dpos)
+            # pixel[3].x = get_bin_number(< double > cpos[idx, 3, 0], pos0_min, dpos)
             # pixel[3].y = < double > cpos[idx, 3, 1]
 
-            A0 = getBinNr(< double > cpos[idx, 0, 0], pos0_min, dpos)
+            A0 = get_bin_number(< double > cpos[idx, 0, 0], pos0_min, dpos)
             A1 = < double > cpos[idx, 0, 1]
-            B0 = getBinNr(< double > cpos[idx, 1, 0], pos0_min, dpos)
+            B0 = get_bin_number(< double > cpos[idx, 1, 0], pos0_min, dpos)
             B1 = < double > cpos[idx, 1, 1]
-            C0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, dpos)
+            C0 = get_bin_number(< double > cpos[idx, 2, 0], pos0_min, dpos)
             C1 = < double > cpos[idx, 2, 1]
-            D0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, dpos)
+            D0 = get_bin_number(< double > cpos[idx, 3, 0], pos0_min, dpos)
             D1 = < double > cpos[idx, 3, 1]
 
             min0 = min(A0, B0, C0, D0)
@@ -382,8 +368,6 @@ def fullSplit1D(numpy.ndarray pos not None,
                     outCount[bin] += tmp
                     outData[bin] += data * tmp
                     lut_size += 1
-                #if fabs(partialArea2-areaPixel) > epsilon:
-                    #printf("%d -  %f \n",idx,(partialArea2-areaPixel)/areaPixel)
 
         for i in range(bins):
             if outCount[i] > epsilon:
@@ -429,7 +413,7 @@ def fullSplit2D(numpy.ndarray pos not None,
     @param polarization: array (of float64) with polarization correction
     @param solidangle: array (of float64)with solid angle corrections
     @param empty: value of output bins without any contribution when dummy is None
-    
+
     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
     """
     cdef int all_bins0 = 0, all_bins1 = 0, size = weights.size
@@ -534,8 +518,6 @@ def fullSplit2D(numpy.ndarray pos not None,
 
     with nogil:
         for idx in range(size):
-            #printf("%d\n",idx)
-            #fflush(stdout)
             data = cdata[idx]
             if check_dummy and ((cddummy == 0.0 and data == cdummy) or (cddummy != 0.0 and fabs(data - cdummy) <= cddummy)):
                 continue
@@ -543,10 +525,10 @@ def fullSplit2D(numpy.ndarray pos not None,
             if (check_mask) and (cmask[idx]):
                 continue
 
-            A0 = getBinNr(< double > cpos[idx, 0, 0], pos0_min, delta0)
-            B0 = getBinNr(< double > cpos[idx, 1, 0], pos0_min, delta0)
-            C0 = getBinNr(< double > cpos[idx, 2, 0], pos0_min, delta0)
-            D0 = getBinNr(< double > cpos[idx, 3, 0], pos0_min, delta0)
+            A0 = get_bin_number(< double > cpos[idx, 0, 0], pos0_min, delta0)
+            B0 = get_bin_number(< double > cpos[idx, 1, 0], pos0_min, delta0)
+            C0 = get_bin_number(< double > cpos[idx, 2, 0], pos0_min, delta0)
+            D0 = get_bin_number(< double > cpos[idx, 3, 0], pos0_min, delta0)
 
             split = on_boundary(cpos[idx, 0, 1], cpos[idx, 1, 1], cpos[idx, 2, 1], cpos[idx, 3, 1])
             A1 = getBin1Nr(< double > cpos[idx, 0, 1], pos1_min, delta1, split)
@@ -631,8 +613,6 @@ def fullSplit2D(numpy.ndarray pos not None,
                         outData[bin0_min,bin1_min+bin1]  += partialArea * data
 
             elif bin1_min == bin1_max:
-                #printf("  1 %d  %d \n",bin1_min,bin1_max)
-                #fflush(stdout)
                 # 1D code
                 A0 -= bin0_min
                 #A1 -= bin1_min
@@ -676,8 +656,6 @@ def fullSplit2D(numpy.ndarray pos not None,
                     outCount[bin0_min+bin0,bin1_min] += partialArea
                     outData[bin0_min+bin0,bin1_min]  += partialArea * data
             else:
-                #printf("  1 %d  %d \n",bin1_min,bin1_max)
-                #fflush(stdout)
 
                 bins0 = bin0_max - bin0_min + 1
                 bins1 = bin1_max - bin1_min + 1

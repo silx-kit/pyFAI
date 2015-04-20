@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/03/2015"
+__date__ = "31/03/2015"
 __status__ = "production"
 
 import sys, os, threading
@@ -78,7 +78,6 @@ class Massif(object):
         self._sem_binning = threading.Semaphore()
         self._sem_median = threading.Semaphore()
 
-
     def nearest_peak(self, x):
         """
         @param x: coordinates of the peak
@@ -97,7 +96,6 @@ class Massif(object):
         else:
             return res
 
-
     def calculate_massif(self, x):
         """
         defines a map of the massif around x and returns the mask
@@ -105,7 +103,6 @@ class Massif(object):
         labeled = self.getLabeledMassif()
         if labeled[x[0], x[1]] != labeled.max():
             return (labeled == labeled[x[0], x[1]])
-
 
     def find_peaks(self, x, nmax=200, annotate=None, massif_contour=None, stdout=sys.stdout):
         """
@@ -199,7 +196,6 @@ class Massif(object):
     def initValleySize(self):
         if self._valley_size is None:
             self.valley_size = max(5., max(self.data.shape) / 50.)
-
 
     def getValleySize(self):
         if self._valley_size is None:

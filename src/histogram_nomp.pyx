@@ -13,12 +13,12 @@
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
-# 
+#
 #   This program is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #   GNU General Public License for more details.
-# 
+#
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -37,19 +37,8 @@ import sys
 import logging
 logger = logging.getLogger("pyFAI.histogram_nomp")
 from libc.math cimport floor
-EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
-
-@cython.cdivision(True)
-cdef inline double getBinNr(double x0, double pos0_min, double delta) nogil:
-    """
-    calculate the bin number for any point
-    param x0: current position
-    param pos0_min: position minimum
-    param delta: bin width
-    """
-    return (x0 - pos0_min) / delta
-
+include "regrid_common.pxi"
 
 @cython.cdivision(True)
 @cython.boundscheck(False)
@@ -105,7 +94,7 @@ def histogram(numpy.ndarray pos not None, \
         for i in range(size):
             d = cdata[i]
             a = cpos[i]
-            fbin = getBinNr(a, min0, delta)
+            fbin = get_bin_number(a, min0, delta)
             bin = < int > fbin
             if bin<0 or bin>= bins:
                 continue
@@ -184,8 +173,8 @@ def histogram2d(numpy.ndarray pos0 not None,
             p0 = cpos0[i]
             p1 = cpos1[i]
             d = data[i]
-            fbin0 = getBinNr(p0, min0, delta0)
-            fbin1 = getBinNr(p1, min1, delta1)
+            fbin0 = get_bin_number(p0, min0, delta0)
+            fbin1 = get_bin_number(p1, min1, delta1)
             bin0 = < int > floor(fbin0)
             bin1 = < int > floor(fbin1)
             if (bin0<0) or (bin1<0) or (bin0>=bins0) or (bin1>=bins1):

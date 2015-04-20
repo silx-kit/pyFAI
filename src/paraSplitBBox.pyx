@@ -12,20 +12,21 @@
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
-# 
+#
 #   This program is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #   GNU General Public License for more details.
-# 
+#
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 __authors__ = ["Jerome Kieffer"]
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "20/10/2014"
+__date__ = "08/04/2015"
 __status__ = "stable"
 __license__ = "GPLv3+"
+__status__ = "Broken: histogram don't work in parallel as easily !!!"
 
 import cython
 cimport numpy
@@ -34,16 +35,7 @@ import numpy
 from cython.parallel import prange
 from libc.math cimport floor, fabs
 
-
-@cython.cdivision(True)
-cdef float  getBinNr(float x0, float pos0_min, float delta) nogil:
-    """
-    calculate the bin number for any point
-    param x0: current position
-    param pos0_min: position minimum
-    param delta: bin width
-    """
-    return (x0 - pos0_min) / delta
+include "regrid_common.pxi"
 
 
 @cython.cdivision(True)
@@ -144,7 +136,7 @@ def histoBBox1d(numpy.ndarray weights not None,
         pos0_maxin = max(pos0Range)
     else:
         pos0_maxin = pos0_max
-    if pos0_min < 0: 
+    if pos0_min < 0:
         pos0_min = 0
     pos0_max = pos0_maxin * (1.0 + numpy.finfo(numpy.float32).eps)
 
@@ -178,8 +170,8 @@ def histoBBox1d(numpy.ndarray weights not None,
             if check_pos1 and (((cpos1[idx]+dpos1[idx]) < pos1_min) or ((cpos1[idx]-dpos1[idx]) > pos1_max)):
                     continue
 
-            fbin0_min = getBinNr(min0, pos0_min, delta)
-            fbin0_max = getBinNr(max0, pos0_min, delta)
+            fbin0_min = get_bin_number(min0, pos0_min, delta)
+            fbin0_max = get_bin_number(max0, pos0_min, delta)
             bin0_min = < long > floor(fbin0_min)
             bin0_max = < long > floor(fbin0_max)
 
@@ -200,7 +192,7 @@ def histoBBox1d(numpy.ndarray weights not None,
                 outCount[bin0_min] += 1.0
                 outData[bin0_min] += data
 
-            else: 
+            else:
                 # we have pixel spliting.
                 deltaA = 1.0 / (fbin0_max - fbin0_min)
 
@@ -376,10 +368,10 @@ def histoBBox2d(numpy.ndarray weights not None,
             if max1 > pos1_maxin:
                 max1 = pos1_maxin
 
-            fbin0_min = getBinNr(min0, pos0_min, delta0)
-            fbin0_max = getBinNr(max0, pos0_min, delta0)
-            fbin1_min = getBinNr(min1, pos1_min, delta1)
-            fbin1_max = getBinNr(max1, pos1_min, delta1)
+            fbin0_min = get_bin_number(min0, pos0_min, delta0)
+            fbin0_max = get_bin_number(max0, pos0_min, delta0)
+            fbin1_min = get_bin_number(min1, pos1_min, delta1)
+            fbin1_max = get_bin_number(max1, pos1_min, delta1)
 
             bin0_min = < long > floor(fbin0_min)
             bin0_max = < long > floor(fbin0_max)
@@ -406,7 +398,7 @@ def histoBBox2d(numpy.ndarray weights not None,
                         outCount[bin0_min, j] += deltaA
                         outData[bin0_min, j] += data * deltaA
 
-            else: 
+            else:
                 # spread on more than 2 bins in dim 0
                 if bin1_min == bin1_max:
                     # All pixel fall on 1 bins in dim 1

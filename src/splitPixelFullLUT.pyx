@@ -38,14 +38,11 @@ from cython.parallel import prange
 from libc.string cimport memset
 import numpy
 cimport numpy
-from libc.math cimport fabs, M_PI, floor, sqrt
+from libc.math cimport fabs, floor, sqrt
 from libc.stdio cimport printf, fflush, stdout
 
-cdef:
-    float pi = <float> M_PI
-    float piover2 = <float> (pi * 0.5)
-    float onef = <float> 1.0
-    double EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
+include "regrid_common.pxi"
+
 try:
     from fastcrc import crc32
 except:
@@ -67,17 +64,6 @@ cdef inline float area4(float a0, float a1, float b0, float b1, float c0, float 
     @return: area, i.e. 1/2 * (AC ^ BD)
     """
     return 0.5 * fabs(((c0 - a0) * (d1 - b1)) - ((c1 - a1) * (d0 - b0)))
-
-
-@cython.cdivision(True)
-cdef inline float getBinNr(float x0, float pos0_min, float delta) nogil:
-    """
-    calculate the bin number for any point
-    param x0: current position
-    param pos0_min: position minimum
-    param delta: bin width
-    """
-    return (x0 - pos0_min) / delta
 
 
 @cython.cdivision(True)
@@ -250,13 +236,13 @@ class HistoLUT1dFullSplit(object):
                 if (check_mask) and (cmask[idx]):
                     continue
 
-                A0 = getBinNr(< float > cpos[idx, 0, 0], pos0_min, delta)
+                A0 = get_bin_number(< float > cpos[idx, 0, 0], pos0_min, delta)
                 A1 = < float > cpos[idx, 0, 1]
-                B0 = getBinNr(< float > cpos[idx, 1, 0], pos0_min, delta)
+                B0 = get_bin_number(< float > cpos[idx, 1, 0], pos0_min, delta)
                 B1 = < float > cpos[idx, 1, 1]
-                C0 = getBinNr(< float > cpos[idx, 2, 0], pos0_min, delta)
+                C0 = get_bin_number(< float > cpos[idx, 2, 0], pos0_min, delta)
                 C1 = < float > cpos[idx, 2, 1]
-                D0 = getBinNr(< float > cpos[idx, 3, 0], pos0_min, delta)
+                D0 = get_bin_number(< float > cpos[idx, 3, 0], pos0_min, delta)
                 D1 = < float > cpos[idx, 3, 1]
 
                 #with gil:
@@ -309,13 +295,13 @@ class HistoLUT1dFullSplit(object):
                 if (check_mask) and (cmask[idx]):
                     continue
 
-                A0 = getBinNr(< float > cpos[idx, 0, 0], pos0_min, delta)
+                A0 = get_bin_number(< float > cpos[idx, 0, 0], pos0_min, delta)
                 A1 = < float > cpos[idx, 0, 1]
-                B0 = getBinNr(< float > cpos[idx, 1, 0], pos0_min, delta)
+                B0 = get_bin_number(< float > cpos[idx, 1, 0], pos0_min, delta)
                 B1 = < float > cpos[idx, 1, 1]
-                C0 = getBinNr(< float > cpos[idx, 2, 0], pos0_min, delta)
+                C0 = get_bin_number(< float > cpos[idx, 2, 0], pos0_min, delta)
                 C1 = < float > cpos[idx, 2, 1]
-                D0 = getBinNr(< float > cpos[idx, 3, 0], pos0_min, delta)
+                D0 = get_bin_number(< float > cpos[idx, 3, 0], pos0_min, delta)
                 D1 = < float > cpos[idx, 3, 1]
 
                 #with gil:
@@ -842,10 +828,10 @@ class HistoLUT2dFullSplit(object):
                 if (check_mask) and (cmask[idx]):
                     continue
 
-                A0 = getBinNr(< float > cpos[idx, 0, 0], pos0_min, delta0)
-                B0 = getBinNr(< float > cpos[idx, 1, 0], pos0_min, delta0)
-                C0 = getBinNr(< float > cpos[idx, 2, 0], pos0_min, delta0)
-                D0 = getBinNr(< float > cpos[idx, 3, 0], pos0_min, delta0)
+                A0 = get_bin_number(< float > cpos[idx, 0, 0], pos0_min, delta0)
+                B0 = get_bin_number(< float > cpos[idx, 1, 0], pos0_min, delta0)
+                C0 = get_bin_number(< float > cpos[idx, 2, 0], pos0_min, delta0)
+                D0 = get_bin_number(< float > cpos[idx, 3, 0], pos0_min, delta0)
 
                 var = foo(cpos[idx, 0, 1], cpos[idx, 1, 1], cpos[idx, 2, 1], cpos[idx, 3, 1])
                 A1 = getBin1Nr(< float > cpos[idx, 0, 1], pos1_min, delta1, var)
@@ -929,10 +915,10 @@ class HistoLUT2dFullSplit(object):
                 if (check_mask) and (cmask[idx]):
                     continue
 
-                A0 = getBinNr(< float > cpos[idx, 0, 0], pos0_min, delta0)
-                B0 = getBinNr(< float > cpos[idx, 1, 0], pos0_min, delta0)
-                C0 = getBinNr(< float > cpos[idx, 2, 0], pos0_min, delta0)
-                D0 = getBinNr(< float > cpos[idx, 3, 0], pos0_min, delta0)
+                A0 = get_bin_number(< float > cpos[idx, 0, 0], pos0_min, delta0)
+                B0 = get_bin_number(< float > cpos[idx, 1, 0], pos0_min, delta0)
+                C0 = get_bin_number(< float > cpos[idx, 2, 0], pos0_min, delta0)
+                D0 = get_bin_number(< float > cpos[idx, 3, 0], pos0_min, delta0)
 
                 var = foo(cpos[idx, 0, 1], cpos[idx, 1, 1], cpos[idx, 2, 1], cpos[idx, 3, 1])
                 A1 = getBin1Nr(< float > cpos[idx, 0, 1], pos1_min, delta1, var)

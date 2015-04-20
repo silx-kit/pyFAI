@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2015"
+__date__ = "07/04/2015"
 __status__ = "stable"
 
 
@@ -156,9 +156,10 @@ def Extension(name, source=None, extra_sources=None, **kwargs):
     if "include_dirs" in kwargs:
         include_dirs = set(kwargs.pop("include_dirs"))
         include_dirs.add(numpy.get_include())
+        include_dirs.add("src")
         include_dirs = list(include_dirs)
     else:
-        include_dirs = [numpy.get_include()]
+        include_dirs = ["src", numpy.get_include()]
     return _Extension(name=name, sources=sources, include_dirs=include_dirs, **kwargs)
 
 ext_modules = [
@@ -218,7 +219,9 @@ ext_modules = [
 
     Extension('marchingsquares'),
 
-    Extension('watershed')
+    Extension('watershed',
+#             extra_compile_args=[openmp], extra_link_args=[openmp],
+              )
 
 ]
 
@@ -397,11 +400,11 @@ class sdist_debian(sdist):
             if os.path.isfile(cf):
                 self.filelist.exclude_pattern(pattern=cf)
 
-        print("Adding test_files for debian")
-        self.filelist.allfiles += [os.path.join("test", "testimages", i) \
-                                   for i in download_images()]
-        self.filelist.include_pattern(pattern="*", anchor=True,
-                                      prefix="test/testimages")
+#         print("Adding test_files for debian")
+#         self.filelist.allfiles += [os.path.join("test", "testimages", i) \
+#                                    for i in download_images()]
+#         self.filelist.include_pattern(pattern="*", anchor=True,
+#                                       prefix="test/testimages")
 
     def make_distribution(self):
         sdist.make_distribution(self)
@@ -497,16 +500,18 @@ def get_version():
 classifiers = """\
 Development Status :: 5 - Production/Stable
 Intended Audience :: Developers
-License :: OSI Approved :: GPL
 Programming Language :: Python
-Topic :: Crystallography
 Topic :: Software Development :: Libraries :: Python Modules
 Operating System :: Microsoft :: Windows
 Operating System :: Unix
 Operating System :: MacOS :: MacOS X
 Operating System :: POSIX
-
 """
+problematic = """
+License :: OSI Approved :: GPL
+Topic :: Crystallography
+"""
+
 if __name__ == "__main__":
     setup(name='pyFAI',
           version=get_version(),

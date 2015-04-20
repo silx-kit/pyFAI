@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/03/2015"
+__date__ = "26/03/2015"
 __satus__ = "development"
 
 import sys
@@ -47,7 +47,7 @@ import time
 import types
 import threading
 import math
-
+import weakref
 import os.path as op
 import numpy
 logging.basicConfig(level=logging.INFO)
@@ -60,6 +60,7 @@ from .opencl import ocl
 from .utils import float_, int_, str_, get_ui_file
 from .io import HDF5Writer
 from .azimuthalIntegrator import AzimuthalIntegrator
+from .units import RADIAL_UNITS, TTH_DEG, TTH_RAD, Q_NM, Q_A, R_MM
 from .third_party import six
 
 UIC = get_ui_file("integration.ui")
@@ -128,6 +129,7 @@ class AIWidget(QtGui.QWidget):
     """
     """
     def __init__(self, input_data=None):
+        self.units = {}
         self.ai = AzimuthalIntegrator()
         self.input_data = input_data
         self.output_path = None
@@ -166,9 +168,30 @@ class AIWidget(QtGui.QWidget):
         self.connect(self.do_OpenCL, SIGNAL("clicked()"), self.openCL_changed)
         self.connect(self.platform, SIGNAL("currentIndexChanged(int)"), self.platform_changed)
         self.set_validators()
+        self.assign_unit()
         self.restore()
         self.progressBar.setValue(0)
         self.hdf5_path = None
+
+    def assign_unit(self):
+        """
+        assign unit to the corresponding widget
+        """
+        self.units = {}
+        for unit in RADIAL_UNITS:
+            if unit.REPR == "2th_deg":
+                self.units[unit] = self.tth_deg
+            elif unit.REPR == "2th_rad":
+                self.units[unit] = self.tth_rad
+            elif unit.REPR == "q_nm^-1":
+                self.units[unit] = self.q_nm
+            elif unit.REPR == "q_A^-1":
+                self.units[unit] = self.q_A
+            elif unit.REPR == "r_mm":
+                self.units[unit] = self.r_mm
+            else:
+                logger.warning("Unit unknown to GUI %s" % unit)
+
 
     def set_validators(self):
         """
@@ -209,24 +232,17 @@ class AIWidget(QtGui.QWidget):
             self.set_ai()
 
     #        Default Keyword arguments
-            kwarg = {"unit": "2th_deg",
+            kwarg = {"unit": TTH_DEG,
                      "dummy": None,
                      "delta_dummy": None,
                      "polarization_factor":None,
                      "filename": None,
                      "safe": False,
                      }
-
-            if self.q_nm.isChecked():
-                kwarg["unit"] = "q_nm^-1"
-            elif self.tth_deg.isChecked():
-                kwarg["unit"] = "2th_deg"
-            elif self.tth_rad.isChecked():
-                kwarg["unit"] = "2th_rad"
-            elif self.r_mm.isChecked():
-                kwarg["unit"] = "r_mm"
-            elif self.q_A.isChecked():
-                kwarg["unit"] = "q_A^-1"
+            for unit, widget in self.units.items():
+                if widget is not None and widget.isChecked():
+                    kwarg["unit"] = unit
+                    break
             else:
                 logger.warning("Undefined unit !!! falling back on 2th_deg")
 
@@ -462,16 +478,12 @@ class AIWidget(QtGui.QWidget):
                     "azimuth_range_min":float_(self.azimuth_range_min.text()),
                     "azimuth_range_max":float_(self.azimuth_range_max.text()),
                    }
-        if self.q_nm.isChecked():
-            to_save["unit"] = "q_nm^-1"
-        elif self.q_A.isChecked():
-            to_save["unit"] = "q_A^-1"
-        elif self.tth_deg.isChecked():
-            to_save["unit"] = "2th_deg"
-        elif self.tth_rad.isChecked():
-            to_save["unit"] = "2th_rad"
-        elif self.r_mm.isChecked():
-            to_save["unit"] = "r_mm"
+        for unit, widget in self.units.items():
+            if widget is not None and widget.isChecked():
+                to_save["unit"] = unit.REPR
+                break
+        else:
+            logger.warning("Undefined unit !!!")
         try:
             with open(filename, "w") as myFile:
                 json.dump(to_save, myFile, indent=4)
@@ -534,17 +546,10 @@ class AIWidget(QtGui.QWidget):
             if key in data:
                 value(data[key])
         if "unit" in data:
-            unit = data["unit"].lower()
-            if unit == "q_nm^-1":
-                self.q_nm.setChecked(1)
-            elif unit == "q_A^-1":
-                self.q_A.setChecked(1)
-            elif unit == "2th_deg":
-                self.tth_deg.setChecked(1)
-            elif unit == "2th_rad":
-                self.tth_rad.setChecked(1)
-            elif unit == "r_mm":
-                self.r_mm.setChecked(1)
+            for unit, widget in self.units.items():
+                if unit.REPR == data["unit"] and widget is not None:
+                    widget.setChecked(True)
+                    break
         if "detector" in data:
             detector = data["detector"].lower()
             if detector in self.all_detectors:

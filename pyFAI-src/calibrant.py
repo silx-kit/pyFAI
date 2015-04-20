@@ -27,23 +27,284 @@ Calibrant
 
 A module containing classical calibrant and also tools to generate d-spacing.
 
+Interesting formula:
+http://geoweb3.princeton.edu/research/MineralPhy/xtalgeometry.pdf
 """
+
+from __future__ import absolute_import, print_function, with_statement
 
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/11/2014"
+__date__ = "30/03/2015"
 __status__ = "production"
+
 
 import os
 import logging
 import numpy
-from math import sin, asin
+import itertools
+from math import sin, asin, cos, sqrt, pi, ceil, floor
 import threading
 from .utils import get_calibration_dir
 logger = logging.getLogger("pyFAI.calibrant")
-epsilon = 1.0e-6 # for floating point comparison
+epsilon = 1.0e-6  # for floating point comparison
+
+class Cell(object):
+    """
+    This is a cell object, able to calculate the volume and d-spacing according to formula from:
+
+    http://geoweb3.princeton.edu/research/MineralPhy/xtalgeometry.pdf
+    """
+    lattices = ["cubic", "tetragonal", "hexagonal", "rhombohedral", "orthorhombic", "monoclinic", "triclinic"]
+    types = {"P":"Primitive", "I":"Body centered", "F":"Face centered", "C": "Side centered", "R": "Rhombohedral"}
+
+    def __init__(self, a=1, b=1, c=1, alpha=90, beta=90, gamma=90, lattice="triclinic", lattice_type="P"):
+        """
+        Crystalographic units are Angstrom for distances and degrees for angles !
+
+        @param a,b,c: unit cell length in Angstrom
+        @param alpha, beta, gamma: unit cell angle in degrees
+
+        """
+        self.a = a
+        self.b = b
+        self.c = c
+        self.alpha = alpha
+        self.beta = beta
+        self.gamma = gamma
+        self.lattice = lattice if lattice in self.lattices else "triclinic"
+        self.type = lattice_type if lattice_type in self.types else "P"
+        self._volume = None
+        self.S11 = None
+        self.S12 = None
+        self.S13 = None
+        self.S22 = None
+        self.S23 = None
+
+    def __repr__(self, *args, **kwargs):
+        return "%s %s cell a=%.4f b=%.4f c=%.4f alpha=%.3f beta=%.3f gamma=%.3f" % \
+            (self.types[self.type], self.lattice, self.a, self.b, self.c, self.alpha, self.beta, self.gamma)
+
+    @classmethod
+    def cubic(cls, a):
+        """
+        Factory for cubic lattices
+        @param a: unit cell length
+        """
+        self = cls()
+        self.lattice = "cubic"
+        a = float(a)
+        self.a = a
+        self.b = a
+        self.c = a
+        self.alpha = 90
+        self.beta = 90
+        self.gamma = 90
+        return self
+
+    @classmethod
+    def tetragonal(cls, a, c):
+        """
+        Factory for tetragonal lattices
+        @param a: unit cell length
+        @param c: unit cell length
+        """
+        self = cls()
+        self.lattice = "tetragonal"
+        a = float(a)
+        self.a = a
+        self.b = a
+        self.c = float(c)
+        self.alpha = 90
+        self.beta = 90
+        self.gamma = 90
+        return self
+
+    @classmethod
+    def orthorhombic(cls, a, b, c):
+        """
+        Factory for tetragonal lattices
+        @param a: unit cell length
+        @param b: unit cell length
+        @param c: unit cell length
+        """
+        self = cls()
+        self.lattice = "orthorhombic"
+        self.a = float(a)
+        self.b = float(b)
+        self.c = float(c)
+        self.alpha = 90
+        self.beta = 90
+        self.gamma = 90
+        return self
+
+    @classmethod
+    def hexagonal(cls, a, c):
+        """
+        Factory for hexagonal lattices
+        @param a: unit cell length
+        @param c: unit cell length
+        """
+        self = cls()
+        self.lattice = "hexagonal"
+        a = float(a)
+        self.a = a
+        self.b = a
+        self.c = float(c)
+        self.alpha = 90
+        self.beta = 90
+        self.gamma = 120
+        return self
+
+    @classmethod
+    def monoclinic(cls, a, b, c, beta):
+        """
+        Factory for hexagonal lattices
+        @param a: unit cell length
+        @param b: unit cell length
+        @param c: unit cell length
+        @param beta: unit cell angle
+        """
+        self = cls()
+        self.lattice = "monoclinic"
+        self.a = float(a)
+        self.b = float(b)
+        self.c = float(c)
+        self.alpha = 90
+        self.beta = float(beta)
+        self.gamma = 90
+        return self
+
+    @classmethod
+    def rhombohedral(cls, a, alpha):
+        """
+        Factory for hexagonal lattices
+        @param a: unit cell length
+        @param alpha: unit cell angle
+        """
+        self = cls()
+        self.lattice = "rhombohedral"
+        a = float(a)
+        alpha = float(a)
+        self.a = a
+        self.b = a
+        self.c = a
+        self.alpha = alpha
+        self.beta = alpha
+        self.gamma = alpha
+        return self
+
+    # TODO: continue
+
+    @property
+    def volume(self):
+        if self._volume is None:
+            self._volume = self.a * self.b * self.c
+            if self.lattice not in ["cubic", "tetragonal", "orthorhombic"]:
+                cosa = cos(self.alpha * pi / 180.)
+                cosb = cos(self.beta * pi / 180.)
+                cosg = cos(self.gamma * pi / 180.)
+                self._volume *= sqrt(1 - cosa ** 2 - cosb ** 2 - cosg ** 2 + 2 * cosa * cosb * cosg)
+        return self._volume
+
+    def d(self, hkl):
+        """
+        Calculate the actual d-spacing for a 3-tuple of
+        """
+        h, k, l = hkl
+        if self.lattice in ["cubic", "tetragonal", "orthorhombic"]:
+            invd2 = (h / self.a) ** 2 + (k / self.b) ** 2 + (l / self.c) ** 2
+        else:
+            if self.S11 is None:
+                alpha = self.alpha * pi / 180.
+                cosa = cos(alpha)
+                sina = sin(alpha)
+                beta = self.beta * pi / 180.
+                cosb = cos(beta)
+                sinb = sin(beta)
+                gamma = self.gamma * pi / 180.
+                cosg = cos(gamma)
+                sing = sin(gamma)
+
+                self.S11 = (self.b * self.c * sina) ** 2
+                self.S22 = (self.a * self.c * sinb) ** 2
+                self.S33 = (self.a * self.b * sing) ** 2
+                self.S12 = self.a * self.b * self.c * self.c * (cosa * cosb - cosg)
+                self.S23 = self.a * self.a * self.b * self.c * (cosb * cosg - cosa)
+                self.S13 = self.a * self.b * self.b * self.c * (cosg * cosa - cosb)
+
+            invd2 = self.S11 * h * h + \
+                    self.S22 * k * k + \
+                    self.S33 * l * l + \
+                    2 * self.S12 * h * k + \
+                    2 * self.S23 * k * l + \
+                    2 * self.S13 * h * l
+            invd2 /= (self.volume) ** 2
+        return sqrt(1 / invd2)
+
+    def d_spacing(self, dmin=1.0):
+        """
+        @param dmin: minimum value of
+        @return: dict d-spacing as string, list of tuple with Miller indices preceded with the numerical value
+        """
+        hmax = int(ceil(self.a / dmin))
+        kmax = int(ceil(self.b / dmin))
+        lmax = int(ceil(self.c / dmin))
+        res = {}
+        for hkl in itertools.product(range(-hmax, hmax + 1),
+                                     range(-kmax, kmax + 1),
+                                     range(-lmax, lmax + 1)):
+            h, k, l=hkl
+            if hkl == (0, 0, 0):
+                continue
+            if self.type == "I" and ((h + k + l) % 2 != 0):
+                continue
+            if self.type == "C" and ((h + k) % 2 != 0):
+                continue
+            if self.type == "F" and ((h % 2 + k % 2 + l % 2) not in (0, 3)):
+                continue
+            if self.type == "R" and ((h - k + l) % 3 != 0):
+                continue
+
+            d = self.d(hkl)
+            strd = "%.8e" % d
+            if d < dmin:
+                continue
+            if strd in res:
+                res[strd].append(hkl)
+            else:
+                res[strd] = [d, hkl]
+        return res
+
+    def save(self, name, long_name=None, doi=None, dmin=1.0, dest_dir=None):
+        """
+        Save informations about the cell in a d-spacing file, usable as Calibrant
+
+        @param name: name of the calibrant
+        @param doi: reference of the publication used to parametrize the cell
+        @param dmin: minimal d-spacing
+        @param dest_dir: name of the directory where to save the result
+        """
+        fname = name + ".D"
+        if dest_dir:
+            fname = os.path.join(dest_dir, fname)
+        with open(fname, "w") as f:
+            if long_name:
+                f.write("# Calibrant: %s (%s)%s" % (long_name, name, os.linesep))
+            else:
+                f.write("# Calibrant: %s%s" % (name, os.linesep))
+            f.write("# %s%s" % (self, os.linesep))
+            if doi:
+                f.write("# Ref: %s%s" % (doi, os.linesep))
+            d = self.d_spacing(dmin)
+            ds = [i[0] for i in d.values()]
+            ds.sort(reverse=True)
+            for k in ds:
+                strk = "%.8e" % k
+                f.write("%.8f # %s %s%s" % (k, d[strk][-1], len(d[strk]) - 1, os.linesep))
+
 
 class Calibrant(object):
     """
@@ -83,7 +344,7 @@ class Calibrant(object):
                 return
             self._filename = os.path.abspath(self._filename)
             self._dSpacing = numpy.unique(numpy.loadtxt(self._filename))
-            self._dSpacing = list(self._dSpacing[-1::-1]) #reverse order
+            self._dSpacing = list(self._dSpacing[-1::-1])  # reverse order
 #            self._dSpacing.sort(reverse=True)
             if self._wavelength:
                 self._calc_2th()
@@ -178,7 +439,7 @@ class Calibrant(object):
                 tth = None
                 if self._2th:
                     self._dSpacing = self._dSpacing[:len(self._2th)]
-                    #avoid turning around...
+                    # avoid turning around...
                     break
             else:
                 self._2th.append(tth)
@@ -191,7 +452,7 @@ class Calibrant(object):
 
     def get_2th(self):
         if not self._2th:
-            ds = self.dSpacing #forces the file reading if not done
+            ds = self.dSpacing  # forces the file reading if not done
             with self._sem:
                 if not self._2th:
                     self._calc_2th()
