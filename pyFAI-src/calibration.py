@@ -128,7 +128,8 @@ class AbstractCalibration(object):
             'reset': "Reset the geometry to the initial guess (rotation to zero, distance to 0.1m, poni at the center of the image)",
             'assign': "Change the assignment of a group of points to a rings",
             "weight": "toggle from weighted to unweighted mode...",
-            "define": "Re-define the value for a constant internal parameter of the program like max_iter, nPt_1D, nPt_2D_azim, nPt_2D_rad. Warning: they may be harmful !"
+            "define": "Re-define the value for a constant internal parameter of the program like max_iter, nPt_1D, nPt_2D_azim, nPt_2D_rad. Warning: they may be harmful !",
+            "chiplot": "plot control point as function of azimuthal and radial angle"
             }
     PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
     UNITS = {"dist":"meter", "poni1":"meter", "poni2":"meter", "rot1":"radian",
@@ -208,6 +209,7 @@ class AbstractCalibration(object):
         self.keep = True
         self.check_calib = None
         self.fig3 = self.ax_xrpd_1d = self.ax_xrpd_2d = None
+        self.fig_chiplot = self.ax_chiplot=None
 
     def __repr__(self):
         lst = ["Calibration object:"]
@@ -1008,8 +1010,60 @@ class AbstractCalibration(object):
                         print("No such parameter %s" % param)
                 else:
                     print(self.HELP[action])
+            elif action == "chiplot":
+                    print(self.HELP[action])    
+                    self.chiplot()
             else:
                 logger.warning("Unrecognized action: %s, type 'quit' to leave " % action)
+
+    def chiplot(self, fit=False):
+        """
+        plot 2theta = f(chi) and fit the curve.
+        """
+        from scipy.optimize import curve_fit
+        sqrt2 = numpy.sqrt(2.)
+        if self.gui:
+            if self.fig_chiplot:
+                self.fig_chiplot.clf()
+            else:
+                self.fig_chiplot = pylab.plt.figure()
+            self.ax_chiplot = self.fig_chiplot.add_subplot(1, 1, 1)
+        else:
+            print("chiplot display only possible with GUI")
+        rings = list(set(i[2]for i in self.data))
+        rings.sort()
+        for ring in rings:
+            print("Fitting ring #%x"%ring)
+            d1 = []
+            d2 = []
+            for i in self.data:
+                if i[2] == ring:
+                    d1.append(i[0])
+                    d2.append(i[1])
+            d1 = numpy.array(d1)
+            d2 = numpy.array(d2)
+            tth = numpy.rad2deg(self.geoRef.tth(d1,d2))
+            chi = self.geoRef.chi(d1,d2)
+            mean = tth.mean()
+            amp = tth.std()*sqrt2
+            phase = 0.0
+            model = lambda x,mean,amp,phase:mean + amp * numpy.sin(x+phase)
+            print(" initial guess mean=%s\tampl=%s\tphase=%s"%(mean,amp,phase))
+            popt, pcov = curve_fit(model, chi, tth, [mean,amp,phase])
+            print(" Fitted  mean=%s\tampl=%s\tphase=%s"%tuple(popt))
+            print(" Fitted  covariance: %s"%pcov)
+            chi = numpy.rad2deg(chi)
+            if self.ax_chiplot:                
+                self.ax_chiplot.plot(chi,tth,"o",label="ring #%s"%ring)
+                chi2 = numpy.linspace(-180, 180, 360)
+                self.ax_chiplot.plot(chi2, model(numpy.deg2rad(chi2), *popt),label=str(popt))
+                self.fig_chiplot.canvas.update()
+        self.ax_chiplot.set_xlim(-180, 180)
+        self.ax_chiplot.set_xlabel("Azimuthal angle Chi (deg)")
+        self.ax_chiplot.set_ylabel("Radial angle (deg)")
+        self.ax_chiplot.set_title("Chi plot")
+        self.ax_chiplot.legend()
+        self.fig_chiplot.show() 
 
     def postProcess(self):
         """
