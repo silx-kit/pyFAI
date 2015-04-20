@@ -551,7 +551,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
             shape = data.shape
         else:
             shape = tuple(data[:2])
-        if self.force_pixel:
+        if not self.force_pixel:
             if shape != self.max_shape:
                 logger.warning("guess_binning is not implemented for %s detectors!\
                  and image size %s! is wrong, expected %s!" % (self.name, shape, self.shape))
@@ -570,6 +570,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
             self._mask_crc = None
         else:
             logger.debug("guess_binning for generic detectors !")
+
 
 class NexusDetector(Detector):
     """
@@ -1526,7 +1527,7 @@ class Perkin(Detector):
     Perkin detector
 
     """
-    aliases = ["Perkin detector"]
+    aliases = ["Perkin detector", "Perkin Elmer"]
     force_pixel = True
     MAX_SHAPE = (4096, 4096)
     def __init__(self, pixel1=200e-6, pixel2=200e-6):
@@ -1598,7 +1599,6 @@ class Rayonix(Detector):
         self._mask_crc = None
 
 
-
 class Rayonix133(Rayonix):
     """
     Rayonix 133 2D CCD detector detector also known as mar133
@@ -1629,6 +1629,7 @@ class Rayonix133(Rayonix):
         x, y = numpy.ogrid[:self.shape[0], :self.shape[1]]
         mask = ((x + 0.5 - c[0]) ** 2 + (y + 0.5 - c[1]) ** 2) > (c[0]) ** 2
         return mask
+
 
 class RayonixSx165(Rayonix):
     """
@@ -1944,9 +1945,6 @@ class RayonixMx325(Rayonix):
         Rayonix.__init__(self, pixel1=79.346e-6, pixel2=79.346e-6)
         self.shape = (4096, 4096)
         self._binning = (2, 2)
-
-
-
 
 
 ALL_DETECTORS = Detector.registry
