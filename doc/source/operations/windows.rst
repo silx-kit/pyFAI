@@ -1,7 +1,7 @@
 
 Author: Jérôme Kieffer
 
-Date: 20/03/2015
+Date: 21/04/2015
 
 Keywords: Installation procedure
 
@@ -40,12 +40,14 @@ PIP is the package management system for Python, it connects to http://pypi.pyth
 download and install software packages from there.
 
 PIP has revolutionize the way Python libraries are installed as it is able to select the right build for your system, or compile from the sources (Which could be tricky).
+If you installed python 2.7.9 or 3.4, PIP is already installed. Unless, you will have to install it:.
 
-To install it, download:
-https://bootstrap.pypa.io/get-pip.py
-and run it:
+Download::
 
-::
+    https://bootstrap.pypa.io/get-pip.py
+
+and run::
+
    python get-pip.py
 
 Assuming python.exe is already in your PATH.
@@ -60,7 +62,7 @@ The strict dependencies for pyFAI are:
 * matplotlib
 * FabIO
 
-Recommanded dependencies are:
+Recommended dependencies are:
 
 * cython
 * h5py
@@ -71,14 +73,11 @@ Recommanded dependencies are:
 * pyfftw3
 * lxml
 
-The ways
-
 Using PIP
 .........
 
-Most of the dependencies are available via PIP:
+Most of the dependencies are available via PIP::
 
-::
    pip install numpy
    pip install scipy
    pip install matplotlib
@@ -90,6 +89,13 @@ Note that numpy/scipy/matplotlib are already installed in most "Scientific Pytho
 If one of the dependency is not available as a Wheel (i.e. binary package) but only as a source package, a compiler will be required.
 In this case, see the next paragraph
 The generalization of Wheel packages should help and the installation of binary modules should become easier.
+
+This requires a network access and correct proxy settings. For example at ESRF, one will need to set-up the environment for the proxy like this::
+
+    set http_proxy=http://proxy.esrf.fr:3128
+    set https_proxy=http://proxy.esrf.fr:3128  
+
+One day, our beloved computing service will put in place a `transparent proxy <http://en.wikipedia.org/wiki/Proxy_server#Transparent_proxy>`_, one day, maybe.
 
 Using Christoph Gohlke repository
 .................................
@@ -103,12 +109,15 @@ http://www.lfd.uci.edu/~gohlke/pythonlibs/
 Moreover the libraries he provides are linked against the MKL library from Intel which
 makes his packages faster then what you would get by simply recompiling them.
 
+Christopher now provides packages as wheels. To install them use PIP::
+
+    pip install numpy*.whl
+
 Install pyFAI via PIP
 ---------------------
 
-The latest stable release of pyFAI should also be PIP-installable (starting at version 0.11)
+The latest stable release of pyFAI should also be PIP-installable (starting at version 0.10.3)::
 
-::
    pip install pyFAI
 
 
@@ -121,8 +130,7 @@ The sources of pyFAI are available at https://github.com/pyFAI/pyFAI/releases
 In addition to the Python interpreter, you will need the C compiler compatible with your Python interpreter, for example you can find the one for Python2.7 at:
 http://aka.ms/vcpython27
 
-To upgrade the C-code in pyFAI, one needs in addition Cython:
+To upgrade the C-code in pyFAI, one needs in addition Cython::
 
-::
    pip install cython
 
