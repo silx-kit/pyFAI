@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/04/2015"
+__date__ = "21/04/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -209,7 +209,7 @@ class AbstractCalibration(object):
         self.keep = True
         self.check_calib = None
         self.fig3 = self.ax_xrpd_1d = self.ax_xrpd_2d = None
-        self.fig_chiplot = self.ax_chiplot=None
+        self.fig_chiplot = self.ax_chiplot = None
 
     def __repr__(self):
         lst = ["Calibration object:"]
@@ -985,11 +985,20 @@ class AbstractCalibration(object):
             else:
                 logger.warning("Unrecognized action: %s, type 'quit' to leave " % action)
 
-    def chiplot(self, fit=False):
+    def chiplot(self):
         """
         plot 2theta = f(chi) and fit the curve.
         """
-        from scipy.optimize import curve_fit
+        from scipy.optimize import leastsq
+        model = lambda x, mean, amp, phase:mean + amp * numpy.sin(x + phase)
+        error = lambda param, xdata, ydata:  model(xdata, *param) - ydata
+#         jacob = lambda param, xdata, ydata: numpy.array([1.0, numpy.sin(xdata + param[2], param[1] * numpy.cos(xdata + param[2]))])
+        def jacob(param, xdata, ydata):
+            j = numpy.ones((param.size, xdata.size))
+#             j[0,:]=1
+            j[1, :] = numpy.sin(xdata + param[2])
+            j[2, :] = param[1] * numpy.cos(xdata + param[2])
+            return j
         sqrt2 = numpy.sqrt(2.)
         if self.gui:
             if self.fig_chiplot:
@@ -997,12 +1006,17 @@ class AbstractCalibration(object):
             else:
                 self.fig_chiplot = pylab.plt.figure()
             self.ax_chiplot = self.fig_chiplot.add_subplot(1, 1, 1)
+            self.ax_chiplot.set_xlim(-180, 180)
+            self.ax_chiplot.set_xlabel("Azimuthal angle Chi (deg)")
+            self.ax_chiplot.set_ylabel("Radial angle (deg)")
+            self.ax_chiplot.set_title("Chi plot")
         else:
             print("chiplot display only possible with GUI")
-        rings = list(set(i[2]for i in self.data))
+        rings = list(set(int(i[2]) for i in self.data))
         rings.sort()
         for ring in rings:
-            print("Fitting ring #%x"%ring)
+            ref_2th = numpy.rad2deg(self.calibrant.get_2th()[ring])
+            print("Fitting ring #%x (2th=%.3fdeg)" % (ring, ref_2th))
             d1 = []
             d2 = []
             for i in self.data:
@@ -1011,28 +1025,27 @@ class AbstractCalibration(object):
                     d2.append(i[1])
             d1 = numpy.array(d1)
             d2 = numpy.array(d2)
-            tth = numpy.rad2deg(self.geoRef.tth(d1,d2))
-            chi = self.geoRef.chi(d1,d2)
+            tth = numpy.rad2deg(self.geoRef.tth(d1, d2))
+            chi = self.geoRef.chi(d1, d2)
             mean = tth.mean()
-            amp = tth.std()*sqrt2
+            amp = tth.std() * sqrt2
             phase = 0.0
-            model = lambda x,mean,amp,phase:mean + amp * numpy.sin(x+phase)
-            print(" initial guess mean=%s\tampl=%s\tphase=%s"%(mean,amp,phase))
-            popt, pcov = curve_fit(model, chi, tth, [mean,amp,phase])
-            print(" Fitted  mean=%s\tampl=%s\tphase=%s"%tuple(popt))
-            print(" Fitted  covariance: %s"%pcov)
+            param = numpy.array([mean, amp, phase])
+            print(" guessed %.3e + %.3e *sin(chi+ %.3e )" % (mean, amp, phase))
+            res = leastsq(error, param, (chi, tth), jacob, col_deriv=True)
+            popt = res[0]
+            str_res = "%.3e + %.3e *sin(chi+ %.3e )" % tuple(popt)
+            print(" fitted " + str_res)
             chi = numpy.rad2deg(chi)
             if self.ax_chiplot:
-                self.ax_chiplot.plot(chi,tth,"o",label="ring #%s"%ring)
+                color = matplotlib.colors.cnames.keys()[ring]
+                self.ax_chiplot.plot(chi, tth, "o", color=color, label="ring #%i (%.3f$^o$)" % (ring, ref_2th))
                 chi2 = numpy.linspace(-180, 180, 360)
-                self.ax_chiplot.plot(chi2, model(numpy.deg2rad(chi2), *popt),label=str(popt))
-                self.fig_chiplot.canvas.update()
-        self.ax_chiplot.set_xlim(-180, 180)
-        self.ax_chiplot.set_xlabel("Azimuthal angle Chi (deg)")
-        self.ax_chiplot.set_ylabel("Radial angle (deg)")
-        self.ax_chiplot.set_title("Chi plot")
+                self.ax_chiplot.plot(chi2, model(numpy.deg2rad(chi2), *popt), color=color, label=str_res)
         self.ax_chiplot.legend()
-        self.fig_chiplot.show()
+        if not gui_utils.main_loop:
+            self.fig_chiplot.show()
+        update_fig(self.fig_chiplot)
 
     def postProcess(self):
         """
@@ -1155,13 +1168,13 @@ class AbstractCalibration(object):
             //* best: try both option and keeps the best
         //@param refine: launch the refinement
         """
-        if how not in ["center","ring"]:,"best"]:
-            logger.warning("unknow geometry reset method: %s, fall back on detector center"%how)
+        if how not in ["center", "ring"]:  # ,"best"]:
+            logger.warning("unknow geometry reset method: %s, fall back on detector center" % how)
             how = "center"
         if not i.data:
             logger.warning("No datapoint: fall back on detector center")
             how = "center"
-        #this is true for all:
+        # this is true for all:
         self.ai.rot1 = 0.0
         self.ai.rot2 = 0.0
         self.ai.rot3 = 0.0
@@ -1175,7 +1188,7 @@ class AbstractCalibration(object):
             dist = (data - center)
             d = numpy.sqrt(dist[:, 0] ** 2 + dist[:, 1] ** 2).mean()
             self.ai.dist = d / numpy.tan(tth)
-        elif how=="center":
+        elif how == "center":
             self.ai.dist = 0.1
             try:
                 p1, p2 = self.detector.calc_cartesian_positions()
@@ -1334,7 +1347,7 @@ decrease the value if arcs are mixed together.""", default=None)
         Tries to initialise the GeometryRefinement (dist, poni, rot)
         Returns a dictionary of key value pairs
         """
-        defaults = { "dist" : 0.1,  "poni1" : 0.0,  "poni2" : 0.0,
+        defaults = { "dist" : 0.1, "poni1" : 0.0, "poni2" : 0.0,
                         "rot1" : 0.0, "rot2" : 0.0, "rot3" : 0.0 }
         if self.detector:
             try:
@@ -1344,7 +1357,7 @@ decrease the value if arcs are mixed together.""", default=None)
             except Exception as err:
                 logger.warning(err)
         if self.ai:
-            for key in defaults.keys(): # not PARAMETERS which holds wavelength
+            for key in defaults.keys():  # not PARAMETERS which holds wavelength
                 val = getattr(self.ai, key, None)
                 if val is not None:
                     defaults[key] = val
@@ -1362,7 +1375,7 @@ decrease the value if arcs are mixed together.""", default=None)
                                          wavelength=self.wavelength,
                                          calibrant=self.calibrant,
                                          **defaults)
-        self.geoRef.refine2(1000000, fix= self.fixed)
+        self.geoRef.refine2(1000000, fix=self.fixed)
         scor = self.geoRef.chi2()
         pars = [getattr(self.geoRef, p) for p in self.PARAMETERS]
 
@@ -1376,11 +1389,11 @@ decrease the value if arcs are mixed together.""", default=None)
                                          calibrant=self.calibrant,
                                          **defaults)
         self.geoRef.guess_poni()
-        self.geoRef.refine2(1000000, fix= self.fixed)
+        self.geoRef.refine2(1000000, fix=self.fixed)
         scor = self.geoRef.chi2()
         pars = [getattr(self.geoRef, p) for p in self.PARAMETERS]
 
-        scores.append( (scor, pars) )
+        scores.append((scor, pars))
 
         # Third attempt (can be from when a program bombed last time)
         paramfile = self.basename + ".poni"
@@ -1404,18 +1417,18 @@ decrease the value if arcs are mixed together.""", default=None)
                     self.geoRef.detector = self.detector
 
         # Third attempt
-        self.geoRef.refine2(1000000, fix= self.fixed)
+        self.geoRef.refine2(1000000, fix=self.fixed)
         scor = self.geoRef.chi2()
         pars = [getattr(self.geoRef, p) for p in self.PARAMETERS]
 
-        scores.append( (scor, pars) )
+        scores.append((scor, pars))
 
         # Choose the best scoring method: At this point we might also ask
         # a user to just type the numbers in?
         scores.sort()
         scor, pars = scores[0]
         for parval, parname in zip(pars, self.PARAMETERS):
-            setattr( self.geoRef, parname, parval )
+            setattr(self.geoRef, parname, parval)
 
         # Now continue as before
         AbstractCalibration.refine(self)
