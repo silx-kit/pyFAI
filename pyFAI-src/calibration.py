@@ -990,6 +990,8 @@ class AbstractCalibration(object):
         plot 2theta = f(chi) and fit the curve.
         """
         from scipy.optimize import leastsq
+        from scipy.version import version as scipy_version
+        scipy_version = (int(i) for i in scipy_version.split(".")[:2])
         model = lambda x, mean, amp, phase:mean + amp * numpy.sin(x + phase)
         error = lambda param, xdata, ydata:  model(xdata, *param) - ydata
 #         jacob = lambda param, xdata, ydata: numpy.array([1.0, numpy.sin(xdata + param[2], param[1] * numpy.cos(xdata + param[2]))])
@@ -1032,7 +1034,10 @@ class AbstractCalibration(object):
             phase = 0.0
             param = numpy.array([mean, amp, phase])
             print(" guessed %.3e + %.3e *sin(chi+ %.3e )" % (mean, amp, phase))
-            res = leastsq(error, param, (chi, tth), jacob, col_deriv=True)
+            if scipy_version < (0, 10):
+                res = leastsq(error, param, (chi, tth))
+            else:
+                res = leastsq(error, param, (chi, tth), jacob, col_deriv=True)
             popt = res[0]
             str_res = "%.3e + %.3e *sin(chi+ %.3e )" % tuple(popt)
             print(" fitted " + str_res)
