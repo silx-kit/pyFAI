@@ -1032,10 +1032,10 @@ class AbstractCalibration(object):
             amp = tth.std() * sqrt2
             phase = 0.0
             param = numpy.array([mean, amp, phase])
-            print(" guessed %.3e + %.3e *sin(chi+ %.3e )" % (mean, amp, phase))
+            print(" guessed %.3f + %.3e *sin(chi+ %.3f )" % (mean, amp, phase))
             res = leastsq(error, param, (chi, tth), jacob, col_deriv=True)
             popt = res[0]
-            str_res = "%.3e + %.3e *sin(chi+ %.3e )" % tuple(popt)
+            str_res = "%.3f + %.3e *sin(chi+ %.3f )" % tuple(popt)
             print(" fitted " + str_res)
             chi = numpy.rad2deg(chi)
             if self.ax_chiplot:
