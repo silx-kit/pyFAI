@@ -1,6 +1,6 @@
 # Calibrant: Lanthanum hexaboride (LaB6)
 # Primitive cubic cell a=4.1568 b=4.1568 c=4.1568 alpha=90.000 beta=90.000 gamma=90.000
-# Ref: NIST SRM 660c
+# Ref: NIST standard reference material 660c
 4.15682600 # (1, 0, 0) 6
 2.93931985 # (1, 1, 0) 12
 2.39994461 # (1, 1, 1) 8
