@@ -990,14 +990,10 @@ class AbstractCalibration(object):
         plot 2theta = f(chi) and fit the curve.
         """
         from scipy.optimize import leastsq
-        from scipy.version import version as scipy_version
-        scipy_version = (int(i) for i in scipy_version.split(".")[:2])
         model = lambda x, mean, amp, phase:mean + amp * numpy.sin(x + phase)
         error = lambda param, xdata, ydata:  model(xdata, *param) - ydata
-#         jacob = lambda param, xdata, ydata: numpy.array([1.0, numpy.sin(xdata + param[2], param[1] * numpy.cos(xdata + param[2]))])
         def jacob(param, xdata, ydata):
             j = numpy.ones((param.size, xdata.size))
-#             j[0,:]=1
             j[1, :] = numpy.sin(xdata + param[2])
             j[2, :] = param[1] * numpy.cos(xdata + param[2])
             return j
@@ -1025,6 +1021,9 @@ class AbstractCalibration(object):
                 if i[2] == ring:
                     d1.append(i[0])
                     d2.append(i[1])
+            if len(d1) < 5:
+                print(" Skip group of length %i" % len(d1))
+                continue
             d1 = numpy.array(d1)
             d2 = numpy.array(d2)
             tth = numpy.rad2deg(self.geoRef.tth(d1, d2))
@@ -1034,10 +1033,7 @@ class AbstractCalibration(object):
             phase = 0.0
             param = numpy.array([mean, amp, phase])
             print(" guessed %.3e + %.3e *sin(chi+ %.3e )" % (mean, amp, phase))
-            if scipy_version < (0, 10):
-                res = leastsq(error, param, (chi, tth))
-            else:
-                res = leastsq(error, param, (chi, tth), jacob, col_deriv=True)
+            res = leastsq(error, param, (chi, tth), jacob, col_deriv=True)
             popt = res[0]
             str_res = "%.3e + %.3e *sin(chi+ %.3e )" % tuple(popt)
             print(" fitted " + str_res)
