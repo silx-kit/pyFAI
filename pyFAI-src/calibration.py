@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/04/2015"
+__date__ = "22/04/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -998,6 +998,9 @@ class AbstractCalibration(object):
             j[2, :] = param[1] * numpy.cos(xdata + param[2])
             return j
         sqrt2 = numpy.sqrt(2.)
+        ttha = self.geoRef.twoThetaArray(self.detector.shape)
+        resolution = numpy.rad2deg(max(abs(ttha[1:] - ttha[:-1]).max(),
+                          abs(ttha[:, 1:] - ttha[:, :-1]).max()))
         if self.gui:
             if self.fig_chiplot:
                 self.fig_chiplot.clf()
@@ -1005,9 +1008,10 @@ class AbstractCalibration(object):
                 self.fig_chiplot = pylab.plt.figure()
             self.ax_chiplot = self.fig_chiplot.add_subplot(1, 1, 1)
             self.ax_chiplot.set_xlim(-180, 180)
-            self.ax_chiplot.set_xlabel("Azimuthal angle Chi (deg)")
-            self.ax_chiplot.set_ylabel("Radial angle (deg)")
+            self.ax_chiplot.set_xlabel("Azimuthal angle Chi ($^o$)")
+            self.ax_chiplot.set_ylabel("Radial angle 2$\theta$($^o$). One pixel= %.3e $^o%" % resolution)
             self.ax_chiplot.set_title("Chi plot")
+
         else:
             print("chiplot display only possible with GUI")
         rings = list(set(int(i[2]) for i in self.data))
@@ -1047,6 +1051,7 @@ class AbstractCalibration(object):
         if not gui_utils.main_loop:
             self.fig_chiplot.show()
         update_fig(self.fig_chiplot)
+        logger.info("One pixel = %.3e" % resolution)
 
     def postProcess(self):
         """
