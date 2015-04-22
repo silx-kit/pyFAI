@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/03/2015"
+__date__ = "22/04/2015"
 __status__ = "production"
 
 import os
@@ -500,6 +500,10 @@ class PeakPicker(object):
         """
         logging.info(os.linesep.join(self.help))
         if not callback:
+            if not self.points.calibrant.dSpacing:
+                logger.error("Calibrant has no line ! check input parameters please, especially the '-c' option")
+                print(ALL_CALIBRANTS)
+                raise RuntimeError("Invalid calibrant")
             raw_input("Please press enter when you are happy with your selection" + os.linesep)
             # need to disconnect 'button_press_event':
             self.fig.canvas.mpl_disconnect(self.mpl_connectId)
