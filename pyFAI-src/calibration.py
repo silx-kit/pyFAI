@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/04/2015"
+__date__ = "23/04/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -1009,7 +1009,7 @@ class AbstractCalibration(object):
             self.ax_chiplot = self.fig_chiplot.add_subplot(1, 1, 1)
             self.ax_chiplot.set_xlim(-180, 180)
             self.ax_chiplot.set_xlabel("Azimuthal angle Chi ($^o$)")
-            self.ax_chiplot.set_ylabel("Radial angle 2$\theta$($^o$). One pixel= %.3e $^o%" % resolution)
+            self.ax_chiplot.set_ylabel("Radial angle 2$\theta$ ($^o$). One pixel= %.3e $^o$" % resolution)
             self.ax_chiplot.set_title("Chi plot")
 
         else:
@@ -1177,7 +1177,7 @@ class AbstractCalibration(object):
         if how not in ["center", "ring"]:  # ,"best"]:
             logger.warning("unknow geometry reset method: %s, fall back on detector center" % how)
             how = "center"
-        if not i.data:
+        if not self.data:
             logger.warning("No datapoint: fall back on detector center")
             how = "center"
         # this is true for all:
