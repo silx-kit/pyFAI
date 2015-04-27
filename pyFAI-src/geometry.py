@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/04/2015"
+__date__ = "27/04/2015"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -323,7 +323,7 @@ class Geometry(object):
     def tth(self, d1, d2, param=None, path="cython"):
         """
         Calculates the 2theta value for the center of a given pixel
-        (or set of pixels)
+        (or set of pixels) 
 
         @param d1: position(s) in pixel in first dimension (c order)
         @type d1: scalar or array of scalar
@@ -393,7 +393,7 @@ class Geometry(object):
     def rFunction(self, d1, d2, param=None, path="numpy"):
         """
         Calculates the radius value for the center of a given pixel
-        (or set of pixels) in mm
+        (or set of pixels) in m
 
         r = direct_distance  * tan( 2theta )
 
@@ -401,7 +401,7 @@ class Geometry(object):
         @type d1: scalar or array of scalar
         @param d2: position(s) in pixel in second dimension (c order)
         @type d2: scalar or array of scalar
-        @return: r in in mm
+        @return: r in in m
         @rtype: float or array of floats.
         """
         cosTilt = cos(self._rot1) * cos(self._rot2)
@@ -434,10 +434,10 @@ class Geometry(object):
     def rArray(self, shape):
         """
         Generate an array of the given shape with r(i,j) for all
-        elements; r in mm.
+        elements; r in m.
 
         @param shape: expected shape
-        @return: 2d array of the given shape with radius in mm from beam stop.
+        @return: 2d array of the given shape with radius in m from beam center on detector.
         """
         if self._ra is None:
             with self._sem:
@@ -454,7 +454,7 @@ class Geometry(object):
 
     def rCornerFunct(self, d1, d2):
         """
-        Calculate the radius array for any pixel corner (in mm)
+        Calculate the radius array for any pixel corner (in m)
         """
         return self.rFunction(d1 - 0.5, d2 - 0.5)
 
