@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/03/2015"
+__date__ = "21/04/2015"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instanciate them
@@ -1530,10 +1530,16 @@ class Perkin(Detector):
     aliases = ["Perkin detector", "Perkin Elmer"]
     force_pixel = True
     MAX_SHAPE = (4096, 4096)
+    DEFAULT_PIXEL1 = DEFAULT_PIXEL2 = 200e-6
+
     def __init__(self, pixel1=200e-6, pixel2=200e-6):
         super(Perkin, self).__init__(pixel1=pixel1, pixel2=pixel2)
-        self.shape = (2048, 2048)
-        self._binning = (2, 2)
+        if (pixel1 != self.DEFAULT_PIXEL1) or (pixel2 != self.DEFAULT_PIXEL2):
+            self._binning = (int(2 * pixel1 / self.DEFAULT_PIXEL1), int(2 * pixel2 / self.DEFAULT_PIXEL2))
+            self.shape = tuple(s // b for s, b in zip(self.MAX_SHAPE, self._binning))
+        else:
+            self.shape = (2048, 2048)
+            self._binning = (2, 2)
 
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
@@ -1542,10 +1548,19 @@ class Perkin(Detector):
 
 class Rayonix(Detector):
     force_pixel = True
-    BINNED_PIXEL_SIZE = {}
+    BINNED_PIXEL_SIZE = {1: 32e-6}
+    MAX_SHAPE = (4096 , 4096)
 
-    def __init__(self, pixel1=None, pixel2=None):
-        Detector.__init__(self, pixel1=pixel1, pixel2=pixel2)
+    def __init__(self, pixel1=32e-6, pixel2=32e-6):
+        super(Rayonix, self).__init__(pixel1=pixel1, pixel2=pixel2)
+        binning = [1, 1]
+        for b, p in self.BINNED_PIXEL_SIZE.items():
+            if p == pixel1:
+                binning[0] = b
+            if p == pixel2:
+                binning[1] = b
+        self._binning = tuple(binning)
+        self.shape = tuple(s // b for s, b in zip(self.MAX_SHAPE, binning))
 
     def get_binning(self):
         return self._binning
@@ -1618,10 +1633,8 @@ class Rayonix133(Rayonix):
     MAX_SHAPE = (4096 , 4096)
     aliases = ["MAR133"]
 
-    def __init__(self):
-        Rayonix.__init__(self, pixel1=64e-6, pixel2=64e-6)
-        self.shape = (2048, 2048)
-        self._binning = (2, 2)
+    def __init__(self, pixel1=64e-6, pixel2=64e-6):
+        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
     def calc_mask(self):
         """Circular mask"""
@@ -1647,8 +1660,8 @@ class RayonixSx165(Rayonix):
     aliases = ["MAR165", "Rayonix Sx165"]
     force_pixel = True
 
-    def __init__(self):
-        Rayonix.__init__(self, pixel1=39.5e-6, pixel2=39.5e-6)
+    def __init__(self, pixel1=39.5e-6, pixel2=39.5e-6):
+        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
     def calc_mask(self):
         """Circular mask"""
@@ -1673,8 +1686,8 @@ class RayonixSx200(Rayonix):
     MAX_SHAPE = (4096 , 4096)
     aliases = ["Rayonix sx200"]
 
-    def __init__(self):
-        Rayonix.__init__(self, pixel1=48e-6, pixel2=48e-6)
+    def __init__(self, pixel1=48e-6, pixel2=48e-6):
+        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
 class RayonixLx170(Rayonix):
@@ -1696,8 +1709,8 @@ class RayonixLx170(Rayonix):
     force_pixel = True
     aliases = ["Rayonix lx170"]
 
-    def __init__(self):
-        Rayonix.__init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6)
+    def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
+        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
 class RayonixMx170(Rayonix):
@@ -1718,8 +1731,8 @@ class RayonixMx170(Rayonix):
     MAX_SHAPE = (3840, 3840)
     aliases = ["Rayonix mx170"]
 
-    def __init__(self):
-        Rayonix.__init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6)
+    def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
+        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
 class RayonixLx255(Rayonix):
@@ -1740,8 +1753,8 @@ class RayonixLx255(Rayonix):
     MAX_SHAPE = (1920 , 5760)
     aliases = [ "Rayonix lx225"]
 
-    def __init__(self):
-        Rayonix.__init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6)
+    def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
+        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
 class RayonixMx225(Rayonix):
@@ -1761,10 +1774,8 @@ class RayonixMx225(Rayonix):
     MAX_SHAPE = (6144, 6144)
     aliases = ["Rayonix mx225"]
 
-    def __init__(self):
-        Rayonix.__init__(self, pixel1=73.242e-6, pixel2=73.242e-6)
-        self.shape = (3072, 3072)
-        self._binning = (2, 2)
+    def __init__(self, pixel1=73.242e-6, pixel2=73.242e-6):
+        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
 class RayonixMx225hs(Rayonix):
@@ -1785,10 +1796,8 @@ class RayonixMx225hs(Rayonix):
                          }
     MAX_SHAPE = (5760 , 5760)
     aliases = ["Rayonix mx225hs"]
-    def __init__(self):
-        Rayonix.__init__(self, pixel1=78.125e-6, pixel2=78.125e-6)
-        self.shape = (2880, 2880)
-        self._binning = (2, 2)
+    def __init__(self, pixel1=78.125e-6, pixel2=78.125e-6):
+        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
 class RayonixMx300(Rayonix):
@@ -1807,10 +1816,8 @@ class RayonixMx300(Rayonix):
     MAX_SHAPE = (8192, 8192)
     aliases = ["Rayonix mx300"]
 
-    def __init__(self):
-        Rayonix.__init__(self, pixel1=73.242e-6, pixel2=73.242e-6)
-        self.shape = (4096, 4096)
-        self._binning = (2, 2)
+    def __init__(self, pixel1=73.242e-6, pixel2=73.242e-6):
+        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
 class RayonixMx300hs(Rayonix):
@@ -1832,10 +1839,8 @@ class RayonixMx300hs(Rayonix):
     MAX_SHAPE = (7680, 7680)
     aliases = ["Rayonix mx300hs"]
 
-    def __init__(self):
-        Rayonix.__init__(self, pixel1=78.125e-6, pixel2=78.125e-6)
-        self.shape = (3840, 3840)
-        self._binning = (2, 2)
+    def __init__(self, pixel1=78.125e-6, pixel2=78.125e-6):
+        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
 class RayonixMx340hs(Rayonix):
@@ -1857,10 +1862,8 @@ class RayonixMx340hs(Rayonix):
     MAX_SHAPE = (7680 , 7680)
     aliases = ["Rayonix mx340hs"]
 
-    def __init__(self):
-        Rayonix.__init__(self, pixel1=88.5417e-6, pixel2=88.5417e-6)
-        self.shape = (3840, 3840)
-        self._binning = (2, 2)
+    def __init__(self, pixel1=88.5417e-6, pixel2=88.5417e-6):
+        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
 class RayonixSx30hs(Rayonix):
@@ -1881,8 +1884,8 @@ class RayonixSx30hs(Rayonix):
     MAX_SHAPE = (1920 , 1920)
     aliases = ["Rayonix Sx30hs"]
 
-    def __init__(self):
-        Rayonix.__init__(self, pixel1=15.625e-6, pixel2=15.625e-6)
+    def __init__(self, pixel1=15.625e-6, pixel2=15.625e-6):
+        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
 class RayonixSx85hs(Rayonix):
@@ -1902,8 +1905,8 @@ class RayonixSx85hs(Rayonix):
                          }
     MAX_SHAPE = (1920 , 1920)
     aliases = ["Rayonix Sx85hs"]
-    def __init__(self):
-        Rayonix.__init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6)
+    def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
+        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
 class RayonixMx425hs(Rayonix):
@@ -1923,8 +1926,8 @@ class RayonixMx425hs(Rayonix):
                          }
     MAX_SHAPE = (9600 , 9600)
     aliases = ["Rayonix mx425hs"]
-    def __init__(self):
-        Rayonix.__init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6)
+    def __init__(self, pixel1=44.2708e-6, pixel2=44.2708e-6):
+        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
 class RayonixMx325(Rayonix):
@@ -1941,10 +1944,8 @@ class RayonixMx325(Rayonix):
                          }
     MAX_SHAPE = (8192 , 8192)
     aliases = ["Rayonix mx325"]
-    def __init__(self):
-        Rayonix.__init__(self, pixel1=79.346e-6, pixel2=79.346e-6)
-        self.shape = (4096, 4096)
-        self._binning = (2, 2)
+    def __init__(self, pixel1=79.346e-6, pixel2=79.346e-6):
+        Rayonix.__init__(self, pixel1=pixel1, pixel2=pixel2)
 
 
 ALL_DETECTORS = Detector.registry
