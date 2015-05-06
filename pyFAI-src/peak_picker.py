@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/04/2015"
+__date__ = "06/05/2015"
 __status__ = "production"
 
 import os
@@ -744,28 +744,30 @@ class ControlPoints(object):
                 logger.warning("No such group %s in ControlPoints.pop" % (lbl))
         return out
 
-    def pop(self, ring=None):
+    def pop(self, ring=None, lbl=None):
         """
-        Remove the set of points for a given ring (by default the last)
+        Remove the set of points, either from its code or from a given ring (by default the last)
 
         @param ring: index of ring of which remove the last group
+        @param lbl: code of the ring to remove 
         """
         out = None
         with self._sem:
-            if (ring is None):
-                lst = list(self._groups.keys())
-                lst.sort(key=lambda item: self._groups[item].code)
-                if not lst:
-                    logger.warning("No group in ControlPoints.pop")
-                    return
-                lbl = lst[-1]
-            else:
-                lst = [l for l, gpt in self._groups.items() if gpt.ring == ring]
-                lst.sort(key=lambda item: self._groups[item].code)
-                if not lst:
-                    logger.warning("No group for ring %s in ControlPoints.pop" % (ring))
-                    return
-                lbl = lst[-1]
+            if lbl is None:
+                if (ring is None):
+                    lst = list(self._groups.keys())
+                    lst.sort(key=lambda item: self._groups[item].code)
+                    if not lst:
+                        logger.warning("No group in ControlPoints.pop")
+                        return
+                    lbl = lst[-1]
+                else:
+                    lst = [l for l, gpt in self._groups.items() if gpt.ring == ring]
+                    lst.sort(key=lambda item: self._groups[item].code)
+                    if not lst:
+                        logger.warning("No group for ring %s in ControlPoints.pop" % (ring))
+                        return
+                    lbl = lst[-1]
             if lbl in self._groups:
                 out = self._groups.pop(lbl)
             else:
