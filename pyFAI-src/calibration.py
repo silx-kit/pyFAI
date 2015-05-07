@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/05/2015"
+__date__ = "07/05/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -988,8 +988,8 @@ class AbstractCalibration(object):
                     print(self.HELP[action])
                 else:
                     for code in  words[1:]:
-                         print(self.peakPicker.points.pop(lbl=code))
-                    self.peakPicker.display_points()
+                        gpt = self.peakPicker.points.pop(lbl=code)
+                    self.peakPicker.display_points(reset=True)
                     self.data = self.peakPicker.points.getList()
             else:
                 logger.warning("Unrecognized action: %s, type 'quit' to leave " % action)

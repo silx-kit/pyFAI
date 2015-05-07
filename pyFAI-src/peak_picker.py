@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "06/05/2015"
+__date__ = "07/05/2015"
 __status__ = "production"
 
 import os
@@ -285,12 +285,17 @@ class PeakPicker(object):
         self.points.load(filename)
         self.display_points()
 
-    def display_points(self, minIndex=0):
+    def display_points(self, minIndex=0, reset=False):
         """
         display all points and their ring annotations
         @param minIndex: ring index to start with
+        @param reset: remove all point before re-displaying them
         """
         if self.ax is not None:
+            if reset:
+                self.ax.texts = []
+                self.ax.lines = []
+
             for lbl, gpt in self.points._groups.items():
                 idx = gpt.ring
                 if idx < minIndex:
@@ -304,6 +309,7 @@ class PeakPicker(object):
 
                     npl = numpy.array(gpt.points)
                     gpt.plot = self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
+            self.ax.texts = []
 
     def onclick(self, event):
         """

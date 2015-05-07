@@ -518,14 +518,18 @@ class Geometry(object):
         @param path: can be "tan" (i.e via numpy) or "cython"
         @return: chi, the azimuthal angle in rad
         """
-        p1, p2 = self._calcCartesianPositions(d1, d2, self._poni1, self._poni2)
+        p = self._calcCartesianPositions(d1, d2, self._poni1, self._poni2)
 
         if path == "cython" and _geometry:
-            tmp = _geometry.calc_chi(
-                L=self._dist,
-                rot1=self._rot1, rot2=self._rot2, rot3=self._rot3,
-                pos1=p1, pos2=p2)
-            tmp.shape = p1.shape
+            if len(p) == 2:
+                tmp = _geometry.calc_chi(L=self._dist,
+                                         rot1=self._rot1, rot2=self._rot2, rot3=self._rot3,
+                                         pos1=p[0], pos2=p[1])
+            else:
+                tmp = _geometry.calc_chi(L=self._dist,
+                                         rot1=self._rot1, rot2=self._rot2, rot3=self._rot3,
+                                         pos1=p[0], pos2=p[1], pos3=p[2])
+            tmp.shape = p[0].shape
         else:
             cosRot1 = cos(self._rot1)
             cosRot2 = cos(self._rot2)
@@ -534,6 +538,9 @@ class Geometry(object):
             sinRot2 = sin(self._rot2)
             sinRot3 = sin(self._rot3)
             L = self._dist
+            p1, p2 = p[:2]
+            if len(p) == 3:
+                L = L + p[-1]
             num = p1 * cosRot2 * cosRot3 \
                 + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) \
                 - L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
@@ -832,7 +839,11 @@ class Geometry(object):
         @param d2:  1d or 2d set of points in pixel coord
         @return: cosine of the incidence angle
         """
-        p1, p2 = self._calcCartesianPositions(d1, d2)
+        p = self._calcCartesianPositions(d1, d2)
+        if len(p) > 2:
+            logger.warning("FIXME: Disable solid angle correction for 3D detectors")
+            return numpy.ones_like(d1)
+        p1, p2 = p[:2]
         if path == "cython":
             cosa = _geometry.calc_cosa(self._dist, p1, p2)
         else:

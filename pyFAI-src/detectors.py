@@ -59,6 +59,7 @@ try:
 except ImportError:
     fabio = None
 from .third_party.six import with_metaclass
+from .utils import expand2d
 
 epsilon = 1e-6
 
@@ -2062,10 +2063,10 @@ class Aarhus(Detector):
         the same shape.
         """
         if (d1 is None) or d2 is None:
-#            d1, d2 = numpy.ogrid[:self.shape[0], :self.shape[1]]
-            # TODO: use expand2d
-            d1 = numpy.outer(numpy.arange(self.shape[0]), numpy.ones(self.shape[1]))
-            d2 = numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1]))
+            d1 = expand2d(numpy.arange(self.shape[1]), self.shape[0], True)
+            d2 = expand2d(numpy.arange(self.shape[0]), self.shape[1], False)
+            # d1 = utinumpy.outer(numpy.arange(self.shape[0]), numpy.ones(self.shape[1]))
+            # d2 = numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1]))
         corners = self.get_pixel_corners()
         if center:
             # avoid += It modifies in place and segfaults
@@ -2082,18 +2083,33 @@ class Aarhus(Detector):
             delta1 = d1 - i1
             delta2 = d2 - i2
             pixels = corners[i1, i2]
-            A0 = pixels[:, :, 0, 0]
-            A1 = pixels[:, :, 0, 1]
-            A2 = pixels[:, :, 0, 2]
-            B0 = pixels[:, :, 1, 0]
-            B1 = pixels[:, :, 1, 1]
-            B2 = pixels[:, :, 1, 2]
-            C0 = pixels[:, :, 2, 0]
-            C1 = pixels[:, :, 2, 1]
-            C2 = pixels[:, :, 2, 2]
-            D0 = pixels[:, :, 3, 0]
-            D1 = pixels[:, :, 3, 1]
-            D2 = pixels[:, :, 3, 2]
+            if pixels.ndim == 3:
+                A0 = pixels[:, 0, 0]
+                A1 = pixels[:, 0, 1]
+                A2 = pixels[:, 0, 2]
+                B0 = pixels[:, 1, 0]
+                B1 = pixels[:, 1, 1]
+                B2 = pixels[:, 1, 2]
+                C0 = pixels[:, 2, 0]
+                C1 = pixels[:, 2, 1]
+                C2 = pixels[:, 2, 2]
+                D0 = pixels[:, 3, 0]
+                D1 = pixels[:, 3, 1]
+                D2 = pixels[:, 3, 2]
+            else:
+                A0 = pixels[:, :, 0, 0]
+                A1 = pixels[:, :, 0, 1]
+                A2 = pixels[:, :, 0, 2]
+                B0 = pixels[:, :, 1, 0]
+                B1 = pixels[:, :, 1, 1]
+                B2 = pixels[:, :, 1, 2]
+                C0 = pixels[:, :, 2, 0]
+                C1 = pixels[:, :, 2, 1]
+                C2 = pixels[:, :, 2, 2]
+                D0 = pixels[:, :, 3, 0]
+                D1 = pixels[:, :, 3, 1]
+                D2 = pixels[:, :, 3, 2]
+
             # points A and D are on the same dim1 (Y), they differ in dim2 (X)
             # points B and C are on the same dim1 (Y), they differ in dim2 (X)
             # points A and B are on the same dim2 (X), they differ in dim1 (Y)
