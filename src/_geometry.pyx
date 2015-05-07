@@ -23,7 +23,7 @@
 #
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3+"
-__date__ = "06/05/2015"
+__date__ = "07/05/2015"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -51,7 +51,7 @@ cdef inline double tth(double p1, double p2, double L, double sinRot1, double co
         double t1 = p1 * cosRot2 * cosRot3 + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
         double t2 = p1 * cosRot2 * sinRot3 + p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
         double t3 = (p1 * sinRot2 - p2 * cosRot2 * sinRot1 + L * cosRot1 * cosRot2)
-    return  atan2(sqrt(t1 * t1 + t2 * t2), t3)
+    return atan2(sqrt(t1 * t1 + t2 * t2), t3)
 
 
 @cython.cdivision(True)
@@ -81,7 +81,7 @@ cdef inline double chi(double p1, double p2, double L, double sinRot1, double co
     cdef double num = 1.0, den = 1.0
     num = p1 * cosRot2 * cosRot3 + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
     den = p1 * cosRot2 * sinRot3 - L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3) + p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3)
-    return  atan2(num, den)
+    return atan2(num, den)
 
 
 @cython.cdivision(True)
@@ -95,10 +95,10 @@ cdef inline double r(double p1, double p2, double L, double sinRot1, double cosR
     @param cosRot1,cosRot2,cosRot3: cosine of the angles
     """
     cdef:
-        double t1 =p1 * cosRot2 * cosRot3 + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
+        double t1 = p1 * cosRot2 * cosRot3 + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) - L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
         double t2 = p1 * cosRot2 * sinRot3 + p2 * (cosRot1 * cosRot3 + sinRot1 * sinRot2 * sinRot3) - L * (-(cosRot3 * sinRot1) + cosRot1 * sinRot2 * sinRot3)
         double t3 = (p1 * sinRot2 - p2 * cosRot2 * sinRot1 + L * cosRot1 * cosRot2)
-    return L * sqrt(t1 * t1 + t2 * t2) / ( t3 * cosRot1 * cosRot2)
+    return L * sqrt(t1 * t1 + t2 * t2) / (t3 * cosRot1 * cosRot2)
 
 
 @cython.cdivision(True)
@@ -118,7 +118,7 @@ cdef inline double cosa(double p1, double p2, double L) nogil:
 def calc_tth(double L, double rot1, double rot2, double rot3,
              numpy.ndarray pos1 not None,
              numpy.ndarray pos2 not None,
-             numpy.ndarray pos3 = None):
+             numpy.ndarray pos3=None):
     """
     Calculate the 2theta array (radial angle) in parallel
 
@@ -153,7 +153,7 @@ def calc_tth(double L, double rot1, double rot2, double rot3,
         assert pos3.size == size
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
         for i in prange(size, nogil=True, schedule="static"):
-            out[i] = tth(c1[i], c2[i], L+c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+            out[i] = tth(c1[i], c2[i], L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
 
     if pos1.ndim == 2:
         return out.reshape(pos1.shape[0], pos1.shape[1])
@@ -166,7 +166,7 @@ def calc_tth(double L, double rot1, double rot2, double rot3,
 def calc_chi(double L, double rot1, double rot2, double rot3,
              numpy.ndarray pos1 not None,
              numpy.ndarray pos2 not None,
-             numpy.ndarray pos3 = None):
+             numpy.ndarray pos3=None):
     """
     Calculate the chi array (azimuthal angles) in parallel
 
@@ -207,7 +207,7 @@ def calc_chi(double L, double rot1, double rot2, double rot3,
         assert pos3.size == size
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
         for i in prange(size, nogil=True, schedule="static"):
-            out[i] = chi(c1[i], c2[i], L+c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+            out[i] = chi(c1[i], c2[i], L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
 
     if pos1.ndim == 2:
         return out.reshape(pos1.shape[0], pos1.shape[1])
@@ -218,9 +218,9 @@ def calc_chi(double L, double rot1, double rot2, double rot3,
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def calc_q(double L, double rot1, double rot2, double rot3,
-             numpy.ndarray pos1 not None,
-             numpy.ndarray pos2 not None,
-             double wavelength, pos3=None):
+           numpy.ndarray pos1 not None,
+           numpy.ndarray pos2 not None,
+           double wavelength, pos3=None):
     """
     Calculate the q (scattering vector) array in parallel
 
@@ -262,7 +262,7 @@ def calc_q(double L, double rot1, double rot2, double rot3,
         assert pos3.size == size
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
         for i in prange(size, nogil=True, schedule="static"):
-            out[i] = q(c1[i], c2[i], L+c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3, wavelength)
+            out[i] = q(c1[i], c2[i], L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3, wavelength)
 
     if pos1.ndim == 2:
         return out.reshape(pos1.shape[0], pos1.shape[1])
@@ -309,7 +309,7 @@ def calc_r(double L, double rot1, double rot2, double rot3,
         assert pos3.size == size
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
         for i in prange(size, nogil=True, schedule="static"):
-            out[i] = r(c1[i], c2[i], L+c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
+            out[i] = r(c1[i], c2[i], L + c3[i], sinRot1, cosRot1, sinRot2, cosRot2, sinRot3, cosRot3)
 
     if pos1.ndim == 2:
         return out.reshape(pos1.shape[0], pos1.shape[1])
@@ -347,7 +347,7 @@ def calc_cosa(double L,
         assert pos3.size == size
         c3 = numpy.ascontiguousarray(pos3.ravel(), dtype=numpy.float64)
         for i in prange(size, nogil=True, schedule="static"):
-            out[i] = cosa(c1[i], c2[i], L+c3[i])
+            out[i] = cosa(c1[i], c2[i], L + c3[i])
 
     if pos1.ndim == 2:
         return out.reshape(pos1.shape[0], pos1.shape[1])

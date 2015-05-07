@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/04/2015"
+__date__ = "07/05/2015"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -274,8 +274,11 @@ class Geometry(object):
         if poni2 is None:
             poni2 = self.poni2
 
-        p1, p2 = self.detector.calc_cartesian_positions(d1, d2)
-        return p1 - poni1, p2 - poni2
+        p = self.detector.calc_cartesian_positions(d1, d2)
+        if len(p) == 2:
+            return p[0] - poni1, p[1] - poni2
+        else:
+            return p[0] - poni1, p[1] - poni2, p[2]
 
     def calc_pos_zyx(self, d0=None, d1=None, d2=None, param=None):
         """
@@ -295,11 +298,16 @@ class Geometry(object):
             param = self.param
         if (d1 is None) or (d2 is None):
             raise RuntimeError("input corrdiate d1 and d2 are mandatory")
-        p1, p2 = self._calcCartesianPositions(d1, d2, param[1], param[2])
         if d0 is None:
             L = param[0]
         else:
             L = param[0] + d0
+        p = self._calcCartesianPositions(d1, d2, param[1], param[2])
+        if len(p) == 2:
+            p1, p2 = p
+        else:
+            p1, p2, p3 = p
+            L = L + p3
         cosRot1 = cos(param[3])
         cosRot2 = cos(param[4])
         cosRot3 = cos(param[5])
@@ -338,14 +346,22 @@ class Geometry(object):
             if param is None:
                 param = self.param
 
-            p1, p2 = self._calcCartesianPositions(d1, d2, param[1], param[2])
-
-            tmp = _geometry.calc_tth(L=param[0],
-                                     rot1=param[3],
-                                     rot2=param[4],
-                                     rot3=param[5],
-                                     pos1=p1,
-                                     pos2=p2)
+            p = self._calcCartesianPositions(d1, d2, param[1], param[2])
+            if len(p) == 2:
+                tmp = _geometry.calc_tth(L=param[0],
+                                         rot1=param[3],
+                                         rot2=param[4],
+                                         rot3=param[5],
+                                         pos1=p[0],
+                                         pos2=p[1])
+            else:
+                tmp = _geometry.calc_tth(L=param[0],
+                                         rot1=param[3],
+                                         rot2=param[4],
+                                         rot3=param[5],
+                                         pos1=p[0],
+                                         pos2=p[1],
+                                         pos3=p[2])
         else:
             zyx = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, param=param)
             t1 = zyx[1]
