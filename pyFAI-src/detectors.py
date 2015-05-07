@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/04/2015"
+__date__ = "07/05/2015"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instanciate them
@@ -90,7 +90,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
     aliases = []  # list of alternative names
     registry = {}  # list of  detectors ...
     uniform_pixel = True  # tells all pixels have the same size
-
+    IS_FLAT = True  # this detector is flat
     @classmethod
     def factory(cls, name, config=None):
         """
@@ -528,6 +528,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
         with io.Nexus(filename, "+") as nxs:
             det_grp = nxs.new_detector(name=self.name.replace(" ", "_"))
+            det_grp["IS_FLAT"] = self.IS_FLAT
             det_grp["pixel_size"] = numpy.array([self.pixel1, self.pixel2], dtype=numpy.float32)
             if self.max_shape is not None:
                 det_grp["max_shape"] = numpy.array(self.max_shape, dtype=numpy.int32)
@@ -535,12 +536,19 @@ class Detector(with_metaclass(DetectorMeta, object)):
                 det_grp["shape"] = numpy.array(self.shape, dtype=numpy.int32)
             if self.binning is not None:
                 det_grp["binning"] = numpy.array(self._binning, dtype=numpy.int32)
+            if self.flat is not None:
+                dset = det_grp.create_dataset("flat", data=self.flat,
+                                              compression="gzip", compression_opts=9)
+                dset.attrs["interpretation"] = "image"
             if self.mask is not None:
-                det_grp["mask"] = self.mask
-            if not self.uniform_pixel:
+                dset = det_grp.create_dataset("mask", data=self.mask,
+                                              compression="gzip", compression_opts=9)
+                dset.attrs["interpretation"] = "image"
+            if not (self.uniform_pixel and self.IS_FLAT):
                 # Get ready for the worse case: 4 corner per pixel, position 3D: z,y,x
-                det_grp["pixel_corners"] = self.get_pixel_corners()
-                det_grp["pixel_corners"].attrs["interpretation"] = "vertex"
+                dset = det_grp.create_dataset("pixel_corners", data=self.get_pixel_corners(),
+                                              compression="gzip", compression_opts=9)
+                dset.attrs["interpretation"] = "vertex"
 
     def guess_binning(self, data):
         """
@@ -602,6 +610,10 @@ class NexusDetector(Detector):
             det_grp = nxs.find_detector()
             name = posixpath.split(det_grp.name)[-1]
             self.aliases = [name.replace("_", " "), det_grp.name]
+            if "IS_FLAT" in det_grp:
+                self.IS_FLAT = det_grp["IS_FLAT"].value
+            if "flat" in det_grp:
+                self.flat = det_grp["flat"].value
             if "pixel_size" in det_grp:
                 self.pixel1, self.pixel2 = det_grp["pixel_size"]
             if "binning" in det_grp:
@@ -686,7 +698,7 @@ class NexusDetector(Detector):
             # avoid += It modifies in place and segfaults
             d1 = d1 + 0.5
             d2 = d2 + 0.5
-        if bilinear and use_cython:
+        if bilinear and use_cython and self.IS_FLAT:
             p1, p2 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
             p1.shape = d1.shape
             p2.shape = d2.shape
@@ -717,7 +729,16 @@ class NexusDetector(Detector):
                + B2 * delta1 * (1.0 - delta2) \
                + C2 * delta1 * delta2 \
                + D2 * (1.0 - delta1) * delta2
-
+            if not self.IS_FLAT:
+                A0 = pixels[:, :, 0, 0]
+                B0 = pixels[:, :, 1, 0]
+                C0 = pixels[:, :, 2, 0]
+                D0 = pixels[:, :, 3, 0]
+                p3 = A0 * (1.0 - delta1) * (1.0 - delta2) \
+                   + B0 * delta1 * (1.0 - delta2) \
+                   + C0 * delta1 * delta2 \
+                   + D0 * (1.0 - delta1) * delta2
+                return p1, p2, p3
         return p1, p2
 
 class Pilatus(Detector):
@@ -1629,7 +1650,7 @@ class Rayonix133(Rayonix):
                          2: 64e-6,
                          4: 128e-6,
                          8: 256e-6,
-                         }()
+                         }
     MAX_SHAPE = (4096 , 4096)
     aliases = ["MAR133"]
 
@@ -1962,11 +1983,13 @@ class Aarhus(Detector):
     use expand2d instead of outer product with ones
     """
     MAX_SHAPE = (1000 , 16000)
-    
+    IS_FLAT = False
     def __init__(self, pixel1=25e-6, pixel2=25e-6, radius=0.3):
         Detector.__init__(self, pixel1, pixel2)
         self.radius = radius
-        
+        self._pixel_corners = None
+
+
     def get_pixel_corners(self, use_cython=True):
         """
         Calculate the position of the corner of the pixels
@@ -1983,14 +2006,14 @@ class Aarhus(Detector):
             with self._sem:
                 if self._pixel_corners is None:
                     p1 = numpy.arange(self.shape[0] + 1) * self._pixel1
-                    t2 = numpy.arange(self.shape[1] + 1) * (self._pixel2 / self.radius) 
+                    t2 = numpy.arange(self.shape[1] + 1) * (self._pixel2 / self.radius)
                     p2 = self.radius * numpy.sin(t2)
-                    p3 = self.radius * (numpy.cos(t2)-1.0)
+                    p3 = self.radius * (numpy.cos(t2) - 1.0)
 #                     if bilinear and use_cython:
 #                         #TODO: replace with expand2d
 #                         d1 = numpy.outer(p1, numpy.ones(self.shape[1] + 1))
 #                         d2 = numpy.outer(numpy.ones(self.shape[0] + 1), p2)
-#                         
+#
 #                         corners = bilinear.convert_corner_2D_to_4D(3, p1, p2)
 #                     else:
                     if True:
@@ -2004,15 +2027,15 @@ class Aarhus(Detector):
                         corners[:, :, 0, 1] = p1[:-1, :]
                         corners[:, :, 0, 2] = p2[:, :-1]
                         corners[:, :, 0, 0] = p3[:, :-1]
-                        
+
                         corners[:, :, 1, 1] = p1[1:, :]
                         corners[:, :, 1, 2] = p2[:, :-1]
                         corners[:, :, 1, 0] = p3[:, :-1]
-                        
+
                         corners[:, :, 2, 1] = p1[1:, :]
                         corners[:, :, 2, 2] = p2[:, 1:]
                         corners[:, :, 2, 0] = p3[:, 1:]
-                        
+
                         corners[:, :, 3, 1] = p1[:-1, :]
                         corners[:, :, 3, 2] = p2[:, 1:]
                         corners[:, :, 3, 0] = p3[:, 1:]
@@ -2040,7 +2063,7 @@ class Aarhus(Detector):
         """
         if (d1 is None) or d2 is None:
 #            d1, d2 = numpy.ogrid[:self.shape[0], :self.shape[1]]
-            #TODO: use expand2d
+            # TODO: use expand2d
             d1 = numpy.outer(numpy.arange(self.shape[0]), numpy.ones(self.shape[1]))
             d2 = numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1]))
         corners = self.get_pixel_corners()
@@ -2089,8 +2112,8 @@ class Aarhus(Detector):
                + C0 * delta1 * delta2 \
                + D0 * (1.0 - delta1) * delta2
         return p1, p2, p3
-    
-    
+
+
 
 ALL_DETECTORS = Detector.registry
 detector_factory = Detector.factory

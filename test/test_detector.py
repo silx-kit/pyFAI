@@ -28,7 +28,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2015"
+__date__ = "07/05/2015"
 
 import sys
 import os
@@ -153,21 +153,27 @@ class TestDetector(unittest.TestCase):
                     self.assertEqual(det.__getattribute__(what), new_det.__getattribute__(what), "%s is the same for %s" % (what, fname))
                 else:
                     self.assertAlmostEqual(det.__getattribute__(what), new_det.__getattribute__(what), 4, "%s is the same for %s" % (what, fname))
+            if (det.mask is not None) or (new_det.mask is not None):
+                self.assert_(numpy.allclose(det.mask, new_det.mask), "%s mask is not the same" % det_name)
+
             if det.shape[0] > 2000:
                 continue
             try:
-                r1, r2 = det.calc_cartesian_positions()
-                o1, o2 = new_det.calc_cartesian_positions()
+                r = det.calc_cartesian_positions()
+                o = new_det.calc_cartesian_positions()
             except MemoryError:
                 logger.warning("Test nexus_detector failed due to short memory on detector %s" % det_name)
                 continue
-            err1 = abs(r1 - o1).max()
-            err2 = abs(r2 - o2).max()
-            if det.name not in known_fail:
-                self.assert_(err1 < 1e-6, "%s precision on pixel position 1 is better than 1µm, got %e" % (det_name, err2))
-                self.assert_(err2 < 1e-6, "%s precision on pixel position 2 is better than 1µm, got %e" % (det_name, err2))
-            if (det.mask is not None) or (new_det.mask is not None):
-                self.assert_(numpy.allclose(det.mask, new_det.mask), "%s mask is not the same" % det_name)
+            self.assertEqual(len(o), len(r), "data have same dimension")
+            err1 = abs(r[0] - o[0]).max()
+            err2 = abs(r[1] - o[1]).max()
+            if det.name in known_fail:
+                continue
+            self.assert_(err1 < 1e-6, "%s precision on pixel position 1 is better than 1µm, got %e" % (det_name, err2))
+            self.assert_(err2 < 1e-6, "%s precision on pixel position 2 is better than 1µm, got %e" % (det_name, err2))
+            if not det.IS_FLAT:
+                err = abs(r[2] - o[2]).max()
+                self.assert_(err < 1e-6, "%s precision on pixel position 3 is better than 1µm, got %e" % (det_name, err))
 
         # check Pilatus with displacement maps
         # check spline
