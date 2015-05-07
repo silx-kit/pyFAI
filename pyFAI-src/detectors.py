@@ -1614,7 +1614,7 @@ class Rayonix133(Rayonix):
                          2: 64e-6,
                          4: 128e-6,
                          8: 256e-6,
-                         }
+                         }()
     MAX_SHAPE = (4096 , 4096)
     aliases = ["MAR133"]
 
@@ -1946,6 +1946,150 @@ class RayonixMx325(Rayonix):
         self.shape = (4096, 4096)
         self._binning = (2, 2)
 
+class Aarhus(Detector):
+    """
+    Cylindrical detector made of bent imaging-plate.
+    Developped at the Danish university of Aarhus  
+    r = 1.2m or 0.3m
+    
+    The image has to be laid-out horizontally 
+
+    Nota: the detector is bending towards the sample, hence reducing the sample-detector distance. 
+    This is why z<0 (or p3<0)
+    
+    TODO: update cython code for 3d detectors
+    use expand2d instead of outer product with ones
+    """
+    MAX_SHAPE = (1000 , 16000)
+    
+    def __init__(self, pixel1=25e-6, pixel2=25e-6, radius=0.3):
+        Detector.__init__(self, pixel1, pixel2)
+        self.radius = radius
+        
+    def get_pixel_corners(self, use_cython=True):
+        """
+        Calculate the position of the corner of the pixels
+
+        This should be overwritten by class representing non-contiguous detector (Xpad, ...)
+
+        @return:  4D array containing:
+                    pixel index (slow dimension)
+                    pixel index (fast dimension)
+                    corner index (A, B, C or D), triangles or hexagons can be handled the same way
+                    vertex position (z,y,x)
+        """
+        if self._pixel_corners is None:
+            with self._sem:
+                if self._pixel_corners is None:
+                    p1 = numpy.arange(self.shape[0] + 1) * self._pixel1
+                    t2 = numpy.arange(self.shape[1] + 1) * (self._pixel2 / self.radius) 
+                    p2 = self.radius * numpy.sin(t2)
+                    p3 = self.radius * (numpy.cos(t2)-1.0)
+#                     if bilinear and use_cython:
+#                         #TODO: replace with expand2d
+#                         d1 = numpy.outer(p1, numpy.ones(self.shape[1] + 1))
+#                         d2 = numpy.outer(numpy.ones(self.shape[0] + 1), p2)
+#                         
+#                         corners = bilinear.convert_corner_2D_to_4D(3, p1, p2)
+#                     else:
+                    if True:
+                        p1.shape = -1, 1
+                        p1.strides = p1.strides[0], 0
+                        p2.shape = 1, -1
+                        p2.strides = 0, p2.strides[1]
+                        p3.shape = 1, -1
+                        p3.strides = 0, p3.strides[1]
+                        corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
+                        corners[:, :, 0, 1] = p1[:-1, :]
+                        corners[:, :, 0, 2] = p2[:, :-1]
+                        corners[:, :, 0, 0] = p3[:, :-1]
+                        
+                        corners[:, :, 1, 1] = p1[1:, :]
+                        corners[:, :, 1, 2] = p2[:, :-1]
+                        corners[:, :, 1, 0] = p3[:, :-1]
+                        
+                        corners[:, :, 2, 1] = p1[1:, :]
+                        corners[:, :, 2, 2] = p2[:, 1:]
+                        corners[:, :, 2, 0] = p3[:, 1:]
+                        
+                        corners[:, :, 3, 1] = p1[:-1, :]
+                        corners[:, :, 3, 2] = p2[:, 1:]
+                        corners[:, :, 3, 0] = p3[:, 1:]
+                    self._pixel_corners = corners
+        return self._pixel_corners
+
+    def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
+        """
+        Calculate the position of each pixel center in cartesian coordinate
+        and in meter of a couple of coordinates.
+        The half pixel offset is taken into account here !!!
+        Adapted to Nexus detector definition
+
+        @param d1: the Y pixel positions (slow dimension)
+        @type d1: ndarray (1D or 2D)
+        @param d2: the X pixel positions (fast dimension)
+        @type d2: ndarray (1D or 2D)
+        @param center: retrieve the coordinate of the center of the pixel
+        @param use_cython: set to False to test Python implementeation
+        @return: position in meter of the center of each pixels.
+        @rtype: ndarray
+
+        d1 and d2 must have the same shape, returned array will have
+        the same shape.
+        """
+        if (d1 is None) or d2 is None:
+#            d1, d2 = numpy.ogrid[:self.shape[0], :self.shape[1]]
+            #TODO: use expand2d
+            d1 = numpy.outer(numpy.arange(self.shape[0]), numpy.ones(self.shape[1]))
+            d2 = numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1]))
+        corners = self.get_pixel_corners()
+        if center:
+            # avoid += It modifies in place and segfaults
+            d1 = d1 + 0.5
+            d2 = d2 + 0.5
+#         if bilinear and use_cython:
+#             p1, p2 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
+#             p1.shape = d1.shape
+#             p2.shape = d2.shape
+#         else:
+        if True:
+            i1 = d1.astype(int).clip(0, corners.shape[0] - 1)
+            i2 = d2.astype(int).clip(0, corners.shape[1] - 1)
+            delta1 = d1 - i1
+            delta2 = d2 - i2
+            pixels = corners[i1, i2]
+            A0 = pixels[:, :, 0, 0]
+            A1 = pixels[:, :, 0, 1]
+            A2 = pixels[:, :, 0, 2]
+            B0 = pixels[:, :, 1, 0]
+            B1 = pixels[:, :, 1, 1]
+            B2 = pixels[:, :, 1, 2]
+            C0 = pixels[:, :, 2, 0]
+            C1 = pixels[:, :, 2, 1]
+            C2 = pixels[:, :, 2, 2]
+            D0 = pixels[:, :, 3, 0]
+            D1 = pixels[:, :, 3, 1]
+            D2 = pixels[:, :, 3, 2]
+            # points A and D are on the same dim1 (Y), they differ in dim2 (X)
+            # points B and C are on the same dim1 (Y), they differ in dim2 (X)
+            # points A and B are on the same dim2 (X), they differ in dim1 (Y)
+            # points C and D are on the same dim2 (X), they differ in dim1 (Y)
+
+            p1 = A1 * (1.0 - delta1) * (1.0 - delta2) \
+               + B1 * delta1 * (1.0 - delta2) \
+               + C1 * delta1 * delta2 \
+               + D1 * (1.0 - delta1) * delta2
+            p2 = A2 * (1.0 - delta1) * (1.0 - delta2) \
+               + B2 * delta1 * (1.0 - delta2) \
+               + C2 * delta1 * delta2 \
+               + D2 * (1.0 - delta1) * delta2
+            p3 = A0 * (1.0 - delta1) * (1.0 - delta2) \
+               + B0 * delta1 * (1.0 - delta2) \
+               + C0 * delta1 * delta2 \
+               + D0 * (1.0 - delta1) * delta2
+        return p1, p2, p3
+    
+    
 
 ALL_DETECTORS = Detector.registry
 detector_factory = Detector.factory
