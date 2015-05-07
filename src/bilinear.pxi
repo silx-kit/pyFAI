@@ -29,7 +29,7 @@ cdef class Bilinear:
     Instance attribute defined in pxd file 
     """
     cdef:
-        readonly float[:, :] data
+        readonly float[:, ::1] data
         readonly float maxi, mini
         readonly size_t width, height
 
@@ -43,6 +43,9 @@ cdef class Bilinear:
         self.maxi = data.max()
         self.mini = data.min()
         self.data = numpy.ascontiguousarray(data, dtype=numpy.float32)
+    
+    def __dealloc__(self):
+        self.data = None
 
     @cython.boundscheck(False)
     @cython.wraparound(False)

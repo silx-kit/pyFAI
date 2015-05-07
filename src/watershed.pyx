@@ -26,7 +26,7 @@ Inverse watershed for connecting region of high intensity
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "07/04/2015"
+__date__ = "27/04/2015"
 __status__ = "stable"
 __license__ = "GPLv3+"
 
@@ -68,7 +68,6 @@ cdef class Region:
         self.neighbors = None
         self.border = None
         self.peaks = None
-        
 
     def __repr__(self):
         return "Region %s of size %s:\n neighbors: %s\n border: %s\n" % (self.index, self.size, self.neighbors, self.border) + \
