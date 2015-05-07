@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/04/2015"
+__date__ = "06/05/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -129,7 +129,8 @@ class AbstractCalibration(object):
             'assign': "Change the assignment of a group of points to a rings",
             "weight": "toggle from weighted to unweighted mode...",
             "define": "Re-define the value for a constant internal parameter of the program like max_iter, nPt_1D, nPt_2D_azim, nPt_2D_rad. Warning: they may be harmful !",
-            "chiplot": "plot control point as function of azimuthal and radial angle"
+            "chiplot": "plot control point as function of azimuthal and radial angle",
+            "delete": "delete a group of points, provide the letter."
             }
     PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
     UNITS = {"dist":"meter", "poni1":"meter", "poni2":"meter", "rot1":"radian",
@@ -982,6 +983,14 @@ class AbstractCalibration(object):
             elif action == "chiplot":
                     print(self.HELP[action])
                     self.chiplot()
+            elif action == "delete":
+                if len(words) < 2:
+                    print(self.HELP[action])
+                else:
+                    for code in  words[1:]:
+                         print(self.peakPicker.points.pop(lbl=code))
+                    self.peakPicker.display_points()
+                    self.data = self.peakPicker.points.getList()
             else:
                 logger.warning("Unrecognized action: %s, type 'quit' to leave " % action)
 
@@ -992,14 +1001,15 @@ class AbstractCalibration(object):
         from scipy.optimize import leastsq
         model = lambda x, mean, amp, phase:mean + amp * numpy.sin(x + phase)
         error = lambda param, xdata, ydata:  model(xdata, *param) - ydata
-#         jacob = lambda param, xdata, ydata: numpy.array([1.0, numpy.sin(xdata + param[2], param[1] * numpy.cos(xdata + param[2]))])
         def jacob(param, xdata, ydata):
             j = numpy.ones((param.size, xdata.size))
-#             j[0,:]=1
             j[1, :] = numpy.sin(xdata + param[2])
             j[2, :] = param[1] * numpy.cos(xdata + param[2])
             return j
         sqrt2 = numpy.sqrt(2.)
+        ttha = self.geoRef.twoThetaArray(self.detector.shape)
+        resolution = numpy.rad2deg(max(abs(ttha[1:] - ttha[:-1]).max(),
+                          abs(ttha[:, 1:] - ttha[:, :-1]).max()))
         if self.gui:
             if self.fig_chiplot:
                 self.fig_chiplot.clf()
@@ -1007,9 +1017,10 @@ class AbstractCalibration(object):
                 self.fig_chiplot = pylab.plt.figure()
             self.ax_chiplot = self.fig_chiplot.add_subplot(1, 1, 1)
             self.ax_chiplot.set_xlim(-180, 180)
-            self.ax_chiplot.set_xlabel("Azimuthal angle Chi (deg)")
-            self.ax_chiplot.set_ylabel("Radial angle (deg)")
+            self.ax_chiplot.set_xlabel("Azimuthal angle Chi ($^o$)")
+            self.ax_chiplot.set_ylabel("Radial angle 2$\theta$ ($^o$). One pixel= %.3e $^o$" % resolution)
             self.ax_chiplot.set_title("Chi plot")
+
         else:
             print("chiplot display only possible with GUI")
         rings = list(set(int(i[2]) for i in self.data))
@@ -1023,6 +1034,9 @@ class AbstractCalibration(object):
                 if i[2] == ring:
                     d1.append(i[0])
                     d2.append(i[1])
+            if len(d1) < 5:
+                print(" Skip group of length %i" % len(d1))
+                continue
             d1 = numpy.array(d1)
             d2 = numpy.array(d2)
             tth = numpy.rad2deg(self.geoRef.tth(d1, d2))
@@ -1031,10 +1045,10 @@ class AbstractCalibration(object):
             amp = tth.std() * sqrt2
             phase = 0.0
             param = numpy.array([mean, amp, phase])
-            print(" guessed %.3e + %.3e *sin(chi+ %.3e )" % (mean, amp, phase))
+            print(" guessed %.3f + %.3e *sin(chi+ %.3f )" % (mean, amp, phase))
             res = leastsq(error, param, (chi, tth), jacob, col_deriv=True)
             popt = res[0]
-            str_res = "%.3e + %.3e *sin(chi+ %.3e )" % tuple(popt)
+            str_res = "%.3f + %.3e *sin(chi+ %.3f )" % tuple(popt)
             print(" fitted " + str_res)
             chi = numpy.rad2deg(chi)
             if self.ax_chiplot:
@@ -1046,6 +1060,7 @@ class AbstractCalibration(object):
         if not gui_utils.main_loop:
             self.fig_chiplot.show()
         update_fig(self.fig_chiplot)
+        logger.info("One pixel = %.3e" % resolution)
 
     def postProcess(self):
         """
@@ -1171,7 +1186,7 @@ class AbstractCalibration(object):
         if how not in ["center", "ring"]:  # ,"best"]:
             logger.warning("unknow geometry reset method: %s, fall back on detector center" % how)
             how = "center"
-        if not i.data:
+        if self.data is None:
             logger.warning("No datapoint: fall back on detector center")
             how = "center"
         # this is true for all:
@@ -1181,10 +1196,11 @@ class AbstractCalibration(object):
 
         if how == "ring":
             inner_ring = min(set(i[2] for i in self.data))
+            print("inner ring: %s" % inner_ring)
             data = numpy.array([[i[0], i[1]] for i in self.data if i[2] == inner_ring])
             center = data.mean(axis=0)
             self.ai.poni1, self.ai.poni2 = data.mean(axis=0)
-            tth = self.calibrant.get_2th()[inner_ring]
+            tth = self.calibrant.get_2th()[int(inner_ring)]
             dist = (data - center)
             d = numpy.sqrt(dist[:, 0] ** 2 + dist[:, 1] ** 2).mean()
             self.ai.dist = d / numpy.tan(tth)

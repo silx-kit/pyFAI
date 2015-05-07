@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/03/2015"
+__date__ = "22/04/2015"
 __status__ = "production"
 
 
@@ -256,7 +256,7 @@ class Cell(object):
         for hkl in itertools.product(range(-hmax, hmax + 1),
                                      range(-kmax, kmax + 1),
                                      range(-lmax, lmax + 1)):
-            h, k, l=hkl
+            h, k, l = hkl
             if hkl == (0, 0, 0):
                 continue
             if self.type == "I" and ((h + k + l) % 2 != 0):
@@ -453,6 +453,8 @@ class Calibrant(object):
     def get_2th(self):
         if not self._2th:
             ds = self.dSpacing  # forces the file reading if not done
+            if not ds:
+                logger.error("Not d-spacing for calibrant: %s" % self)
             with self._sem:
                 if not self._2th:
                     self._calc_2th()
