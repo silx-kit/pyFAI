@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/04/2015"
+__date__ = "07/05/2015"
 __status__ = "production"
 
 import logging
@@ -173,6 +173,36 @@ def timeit(func):
     wrapper.__name__ = func.__name__
     wrapper.__doc__ = func.__doc__
     return wrapper
+
+
+def expand2d(vect, size2, vertical=True):
+    """
+    This expands a vector to a 2d-array.
+    
+    The resul is the same as 
+    if vertical:
+        numpy.outer(numpy.ones(size2), vect)
+    else:
+         numpy.outer(vect, numpy.ones( size2))
+         
+    This is a ninja optimization: replace *1 with a memcopy, saves 50% of time at the ms level. 
+    
+    @param vect: 1d vector
+    @param size2: size 
+    @param vertical: if False, 
+    """
+    size1 = vect.size
+    if vertical:
+        out = numpy.empty((size2, size1), vect.dtype)
+        q = vect.reshape(1, -1)
+        q.strides = 0, vect.strides[0]
+    else:
+        out = numpy.empty((size1, size2), vect.dtype)
+        q = vect.reshape(-1, 1)
+        q.strides = vect.strides[0], 0
+    out[:, :] = q
+    return out
+
 
 def gaussian_filter(input_img, sigma, mode="reflect", cval=0.0):
     """
@@ -387,10 +417,10 @@ def expand(input_img, sigma, mode="constant", cval=0.0):
         output[:k0, s1 + k1:] = input_img[0, -1]
         output[s0 + k0:, :k1] = input_img[-1, 0]
     # 4 sides
-        output[k0:k0 + s0, :k1] = numpy.outer(input_img[:, 0], numpy.ones(k1))
-        output[:k0, k1:k1 + s1] = numpy.outer(numpy.ones(k0), input_img[0, :])
-        output[-k0:, k1:s1 + k1] = numpy.outer(numpy.ones(k0), input_img[-1, :])
-        output[k0:s0 + k0, -k1:] = numpy.outer(input_img[:, -1], numpy.ones(k1))
+        output[k0:k0 + s0, :k1] = expand2d(input_img[:, 0], k1, False)
+        output[:k0, k1:k1 + s1] = expand2d(input_img[0, :], k0)
+        output[-k0:, k1:s1 + k1] = expand2d(input_img[-1, :], k0)
+        output[k0:s0 + k0, -k1:] = expand2d(input_img[:, -1], k1, False)
     elif mode == "wrap":
         # 4 corners
         output[s0 + k0:, s1 + k1:] = input_img[:k0, :k1]

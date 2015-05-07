@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/04/2015"
+__date__ = "07/05/2015"
 
 
 import unittest
@@ -146,6 +146,12 @@ class TestUtils(unittest.TestCase):
         s.add_or_discard("a", False)
         self.assertEqual(len(s), 0, "set is still empty")
 
+    def test_expand2d(self):
+        vect = numpy.arange(10.)
+        size2 = 11
+        self.assert_((numpy.outer(vect, numpy.ones(size2)) == pyFAI.utils.expand2d(vect, size2, False)).all(), "horizontal vector expand")
+        self.assert_((numpy.outer(numpy.ones(size2), vect) == pyFAI.utils.expand2d(vect, size2, True)).all(), "vertical vector expand")
+
 
 def test_suite_all_Utils():
     testSuite = unittest.TestSuite()
@@ -154,6 +160,7 @@ def test_suite_all_Utils():
     testSuite.addTest(TestUtils("test_shift"))
     testSuite.addTest(TestUtils("test_gaussian_filter"))
     testSuite.addTest(TestUtils("test_set"))
+    testSuite.addTest(TestUtils("test_expand2d"))
     return testSuite
 
 if __name__ == '__main__':
