@@ -988,9 +988,9 @@ class AbstractCalibration(object):
                     print(self.HELP[action])
                 else:
                     for code in  words[1:]:
-                        gpt = self.peakPicker.points.pop(lbl=code)
-                    self.peakPicker.display_points(reset=True)
+                        self.peakPicker.remove_grp(code)
                     self.data = self.peakPicker.points.getList()
+                    self.geoRef.data = numpy.array(self.data, dtype=numpy.float64)
             else:
                 logger.warning("Unrecognized action: %s, type 'quit' to leave " % action)
 

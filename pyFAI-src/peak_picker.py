@@ -306,10 +306,24 @@ class PeakPicker(object):
                     gpt.annotate = self.ax.annotate(gpt.label, xy=(pt0x, pt0y), xytext=(pt0x + 10, pt0y + 10),
                                                     weight="bold", size="large", color="black",
                                                     arrowprops=dict(facecolor='white', edgecolor='white'))
-
                     npl = numpy.array(gpt.points)
                     gpt.plot = self.ax.plot(npl[:, 1], npl[:, 0], "o", scalex=False, scaley=False)
-            self.ax.texts = []
+
+    def remove_grp(self, lbl):
+        """
+        remove a group of points
+
+        @param lbl: label of the group of points
+        """
+        gpt = self.points.pop(lbl=lbl)
+        if gpt and self.ax:
+            print(gpt.annotate)
+            if gpt.annotate in self.ax.texts:
+                self.ax.texts.remove(gpt.annotate)
+            for plot in gpt.plot:
+                    if plot in self.ax.lines:
+                        self.ax.lines.remove(plot)
+            update_fig(self.fig)
 
     def onclick(self, event):
         """
@@ -755,7 +769,7 @@ class ControlPoints(object):
         Remove the set of points, either from its code or from a given ring (by default the last)
 
         @param ring: index of ring of which remove the last group
-        @param lbl: code of the ring to remove 
+        @param lbl: code of the ring to remove
         """
         out = None
         with self._sem:
