@@ -112,7 +112,11 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
             dia = QtGui.QFileDialog(directory=os.getcwd())
             dia.setFileMode(QtGui.QFileDialog.ExistingFiles)
             dia.exec_()
-            args = [str(i) for i in  dia.selectedFiles()]
+            try:
+            	args = [str(i) for i in  dia.selectedFiles()]
+            except UnicodeEncodeError as err:
+            	logger.error("Problem with the name of some files: %s"%(err))
+            	args = [unicode(i) for i in  dia.selectedFiles()]
 
         window = AIWidget()
         window.set_input_data(args)

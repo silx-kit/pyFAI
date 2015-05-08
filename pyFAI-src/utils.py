@@ -156,7 +156,11 @@ def str_(val):
     """
     s = ""
     if val != None:
-        s = str(val)
+        try:
+            s = str(val)
+        except UnicodeError:
+            #Python2 specific...
+            s = unicode(val)
     return s
 
 
@@ -178,18 +182,18 @@ def timeit(func):
 def expand2d(vect, size2, vertical=True):
     """
     This expands a vector to a 2d-array.
-    
-    The resul is the same as 
+
+    The resul is the same as
     if vertical:
         numpy.outer(numpy.ones(size2), vect)
     else:
          numpy.outer(vect, numpy.ones( size2))
-         
-    This is a ninja optimization: replace *1 with a memcopy, saves 50% of time at the ms level. 
-    
+
+    This is a ninja optimization: replace *1 with a memcopy, saves 50% of time at the ms level.
+
     @param vect: 1d vector
-    @param size2: size 
-    @param vertical: if False, 
+    @param size2: size
+    @param vertical: if False,
     """
     size1 = vect.size
     if vertical:
