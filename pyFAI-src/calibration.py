@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/03/2015"
+__date__ = "07/05/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -128,7 +128,9 @@ class AbstractCalibration(object):
             'reset': "Reset the geometry to the initial guess (rotation to zero, distance to 0.1m, poni at the center of the image)",
             'assign': "Change the assignment of a group of points to a rings",
             "weight": "toggle from weighted to unweighted mode...",
-            "define": "Re-define the value for a constant internal parameter of the program like max_iter, nPt_1D, nPt_2D_azim, nPt_2D_rad. Warning: they may be harmful !"
+            "define": "Re-define the value for a constant internal parameter of the program like max_iter, nPt_1D, nPt_2D_azim, nPt_2D_rad. Warning: they may be harmful !",
+            "chiplot": "plot control point as function of azimuthal and radial angle",
+            "delete": "delete a group of points, provide the letter."
             }
     PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
     UNITS = {"dist":"meter", "poni1":"meter", "poni2":"meter", "rot1":"radian",
@@ -208,6 +210,7 @@ class AbstractCalibration(object):
         self.keep = True
         self.check_calib = None
         self.fig3 = self.ax_xrpd_1d = self.ax_xrpd_2d = None
+        self.fig_chiplot = self.ax_chiplot = None
 
     def __repr__(self):
         lst = ["Calibration object:"]
@@ -925,42 +928,11 @@ class AbstractCalibration(object):
                 print("The current parameter set is:")
                 print(self.geoRef)
             elif action == "reset":
-                self.ai.dist = 0.1
-                try:
-                    p1, p2 = self.detector.calc_cartesian_positions()
-                    self.ai.poni1 = p1.max() / 2.0
-                    self.ai.poni2 = p2.max() / 2.0
-                except Exception as err:
-                    logger.warning(err)
-                    self.ai.poni1 = self.detector.pixel1 * (self.peakPicker.shape[0] / 2.)
-                    self.ai.poni2 = self.detector.pixel2 * (self.peakPicker.shape[1] / 2.)
-                self.ai.rot1 = 0.0
-                self.ai.rot2 = 0.0
-                self.ai.rot3 = 0.0
-
-                self.geoRef.set_dist_min(0)
-                self.geoRef.set_dist_max(100)
-                self.geoRef.set_dist(self.ai.dist)
-
-                self.geoRef.set_poni1_min(-10.0 * self.ai.poni1)
-                self.geoRef.set_poni1_max(10.0 * self.ai.poni1)
-                self.geoRef.set_poni1(self.ai.poni1)
-
-                self.geoRef.set_poni2_min(-10.0 * self.ai.poni2)
-                self.geoRef.set_poni2_max(10.0 * self.ai.poni2)
-                self.geoRef.set_poni2(self.ai.poni2)
-
-                self.geoRef.set_rot1_min(-math.pi)
-                self.geoRef.set_rot1_max(math.pi)
-                self.geoRef.set_rot1(self.ai.rot1)
-
-                self.geoRef.set_rot2_min(-math.pi)
-                self.geoRef.set_rot2_max(math.pi)
-                self.geoRef.set_rot2(self.ai.rot2)
-
-                self.geoRef.set_rot3_min(-math.pi)
-                self.geoRef.set_rot3_max(math.pi)
-                self.geoRef.set_rot3(self.ai.rot3)
+                if len(words) > 1:
+                    how = words[1]
+                else:
+                    how = "center"
+                self.reset_geometry(how)
             elif action == "assign":
                 # Re assign a group of point to a ring ...
                 if self.peakPicker and self.peakPicker.points:
@@ -1008,8 +980,87 @@ class AbstractCalibration(object):
                         print("No such parameter %s" % param)
                 else:
                     print(self.HELP[action])
+            elif action == "chiplot":
+                    print(self.HELP[action])
+                    self.chiplot()
+            elif action == "delete":
+                if len(words) < 2:
+                    print(self.HELP[action])
+                else:
+                    for code in  words[1:]:
+                        gpt = self.peakPicker.points.pop(lbl=code)
+                    self.peakPicker.display_points(reset=True)
+                    self.data = self.peakPicker.points.getList()
             else:
                 logger.warning("Unrecognized action: %s, type 'quit' to leave " % action)
+
+    def chiplot(self):
+        """
+        plot 2theta = f(chi) and fit the curve.
+        """
+        from scipy.optimize import leastsq
+        model = lambda x, mean, amp, phase:mean + amp * numpy.sin(x + phase)
+        error = lambda param, xdata, ydata:  model(xdata, *param) - ydata
+        def jacob(param, xdata, ydata):
+            j = numpy.ones((param.size, xdata.size))
+            j[1, :] = numpy.sin(xdata + param[2])
+            j[2, :] = param[1] * numpy.cos(xdata + param[2])
+            return j
+        sqrt2 = numpy.sqrt(2.)
+        ttha = self.geoRef.twoThetaArray(self.detector.shape)
+        resolution = numpy.rad2deg(max(abs(ttha[1:] - ttha[:-1]).max(),
+                          abs(ttha[:, 1:] - ttha[:, :-1]).max()))
+        if self.gui:
+            if self.fig_chiplot:
+                self.fig_chiplot.clf()
+            else:
+                self.fig_chiplot = pylab.plt.figure()
+            self.ax_chiplot = self.fig_chiplot.add_subplot(1, 1, 1)
+            self.ax_chiplot.set_xlim(-180, 180)
+            self.ax_chiplot.set_xlabel("Azimuthal angle Chi ($^o$)")
+            self.ax_chiplot.set_ylabel("Radial angle 2$\theta$ ($^o$). One pixel= %.3e $^o$" % resolution)
+            self.ax_chiplot.set_title("Chi plot")
+
+        else:
+            print("chiplot display only possible with GUI")
+        rings = list(set(int(i[2]) for i in self.data))
+        rings.sort()
+        for ring in rings:
+            ref_2th = numpy.rad2deg(self.calibrant.get_2th()[ring])
+            print("Fitting ring #%x (2th=%.3fdeg)" % (ring, ref_2th))
+            d1 = []
+            d2 = []
+            for i in self.data:
+                if i[2] == ring:
+                    d1.append(i[0])
+                    d2.append(i[1])
+            if len(d1) < 5:
+                print(" Skip group of length %i" % len(d1))
+                continue
+            d1 = numpy.array(d1)
+            d2 = numpy.array(d2)
+            tth = numpy.rad2deg(self.geoRef.tth(d1, d2))
+            chi = self.geoRef.chi(d1, d2)
+            mean = tth.mean()
+            amp = tth.std() * sqrt2
+            phase = 0.0
+            param = numpy.array([mean, amp, phase])
+            print(" guessed %.3f + %.3e *sin(chi+ %.3f )" % (mean, amp, phase))
+            res = leastsq(error, param, (chi, tth), jacob, col_deriv=True)
+            popt = res[0]
+            str_res = "%.3f + %.3e *sin(chi+ %.3f )" % tuple(popt)
+            print(" fitted " + str_res)
+            chi = numpy.rad2deg(chi)
+            if self.ax_chiplot:
+                color = matplotlib.colors.cnames.keys()[ring]
+                self.ax_chiplot.plot(chi, tth, "o", color=color, label="ring #%i (%.3f$^o$)" % (ring, ref_2th))
+                chi2 = numpy.linspace(-180, 180, 360)
+                self.ax_chiplot.plot(chi2, model(numpy.deg2rad(chi2), *popt), color=color, label=str_res)
+        self.ax_chiplot.legend()
+        if not gui_utils.main_loop:
+            self.fig_chiplot.show()
+        update_fig(self.fig_chiplot)
+        logger.info("One pixel = %.3e" % resolution)
 
     def postProcess(self):
         """
@@ -1121,6 +1172,74 @@ class AbstractCalibration(object):
         if not self.weighted:
             self.data = numpy.array(self.data)[:, :-1]
         self.refine()
+
+    def reset_geometry(self, how="center", refine=False):
+        """
+        Reset the geometry: no tilt in all cases
+
+        @param how: multiple options
+            * center: set the PONI at the center of the detector
+            * ring: center the poni at the middle of the inner-most ring
+            //* best: try both option and keeps the best
+        //@param refine: launch the refinement
+        """
+        if how not in ["center", "ring"]:  # ,"best"]:
+            logger.warning("unknow geometry reset method: %s, fall back on detector center" % how)
+            how = "center"
+        if self.data is None:
+            logger.warning("No datapoint: fall back on detector center")
+            how = "center"
+        # this is true for all:
+        self.ai.rot1 = 0.0
+        self.ai.rot2 = 0.0
+        self.ai.rot3 = 0.0
+
+        if how == "ring":
+            inner_ring = min(set(i[2] for i in self.data))
+            print("inner ring: %s" % inner_ring)
+            data = numpy.array([[i[0], i[1]] for i in self.data if i[2] == inner_ring])
+            center = data.mean(axis=0)
+            self.ai.poni1, self.ai.poni2 = data.mean(axis=0)
+            tth = self.calibrant.get_2th()[int(inner_ring)]
+            dist = (data - center)
+            d = numpy.sqrt(dist[:, 0] ** 2 + dist[:, 1] ** 2).mean()
+            self.ai.dist = d / numpy.tan(tth)
+        elif how == "center":
+            self.ai.dist = 0.1
+            try:
+                p1, p2, p3 = self.detector.calc_cartesian_positions()
+                self.ai.poni1 = p1.max() / 2.0
+                self.ai.poni2 = p2.max() / 2.0
+            except Exception as err:
+                logger.warning(err)
+                self.ai.poni1 = self.detector.pixel1 * (self.peakPicker.shape[0] / 2.)
+                self.ai.poni2 = self.detector.pixel2 * (self.peakPicker.shape[1] / 2.)
+
+        if self.geoRef:
+#        reset geoRef object
+            self.geoRef.set_dist_min(0)
+            self.geoRef.set_dist_max(100)
+            self.geoRef.set_dist(self.ai.dist)
+
+            self.geoRef.set_poni1_min(-10.0 * self.ai.poni1)
+            self.geoRef.set_poni1_max(10.0 * self.ai.poni1)
+            self.geoRef.set_poni1(self.ai.poni1)
+
+            self.geoRef.set_poni2_min(-10.0 * self.ai.poni2)
+            self.geoRef.set_poni2_max(10.0 * self.ai.poni2)
+            self.geoRef.set_poni2(self.ai.poni2)
+
+            self.geoRef.set_rot1_min(-math.pi)
+            self.geoRef.set_rot1_max(math.pi)
+            self.geoRef.set_rot1(self.ai.rot1)
+
+            self.geoRef.set_rot2_min(-math.pi)
+            self.geoRef.set_rot2_max(math.pi)
+            self.geoRef.set_rot2(self.ai.rot2)
+
+            self.geoRef.set_rot3_min(-math.pi)
+            self.geoRef.set_rot3_max(math.pi)
+            self.geoRef.set_rot3(self.ai.rot3)
 
 ################################################################################
 # Calibration
@@ -1244,17 +1363,17 @@ decrease the value if arcs are mixed together.""", default=None)
         Tries to initialise the GeometryRefinement (dist, poni, rot)
         Returns a dictionary of key value pairs
         """
-        defaults = { "dist" : 0.1,  "poni1" : 0.0,  "poni2" : 0.0,
+        defaults = { "dist" : 0.1, "poni1" : 0.0, "poni2" : 0.0,
                         "rot1" : 0.0, "rot2" : 0.0, "rot3" : 0.0 }
         if self.detector:
             try:
-                p1, p2 = self.detector.calc_cartesian_positions()
+                p1, p2, p3 = self.detector.calc_cartesian_positions()
                 defaults["poni1"] = p1.max() / 2.
                 defaults["poni2"] = p2.max() / 2.
             except Exception as err:
                 logger.warning(err)
         if self.ai:
-            for key in defaults.keys(): # not PARAMETERS which holds wavelength
+            for key in defaults.keys():  # not PARAMETERS which holds wavelength
                 val = getattr(self.ai, key, None)
                 if val is not None:
                     defaults[key] = val
@@ -1267,12 +1386,12 @@ decrease the value if arcs are mixed together.""", default=None)
         """
         # First attempt
         defaults = self.initgeoRef()
-        self.geoRef = GeometryRefinement(self.data, 
+        self.geoRef = GeometryRefinement(self.data,
                                          detector=self.detector,
                                          wavelength=self.wavelength,
                                          calibrant=self.calibrant,
                                          **defaults)
-        self.geoRef.refine2(1000000, fix= self.fixed)
+        self.geoRef.refine2(1000000, fix=self.fixed)
         scor = self.geoRef.chi2()
         pars = [getattr(self.geoRef, p) for p in self.PARAMETERS]
 
@@ -1280,17 +1399,17 @@ decrease the value if arcs are mixed together.""", default=None)
 
         # Second attempt
         defaults = self.initgeoRef()
-        self.geoRef = GeometryRefinement(self.data, 
+        self.geoRef = GeometryRefinement(self.data,
                                          detector=self.detector,
                                          wavelength=self.wavelength,
                                          calibrant=self.calibrant,
                                          **defaults)
         self.geoRef.guess_poni()
-        self.geoRef.refine2(1000000, fix= self.fixed)
+        self.geoRef.refine2(1000000, fix=self.fixed)
         scor = self.geoRef.chi2()
         pars = [getattr(self.geoRef, p) for p in self.PARAMETERS]
 
-        scores.append( (scor, pars) )
+        scores.append((scor, pars))
 
         # Third attempt (can be from when a program bombed last time)
         paramfile = self.basename + ".poni"
@@ -1302,30 +1421,30 @@ decrease the value if arcs are mixed together.""", default=None)
                 except Exception as err:
                     logger.warning(err)
                 else:
-                    logger.warning("Overwriting wavelength from PONI file (%s) with the one from command line (%s)" % 
+                    logger.warning("Overwriting wavelength from PONI file (%s) with the one from command line (%s)" %
                                     (old_wl, self.wavelength))
                 self.geoRef.wavelength = self.wavelength
             if self.detector:
                 gr_det = str(self.geoRef.detector)
                 nw_det = str(self.detector)
                 if gr_det != nw_det:
-                    logger.warning("Overwriting detector from PONI file: %s%s with the one from command line %s%s" % 
+                    logger.warning("Overwriting detector from PONI file: %s%s with the one from command line %s%s" %
                                     (os.linesep, gr_det, os.linesep, nw_det))
                     self.geoRef.detector = self.detector
 
         # Third attempt
-        self.geoRef.refine2(1000000, fix= self.fixed)
+        self.geoRef.refine2(1000000, fix=self.fixed)
         scor = self.geoRef.chi2()
         pars = [getattr(self.geoRef, p) for p in self.PARAMETERS]
 
-        scores.append( (scor, pars) )
+        scores.append((scor, pars))
 
         # Choose the best scoring method: At this point we might also ask
         # a user to just type the numbers in?
         scores.sort()
         scor, pars = scores[0]
         for parval, parname in zip(pars, self.PARAMETERS):
-            setattr( self.geoRef, parname, parval )
+            setattr(self.geoRef, parname, parval)
 
         # Now continue as before
         AbstractCalibration.refine(self)
