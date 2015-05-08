@@ -1207,7 +1207,7 @@ class AbstractCalibration(object):
         elif how == "center":
             self.ai.dist = 0.1
             try:
-                p1, p2 = self.detector.calc_cartesian_positions()
+                p1, p2, p3 = self.detector.calc_cartesian_positions()
                 self.ai.poni1 = p1.max() / 2.0
                 self.ai.poni2 = p2.max() / 2.0
             except Exception as err:
@@ -1367,7 +1367,7 @@ decrease the value if arcs are mixed together.""", default=None)
                         "rot1" : 0.0, "rot2" : 0.0, "rot3" : 0.0 }
         if self.detector:
             try:
-                p1, p2 = self.detector.calc_cartesian_positions()
+                p1, p2, p3 = self.detector.calc_cartesian_positions()
                 defaults["poni1"] = p1.max() / 2.
                 defaults["poni2"] = p2.max() / 2.
             except Exception as err:

@@ -12,19 +12,19 @@
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
-# 
+#
 #   This program is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #   GNU General Public License for more details.
-# 
+#
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3+"
-__date__ = "20/03/2015"
+__date__ = "08/05/2015"
 __copyright__ = "2011-2014, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -44,7 +44,7 @@ import sys
 import time
 logger = logging.getLogger("pyFAI._distortion")
 from .detectors import detector_factory
-from .utils import timeit
+from .utils import timeit, expand2d
 from .third_party import six
 import fabio
 
@@ -202,7 +202,7 @@ cdef inline void integrate(float[:, :] box, float start, float stop, float slope
                     dA = fabs(dP)
                     while AA > 0:
                         if dA > AA:
-                            dA = AA 
+                            dA = AA
                             AA = -1
                         box[(<int> floor(stop)), h] += sign * dA
                         AA -= dA
@@ -561,9 +561,12 @@ class Distortion(object):
             with self._sem:
                 if self.pos is None:
                     pos_corners = numpy.empty((self.shape[0] + 1, self.shape[1] + 1, 2), dtype=numpy.float64)
-                    d1 = numpy.outer(numpy.arange(self.shape[0] + 1, dtype=numpy.float64), numpy.ones(self.shape[1] + 1, dtype=numpy.float64)) - 0.5
-                    d2 = numpy.outer(numpy.ones(self.shape[0] + 1, dtype=numpy.float64), numpy.arange(self.shape[1] + 1, dtype=numpy.float64)) - 0.5
-                    pos_corners[:, :, 0], pos_corners[:, :, 1] = self.detector.calc_cartesian_positions(d1, d2)
+                    d1 = expand2d(numpy.arange(self.shape[0] + 1.0), self.shape[1] + 1, False) - 0.5
+                    d2 = expand2d(numpy.arange(self.shape[1] + 1.0), self.shape[0] + 1, True) - 0.5
+                    p = self.detector.calc_cartesian_positions(d1, d2)
+                    if p[-1] is not None:
+                        logger.warning("makes little sense to correct for distortion non-flat detectors: %s"%self.detector)
+                    pos_corners[:, :, 0], pos_corners[:, :, 1] = p[:2]
                     pos_corners[:, :, 0] /= self.detector.pixel1
                     pos_corners[:, :, 1] /= self.detector.pixel2
                     pos = numpy.empty((self.shape[0], self.shape[1], 4, 2), dtype=numpy.float32)
@@ -789,12 +792,12 @@ class Distortion(object):
 @cython.boundscheck(False)
 def calc_size(float[:, :, :, :] pos not None, shape):
     """
-    Calculate the number of items per output pixel  
-    
+    Calculate the number of items per output pixel
+
     @param pos: 4D array with position in space
     @param shape: shape of the output array
-    @return: number of input element per output elements  
-    """    
+    @return: number of input element per output elements
+    """
     cdef:
         int i, j, k, l, shape0, shape1, min0, min1, max0, max1
         numpy.ndarray[numpy.int32_t, ndim = 2] lut_size = numpy.zeros(shape, dtype=numpy.int32)
@@ -826,7 +829,7 @@ def calc_size(float[:, :, :, :] pos not None, shape):
 @cython.cdivision(True)
 def calc_LUT(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size):
     """
-    @param pos: 4D position array 
+    @param pos: 4D position array
     @param shape: output shape
     @param bin_size: number of input element per output element (numpy array)
     @param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
@@ -930,12 +933,12 @@ def calc_LUT(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size):
 @cython.cdivision(True)
 def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size):
     """
-    @param pos: 4D position array 
+    @param pos: 4D position array
     @param shape: output shape
-    @param bin_size: number of input element per output element (as numpy array) 
+    @param bin_size: number of input element per output element (as numpy array)
     @param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
     @return: look-up table in CSR format: 3-tuple of array"""
-    cdef int i, j, k, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1, bins, lut_size, offset0, offset1, box_size0, box_size1 
+    cdef int i, j, k, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1, bins, lut_size, offset0, offset1, box_size0, box_size1
     shape0, shape1 = shape
     delta0, delta1 = max_pixel_size
     bins = shape0 * shape1
@@ -951,16 +954,16 @@ def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size):
     indptr[0] = 0
     indptr[1:] = bin_size.cumsum(dtype=numpy.int32)
     lut_size = indptr[bins]
-                    
+
     indices = numpy.zeros(shape=lut_size, dtype=numpy.int32)
     data = numpy.zeros(shape=lut_size, dtype=numpy.float32)
-    
+
     indptr[1:] = bin_size.cumsum(dtype=numpy.int32)
-    
+
     indices_size = lut_size * sizeof(numpy.int32)
     data_size = lut_size * sizeof(numpy.float32)
     indptr_size = bins * sizeof(numpy.int32)
-    
+
     logger.info("CSR matrix: %.3f MByte" % ((indices_size + data_size + indptr_size) / 1.0e6))
     buffer = view.array(shape=(delta0, delta1), itemsize=sizeof(float), format="f")
     buffer_size = delta0 * delta1 * sizeof(float)
@@ -1051,7 +1054,7 @@ def correct_LUT(image, shape, lut_point[:, :] LUT not None):
     cdef int i, j, lshape0, lshape1, idx, size, shape0, shape1
     cdef float coef, sum, error, t ,y
     cdef float[:] lout, lin
-    shape0, shape1 = shape 
+    shape0, shape1 = shape
     lshape0 = LUT.shape[0]
     lshape1 = LUT.shape[1]
     img_shape = image.shape
@@ -1067,7 +1070,7 @@ def correct_LUT(image, shape, lut_point[:, :] LUT not None):
     size = lin.size
     for i in prange(lshape0, nogil=True, schedule="static"):
         sum = 0.0    # Implement kahan summation
-        error = 0.0 
+        error = 0.0
         for j in range(lshape1):
             idx = LUT[i, j].idx
             coef = LUT[i, j].coef
@@ -1101,7 +1104,7 @@ def correct_CSR(image, shape, LUT):
     cdef float[:] lout, lin, data
     cdef numpy.int32_t[:] indices, indptr
     data, indices, indptr = LUT
-    shape0, shape1 = shape 
+    shape0, shape1 = shape
     bins = indptr.size - 1
     img_shape = image.shape
     if (img_shape[0] < shape0) or (img_shape[1] < shape1):
@@ -1117,7 +1120,7 @@ def correct_CSR(image, shape, LUT):
 
     for i in prange(bins, nogil=True, schedule="static"):
         sum = 0.0    # Implement Kahan summation
-        error = 0.0 
+        error = 0.0
         for j in range(indptr[i], indptr[i + 1]):
             idx = indices[j]
             coef = data[j]
@@ -1150,19 +1153,19 @@ def uncorrect_LUT(image, shape, lut_point[:, :]LUT):
     cdef numpy.int8_t[:] lmask = mask.ravel()
     cdef float[:] lout = out.ravel()
     cdef float[:] lin = numpy.ascontiguousarray(image, dtype=numpy.float32).ravel()
-    
+
     for idx in range(LUT.shape[0]):
         total = 0.0
         for j in range(LUT.shape[1]):
-            coef = LUT[idx, j].coef 
+            coef = LUT[idx, j].coef
             if coef > 0:
-                total += coef 
+                total += coef
         if total <= 0:
             lmask[idx] = 1
             continue
         val = lin[idx] / total
         for j in range(LUT.shape[1]):
-            coef = LUT[idx, j].coef 
+            coef = LUT[idx, j].coef
             if coef > 0:
                 lout[LUT[idx, j].idx] += val * coef
     return out, mask
@@ -1180,7 +1183,7 @@ def uncorrect_CSR(image, shape, LUT):
         int idx, j, nbins
         float total, coef
         numpy.int8_t[:] lmask
-        float[:] lout, lin, data 
+        float[:] lout, lin, data
         numpy.int32_t[:] indices = LUT[1]
         numpy.int32_t[:] indptr = LUT[2]
     out = numpy.zeros(shape, dtype=numpy.float32)
@@ -1193,15 +1196,15 @@ def uncorrect_CSR(image, shape, LUT):
     for idx in range(nbins):
         total = 0.0
         for j in range(indptr[idx], indptr[idx + 1]):
-            coef = data[j] 
+            coef = data[j]
             if coef > 0:
-                total += coef 
+                total += coef
         if total <= 0:
             lmask[idx] = 1
             continue
         val = lin[idx] / total
         for j in range(indptr[idx], indptr[idx + 1]):
-            coef = data[j] 
+            coef = data[j]
             if coef > 0:
                 lout[indices[j]] += val * coef
     return out, mask

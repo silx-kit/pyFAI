@@ -340,7 +340,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
             elif kw == "splineFile":
                 self.set_splineFile(kwarg[kw])
 
-    def calc_cartesian_positions(self, d1=None, d2=None):
+    def calc_cartesian_positions(self, d1=None, d2=None, center=True):
         """
         Calculate the position of each pixel center in cartesian coordinate
         and in meter of a couple of coordinates.
@@ -352,10 +352,12 @@ class Detector(with_metaclass(DetectorMeta, object)):
         @type d2: ndarray (1D or 2D)
 
         @return: position in meter of the center of each pixels.
-        @rtype: ndarray
+        @rtype: 3-tuple of ndarray (pos_y, pos_x, pos_z)
 
         d1 and d2 must have the same shape, returned array will have
         the same shape.
+
+        pos_z is None for all flat detectors
         """
         if self.shape:
             if (d1 is None) or (d2 is None):
@@ -397,7 +399,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
 
         p1 = (self._pixel1 * (dY + 0.5 + d1))
         p2 = (self._pixel2 * (dX + 0.5 + d2))
-        return p1, p2
+        return p1, p2, None
 
     def calc_mask(self):
         """
@@ -501,7 +503,8 @@ class Detector(with_metaclass(DetectorMeta, object)):
         corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
         d1 = numpy.outer(numpy.arange(self.shape[0] + 1), numpy.ones(self.shape[1] + 1)) - 0.5
         d2 = numpy.outer(numpy.ones(self.shape[0] + 1), numpy.arange(self.shape[1] + 1)) - 0.5
-        p1, p2 = self.calc_cartesian_positions(d1, d2)
+        p1, p2, p3 = self.calc_cartesian_positions(d1, d2)
+
         corners[:, :, 0, 1] = p1[:-1, :-1]
         corners[:, :, 0, 2] = p2[:-1, :-1]
         corners[:, :, 1, 1] = p1[1:, :-1]
@@ -510,6 +513,13 @@ class Detector(with_metaclass(DetectorMeta, object)):
         corners[:, :, 2, 2] = p2[1:, 1:]
         corners[:, :, 3, 1] = p1[:-1, 1:]
         corners[:, :, 3, 2] = p2[:-1, 1:]
+        if p3 is not None:
+            # non flat detector
+            corners[:, :, 0, 0] = p1[:-1, :-1]
+            corners[:, :, 1, 0] = p1[1:, :-1]
+            corners[:, :, 2, 0] = p1[1:, 1:]
+            corners[:, :, 3, 0] = p1[:-1, 1:]
+
         return corners
 
     def save(self, filename):
@@ -645,12 +655,12 @@ class NexusDetector(Detector):
         if self._pixel_corners is None:
             with self._sem:
                 if self._pixel_corners is None:
-
+                    # this works only for flat detector
+                    if not self.IS_FLAT:
+                        raise RuntimeWarning("Cannot calculate pixel corner position with non flat detectors")
                     if bilinear and use_cython:
-                        d1 = numpy.outer(numpy.arange(self.shape[0] + 1), numpy.ones(self.shape[1] + 1))
-                        d2 = numpy.outer(numpy.ones(self.shape[0] + 1), numpy.arange(self.shape[1] + 1))
-                        p1 = self._pixel1 * d1
-                        p2 = self._pixel2 * d2
+                        p1 = expand2d(self._pixel1 * numpy.arange(self.shape[0] + 1),self.shape[1] + 1, False)
+                        p2 = expand2d(self._pixel2 * numpy.arange(self.shape[1] + 1),self.shape[0] + 1, True)
                         corners = bilinear.convert_corner_2D_to_4D(3, p1, p2)
                     else:
                         p1 = numpy.arange(self.shape[0] + 1) * self._pixel1
@@ -683,26 +693,29 @@ class NexusDetector(Detector):
         @param d2: the X pixel positions (fast dimension)
         @type d2: ndarray (1D or 2D)
         @param center: retrieve the coordinate of the center of the pixel
-        @param use_cython: set to False to test Python implementeation
+        @param use_cython: set to False to test Python implementation
         @return: position in meter of the center of each pixels.
-        @rtype: ndarray
+        @rtype: 3xndarray, the later being None if IS_FLAT
 
         d1 and d2 must have the same shape, returned array will have
         the same shape.
         """
-        if (d1 is None) or d2 is None:
-#            d1, d2 = numpy.ogrid[:self.shape[0], :self.shape[1]]
-            d1 = numpy.outer(numpy.arange(self.shape[0]), numpy.ones(self.shape[1]))
-            d2 = numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1]))
+        if (d1 is None) or (d2 is None):
+            d1 = expand2d(numpy.arange(self.shape[0]), self.shape[1], False)
+            d2 = expand2d(numpy.arange(self.shape[1]), self.shape[0], True)
+        assert d1.shape == d2.shape
         corners = self.get_pixel_corners()
+        p3 = None
         if center:
             # avoid += It modifies in place and segfaults
             d1 = d1 + 0.5
             d2 = d2 + 0.5
-        if bilinear and use_cython and self.IS_FLAT:
-            p1, p2 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
+        if bilinear and use_cython:
+            p1, p2, p3 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners, is_flat=self.IS_FLAT)
             p1.shape = d1.shape
-            p2.shape = d2.shape
+            p2.shape = d1.shape
+            if p3 is not None:
+                p3.shape = d1.shape
         else:
             i1 = d1.astype(int).clip(0, corners.shape[0] - 1)
             i2 = d2.astype(int).clip(0, corners.shape[1] - 1)
@@ -739,8 +752,8 @@ class NexusDetector(Detector):
                    + B0 * delta1 * (1.0 - delta2) \
                    + C0 * delta1 * delta2 \
                    + D0 * (1.0 - delta1) * delta2
-                return p1, p2, p3
-        return p1, p2
+        return p1, p2, p3
+
 
 class Pilatus(Detector):
     """
@@ -881,7 +894,7 @@ class Pilatus(Detector):
         # For pilatus,
         p1 = (self._pixel1 * (delta1 + 0.5 + d1))
         p2 = (self._pixel2 * (delta2 + 0.5 + d2))
-        return p1, p2
+        return p1, p2, None
 
 
 class Pilatus100k(Pilatus):
@@ -1040,7 +1053,7 @@ class Eiger(Detector):
         # For pilatus,
         p1 = (self._pixel1 * (delta1 + 0.5 + d1))
         p2 = (self._pixel2 * (delta2 + 0.5 + d2))
-        return p1, p2
+        return p1, p2, None
 
 
 class Eiger1M(Eiger):
@@ -1351,7 +1364,7 @@ class ImXPadS10(Detector):
         else:
             p1 = numpy.interp(d1 + 0.5, numpy.arange(self.MAX_SHAPE[0] + 1), edges1, edges1[0], edges1[-1])
             p2 = numpy.interp(d2 + 0.5, numpy.arange(self.MAX_SHAPE[1] + 1), edges2, edges2[0], edges2[-1])
-        return p1, p2
+        return p1, p2, None
 
 
 class ImXPadS70(ImXPadS10):
@@ -1459,7 +1472,7 @@ class Xpad_flat(ImXPadS10):
             d1 = d1 + 0.5
             d2 = d2 + 0.5
         if bilinear and use_cython:
-            p1, p2 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
+            p1, p2, p3 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
             p1.shape = d1.shape
             p2.shape = d2.shape
         else:
@@ -1488,7 +1501,7 @@ class Xpad_flat(ImXPadS10):
                + B2 * delta1 * (1.0 - delta2) \
                + C2 * delta1 * delta2 \
                + D2 * (1.0 - delta1) * delta2
-        return p1, p2
+        return p1, p2, None
 
     def get_pixel_corners(self):
         """
@@ -1971,15 +1984,15 @@ class RayonixMx325(Rayonix):
 
 class Aarhus(Detector):
     """
-    Cylindrical detector made of bent imaging-plate.
-    Developped at the Danish university of Aarhus  
+    Cylindrical detector made of a bent imaging-plate.
+    Developped at the Danish university of Aarhus
     r = 1.2m or 0.3m
-    
-    The image has to be laid-out horizontally 
 
-    Nota: the detector is bending towards the sample, hence reducing the sample-detector distance. 
+    The image has to be laid-out horizontally
+
+    Nota: the detector is bending towards the sample, hence reducing the sample-detector distance.
     This is why z<0 (or p3<0)
-    
+
     TODO: update cython code for 3d detectors
     use expand2d instead of outer product with ones
     """
@@ -2006,18 +2019,17 @@ class Aarhus(Detector):
         if self._pixel_corners is None:
             with self._sem:
                 if self._pixel_corners is None:
-                    p1 = numpy.arange(self.shape[0] + 1) * self._pixel1
-                    t2 = numpy.arange(self.shape[1] + 1) * (self._pixel2 / self.radius)
+                    p1 = numpy.arange(self.shape[0] + 1.0) * self._pixel1
+                    t2 = numpy.arange(self.shape[1] + 1.0) * (self._pixel2 / self.radius)
                     p2 = self.radius * numpy.sin(t2)
                     p3 = self.radius * (numpy.cos(t2) - 1.0)
-#                     if bilinear and use_cython:
-#                         #TODO: replace with expand2d
-#                         d1 = numpy.outer(p1, numpy.ones(self.shape[1] + 1))
-#                         d2 = numpy.outer(numpy.ones(self.shape[0] + 1), p2)
-#
-#                         corners = bilinear.convert_corner_2D_to_4D(3, p1, p2)
-#                     else:
-                    if True:
+                    if bilinear and use_cython:
+                        d1 = expand2d(p1, self.shape[1] + 1, False)
+                        d2 = expand2d(p2, self.shape[0] + 1, True)
+                        d3 = expand2d(p3, self.shape[0] + 1, True)
+
+                        corners = bilinear.convert_corner_2D_to_4D(3, d1, d2, d3)
+                    else:
                         p1.shape = -1, 1
                         p1.strides = p1.strides[0], 0
                         p2.shape = 1, -1
@@ -2025,21 +2037,18 @@ class Aarhus(Detector):
                         p3.shape = 1, -1
                         p3.strides = 0, p3.strides[1]
                         corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
+                        corners[:, :, 0, 0] = p3[:, :-1]
                         corners[:, :, 0, 1] = p1[:-1, :]
                         corners[:, :, 0, 2] = p2[:, :-1]
-                        corners[:, :, 0, 0] = p3[:, :-1]
-
+                        corners[:, :, 1, 0] = p3[:, :-1]
                         corners[:, :, 1, 1] = p1[1:, :]
                         corners[:, :, 1, 2] = p2[:, :-1]
-                        corners[:, :, 1, 0] = p3[:, :-1]
-
                         corners[:, :, 2, 1] = p1[1:, :]
                         corners[:, :, 2, 2] = p2[:, 1:]
                         corners[:, :, 2, 0] = p3[:, 1:]
-
+                        corners[:, :, 3, 0] = p3[:, 1:]
                         corners[:, :, 3, 1] = p1[:-1, :]
                         corners[:, :, 3, 2] = p2[:, 1:]
-                        corners[:, :, 3, 0] = p3[:, 1:]
                     self._pixel_corners = corners
         return self._pixel_corners
 
@@ -2063,21 +2072,20 @@ class Aarhus(Detector):
         the same shape.
         """
         if (d1 is None) or d2 is None:
-            d1 = expand2d(numpy.arange(self.shape[1]), self.shape[0], True)
-            d2 = expand2d(numpy.arange(self.shape[0]), self.shape[1], False)
-            # d1 = utinumpy.outer(numpy.arange(self.shape[0]), numpy.ones(self.shape[1]))
-            # d2 = numpy.outer(numpy.ones(self.shape[0]), numpy.arange(self.shape[1]))
+            d1 = expand2d(numpy.arange(float(self.shape[0])), self.shape[1], False)
+            d2 = expand2d(numpy.arange(float(self.shape[1])), self.shape[0], True)
         corners = self.get_pixel_corners()
         if center:
             # avoid += It modifies in place and segfaults
             d1 = d1 + 0.5
             d2 = d2 + 0.5
-#         if bilinear and use_cython:
-#             p1, p2 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners)
-#             p1.shape = d1.shape
-#             p2.shape = d2.shape
-#         else:
-        if True:
+        if bilinear and use_cython:
+            p1, p2, p3 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners, is_flat=False)
+            p1.shape = d1.shape
+            p2.shape = d2.shape
+            p3.shape = d2.shape
+        else:
+#         if True:
             i1 = d1.astype(int).clip(0, corners.shape[0] - 1)
             i2 = d2.astype(int).clip(0, corners.shape[1] - 1)
             delta1 = d1 - i1

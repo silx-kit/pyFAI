@@ -23,7 +23,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3+"
-__date__ = "07/04/2015"
+__date__ = "08/05/2015"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -43,7 +43,9 @@ include "bilinear.pxi"
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)
-def calc_cartesian_positions(floating[:] d1, floating[:] d2, float[:, :, :, :] pos):
+def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
+                             float[:, :, :, ::1] pos,
+                             bint is_flat=True):
     """
     Calculate the Cartesian position for array of position (d1, d2)
     with pixel coordinated stored in array pos
@@ -52,18 +54,21 @@ def calc_cartesian_positions(floating[:] d1, floating[:] d2, float[:, :, :, :] p
     @param d1: position in dim1
     @param d2: position in dim2
     @param pos: array with position of pixels corners
+    @return 3-tuple of position.
     """
     cdef:
         int i, p1, p2, dim1, dim2, size = d1.size
-        float delta1, delta2, f1, f2, A1, A2, B1, B2, C1, C2, D1, D2
+        float delta1, delta2, f1, f2, A0, A1, A2, B0, B1, B2, C1, C0, C2, D0, D1, D2
         numpy.ndarray[numpy.float32_t, ndim = 1] out1 = numpy.zeros(size, dtype=numpy.float32)
         numpy.ndarray[numpy.float32_t, ndim = 1] out2 = numpy.zeros(size, dtype=numpy.float32)
-
+        numpy.ndarray[numpy.float32_t, ndim = 1] out3
+    if not is_flat:
+        out3 = numpy.zeros(size, dtype=numpy.float32)
     dim1 = pos.shape[0]
     dim2 = pos.shape[1]
     assert size == d2.size
 
-    for i in prange(size, nogil=True):
+    for i in prange(size, nogil=True, schedule="static"):
         f1 = floor(d1[i])
         f2 = floor(d2[i])
 
@@ -103,6 +108,15 @@ def calc_cartesian_positions(floating[:] d1, floating[:] d2, float[:, :, :, :] p
         C2 = pos[p1, p2, 2, 2]
         D1 = pos[p1, p2, 3, 1]
         D2 = pos[p1, p2, 3, 2]
+        if not is_flat:
+            A0 = pos[p1, p2, 0, 0]
+            B0 = pos[p1, p2, 1, 0]
+            C0 = pos[p1, p2, 2, 0]
+            D0 = pos[p1, p2, 3, 0]
+            out3[i] += A0 * (1.0 - delta1) * (1.0 - delta2) \
+                + B0 * delta1 * (1.0 - delta2) \
+                + C0 * delta1 * delta2 \
+                + D0 * (1.0 - delta1) * delta2
 
         # A and D are on the same:  dim1 (Y)
         # A and B are on the same:  dim2 (X)
@@ -115,29 +129,36 @@ def calc_cartesian_positions(floating[:] d1, floating[:] d2, float[:, :, :, :] p
             + B2 * delta1 * (1.0 - delta2) \
             + C2 * delta1 * delta2 \
             + D2 * (1.0 - delta1) * delta2
-
-    return out1, out2
+    if is_flat:
+        return out1, out2, None
+    else:
+        return out1, out2, out3
 
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)
-def convert_corner_2D_to_4D(int ndim, floating[:, :] d1, floating[:, :] d2):
+def convert_corner_2D_to_4D(int ndim,
+                            floating[:, ::1] d1 not None,
+                            floating[:, ::1] d2 not None,
+                            floating[:, ::1] d3 = None):
     """
-    Convert 2 array of corner position into a 4D array of pixel corner coordinates
+    Convert 2 (or 3) arrays of corner position into a 4D array of pixel corner coordinates
 
     @param ndim: 2d or 3D output
     @param d1: 2D position in dim1 (shape +1)
     @param d2: 2D position in dim2 (shape +1)
+    @param d3: 2D position in dim3 (z) (shape +1)
     @param pos: 4D array with position of pixels corners
     """
     cdef int shape0, shape1, i, j
     #  edges position are n+1 compared to number of pixels
     shape0 = d1.shape[0] - 1
-    shape1 = d1.shape[1] - 1
+    shape1 = d2.shape[1] - 1
+    assert d1.shape[0]==d2.shape[0]
+    assert d1.shape[1]==d2.shape[1]
     cdef numpy.ndarray[numpy.float32_t, ndim = 4] pos = numpy.zeros((shape0, shape1, 4, ndim), dtype=numpy.float32)
-#    assert d1.shape == d2.shape
-    for i in prange(shape0, nogil=True):
+    for i in prange(shape0, nogil=True, schedule="static"):
         for j in range(shape1):
             pos[i, j, 0, ndim - 2] += d1[i, j]
             pos[i, j, 0, ndim - 1] += d2[i, j]
@@ -147,4 +168,14 @@ def convert_corner_2D_to_4D(int ndim, floating[:, :] d1, floating[:, :] d2):
             pos[i, j, 2, ndim - 1] += d2[i + 1, j + 1]
             pos[i, j, 3, ndim - 2] += d1[i, j + 1]
             pos[i, j, 3, ndim - 1] += d2[i, j + 1]
+    if (d3 is not None) and ndim==3:
+        assert d1.shape[0] == d3.shape[0]
+        assert d1.shape[1] == d3.shape[1]
+        for i in prange(shape0, nogil=True, schedule="static"):
+            for j in range(shape1):
+                pos[i, j, 0, 0] += d3[i, j]
+                pos[i, j, 1, 0] += d3[i + 1, j]
+                pos[i, j, 2, 0] += d3[i + 1, j + 1]
+                pos[i, j, 3, 0] += d3[i, j + 1]
+
     return pos
