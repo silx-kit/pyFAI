@@ -540,7 +540,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
     @param cutoff: keep all data where (I-center)/std < cutoff
     @return: filename with the data or the data ndarray in case format=None
     """
-    if filter_ not in ["min", "max", "median", "mean", "add"]:
+    if filter_ not in ["min", "max", "median", "mean", "sum"]:
         logger.warning("Filter %s not understood. switch to mean filter")
         filter_ = "mean"
     ld = len(listImages)
@@ -606,7 +606,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
                 sumImg = correctedImg
             else:
                 sumImg += correctedImg
-        elif filter_ == "add":
+        elif filter_ == "sum":
             if sumImg is None:
                 sumImg = correctedImg
             else:
@@ -618,7 +618,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             datared = numpy.ascontiguousarray(sumImg, dtype=numpy.float32)
         elif filter_ == "mean":
             datared = sumImg / numpy.float32(ld)
-        elif filter_ == "add":
+        elif filter_ == "sum":
             datared = sumImg / numpy.float32(ld)
     logger.debug("Intensity range in merged dataset : %s --> %s", datared.min(), datared.max())
     if format is not None:
@@ -667,7 +667,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
 #            if "header_keys" in dir(fimg):
             fimg.header_keys = header_list
 
-            if filter_ == "add":
+            if filter_ == "sum":
               fimg = fabioclass(data=numpy.int32(datared*numpy.float32(ld)),
                               header=header)
 
