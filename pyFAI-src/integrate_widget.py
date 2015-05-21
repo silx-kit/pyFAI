@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/03/2015"
+__date__ = "21/05/2015"
 __satus__ = "development"
 
 import sys
@@ -128,14 +128,14 @@ class Browser(QtGui.QMainWindow):
 class AIWidget(QtGui.QWidget):
     """
     """
-    def __init__(self, input_data=None):
+    def __init__(self, input_data=None, output_path=None, output_format=None, slow_dim=None, fast_dim=None):
         self.units = {}
         self.ai = AzimuthalIntegrator()
         self.input_data = input_data
-        self.output_path = None
-        self.output_format = None
-        self.slow_dim = None
-        self.fast_dim = None
+        self.output_path = output_path
+        self.output_format = output_format
+        self.slow_dim = slow_dim
+        self.fast_dim = fast_dim
         self.name = None
         self._sem = threading.Semaphore()
         QtGui.QWidget.__init__(self)
