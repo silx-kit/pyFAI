@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/03/2015"
+__date__ = "21/05/2015"
 __satus__ = "development"
 
 import sys
@@ -128,14 +128,14 @@ class Browser(QtGui.QMainWindow):
 class AIWidget(QtGui.QWidget):
     """
     """
-    def __init__(self, input_data=None):
+    def __init__(self, input_data=None, output_path=None, output_format=None, slow_dim=None, fast_dim=None):
         self.units = {}
         self.ai = AzimuthalIntegrator()
         self.input_data = input_data
-        self.output_path = None
-        self.output_format = None
-        self.slow_dim = None
-        self.fast_dim = None
+        self.output_path = output_path
+        self.output_format = output_format
+        self.slow_dim = slow_dim
+        self.fast_dim = fast_dim
         self.name = None
         self._sem = threading.Semaphore()
         QtGui.QWidget.__init__(self)
@@ -442,10 +442,10 @@ class AIWidget(QtGui.QWidget):
 
         """
         logger.info("Dump!")
-        to_save = { "poni": str(self.poni.text()).strip(),
-                    "detector": str(self.detector.currentText()).lower(),
+        to_save = { "poni": str_(self.poni.text()).strip(),
+                    "detector": str_(self.detector.currentText()).lower(),
                     "wavelength":float_(self.wavelength.text()),
-                    "splineFile":str(self.splineFile.text()).strip(),
+                    "splineFile":str_(self.splineFile.text()).strip(),
                     "pixel1": float_(self.pixel1.text()),
                     "pixel2":float_(self.pixel2.text()),
                     "dist":float_(self.dist.text()),
@@ -461,9 +461,9 @@ class AIWidget(QtGui.QWidget):
                     "do_polarization":bool(self.do_polarization.isChecked()),
                     "val_dummy":float_(self.val_dummy.text()),
                     "delta_dummy":float_(self.delta_dummy.text()),
-                    "mask_file":str(self.mask_file.text()).strip(),
-                    "dark_current":str(self.dark_current.text()).strip(),
-                    "flat_field":str(self.flat_field.text()).strip(),
+                    "mask_file":str_(self.mask_file.text()).strip(),
+                    "dark_current":str_(self.dark_current.text()).strip(),
+                    "flat_field":str_(self.flat_field.text()).strip(),
                     "polarization_factor":float_(self.polarization_factor.value()),
                     "nbpt_rad":int_(self.nbpt_rad.text()),
                     "do_2D":bool(self.do_2D.isChecked()),
@@ -558,11 +558,11 @@ class AIWidget(QtGui.QWidget):
     def select_ponifile(self):
         ponifile = QtGui.QFileDialog.getOpenFileName()
         self.poni.setText(ponifile)
-        self.set_ponifile(ponifile)
+        self.set_ponifile(str_(ponifile))
 
     def select_splinefile(self):
         logger.debug("select_splinefile")
-        splinefile = str(QtGui.QFileDialog.getOpenFileName())
+        splinefile = str_(QtGui.QFileDialog.getOpenFileName())
         if splinefile:
             try:
                 self.ai.detector.set_splineFile(splinefile)
@@ -574,28 +574,33 @@ class AIWidget(QtGui.QWidget):
 
     def select_maskfile(self):
         logger.debug("select_maskfile")
-        maskfile = str(QtGui.QFileDialog.getOpenFileName())
+        maskfile = str_(QtGui.QFileDialog.getOpenFileName())
         if maskfile:
             self.mask_file.setText(maskfile or "")
             self.do_mask.setChecked(True)
 
     def select_darkcurrent(self):
         logger.debug("select_darkcurrent")
-        darkcurrent = str(QtGui.QFileDialog.getOpenFileName())
+        darkcurrent = str_(QtGui.QFileDialog.getOpenFileName())
         if darkcurrent:
             self.dark_current.setText(str_(darkcurrent))
             self.do_dark.setChecked(True)
 
     def select_flatfield(self):
         logger.debug("select_flatfield")
-        flatfield = str(QtGui.QFileDialog.getOpenFileName())
+        flatfield = str_(QtGui.QFileDialog.getOpenFileName())
         if flatfield:
             self.flat_field.setText(str_(flatfield))
             self.do_flat.setChecked(True)
 
     def set_ponifile(self, ponifile=None):
         if ponifile is None:
-            ponifile = self.poni.text()
+            ponifile = str_(self.poni.text())
+#         try:
+#             str(ponifile)
+#         except UnicodeError:
+#             ponifile = ponifile.encode("utf8")
+#         print(ponifile, type(ponifile))
         try:
             self.ai = AzimuthalIntegrator.sload(ponifile)
         except Exception as error:
@@ -657,10 +662,10 @@ class AIWidget(QtGui.QWidget):
         return fval
 
     def set_ai(self):
-        poni = str(self.poni.text()).strip()
+        poni = str_(self.poni.text()).strip()
         if poni and op.isfile(poni):
             self.ai = AzimuthalIntegrator.sload(poni)
-        detector = str(self.detector.currentText()).lower().strip() or "detector"
+        detector = str_(self.detector.currentText()).lower().strip() or "detector"
         self.ai.detector = detector_factory(detector)
 
         wavelength = str(self.wavelength.text()).strip()
@@ -674,7 +679,7 @@ class AIWidget(QtGui.QWidget):
                     logger.warning("Wavelength is in meter ... unlikely value %s" % fwavelength)
                 self.ai.wavelength = fwavelength
 
-        splineFile = str(self.splineFile.text()).strip()
+        splineFile = str_(self.splineFile.text()).strip()
         if splineFile and op.isfile(splineFile):
             self.ai.detector.splineFile = splineFile
 
@@ -690,7 +695,7 @@ class AIWidget(QtGui.QWidget):
         if self.chi_discontinuity_at_0.isChecked():
             self.ai.setChiDiscAtZero()
 
-        mask_file = str(self.mask_file.text()).strip()
+        mask_file = str_(self.mask_file.text()).strip()
         if mask_file  and bool(self.do_mask.isChecked()):
             if op.exists(mask_file):
                 try:
@@ -701,26 +706,26 @@ class AIWidget(QtGui.QWidget):
                     self.ai.mask = mask
 #            elif mask_file==FROM_PYMCA:
 #                self.ai.mask = mask
-        dark_files = [i.strip() for i in str(self.dark_current.text()).split(",")
+        dark_files = [i.strip() for i in str_(self.dark_current.text()).split(",")
                       if op.isfile(i.strip())]
         if dark_files and bool(self.do_dark.isChecked()):
             self.ai.set_darkfiles(dark_files)
 
-        flat_files = [i.strip() for i in str(self.flat_field.text()).split(",")
+        flat_files = [i.strip() for i in str_(self.flat_field.text()).split(",")
                       if op.isfile(i.strip())]
         if flat_files and bool(self.do_flat.isChecked()):
             self.ai.set_flatfiles(flat_files)
 
     def detector_changed(self):
         logger.debug("detector_changed")
-        detector = str(self.detector.currentText()).lower()
+        detector = str_(self.detector.currentText()).lower()
         inst = detector_factory(detector)
         if inst.force_pixel:
             self.pixel1.setText(str(inst.pixel1))
             self.pixel2.setText(str(inst.pixel2))
             self.splineFile.setText("")
         elif self.splineFile.text():
-            splineFile = str(self.splineFile.text()).strip()
+            splineFile = str_(self.splineFile.text()).strip()
             if op.isfile(splineFile):
                 inst.set_splineFile(splineFile)
                 self.pixel1.setText(str(inst.pixel1))

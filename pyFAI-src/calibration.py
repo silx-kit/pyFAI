@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/04/2015"
+__date__ = "07/05/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -129,7 +129,8 @@ class AbstractCalibration(object):
             'assign': "Change the assignment of a group of points to a rings",
             "weight": "toggle from weighted to unweighted mode...",
             "define": "Re-define the value for a constant internal parameter of the program like max_iter, nPt_1D, nPt_2D_azim, nPt_2D_rad. Warning: they may be harmful !",
-            "chiplot": "plot control point as function of azimuthal and radial angle"
+            "chiplot": "plot control point as function of azimuthal and radial angle",
+            "delete": "delete a group of points, provide the letter."
             }
     PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
     UNITS = {"dist":"meter", "poni1":"meter", "poni2":"meter", "rot1":"radian",
@@ -982,6 +983,14 @@ class AbstractCalibration(object):
             elif action == "chiplot":
                     print(self.HELP[action])
                     self.chiplot()
+            elif action == "delete":
+                if len(words) < 2:
+                    print(self.HELP[action])
+                else:
+                    for code in  words[1:]:
+                        self.peakPicker.remove_grp(code)
+                    self.data = self.peakPicker.points.getList()
+                    self.geoRef.data = numpy.array(self.data, dtype=numpy.float64)
             else:
                 logger.warning("Unrecognized action: %s, type 'quit' to leave " % action)
 
@@ -1177,7 +1186,7 @@ class AbstractCalibration(object):
         if how not in ["center", "ring"]:  # ,"best"]:
             logger.warning("unknow geometry reset method: %s, fall back on detector center" % how)
             how = "center"
-        if not self.data:
+        if self.data is None:
             logger.warning("No datapoint: fall back on detector center")
             how = "center"
         # this is true for all:
@@ -1187,17 +1196,18 @@ class AbstractCalibration(object):
 
         if how == "ring":
             inner_ring = min(set(i[2] for i in self.data))
+            print("inner ring: %s" % inner_ring)
             data = numpy.array([[i[0], i[1]] for i in self.data if i[2] == inner_ring])
             center = data.mean(axis=0)
             self.ai.poni1, self.ai.poni2 = data.mean(axis=0)
-            tth = self.calibrant.get_2th()[inner_ring]
+            tth = self.calibrant.get_2th()[int(inner_ring)]
             dist = (data - center)
             d = numpy.sqrt(dist[:, 0] ** 2 + dist[:, 1] ** 2).mean()
             self.ai.dist = d / numpy.tan(tth)
         elif how == "center":
             self.ai.dist = 0.1
             try:
-                p1, p2 = self.detector.calc_cartesian_positions()
+                p1, p2, p3 = self.detector.calc_cartesian_positions()
                 self.ai.poni1 = p1.max() / 2.0
                 self.ai.poni2 = p2.max() / 2.0
             except Exception as err:
@@ -1357,7 +1367,7 @@ decrease the value if arcs are mixed together.""", default=None)
                         "rot1" : 0.0, "rot2" : 0.0, "rot3" : 0.0 }
         if self.detector:
             try:
-                p1, p2 = self.detector.calc_cartesian_positions()
+                p1, p2, p3 = self.detector.calc_cartesian_positions()
                 defaults["poni1"] = p1.max() / 2.
                 defaults["poni2"] = p2.max() / 2.
             except Exception as err:

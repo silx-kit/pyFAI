@@ -28,7 +28,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2015"
+__date__ = "07/05/2015"
 
 import sys
 import os
@@ -36,6 +36,7 @@ import tempfile
 import shutil
 import unittest
 import numpy
+import time
 if __name__ == '__main__':
     import pkgutil
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
@@ -66,15 +67,16 @@ class TestDetector(unittest.TestCase):
         # check that the cartesian coordinates is cached
         self.assertEqual(hasattr(imxpad, '_pixel_edges'), True)
         self.assertEqual(imxpad._pixel_edges, None)
-        y, x = imxpad.calc_cartesian_positions()
+        y, x, z = imxpad.calc_cartesian_positions()
         self.assertEqual(imxpad._pixel_edges is None, False)
 
         # now check that the cached values are identical for each
         # method call
-        y1, x1 = imxpad.calc_cartesian_positions()
+        y1, x1, z1 = imxpad.calc_cartesian_positions()
         self.assertEqual(numpy.all(numpy.equal(y1, y)), True)
         self.assertEqual(numpy.all(numpy.equal(x1, x)), True)
-
+        self.assertEqual(z, None)
+        self.assertEqual(z1, None)
         # check that a few pixel positions are ok.
         self.assertAlmostEqual(y[0, 0], 2.5 * 130e-6 / 2.)
         self.assertAlmostEqual(y[3, 0], y[2, 0] + 130e-6)
@@ -83,6 +85,7 @@ class TestDetector(unittest.TestCase):
         self.assertAlmostEqual(x[0, 0], 2.5 * 130e-6 / 2.)
         self.assertAlmostEqual(x[0, 3], x[0, 2] + 130e-6)
         self.assertAlmostEqual(x[0, 79], x[0, 78] + 130e-6 * 3.5 / 2.)
+
 
     def test_detector_rayonix_sx165(self):
         """
@@ -153,21 +156,27 @@ class TestDetector(unittest.TestCase):
                     self.assertEqual(det.__getattribute__(what), new_det.__getattribute__(what), "%s is the same for %s" % (what, fname))
                 else:
                     self.assertAlmostEqual(det.__getattribute__(what), new_det.__getattribute__(what), 4, "%s is the same for %s" % (what, fname))
+            if (det.mask is not None) or (new_det.mask is not None):
+                self.assert_(numpy.allclose(det.mask, new_det.mask), "%s mask is not the same" % det_name)
+
             if det.shape[0] > 2000:
                 continue
             try:
-                r1, r2 = det.calc_cartesian_positions()
-                o1, o2 = new_det.calc_cartesian_positions()
+                r = det.calc_cartesian_positions()
+                o = new_det.calc_cartesian_positions()
             except MemoryError:
                 logger.warning("Test nexus_detector failed due to short memory on detector %s" % det_name)
                 continue
-            err1 = abs(r1 - o1).max()
-            err2 = abs(r2 - o2).max()
-            if det.name not in known_fail:
-                self.assert_(err1 < 1e-6, "%s precision on pixel position 1 is better than 1µm, got %e" % (det_name, err2))
-                self.assert_(err2 < 1e-6, "%s precision on pixel position 2 is better than 1µm, got %e" % (det_name, err2))
-            if (det.mask is not None) or (new_det.mask is not None):
-                self.assert_(numpy.allclose(det.mask, new_det.mask), "%s mask is not the same" % det_name)
+            self.assertEqual(len(o), len(r), "data have same dimension")
+            err1 = abs(r[0] - o[0]).max()
+            err2 = abs(r[1] - o[1]).max()
+            if det.name in known_fail:
+                continue
+            self.assert_(err1 < 1e-6, "%s precision on pixel position 1 is better than 1µm, got %e" % (det_name, err2))
+            self.assert_(err2 < 1e-6, "%s precision on pixel position 2 is better than 1µm, got %e" % (det_name, err2))
+            if not det.IS_FLAT:
+                err = abs(r[2] - o[2]).max()
+                self.assert_(err < 1e-6, "%s precision on pixel position 3 is better than 1µm, got %e" % (det_name, err))
 
         # check Pilatus with displacement maps
         # check spline
@@ -216,6 +225,29 @@ class TestDetector(unittest.TestCase):
         self.assert_(numpy.allclose(cy[0], np[0]), "max_delta1=" % abs(cy[0] - np[0]).max())
         self.assert_(numpy.allclose(cy[1], np[1]), "max_delta2=" % abs(cy[1] - np[1]).max())
 
+    def test_non_flat(self):
+        """
+        tests specific to non flat detectors to ensure consistency
+        """
+        a=detector_factory("Aarhus")
+        t0=time.time()
+        n = a.get_pixel_corners(use_cython=False)
+        t1=time.time()
+        a._pixel_corners = None
+        c = a.get_pixel_corners(use_cython=True)
+        t2=time.time()
+        logger.info("Aarhus.get_pixel_corners timing Numpy: %.3fs Cython: %.3fs"%(t1-t0,t2-t1))
+        self.assert_(abs(n-c).max()<1e-6, "get_pixel_corners cython == numpy")
+        # test pixel center coordinates
+        t0=time.time()
+        n1, n2, n3 = a.calc_cartesian_positions(use_cython=False)
+        t1=time.time()
+        c1, c2, c3 = a.calc_cartesian_positions(use_cython=True)
+        t2=time.time()
+        logger.info("Aarhus.calc_cartesian_positions timing Numpy: %.3fs Cython: %.3fs"%(t1-t0,t2-t1))
+        self.assert_(abs(n1-c1).max()<1e-6, "cartesian coord1 cython == numpy")
+        self.assert_(abs(n2-c2).max()<1e-6, "cartesian coord2 cython == numpy")
+        self.assert_(abs(n3-c3).max()<1e-6, "cartesian coord3 cython == numpy")
 
 def test_suite_all_detectors():
     testSuite = unittest.TestSuite()
@@ -225,6 +257,7 @@ def test_suite_all_detectors():
     testSuite.addTest(TestDetector("test_nexus_detector"))
     testSuite.addTest(TestDetector("test_guess_binning"))
     testSuite.addTest(TestDetector("test_Xpad_flat"))
+    testSuite.addTest(TestDetector("test_non_flat"))
     return testSuite
 
 if __name__ == '__main__':

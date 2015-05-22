@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/04/2015"
+__date__ = "07/05/2015"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -254,7 +254,7 @@ class Geometry(object):
                            f2d["tilt"], f2d["tiltPlanRotation"]))
         return os.linesep.join(lstTxt)
 
-    def _calcCartesianPositions(self, d1, d2, poni1=None, poni2=None):
+    def _calc_cartesian_positions(self, d1, d2, poni1=None, poni2=None):
         """
         Calculate the position in cartesian coordinate (centered on the PONI)
         and in meter of a couple of coordinates.
@@ -274,8 +274,8 @@ class Geometry(object):
         if poni2 is None:
             poni2 = self.poni2
 
-        p1, p2 = self.detector.calc_cartesian_positions(d1, d2)
-        return p1 - poni1, p2 - poni2
+        p1, p2, p3 = self.detector.calc_cartesian_positions(d1, d2)
+        return p1 - poni1, p2 - poni2, p3
 
     def calc_pos_zyx(self, d0=None, d1=None, d2=None, param=None):
         """
@@ -295,11 +295,13 @@ class Geometry(object):
             param = self.param
         if (d1 is None) or (d2 is None):
             raise RuntimeError("input corrdiate d1 and d2 are mandatory")
-        p1, p2 = self._calcCartesianPositions(d1, d2, param[1], param[2])
         if d0 is None:
             L = param[0]
         else:
             L = param[0] + d0
+        p1, p2, p3 = self._calc_cartesian_positions(d1, d2, param[1], param[2])
+        if p3 is not None:
+            L = L + p3
         cosRot1 = cos(param[3])
         cosRot2 = cos(param[4])
         cosRot3 = cos(param[5])
@@ -323,7 +325,7 @@ class Geometry(object):
     def tth(self, d1, d2, param=None, path="cython"):
         """
         Calculates the 2theta value for the center of a given pixel
-        (or set of pixels) 
+        (or set of pixels)
 
         @param d1: position(s) in pixel in first dimension (c order)
         @type d1: scalar or array of scalar
@@ -338,14 +340,14 @@ class Geometry(object):
             if param is None:
                 param = self.param
 
-            p1, p2 = self._calcCartesianPositions(d1, d2, param[1], param[2])
-
+            p1, p2, p3 = self._calc_cartesian_positions(d1, d2, param[1], param[2])
             tmp = _geometry.calc_tth(L=param[0],
                                      rot1=param[3],
                                      rot2=param[4],
                                      rot3=param[5],
                                      pos1=p1,
-                                     pos2=p2)
+                                     pos2=p2,
+                                     pos3=p3)
         else:
             zyx = self.calc_pos_zyx(d0=None, d1=d1, d2=d2, param=param)
             t1 = zyx[1]
@@ -376,14 +378,15 @@ class Geometry(object):
                                 " without knowing wavelength !!!"))
 
         if _geometry and path == "cython":
-            p1, p2 = self._calcCartesianPositions(d1, d2,
-                                                  self._poni1, self.poni2)
+            p1, p2, p3 = self._calc_cartesian_positions(d1, d2,
+                                                      self._poni1, self.poni2)
             out = _geometry.calc_q(L=self._dist,
                                    rot1=self._rot1,
                                    rot2=self._rot2,
                                    rot3=self._rot3,
                                    pos1=p1,
                                    pos2=p2,
+                                   pos3=p3,
                                    wavelength=self.wavelength)
         else:
             out = 4.0e-9 * numpy.pi / self.wavelength * \
@@ -408,13 +411,14 @@ class Geometry(object):
         directDist = self._dist / cosTilt  # in m
 
         if _geometry and path == "cython":
-            p1, p2 = self._calcCartesianPositions(d1, d2, self._poni1, self.poni2)
+            p1, p2, p3 = self._calc_cartesian_positions(d1, d2, self._poni1, self.poni2)
             out = _geometry.calc_r(L=self._dist,
                                    rot1=self._rot1,
                                    rot2=self._rot2,
                                    rot3=self._rot3,
                                    pos1=p1,
-                                   pos2=p2)
+                                   pos2=p2,
+                                   pos3=p3)
         else:
             out = directDist * numpy.tan(self.tth(d1=d1, d2=d2, param=param))
         return out
@@ -502,14 +506,13 @@ class Geometry(object):
         @param path: can be "tan" (i.e via numpy) or "cython"
         @return: chi, the azimuthal angle in rad
         """
-        p1, p2 = self._calcCartesianPositions(d1, d2, self._poni1, self._poni2)
+        p1, p2, p3 = self._calc_cartesian_positions(d1, d2, self._poni1, self._poni2)
 
         if path == "cython" and _geometry:
-            tmp = _geometry.calc_chi(
-                L=self._dist,
-                rot1=self._rot1, rot2=self._rot2, rot3=self._rot3,
-                pos1=p1, pos2=p2)
-            tmp.shape = p1.shape
+            tmp = _geometry.calc_chi(L=self._dist,
+                                     rot1=self._rot1, rot2=self._rot2, rot3=self._rot3,
+                                     pos1=p1, pos2=p2, pos3=p3)
+            tmp.shape = d1.shape
         else:
             cosRot1 = cos(self._rot1)
             cosRot2 = cos(self._rot2)
@@ -518,6 +521,8 @@ class Geometry(object):
             sinRot2 = sin(self._rot2)
             sinRot3 = sin(self._rot3)
             L = self._dist
+            if p3 is not None:
+                L = L + p3
             num = p1 * cosRot2 * cosRot3 \
                 + p2 * (cosRot3 * sinRot1 * sinRot2 - cosRot1 * sinRot3) \
                 - L * (cosRot1 * cosRot3 * sinRot2 + sinRot1 * sinRot3)
@@ -816,7 +821,10 @@ class Geometry(object):
         @param d2:  1d or 2d set of points in pixel coord
         @return: cosine of the incidence angle
         """
-        p1, p2 = self._calcCartesianPositions(d1, d2)
+        p1, p2, p3 = self._calc_cartesian_positions(d1, d2)
+        if p3 is not None:
+            logger.warning("FIXME: Disable solid angle correction for 3D detectors")
+            return numpy.ones_like(d1)
         if path == "cython":
             cosa = _geometry.calc_cosa(self._dist, p1, p2)
         else:

@@ -25,7 +25,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/03/2015"
+__date__ = "13/05/2015"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -82,7 +82,7 @@ Q_A = Enum(REPR="q_A^-1",
            corner="cornerQArray",
            delta="deltaQ",
            scale=0.1,
-           label=r"Scattering vector $q$ ($\angstrom ^{-1}$)")
+           label=r"Scattering vector $q$ ($\AA ^{-1}$)")
 
 R = R_MM = Enum(REPR="r_mm",
                 center="rArray",

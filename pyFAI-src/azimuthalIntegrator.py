@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/04/2015"
+__date__ = "08/08/2015"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3267,7 +3267,10 @@ class AzimuthalIntegrator(Geometry):
                 f.write(self.makeHeaders(dark=dark, flat=flat,
                                          polarization_factor=polarization_factor,
                                          normalization_factor=normalization_factor))
-                f.write("\n# --> %s\n" % (filename))
+                try:
+                    f.write("\n# --> %s\n" % (filename))
+                except UnicodeError:
+                    f.write("\n# --> %s\n" % (filename.encode("utf8")))
                 if error is None:
                     f.write("#%14s %14s\n" % (dim1_unit.REPR, "I "))
                     f.write("\n".join(["%14.6e  %14.6e" % (t, i) for t, i in zip(dim1, I)]))
