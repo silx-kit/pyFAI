@@ -858,6 +858,7 @@ def shiftFFT(input_img, shift_val, method="fftw"):
         out = numpy.fft.ifft2(numpy.fft.fft2(input_img) * e)
     return abs(out)
 
+
 def maximum_position(img):
     """
     Same as scipy.ndimage.measurements.maximum_position:
@@ -869,6 +870,7 @@ def maximum_position(img):
     maxarg = numpy.argmax(img)
     _, s1 = img.shape
     return (maxarg // s1, maxarg % s1)
+
 
 def center_of_mass(img):
     """
@@ -882,6 +884,7 @@ def center_of_mass(img):
     img = img.astype("float64")
     img /= img.sum()
     return ((a0 * img).sum(), (a1 * img).sum())
+
 
 def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
     """
@@ -1016,6 +1019,7 @@ def _get_data_path(filename):
         raise RuntimeError("Can not find the [%s] resource, "
                         " something went wrong !!!" % (real_filename,))
 
+
 def get_calibration_dir():
     """get the full path of a calibration directory
 
@@ -1038,7 +1042,6 @@ def get_ui_file(filename):
     @return: the full path of the ui
     """
     return _get_data_path(os.path.join("gui", filename))
-
 
 
 def read_cl_file(filename):
@@ -1077,9 +1080,10 @@ def deg2rad(dd):
     """
     while dd > 180.0:
         dd -= 360.0
-    while dd <= -180.0:
+    while dd < -180.0:
         dd += 360.0
     return dd * pi / 180.
+
 
 class lazy_property(object):
     '''
@@ -1237,6 +1241,7 @@ except ImportError:  # backport percentile from numpy 1.6.2
         #   check and use out array.
         return np.add.reduce(sorted[indexer] * weights, axis=axis, out=out) / sumval
 
+
 def convert_CamelCase(name):
     """
     convert a function name in CamelCase into camel_case
@@ -1244,6 +1249,7 @@ def convert_CamelCase(name):
     import re
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
 
 def readFloatFromKeyboard(text, dictVar):
     """
@@ -1266,6 +1272,7 @@ def readFloatFromKeyboard(text, dictVar):
                     dictVar[i][j](vals[j])
         if not found:
             logger.error("You should provide the good number of floats")
+
 
 class FixedParameters(set):
     """
