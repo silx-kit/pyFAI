@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/05/2015"
+__date__ = "26/05/2015"
 __status__ = "production"
 
 import logging
@@ -78,6 +78,8 @@ try:
 except (ImportError, WindowsError) as err:
     logger.warn("Exception %s: FFTw3 not available. Falling back on Scipy", err)
     has_fftw3 = False
+
+EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
 import traceback
 
@@ -159,7 +161,7 @@ def str_(val):
         try:
             s = str(val)
         except UnicodeError:
-            #Python2 specific...
+            # Python2 specific...
             s = unicode(val)
     return s
 
@@ -668,7 +670,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             fimg.header_keys = header_list
 
             if filter_ == "sum":
-              fimg = fabioclass(data=numpy.int32(datared*numpy.float32(ld)),
+              fimg = fabioclass(data=numpy.int32(datared * numpy.float32(ld)),
                               header=header)
 
             fimg.write(output)

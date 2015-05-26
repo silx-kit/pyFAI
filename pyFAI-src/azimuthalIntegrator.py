@@ -41,12 +41,11 @@ import gc
 import numpy
 from math import pi
 from numpy import rad2deg
-EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 from . import geometry
 Geometry = geometry.Geometry
 from . import units
 from . import utils
-from .utils import StringTypes, deprecated
+from .utils import StringTypes, deprecated, EPS32
 import fabio
 error = None
 
@@ -2129,7 +2128,7 @@ class AzimuthalIntegrator(Geometry):
                     mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=None, dark=None, flat=None,
                     method="lut", unit=units.Q, safe=True, normalization_factor=None,
-                    block_size=32, profile=False):
+                    block_size=32, profile=False, all=False):
         """
         Calculate the azimuthal integrated Saxs curve in q(nm^-1) by default
 
@@ -2173,8 +2172,12 @@ class AzimuthalIntegrator(Geometry):
         @type safe: bool
         @param normalization_factor: Value of a normalization monitor
         @type normalization_factor: float
+        @param block_size: size of the block for OpenCL integration (unused?)
+        @param profile: set to True to enable profiling in OpenCL
+        @param all: if true return a dictionary with many more parameters  
+        
 
-        @return: q/2th/r bins center positions and regrouped intensity (and error array if variance or variance model provided).
+        @return: q/2th/r bins center positions and regrouped intensity (and error array if variance or variance model provided), uneless all==True.
         @rtype: 2 or 3-tuple of ndarrays
         """
         method = method.lower()
@@ -2221,8 +2224,8 @@ class AzimuthalIntegrator(Geometry):
 
         I = None
         sigma = None
-
-
+        count = None
+        sum = None
 
 
 
@@ -2321,13 +2324,13 @@ class AzimuthalIntegrator(Geometry):
 #                                     self._ocl_lut_integr = None
 #                                     method = self.DEFAULT_METHOD
                             if self._ocl_lut_integr is not None:
-                                I, _, _ = self._ocl_lut_integr.integrate(data, dark=dark, flat=flat,
-                                                                         solidAngle=solidangle,
-                                                                         solidAngle_checksum=self._dssa_crc,
-                                                                         dummy=dummy,
-                                                                         delta_dummy=delta_dummy,
-                                                                         polarization=polarization,
-                                                                         polarization_checksum=self._polarization_crc)
+                                I, sum, count = self._ocl_lut_integr.integrate(data, dark=dark, flat=flat,
+                                                                               solidAngle=solidangle,
+                                                                               solidAngle_checksum=self._dssa_crc,
+                                                                               dummy=dummy,
+                                                                               delta_dummy=delta_dummy,
+                                                                               polarization=polarization,
+                                                                               polarization_checksum=self._polarization_crc)
                                 qAxis = self._lut_integrator.outPos  # this will be copied later
                                 if error_model == "azimuthal":
                                     variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
@@ -2338,11 +2341,11 @@ class AzimuthalIntegrator(Geometry):
                                                                                  delta_dummy=delta_dummy)
                                     sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
                     else:
-                        qAxis, I, a, b = self._lut_integrator.integrate(data, dark=dark, flat=flat,
-                                                           solidAngle=solidangle,
-                                                           dummy=dummy,
-                                                           delta_dummy=delta_dummy,
-                                                           polarization=polarization)
+                        qAxis, I, sum, count = self._lut_integrator.integrate(data, dark=dark, flat=flat,
+                                                                              solidAngle=solidangle,
+                                                                              dummy=dummy,
+                                                                              delta_dummy=delta_dummy,
+                                                                              polarization=polarization)
 
                         if error_model == "azimuthal":
                             variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit)) ** 2
@@ -2450,7 +2453,7 @@ class AzimuthalIntegrator(Geometry):
                                                                                        checksum=self._csr_integrator.lut_checksum,
                                                                                        block_size=block_size,
                                                                                        profile=profile)
-                            I, _, _ = self._ocl_csr_integr.integrate(data, dark=dark, flat=flat,
+                            I, sum, count = self._ocl_csr_integr.integrate(data, dark=dark, flat=flat,
                                                                      solidAngle=solidangle,
                                                                      solidAngle_checksum=self._dssa_crc,
                                                                      dummy=dummy,
@@ -2467,7 +2470,7 @@ class AzimuthalIntegrator(Geometry):
                                                                              delta_dummy=delta_dummy)
                                 sigma = numpy.sqrt(a) / numpy.maximum(b, 1)
                     else:
-                        qAxis, I, a, b = self._csr_integrator.integrate(data, dark=dark, flat=flat,
+                        qAxis, I, sum, count = self._csr_integrator.integrate(data, dark=dark, flat=flat,
                                                            solidAngle=solidangle,
                                                            dummy=dummy,
                                                            delta_dummy=delta_dummy,
@@ -2492,7 +2495,7 @@ class AzimuthalIntegrator(Geometry):
                 else:
                     logger.debug("integrate1d uses SplitPixel implementation")
                     pos = self.array_from_unit(shape, "corner", unit)
-                    qAxis, I, a, b = splitPixel.fullSplit1D(pos=pos,
+                    qAxis, I, sum, count = splitPixel.fullSplit1D(pos=pos,
                                                             weights=data,
                                                             bins=npt,
                                                             pos0Range=radial_range,
@@ -2567,7 +2570,7 @@ class AzimuthalIntegrator(Geometry):
                     dchi = None
                 pos0 = self.array_from_unit(shape, "center", unit)
                 dpos0 = self.array_from_unit(shape, "delta", unit)
-                qAxis, I, a, b = splitBBox.histoBBox1d(weights=data,
+                qAxis, I, sum, count = splitBBox.histoBBox1d(weights=data,
                                                        pos0=pos0,
                                                        delta_pos0=dpos0,
                                                        pos1=chi,
@@ -2631,11 +2634,11 @@ class AzimuthalIntegrator(Geometry):
             if ("cython" in method):
                 if histogram is not None:
                     logger.debug("integrate1d uses cython implementation")
-                    qAxis, I, a, b = histogram.histogram(pos=pos0,
-                                                         weights=data,
-                                                         bins=npt,
-                                                         pixelSize_in_Pos=0,
-                                                         empty=dummy if dummy is not None else self._empty)
+                    qAxis, I, sum, count = histogram.histogram(pos=pos0,
+                                                               weights=data,
+                                                               bins=npt,
+                                                               pixelSize_in_Pos=0,
+                                                               empty=dummy if dummy is not None else self._empty)
                     if error_model == "azimuthal":
                         variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
                     if variance is not None:
@@ -2653,19 +2656,19 @@ class AzimuthalIntegrator(Geometry):
         if I is None:
             logger.debug("integrate1d uses Numpy implementation")
             method = "numpy"
-            ref, b = numpy.histogram(pos0, npt, range=radial_range)
+            count, b = numpy.histogram(pos0, npt, range=radial_range)
             qAxis = (b[1:] + b[:-1]) / 2.0
-            count = numpy.maximum(1, ref)
-            val, b = numpy.histogram(pos0, npt, weights=data, range=radial_range)
+            count1 = numpy.maximum(1, count)
+            sum, b = numpy.histogram(pos0, npt, weights=data, range=radial_range)
             if error_model == "azimuthal":
                 variance = (data - self.calcfrom1d(qAxis * pos0_scale, I, dim1_unit=unit, correctSolidAngle=False)[mask]) ** 2
             if variance is not None:
                 var1d, b = numpy.histogram(pos0, npt, weights=variance, range=radial_range)
-                sigma = numpy.sqrt(var1d) / count
-            I = val / count
+                sigma = numpy.sqrt(var1d) / count1
+            I = sum / count1
 
         if pos0_scale:
-            # not in place on purpose: make a copy
+            # not in place to make a copy
             qAxis = qAxis * pos0_scale
 
         if normalization_factor:
@@ -2676,10 +2679,22 @@ class AzimuthalIntegrator(Geometry):
         self.save1D(filename, qAxis, I, sigma, unit,
                     dark, flat, polarization_factor, normalization_factor)
 
-        if sigma is not None:
-            return qAxis, I, sigma
+        if all:
+            res = {"radial": qAxis,
+                   "unit": unit,
+                   "I": I,
+                   "sum": sum,
+                   "count":count
+                   }
+            if sigma is not None:
+                res["sigma"] = sigma
         else:
-            return qAxis, I
+            if sigma is not None:
+                res = qAxis, I, sigma
+            else:
+                res = qAxis, I
+        return res
+
 
     def integrate2d(self, data, npt_rad, npt_azim=360,
                     filename=None, correctSolidAngle=True, variance=None,
@@ -2687,7 +2702,7 @@ class AzimuthalIntegrator(Geometry):
                     mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=None, dark=None, flat=None,
                     method="bbox", unit=units.Q, safe=True,
-                    normalization_factor=None):
+                    normalization_factor=None, all=False):
         """
         Calculate the azimuthal regrouped 2d image in q(nm^-1)/chi(deg) by default
 
@@ -2731,7 +2746,7 @@ class AzimuthalIntegrator(Geometry):
         @type safe: bool
         @param normalization_factor: Value of a normalization monitor
         @type normalization_factor: float
-
+        @param all: if true, return many more intermediate results as a dict.
         @return: azimuthaly regrouped intensity, q/2theta/r pos. and chi pos.
         @rtype: 3-tuple of ndarrays (2d, 1d, 1d)
         """
@@ -2774,6 +2789,8 @@ class AzimuthalIntegrator(Geometry):
 
         I = None
         sigma = None
+        sum = None
+        count = None
 
         if (I is None) and ("lut" in method):
             logger.debug("in lut")
@@ -2861,7 +2878,7 @@ class AzimuthalIntegrator(Geometry):
 #                                     method = self.DEFAULT_METHOD
 #                                     error = True
                             if not error:
-                                I, _, _ = self._ocl_lut_integr.integrate(data, dark=dark, flat=flat,
+                                I, sum, count = self._ocl_lut_integr.integrate(data, dark=dark, flat=flat,
                                                                          solidAngle=solidangle,
                                                                          solidAngle_checksum=self._dssa_crc,
                                                                          dummy=dummy,
@@ -2874,12 +2891,12 @@ class AzimuthalIntegrator(Geometry):
                                 bins_rad = self._lut_integrator.outPos0  # this will be copied later
                                 bins_azim = self._lut_integrator.outPos1
                     else:
-                        I, bins_rad, bins_azim, _, _ = self._lut_integrator.integrate(data, dark=dark, flat=flat,
-                                                                                      solidAngle=solidangle,
-                                                                                      dummy=dummy,
-                                                                                      delta_dummy=delta_dummy,
-                                                                                      polarization=polarization,
-                                                                                      )
+                        I, bins_rad, bins_azim, sum, count = self._lut_integrator.integrate(data, dark=dark, flat=flat,
+                                                                                            solidAngle=solidangle,
+                                                                                            dummy=dummy,
+                                                                                            delta_dummy=delta_dummy,
+                                                                                            polarization=polarization,
+                                                                                            )
 
         if (I is None) and ("csr" in method):
             logger.debug("in csr")
@@ -2976,24 +2993,24 @@ class AzimuthalIntegrator(Geometry):
 #                                     method = self.DEFAULT_METHOD
 #                                     error = True
                             if not error:
-                                I, _, _ = self._ocl_csr_integr.integrate(data, dark=dark, flat=flat,
-                                                                         solidAngle=solidangle,
-                                                                         solidAngle_checksum=self._dssa_crc,
-                                                                         dummy=dummy,
-                                                                         delta_dummy=delta_dummy,
-                                                                         polarization=polarization,
-                                                                         polarization_checksum=self._polarization_crc,
-                                                                         safe=safe)
+                                I, sum, count = self._ocl_csr_integr.integrate(data, dark=dark, flat=flat,
+                                                                               solidAngle=solidangle,
+                                                                               solidAngle_checksum=self._dssa_crc,
+                                                                               dummy=dummy,
+                                                                               delta_dummy=delta_dummy,
+                                                                               polarization=polarization,
+                                                                               polarization_checksum=self._polarization_crc,
+                                                                               safe=safe)
                                 I.shape = npt
                                 I = I.T
                                 bins_rad = self._csr_integrator.outPos0  # this will be copied later
                                 bins_azim = self._csr_integrator.outPos1
                     else:
-                        I, bins_rad, bins_azim, _, _ = self._csr_integrator.integrate(data, dark=dark, flat=flat,
-                                                                                      solidAngle=solidangle,
-                                                                                      dummy=dummy,
-                                                                                      delta_dummy=delta_dummy,
-                                                                                      polarization=polarization)
+                        I, bins_rad, bins_azim, sum, count = self._csr_integrator.integrate(data, dark=dark, flat=flat,
+                                                                                            solidAngle=solidangle,
+                                                                                            dummy=dummy,
+                                                                                            delta_dummy=delta_dummy,
+                                                                                            polarization=polarization)
 
         if (I is None) and ("splitpix" in method):
             if splitPixel is None:
@@ -3003,18 +3020,18 @@ class AzimuthalIntegrator(Geometry):
             else:
                 logger.debug("integrate2d uses SplitPixel implementation")
                 pos = self.array_from_unit(shape, "corner", unit)
-                I, bins_rad, bins_azim, _, _ = splitPixel.fullSplit2D(pos=pos,
-                                                                      weights=data,
-                                                                      bins=(npt_rad, npt_azim),
-                                                                      pos0Range=radial_range,
-                                                                      pos1Range=azimuth_range,
-                                                                      dummy=dummy,
-                                                                      delta_dummy=delta_dummy,
-                                                                      mask=mask,
-                                                                      dark=dark,
-                                                                      flat=flat,
-                                                                      solidangle=solidangle,
-                                                                      polarization=polarization)
+                I, bins_rad, bins_azim, sum, count = splitPixel.fullSplit2D(pos=pos,
+                                                                            weights=data,
+                                                                            bins=(npt_rad, npt_azim),
+                                                                            pos0Range=radial_range,
+                                                                            pos1Range=azimuth_range,
+                                                                            dummy=dummy,
+                                                                            delta_dummy=delta_dummy,
+                                                                            mask=mask,
+                                                                            dark=dark,
+                                                                            flat=flat,
+                                                                            solidangle=solidangle,
+                                                                            polarization=polarization)
         if (I is None) and ("bbox" in method):
             if splitBBox is None:
                 logger.warning("splitBBox is not available;"
@@ -3026,21 +3043,21 @@ class AzimuthalIntegrator(Geometry):
                 dchi = self.deltaChi(shape)
                 pos0 = self.array_from_unit(shape, "center", unit)
                 dpos0 = self.array_from_unit(shape, "delta", unit)
-                I, bins_rad, bins_azim, _a, b = splitBBox.histoBBox2d(weights=data,
-                                                                      pos0=pos0,
-                                                                      delta_pos0=dpos0,
-                                                                      pos1=chi,
-                                                                      delta_pos1=dchi,
-                                                                      bins=(npt_rad, npt_azim),
-                                                                      pos0Range=radial_range,
-                                                                      pos1Range=azimuth_range,
-                                                                      dummy=dummy,
-                                                                      delta_dummy=delta_dummy,
-                                                                      mask=mask,
-                                                                      dark=dark,
-                                                                      flat=flat,
-                                                                      solidangle=solidangle,
-                                                                      polarization=polarization)
+                I, bins_rad, bins_azim, sum, count = splitBBox.histoBBox2d(weights=data,
+                                                                           pos0=pos0,
+                                                                           delta_pos0=dpos0,
+                                                                           pos1=chi,
+                                                                           delta_pos1=dchi,
+                                                                           bins=(npt_rad, npt_azim),
+                                                                           pos0Range=radial_range,
+                                                                           pos1Range=azimuth_range,
+                                                                           dummy=dummy,
+                                                                           delta_dummy=delta_dummy,
+                                                                           mask=mask,
+                                                                           dark=dark,
+                                                                           flat=flat,
+                                                                           solidangle=solidangle,
+                                                                           polarization=polarization)
 
         if (I is None):
             logger.debug("integrate2d uses cython implementation")
@@ -3084,22 +3101,22 @@ class AzimuthalIntegrator(Geometry):
                                    " falling back on numpy histogram")
                     method = "numpy"
                 else:
-                    I, bins_azim, bins_rad, _a, _b = histogram.histogram2d(pos0=pos1,
-                                                                           pos1=pos0,
-                                                                           weights=data,
-                                                                           bins=(npt_azim, npt_rad),
-                                                                           split=False,
-                                                                           empty=dummy if dummy is not None else self._empty)
+                    I, bins_azim, bins_rad, sum, count = histogram.histogram2d(pos0=pos1,
+                                                                               pos1=pos0,
+                                                                               weights=data,
+                                                                               bins=(npt_azim, npt_rad),
+                                                                               split=False,
+                                                                               empty=dummy if dummy is not None else self._empty)
 
         if I is None:
             logger.debug("integrate2d uses Numpy implementation")
-            ref, b, c = numpy.histogram2d(pos1, pos0, (npt_azim, npt_rad), range=[azimuth_range, radial_range])
+            count, b, c = numpy.histogram2d(pos1, pos0, (npt_azim, npt_rad), range=[azimuth_range, radial_range])
             bins_azim = (b[1:] + b[:-1]) / 2.0
             bins_rad = (c[1:] + c[:-1]) / 2.0
-            count = numpy.maximum(1, ref)
-            val, b, c = numpy.histogram2d(pos1, pos0, (npt_azim, npt_rad),
+            count1 = numpy.maximum(1, count)
+            sum, b, c = numpy.histogram2d(pos1, pos0, (npt_azim, npt_rad),
                                           weights=data, range=[azimuth_range, radial_range])
-            I = val / count
+            I = sum / count1
         # I know I make copies ....
         bins_rad = bins_rad * pos0_scale
         bins_azim = bins_azim * 180.0 / pi
@@ -3110,11 +3127,21 @@ class AzimuthalIntegrator(Geometry):
         self.save2D(filename, I, bins_rad, bins_azim, sigma, unit,
                     dark=dark, flat=flat, polarization_factor=polarization_factor,
                     normalization_factor=normalization_factor)
-        if sigma is not None:
-            return I, bins_rad, bins_azim, sigma
-        else:
-            return I, bins_rad, bins_azim
 
+        if all:
+            res = {"I":I,
+                 "radial":bins_rad,
+                 "azimuthal":bins_azim,
+                 "count":count,
+                 "sum": sum}
+            if sigma is not None:
+                res["sigma"] = sigma
+        else:
+            if sigma is not None:
+                res = I, bins_rad, bins_azim, sigma
+            else:
+                res = I, bins_rad, bins_azim
+        return res
 
     @deprecated
     def saxs(self, data, npt, filename=None,
