@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/08/2015"
+__date__ = "26/05/2015"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -41,11 +41,10 @@ import gc
 import numpy
 from math import pi
 from numpy import rad2deg
-from . import geometry
-Geometry = geometry.Geometry
+from .geometry import Geometry
 from . import units
 from . import utils
-from .utils import StringTypes, deprecated, EPS32
+from .utils import StringTypes, deprecated, EPS32, deg2rad
 import fabio
 error = None
 
@@ -403,8 +402,8 @@ class AzimuthalIntegrator(Geometry):
         data = data[mask]
 
         if tthRange is not None:
-            tthRange = (utils.deg2rad(tthRange[0]),
-                        utils.deg2rad(tthRange[-1]) * EPS32)
+            tthRange = (deg2rad(tthRange[0]),
+                        deg2rad(tthRange[-1]) * EPS32)
         else:
             tthRange = (tth.min(), tth.max() * EPS32)
         if npt not in self._nbPixCache:
@@ -465,7 +464,7 @@ class AzimuthalIntegrator(Geometry):
         data = data[mask]
 
         if tthRange is not None:
-            tthRange = (utils.deg2rad(tthRange[0]), utils.deg2rad(tthRange[-1]))
+            tthRange = tuple(deg2rad(tthRange[i]) for i in (0, -1))
         tthAxis, I, _, _ = histogram.histogram(pos=tth,
                                                weights=data,
                                                bins=npt,
@@ -587,10 +586,10 @@ class AzimuthalIntegrator(Geometry):
         dtth = self.delta2Theta(data.shape)
 
         if tthRange is not None:
-            tthRange = (utils.deg2rad(tthRange[0]), utils.deg2rad(tthRange[-1]))
+            tthRange = tuple(deg2rad(tthRange[i]) for i in (0, -1))
 
         if chiRange is not None:
-             chiRange = [utils.deg2rad(chiRange[0]), utils.deg2rad(chiRange[-1])]
+             chiRange = tuple(deg2rad(chiRange[i]) for i in (0, -1))
 
         if flat is None:
             flat = self.flatfield
@@ -746,10 +745,10 @@ class AzimuthalIntegrator(Geometry):
             polarization = self.polarization(data.shape, polarization_factor)
 
         if tthRange is not None:
-            tthRange = (utils.deg2rad(tthRange[0]), utils.deg2rad(tthRange[-1]))
+            tthRange = tuple(deg2rad(tthRange[i]) for i in (0, -1))
 
         if chiRange is not None:
-            chiRange = [utils.deg2rad(chiRange[0]), utils.deg2rad(chiRange[-1])]
+            chiRange = tuple(deg2rad(chiRange[i]) for i in (0, -1))
 
         # ??? what about dark and flat computation like with other methods ?
 
@@ -933,8 +932,8 @@ class AzimuthalIntegrator(Geometry):
                     pos0 = self.twoThetaArray(shape)
                     delta_pos0 = self.delta2Theta(shape)
                     if tthRange is not None and len(tthRange) > 1:
-                        pos0_min = utils.deg2rad(min(tthRange))
-                        pos0_maxin = utils.deg2rad(max(tthRange))
+                        pos0_min = deg2rad(min(tthRange))
+                        pos0_maxin = deg2rad(max(tthRange))
                     else:
                         pos0_min = pos0.min()
                         pos0_maxin = pos0.max()
@@ -1666,12 +1665,12 @@ class AzimuthalIntegrator(Geometry):
             data /= self.solidAngleArray(shape, correctSolidAngle)[mask]
 
         if tthRange is not None:
-            tthRange = [utils.deg2rad(tthRange[0]), utils.deg2rad(tthRange[-1])]
+            tthRange = tuple(deg2rad(tthRange[i]) for i in (0, -1))
         else:
             tthRange = [tth.min(), tth.max() * EPS32]
 
         if chiRange is not None:
-            chiRange = [utils.deg2rad(chiRange[0]), utils.deg2rad(chiRange[-1])]
+            chiRange = tuple(deg2rad(chiRange[i]) for i in (0, -1))
         else:
             chiRange = [chi.min(), chi.max() * EPS32]
 
@@ -1910,10 +1909,10 @@ class AzimuthalIntegrator(Geometry):
         dchi = self.deltaChi(data.shape)
 
         if tthRange is not None:
-            tthRange = (utils.deg2rad(tthRange[0]), utils.deg2rad(tthRange[-1]))
+            tthRange = tuple(deg2rad(tthRange[i]) for i in (0, 1))
 
         if chiRange is not None:
-            chiRange = [utils.deg2rad(chiRange[0]), utils.deg2rad(chiRange[-1])]
+            chiRange = tuple(deg2rad(chiRange[i]) for i in (0, -1))
 
         if dark is None:
             dark = self.darkcurrent
@@ -2073,23 +2072,23 @@ class AzimuthalIntegrator(Geometry):
             flat = self.flatfield
 
         if tthRange is not None:
-            tthRange = (utils.deg2rad(tthRange[0]), utils.deg2rad(tthRange[-1]))
+            tthRange = tuple(deg2rad(tthRange[i]) for i in (0, -1))
 
         if chiRange is not None:
-            chiRange = [utils.deg2rad(chiRange[0]), utils.deg2rad(chiRange[-1])]
+            chiRange = tuple(deg2rad(chiRange[i]) for i in (0, -1))
 
         I, bins2Th, binsChi, _, _ = splitPixel.fullSplit2D(pos=pos,
-                                                       weights=data,
-                                                       bins=(npt_rad, npt_azim),
-                                                       pos0Range=tthRange,
-                                                       pos1Range=chiRange,
-                                                       dummy=dummy,
-                                                       delta_dummy=delta_dummy,
-                                                       mask=mask,
-                                                       dark=dark,
-                                                       flat=flat,
-                                                       solidangle=solidangle,
-                                                       polarization=polarization)
+                                                           weights=data,
+                                                           bins=(npt_rad, npt_azim),
+                                                           pos0Range=tthRange,
+                                                           pos1Range=chiRange,
+                                                           dummy=dummy,
+                                                           delta_dummy=delta_dummy,
+                                                           mask=mask,
+                                                           dark=dark,
+                                                           flat=flat,
+                                                           solidangle=solidangle,
+                                                           polarization=polarization)
         bins2Th = rad2deg(bins2Th)
         binsChi = rad2deg(binsChi)
         self.save2D(filename, I, bins2Th, binsChi, dark=dark, flat=flat,
@@ -2201,7 +2200,7 @@ class AzimuthalIntegrator(Geometry):
                 variance = numpy.ascontiguousarray(data, numpy.float32)
 
         if azimuth_range is not None:
-            azimuth_range = tuple([numpy.deg2rad(i) for i in azimuth_range])
+            azimuth_range = tuple(deg2rad(azimuth_range[i]) for i in (0, -1))
             chi = self.chiArray(shape)
         else:
             chi = None
@@ -2769,7 +2768,7 @@ class AzimuthalIntegrator(Geometry):
                 variance = numpy.ascontiguousarray(data, numpy.float32)
 
         if azimuth_range is not None:
-            azimuth_range = tuple([numpy.deg2rad(i) for i in azimuth_range])
+            azimuth_range = tuple(deg2rad(azimuth_range[i]) for i in (0, -1))
 
         if correctSolidAngle:
             solidangle = self.solidAngleArray(shape, correctSolidAngle)
