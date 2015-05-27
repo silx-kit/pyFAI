@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/05/2015"
+__date__ = "27/05/2015"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -98,13 +98,13 @@ class MultiGeometry(object):
                                  method="splitpixel", unit=self.unit, safe=True,
                                  all=True)
             count += res["count"]
-            sum += res["sum"] * ai.pixel1 * ai.pixel2 / monitor / ai.dist ** 2
+            sum += res["sum"] * (ai.pixel1 * ai.pixel2 / monitor / ai.dist ** 2)
 
         I = sum / numpy.maximum(count, 1)
         I[count == 0.0] = self.empty
 
         if all:
-            res = {"I":I,
+            out = {"I":I,
                  "radial": res["radial"],
                  "count": count,
                  "sum": sum}
@@ -114,8 +114,8 @@ class MultiGeometry(object):
 #             if sigma is not None:
 #                 res = I, res["radial"], res["azimuthal"], sigma
 #             else:
-                res = res["radial"], I
-        return res
+                out = res["radial"], I
+        return out
 
     def integrate2d(self, lst_data, npt_rad=1800, npt_azim=3600, monitors=None, all=False):
         """
@@ -137,22 +137,22 @@ class MultiGeometry(object):
                                  method="splitpixel", unit=self.unit, safe=True,
                                  all=True)
             count += res["count"]
-            sum += res["sum"] * ai.pixel1 * ai.pixel2 / monitor / ai.dist ** 2
+            sum += res["sum"] * (ai.pixel1 * ai.pixel2 / monitor / ai.dist ** 2)
 
         I = sum / numpy.maximum(count, 1)
         I[count == 0.0] = self.empty
 
         if all:
-            res = {"I":I,
-                 "radial":res["radial"],
-                 "azimuthal":res["azimuthal"],
-                 "count":count,
-                 "sum": sum}
+            out = {"I": I,
+                 "radial": res["radial"],
+                 "azimuthal": res["azimuthal"],
+                 "count": count,
+                 "sum":  sum}
 #             if sigma is not None:
 #                 res["sigma"] = sigma
         else:
 #             if sigma is not None:
 #                 res = I, res["radial"], res["azimuthal"], sigma
 #             else:
-                res = I, res["radial"], res["azimuthal"]
-        return res
+                out = I, res["radial"], res["azimuthal"]
+        return out
