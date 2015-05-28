@@ -24,7 +24,7 @@
 
 
 """
-Test suites for multi_geometry modules 
+Test suites for multi_geometry modules
 """
 
 
@@ -107,9 +107,9 @@ class TestMultiGeometry(unittest.TestCase):
                 f.show()
                 raw_input()
 
-        self.assertLessEqual(delta_cnt.max(), 0.001, "pixel count is the same delta=%s" % delta_cnt.max())
-        self.assertLessEqual(delta_sum.max(), 0.03, "pixel sum is the same delta=%s" % delta_sum.max())
-        self.assertLessEqual(delta.max(), 0.004, "pixel intensity is the same (for populated pixels) delta=%s" % delta.max())
+        self.assertLess(delta_cnt.max(), 0.001, "pixel count is the same delta=%s" % delta_cnt.max())
+        self.assertLess(delta_sum.max(), 0.03, "pixel sum is the same delta=%s" % delta_sum.max())
+        self.assertLess(delta.max(), 0.004, "pixel intensity is the same (for populated pixels) delta=%s" % delta.max())
 
 
 def test_suite_all_multi_geometry():
