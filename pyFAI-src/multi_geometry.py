@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/05/2015"
+__date__ = "29/05/2015"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -100,8 +100,8 @@ class MultiGeometry(object):
             count += res["count"]
             sum += res["sum"] * (ai.pixel1 * ai.pixel2 / monitor / ai.dist ** 2)
 
-        I = sum / numpy.maximum(count, 1)
-        I[count == 0.0] = self.empty
+        I = sum / numpy.maximum(count, EPS32 - 1)
+        I[count <= (EPS32 - 1)] = self.empty
 
         if all:
             out = {"I":I,
@@ -139,8 +139,8 @@ class MultiGeometry(object):
             count += res["count"]
             sum += res["sum"] * (ai.pixel1 * ai.pixel2 / monitor / ai.dist ** 2)
 
-        I = sum / numpy.maximum(count, 1)
-        I[count == 0.0] = self.empty
+        I = sum / numpy.maximum(count, EPS32 - 1)
+        I[count <= (EPS32 - 1)] = self.empty
 
         if all:
             out = {"I": I,

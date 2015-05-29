@@ -88,10 +88,10 @@ class TestMultiGeometry(unittest.TestCase):
         self.assertEqual(abs(ref["radial"] - obt["radial"]).max(), 0, "Bin position is the same")
         self.assertEqual(abs(ref["azimuthal"] - obt["azimuthal"]).max(), 0, "Bin position is the same")
         # intensity need to be scaled by solid angle 1e-4*1e-4/0.1**2 = 1e-6
-        delta = abs(obt["I"] * 1e6 - ref["I"])[obt["count"] >= 1]  # restict on valid pixel
+        delta = abs(obt["I"] * 1e6 - ref["I"])[obt["count"] >= 1e-6]  # restrict on valid pixel
         delta_cnt = abs(obt["count"] - ref["count"])
         delta_sum = abs(obt["sum"] * 1e6 - ref["sum"])
-        if delta.max() > 1:
+        if delta.max() > 0:
             logger.warning("TestMultiGeometry.test_integrate2d gave intensity difference of %s" % delta.max())
             if logger.level <= logging.DEBUG:
                 from matplotlib import pyplot as plt
