@@ -80,7 +80,7 @@ class TestMultiGeometry(unittest.TestCase):
         self.assertEqual(abs(tth_ref - tth_obt).max(), 0, "Bin position is the same")
         # intensity need to be scaled by solid angle 1e-4*1e-4/0.1**2 = 1e-6
         delta = (abs(I_obt * 1e6 - I_ref).max())
-        self.assertLessEqual(delta, 5e-5, "Intensity is the same delta=%s" % delta)
+        self.assert_(delta < 5e-5, "Intensity is the same delta=%s" % delta)
 
     def test_integrate2d(self):
         ref = self.ai.integrate2d(self.data, self.N, 360, radial_range=self.range, azimuth_range=(-180, 180), unit="2th_deg", method="splitpixel", all=True)
@@ -107,9 +107,9 @@ class TestMultiGeometry(unittest.TestCase):
                 f.show()
                 raw_input()
 
-        self.assertLess(delta_cnt.max(), 0.001, "pixel count is the same delta=%s" % delta_cnt.max())
-        self.assertLess(delta_sum.max(), 0.03, "pixel sum is the same delta=%s" % delta_sum.max())
-        self.assertLess(delta.max(), 0.004, "pixel intensity is the same (for populated pixels) delta=%s" % delta.max())
+        self.assert_(delta_cnt.max() < 0.001, "pixel count is the same delta=%s" % delta_cnt.max())
+        self.assert_(delta_sum.max() < 0.03, "pixel sum is the same delta=%s" % delta_sum.max())
+        self.assert_(delta.max() < 0.004, "pixel intensity is the same (for populated pixels) delta=%s" % delta.max())
 
 
 def test_suite_all_multi_geometry():
