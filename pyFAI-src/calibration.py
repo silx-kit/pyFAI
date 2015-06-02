@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/05/2015"
+__date__ = "02/06/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -982,7 +982,11 @@ class AbstractCalibration(object):
                     print(self.HELP[action])
             elif action == "chiplot":
                     print(self.HELP[action])
-                    self.chiplot()
+                    if len(words) > 1:
+                        rings = [int(i) for i in words[1:]]
+                    else:
+                        rings = None
+                    self.chiplot(rings)
             elif action == "delete":
                 if len(words) < 2:
                     print(self.HELP[action])
@@ -994,9 +998,11 @@ class AbstractCalibration(object):
             else:
                 logger.warning("Unrecognized action: %s, type 'quit' to leave " % action)
 
-    def chiplot(self):
+    def chiplot(self, rings=None):
         """
-        plot 2theta = f(chi) and fit the curve.
+        plot delta_2theta/2theta = f(chi) and fit the curve.
+        
+        @param rings: list of rings to consider
         """
         from scipy.optimize import leastsq
         model = lambda x, mean, amp, phase:mean + amp * numpy.sin(x + phase)
@@ -1017,14 +1023,15 @@ class AbstractCalibration(object):
                 self.fig_chiplot = pylab.plt.figure()
             self.ax_chiplot = self.fig_chiplot.add_subplot(1, 1, 1)
             self.ax_chiplot.set_xlim(-180, 180)
-            self.ax_chiplot.set_xlabel("Azimuthal angle Chi ($^o$)")
-            self.ax_chiplot.set_ylabel("Radial angle 2$\theta$ ($^o$). One pixel= %.3e $^o$" % resolution)
+            self.ax_chiplot.set_xlabel("Azimuthal angle $\chi$ ($^o$)")
+            self.ax_chiplot.set_ylabel(r"Error in Radial angle $\Delta$ 2$\theta$/2$\theta$*10$^4$")
             self.ax_chiplot.set_title("Chi plot")
 
         else:
             print("chiplot display only possible with GUI")
-        rings = list(set(int(i[2]) for i in self.data))
-        rings.sort()
+        if rings is None:
+            rings = list(set(int(i[2]) for i in self.data))
+            rings.sort()
         for ring in rings:
             ref_2th = numpy.rad2deg(self.calibrant.get_2th()[ring])
             print("Fitting ring #%x (2th=%.3fdeg)" % (ring, ref_2th))
@@ -1040,20 +1047,21 @@ class AbstractCalibration(object):
             d1 = numpy.array(d1)
             d2 = numpy.array(d2)
             tth = numpy.rad2deg(self.geoRef.tth(d1, d2))
+            err4 = (tth - ref_2th) / ref_2th * 10000
             chi = self.geoRef.chi(d1, d2)
-            mean = tth.mean()
-            amp = tth.std() * sqrt2
+            mean = err4.mean()
+            amp = err4.std() * sqrt2
             phase = 0.0
             param = numpy.array([mean, amp, phase])
-            print(" guessed %.3f + %.3e *sin(chi+ %.3f )" % (mean, amp, phase))
-            res = leastsq(error, param, (chi, tth), jacob, col_deriv=True)
+            print(" guessed err4 = %.3f + %.3f *sin($\chi$+ %.3f )" % (mean, amp, phase))
+            res = leastsq(error, param, (chi, err4), jacob, col_deriv=True)
             popt = res[0]
-            str_res = "%.3f + %.3e *sin(chi+ %.3f )" % tuple(popt)
-            print(" fitted " + str_res)
+            str_res = "%.3f + %.3f *sin($\chi$+ %.3f )" % tuple(popt)
+            print(" fitted err4 = " + str_res)
             chi = numpy.rad2deg(chi)
             if self.ax_chiplot:
                 color = matplotlib.colors.cnames.keys()[ring]
-                self.ax_chiplot.plot(chi, tth, "o", color=color, label="ring #%i (%.3f$^o$)" % (ring, ref_2th))
+                self.ax_chiplot.plot(chi, err4, "o", color=color, label="ring #%i (%.3f$^o$)" % (ring, ref_2th))
                 chi2 = numpy.linspace(-180, 180, 360)
                 self.ax_chiplot.plot(chi2, model(numpy.deg2rad(chi2), *popt), color=color, label=str_res)
         self.ax_chiplot.legend()
