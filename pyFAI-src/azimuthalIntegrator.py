@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/05/2015"
+__date__ = "03/06/2015"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2201,6 +2201,8 @@ class AzimuthalIntegrator(Geometry):
 
         if azimuth_range is not None:
             azimuth_range = tuple(deg2rad(azimuth_range[i]) for i in (0, -1))
+            if azimuth_range[1] <= azimuth_range[0]:
+                azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
             chi = self.chiArray(shape)
         else:
             chi = None
@@ -2769,6 +2771,8 @@ class AzimuthalIntegrator(Geometry):
 
         if azimuth_range is not None:
             azimuth_range = tuple(deg2rad(azimuth_range[i]) for i in (0, -1))
+            if azimuth_range[1] <= azimuth_range[0]:
+                azimuth_range = (azimuth_range[0], azimuth_range[1] + 2 * pi)
 
         if correctSolidAngle:
             solidangle = self.solidAngleArray(shape, correctSolidAngle)
