@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/06/2015"
+__date__ = "03/06/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -1034,7 +1034,7 @@ class AbstractCalibration(object):
             rings.sort()
         for ring in rings:
             ref_2th = numpy.rad2deg(self.calibrant.get_2th()[ring])
-            print("Fitting ring #%x (2th=%.3fdeg)" % (ring, ref_2th))
+            print("Fitting ring #%s (2th=%.3fdeg)" % (ring, ref_2th))
             d1 = []
             d2 = []
             for i in self.data:
@@ -1064,11 +1064,12 @@ class AbstractCalibration(object):
                 self.ax_chiplot.plot(chi, err4, "o", color=color, label="ring #%i (%.3f$^o$)" % (ring, ref_2th))
                 chi2 = numpy.linspace(-180, 180, 360)
                 self.ax_chiplot.plot(chi2, model(numpy.deg2rad(chi2), *popt), color=color, label=str_res)
+
         self.ax_chiplot.legend()
         if not gui_utils.main_loop:
             self.fig_chiplot.show()
         update_fig(self.fig_chiplot)
-        logger.info("One pixel = %.3e" % resolution)
+        logger.info("One pixel = %.3e deg" % resolution)
 
     def postProcess(self):
         """
