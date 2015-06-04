@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/05/2015"
+__date__ = "04/06/2015"
 __status__ = "production"
 
 import logging
@@ -41,6 +41,7 @@ import types
 import os
 import glob
 import threading
+import math
 sem = threading.Semaphore()  # global lock for image processing initialization
 import numpy
 import fabio
@@ -78,6 +79,8 @@ try:
 except (ImportError, WindowsError) as err:
     logger.warn("Exception %s: FFTw3 not available. Falling back on Scipy", err)
     has_fftw3 = False
+
+EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
 import traceback
 
@@ -159,7 +162,7 @@ def str_(val):
         try:
             s = str(val)
         except UnicodeError:
-            #Python2 specific...
+            # Python2 specific...
             s = unicode(val)
     return s
 
@@ -668,7 +671,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             fimg.header_keys = header_list
 
             if filter_ == "sum":
-              fimg = fabioclass(data=numpy.int32(datared*numpy.float32(ld)),
+              fimg = fabioclass(data=numpy.int32(datared * numpy.float32(ld)),
                               header=header)
 
             fimg.write(output)
@@ -856,6 +859,7 @@ def shiftFFT(input_img, shift_val, method="fftw"):
         out = numpy.fft.ifft2(numpy.fft.fft2(input_img) * e)
     return abs(out)
 
+
 def maximum_position(img):
     """
     Same as scipy.ndimage.measurements.maximum_position:
@@ -867,6 +871,7 @@ def maximum_position(img):
     maxarg = numpy.argmax(img)
     _, s1 = img.shape
     return (maxarg // s1, maxarg % s1)
+
 
 def center_of_mass(img):
     """
@@ -880,6 +885,7 @@ def center_of_mass(img):
     img = img.astype("float64")
     img /= img.sum()
     return ((a0 * img).sum(), (a1 * img).sum())
+
 
 def measure_offset(img1, img2, method="numpy", withLog=False, withCorr=False):
     """
@@ -1014,6 +1020,7 @@ def _get_data_path(filename):
         raise RuntimeError("Can not find the [%s] resource, "
                         " something went wrong !!!" % (real_filename,))
 
+
 def get_calibration_dir():
     """get the full path of a calibration directory
 
@@ -1036,7 +1043,6 @@ def get_ui_file(filename):
     @return: the full path of the ui
     """
     return _get_data_path(os.path.join("gui", filename))
-
 
 
 def read_cl_file(filename):
@@ -1075,9 +1081,10 @@ def deg2rad(dd):
     """
     while dd > 180.0:
         dd -= 360.0
-    while dd <= -180.0:
+    while dd < -180.0:
         dd += 360.0
     return dd * pi / 180.
+
 
 class lazy_property(object):
     '''
@@ -1235,6 +1242,7 @@ except ImportError:  # backport percentile from numpy 1.6.2
         #   check and use out array.
         return np.add.reduce(sorted[indexer] * weights, axis=axis, out=out) / sumval
 
+
 def convert_CamelCase(name):
     """
     convert a function name in CamelCase into camel_case
@@ -1242,6 +1250,7 @@ def convert_CamelCase(name):
     import re
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
 
 def readFloatFromKeyboard(text, dictVar):
     """
@@ -1265,6 +1274,7 @@ def readFloatFromKeyboard(text, dictVar):
         if not found:
             logger.error("You should provide the good number of floats")
 
+
 class FixedParameters(set):
     """
     Like a set, made for FixedParameters in geometry refinement
@@ -1283,3 +1293,51 @@ class FixedParameters(set):
             self.add(key)
         else:
             self.discard(key)
+
+
+def roundfft(N):
+    """
+    This function returns the integer >=N for which size the Fourier analysis is faster (fron the FFT point of view)
+    Credit: Alessandro Mirone, ESRF, 2012 
+    
+    @param N: interger on which one would like to do a Fourier transform 
+    @return: integer with a better choice 
+    """
+    MA, MB, MC, MD, ME, MF = 0, 0, 0, 0, 0, 0
+    FA, FB, FC, FD, FE, FFF = 2, 3, 5, 7, 11, 13
+    DIFF = 9999999999
+    RES = 1
+    R0 = 1
+    AA = 1
+    for A in range(int(math.log(N) / math.log(FA) + 2)):
+        BB = AA
+        for B in range(int(math.log(N) / math.log(FB) + 2)):
+            CC = BB
+
+            for C in range(int(math.log(N) / math.log(FC) + 2)):
+                DD = CC
+
+                for D in range(int(math.log(N) / math.log(FD) + 2)):
+                    EE = DD
+
+                    for E in range(2):
+                        FF = EE
+
+                        for F in range(2 - E):
+                            if FF >= N and DIFF > abs(N - FF):
+                                MA, MB, MC, MD, ME, MF = A, B, C, D, E, F
+                                DIFF = abs(N - FF)
+                                RES = FF
+                            if FF > N: break
+                            FF = FF * FFF
+                        if EE > N: break
+                        EE = EE * FE
+                    if DD > N: break
+                    DD = DD * FD
+                if CC > N: break
+                CC = CC * FC
+            if BB > N: break
+            BB = BB * FB
+        if AA > N: break
+        AA = AA * FA
+    return RES

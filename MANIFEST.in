@@ -18,30 +18,6 @@ include build-msi.bat
 include README.txt
 include CHANGELOG.txt
 include TODO.txt
-
-#recursive-include test *.py *.sp *.poni
-# not recursive as testimages could come with ...
-include test/__init__.py
-include test/example.sp
-include test/moke.poni
-include test/testAzimuthalIntegrator.py
-include test/testExport.py
-include test/testGeometry.py
-include test/testGeometryRefinement.py
-include test/testHistogram.py
-include test/testMask.py
-include test/testOpenCL.py
-include test/testPeakPicking.py
-include test/testSaxs.py
-include test/test_all.py
-include test/test_ocl_lut.py
-include test/utilstest.py
-include scripts/diff_tomo
-include scripts/drawMask_pymca
-include scripts/pyFAI-calib
-include scripts/pyFAI-recalib
-include scripts/pyFAI-saxs
-include scripts/pyFAI-waxs
-include scripts/pyFAI-average
-include scripts/check_calib
-include scripts/diff_tomo
+recursive-include scripts *.py 
+recursive-include test *.py *.poni
+recursive-exclude test *.edf *.cbf *.tif

@@ -108,70 +108,71 @@ Setting the environment variable http_proxy can be necessary (depending on your 
 
    export http_proxy=http://proxy.site.org:3128
 
-PyFAI comes with 28 test-suites (163 tests in total) representing a coverage of 65%.
+PyFAI comes with 30 test-suites (172 tests in total) representing a coverage of 67%.
 This ensures both non regression over time and ease the distribution under different platforms:
 pyFAI runs under Linux, MacOSX and Windows (in each case in 32 and 64 bits).
-Test may not pass on computer featuring less than 2GB of memory.
+Test may not pass on computer featuring less than 2GB of memory or 32 bit computers.
 
 .. csv-table:: Test suite coverage
    :header:   "Name",  "Stmts", "Miss", "Cover"
    :widths: 50, 8, 8, 8
 
-   "pyFAI/__init__","12","3","75%"
+   "pyFAI/__init__","14","5","64%"
    "pyFAI/_version","31","1","97%"
-   "pyFAI/azimuthalIntegrator","1193","311","74%"
+   "pyFAI/azimuthalIntegrator","1209","311","74%"
    "pyFAI/blob_detection","520","323","38%"
-   "pyFAI/calibrant","197","60","70%"
-   "pyFAI/detectors","1034","274","74%"
+   "pyFAI/calibrant","360","112","69%"
+   "pyFAI/detectors","1147","287","75%"
    "pyFAI/directories","30","8","73%"
-   "pyFAI/geometry","808","203","75%"
+   "pyFAI/geometry","815","208","74%"
    "pyFAI/geometryRefinement","477","304","36%"
    "pyFAI/gui_utils","66","41","38%"
-   "pyFAI/io","453","212","53%"
-   "pyFAI/massif","188","60","68%"
+   "pyFAI/io","457","214","53%"
+   "pyFAI/massif","189","60","68%"
+   "pyFAI/multi_geometry","66","4","94%"
    "pyFAI/ocl_azim","269","78","71%"
-   "pyFAI/ocl_azim_csr","225","50","78%"
+   "pyFAI/ocl_azim_csr","225","46","80%"
    "pyFAI/ocl_azim_lut","219","45","79%"
    "pyFAI/opencl","191","52","73%"
-   "pyFAI/peak_picker","707","516","27%"
+   "pyFAI/peak_picker","732","537","27%"
    "pyFAI/spline","397","249","37%"
-   "pyFAI/test/__init__","19","2","89%"
-   "pyFAI/test/test_all","77","7","91%"
-   "pyFAI/test/test_azimuthal_integrator","241","67","72%"
-   "pyFAI/test/test_bilinear","80","8","90%"
-   "pyFAI/test/test_bispev","66","16","76%"
-   "pyFAI/test/test_blob_detection","54","5","91%"
-   "pyFAI/test/test_bug_regression","41","5","88%"
-   "pyFAI/test/test_calibrant","84","25","70%"
-   "pyFAI/test/test_convolution","54","6","89%"
-   "pyFAI/test/test_csr","88","23","74%"
-   "pyFAI/test/test_detector","137","12","91%"
-   "pyFAI/test/test_distortion","56","8","86%"
-   "pyFAI/test/test_dummy","27","6","78%"
-   "pyFAI/test/test_export","87","9","90%"
-   "pyFAI/test/test_flat","112","9","92%"
-   "pyFAI/test/test_geometry","91","6","93%"
-   "pyFAI/test/test_geometry_refinement","64","7","89%"
-   "pyFAI/test/test_histogram","228","17","93%"
-   "pyFAI/test/test_integrate","139","12","91%"
-   "pyFAI/test/test_io","108","30","72%"
-   "pyFAI/test/test_marchingsquares","42","9","79%"
-   "pyFAI/test/test_mask","137","29","79%"
-   "pyFAI/test/test_openCL","196","22","89%"
-   "pyFAI/test/test_peak_picking","88","11","88%"
-   "pyFAI/test/test_polarization","57","6","89%"
-   "pyFAI/test/test_saxs","105","31","70%"
-   "pyFAI/test/test_sparse","44","5","89%"
-   "pyFAI/test/test_split_pixel","74","6","92%"
-   "pyFAI/test/test_utils","96","6","94%"
-   "pyFAI/test/utilstest","281","164","42%"
    "pyFAI/third_party/__init__","0","0","100%"
    "pyFAI/third_party/six","393","184","53%"
-   "pyFAI/units","41","5","88%"
-   "pyFAI/utils","718","316","56%"
-   "TOTAL","11142","3864","65%"
-
+   "pyFAI/units","42","6","86%"
+   "pyFAI/utils","744","315","58%"
+   "test_all","81","1","99%"
+   "test_azimuthal_integrator","241","67","72%"
+   "test_bilinear","82","8","90%"
+   "test_bispev","66","16","76%"
+   "test_blob_detection","54","5","91%"
+   "test_bug_regression","41","5","88%"
+   "test_calibrant","126","35","72%"
+   "test_convolution","54","6","89%"
+   "test_csr","88","23","74%"
+   "test_detector","171","13","92%"
+   "test_distortion","56","8","86%"
+   "test_dummy","27","6","78%"
+   "test_export","87","9","90%"
+   "test_flat","112","9","92%"
+   "test_geometry","91","6","93%"
+   "test_geometry_refinement","64","7","89%"
+   "test_histogram","234","19","92%"
+   "test_integrate","139","12","91%"
+   "test_io","108","30","72%"
+   "test_marchingsquares","42","9","79%"
+   "test_mask","218","55","75%"
+   "test_multi_geometry","79","20","75%"
+   "test_openCL","225","27","88%"
+   "test_peak_picking","89","11","88%"
+   "test_polarization","57","6","89%"
+   "test_saxs","105","31","70%"
+   "test_sparse","44","5","89%"
+   "test_split_pixel","74","6","92%"
+   "test_utils","97","6","94%"
+   "test_watershed","40","6","85%"
+   "TOTAL","11585", "3857", "67%"
 Note that the test coverage tool does not count lines of Cython, nor those of OpenCL
+Updated 27/05/2014
 
 Continuous integration is made by a home-made scripts which checks out the latest release and builds and runs the test every night.
 Nightly builds are available for debian6-64 bits in:
@@ -184,7 +185,7 @@ List of contributors in code
 
     $ git log  --pretty='%aN##%s' | grep -v 'Merge pull' | grep -Po '^[^#]+' | sort | uniq -c | sort -rn
 
-As of 03/2015:
+As of 05/2015:
  * Jérôme Kieffer (ESRF)
  * Aurore Deschildre (ESRF)
  * Frédéric-Emmanuel Picca (Soleil)
@@ -196,6 +197,7 @@ As of 03/2015:
  * Dodogerstlin @github
  * Gunthard Benecke (Desy)
  * Gero Flucke (Desy)
+ * Vadim Dyadkin (ESRF)
 
 
 List of other contributors (ideas or code)
