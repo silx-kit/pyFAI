@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/05/2015"
+__date__ = "04/06/2015"
 __status__ = "production"
 
 import logging
@@ -41,6 +41,7 @@ import types
 import os
 import glob
 import threading
+import math
 sem = threading.Semaphore()  # global lock for image processing initialization
 import numpy
 import fabio
@@ -1292,3 +1293,51 @@ class FixedParameters(set):
             self.add(key)
         else:
             self.discard(key)
+
+
+def roundfft(N):
+    """
+    This function returns the integer >=N for which size the Fourier analysis is faster (fron the FFT point of view)
+    Credit: Alessandro Mirone, ESRF, 2012 
+    
+    @param N: interger on which one would like to do a Fourier transform 
+    @return: integer with a better choice 
+    """
+    MA, MB, MC, MD, ME, MF = 0, 0, 0, 0, 0, 0
+    FA, FB, FC, FD, FE, FFF = 2, 3, 5, 7, 11, 13
+    DIFF = 9999999999
+    RES = 1
+    R0 = 1
+    AA = 1
+    for A in range(int(math.log(N) / math.log(FA) + 2)):
+        BB = AA
+        for B in range(int(math.log(N) / math.log(FB) + 2)):
+            CC = BB
+
+            for C in range(int(math.log(N) / math.log(FC) + 2)):
+                DD = CC
+
+                for D in range(int(math.log(N) / math.log(FD) + 2)):
+                    EE = DD
+
+                    for E in range(2):
+                        FF = EE
+
+                        for F in range(2 - E):
+                            if FF >= N and DIFF > abs(N - FF):
+                                MA, MB, MC, MD, ME, MF = A, B, C, D, E, F
+                                DIFF = abs(N - FF)
+                                RES = FF
+                            if FF > N: break
+                            FF = FF * FFF
+                        if EE > N: break
+                        EE = EE * FE
+                    if DD > N: break
+                    DD = DD * FD
+                if CC > N: break
+                CC = CC * FC
+            if BB > N: break
+            BB = BB * FB
+        if AA > N: break
+        AA = AA * FA
+    return RES
