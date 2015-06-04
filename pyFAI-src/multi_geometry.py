@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/05/2015"
+__date__ = "03/06/2015"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -55,13 +55,14 @@ class MultiGeometry(object):
 
     def __init__(self, ais, unit="2th_deg",
                  radial_range=(0, 180), azimuth_range=(-180, 180),
-                 wavelength=None, empty=0.0):
+                 wavelength=None, empty=0.0, chi_disc=180):
         """
         Constructor of the multi-geometry integrator
         @param ais: list of azimuthal integrators
         @param radial_range: common range for integration
         @param azimuthal_range: common range for integration
         @param empty: value for empty pixels
+        @param chi_disc: if 0, set the chi_discontinuity at 
         """
         self._sem = threading.Semaphore()
         self.abolute_solid_angle = None
@@ -73,6 +74,14 @@ class MultiGeometry(object):
         self.unit = units.to_unit(unit)
         self.abolute_solid_angle = None
         self.empty = empty
+        if chi_disc == 0:
+            for ai in self.ais:
+                ai.setChiDiscAtZero()
+        elif chi_disc == 180:
+            for ai in self.ais:
+                ai.setChiDiscAtPi()
+        else:
+            logger.warning("Unable to set the Chi discontinuity at %s" % chi_disc)
 
     def __repr__(self, *args, **kwargs):
         return "MultiGeometry integrator with %s geometries on %s radial range (%s) and %s azimuthal range (deg)" % \

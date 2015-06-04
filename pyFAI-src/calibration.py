@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/06/2015"
+__date__ = "04/06/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -56,7 +56,8 @@ from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
 from .peak_picker import PeakPicker
 from . import units, gui_utils
-from .utils import averageImages, measure_offset, expand_args, readFloatFromKeyboard, input, FixedParameters
+from .utils import averageImages, measure_offset, expand_args, \
+            readFloatFromKeyboard, input, FixedParameters, roundfft
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import hc
 from . import version as PyFAI_VERSION
@@ -121,7 +122,8 @@ class AbstractCalibration(object):
             'refine': "performs a new cycle of refinement",
             'recalib': "extract a new set of rings and re-perform the calibration. One can specify how many rings to extract and the algorithm to use (blob or massif)",
             'done': "finishes the processing, performs an integration and quits",
-            'validate': "measures the offset between the calibrated image and the back-projected image",
+            'validate': "plot the offset between the calibrated image and the back-projected image",
+            'validate2': "measures the offset of the center as function of azimuthal angle by cross-correlation of 2 plots, 180 deg appart. Option: number of azimuthal sliced, default: 36",
             'integrate': "perform the azimuthal integration and display results",
             'abort': "quit immediately, discarding any unsaved changes",
             'show': "Just print out the current parameter set",
@@ -129,7 +131,7 @@ class AbstractCalibration(object):
             'assign': "Change the assignment of a group of points to a rings",
             "weight": "toggle from weighted to unweighted mode...",
             "define": "Re-define the value for a constant internal parameter of the program like max_iter, nPt_1D, nPt_2D_azim, nPt_2D_rad. Warning: they may be harmful !",
-            "chiplot": "plot control point as function of azimuthal and radial angle",
+            "chiplot": "plot control point radial error as function of azimuthal angle, optional parameters: the rings for which this need to be plotted",
             "delete": "delete a group of points, provide the letter."
             }
     PARAMETERS = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3", "wavelength"]
@@ -211,6 +213,7 @@ class AbstractCalibration(object):
         self.check_calib = None
         self.fig3 = self.ax_xrpd_1d = self.ax_xrpd_2d = None
         self.fig_chiplot = self.ax_chiplot = None
+        self.fig_center = self.ax_center = None
 
     def __repr__(self):
         lst = ["Calibration object:"]
@@ -920,6 +923,12 @@ class AbstractCalibration(object):
                 return False
             elif action == "validate":
                 self.validate_calibration()
+            elif action == "validate2":
+                if len(words) > 1:
+                    nb = int(words[1])
+                else:
+                    nb = 36
+                self.validate_center(nb)
             elif action == "integrate":
                 self.postProcess()
             elif action == "abort":
@@ -1012,7 +1021,7 @@ class AbstractCalibration(object):
             j[1, :] = numpy.sin(xdata + param[2])
             j[2, :] = param[1] * numpy.cos(xdata + param[2])
             return j
-        sqrt2 = numpy.sqrt(2.)
+        sqrt2 = math.sqrt(2.)
         ttha = self.geoRef.twoThetaArray(self.detector.shape)
         resolution = numpy.rad2deg(max(abs(ttha[1:] - ttha[:-1]).max(),
                           abs(ttha[:, 1:] - ttha[:, :-1]).max()))
@@ -1023,6 +1032,7 @@ class AbstractCalibration(object):
                 self.fig_chiplot = pylab.plt.figure()
             self.ax_chiplot = self.fig_chiplot.add_subplot(1, 1, 1)
             self.ax_chiplot.set_xlim(-180, 180)
+            self.ax_chiplot.set_xticks(numpy.linspace(-180, 180, 9))
             self.ax_chiplot.set_xlabel("Azimuthal angle $\chi$ ($^o$)")
             self.ax_chiplot.set_ylabel(r"Error in Radial angle $\Delta$ 2$\theta$/2$\theta$*10$^4$")
             self.ax_chiplot.set_title("Chi plot")
@@ -1158,7 +1168,7 @@ class AbstractCalibration(object):
 
     def validate_calibration(self):
         """
-        Validate the calivration and calculate the offset in the diffraction image
+        Validate the calibration and calculate the offset in the diffraction image
         """
         if not self.check_calib:
             self.check_calib = CheckCalib()
@@ -1172,6 +1182,65 @@ class AbstractCalibration(object):
         self.check_calib.integrate()
         self.check_calib.rebuild()
         self.check_calib.show()
+
+    def validate_center(self, slices=36):
+        """
+        Validate the position of the center by cross-correlating two spectra 180 deg appart.
+        Output values are in micron.
+        
+        Designed for orthogonal setup with centered beam...
+        
+        @param slices: number of slices on which perform 
+        """
+        if slices % 2 == 1:
+            logger.warning("Validate assumes the number of slices is even. adding one")
+            slices += 1
+        half_slices = slices // 2
+        npt = roundfft(int(math.sqrt(self.peakPicker.data.shape[0] ** 2 + self.peakPicker.data.shape[1] ** 2) + 1))
+
+        if self.geoRef:
+            self.ai.setPyFAI(**self.geoRef.getPyFAI())
+            self.ai.wavelength = self.geoRef.wavelength
+        logger.info("Performing autocorreclation on %sx%s, Fourier analysis may take some time" % (slices, npt))
+        img, tth, chi = self.ai.integrate2d(self.peakPicker.data, npt, slices, azimuth_range=(-180, 180), unit="r_mm", method="splitpixel")
+        ft = numpy.fft.fft(img, npt * 2, axis=-1)
+        crosscor = numpy.fft.ifft(ft[:half_slices, :] * (ft[half_slices:, :].conj()), axis=-1).real
+        centered = numpy.empty_like(crosscor)
+        centered[:, :npt] = crosscor[:, npt:]
+        centered[:, npt:] = crosscor[:, :npt]
+
+        center = numpy.zeros(slices)  # in micron
+        dr = (tth[1] - tth[0]) * 1000.0  # ouput in r(mm) -> micron
+
+        # sub-bin precision obtained by second order expantion of peak
+        range_half_slices = range(half_slices)
+        x0 = centered.argmax(axis=-1)
+        f_x = centered[(range_half_slices, x0)]
+        f_xm1 = centered[(range_half_slices, x0 - 1)]
+        f_xp1 = centered[(range_half_slices, x0 + 1)]
+        f_prime = (f_xp1 - f_xm1) / 2.0
+        f_second = (f_xp1 + f_xm1 - 2.0 * f_x)
+        dx = -f_prime / f_second
+        if (abs(dx) >= 0.5).any():
+            msk = abs(dx) > 1
+            logger.info("Correction is important ! %s" % msk)
+            dx[msk] = 0.0
+        center[half_slices:] = (x0 + dx - npt) * dr
+        center[:half_slices] = -center[half_slices:]
+        if self.gui:
+            if self.fig_center:
+                self.fig_center.clf()
+            else:
+                self.fig_center = pylab.plt.figure()
+            self.ax_center = self.fig_center.add_subplot(1, 1, 1)
+            self.ax_center.set_xlim(-180, 180)
+            self.ax_center.set_xticks(numpy.linspace(-180, 180, 9))
+            self.ax_center.set_xlabel("Azimuthal angle $\chi$ ($^o$)")
+            self.ax_center.set_ylabel(r"Error of the center position along radius ($\mu$m)")
+            self.ax_center.set_title("Center plot")
+            self.ax_center.plot(chi, center, label="From pattern cross-correlation")
+            self.fig_center.show()
+            update_fig(self.fig_center)
 
     def set_data(self, data):
         """
