@@ -27,10 +27,10 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/06/2015"
+__date__ = "07/06/2015"
 __status__ = "stable"
 __doc__ = """
-Module containing the description of all detectors with a factory to instanciate them
+Module containing the description of all detectors with a factory to instantiate them
 """
 
 
@@ -413,8 +413,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
         if self._pixel_corners is not None:
             p3 = None
             if bilinear and use_cython:
-                print(self._pixel_corners.shape, self._pixel_corners.dtype)
-                p1, p2, p3 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(),
+                p1, p2, p3 = bilinear.calc_cartesian_positions(d1c.ravel(), d2c.ravel(),
                                                                self._pixel_corners,
                                                                is_flat=self.IS_FLAT)
                 p1.shape = d1.shape
@@ -702,7 +701,7 @@ class NexusDetector(Detector):
         Loads the detector description from a NeXus file, adapted from:
         http://download.nexusformat.org/sphinx/classes/base_classes/NXdetector.html
 
-        @param filename: name of the file on the disc
+        @param filename: name of the file on the disk
         """
         if not io.h5py:
             logger.error("h5py module missing: NeXus detectors not supported")
@@ -730,119 +729,18 @@ class NexusDetector(Detector):
             else:
                 self.uniform_pixel = True
 
-#     def get_pixel_corners(self, use_cython=True):
-#         """
-#         Calculate the position of the corner of the pixels
-#
-#         This should be overwritten by class representing non-contiguous detector (Xpad, ...)
-#
-#         @return:  4D array containing:
-#                     pixel index (slow dimension)
-#                     pixel index (fast dimension)
-#                     corner index (A, B, C or D), triangles or hexagons can be handled the same way
-#                     vertex position (z,y,x)
-#         """
-#         if self._pixel_corners is None:
-#             with self._sem:
-#                 if self._pixel_corners is None:
-#                     # this works only for flat detector
-#                     if not self.IS_FLAT:
-#                         raise RuntimeWarning("Cannot calculate pixel corner position with non flat detectors")
-#                     if bilinear and use_cython:
-#                         p1 = expand2d(self._pixel1 * numpy.arange(self.shape[0] + 1), self.shape[1] + 1, False)
-#                         p2 = expand2d(self._pixel2 * numpy.arange(self.shape[1] + 1), self.shape[0] + 1, True)
-#                         corners = bilinear.convert_corner_2D_to_4D(3, p1, p2)
-#                     else:
-#                         p1 = numpy.arange(self.shape[0] + 1) * self._pixel1
-#                         p2 = numpy.arange(self.shape[1] + 1) * self._pixel2
-#                         p1.shape = -1, 1
-#                         p1.strides = p1.strides[0], 0
-#                         p2.shape = 1, -1
-#                         p2.strides = 0, p2.strides[1]
-#                         corners = numpy.zeros((self.shape[0], self.shape[1], 4, 3), dtype=numpy.float32)
-#                         corners[:, :, 0, 1] = p1[:-1, :]
-#                         corners[:, :, 0, 2] = p2[:, :-1]
-#                         corners[:, :, 1, 1] = p1[1:, :]
-#                         corners[:, :, 1, 2] = p2[:, :-1]
-#                         corners[:, :, 2, 1] = p1[1:, :]
-#                         corners[:, :, 2, 2] = p2[:, 1:]
-#                         corners[:, :, 3, 1] = p1[:-1, :]
-#                         corners[:, :, 3, 2] = p2[:, 1:]
-#                     self._pixel_corners = corners
-#         return self._pixel_corners
-#
-#     def calc_cartesian_positions(self, d1=None, d2=None, center=True, use_cython=True):
-#         """
-#         Calculate the position of each pixel center in cartesian coordinate
-#         and in meter of a couple of coordinates.
-#         The half pixel offset is taken into account here !!!
-#         Adapted to Nexus detector definition
-#
-#         @param d1: the Y pixel positions (slow dimension)
-#         @type d1: ndarray (1D or 2D)
-#         @param d2: the X pixel positions (fast dimension)
-#         @type d2: ndarray (1D or 2D)
-#         @param center: retrieve the coordinate of the center of the pixel
-#         @param use_cython: set to False to test Python implementation
-#         @return: position in meter of the center of each pixels.
-#         @rtype: 3xndarray, the later being None if IS_FLAT
-#
-#         d1 and d2 must have the same shape, returned array will have
-#         the same shape.
-#         """
-#         if (d1 is None) or (d2 is None):
-#             d1 = expand2d(numpy.arange(self.shape[0]), self.shape[1], False)
-#             d2 = expand2d(numpy.arange(self.shape[1]), self.shape[0], True)
-#         assert d1.shape == d2.shape
-#         corners = self.get_pixel_corners()
-#         p3 = None
-#         if center:
-#             # avoid += It modifies in place and segfaults
-#             d1 = d1 + 0.5
-#             d2 = d2 + 0.5
-#         if bilinear and use_cython:
-#             p1, p2, p3 = bilinear.calc_cartesian_positions(d1.ravel(), d2.ravel(), corners, is_flat=self.IS_FLAT)
-#             p1.shape = d1.shape
-#             p2.shape = d1.shape
-#             if p3 is not None:
-#                 p3.shape = d1.shape
-#         else:
-#             i1 = d1.astype(int).clip(0, corners.shape[0] - 1)
-#             i2 = d2.astype(int).clip(0, corners.shape[1] - 1)
-#             delta1 = d1 - i1
-#             delta2 = d2 - i2
-#             pixels = corners[i1, i2]
-#             A1 = pixels[:, :, 0, 1]
-#             A2 = pixels[:, :, 0, 2]
-#             B1 = pixels[:, :, 1, 1]
-#             B2 = pixels[:, :, 1, 2]
-#             C1 = pixels[:, :, 2, 1]
-#             C2 = pixels[:, :, 2, 2]
-#             D1 = pixels[:, :, 3, 1]
-#             D2 = pixels[:, :, 3, 2]
-#             # points A and D are on the same dim1 (Y), they differ in dim2 (X)
-#             # points B and C are on the same dim1 (Y), they differ in dim2 (X)
-#             # points A and B are on the same dim2 (X), they differ in dim1 (Y)
-#             # points C and D are on the same dim2 (X), they differ in dim1 (Y)
-#
-#             p1 = A1 * (1.0 - delta1) * (1.0 - delta2) \
-#                + B1 * delta1 * (1.0 - delta2) \
-#                + C1 * delta1 * delta2 \
-#                + D1 * (1.0 - delta1) * delta2
-#             p2 = A2 * (1.0 - delta1) * (1.0 - delta2) \
-#                + B2 * delta1 * (1.0 - delta2) \
-#                + C2 * delta1 * delta2 \
-#                + D2 * (1.0 - delta1) * delta2
-#             if not self.IS_FLAT:
-#                 A0 = pixels[:, :, 0, 0]
-#                 B0 = pixels[:, :, 1, 0]
-#                 C0 = pixels[:, :, 2, 0]
-#                 D0 = pixels[:, :, 3, 0]
-#                 p3 = A0 * (1.0 - delta1) * (1.0 - delta2) \
-#                    + B0 * delta1 * (1.0 - delta2) \
-#                    + C0 * delta1 * delta2 \
-#                    + D0 * (1.0 - delta1) * delta2
-#         return p1, p2, p3
+    @classmethod
+    def sload(cls, filename):
+        """
+        Instantiate the detector description from a NeXus file, adapted from:
+        http://download.nexusformat.org/sphinx/classes/base_classes/NXdetector.html
+
+        @param filename: name of the file on the disk
+        @return: Detector instance
+        """
+        obj = cls()
+        cls.load(filename)
+        return obj
 
 
 class Pilatus(Detector):
@@ -2267,5 +2165,6 @@ class Aarhus(Detector):
 
 ALL_DETECTORS = Detector.registry
 detector_factory = Detector.factory
+load = NexusDetector.sload
 
 
