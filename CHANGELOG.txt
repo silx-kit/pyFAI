@@ -101,7 +101,27 @@
 0.10.2: 11/2014
 		Update documentation
 		Packaging for debian 8
-0.10.3: 
+0.10.3:
 		* Image segmentation based on inverse watershed (only for recalib, not for calib)
 		* Python3 compatibility
 		* include testimages  into distribution
+0.11.0:
+		* All calibrant from NIST are now available, + Nickel, Aluminum, ... with bibliographic references
+		* The Cell class helps defining new calibrants.
+		* OpenCL Bitonic sort (to be integated into Bragg/Amorphous separation)
+		* Calib is available from the Python interface (procedural API), not only from the shell script.
+		* Many new options in calib for reset/assign/delete/validate/validate2/chiplot.
+			- reset: set the detector, orthogonal, centered and at 10cm
+			- assign: checks the assignment of groups of points to rings
+			- delete: remove a group of peaks
+			- validate: autocorrelation of images: error on the center
+			- validate2:  autocorrelation of patterns at 180° apart: error on the center function of chi
+			- chiplot: assesses the quality of control points of one/multiple rings. 
+		* Fix the regression of the initial guess in calib (Thanks Jon Wright)
+		* New peak picking algorithm named "watershed" and based on inverse watershed for ridge recognition 
+		* start factorizing cython regridding engines (work ongoing)
+		* Add "--poni" meyword for pyFAI-calib (Thanks Vadim Dyakin)
+		* Improved "guess_binning", especially for Perkin Elmer flat panel detectors.
+		* Support for non planar detectors like Curved Imaging plate developped at Aarhus
+		* Support for Multi-geometry experiments (tested)
+		* Speed improvement for detector initialization
