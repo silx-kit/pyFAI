@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/06/2015"
+__date__ = "08/06/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -991,10 +991,12 @@ class AbstractCalibration(object):
                     print(self.HELP[action])
             elif action == "chiplot":
                     print(self.HELP[action])
+                    rings = None
                     if len(words) > 1:
-                        rings = [int(i) for i in words[1:]]
-                    else:
-                        rings = None
+                        try:
+                            rings = [int(i) for i in words[1:]]
+                        except ValueError:
+                            print("Please provide ring numbers ... ")
                     self.chiplot(rings)
             elif action == "delete":
                 if len(words) < 2:
