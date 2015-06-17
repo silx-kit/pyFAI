@@ -675,6 +675,8 @@ class AbstractCalibration(object):
                 azimuthal = chia[points[:,1].clip(0, self.peakPicker.data.shape[0]), points[:,0].clip(0, self.peakPicker.data.shape[1])]
                 nb_deg_azim = numpy.unique(numpy.rad2deg(azimuthal).round()).size
                 keep =  int(nb_deg_azim * pts_per_deg)
+                if keep == 0: 
+                    continue 
                 dist_min = len(seeds)/2.0/keep 
                 #why 3.0, why not ?
 
@@ -1215,6 +1217,9 @@ class AbstractCalibration(object):
         
         @param slices: number of slices on which perform 
         """
+        if slices <= 0:
+            logger.warning("The number of slices should be strictly positive")
+            slices = 1
         if slices % 2 == 1:
             logger.warning("Validate assumes the number of slices is even. adding one")
             slices += 1
