@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "11/06/2015"
+__date__ = "22/06/2015"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instantiate them
@@ -92,6 +92,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
     registry = {}  # list of  detectors ...
     uniform_pixel = True  # tells all pixels have the same size
     IS_FLAT = True  # this detector is flat
+
     @classmethod
     def factory(cls, name, config=None):
         """
@@ -741,6 +742,30 @@ class NexusDetector(Detector):
         obj = cls()
         cls.load(filename)
         return obj
+
+    def getPyFAI(self):
+        """
+        Helper method to serialize the description of a detector using the pyFAI way
+        with everything in S.I units.
+
+        @return: representation of the detector easy to serialize
+        @rtype: dict
+        """
+        return {"detector": self._filename or self.name,
+                "pixel1": self._pixel1,
+                "pixel2": self._pixel2
+                }
+
+    def getFit2D(self):
+        """
+        Helper method to serialize the description of a detector using the Fit2d units
+
+        @return: representation of the detector easy to serialize
+        @rtype: dict
+        """
+        return {"pixelX": self._pixel2 * 1e6,
+                "pixelY": self._pixel1 * 1e6
+                }
 
 
 class Pilatus(Detector):

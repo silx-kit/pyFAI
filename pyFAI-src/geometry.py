@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/05/2015"
+__date__ = "22/06/2015"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -898,7 +898,7 @@ class Geometry(object):
 
     def save(self, filename):
         """
-        Save the refined parameters.
+        Save the geometry parameters.
 
         @param filename: name of the file where to save the parameters
         @type filename: string
@@ -908,17 +908,22 @@ class Geometry(object):
                 f.write(("# Nota: C-Order, 1 refers to the Y axis,"
                          " 2 to the X axis \n"))
                 f.write("# Calibration done at %s\n" % time.ctime())
-                if self.detector.name != "Detector":
-                    f.write("Detector: %s\n" % self.detector.__class__.__name__)
-                f.write("PixelSize1: %s\n" % self.pixel1)
-                f.write("PixelSize2: %s\n" % self.pixel2)
+                detector = self.detector
+                if isinstance(detector, detectors.NexusDetector) and detector._filename:
+                    f.write("Detector: %s\n" % os.path.abspath(detector._filename))
+                elif detector.name != "Detector":
+                    f.write("Detector: %s\n" % detector.__class__.__name__)
+                f.write("PixelSize1: %s\n" % detector.pixel1)
+                f.write("PixelSize2: %s\n" % detector.pixel2)
+                if detector.splineFile:
+                    f.write("SplineFile: %s\n" % detector.splineFile)
+
                 f.write("Distance: %s\n" % self._dist)
                 f.write("Poni1: %s\n" % self._poni1)
                 f.write("Poni2: %s\n" % self._poni2)
                 f.write("Rot1: %s\n" % self._rot1)
                 f.write("Rot2: %s\n" % self._rot2)
                 f.write("Rot3: %s\n" % self._rot3)
-                f.write("SplineFile: %s\n" % self.splineFile)
                 if self._wavelength is not None:
                     f.write("Wavelength: %s\n" % self._wavelength)
         except IOError:
