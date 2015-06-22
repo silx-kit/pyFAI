@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/06/2015"
+__date__ = "22/06/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -140,7 +140,7 @@ class AbstractCalibration(object):
     UNITS = {"dist":"meter", "poni1":"meter", "poni2":"meter", "rot1":"radian",
              "rot2":"radian", "rot3":"radian", "wavelength":"meter"}
     VALID_URL = ["", 'file', 'hdf5', "nxs", "h5" ]
-    PTS_PER_DEG=0.3
+    PTS_PER_DEG = 0.3
 
 
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None,
@@ -215,7 +215,7 @@ class AbstractCalibration(object):
         self.unit = units.to_unit("2th_deg")
         self.keep = True
         self.check_calib = None
-        self.fig3 = self.ax_xrpd_1d = self.ax_xrpd_2d = None
+        self.fig_integrate = self.ax_xrpd_1d = self.ax_xrpd_2d = None
         self.fig_chiplot = self.ax_chiplot = None
         self.fig_center = self.ax_center = None
 
@@ -668,17 +668,17 @@ class AbstractCalibration(object):
                     upper_limit = mean
                     mask2 = numpy.logical_and(self.peakPicker.data > upper_limit, mask)
                     size2 = mask2.sum()
-                #length of the arc:
+                # length of the arc:
                 points = isocontour(ttha, tth[i]).round().astype(int)
                 seeds = set((i[1], i[0]) for i in points)
-                #max number of points: 360 points for a full circle
-                azimuthal = chia[points[:,1].clip(0, self.peakPicker.data.shape[0]), points[:,0].clip(0, self.peakPicker.data.shape[1])]
+                # max number of points: 360 points for a full circle
+                azimuthal = chia[points[:, 1].clip(0, self.peakPicker.data.shape[0]), points[:, 0].clip(0, self.peakPicker.data.shape[1])]
                 nb_deg_azim = numpy.unique(numpy.rad2deg(azimuthal).round()).size
-                keep =  int(nb_deg_azim * pts_per_deg)
-                if keep == 0: 
-                    continue 
-                dist_min = len(seeds)/2.0/keep 
-                #why 3.0, why not ?
+                keep = int(nb_deg_azim * pts_per_deg)
+                if keep == 0:
+                    continue
+                dist_min = len(seeds) / 2.0 / keep
+                # why 3.0, why not ?
 
                 logger.info("Extracting datapoint for ring %s (2theta = %.2f deg); "\
                             "searching for %i pts out of %i with I>%.1f, dmin=%.1f" %
@@ -1130,12 +1130,16 @@ class AbstractCalibration(object):
         self.geoRef.cornerArray(self.peakPicker.shape)
         t2b = time.time()
         if self.gui:
-            if self.fig3 is None:
-                self.fig3 = pylab.plt.figure()
+            if self.fig_integrate is None:
+                self.fig_integrate = pylab.plt.figure()
+                self.ax_xrpd_1d = self.fig_integrate.add_subplot(1, 2, 1)
+                self.ax_xrpd_2d = self.fig_integrate.add_subplot(1, 2, 2)
             else:
-                self.fig3.clf()
-            self.ax_xrpd_1d = self.fig3.add_subplot(1, 2, 1)
-            self.ax_xrpd_2d = self.fig3.add_subplot(1, 2, 2)
+                self.fig_integrate.clf()
+                self.ax_xrpd_1d.cla()
+                self.ax_xrpd_2d.cla()
+                update_fig(self.fig_integrate)
+
         t3 = time.time()
         a, b = self.geoRef.integrate1d(self.peakPicker.data, self.nPt_1D,
                                 filename=self.basename + ".xy", unit=self.unit,
@@ -1188,8 +1192,8 @@ class AbstractCalibration(object):
             self.ax_xrpd_2d.set_xlabel(self.unit.label)
             self.ax_xrpd_2d.set_ylabel(r"Azimuthal angle $\chi$ ($^{o}$)")
             if not gui_utils.main_loop:
-                self.fig3.show()
-            update_fig(self.fig3)
+                self.fig_integrate.show()
+            update_fig(self.fig_integrate)
 
     def validate_calibration(self):
         """
