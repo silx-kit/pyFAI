@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/06/2015"
+__date__ = "16/06/2015"
 __status__ = "production"
 
 import logging
@@ -1341,3 +1341,21 @@ def roundfft(N):
         if AA > N: break
         AA = AA * FA
     return RES
+
+
+def is_far_from_group(pt, lst_pts, d2):
+    """
+    Tells if a point is far from a group of points, distance greater than d2 (distance squared)
+    
+    @param pt: point of interest
+    @param lst_pts: list of points
+    @param d2: minimum distance squarred
+    @return: True If the point is far from all others.
+    
+    """
+    for apt in lst_pts:
+        dsq = sum((i-j)*(i-j) for i, j in zip(apt,pt))
+        if dsq <= d2:
+            return False
+    return True
+    

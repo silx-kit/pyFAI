@@ -208,7 +208,8 @@ class Worker(object):
                  # "filename": None,
                  "safe": True,
                  "data": data,
-                 "normalization_factor":monitor
+                 "normalization_factor":monitor,
+                 "correctSolidAngle": self.correct_solid_angle,
                  }
 
 
