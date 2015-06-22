@@ -3410,8 +3410,13 @@ class AzimuthalIntegrator(Geometry):
                                                       unit=unit, method="splitpixel",
                                                       dummy=dummy, correctSolidAngle=True)
         dummies = (integ2d == dummy).sum(axis=0)
-        sorted = numpy.sort(integ2d, axis=0)
-        pos = (dummies + (percentile / 100.) * (npt_azim - dummies)).astype(int).clip(0, npt_azim - 1)
+        #add a line of zeros at the end (along npt_azim) so that the value for no valid pixel is 0 
+        sorted = numpy.zeros((npt_azim + 1, npt_rad))
+        sorted[:npt_azim, :] = numpy.sort(integ2d, axis=0)
+        pos = (dummies + (percentile / 100.) * (npt_azim - dummies)).astype(int)#.clip(0, npt_azim - 1)
+        assert (pos >= 0).all()
+        assert (pos <= npt_azim).all()
+
         spectrum = sorted[(pos, numpy.arange(npt_rad))]
         amorphous = self.calcfrom1d(radial, spectrum, data.shape, mask=None,
                    dim1_unit=unit, correctSolidAngle=True)
