@@ -41,7 +41,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/01/2015"
+__date__ = "22/06/2015"
 __status__ = "development"
 
 import os, getpass, tempfile
@@ -74,6 +74,9 @@ else:
         # create a temporary folder
         testimages = os.path.join(tempfile.gettempdir(), "pyFAI_testimages_%s" % (getpass.getuser()))
         if not os.path.exists(testimages):
-            os.makedirs(testimages)
+            try:
+                os.makedirs(testimages)
+            except OSError as err:
+                logger.warning("Creating test_directory %s ended in error %s, probably a race condition" % (testimages, err))
 
 
