@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/06/2015"
+__date__ = "22/06/2015"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3411,9 +3411,7 @@ class AzimuthalIntegrator(Geometry):
                                                       dummy=dummy, correctSolidAngle=True)
         dummies = (integ2d == dummy).sum(axis=0)
         sorted = numpy.sort(integ2d, axis=0)
-        pos = (dummies + (percentile / 100.) * (npt_azim - dummies)).astype(int)
-        assert (pos >= 0).all()
-        assert (pos < npt_azim).all()
+        pos = (dummies + (percentile / 100.) * (npt_azim - dummies)).astype(int).clip(0, npt_azim - 1)
         spectrum = sorted[(pos, numpy.arange(npt_rad))]
         amorphous = self.calcfrom1d(radial, spectrum, data.shape, mask=None,
                    dim1_unit=unit, correctSolidAngle=True)
