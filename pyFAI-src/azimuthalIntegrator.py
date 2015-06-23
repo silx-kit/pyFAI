@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/06/2015"
+__date__ = "23/06/2015"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3133,10 +3133,10 @@ class AzimuthalIntegrator(Geometry):
 
         if all:
             res = {"I":I,
-                 "radial":bins_rad,
-                 "azimuthal":bins_azim,
-                 "count":count,
-                 "sum": sum}
+                   "radial":bins_rad,
+                   "azimuthal":bins_azim,
+                   "count":count,
+                   "sum": sum}
             if sigma is not None:
                 res["sigma"] = sigma
         else:
@@ -3410,10 +3410,10 @@ class AzimuthalIntegrator(Geometry):
                                                       unit=unit, method="splitpixel",
                                                       dummy=dummy, correctSolidAngle=True)
         dummies = (integ2d == dummy).sum(axis=0)
-        #add a line of zeros at the end (along npt_azim) so that the value for no valid pixel is 0 
+        # add a line of zeros at the end (along npt_azim) so that the value for no valid pixel is 0
         sorted = numpy.zeros((npt_azim + 1, npt_rad))
         sorted[:npt_azim, :] = numpy.sort(integ2d, axis=0)
-        pos = (dummies + (percentile / 100.) * (npt_azim - dummies)).astype(int)#.clip(0, npt_azim - 1)
+        pos = (dummies + (percentile / 100.) * (npt_azim - dummies)).astype(int)  # .clip(0, npt_azim - 1)
         assert (pos >= 0).all()
         assert (pos <= npt_azim).all()
 

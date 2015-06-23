@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/06/2015"
+__date__ = "23/06/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -132,7 +132,7 @@ class AbstractCalibration(object):
             'reset': "Reset the geometry to the initial guess (rotation to zero, distance to 0.1m, poni at the center of the image)",
             'assign': "Change the assignment of a group of points to a rings",
             "weight": "toggle from weighted to unweighted mode...",
-            "define": "Re-define the value for a constant internal parameter of the program like max_iter, nPt_1D, nPt_2D_azim, nPt_2D_rad. Warning: they may be harmful !",
+            "define": "Re-define the value for a constant internal parameter of the program like max_iter, nPt_1D, nPt_2D_azim, nPt_2D_rad, integrator_method, error_model. Warning: attribute change may be harmful !",
             "chiplot": "plot control point radial error as function of azimuthal angle, optional parameters: the rings for which this need to be plotted",
             "delete": "delete a group of points, provide the letter."
             }
@@ -218,6 +218,8 @@ class AbstractCalibration(object):
         self.fig_integrate = self.ax_xrpd_1d = self.ax_xrpd_2d = None
         self.fig_chiplot = self.ax_chiplot = None
         self.fig_center = self.ax_center = None
+        self.integrator_method = "splitbbox"
+        self.error_model = ""
 
     def __repr__(self):
         lst = ["Calibration object:"]
@@ -1135,31 +1137,39 @@ class AbstractCalibration(object):
                 self.ax_xrpd_1d = self.fig_integrate.add_subplot(1, 2, 1)
                 self.ax_xrpd_2d = self.fig_integrate.add_subplot(1, 2, 2)
             else:
-                self.fig_integrate.clf()
+#                self.fig_integrate.clf()
                 self.ax_xrpd_1d.cla()
                 self.ax_xrpd_2d.cla()
                 update_fig(self.fig_integrate)
 
         t3 = time.time()
-        a, b = self.geoRef.integrate1d(self.peakPicker.data, self.nPt_1D,
-                                filename=self.basename + ".xy", unit=self.unit,
-                                polarization_factor=self.polarization_factor,
-                                method="splitbbox")
+        res1 = self.geoRef.integrate1d(self.peakPicker.data, self.nPt_1D,
+                                       filename=self.basename + ".xy",
+                                       unit=self.unit,
+                                       polarization_factor=self.polarization_factor,
+                                       method=self.integrator_method,
+                                       error_model=self.error_model,
+                                       all=True)
         t4 = time.time()
-        img, pos_rad, pos_azim = self.geoRef.integrate2d(self.peakPicker.data, self.nPt_2D_rad, self.nPt_2D_azim,
-                                filename=self.basename + ".azim", unit=self.unit,
-                                polarization_factor=self.polarization_factor,
-                                method="splitbbox")
+        res2 = self.geoRef.integrate2d(self.peakPicker.data,
+                                       self.nPt_2D_rad, self.nPt_2D_azim,
+                                       filename=self.basename + ".azim",
+                                       unit=self.unit,
+                                       polarization_factor=self.polarization_factor,
+                                       method=self.integrator_method,
+                                       error_model=self.error_model,
+                                       all=True)
         t5 = time.time()
-        logger.info(os.linesep.join(["Timings:",
+        logger.info(os.linesep.join(["Timings (%s):" % self.integrator_method,
                                 " * two theta array generation %.3fs" % (t1 - t0),
                                 " * diff Solid Angle           %.3fs" % (t2 - t1),
                                 " * chi array generation       %.3fs" % (t2a - t2),
                                 " * corner coordinate array    %.3fs" % (t2b - t2a),
                                 " * 1D Azimuthal integration   %.3fs" % (t4 - t3),
                                 " * 2D Azimuthal integration   %.3fs" % (t5 - t4)]))
+
         if self.gui:
-            self.ax_xrpd_1d.plot(a, b)
+            self.ax_xrpd_1d.plot(res1["radial"], res1["I"])
             # GF: Add vertical line for each used calibration ring:
             xValues = None
             twoTheta = numpy.array([i for i in self.peakPicker.points.calibrant.get_2th() if i])  # in radian
@@ -1185,6 +1195,9 @@ class AbstractCalibration(object):
             self.ax_xrpd_1d.set_title("1D integration")
             self.ax_xrpd_1d.set_xlabel(self.unit.label)
             self.ax_xrpd_1d.set_ylabel("Intensity")
+            img = res2["I"]
+            pos_rad = res2["radial"]
+            pos_azim = res2["azimuthal"]
             self.ax_xrpd_2d.imshow(numpy.log(img - img.min() + 1e-3), origin="lower",
                          extent=[pos_rad.min(), pos_rad.max(), pos_azim.min(), pos_azim.max()],
                          aspect="auto")
