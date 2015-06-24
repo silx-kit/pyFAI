@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/03/2015"
+__date__ = "24/06/2015"
 __status__ = "production"
 
 import os
@@ -77,6 +77,8 @@ def main():
                   help="Flat field correction")
     parser.add_argument("-v", "--verbose", action="store_true", dest="verbose", default=False,
                       help="switch to verbose/debug mode")
+    parser.add_argument("-q", "--quantiles", dest="quantiles", default=None,
+                      help="average out between two quantiles -q 0.20-0.90")
     parser.add_argument("args", metavar='FILE', type=str, nargs='+',
                         help="Files to be processed")
 
@@ -104,11 +106,23 @@ def main():
         darks = pyFAI.utils.expand_args([options.dark])
     else:
         darks = None
+    if options.quantiles:
+        options.method = "quantiles"
+        for sep in "-,":
+            if sep in options.quantiles:
+                q1, q2 = options.quantiles.split(sep,1)
+                break
+        else:
+            q1 = float(options.quantiles)
+            q2 = 1.0 - q1
+        quantiles = (float(q1),float(q2))
 
+    else:
+        quantiles = None
     if images:
         dataout = pyFAI.utils.averageImages(images, filter_=options.method, cutoff=options.cutoff,
-                                            threshold=0, format=options.format, output=output,
-                                            flats=flats, darks=darks)
+                                            threshold=0, fformat=options.format, output=output,
+                                            flats=flats, darks=darks, quantiles=quantiles)
         return dataout
 
 if __name__ == "__main__":

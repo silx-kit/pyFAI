@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/06/2015"
+__date__ = "24/06/2015"
 __status__ = "production"
 
 import logging
@@ -498,16 +498,18 @@ def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5))
             return lstimg[0].astype(numpy.float32)
         stack = numpy.zeros((length, shape[0], shape[1]), dtype=numpy.float32)
         for i, img in enumerate(lstimg):
-           stack[i] = img
+            stack[i] = img
     if center_method in dir(stack):
         center = stack.__getattribute__(center_method)(axis=0)
     elif center_method == "median":
+        logger.info("Filtering data (median)")
         center = numpy.median(stack, axis=0)
     elif center_method.startswith("quantil"):
-        sorted = numpy.sort(stack, axis=0)
+        logger.info("Filtering data (quantiles)")
+        sorted_ = numpy.sort(stack, axis=0)
         lower = max(0, int(min(quantiles) * length))
         upper = min(length, int(max(quantiles) * length) + 1)
-        center = sorted[lower:upper].mean(axis=0)
+        center = sorted_[lower:upper].mean(axis=0)
     else:
         raise RuntimeError("Cannot understand method: %s in averageDark" % center_method)
     if cutoff is None or cutoff <= 0:
@@ -527,7 +529,7 @@ def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5))
 
 def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=None,
                    darks=None, flats=None, filter_="mean", correct_flat_from_dark=False,
-                   cutoff=None, format="edf"):
+                   cutoff=None, quantiles=None, fformat="edf"):
     """
     Takes a list of filenames and create an average frame discarding all saturated pixels.
 
@@ -541,10 +543,12 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
     @param filter_: can be maximum, mean or median (default=mean)
     @param correct_flat_from_dark: shall the flat be re-corrected ?
     @param cutoff: keep all data where (I-center)/std < cutoff
+    @param quantiles: 2-tuple containing the lower and upper quantile (0<q<1) to average out.
+    @param fformat: file format of the output image, default: edf
     @return: filename with the data or the data ndarray in case format=None
     """
-    if filter_ not in ["min", "max", "median", "mean", "sum"]:
-        logger.warning("Filter %s not understood. switch to mean filter")
+    if filter_ not in ["min", "max", "median", "mean", "sum", "quantiles"]:
+        logger.warning("Filter %s not understood. switch to mean filter"%filter_)
         filter_ = "mean"
     ld = len(listImages)
     sumImg = None
@@ -588,8 +592,8 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
         if do_dark:
             correctedImg -= dark
         if do_flat:
-             correctedImg /= flat
-        if (cutoff or (filter_ == "median")):
+            correctedImg /= flat
+        if (cutoff or quantiles or (filter_ in ["median", "quantiles"])):
             if big_img is None:
                 logger.info("Big array allocation for median filter or cut-off")
                 big_img = numpy.zeros((ld, shape[0], shape[1]), dtype=numpy.float32)
@@ -614,8 +618,8 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
                 sumImg = correctedImg
             else:
                 sumImg += correctedImg
-    if cutoff or (filter_ == "median"):
-        datared = averageDark(big_img, filter_, cutoff)
+    if cutoff or quantiles or (filter_ in ["median", "quantiles"]):
+        datared = averageDark(big_img, filter_, cutoff, quantiles )
     else:
         if filter_ in ["max", "min"]:
             datared = numpy.ascontiguousarray(sumImg, dtype=numpy.float32)
@@ -624,9 +628,9 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
         elif filter_ == "sum":
             datared = sumImg / numpy.float32(ld)
     logger.debug("Intensity range in merged dataset : %s --> %s", datared.min(), datared.max())
-    if format is not None:
-        if format.startswith("."):
-            format = format.lstrip(".")
+    if fformat is not None:
+        if fformat.startswith("."):
+            fformat = fformat.lstrip(".")
         if (output is None):
             prefix = ""
             for ch in zip(*listImages):
@@ -644,21 +648,22 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
                 else:
                     break
             if filter_ == "max":
-                output = "maxfilt%02i-%s.%s" % (ld, prefix, format)
+                output = "maxfilt%02i-%s.%s" % (ld, prefix, fformat)
             elif filter_ == "median":
-                output = "medfilt%02i-%s.%s" % (ld, prefix, format)
+                output = "medfilt%02i-%s.%s" % (ld, prefix, fformat)
             elif filter_ == "median":
-                output = "meanfilt%02i-%s.%s" % (ld, prefix, format)
+                output = "meanfilt%02i-%s.%s" % (ld, prefix, fformat)
             else:
-                output = "merged%02i-%s.%s" % (ld, prefix, format)
-        if format and output:
-            if "." in format:  # in case "edf.gz"
-                format = format.split(".")[0]
-            fabiomod = fabio.__getattribute__(format + "image")
-            fabioclass = fabiomod.__getattribute__(format + "image")
+                output = "merged%02i-%s.%s" % (ld, prefix, fformat)
+        if fformat and output:
+            if "." in fformat:  # in case "edf.gz"
+                fformat = fformat.split(".")[0]
+            fabiomod = fabio.__getattribute__(fformat + "image")
+            fabioclass = fabiomod.__getattribute__(fformat + "image")
             header = {"method":filter_,
                       "nframes":ld,
-                      "cutoff":str(cutoff)}
+                      "cutoff":str(cutoff),
+                      "quantiles": str(quantiles)}
             form = "merged_file_%%0%ii" % len(str(len(listImages)))
             header_list = ["method", "nframes", "cutoff"]
             for i, f in enumerate(listImages):
@@ -671,8 +676,8 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             fimg.header_keys = header_list
 
             if filter_ == "sum":
-              fimg = fabioclass(data=numpy.int32(datared * numpy.float32(ld)),
-                              header=header)
+                fimg = fabioclass(data=numpy.int32(datared * numpy.float32(ld)),
+                                  header=header)
 
             fimg.write(output)
             logger.info("Wrote %s" % output)
@@ -1298,10 +1303,10 @@ class FixedParameters(set):
 def roundfft(N):
     """
     This function returns the integer >=N for which size the Fourier analysis is faster (fron the FFT point of view)
-    Credit: Alessandro Mirone, ESRF, 2012 
-    
-    @param N: interger on which one would like to do a Fourier transform 
-    @return: integer with a better choice 
+    Credit: Alessandro Mirone, ESRF, 2012
+
+    @param N: interger on which one would like to do a Fourier transform
+    @return: integer with a better choice
     """
     MA, MB, MC, MD, ME, MF = 0, 0, 0, 0, 0, 0
     FA, FB, FC, FD, FE, FFF = 2, 3, 5, 7, 11, 13
@@ -1346,16 +1351,15 @@ def roundfft(N):
 def is_far_from_group(pt, lst_pts, d2):
     """
     Tells if a point is far from a group of points, distance greater than d2 (distance squared)
-    
+
     @param pt: point of interest
     @param lst_pts: list of points
     @param d2: minimum distance squarred
     @return: True If the point is far from all others.
-    
+
     """
     for apt in lst_pts:
         dsq = sum((i-j)*(i-j) for i, j in zip(apt,pt))
         if dsq <= d2:
             return False
     return True
-    
