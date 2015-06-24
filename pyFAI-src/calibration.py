@@ -610,7 +610,7 @@ class AbstractCalibration(object):
         """
         Performs an automatic keypoint extraction:
         Can be used in recalib or in calib after a first calibration has been performed.
-        
+
         @param method: method for keypoint extraction
         @param pts_per_deg: number of control points per azimuthal degree (increase for better precision)
         """
@@ -1037,7 +1037,7 @@ class AbstractCalibration(object):
     def chiplot(self, rings=None):
         """
         plot delta_2theta/2theta = f(chi) and fit the curve.
-        
+
         @param rings: list of rings to consider
         """
         from scipy.optimize import leastsq
@@ -1229,10 +1229,10 @@ class AbstractCalibration(object):
         """
         Validate the position of the center by cross-correlating two spectra 180 deg appart.
         Output values are in micron.
-        
+
         Designed for orthogonal setup with centered beam...
-        
-        @param slices: number of slices on which perform 
+
+        @param slices: number of slices on which perform
         """
         if slices <= 0:
             logger.warning("The number of slices should be strictly positive")
@@ -2328,6 +2328,7 @@ def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, 
     @param dist: initial distance
     @param gaussian: width of the gaussian used for difference of gaussian in the "massif" peak-picking algorithm
     @param interactive: set to False for testing
+    @return: AzimuthalIntegrator instance
     """
     assert isinstance(detector, Detector)
     assert isinstance(calibrant, Calibrant)
