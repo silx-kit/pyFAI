@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/03/2015"
+__date__ = "25/06/2015"
 __status__ = "production"
 
 import sys, os, threading
@@ -182,7 +182,7 @@ class Massif(object):
         if seed:
             seeds = numpy.array(list(seed))
             numpy.random.shuffle(seeds)
-            all_points = numpy.concatenate((seeds,all_points))
+            all_points = numpy.concatenate((seeds, all_points))
         for idx in all_points:
             out = self.nearest_peak(idx)
             if out is not None:
@@ -190,7 +190,7 @@ class Massif(object):
                       (idx[1], idx[0], out[1], out[0]))
                 p0, p1 = int(round(out[0])), int(round(out[1]))
                 if mask[p0, p1]:
-                    
+
                     if (self.data[p0, p1] > Imin) and \
                         is_far_from_group(out, res, dmin2):
                         res.append(out)
