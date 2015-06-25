@@ -48,9 +48,9 @@ from math import pi
 
 class MultiGeometry(object):
     """
-    This is an Azimuthal integrator containing multiple geometries (when 
+    This is an Azimuthal integrator containing multiple geometries (when
     the detector is on a goniometer arm)
-     
+
     """
 
     def __init__(self, ais, unit="2th_deg",
@@ -62,13 +62,14 @@ class MultiGeometry(object):
         @param radial_range: common range for integration
         @param azimuthal_range: common range for integration
         @param empty: value for empty pixels
-        @param chi_disc: if 0, set the chi_discontinuity at 
+        @param chi_disc: if 0, set the chi_discontinuity at
         """
         self._sem = threading.Semaphore()
         self.abolute_solid_angle = None
         self.ais = [ ai if isinstance(ai, AzimuthalIntegrator) else AzimuthalIntegrator.sload(ai) for ai in ais]
+        self.wavelength = None
         if wavelength:
-            self.wavelength = float(wavelength)
+            self.set_wavelength(wavelength)
         self.radial_range = tuple(radial_range[:2])
         self.azimuth_range = tuple(azimuth_range[:2])
         self.unit = units.to_unit(unit)
@@ -90,8 +91,8 @@ class MultiGeometry(object):
     def integrate1d(self, lst_data, npt=1800, monitors=None, all=False):
         """
         Perform 1D azimuthal integration
-        
-        @param lst_data: list of numpy array 
+
+        @param lst_data: list of numpy array
         @param npt: number of points int the integration
         @param monitors:
         """
@@ -129,10 +130,10 @@ class MultiGeometry(object):
     def integrate2d(self, lst_data, npt_rad=1800, npt_azim=3600, monitors=None, all=False):
         """
         Perform 1D azimuthal integration of multiples frames, one for each geometry
-        
-        @param lst_data: list of numpy array 
+
+        @param lst_data: list of numpy array
         @param npt_rad: integration range
-        @param monitors: 
+        @param monitors:
         """
         if monitors is None:
             monitors = [1.0] * len(self.ais)
@@ -165,3 +166,11 @@ class MultiGeometry(object):
 #             else:
                 out = I, res["radial"], res["azimuthal"]
         return out
+
+    def set_wavelength(self, value):
+        """
+        Changes the wavelength of a group of azimuthal integrators
+        """
+        self.wavelength = float(value)
+        for ai in self.ais:
+            ai.set_wavelength(self.wavelength)

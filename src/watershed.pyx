@@ -469,12 +469,13 @@ class InverseWatershed(object):
                 cnt += 1
         logger.info("Did %s merge_intense" % cnt)
     
-    def peaks_from_area(self, mask, Imin=None, keep=None, bint refine=True):
+    def peaks_from_area(self, mask, Imin=None, keep=None, bint refine=True, float dmin=0.0, **kwarg):
         """
         @param mask: mask of data points valid
         @param Imin: Minimum intensity for a peak 
         @param keep: Number of  points to keep
         @param refine: refine sub-pixel position
+        @param dmin: minimum distance from 
         """
         cdef:
             int i, j, l, x, y, width = self.width
@@ -483,9 +484,10 @@ class InverseWatershed(object):
             numpy.int32_t[:] labels = self.labels.ravel()
             dict regions = self.regions
             Region region
-            list output_points = [], intensities = [], argsort
+            list output_points = [], intensities = [], argsort, tmp_lst, rej_lst
             set keep_regions = set()
             float[:] data = self.data.ravel() 
+            double d2, dmin2
         for i in input_points:
             l = labels[i]
             region = regions[l]
@@ -507,6 +509,23 @@ class InverseWatershed(object):
                 argsort = [i for i in argsort if intensities[i] >= Imin]
             output_points = [output_points[i] for i in argsort]
             
+            if dmin:
+                dmin2 = dmin * dmin
+            else:
+                dmin2 = 0.0
             if keep and len(output_points)>keep:
-                output_points = output_points[:keep]
+                tmp_lst = output_points
+                rej_lst = []
+                output_points = []
+                for pt in tmp_lst:
+                    for pt2 in output_points:
+                        d2 = (pt[0]-pt2[0])**2 + (pt[1]-pt2[1])**2
+                        if d2<=dmin2:
+                            rej_lst.append(pt)
+                            break
+                    else:
+                        output_points.append(pt)
+                        if len(output_points)>=keep:
+                            return output_points
+                output_points = (output_points+rej_lst)[:keep]
         return output_points

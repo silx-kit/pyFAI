@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/06/2015"
+__date__ = "23/06/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -75,6 +75,8 @@ except ImportError:
     pyFAI_morphology = False
 else:
     pyFAI_morphology = True
+
+from .marchingsquares import isocontour
 
 
 def get_detector(detector, datafiles=None):
@@ -120,7 +122,7 @@ class AbstractCalibration(object):
             'bound': "sets the upper and lower bound of a parameter: 'bound dist 0.1 0.2'",
             'bounds': "sets the upper and lower bound of all parameters",
             'refine': "performs a new cycle of refinement",
-            'recalib': "extract a new set of rings and re-perform the calibration. One can specify how many rings to extract and the algorithm to use (blob or massif)",
+            'recalib': "extract a new set of rings and re-perform the calibration. One can specify how many rings to extract and the algorithm to use (blob, massif, watershed) and the nb_pts_per_deg in azimuth",
             'done': "finishes the processing, performs an integration and quits",
             'validate': "plot the offset between the calibrated image and the back-projected image",
             'validate2': "measures the offset of the center as function of azimuthal angle by cross-correlation of 2 plots, 180 deg appart. Option: number of azimuthal sliced, default: 36",
@@ -130,7 +132,7 @@ class AbstractCalibration(object):
             'reset': "Reset the geometry to the initial guess (rotation to zero, distance to 0.1m, poni at the center of the image)",
             'assign': "Change the assignment of a group of points to a rings",
             "weight": "toggle from weighted to unweighted mode...",
-            "define": "Re-define the value for a constant internal parameter of the program like max_iter, nPt_1D, nPt_2D_azim, nPt_2D_rad. Warning: they may be harmful !",
+            "define": "Re-define the value for a constant internal parameter of the program like max_iter, nPt_1D, nPt_2D_azim, nPt_2D_rad, integrator_method, error_model. Warning: attribute change may be harmful !",
             "chiplot": "plot control point radial error as function of azimuthal angle, optional parameters: the rings for which this need to be plotted",
             "delete": "delete a group of points, provide the letter."
             }
@@ -138,6 +140,8 @@ class AbstractCalibration(object):
     UNITS = {"dist":"meter", "poni1":"meter", "poni2":"meter", "rot1":"radian",
              "rot2":"radian", "rot3":"radian", "wavelength":"meter"}
     VALID_URL = ["", 'file', 'hdf5', "nxs", "h5" ]
+    PTS_PER_DEG = 0.3
+
 
     def __init__(self, dataFiles=None, darkFiles=None, flatFiles=None, pixelSize=None,
                  splineFile=None, detector=None, wavelength=None, calibrant=None):
@@ -211,9 +215,11 @@ class AbstractCalibration(object):
         self.unit = units.to_unit("2th_deg")
         self.keep = True
         self.check_calib = None
-        self.fig3 = self.ax_xrpd_1d = self.ax_xrpd_2d = None
+        self.fig_integrate = self.ax_xrpd_1d = self.ax_xrpd_2d = None
         self.fig_chiplot = self.ax_chiplot = None
         self.fig_center = self.ax_center = None
+        self.integrator_method = "splitbbox"
+        self.error_model = ""
 
     def __repr__(self):
         lst = ["Calibration object:"]
@@ -600,10 +606,13 @@ class AbstractCalibration(object):
             self.read_wavelength()
             self.peakPicker.points.calibrant.wavelength = self.wavelength
 
-    def extract_cpt(self, method="massif"):
+    def extract_cpt(self, method="massif", pts_per_deg=1.0):
         """
         Performs an automatic keypoint extraction:
-        Can be used in recalib or in calib after a first calibration has been performed
+        Can be used in recalib or in calib after a first calibration has been performed.
+
+        @param method: method for keypoint extraction
+        @param pts_per_deg: number of control points per azimuthal degree (increase for better precision)
         """
         logger.info("in extract_cpt with method %s" % method)
         assert self.ai
@@ -626,13 +635,15 @@ class AbstractCalibration(object):
         tth_min += tth
 
         if self.geoRef:
-            ary = self.geoRef.get_ttha()
-            if (ary is not None) and (ary.shape == self.peakPicker.data.shape):
-                ttha = ary
-            else:
+            ttha = self.geoRef.get_ttha()
+            chia = self.geoRef.get_chia()
+            if (ttha is None) or (ttha.shape != self.peakPicker.data.shape):
                 ttha = self.geoRef.twoThetaArray(self.peakPicker.data.shape)
+            if (chia is  None) or (chia.shape != self.peakPicker.data.shape):
+                chia = self.geoRef.chiArray(self.peakPicker.data.shape)
         else:
             ttha = self.ai.twoThetaArray(self.peakPicker.data.shape)
+            chia = self.ai.chiArray(self.peakPicker.data.shape)
         rings = 0
         self.peakPicker.sync_init()
         if self.max_rings is None:
@@ -659,14 +670,22 @@ class AbstractCalibration(object):
                     upper_limit = mean
                     mask2 = numpy.logical_and(self.peakPicker.data > upper_limit, mask)
                     size2 = mask2.sum()
-                keep = int(numpy.ceil(numpy.sqrt(size2)))
+                # length of the arc:
+                points = isocontour(ttha, tth[i]).round().astype(int)
+                seeds = set((i[1], i[0]) for i in points)
+                # max number of points: 360 points for a full circle
+                azimuthal = chia[points[:, 1].clip(0, self.peakPicker.data.shape[0]), points[:, 0].clip(0, self.peakPicker.data.shape[1])]
+                nb_deg_azim = numpy.unique(numpy.rad2deg(azimuthal).round()).size
+                keep = int(nb_deg_azim * pts_per_deg)
+                if keep == 0:
+                    continue
+                dist_min = len(seeds) / 2.0 / keep
+                # why 3.0, why not ?
 
                 logger.info("Extracting datapoint for ring %s (2theta = %.2f deg); "\
-                            "searching for %i pts out of %i with I>%.1f" %
-                            (i, numpy.degrees(tth[i]), keep, size2, upper_limit))
-
-                res = self.peakPicker.peaks_from_area(mask2, Imin=upper_limit, keep=keep, method=method, ring=i)
-
+                            "searching for %i pts out of %i with I>%.1f, dmin=%.1f" %
+                            (i, numpy.degrees(tth[i]), keep, size2, upper_limit, dist_min))
+                res = self.peakPicker.peaks_from_area(mask=mask2, Imin=upper_limit, keep=keep, method=method, ring=i, dmin=dist_min, seed=seeds)
 
         self.peakPicker.points.save(self.basename + ".npt")
         if self.weighted:
@@ -818,6 +837,7 @@ class AbstractCalibration(object):
 
             elif action == "recalib":
                 max_rings = None
+                pts_per_deg = self.PTS_PER_DEG
                 if len(words) >= 2:
                     try:
                        max_rings = int(words[1])
@@ -828,11 +848,16 @@ class AbstractCalibration(object):
                         self.max_rings = max_rings
                 else:
                     self.max_rings = None
-                if len(words) == 3 and words[2] in PeakPicker.VALID_METHODS:
+                if len(words) >= 3 and words[2] in PeakPicker.VALID_METHODS:
                     method = words[2]
                 else:
                     method = "blob"
-                self.extract_cpt(method)
+                if len(words) >= 4:
+                    try:
+                        pts_per_deg = float(words[3])
+                    except:
+                        pts_per_deg = self.PTS_PER_DEG
+                self.extract_cpt(method, pts_per_deg)
                 self.geoRef.data = numpy.array(self.data, dtype=numpy.float64)
                 return False
             elif action == "bound":  # bound dist
@@ -1012,7 +1037,7 @@ class AbstractCalibration(object):
     def chiplot(self, rings=None):
         """
         plot delta_2theta/2theta = f(chi) and fit the curve.
-        
+
         @param rings: list of rings to consider
         """
         from scipy.optimize import leastsq
@@ -1107,32 +1132,44 @@ class AbstractCalibration(object):
         self.geoRef.cornerArray(self.peakPicker.shape)
         t2b = time.time()
         if self.gui:
-            if self.fig3 is None:
-                self.fig3 = pylab.plt.figure()
+            if self.fig_integrate is None:
+                self.fig_integrate = pylab.plt.figure()
+                self.ax_xrpd_1d = self.fig_integrate.add_subplot(1, 2, 1)
+                self.ax_xrpd_2d = self.fig_integrate.add_subplot(1, 2, 2)
             else:
-                self.fig3.clf()
-            self.ax_xrpd_1d = self.fig3.add_subplot(1, 2, 1)
-            self.ax_xrpd_2d = self.fig3.add_subplot(1, 2, 2)
+#                self.fig_integrate.clf()
+                self.ax_xrpd_1d.cla()
+                self.ax_xrpd_2d.cla()
+                update_fig(self.fig_integrate)
+
         t3 = time.time()
-        a, b = self.geoRef.integrate1d(self.peakPicker.data, self.nPt_1D,
-                                filename=self.basename + ".xy", unit=self.unit,
-                                polarization_factor=self.polarization_factor,
-                                method="splitbbox")
+        res1 = self.geoRef.integrate1d(self.peakPicker.data, self.nPt_1D,
+                                       filename=self.basename + ".xy",
+                                       unit=self.unit,
+                                       polarization_factor=self.polarization_factor,
+                                       method=self.integrator_method,
+                                       error_model=self.error_model,
+                                       all=True)
         t4 = time.time()
-        img, pos_rad, pos_azim = self.geoRef.integrate2d(self.peakPicker.data, self.nPt_2D_rad, self.nPt_2D_azim,
-                                filename=self.basename + ".azim", unit=self.unit,
-                                polarization_factor=self.polarization_factor,
-                                method="splitbbox")
+        res2 = self.geoRef.integrate2d(self.peakPicker.data,
+                                       self.nPt_2D_rad, self.nPt_2D_azim,
+                                       filename=self.basename + ".azim",
+                                       unit=self.unit,
+                                       polarization_factor=self.polarization_factor,
+                                       method=self.integrator_method,
+                                       error_model=self.error_model,
+                                       all=True)
         t5 = time.time()
-        logger.info(os.linesep.join(["Timings:",
+        logger.info(os.linesep.join(["Timings (%s):" % self.integrator_method,
                                 " * two theta array generation %.3fs" % (t1 - t0),
                                 " * diff Solid Angle           %.3fs" % (t2 - t1),
                                 " * chi array generation       %.3fs" % (t2a - t2),
                                 " * corner coordinate array    %.3fs" % (t2b - t2a),
                                 " * 1D Azimuthal integration   %.3fs" % (t4 - t3),
                                 " * 2D Azimuthal integration   %.3fs" % (t5 - t4)]))
+
         if self.gui:
-            self.ax_xrpd_1d.plot(a, b)
+            self.ax_xrpd_1d.plot(res1["radial"], res1["I"])
             # GF: Add vertical line for each used calibration ring:
             xValues = None
             twoTheta = numpy.array([i for i in self.peakPicker.points.calibrant.get_2th() if i])  # in radian
@@ -1158,6 +1195,9 @@ class AbstractCalibration(object):
             self.ax_xrpd_1d.set_title("1D integration")
             self.ax_xrpd_1d.set_xlabel(self.unit.label)
             self.ax_xrpd_1d.set_ylabel("Intensity")
+            img = res2["I"]
+            pos_rad = res2["radial"]
+            pos_azim = res2["azimuthal"]
             self.ax_xrpd_2d.imshow(numpy.log(img - img.min() + 1e-3), origin="lower",
                          extent=[pos_rad.min(), pos_rad.max(), pos_azim.min(), pos_azim.max()],
                          aspect="auto")
@@ -1165,8 +1205,8 @@ class AbstractCalibration(object):
             self.ax_xrpd_2d.set_xlabel(self.unit.label)
             self.ax_xrpd_2d.set_ylabel(r"Azimuthal angle $\chi$ ($^{o}$)")
             if not gui_utils.main_loop:
-                self.fig3.show()
-            update_fig(self.fig3)
+                self.fig_integrate.show()
+            update_fig(self.fig_integrate)
 
     def validate_calibration(self):
         """
@@ -1189,11 +1229,14 @@ class AbstractCalibration(object):
         """
         Validate the position of the center by cross-correlating two spectra 180 deg appart.
         Output values are in micron.
-        
+
         Designed for orthogonal setup with centered beam...
-        
-        @param slices: number of slices on which perform 
+
+        @param slices: number of slices on which perform
         """
+        if slices <= 0:
+            logger.warning("The number of slices should be strictly positive")
+            slices = 1
         if slices % 2 == 1:
             logger.warning("Validate assumes the number of slices is even. adding one")
             slices += 1
@@ -2285,6 +2328,7 @@ def calib(img, calibrant, detector, basename="from_ipython", reconstruct=False, 
     @param dist: initial distance
     @param gaussian: width of the gaussian used for difference of gaussian in the "massif" peak-picking algorithm
     @param interactive: set to False for testing
+    @return: AzimuthalIntegrator instance
     """
     assert isinstance(detector, Detector)
     assert isinstance(calibrant, Calibrant)
