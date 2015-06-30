@@ -153,12 +153,12 @@ class TestCell(unittest.TestCase):
     def test_dspacing(self):
         c = Cell.cubic(1)
         cd = c.d_spacing(0.1)
-        cds = cd.keys()
+        cds = list(cd.keys())
         cds.sort()
 
         t = Cell()
         td = t.d_spacing(0.1)
-        tds = td.keys()
+        tds = list(td.keys())
         tds.sort()
 
         self.assertEquals(cds, tds, msg="d-spacings are the same")
