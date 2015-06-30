@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/06/2015"
+__date__ = "25/06/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -57,7 +57,8 @@ from .geometryRefinement import GeometryRefinement
 from .peak_picker import PeakPicker
 from . import units, gui_utils
 from .utils import averageImages, measure_offset, expand_args, \
-            readFloatFromKeyboard, input, FixedParameters, roundfft
+            readFloatFromKeyboard, input, FixedParameters, roundfft, \
+            win32
 from .azimuthalIntegrator import AzimuthalIntegrator
 from .units import hc
 from . import version as PyFAI_VERSION
@@ -109,10 +110,11 @@ class AbstractCalibration(object):
     Everything that is common to Calibration and Recalibration
     """
 
-    win_error = "We are under windows, matplotlib is not able to"\
-                         " display too many images without crashing, this"\
-                         " is why the window showing the diffraction image"\
-                         " is closed"
+    win_error = "We are under windows with a 32 bit version of python,"\
+                " matplotlib is not able to"\
+                " display too many images without crashing, this"\
+                " is why the window showing the diffraction image"\
+                " is closed"
     HELP = {"help": "Try to get the help of a given action, like 'refine?'. Use done when finished. "
             "Most command are composed of 'action parameter value' like 'set wavelength 1e-10'.",
             "get": "print he value of a parameter",
@@ -698,7 +700,7 @@ class AbstractCalibration(object):
         """
         Contains the common geometry refinement part
         """
-        if os.name == "nt" and self.peakPicker is not None:
+        if win32 and self.peakPicker is not None:
             logging.info(self.win_error)
             self.peakPicker.closeGUI()
         print("Before refinement, the geometry is:")
@@ -736,7 +738,7 @@ class AbstractCalibration(object):
             dsa = self.geoRef.solidAngleArray(self.peakPicker.shape)
 #            self.geoRef.chiArray(self.peakPicker.shape)
 #            self.geoRef.cornerArray(self.peakPicker.shape)
-            if os.name == "nt":
+            if win32:
                 logger.info(self.win_error)
             else:
                 if self.gui:

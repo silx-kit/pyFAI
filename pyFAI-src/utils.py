@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/06/2015"
+__date__ = "25/06/2015"
 __status__ = "production"
 
 import logging
@@ -72,6 +72,9 @@ depreclog = logging.getLogger("DEPRECATION")
 cu_fft = None  # No cuda here !
 if sys.platform != "win32":
     WindowsError = RuntimeError
+
+win32 = (os.name == "nt") and (tuple.__itemsize__ == 4)
+
 has_fftw3 = None
 try:
     import fftw3
@@ -548,7 +551,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
     @return: filename with the data or the data ndarray in case format=None
     """
     if filter_ not in ["min", "max", "median", "mean", "sum", "quantiles"]:
-        logger.warning("Filter %s not understood. switch to mean filter"%filter_)
+        logger.warning("Filter %s not understood. switch to mean filter" % filter_)
         filter_ = "mean"
     ld = len(listImages)
     sumImg = None
@@ -619,7 +622,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             else:
                 sumImg += correctedImg
     if cutoff or quantiles or (filter_ in ["median", "quantiles"]):
-        datared = averageDark(big_img, filter_, cutoff, quantiles )
+        datared = averageDark(big_img, filter_, cutoff, quantiles)
     else:
         if filter_ in ["max", "min"]:
             datared = numpy.ascontiguousarray(sumImg, dtype=numpy.float32)
@@ -1359,7 +1362,7 @@ def is_far_from_group(pt, lst_pts, d2):
 
     """
     for apt in lst_pts:
-        dsq = sum((i-j)*(i-j) for i, j in zip(apt,pt))
+        dsq = sum((i - j) * (i - j) for i, j in zip(apt, pt))
         if dsq <= d2:
             return False
     return True
