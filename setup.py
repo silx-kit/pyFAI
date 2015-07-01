@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/04/2015"
+__date__ = "01/07/2015"
 __status__ = "stable"
 
 
@@ -139,17 +139,20 @@ def check_openmp():
             return False
     return True
 
-CYTHON = check_cython()
-openmp = "openmp" if check_openmp() else ""
+
+USE_OPENMP = "openmp" if check_openmp() else ""
+USE_CYTHON = check_cython()
+if USE_CYTHON:
+    from Cython.Build import cythonize
 
 
-def Extension(name, source=None, extra_sources=None, **kwargs):
+def Extension(name, source=None, can_use_openmp=False, extra_sources=None, **kwargs):
     """
     Wrapper for distutils' Extension
     """
     if source is None:
         source = name
-    cython_c_ext = ".pyx" if CYTHON else ".c"
+    cython_c_ext = ".pyx" if USE_CYTHON else ".c"
     sources = [os.path.join("src", source + cython_c_ext)]
     if extra_sources:
         sources.extend(extra_sources)
@@ -160,90 +163,52 @@ def Extension(name, source=None, extra_sources=None, **kwargs):
         include_dirs = list(include_dirs)
     else:
         include_dirs = ["src", numpy.get_include()]
-    return _Extension(name=name, sources=sources, include_dirs=include_dirs, **kwargs)
+
+    if can_use_openmp and USE_OPENMP:
+        extra_compile_args = set(kwargs.pop("extra_compile_args", []))
+        extra_compile_args.add(USE_OPENMP)
+        kwargs["extra_compile_args"] = list(extra_compile_args)
+
+        extra_link_args = set(kwargs.pop("extra_link_args", []))
+        extra_link_args.add(USE_OPENMP)
+        kwargs["extra_link_args"] = list(extra_link_args)
+
+    ext = _Extension(name=name, sources=sources, include_dirs=include_dirs, **kwargs)
+
+    if USE_CYTHON:
+        cext = cythonize([ext], compile_time_env={"HAVE_OPENMP": bool(USE_OPENMP)})
+        if cext:
+            ext = cext[0]
+    return ext
 
 ext_modules = [
-    Extension("_geometry",
-              extra_compile_args=[openmp],
-              extra_link_args=[openmp]),
-
-    Extension("reconstruct",
-              extra_compile_args=[openmp],
-              extra_link_args=[openmp]),
-
+    Extension("_geometry", can_use_openmp=True),
+    Extension("reconstruct", can_use_openmp=True),
     Extension('splitPixel'),
-
     Extension('splitPixelFull'),
-
     Extension('splitPixelFullLUT'),
-
     Extension('splitPixelFullLUT_double'),
-
     Extension('splitBBox'),
-
-    Extension('splitBBoxLUT',
-              extra_compile_args=[openmp],
-              extra_link_args=[openmp]),
-
-    Extension('splitBBoxCSR',
-              extra_compile_args=[openmp],
-              extra_link_args=[openmp]),
-    Extension('splitPixelFullCSR',
-              extra_compile_args=[openmp],
-              extra_link_args=[openmp]),
+    Extension('splitBBoxLUT', can_use_openmp=True),
+    Extension('splitBBoxCSR', can_use_openmp=True),
+    Extension('splitPixelFullCSR', can_use_openmp=True),
     Extension('relabel'),
-
-    Extension("bilinear",
-              extra_compile_args=[openmp],
-              extra_link_args=[openmp]),
-
-    Extension('_distortion',
-              extra_compile_args=[openmp],
-              extra_link_args=[openmp]),
-
-    Extension('_distortionCSR',
-              extra_compile_args=[openmp],
-              extra_link_args=[openmp]),
-
-    Extension('_bispev',
-              extra_compile_args=[openmp],
-              extra_link_args=[openmp]),
-
-    Extension('_convolution',
-              extra_compile_args=[openmp],
-              extra_link_args=[openmp]),
-
+    Extension("bilinear", can_use_openmp=True),
+    Extension('_distortion', can_use_openmp=True),
+    Extension('_distortionCSR', can_use_openmp=True),
+    Extension('_bispev', can_use_openmp=True),
+    Extension('_convolution', can_use_openmp=True),
     Extension('_blob'),
-
     Extension('morphology'),
-
     Extension('marchingsquares'),
-
-    Extension('watershed',
-#             extra_compile_args=[openmp], extra_link_args=[openmp],
-              )
-
+    Extension('watershed'),
+    Extension('histogram', can_use_openmp=True)
 ]
 
 if (os.name == "posix") and ("x86" in platform.machine()):
     ext_modules.append(
         Extension('fastcrc', extra_sources=[os.path.join("src", "crc32.c")])
     )
-
-if openmp == "openmp":
-    copy('histogram_omp.pyx', 'histogram.pyx', "src")
-    copy('histogram_omp.c', 'histogram.c', "src")
-    ext_modules.append(Extension('histogram',
-                                 extra_compile_args=[openmp],
-                                 extra_link_args=[openmp]))
-else:
-    copy('histogram_nomp.pyx', 'histogram.pyx', "src")
-    copy('histogram_nomp.c', 'histogram.c', "src")
-    ext_modules.append(Extension('histogram'))
-
-if CYTHON:
-    from Cython.Build import cythonize
-    ext_modules = cythonize(ext_modules)
 
 
 class build_ext_pyFAI(build_ext):
