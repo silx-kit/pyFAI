@@ -26,7 +26,7 @@ Inverse watershed for connecting region of high intensity
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "27/04/2015"
+__date__ = "08/07/2015"
 __status__ = "stable"
 __license__ = "GPLv3+"
 
@@ -191,7 +191,9 @@ class InverseWatershed(object):
 #         readonly numpy.uint8_t[:, :] borders
 #         readonly float  thres, _actual_thres
 #         readonly Bilinear bilinear
-        
+    NAME = "Inverse watershed"
+    VERSION = "1.0"
+    
     def __init__(self, data not None, thres=1.0):
         """
         @param data: 2d image as numpy array
@@ -217,6 +219,49 @@ class InverseWatershed(object):
         self.borders = None
         self.dict = None
 
+    def save(self, fname):
+        """
+        Save all regions into a HDF5 file
+        """
+        import h5py
+        with h5py.File(fname) as h5:
+            h5["NAME"] = self.NAME
+            h5["VERSION"] = self.VERSION
+            for i in ("data", "height", "width", "labels", "borders", "thres"):
+                h5[i] = self.__getattribute__(i)
+            r = h5.require_group("regions")
+            
+            for i in set(self.regions.values()):
+                s = r.require_group(str(i.index))
+                for j in ("index", "size", "pass_to", "mini", "maxi", "highest_pass", "neighbors", "border", "peaks"):
+                    s[j] = i.__getattribute__(j)
+
+    @classmethod
+    def load(cls, fname):
+        """
+        Load data from a HDF5 file
+        """
+        import h5py
+        with h5py.File(fname) as h5:
+            assert h5["VERSION"].value == cls.VERSION
+            assert h5["NAME"].value == cls.NAME
+            self = cls(h5["data"].value, h5["thres"].value)
+            for i in ("labels", "borders"):
+                setattr(self, i, h5[i].value)
+            for i in h5["regions"].values():
+                r = Region(i["index"].value)
+                r.size = i["size"].value
+                r.pass_to = i["pass_to"].value
+                r.mini = i["mini"].value
+                r.maxi = i["maxi"].value
+                r.highest_pass = i["highest_pass"].value
+                r.neighbors = list(i["neighbors"].value)
+                r.border = list(i["border"].value)
+                r.peaks = list(i["peaks"].value)
+                for j in r.peaks:
+                    self.regions[j] = r
+        return self
+    
     def init(self):
         self.init_labels()
         self.init_borders()
