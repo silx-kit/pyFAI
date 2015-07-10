@@ -12,11 +12,13 @@ Software pyFAI is relying on
 
 FabIO
 .....
+
 PyFAI is using FabIO everywhere access to a 2D images is needed.
 The fabio-viewer is also a lightweight convenient viewer for diffraction images.
 
 PyMca
 .....
+
 The X-ray Fluorescence Toolkit provides convenient tools for
 HDF5 file browsing and mask drawing.
 
@@ -86,6 +88,7 @@ the structure of DPDAK and the possibilities and limitations are discussed.
 
 EDNA
 ....
+
 EDNA is a framework for developing plugin-based applications especially
 for online data analysis in the X-ray experiments field (http://edna-site.org)
 A EDNA data analysis server is using pyFAI as an integration engine (on the GPU)
