@@ -14,13 +14,15 @@ FabIO
 .....
 
 PyFAI is using FabIO everywhere access to a 2D images is needed.
-The fabio-viewer is also a lightweight convenient viewer for diffraction images.
+The fabio_viewer is also a lightweight convenient viewer for diffraction images.
+It has been described in `doi:10.1107/S0021889813000150 <http://journals.iucr.org/j/issues/2013/02/00/kk5124/>`_
 
 PyMca
 .....
 
 The X-ray Fluorescence Toolkit provides convenient tools for
 HDF5 file browsing and mask drawing.
+It has been described in `doi:10.1016/j.sab.2006.12.002 <http://www.sciencedirect.com/science/article/pii/S0584854706003764>`_
 
 
 Program using pyFAI as a library
@@ -28,13 +30,13 @@ Program using pyFAI as a library
 
 Bubble
 ......
-
-Developed for the SNBL and Dubble beamlines by Vadim DIADKIN.
+Client-server program to perform azimuthal integration online.
+Developed for the SNBL and Dubble beamlines by Vadim DIADKIN and available from this `mercurial repository <http://www.3lp.cx/>`_.
 
 Dahu
 ....
 
-Dahu is a lightweight plugin based framework.
+Dahu is a lightweight plugin based framework available from this `git repository <https://github.com/kif/UPBL09a>`_.
 Lighter then EDNA, it is technically a JSON-RPC server over Tango.
 Used on TRUSAXS beamline at ESRF (ID02), dahu uses pyFAI to process data
 up to the kHz range.
@@ -44,7 +46,6 @@ Dioptas
 
 Graphical user interface for high-pressure diffraction, developed at the
 APS synchrotron by C. Prescher and described in:
-http://www.tandfonline.com/doi/full/10.1080/08957959.2015.1059835
 `doi:10.1080/08957959.2015.1059835 <http://www.tandfonline.com/doi/full/10.1080/08957959.2015.1059835>`_
 
 The amount of data collected during synchrotron X-ray diffraction (XRD)
@@ -115,9 +116,15 @@ xPDFsuite
 
 Developed by the Billinge Group, this commercial software is described in `arXiv 1402.3163 (2014) <http://arxiv.org/abs/1402.3163>`_
 
-xPDFsuite is an end-to-end software solution for high throughput
-Pair Distribution Function transformation, visualization and analysis.
-It provides a convenient GUI for SrXplanar and PDFgetX3, allowing the users
-to easily obtain 1D diffraction pattern from raw 2D diffraction images and then transform them to PDFs.
+xPDFsuite is an application that facilitates the workflow of atomic pair
+distribution function analysis of x-ray diffraction measurements from
+complex materials.  It is specially designed to help the scientist
+visualize, handle and process large numbers of datasets that is common
+when working with high throughput modern synchrotron sources.  It has a
+full-featured interactive graphical user interface (GUI) with 3D and 3D
+graphics for plotting data and it  incorporates a number of powerful
+packages for integrating 2D powder diffraction images, analyzing the
+curves to obtain PDFs and then tools for assessing the data and modeling
+it.  It is available from diffpy.org <http://diffpy.org>.
 
 
