@@ -108,7 +108,7 @@
 0.11.0:
 		* All calibrant from NIST are now available, + Nickel, Aluminum, ... with bibliographic references
 		* The Cell class helps defining new calibrants.
-		* OpenCL Bitonic sort (to be integated into Bragg/Amorphous separation)
+		* OpenCL Bitonic sort (to be integrated into Bragg/Amorphous separation)
 		* Calib is available from the Python interface (procedural API), not only from the shell script.
 		* Many new options in calib for reset/assign/delete/validate/validate2/chiplot.
 			- reset: set the detector, orthogonal, centered and at 10cm
@@ -120,7 +120,7 @@
 		* Fix the regression of the initial guess in calib (Thanks Jon Wright)
 		* New peak picking algorithm named "watershed" and based on inverse watershed for ridge recognition 
 		* start factorizing cython regridding engines (work ongoing)
-		* Add "--poni" meyword for pyFAI-calib (Thanks Vadim Dyakin)
+		* Add "--poni" option for pyFAI-calib (Thanks Vadim Dyakin)
 		* Improved "guess_binning", especially for Perkin Elmer flat panel detectors.
 		* Support for non planar detectors like Curved Imaging plate developped at Aarhus
 		* Support for Multi-geometry experiments (tested)
