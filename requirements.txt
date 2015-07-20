@@ -1,6 +1,6 @@
 numpy
 cython
-matplotlib
+#matplotlib #anyway installed on RTD
 sphinx
 sphinxcontrib-programoutput
 #fabio #breaks readthedocs for now -> update fabio first
