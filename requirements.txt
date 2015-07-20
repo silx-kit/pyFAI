@@ -1,0 +1,6 @@
+numpy
+fabio
+cython
+matplotlib
+sphinx
+sphinxcontrib-programoutput
