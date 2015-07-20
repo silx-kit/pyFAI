@@ -1,4 +1,3 @@
-Project structure
 =================
 
 PyFAI is a library to deal with diffraction images for data reduction.
@@ -100,6 +99,7 @@ Test suites
 
 To run the test an internet connection is needed as 200MB of test images will be downloaded.
 ............................................................................................
+..
     python setup.py build test
 
 Setting the environment variable http_proxy can be necessary (depending on your network):
@@ -107,6 +107,8 @@ Setting the environment variable http_proxy can be necessary (depending on your 
 ..
 
    export http_proxy=http://proxy.site.org:3128
+
+Especially at ESRF, the configuration of the network proxy can be obtained by phoning on the hotline: 24-24. 
 
 PyFAI comes with 30 test-suites (172 tests in total) representing a coverage of 67%.
 This ensures both non regression over time and ease the distribution under different platforms:
