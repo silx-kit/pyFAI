@@ -50,7 +50,6 @@ try:
     from setuptools.command.install_data import install_data
 except ImportError:
     from distutils.core import setup, Command
-    from distutils.core import Extension
     from distutils.command.sdist import sdist
     from distutils.command.build_ext import build_ext
     from distutils.command.install_data import install_data
