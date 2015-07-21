@@ -107,6 +107,22 @@ NanoPeakCell
 ............
 TODO ... Developed at IBS (Grenoble) by N. Coquelle
 
+pygix
+.....
+
+A Python library for reduction of 2D grazing-incidence X-ray scattering
+data developped at ESRF (ID13) by Thomas DANE.
+
+Grazing-incidence X-ray scattering techniques (GISAXS, GIWAXS/GID)
+allow the study of thin films on surfaces that would otherwise be
+unmeasurable in standard transmission geometry experiments. The fixed
+incident X-ray angle gives rise to a distortion in the diffraction
+patterns, which is extreme at wide-angles. The pygix library provides
+routines for projecting 2D detector images into corrected reciprocal
+space maps, radial transformations and line profile extraction using
+pyFAI's regrouping functions.
+
+
 PySAXS
 ......
 TODO ... Developed at CEA by O. Taché
