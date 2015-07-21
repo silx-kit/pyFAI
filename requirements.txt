@@ -1,7 +1,7 @@
 numpy
 scipy
 cython
-matplotlib
+#matplotlib #issue in RTD 
 sphinx
 sphinxcontrib-programoutput
 fabio
