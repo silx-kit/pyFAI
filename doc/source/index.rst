@@ -40,6 +40,7 @@ Finally other programs/projects relying on pyFAI are presented and the project i
    ecosystem
    project
    biblio
+   changelog
 
 Indices and tables
 ==================
