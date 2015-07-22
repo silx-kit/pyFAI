@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/06/2015"
+__date__ = "22/07/2015"
 __status__ = "production"
 
 import logging
@@ -543,7 +543,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
     @param maximum: maximum valid value
     @param darks: list of dark current images for subtraction
     @param flats: list of flat field images for division
-    @param filter_: can be maximum, mean or median (default=mean)
+    @param filter_: can be "min", "max", "median", "mean", "sum", "quantiles" (default='mean')
     @param correct_flat_from_dark: shall the flat be re-corrected ?
     @param cutoff: keep all data where (I-center)/std < cutoff
     @param quantiles: 2-tuple containing the lower and upper quantile (0<q<1) to average out.

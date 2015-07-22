@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/06/2015"
+__date__ = "22/07/2015"
 __status__ = "production"
 
 import os
@@ -66,7 +66,7 @@ def main():
                       help="Output/ destination of average image")
     parser.add_argument("-m", "--method", dest="method",
                       type=str, default="mean",
-                      help="Method used for averaging, can be 'mean'(default) or 'median', 'min' or 'max'")
+                      help="Method used for averaging, can be 'mean'(default) or 'min', 'max', 'median', 'sum', 'quantiles'")
     parser.add_argument("-c", "--cutoff", dest="cutoff", type=float, default=None,
                   help="Take the mean of the average +/- cutoff * std_dev.")
     parser.add_argument("-F", "--format", dest="format", type=str, default="edf",
@@ -110,12 +110,12 @@ def main():
         options.method = "quantiles"
         for sep in "-,":
             if sep in options.quantiles:
-                q1, q2 = options.quantiles.split(sep,1)
+                q1, q2 = options.quantiles.split(sep, 1)
                 break
         else:
             q1 = float(options.quantiles)
             q2 = 1.0 - q1
-        quantiles = (float(q1),float(q2))
+        quantiles = (float(q1), float(q2))
 
     else:
         quantiles = None

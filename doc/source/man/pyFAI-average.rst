@@ -27,7 +27,7 @@ optional arguments:
                         Output/ destination of average image
   -m METHOD, --method METHOD
                         Method used for averaging, can be 'mean'(default) or
-                        'median', 'min' or 'max'
+                        'median', 'min', 'max' or sum
   -c CUTOFF, --cutoff CUTOFF
                         Take the mean of the average +/- cutoff * std_dev.
   -F FORMAT, --format FORMAT
