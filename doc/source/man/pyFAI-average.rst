@@ -27,7 +27,7 @@ optional arguments:
                         Output/ destination of average image
   -m METHOD, --method METHOD
                         Method used for averaging, can be 'mean'(default) or
-                        'median', 'min', 'max' or sum
+                        'min', 'max', 'median', 'sum', 'quantiles'
   -c CUTOFF, --cutoff CUTOFF
                         Take the mean of the average +/- cutoff * std_dev.
   -F FORMAT, --format FORMAT
@@ -37,4 +37,8 @@ optional arguments:
   -v, --verbose         switch to verbose/debug mode
   -q QUANTILES, --quantiles QUANTILES
                         average out between two quantiles -q 0.20-0.90
+
+
+.. command-output:: pyFAI-average --help
+    :nostderr:
 
