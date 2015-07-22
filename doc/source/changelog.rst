@@ -13,18 +13,18 @@ Changelog of Versions
 ------------
 * Azimuthal integration splits pixels like fit2d
 
-0.4:
-----
+0.4: 06/2012
+------------
 * Global clean up of the code regarding options from command line and better design
 * Correct the orientation of the azimuthal angle chi
 * Rename scripts in pyFAI-calib, pyFAI-saxs and pyFAI-waxs
 
-0.5:
-----
+0.5: 06/2012
+------------
 * Include OpenCL version of azimuthal integration (based on histograms)
 
-0.6: (07/2012)
---------------
+0.6: 07/2012
+------------
 * OpenCL flavor works well on GPU in double precision with device selection
 
 0.7: 07/2012
