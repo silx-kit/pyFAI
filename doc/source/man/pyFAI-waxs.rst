@@ -1,4 +1,4 @@
-Integration tool: pyFAI-saxs
+Integration tool: pyFAI-waxs
 ============================
 
 Purpose
