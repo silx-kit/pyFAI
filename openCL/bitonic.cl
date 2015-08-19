@@ -80,7 +80,7 @@ static float8 my_sort_file(uint local_id, uint group_id, uint local_size,
 
 	/* Swap corresponding elements of input 1 and 2 */
 	add3 = (int4)(4, 5, 6, 7);
-	dir = local_id % 2 * -1;
+	dir = - (int) (local_id % 2);
 	temp = input1;
 	comp = ((input1 < input2) ^ dir) * 4 + add3;
 	input1 = shuffle2(input1, input2, as_uint4(comp));
@@ -94,7 +94,7 @@ static float8 my_sort_file(uint local_id, uint group_id, uint local_size,
 
 	/* Create bitonic set */
 	for(size = 2; size < local_size; size <<= 1) {
-	  dir = (local_id/size & 1) * -1;
+	  dir = - (int) (local_id/size & 1) ;
 
 	  for(stride = size; stride > 1; stride >>= 1) {
 		 barrier(CLK_LOCAL_MEM_FENCE);
@@ -116,7 +116,7 @@ static float8 my_sort_file(uint local_id, uint group_id, uint local_size,
 	}
 
 	/* Perform bitonic merge */
-	dir = (group_id % 2) * -1;
+	dir = - (int) (group_id % 2);
 	for(stride = local_size; stride > 1; stride >>= 1) {
 	  barrier(CLK_LOCAL_MEM_FENCE);
 	  id = local_id + (local_id/stride)*stride;
@@ -471,7 +471,7 @@ __kernel void bsort_file(__global float4 *g_data, __local float4 *l_data) {
 
    /* Swap corresponding elements of input 1 and 2 */
    add3 = (int4)(4, 5, 6, 7);
-   dir = get_local_id(0) % 2 * -1;
+   dir = - (int)(get_local_id(0) % 2);
    temp = input1;
    comp = ((input1 < input2) ^ dir) * 4 + add3;
    input1 = shuffle2(input1, input2, as_uint4(comp));
@@ -485,7 +485,7 @@ __kernel void bsort_file(__global float4 *g_data, __local float4 *l_data) {
 
    /* Create bitonic set */
    for(size = 2; size < get_local_size(0); size <<= 1) {
-      dir = (get_local_id(0)/size & 1) * -1;
+      dir = - (int)(get_local_id(0)/size & 1);
 
       for(stride = size; stride > 1; stride >>= 1) {
          barrier(CLK_LOCAL_MEM_FENCE);
@@ -507,7 +507,7 @@ __kernel void bsort_file(__global float4 *g_data, __local float4 *l_data) {
    }
 
    /* Perform bitonic merge */
-   dir = (get_group_id(0) % 2) * -1;
+   dir = - (int)(get_group_id(0) % 2);
    for(stride = get_local_size(0); stride > 1; stride >>= 1) {
       barrier(CLK_LOCAL_MEM_FENCE);
       id = get_local_id(0) + (get_local_id(0)/stride)*stride;
