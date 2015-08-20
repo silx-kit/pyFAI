@@ -6,14 +6,20 @@ python:
   - "3.3"
   - "3.4"
 #  - "nightly"
+virtualenv:
+    system_site_packages: true
 addons:
   apt:
     packages:
       # Only used by the DISTRIB="ubuntu" setting
       - libatlas3gf-base
       - libatlas-dev
+      - python-matplotlib
+      - python3-matplotlib
       - python-scipy
       - python3-scipy
+      - python3-pyopencl
+      - python-pyopencl
 # command to install dependencies
 install:
   - "pip install -r requirements_travis.txt"
