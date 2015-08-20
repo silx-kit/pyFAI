@@ -12,6 +12,7 @@ addons:
   apt:
     packages:
       # Only used by the DISTRIB="ubuntu" setting
+      - gfortran
       - libatlas3gf-base
       - libatlas-dev
       - liblapack3
