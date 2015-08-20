@@ -15,6 +15,8 @@ addons:
       - libatlas3gf-base
       - libatlas-dev
       - liblapack3
+      - libblas-dev
+      - liblapack-dev
 #      - python-matplotlib
 #      - python3-matplotlib
 #      - python-scipy
