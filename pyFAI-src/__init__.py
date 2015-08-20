@@ -46,6 +46,7 @@ def tests(deprecation=False):
         utils.depreclog.setLevel(logging.DEBUG)
     else:
         utils.depreclog.setLevel(logging.ERROR)
-
     from . import test
-    test.run_tests()
+    res = test.run_tests()
+    utils.depreclog.setLevel(logging.DEBUG)
+    return res
