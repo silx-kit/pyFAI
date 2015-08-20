@@ -6,6 +6,14 @@ python:
   - "3.3"
   - "3.4"
 #  - "nightly"
+addons:
+  apt:
+    packages:
+      # Only used by the DISTRIB="ubuntu" setting
+      - libatlas3gf-base
+      - libatlas-dev
+      - python-scipy
+      - python3-scipy
 # command to install dependencies
 install:
   - "pip install -r requirements_travis.txt"
@@ -13,4 +21,4 @@ install:
 # command to run tests
 script: 
   - "python setup.py build test"
-  - "(cd /tmp && python -c 'import pyFAI, sys; print(sys.version); print(pyFAI.version); pyFAI.tests()')"
+  - "(WD=$(pwd); cd /tmp && python $WD/run_tests)"

@@ -104,7 +104,8 @@ static float8 my_sort_file(uint local_id, uint group_id, uint local_size,
 
 	  barrier(CLK_LOCAL_MEM_FENCE);
 	  id = local_id * 2;
-	  input1 = l_data[id]; input2 = l_data[id+1];
+	  input1 = l_data[id];
+	  input2 = l_data[id+1];
 	  temp = input1;
 	  comp = ((input1 < input2) ^ dir) * 4 + add3;
 	  input1 = shuffle2(input1, input2, as_uint4(comp));
@@ -253,7 +254,7 @@ __kernel void bsort_all(__global float4 *g_data,
 
     input1 = g_data[global_start];
     input2 = g_data[global_start+1];
-    input = (float8) (input1, input2);
+    input = (float8)(input1, input2);
     output = my_sort_file(get_local_id(0), get_group_id(0), get_local_size(0),
                           input, l_data);
     input1 = (float4) (output.s0, output.s1, output.s2, output.s3);

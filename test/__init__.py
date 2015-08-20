@@ -30,7 +30,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__data__ = "2014-11-10"
+__date__ = "20/08/2016"
 import os
 import sys
 import unittest
@@ -39,8 +39,6 @@ import unittest
 #     print("Create the package to allow relative imports")
 #     __name__ = "pyFAI.test"
 #     dirname = os.path.dirname(__file__)
-
-
 
 from . import utilstest
 from .test_all import test_suite_all

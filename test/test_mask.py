@@ -140,11 +140,8 @@ class TestMask(unittest.TestCase):
         """
         meth="lut"
         x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         x3 = self.ai.integrate1d(self.data, 1000, mask=numpy.zeros(shape=self.mask.shape, dtype="uint8"), dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
@@ -167,11 +164,8 @@ class TestMask(unittest.TestCase):
         """
         meth="csr"
         x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         x3 = self.ai.integrate1d(self.data, 1000, mask=numpy.zeros(shape=self.mask.shape, dtype="uint8"), dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
@@ -195,11 +189,8 @@ class TestMask(unittest.TestCase):
         """
         meth = "lut_ocl"
         x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         x3 = self.ai.integrate1d(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
@@ -222,11 +213,8 @@ class TestMask(unittest.TestCase):
         """
         meth = "CSR_ocl"
         x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         x3 = self.ai.integrate1d(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
