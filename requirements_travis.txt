@@ -1,4 +1,6 @@
 numpy
 cython
-#scipy
 fabio
+scipy
+matplotlib
+#pyopencl
