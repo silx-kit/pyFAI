@@ -32,3 +32,6 @@ install:
 script: 
   - "python setup.py build test"
   - "(WD=$(pwd); cd /tmp && python $WD/run_tests.py)"
+notifications:
+  email:
+    - dev@terre-adelie.org
