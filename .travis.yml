@@ -12,24 +12,17 @@ addons:
   apt:
     packages:
       # Only used by the DISTRIB="ubuntu" setting
-      - libsuitesparse-dev
-      - libblas-dev
-      - liblapack-dev
       - gfortran
+      - libatlas-base-dev
+      - libatlas-base-dev
+      - libhdf5-serial-dev
       - libqtcore4
-      - python-pyqt4
-#      - python-matplotlib
-#      - python3-matplotlib
-#      - python-scipy
-#      - python3-scipy
-#      - python3-pyopencl
-#      - python-pyopencl
+      
 # command to install dependencies
 install:
-  - dpkg -l 
-#  - travis_wait pip install cython
-#  - travis_wait pip install numpy
-#  - travis_wait pip install scipy
+  - travis_wait pip install cython
+  - travis_wait pip install numpy
+  - travis_wait pip install scipy
   - "pip install -r requirements_travis.txt"
   - "python setup.py build install"
 # command to run tests

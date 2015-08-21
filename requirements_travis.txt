@@ -3,4 +3,5 @@ cython
 fabio
 scipy
 matplotlib
+h5py
 #pyopencl
