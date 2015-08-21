@@ -3,7 +3,7 @@ python:
   - "2.6"
   - "2.7"
   - "3.2"
-  - "3.3"
+#  - "3.3" Disabled: FabIO, as released is not working
   - "3.4"
 #  - "nightly"
 #virtualenv:
@@ -12,9 +12,14 @@ addons:
   apt:
     packages:
       # Only used by the DISTRIB="ubuntu" setting
+      - gfortran
       - libatlas3gf-base
       - libatlas-dev
       - liblapack3
+      - libblas-dev
+      - liblapack-dev 
+      - libqtcore4
+      - python-pyqt4
 #      - python-matplotlib
 #      - python3-matplotlib
 #      - python-scipy
@@ -29,3 +34,6 @@ install:
 script: 
   - "python setup.py build test"
   - "(WD=$(pwd); cd /tmp && python $WD/run_tests.py)"
+notifications:
+  email:
+    - dev@terre-adelie.org
