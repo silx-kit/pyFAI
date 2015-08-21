@@ -24,6 +24,8 @@
 
 "test suite for masked arrays"
 
+from __future__ import print_function
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
@@ -55,7 +57,6 @@ def testExport(direct=100, centerX=900, centerY=1000, tilt=0, tpr=0, pixelX=50, 
     a2 = pyFAI.AzimuthalIntegrator()
     a3 = pyFAI.AzimuthalIntegrator()
     a1.setFit2D(direct, centerX, centerY, tilt, tpr, pixelX, pixelY)
-#    print a1
     a2.setPyFAI(**a1.getPyFAI())
     a3.setFit2D(**a2.getFit2D())
     res = ""
@@ -110,14 +111,8 @@ class TestSPD(unittest.TestCase):
 
     def test_simple(self):
         ref = pyFAI.load(self.poniFile)
-#        ref.rot1 = 0
-#        ref.rot2 = 0
-#        ref.rot3 = 0
         obt = pyFAI.AzimuthalIntegrator()
-#        print ref.getFit2D()
-#        print ref.getSPD()
         obt.setSPD(**ref.getSPD())
-#        print obt.getSPD()
         for key in ["dist", "poni1", "poni2", "rot3", "pixel1", "pixel2", "splineFile"]:
             refv = ref.__getattribute__(key)
             obtv = obt.__getattribute__(key)

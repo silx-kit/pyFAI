@@ -24,11 +24,13 @@
 #
 "test suite for polarization corrections"
 
+from __future__ import print_function
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/12/2014"
+__date__ = "21/08/2015"
 
 
 import unittest
@@ -54,10 +56,6 @@ class TestPolarization(unittest.TestCase):
     rotX = numpy.radians(30.0 * X)
     tth = numpy.sqrt(rotY ** 2 + rotX ** 2)
     chi = numpy.arctan2(rotY, rotX)
-#    print numpy.degrees(tth[6])
-#    print numpy.degrees(chi[6])
-#    print numpy.degrees(tth[:, 6])
-#    print numpy.degrees(chi[:, 6])
     ai = pyFAI.AzimuthalIntegrator(dist=1, pixel1=0.1, pixel2=0.1)
     ai._ttha = tth
     ai._chia = chi

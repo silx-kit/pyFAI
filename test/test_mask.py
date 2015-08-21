@@ -23,11 +23,13 @@
 #
 "test suite for masked arrays"
 
+from __future__ import print_function
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/03/2015"
+__date__ = "21/08/2015"
 
 
 import unittest
@@ -54,7 +56,6 @@ class TestMask(unittest.TestCase):
         self.dataFile = UtilsTest.getimage(self.__class__.dataFile)
         self.poniFile = UtilsTest.getimage(self.__class__.poniFile)
         self.ai = pyFAI.load(self.poniFile)
-#        self.ai.mask = None
         self.data = fabio.open(self.dataFile).data
         self.mask = self.data < 0
 
@@ -239,7 +240,7 @@ class TestMaskBeamstop(unittest.TestCase):
 
     def setUp(self):
         """
-        Download files 
+        Download files
         Create a mask for tth<3.7 deg
         """
         self.dataFile = UtilsTest.getimage(self.__class__.dataFile)
@@ -316,7 +317,7 @@ def test_suite_all_Mask():
     testSuite.addTest(TestMask("test_mask_CSR"))
     testSuite.addTest(TestMask("test_mask_LUT_OCL"))
     testSuite.addTest(TestMask("test_mask_CSR_OCL"))
-    
+
     testSuite.addTest(TestMaskBeamstop("test_nomask"))
     testSuite.addTest(TestMaskBeamstop("test_mask_splitBBox"))
     testSuite.addTest(TestMaskBeamstop("test_mask_LUT"))

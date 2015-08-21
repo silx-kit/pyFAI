@@ -25,11 +25,13 @@
 #
 "test suite for peak picking class"
 
+from __future__ import print_function
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/03/2015"
+__date__ = "21/08/2015"
 
 
 import unittest
@@ -104,8 +106,6 @@ class testPeakPicking(unittest.TestCase):
 
         self.pp.points.save(self.nptfile)
         lstPeak = self.pp.points.getListRing()
-#        print self.pp.points
-#        print lstPeak
         logger.info("After peak-picking, we have %s points generated from %s groups ", len(lstPeak), len(self.ctrlPt))
         gr = GeometryRefinement(lstPeak, dist=0.01, pixel1=1e-4, pixel2=1e-4, wavelength=self.wavelength, calibrant=self.calibrant)
         gr.guess_poni()
@@ -125,8 +125,6 @@ class testPeakPicking(unittest.TestCase):
         self.assertAlmostEquals(gr.rot1, 0, 2, "rot1 is OK, got %s, expected 0" % gr.rot1)
         self.assertAlmostEquals(gr.rot2, 0, 2, "rot2 is OK, got %s, expected 0" % gr.rot2)
         self.assertAlmostEquals(gr.rot3, 0, 2, "rot3 is OK, got %s, expected 0" % gr.rot3)
-
-#        print self.pp.points
 
 
 class TestMassif(unittest.TestCase):

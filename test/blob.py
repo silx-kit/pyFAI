@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # coding: utf-8
+from __future__ import print_function
 import sys, scipy
 import matplotlib
 matplotlib.use('Qt4Agg')
@@ -47,7 +48,7 @@ def image_test_rings():
     modulation = (1 + numpy.sin(5 * r + chi * mod))
     for radius in numpy.linspace(0, r_max, rings):
         img += numpy.exp(-(r - radius) ** 2 / (2 * (sigma * sigma)))
-    
+
     img *= modulation
     img = add_noise(img, 0.0)
     return img
@@ -55,7 +56,7 @@ def image_test_rings():
 def add_noise(img,rate):
     noise = numpy.random.random(img.shape) * rate
     return img+noise
-    
+
 def make_gaussian(im,sigma,xc,yc):
     "Creating 2D gaussian to be put in a test image"
     e = 1
@@ -95,13 +96,13 @@ ax = f.add_subplot(111)
 ax.imshow(numpy.log1p(data), interpolation = 'nearest')
 
 for i in range(5):
-    print ('Octave #%i' %i)
+    print('Octave #%i' %i)
     bd._one_octave(shrink=True, refine = True, n_5 = False)
     print("Octave #%i Total kp: %i" % (i, bd.keypoints.size))
-    
+
 # bd._one_octave(False, True ,False)
-    
-print ('Final size of keypoints : %i'% bd.keypoints.size)
+
+print('Final size of keypoints : %i'% bd.keypoints.size)
 
 i = 0
 # for kp  in bd.keypoints:
@@ -119,7 +120,7 @@ if sigma.size > 0:
     h = pylab.figure(2)
     x, y, o = pylab.hist(sigma, bins=100)
     h.show()
-      
+
     index = numpy.where(x == x.max())
     kp = bd.keypoints[bd.keypoints.sigma > y[index]]
 else : kp = bd.keypoints

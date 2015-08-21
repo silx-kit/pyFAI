@@ -53,7 +53,7 @@ plot(nodummy + 1, label="no_corr")
 out_cyt = ai._lut_integrator.integrate(data, dummy= -2, delta_dummy=1.5)
 out_ocl = gpu.integrate(data, dummy= -2, delta_dummy=1.5)[0]
 print("Dummy  R=", utilstest.Rwp((out_cyt[0], out_ocl), out_cyt[:2], "Dummy"))
-#print "nodummy/Dummy", utilstest.Rwp((out_cyt[0], out_cyt[1]), (out_cyt[0], nodummy), "nodummy/Dummy")
+#print("nodummy/Dummy", utilstest.Rwp((out_cyt[0], out_cyt[1]), (out_cyt[0], nodummy), "nodummy/Dummy")
 
 dark = numpy.random.random(data.shape)
 out_cyt = ai._lut_integrator.integrate(data, dark=dark)
@@ -76,18 +76,12 @@ out_ocl = gpu.integrate(data, polarization=polarization)[0]
 print("PolarizationR=", utilstest.Rwp((out_cyt[0], out_ocl), out_cyt[:2], "Polarization"))
 
 #pyopencl.enqueue_copy(gpu._queue, img, gpu._cl_mem["image"]).wait()
-#print "SolidAngle", solidAngle
-#print img
 #xx = splitBBox.histoBBox1d(weights=data,
 #                                                 pos0=ai._ttha,
 #                                                 delta_pos0=ai._dttha,
 #                                                 bins=1000,
 #                                                 polarization=polarization)[1]
 #plot(xx + 2, label="xrpd")
-#print "Pol: lut/refR=", utilstest.Rwp((out_cyt[0], xx), out_cyt[:2], "Polarization")
-#print "Pol: ocl/refR=", utilstest.Rwp((out_cyt[0], out_ocl), (out_cyt[0], xx), "Polarization")
-#print "Pol: noc/refR=", utilstest.Rwp((out_cyt[0], nodummy), (out_cyt[0], xx), "Polarization")
-#print out_ocl
 plot(out_cyt[1], label="ref")
 plot(out_ocl, label="obt")
 

@@ -104,7 +104,7 @@ legend()
 show()
 input()
 
-  
+
 #aaa = 0
 #bbb = 0
 #for i in range(bins):
@@ -120,7 +120,3 @@ input()
         #aaa += 1
         #if not numpy.allclose(data_1[j],data_2[j]):
             #bbb += 1
-            #print data_1[j],data_2[j],numpy.allclose(data_1[j],data_2[j]), idx_ptr[i]+j
-
-
-#print aaa,bbb

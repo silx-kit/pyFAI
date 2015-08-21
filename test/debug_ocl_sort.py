@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy, time
 import pyFAI, pyFAI.opencl
 from pyFAI.opencl import pyopencl, ocl
@@ -21,7 +22,7 @@ hs_data = numpy.sort(h_data)
 t1 = time.time()
 time_sort = 1e3 * (t1 - t0)
 
-print time_sort
+print(time_sort)
 
 evt = prg.bsort_init(queue, (ws,), (ws,), d_data.data, local_mem)
 evt.wait()

@@ -24,11 +24,13 @@
 
 "test suite for Geometric Refinement class"
 
+from __future__ import print_function
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/03/2015"
+__date__ = "21/08/2015"
 
 
 import unittest
@@ -204,7 +206,6 @@ class TestGeometryRefinement(unittest.TestCase):
         wl = 2e-10 * numpy.sin(tth / 2.0)
         ds = [1.0]
         calibrant = pyFAI.calibrant.Calibrant(dSpacing=ds, wavelength=wl)
-#        print tth, wl, ds, 2 * ds[0] * numpy.sin(tth / 2)
         r2 = GeometryRefinement(data, dist=0.1, splineFile=splineFine, wavelength=wl, calibrant=calibrant)
 #        r2.poni1 = 5e-2
 #        r2.poni2 = 5e-2
@@ -216,8 +217,6 @@ class TestGeometryRefinement(unittest.TestCase):
         r2.rot3_min = -0.0001
         r2.refine2(10000000)
         ref2 = numpy.array([0.1, 4.917310e-02, 4.722438e-02, 0 , 0.  , 0.00000])
-#        print "ref", ref2
-#        print "obt", r2.param
         for i, key in enumerate(("dist", "poni1", "poni2", "rot1", "rot2", "rot3")):
             self.assertAlmostEqual(ref2[i], r2.__getattribute__(key), 3,
                                    "%s is %s, I expected %s%s%s" % (key, r2.__getattribute__(key) , ref2[i], os.linesep, r2))
