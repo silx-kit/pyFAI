@@ -17,7 +17,9 @@ addons:
       - libatlas-dev
       - liblapack3
       - libblas-dev
-      - liblapack-dev
+      - liblapack-dev 
+      - libqtcore4
+      - python-pyqt4
 #      - python-matplotlib
 #      - python3-matplotlib
 #      - python-scipy
