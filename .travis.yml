@@ -18,7 +18,14 @@ addons:
       - gfortran
       - libatlas-base-dev
       - libqtcore4
-      
+#For GPU:
+      - dkms 
+      - fglrx-amdcccle 
+      - fglrx 
+      - opencl-headers   
+      - libboost1.48-dev
+      - libboost-python-dev
+      - libboost-python1.48
 # command to install dependencies
 install:
   - "python info_platform.py"

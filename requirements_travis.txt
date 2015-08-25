@@ -10,4 +10,4 @@ h5py
 fabio
 scipy
 matplotlib
-#pyopencl
+pyopencl
