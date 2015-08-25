@@ -15,7 +15,7 @@ except: print("FabIO missing")
 else: print("FabIO %s" % fabio.version)
 
 try: import h5py
-except as error: print("h5py missing: %s" % error)
+except Exception as error: print("h5py missing: %s" % error)
 else: print("h5py %s" % h5py.version.version)
 
 try: import Cython
