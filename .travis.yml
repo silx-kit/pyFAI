@@ -28,9 +28,9 @@ addons:
       - libboost-python1.48
 # command to install dependencies
 install:
-  - "python info_platform.py"
   - travis_wait pip install cython --trusted-host www.edna-site.org --find-links http://www.edna-site.org/pub/wheelhouse
   - "pip install --trusted-host www.edna-site.org -r requirements_travis.txt"
+  - "python info_platform.py"
   - "python setup.py build install"
 # command to run tests
 script: 
