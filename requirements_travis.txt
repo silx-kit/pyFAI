@@ -5,6 +5,7 @@
 numpy
 cython
 pillow
+lxml
 h5py
 fabio
 scipy
