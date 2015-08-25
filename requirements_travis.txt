@@ -4,8 +4,9 @@
 
 numpy
 cython
+pillow
+h5py
 fabio
 scipy
 matplotlib
-h5py
 #pyopencl
