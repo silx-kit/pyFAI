@@ -28,4 +28,4 @@ install:
 # command to run tests
 script: 
   - "python setup.py build test"
-  - "(WD=$(pwd); cd /tmp && python $WD/run_tests.py)"
+  - "(WD=$(pwd); cd /tmp && python $WD/run_tests.py -v)"

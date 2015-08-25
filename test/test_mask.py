@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/08/2015"
+__date__ = "25/08/2015"
 
 
 import unittest
@@ -64,7 +64,7 @@ class TestMask(unittest.TestCase):
         The masked image has a masked ring around 1.5deg with value -10
         without mask the pixels should be at -10 ; with mask they are at 0
         """
-        meth="cython"
+        meth = "cython"
         x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
         x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
         x3 = self.ai.integrate1d(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
@@ -89,7 +89,7 @@ class TestMask(unittest.TestCase):
         The masked image has a masked ring around 1.5deg with value -10
         without mask the pixels should be at -10 ; with mask they are at 0
         """
-        meth="splitbbox"
+        meth = "splitbbox"
         x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
         x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
         x3 = self.ai.integrate1d(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
@@ -114,7 +114,7 @@ class TestMask(unittest.TestCase):
         The masked image has a masked ring around 1.5deg with value -10
         without mask the pixels should be at -10 ; with mask they are at 0
         """
-        meth="splitpixel"
+        meth = "splitpixel"
         x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
         x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
         x3 = self.ai.integrate1d(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
@@ -139,7 +139,7 @@ class TestMask(unittest.TestCase):
         The masked image has a masked ring around 1.5deg with value -10
         without mask the pixels should be at -10 ; with mask they are at 0
         """
-        meth="lut"
+        meth = "lut"
         x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
         x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
         x3 = self.ai.integrate1d(self.data, 1000, mask=numpy.zeros(shape=self.mask.shape, dtype="uint8"), dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
@@ -163,7 +163,7 @@ class TestMask(unittest.TestCase):
         The masked image has a masked ring around 1.5deg with value -10
         without mask the pixels should be at -10 ; with mask they are at 0
         """
-        meth="csr"
+        meth = "csr"
         x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
         x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
         x3 = self.ai.integrate1d(self.data, 1000, mask=numpy.zeros(shape=self.mask.shape, dtype="uint8"), dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
@@ -204,7 +204,7 @@ class TestMask(unittest.TestCase):
             raw_input()
 
         self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
-        self.assertAlmostEqual(res2, 0, 1,msg="With mask the bad pixels are actually around 0 (got %.4f)" % res2)
+        self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually around 0 (got %.4f)" % res2)
         self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
 
     def test_mask_CSR_OCL(self):
@@ -228,7 +228,7 @@ class TestMask(unittest.TestCase):
             raw_input()
 
         self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
-        self.assertAlmostEqual(res2, 0, 1,msg="With mask the bad pixels are actually around 0 (got %.4f)" % res2)
+        self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually around 0 (got %.4f)" % res2)
         self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
 
 
