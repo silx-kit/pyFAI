@@ -7,7 +7,8 @@ python:
   - "3.4"
 #  - "nightly"
 #virtualenv:
-#    system_site_packages: true
+#    system_site_packages: NO !!! 
+# the system python and the one from travis have been compiled with different options 
 addons:
   apt:
     packages:
@@ -20,10 +21,9 @@ addons:
       
 # command to install dependencies
 install:
-  - travis_wait pip install cython
-  - travis_wait pip install numpy
-  - travis_wait pip install scipy
-  - "pip install -r requirements_travis.txt"
+  - "python info_platform.py"
+  - travis_wait pip install cython --trusted-host www.edna-site.org --find-links http://www.edna-site.org/pub/wheelhouse
+  - "pip install --trusted-host www.edna-site.org -r requirements_travis.txt"
   - "python setup.py build install"
 # command to run tests
 script: 
