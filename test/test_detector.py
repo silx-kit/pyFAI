@@ -28,7 +28,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/06/2015"
+__date__ = "26/08/2015"
 
 import sys
 import os
@@ -143,12 +143,17 @@ class TestDetector(unittest.TestCase):
             logger.warning("H5py not present, skipping test_detector.TestDetector.test_nexus_detector")
             return
         for det_name in ALL_DETECTORS:
+
             fname = os.path.join(tmpdir, det_name + ".h5")
             if os.path.exists(fname):  # already tested with another alias
                 continue
             det = detector_factory(det_name)
+            logger.info("%s --> nxs" % det_name)
             if (det.pixel1 is None) or (det.shape is None):
                 continue
+            if (det.shape[0] > 1900) or (det.shape[1] > 1900):
+                continue
+
             det.save(fname)
             new_det = detector_factory(fname)
             for what in ("pixel1", "pixel2", "name", "max_shape", "shape", "binning"):
