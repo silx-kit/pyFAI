@@ -70,6 +70,7 @@ class TestMultiGeometry(unittest.TestCase):
         self.det = None
         self.sub_det = None
         self.ai = None
+        self.range = None
         self.ais = None
         self.mg = None
 

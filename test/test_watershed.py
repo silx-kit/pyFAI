@@ -52,6 +52,10 @@ class TestWatershed(unittest.TestCase):
     def setUp(self):
         self.data = fabio.open(UtilsTest.getimage(self.fname)).data
 
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        self.data = None
+
     def test_init(self):
         w = pyFAI.watershed.InverseWatershed(data=self.data)
         w.init()

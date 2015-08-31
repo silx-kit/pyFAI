@@ -65,12 +65,17 @@ import scipy.ndimage
 
 
 class TestUtils(unittest.TestCase):
-    unbinned = numpy.random.random((64, 32))
-    dark = unbinned.astype("float32")
-    flat = 1 + numpy.random.random((64, 32))
-    raw = flat + dark
-    tmp_dir = UtilsTest.tempdir
-    tmp_file = os.path.join(tmp_dir, "testUtils_average.edf")
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.unbinned = numpy.random.random((64, 32))
+        self.dark = unbinned.astype("float32")
+        self.flat = 1 + numpy.random.random((64, 32))
+        self.raw = flat + dark
+        self.tmp_file = os.path.join(UtilsTest.tempdir, "testUtils_average.edf")
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        self.dark = self.flat = self.raw = self.tmp_file = None
 
     def test_binning(self):
         """

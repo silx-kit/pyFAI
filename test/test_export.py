@@ -79,6 +79,10 @@ class TestFIT2D(unittest.TestCase):
         """Download files"""
         self.poniFile = UtilsTest.getimage(self.__class__.poniFile)
 
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        self.poniFile = None
+
     def test_simple(self):
         ref = pyFAI.load(self.poniFile)
         obt = pyFAI.AzimuthalIntegrator()
