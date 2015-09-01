@@ -23,12 +23,14 @@
 #
 
 from __future__ import division, print_function, absolute_import
+
 "test suite for utilities library"
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/05/2015"
+__date__ = "01/09/2015"
 
 
 import unittest
@@ -68,9 +70,9 @@ class TestUtils(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.unbinned = numpy.random.random((64, 32))
-        self.dark = unbinned.astype("float32")
+        self.dark = self.unbinned.astype("float32")
         self.flat = 1 + numpy.random.random((64, 32))
-        self.raw = flat + dark
+        self.raw = self.flat + self.dark
         self.tmp_file = os.path.join(UtilsTest.tempdir, "testUtils_average.edf")
 
     def tearDown(self):

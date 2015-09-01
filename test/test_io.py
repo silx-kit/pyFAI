@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/12/2014"
+__date__ = "01/09/2015"
 
 
 import unittest
@@ -64,7 +64,13 @@ class TestNexus(unittest.TestCase):
 
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = os.path.join(UtilsTest.tempdir, "io")
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        shutil.rmtree(self.tmpdir)
+        self.tmpdir = None
+
 
     def test_new_detector(self):
         if io.h5py is None:
@@ -78,15 +84,18 @@ class TestNexus(unittest.TestCase):
         self.assert_(io.is_hdf5(fname), "nexus file is an HDF5")
 #        os.system("h5ls -r -a %s" % fname)
 
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        shutil.rmtree(self.tmpdir)
 
 
 class testHDF5Writer(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = os.path.join(UtilsTest.tempdir, "io")
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        shutil.rmtree(self.tmpdir)
+        self.tmpdir = None
+
 
     def test_writer(self):
         if io.h5py is None:
@@ -109,15 +118,18 @@ class testHDF5Writer(unittest.TestCase):
         statinfo = os.stat(h5file)
         self.assert_(statinfo.st_size / 1e6 > nmbytes, "file size (%s) is larger than dataset" % statinfo.st_size)
 
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        shutil.rmtree(self.tmpdir)
 
 
 class testFabIOWriter(unittest.TestCase):
+
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = os.path.join(UtilsTest.tempdir, "io")
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        shutil.rmtree(self.tmpdir)
+        self.tmpdir = None
 
     def test_writer(self):
         h5file = os.path.join(self.tmpdir)
@@ -136,10 +148,6 @@ class testFabIOWriter(unittest.TestCase):
         logger.info("Writing of HDF5 of %ix%s (%.3fMB) took %.3f (%.3fMByte/s)" % (n, shape, nmbytes, t, nmbytes / t))
         statinfo = os.stat(h5file)
         self.assert_(statinfo.st_size / 1e6 > nmbytes, "file size (%s) is larger than dataset" % statinfo.st_size)
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        shutil.rmtree(self.tmpdir)
 
 
 def test_suite_all_io():

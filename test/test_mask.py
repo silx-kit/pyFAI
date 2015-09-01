@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2015"
+__date__ = "01/09/2015"
 
 
 import unittest
@@ -58,6 +58,10 @@ class TestMask(unittest.TestCase):
         self.ai = pyFAI.load(self.poniFile)
         self.data = fabio.open(self.dataFile).data
         self.mask = self.data < 0
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        self.dataFile = self.data = self.ai = self.mask = self.poniFile = None
 
     def test_mask_hist(self):
         """

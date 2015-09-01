@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/12/2014"
+__date__ = "01/09/2015"
 
 
 import unittest
@@ -49,11 +49,19 @@ if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 
 class TestSaxs(unittest.TestCase):
-    img = UtilsTest.getimage("1883/Pilatus1M.edf")
-    data = fabio.open(img).data
-    ai = pyFAI.AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0, detector=pyFAI.detectors.Pilatus1M())
-    ai.wavelength = 1e-10
-    npt = 1000
+
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        img = UtilsTest.getimage("1883/Pilatus1M.edf")
+        self.data = fabio.open(img).data
+        self.ai = pyFAI.AzimuthalIntegrator(1.58323111834, 0.0334170169115, 0.0412277798782, 0.00648735642526, 0.00755810191106, 0.0, detector=pyFAI.detectors.Pilatus1M())
+        self.ai.wavelength = 1e-10
+        self.npt = 1000
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        self.data = self.ai = self.npt = None
+
     def testMask(self):
         ss = self.ai.mask.sum()
         self.assertTrue(ss == 73533, "masked pixel = %s expected 73533" % ss)

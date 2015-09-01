@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/08/2015"
+__date__ = "01/09/2015"
 
 
 import unittest
@@ -50,15 +50,22 @@ if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 
 class TestPolarization(unittest.TestCase):
-    shape = (13, 13)
-    Y, X = numpy.ogrid[-6:7, -6:7]
-    rotY = numpy.radians(30.0 * Y)
-    rotX = numpy.radians(30.0 * X)
-    tth = numpy.sqrt(rotY ** 2 + rotX ** 2)
-    chi = numpy.arctan2(rotY, rotX)
-    ai = pyFAI.AzimuthalIntegrator(dist=1, pixel1=0.1, pixel2=0.1)
-    ai._ttha = tth
-    ai._chia = chi
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.shape = (13, 13)
+        Y, X = numpy.ogrid[-6:7, -6:7]
+        self.rotY = numpy.radians(30.0 * Y)
+        self.rotX = numpy.radians(30.0 * X)
+        self.tth = numpy.sqrt(self.rotY ** 2 + self.rotX ** 2)
+        chi = numpy.arctan2(self.rotY, self.rotX)
+        self.ai = pyFAI.AzimuthalIntegrator(dist=1, pixel1=0.1, pixel2=0.1)
+        self.ai._ttha = self.tth
+        self.ai._chia = chi
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        self.shape = self.rotY = self.rotX = self.tth = self.ai = None
+
 
     def testNoPol(self):
         "without polarization correction should be 1"
