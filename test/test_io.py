@@ -64,7 +64,9 @@ class TestNexus(unittest.TestCase):
 
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.tmpdir = os.path.join(UtilsTest.tempdir, "io")
+        self.tmpdir = os.path.join(UtilsTest.tempdir, "io_nexus")
+        if not os.path.isdir(self.tmpdir):
+            os.mkdir(self.tmpdir)
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
@@ -89,7 +91,9 @@ class TestNexus(unittest.TestCase):
 class testHDF5Writer(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.tmpdir = os.path.join(UtilsTest.tempdir, "io")
+        self.tmpdir = os.path.join(UtilsTest.tempdir, "io_HDF5Writer")
+        if not os.path.isdir(self.tmpdir):
+            os.mkdir(self.tmpdir)
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
@@ -124,7 +128,10 @@ class testFabIOWriter(unittest.TestCase):
 
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.tmpdir = os.path.join(UtilsTest.tempdir, "io")
+        self.tmpdir = os.path.join(UtilsTest.tempdir, "io_FabIOwriter")
+        if not os.path.isdir(self.tmpdir):
+            os.mkdir(self.tmpdir)
+
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
