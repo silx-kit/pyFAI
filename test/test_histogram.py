@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2015"
+__date__ = "01/09/2015"
 
 import unittest
 import time
@@ -52,40 +52,51 @@ EPS32 = (1.0 + numpy.finfo(numpy.float32).eps)
 
 class TestHistogram1d(unittest.TestCase):
     """basic test"""
-    shape = (512, 512)
-    npt = 500
-    size = shape[0] * shape[1]
-    maxI = 1000
-    epsilon = 1.0e-4
-    y, x = numpy.ogrid[:shape[0], :shape[1]]
-    tth = numpy.sqrt(x * x + y * y).astype("float32")
-    mod = 0.5 + 0.5 * cos(tth / 12) + 0.25 * cos(tth / 6) + 0.1 * cos(tth / 4)
-    data = (numpy.random.poisson(maxI, shape) * mod).astype("uint16")
-    data_sum = data.sum(dtype="float64")
-    t0 = time.time()
-    drange = (tth.min(), tth.max() * EPS32)
-    unweight_numpy, bin_edges = numpy.histogram(tth, npt, range=drange)
-    t1 = time.time()
-    weight_numpy, bin_edges = numpy.histogram(tth, npt, weights=data.astype("float64"), range=drange)
-    t2 = time.time()
-    logger.info("Timing for Numpy   raw    histogram: %.3f", t1 - t0)
-    logger.info("Timing for Numpy weighted histogram: %.3f", t2 - t1)
-    bins_numpy = 0.5 * (bin_edges[1:] + bin_edges[:-1])
-    I_numpy = weight_numpy / numpy.maximum(1.0, unweight_numpy)
-    t3 = time.time()
-    bins_cython, I_cython, weight_cython, unweight_cython = histogram(tth, data, npt, pixelSize_in_Pos=0)
-    t4 = time.time()
-    logger.info("Timing for Cython  both   histogram: %.3f", t4 - t3)
-    t3 = time.time()
-    integrator = HistoBBox1d(tth, delta_pos0=None, pos1=None, delta_pos1=None,
-                             bins=npt, pos0Range=drange, allow_pos0_neg=False,
-                             unit="undefined",)
-    t2 = time.time()
-    bins_csr, I_csr, weight_csr, unweight_csr = integrator.integrate(data)
-    t4 = time.time()
-    logger.info("Timing for CSR  init: %.3fs, integrate: %0.3fs, both: %.3f", (t2 - t3), (t4 - t2), (t4 - t3))
-    # Under Linux, windows or MacOSX, up to 1 bin error has been reported...
-    err_max_cnt = 1
+
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        shape = (512, 512)
+        npt = 500
+        self.size = shape[0] * shape[1]
+        maxI = 1000
+        self.epsilon = 1.0e-4
+        y, x = numpy.ogrid[:shape[0], :shape[1]]
+        tth = numpy.sqrt(x * x + y * y).astype("float32")
+        mod = 0.5 + 0.5 * cos(tth / 12) + 0.25 * cos(tth / 6) + 0.1 * cos(tth / 4)
+        data = (numpy.random.poisson(maxI, shape) * mod).astype("uint16")
+        self.data_sum = data.sum(dtype="float64")
+        t0 = time.time()
+        drange = (tth.min(), tth.max() * EPS32)
+        self.unweight_numpy, bin_edges = numpy.histogram(tth, npt, range=drange)
+        t1 = time.time()
+        self.weight_numpy, bin_edges = numpy.histogram(tth, npt, weights=data.astype("float64"), range=drange)
+        t2 = time.time()
+        logger.info("Timing for Numpy   raw    histogram: %.3f", t1 - t0)
+        logger.info("Timing for Numpy weighted histogram: %.3f", t2 - t1)
+        self.bins_numpy = 0.5 * (bin_edges[1:] + bin_edges[:-1])
+        self.I_numpy = self.weight_numpy / numpy.maximum(1.0, self.unweight_numpy)
+        t3 = time.time()
+        self.bins_cython, self.I_cython, self.weight_cython, self.unweight_cython = histogram(tth, data, npt, pixelSize_in_Pos=0)
+        t4 = time.time()
+        logger.info("Timing for Cython  both   histogram: %.3f", t4 - t3)
+        t3 = time.time()
+        integrator = HistoBBox1d(tth, delta_pos0=None, pos1=None, delta_pos1=None,
+                                 bins=npt, pos0Range=drange, allow_pos0_neg=False,
+                                 unit="undefined",)
+        t2 = time.time()
+        self.bins_csr, self.I_csr, self.weight_csr, self.unweight_csr = integrator.integrate(data)
+        t4 = time.time()
+        logger.info("Timing for CSR  init: %.3fs, integrate: %0.3fs, both: %.3f", (t2 - t3), (t4 - t2), (t4 - t3))
+        # Under Linux, windows or MacOSX, up to 1 bin error has been reported...
+        self.err_max_cnt = 1
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        self.unweight_numpy = self.bins_numpy = None
+        self.I_numpy = self.weight_numpy = self.bins_csr = None
+        self.data_sum = self.size = self.err_max_cnt = None
+        self.bins_csr = self.I_csr = self.weight_csr = self.unweight_csr = None
+
 
     def test_count_numpy(self):
         """
@@ -193,44 +204,55 @@ class TestHistogram1d(unittest.TestCase):
 
 class TestHistogram2d(unittest.TestCase):
     """basic test for 2D histogram"""
-    shape = (512, 512)
-    size = shape[0] * shape[1]
-    maxI = 1000
-    epsilon = 1.1e-4
-    y, x = numpy.ogrid[:shape[0], :shape[1]]
-    tth = numpy.sqrt(x * x + y * y).astype("float32")
-    mod = 0.5 + 0.5 * cos(tth / 12) + 0.25 * cos(tth / 6) + 0.1 * cos(tth / 4)
-    data = (numpy.random.poisson(maxI, shape) * mod).astype("uint16")
-    data_sum = data.sum(dtype="float64")
-    npt = (400, 360)
-    chi = numpy.arctan2(y, x).astype("float32")
-    drange = [[tth.min(), tth.max() * EPS32], [chi.min(), chi.max() * EPS32]]
-    t0 = time.time()
-    unweight_numpy, tth_edges, chi_edges = numpy.histogram2d(tth.flatten(), chi.flatten(), npt, range=drange)
-    t1 = time.time()
-    weight_numpy, tth_edges, chi_edges = numpy.histogram2d(tth.flatten(), chi.flatten(), npt, weights=data.astype("float64").flatten(), range=drange)
-    t2 = time.time()
-    logger.info("Timing for Numpy  raw     histogram2d: %.3f", t1 - t0)
-    logger.info("Timing for Numpy weighted histogram2d: %.3f", t2 - t1)
-    tth_numpy = 0.5 * (tth_edges[1:] + tth_edges[:-1])
-    chi_numpy = 0.5 * (chi_edges[1:] + chi_edges[:-1])
-    I_numpy = weight_numpy / numpy.maximum(1.0, unweight_numpy)
-    t3 = time.time()
-    I_cython, tth_cython, chi_cython, weight_cython, unweight_cython = histogram2d(tth.flatten(), chi.flatten(), npt, data.flatten(), split=0)
-    t4 = time.time()
-    logger.info("Timing for Cython  both   histogram2d: %.3f", t4 - t3)
-    t3 = time.time()
-    integrator = HistoBBox2d(tth, None, chi, delta_pos1=None,
-                             bins=npt, allow_pos0_neg=False, unit="undefined")
-    t2 = time.time()
-    I_csr, tth_csr, chi_csr, weight_csr, unweight_csr = integrator.integrate(data)
-    t4 = time.time()
-    logger.info("Timing for CSR  init: %.3fs, integrate: %0.3fs, both: %.3f", (t2 - t3), (t4 - t2), (t4 - t3))
-#     if platform.system() == "Linux":
-#         err_max_cnt = 0
-#     else:
-    # Under windows or MacOSX, up to 1 bin error has been reported...
-    err_max_cnt = 1.0
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        shape = (512, 512)
+        self.size = shape[0] * shape[1]
+        self.maxI = 1000
+        self.epsilon = 1.1e-4
+        y, x = numpy.ogrid[:shape[0], :shape[1]]
+        tth = numpy.sqrt(x * x + y * y).astype("float32")
+        mod = 0.5 + 0.5 * cos(tth / 12) + 0.25 * cos(tth / 6) + 0.1 * cos(tth / 4)
+        data = (numpy.random.poisson(self.maxI, shape) * mod).astype("uint16")
+        self.data_sum = data.sum(dtype="float64")
+        npt = (400, 360)
+        chi = numpy.arctan2(y, x).astype("float32")
+        drange = [[tth.min(), tth.max() * EPS32], [chi.min(), chi.max() * EPS32]]
+        t0 = time.time()
+        self.unweight_numpy, tth_edges, chi_edges = numpy.histogram2d(tth.flatten(), chi.flatten(), npt, range=drange)
+        t1 = time.time()
+        self.weight_numpy, tth_edges, chi_edges = numpy.histogram2d(tth.flatten(), chi.flatten(), npt, weights=data.astype("float64").flatten(), range=drange)
+        t2 = time.time()
+        logger.info("Timing for Numpy  raw     histogram2d: %.3f", t1 - t0)
+        logger.info("Timing for Numpy weighted histogram2d: %.3f", t2 - t1)
+        self.tth_numpy = 0.5 * (tth_edges[1:] + tth_edges[:-1])
+        self.chi_numpy = 0.5 * (chi_edges[1:] + chi_edges[:-1])
+        self.I_numpy = self.weight_numpy / numpy.maximum(1.0, self.unweight_numpy)
+        t3 = time.time()
+        self.I_cython, self.tth_cython, self.chi_cython, self.weight_cython, self.unweight_cython = histogram2d(tth.flatten(), chi.flatten(), npt, data.flatten(), split=0)
+        t4 = time.time()
+        logger.info("Timing for Cython  both   histogram2d: %.3f", t4 - t3)
+        t3 = time.time()
+        integrator = HistoBBox2d(tth, None, chi, delta_pos1=None,
+                                 bins=npt, allow_pos0_neg=False, unit="undefined")
+        t2 = time.time()
+        self.I_csr, self.tth_csr, self.chi_csr, self.weight_csr, self.unweight_csr = integrator.integrate(data)
+        t4 = time.time()
+        logger.info("Timing for CSR  init: %.3fs, integrate: %0.3fs, both: %.3f", (t2 - t3), (t4 - t2), (t4 - t3))
+    #     if platform.system() == "Linux":
+    #         err_max_cnt = 0
+    #     else:
+        # Under windows or MacOSX, up to 1 bin error has been reported...
+        self.err_max_cnt = 1.0
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        self.I_numpy = self.size = self.err_max_cnt = None
+        self.epsilon = self.tth_numpy = None
+        self.I_csr = self.tth_csr = self.chi_csr = self.weight_csr = self.unweight_csr = None
+        self.I_cython = self.tth_cython = self.chi_cython = self.weight_cython = self.unweight_cython
+        self.unweight_numpy = self.weight_numpy = None
+        self.maxI = None
 
     def test_count_numpy(self):
         """

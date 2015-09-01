@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/08/2015"
+__date__ = "01/09/2015"
 
 
 import unittest
@@ -63,6 +63,7 @@ class TestBispev(unittest.TestCase):
         self.splineFile = UtilsTest.getimage(self.__class__.spinefile)
         self.spline = spline.Spline(self.splineFile)
         self.spline.spline2array(timing=True)
+
     def tearDown(self):
         unittest.TestCase.tearDown(self)
         self.spline = self.splineFile = None

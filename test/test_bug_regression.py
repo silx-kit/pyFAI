@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme Kieffer"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/02/2015"
+__date__ = "01/09/2015"
 
 import sys
 import os
@@ -50,7 +50,9 @@ class TestBug170(unittest.TestCase):
     """
     Test a mar345 image with 2300 pixels size
     """
-    poni = """
+
+    def setUp(self):
+        ponitxt = """
 Detector: Mar345
 PixelSize1: 0.00015
 PixelSize2: 0.00015
@@ -63,12 +65,15 @@ Rot3: -7.22446379865e-08
 SplineFile: None
 Wavelength: 7e-11
 """
-
-    def setUp(self):
         self.ponifile = os.path.join(UtilsTest.tempdir, "bug170.poni")
         with open(self.ponifile, "w") as poni:
-            poni.write(self.poni)
+            poni.write(ponitxt)
         self.data = numpy.random.random((2300,2300))
+
+    def tearDown(self):
+        if os.path.exists(self.ponifile):
+            os.unlink(self.ponifile)
+        self.data = None
 
     def test_bug170(self):
         ai = pyFAI.load(self.ponifile)
@@ -77,10 +82,6 @@ Wavelength: 7e-11
         logger.debug(ai.detector.pixel2)
         ai.integrate1d(self.data, 2000)
 
-    def tearDown(self):
-        if os.path.exists(self.ponifile):
-            os.unlink(self.ponifile)
-        self.data = None
 
 def test_suite_bug_regression():
     testSuite = unittest.TestSuite()
