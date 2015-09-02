@@ -49,7 +49,7 @@ with open("../openCL/ocl_lut_pixelsplit.cl", "r") as kernelFile:
 
 compile_options = "-D BINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i -D EPS=%e" % \
                 (bins, size, workgroup_size, numpy.finfo(numpy.float32).eps)
-            
+
 print(compile_options)
 
 program = cl.Program(ctx, kernel_src).build(options=compile_options)
@@ -181,7 +181,7 @@ legend()
 show()
 input()
 
-  
+
 #aaa = 0
 #bbb = 0
 #for i in range(bins):
@@ -197,7 +197,5 @@ input()
         #aaa += 1
         #if not numpy.allclose(data_1[j],data_2[j]):
             #bbb += 1
-            #print data_1[j],data_2[j],numpy.allclose(data_1[j],data_2[j]), idx_ptr[i]+j
 
 
-#print aaa,bbb

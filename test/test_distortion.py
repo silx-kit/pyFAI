@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/12/2014"
+__date__ = "31/08/2015"
 
 
 import unittest
@@ -62,6 +62,10 @@ class test_halfccd(unittest.TestCase):
         self.dis = _distortion.Distortion(self.det)
         self.fit2d = fabio.open(self.fit2dFile).data
         self.raw = fabio.open(self.halfFrelon).data
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        self.fit2dFile = self.halfFrelon = self.splineFile = self.det = self.dis = self.fit2d = self.raw = None
 
     def test_vs_fit2d(self):
         """

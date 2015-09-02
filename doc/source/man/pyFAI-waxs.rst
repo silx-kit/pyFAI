@@ -1,15 +1,15 @@
-Integration tool: pyFAI-saxs
+Integration tool: pyFAI-waxs
 ============================
 
 Purpose
 -------
 
-Azimuthal integration for WAXS users.
+Azimuthal integration for powder diffraction.
 
-pyFAI-waxs is the script of pyFAI that allows data reduction (azimuthal integration) for 
+pyFAI-waxs is the script of pyFAI that allows data reduction (azimuthal integration) for
 Wide Angle Scattering to produce X-Ray Powder Diffraction Pattern with output axis in 2-theta space.
 
-Usage: 
+Usage:
 ------
 pyFAI-waxs -p param.poni [options] file1.edf file2.edf ...
 
@@ -47,5 +47,12 @@ Options:
   --do-2D
                         Perform 2D integration in addition to 1D
 
-pyFAI-waxs is the script of pyFAI that allows data reduction (azimuthal integration) for Wide Angle Scattering 
+pyFAI-waxs is the script of pyFAI that allows data reduction (azimuthal integration) for Wide Angle Scattering
 to produce X-Ray Powder Diffraction Pattern with output axis in 2-theta space.
+
+Example:
+--------
+
+
+.. command-output:: pyFAI-waxs --help
+    :nostderr:

@@ -1,0 +1,7 @@
+numpy
+cython
+fabio
+#scipy      #issue in RTD
+#matplotlib #issue in RTD 
+sphinx
+sphinxcontrib-programoutput

@@ -25,7 +25,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/05/2015"
+__date__ = "31/08/2015"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -84,6 +84,20 @@ Q_A = Enum(REPR="q_A^-1",
            scale=0.1,
            label=r"Scattering vector $q$ ($\AA ^{-1}$)")
 
+RecD2_A = Enum(REPR="d*2_A^-2",
+               center="rd2Array",
+               corner="cornerRd2Array",
+               delta="deltaRd2",
+               scale=0.01,
+               label=r"Reciprocal spacing squared $d^{*2}$ ($\AA ^{-2}$)")
+
+RecD2_NM = Enum(REPR="d*2_nm^-2",
+                center="rd2Array",
+                corner="cornerRd2Array",
+                delta="deltaRd2",
+                scale=1.0,
+                label=r"Reciprocal spacing squared $d^{*2}$ ($nm^{-2}$)")
+
 R = R_MM = Enum(REPR="r_mm",
                 center="rArray",
                 corner="cornerRArray",
@@ -92,7 +106,7 @@ R = R_MM = Enum(REPR="r_mm",
                 label=r"Radius $r$ ($mm$)")
 
 
-RADIAL_UNITS = (TTH_DEG, TTH_RAD, Q_NM, Q_A, R_MM)
+RADIAL_UNITS = (TTH_DEG, TTH_RAD, Q_NM, Q_A, R_MM, RecD2_A, RecD2_NM)
 
 
 def to_unit(obj):

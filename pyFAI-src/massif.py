@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/03/2015"
+__date__ = "25/06/2015"
 __status__ = "production"
 
 import sys, os, threading
@@ -39,7 +39,7 @@ from scipy.ndimage import label
 from scipy.ndimage.filters  import median_filter
 
 from .bilinear import Bilinear
-from .utils import gaussian_filter, binning, unBinning, relabel
+from .utils import gaussian_filter, binning, unBinning, relabel, is_far_from_group
 from .third_party import six
 
 if os.name != "nt":
@@ -162,7 +162,7 @@ class Massif(object):
                 break
         return listpeaks
 
-    def peaks_from_area(self, mask, Imin=None, keep=1000, **kwarg):
+    def peaks_from_area(self, mask, Imin=None, keep=1000, dmin=0.0, seed=None, **kwarg):
         """
         Return the list of peaks within an area
 
@@ -170,21 +170,29 @@ class Massif(object):
         @param Imin: minimum of intensity above the background to keep the point
         @param keep: maximum number of points to keep
         @param kwarg: ignored parameters
+        @param dmin: minimum distance to another peak
+        @param seed: list of good guesses to start with
         @return: list of peaks [y,x], [y,x], ...]
         """
         all_points = numpy.vstack(numpy.where(mask)).T
         res = []
         cnt = 0
+        dmin2 = dmin * dmin
         numpy.random.shuffle(all_points)
+        if seed:
+            seeds = numpy.array(list(seed))
+            numpy.random.shuffle(seeds)
+            all_points = numpy.concatenate((seeds, all_points))
         for idx in all_points:
             out = self.nearest_peak(idx)
             if out is not None:
-                print("[ %3i, %3i ] -> [ %.1f, %.1f ]" %
+                logger.debug("[ %3i, %3i ] -> [ %.1f, %.1f ]" %
                       (idx[1], idx[0], out[1], out[0]))
-                p0, p1 = int(out[0]), int(out[1])
+                p0, p1 = int(round(out[0])), int(round(out[1]))
                 if mask[p0, p1]:
-                    if (out not in res) and\
-                        (self.data[p0, p1] > Imin):
+
+                    if (self.data[p0, p1] > Imin) and \
+                        is_far_from_group(out, res, dmin2):
                         res.append(out)
                         cnt = 0
             if len(res) >= keep or cnt > keep:

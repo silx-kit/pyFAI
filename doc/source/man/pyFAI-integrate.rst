@@ -36,3 +36,10 @@ the LImA plugin of pyFAI.
 
 Nota: there is bug in debian6 making the GUI crash (to be fixed inside pyqt)
 http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348
+
+Example:
+--------
+
+
+.. command-output:: pyFAI-integrate --help
+    :nostderr:

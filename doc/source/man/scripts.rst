@@ -3,7 +3,7 @@ pyFAI scripts manual
 
 While pyFAI is first and foremost a Python library to be used by developers, a set of scripts is provided to process
 a full diffraction experiment on the command line without knowing anything about Python.
-Those scipts can be divided into 3 categories: pre-processing tools which prepare the dataset for the calibration tool.
+Those scripts can be divided into 3 categories: pre-processing tools which prepare the dataset for the calibration tool.
 The calibration is the determination of the geometry of the experimental setup using Debye-Scherrer rings of a reference compound (or calibrant).
 Finally a full dataset can be integrated using different tools targeted at different experiments.
 
@@ -28,6 +28,7 @@ Azimuthal integration tools:
 
    pyFAI-average
    drawMask_pymca
+   detector2nexus
    pyFAI-calib
    pyFAI-recalib
    check_calib

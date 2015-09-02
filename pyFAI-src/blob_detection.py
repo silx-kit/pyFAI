@@ -22,13 +22,13 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-from __future__ import division
+from __future__ import division, print_function, absolute_import
 __authors__ = ["Aurore Deschildre", "Jérôme Kieffer"]
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/09/2014"
-__status__ = "development"
+__date__ = "16/06/2015"
+__status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import os
@@ -57,7 +57,7 @@ from .bilinear import Bilinear
 
 from math import sqrt, cos, sin, pow
 
-from .utils import binning #, timeit
+from .utils import binning, is_far_from_group
 
 def image_test():
     img = numpy.zeros((128 * 4, 128 * 4))
@@ -734,7 +734,7 @@ class BlobDetection(object):
             best = self.bilinear.local_maxi(best)
         return best
 
-    def peaks_from_area(self, mask, keep=None, refine=True, Imin=None, **kwargs):
+    def peaks_from_area(self, mask, keep=None, refine=True, Imin=None, dmin=0.0, **kwargs):
         """
         Return the list of peaks within an area
 
@@ -747,6 +747,7 @@ class BlobDetection(object):
         y = numpy.round(self.keypoints.y).astype(int)
         x = numpy.round(self.keypoints.x).astype(int)
         is_inside = (mask[y, x]).astype(bool)
+        dmin2 = dmin*dmin
         if is_inside.sum() == 0:
             logger.error("No keypoint that region")
             return []
@@ -761,10 +762,18 @@ class BlobDetection(object):
                 good_kp = kp[valid]
         else:
             good_kp = kp
-        if keep and len(good_kp) > keep:
-            order = numpy.argsort(good_kp.I)
-            order = order[-1::-1][:keep] #keep only the most intense
-            good_kp = good_kp[order]
+        #sort keypoint by intensity
+        order = numpy.argsort(good_kp.I)
+        order = order[-1::-1][:keep] #keep only the most intense
+        good_kp = good_kp[order]
+        if keep and (len(good_kp) > keep):
+            keep_kp = []
+            for i in good_kp:
+                if is_far_from_group(i, keep_kp, dmin2):
+                    keep_kp.append(i)
+                if len(keep_kp)>= keep:
+                    break
+            good_kp = keep_kp
         if refine:
             if self.bilinear is None:
                 self.bilinear = Bilinear(self.raw)

@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/12/2014"
+__date__ = "01/09/2015"
 
 
 import unittest
@@ -51,14 +51,25 @@ if logger.getEffectiveLevel() <= logging.INFO:
 
 
 class TestFlat1D(unittest.TestCase):
-    shape = 640, 480
-    flat = 1 + numpy.random.random(shape)
-    dark = numpy.random.random(shape)
-    raw = flat + dark
-    eps = 1e-6
-    ai = pyFAI.AzimuthalIntegrator()
-    ai.setFit2D(directDist=1, centerX=shape[1] // 2, centerY=shape[0] // 2, pixelX=1, pixelY=1)
-    bins = 500
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.shape = 640, 480
+        self.flat = 1.0 + numpy.random.random(self.shape)
+        self.dark = numpy.random.random(self.shape)
+        self.raw = self.flat + self.dark
+        self.eps = 1e-6
+        self.ai = pyFAI.AzimuthalIntegrator()
+        self.ai.setFit2D(directDist=1, centerX=self.shape[1] // 2, centerY=self.shape[0] // 2, pixelX=1, pixelY=1)
+        self.bins = 500
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        self.shape = None
+        self.flat = None
+        self.dark = None
+        self.raw = None
+        self.eps = None
+        self.ai = None
+        self.bins = None
 
     def test_no_correct(self):
         r, I = self.ai.integrate1d(self.raw, self.bins, unit="r_mm", correctSolidAngle=False)

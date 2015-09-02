@@ -26,7 +26,7 @@
 """
 Test suites for multi_geometry modules
 """
-
+__date__ = "01/09/2015"
 
 import unittest, numpy, os, sys, time, logging
 if sys.version_info[0] > 2:
@@ -65,13 +65,8 @@ class TestMultiGeometry(unittest.TestCase):
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
-        self.data = None
-        self.lst_data = None
-        self.det = None
-        self.sub_det = None
-        self.ai = None
-        self.ais = None
-        self.mg = None
+        self.data = self.lst_data = self.det = self.sub_det = self.ai = None
+        self.range = self.ais = self.mg = self.N = None
 
     def test_integrate1d(self):
         tth_ref, I_ref = self.ai.integrate1d(self.data, radial_range=self.range, npt=self.N, unit="2th_deg", method="splitpixel")

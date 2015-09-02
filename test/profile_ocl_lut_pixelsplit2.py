@@ -57,7 +57,7 @@ with open("../openCL/ocl_lut_pixelsplit.cl", "r") as kernelFile:
 
 compile_options = "-D BINS=%i  -D NIMAGE=%i -D WORKGROUP_SIZE=%i -D EPS=%e" % \
                 (bins, size, workgroup_size, numpy.finfo(numpy.float32).eps)
-            
+
 print(compile_options)
 
 program = cl.Program(ctx, kernel_src).build(options=compile_options)
@@ -109,8 +109,6 @@ d_idx_ptr = cl.array.to_device(queue, idx_ptr)
 #lutsize  = numpy.ndarray(1, dtype=numpy.int32)
 
 #cl.enqueue_copy(queue, lutsize, d_lutsize.data)
-
-#print lutsize
 
 lut_size = int(idx_ptr[-1])
 

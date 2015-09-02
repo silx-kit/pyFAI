@@ -25,11 +25,13 @@
 #
 "test suite for peak picking class"
 
+from __future__ import print_function
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/03/2015"
+__date__ = "01/09/2015"
 
 
 import unittest
@@ -57,30 +59,34 @@ if logger.getEffectiveLevel() <= logging.INFO:
 
 class testPeakPicking(unittest.TestCase):
     """basic test"""
-    calibFile = "1788/moke.tif"
-    ctrlPt = {0: (300, 230),
-              1: (300, 212),
-              2: (300, 195),
-              3: (300, 177),
-              4: (300, 159),
-              5: (300, 140),
-              6: (300, 123),
-              7: (300, 105),
-              8: (300, 87)}
-    tth = numpy.radians(numpy.arange(4, 13))
-    wavelength = 1e-10
-    ds = wavelength * 5e9 / numpy.sin(tth / 2)
-    calibrant = Calibrant(dSpacing=ds)
-    maxiter = 100
-    tmp_dir = tempfile.mkdtemp(prefix="pyFAI_test_peak_picking_")
-    logfile = os.path.join(tmp_dir, "testpeakPicking.log")
-    nptfile = os.path.join(tmp_dir, "testpeakPicking.npt")
 
     def setUp(self):
         """Download files"""
+
+        self.calibFile = "1788/moke.tif"
+        self.ctrlPt = {0: (300, 230),
+                      1: (300, 212),
+                      2: (300, 195),
+                      3: (300, 177),
+                      4: (300, 159),
+                      5: (300, 140),
+                      6: (300, 123),
+                      7: (300, 105),
+                      8: (300, 87)}
+        self.tth = numpy.radians(numpy.arange(4, 13))
+        self.wavelength = 1e-10
+        self.ds = self.wavelength * 5e9 / numpy.sin(self.tth / 2)
+        self.calibrant = Calibrant(dSpacing=self.ds)
+        self.maxiter = 100
+        self.tmp_dir = os.path.join(UtilsTest.tempdir, "peak_picking")
+        self.logfile = os.path.join(self.tmp_dir, "testpeakPicking.log")
+        self.nptfile = os.path.join(self.tmp_dir, "testpeakPicking.npt")
+
+        # download files
+
         if not os.path.isdir(self.tmp_dir):
             os.makedirs(self.tmp_dir)
-        self.img = UtilsTest.getimage(self.__class__.calibFile)
+        self.img = UtilsTest.getimage(self.calibFile)
         self.pp = PeakPicker(self.img, calibrant=self.calibrant, wavelength=self.wavelength)
         if not os.path.isdir(self.tmp_dir):
             os.makedirs(self.tmp_dir)
@@ -91,6 +97,8 @@ class testPeakPicking(unittest.TestCase):
     def tearDown(self):
         """Remove temporary files"""
         recursive_delete(self.tmp_dir)
+        self.calibFile = self.ctrlPt = self.tth = self.wavelength = self.ds = None
+        self.calibrant = self.maxiter = self.tmp_dir = self.logfile = self.nptfile = None
 
     def test_peakPicking(self):
         """first test peak-picking then checks the geometry found is OK"""
@@ -104,8 +112,6 @@ class testPeakPicking(unittest.TestCase):
 
         self.pp.points.save(self.nptfile)
         lstPeak = self.pp.points.getListRing()
-#        print self.pp.points
-#        print lstPeak
         logger.info("After peak-picking, we have %s points generated from %s groups ", len(lstPeak), len(self.ctrlPt))
         gr = GeometryRefinement(lstPeak, dist=0.01, pixel1=1e-4, pixel2=1e-4, wavelength=self.wavelength, calibrant=self.calibrant)
         gr.guess_poni()
@@ -125,8 +131,6 @@ class testPeakPicking(unittest.TestCase):
         self.assertAlmostEquals(gr.rot1, 0, 2, "rot1 is OK, got %s, expected 0" % gr.rot1)
         self.assertAlmostEquals(gr.rot2, 0, 2, "rot2 is OK, got %s, expected 0" % gr.rot2)
         self.assertAlmostEquals(gr.rot3, 0, 2, "rot3 is OK, got %s, expected 0" % gr.rot3)
-
-#        print self.pp.points
 
 
 class TestMassif(unittest.TestCase):

@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/11/2014"
+__date__ = "21/08/2015"
 __status__ = "development"
 
 import os
@@ -41,11 +41,16 @@ from math import pi
 from . import azimuthalIntegrator
 from .calibrant import Calibrant, ALL_CALIBRANTS
 AzimuthalIntegrator = azimuthalIntegrator.AzimuthalIntegrator
-from scipy.optimize import fmin, leastsq, fmin_slsqp, basinhopping as anneal
+from scipy.optimize import fmin, leastsq, fmin_slsqp
+try:
+    from scipy.optimize import basinhopping as anneal
+except ImportError:
+    from scipy.optimize import anneal
 try:
     from scipy.optimize import curve_fit
 except ImportError:
     curve_fit = None
+
 
 from .utils import timeit
 
@@ -87,7 +92,7 @@ class GeometryRefinement(AzimuthalIntegrator):
         """
         self.data = numpy.array(data, dtype=numpy.float64)
         assert self.data.ndim == 2
-        assert self.data.shape[1] in [ 3, 4] #3 for non weighted, 4 for weighted refinement
+        assert self.data.shape[1] in [ 3, 4]  # 3 for non weighted, 4 for weighted refinement
         assert self.data.shape[0] > 0
 
         if (pixel1 is None) and (pixel2 is None) and (splineFile is None) and (detector is None):
@@ -218,23 +223,23 @@ class GeometryRefinement(AzimuthalIntegrator):
         return self.tth(d1, d2, param) - self.calc_2th(rings, param[6] * 1e-10)
 
     def residu2(self, param, d1, d2, rings):
-        #dot product is faster ...
+        # dot product is faster ...
 #        return (self.residu1(param, d1, d2, rings) ** 2).sum()
         t = self.residu1(param, d1, d2, rings)
         return numpy.dot(t, t)
 
     def residu2_weighted(self, param, d1, d2, rings, weight):
-        #return (weight * self.residu1(param, d1, d2, rings) ** 2).sum()
-        t=weight * self.residu1(param, d1, d2, rings)
-        return numpy.dot(t,t)
+        # return (weight * self.residu1(param, d1, d2, rings) ** 2).sum()
+        t = weight * self.residu1(param, d1, d2, rings)
+        return numpy.dot(t, t)
 
     def residu2_wavelength(self, param, d1, d2, rings):
-        #return (self.residu1_wavelength(param, d1, d2, rings) ** 2).sum()
-        t=self.residu1_wavelength(param, d1, d2, rings)
-        return numpy.dot(t,t)
+        # return (self.residu1_wavelength(param, d1, d2, rings) ** 2).sum()
+        t = self.residu1_wavelength(param, d1, d2, rings)
+        return numpy.dot(t, t)
 
     def residu2_wavelength_weighted(self, param, d1, d2, rings, weight):
-        #return (weight * self.residu1_wavelength(param, d1, d2, rings) ** 2).sum()
+        # return (weight * self.residu1_wavelength(param, d1, d2, rings) ** 2).sum()
         t = weight * self.residu1_wavelength(param, d1, d2, rings)
         return numpy.dot(t, t)
 
@@ -526,7 +531,7 @@ class GeometryRefinement(AzimuthalIntegrator):
             hessian[i, i] = (value_plus + value_moins - 2.0 * ref) / (deltai ** 2)
 
             for j in range(i + 1, size):
-                #if i == j: continue
+                # if i == j: continue
                 deltaj = delta[j]
                 param = param0.copy()
                 param[i] += deltai

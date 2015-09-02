@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme Kieffer"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/12/2014"
+__date__ = "31/08/2015"
 
 import sys
 import unittest
@@ -70,6 +70,10 @@ class TestBlobDetection(unittest.TestCase):
     def setUp(self):
         if self.img is None:
             self.img = image_test_rings()
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        self.img = None
 
     def test_local_max(self):
         bd = BlobDetection(self.img)

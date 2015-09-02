@@ -6,7 +6,7 @@ Purpose
 
 Azimuthal integration for SAXS users.
 
-pyFAI-saxs is the SAXS script of pyFAI that allows data reduction (azimuthal integration) for 
+pyFAI-saxs is the SAXS script of pyFAI that allows data reduction (azimuthal integration) for
 Small Angle Scattering with output axis in q space.
 
 Usage:
@@ -42,3 +42,9 @@ Options:
                         2th_deg, 2th_rad or r_mm
   --ext=EXT             extension of the regrouped filename (.dat)
 
+Example:
+--------
+
+
+.. command-output:: pyFAI-saxs --help
+    :nostderr:

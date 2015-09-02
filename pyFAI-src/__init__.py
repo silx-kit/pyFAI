@@ -36,6 +36,17 @@ from . import utils
 from .azimuthalIntegrator import AzimuthalIntegrator
 load = AzimuthalIntegrator.sload
 
-def tests():
+def tests(deprecation=False):
+    """
+    Runs the test suite of the installed version
+    
+    @param deprecation: enable/disables deprecation warning in the tests
+    """
+    if deprecation:
+        utils.depreclog.setLevel(logging.DEBUG)
+    else:
+        utils.depreclog.setLevel(logging.ERROR)
     from . import test
-    test.run_tests()
+    res = test.run_tests()
+    utils.depreclog.setLevel(logging.DEBUG)
+    return res

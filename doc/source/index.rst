@@ -39,6 +39,7 @@ Finally other programs/projects relying on pyFAI are presented and the project i
    operations/index
    ecosystem
    project
+   changelog
    biblio
 
 Indices and tables

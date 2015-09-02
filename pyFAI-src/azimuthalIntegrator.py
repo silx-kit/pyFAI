@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/06/2015"
+__date__ = "24/06/2015"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -2173,8 +2173,8 @@ class AzimuthalIntegrator(Geometry):
         @type normalization_factor: float
         @param block_size: size of the block for OpenCL integration (unused?)
         @param profile: set to True to enable profiling in OpenCL
-        @param all: if true return a dictionary with many more parameters  
-        
+        @param all: if true return a dictionary with many more parameters
+
 
         @return: q/2th/r bins center positions and regrouped intensity (and error array if variance or variance model provided), uneless all==True.
         @rtype: 2 or 3-tuple of ndarrays
@@ -3133,10 +3133,10 @@ class AzimuthalIntegrator(Geometry):
 
         if all:
             res = {"I":I,
-                 "radial":bins_rad,
-                 "azimuthal":bins_azim,
-                 "count":count,
-                 "sum": sum}
+                   "radial":bins_rad,
+                   "azimuthal":bins_azim,
+                   "count":count,
+                   "sum": sum}
             if sigma is not None:
                 res["sigma"] = sigma
         else:
@@ -3410,10 +3410,13 @@ class AzimuthalIntegrator(Geometry):
                                                       unit=unit, method="splitpixel",
                                                       dummy=dummy, correctSolidAngle=True)
         dummies = (integ2d == dummy).sum(axis=0)
-        sorted = numpy.sort(integ2d, axis=0)
-        pos = (dummies + (percentile / 100.) * (npt_azim - dummies)).astype(int)
+        # add a line of zeros at the end (along npt_azim) so that the value for no valid pixel is 0
+        sorted = numpy.zeros((npt_azim + 1, npt_rad))
+        sorted[:npt_azim, :] = numpy.sort(integ2d, axis=0)
+        pos = (dummies + (percentile / 100.) * (npt_azim - dummies)).astype(int)  # .clip(0, npt_azim - 1)
         assert (pos >= 0).all()
-        assert (pos < npt_azim).all()
+        assert (pos <= npt_azim).all()
+
         spectrum = sorted[(pos, numpy.arange(npt_rad))]
         amorphous = self.calcfrom1d(radial, spectrum, data.shape, mask=None,
                    dim1_unit=unit, correctSolidAngle=True)
@@ -3489,7 +3492,7 @@ class AzimuthalIntegrator(Geometry):
             self.set_darkcurrent(fabio.open(files[0]).data.astype(numpy.float32))
             self.darkfiles = files[0]
         else:
-            self.set_darkcurrent(utils.averageImages(files, filter_=method, format=None, threshold=0))
+            self.set_darkcurrent(utils.averageImages(files, filter_=method, fformat=None, threshold=0))
             self.darkfiles = "%s(%s)" % (method, ",".join(files))
 
     def set_flatfiles(self, files, method="mean"):
@@ -3512,7 +3515,7 @@ class AzimuthalIntegrator(Geometry):
             self.set_flatfield(fabio.open(files[0]).data.astype(numpy.float32))
             self.flatfiles = files[0]
         else:
-            self.set_flatfield(utils.averageImages(files, filter_=method, format=None, threshold=0))
+            self.set_flatfield(utils.averageImages(files, filter_=method, fformat=None, threshold=0))
             self.flatfiles = "%s(%s)" % (method, ",".join(files))
 
     def get_empty(self):

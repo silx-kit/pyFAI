@@ -36,23 +36,28 @@ if __name__ == '__main__':
 from .utilstest import UtilsTest, getLogger, Rwp
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
-
+import pyFAI, numpy
 
 class TestSplitPixel(unittest.TestCase):
     """
 
     """
-    N = 10000
-    import pyFAI, numpy
-    img = numpy.zeros((512, 512))
-    for i in range(1, 6):img[i * 100, i * 100] = 1
-    det = pyFAI.detectors.Detector(1e-4, 1e-4)
-    det.shape = (512, 512)
-    ai = pyFAI.AzimuthalIntegrator(1, detector=det)
-    results = {}
-    for i, meth in enumerate(["numpy", "cython", "splitbbox", "splitpixel", "csr_no", "csr_bbox", "csr_full"]):
-        results[meth] = ai.integrate1d(img, 10000, method=meth, unit="2th_deg")
-        ai.reset()
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        N = 10000
+        img = numpy.zeros((512, 512))
+        for i in range(1, 6):img[i * 100, i * 100] = 1
+        det = pyFAI.detectors.Detector(1e-4, 1e-4)
+        det.shape = (512, 512)
+        ai = pyFAI.AzimuthalIntegrator(1, detector=det)
+        self.results = {}
+        for i, meth in enumerate(["numpy", "cython", "splitbbox", "splitpixel", "csr_no", "csr_bbox", "csr_full"]):
+            self.results[meth] = ai.integrate1d(img, 10000, method=meth, unit="2th_deg")
+            ai.reset()
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        self.results = None
 
     def test_no_split(self):
         """

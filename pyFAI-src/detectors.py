@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/06/2015"
+__date__ = "22/06/2015"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instantiate them
@@ -42,7 +42,7 @@ import threading
 
 from . import io
 from . import spline
-from .utils import binning
+from .utils import binning, expand2d
 
 logger = logging.getLogger("pyFAI.detectors")
 
@@ -59,7 +59,7 @@ try:
 except ImportError:
     fabio = None
 from .third_party.six import with_metaclass
-from .utils import expand2d
+
 
 epsilon = 1e-6
 
@@ -92,6 +92,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
     registry = {}  # list of  detectors ...
     uniform_pixel = True  # tells all pixels have the same size
     IS_FLAT = True  # this detector is flat
+
     @classmethod
     def factory(cls, name, config=None):
         """
@@ -639,16 +640,16 @@ class Detector(with_metaclass(DetectorMeta, object)):
                 det_grp["binning"] = numpy.array(self._binning, dtype=numpy.int32)
             if self.flat is not None:
                 dset = det_grp.create_dataset("flat", data=self.flat,
-                                              compression="gzip", compression_opts=9)
+                                              compression="gzip", compression_opts=9, shuffle=True)
                 dset.attrs["interpretation"] = "image"
             if self.mask is not None:
                 dset = det_grp.create_dataset("mask", data=self.mask,
-                                              compression="gzip", compression_opts=9)
+                                              compression="gzip", compression_opts=9, shuffle=True)
                 dset.attrs["interpretation"] = "image"
             if not (self.uniform_pixel and self.IS_FLAT):
                 # Get ready for the worse case: 4 corner per pixel, position 3D: z,y,x
                 dset = det_grp.create_dataset("pixel_corners", data=self.get_pixel_corners(),
-                                              compression="gzip", compression_opts=9)
+                                              compression="gzip", compression_opts=9, shuffle=True)
                 dset.attrs["interpretation"] = "vertex"
 
     def guess_binning(self, data):
@@ -741,6 +742,30 @@ class NexusDetector(Detector):
         obj = cls()
         cls.load(filename)
         return obj
+
+    def getPyFAI(self):
+        """
+        Helper method to serialize the description of a detector using the pyFAI way
+        with everything in S.I units.
+
+        @return: representation of the detector easy to serialize
+        @rtype: dict
+        """
+        return {"detector": self._filename or self.name,
+                "pixel1": self._pixel1,
+                "pixel2": self._pixel2
+                }
+
+    def getFit2D(self):
+        """
+        Helper method to serialize the description of a detector using the Fit2d units
+
+        @return: representation of the detector easy to serialize
+        @rtype: dict
+        """
+        return {"pixelX": self._pixel2 * 1e6,
+                "pixelY": self._pixel1 * 1e6
+                }
 
 
 class Pilatus(Detector):
@@ -1390,6 +1415,88 @@ class ImXPadS10(Detector):
             p2 = numpy.interp(d2 + 0.5, numpy.arange(self.MAX_SHAPE[1] + 1), edges2, edges2[0], edges2[-1])
         return p1, p2, None
 
+    def from_control_points(self, points, border_relative_size=1.0):
+        """
+        This methods allows the calculation of the pixel corners from a set
+        of control points taked on each chip, 2 on each of them.
+
+        @param points: list (len 2x the number of chips) with xyz coordinates in mm
+        @param border_relative_size: 2.5 for Si sensor, 1 for CdTe sensor
+        """
+        MAX_SHAPE = self.MAX_SHAPE
+        MODULE_SIZE = self.MODULE_SIZE
+        chips = tuple(i // j for i, j in zip(MAX_SHAPE, MODULE_SIZE))
+        nchip = 1
+        for i in chips:
+            nchip *= i
+        points = numpy.array(points)
+        assert points.ndim == 2
+        assert points.shape[0] == nchip * 2
+        if points.shape[1] >= 3:
+            points = points[:, -3:]
+        points *= 1e-3  # set points coordinates in meters.
+
+        origin = points[0]
+        x = points[1] - origin
+        x /= numpy.sqrt(numpy.dot(x, x))
+        z0 = numpy.array([0.0, 0.0, 1.0])
+        y = numpy.cross(z0, x)
+        y /= numpy.sqrt(numpy.dot(y, y))
+        z = numpy.cross(x, y)
+
+        size1 = numpy.ones(MODULE_SIZE[0])
+        size2 = numpy.ones(MODULE_SIZE[1])
+        size1[0] = size1[-1] = size2[0] = size2[-1] = border_relative_size
+        size1 *= self.pixel1
+        size2 *= self.pixel2
+        pixel_edges1 = numpy.zeros(MODULE_SIZE[0] + 1)
+        pixel_edges2 = numpy.zeros(MODULE_SIZE[1] + 1)
+        pixel_edges1[1:] = numpy.cumsum(size1)
+        pixel_edges2[1:] = numpy.cumsum(size2)
+        pixel_edges_y = expand2d(pixel_edges1, MODULE_SIZE[1] + 1, False)
+        pixel_edges_x = expand2d(pixel_edges2, MODULE_SIZE[0] + 1, True)
+        pixel_edges_xyz = numpy.zeros((MODULE_SIZE[0] + 1, MODULE_SIZE[1] + 1, 3))
+        pixel_edges_xyz[:, :, 0] = pixel_edges_x
+        pixel_edges_xyz[:, :, 1] = pixel_edges_y
+        pixel_edges_2d = pixel_edges_xyz.reshape(-1, 3)
+
+
+        pixels = numpy.zeros((MAX_SHAPE[0], MAX_SHAPE[1], 4, 3), numpy.float32)
+
+        for mod in range(chips[0]):
+            for cel in range(chips[1]):
+                p0 = points[2 * (chips[-1] * mod + cel)]
+                p1 = points[2 * (chips[-1] * mod + cel) + 1]
+                startx = numpy.dot(p0 - origin, x)
+                starty = numpy.dot(p0 - origin, y)
+                startz = numpy.dot(p0 - origin, z)
+                x1 = p1 - p0
+                x1 /= numpy.sqrt(numpy.dot(x1, x1))
+                y1 = numpy.cross(z0, x1)
+                y1 /= numpy.sqrt(numpy.dot(y1, y1))
+                z1 = numpy.cross(x1, y1)
+                rot = numpy.array([[numpy.dot(x1, x), numpy.dot(y1, x), numpy.dot(z1, x)],
+                                   [numpy.dot(x1, y), numpy.dot(y1, y), numpy.dot(z1, y)],
+                                   [numpy.dot(x1, z), numpy.dot(y1, z), numpy.dot(z1, z)]])
+                rotated = numpy.dot(rot, pixel_edges_2d.T).T
+                rotated.shape = pixel_edges_xyz.shape
+
+                pixels[mod * MODULE_SIZE[0]:(mod + 1) * MODULE_SIZE[0], cel * MODULE_SIZE[1]:(cel + 1) * MODULE_SIZE[1], 0, 0] = startz + rotated[:-1, :-1, 2]
+                pixels[mod * MODULE_SIZE[0]:(mod + 1) * MODULE_SIZE[0], cel * MODULE_SIZE[1]:(cel + 1) * MODULE_SIZE[1], 1, 0] = startz + rotated[:-1, 1: , 2]
+                pixels[mod * MODULE_SIZE[0]:(mod + 1) * MODULE_SIZE[0], cel * MODULE_SIZE[1]:(cel + 1) * MODULE_SIZE[1], 2, 0] = startz + rotated[1: , 1: , 2]
+                pixels[mod * MODULE_SIZE[0]:(mod + 1) * MODULE_SIZE[0], cel * MODULE_SIZE[1]:(cel + 1) * MODULE_SIZE[1], 3, 0] = startz + rotated[1: , :-1, 2]
+
+                pixels[mod * MODULE_SIZE[0]:(mod + 1) * MODULE_SIZE[0], cel * MODULE_SIZE[1]:(cel + 1) * MODULE_SIZE[1], 0, 1] = starty + rotated[:-1, :-1, 1]
+                pixels[mod * MODULE_SIZE[0]:(mod + 1) * MODULE_SIZE[0], cel * MODULE_SIZE[1]:(cel + 1) * MODULE_SIZE[1], 1, 1] = starty + rotated[:-1, 1: , 1]
+                pixels[mod * MODULE_SIZE[0]:(mod + 1) * MODULE_SIZE[0], cel * MODULE_SIZE[1]:(cel + 1) * MODULE_SIZE[1], 2, 1] = starty + rotated[1: , 1: , 1]
+                pixels[mod * MODULE_SIZE[0]:(mod + 1) * MODULE_SIZE[0], cel * MODULE_SIZE[1]:(cel + 1) * MODULE_SIZE[1], 3, 1] = starty + rotated[1: , :-1, 1]
+
+                pixels[mod * MODULE_SIZE[0]:(mod + 1) * MODULE_SIZE[0], cel * MODULE_SIZE[1]:(cel + 1) * MODULE_SIZE[1], 0, 2] = startx + rotated[:-1, :-1, 0]
+                pixels[mod * MODULE_SIZE[0]:(mod + 1) * MODULE_SIZE[0], cel * MODULE_SIZE[1]:(cel + 1) * MODULE_SIZE[1], 1, 2] = startx + rotated[:-1, 1: , 0]
+                pixels[mod * MODULE_SIZE[0]:(mod + 1) * MODULE_SIZE[0], cel * MODULE_SIZE[1]:(cel + 1) * MODULE_SIZE[1], 2, 2] = startx + rotated[1: , 1: , 0]
+                pixels[mod * MODULE_SIZE[0]:(mod + 1) * MODULE_SIZE[0], cel * MODULE_SIZE[1]:(cel + 1) * MODULE_SIZE[1], 3, 2] = startx + rotated[1: , :-1, 0]
+
+        self._pixel_corners = pixels
 
 class ImXPadS70(ImXPadS10):
     """
@@ -1427,7 +1534,6 @@ class Xpad_flat(ImXPadS10):
     Xpad detector: generic description for
     ImXPad detector with 8x7modules
     """
-    MODULE_SIZE = (120, 80)
     MODULE_GAP = (3.57e-3, 0)  # in meter
     force_pixel = True
     MAX_SHAPE = (960, 560)

@@ -24,7 +24,7 @@
 
 
 """
-Test suites for sparse matrix multiplication modules 
+Test suites for sparse matrix multiplication modules
 """
 
 
@@ -43,15 +43,23 @@ import fabio
 
 
 class TestSparseBBox(unittest.TestCase):
-    """Test Azimuthal integration based sparse matrix mutiplication methods
+    """Test Azimuthal integration based sparse matrix multiplication methods
     Bounding box pixel splitting
     """
-    N = 1000
-    unit = "2th_deg"
-    ai = pyFAI.load(UtilsTest.getimage("1893/Pilatus1M.poni"))
-    data = fabio.open(UtilsTest.getimage("1883/Pilatus1M.edf")).data
-    ref = ai.integrate1d(data, N, correctSolidAngle=False, unit=unit, method="splitBBox")[1]
-    cython = splitBBox.histoBBox1d(data, ai._ttha, ai._dttha, bins=N)
+
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.N = 1000
+        self.unit = "2th_deg"
+        self.ai = pyFAI.load(UtilsTest.getimage("1893/Pilatus1M.poni"))
+        self.data = fabio.open(UtilsTest.getimage("1883/Pilatus1M.edf")).data
+        self.ref = self.ai.integrate1d(self.data, self.N, correctSolidAngle=False, unit=self.unit, method="splitBBox")[1]
+        self.cython = splitBBox.histoBBox1d(self.data, self.ai._ttha, self.ai._dttha, bins=self.N)
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        self.N = self.unit = self.ai = None
+        self.data = self.ref = self.cython = None
 
     def test_LUT(self):
         obt = self.ai.integrate1d(self.data, self.N, correctSolidAngle=False, unit=self.unit, method="LUT")[1]

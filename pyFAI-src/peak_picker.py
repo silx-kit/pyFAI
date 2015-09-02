@@ -183,16 +183,21 @@ class PeakPicker(object):
         if sync:
             self._init_thread.join()
 
-    def peaks_from_area(self, mask, Imin, keep=1000, refine=True, method=None, ring=None):
+    def peaks_from_area(self, **kwargs):
         """
         Return the list of peaks within an area
 
         @param mask: 2d array with mask.
         @param Imin: minimum of intensity above the background to keep the point
         @param keep: maximum number of points to keep
-        @param method: enforce the use of detection using "massif" or "blob"
+        @param method: enforce the use of detection using "massif" or "blob" or "watershed"
+        @param ring: ring number to which assign the  points
+        @param dmin: minimum distance between two peaks (in pixels)
+        @param seed: good starting points.
         @return: list of peaks [y,x], [y,x], ...]
         """
+        method = kwargs.get("method")
+        ring = kwargs.get("ring", 0)
         if not method:
             method = self.method
         else:
@@ -200,7 +205,7 @@ class PeakPicker(object):
 
         obj = self.__getattribute__(method)
 
-        points = obj.peaks_from_area(mask, Imin=Imin, keep=keep, refine=refine)
+        points = obj.peaks_from_area(**kwargs)
         if points:
             gpt = self.points.append(points, ring)
             if self.fig:

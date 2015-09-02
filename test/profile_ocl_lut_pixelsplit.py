@@ -187,23 +187,3 @@ legend()
 show()
 input()
 
-
-# aaa = 0
-# bbb = 0
-# for i in range(bins):
-    # ind_tmp1 = numpy.copy(indices[idx_ptr[i]:idx_ptr[i+1]])
-    # ind_tmp2 = numpy.copy(foo.indices[idx_ptr[i]:idx_ptr[i+1]])
-    # data_tmp1 = numpy.copy(data_lut[idx_ptr[i]:idx_ptr[i+1]])
-    # data_tmp2 = numpy.copy(foo.data[idx_ptr[i]:idx_ptr[i+1]])
-    # sort1 = numpy.argsort(ind_tmp1)
-    # sort2 = numpy.argsort(ind_tmp2)
-    # data_1 = data_tmp1[sort1]
-    # data_2 = data_tmp2[sort2]
-    # for j in range(data_1.size):
-        # aaa += 1
-        # if not numpy.allclose(data_1[j],data_2[j]):
-            # bbb += 1
-            # print data_1[j],data_2[j],numpy.allclose(data_1[j],data_2[j]), idx_ptr[i]+j
-
-
-# print aaa,bbb

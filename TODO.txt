@@ -29,8 +29,7 @@ Done list
 
 Python3
 =======
-List of modifications that needs to be done for python3 compatibility:
-
+PyFAI is tested under Python 2.6, 3.7, 3.2, 3.3 and 3.4.
 
 Done:
 -----

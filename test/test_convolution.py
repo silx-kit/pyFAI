@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme Kieffer"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/12/2014"
+__date__ = "01/09/2015"
 
 import sys
 import unittest
@@ -51,6 +51,10 @@ class TestConvolution(unittest.TestCase):
         self.gauss = scipy.signal.gaussian(self.width, self.sigma)
         self.gauss /= self.gauss.sum()
         self.lena = scipy.misc.lena().astype("float32")
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        self.lena = self.gauss = self.sigma = self.width = None
 
     def test_gaussian(self):
         gauss = _convolution.gaussian(self.sigma)

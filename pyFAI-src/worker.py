@@ -28,7 +28,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/03/2015"
+__date__ = "22/06/2015"
 __status__ = "development"
 __doc__ = """
 
@@ -101,7 +101,9 @@ import json
 # from .io import h5py, HDF5Writer
 
 class Worker(object):
-    def __init__(self, azimuthalIntgrator=None, shapeIn=(2048, 2048), shapeOut=(360, 500), unit="r_mm"):
+    def __init__(self, azimuthalIntgrator=None,
+                 shapeIn=(2048, 2048), shapeOut=(360, 500),
+                 unit="r_mm", dummy=None, delta_dummy=None):
         """
         @param azimuthalIntgrator: pyFAI.AzimuthalIntegrator instance
         @param shapeIn: image size in input
@@ -130,8 +132,8 @@ class Worker(object):
         self.nbpt_azim, self.nbpt_rad = shapeOut
         self._unit = units.to_unit(unit)
         self.polarization = None
-        self.dummy = None
-        self.delta_dummy = None
+        self.dummy = dummy
+        self.delta_dummy = delta_dummy
         self.correct_solid_angle = True
         self.dark_current_image = None
         self.flat_field_image = None
@@ -208,7 +210,8 @@ class Worker(object):
                  # "filename": None,
                  "safe": True,
                  "data": data,
-                 "normalization_factor":monitor
+                 "normalization_factor":monitor,
+                 "correctSolidAngle": self.correct_solid_angle,
                  }
 
 

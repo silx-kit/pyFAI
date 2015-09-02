@@ -23,11 +23,13 @@
 #
 "test suite for masked arrays"
 
+from __future__ import print_function
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/03/2015"
+__date__ = "01/09/2015"
 
 
 import unittest
@@ -54,16 +56,19 @@ class TestMask(unittest.TestCase):
         self.dataFile = UtilsTest.getimage(self.__class__.dataFile)
         self.poniFile = UtilsTest.getimage(self.__class__.poniFile)
         self.ai = pyFAI.load(self.poniFile)
-#        self.ai.mask = None
         self.data = fabio.open(self.dataFile).data
         self.mask = self.data < 0
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        self.dataFile = self.data = self.ai = self.mask = self.poniFile = None
 
     def test_mask_hist(self):
         """
         The masked image has a masked ring around 1.5deg with value -10
         without mask the pixels should be at -10 ; with mask they are at 0
         """
-        meth="cython"
+        meth = "cython"
         x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
         x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
         x3 = self.ai.integrate1d(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
@@ -88,7 +93,7 @@ class TestMask(unittest.TestCase):
         The masked image has a masked ring around 1.5deg with value -10
         without mask the pixels should be at -10 ; with mask they are at 0
         """
-        meth="splitbbox"
+        meth = "splitbbox"
         x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
         x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
         x3 = self.ai.integrate1d(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
@@ -113,7 +118,7 @@ class TestMask(unittest.TestCase):
         The masked image has a masked ring around 1.5deg with value -10
         without mask the pixels should be at -10 ; with mask they are at 0
         """
-        meth="splitpixel"
+        meth = "splitpixel"
         x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
         x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
         x3 = self.ai.integrate1d(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
@@ -138,13 +143,10 @@ class TestMask(unittest.TestCase):
         The masked image has a masked ring around 1.5deg with value -10
         without mask the pixels should be at -10 ; with mask they are at 0
         """
-        meth="lut"
+        meth = "lut"
         x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         x3 = self.ai.integrate1d(self.data, 1000, mask=numpy.zeros(shape=self.mask.shape, dtype="uint8"), dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
@@ -165,13 +167,10 @@ class TestMask(unittest.TestCase):
         The masked image has a masked ring around 1.5deg with value -10
         without mask the pixels should be at -10 ; with mask they are at 0
         """
-        meth="csr"
+        meth = "csr"
         x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         x3 = self.ai.integrate1d(self.data, 1000, mask=numpy.zeros(shape=self.mask.shape, dtype="uint8"), dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
@@ -195,11 +194,8 @@ class TestMask(unittest.TestCase):
         """
         meth = "lut_ocl"
         x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         x3 = self.ai.integrate1d(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
@@ -212,7 +208,7 @@ class TestMask(unittest.TestCase):
             raw_input()
 
         self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
-        self.assertAlmostEqual(res2, 0, 1,msg="With mask the bad pixels are actually around 0 (got %.4f)" % res2)
+        self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually around 0 (got %.4f)" % res2)
         self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
 
     def test_mask_CSR_OCL(self):
@@ -222,11 +218,8 @@ class TestMask(unittest.TestCase):
         """
         meth = "CSR_ocl"
         x1 = self.ai.integrate1d(self.data, 1000, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         x2 = self.ai.integrate1d(self.data, 1000, mask=self.mask, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         x3 = self.ai.integrate1d(self.data, 1000, dummy=-20.0, delta_dummy=19.5, unit="2th_deg", method=meth)
-#        print self.ai._lut_integrator.lut_checksum
         res1 = numpy.interp(1.5, *x1)
         res2 = numpy.interp(1.5, *x2)
         res3 = numpy.interp(1.5, *x3)
@@ -239,7 +232,7 @@ class TestMask(unittest.TestCase):
             raw_input()
 
         self.assertAlmostEqual(res1, -10., 1, msg="Without mask the bad pixels are around -10 (got %.4f)" % res1)
-        self.assertAlmostEqual(res2, 0, 1,msg="With mask the bad pixels are actually around 0 (got %.4f)" % res2)
+        self.assertAlmostEqual(res2, 0, 1, msg="With mask the bad pixels are actually around 0 (got %.4f)" % res2)
         self.assertAlmostEqual(res3, -20., 4, msg="Without mask but dummy=-20 the dummy pixels are actually at -20 (got % .4f)" % res3)
 
 
@@ -251,7 +244,7 @@ class TestMaskBeamstop(unittest.TestCase):
 
     def setUp(self):
         """
-        Download files 
+        Download files
         Create a mask for tth<3.7 deg
         """
         self.dataFile = UtilsTest.getimage(self.__class__.dataFile)
@@ -328,7 +321,7 @@ def test_suite_all_Mask():
     testSuite.addTest(TestMask("test_mask_CSR"))
     testSuite.addTest(TestMask("test_mask_LUT_OCL"))
     testSuite.addTest(TestMask("test_mask_CSR_OCL"))
-    
+
     testSuite.addTest(TestMaskBeamstop("test_nomask"))
     testSuite.addTest(TestMaskBeamstop("test_mask_splitBBox"))
     testSuite.addTest(TestMaskBeamstop("test_mask_LUT"))

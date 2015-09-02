@@ -4,7 +4,7 @@ Preprocessing tool: pyFAI-average
 Purpose
 -------
 
-This tool can be used to average out a set of dark current images using
+This tool is used to average out a set of dark current images using
 mean or median filter (along the image stack). One can also reject outliers
 be specifying a cutoff (remove cosmic rays / zingers from dark)
 
@@ -17,17 +17,28 @@ Options:
 
 Usage: pyFAI-average [options] -o output.edf file1.edf file2.edf ...
 
-Options:
-  --version             show program's version number and exit
-  -h, --help            show help message and exit
-  -o OUTPUT, --output=OUTPUT
+positional arguments:
+  FILE                  Files to be processed
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -V, --version         show program's version number and exit
+  -o OUTPUT, --output OUTPUT
                         Output/ destination of average image
-  -m METHOD, --method=METHOD
+  -m METHOD, --method METHOD
                         Method used for averaging, can be 'mean'(default) or
-                        'median', 'min' or 'max'
-  -c CUTOFF, --cutoff=CUTOFF
+                        'min', 'max', 'median', 'sum', 'quantiles'
+  -c CUTOFF, --cutoff CUTOFF
                         Take the mean of the average +/- cutoff * std_dev.
-  -f FORMAT, --format=FORMAT
+  -F FORMAT, --format FORMAT
                         Output file/image format (by default EDF)
+  -d DARK, --dark DARK  Dark noise to be subtracted
+  -f FLAT, --flat FLAT  Flat field correction
   -v, --verbose         switch to verbose/debug mode
-                        
+  -q QUANTILES, --quantiles QUANTILES
+                        average out between two quantiles -q 0.20-0.90
+
+
+.. command-output:: pyFAI-average --help
+    :nostderr:
+

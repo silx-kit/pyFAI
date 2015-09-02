@@ -42,15 +42,29 @@ All files are unpacked into the directory pyFAI-0.10.3.
 ::
     cd pyFAI-0.10.3
 
-Build it & test it. For test pyFAI downloads test images (you may have to setup a proxy configuration like export http_proxy=http://proxy.site.org:3128):
+Build it & test it: 
 ::
     python setup.py build test
 
-and install pyFAI with
+For its tests, pyFAI downloads test images from the internet. 
+Depending on your network connection and your local network configuration, 
+you may have to setup a proxy configuration like this: 
+
+:: export http_proxy=http://proxy.site.org:3128
+   python setup.py build test
+
+This is especially true at ESRF, where you will have to phone the hotline 
+(24-24) to get this information or grab it from the intranet.
+
+Finally, install pyFAI computer-wise if you have local root access. 
+This command may request your password to gain root-access:
 ::
     sudo python setup.py install
 
-Most likely you will need to do this with root privileges, sudo requests a passwors to do-so
+If you prefer a local installation (only you will have access to the 
+installed version):
+::
+    python setup.py install --user
 
 
 The newest development version can be obtained by checking it out from the git repository.

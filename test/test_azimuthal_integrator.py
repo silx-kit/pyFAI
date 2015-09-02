@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/01/2015"
+__date__ = "01/09/2015"
 
 
 import unittest
@@ -66,30 +66,30 @@ class TestAzimPilatus(unittest.TestCase):
         self.ai.setFit2D(300, 1326, 1303)
 
     def test_separate(self):
-        maxi = self.data.max()
-        mini = self.data.min()
         bragg, amorphous = self.ai.separate(self.data)
         self.assert_(amorphous.max() < bragg.max(), "bragg is more intense than amorphous")
+        self.assert_(amorphous.std() < bragg.std(), "bragg is more variatic than amorphous")
 
 
 class TestAzimHalfFrelon(unittest.TestCase):
     """basic test"""
-    fit2dFile = '1460/fit2d.dat'
-    halfFrelon = "1464/LaB6_0020.edf"
-    splineFile = "1461/halfccd.spline"
-    poniFile = "1463/LaB6.poni"
-    ai = None
-    fit2d = None
-    tmpfiles = {"cython": os.path.join(tmp_dir, "cython.dat"),
-                "cythonSP": os.path.join(tmp_dir, "cythonSP.dat"),
-                "numpy": os.path.join(tmp_dir, "numpy.dat")}
 
     def setUp(self):
         """Download files"""
-        self.fit2dFile = UtilsTest.getimage(self.__class__.fit2dFile)
-        self.halfFrelon = UtilsTest.getimage(self.__class__.halfFrelon)
-        self.splineFile = UtilsTest.getimage(self.__class__.splineFile)
-        poniFile = UtilsTest.getimage(self.__class__.poniFile)
+
+        fit2dFile = '1460/fit2d.dat'
+        halfFrelon = "1464/LaB6_0020.edf"
+        splineFile = "1461/halfccd.spline"
+        poniFile = "1463/LaB6.poni"
+
+        self.tmpfiles = {"cython": os.path.join(tmp_dir, "cython.dat"),
+                         "cythonSP": os.path.join(tmp_dir, "cythonSP.dat"),
+                         "numpy": os.path.join(tmp_dir, "numpy.dat")}
+
+        self.fit2dFile = UtilsTest.getimage(fit2dFile)
+        self.halfFrelon = UtilsTest.getimage(halfFrelon)
+        self.splineFile = UtilsTest.getimage(splineFile)
+        poniFile = UtilsTest.getimage(poniFile)
 
         with open(poniFile) as f:
             data = []
@@ -117,6 +117,7 @@ class TestAzimHalfFrelon(unittest.TestCase):
         for fn in self.tmpfiles.values():
             if os.path.exists(fn):
                 os.unlink(fn)
+
 
     def test_numpy_vs_fit2d(self):
         """
@@ -231,6 +232,13 @@ class TestAzimHalfFrelon(unittest.TestCase):
 
         assert rwp < 3
 
+    def test_separate(self):
+        "test separate with a mask. issue #209 regression test"
+        msk = self.data < 100
+        bragg, amorphous = self.ai.separate(self.data, mask=msk)
+        self.assert_(amorphous.max() < bragg.max(), "bragg is more intense than amorphous")
+        self.assert_(amorphous.std() < bragg.std(), "bragg is more variatic than amorphous")
+
 
 class TestFlatimage(unittest.TestCase):
     """test the caking of a flat image"""
@@ -330,6 +338,7 @@ def test_suite_all_AzimuthalIntegration():
     testSuite.addTest(TestAzimHalfFrelon("test_numpy_vs_fit2d"))
     testSuite.addTest(TestAzimHalfFrelon("test_cythonSP_vs_fit2d"))
     testSuite.addTest(TestAzimHalfFrelon("test_cython_vs_numpy"))
+    testSuite.addTest(TestAzimHalfFrelon("test_separate"))
     testSuite.addTest(TestFlatimage("test_splitPixel"))
     testSuite.addTest(TestFlatimage("test_splitBBox"))
     testSuite.addTest(TestSetter("test_flat"))

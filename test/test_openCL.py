@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/04/2015"
+__date__ = "01/09/2015"
 
 
 import unittest
@@ -62,10 +62,13 @@ else:
 
 
 class TestMask(unittest.TestCase):
-    tmp_dir = tempfile.mkdtemp(prefix="pyFAI_test_OpenCL_")
-    N = 1000
 
     def setUp(self):
+        self.tmp_dir = os.path.join(UtilsTest.tempdir, "opencl")
+        if not os.path.isdir(self.tmp_dir):
+            os.makedirs(self.tmp_dir)
+
+        self.N = 1000
         self.datasets = [{"img": UtilsTest.getimage("1883/Pilatus1M.edf"),
                           "poni": UtilsTest.getimage("1893/Pilatus1M.poni"),
                           "spline": None},
@@ -79,8 +82,6 @@ class TestMask(unittest.TestCase):
                           "poni": UtilsTest.getimage("1897/Pilatus6M.poni"),
                           "spline": None},
             ]
-        if not os.path.isdir(self.tmp_dir):
-            os.makedirs(self.tmp_dir)
         for ds in self.datasets:
             if ds["spline"] is not None:
                 data = open(ds["poni"], "r").read()
@@ -98,6 +99,7 @@ class TestMask(unittest.TestCase):
 
     def tearDown(self):
         recursive_delete(self.tmp_dir)
+        self.tmp_dir = self.N = self.datasets = None
 
     def test_OpenCL(self):
         logger.info("Testing histogram-based algorithm (forward-integration)")

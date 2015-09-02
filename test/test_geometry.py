@@ -40,6 +40,7 @@ from pyFAI import geometry
 from pyFAI import AzimuthalIntegrator
 import fabio
 
+
 class TestSolidAngle(unittest.TestCase):
     """
     Test case for solid angle compared to Fit2D results
@@ -72,6 +73,10 @@ class TestSolidAngle(unittest.TestCase):
         self.data = fabio.open(self.pilatusFile).data
         self.data[self.data < 0] = 0  # discard negative pixels
 
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        self.fit2dFile = self.pilatusFile = self.tth_fit2d = self.I_fit2d = self.ai = self.data = None
+
     def testSolidAngle(self):
         """
         This dataset goes up to 56deg, very good to test the solid angle correction
@@ -93,13 +98,13 @@ class TestSolidAngle(unittest.TestCase):
         self.assert_(delta_I < 5, 'Error on (good) I are small: %s <5' % delta_I)
         self.assert_(I < 0.05, 'Error on (good) I are small: %s <0.05' % I)
 
+
 class TestBug88SolidAngle(unittest.TestCase):
     """
     Test case for solid angle where data got modified inplace.
     
     https://github.com/kif/pyFAI/issues/88
     """
-
 
     def testSolidAngle(self):
         img = numpy.ones((1000, 1000), dtype=numpy.float32)
@@ -109,6 +114,42 @@ class TestBug88SolidAngle(unittest.TestCase):
         self.assertAlmostEqual(f, 1, 5, "uncorrected flat data are unchanged")
         self.assertNotAlmostEqual(f, t, 1, "corrected and uncorrected flat data are different")
 
+
+class TestRecprocalSpacingSquarred(unittest.TestCase):
+    """
+    """
+    def setUp(self):
+        from pyFAI.detectors import Detector
+        self.shape = (50, 49)
+        size = (50, 60)
+        det = Detector(*size)
+        det.max_shape = self.shape
+        self.geo = geometry.Geometry(detector=det, wavelength=1e-10)
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        self.geo = None
+        self.size = None
+
+    def test_center(self):
+        rd2 = self.geo.rd2Array(self.shape)
+        q = self.geo.qArray(self.shape)
+        self.assert_(numpy.allclose(rd2, (q / (2 * numpy.pi)) ** 2), "center rd2 = (q/2pi)**2")
+
+    def test_corner(self):
+        rd2 = self.geo.cornerRd2Array(self.shape)[:, :, :, 0]
+        q = self.geo.cornerQArray(self.shape)[:, :, :, 0]
+        self.assert_(numpy.allclose(rd2, (q / (2 * numpy.pi)) ** 2), "corners rd2 = (q/2pi)**2")
+
+    def test_delta(self):
+
+        drd2a = self.geo.deltaRd2(self.shape)
+        rd2 = self.geo.rd2Array(self.shape)
+        rc = self.geo.cornerRd2Array(self.shape)[:, :, :, 0]
+        drd2 = self.geo.deltaRd2(self.shape)
+        self.assert_(numpy.allclose(drd2, drd2a, atol=1e-5), "delta rd2 = (q/2pi)**2, one formula with another")
+        delta2 = abs(rc - numpy.atleast_3d(rd2)).max(axis=-1)
+        self.assert_(numpy.allclose(drd2, delta2, atol=1e-5), "delta rd2 = (q/2pi)**2")
 
 
 class ParameterisedTestCase(unittest.TestCase):
@@ -132,6 +173,7 @@ class ParameterisedTestCase(unittest.TestCase):
         for name in testnames:
             suite.addTest(testcase_klass(name, param=param))
         return suite
+
 
 class TestGeometry(ParameterisedTestCase):
 
@@ -217,8 +259,6 @@ TESTCASES = [
  ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':1, 'rot2':5, 'rot3':.4}, False),
  ("rFunction", (d1, d2), ("cython", "numpy"), {'rot1':-1.2, 'rot2':1.6, 'rot3':1}, False),
  ("rFunction", (d1, d2), ("cython", "numpy"), {'dist':1e10, 'rot1':0, 'rot2':0, 'rot3':0}, False),
-
-
  ]
 
 
@@ -226,12 +266,15 @@ def test_suite_all_Geometry():
     testSuite = unittest.TestSuite()
     testSuite.addTest(TestSolidAngle("testSolidAngle"))
     testSuite.addTest(TestBug88SolidAngle("testSolidAngle"))
+    testSuite.addTest(TestRecprocalSpacingSquarred("test_center"))
+    testSuite.addTest(TestRecprocalSpacingSquarred("test_corner"))
+    testSuite.addTest(TestRecprocalSpacingSquarred("test_delta"))
+
     for param in TESTCASES:
         testSuite.addTest(ParameterisedTestCase.parameterise(
                 TestGeometry, param))
 
     return testSuite
-
 
 
 if __name__ == '__main__':
