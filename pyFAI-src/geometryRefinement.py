@@ -41,7 +41,7 @@ from math import pi
 from . import azimuthalIntegrator
 from .calibrant import Calibrant, ALL_CALIBRANTS
 AzimuthalIntegrator = azimuthalIntegrator.AzimuthalIntegrator
-from scipy.optimize import fmin, leastsq, fmin_slsqp, anneal
+from scipy.optimize import fmin, leastsq, fmin_slsqp, basinhopping as anneal
 try:
     from scipy.optimize import curve_fit
 except ImportError:
