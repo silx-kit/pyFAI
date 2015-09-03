@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme Kieffer"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/09/2015"
+__date__ = "03/09/2015"
 
 import sys
 import os
@@ -42,9 +42,10 @@ import numpy
 if __name__ == '__main__':
     import pkgutil
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
-from utilstest import getLogger, UtilsTest#, Rwp, getLogger
+from .utilstest import getLogger, UtilsTest  # , Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
+
 
 class TestBug170(unittest.TestCase):
     """
@@ -68,7 +69,7 @@ Wavelength: 7e-11
         self.ponifile = os.path.join(UtilsTest.tempdir, "bug170.poni")
         with open(self.ponifile, "w") as poni:
             poni.write(ponitxt)
-        self.data = numpy.random.random((2300,2300))
+        self.data = numpy.random.random((2300, 2300))
 
     def tearDown(self):
         if os.path.exists(self.ponifile):

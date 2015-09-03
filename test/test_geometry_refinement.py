@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/08/2015"
+__date__ = "03/09/2015"
 
 
 import unittest
@@ -38,15 +38,13 @@ import os
 import numpy
 import sys
 import random
+
 # Nota: UtilsTest is a static class with initialization at import.
 if __name__ == '__main__':
     import pkgutil
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
 
-try:
-    from .utilstest import UtilsTest, getLogger
-except (ValueError, SystemError, ImportError):
-    from utilstest import UtilsTest, getLogger
+from .utilstest import UtilsTest, getLogger
 
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]

@@ -29,17 +29,13 @@ Test suites for calibrants
 
 
 import unittest
-import numpy
 import sys
 
 if __name__ == '__main__':
     import pkgutil, os
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
+from .utilstest import getLogger UtilsTest
 
-try:
-    from .utilstest import UtilsTest, getLogger
-except (ValueError, SystemError):
-    from utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 

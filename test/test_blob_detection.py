@@ -37,7 +37,6 @@ import numpy
 if __name__ == '__main__':
     import pkgutil, os
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
-# from utilstest import getLogger  # UtilsTest, Rwp, getLogger
 from .utilstest import getLogger  # UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
