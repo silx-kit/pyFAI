@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/06/2015"
+__date__ = "03/09/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -1628,7 +1628,7 @@ the various peaks; making pyFAI-recalib able to run without graphical interface 
 without human intervention (--no-gui and --no-interactive options).
 
 
-Note that `pyFAI-recalib` program is obsolete as the same functionnality is
+Note that `pyFAI-recalib` program is obsolete as the same functionality is
 available from within pyFAI-calib, using the `recalib` command in the
 refinement process.
 Two option are available for recalib: the numbe of rings to extract (similar to the -r option of this program)
@@ -2175,7 +2175,7 @@ class CheckCalib(object):
 calibration and everything else like flat-field correction, distortion
 correction, at a sub-pixel level.
 
-Note that `check_calib` program is obsolete as the same functionnality is
+Note that `check_calib` program is obsolete as the same functionality is
 available from within pyFAI-calib, using the `validate` command in the
 refinement process.
         """

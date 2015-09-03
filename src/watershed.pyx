@@ -26,7 +26,7 @@ Inverse watershed for connecting region of high intensity
 """
 __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.kieffer@esrf.fr"
-__date__ = "08/07/2015"
+__date__ = "03/09/2015"
 __status__ = "stable"
 __license__ = "GPLv3+"
 
@@ -78,7 +78,7 @@ cdef class Region:
     @cython.wraparound(False)
     def init_values(self, float[:] flat):
         """
-        Initalize the values : maxi, mini and pass both height and so on
+        Initialize the values : maxi, mini and pass both height and so on
         @param flat: flat view on the data (intensity)
         @return: True if there is a problem and the region should be removed
         """
