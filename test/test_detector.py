@@ -28,7 +28,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/08/2015"
+__date__ = "01/09/2015"
 
 import sys
 import os
@@ -240,6 +240,8 @@ class TestDetector(unittest.TestCase):
         tests specific to non flat detectors to ensure consistency
         """
         a = detector_factory("Aarhus")
+        # to limit the memory footprint, devide size by 100
+        a.binning = (10, 10)
         t0 = time.time()
         n = a.get_pixel_corners(use_cython=False)
         t1 = time.time()
