@@ -5,8 +5,6 @@ Main development website: https://github.com/kif/pyFAI
 
 |Build Status| |Appveyor Status|
 
-----
-
 pyFAI is an azimuthal integration library that tries to be fast (as fast as C
 and even more using OpenCL and GPU).
 It is based on histogramming of the 2theta/Q positions of each (center of)
@@ -30,7 +28,7 @@ References:
 
 
 Installation
-============
+------------
 
 pyFAI can be downloaded from the http://forge.epn-campus.eu/projects/azimuthal/files.
 Presently the source code has been distributed as a zip package and a compressed
@@ -38,18 +36,23 @@ tarball. Download either one and unpack it.
 Developement is done on Github: https://github.com/pyFAI/pyFAI
 
 e.g.
-::
+
+..
     tar xvzf pyFAI-0.10.3.tar.gz
+
 or
-::
+
+..
     unzip pyFAI-0.10.3.zip
 
 All files are unpacked into the directory pyFAI-0.10.3.
-::
+
+..
     cd pyFAI-0.10.3
 
 Build it & test it:
-::
+
+..
     python setup.py build test
 
 For its tests, pyFAI downloads test images from the internet.
@@ -64,17 +67,20 @@ This is especially true at ESRF, where you will have to phone the hotline
 
 Finally, install pyFAI computer-wise if you have local root access.
 This command may request your password to gain root-access:
-::
+
+..
     sudo python setup.py install
 
 If you prefer a local installation (only you will have access to the
 installed version):
-::
+
+..
     python setup.py install --user
 
 
 The newest development version can be obtained by checking it out from the git repository.
-::
+
+..
     git clone https://github.com/pyFAI/pyFAI.git
     cd pyFAI
     sudo python setup.py install
@@ -88,23 +94,22 @@ installation files (Chose the one corresponding to your python version).
 For MacOSX users with MacOS version>10.7, the default compiler switched from gcc
 to clang and dropped the OpenMP support. Three options for you:
 
-* Use the new Xcode6 (with clang3.5) or Xcode4 (with gcc)
 * Install a version of gcc (>4.2) on MacOSX
-* use the "--no-openmp" option to setup.py if you are enforced to use Xcode4
+* use the "--no-openmp" option to setup.py (depends on Cython installed)
 
 Documentation
 -------------
 
 Documentation can be build using this command and Sphinx (installed on your computer):
 
-::
+..
     python setup.py build_doc
 
 
 Dependencies
-============
+------------
 
-Python 2.6 or 2.7. Compatibility with python 3 is unchecked.
+Python 2.6, 2.7, 3.2, 3.3 or 3.4.
 For full functionality of pyFAI the following modules need to be installed.
 
     * numpy 		- 	http://www.numpy.org
@@ -133,7 +138,8 @@ The extra ubuntu packages needed are:
     * python-qt4
 
 using apt-get these can be installed as:
-::
+
+..
     sudo apt-get install python-numpy python-scipy python-matplotlib  python-dev python-fabio python-pyopencl python-fftw python-qt4
 
 MacOSX
@@ -151,18 +157,20 @@ under windows, easy easily reached. The VisualStudio C++ compiler works as well.
 With 64 bits windows, the Visual Studio C++ compiler is the only one known to work correctly.
 
 Getting help
-============
+------------
 
 A mailing-list, pyfai@esrf.fr, is available to get help on the program and how to use it.
 One needs to subscribe by sending an email to sympa@esrf.fr with a subject "subscribe pyfai".
 
 
 Maintainer
-==========
+----------
+
  * Jérôme Kieffer (ESRF)
 
 Contributors
-============
+------------
+
  * Frédéric-Emmanuel Picca (Soleil)
  * Dimitris Karkoulis (ESRF)
  * Aurore Deschildre (ESRF)
@@ -176,6 +184,7 @@ Contributors
 
 Indirect contributors (ideas, ...):
 -----------------------------------
+
  * Peter Boesecke
  * Manuel Sánchez del Río
  * Vicente Armando Solé
