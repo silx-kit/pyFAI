@@ -37,29 +37,30 @@ Developement is done on Github: https://github.com/pyFAI/pyFAI
 
 e.g.
 
-..
+.. code:: shell
     tar xvzf pyFAI-0.10.3.tar.gz
 
 or
 
-..
+.. code:: shell
     unzip pyFAI-0.10.3.zip
 
 All files are unpacked into the directory pyFAI-0.10.3.
 
-..
+.. code:: shell
     cd pyFAI-0.10.3
 
 Build it & test it:
 
-..
+.. code:: shell
     python setup.py build test
 
 For its tests, pyFAI downloads test images from the internet.
 Depending on your network connection and your local network configuration,
 you may have to setup a proxy configuration like this:
 
-:: export http_proxy=http://proxy.site.org:3128
+.. code:: shell
+   export http_proxy=http://proxy.site.org:3128
    python setup.py build test
 
 This is especially true at ESRF, where you will have to phone the hotline
@@ -68,22 +69,22 @@ This is especially true at ESRF, where you will have to phone the hotline
 Finally, install pyFAI computer-wise if you have local root access.
 This command may request your password to gain root-access:
 
-..
-    sudo python setup.py install
+.. code:: shell
+    sudo pip install .
 
 If you prefer a local installation (only you will have access to the
 installed version):
 
-..
+.. code:: shell
     python setup.py install --user
-
 
 The newest development version can be obtained by checking it out from the git repository.
 
-..
+.. code:: shell
     git clone https://github.com/pyFAI/pyFAI.git
     cd pyFAI
-    sudo python setup.py install
+    python setup.py build bdist_wheel
+    sudo pip install .
 
 If you want pyFAI to make use of your graphic card, please install pyopencl from:
 http://mathema.tician.de/software/pyopencl
@@ -102,7 +103,7 @@ Documentation
 
 Documentation can be build using this command and Sphinx (installed on your computer):
 
-..
+.. code:: shell
     python setup.py build_doc
 
 
@@ -119,6 +120,10 @@ For full functionality of pyFAI the following modules need to be installed.
     * h5py			-   http://www.h5py.org/
     * pyopencl		-	http://mathema.tician.de/software/pyopencl/
     * python-qt4	-	http://www.riverbankcomputing.co.uk/software/pyqt/intro
+
+Those dependencies can simply be installed by::
+
+  pip install -r requirements.txt
 
 Ubuntu and Debian Like linux distributions:
 -------------------------------------------
@@ -139,8 +144,10 @@ The extra ubuntu packages needed are:
 
 using apt-get these can be installed as:
 
-..
+.. code:: shell
     sudo apt-get install python-numpy python-scipy python-matplotlib  python-dev python-fabio python-pyopencl python-fftw python-qt4
+
+
 
 MacOSX
 ------
@@ -155,6 +162,10 @@ Under 32 bits windows, pyFAI can be built using The MinGW compiler. Unfortunatel
 pyFAI will be limited to small images as the memory consumption, limited to 2GB
 under windows, easy easily reached. The VisualStudio C++ compiler works as well.
 With 64 bits windows, the Visual Studio C++ compiler is the only one known to work correctly.
+
+Dependencies for windows have been regrouped in our wheelhouse, just use::
+
+  pip install --trusted-host www.edna-site.org -r requirements_appveyor.txt
 
 Getting help
 ------------
