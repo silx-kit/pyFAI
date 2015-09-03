@@ -58,7 +58,7 @@ Run dependencies
 * SciPy
 * Matplotlib
 * FabIO
-* h5py (optional)
+* h5py
 * pyopencl (optional)
 * fftw (optional)
 * pymca (optional)
@@ -73,7 +73,7 @@ dropped the support for OpenMP (clang v3.5 supports OpenMP under linux but not d
 Multiple solution exist, pick any of those:
 
 * Install a recent version of GCC (>=4.2)
-* Use Xcode without OpenMP, using the --no-openmp flag for setup.py.
+* Use Xcode without OpenMP, using the --no-openmp flag for setup.py. You will need Cython installed
 
 C files are generated from cython source and distributed. Cython is only needed for developing new binary modules.
 If you want to generate your own C files, make sure your local Cython version supports memory-views (available from Cython v0.17 and newer),
@@ -85,6 +85,7 @@ Building procedure
 As most of the python projects:
 ...............................
 
+::
     python setup.py build install
 
 There are few specific options to setup.py:
@@ -108,7 +109,7 @@ Setting the environment variable http_proxy can be necessary (depending on your 
 
    export http_proxy=http://proxy.site.org:3128
 
-Especially at ESRF, the configuration of the network proxy can be obtained by phoning on the hotline: 24-24. 
+Especially at ESRF, the configuration of the network proxy can be obtained by phoning on the hotline: 24-24.
 
 PyFAI comes with 30 test-suites (172 tests in total) representing a coverage of 67%.
 This ensures both non regression over time and ease the distribution under different platforms:
@@ -173,12 +174,40 @@ Test may not pass on computer featuring less than 2GB of memory or 32 bit comput
    "test_utils","97","6","94%"
    "test_watershed","40","6","85%"
    "TOTAL","11585", "3857", "67%"
+
 Note that the test coverage tool does not count lines of Cython, nor those of OpenCL
 Updated 27/05/2014
 
+Continuous integration
+----------------------
 Continuous integration is made by a home-made scripts which checks out the latest release and builds and runs the test every night.
 Nightly builds are available for debian6-64 bits in:
-http://www.edna-site.org/pub/debian/binary/
+
+..
+    http://www.edna-site.org/pub/debian/binary/
+
+In addition some "cloud-based" tools are used to ensure a larger coverage of operating systems/environment.
+They rely on a "wheelhouse" located on:
+
+..
+    http://www.edna-site.org/pub/debian/wheelhouse/
+ 
+Those wheels are optimized for Travis-CI, AppVeyor and ReadTheDocs, using them is not recommended as your Python configuration may differ
+(and those libraries couls crash your system)
+
+Travis-CI
+.........
+
+Continuous integration on Linux, 64 bits computer with Python 2.6, 2.7, 3.2, 3.3 and 3.4.
+.. 
+    https://travis-ci.org/kif/pyFAI/
+
+AppVeyor
+........
+Continuous integration on Windows, 64 bits computer with Python 2.7 and 3.4.
+.. 
+    https://ci.appveyor.com/project/kif/pyFAI
+
 
 List of contributors in code
 ----------------------------
