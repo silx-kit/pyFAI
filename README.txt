@@ -1,6 +1,12 @@
 pyFAI: Fast Azimuthal Integration in Python
 ===========================================
 
+Main development website: https://github.com/kif/pyFAI
+
+|Build Status| |Appveyor Status|
+
+----
+
 pyFAI is an azimuthal integration library that tries to be fast (as fast as C
 and even more using OpenCL and GPU).
 It is based on histogramming of the 2theta/Q positions of each (center of)
@@ -42,26 +48,26 @@ All files are unpacked into the directory pyFAI-0.10.3.
 ::
     cd pyFAI-0.10.3
 
-Build it & test it: 
+Build it & test it:
 ::
     python setup.py build test
 
-For its tests, pyFAI downloads test images from the internet. 
-Depending on your network connection and your local network configuration, 
-you may have to setup a proxy configuration like this: 
+For its tests, pyFAI downloads test images from the internet.
+Depending on your network connection and your local network configuration,
+you may have to setup a proxy configuration like this:
 
 :: export http_proxy=http://proxy.site.org:3128
    python setup.py build test
 
-This is especially true at ESRF, where you will have to phone the hotline 
+This is especially true at ESRF, where you will have to phone the hotline
 (24-24) to get this information or grab it from the intranet.
 
-Finally, install pyFAI computer-wise if you have local root access. 
+Finally, install pyFAI computer-wise if you have local root access.
 This command may request your password to gain root-access:
 ::
     sudo python setup.py install
 
-If you prefer a local installation (only you will have access to the 
+If you prefer a local installation (only you will have access to the
 installed version):
 ::
     python setup.py install --user
@@ -175,3 +181,8 @@ Indirect contributors (ideas, ...):
  * Vicente Armando Solé
  * Brian Pauw
  * Veijo Honkimaki
+
+.. |Build Status| image:: https://travis-ci.org/kif/pyFAI.svg?branch=master
+   :target: https://travis-ci.org/kif/pyFAI
+.. |Appveyor Status| image:: https://ci.appveyor.com/api/projects/status/if0fdfftdh4iigpo?svg=true
+   :target: https://ci.appveyor.com/project/kif/pyfai
