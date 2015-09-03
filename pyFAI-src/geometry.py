@@ -914,7 +914,7 @@ class Geometry(object):
             cosa = self._dist / numpy.sqrt(self._dist * self._dist + p1 * p1 + p2 * p2)
         return cosa
 
-    def diffSolidAngle(self, d1, d2=None):
+    def diffSolidAngle(self, d1, d2):
         """
         Calculate the solid angle of the current pixels (P) versus the PONI (C)
 
@@ -928,16 +928,11 @@ class Geometry(object):
         @param d2: 1d or 2d set of points (same size&shape as d1)
         @return: solid angle correction array
         """
-
-        if d2 == None:
-            print(len(d1))
-            print(d1)
-
         ds = 1.0
 
         # #######################################################
         # Nota: the solid angle correction should be done in flat
-        # field correction Here is dual-correction
+        # field correction. Here is dual-correction
         # #######################################################
 
         if self.spline and self._correct_solid_angle_for_spline:
