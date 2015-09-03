@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/08/2015"
+__date__ = "03/09/2015"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -914,7 +914,7 @@ class Geometry(object):
             cosa = self._dist / numpy.sqrt(self._dist * self._dist + p1 * p1 + p2 * p2)
         return cosa
 
-    def diffSolidAngle(self, d1, d2):
+    def diffSolidAngle(self, d1, d2=None):
         """
         Calculate the solid angle of the current pixels (P) versus the PONI (C)
 
@@ -928,6 +928,11 @@ class Geometry(object):
         @param d2: 1d or 2d set of points (same size&shape as d1)
         @return: solid angle correction array
         """
+
+        if d2 == None:
+            print(len(d1))
+            print(d1)
+
         ds = 1.0
 
         # #######################################################
