@@ -37,29 +37,25 @@ Developement is done on Github: https://github.com/pyFAI/pyFAI
 
 e.g.
 
-.. code:: shell
-    tar xvzf pyFAI-0.10.3.tar.gz
+::
+    tar xvzf pyFAI-0.11.0.tar.gz
 
 or
 
-.. code:: shell
-    unzip pyFAI-0.10.3.zip
+::
+    unzip pyFAI-0.11.0.zip
 
-All files are unpacked into the directory pyFAI-0.10.3.
+All files are unpacked into the directory pyFAI-0.11.0::
 
-.. code:: shell
     cd pyFAI-0.10.3
 
-Build it & test it:
+Build it & test it::
 
-.. code:: shell
     python setup.py build test
 
 For its tests, pyFAI downloads test images from the internet.
 Depending on your network connection and your local network configuration,
-you may have to setup a proxy configuration like this:
-
-.. code:: shell
+you may have to setup a proxy configuration like this::
    export http_proxy=http://proxy.site.org:3128
    python setup.py build test
 
@@ -67,20 +63,17 @@ This is especially true at ESRF, where you will have to phone the hotline
 (24-24) to get this information or grab it from the intranet.
 
 Finally, install pyFAI computer-wise if you have local root access.
-This command may request your password to gain root-access:
+This command may request your password to gain root-access::
 
-.. code:: shell
-    sudo pip install .
+    sudo pip install . --upgrade
 
 If you prefer a local installation (only you will have access to the
-installed version):
+installed version)::
 
-.. code:: shell
     python setup.py install --user
 
-The newest development version can be obtained by checking it out from the git repository.
+The newest development version can be obtained by checking it out from the git repository.::
 
-.. code:: shell
     git clone https://github.com/pyFAI/pyFAI.git
     cd pyFAI
     python setup.py build bdist_wheel
@@ -101,9 +94,8 @@ to clang and dropped the OpenMP support. Three options for you:
 Documentation
 -------------
 
-Documentation can be build using this command and Sphinx (installed on your computer):
+Documentation can be build using this command and Sphinx (installed on your computer)::
 
-.. code:: shell
     python setup.py build_doc
 
 
@@ -142,9 +134,8 @@ The extra ubuntu packages needed are:
     * python-fftw
     * python-qt4
 
-using apt-get these can be installed as:
+using apt-get these can be installed as::
 
-.. code:: shell
     sudo apt-get install python-numpy python-scipy python-matplotlib  python-dev python-fabio python-pyopencl python-fftw python-qt4
 
 
