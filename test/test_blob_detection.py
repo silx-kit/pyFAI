@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme Kieffer"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/08/2015"
+__date__ = "03/09/2015"
 
 import sys
 import unittest
@@ -37,7 +37,8 @@ import numpy
 if __name__ == '__main__':
     import pkgutil, os
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
-from utilstest import getLogger  # UtilsTest, Rwp, getLogger
+# from utilstest import getLogger  # UtilsTest, Rwp, getLogger
+from .utilstest import getLogger  # UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI.detectors import detector_factory
@@ -45,7 +46,6 @@ from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
 from pyFAI.blob_detection import BlobDetection, local_max
 from pyFAI import _blob
 
-from pyFAI import _blob
 
 def image_test_rings():
     rings = 10
@@ -64,6 +64,7 @@ def image_test_rings():
         img += numpy.exp(-(r - radius) ** 2 / (2 * (sigma * sigma)))
     return img * modulation
 
+
 class TestBlobDetection(unittest.TestCase):
     img = None
 
@@ -79,9 +80,10 @@ class TestBlobDetection(unittest.TestCase):
         bd = BlobDetection(self.img)
         bd._one_octave(shrink=False, refine=False, n_5=False)
         self.assert_(numpy.alltrue(_blob.local_max(bd.dogs, bd.cur_mask, False) == \
-                                         local_max(bd.dogs, bd.cur_mask, False)), "max test, 3x3x3")
+                                   local_max(bd.dogs, bd.cur_mask, False)), "max test, 3x3x3")
         self.assert_(numpy.alltrue(_blob.local_max(bd.dogs, bd.cur_mask, True) == \
-                                         local_max(bd.dogs, bd.cur_mask, True)), "max test, 3x5x5")
+                                   local_max(bd.dogs, bd.cur_mask, True)), "max test, 3x5x5")
+
 
 def test_suite_all_blob_detection():
     testSuite = unittest.TestSuite()
