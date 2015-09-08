@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/03/2015"
+__date__ = "08/09/2015"
 __status__ = "development"
 
 import logging, threading
@@ -131,7 +131,7 @@ class Distortion(object):
                 if self.delta1 is None:
                     pos_corners = numpy.empty((self.shape[0] + 1, self.shape[1] + 1, 2), dtype=numpy.float64)
                     d1 = numpy.outer(numpy.arange(self.shape[0] + 1, dtype=numpy.float64), numpy.ones(self.shape[1] + 1, dtype=numpy.float64)) - 0.5
-                    d2 = numpy.outer(numpy.ones(self.shape[0] + 1, dtype=numpy.float64), numpy.arange(self.shape[1] + 1, dtype=numpy.float64)) - 0.5                    
+                    d2 = numpy.outer(numpy.ones(self.shape[0] + 1, dtype=numpy.float64), numpy.arange(self.shape[1] + 1, dtype=numpy.float64)) - 0.5
                     pos_corners[:, :, 0], pos_corners[:, :, 1] = self.detector.calc_cartesian_positions(d1, d2)[:2]
                     pos_corners[:, :, 0] /= self.detector.pixel1
                     pos_corners[:, :, 1] /= self.detector.pixel2
@@ -162,8 +162,9 @@ class Distortion(object):
             with self._sem:
                 if self.max_size is None:
                     if _distortion:
-                        self.bin_size = _distortion.calc_size(self.pos, self.shape)
+                        self.bin_size = _distortion.calc_size(self.pos, self.shape, self.detector.mask)
                     else:
+                        mask = self.detector.mask
                         pos0min = numpy.floor(pos[:, :, :, 0].min(axis=-1)).astype(numpy.int32).clip(0, self.shape[0])
                         pos1min = numpy.floor(pos[:, :, :, 1].min(axis=-1)).astype(numpy.int32).clip(0, self.shape[1])
                         pos0max = (numpy.ceil(pos[:, :, :, 0].max(axis=-1)).astype(numpy.int32) + 1).clip(0, self.shape[0])
@@ -173,14 +174,16 @@ class Distortion(object):
                         max1 = 0
                         for i in range(self.shape[0]):
                             for j in range(self.shape[1]):
+                                if (mask is not None) and mask[i, j]:
+                                    continue
                                 if (pos0max[i, j] - pos0min[i, j]) > max0:
                                     old = max0
                                     max0 = pos0max[i, j] - pos0min[i, j]
-                                    print(old, "new max0", max0, i, j)
+                                    logger.debug(old, "new max0", max0, i, j)
                                 if (pos1max[i, j] - pos1min[i, j]) > max1:
                                     old = max1
                                     max1 = pos1max[i, j] - pos1min[i, j]
-                                    print(old, "new max1", max1, i, j)
+                                    logger.debug(old, "new max1", max1, i, j)
 
                                 self.bin_size[pos0min[i, j]:pos0max[i, j], pos1min[i, j]:pos1max[i, j]] += 1
                     self.max_size = self.bin_size.max()
@@ -216,6 +219,7 @@ class Distortion(object):
         if self.lut is None:
             with self._sem:
                 if self.lut is None:
+                    mask = self.detector.mask
                     if _distortion:
                         if self.method == "lut":
                             self.lut = _distortion.calc_LUT(self.pos, self.shape, self.bin_size, max_pixel_size=(self.delta0, self.delta1))
@@ -231,6 +235,8 @@ class Distortion(object):
                         quad = Quad(buffer)
                         for i in range(self.shape[0]):
                             for j in range(self.shape[1]):
+                                if (mask is not None) and mask[i, j]:
+                                    continue
                                 # i,j, idx are indexes of the raw image uncorrected
                                 quad.reinit(*list(self.pos[i, j, :, :].ravel()))
                                 # print(self.pos[i, j, 0, :], self.pos[i, j, 1, :], self.pos[i, j, 2, :], self.pos[i, j, 3, :]
@@ -264,12 +270,16 @@ class Distortion(object):
                         lut.shape = (self.shape[0] * self.shape[1]), self.max_size
                         self.lut = lut
 
-    def correct(self, image):
+    def correct(self, image, dummy=None, delta_dummy=None):
         """
         Correct an image based on the look-up table calculated ...
 
         @param image: 2D-array with the image
+        @param dummy: value suggested for bad pixels
+        @param delta_dummy: precision of the dummy value
         @return: corrected 2D image
+        
+        #TODO: #225
         """
         if self.device:
             if self.integrator is None:

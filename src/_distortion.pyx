@@ -24,8 +24,8 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3+"
-__date__ = "08/05/2015"
-__copyright__ = "2011-2014, ESRF"
+__date__ = "08/09/2015"
+__copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
 import cython
@@ -790,7 +790,7 @@ class Distortion(object):
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def calc_size(float[:, :, :, :] pos not None, shape):
+def calc_size(float[:, :, :, :] pos not None, shape, numpy.int8_t[:, :] mask=None):
     """
     Calculate the number of items per output pixel
 
@@ -802,10 +802,18 @@ def calc_size(float[:, :, :, :] pos not None, shape):
         int i, j, k, l, shape0, shape1, min0, min1, max0, max1
         numpy.ndarray[numpy.int32_t, ndim = 2] lut_size = numpy.zeros(shape, dtype=numpy.int32)
         float A0, A1, B0, B1, C0, C1, D0, D1
+        bint do_mask = mask is None
     shape0, shape1 = shape
+    
+    if do_mask:
+        assert mask.shape[0] == shape0
+        assert mask.shape[1] == shape1
+        
     with nogil:
         for i in range(shape0):
             for j in range(shape1):
+                if do_mask and mask[i, j]:
+                    continue
                 A0 = pos[i, j, 0, 0]
                 A1 = pos[i, j, 0, 1]
                 B0 = pos[i, j, 1, 0]
@@ -827,20 +835,28 @@ def calc_size(float[:, :, :, :] pos not None, shape):
 @cython.wraparound(False)
 @cython.boundscheck(False)
 @cython.cdivision(True)
-def calc_LUT(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size):
+def calc_LUT(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size, 
+             numpy.int8_t[:, :] mask=None):
     """
     @param pos: 4D position array
     @param shape: output shape
     @param bin_size: number of input element per output element (numpy array)
     @param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel
-    @return: look-up table"""
-    cdef int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1
-    cdef int offset0, offset1, box_size0, box_size1, size, k
-    cdef numpy.int32_t idx = 0
-    cdef float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area, value
-    cdef lut_point[:, :, :] lut
+    @param mask: arry with bad pixels marked as True
+    @return: look-up table
+    """
+    cdef: 
+        int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1
+        int offset0, offset1, box_size0, box_size1, size, k
+        numpy.int32_t idx = 0
+        float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area, value
+        lut_point[:, :, :] lut
+        bint do_mask = mask is not None
     size = bin_size.max()
     shape0, shape1 = shape
+    if do_mask:
+        assert shape0 == mask.shape[0]
+        assert shape1 == mask.shape[1]
     delta0, delta1 = max_pixel_size
     cdef int[:, :] outMax = view.array(shape=(shape0, shape1), itemsize=sizeof(int), format="i")
     outMax[:, :] =0
@@ -855,6 +871,8 @@ def calc_LUT(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size):
         # i,j, idx are indexes of the raw image uncorrected
         for i in range(shape0):
             for j in range(shape1):
+                if do_mask and mask[i, j]:
+                    continue
                 # reinit of buffer
                 buffer[:, :] = 0
                 A0 = pos[i, j, 0, 0]
@@ -931,7 +949,8 @@ def calc_LUT(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size):
 @cython.wraparound(False)
 @cython.boundscheck(False)
 @cython.cdivision(True)
-def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size):
+def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size, 
+             numpy.int8_t[:, :] mask=None):
     """
     @param pos: 4D position array
     @param shape: output shape
@@ -949,6 +968,11 @@ def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size):
         numpy.ndarray[numpy.float32_t, ndim = 1] data
         int[:, :] outMax = view.array(shape=(shape0, shape1), itemsize=sizeof(int), format="i")
         float[:, :] buffer
+        bint do_mask = mask is not None
+    if do_mask:
+        assert shape0 == mask.shape[0]
+        assert shape1 == mask.shape[1]
+
     outMax[:, :] = 0
     indptr = numpy.empty(bins + 1, dtype=numpy.int32)
     indptr[0] = 0
@@ -972,6 +996,8 @@ def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size):
         # i,j, idx are indices of the raw image uncorrected
         for i in range(shape0):
             for j in range(shape1):
+                if do_mask and mask[i, j]:
+                    continue
                 # reinit of buffer
                 buffer[:, :] = 0
                 A0 = pos[i, j, 0, 0]
@@ -1042,18 +1068,26 @@ def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size):
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def correct_LUT(image, shape, lut_point[:, :] LUT not None):
+def correct_LUT(image, shape, lut_point[:, :] LUT not None, dummy=None, delta_dummy=None):
     """
     Correct an image based on the look-up table calculated ...
 
     @param image: 2D-array with the image
     @param shape: shape of output image
     @param LUT: Look up table, here a 2D-array of struct
+    @param dummy: value for invalid pixels
+    @param delta_dummy: precision for invalid pixels
     @return: corrected 2D image
     """
-    cdef int i, j, lshape0, lshape1, idx, size, shape0, shape1
-    cdef float coef, sum, error, t ,y
-    cdef float[:] lout, lin
+    cdef:
+        int i, j, lshape0, lshape1, idx, size, shape0, shape1
+        float coef, sum, error, t, y, value, cdummy, cdelta_dummy
+        float[:] lout, lin
+        bint do_dummy = dummy is not None
+    if do_dummy:
+        cdummy = dummy  
+        if delta_dummy is None:
+            cdelta_dummy = 0.0
     shape0, shape1 = shape
     lshape0 = LUT.shape[0]
     lshape1 = LUT.shape[1]
@@ -1069,8 +1103,8 @@ def correct_LUT(image, shape, lut_point[:, :] LUT not None):
     lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
     size = lin.size
     for i in prange(lshape0, nogil=True, schedule="static"):
-        sum = 0.0    # Implement kahan summation
-        error = 0.0
+        sum = 0.0    
+        error = 0.0  # Implement Kahan summation
         for j in range(lshape1):
             idx = LUT[i, j].idx
             coef = LUT[i, j].coef
@@ -1078,31 +1112,46 @@ def correct_LUT(image, shape, lut_point[:, :] LUT not None):
                 continue
             if idx >= size:
                 with gil:
-                    logger.warning("Accessing %i >= %i !!!" % (idx,size))
+                    logger.warning("Accessing %i >= %i !!!" % (idx, size))
                     continue
-            y = lin[idx] * coef - error
+            value = lin[idx]
+            if do_dummy and fabs(value - cdummy) <= cdelta_dummy:
+                continue
+            y = value * coef - error
             t = sum + y
             error = (t - sum) - y
             sum = t
+        if do_dummy and (sum == 0.0):
+            sum = cdummy
         lout[i] += sum  # this += is for Cython's reduction
     return out[:img_shape[0], :img_shape[1]]
 
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def correct_CSR(image, shape, LUT):
+def correct_CSR(image, shape, LUT, dummy=None, delta_dummy=None):
     """
     Correct an image based on the look-up table calculated ...
 
     @param image: 2D-array with the image
     @param shape: shape of output image
     @param LUT: Look up table, here a 3-tuple array of ndarray
+    @param dummy: value for invalid pixels
+    @param delta_dummy: precision for invalid pixels
     @return: corrected 2D image
     """
-    cdef int i, j, idx, size, bins
-    cdef float coef, tmp, error, sum, y, t
-    cdef float[:] lout, lin, data
-    cdef numpy.int32_t[:] indices, indptr
+    cdef:
+        int i, j, idx, size, bins
+        float coef, tmp, error, sum, y, t, value, cdummy, cdelta_dummy
+        float[:] lout, lin, data
+        numpy.int32_t[:] indices, indptr
+        bint do_dummy = dummy is not None
+
+    if do_dummy:
+        cdummy = dummy 
+        if delta_dummy is None:
+            cdelta_dummy = 0.0
+
     data, indices, indptr = LUT
     shape0, shape1 = shape
     bins = indptr.size - 1
@@ -1130,10 +1179,15 @@ def correct_CSR(image, shape, LUT):
                 with gil:
                     logger.warning("Accessing %i >= %i !!!" % (idx, size))
                     continue
-            y = lin[idx] * coef - error
+            value = lin[idx] 
+            if do_dummy and fabs(value - cdummy) <= cdelta_dummy:
+                continue
+            y = value * coef - error
             t = sum + y
             error = (t - sum) - y
             sum = t
+        if do_dummy and (sum == 0.0):
+            sum = cdummy
         lout[i] += sum  # this += is for Cython's reduction
     return out[:img_shape[0], :img_shape[1]]
 
