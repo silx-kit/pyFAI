@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/06/2015"
+__date__ = "21/09/2015"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -125,6 +125,14 @@ if ocl:
         logger.error("Unable to import pyFAI.ocl_azim_lut for"
                      ": %s" % error)
         ocl_azim_lut = None
+    try:
+        from . import ocl_sort
+    except ImportError as error:  # IGNORE:W0703
+        logger.error("Unable to import pyFAI.ocl_sort for"
+                     ": %s" % error)
+        ocl_sort = None
+
+
 else:
     ocl_azim = ocl_azim_csr = ocl_azim_lut = None
 
@@ -192,6 +200,7 @@ class AzimuthalIntegrator(Geometry):
         self._ocl_csr_integr = None
         self._lut_integrator = None
         self._csr_integrator = None
+        self._ocl_sorter = None
         self._ocl_sem = threading.Semaphore()
         self._lut_sem = threading.Semaphore()
         self._csr_sem = threading.Semaphore()
@@ -3389,7 +3398,8 @@ class AzimuthalIntegrator(Geometry):
         except IOError:
             logger.error("IOError while writing %s" % filename)
 
-    def separate(self, data, npt_rad=1024, npt_azim=512, unit="2th_deg", percentile=50, mask=None, restore_mask=True):
+    def separate(self, data, npt_rad=1024, npt_azim=512, unit="2th_deg", method="splitpixel",
+                 percentile=50, mask=None, restore_mask=True):
         """
         Separate bragg signal from powder/amorphous signal using azimuthal integration,
         median filering and projected back before subtraction.
@@ -3398,6 +3408,7 @@ class AzimuthalIntegrator(Geometry):
         @param npt_rad: number of radial points
         @param npt_azim: number of azimuthal points
         @param unit: unit to be used for integration
+        @param method: pathway for integration and sort 
         @param percentile: which percentile use for cutting out
         @param mask: masked out pixels array
         @param restore_mask: masked pixels have the same value as input data provided
@@ -3405,27 +3416,41 @@ class AzimuthalIntegrator(Geometry):
         """
         if mask is None:
             mask = self.mask
-        dummy = numpy.int(data.min() - 1234)
+        dummy = data.min() - 1234.5678
+        if "ocl" in method:
+            self._ocl_sem.acquire()
         integ2d, radial, azimuthal = self.integrate2d(data, npt_rad, npt_azim, mask=mask,
-                                                      unit=unit, method="splitpixel",
+                                                      unit=unit, method=method,
                                                       dummy=dummy, correctSolidAngle=True)
-        dummies = (integ2d == dummy).sum(axis=0)
-        # add a line of zeros at the end (along npt_azim) so that the value for no valid pixel is 0
-        sorted = numpy.zeros((npt_azim + 1, npt_rad))
-        sorted[:npt_azim, :] = numpy.sort(integ2d, axis=0)
-        pos = (dummies + (percentile / 100.) * (npt_azim - dummies)).astype(int)  # .clip(0, npt_azim - 1)
-        assert (pos >= 0).all()
-        assert (pos <= npt_azim).all()
+        if "ocl" in method:
+            if self._ocl_sorter:
+                if self.ocl_sorter.npt_rad != npt_rad or self.ocl_sorter.npt_azim != npt_azim:
+                    self._ocl_sorter = None
+            if not self._ocl_sorter:
+                self._ocl_sorter = ocl_sort.Separator(self._ocl_integrator.ctx)
 
-        spectrum = sorted[(pos, numpy.arange(npt_rad))]
-        amorphous = self.calcfrom1d(radial, spectrum, data.shape, mask=None,
-                   dim1_unit=unit, correctSolidAngle=True)
-        bragg = data - amorphous
-        if restore_mask:
-            wmask = numpy.where(mask)
-            maskdata = data[wmask]
-            bragg[wmask] = maskdata
-            amorphous[wmask] = maskdata
+#             bragg =
+#             amorphous =
+
+            self._ocl_sem.release()
+        else:
+            dummies = (integ2d == dummy).sum(axis=0)
+            # add a line of zeros at the end (along npt_azim) so that the value for no valid pixel is 0
+            sorted = numpy.zeros((npt_azim + 1, npt_rad))
+            sorted[:npt_azim, :] = numpy.sort(integ2d, axis=0)
+            pos = (dummies + (percentile / 100.) * (npt_azim - dummies)).astype(int)  # .clip(0, npt_azim - 1)
+            assert (pos >= 0).all()
+            assert (pos <= npt_azim).all()
+
+            spectrum = sorted[(pos, numpy.arange(npt_rad))]
+            amorphous = self.calcfrom1d(radial, spectrum, data.shape, mask=None,
+                       dim1_unit=unit, correctSolidAngle=True)
+            bragg = data - amorphous
+            if restore_mask:
+                wmask = numpy.where(mask)
+                maskdata = data[wmask]
+                bragg[wmask] = maskdata
+                amorphous[wmask] = maskdata
         return bragg, amorphous
 
 ################################################################################

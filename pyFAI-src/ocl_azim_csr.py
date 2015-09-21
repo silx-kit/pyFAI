@@ -25,7 +25,7 @@
 
 __authors__ = ["Jérôme Kieffer", "Giannis Ashiotis"]
 __license__ = "GPLv3"
-__date__ = "14/03/2015"
+__date__ = "21/09/2015"
 __copyright__ = "2014, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -104,11 +104,11 @@ class OCL_CSR_Integrator(object):
         self.wdim_bins = (self.bins * self.BLOCK_SIZE),
         self.wdim_data = (self.size + self.BLOCK_SIZE - 1) & ~(self.BLOCK_SIZE - 1),
         try:
-            self._ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
+            self.ctx = pyopencl.Context(devices=[pyopencl.get_platforms()[platformid].get_devices()[deviceid]])
             if self.profile:
-                self._queue = pyopencl.CommandQueue(self._ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
+                self._queue = pyopencl.CommandQueue(self.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
             else:
-                self._queue = pyopencl.CommandQueue(self._ctx)
+                self._queue = pyopencl.CommandQueue(self.ctx)
             self._allocate_buffers()
             self._compile_kernels()
             self._set_kernel_arguments()
@@ -128,7 +128,7 @@ class OCL_CSR_Integrator(object):
         self._free_kernels()
         self._free_buffers()
         self._queue = None
-        self._ctx = None
+        self.ctx = None
         gc.collect()
 
     def _allocate_buffers(self):
@@ -161,7 +161,7 @@ class OCL_CSR_Integrator(object):
 
         if self.size < self.BLOCK_SIZE:
             raise RuntimeError("Fatal error in _allocate_buffers. size (%d) must be >= BLOCK_SIZE (%d)\n", self.size, self.BLOCK_SIZE)  # noqa
-        self._cl_mem = allocate_cl_buffers(buffers, self.device, self._ctx)
+        self._cl_mem = allocate_cl_buffers(buffers, self.device, self.ctx)
 
     def _free_buffers(self):
         """
@@ -182,7 +182,7 @@ class OCL_CSR_Integrator(object):
                 (self.bins, self.size, self.BLOCK_SIZE, int(self.device_type == "CPU"))
         logger.info("Compiling file %s with options %s" % (kernel_file, compile_options))
         try:
-            self._program = pyopencl.Program(self._ctx, kernel_src).build(options=compile_options)
+            self._program = pyopencl.Program(self.ctx, kernel_src).build(options=compile_options)
         except (pyopencl.MemoryError, pyopencl.LogicError) as error:
             raise MemoryError(error)
 
@@ -378,3 +378,4 @@ class OCL_CSR_Integrator(object):
 
         print("_"*80)
         print("%50s:\t%.3fms" % ("Total execution time", t))
+
