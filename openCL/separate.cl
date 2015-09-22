@@ -61,7 +61,7 @@ copies the according value at the position depending on the quantile.
 @param dst: 1D array of floats of size width
 @param width:
 @param height:
-@param dummy: value of the invalide data
+@param dummy: value of the invalid data
 @param quantile: between 0 and 1
 
 Each thread works on a complete column, counting the elements and copying the right one
@@ -85,7 +85,11 @@ __kernel void filter_vertical(__global float *src,
         }
 	  }
 	  if (cnt){
-		  int line = round(quantile*cnt);
+		  int line = round(quantile*cnt)+height-cnt;
+		  if (line<0)
+			  line=0;
+		  else if (line>=height)
+			  line=height-1;
 		  dst[gid] = src[gid + width * line];
 	  }else{
 		  dst[gid] = dummy;

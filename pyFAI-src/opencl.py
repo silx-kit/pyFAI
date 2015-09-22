@@ -323,6 +323,25 @@ class OpenCL(object):
             ctx = pyopencl.create_some_context(interactive=False)
         return ctx
 
+    def device_from_context(self, ctx):
+        """
+        Retrieves the Device from the context
+        
+        @param ctx: OpenCL context
+        @return: instance of Device  
+        """
+        odevice = context.devices[0]
+        oplat = odevice.platform
+        device_id = oplat.get_devices().index(odevice)
+        platform_id = pyopencl.get_platforms().index(oplat)
+        return self.platforms[platform_id].devices[device_id]
+
+if pyopencl:
+    ocl = OpenCL()
+    if ocl.nb_devices == 0:
+        ocl = None
+else:
+    ocl = None
 
 def release_cl_buffers(cl_buffers):
     """
@@ -359,10 +378,8 @@ def allocate_cl_buffers(buffers, device=None, context=None):
     """
     mem = {}
     if device is None:
-        odevice = context.devices[0]
-        device = Device(odevice.name, devtype, odevice.version, odevice.driver_version, odevice.extensions,
-               odevice.global_mem_size, bool(odevice.available), odevice.max_compute_units,
-               odevice.max_clock_frequency, 1)
+        device = ocl.device_from_context(context)
+
     # check if enough memory is available on the device
     ualloc = 0
     for _, _, dtype, size in buffers:
@@ -385,10 +402,4 @@ def allocate_cl_buffers(buffers, device=None, context=None):
 
     return mem
 
-if pyopencl:
-    ocl = OpenCL()
-    if ocl.nb_devices == 0:
-        ocl = None
-else:
-    ocl = None
 

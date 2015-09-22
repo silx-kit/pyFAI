@@ -3423,12 +3423,19 @@ class AzimuthalIntegrator(Geometry):
                                                       unit=unit, method=method,
                                                       dummy=dummy, correctSolidAngle=True)
         if "ocl" in method:
+            if "csr" in method and self._ocl_csr_integr:
+                ctx = self._ocl_csr_integr.ctx
+            elif "lut" in method and self._ocl_lut_integr:
+                ctx = self._ocl_lut_integr.ctx
+            else:
+                ctx = None
             if self._ocl_sorter:
-                if self.ocl_sorter.npt_rad != npt_rad or self.ocl_sorter.npt_azim != npt_azim:
+                if self._ocl_sorter.npt_rad != npt_rad or self._ocl_sorter.npt_azim != npt_azim:
                     self._ocl_sorter = None
             if not self._ocl_sorter:
-                self._ocl_sorter = ocl_sort.Separator(npt_azim=npt_azim, npt_rad=npt_rad, ctx=self._ocl_integrator.ctx)
-            spectrum = self._ocl_sorter.filter_vertical(integ2d, dummy, percentile / 100.0).get()
+                self._ocl_sorter = ocl_sort.Separator(npt_azim=npt_azim, npt_rad=npt_rad, ctx=ctx)
+            spectrum = self._ocl_sorter.filter_vertical(numpy.ascontiguousarray(integ2d),
+                                                        dummy, percentile / 100.0).get()
 #             self._ocl_sem.release()
         else:
             dummies = (integ2d == dummy).sum(axis=0)
