@@ -69,6 +69,7 @@ class TestOclSort(unittest.TestCase):
         self.shape = (256, 500)
         self.ary = numpy.random.random(self.shape).astype(numpy.float32)
         self.sorted = numpy.sort(self.ary.copy(), axis=0)
+        self.vector = self.sorted[128]
         if logger.level < logging.INFO:
             self.PROFILE = True
         else:
@@ -85,6 +86,19 @@ class TestOclSort(unittest.TestCase):
         if self.PROFILE:
             s.log_profile()
 
+    def test_filter(self):
+        s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
+        res = s.filter_vertical(self.ary).get()
+#         import pylab
+#         pylab.plot(self.vector, label="ref")
+#         pylab.plot(res, label="obt")
+#         pylab.legend()
+#         pylab.show()
+#         raw_input()
+        self.assert_(numpy.allclose(self.vector, res), "vertical filter is OK")
+        if self.PROFILE:
+            s.log_profile()
+
 
 def test_suite_all_ocl_sort():
     testSuite = unittest.TestSuite()
@@ -92,6 +106,7 @@ def test_suite_all_ocl_sort():
         logger.warning("OpenCL module (pyopencl) is not present or no device available: skip test_ocl_sort")
     else:
         testSuite.addTest(TestOclSort("test_sort"))
+        testSuite.addTest(TestOclSort("test_filter"))
     return testSuite
 
 if is_main:

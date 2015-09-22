@@ -84,7 +84,6 @@ class Separator(object):
         # Those are pointer to memory on the GPU (or None if uninitialized
         self._cl_mem = {}
         self._cl_kernel_args = {}
-        self._cl_programs = None
         self.local_mem = pyopencl.LocalMemory(self.ws * 32)  # 2float4 = 2*4*4 bytes per workgroup size
         self.events = []  # list with all events for profiling
         self._allocate_buffers()
@@ -173,7 +172,10 @@ class Separator(object):
         self._cl_kernel_args["bsort_vertical"] = [self._cl_mem["input_data"].data,
                                                   self.local_mem]
         self._cl_kernel_args["filter_vertical"] = [self._cl_mem["input_data"].data,
-                                                   self._cl_mem["vector"].data]
+                                                   self._cl_mem["vector"].data,
+                                                   numpy.uint32(self.npt_rad),
+                                                   numpy.uint32(self.npt_azim),
+                                                   numpy.float32(0), numpy.float32(0.5), ]
 
     def sort_vertical(self, data, dummy=None):
         """
@@ -229,8 +231,16 @@ class Separator(object):
             dummy = numpy.float32(data.min() - self.DUMMY)
         else:
             dummy = numpy.float32(dummy)
-        sorted = self.vertical_sort(data, dummy)
+        sorted = self.sort_vertical(data, dummy)
         wg = min(32, self.max_workgroup_size)
+        ws = (self.npt_rad + wg - 1) & ~(wg - 1)
+        with self._sem:
+            args = self._cl_kernel_args["filter_vertical"]
+            args[-2] = dummy
+            args[-1] = numpy.float32(quantile)
+            evt = self._cl_program.filter_vertical(self._queue, (ws,), (wg,), *args)
+            self.events.append(("filter_vertical", evt))
+        return self._cl_mem["vector"]
 
 
     def log_profile(self):
@@ -244,11 +254,11 @@ class Separator(object):
             for e in self.events:
                 if "__len__" in dir(e) and len(e) >= 2:
                     et = 1e-6 * (e[1].profile.end - e[1].profile.start)
-                    logger.info("%50s:\t%.3fms" % (e[0], et))
+                    print("%50s:\t%.3fms" % (e[0], et))
                     t += et
 
-        logger.info("_"*80)
-        logger.info("%50s:\t%.3fms" % ("Total execution time", t))
+        print("_"*70)
+        print("%50s:\t%.3fms" % ("Total execution time", t))
 
     def reset_timer(self):
         """

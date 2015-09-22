@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/09/2015"
+__date__ = "22/09/2015"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3416,9 +3416,9 @@ class AzimuthalIntegrator(Geometry):
         """
         if mask is None:
             mask = self.mask
-        dummy = data.min() - 1234.5678
-        if "ocl" in method:
-            self._ocl_sem.acquire()
+        dummy = numpy.float32(data.min() - 1234.5678)
+#         if "ocl" in method:
+#             self._ocl_sem.acquire()
         integ2d, radial, azimuthal = self.integrate2d(data, npt_rad, npt_azim, mask=mask,
                                                       unit=unit, method=method,
                                                       dummy=dummy, correctSolidAngle=True)
@@ -3427,12 +3427,9 @@ class AzimuthalIntegrator(Geometry):
                 if self.ocl_sorter.npt_rad != npt_rad or self.ocl_sorter.npt_azim != npt_azim:
                     self._ocl_sorter = None
             if not self._ocl_sorter:
-                self._ocl_sorter = ocl_sort.Separator(self._ocl_integrator.ctx)
-
-#             bragg =
-#             amorphous =
-
-            self._ocl_sem.release()
+                self._ocl_sorter = ocl_sort.Separator(npt_azim=npt_azim, npt_rad=npt_rad, ctx=self._ocl_integrator.ctx)
+            spectrum = self._ocl_sorter.filter_vertical(integ2d, dummy, percentile / 100.0).get()
+#             self._ocl_sem.release()
         else:
             dummies = (integ2d == dummy).sum(axis=0)
             # add a line of zeros at the end (along npt_azim) so that the value for no valid pixel is 0
@@ -3443,14 +3440,14 @@ class AzimuthalIntegrator(Geometry):
             assert (pos <= npt_azim).all()
 
             spectrum = sorted[(pos, numpy.arange(npt_rad))]
-            amorphous = self.calcfrom1d(radial, spectrum, data.shape, mask=None,
-                       dim1_unit=unit, correctSolidAngle=True)
-            bragg = data - amorphous
-            if restore_mask:
-                wmask = numpy.where(mask)
-                maskdata = data[wmask]
-                bragg[wmask] = maskdata
-                amorphous[wmask] = maskdata
+        amorphous = self.calcfrom1d(radial, spectrum, data.shape, mask=None,
+                   dim1_unit=unit, correctSolidAngle=True)
+        bragg = data - amorphous
+        if restore_mask:
+            wmask = numpy.where(mask)
+            maskdata = data[wmask]
+            bragg[wmask] = maskdata
+            amorphous[wmask] = maskdata
         return bragg, amorphous
 
 ################################################################################

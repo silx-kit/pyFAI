@@ -66,7 +66,7 @@ copies the according value at the position depending on the quantile.
 
 Each thread works on a complete column, counting the elements and copying the right one
 */
-__kernel void vertical_filter(__global float *src,
+__kernel void filter_vertical(__global float *src,
                               __global float *dst,
                               uint width,
                               uint height,

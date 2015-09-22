@@ -358,7 +358,11 @@ def allocate_cl_buffers(buffers, device=None, context=None):
     description.
     """
     mem = {}
-    device = context.devices[0]
+    if device is None:
+        odevice = context.devices[0]
+        device = Device(odevice.name, devtype, odevice.version, odevice.driver_version, odevice.extensions,
+               odevice.global_mem_size, bool(odevice.available), odevice.max_compute_units,
+               odevice.max_clock_frequency, 1)
     # check if enough memory is available on the device
     ualloc = 0
     for _, _, dtype, size in buffers:
