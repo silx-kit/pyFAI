@@ -1,4 +1,7 @@
 The pyFAI is released under GPL license.
 
 Some modules/sub-parts are available under MIT license:
+
 pyFAI-src/ocl_sort.py  
+opencl/separate.cl
+test/test_ocl_sort.py

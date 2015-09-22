@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/02/2015"
+__date__ = "22/09/2015"
 __status__ = "stable"
 
 import os
@@ -331,17 +331,23 @@ def release_cl_buffers(cl_buffers):
 
     This method release the memory of the buffers store in the dict
     """
-    for key in cl_buffers:
-        if cl_buffers[key] is not None:
-            try:
-                cl_buffers[key].release()
-                cl_buffers[key] = None
-            except pyopencl.LogicError:
-                logger.error("Error while freeing buffer %s", key)
+    for key, buffer in cl_buffers.items():
+        if buffer is not None:
+            if isinstance(buffer, pyopencl.array.Array):
+                try:
+                    buffer.data.release()
+                except pyopencl.LogicError:
+                    logger.error("Error while freeing buffer %s", key)
+            else:
+                try:
+                    buffer.release()
+                except pyopencl.LogicError:
+                    logger.error("Error while freeing buffer %s", key)
+            cl_buffers[key] = None
     return cl_buffers
 
 
-def allocate_cl_buffers(buffers, device, context):
+def allocate_cl_buffers(buffers, device=None, context=None):
     """
     @param buffers: the buffers info use to create the pyopencl.Buffer
     @type buffer: list(std, flag, numpy.dtype, int)
@@ -352,7 +358,7 @@ def allocate_cl_buffers(buffers, device, context):
     description.
     """
     mem = {}
-
+    device = context.devices[0]
     # check if enough memory is available on the device
     ualloc = 0
     for _, _, dtype, size in buffers:

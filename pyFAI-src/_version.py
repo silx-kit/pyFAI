@@ -7,7 +7,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/07/2015"
+__date__ = "22/09/2015"
 __status__ = "producton"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -44,9 +44,9 @@ RELEASE_LEVEL_VALUE = { "dev": 0,
                        "final":15}
 
 MAJOR = 0
-MINOR = 11
+MINOR = 12
 MICRO = 0
-RELEV = "final"  # <16
+RELEV = "dev"  # <16
 SERIAL = 0  # <16
 
 date = __date__
