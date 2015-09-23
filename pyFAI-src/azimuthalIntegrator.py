@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/09/2015"
+__date__ = "23/09/2015"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3417,7 +3417,10 @@ class AzimuthalIntegrator(Geometry):
         if mask is None:
             mask = self.mask
         dummy = numpy.float32(data.min() - 1234.5678)
-#         if "ocl" in method:
+        if "ocl" in method and npt_azim & (npt_azim - 1):
+            old = npt_azim
+            npt_azim = int(2 ** numpy.round(numpy.log2(npt_azim)))
+            logger.warning("Change number of azimuthal bins to nearest power of two: %s->%s" % (old, npt_azim))
 #             self._ocl_sem.acquire()
         integ2d, radial, azimuthal = self.integrate2d(data, npt_rad, npt_azim, mask=mask,
                                                       unit=unit, method=method,
@@ -3429,14 +3432,24 @@ class AzimuthalIntegrator(Geometry):
                 ctx = self._ocl_lut_integr.ctx
             else:
                 ctx = None
+
+            if numpy.isfortran(integ2d) and integ2d.dtype == numpy.float32:
+                rdata = integ2d.T
+                horizontal = True
+            else:
+                rdata = numpy.ascontiguousarray(integ2d, dtype=numpy.float32)
+                horizontal = False
+
             if self._ocl_sorter:
-                if self._ocl_sorter.npt_rad != npt_rad or self._ocl_sorter.npt_azim != npt_azim:
+                if self._ocl_sorter.npt_width != rdata.shape[1] or self._ocl_sorter.npt_height != rdata.shape[0]:
                     self._ocl_sorter = None
             if not self._ocl_sorter:
-                self._ocl_sorter = ocl_sort.Separator(npt_azim=npt_azim, npt_rad=npt_rad, ctx=ctx)
-            spectrum = self._ocl_sorter.filter_vertical(numpy.ascontiguousarray(integ2d),
-                                                        dummy, percentile / 100.0).get()
-#             self._ocl_sem.release()
+                logger.info("reset opencl sorter")
+                self._ocl_sorter = ocl_sort.Separator(npt_height=rdata.shape[0], npt_width=rdata.shape[1], ctx=ctx)
+            if horizontal:
+                spectrum = self._ocl_sorter.filter_horizontal(rdata, dummy, percentile / 100.0).get()
+            else:
+                spectrum = self._ocl_sorter.filter_vertical(rdata, dummy, percentile / 100.0).get()
         else:
             dummies = (integ2d == dummy).sum(axis=0)
             # add a line of zeros at the end (along npt_azim) so that the value for no valid pixel is 0
@@ -3447,8 +3460,10 @@ class AzimuthalIntegrator(Geometry):
             assert (pos <= npt_azim).all()
 
             spectrum = sorted[(pos, numpy.arange(npt_rad))]
+
+        # This takes 100ms and is the next to be optimized.
         amorphous = self.calcfrom1d(radial, spectrum, data.shape, mask=None,
-                   dim1_unit=unit, correctSolidAngle=True)
+                                    dim1_unit=unit, correctSolidAngle=True)
         bragg = data - amorphous
         if restore_mask:
             wmask = numpy.where(mask)

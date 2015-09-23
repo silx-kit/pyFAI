@@ -54,7 +54,7 @@ __kernel void copy_pad(__global float *src,
 }
 /*
 
-vertical_filter filters out a sorted array, counts the number of non dummy values and
+filter_vertical filters out a sorted array, counts the number of non dummy values and
 copies the according value at the position depending on the quantile.
 
 @param src: 2D array of floats of size width*height
@@ -74,23 +74,60 @@ __kernel void filter_vertical(__global float *src,
                               float quantile){
   uint gid = get_global_id(0);
   //Global memory guard for padding
-  uint cnt = 0, i=0;
+  uint cnt = 0, pos=0;
   float data;
-
   if(gid < width){
-	  for (i=0; i<height*width; i+=width){
-        data = src[gid+i];
+	  for (pos=0; pos<height*width; pos+=width){
+        data = src[gid+pos];
         if (data!=dummy){
         	cnt++;
         }
 	  }
 	  if (cnt){
-		  int line = round(quantile*cnt)+height-cnt;
-		  if (line<0)
-			  line=0;
-		  else if (line>=height)
-			  line=height-1;
-		  dst[gid] = src[gid + width * line];
+		  pos = round(quantile*cnt);
+		  pos = min(pos+height-cnt, height-1);
+		  dst[gid] = src[gid + width * pos];
+	  }else{
+		  dst[gid] = dummy;
+	  }
+  }
+}
+/*
+
+filter_horizontal filters out a sorted array, counts the number of non dummy values and
+copies the according value at the position depending on the quantile.
+
+@param src: 2D array of floats of size width*height
+@param dst: 1D array of floats of size width
+@param width:
+@param height:
+@param dummy: value of the invalid data
+@param quantile: between 0 and 1
+
+Each thread works on a complete column, counting the elements and copying the right one
+*/
+__kernel void filter_horizontal(__global float *src,
+                                __global float *dst,
+                                uint width,
+                                uint height,
+                                float dummy,
+                                float quantile){
+  uint gid = get_global_id(0);
+  //Global memory guard for padding
+  uint cnt = 0, pos=0, offset=gid*width;
+  float data;
+
+  if(gid < height){
+	  for (pos=0; pos<width; pos++){
+        data = src[offset+pos];
+        if (data!=dummy){
+        	cnt++;
+        }
+	  }
+	  if (cnt){
+		  pos = round(quantile*cnt);
+		  pos = min(pos+width-cnt, width-1);
+		  dst[gid] = src[offset+pos];
 	  }else{
 		  dst[gid] = dummy;
 	  }

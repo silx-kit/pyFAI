@@ -64,10 +64,12 @@ else:
 class TestOclSort(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.shape = (256, 500)
+        self.shape = (128, 256)
         self.ary = numpy.random.random(self.shape).astype(numpy.float32)
-        self.sorted = numpy.sort(self.ary.copy(), axis=0)
-        self.vector = self.sorted[128]
+        self.sorted_vert = numpy.sort(self.ary.copy(), axis=0)
+        self.sorted_hor = numpy.sort(self.ary.copy(), axis=1)
+        self.vector_vert = self.sorted_vert[self.shape[0] // 2]
+        self.vector_hor = self.sorted_hor[:, self.shape[1] // 2]
         if logger.level < logging.INFO:
             self.PROFILE = True
         else:
@@ -75,16 +77,17 @@ class TestOclSort(unittest.TestCase):
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
-        self.shape = self.ary = self.sorted = None
+        self.shape = self.ary = self.sorted_vert = self.sorted_hor = self.vector_vert = self.sorted_hor = None
 
-    def test_sort(self):
+    def test_sort_vert(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
         res = s.sort_vertical(self.ary).get()
-        self.assert_(numpy.allclose(self.sorted, res), "vertical sort is OK")
+        self.assert_(numpy.allclose(self.sorted_vert, res), "vertical sort is OK")
         if self.PROFILE:
             s.log_profile()
+            s.reset_timer()
 
-    def test_filter(self):
+    def test_filter_vert(self):
         s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
         res = s.filter_vertical(self.ary).get()
 #         import pylab
@@ -93,9 +96,32 @@ class TestOclSort(unittest.TestCase):
 #         pylab.legend()
 #         pylab.show()
 #         raw_input()
-        self.assert_(numpy.allclose(self.vector, res), "vertical filter is OK")
+        self.assert_(numpy.allclose(self.vector_vert, res), "vertical filter is OK")
         if self.PROFILE:
             s.log_profile()
+            s.reset_timer()
+
+    def test_sort_hor(self):
+        s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
+        res = s.sort_horizontal(self.ary).get()
+        self.assert_(numpy.allclose(self.sorted_hor, res), "horizontal sort is OK")
+        if self.PROFILE:
+            s.log_profile()
+            s.reset_timer()
+
+    def test_filter_hor(self):
+        s = ocl_sort.Separator(self.shape[0], self.shape[1], profile=self.PROFILE)
+        res = s.filter_horizontal(self.ary).get()
+#         import pylab
+#         pylab.plot(self.vector_hor, label="ref")
+#         pylab.plot(res, label="obt")
+#         pylab.legend()
+#         pylab.show()
+#         raw_input()
+        self.assert_(numpy.allclose(self.vector_hor, res), "horizontal filter is OK")
+        if self.PROFILE:
+            s.log_profile()
+            s.reset_timer()
 
 
 def test_suite_all_ocl_sort():
@@ -103,8 +129,10 @@ def test_suite_all_ocl_sort():
     if skip:
         logger.warning("OpenCL module (pyopencl) is not present or no device available: skip test_ocl_sort")
     else:
-        testSuite.addTest(TestOclSort("test_sort"))
-        testSuite.addTest(TestOclSort("test_filter"))
+        testSuite.addTest(TestOclSort("test_sort_hor"))
+        testSuite.addTest(TestOclSort("test_sort_vert"))
+        testSuite.addTest(TestOclSort("test_filter_hor"))
+        testSuite.addTest(TestOclSort("test_filter_vert"))
     return testSuite
 
 if is_main:

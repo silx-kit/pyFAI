@@ -34,7 +34,7 @@ separation on GPU.
 from __future__ import absolute_import, print_function, division
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "22/09/2015"
+__date__ = "23/09/2015"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -58,23 +58,21 @@ class Separator(object):
     """
     Attempt to implements sort and median filter in  pyopencl
     """
-    def __init__(self, npt_azim=512, npt_rad=1024, ctx=None, max_workgroup_size=None, profile=False):
+    def __init__(self, npt_height=512, npt_width=1024, ctx=None, max_workgroup_size=None, profile=False):
         """
         @param ctx: context
         @param max_workgroup_size: 1 on macOSX on CPU
         @param profile: turn on profiling
         """
         self._sem = threading.Semaphore()
-        self.npt_rad = npt_rad
-        self.npt_azim = npt_azim
+        self.npt_width = npt_width
+        self.npt_height = npt_height
         self.ctx = ctx if ctx else ocl.create_context()
-        self.ws = self.npt_azim // 8
+
         if max_workgroup_size:
             self.max_workgroup_size = max_workgroup_size
         else:
             self.max_workgroup_size = self.ctx.devices[0].max_work_group_size
-        if self.max_workgroup_size < self.ws:
-            logger.error("Requested a workgoup size of %s, maximum is %s" % (self.ws, self.max_workgroup_size))
         if profile:
             self._queue = pyopencl.CommandQueue(self.ctx, properties=pyopencl.command_queue_properties.PROFILING_ENABLE)
             self.profile = True
@@ -84,7 +82,6 @@ class Separator(object):
         # Those are pointer to memory on the GPU (or None if uninitialized
         self._cl_mem = {}
         self._cl_kernel_args = {}
-        self.local_mem = pyopencl.LocalMemory(self.ws * 32)  # 2float4 = 2*4*4 bytes per workgroup size
         self.events = []  # list with all events for profiling
         self._allocate_buffers()
         self._compile_kernels()
@@ -118,8 +115,9 @@ class Separator(object):
         device, only the total memory.
         """
         buffers = [
-            ("input_data", numpy.float32, (self.npt_azim, self.npt_rad)),
-            ("vector", numpy.float32, (self.npt_rad,))
+            ("input_data", numpy.float32, (self.npt_height, self.npt_width)),
+            ("vector_vertical", numpy.float32, (self.npt_width,)),
+            ("vector_horizontal", numpy.float32, (self.npt_height,))
         ]
         self._cl_mem = {}
         for name, dtype, shape in buffers:
@@ -170,12 +168,21 @@ class Separator(object):
         argument slot is reset to tth_min_max.
         """
         self._cl_kernel_args["bsort_vertical"] = [self._cl_mem["input_data"].data,
-                                                  self.local_mem]
+                                                    None]
+        self._cl_kernel_args["bsort_horizontal"] = [self._cl_mem["input_data"].data,
+                                                    None]
+
         self._cl_kernel_args["filter_vertical"] = [self._cl_mem["input_data"].data,
-                                                   self._cl_mem["vector"].data,
-                                                   numpy.uint32(self.npt_rad),
-                                                   numpy.uint32(self.npt_azim),
+                                                   self._cl_mem["vector_vertical"].data,
+                                                   numpy.uint32(self.npt_width),
+                                                   numpy.uint32(self.npt_height),
                                                    numpy.float32(0), numpy.float32(0.5), ]
+        self._cl_kernel_args["filter_horizontal"] = [self._cl_mem["input_data"].data,
+                                                     self._cl_mem["vector_horizontal"].data,
+                                                     numpy.uint32(self.npt_width),
+                                                     numpy.uint32(self.npt_height),
+                                                     numpy.float32(0), numpy.float32(0.5), ]
+
 
     def sort_vertical(self, data, dummy=None):
         """
@@ -186,20 +193,22 @@ class Separator(object):
         @return: pyopencl array
         """
         events = []
-        assert data.shape[1] == self.npt_rad
-        assert data.shape[0] <= self.npt_azim
+        assert data.shape[1] == self.npt_width
+        assert data.shape[0] <= self.npt_height
+        if self.npt_height & (self.npt_height - 1):  # not a power of 2
+            raise RuntimeError("Bitonic sort works only for power of two, requested sort on %s element" % self.npt_height)
         if dummy == None:
             dummy = numpy.float32(data.min() - self.DUMMY)
         else:
             dummy = numpy.float32(dummy)
-        if data.shape[0] < self.npt_azim:
+        if data.shape[0] < self.npt_height:
             if isinstance(data, pyopencl.array.Array):
                 wg = min(32, self.max_workgroup_size)
-                size = ((self.npt_azim * self.npt_rad) + wg - 1) & ~(wg - 1)
+                size = ((self.npt_height * self.npt_width) + wg - 1) & ~(wg - 1)
                 evt = prg.copy_pad(queue, (size,), (ws,), data.data, self._cl_mem["input_data"].data, data.size, self._cl_mem["input_data"].size, dummy)
                 events.append(("copy_pad", evt))
             else:
-                data_big = numpy.zeros((self.npt_azim, self.npt_rad), dtype=numpy.float32) + dummy
+                data_big = numpy.zeros((self.npt_height, self.npt_width), dtype=numpy.float32) + dummy
                 data_big[:data.shape[0], :] = data
                 self._cl_mem["input_data"].set(data_big)
         else:
@@ -208,15 +217,70 @@ class Separator(object):
                 events.append(("copy", evt))
             else:
                 self._cl_mem["input_data"].set(data)
+        ws = self.npt_height // 8
+        if self.max_workgroup_size < ws:
+            raise RuntimeError("Requested a workgoup size of %s, maximum is %s" % (ws, self.max_workgroup_size))
 
-        evt = self._cl_program.bsort_vertical(self._queue, (self.ws, self.npt_rad), (self.ws, 1), *self._cl_kernel_args["bsort_vertical"])
+        local_mem = self._cl_kernel_args["bsort_vertical"][-1]
+        if not local_mem or local_mem.size < ws * 32:
+            local_mem = pyopencl.LocalMemory(ws * 32)  # 2float4 = 2*4*4 bytes per workgroup size
+            self._cl_kernel_args["bsort_vertical"][-1] = local_mem
+        evt = self._cl_program.bsort_vertical(self._queue, (ws, self.npt_width), (ws, 1), *self._cl_kernel_args["bsort_vertical"])
         events.append(("bsort_vertical", evt))
-#         evt.wait()
 
         if self.profile:
             with self._sem:
                 self.events += events
         return self._cl_mem["input_data"]
+
+    def sort_horizontal(self, data, dummy=None):
+        """
+        Sort the data along the horizontal axis (radial) 
+        
+        @param data: numpy or pyopencl array
+        @param dummy: dummy value
+        @return: pyopencl array
+        """
+        events = []
+        assert data.shape[1] == self.npt_width
+        assert data.shape[0] == self.npt_height
+        if self.npt_width & (self.npt_width - 1):  # not a power of 2
+            raise RuntimeError("Bitonic sort works only for power of two, requested sort on %s element" % self.npt_width)
+        if dummy == None:
+            dummy = numpy.float32(data.min() - self.DUMMY)
+        else:
+            dummy = numpy.float32(dummy)
+#         if data.shape[0] < self.npt_height:
+#             if isinstance(data, pyopencl.array.Array):
+#                 wg = min(32, self.max_workgroup_size)
+#                 size = ((self.npt_height * self.npt_width) + wg - 1) & ~(wg - 1)
+#                 evt = prg.copy_pad(queue, (size,), (ws,), data.data, self._cl_mem["input_data"].data, data.size, self._cl_mem["input_data"].size, dummy)
+#                 events.append(("copy_pad", evt))
+#             else:
+#                 data_big = numpy.zeros((self.npt_height, self.npt_width), dtype=numpy.float32) + dummy
+#                 data_big[:data.shape[0], :] = data
+#                 self._cl_mem["input_data"].set(data_big)
+#         else:
+        if isinstance(data, pyopencl.array.Array):
+            evt = pyopencl.enqueue(data.queue, self._cl_mem["input_data"].data, data.data)
+            events.append(("copy", evt))
+        else:
+            self._cl_mem["input_data"].set(data)
+        ws = self.npt_width // 8
+        if self.max_workgroup_size < ws:
+            raise RuntimeError("Requested a workgoup size of %s, maximum is %s" % (ws, self.max_workgroup_size))
+        local_mem = self._cl_kernel_args["bsort_horizontal"][-1]
+        if not local_mem or local_mem.size < ws * 32:
+            local_mem = pyopencl.LocalMemory(ws * 32)  # 2float4 = 2*4*4 bytes per workgroup size
+            self._cl_kernel_args["bsort_horizontal"][-1] = local_mem
+        evt = self._cl_program.bsort_horizontal(self._queue, (self.npt_height, ws), (1, ws), *self._cl_kernel_args["bsort_horizontal"])
+        events.append(("bsort_horizontal", evt))
+
+        if self.profile:
+            with self._sem:
+                self.events += events
+        return self._cl_mem["input_data"]
+
 
     def filter_vertical(self, data, dummy=None, quantile=0.5):
         """
@@ -233,14 +297,38 @@ class Separator(object):
             dummy = numpy.float32(dummy)
         sorted = self.sort_vertical(data, dummy)
         wg = min(32, self.max_workgroup_size)
-        ws = (self.npt_rad + wg - 1) & ~(wg - 1)
+        ws = (self.npt_width + wg - 1) & ~(wg - 1)
         with self._sem:
             args = self._cl_kernel_args["filter_vertical"]
             args[-2] = dummy
             args[-1] = numpy.float32(quantile)
             evt = self._cl_program.filter_vertical(self._queue, (ws,), (wg,), *args)
             self.events.append(("filter_vertical", evt))
-        return self._cl_mem["vector"]
+        return self._cl_mem["vector_vertical"]
+
+    def filter_horizontal(self, data, dummy=None, quantile=0.5):
+        """
+        Sort the data along the vertical axis (azimuthal) 
+        
+        @param data: numpy or pyopencl array
+        @param dummy: dummy value
+        @param quantile: 
+        @return: pyopencl array
+        """
+        if dummy == None:
+            dummy = numpy.float32(data.min() - self.DUMMY)
+        else:
+            dummy = numpy.float32(dummy)
+        sorted = self.sort_horizontal(data, dummy)
+        wg = min(32, self.max_workgroup_size)
+        ws = (self.npt_height + wg - 1) & ~(wg - 1)
+        with self._sem:
+            args = self._cl_kernel_args["filter_horizontal"]
+            args[-2] = dummy
+            args[-1] = numpy.float32(quantile)
+            evt = self._cl_program.filter_horizontal(self._queue, (ws,), (wg,), *args)
+            self.events.append(("filter_horizontal", evt))
+        return self._cl_mem["vector_horizontal"]
 
 
     def log_profile(self):
