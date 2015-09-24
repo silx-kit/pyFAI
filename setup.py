@@ -105,7 +105,7 @@ def check_cython():
     except ImportError:
         return False
     else:
-        if Cython.Compiler.Version.version < "0.17":
+        if Cython.Compiler.Version.version < "0.19":
             return False
     return True
 
