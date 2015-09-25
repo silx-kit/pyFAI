@@ -8,7 +8,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import sys, numpy, time
-from . import utilstest
+from pyFAI.test import utilstest
 import fabio, pyopencl
 from pylab import *
 from six.moves import input

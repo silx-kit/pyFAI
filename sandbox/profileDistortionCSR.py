@@ -28,11 +28,11 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "15/12/2014"
+__date__ = "24/09/2015"
 __status__ = "development"
 
 import unittest
-from utilstest import UtilsTest, getLogger
+from pyFAI.test.utilstest import UtilsTest, getLogger
 import logging, threading
 import types, os, sys
 import numpy

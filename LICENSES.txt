@@ -7,5 +7,10 @@ build-deb.sh
 pyFAI-src/_version.py
 pyFAI-src/ocl_sort.py
   
+openCL/bitonic.cl
 opencl/separate.cl
+openCL/for_eclipse.h
+
+sandbox/demo_bitonic.py
+
 test/test_ocl_sort.py

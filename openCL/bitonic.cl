@@ -1,11 +1,35 @@
-// Attempt for a bitonic sort inspired from "OpenCL in Action" by Matthew Scarpino which is "public domain", the code, not the book.
-// Copyright 
-// All of the code is public domain, and you can do with it as you please.
-// Each work-item treats 2*4 elements so if max_workgroup_size = 512 up to 4096 items can be sorted (nvidia GPU)
-// Uses local memory:
-//     each work-item stores a 2*sizeof(float4), so the memory used for 512 working-elements is 16k (may not fit into pre-fermi GPUs)
+/*############################################################################
+# Sort elements within a vector by Matthew Scarpino,
+# Taken from his book "OpenCL in Action",
+# November 2011 ISBN 9781617290176
+# Original license for the code: "public domain"
+#
+# Originally this code is public domain. The MIT license has been added
+# by J. Kieffer (jerome.kieffer@esrf.eu) to provide a disclaimer.
+# J. Kieffer does not claim authorship of this code developed by .
+#
+# Copyright (c) 2011 Matthew Scarpino
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+#############################################################################*/
 
-// The _BOOK extension correspond to the formula found in the "OpenCL in Action" by Matthew Scarpino book. This does not work on MacOSX nor Windows
 #define VECTOR_SORT_BOOK(input, dir) \
         comp = abs(input > shuffle(input, mask2)) ^ dir; \
         input = shuffle(input, comp * 2 + add2); \
