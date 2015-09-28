@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer, Picca Frédéric-Emmanuel"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/07/2015"
+__date__ = "28/09/2015"
 __status__ = "production"
 
 import os
@@ -75,20 +75,24 @@ def main():
                   help="Dark noise to be subtracted")
     parser.add_argument("-f", "--flat", dest="flat", type=str, default=None,
                   help="Flat field correction")
-    parser.add_argument("-v", "--verbose", action="store_true", dest="verbose", default=False,
+    parser.add_argument("-v", "--verbose", action="store_true", dest="verbose", default=None,
                       help="switch to verbose/debug mode")
     parser.add_argument("-q", "--quantiles", dest="quantiles", default=None,
                       help="average out between two quantiles -q 0.20-0.90")
+    parser.add_argument("--quiet", dest="verbose", default=None, action="store_false",
+                      help="Only error messages are printed out")
     parser.add_argument("args", metavar='FILE', type=str, nargs='+',
                         help="Files to be processed")
 
     options = parser.parse_args()
 
-    # Analyse aruments and options
+    # Analyze arguments and options
     images = pyFAI.utils.expand_args(options.args)
 
-    if options.verbose:
+    if options.verbose is True:
         pyFAI.utils.logger.setLevel(logging.DEBUG)
+    elif options.verbose is False:
+        pyFAI.utils.logger.setLevel(logging.ERROR)
     else:
         pyFAI.utils.logger.setLevel(logging.INFO)
     if  options.output:

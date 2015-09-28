@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/07/2015"
+__date__ = "28/09/2015"
 __status__ = "production"
 
 import logging
@@ -477,6 +477,7 @@ def relabel(label, data, blured, max_size=None):
         logger.warning("relabel Cython module is not available...")
         return label
 
+
 def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5)):
     """
     Averages a serie of dark (or flat) images.
@@ -508,10 +509,17 @@ def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5))
         logger.info("Filtering data (median)")
         center = numpy.median(stack, axis=0)
     elif center_method.startswith("quantil"):
-        logger.info("Filtering data (quantiles)")
+        logger.info("Filtering data (quantiles: %s)" % str(quantiles))
         sorted_ = numpy.sort(stack, axis=0)
-        lower = max(0, int(min(quantiles) * length))
-        upper = min(length, int(max(quantiles) * length) + 1)
+        lower = max(0, int(numpy.floor(min(quantiles) * length)))
+        upper = min(length, int(numpy.ceil(max(quantiles) * length)))
+        if (upper == lower):
+            if upper < length:
+                upper += 1
+            elif lower > 0:
+                lower -= 1
+            else:
+                logger.warning("Empty selection for quantil %s, would keep points from %s to %s" % (quantiles, lower, upper))
         center = sorted_[lower:upper].mean(axis=0)
     else:
         raise RuntimeError("Cannot understand method: %s in averageDark" % center_method)
@@ -529,6 +537,7 @@ def averageDark(lstimg, center_method="mean", cutoff=None, quantiles=(0.5, 0.5))
         summed = stack.sum(axis=0)
         output = summed / numpy.maximum(1, (length - mask.sum(axis=0)))
     return output
+
 
 def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=None,
                    darks=None, flats=None, filter_="mean", correct_flat_from_dark=False,
@@ -598,7 +607,7 @@ def averageImages(listImages, output=None, threshold=0.1, minimum=None, maximum=
             correctedImg /= flat
         if (cutoff or quantiles or (filter_ in ["median", "quantiles"])):
             if big_img is None:
-                logger.info("Big array allocation for median filter or cut-off")
+                logger.info("Big array allocation for median filter/cut-off/quantiles")
                 big_img = numpy.zeros((ld, shape[0], shape[1]), dtype=numpy.float32)
             big_img[idx, :, :] = correctedImg
         elif filter_ == "max":

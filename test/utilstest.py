@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "LGPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/02/2015"
+__date__ = "28/09/2015"
 
 PACKAGE = "pyFAI"
 SOURCES = PACKAGE + "-src"
@@ -107,7 +107,7 @@ class UtilsTest(object):
             home = os.path.abspath(os.environ.get("BUILDPYTHONPATH", ""))
         else:
             home = os.path.join(os.path.dirname(TEST_HOME),
-                                      "build", architecture)
+                                "build", architecture)
         logger.info("%s Home is: %s" % (name, home))
         if name in sys.modules:
             logger.info("%s module was already loaded from  %s" % (name, sys.modules[name]))
@@ -334,6 +334,27 @@ class UtilsTest(object):
         if force_build:
             UtilsTest.forceBuild(force_remove)
         return mylogger
+
+    @classmethod
+    def script_path(cls, script):
+        """
+        Return the path of the executable and the associated environment
+        """
+        if (sys.platform == "nt") and not script.endswith(".py"):
+                script += ".py"
+
+        if IN_SOURCES:
+            script_dir = os.path.join(os.path.dirname(cls.home),
+                    "scripts-%i.%i" % (sys.version_info[0], sys.version_info[1]))
+            script_path = os.path.join(script_dir, script)
+            env = {"PYTHONPATH": os.pathsep.join([cls.home] + sys.path)}
+        else:
+            env = {"PYTHONPATH": os.pathsep.join(sys.path)}
+            for i in os.environ.get("PATH", "").split(os.pathsep):
+                script_path = os.path.join(i, script)
+                if os.path.exists(script_path):
+                    break
+        return script_path, env
 
 
 def Rwp(obt, ref, comment="Rwp"):

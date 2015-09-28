@@ -32,19 +32,20 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme Kieffer"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/09/2015"
+__date__ = "28/09/2015"
 
 import sys
 import os
 import unittest
 import numpy
-
+import subprocess
 if __name__ == '__main__':
     import pkgutil
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
 from .utilstest import getLogger, UtilsTest  # , Rwp, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
+import fabio
 
 
 class TestBug170(unittest.TestCase):
@@ -84,9 +85,52 @@ Wavelength: 7e-11
         ai.integrate1d(self.data, 2000)
 
 
+class TestBug211(unittest.TestCase):
+    """
+    Check the quantile filter in pyFAI-average
+    """
+    def setUp(self):
+        shape = (100, 100)
+        dtype = numpy.float32
+        self.image_files = []
+        self.outfile = os.path.join(UtilsTest.tempdir, "out.edf")
+        res = numpy.zeros(shape, dtype=dtype)
+        for i in range(5):
+            fn = os.path.join(UtilsTest.tempdir, "img_%i.edf" % i)
+            if i == 3:
+                data = numpy.zeros(shape, dtype=dtype)
+            elif i == 4:
+                data = numpy.ones(shape, dtype=dtype)
+            else:
+                data = numpy.random.random(shape).astype(dtype)
+                res += data
+            e = fabio.edfimage.edfimage(data=data)
+            e.write(fn)
+            self.image_files.append(fn)
+        self.res = res / 3.0
+        self.exe, self.env = UtilsTest.script_path("pyFAI-average")
+
+    def tearDown(self):
+        for fn in self.image_files:
+            os.unlink(fn)
+        if os.path.exists(self.outfile):
+            os.unlink(self.outfile)
+        self.image_files = None
+        self.res = None
+        self.exe = self.env = None
+
+    def test_quantile(self):
+        p = subprocess.call([sys.executable, self.exe, "--quiet", "-q", "0.2-0.8", "-o", self.outfile] + self.image_files,
+                            shell=False, env=self.env)
+        self.assertEqual(p, 0, msg="pyFAI-average return code is 0")
+        self.assert_(numpy.allclose(fabio.open(self.outfile).data, self.res),
+                         "pyFAI-average with quantiles gives good results")
+
+
 def test_suite_bug_regression():
     testSuite = unittest.TestSuite()
     testSuite.addTest(TestBug170("test_bug170"))
+    testSuite.addTest(TestBug211("test_quantile"))
     return testSuite
 
 if __name__ == '__main__':
