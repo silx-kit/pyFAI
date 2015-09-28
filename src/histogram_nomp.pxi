@@ -24,7 +24,7 @@
 #
 
 __author__ = "Jerome Kieffer"
-__date__ = "20/10/2014"
+__date__ = "28/09/2015"
 __name__ = "histogram"
 __license__ = "GPLv3+"
 __copyright__ = "2011-2014, ESRF"
@@ -129,7 +129,7 @@ def histogram2d(numpy.ndarray pos0 not None,
     @param pos1: Chi array
     @param weights: array with intensities
     @param bins: number of output bins int or 2-tuple of int
-	@param split: pixel splitting is disabled in histogram
+    @param split: pixel splitting is disabled in histogram
     @param nthread: OpenMP is disabled. unused
 
     @return  I, edges0, edges1, weighted histogram(2D), unweighted histogram (2D)
