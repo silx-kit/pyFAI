@@ -1,7 +1,30 @@
 #!/usr/bin/python
-
-#Benchmark for Azimuthal integration of PyFAI
-
+# coding: utf-8
+# author: Jérôme Kieffer
+#
+#    Project: Fast Azimuthal integration
+#             https://github.com/pyFAI/pyFAI
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+"""
+Benchmark for Azimuthal integration of PyFAI
+"""
 from __future__ import print_function, division
 
 import json, sys, time, timeit, os, platform, subprocess
@@ -18,7 +41,7 @@ try:
 except ImportError:
     print("No socket opened for debugging -> please install rfoo")
 
-#We use the locally build version of PyFAI
+# We use the locally build version of PyFAI
 pyFAI = utilstest.UtilsTest.pyFAI
 ocl = pyFAI.opencl.ocl
 from matplotlib import pyplot as plt
@@ -35,7 +58,7 @@ datasets = {"Fairchild.poni":utilstest.UtilsTest.getimage("1880/Fairchild.edf"),
 
 
 
-#Handle to the Bench instance: allows debugging from outside if needed
+# Handle to the Bench instance: allows debugging from outside if needed
 bench = None
 
 
@@ -155,7 +178,7 @@ data = fabio.open(r"%s").data
         @param check: check results vs ref if method is LUT based
         @param opencl: dict containing platformid, deviceid and devicetype
         """
-        method="ocl_csr"
+        method = "ocl_csr"
         self.update_mp()
         if opencl:
             if (ocl is None):
@@ -179,7 +202,7 @@ data = fabio.open(r"%s").data
         mem_band = {}
         first = True
         param = "Pilatus1M.poni"
-        block_size_list = [1,2,4,8,16,32,64,128,256]
+        block_size_list = [1, 2, 4, 8, 16, 32, 64, 128, 256]
         for block_size in block_size_list:
             self.update_mp()
             fn = datasets[param]
@@ -195,20 +218,20 @@ data = fabio.open(r"%s").data
             if check:
                 if "csr" in method:
                     print("csr: size= %s \t nbytes %.3f MB " % (ai._csr_integrator.data.size, ai._csr_integrator.lut_nbytes / 2 ** 20))
-            
+
             bins = ai._csr_integrator.bins
             nnz = ai._csr_integrator.nnz
-            parallel_reduction = sum([2**i for i in range(1,int(log2(block_size)))])
-            
-            FLOPs = 9*nnz + 11*parallel_reduction + 1*bins
-            mem_access = (2*block_size*bins + 5*nnz + 7*bins)*4
-            
+            parallel_reduction = sum([2 ** i for i in range(1, int(log2(block_size)))])
+
+            FLOPs = 9 * nnz + 11 * parallel_reduction + 1 * bins
+            mem_access = (2 * block_size * bins + 5 * nnz + 7 * bins) * 4
+
             del ai, data
             self.update_mp()
-            
-            t_repeat=[]
+
+            t_repeat = []
             for j in range(self.repeat):
-                t=[]
+                t = []
                 exec setup
                 for i in range(self.nbr):
                     eval(stmt)
@@ -218,7 +241,7 @@ data = fabio.open(r"%s").data
                         t.append(et)
                 exec(self.unsetup)
                 t_repeat.append(numpy.mean(t))
-                
+
             tmin = min(t_repeat)
             self.update_mp()
             self.print_exec(tmin)
@@ -229,13 +252,13 @@ data = fabio.open(r"%s").data
                 self.update_mp()
                 if R < self.LIMIT:
                     results[block_size ] = tmin
-                    flops[block_size ] = (FLOPs/tmin)*1e-6
-                    mem_band[block_size ] = (mem_access/tmin)*1e-6
+                    flops[block_size ] = (FLOPs / tmin) * 1e-6
+                    mem_band[block_size ] = (mem_access / tmin) * 1e-6
                     self.update_mp()
             else:
                 results[block_size ] = tmin
-                flops[block_size ] = FLOPs/tmin
-                mem_band[block_size ] = mem_access/tmin
+                flops[block_size ] = FLOPs / tmin
+                mem_band[block_size ] = mem_access / tmin
             if first:
                 self.new_curve(results, label)
                 first = False
@@ -253,7 +276,7 @@ data = fabio.open(r"%s").data
         self.update_mp()
         json.dump(self.results, open(filename, "w"))
 
-    def print_res(self,summary,results):
+    def print_res(self, summary, results):
         self.update_mp()
         print(summary)
         print("Size/Meth\t" + "\t".join(self.meth))
@@ -273,7 +296,7 @@ data = fabio.open(r"%s").data
             self.ax.set_xlabel("Workgroup size")
             self.ax.set_ylabel("Time for integration in ms")
             self.ax.set_xscale("log", basey=2)
-            t = [1,2,4,8,16,32,64,128,256]
+            t = [1, 2, 4, 8, 16, 32, 64, 128, 256]
             self.ax.set_xticks([float(i) for i in t])
             self.ax.set_xticklabels([str(i)for i in t])
             self.ax.set_ylim(0, 70)
@@ -418,8 +441,8 @@ if __name__ == "__main__":
     mem_band = bench.mem_band
 
     bench.print_res("Summary: Execution time in milliseconds", results)
-    bench.print_res("Summary: MFLOPS",flops)
-    bench.print_res("Summary: Memory Bandwidth in MB/s",mem_band)
+    bench.print_res("Summary: MFLOPS", flops)
+    bench.print_res("Summary: Memory Bandwidth in MB/s", mem_band)
     bench.update_mp()
 
     bench.ax.set_ylim(1, 200)

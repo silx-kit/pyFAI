@@ -1,7 +1,30 @@
 #!/usr/bin/python
-
-#Benchmark for Distortion correction in PyFAI
-
+# coding: utf-8
+# author: Jérôme Kieffer
+#
+#    Project: Fast Azimuthal integration
+#             https://github.com/pyFAI/pyFAI
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+"""
+Benchmark for Distortion correction in PyFAI
+"""
 from __future__ import print_function, division
 
 import json, sys, time, timeit, os, platform, subprocess, gc, logging
@@ -19,7 +42,7 @@ try:
 except ImportError:
     print("No socket opened for debugging -> please install rfoo")
 
-#We use the locally build version of PyFAI
+# We use the locally build version of PyFAI
 pyFAI = utilstest.UtilsTest.pyFAI
 ocl = pyFAI.opencl.ocl
 import matplotlib
@@ -35,7 +58,7 @@ repeat = 1
 number = 1
 
 print("Number of iteration: %s average over %s processing" % (repeat, number))
-for method in ("LUT","CSR"):
+for method in ("LUT", "CSR"):
     for device in ("None", '"CPU"', '"GPU"'):
         for wg in [1, 2, 4, 8, 16, 32]:
             if (method != "CSR" or device == "None")and wg > 1:
