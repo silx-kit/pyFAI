@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/09/2015"
+__date__ = "02/10/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -49,9 +49,9 @@ else:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pyFAI.calibration")
 import numpy
+from .gui_utils import pylab, update_fig, matplotlib
 from scipy.stats import linregress
 import fabio
-from .gui_utils import pylab, update_fig, matplotlib
 from .detectors import detector_factory, Detector
 from .geometryRefinement import GeometryRefinement
 from .peak_picker import PeakPicker
