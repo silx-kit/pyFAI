@@ -32,8 +32,8 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/09/2015"
-__status__ = "producton"
+__date__ = "09/10/2015"
+__status__ = "production"
 __docformat__ = 'restructuredtext'
 __doc__ = """
 
@@ -60,6 +60,7 @@ Bits (big endian order)     Meaning
 Thus 2.1.0a3 is hexversion 0x020100a3.
 
 """
+__all__ = ["date", "version_info", "strictversion", "hexversion"]
 
 RELEASE_LEVEL_VALUE = { "dev": 0,
                        "alpha": 10,
@@ -96,4 +97,4 @@ hexversion |= version_info[2] * 1 << 8
 hexversion |= version_info[1] * 1 << 16
 hexversion |= version_info[0] * 1 << 24
 
-__all__ = ["date", "version_info", "strictversion", "hexversion"]
+
