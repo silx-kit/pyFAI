@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/07/2015"
+__date__ = "09/10/2015"
 __status__ = "stable"
 
 
@@ -260,7 +260,7 @@ cmdclass['build_ext'] = build_ext_pyFAI
 # ############################# #
 def download_images():
     """
-    Download all test images and  
+    Download all test images and
     """
     test_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test")
     sys.path.insert(0, test_dir)
@@ -486,8 +486,8 @@ if __name__ == "__main__":
           and Frederic-Emmanuel Picca",
           author_email="jerome.kieffer@esrf.fr",
           description='Python implementation of fast azimuthal integration',
-          url="https://github.com/kif/pyFAI",
-          download_url="http://forge.epn-campus.eu/projects/azimuthal/files",
+          url="https://github.com/pyFAI/pyFAI",
+          download_url="https://github.com/pyFAI/pyFAI/releases",
           ext_package="pyFAI",
           scripts=script_files,
           ext_modules=ext_modules,
