@@ -461,20 +461,26 @@ def get_version():
     sys.path.pop(0)
     return _version.strictversion
 
-classifiers = """\
-Development Status :: 5 - Production/Stable
-Intended Audience :: Developers
-Programming Language :: Python
-Topic :: Software Development :: Libraries :: Python Modules
-Operating System :: Microsoft :: Windows
-Operating System :: Unix
-Operating System :: MacOS :: MacOS X
-Operating System :: POSIX
-"""
-problematic = """
-License :: OSI Approved :: GPL
-Topic :: Crystallography
-"""
+classifiers = ["Development Status :: 5 - Production/Stable",
+               "Intended Audience :: Developers",
+               "Programming Language :: Python :: 2",
+               "Programming Language :: Python :: 3",
+               "Programming Language :: Cython",
+               "Environment :: Console",
+               "Environment :: X11 Applications :: Qt",
+               "Intented Audience :: Science/Research",
+               "License :: OSI Approved :: GNU General Public License (GPL)",
+               "License :: OSI Approved :: MIT License",
+               "Topic :: Software Development :: Libraries :: Python Modules",
+               "Operating System :: Microsoft :: Windows",
+               "Operating System :: Unix",
+               "Operating System :: MacOS :: MacOS X",
+               "Operating System :: POSIX",
+               "Topic :: Scientific/Engineering :: Physics"
+               ]
+
+install_requires = ["numpy", "h5py", "fabio", "matplotlib", "scipy"]
+setup_requires = ["numpy", "cython"]
 
 if __name__ == "__main__":
     setup(name='pyFAI',
@@ -499,7 +505,7 @@ if __name__ == "__main__":
           test_suite="test",
           cmdclass=cmdclass,
           data_files=data_files,
-          classifiers=[i for i in classifiers.split("\n") if i],
+          classifiers=classifiers,
           long_description="""PyFAI is an azimuthal integration library that tries to be fast (as fast as C
     and even more using OpenCL and GPU).
     It is based on histogramming of the 2theta/Q positions of each (center of)
@@ -510,7 +516,9 @@ if __name__ == "__main__":
     Finally pyFAI provides also tools to calibrate the experimental setup using Debye-Scherrer
     rings of a reference compound.
           """,
-          license="GPL"
+          license="GPL",
+          install_requires=install_requires,
+          setup_requires=setup_requires,
           )
 
 # ########################################### #
