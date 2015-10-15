@@ -25,15 +25,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"""
+Test for OpenCL sorting on GPU
+"""
 
 from __future__ import absolute_import, print_function, division
-__doc__ = """Test for OpenCL sorting on GPU"""
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
-__date__ = "14/10/2015"
+__date__ = "23/09/2015"
 __copyright__ = "2015, ESRF, Grenoble"
 __contact__ = "jerome.kieffer@esrf.fr"
-
 
 import sys
 import os
@@ -123,19 +124,19 @@ class TestOclSort(unittest.TestCase):
             s.reset_timer()
 
 
-def suite():
-    testsuite = unittest.TestSuite()
+def test_suite_all_ocl_sort():
+    testSuite = unittest.TestSuite()
     if skip:
         logger.warning("OpenCL module (pyopencl) is not present or no device available: skip test_ocl_sort")
     else:
-        testsuite.addTest(TestOclSort("test_sort_hor"))
-        testsuite.addTest(TestOclSort("test_sort_vert"))
-        testsuite.addTest(TestOclSort("test_filter_hor"))
-        testsuite.addTest(TestOclSort("test_filter_vert"))
+        testSuite.addTest(TestOclSort("test_sort_hor"))
+        testSuite.addTest(TestOclSort("test_sort_vert"))
+        testSuite.addTest(TestOclSort("test_filter_hor"))
+        testSuite.addTest(TestOclSort("test_filter_vert"))
     return testSuite
 
 if is_main:
-    mysuite = suite()
+    mysuite = test_suite_all_ocl_sort()
     runner = unittest.TextTestRunner()
     runner.run(mysuite)
     UtilsTest.clean_up()

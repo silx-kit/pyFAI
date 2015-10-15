@@ -1,38 +1,34 @@
 #!/usr/bin/env python
-# coding: utf-8
+# -*- coding: utf-8 -*-
 #
-#    Project: Azimuthal integration
+#    Project: Fast Azimuthal Integration
 #             https://github.com/pyFAI/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
 #
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 
-from __future__ import absolute_import, division, print_function
-__doc__ = "Dummy test to run first to check for relative imports"
+"Dummy test to run first to check for relative imports"
+
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "MIT"
+__license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "14/10/2015"
+__date__ = "15/12/2014"
 
 
 import unittest
@@ -51,10 +47,10 @@ class TestDummy(unittest.TestCase):
         print(pyFAI)
 
 
-def suite():
-    testsuite = unittest.TestSuite()
-    testsuite.addTest(TestDummy("test_dummy"))
-    return testsuite
+def test_suite_all_dummy():
+    testSuite = unittest.TestSuite()
+    testSuite.addTest(TestDummy("test_dummy"))
+    return testSuite
 
 if __name__ == '__main__':
     mysuite = test_suite_all_dummy()
