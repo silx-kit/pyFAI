@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/09/2015"
+__date__ = "16/10/2015"
 
 import unittest
 import time
@@ -209,7 +209,7 @@ class TestHistogram2d(unittest.TestCase):
         shape = (512, 512)
         self.size = shape[0] * shape[1]
         self.maxI = 1000
-        self.epsilon = 1.1e-4
+        self.epsilon = 1.3e-4
         y, x = numpy.ogrid[:shape[0], :shape[1]]
         tth = numpy.sqrt(x * x + y * y).astype("float32")
         mod = 0.5 + 0.5 * cos(tth / 12) + 0.25 * cos(tth / 6) + 0.1 * cos(tth / 4)
