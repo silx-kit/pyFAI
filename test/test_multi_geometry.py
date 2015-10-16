@@ -72,6 +72,18 @@ class TestMultiGeometry(unittest.TestCase):
         cls.data = cls.lst_data = cls.det = cls.sub_det = cls.ai = None
         cls.range = cls.ais = cls.mg = cls.N = None
 
+    def setUp(self):
+        """
+        Python2.6 compatibility !!!
+        """
+        unittest.TestCase.setUp(self)
+        if "data" not in dir(self):
+            self.setUpClass()
+
+    def tearDown(self):
+        self.data = self.lst_data = self.det = self.sub_det = self.ai = None
+        self.range = self.ais = self.mg = self.N = None
+
     def test_integrate1d(self):
         tth_ref, I_ref = self.ai.integrate1d(self.data, radial_range=self.range,
                                              npt=self.N, unit="2th_deg", method="splitpixel")
