@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# coding: utf-8
 #
 #    Project: Fast Azimuthal Integration
 #             https://github.com/pyFAI/pyFAI
@@ -8,25 +8,29 @@
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
+from __future__ import absolute_import, print_function, with_statement, division
 
-"""
-Test suites for multi_geometry modules
-"""
-__date__ = "01/09/2015"
+__doc__ = """Test suites for multi_geometry modules"""
+__date__ = "16/10/2015"
+__license__ = "MIT"
 
 import unittest, numpy, os, sys, time, logging
 if sys.version_info[0] > 2:
@@ -45,32 +49,44 @@ import fabio
 
 
 class TestMultiGeometry(unittest.TestCase):
-    def setUp(self):
-        unittest.TestCase.setUp(self)
-        self.data = fabio.open(UtilsTest.getimage("1788/moke.tif")).data
-        self.lst_data = [self.data[:250, :300], self.data[250:, :300], self.data[:250, 300:], self.data[250:, 300:]]
-        self.det = Detector(1e-4, 1e-4)
-        self.det.max_shape = (500, 600)
-        self.sub_det = Detector(1e-4, 1e-4)
-        self.sub_det.max_shape = (250, 300)
-        self.ai = AzimuthalIntegrator(0.1, 0.03, 0.03, detector=self.det)
-        self.range = (0, 23)
-        self.ais = [AzimuthalIntegrator(0.1, 0.030, 0.03, detector=self.sub_det),
-                    AzimuthalIntegrator(0.1, 0.005, 0.03, detector=self.sub_det),
-                    AzimuthalIntegrator(0.1, 0.030, 0.00, detector=self.sub_det),
-                    AzimuthalIntegrator(0.1, 0.005, 0.00, detector=self.sub_det),
-                    ]
-        self.mg = MultiGeometry(self.ais, radial_range=self.range, unit="2th_deg")
-        self.N = 390
+    @classmethod
+    def setUpClass(cls):
+        cls.data = fabio.open(UtilsTest.getimage("1788/moke.tif")).data
+        cls.lst_data = [cls.data[:250, :300], cls.data[250:, :300], cls.data[:250, 300:], cls.data[250:, 300:]]
+        cls.det = Detector(1e-4, 1e-4)
+        cls.det.max_shape = (500, 600)
+        cls.sub_det = Detector(1e-4, 1e-4)
+        cls.sub_det.max_shape = (250, 300)
+        cls.ai = AzimuthalIntegrator(0.1, 0.03, 0.03, detector=cls.det)
+        cls.range = (0, 23)
+        cls.ais = [AzimuthalIntegrator(0.1, 0.030, 0.03, detector=cls.sub_det),
+                   AzimuthalIntegrator(0.1, 0.005, 0.03, detector=cls.sub_det),
+                   AzimuthalIntegrator(0.1, 0.030, 0.00, detector=cls.sub_det),
+                   AzimuthalIntegrator(0.1, 0.005, 0.00, detector=cls.sub_det),
+                   ]
+        cls.mg = MultiGeometry(cls.ais, radial_range=cls.range, unit="2th_deg")
+        cls.N = 390
 
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        self.data = self.lst_data = self.det = self.sub_det = self.ai = None
-        self.range = self.ais = self.mg = self.N = None
+    @classmethod
+    def tearDownClass(cls):
+        cls.data = cls.lst_data = cls.det = cls.sub_det = cls.ai = None
+        cls.range = cls.ais = cls.mg = cls.N = None
 
     def test_integrate1d(self):
-        tth_ref, I_ref = self.ai.integrate1d(self.data, radial_range=self.range, npt=self.N, unit="2th_deg", method="splitpixel")
+        tth_ref, I_ref = self.ai.integrate1d(self.data, radial_range=self.range,
+                                             npt=self.N, unit="2th_deg", method="splitpixel")
         obt = self.mg.integrate1d(self.lst_data, self.N)
+        tth_obt, I_obt = obt
+        self.assertEqual(abs(tth_ref - tth_obt).max(), 0, "Bin position is the same")
+        # intensity need to be scaled by solid angle 1e-4*1e-4/0.1**2 = 1e-6
+        delta = (abs(I_obt * 1e6 - I_ref).max())
+        self.assert_(delta < 5e-5, "Intensity is the same delta=%s" % delta)
+
+    def test_integrate1d_withpol(self):
+        tth_ref, I_ref = self.ai.integrate1d(self.data, radial_range=self.range,
+                                             npt=self.N, unit="2th_deg", method="splitpixel",
+                                             polarization_factor=0.9)
+        obt = self.mg.integrate1d(self.lst_data, self.N, polarization_factor=0.9)
         tth_obt, I_obt = obt
         self.assertEqual(abs(tth_ref - tth_obt).max(), 0, "Bin position is the same")
         # intensity need to be scaled by solid angle 1e-4*1e-4/0.1**2 = 1e-6
@@ -107,14 +123,15 @@ class TestMultiGeometry(unittest.TestCase):
         self.assert_(delta.max() < 0.004, "pixel intensity is the same (for populated pixels) delta=%s" % delta.max())
 
 
-def test_suite_all_multi_geometry():
-    testSuite = unittest.TestSuite()
-    testSuite.addTest(TestMultiGeometry("test_integrate1d"))
-    testSuite.addTest(TestMultiGeometry("test_integrate2d"))
-    return testSuite
+def suite():
+    testsuite = unittest.TestSuite()
+    testsuite.addTest(TestMultiGeometry("test_integrate1d"))
+    testsuite.addTest(TestMultiGeometry("test_integrate1d_withpol"))
+    testsuite.addTest(TestMultiGeometry("test_integrate2d"))
+    return testsuite
 
+test_suite_all_multi_geometry = suite
 
 if __name__ == '__main__':
-    mysuite = test_suite_all_multi_geometry()
     runner = unittest.TextTestRunner()
-    runner.run(mysuite)
+    runner.run(suite())
