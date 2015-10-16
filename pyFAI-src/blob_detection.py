@@ -87,6 +87,8 @@ def local_max(dogs, mask=None, n_5=True):
     @parm mask: mask out keypoint next to the mask (or inside the mask)
     @param n_5: look for a larger neighborhood
     """
+    if mask is not None:
+        mask = mask.astype(bool)
     ns = dogs.shape[0]
     kpma = numpy.zeros(shape=dogs.shape, dtype=numpy.uint8)
     for i in range(1, ns - 1):
@@ -152,7 +154,7 @@ def local_max(dogs, mask=None, n_5=True):
             target = 14
 
         if mask is not None:
-            kpm -= mask
+            kpm[mask] = 0
 
     return kpma == target
 
