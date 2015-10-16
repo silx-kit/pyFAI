@@ -1,33 +1,35 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# coding: utf-8
 #
 #    Project: Azimuthal integration
 #             https://github.com/pyFAI/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
 from __future__ import absolute_import, print_function, with_statement, division
 
+__doc__ = """Module for treating simultaneously multiple detector configuration
+             within a single integration"""
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/06/2015"
+__date__ = "16/10/2015"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -88,13 +90,18 @@ class MultiGeometry(object):
         return "MultiGeometry integrator with %s geometries on %s radial range (%s) and %s azimuthal range (deg)" % \
             (len(self.ais), self.radial_range, self.unit, self.azimuth_range)
 
-    def integrate1d(self, lst_data, npt=1800, monitors=None, all=False):
-        """
-        Perform 1D azimuthal integration
+    def integrate1d(self, lst_data, npt=1800,
+                    correctSolidAngle=True, polarization_factor=None,
+                    monitors=None, all=False):
+        """Perform 1D azimuthal integration
 
         @param lst_data: list of numpy array
         @param npt: number of points int the integration
-        @param monitors:
+        @param correctSolidAngle: correct for solid angle (all processing are then done in absolute solid angle !)
+        @param polarization_factor: Apply polarization correction ? is None: not applies. Else provide a value from -1 to +1
+        @param monitors: normalization monitors value (list of floats)
+        @param all: return a dict with all information in it.
+        @return: 2th/I or a dict with everything depending on "all"
         """
         if monitors is None:
             monitors = [1.0] * len(self.ais)
@@ -102,13 +109,15 @@ class MultiGeometry(object):
         count = numpy.zeros(npt, dtype=numpy.float64)
         for ai, data, monitor in zip(self.ais, lst_data, monitors):
             res = ai.integrate1d(data, npt=npt,
-                                 correctSolidAngle=True,
+                                 correctSolidAngle=correctSolidAngle,
+                                 polarization_factor=polarization_factor,
                                  radial_range=self.radial_range,
                                  azimuth_range=self.azimuth_range,
                                  method="splitpixel", unit=self.unit, safe=True,
                                  all=True)
             count += res["count"]
-            sum += res["sum"] * (ai.pixel1 * ai.pixel2 / monitor / ai.dist ** 2)
+            sac = (ai.pixel1 * ai.pixel2 / monitor / ai.dist ** 2) if correctSolidAngle else 1.0 / monitor
+            sum += res["sum"] * sac
 
         I = sum / numpy.maximum(count, EPS32 - 1)
         I[count <= (EPS32 - 1)] = self.empty
@@ -127,13 +136,18 @@ class MultiGeometry(object):
                 out = res["radial"], I
         return out
 
-    def integrate2d(self, lst_data, npt_rad=1800, npt_azim=3600, monitors=None, all=False):
-        """
-        Perform 1D azimuthal integration of multiples frames, one for each geometry
+    def integrate2d(self, lst_data, npt_rad=1800, npt_azim=3600,
+                    correctSolidAngle=True, polarization_factor=None,
+                    monitors=None, all=False):
+        """Performs 2D azimuthal integration of multiples frames, one for each geometry
 
         @param lst_data: list of numpy array
-        @param npt_rad: integration range
-        @param monitors:
+        @param npt: number of points int the integration
+        @param correctSolidAngle: correct for solid angle (all processing are then done in absolute solid angle !)
+        @param polarization_factor: Apply polarization correction ? is None: not applies. Else provide a value from -1 to +1
+        @param monitors: normalization monitors value (list of floats)
+        @param all: return a dict with all information in it.
+        @return: I/2th/chi or a dict with everything depending on "all"
         """
         if monitors is None:
             monitors = [1.0] * len(self.ais)
@@ -141,13 +155,15 @@ class MultiGeometry(object):
         count = numpy.zeros((npt_azim, npt_rad), dtype=numpy.float64)
         for ai, data, monitor in zip(self.ais, lst_data, monitors):
             res = ai.integrate2d(data, npt_rad=npt_rad, npt_azim=npt_azim,
-                                 correctSolidAngle=True,
+                                 correctSolidAngle=correctSolidAngle,
+                                 polarization_factor=polarization_factor,
                                  radial_range=self.radial_range,
                                  azimuth_range=self.azimuth_range,
                                  method="splitpixel", unit=self.unit, safe=True,
                                  all=True)
             count += res["count"]
-            sum += res["sum"] * (ai.pixel1 * ai.pixel2 / monitor / ai.dist ** 2)
+            sac = (ai.pixel1 * ai.pixel2 / monitor / ai.dist ** 2) if correctSolidAngle else 1.0 / monitor
+            sum += res["sum"] * sac
 
         I = sum / numpy.maximum(count, EPS32 - 1)
         I[count <= (EPS32 - 1)] = self.empty

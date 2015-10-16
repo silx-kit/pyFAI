@@ -3,28 +3,39 @@ The pyFAI library is released under GPL license.
 However some modules/sub-parts are available under MIT license:
 
 build-deb.sh
-benchmark/benchmark.py
-benchmark/benchmark_distortion.py
-benchmark/benchmark_ocl_csr3.py
-benchmark/benchmark_split.py
-pyFAI-src/_version.py
-pyFAI-src/ocl_sort.py 
+
+benchmark/
+          benchmark.py
+          benchmark_distortion.py
+          benchmark_ocl_csr3.py
+          benchmark_split.py
+
+pyFAI-src/
+          _version.py
+          multi_geometry.py
+          ocl_sort.py 
+
 openCL/bitonic.cl
-opencl/separate.cl
-openCL/for_eclipse.h
-sandbox/demo_bitonic.py
-sandbox/blob.py
-sandbox/bug-1280.py
-sandbox/bug_ocl_cpu.py
-sandbox/bug_ocl_gpu.py
-sandbox/chi_square_ds8.py
-sandbox/moke.poni
-sandbox/utilstest.py
-src/crc32.c
-src/crc32.h
-src/crc32.pxd
-src/fastcrc.pyx
+       separate.cl
+       for_eclipse.h
+       
+sandbox/
+        demo_bitonic.py
+        blob.py
+        bug-1280.py
+        bug_ocl_cpu.py
+        bug_ocl_gpu.py
+        chi_square_ds8.py
+        moke.poni
+        utilstest.py
+src/
+    crc32.c
+    crc32.h
+    crc32.pxd
+    fastcrc.pyx
+
 test/test_ocl_sort.py
+     test_multi_geometry.py
 
 Files under BSD license:
 /doc/source/mathjax.py (Copyright 2007-2013 by the Sphinx team)
