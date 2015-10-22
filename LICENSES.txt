@@ -46,8 +46,14 @@ src/
     crc32.pxd
     fastcrc.pyx
 
-test/test_ocl_sort.py
+test/profile_all.py
+     test_all.py
+     test_ocl_sort.py
      test_multi_geometry.py
+     test_utils.py
+     test_split_pixel.py
+     test_watershed.py
+
 
 Files under BSD license:
 /doc/source/mathjax.py (Copyright 2007-2013 by the Sphinx team)

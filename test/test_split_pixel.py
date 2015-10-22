@@ -1,32 +1,36 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/python
+# coding: utf-8
 #
-#    Project: Fast Azimuthal Integration
+#    Project: Azimuthal integration
 #             https://github.com/pyFAI/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
 
 """
-Test suites for pixel splitting scheeme balidation
+Test suites for pixel splitting scheme validation
 
-see debug_split_pixel.py for visual validation
+see sandbox/debug_split_pixel.py for visual validation
 """
 
 import unittest, numpy, os, sys, time
@@ -115,16 +119,15 @@ class TestSplitPixel(unittest.TestCase):
         self.assert_(Rwp(self.results["csr_bbox"], self.results["csr_full"]) > thres, "csr_full/csr_full")
 
 
-def test_suite_all_split():
-    testSuite = unittest.TestSuite()
-    testSuite.addTest(TestSplitPixel("test_no_split"))
-    testSuite.addTest(TestSplitPixel("test_split_bbox"))
-    testSuite.addTest(TestSplitPixel("test_split_full"))
-    return testSuite
+def suite():
+    testsuite = unittest.TestSuite()
+    testsuite.addTest(TestSplitPixel("test_no_split"))
+    testsuite.addTest(TestSplitPixel("test_split_bbox"))
+    testsuite.addTest(TestSplitPixel("test_split_full"))
+    return testsuite
 
 
 if __name__ == '__main__':
-    mysuite = test_suite_all_split()
     runner = unittest.TextTestRunner()
-    runner.run(mysuite)
+    runner.run(suite())
     UtilsTest.clean_up()

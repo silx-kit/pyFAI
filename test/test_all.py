@@ -1,36 +1,38 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/python
+# coding: utf-8
 #
-#    Project: Fast Azimuthal Integration
+#    Project: Azimuthal integration
 #             https://github.com/pyFAI/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 from __future__ import absolute_import, division, print_function
-"""
-Test suite for all pyFAI modules.
-"""
 
+__doc__ = """Test suite for all pyFAI modules."""
 __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/09/2015"
+__date__ = "22/10/2015"
 
 import sys
 import os
@@ -57,7 +59,7 @@ from .test_integrate import test_suite_all_Integrate1d
 from .test_bilinear import test_suite_all_bilinear
 from .test_distortion import test_suite_all_distortion
 from .test_flat import test_suite_all_Flat
-from .test_utils import test_suite_all_Utils
+from . import test_utils
 from .test_polarization import test_suite_all_polarization
 from .test_detector import test_suite_all_detectors
 from .test_convolution import test_suite_all_convolution
@@ -67,52 +69,51 @@ from .test_blob_detection import test_suite_all_blob_detection
 from .test_marchingsquares import test_suite_all_marchingsquares
 from .test_io import test_suite_all_io
 from .test_calibrant import test_suite_all_calibrant
-from .test_split_pixel import test_suite_all_split
+from . import test_split_pixel
 from .test_bispev import test_suite_all_bispev
 from .test_bug_regression import test_suite_bug_regression
 from .test_multi_geometry import test_suite_all_multi_geometry
-from .test_watershed import test_suite_all_watershed
+from . import test_watershed
 from .test_ocl_sort import test_suite_all_ocl_sort
 
 
-def test_suite_all():
-    testSuite = unittest.TestSuite()
-    testSuite.addTest(test_suite_all_dummy())
-    testSuite.addTest(test_suite_all_Histogram())
-    testSuite.addTest(test_suite_all_GeometryRefinement())
-    testSuite.addTest(test_suite_all_AzimuthalIntegration())
-    testSuite.addTest(test_suite_all_PeakPicking())
-    testSuite.addTest(test_suite_all_Geometry())
-    testSuite.addTest(test_suite_all_Mask())
-    testSuite.addTest(test_suite_all_OpenCL())
-    testSuite.addTest(test_suite_all_Export())
-    testSuite.addTest(test_suite_all_Saxs())
-    testSuite.addTest(test_suite_all_Integrate1d())
-    testSuite.addTest(test_suite_all_bilinear())
-    testSuite.addTest(test_suite_all_distortion())
-    testSuite.addTest(test_suite_all_Flat())
-    testSuite.addTest(test_suite_all_Utils())
-    testSuite.addTest(test_suite_all_detectors())
-    testSuite.addTest(test_suite_all_convolution())
-    testSuite.addTest(test_suite_all_sparse())
-    testSuite.addTest(test_suite_all_OpenCL_CSR())
-    testSuite.addTest(test_suite_all_blob_detection())
-    testSuite.addTest(test_suite_all_marchingsquares())
-    testSuite.addTest(test_suite_all_io())
-    testSuite.addTest(test_suite_all_calibrant())
-    testSuite.addTest(test_suite_all_polarization())
-    testSuite.addTest(test_suite_all_split())
-    testSuite.addTest(test_suite_all_bispev())
-    testSuite.addTest(test_suite_bug_regression())
-    testSuite.addTest(test_suite_all_watershed())
-    testSuite.addTest(test_suite_all_multi_geometry())
-    testSuite.addTest(test_suite_all_ocl_sort())
-    return testSuite
+def suite():
+    testsuite = unittest.TestSuite()
+    testsuite.addTest(test_suite_all_dummy())
+    testsuite.addTest(test_suite_all_Histogram())
+    testsuite.addTest(test_suite_all_GeometryRefinement())
+    testsuite.addTest(test_suite_all_AzimuthalIntegration())
+    testsuite.addTest(test_suite_all_PeakPicking())
+    testsuite.addTest(test_suite_all_Geometry())
+    testsuite.addTest(test_suite_all_Mask())
+    testsuite.addTest(test_suite_all_OpenCL())
+    testsuite.addTest(test_suite_all_Export())
+    testsuite.addTest(test_suite_all_Saxs())
+    testsuite.addTest(test_suite_all_Integrate1d())
+    testsuite.addTest(test_suite_all_bilinear())
+    testsuite.addTest(test_suite_all_distortion())
+    testsuite.addTest(test_suite_all_Flat())
+    testsuite.addTest(test_utils.suite())
+    testsuite.addTest(test_suite_all_detectors())
+    testsuite.addTest(test_suite_all_convolution())
+    testsuite.addTest(test_suite_all_sparse())
+    testsuite.addTest(test_suite_all_OpenCL_CSR())
+    testsuite.addTest(test_suite_all_blob_detection())
+    testsuite.addTest(test_suite_all_marchingsquares())
+    testsuite.addTest(test_suite_all_io())
+    testsuite.addTest(test_suite_all_calibrant())
+    testsuite.addTest(test_suite_all_polarization())
+    testsuite.addTest(test_split_pixel.suite())
+    testsuite.addTest(test_suite_all_bispev())
+    testsuite.addTest(test_suite_bug_regression())
+    testsuite.addTest(test_watershed.suite())
+    testsuite.addTest(test_suite_all_multi_geometry())
+    testsuite.addTest(test_suite_all_ocl_sort())
+    return testsuite
 
 if __name__ == '__main__':
-    mysuite = test_suite_all()
     runner = unittest.TextTestRunner()
-    if runner.run(mysuite).wasSuccessful():
+    if runner.run(suite()).wasSuccessful():
         UtilsTest.clean_up()
     else:
         sys.exit(1)
