@@ -20,7 +20,7 @@ pyFAI-src/
 openCL/bitonic.cl
        separate.cl
        for_eclipse.h
-       
+
 sandbox/
         demo_bitonic.py
         blob.py
@@ -49,7 +49,7 @@ src/
     crc32.pxd
     fastcrc.pyx
 
-test/
+test/__init__.py
      profile_all.py
      test_all.py
      test_azimuthal_integrator.py
