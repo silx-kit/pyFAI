@@ -127,7 +127,10 @@ class TestBug211(unittest.TestCase):
     def test_quantile(self):
         p = subprocess.call([sys.executable, self.exe, "--quiet", "-q", "0.2-0.8", "-o", self.outfile] + self.image_files,
                             shell=False, env=self.env)
-        self.assertEqual(p, 0, msg="pyFAI-average return code is 0")
+        if p:
+            l = [sys.executable, self.exe, "--quiet", "-q", "0.2-0.8", "-o", self.outfile] + self.image_files
+            logger.error(" ".join(l))
+        self.assertEqual(p, 0, msg="pyFAI-average return code %i != 0" % p)
         self.assert_(numpy.allclose(fabio.open(self.outfile).data, self.res),
                          "pyFAI-average with quantiles gives good results")
 
