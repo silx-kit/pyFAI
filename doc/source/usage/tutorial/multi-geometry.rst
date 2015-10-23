@@ -46,18 +46,40 @@ to define the output space so that all individual integrators use the same bins.
    q, I = mg.integrate1d(img_data, 10000)
 
 What is automatic
-=================
+-----------------
 
 * MultiGeometry takes care of defining the same output space with the same bin position,
 * It performs the normalization of the solid angle (absolute solid angle, unlike AzimuthalIntegrator !)
 * It can handle polarization correction if needed
 * It can normalize by a monitor (I1 normalization) or correct for exposure time
 
-What is not automatic
-=====================
+What is not
+-----------
 
 For PDF measurement, data needs to be properly prepared, especially:
 
 * Dark current subtraction
 * Flat-field correction
 * Exposure time correction (if all images are not taken with the same exposure time)
+
+Examples
+========
+
+In 1d
+-----
+
+Go to very high-Q.
+TODO: example of LaB6 taken at Max-lab, Titan detector 0-> 150°
+
+In 2d
+-----
+
+Fill the gaps of a pixel detector
+TODO: Example of Tra at D2AM with imXpad detctor.
+
+Conclusion
+==========
+
+MultiGeometry is a unique feature of PyFAI ...
+While extremely powerful, it need
+careful understanding of the numerical treatement going on underneath.
