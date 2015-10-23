@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/09/2015"
+__date__ = "23/10/2015"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
@@ -1483,12 +1483,22 @@ class Geometry(object):
 
 
     def calcfrom1d(self, tth, I, shape=None, mask=None,
-                   dim1_unit=units.TTH, correctSolidAngle=True):
+                   dim1_unit=units.TTH, correctSolidAngle=True,
+                   dummy=None,
+                   polarization_factor=None, dark=None, flat=None,
+                   ):
         """
         Computes a 2D image from a 1D integrated profile
 
-        @param tth: 1D array with 2theta in degrees
+        @param tth: 1D array with radial unit
         @param I: scattering intensity
+        @param shape: shape of the image (if not defined by the detector)
+        @param dim1_unit: unit for the "tth" array
+        @param correctSolidAngle:
+        @param dummy: value for masked pixels
+        @param polarization_factor: set to true to use previously used value
+        @param dark: dark current correction
+        @param flat: faltfield corrction
         @return: 2D image reconstructed
 
         """
@@ -1506,9 +1516,22 @@ class Geometry(object):
         calcimage.shape = shape
         if correctSolidAngle:
             calcimage *= self.solidAngleArray(shape)
+        if polarization_factor:
+            if polarization_factor is True and self._polarization:
+                polarization = self._polarization
+            else:
+                polarization = self.polarization(shape, factor, axis_offset=0)
+            try:
+                calcimage *= polarization
+            except Exception as err:
+                logger.error("unable to apply polarization correction: %s" % err)
+        if flat is not None:
+            calcimage *= flat
+        if dark is not None:
+            calcimage += dark
         if mask is not None:
             assert mask.shape == tuple(shape)
-            calcimage[numpy.where(mask)] = 0
+            calcimage[numpy.where(mask)] = dummy
         return calcimage
 
     def __copy__(self):
