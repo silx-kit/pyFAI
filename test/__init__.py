@@ -21,32 +21,24 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# print(
-"""
-Test module pyFAI.
-"""
-# )
+
+__doc__ = """Test module pyFAI."""
 __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "20/08/2016"
 import os
 import sys
 import unittest
 
-# if __path__ not in dir():
-#     print("Create the package to allow relative imports")
-#     __name__ = "pyFAI.test"
-#     dirname = os.path.dirname(__file__)
-
 from . import utilstest
-from .test_all import test_suite_all
+from . import test_all
 
 
 def run_tests():
     """Run test complete test_suite"""
-    mysuite = test_suite_all()
+    mysuite = test_all.suite()
     runner = unittest.TextTestRunner()
     if not runner.run(mysuite).wasSuccessful():
         print("Test suite failed")
