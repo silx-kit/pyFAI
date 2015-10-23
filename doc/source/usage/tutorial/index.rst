@@ -1,2 +1,6 @@
 more in depth explanation ...
-To come
+
+.. toctree::
+   :maxdepth: 2
+
+   multi-geometry

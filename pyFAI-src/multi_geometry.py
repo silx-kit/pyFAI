@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2015"
+__date__ = "23/10/2015"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -47,6 +47,7 @@ import numpy
 from numpy import rad2deg
 error = None
 from math import pi
+
 
 class MultiGeometry(object):
     """
