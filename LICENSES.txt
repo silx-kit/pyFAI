@@ -12,9 +12,10 @@ benchmark/
 
 pyFAI-src/
           _version.py
+          diffmap_widget.py
+          diffmap.py
           multi_geometry.py
           ocl_sort.py 
-
 openCL/bitonic.cl
        separate.cl
        for_eclipse.h
