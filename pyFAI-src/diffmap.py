@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # coding: utf-8
 #
 #    Project: Azimuthal integration
@@ -26,54 +25,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import division, print_function, absolute_import
 
-__doc__ = "test suite for inverse watershed space segmenting code."
-__author__ = "Jérôme Kieffer"
+from __future__ import absolute_import, print_function, division
+
+__author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/10/2015"
+__date__ = "22/10/2015"
+__status__ = "development"
+__docformat__ = 'restructuredtext'
+__doc__ = """
 
-import unittest
-import sys
-import os
-import fabio
-if __name__ == '__main__':
-    import pkgutil
-    __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
-from .utilstest import UtilsTest, getLogger
-logger = getLogger(__file__)
-pyFAI = sys.modules["pyFAI"]
-import pyFAI.watershed
+Module with GUI for diffraction mapping experiments 
 
 
-class TestWatershed(unittest.TestCase):
-    fname = "1883/Pilatus1M.edf"
-
-    def setUp(self):
-        self.data = fabio.open(UtilsTest.getimage(self.fname)).data
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        self.data = None
-
-    def test_init(self):
-        w = pyFAI.watershed.InverseWatershed(data=self.data)
-        w.init()
-        print(len(w.regions))
-        from sys import getsizeof
-        print(getsizeof(w))
-        w.__dealloc__()
-        print(getsizeof(w))
-
-
-def suite():
-    testsuite = unittest.TestSuite()
-    testsuite.addTest(TestWatershed("test_init"))
-    return testsuite
-
-if __name__ == '__main__':
-    runner = unittest.TextTestRunner()
-    runner.run(suite())
-    UtilsTest.clean_up()
+"""
+# __all__ = ["date", "version_info", "strictversion", "hexversion"]

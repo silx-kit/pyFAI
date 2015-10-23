@@ -1,36 +1,50 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/python
+# coding: utf-8
 #
-#    Project: Fast Azimuthal Integration
+#    Project: Azimuthal integration
 #             https://github.com/pyFAI/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
-"""tests for Jon's geometry changes
+from __future__ import absolute_import, division, print_function
+
+__doc__ = """tests for Jon's geometry changes
 FIXME : make some tests that the functions do what is expected
-
 """
+__author__ = "Jérôme Kieffer"
+__contact__ = "Jerome.Kieffer@ESRF.eu"
+__license__ = "MIT"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "23/10/2015"
 
 
-import unittest, numpy, os, sys, time
+import unittest
+import os
+import sys
+import time
+import numpy
 if __name__ == '__main__':
-    import pkgutil, os
+    import pkgutil
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
 from .utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
@@ -262,22 +276,21 @@ TESTCASES = [
  ]
 
 
-def test_suite_all_Geometry():
-    testSuite = unittest.TestSuite()
-    testSuite.addTest(TestSolidAngle("testSolidAngle"))
-    testSuite.addTest(TestBug88SolidAngle("testSolidAngle"))
-    testSuite.addTest(TestRecprocalSpacingSquarred("test_center"))
-    testSuite.addTest(TestRecprocalSpacingSquarred("test_corner"))
-    testSuite.addTest(TestRecprocalSpacingSquarred("test_delta"))
+def suite():
+    testsuite = unittest.TestSuite()
+    testsuite.addTest(TestSolidAngle("testSolidAngle"))
+    testsuite.addTest(TestBug88SolidAngle("testSolidAngle"))
+    testsuite.addTest(TestRecprocalSpacingSquarred("test_center"))
+    testsuite.addTest(TestRecprocalSpacingSquarred("test_corner"))
+    testsuite.addTest(TestRecprocalSpacingSquarred("test_delta"))
 
     for param in TESTCASES:
-        testSuite.addTest(ParameterisedTestCase.parameterise(
+        testsuite.addTest(ParameterisedTestCase.parameterise(
                 TestGeometry, param))
 
-    return testSuite
+    return testsuite
 
 
 if __name__ == '__main__':
-    mysuite = test_suite_all_Geometry()
     runner = unittest.TextTestRunner()
-    runner.run(mysuite)
+    runner.run(suite())

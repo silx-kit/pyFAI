@@ -1,10 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 #
-#    Project: Azimuthal integration
+#    Project: Fast Azimuthal Integration
 #             https://github.com/pyFAI/pyFAI
 #
-#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
@@ -25,41 +25,39 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-
-from __future__ import absolute_import, division, print_function
-
-__doc__ = "Dummy test to run first to check for relative imports"
-__author__ = "Jérôme Kieffer"
-__contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "MIT"
-__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/10/2015"
-
-
+import cProfile, pstats, StringIO
 import unittest
-import sys
-import os
-if __name__ == '__main__':
-    import pkgutil
-    __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
-from .utilstest import UtilsTest, getLogger
-logger = getLogger(__file__)
-pyFAI = sys.modules["pyFAI"]
+import pyFAI, fabio
+aimg = fabio.open("testimages/halfccd.edf").data
+ai = pyFAI.load("testimages/halfccd.poni")
+a, b = ai.separate(aimg)
+pr = cProfile.Profile()
+pr.enable()
+a, b = ai.separate(aimg)
+pr.disable()
+pr.dump_stats(__file__ + ".numpy.log")
+a, b = ai.separate(aimg, method="ocl_csr")
+pr = cProfile.Profile()
+pr.enable()
+a, b = ai.separate(aimg, method="ocl_csr")
+pr.disable()
+pr.dump_stats(__file__ + ".opencl.log")
+# s = StringIO.StringIO()
+# sortby = 'cumulative'
+# ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+# ps.print_stats()
+# print s.getvalue()
 
-
-class TestDummy(unittest.TestCase):
-    def test_dummy(self):
-        print(__name__)
-        print(pyFAI)
-
-
-def suite():
-    testsuite = unittest.TestSuite()
-    testsuite.addTest(TestDummy("test_dummy"))
-    return testsuite
-
-
-if __name__ == '__main__':
-    runner = unittest.TextTestRunner()
-    runner.run(suite())
-    UtilsTest.clean_up()
+from pylab import *
+f = figure()
+f.add_subplot(221)
+a, b = ai.separate(aimg)
+imshow(log(a))
+f.add_subplot(222)
+imshow(log(b))
+f.add_subplot(223)
+a, b = ai.separate(aimg, method="ocl_csr")
+imshow(log(a))
+f.add_subplot(224)
+imshow(log(b))
+show()

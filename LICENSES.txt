@@ -12,14 +12,17 @@ benchmark/
 
 pyFAI-src/
           _version.py
+          diffmap_widget.py
+          diffmap.py
           multi_geometry.py
           ocl_sort.py
 
 openCL/bitonic.cl
        separate.cl
        for_eclipse.h
-
+       
 sandbox/
+        demo_bitonic.py
         blob.py
         bug-1280.py
         bug_ocl_cpu.py
@@ -46,8 +49,39 @@ src/
     crc32.pxd
     fastcrc.pyx
 
-test/test_ocl_sort.py
+test/
+     profile_all.py
+     test_all.py
+     test_azimuthal_integrator.py
+     test_bilinear.py
+     test_bispev.py
+     test_blob_detection.py
+     test_bug_regression.py
+     test_calibrant.py
+     test_convolution.py
+     test_csr.py
+     test_distortion.py
+     test_dummy.py
+     test_export.py
+     test_flat.py
+     test_geometry.py
+     test_geometry_refinement.py
+     test_histogram.py
+     test_integrate.py
+     test_io.py
+     test_marchingsquares.py
+     test_mask.py
      test_multi_geometry.py
+     test_ocl_sort.py
+     test_openCL.py
+     test_peak_picking.py
+     test_polarization.py
+     test_saxs.py
+     test_sparse.py
+     test_split_pixel.py
+     test_utils.py
+     test_watershed.py
+
 
 Files under BSD license:
 /doc/source/mathjax.py (Copyright 2007-2013 by the Sphinx team)

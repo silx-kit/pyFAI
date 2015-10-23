@@ -28,6 +28,7 @@ __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "20/08/2016"
+
 import os
 import sys
 import unittest
@@ -40,7 +41,7 @@ def run_tests():
     """Run test complete test_suite"""
     mysuite = test_all.suite()
     runner = unittest.TextTestRunner()
-    if not runner.run(mysuite).wasSuccessful():
+    if not runner.run(suite()).wasSuccessful():
         print("Test suite failed")
         return 1
     else:
