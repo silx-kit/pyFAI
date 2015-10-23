@@ -125,6 +125,9 @@ class TestBug211(unittest.TestCase):
         self.exe = self.env = None
 
     def test_quantile(self):
+        if not os.path.exists(self.exe):
+            print("Error with executable: %s" % self.exe)
+            print(os.listdir(os.path.dirname(self.exe)))
         p = subprocess.call([sys.executable, self.exe, "--quiet", "-q", "0.2-0.8", "-o", self.outfile] + self.image_files,
                             shell=False, env=self.env)
         if p:
