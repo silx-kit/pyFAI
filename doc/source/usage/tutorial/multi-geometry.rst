@@ -17,7 +17,7 @@ allowing either a better statistics or a larger Q-range coverage.
 
 As described in the publication, the average is calculated by the ratio of the
 (intensity-) weighted histogram by the unweighted histogram. By enforcing a same
-bin position over multiple gerometries, one can create a combined weighted and
+bin position over multiple geometries, one can create a combined weighted and
 unweighted histograms by simply summing all partial histograms from each geometry.
 
 The resulting pattern is obtained as usual by the ration of weighted/unweighted
@@ -57,6 +57,7 @@ What is not automatic
 =====================
 
 For PDF measurement, data needs to be properly prepared, especially:
+
 * Dark current subtraction
 * Flat-field correction
 * Exposure time correction (if all images are not taken with the same exposure time)
