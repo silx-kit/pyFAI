@@ -44,6 +44,8 @@ install:
   - "python --version"
   - "python -c \"print(tuple.__itemsize__*8)\""
   # Install the build and runtime dependencies of the project.
+  #pip install -i https://pypi.anaconda.org/carlkl/simple scipy
+  - "%CMD_IN_ENV% pip install --trusted-host pypi.anaconda.org -i https://pypi.anaconda.org/carlkl/simple numpy scipy"
   - "%CMD_IN_ENV% pip install --trusted-host www.edna-site.org -r requirements_appveyor.txt"
   - "%CMD_IN_ENV% python setup.py build bdist_wheel bdist_msi"
   - ps: "ls dist"
