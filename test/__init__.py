@@ -46,7 +46,7 @@ from . import test_all
 def run_tests():
     """Run test complete test_suite"""
     runner = unittest.TextTestRunner()
-    if not runner.run(test_allsuite()).wasSuccessful():
+    if not runner.run(test_all.suite()).wasSuccessful():
         print("Test suite failed")
         return 1
     else:
