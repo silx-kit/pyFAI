@@ -32,7 +32,7 @@ __authors__ = ["Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/10/2015"
+__date__ = "23/10/2015"
 
 import sys
 import os
@@ -45,71 +45,72 @@ from .utilstest import UtilsTest, getLogger
 logger = getLogger("test_all")
 
 
-from .test_dummy import test_suite_all_dummy
-from .test_geometry_refinement import test_suite_all_GeometryRefinement
-from .test_azimuthal_integrator import test_suite_all_AzimuthalIntegration
-from .test_histogram import test_suite_all_Histogram
-from .test_peak_picking import test_suite_all_PeakPicking
-from .test_geometry import test_suite_all_Geometry
-from .test_mask import test_suite_all_Mask
-from .test_openCL import test_suite_all_OpenCL
-from .test_export import test_suite_all_Export
-from .test_saxs import test_suite_all_Saxs
-from .test_integrate import test_suite_all_Integrate1d
-from .test_bilinear import test_suite_all_bilinear
-from .test_distortion import test_suite_all_distortion
-from .test_flat import test_suite_all_Flat
+from . import test_dummy
+from . import test_histogram
+from . import test_geometry_refinement
+from . import test_azimuthal_integrator
+from . import test_peak_picking
+from . import test_geometry
+from . import test_mask
+from . import test_openCL
+from . import test_export
+from . import test_saxs
+from . import test_integrate
+from . import test_bilinear
+from . import test_distortion
+from . import test_flat
 from . import test_utils
-from .test_polarization import test_suite_all_polarization
-from .test_detector import test_suite_all_detectors
-from .test_convolution import test_suite_all_convolution
-from .test_sparse import test_suite_all_sparse
-from .test_csr import test_suite_all_OpenCL_CSR
-from .test_blob_detection import test_suite_all_blob_detection
-from .test_marchingsquares import test_suite_all_marchingsquares
-from .test_io import test_suite_all_io
-from .test_calibrant import test_suite_all_calibrant
+from . import test_detector
+from . import test_convolution
+from . import test_sparse
+from . import test_csr
+from . import test_blob_detection
+from . import test_marchingsquares
+from . import test_io
+from . import test_calibrant
+from . import test_polarization
 from . import test_split_pixel
-from .test_bispev import test_suite_all_bispev
-from .test_bug_regression import test_suite_bug_regression
-from .test_multi_geometry import test_suite_all_multi_geometry
+from . import test_bispev
+from . import test_bug_regression
 from . import test_watershed
-from .test_ocl_sort import test_suite_all_ocl_sort
+from . import test_multi_geometry
+from . import test_ocl_sort
 
 
 def suite():
     testsuite = unittest.TestSuite()
-    testsuite.addTest(test_suite_all_dummy())
-    testsuite.addTest(test_suite_all_Histogram())
-    testsuite.addTest(test_suite_all_GeometryRefinement())
-    testsuite.addTest(test_suite_all_AzimuthalIntegration())
-    testsuite.addTest(test_suite_all_PeakPicking())
-    testsuite.addTest(test_suite_all_Geometry())
-    testsuite.addTest(test_suite_all_Mask())
-    testsuite.addTest(test_suite_all_OpenCL())
-    testsuite.addTest(test_suite_all_Export())
-    testsuite.addTest(test_suite_all_Saxs())
-    testsuite.addTest(test_suite_all_Integrate1d())
-    testsuite.addTest(test_suite_all_bilinear())
-    testsuite.addTest(test_suite_all_distortion())
-    testsuite.addTest(test_suite_all_Flat())
+    testsuite.addTest(test_dummy.suite())
+    testsuite.addTest(test_histogram.suite())
+    testsuite.addTest(test_geometry_refinement.suite())
+    testsuite.addTest(test_azimuthal_integrator.suite())
+    testsuite.addTest(test_peak_picking.suite())
+    testsuite.addTest(test_geometry.suite())
+    testsuite.addTest(test_mask.suite())
+    testsuite.addTest(test_openCL.suite())
+    testsuite.addTest(test_export.suite())
+    testsuite.addTest(test_saxs.suite())
+    testsuite.addTest(test_integrate.suite())
+    testsuite.addTest(test_bilinear.suite())
+    testsuite.addTest(test_distortion.suite())
+    testsuite.addTest(test_flat.suite())
     testsuite.addTest(test_utils.suite())
-    testsuite.addTest(test_suite_all_detectors())
-    testsuite.addTest(test_suite_all_convolution())
-    testsuite.addTest(test_suite_all_sparse())
-    testsuite.addTest(test_suite_all_OpenCL_CSR())
-    testsuite.addTest(test_suite_all_blob_detection())
-    testsuite.addTest(test_suite_all_marchingsquares())
-    testsuite.addTest(test_suite_all_io())
-    testsuite.addTest(test_suite_all_calibrant())
-    testsuite.addTest(test_suite_all_polarization())
+    testsuite.addTest(test_detector.suite())
+    testsuite.addTest(test_convolution.suite())
+    testsuite.addTest(test_sparse.suite())
+    testsuite.addTest(test_csr.suite())
+    testsuite.addTest(test_blob_detection.suite())
+    testsuite.addTest(test_marchingsquares.suite())
+    testsuite.addTest(test_io.suite())
+    testsuite.addTest(test_calibrant.suite())
+    testsuite.addTest(test_polarization.suite())
     testsuite.addTest(test_split_pixel.suite())
-    testsuite.addTest(test_suite_all_bispev())
-    testsuite.addTest(test_suite_bug_regression())
+    testsuite.addTest(test_bispev.suite())
+    testsuite.addTest(test_bug_regression.suite())
     testsuite.addTest(test_watershed.suite())
-    testsuite.addTest(test_suite_all_multi_geometry())
-    testsuite.addTest(test_suite_all_ocl_sort())
+    testsuite.addTest(test_multi_geometry.suite())
+    testsuite.addTest(test_ocl_sort.suite())
     return testsuite
+
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()

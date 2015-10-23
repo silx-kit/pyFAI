@@ -26,7 +26,7 @@ from __future__ import print_function, division, absolute_import, with_statement
 
 __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
-__license__ = "LGPLv3+"
+__license__ = "LMIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "28/09/2015"
 

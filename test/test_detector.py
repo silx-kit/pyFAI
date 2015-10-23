@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# coding: utf-8
 #
 #    Project: Fast Azimuthal Integration
 #             https://github.com/pyFAI/pyFAI
@@ -28,7 +28,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/09/2015"
+__date__ = "23/10/2015"
 
 import sys
 import os
@@ -262,18 +262,18 @@ class TestDetector(unittest.TestCase):
         self.assert_(abs(n3 - c3).max() < 1e-6, "cartesian coord3 cython == numpy")
 
 
-def test_suite_all_detectors():
-    testSuite = unittest.TestSuite()
-    testSuite.addTest(TestDetector("test_detector_instanciate"))
-    testSuite.addTest(TestDetector("test_detector_imxpad_s140"))
-    testSuite.addTest(TestDetector("test_detector_rayonix_sx165"))
-    testSuite.addTest(TestDetector("test_nexus_detector"))
-    testSuite.addTest(TestDetector("test_guess_binning"))
-    testSuite.addTest(TestDetector("test_Xpad_flat"))
-    testSuite.addTest(TestDetector("test_non_flat"))
-    return testSuite
+def suite():
+    testsuite = unittest.TestSuite()
+    testsuite.addTest(TestDetector("test_detector_instanciate"))
+    testsuite.addTest(TestDetector("test_detector_imxpad_s140"))
+    testsuite.addTest(TestDetector("test_detector_rayonix_sx165"))
+    testsuite.addTest(TestDetector("test_nexus_detector"))
+    testsuite.addTest(TestDetector("test_guess_binning"))
+    testsuite.addTest(TestDetector("test_Xpad_flat"))
+    testsuite.addTest(TestDetector("test_non_flat"))
+    return testsuite
+
 
 if __name__ == '__main__':
-    mysuite = test_suite_all_detectors()
     runner = unittest.TextTestRunner()
-    runner.run(mysuite)
+    runner.run(suite())

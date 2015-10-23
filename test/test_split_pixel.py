@@ -26,12 +26,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import absolute_import, division, print_function
 
-"""
-Test suites for pixel splitting scheme validation
+__doc__ = """Test suites for pixel splitting scheme validation
 
 see sandbox/debug_split_pixel.py for visual validation
 """
+__author__ = "Jérôme Kieffer"
+__contact__ = "Jerome.Kieffer@ESRF.eu"
+__license__ = "MIT"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "23/10/2015"
 
 import unittest, numpy, os, sys, time
 if __name__ == '__main__':

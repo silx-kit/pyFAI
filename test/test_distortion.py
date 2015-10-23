@@ -1,44 +1,49 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/python
+# coding: utf-8
 #
-#    Project: Fast Azimuthal Integration
+#    Project: Azimuthal integration
 #             https://github.com/pyFAI/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
-"test suite for Distortion correction class"
+from __future__ import absolute_import, division, print_function
 
+__doc__ = "test suite for Distortion correction class"
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/08/2015"
+__date__ = "23/10/2015"
 
 
 import unittest
-# import os
+import os
 import numpy
 # import logging, time
 import sys
 import fabio
 if __name__ == '__main__':
-    import pkgutil, os
+    import pkgutil
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
 from .utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
@@ -46,6 +51,7 @@ pyFAI = sys.modules["pyFAI"]
 from pyFAI import _distortion, detectors
 # _distortion = sys.modules["pyFAI._distortion"]
 # detectors = sys.modules["pyFAI.detectors"]
+
 
 class test_halfccd(unittest.TestCase):
     """basic test"""
@@ -92,21 +98,20 @@ class test_halfccd(unittest.TestCase):
         logger.info("ratio of good points (less than 1/1000 relative error): %.4f" % good_points_ratio)
         self.assert_(good_points_ratio > 0.99, "99% of all points have a relative error below 1/1000")
 
-def test_suite_all_distortion():
-    testSuite = unittest.TestSuite()
-    testSuite.addTest(test_halfccd("test_vs_fit2d"))
-#    testSuite.addTest(test_azim_halfFrelon("test_numpy_vs_fit2d"))
-#    testSuite.addTest(test_azim_halfFrelon("test_cythonSP_vs_fit2d"))
-#    testSuite.addTest(test_azim_halfFrelon("test_cython_vs_numpy"))
-#    testSuite.addTest(test_flatimage("test_splitPixel"))
-#    testSuite.addTest(test_flatimage("test_splitBBox"))
-# This test is known to be broken ...
-#    testSuite.addTest(test_saxs("test_mask"))
 
-    return testSuite
+def suite():
+    testsuite = unittest.TestSuite()
+    testsuite.addTest(test_halfccd("test_vs_fit2d"))
+#    testsuite.addTest(test_azim_halfFrelon("test_numpy_vs_fit2d"))
+#    testsuite.addTest(test_azim_halfFrelon("test_cythonSP_vs_fit2d"))
+#    testsuite.addTest(test_azim_halfFrelon("test_cython_vs_numpy"))
+#    testsuite.addTest(test_flatimage("test_splitPixel"))
+#    testsuite.addTest(test_flatimage("test_splitBBox"))
+# This test is known to be broken ...
+#    testsuite.addTest(test_saxs("test_mask"))
+
+    return testsuite
 
 if __name__ == '__main__':
-
-    mysuite = test_suite_all_distortion()
     runner = unittest.TextTestRunner()
-    runner.run(mysuite)
+    runner.run(suite())

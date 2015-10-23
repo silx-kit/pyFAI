@@ -29,10 +29,17 @@
 from __future__ import absolute_import, print_function, with_statement, division
 
 __doc__ = """Test suites for multi_geometry modules"""
-__date__ = "16/10/2015"
+__author__ = "Jérôme Kieffer"
+__contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "23/10/2015"
 
-import unittest, numpy, os, sys, time, logging
+import os
+import sys
+import time
+import unittest
+import logging
 if sys.version_info[0] > 2:
     raw_input = input
 if __name__ == '__main__':
@@ -142,7 +149,6 @@ def suite():
     testsuite.addTest(TestMultiGeometry("test_integrate2d"))
     return testsuite
 
-test_suite_all_multi_geometry = suite
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()

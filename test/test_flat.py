@@ -1,34 +1,39 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/python
+# coding: utf-8
 #
-#    Project: Fast Azimuthal Integration
+#    Project: Azimuthal integration
 #             https://github.com/pyFAI/pyFAI
 #
-#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
 #    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
-"test suite for dark_current / flat_field correction"
+from __future__ import absolute_import, division, print_function
 
+__doc__ = "test suite for dark_current / flat_field correction"
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
-__license__ = "GPLv3+"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/09/2015"
+__date__ = "23/10/2015"
 
 
 import unittest
@@ -39,7 +44,7 @@ import time
 import sys
 import fabio
 if __name__ == '__main__':
-    import pkgutil, os
+    import pkgutil
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
 from .utilstest import UtilsTest, Rwp, getLogger
 logger = getLogger(__file__)
@@ -158,19 +163,16 @@ class TestFlat2D(unittest.TestCase):
             self.assert_(I.max() - I.min() < test2d_direct[meth], "deviation should be small with meth %s, got %s" % (meth, I.max() - I.min()))
 
 
-def test_suite_all_Flat():
-    testSuite = unittest.TestSuite()
-    testSuite.addTest(TestFlat1D("test_no_correct"))
-    testSuite.addTest(TestFlat1D("test_correct"))
-    testSuite.addTest(TestFlat2D("test_no_correct"))
-    testSuite.addTest(TestFlat2D("test_correct"))
+def suite():
+    testsuite = unittest.TestSuite()
+    testsuite.addTest(TestFlat1D("test_no_correct"))
+    testsuite.addTest(TestFlat1D("test_correct"))
+    testsuite.addTest(TestFlat2D("test_no_correct"))
+    testsuite.addTest(TestFlat2D("test_correct"))
 
-    return testSuite
+    return testsuite
+
 
 if __name__ == '__main__':
-    mysuite = test_suite_all_Flat()
     runner = unittest.TextTestRunner()
-    runner.run(mysuite)
-
-
-
+    runner.run(suite())

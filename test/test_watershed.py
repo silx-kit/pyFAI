@@ -27,23 +27,22 @@
 # THE SOFTWARE.
 
 from __future__ import division, print_function, absolute_import
+
 __doc__ = "test suite for inverse watershed space segmenting code."
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/10/2015"
+__date__ = "23/10/2015"
 
 import unittest
-import numpy
 import sys
 import os
 import fabio
-import tempfile
 if __name__ == '__main__':
     import pkgutil
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
-from .utilstest import UtilsTest, getLogger, recursive_delete
+from .utilstest import UtilsTest, getLogger
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 import pyFAI.watershed
@@ -70,9 +69,9 @@ class TestWatershed(unittest.TestCase):
 
 
 def suite():
-    testSuite = unittest.TestSuite()
-    testSuite.addTest(TestWatershed("test_init"))
-    return testSuite
+    testsuite = unittest.TestSuite()
+    testsuite.addTest(TestWatershed("test_init"))
+    return testsuite
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
