@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "LMIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/09/2015"
+__date__ = "23/10/2015"
 
 PACKAGE = "pyFAI"
 SOURCES = PACKAGE + "-src"
@@ -340,7 +340,7 @@ class UtilsTest(object):
         """
         Return the path of the executable and the associated environment
         """
-        if (sys.platform == "nt") and not script.endswith(".py"):
+        if (sys.platform == "win32") and not script.endswith(".py"):
                 script += ".py"
 
         if IN_SOURCES:
