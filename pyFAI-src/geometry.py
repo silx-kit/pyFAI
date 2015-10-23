@@ -657,7 +657,7 @@ class Geometry(object):
         """
         Generate a 3D array of the given shape with (i,j) (azimuthal
         angle) for all elements.
-        
+
         @param shape: expected shape
         @type shape: 2-tuple of integer
         @return: 3d array with shape=(*shape,4,2) the two elements are (radial distance, azimuthal angle chi)
@@ -1484,7 +1484,7 @@ class Geometry(object):
 
     def calcfrom1d(self, tth, I, shape=None, mask=None,
                    dim1_unit=units.TTH, correctSolidAngle=True,
-                   dummy=None,
+                   dummy=0.0,
                    polarization_factor=None, dark=None, flat=None,
                    ):
         """
@@ -1516,18 +1516,18 @@ class Geometry(object):
         calcimage.shape = shape
         if correctSolidAngle:
             calcimage *= self.solidAngleArray(shape)
-        if polarization_factor:
-            if polarization_factor is True and self._polarization:
+        if polarization_factor is not None:
+            if (polarization_factor is True) and (self._polarization is not None):
                 polarization = self._polarization
             else:
                 polarization = self.polarization(shape, factor, axis_offset=0)
-            try:
-                calcimage *= polarization
-            except Exception as err:
-                logger.error("unable to apply polarization correction: %s" % err)
+            assert polarization.shape == tuple(shape)
+            calcimage *= polarization
         if flat is not None:
+            assert dark.shape == tuple(shape)
             calcimage *= flat
         if dark is not None:
+            assert dark.shape == tuple(shape)
             calcimage += dark
         if mask is not None:
             assert mask.shape == tuple(shape)
