@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "07/05/2015"
+__date__ = "26/10/2015"
 __status__ = "production"
 
 import os
@@ -52,7 +52,11 @@ from .calibrant import Calibrant, ALL_CALIBRANTS
 from .blob_detection import BlobDetection
 from .massif import Massif
 from .watershed import InverseWatershed
-from .third_party import six
+try:
+    import six
+except (ImportError, Exception):
+    from .third_party import six
+
 logger = logging.getLogger("pyFAI.peak_picker")
 if os.name != "nt":
     WindowsError = RuntimeError

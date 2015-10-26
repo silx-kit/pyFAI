@@ -34,7 +34,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/10/2015"
+__date__ = "26/10/2015"
 
 
 import unittest
@@ -53,7 +53,10 @@ pyFAI = sys.modules["pyFAI"]
 if logger.getEffectiveLevel() <= logging.INFO:
     import pylab
 from pyFAI import spline, _bispev
-from pyFAI.third_party import six
+try:
+    import six
+except ImportError:
+    from pyFAI.third_party import six
 
 try:
     from scipy.interpolate import fitpack

@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/09/2015"
+__date__ = "26/10/2015"
 __status__ = "production"
 
 import logging
@@ -52,10 +52,13 @@ else:
 from scipy import ndimage
 from scipy.interpolate import interp1d
 from math import ceil, sin, cos, atan2, pi
-from .third_party import six
+try:
+    import six
+except (ImportError, Exception):
+    from .third_party import six
 try:
     from . import relabel as _relabel
-except:
+except ImportError:
     _relabel = None
 try:
     from .directories import data_dir

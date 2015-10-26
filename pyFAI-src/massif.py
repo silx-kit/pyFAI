@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/06/2015"
+__date__ = "26/10/2015"
 __status__ = "production"
 
 import sys, os, threading
@@ -40,7 +40,11 @@ from scipy.ndimage.filters  import median_filter
 
 from .bilinear import Bilinear
 from .utils import gaussian_filter, binning, unBinning, relabel, is_far_from_group
-from .third_party import six
+try:
+    import six
+except (ImportError, Exception):
+    from .third_party import six
+
 
 if os.name != "nt":
     WindowsError = RuntimeError
