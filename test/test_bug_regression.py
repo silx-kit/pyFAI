@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/10/2015"
+__date__ = "26/10/2015"
 
 import sys
 import os
@@ -138,10 +138,31 @@ class TestBug211(unittest.TestCase):
                          "pyFAI-average with quantiles gives good results")
 
 
+class TestBug232(unittest.TestCase):
+    """
+    Check the copy and deepcopy methods of Azimuthal integrator
+    """
+    def test(self):
+        det = pyFAI.detectors.ImXPadS10()
+        ai = pyFAI.AzimuthalIntegrator(dist=1, detector=det)
+        data = numpy.random.random(det.shape)
+        tth, I = ai.integrate1d(data, 100, unit="r_mm")
+        import copy
+        ai2 = copy.copy(ai)
+        self.assertNotEqual(id(ai), id(ai2), "copy instances are different")
+        self.assertEqual(id(ai._ra), id(ai2._ra), "copy arrays are the same after copy")
+        self.assertEqual(id(ai.detector), id(ai2.detector), "copy detector are the same after copy")
+        ai3 = copy.deepcopy(ai)
+        self.assertNotEqual(id(ai), id(ai3), "deepcopy instances are different")
+        self.assertNotEqual(id(ai._ra), id(ai3._ra), "deepcopy arrays are different after copy")
+        self.assertNotEqual(id(ai.detector), id(ai3.detector), "deepcopy arrays are different after copy")
+
+
 def suite():
     testsuite = unittest.TestSuite()
     testsuite.addTest(TestBug170("test_bug170"))
     testsuite.addTest(TestBug211("test_quantile"))
+    testsuite.addTest(TestBug232("test"))
     return testsuite
 
 
