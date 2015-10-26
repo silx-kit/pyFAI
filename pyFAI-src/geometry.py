@@ -1549,7 +1549,7 @@ class Geometry(object):
                      '_polarization_crc', '_transmission_crc', '_transmission_normal']
         array = ["_ttha", "_dttha", "_dssa", "_chia", "_dchia", "_qa", "_dqa",
                  "_ra", "_dra", "_rd2a", "_drd2a",
-                 "_corner4Da", "_corner4Dqa", "_corner4Dra", "_corner4Drd2a"
+                 "_corner4Da", "_corner4Dqa", "_corner4Dra", "_corner4Drd2a",
                  '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
         for key in numerical + array:
             new.__setattr__(key, self.__getattribute__(key))
@@ -1571,7 +1571,7 @@ class Geometry(object):
                      '_polarization_crc', '_transmission_crc', '_transmission_normal']
         array = ["_ttha", "_dttha", "_dssa", "_chia", "_dchia", "_qa", "_dqa",
                  "_ra", "_dra", "_rd2a", "_drd2a",
-                 "_corner4Da", "_corner4Dqa", "_corner4Dra", "_corner4Drd2a"
+                 "_corner4Da", "_corner4Dqa", "_corner4Dra", "_corner4Drd2a",
                  '_polarization', '_cosa', '_transmission_normal', '_transmission_corr']
         for key in numerical:
             new.__setattr__(key, self.__getattribute__(key))
