@@ -181,7 +181,7 @@ class Detector(with_metaclass(DetectorMeta, object)):
             new.set_splineFile(self._splineFile)
         return new
 
-    def __deepcopy__(self):
+    def __deepcopy__(self, memo):
         "@return a deep copy of itself"
         new = self.__class__()
         numerical = ['_pixel1', '_pixel2', 'max_shape', 'shape', '_binning', '_mask_crc', '_maskfile']
