@@ -64,18 +64,7 @@ For PDF measurement, data needs to be properly prepared, especially:
 
 Examples
 ========
-
-In 1d
------
-
-Go to very high-Q.
-TODO: example of LaB6 taken at Max-lab, Titan detector 0-> 150°
-
-In 2d
------
-
-Fill the gaps of a pixel detector
-TODO: Example of Tra at D2AM with imXpad detctor.
+.. include:: MultiGeometry.rst
 
 Conclusion
 ==========
