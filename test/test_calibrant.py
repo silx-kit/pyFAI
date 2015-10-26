@@ -36,8 +36,10 @@ __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "23/10/2015"
 
 import unittest
+import logging
 import sys
 import os
+import six
 if __name__ == '__main__':
     import pkgutil
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
@@ -85,19 +87,12 @@ class TestCalibrant(unittest.TestCase):
 
     def test_fake(self):
         """test for fake image generation"""
-        with_plot = False
+        with_plot = (logger.getEffectiveLevel() <= logging.DEBUG)
         if with_plot:
             import matplotlib
-            matplotlib.use('Agg')
-
             import matplotlib.pyplot as plt
-
-            from matplotlib.backends.backend_pdf import PdfPages
-            from matplotlib import rcParams
-
-            pp = PdfPages('fake.pdf')
-            rcParams['font.size'] = 6
-            plt.clf()
+            fig = plt.figure()
+            ax = fig.add_subplot(1, 1, 1)
 
         detectors = set(ALL_DETECTORS.values())
         for idx, detector in enumerate(detectors):
@@ -115,22 +110,16 @@ class TestCalibrant(unittest.TestCase):
             img = calibrant.fake_calibration_image(ai)
 
             if with_plot:
-                plt.clf
-                plt.subplot(3, 4, idx % 12)
-                plt.title(det.name)
-                plt.imshow(img, interpolation='nearest')
+                ax.cla()
+                ax.set_title(det.name)
 
-                if idx != 0 and idx % 12 == 0:
-                    pp.savefig()
-                    plt.clf()
-                print(det.name, img.min(), img.max())
+                ax.imshow(img, interpolation='nearest')
+                fig.show()
+                six.moves.input("enter> ")
+            logger.info("%s min: %s max: %s " % (det.name, img.min(), img.max()))
             self.assert_(img.shape == det.shape, "Image (%s) has the right size" % (det.name,))
             self.assert_(img.sum() > 0, "Image (%s) contains some data" % (det.name,))
             sys.stderr.write(".")
-
-        if with_plot:
-            pp.savefig()
-            pp.close()
 
 
 class TestCell(unittest.TestCase):
@@ -193,7 +182,6 @@ def suite():
     testsuite.addTest(TestCell("test_dspacing"))
     return testsuite
 
-__call__ = suite
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
