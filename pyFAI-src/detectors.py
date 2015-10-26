@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/06/2015"
+__date__ = "26/10/2015"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instantiate them
@@ -58,7 +58,10 @@ try:
     import fabio
 except ImportError:
     fabio = None
-from .third_party.six import with_metaclass
+try:
+    from six import with_metaclass
+except ImportError:
+    from .third_party.six import with_metaclass
 
 
 epsilon = 1e-6

@@ -25,14 +25,18 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer"]
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "31/08/2015"
+__date__ = "26/10/2015"
 __status__ = "production"
 __docformat__ = 'restructuredtext'
 
 import logging
 logger = logging.getLogger("pyFAI.unit")
 from numpy import pi
-from .third_party import six
+try:
+    import six
+except (ImportError, Exception):
+    from .third_party import six
+
 hc = 12.398419292004204
 
 class Enum(dict):

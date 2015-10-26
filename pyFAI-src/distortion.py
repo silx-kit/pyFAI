@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/09/2015"
+__date__ = "26/10/2015"
 __status__ = "development"
 
 import logging, threading
@@ -43,7 +43,10 @@ if ocl:
 else:
     ocl_azim_lut = ocl_azim_csr = None
 from .utils import timeit
-from .third_party import six
+try:
+    import six
+except ImportError:
+    from .third_party import six
 import fabio
 
 try:

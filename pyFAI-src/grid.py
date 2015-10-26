@@ -26,7 +26,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/05/2015"
+__date__ = "26/10/2015"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -37,7 +37,10 @@ import time
 
 from . import detectors
 from . import units
-from .third_party import six
+try:
+    import six
+except ImportError:
+    from .third_party import six
 StringTypes = (six.binary_type, six.text_type)
 
 logger = logging.getLogger("pyFAI.grid")
