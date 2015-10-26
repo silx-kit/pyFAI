@@ -64,7 +64,11 @@ For PDF measurement, data needs to be properly prepared, especially:
 
 Examples
 ========
-.. include:: MultiGeometry.rst
+
+.. toctree::
+   :maxdepth: 2
+
+   MultiGeometry
 
 Conclusion
 ==========
