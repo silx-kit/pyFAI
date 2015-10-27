@@ -134,7 +134,7 @@ class TestBug211(unittest.TestCase):
             l = [sys.executable, self.exe, "--quiet", "-q", "0.2-0.8", "-o", self.outfile] + self.image_files
             logger.error(os.linesep + (" ".join(l)))
             env = "Environment:"
-            for k, v in self.env:
+            for k, v in self.env.items():
                 env += "%s    %s: %s" % (os.linesep, k, v)
             logger.error(env)
         self.assertEqual(p, 0, msg="pyFAI-average return code %i != 0" % p)
