@@ -1,6 +1,6 @@
 
-Demonstration of usage of the MultiGeometry class of pyFAI
-==========================================================
+Demo of usage of the MultiGeometry class of pyFAI
+=================================================
 
 For this tutorial, we will use the ipython notebook, now known as
 *Jypyter*, an take advantage of the integration of matplotlib with the
@@ -39,7 +39,7 @@ and its position in space
 .. parsed-literal::
 
     Number of known calibrants: 27
-    Ni CrOx NaCl Si_SRM640e Si_SRM640d Si_SRM640a Si_SRM640c Si_SRM640b Cr2O3 AgBh Si_SRM640 CuO PBBA alpha_Al2O3 quartz C14H30O cristobaltite Si LaB6 CeO2 LaB6_SRM660a LaB6_SRM660b LaB6_SRM660c TiO2 ZnO Al Au
+    Ni CrOx NaCl Si_SRM640e Si_SRM640d Si_SRM640a Si_SRM640c alpha_Al2O3 Cr2O3 AgBh Si_SRM640 CuO PBBA Si_SRM640b quartz C14H30O cristobaltite Si LaB6 CeO2 LaB6_SRM660a LaB6_SRM660b LaB6_SRM660c TiO2 ZnO Al Au
 
 
 .. code:: python
@@ -105,12 +105,12 @@ one can simulate the 2D diffraction pattern:
 
 .. parsed-literal::
 
-    <matplotlib.image.AxesImage at 0x7fb1bd504c10>
+    <matplotlib.image.AxesImage at 0x7fbf946e68d0>
 
 
 
 
-.. image:: MultiGeometry_files/MultiGeometry_10_1.png
+.. image:: output_10_1.png
 
 
 This image can be integrated in q-space and plotted:
@@ -123,12 +123,12 @@ This image can be integrated in q-space and plotted:
 
 .. parsed-literal::
 
-    [<matplotlib.lines.Line2D at 0x7fb1b9c681d0>]
+    [<matplotlib.lines.Line2D at 0x7fbf92da9d90>]
 
 
 
 
-.. image:: MultiGeometry_files/MultiGeometry_12_1.png
+.. image:: output_12_1.png
 
 
 Note pyFAI does now about the ring position but nothing about relative
@@ -193,7 +193,7 @@ by half a detector width (stored as *poni1*).
 
 
 
-.. image:: MultiGeometry_files/MultiGeometry_16_1.png
+.. image:: output_16_1.png
 
 
 MultiGeometry integrator
@@ -233,12 +233,12 @@ scaled to absolute solid angle.
 
 .. parsed-literal::
 
-    [<matplotlib.lines.Line2D at 0x7fb1b98498d0>]
+    [<matplotlib.lines.Line2D at 0x7fbf90a4a210>]
 
 
 
 
-.. image:: MultiGeometry_files/MultiGeometry_21_1.png
+.. image:: output_21_1.png
 
 
 .. code:: python
@@ -247,11 +247,11 @@ scaled to absolute solid angle.
         plot(*a.integrate1d(i, 1000, unit="q_A^-1"))
 
 
-.. image:: MultiGeometry_files/MultiGeometry_22_0.png
+.. image:: output_22_0.png
 
 
 Rotation of the detector
-========================
+------------------------
 
 The strength of translating the detector is that it simulates a larger
 detector, but this approach reaches its limit quikly as the higher the
@@ -259,12 +259,12 @@ detector gets, the smallest the solid angle gets and induces artificial
 noise. One solution is to keep the detector at the same distance and
 rotate the detector.
 
+Creation of diffraction images
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 In this example we will use a Pilatus 200k with 2 modules. It has a gap
 in the middle of the two detectors and we will see how the
 *MultiGeometry* can help.
-
-Creation of the geometries and images
--------------------------------------
 
 As previously, we will use LaB6 but instead of translating the images,
 we will rotate them along the second axis:
@@ -297,12 +297,12 @@ we will rotate them along the second axis:
 
 .. parsed-literal::
 
-    <matplotlib.image.AxesImage at 0x7fb1b96c5e10>
+    <matplotlib.image.AxesImage at 0x7fbf90923790>
 
 
 
 
-.. image:: MultiGeometry_files/MultiGeometry_25_1.png
+.. image:: output_25_1.png
 
 
 .. code:: python
@@ -313,12 +313,12 @@ we will rotate them along the second axis:
 
 .. parsed-literal::
 
-    [<matplotlib.lines.Line2D at 0x7fb1b9667b50>]
+    [<matplotlib.lines.Line2D at 0x7fbf90847490>]
 
 
 
 
-.. image:: MultiGeometry_files/MultiGeometry_26_1.png
+.. image:: output_26_1.png
 
 
 We will rotate the detector with a step size of 15 degrees
@@ -359,7 +359,7 @@ We will rotate the detector with a step size of 15 degrees
 
 
 
-.. image:: MultiGeometry_files/MultiGeometry_28_1.png
+.. image:: output_28_1.png
 
 
 .. code:: python
@@ -368,11 +368,11 @@ We will rotate the detector with a step size of 15 degrees
         plot(*a.integrate1d(i, 1000, unit="2th_deg"))
 
 
-.. image:: MultiGeometry_files/MultiGeometry_29_0.png
+.. image:: output_29_0.png
 
 
 Creation of the MultiGeometry
------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This time we will work in 2theta angle using degrees:
 
@@ -392,12 +392,12 @@ This time we will work in 2theta angle using degrees:
 
 .. parsed-literal::
 
-    [<matplotlib.lines.Line2D at 0x7fb1b9180d10>]
+    [<matplotlib.lines.Line2D at 0x7fbf903e2650>]
 
 
 
 
-.. image:: MultiGeometry_files/MultiGeometry_31_2.png
+.. image:: output_31_2.png
 
 
 .. code:: python
@@ -411,19 +411,144 @@ This time we will work in 2theta angle using degrees:
 
 .. parsed-literal::
 
-    <matplotlib.text.Text at 0x7fb1b978de50>
+    <matplotlib.text.Text at 0x7fbf90330350>
 
 
 
 
-.. image:: MultiGeometry_files/MultiGeometry_32_1.png
+.. image:: output_32_1.png
 
 
-TODO : fill the gaps, rotate along rot3, ...
---------------------------------------------
+How to fill-up gaps in arrays of pixel detectors during 2D integration
+----------------------------------------------------------------------
+
+We will use ImXpad detectors which exhibits large gaps.
+
+.. code:: python
+
+    det = pyFAI.detectors.detector_factory("Xpad_flat")
+    p1, p2, p3 = det.calc_cartesian_positions()
+    print(p3)
+    poni1 = p1.mean()
+    poni2 = p2.mean()
+    print(poni1)
+    print(poni2)
+
+.. parsed-literal::
+
+    None
+    0.076457
+    0.0377653
+
+
+.. code:: python
+
+    ai = pyFAI.AzimuthalIntegrator(dist=0.1, poni1=0, poni2=poni2, detector=det)
+    img = LaB6.fake_calibration_image(ai)
+    imshow(img, origin="lower")
+
+
+
+.. parsed-literal::
+
+    <matplotlib.image.AxesImage at 0x7fbf909b8210>
+
+
+
+
+.. image:: output_35_1.png
+
+
+.. code:: python
+
+    I, tth, chi=ai.integrate2d(img, 500, 360, azimuth_range=(0,180), unit="2th_deg", dummy=-1)
+    imshow(sqrt(I),origin="lower",extent=[tth.min(), tth.max(), chi.min(), chi.max()], aspect="auto")
+    xlabel("2theta")
+    ylabel("chi")
+
+.. parsed-literal::
+
+    -c:2: RuntimeWarning: invalid value encountered in sqrt
+
+
+
+
+.. parsed-literal::
+
+    <matplotlib.text.Text at 0x7fbf90a67850>
+
+
+
+
+.. image:: output_36_2.png
+
+
+To observe textures, it is mandatory to fill the large empty space. This
+can be done by tilting the detector by a few degrees to higher 2theta
+angle (yaw 2x5deg) and turn the detector along the azimuthal angle (roll
+2x5deg):
+
+.. code:: python
+
+    step = 5*pi/180
+    nb_geom = 3
+    ais = []
+    imgs = []
+    for i in range(nb_geom):
+        for j in range(nb_geom):
+            my_ai = copy.deepcopy(ai)
+            my_ai.rot2 -= i*step
+            my_ai.rot3 -= j*step
+            my_img = LaB6.fake_calibration_image(my_ai)
+            ais.append(my_ai)
+            imgs.append(my_img)
+    mg = MultiGeometry(ais, unit="2th_deg", radial_range=(0, 60), azimuth_range=(0, 180), empty=-1)
+    print(mg)
+    I, tth, chi = mg.integrate2d(imgs, 1000, 360)
+    imshow(sqrt(I),origin="lower",extent=[tth.min(), tth.max(), chi.min(), chi.max()], aspect="auto")
+    xlabel("2theta")
+    ylabel("chi")
+
+.. parsed-literal::
+
+    MultiGeometry integrator with 9 geometries on (0, 60) radial range (2th_deg) and (0, 180) azimuthal range (deg)
+
+
+.. parsed-literal::
+
+    -c:16: RuntimeWarning: invalid value encountered in sqrt
+
+
+
+
+.. parsed-literal::
+
+    <matplotlib.text.Text at 0x7fbf92c74710>
+
+
+
+
+.. image:: output_38_3.png
+
+
+As on can see, the gaps have disapeared and the statistics is much
+better, except on the border were only one image contributes to the
+integrated image.
 
 Conclusion
 ==========
 
-It isn't that difficult, is it ?
+The multi\_geometry module of pyFAI makes powder diffraction experiments
+with small moving detectors much easier.
+
+Some people would like to stitch input images together prior to
+integration. There are plenty of good tools to do this: generalist one
+like `Photoshop <http://www.adobe.com/fr/products/photoshop.html>`__ or
+more specialized ones like `AutoPano <http://www.kolor.com/autopano>`__.
+More seriously this can be using the distortion module of a detector to
+re-sample the signal on a regular grid but one will have to store on one
+side the number of actual pixel contributing to a regular pixels and on
+the other the total intensity contained in the regularized pixel.
+Without the former information, doing science with a rebinned image is
+as meaningful as using Photoshop.
 
