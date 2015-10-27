@@ -15,47 +15,69 @@ Using PIP
 To install pyFAI on an Apple computer you will need a scientific Python stack.
 MacOSX provides by default Python2.7 with Numpy which is a good basis.
 
-::
+.. code::
+
     sudo pip install matplotlib --upgrade
     sudo pip install scipy --upgrade
     sudo pip install fabio --upgrade
+    sudo pip install h5py --upgrade
     sudo pip install pyFAI --upgrade
 
 If you get an error about the local "UTF-8", try to:
 
-::
+.. code::
    export LC_ALL=C
 
-Before the installation
+Before the installation.
 
 Installation from sources
 -------------------------
 
 Get the sources from Github:
 
-::
-   git clone https://github.com/pyFAI/pyFAI.git
-   cd pyFAI
+.. code::
 
-To build pyFAI from sources, a compiler is needed. Apple provides Xcode for free:
-https://developer.apple.com/xcode/
-
-Another option is to use GCC which provides supports for multiprocessing via OpenMP (see below)
-
-Optional build dependencies: Cython (>v0.17) is needed to translate the source files into C code.
-If Cython is present on your system, the source code will be re-generated and compiled.
-
-::
-    sudo pip install cython --upgrade
+   git clone https://github.com/kif/pyFAI.git
 
 About OpenMP
-------------
+............
 
-There is an issue with MacOSX (v10.8 onwards) where the default compiler (Xcode 5 or 6) switched from gcc 4.2 to clang and
-dropped the support for OpenMP.
-This is why OpenMP is by default deactivated under MacOSX. If you have installed an OpenMP-able compiler like GCC, you can re-activate it using the flag --openmp for setup.py
+OpenMP is a way to write multithreaded code, running on multiple processors simultaneously.
+PyFAI makes heavy use of OpenMP, but there is an issue with MacOSX (>v10.6) where the default compiler of Apple, *Xcode*, dropped the support for OpenMP.
 
-::
-    LC_ALL=C python setup.py build --openmp
-    sudo LC_ALL=C python setup.py install
+There are two ways to compile pyFAI on MacOSX:
 
+* Using Xcode and de-activating OpenMP
+* Using another compiler which supports OpenMP
+
+Using Xcode
+...........
+
+To build pyFAI from sources, an compiler is needed.
+On an *Apple* computer, the default compiler is `Xcode <https://developer.apple.com/xcode/>`_, and it is availbe for free on the **AppStore**.
+As pyFAI has by default OpenMP activated, and it needs to be de-activated, one needs to regenerate all Cython files without OpenMP.
+
+.. code::
+
+    cd pyFAI
+    sudo pip install cython --upgrade
+    python setup.py build --no-openmp 
+    sudo pip install . --upgrade 
+
+Using **gcc** or **clang**
+..........................
+
+If you want to keep the OpenMP feature (which makes the processing slightly faster), the alternative is to install another compiler like `gcc <https://gcc.gnu.org/>`_
+or `clang <http://clang.llvm.org/>`_ on your *Apple* computer.
+As gcc/clang support *OpenMP*, there is no need to re-generate the cython files.
+
+.. code::
+
+    cd pyFAI
+    CC=gcc python setup.py build --openmp 
+    sudo pip install . --upgrade 
+
+
+
+**Nota:** The usage of "python setup.py install" is now deprecated.
+It causes much more trouble as there is no installed file tracking, hence no way to de-install properly a package.
