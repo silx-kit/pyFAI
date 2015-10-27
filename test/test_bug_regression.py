@@ -37,7 +37,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/10/2015"
+__date__ = "27/10/2015"
 
 import sys
 import os
@@ -132,7 +132,11 @@ class TestBug211(unittest.TestCase):
                             shell=False, env=self.env)
         if p:
             l = [sys.executable, self.exe, "--quiet", "-q", "0.2-0.8", "-o", self.outfile] + self.image_files
-            logger.error(" ".join(l))
+            logger.error(os.linesep + (" ".join(l)))
+            env = "Environment:"
+            for k, v in self.env:
+                env += "%s    %s: %s" % (os.linesep, k, v)
+            logger.error(env)
         self.assertEqual(p, 0, msg="pyFAI-average return code %i != 0" % p)
         self.assert_(numpy.allclose(fabio.open(self.outfile).data, self.res),
                          "pyFAI-average with quantiles gives good results")
