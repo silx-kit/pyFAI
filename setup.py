@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/10/2015"
+__date__ = "27/10/2015"
 __status__ = "stable"
 
 
@@ -526,21 +526,3 @@ if __name__ == "__main__":
           install_requires=install_requires,
           setup_requires=setup_requires,
           )
-
-# ########################################### #
-# Check for Fabio to be present of the system #
-# ########################################### #
-try:
-    import fabio
-except ImportError:
-    print("""pyFAI needs fabIO for all image reading and writing.
-This python module can be found on:
-http://sourceforge.net/projects/fable/files/fabio""")
-
-try:
-    import pyopencl
-except ImportError:
-    print("""pyFAI can use pyopencl to run on parallel accelerators like GPU; this is an optional dependency.
-This python module can be found on:
-http://pypi.python.org/pypi/pyopencl
-""")
