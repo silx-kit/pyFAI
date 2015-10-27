@@ -1,3 +1,7 @@
+:Author: Jérôme Kieffer
+:Date: 27/10/2015
+:Keywords: Tutorials
+:Target: Advanced users
 
 Demo of usage of the MultiGeometry class of pyFAI
 =================================================
@@ -166,7 +170,7 @@ by half a detector width (stored as *poni1*).
         ais.append(my_ai)
         imgs.append(my_img)
         print(my_ai)
-        
+
 
 .. parsed-literal::
 

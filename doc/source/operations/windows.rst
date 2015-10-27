@@ -21,7 +21,7 @@ Get Python
 Unlike on Unix computers, Python is not available by default on Windows computers.
 We recommend you to install the 64 bit version of `Python <http://python.org>`_,
 preferably the latest 64 bits version from the
-`2.7 series <https://www.python.org/downloads/release/python-2710/`_>.
+`2.7 series <https://www.python.org/downloads/release/python-2710/>`_.
 Any version between 2.6, 2.7, 3.2, 3.3, 3.4 and 3.5 is tested but 2.7 is the
 mostly used one.
 
@@ -33,7 +33,7 @@ memory available to the Python process,
 nevertheless, pyFAI is running on Winodws 32 bits (but not as well).
 
 Alternative Scientific Python stacks exists, like
-`Enthought Python Distribution<https://www.enthought.com/products/epd/>`_ ,
+`Enthought Python Distribution <https://www.enthought.com/products/epd/>`_ ,
 `Canopy <https://www.enthought.com/products/canopy/>`_,
 `Anaconda <https://www.continuum.io/downloads>`_,
 `PythonXY <https://python-xy.github.io/>`_ or
@@ -102,7 +102,7 @@ Recommended dependencies are:
 Using PIP
 .........
 
-Most of the dependencies are available via PIP::
+Most of the dependencies are available via PIP:
 
 .. code::
 
@@ -147,7 +147,7 @@ To install them, download the wheels and use PIP:
 Install pyFAI via PIP
 ---------------------
 
-The latest stable release of pyFAI should also be PIP-installable (starting at version 0.10.3)::
+The latest stable release of pyFAI should also be PIP-installable (starting at version 0.10.3):
 
 .. code::
 

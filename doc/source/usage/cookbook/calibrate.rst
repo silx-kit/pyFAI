@@ -1,13 +1,10 @@
+:Author: Jérôme Kieffer
+:Date: 27/10/2015
+:Keywords: Tutorials
+:Target: Scientists
+
 Calibration of a diffraction setup
 ==================================
-
-Author: Jérôme Kieffer
-
-Date: 20/01/2015
-
-Keywords: Calibration
-
-Target: Scientists
 
 Associated video:
   http://www.edna-site.org/pub/calibration/calib.flv

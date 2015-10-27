@@ -1,3 +1,8 @@
+:Author: Jérôme Kieffer
+:Date: 27/10/2015
+:Keywords: Tutorials
+:Target: Advanced users
+
 ====================================
 Multi-geometry azimuthal integration
 ====================================
