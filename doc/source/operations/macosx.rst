@@ -1,10 +1,8 @@
-Author: Jérôme Kieffer
-
-Date: 29/01/2015
-
-Keywords: Installation procedure on MacOSX
-
-Target: System administrators
+..
+  Author: Jérôme Kieffer
+  Date: 27/10/2015
+  Keywords: Installation procedure on MacOSX
+  Target: System administrators
 
 Installation procedure on MacOSX
 ================================

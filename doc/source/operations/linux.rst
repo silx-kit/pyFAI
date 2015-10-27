@@ -1,10 +1,8 @@
-Author: Jérôme Kieffer
-
-Date: 27/10/2015
-
-Keywords: Installation procedure on Linux
-
-Target: System administrators
+..
+  Author: Jérôme Kieffer
+  Date: 27/10/2015
+  Keywords: Installation procedure on Linux
+  Target: System administrators
 
 Installation procedure on Linux
 ===============================

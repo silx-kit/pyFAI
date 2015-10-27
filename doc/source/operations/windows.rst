@@ -1,11 +1,9 @@
+..
 
-Author: Jérôme Kieffer
-
-Date: 21/04/2015
-
-Keywords: Installation procedure
-
-Target: System administrators
+  Author: Jérôme Kieffer
+  Date: 27/10/2015
+  Keywords: Installation procedure
+  Target: System administrators
 
 
 Installation procedure on Windows
@@ -13,44 +11,55 @@ Installation procedure on Windows
 
 PyFAI is a Python library. Even if you are only interested in some tool like pyFAI-calib or pyFAI-integrate,
 you need to install the complete library (for now).
-This is usually performed in 3 steps: install Python, the scientific python stack and finally the pyFAI itself.
+This is usually performed in 3 steps: install Python, the scientific Python stack and finally the pyFAI itself.
 
 Get Python
 ----------
 
 Unlike on Unix computers, Python is not available by default on Windows computers.
-We recommend you to install the 64 bit version of Python from http://python.org, preferably the latest version from the 2.7 series.
-Any version between 2.6, 2.7, 3.2, 3.3 or 3.4 should be OK but 2.7 is the most tested.
+We recommend you to install the 64 bit version of `Python <http://python.org>`_, preferably the latest 64 bits version from the
+`2.7 series <https://www.python.org/downloads/release/python-2710/`_>.
+Any version between 2.6, 2.7, 3.2, 3.3, 3.4 and 3.5 is tested but 2.7 is the most supported.
 
-The 64bits version is strongly advised if your hardware and operating system supports it, as the 32 bits versions is
-limited to 2GB of memory, hence unable to treat large images (4096 x 4096).
+The 64 bits version is strongly advised if your hardware and operating system supports it, as the 32 bits versions is
+limited to 2 GB of memory, hence unable to treat large images (4096 x 4096).
 The test suite is not passing on Windows 32 bits due to the limited amount of memory available to the Python process,
-nevertheless, pyFAI is running on Winodws32 bits (but not as well).
+nevertheless, pyFAI is running on Winodws 32 bits (but not as well).
 
-Alternative Scientific Python stacks exists, like Enthought Python Distribution, Canopy, Anaconda, PythonXY
-or WinPython. They all offer most of the scientific packages already installed which makes the installation of
+Alternative Scientific Python stacks exists, like `Enthought Python Distribution<https://www.enthought.com/products/epd/>`_ ,
+`Canopy <https://www.enthought.com/products/canopy/>`_, `Anaconda <https://www.continuum.io/downloads>`_,
+`PythonXY <https://python-xy.github.io/>`_ or `WinPython <http://winpython.github.io/>`_.
+They all offer most of the scientific packages already installed which makes the installation of
 dependencies much easier. On the other hand, they all offer different packaging system and we cannot support all
-of them. Moreover, distribution from Enthought and Continuum are not free so you should be able to get support
+of them. Moreover, distribution from *Enthought* and *Continuum* are not free so you should be able to get support
 from those companies.
+
+**Nota:** each flavor of those Python distribution is incompatible with any other due to change in compiler or Python
+compilation options. Mixing them is really looking for trouble.
+If you want an advice on which scientific python distribution for Windows to use,
+I would recommend `WinPython <http://winpython.github.io/>`_.
 
 Install PIP
 -----------
 
-PIP is the package management system for Python, it connects to http://pypi.python.org,
+**PIP** is the package management system for Python, it connects to http://pypi.python.org,
 download and install software packages from there.
 
-PIP has revolutionize the way Python libraries are installed as it is able to select the right build for your system, or compile from the sources (Which could be tricky).
-If you installed python 2.7.9 or 3.4, PIP is already installed. Unless, you will have to install it:.
 
-Download::
+PIP has revolutionize the way Python libraries are installed as it is able to select the right build for your system, or compile from the sources,
+which could be extremely tricky.
+If you installed python 2.7.10 or 3.4, PIP is already installed.
+If **pip** is not yet installed, download `get_pip <https://bootstrap.pypa.io/get-pip.py>`_ and run it:
 
-    https://bootstrap.pypa.io/get-pip.py
-
-and run::
+.. code::
 
    python get-pip.py
 
 Assuming python.exe is already in your PATH.
+
+**Nota:**  Because PIP connects to the network, the *http_proxy* and *https_proxy* environment variable may need to be set-up properly.
+At ESRF, please get in contact with the hotline (24-24) to get those information.
+
 
 Install the scientific stack
 ----------------------------
@@ -61,6 +70,7 @@ The strict dependencies for pyFAI are:
 * SciPy
 * matplotlib
 * FabIO
+* h5py
 
 Recommended dependencies are:
 
