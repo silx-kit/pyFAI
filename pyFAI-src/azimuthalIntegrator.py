@@ -1801,7 +1801,6 @@ class AzimuthalIntegrator(Geometry):
             data /= flat[mask]
 
         if correctSolidAngle:
-            print(data.shape, shape)
             data /= self.solidAngleArray(shape)[mask]
 
         if dummy is None:
