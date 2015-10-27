@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/10/2015"
+__date__ = "27/10/2015"
 
 import unittest
 import time
@@ -334,7 +334,7 @@ class TestHistogram2d(unittest.TestCase):
         delta_max = abs(self.I_csr.T - self.I_numpy).max()
         if delta_max > self.epsilon:
             logger.warning("Intensity count difference numpy/csr : max delta=%s", delta_max)
-        self.assert_(delta_max < 31, "Intensity count difference numpy/csr : max delta=%s" % delta_max)
+        self.assert_(delta_max <= 31, "Intensity count difference numpy/csr : max delta=%s" % delta_max)
 
 
 def suite():

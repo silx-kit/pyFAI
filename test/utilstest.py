@@ -1,34 +1,38 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # coding: utf-8
 #
-#    Project: pyFAI tests class utilities
+#    Project: Azimuthal integration
 #             https://github.com/pyFAI/pyFAI
 #
-#    Copyright (C) 2010-2014 European Synchrotron Radiation Facility
-#                       Grenoble, France
+#    Copyright (C) 2015 European Synchrotron Radiation Facility, Grenoble, France
 #
-#    Principal authors: Jérôme KIEFFER (jerome.kieffer@esrf.fr)
+#    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as
-#    published by the Free Software Foundation, either version 3 of the
-#    License, or (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-from __future__ import print_function, division, absolute_import, with_statement
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
+from __future__ import print_function, division, absolute_import, with_statement
+__doc__ = "bunch of utility function/static classes to handle testing environment"
 __author__ = "Jérôme Kieffer"
 __contact__ = "jerome.kieffer@esrf.eu"
-__license__ = "LMIT"
+__license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/10/2015"
+__date__ = "27/10/2015"
 
 PACKAGE = "pyFAI"
 SOURCES = PACKAGE + "-src"
@@ -342,14 +346,14 @@ class UtilsTest(object):
         """
         if (sys.platform == "win32") and not script.endswith(".py"):
                 script += ".py"
-
+        env = os.environ.copy()
         if IN_SOURCES:
             script_dir = os.path.join(os.path.dirname(cls.home),
-                    "scripts-%i.%i" % (sys.version_info[0], sys.version_info[1]))
+                "scripts-%i.%i" % (sys.version_info[0], sys.version_info[1]))
             script_path = os.path.join(script_dir, script)
-            env = {"PYTHONPATH": os.pathsep.join([cls.home] + sys.path)}
+            env["PYTHONPATH"] = os.pathsep.join([cls.home] + sys.path)
         else:
-            env = {"PYTHONPATH": os.pathsep.join(sys.path)}
+            env["PYTHONPATH"] = os.pathsep.join(sys.path)
             for i in os.environ.get("PATH", "").split(os.pathsep):
                 script_path = os.path.join(i, script)
                 if os.path.exists(script_path):

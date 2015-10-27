@@ -81,6 +81,7 @@ test/__init__.py
      test_split_pixel.py
      test_utils.py
      test_watershed.py
+     utilstest.py
 
 
 Files under BSD license:
