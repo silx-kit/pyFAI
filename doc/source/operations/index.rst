@@ -1,20 +1,17 @@
+:Author: Jérôme Kieffer
+:Date: 27/10/2015
+:Keywords: Installation procedure
+:Target: System administrators
+
+
 Installation of Python Fast Azimuthal Integration library
 =========================================================
 
-Author: Jérôme Kieffer
-
-Date: 20/03/2015
-
-Keywords: Installation procedure
-
-Target: System administrators
-
-Reference:
 
 Abstract
 --------
 
-Installation procedure
+Installation procedure for all operating sytems
 
 Hardware requirement
 --------------------
@@ -29,16 +26,17 @@ Dependencies
 
 PyFAI is a Python library which relies on the scientific stack (numpy, scipy, matplotlib)
 
-* Python: version 2.6, 2.7 and 3.2, 3.3 and 3.4
+* Python: version 2.6, 2.7, 3.2, 3.3, 3.4, 3.5
 * NumPy: version 1.4 or newer
 * SciPy: version 0.7 or newer
 * Matplotlib: verson 0.99 or newer
 * FabIO: version 0.08 or newer
+* h5py (to access HDF5 files)
 
 There are plenty of optional dependencies which will not prevent pyFAI from working
 by may impair performances or prevent tools from properly working:
 
-* h5py (to access HDF5 files)
+
 * pyopencl (for GPU computing)
 * fftw (for image analysis)
 * pymca (for mask drawing)
@@ -55,15 +53,17 @@ If you want to generate your own C files, make sure your local Cython version su
 Building procedure
 ------------------
 
-::
+.. code ::
 
-    python setup.py build install
+    python setup.py build
+    pip install . --upgrade
 
-There are few specific options to setup.py:
+There are few specific options to ``setup.py``:
 
-* --no-cython: do not use cython (even if present) and use the C source code provided by the development team
-* --no-openmp: if you compiler lacks OpenMP support (MacOSX)
-* --with-testimages: build the source distribution including all test images. Download 200MB of test images to create a self consistent tar-ball.
+* ``--no-cython``: Prevent Cython (even if present) to re-generate the C source code. Use the one provided by the development team.
+* ``--no-openmp``: Recompiles the Cython code without OpenMP support (default under MacOSX).
+* ``--openmp``: Recompiles the Cython code with OpenMP support (Default under Windows and Linux).
+* ``--with-testimages``: build the source distribution including all test images. Download 200MB of test images to create a self consistent tar-ball.
 
 .. toctree::
    :maxdepth: 2
@@ -75,14 +75,17 @@ There are few specific options to setup.py:
 
 Test suites
 -----------
+
 PyFAI comes with a test suite to ensure all core functionalities are working as expected and numerical results are correct:
 
-::
+.. code::
 
     python setup.py build test
 
-Nota: to run the test an internet connection is needed as 200MB of test images need to be download.
-
+**Nota:** to run the test, an internet connection is needed as 200MB of test images need to be download.
+You may have to set the environment variable *http_proxy* and *https_proxy*
+according to the networking environment you are in.
+Specifically at ESRF, please phone the hotline at 24-24 to get those information.
 
 .. toctree::
    :maxdepth: 2
