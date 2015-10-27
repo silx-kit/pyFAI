@@ -28,7 +28,7 @@ It relies on stdeb:
    sudo apt-get install python-stdeb cython python-fabio
    ./build-deb.sh
 
- If you are interested in programming in Python3, use
+If you are interested in programming in Python3, use
 
 .. code::
 
