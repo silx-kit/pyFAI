@@ -231,8 +231,8 @@ void __Pyx_call_destructor(T* x) {
 #define _USE_MATH_DEFINES
 #endif
 #include <math.h>
-#define __PYX_HAVE___distortion
-#define __PYX_HAVE_API___distortion
+#define __PYX_HAVE__src___distortion
+#define __PYX_HAVE_API__src___distortion
 #include "string.h"
 #include "stdio.h"
 #include "stdlib.h"
@@ -444,7 +444,7 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "_distortion.pyx",
+  "src/_distortion.pyx",
   "__init__.pxd",
   "stringsource",
   "type.pxd",
@@ -541,7 +541,7 @@ typedef volatile __pyx_atomic_int_type __pyx_atomic_int;
 #endif
 
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":723
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":723
  * # in Cython to enable them only on the right systems.
  * 
  * ctypedef npy_int8       int8_t             # <<<<<<<<<<<<<<
@@ -550,7 +550,7 @@ typedef volatile __pyx_atomic_int_type __pyx_atomic_int;
  */
 typedef npy_int8 __pyx_t_5numpy_int8_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":724
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":724
  * 
  * ctypedef npy_int8       int8_t
  * ctypedef npy_int16      int16_t             # <<<<<<<<<<<<<<
@@ -559,7 +559,7 @@ typedef npy_int8 __pyx_t_5numpy_int8_t;
  */
 typedef npy_int16 __pyx_t_5numpy_int16_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":725
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":725
  * ctypedef npy_int8       int8_t
  * ctypedef npy_int16      int16_t
  * ctypedef npy_int32      int32_t             # <<<<<<<<<<<<<<
@@ -568,7 +568,7 @@ typedef npy_int16 __pyx_t_5numpy_int16_t;
  */
 typedef npy_int32 __pyx_t_5numpy_int32_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":726
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":726
  * ctypedef npy_int16      int16_t
  * ctypedef npy_int32      int32_t
  * ctypedef npy_int64      int64_t             # <<<<<<<<<<<<<<
@@ -577,7 +577,7 @@ typedef npy_int32 __pyx_t_5numpy_int32_t;
  */
 typedef npy_int64 __pyx_t_5numpy_int64_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":730
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":730
  * #ctypedef npy_int128     int128_t
  * 
  * ctypedef npy_uint8      uint8_t             # <<<<<<<<<<<<<<
@@ -586,7 +586,7 @@ typedef npy_int64 __pyx_t_5numpy_int64_t;
  */
 typedef npy_uint8 __pyx_t_5numpy_uint8_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":731
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":731
  * 
  * ctypedef npy_uint8      uint8_t
  * ctypedef npy_uint16     uint16_t             # <<<<<<<<<<<<<<
@@ -595,7 +595,7 @@ typedef npy_uint8 __pyx_t_5numpy_uint8_t;
  */
 typedef npy_uint16 __pyx_t_5numpy_uint16_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":732
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":732
  * ctypedef npy_uint8      uint8_t
  * ctypedef npy_uint16     uint16_t
  * ctypedef npy_uint32     uint32_t             # <<<<<<<<<<<<<<
@@ -604,7 +604,7 @@ typedef npy_uint16 __pyx_t_5numpy_uint16_t;
  */
 typedef npy_uint32 __pyx_t_5numpy_uint32_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":733
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":733
  * ctypedef npy_uint16     uint16_t
  * ctypedef npy_uint32     uint32_t
  * ctypedef npy_uint64     uint64_t             # <<<<<<<<<<<<<<
@@ -613,7 +613,7 @@ typedef npy_uint32 __pyx_t_5numpy_uint32_t;
  */
 typedef npy_uint64 __pyx_t_5numpy_uint64_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":737
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":737
  * #ctypedef npy_uint128    uint128_t
  * 
  * ctypedef npy_float32    float32_t             # <<<<<<<<<<<<<<
@@ -622,7 +622,7 @@ typedef npy_uint64 __pyx_t_5numpy_uint64_t;
  */
 typedef npy_float32 __pyx_t_5numpy_float32_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":738
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":738
  * 
  * ctypedef npy_float32    float32_t
  * ctypedef npy_float64    float64_t             # <<<<<<<<<<<<<<
@@ -631,7 +631,7 @@ typedef npy_float32 __pyx_t_5numpy_float32_t;
  */
 typedef npy_float64 __pyx_t_5numpy_float64_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":747
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":747
  * # The int types are mapped a bit surprising --
  * # numpy.int corresponds to 'l' and numpy.long to 'q'
  * ctypedef npy_long       int_t             # <<<<<<<<<<<<<<
@@ -640,7 +640,7 @@ typedef npy_float64 __pyx_t_5numpy_float64_t;
  */
 typedef npy_long __pyx_t_5numpy_int_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":748
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":748
  * # numpy.int corresponds to 'l' and numpy.long to 'q'
  * ctypedef npy_long       int_t
  * ctypedef npy_longlong   long_t             # <<<<<<<<<<<<<<
@@ -649,7 +649,7 @@ typedef npy_long __pyx_t_5numpy_int_t;
  */
 typedef npy_longlong __pyx_t_5numpy_long_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":749
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":749
  * ctypedef npy_long       int_t
  * ctypedef npy_longlong   long_t
  * ctypedef npy_longlong   longlong_t             # <<<<<<<<<<<<<<
@@ -658,7 +658,7 @@ typedef npy_longlong __pyx_t_5numpy_long_t;
  */
 typedef npy_longlong __pyx_t_5numpy_longlong_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":751
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":751
  * ctypedef npy_longlong   longlong_t
  * 
  * ctypedef npy_ulong      uint_t             # <<<<<<<<<<<<<<
@@ -667,7 +667,7 @@ typedef npy_longlong __pyx_t_5numpy_longlong_t;
  */
 typedef npy_ulong __pyx_t_5numpy_uint_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":752
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":752
  * 
  * ctypedef npy_ulong      uint_t
  * ctypedef npy_ulonglong  ulong_t             # <<<<<<<<<<<<<<
@@ -676,7 +676,7 @@ typedef npy_ulong __pyx_t_5numpy_uint_t;
  */
 typedef npy_ulonglong __pyx_t_5numpy_ulong_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":753
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":753
  * ctypedef npy_ulong      uint_t
  * ctypedef npy_ulonglong  ulong_t
  * ctypedef npy_ulonglong  ulonglong_t             # <<<<<<<<<<<<<<
@@ -685,7 +685,7 @@ typedef npy_ulonglong __pyx_t_5numpy_ulong_t;
  */
 typedef npy_ulonglong __pyx_t_5numpy_ulonglong_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":755
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":755
  * ctypedef npy_ulonglong  ulonglong_t
  * 
  * ctypedef npy_intp       intp_t             # <<<<<<<<<<<<<<
@@ -694,7 +694,7 @@ typedef npy_ulonglong __pyx_t_5numpy_ulonglong_t;
  */
 typedef npy_intp __pyx_t_5numpy_intp_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":756
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":756
  * 
  * ctypedef npy_intp       intp_t
  * ctypedef npy_uintp      uintp_t             # <<<<<<<<<<<<<<
@@ -703,7 +703,7 @@ typedef npy_intp __pyx_t_5numpy_intp_t;
  */
 typedef npy_uintp __pyx_t_5numpy_uintp_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":758
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":758
  * ctypedef npy_uintp      uintp_t
  * 
  * ctypedef npy_double     float_t             # <<<<<<<<<<<<<<
@@ -712,7 +712,7 @@ typedef npy_uintp __pyx_t_5numpy_uintp_t;
  */
 typedef npy_double __pyx_t_5numpy_float_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":759
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":759
  * 
  * ctypedef npy_double     float_t
  * ctypedef npy_double     double_t             # <<<<<<<<<<<<<<
@@ -721,7 +721,7 @@ typedef npy_double __pyx_t_5numpy_float_t;
  */
 typedef npy_double __pyx_t_5numpy_double_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":760
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":760
  * ctypedef npy_double     float_t
  * ctypedef npy_double     double_t
  * ctypedef npy_longdouble longdouble_t             # <<<<<<<<<<<<<<
@@ -751,13 +751,13 @@ typedef npy_longdouble __pyx_t_5numpy_longdouble_t;
 
 
 /*--- Type declarations ---*/
-struct __pyx_obj_11_distortion_Quad;
+struct __pyx_obj_3src_11_distortion_Quad;
 struct __pyx_array_obj;
 struct __pyx_MemviewEnum_obj;
 struct __pyx_memoryview_obj;
 struct __pyx_memoryviewslice_obj;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":762
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":762
  * ctypedef npy_longdouble longdouble_t
  * 
  * ctypedef npy_cfloat      cfloat_t             # <<<<<<<<<<<<<<
@@ -766,7 +766,7 @@ struct __pyx_memoryviewslice_obj;
  */
 typedef npy_cfloat __pyx_t_5numpy_cfloat_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":763
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":763
  * 
  * ctypedef npy_cfloat      cfloat_t
  * ctypedef npy_cdouble     cdouble_t             # <<<<<<<<<<<<<<
@@ -775,7 +775,7 @@ typedef npy_cfloat __pyx_t_5numpy_cfloat_t;
  */
 typedef npy_cdouble __pyx_t_5numpy_cdouble_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":764
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":764
  * ctypedef npy_cfloat      cfloat_t
  * ctypedef npy_cdouble     cdouble_t
  * ctypedef npy_clongdouble clongdouble_t             # <<<<<<<<<<<<<<
@@ -784,7 +784,7 @@ typedef npy_cdouble __pyx_t_5numpy_cdouble_t;
  */
 typedef npy_clongdouble __pyx_t_5numpy_clongdouble_t;
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":766
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":766
  * ctypedef npy_clongdouble clongdouble_t
  * 
  * ctypedef npy_cdouble     complex_t             # <<<<<<<<<<<<<<
@@ -792,30 +792,30 @@ typedef npy_clongdouble __pyx_t_5numpy_clongdouble_t;
  * cdef inline object PyArray_MultiIterNew1(a):
  */
 typedef npy_cdouble __pyx_t_5numpy_complex_t;
-struct __pyx_t_11_distortion_lut_point;
+struct __pyx_t_3src_11_distortion_lut_point;
 
-/* "_distortion.pyx":54
+/* "src/_distortion.pyx":54
  * import fabio
  * 
  * cdef struct lut_point:             # <<<<<<<<<<<<<<
  *     numpy.int32_t idx
  *     numpy.float32_t coef
  */
-struct __pyx_t_11_distortion_lut_point {
+struct __pyx_t_3src_11_distortion_lut_point {
   __pyx_t_5numpy_int32_t idx;
   __pyx_t_5numpy_float32_t coef;
 };
 
-/* "_distortion.pyx":214
+/* "src/_distortion.pyx":214
  *                         h += 1
  * 
  * cdef class Quad:             # <<<<<<<<<<<<<<
  *     """
  *     Basic quadrilatere object
  */
-struct __pyx_obj_11_distortion_Quad {
+struct __pyx_obj_3src_11_distortion_Quad {
   PyObject_HEAD
-  struct __pyx_vtabstruct_11_distortion_Quad *__pyx_vtab;
+  struct __pyx_vtabstruct_3src_11_distortion_Quad *__pyx_vtab;
   __Pyx_memviewslice box;
   float A0;
   float A1;
@@ -920,7 +920,7 @@ struct __pyx_memoryviewslice_obj {
 
 
 
-/* "_distortion.pyx":214
+/* "src/_distortion.pyx":214
  *                         h += 1
  * 
  * cdef class Quad:             # <<<<<<<<<<<<<<
@@ -928,20 +928,20 @@ struct __pyx_memoryviewslice_obj {
  *     Basic quadrilatere object
  */
 
-struct __pyx_vtabstruct_11_distortion_Quad {
-  float (*get_box)(struct __pyx_obj_11_distortion_Quad *, int, int, int __pyx_skip_dispatch);
-  int (*get_offset0)(struct __pyx_obj_11_distortion_Quad *, int __pyx_skip_dispatch);
-  int (*get_offset1)(struct __pyx_obj_11_distortion_Quad *, int __pyx_skip_dispatch);
-  int (*get_box_size0)(struct __pyx_obj_11_distortion_Quad *, int __pyx_skip_dispatch);
-  int (*get_box_size1)(struct __pyx_obj_11_distortion_Quad *, int __pyx_skip_dispatch);
-  PyObject *(*init_slope)(struct __pyx_obj_11_distortion_Quad *, int __pyx_skip_dispatch);
-  float (*calc_area_AB)(struct __pyx_obj_11_distortion_Quad *, float, float, int __pyx_skip_dispatch);
-  float (*calc_area_BC)(struct __pyx_obj_11_distortion_Quad *, float, float, int __pyx_skip_dispatch);
-  float (*calc_area_CD)(struct __pyx_obj_11_distortion_Quad *, float, float, int __pyx_skip_dispatch);
-  float (*calc_area_DA)(struct __pyx_obj_11_distortion_Quad *, float, float, int __pyx_skip_dispatch);
-  float (*calc_area)(struct __pyx_obj_11_distortion_Quad *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_3src_11_distortion_Quad {
+  float (*get_box)(struct __pyx_obj_3src_11_distortion_Quad *, int, int, int __pyx_skip_dispatch);
+  int (*get_offset0)(struct __pyx_obj_3src_11_distortion_Quad *, int __pyx_skip_dispatch);
+  int (*get_offset1)(struct __pyx_obj_3src_11_distortion_Quad *, int __pyx_skip_dispatch);
+  int (*get_box_size0)(struct __pyx_obj_3src_11_distortion_Quad *, int __pyx_skip_dispatch);
+  int (*get_box_size1)(struct __pyx_obj_3src_11_distortion_Quad *, int __pyx_skip_dispatch);
+  PyObject *(*init_slope)(struct __pyx_obj_3src_11_distortion_Quad *, int __pyx_skip_dispatch);
+  float (*calc_area_AB)(struct __pyx_obj_3src_11_distortion_Quad *, float, float, int __pyx_skip_dispatch);
+  float (*calc_area_BC)(struct __pyx_obj_3src_11_distortion_Quad *, float, float, int __pyx_skip_dispatch);
+  float (*calc_area_CD)(struct __pyx_obj_3src_11_distortion_Quad *, float, float, int __pyx_skip_dispatch);
+  float (*calc_area_DA)(struct __pyx_obj_3src_11_distortion_Quad *, float, float, int __pyx_skip_dispatch);
+  float (*calc_area)(struct __pyx_obj_3src_11_distortion_Quad *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_11_distortion_Quad *__pyx_vtabptr_11_distortion_Quad;
+static struct __pyx_vtabstruct_3src_11_distortion_Quad *__pyx_vtabptr_3src_11_distortion_Quad;
 
 
 /* "View.MemoryView":302
@@ -1449,7 +1449,7 @@ static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsdsds
 
 static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsds_nn___pyx_t_5numpy_int8_t(PyObject *);
 
-static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsds_nn_struct___pyx_t_11_distortion_lut_point(PyObject *);
+static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsds_nn_struct___pyx_t_3src_11_distortion_lut_point(PyObject *);
 
 static CYTHON_INLINE PyObject* __Pyx_PyInt_From_int(int value);
 
@@ -1600,7 +1600,7 @@ static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsds_i
 
 static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_float(PyObject *);
 
-static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsdsds_nn_struct___pyx_t_11_distortion_lut_point(PyObject *);
+static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsdsds_nn_struct___pyx_t_3src_11_distortion_lut_point(PyObject *);
 
 static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_nn___pyx_t_5numpy_int32_t(PyObject *);
 
@@ -1622,17 +1622,17 @@ static PyTypeObject *__Pyx_ImportType(const char *module_name, const char *class
 
 static int __Pyx_InitStrings(__Pyx_StringTabEntry *t);
 
-static float __pyx_f_11_distortion_4Quad_get_box(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, int __pyx_v_i, int __pyx_v_j, int __pyx_skip_dispatch); /* proto*/
-static int __pyx_f_11_distortion_4Quad_get_offset0(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch); /* proto*/
-static int __pyx_f_11_distortion_4Quad_get_offset1(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch); /* proto*/
-static int __pyx_f_11_distortion_4Quad_get_box_size0(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch); /* proto*/
-static int __pyx_f_11_distortion_4Quad_get_box_size1(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch); /* proto*/
-static PyObject *__pyx_f_11_distortion_4Quad_init_slope(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch); /* proto*/
-static float __pyx_f_11_distortion_4Quad_calc_area_AB(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, float __pyx_v_I1, float __pyx_v_I2, int __pyx_skip_dispatch); /* proto*/
-static float __pyx_f_11_distortion_4Quad_calc_area_BC(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, float __pyx_v_J1, float __pyx_v_J2, int __pyx_skip_dispatch); /* proto*/
-static float __pyx_f_11_distortion_4Quad_calc_area_CD(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, float __pyx_v_K1, float __pyx_v_K2, int __pyx_skip_dispatch); /* proto*/
-static float __pyx_f_11_distortion_4Quad_calc_area_DA(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, float __pyx_v_L1, float __pyx_v_L2, int __pyx_skip_dispatch); /* proto*/
-static float __pyx_f_11_distortion_4Quad_calc_area(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch); /* proto*/
+static float __pyx_f_3src_11_distortion_4Quad_get_box(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, int __pyx_v_i, int __pyx_v_j, int __pyx_skip_dispatch); /* proto*/
+static int __pyx_f_3src_11_distortion_4Quad_get_offset0(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch); /* proto*/
+static int __pyx_f_3src_11_distortion_4Quad_get_offset1(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch); /* proto*/
+static int __pyx_f_3src_11_distortion_4Quad_get_box_size0(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch); /* proto*/
+static int __pyx_f_3src_11_distortion_4Quad_get_box_size1(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch); /* proto*/
+static PyObject *__pyx_f_3src_11_distortion_4Quad_init_slope(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch); /* proto*/
+static float __pyx_f_3src_11_distortion_4Quad_calc_area_AB(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, float __pyx_v_I1, float __pyx_v_I2, int __pyx_skip_dispatch); /* proto*/
+static float __pyx_f_3src_11_distortion_4Quad_calc_area_BC(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, float __pyx_v_J1, float __pyx_v_J2, int __pyx_skip_dispatch); /* proto*/
+static float __pyx_f_3src_11_distortion_4Quad_calc_area_CD(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, float __pyx_v_K1, float __pyx_v_K2, int __pyx_skip_dispatch); /* proto*/
+static float __pyx_f_3src_11_distortion_4Quad_calc_area_DA(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, float __pyx_v_L1, float __pyx_v_L2, int __pyx_skip_dispatch); /* proto*/
+static float __pyx_f_3src_11_distortion_4Quad_calc_area(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch); /* proto*/
 static char *__pyx_memoryview_get_item_pointer(struct __pyx_memoryview_obj *__pyx_v_self, PyObject *__pyx_v_index); /* proto*/
 static PyObject *__pyx_memoryview_is_slice(struct __pyx_memoryview_obj *__pyx_v_self, PyObject *__pyx_v_obj); /* proto*/
 static PyObject *__pyx_memoryview_setitem_slice_assignment(struct __pyx_memoryview_obj *__pyx_v_self, PyObject *__pyx_v_dst, PyObject *__pyx_v_src); /* proto*/
@@ -1676,21 +1676,21 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *, cha
 
 /* Module declarations from 'libc.math' */
 
-/* Module declarations from '_distortion' */
-static PyTypeObject *__pyx_ptype_11_distortion_Quad = 0;
+/* Module declarations from 'src._distortion' */
+static PyTypeObject *__pyx_ptype_3src_11_distortion_Quad = 0;
 static PyTypeObject *__pyx_array_type = 0;
 static PyTypeObject *__pyx_MemviewEnum_type = 0;
 static PyTypeObject *__pyx_memoryview_type = 0;
 static PyTypeObject *__pyx_memoryviewslice_type = 0;
-static int __pyx_v_11_distortion_NEED_DECREF;
+static int __pyx_v_3src_11_distortion_NEED_DECREF;
 static PyObject *generic = 0;
 static PyObject *strided = 0;
 static PyObject *indirect = 0;
 static PyObject *contiguous = 0;
 static PyObject *indirect_contiguous = 0;
-static CYTHON_INLINE float __pyx_f_11_distortion_calc_area(float, float, float, float, int __pyx_skip_dispatch); /*proto*/
-static CYTHON_INLINE int __pyx_f_11_distortion_clip(int, int, int, int __pyx_skip_dispatch); /*proto*/
-static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice, float, float, float, float); /*proto*/
+static CYTHON_INLINE float __pyx_f_3src_11_distortion_calc_area(float, float, float, float, int __pyx_skip_dispatch); /*proto*/
+static CYTHON_INLINE int __pyx_f_3src_11_distortion_clip(int, int, int, int __pyx_skip_dispatch); /*proto*/
+static CYTHON_INLINE void __pyx_f_3src_11_distortion_integrate(__Pyx_memviewslice, float, float, float, float); /*proto*/
 static struct __pyx_array_obj *__pyx_array_new(PyObject *, Py_ssize_t, char *, char *, char *); /*proto*/
 static void *__pyx_align_pointer(void *, size_t); /*proto*/
 static PyObject *__pyx_memoryview_new(PyObject *, int, int, __Pyx_TypeInfo *); /*proto*/
@@ -1725,20 +1725,20 @@ static void __pyx_memoryview_slice_assign_scalar(__Pyx_memviewslice *, int, size
 static void __pyx_memoryview__slice_assign_scalar(char *, Py_ssize_t *, Py_ssize_t *, int, size_t, void *); /*proto*/
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_5numpy_float32_t = { "float32_t", NULL, sizeof(__pyx_t_5numpy_float32_t), { 0 }, 0, 'R', 0, 0 };
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_5numpy_int32_t = { "int32_t", NULL, sizeof(__pyx_t_5numpy_int32_t), { 0 }, 0, IS_UNSIGNED(__pyx_t_5numpy_int32_t) ? 'U' : 'I', IS_UNSIGNED(__pyx_t_5numpy_int32_t), 0 };
-static __Pyx_StructField __Pyx_StructFields_nn_struct___pyx_t_11_distortion_lut_point[] = {
-  {&__Pyx_TypeInfo_nn___pyx_t_5numpy_int32_t, "idx", offsetof(struct __pyx_t_11_distortion_lut_point, idx)},
-  {&__Pyx_TypeInfo_nn___pyx_t_5numpy_float32_t, "coef", offsetof(struct __pyx_t_11_distortion_lut_point, coef)},
+static __Pyx_StructField __Pyx_StructFields_nn_struct___pyx_t_3src_11_distortion_lut_point[] = {
+  {&__Pyx_TypeInfo_nn___pyx_t_5numpy_int32_t, "idx", offsetof(struct __pyx_t_3src_11_distortion_lut_point, idx)},
+  {&__Pyx_TypeInfo_nn___pyx_t_5numpy_float32_t, "coef", offsetof(struct __pyx_t_3src_11_distortion_lut_point, coef)},
   {NULL, NULL, 0}
 };
-static __Pyx_TypeInfo __Pyx_TypeInfo_nn_struct___pyx_t_11_distortion_lut_point = { "lut_point", __Pyx_StructFields_nn_struct___pyx_t_11_distortion_lut_point, sizeof(struct __pyx_t_11_distortion_lut_point), { 0 }, 0, 'S', 0, 0 };
+static __Pyx_TypeInfo __Pyx_TypeInfo_nn_struct___pyx_t_3src_11_distortion_lut_point = { "lut_point", __Pyx_StructFields_nn_struct___pyx_t_3src_11_distortion_lut_point, sizeof(struct __pyx_t_3src_11_distortion_lut_point), { 0 }, 0, 'S', 0, 0 };
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_5numpy_float64_t = { "float64_t", NULL, sizeof(__pyx_t_5numpy_float64_t), { 0 }, 0, 'R', 0, 0 };
 static __Pyx_TypeInfo __Pyx_TypeInfo_float = { "float", NULL, sizeof(float), { 0 }, 0, 'R', 0, 0 };
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_5numpy_int8_t = { "int8_t", NULL, sizeof(__pyx_t_5numpy_int8_t), { 0 }, 0, IS_UNSIGNED(__pyx_t_5numpy_int8_t) ? 'U' : 'I', IS_UNSIGNED(__pyx_t_5numpy_int8_t), 0 };
 static __Pyx_TypeInfo __Pyx_TypeInfo_int = { "int", NULL, sizeof(int), { 0 }, 0, IS_UNSIGNED(int) ? 'U' : 'I', IS_UNSIGNED(int), 0 };
-#define __Pyx_MODULE_NAME "_distortion"
-int __pyx_module_is_main__distortion = 0;
+#define __Pyx_MODULE_NAME "src._distortion"
+int __pyx_module_is_main_src___distortion = 0;
 
-/* Implementation of '_distortion' */
+/* Implementation of 'src._distortion' */
 static PyObject *__pyx_builtin_ImportError;
 static PyObject *__pyx_builtin_object;
 static PyObject *__pyx_builtin_range;
@@ -1751,38 +1751,38 @@ static PyObject *__pyx_builtin_TypeError;
 static PyObject *__pyx_builtin_xrange;
 static PyObject *__pyx_builtin_id;
 static PyObject *__pyx_builtin_IndexError;
-static PyObject *__pyx_pf_11_distortion_calc_area(CYTHON_UNUSED PyObject *__pyx_self, float __pyx_v_I1, float __pyx_v_I2, float __pyx_v_slope, float __pyx_v_intercept); /* proto */
-static PyObject *__pyx_pf_11_distortion_2clip(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_value, int __pyx_v_min_val, int __pyx_v_max_val); /* proto */
-static int __pyx_pf_11_distortion_4Quad___cinit__(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, __Pyx_memviewslice __pyx_v_buffer); /* proto */
-static PyObject *__pyx_pf_11_distortion_4Quad_2reinit(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, PyObject *__pyx_v_A0, PyObject *__pyx_v_A1, PyObject *__pyx_v_B0, PyObject *__pyx_v_B1, PyObject *__pyx_v_C0, PyObject *__pyx_v_C1, PyObject *__pyx_v_D0, PyObject *__pyx_v_D1); /* proto */
-static PyObject *__pyx_pf_11_distortion_4Quad_4__repr__(struct __pyx_obj_11_distortion_Quad *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_11_distortion_4Quad_6get_box(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, int __pyx_v_i, int __pyx_v_j); /* proto */
-static PyObject *__pyx_pf_11_distortion_4Quad_8get_offset0(struct __pyx_obj_11_distortion_Quad *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_11_distortion_4Quad_10get_offset1(struct __pyx_obj_11_distortion_Quad *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_11_distortion_4Quad_12get_box_size0(struct __pyx_obj_11_distortion_Quad *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_11_distortion_4Quad_14get_box_size1(struct __pyx_obj_11_distortion_Quad *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_11_distortion_4Quad_16init_slope(struct __pyx_obj_11_distortion_Quad *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_11_distortion_4Quad_18calc_area_AB(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, float __pyx_v_I1, float __pyx_v_I2); /* proto */
-static PyObject *__pyx_pf_11_distortion_4Quad_20calc_area_BC(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, float __pyx_v_J1, float __pyx_v_J2); /* proto */
-static PyObject *__pyx_pf_11_distortion_4Quad_22calc_area_CD(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, float __pyx_v_K1, float __pyx_v_K2); /* proto */
-static PyObject *__pyx_pf_11_distortion_4Quad_24calc_area_DA(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, float __pyx_v_L1, float __pyx_v_L2); /* proto */
-static PyObject *__pyx_pf_11_distortion_4Quad_26calc_area(struct __pyx_obj_11_distortion_Quad *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_11_distortion_4Quad_28populate_box(struct __pyx_obj_11_distortion_Quad *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, float __pyx_v_start, float __pyx_v_stop, float __pyx_v_slope, float __pyx_v_intercept); /* proto */
-static PyObject *__pyx_pf_11_distortion_10Distortion___init__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_detector, PyObject *__pyx_v_shape); /* proto */
-static PyObject *__pyx_pf_11_distortion_10Distortion_2__repr__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_image); /* proto */
-static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_image); /* proto */
-static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_pos, PyObject *__pyx_v_shape, __Pyx_memviewslice __pyx_v_mask); /* proto */
-static PyObject *__pyx_pf_11_distortion_6calc_LUT(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_pos, PyObject *__pyx_v_shape, PyObject *__pyx_v_bin_size, PyObject *__pyx_v_max_pixel_size, __Pyx_memviewslice __pyx_v_mask); /* proto */
-static PyObject *__pyx_pf_11_distortion_8calc_CSR(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_pos, PyObject *__pyx_v_shape, PyObject *__pyx_v_bin_size, PyObject *__pyx_v_max_pixel_size, __Pyx_memviewslice __pyx_v_mask); /* proto */
-static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_image, PyObject *__pyx_v_shape, __Pyx_memviewslice __pyx_v_LUT, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy); /* proto */
-static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_image, PyObject *__pyx_v_shape, PyObject *__pyx_v_LUT, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy); /* proto */
-static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_image, PyObject *__pyx_v_shape, __Pyx_memviewslice __pyx_v_LUT); /* proto */
-static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_image, PyObject *__pyx_v_shape, PyObject *__pyx_v_LUT); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_calc_area(CYTHON_UNUSED PyObject *__pyx_self, float __pyx_v_I1, float __pyx_v_I2, float __pyx_v_slope, float __pyx_v_intercept); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_2clip(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_value, int __pyx_v_min_val, int __pyx_v_max_val); /* proto */
+static int __pyx_pf_3src_11_distortion_4Quad___cinit__(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, __Pyx_memviewslice __pyx_v_buffer); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_2reinit(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, PyObject *__pyx_v_A0, PyObject *__pyx_v_A1, PyObject *__pyx_v_B0, PyObject *__pyx_v_B1, PyObject *__pyx_v_C0, PyObject *__pyx_v_C1, PyObject *__pyx_v_D0, PyObject *__pyx_v_D1); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_4__repr__(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_6get_box(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, int __pyx_v_i, int __pyx_v_j); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_8get_offset0(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_10get_offset1(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_12get_box_size0(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_14get_box_size1(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_16init_slope(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_18calc_area_AB(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, float __pyx_v_I1, float __pyx_v_I2); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_20calc_area_BC(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, float __pyx_v_J1, float __pyx_v_J2); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_22calc_area_CD(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, float __pyx_v_K1, float __pyx_v_K2); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_24calc_area_DA(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, float __pyx_v_L1, float __pyx_v_L2); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_26calc_area(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_28populate_box(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_30integrate(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, float __pyx_v_start, float __pyx_v_stop, float __pyx_v_slope, float __pyx_v_intercept); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_10Distortion___init__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_detector, PyObject *__pyx_v_shape); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_10Distortion_2__repr__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_image); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_image); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_pos, PyObject *__pyx_v_shape, __Pyx_memviewslice __pyx_v_mask); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_6calc_LUT(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_pos, PyObject *__pyx_v_shape, PyObject *__pyx_v_bin_size, PyObject *__pyx_v_max_pixel_size, __Pyx_memviewslice __pyx_v_mask); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_8calc_CSR(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_pos, PyObject *__pyx_v_shape, PyObject *__pyx_v_bin_size, PyObject *__pyx_v_max_pixel_size, __Pyx_memviewslice __pyx_v_mask); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_image, PyObject *__pyx_v_shape, __Pyx_memviewslice __pyx_v_LUT, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_image, PyObject *__pyx_v_shape, PyObject *__pyx_v_LUT, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_image, PyObject *__pyx_v_shape, __Pyx_memviewslice __pyx_v_LUT); /* proto */
+static PyObject *__pyx_pf_3src_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_image, PyObject *__pyx_v_shape, PyObject *__pyx_v_LUT); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static int __pyx_array_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
@@ -1817,7 +1817,7 @@ static PyObject *__pyx_memoryview_MemoryView_10memoryview_20copy(struct __pyx_me
 static PyObject *__pyx_memoryview_MemoryView_10memoryview_22copy_fortran(struct __pyx_memoryview_obj *__pyx_v_self); /* proto */
 static void __pyx_memoryviewslice_MemoryView_16_memoryviewslice___dealloc__(struct __pyx_memoryviewslice_obj *__pyx_v_self); /* proto */
 static PyObject *__pyx_memoryviewslice__get__base_MemoryView_16_memoryviewslice_4base___get__(struct __pyx_memoryviewslice_obj *__pyx_v_self); /* proto */
-static PyObject *__pyx_tp_new_11_distortion_Quad(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static PyObject *__pyx_tp_new_3src_11_distortion_Quad(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_array(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_Enum(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_memoryview(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
@@ -2059,7 +2059,6 @@ static char __pyx_k_26_10_2015[] = "26/10/2015";
 static char __pyx_k_Distortion[] = "Distortion";
 static char __pyx_k_IndexError[] = "IndexError";
 static char __pyx_k_ValueError[] = "ValueError";
-static char __pyx_k_distortion[] = "_distortion";
 static char __pyx_k_init_slope[] = "init_slope";
 static char __pyx_k_pyx_vtable[] = "__pyx_vtable__";
 static char __pyx_k_ImportError[] = "ImportError";
@@ -2095,6 +2094,7 @@ static char __pyx_k_lut_total_size[] = "lut_total_size";
 static char __pyx_k_max_pixel_size[] = "max_pixel_size";
 static char __pyx_k_allocate_buffer[] = "allocate_buffer";
 static char __pyx_k_dtype_is_object[] = "dtype_is_object";
+static char __pyx_k_src__distortion[] = "src._distortion";
 static char __pyx_k_detector_factory[] = "detector_factory";
 static char __pyx_k_Distortion___init[] = "Distortion.__init__";
 static char __pyx_k_Distortion___repr[] = "Distortion.__repr__";
@@ -2128,7 +2128,7 @@ static char __pyx_k_unable_to_allocate_array_data[] = "unable to allocate array 
 static char __pyx_k_strided_and_direct_or_indirect[] = "<strided and direct or indirect>";
 static char __pyx_k_Patching_image_as_image_is_ix_i[] = "Patching image as image is %ix%i and spline is %ix%i";
 static char __pyx_k_This_class_applies_a_distortion[] = "\n\n    This class applies a distortion correction on an image.\n\n    It is also able to apply an inversion of the correction.\n\n    ";
-static char __pyx_k_mntdirect__scisoft_users_kieffe[] = "/mntdirect/_scisoft/users/kieffer/workspace/pyFAI/src/_distortion.pyx";
+static char __pyx_k_home_jerome_workspace_pyFAI_src[] = "/home/jerome/workspace/pyFAI/src/_distortion.pyx";
 static char __pyx_k_unknown_dtype_code_in_numpy_pxd[] = "unknown dtype code in numpy.pxd (%d)";
 static char __pyx_k_All_dimensions_preceding_dimensi[] = "All dimensions preceding dimension %d must be indexed and not sliced";
 static char __pyx_k_Buffer_view_does_not_expose_stri[] = "Buffer view does not expose strides";
@@ -2274,7 +2274,6 @@ static PyObject *__pyx_n_s_delta_dummy;
 static PyObject *__pyx_n_s_detector;
 static PyObject *__pyx_n_s_detector_factory;
 static PyObject *__pyx_n_s_detectors;
-static PyObject *__pyx_n_s_distortion;
 static PyObject *__pyx_n_s_do_dummy;
 static PyObject *__pyx_n_s_do_mask;
 static PyObject *__pyx_n_s_doc;
@@ -2306,6 +2305,7 @@ static PyObject *__pyx_n_s_get_box_size1;
 static PyObject *__pyx_n_s_get_offset0;
 static PyObject *__pyx_n_s_get_offset1;
 static PyObject *__pyx_kp_s_got_differing_extents_in_dimensi;
+static PyObject *__pyx_kp_s_home_jerome_workspace_pyFAI_src;
 static PyObject *__pyx_n_s_i;
 static PyObject *__pyx_n_s_i0;
 static PyObject *__pyx_n_s_i1;
@@ -2361,7 +2361,6 @@ static PyObject *__pyx_n_s_min0;
 static PyObject *__pyx_n_s_min1;
 static PyObject *__pyx_n_s_min_val;
 static PyObject *__pyx_n_s_ml;
-static PyObject *__pyx_kp_s_mntdirect__scisoft_users_kieffe;
 static PyObject *__pyx_n_s_mode;
 static PyObject *__pyx_n_s_module;
 static PyObject *__pyx_n_s_ms;
@@ -2418,6 +2417,7 @@ static PyObject *__pyx_n_s_shape1;
 static PyObject *__pyx_n_s_six;
 static PyObject *__pyx_n_s_size;
 static PyObject *__pyx_n_s_slope;
+static PyObject *__pyx_n_s_src__distortion;
 static PyObject *__pyx_n_s_start;
 static PyObject *__pyx_n_s_step;
 static PyObject *__pyx_n_s_stop;
@@ -2599,7 +2599,7 @@ static PyObject *__pyx_codeobj__123;
 static PyObject *__pyx_codeobj__125;
 static PyObject *__pyx_codeobj__127;
 
-/* "_distortion.pyx":62
+/* "src/_distortion.pyx":62
  * 
  * 
  * cpdef inline float calc_area(float I1, float I2, float slope, float intercept) nogil:             # <<<<<<<<<<<<<<
@@ -2607,11 +2607,11 @@ static PyObject *__pyx_codeobj__127;
  *     return 0.5 * (I2 - I1) * (slope * (I2 + I1) + 2 * intercept)
  */
 
-static PyObject *__pyx_pw_11_distortion_1calc_area(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static CYTHON_INLINE float __pyx_f_11_distortion_calc_area(float __pyx_v_I1, float __pyx_v_I2, float __pyx_v_slope, float __pyx_v_intercept, CYTHON_UNUSED int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_3src_11_distortion_1calc_area(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static CYTHON_INLINE float __pyx_f_3src_11_distortion_calc_area(float __pyx_v_I1, float __pyx_v_I2, float __pyx_v_slope, float __pyx_v_intercept, CYTHON_UNUSED int __pyx_skip_dispatch) {
   float __pyx_r;
 
-  /* "_distortion.pyx":64
+  /* "src/_distortion.pyx":64
  * cpdef inline float calc_area(float I1, float I2, float slope, float intercept) nogil:
  *     "Calculate the area between I1 and I2 of a line with a given slope & intercept"
  *     return 0.5 * (I2 - I1) * (slope * (I2 + I1) + 2 * intercept)             # <<<<<<<<<<<<<<
@@ -2621,7 +2621,7 @@ static CYTHON_INLINE float __pyx_f_11_distortion_calc_area(float __pyx_v_I1, flo
   __pyx_r = ((0.5 * (__pyx_v_I2 - __pyx_v_I1)) * ((__pyx_v_slope * (__pyx_v_I2 + __pyx_v_I1)) + (2.0 * __pyx_v_intercept)));
   goto __pyx_L0;
 
-  /* "_distortion.pyx":62
+  /* "src/_distortion.pyx":62
  * 
  * 
  * cpdef inline float calc_area(float I1, float I2, float slope, float intercept) nogil:             # <<<<<<<<<<<<<<
@@ -2635,9 +2635,9 @@ static CYTHON_INLINE float __pyx_f_11_distortion_calc_area(float __pyx_v_I1, flo
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_1calc_area(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_11_distortion_calc_area[] = "Calculate the area between I1 and I2 of a line with a given slope & intercept";
-static PyObject *__pyx_pw_11_distortion_1calc_area(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_11_distortion_1calc_area(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_3src_11_distortion_calc_area[] = "Calculate the area between I1 and I2 of a line with a given slope & intercept";
+static PyObject *__pyx_pw_3src_11_distortion_1calc_area(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   float __pyx_v_I1;
   float __pyx_v_I2;
   float __pyx_v_slope;
@@ -2703,18 +2703,18 @@ static PyObject *__pyx_pw_11_distortion_1calc_area(PyObject *__pyx_self, PyObjec
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("calc_area", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("_distortion.calc_area", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.calc_area", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_11_distortion_calc_area(__pyx_self, __pyx_v_I1, __pyx_v_I2, __pyx_v_slope, __pyx_v_intercept);
+  __pyx_r = __pyx_pf_3src_11_distortion_calc_area(__pyx_self, __pyx_v_I1, __pyx_v_I2, __pyx_v_slope, __pyx_v_intercept);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_calc_area(CYTHON_UNUSED PyObject *__pyx_self, float __pyx_v_I1, float __pyx_v_I2, float __pyx_v_slope, float __pyx_v_intercept) {
+static PyObject *__pyx_pf_3src_11_distortion_calc_area(CYTHON_UNUSED PyObject *__pyx_self, float __pyx_v_I1, float __pyx_v_I2, float __pyx_v_slope, float __pyx_v_intercept) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -2723,7 +2723,7 @@ static PyObject *__pyx_pf_11_distortion_calc_area(CYTHON_UNUSED PyObject *__pyx_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("calc_area", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_11_distortion_calc_area(__pyx_v_I1, __pyx_v_I2, __pyx_v_slope, __pyx_v_intercept, 0)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_3src_11_distortion_calc_area(__pyx_v_I1, __pyx_v_I2, __pyx_v_slope, __pyx_v_intercept, 0)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -2732,7 +2732,7 @@ static PyObject *__pyx_pf_11_distortion_calc_area(CYTHON_UNUSED PyObject *__pyx_
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("_distortion.calc_area", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.calc_area", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -2740,7 +2740,7 @@ static PyObject *__pyx_pf_11_distortion_calc_area(CYTHON_UNUSED PyObject *__pyx_
   return __pyx_r;
 }
 
-/* "_distortion.pyx":66
+/* "src/_distortion.pyx":66
  *     return 0.5 * (I2 - I1) * (slope * (I2 + I1) + 2 * intercept)
  * 
  * cpdef inline int clip(int value, int min_val, int max_val) nogil:             # <<<<<<<<<<<<<<
@@ -2748,12 +2748,12 @@ static PyObject *__pyx_pf_11_distortion_calc_area(CYTHON_UNUSED PyObject *__pyx_
  *     if value < min_val:
  */
 
-static PyObject *__pyx_pw_11_distortion_3clip(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static CYTHON_INLINE int __pyx_f_11_distortion_clip(int __pyx_v_value, int __pyx_v_min_val, int __pyx_v_max_val, CYTHON_UNUSED int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_3src_11_distortion_3clip(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static CYTHON_INLINE int __pyx_f_3src_11_distortion_clip(int __pyx_v_value, int __pyx_v_min_val, int __pyx_v_max_val, CYTHON_UNUSED int __pyx_skip_dispatch) {
   int __pyx_r;
   int __pyx_t_1;
 
-  /* "_distortion.pyx":68
+  /* "src/_distortion.pyx":68
  * cpdef inline int clip(int value, int min_val, int max_val) nogil:
  *     "Limits the value to bounds"
  *     if value < min_val:             # <<<<<<<<<<<<<<
@@ -2763,7 +2763,7 @@ static CYTHON_INLINE int __pyx_f_11_distortion_clip(int __pyx_v_value, int __pyx
   __pyx_t_1 = ((__pyx_v_value < __pyx_v_min_val) != 0);
   if (__pyx_t_1) {
 
-    /* "_distortion.pyx":69
+    /* "src/_distortion.pyx":69
  *     "Limits the value to bounds"
  *     if value < min_val:
  *         return min_val             # <<<<<<<<<<<<<<
@@ -2774,7 +2774,7 @@ static CYTHON_INLINE int __pyx_f_11_distortion_clip(int __pyx_v_value, int __pyx
     goto __pyx_L0;
   }
 
-  /* "_distortion.pyx":70
+  /* "src/_distortion.pyx":70
  *     if value < min_val:
  *         return min_val
  *     elif value > max_val:             # <<<<<<<<<<<<<<
@@ -2784,7 +2784,7 @@ static CYTHON_INLINE int __pyx_f_11_distortion_clip(int __pyx_v_value, int __pyx
   __pyx_t_1 = ((__pyx_v_value > __pyx_v_max_val) != 0);
   if (__pyx_t_1) {
 
-    /* "_distortion.pyx":71
+    /* "src/_distortion.pyx":71
  *         return min_val
  *     elif value > max_val:
  *         return max_val             # <<<<<<<<<<<<<<
@@ -2796,7 +2796,7 @@ static CYTHON_INLINE int __pyx_f_11_distortion_clip(int __pyx_v_value, int __pyx
   }
   /*else*/ {
 
-    /* "_distortion.pyx":73
+    /* "src/_distortion.pyx":73
  *         return max_val
  *     else:
  *         return value             # <<<<<<<<<<<<<<
@@ -2807,7 +2807,7 @@ static CYTHON_INLINE int __pyx_f_11_distortion_clip(int __pyx_v_value, int __pyx
     goto __pyx_L0;
   }
 
-  /* "_distortion.pyx":66
+  /* "src/_distortion.pyx":66
  *     return 0.5 * (I2 - I1) * (slope * (I2 + I1) + 2 * intercept)
  * 
  * cpdef inline int clip(int value, int min_val, int max_val) nogil:             # <<<<<<<<<<<<<<
@@ -2821,9 +2821,9 @@ static CYTHON_INLINE int __pyx_f_11_distortion_clip(int __pyx_v_value, int __pyx
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_3clip(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_11_distortion_2clip[] = "Limits the value to bounds";
-static PyObject *__pyx_pw_11_distortion_3clip(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_11_distortion_3clip(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_3src_11_distortion_2clip[] = "Limits the value to bounds";
+static PyObject *__pyx_pw_3src_11_distortion_3clip(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   int __pyx_v_value;
   int __pyx_v_min_val;
   int __pyx_v_max_val;
@@ -2880,18 +2880,18 @@ static PyObject *__pyx_pw_11_distortion_3clip(PyObject *__pyx_self, PyObject *__
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("clip", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 66; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("_distortion.clip", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.clip", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_11_distortion_2clip(__pyx_self, __pyx_v_value, __pyx_v_min_val, __pyx_v_max_val);
+  __pyx_r = __pyx_pf_3src_11_distortion_2clip(__pyx_self, __pyx_v_value, __pyx_v_min_val, __pyx_v_max_val);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_2clip(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_value, int __pyx_v_min_val, int __pyx_v_max_val) {
+static PyObject *__pyx_pf_3src_11_distortion_2clip(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_value, int __pyx_v_min_val, int __pyx_v_max_val) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -2900,7 +2900,7 @@ static PyObject *__pyx_pf_11_distortion_2clip(CYTHON_UNUSED PyObject *__pyx_self
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("clip", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_f_11_distortion_clip(__pyx_v_value, __pyx_v_min_val, __pyx_v_max_val, 0)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 66; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_f_3src_11_distortion_clip(__pyx_v_value, __pyx_v_min_val, __pyx_v_max_val, 0)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 66; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -2909,7 +2909,7 @@ static PyObject *__pyx_pf_11_distortion_2clip(CYTHON_UNUSED PyObject *__pyx_self
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("_distortion.clip", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.clip", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -2917,7 +2917,7 @@ static PyObject *__pyx_pf_11_distortion_2clip(CYTHON_UNUSED PyObject *__pyx_self
   return __pyx_r;
 }
 
-/* "_distortion.pyx":79
+/* "src/_distortion.pyx":79
  * @cython.boundscheck(False)
  * @cython.cdivision(True)
  * cdef inline void integrate(float[:, :] box, float start, float stop, float slope, float intercept) nogil:             # <<<<<<<<<<<<<<
@@ -2925,7 +2925,7 @@ static PyObject *__pyx_pf_11_distortion_2clip(CYTHON_UNUSED PyObject *__pyx_self
  *     cdef:
  */
 
-static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __pyx_v_box, float __pyx_v_start, float __pyx_v_stop, float __pyx_v_slope, float __pyx_v_intercept) {
+static CYTHON_INLINE void __pyx_f_3src_11_distortion_integrate(__Pyx_memviewslice __pyx_v_box, float __pyx_v_start, float __pyx_v_stop, float __pyx_v_slope, float __pyx_v_intercept) {
   int __pyx_v_i;
   int __pyx_v_h;
   float __pyx_v_P;
@@ -2952,7 +2952,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
   long __pyx_t_16;
   int __pyx_t_17;
 
-  /* "_distortion.pyx":82
+  /* "src/_distortion.pyx":82
  *     "Integrate in a box a line between start and stop, line defined by its slope & intercept "
  *     cdef:
  *         int i, h = 0             # <<<<<<<<<<<<<<
@@ -2961,7 +2961,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
   __pyx_v_h = 0;
 
-  /* "_distortion.pyx":84
+  /* "src/_distortion.pyx":84
  *         int i, h = 0
  *         float P, dP, A, AA, dA, sign
  *     if start < stop:  # positive contribution             # <<<<<<<<<<<<<<
@@ -2971,7 +2971,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
   __pyx_t_1 = ((__pyx_v_start < __pyx_v_stop) != 0);
   if (__pyx_t_1) {
 
-    /* "_distortion.pyx":85
+    /* "src/_distortion.pyx":85
  *         float P, dP, A, AA, dA, sign
  *     if start < stop:  # positive contribution
  *         P = ceil(start)             # <<<<<<<<<<<<<<
@@ -2980,7 +2980,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
     __pyx_v_P = ceil(__pyx_v_start);
 
-    /* "_distortion.pyx":86
+    /* "src/_distortion.pyx":86
  *     if start < stop:  # positive contribution
  *         P = ceil(start)
  *         dP = P - start             # <<<<<<<<<<<<<<
@@ -2989,7 +2989,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
     __pyx_v_dP = (__pyx_v_P - __pyx_v_start);
 
-    /* "_distortion.pyx":87
+    /* "src/_distortion.pyx":87
  *         P = ceil(start)
  *         dP = P - start
  *         if P > stop:  # start and stop are in the same unit             # <<<<<<<<<<<<<<
@@ -2999,16 +2999,16 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
     __pyx_t_1 = ((__pyx_v_P > __pyx_v_stop) != 0);
     if (__pyx_t_1) {
 
-      /* "_distortion.pyx":88
+      /* "src/_distortion.pyx":88
  *         dP = P - start
  *         if P > stop:  # start and stop are in the same unit
  *             A = calc_area(start, stop, slope, intercept)             # <<<<<<<<<<<<<<
  *             if A != 0:
  *                 AA = fabs(A)
  */
-      __pyx_v_A = __pyx_f_11_distortion_calc_area(__pyx_v_start, __pyx_v_stop, __pyx_v_slope, __pyx_v_intercept, 0);
+      __pyx_v_A = __pyx_f_3src_11_distortion_calc_area(__pyx_v_start, __pyx_v_stop, __pyx_v_slope, __pyx_v_intercept, 0);
 
-      /* "_distortion.pyx":89
+      /* "src/_distortion.pyx":89
  *         if P > stop:  # start and stop are in the same unit
  *             A = calc_area(start, stop, slope, intercept)
  *             if A != 0:             # <<<<<<<<<<<<<<
@@ -3018,7 +3018,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
       __pyx_t_1 = ((__pyx_v_A != 0.0) != 0);
       if (__pyx_t_1) {
 
-        /* "_distortion.pyx":90
+        /* "src/_distortion.pyx":90
  *             A = calc_area(start, stop, slope, intercept)
  *             if A != 0:
  *                 AA = fabs(A)             # <<<<<<<<<<<<<<
@@ -3027,7 +3027,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
         __pyx_v_AA = fabs(__pyx_v_A);
 
-        /* "_distortion.pyx":91
+        /* "src/_distortion.pyx":91
  *             if A != 0:
  *                 AA = fabs(A)
  *                 sign = A / AA             # <<<<<<<<<<<<<<
@@ -3036,7 +3036,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
         __pyx_v_sign = (__pyx_v_A / __pyx_v_AA);
 
-        /* "_distortion.pyx":92
+        /* "src/_distortion.pyx":92
  *                 AA = fabs(A)
  *                 sign = A / AA
  *                 dA = (stop - start)  # always positive             # <<<<<<<<<<<<<<
@@ -3045,7 +3045,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
         __pyx_v_dA = (__pyx_v_stop - __pyx_v_start);
 
-        /* "_distortion.pyx":93
+        /* "src/_distortion.pyx":93
  *                 sign = A / AA
  *                 dA = (stop - start)  # always positive
  *                 h = 0             # <<<<<<<<<<<<<<
@@ -3054,7 +3054,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
         __pyx_v_h = 0;
 
-        /* "_distortion.pyx":94
+        /* "src/_distortion.pyx":94
  *                 dA = (stop - start)  # always positive
  *                 h = 0
  *                 while AA > 0:             # <<<<<<<<<<<<<<
@@ -3065,7 +3065,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
           __pyx_t_1 = ((__pyx_v_AA > 0.0) != 0);
           if (!__pyx_t_1) break;
 
-          /* "_distortion.pyx":95
+          /* "src/_distortion.pyx":95
  *                 h = 0
  *                 while AA > 0:
  *                     if dA > AA:             # <<<<<<<<<<<<<<
@@ -3075,7 +3075,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
           __pyx_t_1 = ((__pyx_v_dA > __pyx_v_AA) != 0);
           if (__pyx_t_1) {
 
-            /* "_distortion.pyx":96
+            /* "src/_distortion.pyx":96
  *                 while AA > 0:
  *                     if dA > AA:
  *                         dA = AA             # <<<<<<<<<<<<<<
@@ -3084,7 +3084,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
             __pyx_v_dA = __pyx_v_AA;
 
-            /* "_distortion.pyx":97
+            /* "src/_distortion.pyx":97
  *                     if dA > AA:
  *                         dA = AA
  *                         AA = -1             # <<<<<<<<<<<<<<
@@ -3096,7 +3096,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
           }
           __pyx_L8:;
 
-          /* "_distortion.pyx":98
+          /* "src/_distortion.pyx":98
  *                         dA = AA
  *                         AA = -1
  *                     box[(<int> floor(start)), h] += sign * dA             # <<<<<<<<<<<<<<
@@ -3107,7 +3107,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
           __pyx_t_3 = __pyx_v_h;
           *((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_box.data + __pyx_t_2 * __pyx_v_box.strides[0]) ) + __pyx_t_3 * __pyx_v_box.strides[1]) )) += (__pyx_v_sign * __pyx_v_dA);
 
-          /* "_distortion.pyx":99
+          /* "src/_distortion.pyx":99
  *                         AA = -1
  *                     box[(<int> floor(start)), h] += sign * dA
  *                     AA -= dA             # <<<<<<<<<<<<<<
@@ -3116,7 +3116,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_AA = (__pyx_v_AA - __pyx_v_dA);
 
-          /* "_distortion.pyx":100
+          /* "src/_distortion.pyx":100
  *                     box[(<int> floor(start)), h] += sign * dA
  *                     AA -= dA
  *                     h += 1             # <<<<<<<<<<<<<<
@@ -3132,7 +3132,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
     }
     /*else*/ {
 
-      /* "_distortion.pyx":102
+      /* "src/_distortion.pyx":102
  *                     h += 1
  *         else:
  *             if dP > 0:             # <<<<<<<<<<<<<<
@@ -3142,16 +3142,16 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
       __pyx_t_1 = ((__pyx_v_dP > 0.0) != 0);
       if (__pyx_t_1) {
 
-        /* "_distortion.pyx":103
+        /* "src/_distortion.pyx":103
  *         else:
  *             if dP > 0:
  *                 A = calc_area(start, P, slope, intercept)             # <<<<<<<<<<<<<<
  *                 if A != 0:
  *                     AA = fabs(A)
  */
-        __pyx_v_A = __pyx_f_11_distortion_calc_area(__pyx_v_start, __pyx_v_P, __pyx_v_slope, __pyx_v_intercept, 0);
+        __pyx_v_A = __pyx_f_3src_11_distortion_calc_area(__pyx_v_start, __pyx_v_P, __pyx_v_slope, __pyx_v_intercept, 0);
 
-        /* "_distortion.pyx":104
+        /* "src/_distortion.pyx":104
  *             if dP > 0:
  *                 A = calc_area(start, P, slope, intercept)
  *                 if A != 0:             # <<<<<<<<<<<<<<
@@ -3161,7 +3161,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
         __pyx_t_1 = ((__pyx_v_A != 0.0) != 0);
         if (__pyx_t_1) {
 
-          /* "_distortion.pyx":105
+          /* "src/_distortion.pyx":105
  *                 A = calc_area(start, P, slope, intercept)
  *                 if A != 0:
  *                     AA = fabs(A)             # <<<<<<<<<<<<<<
@@ -3170,7 +3170,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_AA = fabs(__pyx_v_A);
 
-          /* "_distortion.pyx":106
+          /* "src/_distortion.pyx":106
  *                 if A != 0:
  *                     AA = fabs(A)
  *                     sign = A / AA             # <<<<<<<<<<<<<<
@@ -3179,7 +3179,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_sign = (__pyx_v_A / __pyx_v_AA);
 
-          /* "_distortion.pyx":107
+          /* "src/_distortion.pyx":107
  *                     AA = fabs(A)
  *                     sign = A / AA
  *                     h = 0             # <<<<<<<<<<<<<<
@@ -3188,7 +3188,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_h = 0;
 
-          /* "_distortion.pyx":108
+          /* "src/_distortion.pyx":108
  *                     sign = A / AA
  *                     h = 0
  *                     dA = dP             # <<<<<<<<<<<<<<
@@ -3197,7 +3197,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_dA = __pyx_v_dP;
 
-          /* "_distortion.pyx":109
+          /* "src/_distortion.pyx":109
  *                     h = 0
  *                     dA = dP
  *                     while AA > 0:             # <<<<<<<<<<<<<<
@@ -3208,7 +3208,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             __pyx_t_1 = ((__pyx_v_AA > 0.0) != 0);
             if (!__pyx_t_1) break;
 
-            /* "_distortion.pyx":110
+            /* "src/_distortion.pyx":110
  *                     dA = dP
  *                     while AA > 0:
  *                         if dA > AA:             # <<<<<<<<<<<<<<
@@ -3218,7 +3218,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             __pyx_t_1 = ((__pyx_v_dA > __pyx_v_AA) != 0);
             if (__pyx_t_1) {
 
-              /* "_distortion.pyx":111
+              /* "src/_distortion.pyx":111
  *                     while AA > 0:
  *                         if dA > AA:
  *                             dA = AA             # <<<<<<<<<<<<<<
@@ -3227,7 +3227,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
               __pyx_v_dA = __pyx_v_AA;
 
-              /* "_distortion.pyx":112
+              /* "src/_distortion.pyx":112
  *                         if dA > AA:
  *                             dA = AA
  *                             AA = -1             # <<<<<<<<<<<<<<
@@ -3239,7 +3239,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             }
             __pyx_L13:;
 
-            /* "_distortion.pyx":113
+            /* "src/_distortion.pyx":113
  *                             dA = AA
  *                             AA = -1
  *                         box[(<int> floor(P)) - 1, h] += sign * dA             # <<<<<<<<<<<<<<
@@ -3250,7 +3250,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             __pyx_t_5 = __pyx_v_h;
             *((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_box.data + __pyx_t_4 * __pyx_v_box.strides[0]) ) + __pyx_t_5 * __pyx_v_box.strides[1]) )) += (__pyx_v_sign * __pyx_v_dA);
 
-            /* "_distortion.pyx":114
+            /* "src/_distortion.pyx":114
  *                             AA = -1
  *                         box[(<int> floor(P)) - 1, h] += sign * dA
  *                         AA -= dA             # <<<<<<<<<<<<<<
@@ -3259,7 +3259,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
             __pyx_v_AA = (__pyx_v_AA - __pyx_v_dA);
 
-            /* "_distortion.pyx":115
+            /* "src/_distortion.pyx":115
  *                         box[(<int> floor(P)) - 1, h] += sign * dA
  *                         AA -= dA
  *                         h += 1             # <<<<<<<<<<<<<<
@@ -3275,7 +3275,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
       }
       __pyx_L9:;
 
-      /* "_distortion.pyx":117
+      /* "src/_distortion.pyx":117
  *                         h += 1
  *             # subsection P1->Pn
  *             for i in range((<int> floor(P)), (<int> floor(stop))):             # <<<<<<<<<<<<<<
@@ -3286,16 +3286,16 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
       for (__pyx_t_7 = ((int)floor(__pyx_v_P)); __pyx_t_7 < __pyx_t_6; __pyx_t_7+=1) {
         __pyx_v_i = __pyx_t_7;
 
-        /* "_distortion.pyx":118
+        /* "src/_distortion.pyx":118
  *             # subsection P1->Pn
  *             for i in range((<int> floor(P)), (<int> floor(stop))):
  *                 A = calc_area(i, i + 1, slope, intercept)             # <<<<<<<<<<<<<<
  *                 if A != 0:
  *                     AA = fabs(A)
  */
-        __pyx_v_A = __pyx_f_11_distortion_calc_area(__pyx_v_i, (__pyx_v_i + 1), __pyx_v_slope, __pyx_v_intercept, 0);
+        __pyx_v_A = __pyx_f_3src_11_distortion_calc_area(__pyx_v_i, (__pyx_v_i + 1), __pyx_v_slope, __pyx_v_intercept, 0);
 
-        /* "_distortion.pyx":119
+        /* "src/_distortion.pyx":119
  *             for i in range((<int> floor(P)), (<int> floor(stop))):
  *                 A = calc_area(i, i + 1, slope, intercept)
  *                 if A != 0:             # <<<<<<<<<<<<<<
@@ -3305,7 +3305,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
         __pyx_t_1 = ((__pyx_v_A != 0.0) != 0);
         if (__pyx_t_1) {
 
-          /* "_distortion.pyx":120
+          /* "src/_distortion.pyx":120
  *                 A = calc_area(i, i + 1, slope, intercept)
  *                 if A != 0:
  *                     AA = fabs(A)             # <<<<<<<<<<<<<<
@@ -3314,7 +3314,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_AA = fabs(__pyx_v_A);
 
-          /* "_distortion.pyx":121
+          /* "src/_distortion.pyx":121
  *                 if A != 0:
  *                     AA = fabs(A)
  *                     sign = A / AA             # <<<<<<<<<<<<<<
@@ -3323,7 +3323,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_sign = (__pyx_v_A / __pyx_v_AA);
 
-          /* "_distortion.pyx":123
+          /* "src/_distortion.pyx":123
  *                     sign = A / AA
  * 
  *                     h = 0             # <<<<<<<<<<<<<<
@@ -3332,7 +3332,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_h = 0;
 
-          /* "_distortion.pyx":124
+          /* "src/_distortion.pyx":124
  * 
  *                     h = 0
  *                     dA = 1.0             # <<<<<<<<<<<<<<
@@ -3341,7 +3341,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_dA = 1.0;
 
-          /* "_distortion.pyx":125
+          /* "src/_distortion.pyx":125
  *                     h = 0
  *                     dA = 1.0
  *                     while AA > 0:             # <<<<<<<<<<<<<<
@@ -3352,7 +3352,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             __pyx_t_1 = ((__pyx_v_AA > 0.0) != 0);
             if (!__pyx_t_1) break;
 
-            /* "_distortion.pyx":126
+            /* "src/_distortion.pyx":126
  *                     dA = 1.0
  *                     while AA > 0:
  *                         if dA > AA:             # <<<<<<<<<<<<<<
@@ -3362,7 +3362,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             __pyx_t_1 = ((__pyx_v_dA > __pyx_v_AA) != 0);
             if (__pyx_t_1) {
 
-              /* "_distortion.pyx":127
+              /* "src/_distortion.pyx":127
  *                     while AA > 0:
  *                         if dA > AA:
  *                             dA = AA             # <<<<<<<<<<<<<<
@@ -3371,7 +3371,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
               __pyx_v_dA = __pyx_v_AA;
 
-              /* "_distortion.pyx":128
+              /* "src/_distortion.pyx":128
  *                         if dA > AA:
  *                             dA = AA
  *                             AA = -1             # <<<<<<<<<<<<<<
@@ -3383,7 +3383,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             }
             __pyx_L19:;
 
-            /* "_distortion.pyx":129
+            /* "src/_distortion.pyx":129
  *                             dA = AA
  *                             AA = -1
  *                         box[i , h] += sign * dA             # <<<<<<<<<<<<<<
@@ -3394,7 +3394,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             __pyx_t_9 = __pyx_v_h;
             *((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_box.data + __pyx_t_8 * __pyx_v_box.strides[0]) ) + __pyx_t_9 * __pyx_v_box.strides[1]) )) += (__pyx_v_sign * __pyx_v_dA);
 
-            /* "_distortion.pyx":130
+            /* "src/_distortion.pyx":130
  *                             AA = -1
  *                         box[i , h] += sign * dA
  *                         AA -= dA             # <<<<<<<<<<<<<<
@@ -3403,7 +3403,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
             __pyx_v_AA = (__pyx_v_AA - __pyx_v_dA);
 
-            /* "_distortion.pyx":131
+            /* "src/_distortion.pyx":131
  *                         box[i , h] += sign * dA
  *                         AA -= dA
  *                         h += 1             # <<<<<<<<<<<<<<
@@ -3417,7 +3417,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
         __pyx_L16:;
       }
 
-      /* "_distortion.pyx":133
+      /* "src/_distortion.pyx":133
  *                         h += 1
  *             # Section Pn->B
  *             P = floor(stop)             # <<<<<<<<<<<<<<
@@ -3426,7 +3426,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
       __pyx_v_P = floor(__pyx_v_stop);
 
-      /* "_distortion.pyx":134
+      /* "src/_distortion.pyx":134
  *             # Section Pn->B
  *             P = floor(stop)
  *             dP = stop - P             # <<<<<<<<<<<<<<
@@ -3435,7 +3435,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
       __pyx_v_dP = (__pyx_v_stop - __pyx_v_P);
 
-      /* "_distortion.pyx":135
+      /* "src/_distortion.pyx":135
  *             P = floor(stop)
  *             dP = stop - P
  *             if dP > 0:             # <<<<<<<<<<<<<<
@@ -3445,16 +3445,16 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
       __pyx_t_1 = ((__pyx_v_dP > 0.0) != 0);
       if (__pyx_t_1) {
 
-        /* "_distortion.pyx":136
+        /* "src/_distortion.pyx":136
  *             dP = stop - P
  *             if dP > 0:
  *                 A = calc_area(P, stop, slope, intercept)             # <<<<<<<<<<<<<<
  *                 if A != 0:
  *                     AA = fabs(A)
  */
-        __pyx_v_A = __pyx_f_11_distortion_calc_area(__pyx_v_P, __pyx_v_stop, __pyx_v_slope, __pyx_v_intercept, 0);
+        __pyx_v_A = __pyx_f_3src_11_distortion_calc_area(__pyx_v_P, __pyx_v_stop, __pyx_v_slope, __pyx_v_intercept, 0);
 
-        /* "_distortion.pyx":137
+        /* "src/_distortion.pyx":137
  *             if dP > 0:
  *                 A = calc_area(P, stop, slope, intercept)
  *                 if A != 0:             # <<<<<<<<<<<<<<
@@ -3464,7 +3464,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
         __pyx_t_1 = ((__pyx_v_A != 0.0) != 0);
         if (__pyx_t_1) {
 
-          /* "_distortion.pyx":138
+          /* "src/_distortion.pyx":138
  *                 A = calc_area(P, stop, slope, intercept)
  *                 if A != 0:
  *                     AA = fabs(A)             # <<<<<<<<<<<<<<
@@ -3473,7 +3473,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_AA = fabs(__pyx_v_A);
 
-          /* "_distortion.pyx":139
+          /* "src/_distortion.pyx":139
  *                 if A != 0:
  *                     AA = fabs(A)
  *                     sign = A / AA             # <<<<<<<<<<<<<<
@@ -3482,7 +3482,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_sign = (__pyx_v_A / __pyx_v_AA);
 
-          /* "_distortion.pyx":140
+          /* "src/_distortion.pyx":140
  *                     AA = fabs(A)
  *                     sign = A / AA
  *                     h = 0             # <<<<<<<<<<<<<<
@@ -3491,7 +3491,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_h = 0;
 
-          /* "_distortion.pyx":141
+          /* "src/_distortion.pyx":141
  *                     sign = A / AA
  *                     h = 0
  *                     dA = fabs(dP)             # <<<<<<<<<<<<<<
@@ -3500,7 +3500,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_dA = fabs(__pyx_v_dP);
 
-          /* "_distortion.pyx":142
+          /* "src/_distortion.pyx":142
  *                     h = 0
  *                     dA = fabs(dP)
  *                     while AA > 0:             # <<<<<<<<<<<<<<
@@ -3511,7 +3511,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             __pyx_t_1 = ((__pyx_v_AA > 0.0) != 0);
             if (!__pyx_t_1) break;
 
-            /* "_distortion.pyx":143
+            /* "src/_distortion.pyx":143
  *                     dA = fabs(dP)
  *                     while AA > 0:
  *                         if dA > AA:             # <<<<<<<<<<<<<<
@@ -3521,7 +3521,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             __pyx_t_1 = ((__pyx_v_dA > __pyx_v_AA) != 0);
             if (__pyx_t_1) {
 
-              /* "_distortion.pyx":144
+              /* "src/_distortion.pyx":144
  *                     while AA > 0:
  *                         if dA > AA:
  *                             dA = AA             # <<<<<<<<<<<<<<
@@ -3530,7 +3530,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
               __pyx_v_dA = __pyx_v_AA;
 
-              /* "_distortion.pyx":145
+              /* "src/_distortion.pyx":145
  *                         if dA > AA:
  *                             dA = AA
  *                             AA = -1             # <<<<<<<<<<<<<<
@@ -3542,7 +3542,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             }
             __pyx_L24:;
 
-            /* "_distortion.pyx":146
+            /* "src/_distortion.pyx":146
  *                             dA = AA
  *                             AA = -1
  *                         box[(<int> floor(P)), h] += sign * dA             # <<<<<<<<<<<<<<
@@ -3553,7 +3553,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             __pyx_t_7 = __pyx_v_h;
             *((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_box.data + __pyx_t_6 * __pyx_v_box.strides[0]) ) + __pyx_t_7 * __pyx_v_box.strides[1]) )) += (__pyx_v_sign * __pyx_v_dA);
 
-            /* "_distortion.pyx":147
+            /* "src/_distortion.pyx":147
  *                             AA = -1
  *                         box[(<int> floor(P)), h] += sign * dA
  *                         AA -= dA             # <<<<<<<<<<<<<<
@@ -3562,7 +3562,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
             __pyx_v_AA = (__pyx_v_AA - __pyx_v_dA);
 
-            /* "_distortion.pyx":148
+            /* "src/_distortion.pyx":148
  *                         box[(<int> floor(P)), h] += sign * dA
  *                         AA -= dA
  *                         h += 1             # <<<<<<<<<<<<<<
@@ -3582,7 +3582,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
     goto __pyx_L3;
   }
 
-  /* "_distortion.pyx":149
+  /* "src/_distortion.pyx":149
  *                         AA -= dA
  *                         h += 1
  *     elif start > stop:  # negative contribution. Nota is start=stop: no contribution             # <<<<<<<<<<<<<<
@@ -3592,7 +3592,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
   __pyx_t_1 = ((__pyx_v_start > __pyx_v_stop) != 0);
   if (__pyx_t_1) {
 
-    /* "_distortion.pyx":150
+    /* "src/_distortion.pyx":150
  *                         h += 1
  *     elif start > stop:  # negative contribution. Nota is start=stop: no contribution
  *         P = floor(start)             # <<<<<<<<<<<<<<
@@ -3601,7 +3601,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
     __pyx_v_P = floor(__pyx_v_start);
 
-    /* "_distortion.pyx":151
+    /* "src/_distortion.pyx":151
  *     elif start > stop:  # negative contribution. Nota is start=stop: no contribution
  *         P = floor(start)
  *         if stop > P:  # start and stop are in the same unit             # <<<<<<<<<<<<<<
@@ -3611,16 +3611,16 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
     __pyx_t_1 = ((__pyx_v_stop > __pyx_v_P) != 0);
     if (__pyx_t_1) {
 
-      /* "_distortion.pyx":152
+      /* "src/_distortion.pyx":152
  *         P = floor(start)
  *         if stop > P:  # start and stop are in the same unit
  *             A = calc_area(start, stop, slope, intercept)             # <<<<<<<<<<<<<<
  *             if A != 0:
  *                 AA = fabs(A)
  */
-      __pyx_v_A = __pyx_f_11_distortion_calc_area(__pyx_v_start, __pyx_v_stop, __pyx_v_slope, __pyx_v_intercept, 0);
+      __pyx_v_A = __pyx_f_3src_11_distortion_calc_area(__pyx_v_start, __pyx_v_stop, __pyx_v_slope, __pyx_v_intercept, 0);
 
-      /* "_distortion.pyx":153
+      /* "src/_distortion.pyx":153
  *         if stop > P:  # start and stop are in the same unit
  *             A = calc_area(start, stop, slope, intercept)
  *             if A != 0:             # <<<<<<<<<<<<<<
@@ -3630,7 +3630,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
       __pyx_t_1 = ((__pyx_v_A != 0.0) != 0);
       if (__pyx_t_1) {
 
-        /* "_distortion.pyx":154
+        /* "src/_distortion.pyx":154
  *             A = calc_area(start, stop, slope, intercept)
  *             if A != 0:
  *                 AA = fabs(A)             # <<<<<<<<<<<<<<
@@ -3639,7 +3639,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
         __pyx_v_AA = fabs(__pyx_v_A);
 
-        /* "_distortion.pyx":155
+        /* "src/_distortion.pyx":155
  *             if A != 0:
  *                 AA = fabs(A)
  *                 sign = A / AA             # <<<<<<<<<<<<<<
@@ -3648,7 +3648,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
         __pyx_v_sign = (__pyx_v_A / __pyx_v_AA);
 
-        /* "_distortion.pyx":156
+        /* "src/_distortion.pyx":156
  *                 AA = fabs(A)
  *                 sign = A / AA
  *                 dA = (start - stop)  # always positive             # <<<<<<<<<<<<<<
@@ -3657,7 +3657,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
         __pyx_v_dA = (__pyx_v_start - __pyx_v_stop);
 
-        /* "_distortion.pyx":157
+        /* "src/_distortion.pyx":157
  *                 sign = A / AA
  *                 dA = (start - stop)  # always positive
  *                 h = 0             # <<<<<<<<<<<<<<
@@ -3666,7 +3666,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
         __pyx_v_h = 0;
 
-        /* "_distortion.pyx":158
+        /* "src/_distortion.pyx":158
  *                 dA = (start - stop)  # always positive
  *                 h = 0
  *                 while AA > 0:             # <<<<<<<<<<<<<<
@@ -3677,7 +3677,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
           __pyx_t_1 = ((__pyx_v_AA > 0.0) != 0);
           if (!__pyx_t_1) break;
 
-          /* "_distortion.pyx":159
+          /* "src/_distortion.pyx":159
  *                 h = 0
  *                 while AA > 0:
  *                     if dA > AA:             # <<<<<<<<<<<<<<
@@ -3687,7 +3687,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
           __pyx_t_1 = ((__pyx_v_dA > __pyx_v_AA) != 0);
           if (__pyx_t_1) {
 
-            /* "_distortion.pyx":160
+            /* "src/_distortion.pyx":160
  *                 while AA > 0:
  *                     if dA > AA:
  *                         dA = AA             # <<<<<<<<<<<<<<
@@ -3696,7 +3696,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
             __pyx_v_dA = __pyx_v_AA;
 
-            /* "_distortion.pyx":161
+            /* "src/_distortion.pyx":161
  *                     if dA > AA:
  *                         dA = AA
  *                         AA = -1             # <<<<<<<<<<<<<<
@@ -3708,7 +3708,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
           }
           __pyx_L29:;
 
-          /* "_distortion.pyx":162
+          /* "src/_distortion.pyx":162
  *                         dA = AA
  *                         AA = -1
  *                     box[(<int> floor(start)), h] += sign * dA             # <<<<<<<<<<<<<<
@@ -3719,7 +3719,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
           __pyx_t_11 = __pyx_v_h;
           *((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_box.data + __pyx_t_10 * __pyx_v_box.strides[0]) ) + __pyx_t_11 * __pyx_v_box.strides[1]) )) += (__pyx_v_sign * __pyx_v_dA);
 
-          /* "_distortion.pyx":163
+          /* "src/_distortion.pyx":163
  *                         AA = -1
  *                     box[(<int> floor(start)), h] += sign * dA
  *                     AA -= dA             # <<<<<<<<<<<<<<
@@ -3728,7 +3728,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_AA = (__pyx_v_AA - __pyx_v_dA);
 
-          /* "_distortion.pyx":164
+          /* "src/_distortion.pyx":164
  *                     box[(<int> floor(start)), h] += sign * dA
  *                     AA -= dA
  *                     h += 1             # <<<<<<<<<<<<<<
@@ -3744,7 +3744,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
     }
     /*else*/ {
 
-      /* "_distortion.pyx":166
+      /* "src/_distortion.pyx":166
  *                     h += 1
  *         else:
  *             dP = P - start             # <<<<<<<<<<<<<<
@@ -3753,7 +3753,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
       __pyx_v_dP = (__pyx_v_P - __pyx_v_start);
 
-      /* "_distortion.pyx":167
+      /* "src/_distortion.pyx":167
  *         else:
  *             dP = P - start
  *             if dP < 0:             # <<<<<<<<<<<<<<
@@ -3763,16 +3763,16 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
       __pyx_t_1 = ((__pyx_v_dP < 0.0) != 0);
       if (__pyx_t_1) {
 
-        /* "_distortion.pyx":168
+        /* "src/_distortion.pyx":168
  *             dP = P - start
  *             if dP < 0:
  *                 A = calc_area(start, P, slope, intercept)             # <<<<<<<<<<<<<<
  *                 if A != 0:
  *                     AA = fabs(A)
  */
-        __pyx_v_A = __pyx_f_11_distortion_calc_area(__pyx_v_start, __pyx_v_P, __pyx_v_slope, __pyx_v_intercept, 0);
+        __pyx_v_A = __pyx_f_3src_11_distortion_calc_area(__pyx_v_start, __pyx_v_P, __pyx_v_slope, __pyx_v_intercept, 0);
 
-        /* "_distortion.pyx":169
+        /* "src/_distortion.pyx":169
  *             if dP < 0:
  *                 A = calc_area(start, P, slope, intercept)
  *                 if A != 0:             # <<<<<<<<<<<<<<
@@ -3782,7 +3782,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
         __pyx_t_1 = ((__pyx_v_A != 0.0) != 0);
         if (__pyx_t_1) {
 
-          /* "_distortion.pyx":170
+          /* "src/_distortion.pyx":170
  *                 A = calc_area(start, P, slope, intercept)
  *                 if A != 0:
  *                     AA = fabs(A)             # <<<<<<<<<<<<<<
@@ -3791,7 +3791,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_AA = fabs(__pyx_v_A);
 
-          /* "_distortion.pyx":171
+          /* "src/_distortion.pyx":171
  *                 if A != 0:
  *                     AA = fabs(A)
  *                     sign = A / AA             # <<<<<<<<<<<<<<
@@ -3800,7 +3800,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_sign = (__pyx_v_A / __pyx_v_AA);
 
-          /* "_distortion.pyx":172
+          /* "src/_distortion.pyx":172
  *                     AA = fabs(A)
  *                     sign = A / AA
  *                     h = 0             # <<<<<<<<<<<<<<
@@ -3809,7 +3809,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_h = 0;
 
-          /* "_distortion.pyx":173
+          /* "src/_distortion.pyx":173
  *                     sign = A / AA
  *                     h = 0
  *                     dA = fabs(dP)             # <<<<<<<<<<<<<<
@@ -3818,7 +3818,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_dA = fabs(__pyx_v_dP);
 
-          /* "_distortion.pyx":174
+          /* "src/_distortion.pyx":174
  *                     h = 0
  *                     dA = fabs(dP)
  *                     while AA > 0:             # <<<<<<<<<<<<<<
@@ -3829,7 +3829,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             __pyx_t_1 = ((__pyx_v_AA > 0.0) != 0);
             if (!__pyx_t_1) break;
 
-            /* "_distortion.pyx":175
+            /* "src/_distortion.pyx":175
  *                     dA = fabs(dP)
  *                     while AA > 0:
  *                         if dA > AA:             # <<<<<<<<<<<<<<
@@ -3839,7 +3839,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             __pyx_t_1 = ((__pyx_v_dA > __pyx_v_AA) != 0);
             if (__pyx_t_1) {
 
-              /* "_distortion.pyx":176
+              /* "src/_distortion.pyx":176
  *                     while AA > 0:
  *                         if dA > AA:
  *                             dA = AA             # <<<<<<<<<<<<<<
@@ -3848,7 +3848,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
               __pyx_v_dA = __pyx_v_AA;
 
-              /* "_distortion.pyx":177
+              /* "src/_distortion.pyx":177
  *                         if dA > AA:
  *                             dA = AA
  *                             AA = -1             # <<<<<<<<<<<<<<
@@ -3860,7 +3860,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             }
             __pyx_L34:;
 
-            /* "_distortion.pyx":178
+            /* "src/_distortion.pyx":178
  *                             dA = AA
  *                             AA = -1
  *                         box[(<int> floor(P)) , h] += sign * dA             # <<<<<<<<<<<<<<
@@ -3871,7 +3871,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             __pyx_t_13 = __pyx_v_h;
             *((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_box.data + __pyx_t_12 * __pyx_v_box.strides[0]) ) + __pyx_t_13 * __pyx_v_box.strides[1]) )) += (__pyx_v_sign * __pyx_v_dA);
 
-            /* "_distortion.pyx":179
+            /* "src/_distortion.pyx":179
  *                             AA = -1
  *                         box[(<int> floor(P)) , h] += sign * dA
  *                         AA -= dA             # <<<<<<<<<<<<<<
@@ -3880,7 +3880,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
             __pyx_v_AA = (__pyx_v_AA - __pyx_v_dA);
 
-            /* "_distortion.pyx":180
+            /* "src/_distortion.pyx":180
  *                         box[(<int> floor(P)) , h] += sign * dA
  *                         AA -= dA
  *                         h += 1             # <<<<<<<<<<<<<<
@@ -3896,7 +3896,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
       }
       __pyx_L30:;
 
-      /* "_distortion.pyx":182
+      /* "src/_distortion.pyx":182
  *                         h += 1
  *             # subsection P1->Pn
  *             for i in range((<int> start), (<int> ceil(stop)), -1):             # <<<<<<<<<<<<<<
@@ -3907,16 +3907,16 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
       for (__pyx_t_15 = ((int)__pyx_v_start); __pyx_t_15 > __pyx_t_14; __pyx_t_15-=1) {
         __pyx_v_i = __pyx_t_15;
 
-        /* "_distortion.pyx":183
+        /* "src/_distortion.pyx":183
  *             # subsection P1->Pn
  *             for i in range((<int> start), (<int> ceil(stop)), -1):
  *                 A = calc_area(i, i - 1, slope, intercept)             # <<<<<<<<<<<<<<
  *                 if A != 0:
  *                     AA = fabs(A)
  */
-        __pyx_v_A = __pyx_f_11_distortion_calc_area(__pyx_v_i, (__pyx_v_i - 1), __pyx_v_slope, __pyx_v_intercept, 0);
+        __pyx_v_A = __pyx_f_3src_11_distortion_calc_area(__pyx_v_i, (__pyx_v_i - 1), __pyx_v_slope, __pyx_v_intercept, 0);
 
-        /* "_distortion.pyx":184
+        /* "src/_distortion.pyx":184
  *             for i in range((<int> start), (<int> ceil(stop)), -1):
  *                 A = calc_area(i, i - 1, slope, intercept)
  *                 if A != 0:             # <<<<<<<<<<<<<<
@@ -3926,7 +3926,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
         __pyx_t_1 = ((__pyx_v_A != 0.0) != 0);
         if (__pyx_t_1) {
 
-          /* "_distortion.pyx":185
+          /* "src/_distortion.pyx":185
  *                 A = calc_area(i, i - 1, slope, intercept)
  *                 if A != 0:
  *                     AA = fabs(A)             # <<<<<<<<<<<<<<
@@ -3935,7 +3935,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_AA = fabs(__pyx_v_A);
 
-          /* "_distortion.pyx":186
+          /* "src/_distortion.pyx":186
  *                 if A != 0:
  *                     AA = fabs(A)
  *                     sign = A / AA             # <<<<<<<<<<<<<<
@@ -3944,7 +3944,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_sign = (__pyx_v_A / __pyx_v_AA);
 
-          /* "_distortion.pyx":187
+          /* "src/_distortion.pyx":187
  *                     AA = fabs(A)
  *                     sign = A / AA
  *                     h = 0             # <<<<<<<<<<<<<<
@@ -3953,7 +3953,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_h = 0;
 
-          /* "_distortion.pyx":188
+          /* "src/_distortion.pyx":188
  *                     sign = A / AA
  *                     h = 0
  *                     dA = 1             # <<<<<<<<<<<<<<
@@ -3962,7 +3962,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_dA = 1.0;
 
-          /* "_distortion.pyx":189
+          /* "src/_distortion.pyx":189
  *                     h = 0
  *                     dA = 1
  *                     while AA > 0:             # <<<<<<<<<<<<<<
@@ -3973,7 +3973,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             __pyx_t_1 = ((__pyx_v_AA > 0.0) != 0);
             if (!__pyx_t_1) break;
 
-            /* "_distortion.pyx":190
+            /* "src/_distortion.pyx":190
  *                     dA = 1
  *                     while AA > 0:
  *                         if dA > AA:             # <<<<<<<<<<<<<<
@@ -3983,7 +3983,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             __pyx_t_1 = ((__pyx_v_dA > __pyx_v_AA) != 0);
             if (__pyx_t_1) {
 
-              /* "_distortion.pyx":191
+              /* "src/_distortion.pyx":191
  *                     while AA > 0:
  *                         if dA > AA:
  *                             dA = AA             # <<<<<<<<<<<<<<
@@ -3992,7 +3992,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
               __pyx_v_dA = __pyx_v_AA;
 
-              /* "_distortion.pyx":192
+              /* "src/_distortion.pyx":192
  *                         if dA > AA:
  *                             dA = AA
  *                             AA = -1             # <<<<<<<<<<<<<<
@@ -4004,7 +4004,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             }
             __pyx_L40:;
 
-            /* "_distortion.pyx":193
+            /* "src/_distortion.pyx":193
  *                             dA = AA
  *                             AA = -1
  *                         box[i - 1, h] += sign * dA             # <<<<<<<<<<<<<<
@@ -4015,7 +4015,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             __pyx_t_17 = __pyx_v_h;
             *((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_box.data + __pyx_t_16 * __pyx_v_box.strides[0]) ) + __pyx_t_17 * __pyx_v_box.strides[1]) )) += (__pyx_v_sign * __pyx_v_dA);
 
-            /* "_distortion.pyx":194
+            /* "src/_distortion.pyx":194
  *                             AA = -1
  *                         box[i - 1, h] += sign * dA
  *                         AA -= dA             # <<<<<<<<<<<<<<
@@ -4024,7 +4024,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
             __pyx_v_AA = (__pyx_v_AA - __pyx_v_dA);
 
-            /* "_distortion.pyx":195
+            /* "src/_distortion.pyx":195
  *                         box[i - 1, h] += sign * dA
  *                         AA -= dA
  *                         h += 1             # <<<<<<<<<<<<<<
@@ -4038,7 +4038,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
         __pyx_L37:;
       }
 
-      /* "_distortion.pyx":197
+      /* "src/_distortion.pyx":197
  *                         h += 1
  *             # Section Pn->B
  *             P = ceil(stop)             # <<<<<<<<<<<<<<
@@ -4047,7 +4047,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
       __pyx_v_P = ceil(__pyx_v_stop);
 
-      /* "_distortion.pyx":198
+      /* "src/_distortion.pyx":198
  *             # Section Pn->B
  *             P = ceil(stop)
  *             dP = stop - P             # <<<<<<<<<<<<<<
@@ -4056,7 +4056,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
       __pyx_v_dP = (__pyx_v_stop - __pyx_v_P);
 
-      /* "_distortion.pyx":199
+      /* "src/_distortion.pyx":199
  *             P = ceil(stop)
  *             dP = stop - P
  *             if dP < 0:             # <<<<<<<<<<<<<<
@@ -4066,16 +4066,16 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
       __pyx_t_1 = ((__pyx_v_dP < 0.0) != 0);
       if (__pyx_t_1) {
 
-        /* "_distortion.pyx":200
+        /* "src/_distortion.pyx":200
  *             dP = stop - P
  *             if dP < 0:
  *                 A = calc_area(P, stop, slope, intercept)             # <<<<<<<<<<<<<<
  *                 if A != 0:
  *                     AA = fabs(A)
  */
-        __pyx_v_A = __pyx_f_11_distortion_calc_area(__pyx_v_P, __pyx_v_stop, __pyx_v_slope, __pyx_v_intercept, 0);
+        __pyx_v_A = __pyx_f_3src_11_distortion_calc_area(__pyx_v_P, __pyx_v_stop, __pyx_v_slope, __pyx_v_intercept, 0);
 
-        /* "_distortion.pyx":201
+        /* "src/_distortion.pyx":201
  *             if dP < 0:
  *                 A = calc_area(P, stop, slope, intercept)
  *                 if A != 0:             # <<<<<<<<<<<<<<
@@ -4085,7 +4085,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
         __pyx_t_1 = ((__pyx_v_A != 0.0) != 0);
         if (__pyx_t_1) {
 
-          /* "_distortion.pyx":202
+          /* "src/_distortion.pyx":202
  *                 A = calc_area(P, stop, slope, intercept)
  *                 if A != 0:
  *                     AA = fabs(A)             # <<<<<<<<<<<<<<
@@ -4094,7 +4094,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_AA = fabs(__pyx_v_A);
 
-          /* "_distortion.pyx":203
+          /* "src/_distortion.pyx":203
  *                 if A != 0:
  *                     AA = fabs(A)
  *                     sign = A / AA             # <<<<<<<<<<<<<<
@@ -4103,7 +4103,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_sign = (__pyx_v_A / __pyx_v_AA);
 
-          /* "_distortion.pyx":204
+          /* "src/_distortion.pyx":204
  *                     AA = fabs(A)
  *                     sign = A / AA
  *                     h = 0             # <<<<<<<<<<<<<<
@@ -4112,7 +4112,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_h = 0;
 
-          /* "_distortion.pyx":205
+          /* "src/_distortion.pyx":205
  *                     sign = A / AA
  *                     h = 0
  *                     dA = fabs(dP)             # <<<<<<<<<<<<<<
@@ -4121,7 +4121,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
           __pyx_v_dA = fabs(__pyx_v_dP);
 
-          /* "_distortion.pyx":206
+          /* "src/_distortion.pyx":206
  *                     h = 0
  *                     dA = fabs(dP)
  *                     while AA > 0:             # <<<<<<<<<<<<<<
@@ -4132,7 +4132,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             __pyx_t_1 = ((__pyx_v_AA > 0.0) != 0);
             if (!__pyx_t_1) break;
 
-            /* "_distortion.pyx":207
+            /* "src/_distortion.pyx":207
  *                     dA = fabs(dP)
  *                     while AA > 0:
  *                         if dA > AA:             # <<<<<<<<<<<<<<
@@ -4142,7 +4142,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             __pyx_t_1 = ((__pyx_v_dA > __pyx_v_AA) != 0);
             if (__pyx_t_1) {
 
-              /* "_distortion.pyx":208
+              /* "src/_distortion.pyx":208
  *                     while AA > 0:
  *                         if dA > AA:
  *                             dA = AA             # <<<<<<<<<<<<<<
@@ -4151,7 +4151,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
               __pyx_v_dA = __pyx_v_AA;
 
-              /* "_distortion.pyx":209
+              /* "src/_distortion.pyx":209
  *                         if dA > AA:
  *                             dA = AA
  *                             AA = -1             # <<<<<<<<<<<<<<
@@ -4163,7 +4163,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             }
             __pyx_L45:;
 
-            /* "_distortion.pyx":210
+            /* "src/_distortion.pyx":210
  *                             dA = AA
  *                             AA = -1
  *                         box[(<int> floor(stop)), h] += sign * dA             # <<<<<<<<<<<<<<
@@ -4174,7 +4174,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
             __pyx_t_15 = __pyx_v_h;
             *((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_box.data + __pyx_t_14 * __pyx_v_box.strides[0]) ) + __pyx_t_15 * __pyx_v_box.strides[1]) )) += (__pyx_v_sign * __pyx_v_dA);
 
-            /* "_distortion.pyx":211
+            /* "src/_distortion.pyx":211
  *                             AA = -1
  *                         box[(<int> floor(stop)), h] += sign * dA
  *                         AA -= dA             # <<<<<<<<<<<<<<
@@ -4183,7 +4183,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
             __pyx_v_AA = (__pyx_v_AA - __pyx_v_dA);
 
-            /* "_distortion.pyx":212
+            /* "src/_distortion.pyx":212
  *                         box[(<int> floor(stop)), h] += sign * dA
  *                         AA -= dA
  *                         h += 1             # <<<<<<<<<<<<<<
@@ -4204,7 +4204,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
   }
   __pyx_L3:;
 
-  /* "_distortion.pyx":79
+  /* "src/_distortion.pyx":79
  * @cython.boundscheck(False)
  * @cython.cdivision(True)
  * cdef inline void integrate(float[:, :] box, float start, float stop, float slope, float intercept) nogil:             # <<<<<<<<<<<<<<
@@ -4215,7 +4215,7 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
   /* function exit code */
 }
 
-/* "_distortion.pyx":251
+/* "src/_distortion.pyx":251
  *     cdef bint has_area, has_slope
  * 
  *     def __cinit__(self, float[:, :] buffer):             # <<<<<<<<<<<<<<
@@ -4224,8 +4224,8 @@ static CYTHON_INLINE void __pyx_f_11_distortion_integrate(__Pyx_memviewslice __p
  */
 
 /* Python wrapper */
-static int __pyx_pw_11_distortion_4Quad_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pw_11_distortion_4Quad_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static int __pyx_pw_3src_11_distortion_4Quad_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pw_3src_11_distortion_4Quad_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   __Pyx_memviewslice __pyx_v_buffer = { 0, 0, { 0 }, { 0 }, { 0 } };
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
@@ -4264,23 +4264,23 @@ static int __pyx_pw_11_distortion_4Quad_1__cinit__(PyObject *__pyx_v_self, PyObj
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 1, 1, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 251; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("_distortion.Quad.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_11_distortion_4Quad___cinit__(((struct __pyx_obj_11_distortion_Quad *)__pyx_v_self), __pyx_v_buffer);
+  __pyx_r = __pyx_pf_3src_11_distortion_4Quad___cinit__(((struct __pyx_obj_3src_11_distortion_Quad *)__pyx_v_self), __pyx_v_buffer);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static int __pyx_pf_11_distortion_4Quad___cinit__(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, __Pyx_memviewslice __pyx_v_buffer) {
+static int __pyx_pf_3src_11_distortion_4Quad___cinit__(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, __Pyx_memviewslice __pyx_v_buffer) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__cinit__", 0);
 
-  /* "_distortion.pyx":252
+  /* "src/_distortion.pyx":252
  * 
  *     def __cinit__(self, float[:, :] buffer):
  *         self.box = buffer             # <<<<<<<<<<<<<<
@@ -4291,7 +4291,7 @@ static int __pyx_pf_11_distortion_4Quad___cinit__(struct __pyx_obj_11_distortion
   __PYX_INC_MEMVIEW(&__pyx_v_buffer, 0);
   __pyx_v_self->box = __pyx_v_buffer;
 
-  /* "_distortion.pyx":253
+  /* "src/_distortion.pyx":253
  *     def __cinit__(self, float[:, :] buffer):
  *         self.box = buffer
  *         self.A0 = self.A1 = 0             # <<<<<<<<<<<<<<
@@ -4301,7 +4301,7 @@ static int __pyx_pf_11_distortion_4Quad___cinit__(struct __pyx_obj_11_distortion
   __pyx_v_self->A0 = 0.0;
   __pyx_v_self->A1 = 0.0;
 
-  /* "_distortion.pyx":254
+  /* "src/_distortion.pyx":254
  *         self.box = buffer
  *         self.A0 = self.A1 = 0
  *         self.B0 = self.B1 = 0             # <<<<<<<<<<<<<<
@@ -4311,7 +4311,7 @@ static int __pyx_pf_11_distortion_4Quad___cinit__(struct __pyx_obj_11_distortion
   __pyx_v_self->B0 = 0.0;
   __pyx_v_self->B1 = 0.0;
 
-  /* "_distortion.pyx":255
+  /* "src/_distortion.pyx":255
  *         self.A0 = self.A1 = 0
  *         self.B0 = self.B1 = 0
  *         self.C0 = self.C1 = 0             # <<<<<<<<<<<<<<
@@ -4321,7 +4321,7 @@ static int __pyx_pf_11_distortion_4Quad___cinit__(struct __pyx_obj_11_distortion
   __pyx_v_self->C0 = 0.0;
   __pyx_v_self->C1 = 0.0;
 
-  /* "_distortion.pyx":256
+  /* "src/_distortion.pyx":256
  *         self.B0 = self.B1 = 0
  *         self.C0 = self.C1 = 0
  *         self.D0 = self.D1 = 0             # <<<<<<<<<<<<<<
@@ -4331,7 +4331,7 @@ static int __pyx_pf_11_distortion_4Quad___cinit__(struct __pyx_obj_11_distortion
   __pyx_v_self->D0 = 0.0;
   __pyx_v_self->D1 = 0.0;
 
-  /* "_distortion.pyx":257
+  /* "src/_distortion.pyx":257
  *         self.C0 = self.C1 = 0
  *         self.D0 = self.D1 = 0
  *         self.offset0 = self.offset1 = 0             # <<<<<<<<<<<<<<
@@ -4341,7 +4341,7 @@ static int __pyx_pf_11_distortion_4Quad___cinit__(struct __pyx_obj_11_distortion
   __pyx_v_self->offset0 = 0;
   __pyx_v_self->offset1 = 0;
 
-  /* "_distortion.pyx":258
+  /* "src/_distortion.pyx":258
  *         self.D0 = self.D1 = 0
  *         self.offset0 = self.offset1 = 0
  *         self.box_size0 = self.box_size1 = 0             # <<<<<<<<<<<<<<
@@ -4351,7 +4351,7 @@ static int __pyx_pf_11_distortion_4Quad___cinit__(struct __pyx_obj_11_distortion
   __pyx_v_self->box_size0 = 0;
   __pyx_v_self->box_size1 = 0;
 
-  /* "_distortion.pyx":259
+  /* "src/_distortion.pyx":259
  *         self.offset0 = self.offset1 = 0
  *         self.box_size0 = self.box_size1 = 0
  *         self.pAB = self.pBC = self.pCD = self.pDA = 0             # <<<<<<<<<<<<<<
@@ -4363,7 +4363,7 @@ static int __pyx_pf_11_distortion_4Quad___cinit__(struct __pyx_obj_11_distortion
   __pyx_v_self->pCD = 0.0;
   __pyx_v_self->pDA = 0.0;
 
-  /* "_distortion.pyx":260
+  /* "src/_distortion.pyx":260
  *         self.box_size0 = self.box_size1 = 0
  *         self.pAB = self.pBC = self.pCD = self.pDA = 0
  *         self.cAB = self.cBC = self.cCD = self.cDA = 0             # <<<<<<<<<<<<<<
@@ -4375,7 +4375,7 @@ static int __pyx_pf_11_distortion_4Quad___cinit__(struct __pyx_obj_11_distortion
   __pyx_v_self->cCD = 0.0;
   __pyx_v_self->cDA = 0.0;
 
-  /* "_distortion.pyx":261
+  /* "src/_distortion.pyx":261
  *         self.pAB = self.pBC = self.pCD = self.pDA = 0
  *         self.cAB = self.cBC = self.cCD = self.cDA = 0
  *         self.area = 0             # <<<<<<<<<<<<<<
@@ -4384,7 +4384,7 @@ static int __pyx_pf_11_distortion_4Quad___cinit__(struct __pyx_obj_11_distortion
  */
   __pyx_v_self->area = 0.0;
 
-  /* "_distortion.pyx":262
+  /* "src/_distortion.pyx":262
  *         self.cAB = self.cBC = self.cCD = self.cDA = 0
  *         self.area = 0
  *         self.has_area = 0             # <<<<<<<<<<<<<<
@@ -4393,7 +4393,7 @@ static int __pyx_pf_11_distortion_4Quad___cinit__(struct __pyx_obj_11_distortion
  */
   __pyx_v_self->has_area = 0;
 
-  /* "_distortion.pyx":263
+  /* "src/_distortion.pyx":263
  *         self.area = 0
  *         self.has_area = 0
  *         self.has_slope = 0             # <<<<<<<<<<<<<<
@@ -4402,7 +4402,7 @@ static int __pyx_pf_11_distortion_4Quad___cinit__(struct __pyx_obj_11_distortion
  */
   __pyx_v_self->has_slope = 0;
 
-  /* "_distortion.pyx":251
+  /* "src/_distortion.pyx":251
  *     cdef bint has_area, has_slope
  * 
  *     def __cinit__(self, float[:, :] buffer):             # <<<<<<<<<<<<<<
@@ -4417,7 +4417,7 @@ static int __pyx_pf_11_distortion_4Quad___cinit__(struct __pyx_obj_11_distortion
   return __pyx_r;
 }
 
-/* "_distortion.pyx":265
+/* "src/_distortion.pyx":265
  *         self.has_slope = 0
  * 
  *     def reinit(self, A0, A1, B0, B1, C0, C1, D0, D1):             # <<<<<<<<<<<<<<
@@ -4426,8 +4426,8 @@ static int __pyx_pf_11_distortion_4Quad___cinit__(struct __pyx_obj_11_distortion
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_4Quad_3reinit(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_11_distortion_4Quad_3reinit(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_3reinit(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_3reinit(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_A0 = 0;
   PyObject *__pyx_v_A1 = 0;
   PyObject *__pyx_v_B0 = 0;
@@ -4529,18 +4529,18 @@ static PyObject *__pyx_pw_11_distortion_4Quad_3reinit(PyObject *__pyx_v_self, Py
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("reinit", 1, 8, 8, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 265; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("_distortion.Quad.reinit", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.reinit", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_11_distortion_4Quad_2reinit(((struct __pyx_obj_11_distortion_Quad *)__pyx_v_self), __pyx_v_A0, __pyx_v_A1, __pyx_v_B0, __pyx_v_B1, __pyx_v_C0, __pyx_v_C1, __pyx_v_D0, __pyx_v_D1);
+  __pyx_r = __pyx_pf_3src_11_distortion_4Quad_2reinit(((struct __pyx_obj_3src_11_distortion_Quad *)__pyx_v_self), __pyx_v_A0, __pyx_v_A1, __pyx_v_B0, __pyx_v_B1, __pyx_v_C0, __pyx_v_C1, __pyx_v_D0, __pyx_v_D1);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_4Quad_2reinit(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, PyObject *__pyx_v_A0, PyObject *__pyx_v_A1, PyObject *__pyx_v_B0, PyObject *__pyx_v_B1, PyObject *__pyx_v_C0, PyObject *__pyx_v_C1, PyObject *__pyx_v_D0, PyObject *__pyx_v_D1) {
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_2reinit(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, PyObject *__pyx_v_A0, PyObject *__pyx_v_A1, PyObject *__pyx_v_B0, PyObject *__pyx_v_B1, PyObject *__pyx_v_C0, PyObject *__pyx_v_C1, PyObject *__pyx_v_D0, PyObject *__pyx_v_D1) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __Pyx_memviewslice __pyx_t_1 = { 0, 0, { 0 }, { 0 }, { 0 } };
@@ -4556,7 +4556,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_2reinit(struct __pyx_obj_11_distor
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("reinit", 0);
 
-  /* "_distortion.pyx":266
+  /* "src/_distortion.pyx":266
  * 
  *     def reinit(self, A0, A1, B0, B1, C0, C1, D0, D1):
  *         self.box[:, :] = 0.0             # <<<<<<<<<<<<<<
@@ -4603,7 +4603,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
   }
   __PYX_XDEC_MEMVIEW(&__pyx_t_2, 1);
 
-  /* "_distortion.pyx":267
+  /* "src/_distortion.pyx":267
  *     def reinit(self, A0, A1, B0, B1, C0, C1, D0, D1):
  *         self.box[:, :] = 0.0
  *         self.A0 = A0             # <<<<<<<<<<<<<<
@@ -4613,7 +4613,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
   __pyx_t_4 = __pyx_PyFloat_AsFloat(__pyx_v_A0); if (unlikely((__pyx_t_4 == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 267; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_v_self->A0 = __pyx_t_4;
 
-  /* "_distortion.pyx":268
+  /* "src/_distortion.pyx":268
  *         self.box[:, :] = 0.0
  *         self.A0 = A0
  *         self.A1 = A1             # <<<<<<<<<<<<<<
@@ -4623,7 +4623,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
   __pyx_t_4 = __pyx_PyFloat_AsFloat(__pyx_v_A1); if (unlikely((__pyx_t_4 == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 268; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_v_self->A1 = __pyx_t_4;
 
-  /* "_distortion.pyx":269
+  /* "src/_distortion.pyx":269
  *         self.A0 = A0
  *         self.A1 = A1
  *         self.B0 = B0             # <<<<<<<<<<<<<<
@@ -4633,7 +4633,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
   __pyx_t_4 = __pyx_PyFloat_AsFloat(__pyx_v_B0); if (unlikely((__pyx_t_4 == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 269; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_v_self->B0 = __pyx_t_4;
 
-  /* "_distortion.pyx":270
+  /* "src/_distortion.pyx":270
  *         self.A1 = A1
  *         self.B0 = B0
  *         self.B1 = B1             # <<<<<<<<<<<<<<
@@ -4643,7 +4643,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
   __pyx_t_4 = __pyx_PyFloat_AsFloat(__pyx_v_B1); if (unlikely((__pyx_t_4 == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 270; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_v_self->B1 = __pyx_t_4;
 
-  /* "_distortion.pyx":271
+  /* "src/_distortion.pyx":271
  *         self.B0 = B0
  *         self.B1 = B1
  *         self.C0 = C0             # <<<<<<<<<<<<<<
@@ -4653,7 +4653,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
   __pyx_t_4 = __pyx_PyFloat_AsFloat(__pyx_v_C0); if (unlikely((__pyx_t_4 == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 271; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_v_self->C0 = __pyx_t_4;
 
-  /* "_distortion.pyx":272
+  /* "src/_distortion.pyx":272
  *         self.B1 = B1
  *         self.C0 = C0
  *         self.C1 = C1             # <<<<<<<<<<<<<<
@@ -4663,7 +4663,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
   __pyx_t_4 = __pyx_PyFloat_AsFloat(__pyx_v_C1); if (unlikely((__pyx_t_4 == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 272; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_v_self->C1 = __pyx_t_4;
 
-  /* "_distortion.pyx":273
+  /* "src/_distortion.pyx":273
  *         self.C0 = C0
  *         self.C1 = C1
  *         self.D0 = D0             # <<<<<<<<<<<<<<
@@ -4673,7 +4673,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
   __pyx_t_4 = __pyx_PyFloat_AsFloat(__pyx_v_D0); if (unlikely((__pyx_t_4 == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 273; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_v_self->D0 = __pyx_t_4;
 
-  /* "_distortion.pyx":274
+  /* "src/_distortion.pyx":274
  *         self.C1 = C1
  *         self.D0 = D0
  *         self.D1 = D1             # <<<<<<<<<<<<<<
@@ -4683,7 +4683,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
   __pyx_t_4 = __pyx_PyFloat_AsFloat(__pyx_v_D1); if (unlikely((__pyx_t_4 == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 274; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_v_self->D1 = __pyx_t_4;
 
-  /* "_distortion.pyx":275
+  /* "src/_distortion.pyx":275
  *         self.D0 = D0
  *         self.D1 = D1
  *         self.offset0 = (<int> floor(min(self.A0, self.B0, self.C0, self.D0)))             # <<<<<<<<<<<<<<
@@ -4713,7 +4713,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
   }
   __pyx_v_self->offset0 = ((int)floor(__pyx_t_8));
 
-  /* "_distortion.pyx":276
+  /* "src/_distortion.pyx":276
  *         self.D1 = D1
  *         self.offset0 = (<int> floor(min(self.A0, self.B0, self.C0, self.D0)))
  *         self.offset1 = (<int> floor(min(self.A1, self.B1, self.C1, self.D1)))             # <<<<<<<<<<<<<<
@@ -4743,7 +4743,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
   }
   __pyx_v_self->offset1 = ((int)floor(__pyx_t_7));
 
-  /* "_distortion.pyx":277
+  /* "src/_distortion.pyx":277
  *         self.offset0 = (<int> floor(min(self.A0, self.B0, self.C0, self.D0)))
  *         self.offset1 = (<int> floor(min(self.A1, self.B1, self.C1, self.D1)))
  *         self.box_size0 = (<int> ceil(max(self.A0, self.B0, self.C0, self.D0))) - self.offset0             # <<<<<<<<<<<<<<
@@ -4773,7 +4773,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
   }
   __pyx_v_self->box_size0 = (((int)ceil(__pyx_t_6)) - __pyx_v_self->offset0);
 
-  /* "_distortion.pyx":278
+  /* "src/_distortion.pyx":278
  *         self.offset1 = (<int> floor(min(self.A1, self.B1, self.C1, self.D1)))
  *         self.box_size0 = (<int> ceil(max(self.A0, self.B0, self.C0, self.D0))) - self.offset0
  *         self.box_size1 = (<int> ceil(max(self.A1, self.B1, self.C1, self.D1))) - self.offset1             # <<<<<<<<<<<<<<
@@ -4803,7 +4803,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
   }
   __pyx_v_self->box_size1 = (((int)ceil(__pyx_t_5)) - __pyx_v_self->offset1);
 
-  /* "_distortion.pyx":279
+  /* "src/_distortion.pyx":279
  *         self.box_size0 = (<int> ceil(max(self.A0, self.B0, self.C0, self.D0))) - self.offset0
  *         self.box_size1 = (<int> ceil(max(self.A1, self.B1, self.C1, self.D1))) - self.offset1
  *         self.A0 -= self.offset0             # <<<<<<<<<<<<<<
@@ -4812,7 +4812,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
  */
   __pyx_v_self->A0 = (__pyx_v_self->A0 - __pyx_v_self->offset0);
 
-  /* "_distortion.pyx":280
+  /* "src/_distortion.pyx":280
  *         self.box_size1 = (<int> ceil(max(self.A1, self.B1, self.C1, self.D1))) - self.offset1
  *         self.A0 -= self.offset0
  *         self.A1 -= self.offset1             # <<<<<<<<<<<<<<
@@ -4821,7 +4821,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
  */
   __pyx_v_self->A1 = (__pyx_v_self->A1 - __pyx_v_self->offset1);
 
-  /* "_distortion.pyx":281
+  /* "src/_distortion.pyx":281
  *         self.A0 -= self.offset0
  *         self.A1 -= self.offset1
  *         self.B0 -= self.offset0             # <<<<<<<<<<<<<<
@@ -4830,7 +4830,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
  */
   __pyx_v_self->B0 = (__pyx_v_self->B0 - __pyx_v_self->offset0);
 
-  /* "_distortion.pyx":282
+  /* "src/_distortion.pyx":282
  *         self.A1 -= self.offset1
  *         self.B0 -= self.offset0
  *         self.B1 -= self.offset1             # <<<<<<<<<<<<<<
@@ -4839,7 +4839,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
  */
   __pyx_v_self->B1 = (__pyx_v_self->B1 - __pyx_v_self->offset1);
 
-  /* "_distortion.pyx":283
+  /* "src/_distortion.pyx":283
  *         self.B0 -= self.offset0
  *         self.B1 -= self.offset1
  *         self.C0 -= self.offset0             # <<<<<<<<<<<<<<
@@ -4848,7 +4848,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
  */
   __pyx_v_self->C0 = (__pyx_v_self->C0 - __pyx_v_self->offset0);
 
-  /* "_distortion.pyx":284
+  /* "src/_distortion.pyx":284
  *         self.B1 -= self.offset1
  *         self.C0 -= self.offset0
  *         self.C1 -= self.offset1             # <<<<<<<<<<<<<<
@@ -4857,7 +4857,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
  */
   __pyx_v_self->C1 = (__pyx_v_self->C1 - __pyx_v_self->offset1);
 
-  /* "_distortion.pyx":285
+  /* "src/_distortion.pyx":285
  *         self.C0 -= self.offset0
  *         self.C1 -= self.offset1
  *         self.D0 -= self.offset0             # <<<<<<<<<<<<<<
@@ -4866,7 +4866,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
  */
   __pyx_v_self->D0 = (__pyx_v_self->D0 - __pyx_v_self->offset0);
 
-  /* "_distortion.pyx":286
+  /* "src/_distortion.pyx":286
  *         self.C1 -= self.offset1
  *         self.D0 -= self.offset0
  *         self.D1 -= self.offset1             # <<<<<<<<<<<<<<
@@ -4875,7 +4875,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
  */
   __pyx_v_self->D1 = (__pyx_v_self->D1 - __pyx_v_self->offset1);
 
-  /* "_distortion.pyx":287
+  /* "src/_distortion.pyx":287
  *         self.D0 -= self.offset0
  *         self.D1 -= self.offset1
  *         self.pAB = self.pBC = self.pCD = self.pDA = 0             # <<<<<<<<<<<<<<
@@ -4887,7 +4887,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
   __pyx_v_self->pCD = 0.0;
   __pyx_v_self->pDA = 0.0;
 
-  /* "_distortion.pyx":288
+  /* "src/_distortion.pyx":288
  *         self.D1 -= self.offset1
  *         self.pAB = self.pBC = self.pCD = self.pDA = 0
  *         self.cAB = self.cBC = self.cCD = self.cDA = 0             # <<<<<<<<<<<<<<
@@ -4899,7 +4899,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
   __pyx_v_self->cCD = 0.0;
   __pyx_v_self->cDA = 0.0;
 
-  /* "_distortion.pyx":289
+  /* "src/_distortion.pyx":289
  *         self.pAB = self.pBC = self.pCD = self.pDA = 0
  *         self.cAB = self.cBC = self.cCD = self.cDA = 0
  *         self.area = 0             # <<<<<<<<<<<<<<
@@ -4908,7 +4908,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
  */
   __pyx_v_self->area = 0.0;
 
-  /* "_distortion.pyx":290
+  /* "src/_distortion.pyx":290
  *         self.cAB = self.cBC = self.cCD = self.cDA = 0
  *         self.area = 0
  *         self.has_area = 0             # <<<<<<<<<<<<<<
@@ -4917,7 +4917,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
  */
   __pyx_v_self->has_area = 0;
 
-  /* "_distortion.pyx":291
+  /* "src/_distortion.pyx":291
  *         self.area = 0
  *         self.has_area = 0
  *         self.has_slope = 0             # <<<<<<<<<<<<<<
@@ -4926,7 +4926,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
  */
   __pyx_v_self->has_slope = 0;
 
-  /* "_distortion.pyx":265
+  /* "src/_distortion.pyx":265
  *         self.has_slope = 0
  * 
  *     def reinit(self, A0, A1, B0, B1, C0, C1, D0, D1):             # <<<<<<<<<<<<<<
@@ -4940,7 +4940,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
   __pyx_L1_error:;
   __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
   __PYX_XDEC_MEMVIEW(&__pyx_t_2, 1);
-  __Pyx_AddTraceback("_distortion.Quad.reinit", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.reinit", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -4948,7 +4948,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
   return __pyx_r;
 }
 
-/* "_distortion.pyx":293
+/* "src/_distortion.pyx":293
  *         self.has_slope = 0
  * 
  *     def __repr__(self):             # <<<<<<<<<<<<<<
@@ -4957,19 +4957,19 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_4Quad_5__repr__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_11_distortion_4Quad_5__repr__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_5__repr__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_5__repr__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__repr__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_11_distortion_4Quad_4__repr__(((struct __pyx_obj_11_distortion_Quad *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_11_distortion_4Quad_4__repr__(((struct __pyx_obj_3src_11_distortion_Quad *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_4Quad_4__repr__(struct __pyx_obj_11_distortion_Quad *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_4__repr__(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self) {
   PyObject *__pyx_v_res = NULL;
   int __pyx_v_i;
   PyObject *__pyx_v_line = NULL;
@@ -4994,7 +4994,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_4__repr__(struct __pyx_obj_11_dist
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__repr__", 0);
 
-  /* "_distortion.pyx":294
+  /* "src/_distortion.pyx":294
  * 
  *     def __repr__(self):
  *         res = ["offset %i,%i size %i, %i" % (self.offset0, self.offset1, self.box_size0, self.box_size1), "box:"]             # <<<<<<<<<<<<<<
@@ -5037,7 +5037,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_4__repr__(struct __pyx_obj_11_dist
   __pyx_v_res = ((PyObject*)__pyx_t_5);
   __pyx_t_5 = 0;
 
-  /* "_distortion.pyx":295
+  /* "src/_distortion.pyx":295
  *     def __repr__(self):
  *         res = ["offset %i,%i size %i, %i" % (self.offset0, self.offset1, self.box_size0, self.box_size1), "box:"]
  *         for i in range(self.box_size0):             # <<<<<<<<<<<<<<
@@ -5048,7 +5048,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_4__repr__(struct __pyx_obj_11_dist
   for (__pyx_t_7 = 0; __pyx_t_7 < __pyx_t_6; __pyx_t_7+=1) {
     __pyx_v_i = __pyx_t_7;
 
-    /* "_distortion.pyx":296
+    /* "src/_distortion.pyx":296
  *         res = ["offset %i,%i size %i, %i" % (self.offset0, self.offset1, self.box_size0, self.box_size1), "box:"]
  *         for i in range(self.box_size0):
  *             line = ""             # <<<<<<<<<<<<<<
@@ -5058,7 +5058,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_4__repr__(struct __pyx_obj_11_dist
     __Pyx_INCREF(__pyx_kp_s_);
     __Pyx_XDECREF_SET(__pyx_v_line, __pyx_kp_s_);
 
-    /* "_distortion.pyx":297
+    /* "src/_distortion.pyx":297
  *         for i in range(self.box_size0):
  *             line = ""
  *             for j in range(self.box_size1):             # <<<<<<<<<<<<<<
@@ -5069,7 +5069,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_4__repr__(struct __pyx_obj_11_dist
     for (__pyx_t_9 = 0; __pyx_t_9 < __pyx_t_8; __pyx_t_9+=1) {
       __pyx_v_j = __pyx_t_9;
 
-      /* "_distortion.pyx":298
+      /* "src/_distortion.pyx":298
  *             line = ""
  *             for j in range(self.box_size1):
  *                 line += "\t%.3f"%self.box[i,j]             # <<<<<<<<<<<<<<
@@ -5104,7 +5104,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_4__repr__(struct __pyx_obj_11_dist
       __pyx_t_5 = 0;
     }
 
-    /* "_distortion.pyx":299
+    /* "src/_distortion.pyx":299
  *             for j in range(self.box_size1):
  *                 line += "\t%.3f"%self.box[i,j]
  *             res.append(line)             # <<<<<<<<<<<<<<
@@ -5114,7 +5114,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_4__repr__(struct __pyx_obj_11_dist
     __pyx_t_13 = __Pyx_PyList_Append(__pyx_v_res, __pyx_v_line); if (unlikely(__pyx_t_13 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 299; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
 
-  /* "_distortion.pyx":300
+  /* "src/_distortion.pyx":300
  *                 line += "\t%.3f"%self.box[i,j]
  *             res.append(line)
  *         return os.linesep.join(res)             # <<<<<<<<<<<<<<
@@ -5159,7 +5159,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_4__repr__(struct __pyx_obj_11_dist
   __pyx_t_5 = 0;
   goto __pyx_L0;
 
-  /* "_distortion.pyx":293
+  /* "src/_distortion.pyx":293
  *         self.has_slope = 0
  * 
  *     def __repr__(self):             # <<<<<<<<<<<<<<
@@ -5174,7 +5174,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_4__repr__(struct __pyx_obj_11_dist
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
-  __Pyx_AddTraceback("_distortion.Quad.__repr__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.__repr__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_res);
@@ -5184,7 +5184,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_4__repr__(struct __pyx_obj_11_dist
   return __pyx_r;
 }
 
-/* "_distortion.pyx":302
+/* "src/_distortion.pyx":302
  *         return os.linesep.join(res)
  * 
  *     cpdef float get_box(self, int i, int j):             # <<<<<<<<<<<<<<
@@ -5192,8 +5192,8 @@ static PyObject *__pyx_pf_11_distortion_4Quad_4__repr__(struct __pyx_obj_11_dist
  *     cpdef int get_offset0(self):
  */
 
-static PyObject *__pyx_pw_11_distortion_4Quad_7get_box(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static float __pyx_f_11_distortion_4Quad_get_box(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, int __pyx_v_i, int __pyx_v_j, int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_7get_box(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static float __pyx_f_3src_11_distortion_4Quad_get_box(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, int __pyx_v_i, int __pyx_v_j, int __pyx_skip_dispatch) {
   float __pyx_r;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5218,7 +5218,7 @@ static float __pyx_f_11_distortion_4Quad_get_box(struct __pyx_obj_11_distortion_
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
     __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_get_box); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 302; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_11_distortion_4Quad_7get_box)) {
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_7get_box)) {
       __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_i); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 302; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_j); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 302; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -5260,7 +5260,7 @@ static float __pyx_f_11_distortion_4Quad_get_box(struct __pyx_obj_11_distortion_
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "_distortion.pyx":303
+  /* "src/_distortion.pyx":303
  * 
  *     cpdef float get_box(self, int i, int j):
  *         return self.box[i,j]             # <<<<<<<<<<<<<<
@@ -5286,7 +5286,7 @@ static float __pyx_f_11_distortion_4Quad_get_box(struct __pyx_obj_11_distortion_
   __pyx_r = (*((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_self->box.data + __pyx_t_10 * __pyx_v_self->box.strides[0]) ) + __pyx_t_11 * __pyx_v_self->box.strides[1]) )));
   goto __pyx_L0;
 
-  /* "_distortion.pyx":302
+  /* "src/_distortion.pyx":302
  *         return os.linesep.join(res)
  * 
  *     cpdef float get_box(self, int i, int j):             # <<<<<<<<<<<<<<
@@ -5303,7 +5303,7 @@ static float __pyx_f_11_distortion_4Quad_get_box(struct __pyx_obj_11_distortion_
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
   __Pyx_XDECREF(__pyx_t_8);
-  __Pyx_WriteUnraisable("_distortion.Quad.get_box", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
+  __Pyx_WriteUnraisable("src._distortion.Quad.get_box", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -5311,8 +5311,8 @@ static float __pyx_f_11_distortion_4Quad_get_box(struct __pyx_obj_11_distortion_
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_4Quad_7get_box(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_11_distortion_4Quad_7get_box(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_7get_box(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_7get_box(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   int __pyx_v_i;
   int __pyx_v_j;
   int __pyx_lineno = 0;
@@ -5360,18 +5360,18 @@ static PyObject *__pyx_pw_11_distortion_4Quad_7get_box(PyObject *__pyx_v_self, P
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("get_box", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 302; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("_distortion.Quad.get_box", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.get_box", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_11_distortion_4Quad_6get_box(((struct __pyx_obj_11_distortion_Quad *)__pyx_v_self), __pyx_v_i, __pyx_v_j);
+  __pyx_r = __pyx_pf_3src_11_distortion_4Quad_6get_box(((struct __pyx_obj_3src_11_distortion_Quad *)__pyx_v_self), __pyx_v_i, __pyx_v_j);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_4Quad_6get_box(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, int __pyx_v_i, int __pyx_v_j) {
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_6get_box(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, int __pyx_v_i, int __pyx_v_j) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5380,7 +5380,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_6get_box(struct __pyx_obj_11_disto
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("get_box", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_11_distortion_4Quad_get_box(__pyx_v_self, __pyx_v_i, __pyx_v_j, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 302; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_3src_11_distortion_4Quad_get_box(__pyx_v_self, __pyx_v_i, __pyx_v_j, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 302; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -5389,7 +5389,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_6get_box(struct __pyx_obj_11_disto
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("_distortion.Quad.get_box", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.get_box", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -5397,7 +5397,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_6get_box(struct __pyx_obj_11_disto
   return __pyx_r;
 }
 
-/* "_distortion.pyx":304
+/* "src/_distortion.pyx":304
  *     cpdef float get_box(self, int i, int j):
  *         return self.box[i,j]
  *     cpdef int get_offset0(self):             # <<<<<<<<<<<<<<
@@ -5405,8 +5405,8 @@ static PyObject *__pyx_pf_11_distortion_4Quad_6get_box(struct __pyx_obj_11_disto
  *     cpdef int  get_offset1(self):
  */
 
-static PyObject *__pyx_pw_11_distortion_4Quad_9get_offset0(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static int __pyx_f_11_distortion_4Quad_get_offset0(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_9get_offset0(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static int __pyx_f_3src_11_distortion_4Quad_get_offset0(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5424,7 +5424,7 @@ static int __pyx_f_11_distortion_4Quad_get_offset0(struct __pyx_obj_11_distortio
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
     __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_get_offset0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 304; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_11_distortion_4Quad_9get_offset0)) {
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_9get_offset0)) {
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_3 = __pyx_t_1; __pyx_t_4 = NULL;
       if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_3))) {
@@ -5453,7 +5453,7 @@ static int __pyx_f_11_distortion_4Quad_get_offset0(struct __pyx_obj_11_distortio
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "_distortion.pyx":305
+  /* "src/_distortion.pyx":305
  *         return self.box[i,j]
  *     cpdef int get_offset0(self):
  *         return self.offset0             # <<<<<<<<<<<<<<
@@ -5463,7 +5463,7 @@ static int __pyx_f_11_distortion_4Quad_get_offset0(struct __pyx_obj_11_distortio
   __pyx_r = __pyx_v_self->offset0;
   goto __pyx_L0;
 
-  /* "_distortion.pyx":304
+  /* "src/_distortion.pyx":304
  *     cpdef float get_box(self, int i, int j):
  *         return self.box[i,j]
  *     cpdef int get_offset0(self):             # <<<<<<<<<<<<<<
@@ -5477,7 +5477,7 @@ static int __pyx_f_11_distortion_4Quad_get_offset0(struct __pyx_obj_11_distortio
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_WriteUnraisable("_distortion.Quad.get_offset0", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
+  __Pyx_WriteUnraisable("src._distortion.Quad.get_offset0", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -5485,19 +5485,19 @@ static int __pyx_f_11_distortion_4Quad_get_offset0(struct __pyx_obj_11_distortio
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_4Quad_9get_offset0(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_11_distortion_4Quad_9get_offset0(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_9get_offset0(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_9get_offset0(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_offset0 (wrapper)", 0);
-  __pyx_r = __pyx_pf_11_distortion_4Quad_8get_offset0(((struct __pyx_obj_11_distortion_Quad *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_11_distortion_4Quad_8get_offset0(((struct __pyx_obj_3src_11_distortion_Quad *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_4Quad_8get_offset0(struct __pyx_obj_11_distortion_Quad *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_8get_offset0(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5506,7 +5506,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_8get_offset0(struct __pyx_obj_11_d
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("get_offset0", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_f_11_distortion_4Quad_get_offset0(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 304; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_f_3src_11_distortion_4Quad_get_offset0(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 304; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -5515,7 +5515,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_8get_offset0(struct __pyx_obj_11_d
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("_distortion.Quad.get_offset0", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.get_offset0", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -5523,7 +5523,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_8get_offset0(struct __pyx_obj_11_d
   return __pyx_r;
 }
 
-/* "_distortion.pyx":306
+/* "src/_distortion.pyx":306
  *     cpdef int get_offset0(self):
  *         return self.offset0
  *     cpdef int  get_offset1(self):             # <<<<<<<<<<<<<<
@@ -5531,8 +5531,8 @@ static PyObject *__pyx_pf_11_distortion_4Quad_8get_offset0(struct __pyx_obj_11_d
  *     cpdef int  get_box_size0(self):
  */
 
-static PyObject *__pyx_pw_11_distortion_4Quad_11get_offset1(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static int __pyx_f_11_distortion_4Quad_get_offset1(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_11get_offset1(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static int __pyx_f_3src_11_distortion_4Quad_get_offset1(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5550,7 +5550,7 @@ static int __pyx_f_11_distortion_4Quad_get_offset1(struct __pyx_obj_11_distortio
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
     __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_get_offset1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 306; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_11_distortion_4Quad_11get_offset1)) {
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_11get_offset1)) {
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_3 = __pyx_t_1; __pyx_t_4 = NULL;
       if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_3))) {
@@ -5579,7 +5579,7 @@ static int __pyx_f_11_distortion_4Quad_get_offset1(struct __pyx_obj_11_distortio
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "_distortion.pyx":307
+  /* "src/_distortion.pyx":307
  *         return self.offset0
  *     cpdef int  get_offset1(self):
  *         return self.offset1             # <<<<<<<<<<<<<<
@@ -5589,7 +5589,7 @@ static int __pyx_f_11_distortion_4Quad_get_offset1(struct __pyx_obj_11_distortio
   __pyx_r = __pyx_v_self->offset1;
   goto __pyx_L0;
 
-  /* "_distortion.pyx":306
+  /* "src/_distortion.pyx":306
  *     cpdef int get_offset0(self):
  *         return self.offset0
  *     cpdef int  get_offset1(self):             # <<<<<<<<<<<<<<
@@ -5603,7 +5603,7 @@ static int __pyx_f_11_distortion_4Quad_get_offset1(struct __pyx_obj_11_distortio
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_WriteUnraisable("_distortion.Quad.get_offset1", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
+  __Pyx_WriteUnraisable("src._distortion.Quad.get_offset1", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -5611,19 +5611,19 @@ static int __pyx_f_11_distortion_4Quad_get_offset1(struct __pyx_obj_11_distortio
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_4Quad_11get_offset1(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_11_distortion_4Quad_11get_offset1(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_11get_offset1(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_11get_offset1(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_offset1 (wrapper)", 0);
-  __pyx_r = __pyx_pf_11_distortion_4Quad_10get_offset1(((struct __pyx_obj_11_distortion_Quad *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_11_distortion_4Quad_10get_offset1(((struct __pyx_obj_3src_11_distortion_Quad *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_4Quad_10get_offset1(struct __pyx_obj_11_distortion_Quad *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_10get_offset1(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5632,7 +5632,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_10get_offset1(struct __pyx_obj_11_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("get_offset1", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_f_11_distortion_4Quad_get_offset1(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 306; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_f_3src_11_distortion_4Quad_get_offset1(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 306; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -5641,7 +5641,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_10get_offset1(struct __pyx_obj_11_
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("_distortion.Quad.get_offset1", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.get_offset1", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -5649,7 +5649,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_10get_offset1(struct __pyx_obj_11_
   return __pyx_r;
 }
 
-/* "_distortion.pyx":308
+/* "src/_distortion.pyx":308
  *     cpdef int  get_offset1(self):
  *         return self.offset1
  *     cpdef int  get_box_size0(self):             # <<<<<<<<<<<<<<
@@ -5657,8 +5657,8 @@ static PyObject *__pyx_pf_11_distortion_4Quad_10get_offset1(struct __pyx_obj_11_
  *     cpdef int  get_box_size1(self):
  */
 
-static PyObject *__pyx_pw_11_distortion_4Quad_13get_box_size0(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static int __pyx_f_11_distortion_4Quad_get_box_size0(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_13get_box_size0(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static int __pyx_f_3src_11_distortion_4Quad_get_box_size0(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5676,7 +5676,7 @@ static int __pyx_f_11_distortion_4Quad_get_box_size0(struct __pyx_obj_11_distort
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
     __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_get_box_size0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 308; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_11_distortion_4Quad_13get_box_size0)) {
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_13get_box_size0)) {
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_3 = __pyx_t_1; __pyx_t_4 = NULL;
       if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_3))) {
@@ -5705,7 +5705,7 @@ static int __pyx_f_11_distortion_4Quad_get_box_size0(struct __pyx_obj_11_distort
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "_distortion.pyx":309
+  /* "src/_distortion.pyx":309
  *         return self.offset1
  *     cpdef int  get_box_size0(self):
  *         return self.box_size0             # <<<<<<<<<<<<<<
@@ -5715,7 +5715,7 @@ static int __pyx_f_11_distortion_4Quad_get_box_size0(struct __pyx_obj_11_distort
   __pyx_r = __pyx_v_self->box_size0;
   goto __pyx_L0;
 
-  /* "_distortion.pyx":308
+  /* "src/_distortion.pyx":308
  *     cpdef int  get_offset1(self):
  *         return self.offset1
  *     cpdef int  get_box_size0(self):             # <<<<<<<<<<<<<<
@@ -5729,7 +5729,7 @@ static int __pyx_f_11_distortion_4Quad_get_box_size0(struct __pyx_obj_11_distort
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_WriteUnraisable("_distortion.Quad.get_box_size0", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
+  __Pyx_WriteUnraisable("src._distortion.Quad.get_box_size0", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -5737,19 +5737,19 @@ static int __pyx_f_11_distortion_4Quad_get_box_size0(struct __pyx_obj_11_distort
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_4Quad_13get_box_size0(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_11_distortion_4Quad_13get_box_size0(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_13get_box_size0(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_13get_box_size0(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_box_size0 (wrapper)", 0);
-  __pyx_r = __pyx_pf_11_distortion_4Quad_12get_box_size0(((struct __pyx_obj_11_distortion_Quad *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_11_distortion_4Quad_12get_box_size0(((struct __pyx_obj_3src_11_distortion_Quad *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_4Quad_12get_box_size0(struct __pyx_obj_11_distortion_Quad *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_12get_box_size0(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5758,7 +5758,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_12get_box_size0(struct __pyx_obj_1
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("get_box_size0", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_f_11_distortion_4Quad_get_box_size0(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 308; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_f_3src_11_distortion_4Quad_get_box_size0(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 308; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -5767,7 +5767,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_12get_box_size0(struct __pyx_obj_1
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("_distortion.Quad.get_box_size0", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.get_box_size0", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -5775,7 +5775,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_12get_box_size0(struct __pyx_obj_1
   return __pyx_r;
 }
 
-/* "_distortion.pyx":310
+/* "src/_distortion.pyx":310
  *     cpdef int  get_box_size0(self):
  *         return self.box_size0
  *     cpdef int  get_box_size1(self):             # <<<<<<<<<<<<<<
@@ -5783,8 +5783,8 @@ static PyObject *__pyx_pf_11_distortion_4Quad_12get_box_size0(struct __pyx_obj_1
  * 
  */
 
-static PyObject *__pyx_pw_11_distortion_4Quad_15get_box_size1(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static int __pyx_f_11_distortion_4Quad_get_box_size1(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_15get_box_size1(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static int __pyx_f_3src_11_distortion_4Quad_get_box_size1(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5802,7 +5802,7 @@ static int __pyx_f_11_distortion_4Quad_get_box_size1(struct __pyx_obj_11_distort
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
     __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_get_box_size1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 310; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_11_distortion_4Quad_15get_box_size1)) {
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_15get_box_size1)) {
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_3 = __pyx_t_1; __pyx_t_4 = NULL;
       if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_3))) {
@@ -5831,7 +5831,7 @@ static int __pyx_f_11_distortion_4Quad_get_box_size1(struct __pyx_obj_11_distort
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "_distortion.pyx":311
+  /* "src/_distortion.pyx":311
  *         return self.box_size0
  *     cpdef int  get_box_size1(self):
  *         return self.box_size1             # <<<<<<<<<<<<<<
@@ -5841,7 +5841,7 @@ static int __pyx_f_11_distortion_4Quad_get_box_size1(struct __pyx_obj_11_distort
   __pyx_r = __pyx_v_self->box_size1;
   goto __pyx_L0;
 
-  /* "_distortion.pyx":310
+  /* "src/_distortion.pyx":310
  *     cpdef int  get_box_size0(self):
  *         return self.box_size0
  *     cpdef int  get_box_size1(self):             # <<<<<<<<<<<<<<
@@ -5855,7 +5855,7 @@ static int __pyx_f_11_distortion_4Quad_get_box_size1(struct __pyx_obj_11_distort
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_WriteUnraisable("_distortion.Quad.get_box_size1", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
+  __Pyx_WriteUnraisable("src._distortion.Quad.get_box_size1", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -5863,19 +5863,19 @@ static int __pyx_f_11_distortion_4Quad_get_box_size1(struct __pyx_obj_11_distort
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_4Quad_15get_box_size1(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_11_distortion_4Quad_15get_box_size1(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_15get_box_size1(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_15get_box_size1(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_box_size1 (wrapper)", 0);
-  __pyx_r = __pyx_pf_11_distortion_4Quad_14get_box_size1(((struct __pyx_obj_11_distortion_Quad *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_11_distortion_4Quad_14get_box_size1(((struct __pyx_obj_3src_11_distortion_Quad *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_4Quad_14get_box_size1(struct __pyx_obj_11_distortion_Quad *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_14get_box_size1(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5884,7 +5884,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_14get_box_size1(struct __pyx_obj_1
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("get_box_size1", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_f_11_distortion_4Quad_get_box_size1(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 310; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_f_3src_11_distortion_4Quad_get_box_size1(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 310; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -5893,7 +5893,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_14get_box_size1(struct __pyx_obj_1
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("_distortion.Quad.get_box_size1", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.get_box_size1", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -5901,7 +5901,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_14get_box_size1(struct __pyx_obj_1
   return __pyx_r;
 }
 
-/* "_distortion.pyx":313
+/* "src/_distortion.pyx":313
  *         return self.box_size1
  * 
  *     cpdef init_slope(self):             # <<<<<<<<<<<<<<
@@ -5909,8 +5909,8 @@ static PyObject *__pyx_pf_11_distortion_4Quad_14get_box_size1(struct __pyx_obj_1
  *             if self.B0 != self.A0:
  */
 
-static PyObject *__pyx_pw_11_distortion_4Quad_17init_slope(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_f_11_distortion_4Quad_init_slope(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_17init_slope(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_f_3src_11_distortion_4Quad_init_slope(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5930,7 +5930,7 @@ static PyObject *__pyx_f_11_distortion_4Quad_init_slope(struct __pyx_obj_11_dist
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
     __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_init_slope); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 313; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_11_distortion_4Quad_17init_slope)) {
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_17init_slope)) {
       __Pyx_XDECREF(__pyx_r);
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_3 = __pyx_t_1; __pyx_t_4 = NULL;
@@ -5959,7 +5959,7 @@ static PyObject *__pyx_f_11_distortion_4Quad_init_slope(struct __pyx_obj_11_dist
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "_distortion.pyx":314
+  /* "src/_distortion.pyx":314
  * 
  *     cpdef init_slope(self):
  *         if not self.has_slope:             # <<<<<<<<<<<<<<
@@ -5969,7 +5969,7 @@ static PyObject *__pyx_f_11_distortion_4Quad_init_slope(struct __pyx_obj_11_dist
   __pyx_t_5 = ((!(__pyx_v_self->has_slope != 0)) != 0);
   if (__pyx_t_5) {
 
-    /* "_distortion.pyx":315
+    /* "src/_distortion.pyx":315
  *     cpdef init_slope(self):
  *         if not self.has_slope:
  *             if self.B0 != self.A0:             # <<<<<<<<<<<<<<
@@ -5979,7 +5979,7 @@ static PyObject *__pyx_f_11_distortion_4Quad_init_slope(struct __pyx_obj_11_dist
     __pyx_t_5 = ((__pyx_v_self->B0 != __pyx_v_self->A0) != 0);
     if (__pyx_t_5) {
 
-      /* "_distortion.pyx":316
+      /* "src/_distortion.pyx":316
  *         if not self.has_slope:
  *             if self.B0 != self.A0:
  *                 self.pAB = (self.B1 - self.A1) / (self.B0 - self.A0)             # <<<<<<<<<<<<<<
@@ -6000,7 +6000,7 @@ static PyObject *__pyx_f_11_distortion_4Quad_init_slope(struct __pyx_obj_11_dist
       }
       __pyx_v_self->pAB = (__pyx_t_6 / __pyx_t_7);
 
-      /* "_distortion.pyx":317
+      /* "src/_distortion.pyx":317
  *             if self.B0 != self.A0:
  *                 self.pAB = (self.B1 - self.A1) / (self.B0 - self.A0)
  *                 self.cAB = self.A1 - self.pAB * self.A0             # <<<<<<<<<<<<<<
@@ -6012,7 +6012,7 @@ static PyObject *__pyx_f_11_distortion_4Quad_init_slope(struct __pyx_obj_11_dist
     }
     __pyx_L4:;
 
-    /* "_distortion.pyx":318
+    /* "src/_distortion.pyx":318
  *                 self.pAB = (self.B1 - self.A1) / (self.B0 - self.A0)
  *                 self.cAB = self.A1 - self.pAB * self.A0
  *             if self.C0 != self.B0:             # <<<<<<<<<<<<<<
@@ -6022,7 +6022,7 @@ static PyObject *__pyx_f_11_distortion_4Quad_init_slope(struct __pyx_obj_11_dist
     __pyx_t_5 = ((__pyx_v_self->C0 != __pyx_v_self->B0) != 0);
     if (__pyx_t_5) {
 
-      /* "_distortion.pyx":319
+      /* "src/_distortion.pyx":319
  *                 self.cAB = self.A1 - self.pAB * self.A0
  *             if self.C0 != self.B0:
  *                 self.pBC = (self.C1 - self.B1) / (self.C0 - self.B0)             # <<<<<<<<<<<<<<
@@ -6043,7 +6043,7 @@ static PyObject *__pyx_f_11_distortion_4Quad_init_slope(struct __pyx_obj_11_dist
       }
       __pyx_v_self->pBC = (__pyx_t_7 / __pyx_t_6);
 
-      /* "_distortion.pyx":320
+      /* "src/_distortion.pyx":320
  *             if self.C0 != self.B0:
  *                 self.pBC = (self.C1 - self.B1) / (self.C0 - self.B0)
  *                 self.cBC = self.B1 - self.pBC * self.B0             # <<<<<<<<<<<<<<
@@ -6055,7 +6055,7 @@ static PyObject *__pyx_f_11_distortion_4Quad_init_slope(struct __pyx_obj_11_dist
     }
     __pyx_L5:;
 
-    /* "_distortion.pyx":321
+    /* "src/_distortion.pyx":321
  *                 self.pBC = (self.C1 - self.B1) / (self.C0 - self.B0)
  *                 self.cBC = self.B1 - self.pBC * self.B0
  *             if self.D0 != self.C0:             # <<<<<<<<<<<<<<
@@ -6065,7 +6065,7 @@ static PyObject *__pyx_f_11_distortion_4Quad_init_slope(struct __pyx_obj_11_dist
     __pyx_t_5 = ((__pyx_v_self->D0 != __pyx_v_self->C0) != 0);
     if (__pyx_t_5) {
 
-      /* "_distortion.pyx":322
+      /* "src/_distortion.pyx":322
  *                 self.cBC = self.B1 - self.pBC * self.B0
  *             if self.D0 != self.C0:
  *                 self.pCD = (self.D1 - self.C1) / (self.D0 - self.C0)             # <<<<<<<<<<<<<<
@@ -6086,7 +6086,7 @@ static PyObject *__pyx_f_11_distortion_4Quad_init_slope(struct __pyx_obj_11_dist
       }
       __pyx_v_self->pCD = (__pyx_t_6 / __pyx_t_7);
 
-      /* "_distortion.pyx":323
+      /* "src/_distortion.pyx":323
  *             if self.D0 != self.C0:
  *                 self.pCD = (self.D1 - self.C1) / (self.D0 - self.C0)
  *                 self.cCD = self.C1 - self.pCD * self.C0             # <<<<<<<<<<<<<<
@@ -6098,7 +6098,7 @@ static PyObject *__pyx_f_11_distortion_4Quad_init_slope(struct __pyx_obj_11_dist
     }
     __pyx_L6:;
 
-    /* "_distortion.pyx":324
+    /* "src/_distortion.pyx":324
  *                 self.pCD = (self.D1 - self.C1) / (self.D0 - self.C0)
  *                 self.cCD = self.C1 - self.pCD * self.C0
  *             if self.A0 != self.D0:             # <<<<<<<<<<<<<<
@@ -6108,7 +6108,7 @@ static PyObject *__pyx_f_11_distortion_4Quad_init_slope(struct __pyx_obj_11_dist
     __pyx_t_5 = ((__pyx_v_self->A0 != __pyx_v_self->D0) != 0);
     if (__pyx_t_5) {
 
-      /* "_distortion.pyx":325
+      /* "src/_distortion.pyx":325
  *                 self.cCD = self.C1 - self.pCD * self.C0
  *             if self.A0 != self.D0:
  *                 self.pDA = (self.A1 - self.D1) / (self.A0 - self.D0)             # <<<<<<<<<<<<<<
@@ -6129,7 +6129,7 @@ static PyObject *__pyx_f_11_distortion_4Quad_init_slope(struct __pyx_obj_11_dist
       }
       __pyx_v_self->pDA = (__pyx_t_7 / __pyx_t_6);
 
-      /* "_distortion.pyx":326
+      /* "src/_distortion.pyx":326
  *             if self.A0 != self.D0:
  *                 self.pDA = (self.A1 - self.D1) / (self.A0 - self.D0)
  *                 self.cDA = self.D1 - self.pDA * self.D0             # <<<<<<<<<<<<<<
@@ -6141,7 +6141,7 @@ static PyObject *__pyx_f_11_distortion_4Quad_init_slope(struct __pyx_obj_11_dist
     }
     __pyx_L7:;
 
-    /* "_distortion.pyx":327
+    /* "src/_distortion.pyx":327
  *                 self.pDA = (self.A1 - self.D1) / (self.A0 - self.D0)
  *                 self.cDA = self.D1 - self.pDA * self.D0
  *             self.has_slope = 1             # <<<<<<<<<<<<<<
@@ -6153,7 +6153,7 @@ static PyObject *__pyx_f_11_distortion_4Quad_init_slope(struct __pyx_obj_11_dist
   }
   __pyx_L3:;
 
-  /* "_distortion.pyx":313
+  /* "src/_distortion.pyx":313
  *         return self.box_size1
  * 
  *     cpdef init_slope(self):             # <<<<<<<<<<<<<<
@@ -6169,7 +6169,7 @@ static PyObject *__pyx_f_11_distortion_4Quad_init_slope(struct __pyx_obj_11_dist
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_AddTraceback("_distortion.Quad.init_slope", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.init_slope", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -6178,19 +6178,19 @@ static PyObject *__pyx_f_11_distortion_4Quad_init_slope(struct __pyx_obj_11_dist
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_4Quad_17init_slope(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_11_distortion_4Quad_17init_slope(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_17init_slope(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_17init_slope(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("init_slope (wrapper)", 0);
-  __pyx_r = __pyx_pf_11_distortion_4Quad_16init_slope(((struct __pyx_obj_11_distortion_Quad *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_11_distortion_4Quad_16init_slope(((struct __pyx_obj_3src_11_distortion_Quad *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_4Quad_16init_slope(struct __pyx_obj_11_distortion_Quad *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_16init_slope(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -6199,7 +6199,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_16init_slope(struct __pyx_obj_11_d
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("init_slope", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_11_distortion_4Quad_init_slope(__pyx_v_self, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 313; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __pyx_f_3src_11_distortion_4Quad_init_slope(__pyx_v_self, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 313; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -6208,7 +6208,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_16init_slope(struct __pyx_obj_11_d
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("_distortion.Quad.init_slope", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.init_slope", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -6216,7 +6216,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_16init_slope(struct __pyx_obj_11_d
   return __pyx_r;
 }
 
-/* "_distortion.pyx":329
+/* "src/_distortion.pyx":329
  *             self.has_slope = 1
  * 
  *     cpdef float calc_area_AB(self, float I1, float I2):             # <<<<<<<<<<<<<<
@@ -6224,8 +6224,8 @@ static PyObject *__pyx_pf_11_distortion_4Quad_16init_slope(struct __pyx_obj_11_d
  *             return 0.5 * (I2 - I1) * (self.pAB * (I2 + I1) + 2 * self.cAB)
  */
 
-static PyObject *__pyx_pw_11_distortion_4Quad_19calc_area_AB(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static float __pyx_f_11_distortion_4Quad_calc_area_AB(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, float __pyx_v_I1, float __pyx_v_I2, int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_19calc_area_AB(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static float __pyx_f_3src_11_distortion_4Quad_calc_area_AB(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, float __pyx_v_I1, float __pyx_v_I2, int __pyx_skip_dispatch) {
   float __pyx_r;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -6248,7 +6248,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_AB(struct __pyx_obj_11_distor
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
     __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_calc_area_AB); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 329; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_11_distortion_4Quad_19calc_area_AB)) {
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_19calc_area_AB)) {
       __pyx_t_3 = PyFloat_FromDouble(__pyx_v_I1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 329; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __pyx_t_4 = PyFloat_FromDouble(__pyx_v_I2); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 329; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -6290,7 +6290,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_AB(struct __pyx_obj_11_distor
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "_distortion.pyx":330
+  /* "src/_distortion.pyx":330
  * 
  *     cpdef float calc_area_AB(self, float I1, float I2):
  *         if self.B0 != self.A0:             # <<<<<<<<<<<<<<
@@ -6300,7 +6300,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_AB(struct __pyx_obj_11_distor
   __pyx_t_10 = ((__pyx_v_self->B0 != __pyx_v_self->A0) != 0);
   if (__pyx_t_10) {
 
-    /* "_distortion.pyx":331
+    /* "src/_distortion.pyx":331
  *     cpdef float calc_area_AB(self, float I1, float I2):
  *         if self.B0 != self.A0:
  *             return 0.5 * (I2 - I1) * (self.pAB * (I2 + I1) + 2 * self.cAB)             # <<<<<<<<<<<<<<
@@ -6312,7 +6312,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_AB(struct __pyx_obj_11_distor
   }
   /*else*/ {
 
-    /* "_distortion.pyx":333
+    /* "src/_distortion.pyx":333
  *             return 0.5 * (I2 - I1) * (self.pAB * (I2 + I1) + 2 * self.cAB)
  *         else:
  *             return 0.0             # <<<<<<<<<<<<<<
@@ -6323,7 +6323,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_AB(struct __pyx_obj_11_distor
     goto __pyx_L0;
   }
 
-  /* "_distortion.pyx":329
+  /* "src/_distortion.pyx":329
  *             self.has_slope = 1
  * 
  *     cpdef float calc_area_AB(self, float I1, float I2):             # <<<<<<<<<<<<<<
@@ -6340,7 +6340,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_AB(struct __pyx_obj_11_distor
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
   __Pyx_XDECREF(__pyx_t_8);
-  __Pyx_WriteUnraisable("_distortion.Quad.calc_area_AB", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
+  __Pyx_WriteUnraisable("src._distortion.Quad.calc_area_AB", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -6348,8 +6348,8 @@ static float __pyx_f_11_distortion_4Quad_calc_area_AB(struct __pyx_obj_11_distor
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_4Quad_19calc_area_AB(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_11_distortion_4Quad_19calc_area_AB(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_19calc_area_AB(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_19calc_area_AB(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   float __pyx_v_I1;
   float __pyx_v_I2;
   int __pyx_lineno = 0;
@@ -6397,18 +6397,18 @@ static PyObject *__pyx_pw_11_distortion_4Quad_19calc_area_AB(PyObject *__pyx_v_s
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("calc_area_AB", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 329; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("_distortion.Quad.calc_area_AB", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.calc_area_AB", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_11_distortion_4Quad_18calc_area_AB(((struct __pyx_obj_11_distortion_Quad *)__pyx_v_self), __pyx_v_I1, __pyx_v_I2);
+  __pyx_r = __pyx_pf_3src_11_distortion_4Quad_18calc_area_AB(((struct __pyx_obj_3src_11_distortion_Quad *)__pyx_v_self), __pyx_v_I1, __pyx_v_I2);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_4Quad_18calc_area_AB(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, float __pyx_v_I1, float __pyx_v_I2) {
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_18calc_area_AB(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, float __pyx_v_I1, float __pyx_v_I2) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -6417,7 +6417,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_18calc_area_AB(struct __pyx_obj_11
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("calc_area_AB", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_11_distortion_4Quad_calc_area_AB(__pyx_v_self, __pyx_v_I1, __pyx_v_I2, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 329; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_3src_11_distortion_4Quad_calc_area_AB(__pyx_v_self, __pyx_v_I1, __pyx_v_I2, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 329; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -6426,7 +6426,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_18calc_area_AB(struct __pyx_obj_11
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("_distortion.Quad.calc_area_AB", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.calc_area_AB", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -6434,7 +6434,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_18calc_area_AB(struct __pyx_obj_11
   return __pyx_r;
 }
 
-/* "_distortion.pyx":335
+/* "src/_distortion.pyx":335
  *             return 0.0
  * 
  *     cpdef float calc_area_BC(self, float J1, float J2):             # <<<<<<<<<<<<<<
@@ -6442,8 +6442,8 @@ static PyObject *__pyx_pf_11_distortion_4Quad_18calc_area_AB(struct __pyx_obj_11
  *             return 0.5 * (J2 - J1) * (self.pBC * (J1 + J2) + 2 * self.cBC)
  */
 
-static PyObject *__pyx_pw_11_distortion_4Quad_21calc_area_BC(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static float __pyx_f_11_distortion_4Quad_calc_area_BC(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, float __pyx_v_J1, float __pyx_v_J2, int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_21calc_area_BC(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static float __pyx_f_3src_11_distortion_4Quad_calc_area_BC(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, float __pyx_v_J1, float __pyx_v_J2, int __pyx_skip_dispatch) {
   float __pyx_r;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -6466,7 +6466,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_BC(struct __pyx_obj_11_distor
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
     __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_calc_area_BC); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 335; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_11_distortion_4Quad_21calc_area_BC)) {
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_21calc_area_BC)) {
       __pyx_t_3 = PyFloat_FromDouble(__pyx_v_J1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 335; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __pyx_t_4 = PyFloat_FromDouble(__pyx_v_J2); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 335; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -6508,7 +6508,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_BC(struct __pyx_obj_11_distor
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "_distortion.pyx":336
+  /* "src/_distortion.pyx":336
  * 
  *     cpdef float calc_area_BC(self, float J1, float J2):
  *         if self.B0 != self.C0:             # <<<<<<<<<<<<<<
@@ -6518,7 +6518,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_BC(struct __pyx_obj_11_distor
   __pyx_t_10 = ((__pyx_v_self->B0 != __pyx_v_self->C0) != 0);
   if (__pyx_t_10) {
 
-    /* "_distortion.pyx":337
+    /* "src/_distortion.pyx":337
  *     cpdef float calc_area_BC(self, float J1, float J2):
  *         if self.B0 != self.C0:
  *             return 0.5 * (J2 - J1) * (self.pBC * (J1 + J2) + 2 * self.cBC)             # <<<<<<<<<<<<<<
@@ -6530,7 +6530,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_BC(struct __pyx_obj_11_distor
   }
   /*else*/ {
 
-    /* "_distortion.pyx":339
+    /* "src/_distortion.pyx":339
  *             return 0.5 * (J2 - J1) * (self.pBC * (J1 + J2) + 2 * self.cBC)
  *         else:
  *             return 0.0             # <<<<<<<<<<<<<<
@@ -6541,7 +6541,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_BC(struct __pyx_obj_11_distor
     goto __pyx_L0;
   }
 
-  /* "_distortion.pyx":335
+  /* "src/_distortion.pyx":335
  *             return 0.0
  * 
  *     cpdef float calc_area_BC(self, float J1, float J2):             # <<<<<<<<<<<<<<
@@ -6558,7 +6558,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_BC(struct __pyx_obj_11_distor
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
   __Pyx_XDECREF(__pyx_t_8);
-  __Pyx_WriteUnraisable("_distortion.Quad.calc_area_BC", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
+  __Pyx_WriteUnraisable("src._distortion.Quad.calc_area_BC", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -6566,8 +6566,8 @@ static float __pyx_f_11_distortion_4Quad_calc_area_BC(struct __pyx_obj_11_distor
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_4Quad_21calc_area_BC(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_11_distortion_4Quad_21calc_area_BC(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_21calc_area_BC(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_21calc_area_BC(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   float __pyx_v_J1;
   float __pyx_v_J2;
   int __pyx_lineno = 0;
@@ -6615,18 +6615,18 @@ static PyObject *__pyx_pw_11_distortion_4Quad_21calc_area_BC(PyObject *__pyx_v_s
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("calc_area_BC", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 335; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("_distortion.Quad.calc_area_BC", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.calc_area_BC", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_11_distortion_4Quad_20calc_area_BC(((struct __pyx_obj_11_distortion_Quad *)__pyx_v_self), __pyx_v_J1, __pyx_v_J2);
+  __pyx_r = __pyx_pf_3src_11_distortion_4Quad_20calc_area_BC(((struct __pyx_obj_3src_11_distortion_Quad *)__pyx_v_self), __pyx_v_J1, __pyx_v_J2);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_4Quad_20calc_area_BC(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, float __pyx_v_J1, float __pyx_v_J2) {
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_20calc_area_BC(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, float __pyx_v_J1, float __pyx_v_J2) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -6635,7 +6635,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_20calc_area_BC(struct __pyx_obj_11
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("calc_area_BC", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_11_distortion_4Quad_calc_area_BC(__pyx_v_self, __pyx_v_J1, __pyx_v_J2, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 335; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_3src_11_distortion_4Quad_calc_area_BC(__pyx_v_self, __pyx_v_J1, __pyx_v_J2, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 335; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -6644,7 +6644,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_20calc_area_BC(struct __pyx_obj_11
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("_distortion.Quad.calc_area_BC", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.calc_area_BC", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -6652,7 +6652,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_20calc_area_BC(struct __pyx_obj_11
   return __pyx_r;
 }
 
-/* "_distortion.pyx":341
+/* "src/_distortion.pyx":341
  *             return 0.0
  * 
  *     cpdef float calc_area_CD(self, float K1, float K2):             # <<<<<<<<<<<<<<
@@ -6660,8 +6660,8 @@ static PyObject *__pyx_pf_11_distortion_4Quad_20calc_area_BC(struct __pyx_obj_11
  *             return 0.5 * (K2 - K1) * (self.pCD * (K2 + K1) + 2 * self.cCD)
  */
 
-static PyObject *__pyx_pw_11_distortion_4Quad_23calc_area_CD(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static float __pyx_f_11_distortion_4Quad_calc_area_CD(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, float __pyx_v_K1, float __pyx_v_K2, int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_23calc_area_CD(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static float __pyx_f_3src_11_distortion_4Quad_calc_area_CD(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, float __pyx_v_K1, float __pyx_v_K2, int __pyx_skip_dispatch) {
   float __pyx_r;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -6684,7 +6684,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_CD(struct __pyx_obj_11_distor
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
     __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_calc_area_CD); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 341; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_11_distortion_4Quad_23calc_area_CD)) {
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_23calc_area_CD)) {
       __pyx_t_3 = PyFloat_FromDouble(__pyx_v_K1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 341; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __pyx_t_4 = PyFloat_FromDouble(__pyx_v_K2); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 341; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -6726,7 +6726,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_CD(struct __pyx_obj_11_distor
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "_distortion.pyx":342
+  /* "src/_distortion.pyx":342
  * 
  *     cpdef float calc_area_CD(self, float K1, float K2):
  *         if self.C0 != self.D0:             # <<<<<<<<<<<<<<
@@ -6736,7 +6736,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_CD(struct __pyx_obj_11_distor
   __pyx_t_10 = ((__pyx_v_self->C0 != __pyx_v_self->D0) != 0);
   if (__pyx_t_10) {
 
-    /* "_distortion.pyx":343
+    /* "src/_distortion.pyx":343
  *     cpdef float calc_area_CD(self, float K1, float K2):
  *         if self.C0 != self.D0:
  *             return 0.5 * (K2 - K1) * (self.pCD * (K2 + K1) + 2 * self.cCD)             # <<<<<<<<<<<<<<
@@ -6748,7 +6748,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_CD(struct __pyx_obj_11_distor
   }
   /*else*/ {
 
-    /* "_distortion.pyx":345
+    /* "src/_distortion.pyx":345
  *             return 0.5 * (K2 - K1) * (self.pCD * (K2 + K1) + 2 * self.cCD)
  *         else:
  *             return 0.0             # <<<<<<<<<<<<<<
@@ -6759,7 +6759,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_CD(struct __pyx_obj_11_distor
     goto __pyx_L0;
   }
 
-  /* "_distortion.pyx":341
+  /* "src/_distortion.pyx":341
  *             return 0.0
  * 
  *     cpdef float calc_area_CD(self, float K1, float K2):             # <<<<<<<<<<<<<<
@@ -6776,7 +6776,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_CD(struct __pyx_obj_11_distor
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
   __Pyx_XDECREF(__pyx_t_8);
-  __Pyx_WriteUnraisable("_distortion.Quad.calc_area_CD", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
+  __Pyx_WriteUnraisable("src._distortion.Quad.calc_area_CD", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -6784,8 +6784,8 @@ static float __pyx_f_11_distortion_4Quad_calc_area_CD(struct __pyx_obj_11_distor
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_4Quad_23calc_area_CD(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_11_distortion_4Quad_23calc_area_CD(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_23calc_area_CD(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_23calc_area_CD(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   float __pyx_v_K1;
   float __pyx_v_K2;
   int __pyx_lineno = 0;
@@ -6833,18 +6833,18 @@ static PyObject *__pyx_pw_11_distortion_4Quad_23calc_area_CD(PyObject *__pyx_v_s
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("calc_area_CD", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 341; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("_distortion.Quad.calc_area_CD", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.calc_area_CD", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_11_distortion_4Quad_22calc_area_CD(((struct __pyx_obj_11_distortion_Quad *)__pyx_v_self), __pyx_v_K1, __pyx_v_K2);
+  __pyx_r = __pyx_pf_3src_11_distortion_4Quad_22calc_area_CD(((struct __pyx_obj_3src_11_distortion_Quad *)__pyx_v_self), __pyx_v_K1, __pyx_v_K2);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_4Quad_22calc_area_CD(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, float __pyx_v_K1, float __pyx_v_K2) {
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_22calc_area_CD(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, float __pyx_v_K1, float __pyx_v_K2) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -6853,7 +6853,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_22calc_area_CD(struct __pyx_obj_11
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("calc_area_CD", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_11_distortion_4Quad_calc_area_CD(__pyx_v_self, __pyx_v_K1, __pyx_v_K2, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 341; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_3src_11_distortion_4Quad_calc_area_CD(__pyx_v_self, __pyx_v_K1, __pyx_v_K2, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 341; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -6862,7 +6862,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_22calc_area_CD(struct __pyx_obj_11
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("_distortion.Quad.calc_area_CD", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.calc_area_CD", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -6870,7 +6870,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_22calc_area_CD(struct __pyx_obj_11
   return __pyx_r;
 }
 
-/* "_distortion.pyx":347
+/* "src/_distortion.pyx":347
  *             return 0.0
  * 
  *     cpdef float calc_area_DA(self, float L1, float L2):             # <<<<<<<<<<<<<<
@@ -6878,8 +6878,8 @@ static PyObject *__pyx_pf_11_distortion_4Quad_22calc_area_CD(struct __pyx_obj_11
  *             return 0.5 * (L2 - L1) * (self.pDA * (L1 + L2) + 2 * self.cDA)
  */
 
-static PyObject *__pyx_pw_11_distortion_4Quad_25calc_area_DA(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static float __pyx_f_11_distortion_4Quad_calc_area_DA(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, float __pyx_v_L1, float __pyx_v_L2, int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_25calc_area_DA(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static float __pyx_f_3src_11_distortion_4Quad_calc_area_DA(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, float __pyx_v_L1, float __pyx_v_L2, int __pyx_skip_dispatch) {
   float __pyx_r;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -6902,7 +6902,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_DA(struct __pyx_obj_11_distor
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
     __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_calc_area_DA); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_11_distortion_4Quad_25calc_area_DA)) {
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_25calc_area_DA)) {
       __pyx_t_3 = PyFloat_FromDouble(__pyx_v_L1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __pyx_t_4 = PyFloat_FromDouble(__pyx_v_L2); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -6944,7 +6944,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_DA(struct __pyx_obj_11_distor
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "_distortion.pyx":348
+  /* "src/_distortion.pyx":348
  * 
  *     cpdef float calc_area_DA(self, float L1, float L2):
  *         if self.D0 != self.A0:             # <<<<<<<<<<<<<<
@@ -6954,7 +6954,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_DA(struct __pyx_obj_11_distor
   __pyx_t_10 = ((__pyx_v_self->D0 != __pyx_v_self->A0) != 0);
   if (__pyx_t_10) {
 
-    /* "_distortion.pyx":349
+    /* "src/_distortion.pyx":349
  *     cpdef float calc_area_DA(self, float L1, float L2):
  *         if self.D0 != self.A0:
  *             return 0.5 * (L2 - L1) * (self.pDA * (L1 + L2) + 2 * self.cDA)             # <<<<<<<<<<<<<<
@@ -6966,7 +6966,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_DA(struct __pyx_obj_11_distor
   }
   /*else*/ {
 
-    /* "_distortion.pyx":351
+    /* "src/_distortion.pyx":351
  *             return 0.5 * (L2 - L1) * (self.pDA * (L1 + L2) + 2 * self.cDA)
  *         else:
  *             return 0.0             # <<<<<<<<<<<<<<
@@ -6977,7 +6977,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_DA(struct __pyx_obj_11_distor
     goto __pyx_L0;
   }
 
-  /* "_distortion.pyx":347
+  /* "src/_distortion.pyx":347
  *             return 0.0
  * 
  *     cpdef float calc_area_DA(self, float L1, float L2):             # <<<<<<<<<<<<<<
@@ -6994,7 +6994,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area_DA(struct __pyx_obj_11_distor
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
   __Pyx_XDECREF(__pyx_t_8);
-  __Pyx_WriteUnraisable("_distortion.Quad.calc_area_DA", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
+  __Pyx_WriteUnraisable("src._distortion.Quad.calc_area_DA", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -7002,8 +7002,8 @@ static float __pyx_f_11_distortion_4Quad_calc_area_DA(struct __pyx_obj_11_distor
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_4Quad_25calc_area_DA(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_11_distortion_4Quad_25calc_area_DA(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_25calc_area_DA(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_25calc_area_DA(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   float __pyx_v_L1;
   float __pyx_v_L2;
   int __pyx_lineno = 0;
@@ -7051,18 +7051,18 @@ static PyObject *__pyx_pw_11_distortion_4Quad_25calc_area_DA(PyObject *__pyx_v_s
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("calc_area_DA", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("_distortion.Quad.calc_area_DA", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.calc_area_DA", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_11_distortion_4Quad_24calc_area_DA(((struct __pyx_obj_11_distortion_Quad *)__pyx_v_self), __pyx_v_L1, __pyx_v_L2);
+  __pyx_r = __pyx_pf_3src_11_distortion_4Quad_24calc_area_DA(((struct __pyx_obj_3src_11_distortion_Quad *)__pyx_v_self), __pyx_v_L1, __pyx_v_L2);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_4Quad_24calc_area_DA(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, float __pyx_v_L1, float __pyx_v_L2) {
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_24calc_area_DA(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, float __pyx_v_L1, float __pyx_v_L2) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -7071,7 +7071,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_24calc_area_DA(struct __pyx_obj_11
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("calc_area_DA", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_11_distortion_4Quad_calc_area_DA(__pyx_v_self, __pyx_v_L1, __pyx_v_L2, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_3src_11_distortion_4Quad_calc_area_DA(__pyx_v_self, __pyx_v_L1, __pyx_v_L2, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -7080,7 +7080,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_24calc_area_DA(struct __pyx_obj_11
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("_distortion.Quad.calc_area_DA", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.calc_area_DA", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -7088,7 +7088,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_24calc_area_DA(struct __pyx_obj_11
   return __pyx_r;
 }
 
-/* "_distortion.pyx":353
+/* "src/_distortion.pyx":353
  *             return 0.0
  * 
  *     cpdef float calc_area(self):             # <<<<<<<<<<<<<<
@@ -7096,8 +7096,8 @@ static PyObject *__pyx_pf_11_distortion_4Quad_24calc_area_DA(struct __pyx_obj_11
  *             self.area = 0.5 * ((self.C0 - self.A0) * (self.D1 - self.B1) - (self.C1 - self.A1) * (self.D0 - self.B0))
  */
 
-static PyObject *__pyx_pw_11_distortion_4Quad_27calc_area(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static float __pyx_f_11_distortion_4Quad_calc_area(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_27calc_area(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static float __pyx_f_3src_11_distortion_4Quad_calc_area(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, int __pyx_skip_dispatch) {
   float __pyx_r;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -7116,7 +7116,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area(struct __pyx_obj_11_distortio
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
     __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_calc_area); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 353; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_11_distortion_4Quad_27calc_area)) {
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_27calc_area)) {
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_3 = __pyx_t_1; __pyx_t_4 = NULL;
       if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_3))) {
@@ -7145,7 +7145,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area(struct __pyx_obj_11_distortio
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "_distortion.pyx":354
+  /* "src/_distortion.pyx":354
  * 
  *     cpdef float calc_area(self):
  *         if not self.has_area:             # <<<<<<<<<<<<<<
@@ -7155,7 +7155,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area(struct __pyx_obj_11_distortio
   __pyx_t_6 = ((!(__pyx_v_self->has_area != 0)) != 0);
   if (__pyx_t_6) {
 
-    /* "_distortion.pyx":355
+    /* "src/_distortion.pyx":355
  *     cpdef float calc_area(self):
  *         if not self.has_area:
  *             self.area = 0.5 * ((self.C0 - self.A0) * (self.D1 - self.B1) - (self.C1 - self.A1) * (self.D0 - self.B0))             # <<<<<<<<<<<<<<
@@ -7164,7 +7164,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area(struct __pyx_obj_11_distortio
  */
     __pyx_v_self->area = (0.5 * (((__pyx_v_self->C0 - __pyx_v_self->A0) * (__pyx_v_self->D1 - __pyx_v_self->B1)) - ((__pyx_v_self->C1 - __pyx_v_self->A1) * (__pyx_v_self->D0 - __pyx_v_self->B0))));
 
-    /* "_distortion.pyx":356
+    /* "src/_distortion.pyx":356
  *         if not self.has_area:
  *             self.area = 0.5 * ((self.C0 - self.A0) * (self.D1 - self.B1) - (self.C1 - self.A1) * (self.D0 - self.B0))
  *             self.has_area = 1             # <<<<<<<<<<<<<<
@@ -7176,7 +7176,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area(struct __pyx_obj_11_distortio
   }
   __pyx_L3:;
 
-  /* "_distortion.pyx":357
+  /* "src/_distortion.pyx":357
  *             self.area = 0.5 * ((self.C0 - self.A0) * (self.D1 - self.B1) - (self.C1 - self.A1) * (self.D0 - self.B0))
  *             self.has_area = 1
  *         return self.area             # <<<<<<<<<<<<<<
@@ -7186,7 +7186,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area(struct __pyx_obj_11_distortio
   __pyx_r = __pyx_v_self->area;
   goto __pyx_L0;
 
-  /* "_distortion.pyx":353
+  /* "src/_distortion.pyx":353
  *             return 0.0
  * 
  *     cpdef float calc_area(self):             # <<<<<<<<<<<<<<
@@ -7200,7 +7200,7 @@ static float __pyx_f_11_distortion_4Quad_calc_area(struct __pyx_obj_11_distortio
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_WriteUnraisable("_distortion.Quad.calc_area", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
+  __Pyx_WriteUnraisable("src._distortion.Quad.calc_area", __pyx_clineno, __pyx_lineno, __pyx_filename, 0);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -7208,19 +7208,19 @@ static float __pyx_f_11_distortion_4Quad_calc_area(struct __pyx_obj_11_distortio
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_4Quad_27calc_area(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_11_distortion_4Quad_27calc_area(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_27calc_area(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_27calc_area(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("calc_area (wrapper)", 0);
-  __pyx_r = __pyx_pf_11_distortion_4Quad_26calc_area(((struct __pyx_obj_11_distortion_Quad *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_11_distortion_4Quad_26calc_area(((struct __pyx_obj_3src_11_distortion_Quad *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_4Quad_26calc_area(struct __pyx_obj_11_distortion_Quad *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_26calc_area(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -7229,7 +7229,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_26calc_area(struct __pyx_obj_11_di
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("calc_area", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_11_distortion_4Quad_calc_area(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 353; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_3src_11_distortion_4Quad_calc_area(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 353; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -7238,7 +7238,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_26calc_area(struct __pyx_obj_11_di
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("_distortion.Quad.calc_area", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.calc_area", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -7246,7 +7246,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_26calc_area(struct __pyx_obj_11_di
   return __pyx_r;
 }
 
-/* "_distortion.pyx":359
+/* "src/_distortion.pyx":359
  *         return self.area
  * 
  *     def populate_box(self):             # <<<<<<<<<<<<<<
@@ -7255,19 +7255,19 @@ static PyObject *__pyx_pf_11_distortion_4Quad_26calc_area(struct __pyx_obj_11_di
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_4Quad_29populate_box(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_11_distortion_4Quad_29populate_box(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_29populate_box(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_29populate_box(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("populate_box (wrapper)", 0);
-  __pyx_r = __pyx_pf_11_distortion_4Quad_28populate_box(((struct __pyx_obj_11_distortion_Quad *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_11_distortion_4Quad_28populate_box(((struct __pyx_obj_3src_11_distortion_Quad *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_4Quad_28populate_box(struct __pyx_obj_11_distortion_Quad *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_28populate_box(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self) {
   int __pyx_v_i0;
   int __pyx_v_i1;
   float __pyx_v_area;
@@ -7304,7 +7304,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_28populate_box(struct __pyx_obj_11
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("populate_box", 0);
 
-  /* "_distortion.pyx":362
+  /* "src/_distortion.pyx":362
  *         cdef int i0, i1
  *         cdef float area, value
  *         if not self.has_slope:             # <<<<<<<<<<<<<<
@@ -7314,21 +7314,21 @@ static PyObject *__pyx_pf_11_distortion_4Quad_28populate_box(struct __pyx_obj_11
   __pyx_t_1 = ((!(__pyx_v_self->has_slope != 0)) != 0);
   if (__pyx_t_1) {
 
-    /* "_distortion.pyx":363
+    /* "src/_distortion.pyx":363
  *         cdef float area, value
  *         if not self.has_slope:
  *             self.init_slope()             # <<<<<<<<<<<<<<
  *         integrate(self.box, self.B0, self.A0, self.pAB, self.cAB)
  *         integrate(self.box, self.A0, self.D0, self.pDA, self.cDA)
  */
-    __pyx_t_2 = ((struct __pyx_vtabstruct_11_distortion_Quad *)__pyx_v_self->__pyx_vtab)->init_slope(__pyx_v_self, 0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 363; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = ((struct __pyx_vtabstruct_3src_11_distortion_Quad *)__pyx_v_self->__pyx_vtab)->init_slope(__pyx_v_self, 0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 363; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     goto __pyx_L3;
   }
   __pyx_L3:;
 
-  /* "_distortion.pyx":364
+  /* "src/_distortion.pyx":364
  *         if not self.has_slope:
  *             self.init_slope()
  *         integrate(self.box, self.B0, self.A0, self.pAB, self.cAB)             # <<<<<<<<<<<<<<
@@ -7336,9 +7336,9 @@ static PyObject *__pyx_pf_11_distortion_4Quad_28populate_box(struct __pyx_obj_11
  *         integrate(self.box, self.D0, self.C0, self.pCD, self.cCD)
  */
   if (unlikely(!__pyx_v_self->box.memview)) {PyErr_SetString(PyExc_AttributeError,"Memoryview is not initialized");{__pyx_filename = __pyx_f[0]; __pyx_lineno = 364; __pyx_clineno = __LINE__; goto __pyx_L1_error;}}
-  __pyx_f_11_distortion_integrate(__pyx_v_self->box, __pyx_v_self->B0, __pyx_v_self->A0, __pyx_v_self->pAB, __pyx_v_self->cAB);
+  __pyx_f_3src_11_distortion_integrate(__pyx_v_self->box, __pyx_v_self->B0, __pyx_v_self->A0, __pyx_v_self->pAB, __pyx_v_self->cAB);
 
-  /* "_distortion.pyx":365
+  /* "src/_distortion.pyx":365
  *             self.init_slope()
  *         integrate(self.box, self.B0, self.A0, self.pAB, self.cAB)
  *         integrate(self.box, self.A0, self.D0, self.pDA, self.cDA)             # <<<<<<<<<<<<<<
@@ -7346,9 +7346,9 @@ static PyObject *__pyx_pf_11_distortion_4Quad_28populate_box(struct __pyx_obj_11
  *         integrate(self.box, self.C0, self.B0, self.pBC, self.cBC)
  */
   if (unlikely(!__pyx_v_self->box.memview)) {PyErr_SetString(PyExc_AttributeError,"Memoryview is not initialized");{__pyx_filename = __pyx_f[0]; __pyx_lineno = 365; __pyx_clineno = __LINE__; goto __pyx_L1_error;}}
-  __pyx_f_11_distortion_integrate(__pyx_v_self->box, __pyx_v_self->A0, __pyx_v_self->D0, __pyx_v_self->pDA, __pyx_v_self->cDA);
+  __pyx_f_3src_11_distortion_integrate(__pyx_v_self->box, __pyx_v_self->A0, __pyx_v_self->D0, __pyx_v_self->pDA, __pyx_v_self->cDA);
 
-  /* "_distortion.pyx":366
+  /* "src/_distortion.pyx":366
  *         integrate(self.box, self.B0, self.A0, self.pAB, self.cAB)
  *         integrate(self.box, self.A0, self.D0, self.pDA, self.cDA)
  *         integrate(self.box, self.D0, self.C0, self.pCD, self.cCD)             # <<<<<<<<<<<<<<
@@ -7356,9 +7356,9 @@ static PyObject *__pyx_pf_11_distortion_4Quad_28populate_box(struct __pyx_obj_11
  *         area = self.calc_area()
  */
   if (unlikely(!__pyx_v_self->box.memview)) {PyErr_SetString(PyExc_AttributeError,"Memoryview is not initialized");{__pyx_filename = __pyx_f[0]; __pyx_lineno = 366; __pyx_clineno = __LINE__; goto __pyx_L1_error;}}
-  __pyx_f_11_distortion_integrate(__pyx_v_self->box, __pyx_v_self->D0, __pyx_v_self->C0, __pyx_v_self->pCD, __pyx_v_self->cCD);
+  __pyx_f_3src_11_distortion_integrate(__pyx_v_self->box, __pyx_v_self->D0, __pyx_v_self->C0, __pyx_v_self->pCD, __pyx_v_self->cCD);
 
-  /* "_distortion.pyx":367
+  /* "src/_distortion.pyx":367
  *         integrate(self.box, self.A0, self.D0, self.pDA, self.cDA)
  *         integrate(self.box, self.D0, self.C0, self.pCD, self.cCD)
  *         integrate(self.box, self.C0, self.B0, self.pBC, self.cBC)             # <<<<<<<<<<<<<<
@@ -7366,18 +7366,18 @@ static PyObject *__pyx_pf_11_distortion_4Quad_28populate_box(struct __pyx_obj_11
  *         for i0 in range(self.box_size0):
  */
   if (unlikely(!__pyx_v_self->box.memview)) {PyErr_SetString(PyExc_AttributeError,"Memoryview is not initialized");{__pyx_filename = __pyx_f[0]; __pyx_lineno = 367; __pyx_clineno = __LINE__; goto __pyx_L1_error;}}
-  __pyx_f_11_distortion_integrate(__pyx_v_self->box, __pyx_v_self->C0, __pyx_v_self->B0, __pyx_v_self->pBC, __pyx_v_self->cBC);
+  __pyx_f_3src_11_distortion_integrate(__pyx_v_self->box, __pyx_v_self->C0, __pyx_v_self->B0, __pyx_v_self->pBC, __pyx_v_self->cBC);
 
-  /* "_distortion.pyx":368
+  /* "src/_distortion.pyx":368
  *         integrate(self.box, self.D0, self.C0, self.pCD, self.cCD)
  *         integrate(self.box, self.C0, self.B0, self.pBC, self.cBC)
  *         area = self.calc_area()             # <<<<<<<<<<<<<<
  *         for i0 in range(self.box_size0):
  *             for i1 in range(self.box_size1):
  */
-  __pyx_v_area = ((struct __pyx_vtabstruct_11_distortion_Quad *)__pyx_v_self->__pyx_vtab)->calc_area(__pyx_v_self, 0);
+  __pyx_v_area = ((struct __pyx_vtabstruct_3src_11_distortion_Quad *)__pyx_v_self->__pyx_vtab)->calc_area(__pyx_v_self, 0);
 
-  /* "_distortion.pyx":369
+  /* "src/_distortion.pyx":369
  *         integrate(self.box, self.C0, self.B0, self.pBC, self.cBC)
  *         area = self.calc_area()
  *         for i0 in range(self.box_size0):             # <<<<<<<<<<<<<<
@@ -7388,7 +7388,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_28populate_box(struct __pyx_obj_11
   for (__pyx_t_4 = 0; __pyx_t_4 < __pyx_t_3; __pyx_t_4+=1) {
     __pyx_v_i0 = __pyx_t_4;
 
-    /* "_distortion.pyx":370
+    /* "src/_distortion.pyx":370
  *         area = self.calc_area()
  *         for i0 in range(self.box_size0):
  *             for i1 in range(self.box_size1):             # <<<<<<<<<<<<<<
@@ -7399,7 +7399,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_28populate_box(struct __pyx_obj_11
     for (__pyx_t_6 = 0; __pyx_t_6 < __pyx_t_5; __pyx_t_6+=1) {
       __pyx_v_i1 = __pyx_t_6;
 
-      /* "_distortion.pyx":371
+      /* "src/_distortion.pyx":371
  *         for i0 in range(self.box_size0):
  *             for i1 in range(self.box_size1):
  *                 value = self.box[i0, i1] / area             # <<<<<<<<<<<<<<
@@ -7435,7 +7435,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_28populate_box(struct __pyx_obj_11
       }
       __pyx_v_value = (__pyx_t_10 / __pyx_v_area);
 
-      /* "_distortion.pyx":372
+      /* "src/_distortion.pyx":372
  *             for i1 in range(self.box_size1):
  *                 value = self.box[i0, i1] / area
  *                 self.box[i0, i1] = value             # <<<<<<<<<<<<<<
@@ -7460,7 +7460,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_28populate_box(struct __pyx_obj_11
       }
       *((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_self->box.data + __pyx_t_9 * __pyx_v_self->box.strides[0]) ) + __pyx_t_11 * __pyx_v_self->box.strides[1]) )) = __pyx_v_value;
 
-      /* "_distortion.pyx":373
+      /* "src/_distortion.pyx":373
  *                 value = self.box[i0, i1] / area
  *                 self.box[i0, i1] = value
  *                 if value < 0.0:             # <<<<<<<<<<<<<<
@@ -7470,7 +7470,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_28populate_box(struct __pyx_obj_11
       __pyx_t_1 = ((__pyx_v_value < 0.0) != 0);
       if (__pyx_t_1) {
 
-        /* "_distortion.pyx":374
+        /* "src/_distortion.pyx":374
  *                 self.box[i0, i1] = value
  *                 if value < 0.0:
  *                     print(self.box)             # <<<<<<<<<<<<<<
@@ -7483,7 +7483,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_28populate_box(struct __pyx_obj_11
         if (__Pyx_PrintOne(0, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 374; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-        /* "_distortion.pyx":375
+        /* "src/_distortion.pyx":375
  *                 if value < 0.0:
  *                     print(self.box)
  *                     self.box[:, :] = 0             # <<<<<<<<<<<<<<
@@ -7530,7 +7530,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
         }
         __PYX_XDEC_MEMVIEW(&__pyx_t_14, 1);
 
-        /* "_distortion.pyx":376
+        /* "src/_distortion.pyx":376
  *                     print(self.box)
  *                     self.box[:, :] = 0
  *                     print("AB")             # <<<<<<<<<<<<<<
@@ -7539,7 +7539,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
  */
         if (__Pyx_PrintOne(0, __pyx_n_s_AB) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 376; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-        /* "_distortion.pyx":377
+        /* "src/_distortion.pyx":377
  *                     self.box[:, :] = 0
  *                     print("AB")
  *                     self.integrate(self.B0, self.A0, self.pAB, self.cAB)             # <<<<<<<<<<<<<<
@@ -7591,7 +7591,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
         __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-        /* "_distortion.pyx":378
+        /* "src/_distortion.pyx":378
  *                     print("AB")
  *                     self.integrate(self.B0, self.A0, self.pAB, self.cAB)
  *                     print(self.box)             # <<<<<<<<<<<<<<
@@ -7604,7 +7604,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
         if (__Pyx_PrintOne(0, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 378; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-        /* "_distortion.pyx":379
+        /* "src/_distortion.pyx":379
  *                     self.integrate(self.B0, self.A0, self.pAB, self.cAB)
  *                     print(self.box)
  *                     self.box[:, :] = 0             # <<<<<<<<<<<<<<
@@ -7651,7 +7651,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
         }
         __PYX_XDEC_MEMVIEW(&__pyx_t_23, 1);
 
-        /* "_distortion.pyx":380
+        /* "src/_distortion.pyx":380
  *                     print(self.box)
  *                     self.box[:, :] = 0
  *                     print("DA")             # <<<<<<<<<<<<<<
@@ -7660,7 +7660,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
  */
         if (__Pyx_PrintOne(0, __pyx_n_s_DA) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 380; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-        /* "_distortion.pyx":381
+        /* "src/_distortion.pyx":381
  *                     self.box[:, :] = 0
  *                     print("DA")
  *                     self.integrate(self.A0, self.D0, self.pDA, self.cDA)             # <<<<<<<<<<<<<<
@@ -7712,7 +7712,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
         __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-        /* "_distortion.pyx":382
+        /* "src/_distortion.pyx":382
  *                     print("DA")
  *                     self.integrate(self.A0, self.D0, self.pDA, self.cDA)
  *                     print(self.box)             # <<<<<<<<<<<<<<
@@ -7725,7 +7725,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
         if (__Pyx_PrintOne(0, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 382; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-        /* "_distortion.pyx":383
+        /* "src/_distortion.pyx":383
  *                     self.integrate(self.A0, self.D0, self.pDA, self.cDA)
  *                     print(self.box)
  *                     self.box[:, :] = 0             # <<<<<<<<<<<<<<
@@ -7772,7 +7772,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
         }
         __PYX_XDEC_MEMVIEW(&__pyx_t_24, 1);
 
-        /* "_distortion.pyx":384
+        /* "src/_distortion.pyx":384
  *                     print(self.box)
  *                     self.box[:, :] = 0
  *                     print("CD")             # <<<<<<<<<<<<<<
@@ -7781,7 +7781,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
  */
         if (__Pyx_PrintOne(0, __pyx_n_s_CD) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 384; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-        /* "_distortion.pyx":385
+        /* "src/_distortion.pyx":385
  *                     self.box[:, :] = 0
  *                     print("CD")
  *                     self.integrate(self.D0, self.C0, self.pCD, self.cCD)             # <<<<<<<<<<<<<<
@@ -7833,7 +7833,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
         __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-        /* "_distortion.pyx":386
+        /* "src/_distortion.pyx":386
  *                     print("CD")
  *                     self.integrate(self.D0, self.C0, self.pCD, self.cCD)
  *                     print(self.box)             # <<<<<<<<<<<<<<
@@ -7846,7 +7846,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
         if (__Pyx_PrintOne(0, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 386; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-        /* "_distortion.pyx":387
+        /* "src/_distortion.pyx":387
  *                     self.integrate(self.D0, self.C0, self.pCD, self.cCD)
  *                     print(self.box)
  *                     self.box[:, :] = 0             # <<<<<<<<<<<<<<
@@ -7893,7 +7893,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
         }
         __PYX_XDEC_MEMVIEW(&__pyx_t_25, 1);
 
-        /* "_distortion.pyx":388
+        /* "src/_distortion.pyx":388
  *                     print(self.box)
  *                     self.box[:, :] = 0
  *                     print("BC")             # <<<<<<<<<<<<<<
@@ -7902,7 +7902,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
  */
         if (__Pyx_PrintOne(0, __pyx_n_s_BC) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 388; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-        /* "_distortion.pyx":389
+        /* "src/_distortion.pyx":389
  *                     self.box[:, :] = 0
  *                     print("BC")
  *                     self.integrate(self.C0, self.B0, self.pBC, self.cBC)             # <<<<<<<<<<<<<<
@@ -7954,7 +7954,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
         __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-        /* "_distortion.pyx":390
+        /* "src/_distortion.pyx":390
  *                     print("BC")
  *                     self.integrate(self.C0, self.B0, self.pBC, self.cBC)
  *                     print(self.box)             # <<<<<<<<<<<<<<
@@ -7967,7 +7967,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
         if (__Pyx_PrintOne(0, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 390; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-        /* "_distortion.pyx":391
+        /* "src/_distortion.pyx":391
  *                     self.integrate(self.C0, self.B0, self.pBC, self.cBC)
  *                     print(self.box)
  *                     print(self)             # <<<<<<<<<<<<<<
@@ -7976,7 +7976,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
  */
         if (__Pyx_PrintOne(0, ((PyObject *)__pyx_v_self)) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 391; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-        /* "_distortion.pyx":392
+        /* "src/_distortion.pyx":392
  *                     print(self.box)
  *                     print(self)
  *                     raise RuntimeError()             # <<<<<<<<<<<<<<
@@ -7992,7 +7992,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
     }
   }
 
-  /* "_distortion.pyx":359
+  /* "src/_distortion.pyx":359
  *         return self.area
  * 
  *     def populate_box(self):             # <<<<<<<<<<<<<<
@@ -8017,7 +8017,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
   __PYX_XDEC_MEMVIEW(&__pyx_t_23, 1);
   __PYX_XDEC_MEMVIEW(&__pyx_t_24, 1);
   __PYX_XDEC_MEMVIEW(&__pyx_t_25, 1);
-  __Pyx_AddTraceback("_distortion.Quad.populate_box", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.populate_box", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -8025,7 +8025,7 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
   return __pyx_r;
 }
 
-/* "_distortion.pyx":394
+/* "src/_distortion.pyx":394
  *                     raise RuntimeError()
  * 
  *     def integrate(self, float start, float stop, float slope, float intercept):             # <<<<<<<<<<<<<<
@@ -8034,8 +8034,8 @@ __PYX_XDEC_MEMVIEW(&__pyx_t_13, 1);
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_4Quad_31integrate(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_11_distortion_4Quad_31integrate(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_31integrate(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_3src_11_distortion_4Quad_31integrate(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   float __pyx_v_start;
   float __pyx_v_stop;
   float __pyx_v_slope;
@@ -8101,18 +8101,18 @@ static PyObject *__pyx_pw_11_distortion_4Quad_31integrate(PyObject *__pyx_v_self
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("integrate", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 394; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("_distortion.Quad.integrate", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.integrate", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_11_distortion_4Quad_30integrate(((struct __pyx_obj_11_distortion_Quad *)__pyx_v_self), __pyx_v_start, __pyx_v_stop, __pyx_v_slope, __pyx_v_intercept);
+  __pyx_r = __pyx_pf_3src_11_distortion_4Quad_30integrate(((struct __pyx_obj_3src_11_distortion_Quad *)__pyx_v_self), __pyx_v_start, __pyx_v_stop, __pyx_v_slope, __pyx_v_intercept);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_distortion_Quad *__pyx_v_self, float __pyx_v_start, float __pyx_v_stop, float __pyx_v_slope, float __pyx_v_intercept) {
+static PyObject *__pyx_pf_3src_11_distortion_4Quad_30integrate(struct __pyx_obj_3src_11_distortion_Quad *__pyx_v_self, float __pyx_v_start, float __pyx_v_stop, float __pyx_v_slope, float __pyx_v_intercept) {
   int __pyx_v_i;
   int __pyx_v_h;
   float __pyx_v_P;
@@ -8146,7 +8146,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("integrate", 0);
 
-  /* "_distortion.pyx":395
+  /* "src/_distortion.pyx":395
  * 
  *     def integrate(self, float start, float stop, float slope, float intercept):
  *         cdef int i, h = 0             # <<<<<<<<<<<<<<
@@ -8155,7 +8155,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
   __pyx_v_h = 0;
 
-  /* "_distortion.pyx":398
+  /* "src/_distortion.pyx":398
  *         cdef float P, dP, A, AA, dA, sign
  * #        print(start, stop, calc_area(start, stop)
  *         if start < stop:  # positive contribution             # <<<<<<<<<<<<<<
@@ -8165,7 +8165,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
   __pyx_t_1 = ((__pyx_v_start < __pyx_v_stop) != 0);
   if (__pyx_t_1) {
 
-    /* "_distortion.pyx":399
+    /* "src/_distortion.pyx":399
  * #        print(start, stop, calc_area(start, stop)
  *         if start < stop:  # positive contribution
  *             P = ceil(start)             # <<<<<<<<<<<<<<
@@ -8174,7 +8174,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
     __pyx_v_P = ceil(__pyx_v_start);
 
-    /* "_distortion.pyx":400
+    /* "src/_distortion.pyx":400
  *         if start < stop:  # positive contribution
  *             P = ceil(start)
  *             dP = P - start             # <<<<<<<<<<<<<<
@@ -8183,7 +8183,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
     __pyx_v_dP = (__pyx_v_P - __pyx_v_start);
 
-    /* "_distortion.pyx":402
+    /* "src/_distortion.pyx":402
  *             dP = P - start
  * #            print("Integrate", start, P, stop, calc_area(start, stop)
  *             if P > stop:  # start and stop are in the same unit             # <<<<<<<<<<<<<<
@@ -8193,16 +8193,16 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
     __pyx_t_1 = ((__pyx_v_P > __pyx_v_stop) != 0);
     if (__pyx_t_1) {
 
-      /* "_distortion.pyx":403
+      /* "src/_distortion.pyx":403
  * #            print("Integrate", start, P, stop, calc_area(start, stop)
  *             if P > stop:  # start and stop are in the same unit
  *                 A = calc_area(start, stop, slope, intercept)             # <<<<<<<<<<<<<<
  *                 if A != 0:
  *                     AA = fabs(A)
  */
-      __pyx_v_A = __pyx_f_11_distortion_calc_area(__pyx_v_start, __pyx_v_stop, __pyx_v_slope, __pyx_v_intercept, 0);
+      __pyx_v_A = __pyx_f_3src_11_distortion_calc_area(__pyx_v_start, __pyx_v_stop, __pyx_v_slope, __pyx_v_intercept, 0);
 
-      /* "_distortion.pyx":404
+      /* "src/_distortion.pyx":404
  *             if P > stop:  # start and stop are in the same unit
  *                 A = calc_area(start, stop, slope, intercept)
  *                 if A != 0:             # <<<<<<<<<<<<<<
@@ -8212,7 +8212,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
       __pyx_t_1 = ((__pyx_v_A != 0.0) != 0);
       if (__pyx_t_1) {
 
-        /* "_distortion.pyx":405
+        /* "src/_distortion.pyx":405
  *                 A = calc_area(start, stop, slope, intercept)
  *                 if A != 0:
  *                     AA = fabs(A)             # <<<<<<<<<<<<<<
@@ -8221,7 +8221,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
         __pyx_v_AA = fabs(__pyx_v_A);
 
-        /* "_distortion.pyx":406
+        /* "src/_distortion.pyx":406
  *                 if A != 0:
  *                     AA = fabs(A)
  *                     sign = A / AA             # <<<<<<<<<<<<<<
@@ -8240,7 +8240,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
         }
         __pyx_v_sign = (__pyx_v_A / __pyx_v_AA);
 
-        /* "_distortion.pyx":407
+        /* "src/_distortion.pyx":407
  *                     AA = fabs(A)
  *                     sign = A / AA
  *                     dA = (stop - start)  # always positive             # <<<<<<<<<<<<<<
@@ -8249,7 +8249,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
         __pyx_v_dA = (__pyx_v_stop - __pyx_v_start);
 
-        /* "_distortion.pyx":409
+        /* "src/_distortion.pyx":409
  *                     dA = (stop - start)  # always positive
  * #                    print(AA, sign, dA
  *                     h = 0             # <<<<<<<<<<<<<<
@@ -8258,7 +8258,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
         __pyx_v_h = 0;
 
-        /* "_distortion.pyx":410
+        /* "src/_distortion.pyx":410
  * #                    print(AA, sign, dA
  *                     h = 0
  *                     while AA > 0:             # <<<<<<<<<<<<<<
@@ -8269,7 +8269,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
           __pyx_t_1 = ((__pyx_v_AA > 0.0) != 0);
           if (!__pyx_t_1) break;
 
-          /* "_distortion.pyx":411
+          /* "src/_distortion.pyx":411
  *                     h = 0
  *                     while AA > 0:
  *                         if dA > AA:             # <<<<<<<<<<<<<<
@@ -8279,7 +8279,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
           __pyx_t_1 = ((__pyx_v_dA > __pyx_v_AA) != 0);
           if (__pyx_t_1) {
 
-            /* "_distortion.pyx":412
+            /* "src/_distortion.pyx":412
  *                     while AA > 0:
  *                         if dA > AA:
  *                             dA = AA             # <<<<<<<<<<<<<<
@@ -8288,7 +8288,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
             __pyx_v_dA = __pyx_v_AA;
 
-            /* "_distortion.pyx":413
+            /* "src/_distortion.pyx":413
  *                         if dA > AA:
  *                             dA = AA
  *                             AA = -1             # <<<<<<<<<<<<<<
@@ -8300,7 +8300,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
           }
           __pyx_L8:;
 
-          /* "_distortion.pyx":414
+          /* "src/_distortion.pyx":414
  *                             dA = AA
  *                             AA = -1
  *                         self.box[(<int> floor(start)), h] += sign * dA             # <<<<<<<<<<<<<<
@@ -8325,7 +8325,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
           }
           *((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_self->box.data + __pyx_t_2 * __pyx_v_self->box.strides[0]) ) + __pyx_t_3 * __pyx_v_self->box.strides[1]) )) += (__pyx_v_sign * __pyx_v_dA);
 
-          /* "_distortion.pyx":415
+          /* "src/_distortion.pyx":415
  *                             AA = -1
  *                         self.box[(<int> floor(start)), h] += sign * dA
  *                         AA -= dA             # <<<<<<<<<<<<<<
@@ -8334,7 +8334,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
           __pyx_v_AA = (__pyx_v_AA - __pyx_v_dA);
 
-          /* "_distortion.pyx":416
+          /* "src/_distortion.pyx":416
  *                         self.box[(<int> floor(start)), h] += sign * dA
  *                         AA -= dA
  *                         h += 1             # <<<<<<<<<<<<<<
@@ -8350,7 +8350,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
     }
     /*else*/ {
 
-      /* "_distortion.pyx":418
+      /* "src/_distortion.pyx":418
  *                         h += 1
  *             else:
  *                 if dP > 0:             # <<<<<<<<<<<<<<
@@ -8360,16 +8360,16 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
       __pyx_t_1 = ((__pyx_v_dP > 0.0) != 0);
       if (__pyx_t_1) {
 
-        /* "_distortion.pyx":419
+        /* "src/_distortion.pyx":419
  *             else:
  *                 if dP > 0:
  *                     A = calc_area(start, P, slope, intercept)             # <<<<<<<<<<<<<<
  *                     if A != 0:
  *                         AA = fabs(A)
  */
-        __pyx_v_A = __pyx_f_11_distortion_calc_area(__pyx_v_start, __pyx_v_P, __pyx_v_slope, __pyx_v_intercept, 0);
+        __pyx_v_A = __pyx_f_3src_11_distortion_calc_area(__pyx_v_start, __pyx_v_P, __pyx_v_slope, __pyx_v_intercept, 0);
 
-        /* "_distortion.pyx":420
+        /* "src/_distortion.pyx":420
  *                 if dP > 0:
  *                     A = calc_area(start, P, slope, intercept)
  *                     if A != 0:             # <<<<<<<<<<<<<<
@@ -8379,7 +8379,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
         __pyx_t_1 = ((__pyx_v_A != 0.0) != 0);
         if (__pyx_t_1) {
 
-          /* "_distortion.pyx":421
+          /* "src/_distortion.pyx":421
  *                     A = calc_area(start, P, slope, intercept)
  *                     if A != 0:
  *                         AA = fabs(A)             # <<<<<<<<<<<<<<
@@ -8388,7 +8388,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
           __pyx_v_AA = fabs(__pyx_v_A);
 
-          /* "_distortion.pyx":422
+          /* "src/_distortion.pyx":422
  *                     if A != 0:
  *                         AA = fabs(A)
  *                         sign = A / AA             # <<<<<<<<<<<<<<
@@ -8407,7 +8407,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
           }
           __pyx_v_sign = (__pyx_v_A / __pyx_v_AA);
 
-          /* "_distortion.pyx":423
+          /* "src/_distortion.pyx":423
  *                         AA = fabs(A)
  *                         sign = A / AA
  *                         h = 0             # <<<<<<<<<<<<<<
@@ -8416,7 +8416,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
           __pyx_v_h = 0;
 
-          /* "_distortion.pyx":424
+          /* "src/_distortion.pyx":424
  *                         sign = A / AA
  *                         h = 0
  *                         dA = dP             # <<<<<<<<<<<<<<
@@ -8425,7 +8425,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
           __pyx_v_dA = __pyx_v_dP;
 
-          /* "_distortion.pyx":425
+          /* "src/_distortion.pyx":425
  *                         h = 0
  *                         dA = dP
  *                         while AA > 0:             # <<<<<<<<<<<<<<
@@ -8436,7 +8436,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             __pyx_t_1 = ((__pyx_v_AA > 0.0) != 0);
             if (!__pyx_t_1) break;
 
-            /* "_distortion.pyx":426
+            /* "src/_distortion.pyx":426
  *                         dA = dP
  *                         while AA > 0:
  *                             if dA > AA:             # <<<<<<<<<<<<<<
@@ -8446,7 +8446,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             __pyx_t_1 = ((__pyx_v_dA > __pyx_v_AA) != 0);
             if (__pyx_t_1) {
 
-              /* "_distortion.pyx":427
+              /* "src/_distortion.pyx":427
  *                         while AA > 0:
  *                             if dA > AA:
  *                                 dA = AA             # <<<<<<<<<<<<<<
@@ -8455,7 +8455,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
               __pyx_v_dA = __pyx_v_AA;
 
-              /* "_distortion.pyx":428
+              /* "src/_distortion.pyx":428
  *                             if dA > AA:
  *                                 dA = AA
  *                                 AA = -1             # <<<<<<<<<<<<<<
@@ -8467,7 +8467,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             }
             __pyx_L13:;
 
-            /* "_distortion.pyx":429
+            /* "src/_distortion.pyx":429
  *                                 dA = AA
  *                                 AA = -1
  *                             self.box[(<int> floor(P)) - 1, h] += sign * dA             # <<<<<<<<<<<<<<
@@ -8492,7 +8492,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             }
             *((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_self->box.data + __pyx_t_5 * __pyx_v_self->box.strides[0]) ) + __pyx_t_4 * __pyx_v_self->box.strides[1]) )) += (__pyx_v_sign * __pyx_v_dA);
 
-            /* "_distortion.pyx":430
+            /* "src/_distortion.pyx":430
  *                                 AA = -1
  *                             self.box[(<int> floor(P)) - 1, h] += sign * dA
  *                             AA -= dA             # <<<<<<<<<<<<<<
@@ -8501,7 +8501,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
             __pyx_v_AA = (__pyx_v_AA - __pyx_v_dA);
 
-            /* "_distortion.pyx":431
+            /* "src/_distortion.pyx":431
  *                             self.box[(<int> floor(P)) - 1, h] += sign * dA
  *                             AA -= dA
  *                             h += 1             # <<<<<<<<<<<<<<
@@ -8517,7 +8517,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
       }
       __pyx_L9:;
 
-      /* "_distortion.pyx":433
+      /* "src/_distortion.pyx":433
  *                             h += 1
  *                 # subsection P1->Pn
  *                 for i in range((<int> floor(P)), (<int> floor(stop))):             # <<<<<<<<<<<<<<
@@ -8528,16 +8528,16 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
       for (__pyx_t_7 = ((int)floor(__pyx_v_P)); __pyx_t_7 < __pyx_t_6; __pyx_t_7+=1) {
         __pyx_v_i = __pyx_t_7;
 
-        /* "_distortion.pyx":434
+        /* "src/_distortion.pyx":434
  *                 # subsection P1->Pn
  *                 for i in range((<int> floor(P)), (<int> floor(stop))):
  *                     A = calc_area(i, i + 1, slope, intercept)             # <<<<<<<<<<<<<<
  *                     if A != 0:
  *                         AA = fabs(A)
  */
-        __pyx_v_A = __pyx_f_11_distortion_calc_area(__pyx_v_i, (__pyx_v_i + 1), __pyx_v_slope, __pyx_v_intercept, 0);
+        __pyx_v_A = __pyx_f_3src_11_distortion_calc_area(__pyx_v_i, (__pyx_v_i + 1), __pyx_v_slope, __pyx_v_intercept, 0);
 
-        /* "_distortion.pyx":435
+        /* "src/_distortion.pyx":435
  *                 for i in range((<int> floor(P)), (<int> floor(stop))):
  *                     A = calc_area(i, i + 1, slope, intercept)
  *                     if A != 0:             # <<<<<<<<<<<<<<
@@ -8547,7 +8547,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
         __pyx_t_1 = ((__pyx_v_A != 0.0) != 0);
         if (__pyx_t_1) {
 
-          /* "_distortion.pyx":436
+          /* "src/_distortion.pyx":436
  *                     A = calc_area(i, i + 1, slope, intercept)
  *                     if A != 0:
  *                         AA = fabs(A)             # <<<<<<<<<<<<<<
@@ -8556,7 +8556,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
           __pyx_v_AA = fabs(__pyx_v_A);
 
-          /* "_distortion.pyx":437
+          /* "src/_distortion.pyx":437
  *                     if A != 0:
  *                         AA = fabs(A)
  *                         sign = A / AA             # <<<<<<<<<<<<<<
@@ -8575,7 +8575,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
           }
           __pyx_v_sign = (__pyx_v_A / __pyx_v_AA);
 
-          /* "_distortion.pyx":439
+          /* "src/_distortion.pyx":439
  *                         sign = A / AA
  * 
  *                         h = 0             # <<<<<<<<<<<<<<
@@ -8584,7 +8584,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
           __pyx_v_h = 0;
 
-          /* "_distortion.pyx":440
+          /* "src/_distortion.pyx":440
  * 
  *                         h = 0
  *                         dA = 1.0             # <<<<<<<<<<<<<<
@@ -8593,7 +8593,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
           __pyx_v_dA = 1.0;
 
-          /* "_distortion.pyx":441
+          /* "src/_distortion.pyx":441
  *                         h = 0
  *                         dA = 1.0
  *                         while AA > 0:             # <<<<<<<<<<<<<<
@@ -8604,7 +8604,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             __pyx_t_1 = ((__pyx_v_AA > 0.0) != 0);
             if (!__pyx_t_1) break;
 
-            /* "_distortion.pyx":442
+            /* "src/_distortion.pyx":442
  *                         dA = 1.0
  *                         while AA > 0:
  *                             if dA > AA:             # <<<<<<<<<<<<<<
@@ -8614,7 +8614,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             __pyx_t_1 = ((__pyx_v_dA > __pyx_v_AA) != 0);
             if (__pyx_t_1) {
 
-              /* "_distortion.pyx":443
+              /* "src/_distortion.pyx":443
  *                         while AA > 0:
  *                             if dA > AA:
  *                                 dA = AA             # <<<<<<<<<<<<<<
@@ -8623,7 +8623,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
               __pyx_v_dA = __pyx_v_AA;
 
-              /* "_distortion.pyx":444
+              /* "src/_distortion.pyx":444
  *                             if dA > AA:
  *                                 dA = AA
  *                                 AA = -1             # <<<<<<<<<<<<<<
@@ -8635,7 +8635,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             }
             __pyx_L19:;
 
-            /* "_distortion.pyx":445
+            /* "src/_distortion.pyx":445
  *                                 dA = AA
  *                                 AA = -1
  *                             self.box[i, h] += sign * dA             # <<<<<<<<<<<<<<
@@ -8660,7 +8660,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             }
             *((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_self->box.data + __pyx_t_8 * __pyx_v_self->box.strides[0]) ) + __pyx_t_9 * __pyx_v_self->box.strides[1]) )) += (__pyx_v_sign * __pyx_v_dA);
 
-            /* "_distortion.pyx":446
+            /* "src/_distortion.pyx":446
  *                                 AA = -1
  *                             self.box[i, h] += sign * dA
  *                             AA -= dA             # <<<<<<<<<<<<<<
@@ -8669,7 +8669,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
             __pyx_v_AA = (__pyx_v_AA - __pyx_v_dA);
 
-            /* "_distortion.pyx":447
+            /* "src/_distortion.pyx":447
  *                             self.box[i, h] += sign * dA
  *                             AA -= dA
  *                             h += 1             # <<<<<<<<<<<<<<
@@ -8683,7 +8683,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
         __pyx_L16:;
       }
 
-      /* "_distortion.pyx":449
+      /* "src/_distortion.pyx":449
  *                             h += 1
  *                 # Section Pn->B
  *                 P = floor(stop)             # <<<<<<<<<<<<<<
@@ -8692,7 +8692,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
       __pyx_v_P = floor(__pyx_v_stop);
 
-      /* "_distortion.pyx":450
+      /* "src/_distortion.pyx":450
  *                 # Section Pn->B
  *                 P = floor(stop)
  *                 dP = stop - P             # <<<<<<<<<<<<<<
@@ -8701,7 +8701,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
       __pyx_v_dP = (__pyx_v_stop - __pyx_v_P);
 
-      /* "_distortion.pyx":451
+      /* "src/_distortion.pyx":451
  *                 P = floor(stop)
  *                 dP = stop - P
  *                 if dP > 0:             # <<<<<<<<<<<<<<
@@ -8711,16 +8711,16 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
       __pyx_t_1 = ((__pyx_v_dP > 0.0) != 0);
       if (__pyx_t_1) {
 
-        /* "_distortion.pyx":452
+        /* "src/_distortion.pyx":452
  *                 dP = stop - P
  *                 if dP > 0:
  *                     A = calc_area(P, stop, slope, intercept)             # <<<<<<<<<<<<<<
  *                     if A != 0:
  *                         AA = fabs(A)
  */
-        __pyx_v_A = __pyx_f_11_distortion_calc_area(__pyx_v_P, __pyx_v_stop, __pyx_v_slope, __pyx_v_intercept, 0);
+        __pyx_v_A = __pyx_f_3src_11_distortion_calc_area(__pyx_v_P, __pyx_v_stop, __pyx_v_slope, __pyx_v_intercept, 0);
 
-        /* "_distortion.pyx":453
+        /* "src/_distortion.pyx":453
  *                 if dP > 0:
  *                     A = calc_area(P, stop, slope, intercept)
  *                     if A != 0:             # <<<<<<<<<<<<<<
@@ -8730,7 +8730,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
         __pyx_t_1 = ((__pyx_v_A != 0.0) != 0);
         if (__pyx_t_1) {
 
-          /* "_distortion.pyx":454
+          /* "src/_distortion.pyx":454
  *                     A = calc_area(P, stop, slope, intercept)
  *                     if A != 0:
  *                         AA = fabs(A)             # <<<<<<<<<<<<<<
@@ -8739,7 +8739,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
           __pyx_v_AA = fabs(__pyx_v_A);
 
-          /* "_distortion.pyx":455
+          /* "src/_distortion.pyx":455
  *                     if A != 0:
  *                         AA = fabs(A)
  *                         sign = A / AA             # <<<<<<<<<<<<<<
@@ -8758,7 +8758,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
           }
           __pyx_v_sign = (__pyx_v_A / __pyx_v_AA);
 
-          /* "_distortion.pyx":456
+          /* "src/_distortion.pyx":456
  *                         AA = fabs(A)
  *                         sign = A / AA
  *                         h = 0             # <<<<<<<<<<<<<<
@@ -8767,7 +8767,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
           __pyx_v_h = 0;
 
-          /* "_distortion.pyx":457
+          /* "src/_distortion.pyx":457
  *                         sign = A / AA
  *                         h = 0
  *                         dA = fabs(dP)             # <<<<<<<<<<<<<<
@@ -8776,7 +8776,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
           __pyx_v_dA = fabs(__pyx_v_dP);
 
-          /* "_distortion.pyx":458
+          /* "src/_distortion.pyx":458
  *                         h = 0
  *                         dA = fabs(dP)
  *                         while AA > 0:             # <<<<<<<<<<<<<<
@@ -8787,7 +8787,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             __pyx_t_1 = ((__pyx_v_AA > 0.0) != 0);
             if (!__pyx_t_1) break;
 
-            /* "_distortion.pyx":459
+            /* "src/_distortion.pyx":459
  *                         dA = fabs(dP)
  *                         while AA > 0:
  *                             if dA > AA:             # <<<<<<<<<<<<<<
@@ -8797,7 +8797,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             __pyx_t_1 = ((__pyx_v_dA > __pyx_v_AA) != 0);
             if (__pyx_t_1) {
 
-              /* "_distortion.pyx":460
+              /* "src/_distortion.pyx":460
  *                         while AA > 0:
  *                             if dA > AA:
  *                                 dA = AA             # <<<<<<<<<<<<<<
@@ -8806,7 +8806,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
               __pyx_v_dA = __pyx_v_AA;
 
-              /* "_distortion.pyx":461
+              /* "src/_distortion.pyx":461
  *                             if dA > AA:
  *                                 dA = AA
  *                                 AA = -1             # <<<<<<<<<<<<<<
@@ -8818,7 +8818,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             }
             __pyx_L24:;
 
-            /* "_distortion.pyx":462
+            /* "src/_distortion.pyx":462
  *                                 dA = AA
  *                                 AA = -1
  *                             self.box[(<int> floor(P)), h] += sign * dA             # <<<<<<<<<<<<<<
@@ -8843,7 +8843,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             }
             *((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_self->box.data + __pyx_t_6 * __pyx_v_self->box.strides[0]) ) + __pyx_t_7 * __pyx_v_self->box.strides[1]) )) += (__pyx_v_sign * __pyx_v_dA);
 
-            /* "_distortion.pyx":463
+            /* "src/_distortion.pyx":463
  *                                 AA = -1
  *                             self.box[(<int> floor(P)), h] += sign * dA
  *                             AA -= dA             # <<<<<<<<<<<<<<
@@ -8852,7 +8852,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
             __pyx_v_AA = (__pyx_v_AA - __pyx_v_dA);
 
-            /* "_distortion.pyx":464
+            /* "src/_distortion.pyx":464
  *                             self.box[(<int> floor(P)), h] += sign * dA
  *                             AA -= dA
  *                             h += 1             # <<<<<<<<<<<<<<
@@ -8872,7 +8872,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
     goto __pyx_L3;
   }
 
-  /* "_distortion.pyx":465
+  /* "src/_distortion.pyx":465
  *                             AA -= dA
  *                             h += 1
  *         elif start > stop:  # negative contribution. Nota is start=stop: no contribution             # <<<<<<<<<<<<<<
@@ -8882,7 +8882,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
   __pyx_t_1 = ((__pyx_v_start > __pyx_v_stop) != 0);
   if (__pyx_t_1) {
 
-    /* "_distortion.pyx":466
+    /* "src/_distortion.pyx":466
  *                             h += 1
  *         elif start > stop:  # negative contribution. Nota is start=stop: no contribution
  *             P = floor(start)             # <<<<<<<<<<<<<<
@@ -8891,7 +8891,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
     __pyx_v_P = floor(__pyx_v_start);
 
-    /* "_distortion.pyx":467
+    /* "src/_distortion.pyx":467
  *         elif start > stop:  # negative contribution. Nota is start=stop: no contribution
  *             P = floor(start)
  *             if stop > P:  # start and stop are in the same unit             # <<<<<<<<<<<<<<
@@ -8901,16 +8901,16 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
     __pyx_t_1 = ((__pyx_v_stop > __pyx_v_P) != 0);
     if (__pyx_t_1) {
 
-      /* "_distortion.pyx":468
+      /* "src/_distortion.pyx":468
  *             P = floor(start)
  *             if stop > P:  # start and stop are in the same unit
  *                 A = calc_area(start, stop, slope, intercept)             # <<<<<<<<<<<<<<
  *                 if A != 0:
  *                     AA = fabs(A)
  */
-      __pyx_v_A = __pyx_f_11_distortion_calc_area(__pyx_v_start, __pyx_v_stop, __pyx_v_slope, __pyx_v_intercept, 0);
+      __pyx_v_A = __pyx_f_3src_11_distortion_calc_area(__pyx_v_start, __pyx_v_stop, __pyx_v_slope, __pyx_v_intercept, 0);
 
-      /* "_distortion.pyx":469
+      /* "src/_distortion.pyx":469
  *             if stop > P:  # start and stop are in the same unit
  *                 A = calc_area(start, stop, slope, intercept)
  *                 if A != 0:             # <<<<<<<<<<<<<<
@@ -8920,7 +8920,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
       __pyx_t_1 = ((__pyx_v_A != 0.0) != 0);
       if (__pyx_t_1) {
 
-        /* "_distortion.pyx":470
+        /* "src/_distortion.pyx":470
  *                 A = calc_area(start, stop, slope, intercept)
  *                 if A != 0:
  *                     AA = fabs(A)             # <<<<<<<<<<<<<<
@@ -8929,7 +8929,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
         __pyx_v_AA = fabs(__pyx_v_A);
 
-        /* "_distortion.pyx":471
+        /* "src/_distortion.pyx":471
  *                 if A != 0:
  *                     AA = fabs(A)
  *                     sign = A / AA             # <<<<<<<<<<<<<<
@@ -8948,7 +8948,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
         }
         __pyx_v_sign = (__pyx_v_A / __pyx_v_AA);
 
-        /* "_distortion.pyx":472
+        /* "src/_distortion.pyx":472
  *                     AA = fabs(A)
  *                     sign = A / AA
  *                     dA = (start - stop)  # always positive             # <<<<<<<<<<<<<<
@@ -8957,7 +8957,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
         __pyx_v_dA = (__pyx_v_start - __pyx_v_stop);
 
-        /* "_distortion.pyx":473
+        /* "src/_distortion.pyx":473
  *                     sign = A / AA
  *                     dA = (start - stop)  # always positive
  *                     h = 0             # <<<<<<<<<<<<<<
@@ -8966,7 +8966,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
         __pyx_v_h = 0;
 
-        /* "_distortion.pyx":474
+        /* "src/_distortion.pyx":474
  *                     dA = (start - stop)  # always positive
  *                     h = 0
  *                     while AA > 0:             # <<<<<<<<<<<<<<
@@ -8977,7 +8977,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
           __pyx_t_1 = ((__pyx_v_AA > 0.0) != 0);
           if (!__pyx_t_1) break;
 
-          /* "_distortion.pyx":475
+          /* "src/_distortion.pyx":475
  *                     h = 0
  *                     while AA > 0:
  *                         if dA > AA:             # <<<<<<<<<<<<<<
@@ -8987,7 +8987,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
           __pyx_t_1 = ((__pyx_v_dA > __pyx_v_AA) != 0);
           if (__pyx_t_1) {
 
-            /* "_distortion.pyx":476
+            /* "src/_distortion.pyx":476
  *                     while AA > 0:
  *                         if dA > AA:
  *                             dA = AA             # <<<<<<<<<<<<<<
@@ -8996,7 +8996,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
             __pyx_v_dA = __pyx_v_AA;
 
-            /* "_distortion.pyx":477
+            /* "src/_distortion.pyx":477
  *                         if dA > AA:
  *                             dA = AA
  *                             AA = -1             # <<<<<<<<<<<<<<
@@ -9008,7 +9008,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
           }
           __pyx_L29:;
 
-          /* "_distortion.pyx":478
+          /* "src/_distortion.pyx":478
  *                             dA = AA
  *                             AA = -1
  *                         self.box[(<int> floor(start)), h] += sign * dA             # <<<<<<<<<<<<<<
@@ -9033,7 +9033,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
           }
           *((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_self->box.data + __pyx_t_10 * __pyx_v_self->box.strides[0]) ) + __pyx_t_11 * __pyx_v_self->box.strides[1]) )) += (__pyx_v_sign * __pyx_v_dA);
 
-          /* "_distortion.pyx":479
+          /* "src/_distortion.pyx":479
  *                             AA = -1
  *                         self.box[(<int> floor(start)), h] += sign * dA
  *                         AA -= dA             # <<<<<<<<<<<<<<
@@ -9042,7 +9042,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
           __pyx_v_AA = (__pyx_v_AA - __pyx_v_dA);
 
-          /* "_distortion.pyx":480
+          /* "src/_distortion.pyx":480
  *                         self.box[(<int> floor(start)), h] += sign * dA
  *                         AA -= dA
  *                         h += 1             # <<<<<<<<<<<<<<
@@ -9058,7 +9058,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
     }
     /*else*/ {
 
-      /* "_distortion.pyx":482
+      /* "src/_distortion.pyx":482
  *                         h += 1
  *             else:
  *                 dP = P - start             # <<<<<<<<<<<<<<
@@ -9067,7 +9067,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
       __pyx_v_dP = (__pyx_v_P - __pyx_v_start);
 
-      /* "_distortion.pyx":483
+      /* "src/_distortion.pyx":483
  *             else:
  *                 dP = P - start
  *                 if dP < 0:             # <<<<<<<<<<<<<<
@@ -9077,16 +9077,16 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
       __pyx_t_1 = ((__pyx_v_dP < 0.0) != 0);
       if (__pyx_t_1) {
 
-        /* "_distortion.pyx":484
+        /* "src/_distortion.pyx":484
  *                 dP = P - start
  *                 if dP < 0:
  *                     A = calc_area(start, P, slope, intercept)             # <<<<<<<<<<<<<<
  *                     if A != 0:
  *                         AA = fabs(A)
  */
-        __pyx_v_A = __pyx_f_11_distortion_calc_area(__pyx_v_start, __pyx_v_P, __pyx_v_slope, __pyx_v_intercept, 0);
+        __pyx_v_A = __pyx_f_3src_11_distortion_calc_area(__pyx_v_start, __pyx_v_P, __pyx_v_slope, __pyx_v_intercept, 0);
 
-        /* "_distortion.pyx":485
+        /* "src/_distortion.pyx":485
  *                 if dP < 0:
  *                     A = calc_area(start, P, slope, intercept)
  *                     if A != 0:             # <<<<<<<<<<<<<<
@@ -9096,7 +9096,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
         __pyx_t_1 = ((__pyx_v_A != 0.0) != 0);
         if (__pyx_t_1) {
 
-          /* "_distortion.pyx":486
+          /* "src/_distortion.pyx":486
  *                     A = calc_area(start, P, slope, intercept)
  *                     if A != 0:
  *                         AA = fabs(A)             # <<<<<<<<<<<<<<
@@ -9105,7 +9105,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
           __pyx_v_AA = fabs(__pyx_v_A);
 
-          /* "_distortion.pyx":487
+          /* "src/_distortion.pyx":487
  *                     if A != 0:
  *                         AA = fabs(A)
  *                         sign = A / AA             # <<<<<<<<<<<<<<
@@ -9124,7 +9124,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
           }
           __pyx_v_sign = (__pyx_v_A / __pyx_v_AA);
 
-          /* "_distortion.pyx":488
+          /* "src/_distortion.pyx":488
  *                         AA = fabs(A)
  *                         sign = A / AA
  *                         h = 0             # <<<<<<<<<<<<<<
@@ -9133,7 +9133,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
           __pyx_v_h = 0;
 
-          /* "_distortion.pyx":489
+          /* "src/_distortion.pyx":489
  *                         sign = A / AA
  *                         h = 0
  *                         dA = fabs(dP)             # <<<<<<<<<<<<<<
@@ -9142,7 +9142,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
           __pyx_v_dA = fabs(__pyx_v_dP);
 
-          /* "_distortion.pyx":490
+          /* "src/_distortion.pyx":490
  *                         h = 0
  *                         dA = fabs(dP)
  *                         while AA > 0:             # <<<<<<<<<<<<<<
@@ -9153,7 +9153,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             __pyx_t_1 = ((__pyx_v_AA > 0.0) != 0);
             if (!__pyx_t_1) break;
 
-            /* "_distortion.pyx":491
+            /* "src/_distortion.pyx":491
  *                         dA = fabs(dP)
  *                         while AA > 0:
  *                             if dA > AA:             # <<<<<<<<<<<<<<
@@ -9163,7 +9163,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             __pyx_t_1 = ((__pyx_v_dA > __pyx_v_AA) != 0);
             if (__pyx_t_1) {
 
-              /* "_distortion.pyx":492
+              /* "src/_distortion.pyx":492
  *                         while AA > 0:
  *                             if dA > AA:
  *                                 dA = AA             # <<<<<<<<<<<<<<
@@ -9172,7 +9172,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
               __pyx_v_dA = __pyx_v_AA;
 
-              /* "_distortion.pyx":493
+              /* "src/_distortion.pyx":493
  *                             if dA > AA:
  *                                 dA = AA
  *                                 AA = -1             # <<<<<<<<<<<<<<
@@ -9184,7 +9184,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             }
             __pyx_L34:;
 
-            /* "_distortion.pyx":494
+            /* "src/_distortion.pyx":494
  *                                 dA = AA
  *                                 AA = -1
  *                             self.box[(<int> floor(P)) , h] += sign * dA             # <<<<<<<<<<<<<<
@@ -9209,7 +9209,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             }
             *((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_self->box.data + __pyx_t_12 * __pyx_v_self->box.strides[0]) ) + __pyx_t_13 * __pyx_v_self->box.strides[1]) )) += (__pyx_v_sign * __pyx_v_dA);
 
-            /* "_distortion.pyx":495
+            /* "src/_distortion.pyx":495
  *                                 AA = -1
  *                             self.box[(<int> floor(P)) , h] += sign * dA
  *                             AA -= dA             # <<<<<<<<<<<<<<
@@ -9218,7 +9218,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
             __pyx_v_AA = (__pyx_v_AA - __pyx_v_dA);
 
-            /* "_distortion.pyx":496
+            /* "src/_distortion.pyx":496
  *                             self.box[(<int> floor(P)) , h] += sign * dA
  *                             AA -= dA
  *                             h += 1             # <<<<<<<<<<<<<<
@@ -9234,7 +9234,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
       }
       __pyx_L30:;
 
-      /* "_distortion.pyx":498
+      /* "src/_distortion.pyx":498
  *                             h += 1
  *                 # subsection P1->Pn
  *                 for i in range((<int> start), (<int> ceil(stop)), -1):             # <<<<<<<<<<<<<<
@@ -9245,16 +9245,16 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
       for (__pyx_t_15 = ((int)__pyx_v_start); __pyx_t_15 > __pyx_t_14; __pyx_t_15-=1) {
         __pyx_v_i = __pyx_t_15;
 
-        /* "_distortion.pyx":499
+        /* "src/_distortion.pyx":499
  *                 # subsection P1->Pn
  *                 for i in range((<int> start), (<int> ceil(stop)), -1):
  *                     A = calc_area(i, i - 1, slope, intercept)             # <<<<<<<<<<<<<<
  *                     if A != 0:
  *                         AA = fabs(A)
  */
-        __pyx_v_A = __pyx_f_11_distortion_calc_area(__pyx_v_i, (__pyx_v_i - 1), __pyx_v_slope, __pyx_v_intercept, 0);
+        __pyx_v_A = __pyx_f_3src_11_distortion_calc_area(__pyx_v_i, (__pyx_v_i - 1), __pyx_v_slope, __pyx_v_intercept, 0);
 
-        /* "_distortion.pyx":500
+        /* "src/_distortion.pyx":500
  *                 for i in range((<int> start), (<int> ceil(stop)), -1):
  *                     A = calc_area(i, i - 1, slope, intercept)
  *                     if A != 0:             # <<<<<<<<<<<<<<
@@ -9264,7 +9264,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
         __pyx_t_1 = ((__pyx_v_A != 0.0) != 0);
         if (__pyx_t_1) {
 
-          /* "_distortion.pyx":501
+          /* "src/_distortion.pyx":501
  *                     A = calc_area(i, i - 1, slope, intercept)
  *                     if A != 0:
  *                         AA = fabs(A)             # <<<<<<<<<<<<<<
@@ -9273,7 +9273,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
           __pyx_v_AA = fabs(__pyx_v_A);
 
-          /* "_distortion.pyx":502
+          /* "src/_distortion.pyx":502
  *                     if A != 0:
  *                         AA = fabs(A)
  *                         sign = A / AA             # <<<<<<<<<<<<<<
@@ -9292,7 +9292,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
           }
           __pyx_v_sign = (__pyx_v_A / __pyx_v_AA);
 
-          /* "_distortion.pyx":503
+          /* "src/_distortion.pyx":503
  *                         AA = fabs(A)
  *                         sign = A / AA
  *                         h = 0             # <<<<<<<<<<<<<<
@@ -9301,7 +9301,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
           __pyx_v_h = 0;
 
-          /* "_distortion.pyx":504
+          /* "src/_distortion.pyx":504
  *                         sign = A / AA
  *                         h = 0
  *                         dA = 1             # <<<<<<<<<<<<<<
@@ -9310,7 +9310,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
           __pyx_v_dA = 1.0;
 
-          /* "_distortion.pyx":505
+          /* "src/_distortion.pyx":505
  *                         h = 0
  *                         dA = 1
  *                         while AA > 0:             # <<<<<<<<<<<<<<
@@ -9321,7 +9321,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             __pyx_t_1 = ((__pyx_v_AA > 0.0) != 0);
             if (!__pyx_t_1) break;
 
-            /* "_distortion.pyx":506
+            /* "src/_distortion.pyx":506
  *                         dA = 1
  *                         while AA > 0:
  *                             if dA > AA:             # <<<<<<<<<<<<<<
@@ -9331,7 +9331,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             __pyx_t_1 = ((__pyx_v_dA > __pyx_v_AA) != 0);
             if (__pyx_t_1) {
 
-              /* "_distortion.pyx":507
+              /* "src/_distortion.pyx":507
  *                         while AA > 0:
  *                             if dA > AA:
  *                                 dA = AA             # <<<<<<<<<<<<<<
@@ -9340,7 +9340,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
               __pyx_v_dA = __pyx_v_AA;
 
-              /* "_distortion.pyx":508
+              /* "src/_distortion.pyx":508
  *                             if dA > AA:
  *                                 dA = AA
  *                                 AA = -1             # <<<<<<<<<<<<<<
@@ -9352,7 +9352,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             }
             __pyx_L40:;
 
-            /* "_distortion.pyx":509
+            /* "src/_distortion.pyx":509
  *                                 dA = AA
  *                                 AA = -1
  *                             self.box[i - 1, h] += sign * dA             # <<<<<<<<<<<<<<
@@ -9377,7 +9377,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             }
             *((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_self->box.data + __pyx_t_16 * __pyx_v_self->box.strides[0]) ) + __pyx_t_17 * __pyx_v_self->box.strides[1]) )) += (__pyx_v_sign * __pyx_v_dA);
 
-            /* "_distortion.pyx":510
+            /* "src/_distortion.pyx":510
  *                                 AA = -1
  *                             self.box[i - 1, h] += sign * dA
  *                             AA -= dA             # <<<<<<<<<<<<<<
@@ -9386,7 +9386,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
             __pyx_v_AA = (__pyx_v_AA - __pyx_v_dA);
 
-            /* "_distortion.pyx":511
+            /* "src/_distortion.pyx":511
  *                             self.box[i - 1, h] += sign * dA
  *                             AA -= dA
  *                             h += 1             # <<<<<<<<<<<<<<
@@ -9400,7 +9400,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
         __pyx_L37:;
       }
 
-      /* "_distortion.pyx":513
+      /* "src/_distortion.pyx":513
  *                             h += 1
  *                 # Section Pn->B
  *                 P = ceil(stop)             # <<<<<<<<<<<<<<
@@ -9409,7 +9409,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
       __pyx_v_P = ceil(__pyx_v_stop);
 
-      /* "_distortion.pyx":514
+      /* "src/_distortion.pyx":514
  *                 # Section Pn->B
  *                 P = ceil(stop)
  *                 dP = stop - P             # <<<<<<<<<<<<<<
@@ -9418,7 +9418,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
       __pyx_v_dP = (__pyx_v_stop - __pyx_v_P);
 
-      /* "_distortion.pyx":515
+      /* "src/_distortion.pyx":515
  *                 P = ceil(stop)
  *                 dP = stop - P
  *                 if dP < 0:             # <<<<<<<<<<<<<<
@@ -9428,16 +9428,16 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
       __pyx_t_1 = ((__pyx_v_dP < 0.0) != 0);
       if (__pyx_t_1) {
 
-        /* "_distortion.pyx":516
+        /* "src/_distortion.pyx":516
  *                 dP = stop - P
  *                 if dP < 0:
  *                     A = calc_area(P, stop, slope, intercept)             # <<<<<<<<<<<<<<
  *                     if A != 0:
  *                         AA = fabs(A)
  */
-        __pyx_v_A = __pyx_f_11_distortion_calc_area(__pyx_v_P, __pyx_v_stop, __pyx_v_slope, __pyx_v_intercept, 0);
+        __pyx_v_A = __pyx_f_3src_11_distortion_calc_area(__pyx_v_P, __pyx_v_stop, __pyx_v_slope, __pyx_v_intercept, 0);
 
-        /* "_distortion.pyx":517
+        /* "src/_distortion.pyx":517
  *                 if dP < 0:
  *                     A = calc_area(P, stop, slope, intercept)
  *                     if A != 0:             # <<<<<<<<<<<<<<
@@ -9447,7 +9447,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
         __pyx_t_1 = ((__pyx_v_A != 0.0) != 0);
         if (__pyx_t_1) {
 
-          /* "_distortion.pyx":518
+          /* "src/_distortion.pyx":518
  *                     A = calc_area(P, stop, slope, intercept)
  *                     if A != 0:
  *                         AA = fabs(A)             # <<<<<<<<<<<<<<
@@ -9456,7 +9456,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
           __pyx_v_AA = fabs(__pyx_v_A);
 
-          /* "_distortion.pyx":519
+          /* "src/_distortion.pyx":519
  *                     if A != 0:
  *                         AA = fabs(A)
  *                         sign = A / AA             # <<<<<<<<<<<<<<
@@ -9475,7 +9475,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
           }
           __pyx_v_sign = (__pyx_v_A / __pyx_v_AA);
 
-          /* "_distortion.pyx":520
+          /* "src/_distortion.pyx":520
  *                         AA = fabs(A)
  *                         sign = A / AA
  *                         h = 0             # <<<<<<<<<<<<<<
@@ -9484,7 +9484,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
           __pyx_v_h = 0;
 
-          /* "_distortion.pyx":521
+          /* "src/_distortion.pyx":521
  *                         sign = A / AA
  *                         h = 0
  *                         dA = fabs(dP)             # <<<<<<<<<<<<<<
@@ -9493,7 +9493,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
           __pyx_v_dA = fabs(__pyx_v_dP);
 
-          /* "_distortion.pyx":522
+          /* "src/_distortion.pyx":522
  *                         h = 0
  *                         dA = fabs(dP)
  *                         while AA > 0:             # <<<<<<<<<<<<<<
@@ -9504,7 +9504,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             __pyx_t_1 = ((__pyx_v_AA > 0.0) != 0);
             if (!__pyx_t_1) break;
 
-            /* "_distortion.pyx":523
+            /* "src/_distortion.pyx":523
  *                         dA = fabs(dP)
  *                         while AA > 0:
  *                             if dA > AA:             # <<<<<<<<<<<<<<
@@ -9514,7 +9514,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             __pyx_t_1 = ((__pyx_v_dA > __pyx_v_AA) != 0);
             if (__pyx_t_1) {
 
-              /* "_distortion.pyx":524
+              /* "src/_distortion.pyx":524
  *                         while AA > 0:
  *                             if dA > AA:
  *                                 dA = AA             # <<<<<<<<<<<<<<
@@ -9523,7 +9523,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
               __pyx_v_dA = __pyx_v_AA;
 
-              /* "_distortion.pyx":525
+              /* "src/_distortion.pyx":525
  *                             if dA > AA:
  *                                 dA = AA
  *                                 AA = -1             # <<<<<<<<<<<<<<
@@ -9535,7 +9535,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             }
             __pyx_L45:;
 
-            /* "_distortion.pyx":526
+            /* "src/_distortion.pyx":526
  *                                 dA = AA
  *                                 AA = -1
  *                             self.box[(<int> floor(stop)), h] += sign * dA             # <<<<<<<<<<<<<<
@@ -9560,7 +9560,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
             }
             *((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_self->box.data + __pyx_t_14 * __pyx_v_self->box.strides[0]) ) + __pyx_t_15 * __pyx_v_self->box.strides[1]) )) += (__pyx_v_sign * __pyx_v_dA);
 
-            /* "_distortion.pyx":527
+            /* "src/_distortion.pyx":527
  *                                 AA = -1
  *                             self.box[(<int> floor(stop)), h] += sign * dA
  *                             AA -= dA             # <<<<<<<<<<<<<<
@@ -9569,7 +9569,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
             __pyx_v_AA = (__pyx_v_AA - __pyx_v_dA);
 
-            /* "_distortion.pyx":528
+            /* "src/_distortion.pyx":528
  *                             self.box[(<int> floor(stop)), h] += sign * dA
  *                             AA -= dA
  *                             h += 1             # <<<<<<<<<<<<<<
@@ -9590,7 +9590,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
   }
   __pyx_L3:;
 
-  /* "_distortion.pyx":394
+  /* "src/_distortion.pyx":394
  *                     raise RuntimeError()
  * 
  *     def integrate(self, float start, float stop, float slope, float intercept):             # <<<<<<<<<<<<<<
@@ -9602,7 +9602,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
   __pyx_r = Py_None; __Pyx_INCREF(Py_None);
   goto __pyx_L0;
   __pyx_L1_error:;
-  __Pyx_AddTraceback("_distortion.Quad.integrate", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Quad.integrate", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -9610,7 +9610,7 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
   return __pyx_r;
 }
 
-/* "_distortion.pyx":539
+/* "src/_distortion.pyx":539
  * 
  *     """
  *     def __init__(self, detector="detector", shape=None):             # <<<<<<<<<<<<<<
@@ -9619,10 +9619,10 @@ static PyObject *__pyx_pf_11_distortion_4Quad_30integrate(struct __pyx_obj_11_di
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_10Distortion_1__init__(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_11_distortion_10Distortion___init__[] = "\n        @param detector: detector instance or detector name\n        ";
-static PyMethodDef __pyx_mdef_11_distortion_10Distortion_1__init__ = {"__init__", (PyCFunction)__pyx_pw_11_distortion_10Distortion_1__init__, METH_VARARGS|METH_KEYWORDS, __pyx_doc_11_distortion_10Distortion___init__};
-static PyObject *__pyx_pw_11_distortion_10Distortion_1__init__(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_11_distortion_10Distortion_1__init__(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_3src_11_distortion_10Distortion___init__[] = "\n        @param detector: detector instance or detector name\n        ";
+static PyMethodDef __pyx_mdef_3src_11_distortion_10Distortion_1__init__ = {"__init__", (PyCFunction)__pyx_pw_3src_11_distortion_10Distortion_1__init__, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_11_distortion_10Distortion___init__};
+static PyObject *__pyx_pw_3src_11_distortion_10Distortion_1__init__(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_self = 0;
   PyObject *__pyx_v_detector = 0;
   PyObject *__pyx_v_shape = 0;
@@ -9683,18 +9683,18 @@ static PyObject *__pyx_pw_11_distortion_10Distortion_1__init__(PyObject *__pyx_s
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("__init__", 0, 1, 3, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("_distortion.Distortion.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Distortion.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_11_distortion_10Distortion___init__(__pyx_self, __pyx_v_self, __pyx_v_detector, __pyx_v_shape);
+  __pyx_r = __pyx_pf_3src_11_distortion_10Distortion___init__(__pyx_self, __pyx_v_self, __pyx_v_detector, __pyx_v_shape);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_10Distortion___init__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_detector, PyObject *__pyx_v_shape) {
+static PyObject *__pyx_pf_3src_11_distortion_10Distortion___init__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_detector, PyObject *__pyx_v_shape) {
   PyObject *__pyx_v_i = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
@@ -9711,7 +9711,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion___init__(CYTHON_UNUSED PyOb
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__init__", 0);
 
-  /* "_distortion.pyx":543
+  /* "src/_distortion.pyx":543
  *         @param detector: detector instance or detector name
  *         """
  *         if isinstance(detector, six.string_types):             # <<<<<<<<<<<<<<
@@ -9728,7 +9728,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion___init__(CYTHON_UNUSED PyOb
   __pyx_t_4 = (__pyx_t_3 != 0);
   if (__pyx_t_4) {
 
-    /* "_distortion.pyx":544
+    /* "src/_distortion.pyx":544
  *         """
  *         if isinstance(detector, six.string_types):
  *             self.detector = detector_factory(detector)             # <<<<<<<<<<<<<<
@@ -9768,7 +9768,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion___init__(CYTHON_UNUSED PyOb
   }
   /*else*/ {
 
-    /* "_distortion.pyx":546
+    /* "src/_distortion.pyx":546
  *             self.detector = detector_factory(detector)
  *         else:  # we assume it is a Detector instance
  *             self.detector = detector             # <<<<<<<<<<<<<<
@@ -9779,7 +9779,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion___init__(CYTHON_UNUSED PyOb
   }
   __pyx_L3:;
 
-  /* "_distortion.pyx":547
+  /* "src/_distortion.pyx":547
  *         else:  # we assume it is a Detector instance
  *             self.detector = detector
  *         if shape:             # <<<<<<<<<<<<<<
@@ -9789,7 +9789,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion___init__(CYTHON_UNUSED PyOb
   __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_v_shape); if (unlikely(__pyx_t_4 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 547; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   if (__pyx_t_4) {
 
-    /* "_distortion.pyx":548
+    /* "src/_distortion.pyx":548
  *             self.detector = detector
  *         if shape:
  *             self.shape = shape             # <<<<<<<<<<<<<<
@@ -9800,7 +9800,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion___init__(CYTHON_UNUSED PyOb
     goto __pyx_L4;
   }
 
-  /* "_distortion.pyx":549
+  /* "src/_distortion.pyx":549
  *         if shape:
  *             self.shape = shape
  *         elif "max_shape" in dir(self.detector):             # <<<<<<<<<<<<<<
@@ -9817,7 +9817,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion___init__(CYTHON_UNUSED PyOb
   __pyx_t_3 = (__pyx_t_4 != 0);
   if (__pyx_t_3) {
 
-    /* "_distortion.pyx":550
+    /* "src/_distortion.pyx":550
  *             self.shape = shape
  *         elif "max_shape" in dir(self.detector):
  *             self.shape = self.detector.max_shape             # <<<<<<<<<<<<<<
@@ -9835,7 +9835,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion___init__(CYTHON_UNUSED PyOb
   }
   __pyx_L4:;
 
-  /* "_distortion.pyx":551
+  /* "src/_distortion.pyx":551
  *         elif "max_shape" in dir(self.detector):
  *             self.shape = self.detector.max_shape
  *         self.shape = tuple([int(i) for i in self.shape])             # <<<<<<<<<<<<<<
@@ -9898,7 +9898,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion___init__(CYTHON_UNUSED PyOb
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_shape, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 551; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "_distortion.pyx":552
+  /* "src/_distortion.pyx":552
  *             self.shape = self.detector.max_shape
  *         self.shape = tuple([int(i) for i in self.shape])
  *         self._sem = threading.Semaphore()             # <<<<<<<<<<<<<<
@@ -9931,7 +9931,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion___init__(CYTHON_UNUSED PyOb
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_sem, __pyx_t_6) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 552; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "_distortion.pyx":553
+  /* "src/_distortion.pyx":553
  *         self.shape = tuple([int(i) for i in self.shape])
  *         self._sem = threading.Semaphore()
  *         self.lut_size = None             # <<<<<<<<<<<<<<
@@ -9940,7 +9940,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion___init__(CYTHON_UNUSED PyOb
  */
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_lut_size, Py_None) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 553; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "_distortion.pyx":554
+  /* "src/_distortion.pyx":554
  *         self._sem = threading.Semaphore()
  *         self.lut_size = None
  *         self.pos = None             # <<<<<<<<<<<<<<
@@ -9949,7 +9949,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion___init__(CYTHON_UNUSED PyOb
  */
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_pos, Py_None) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 554; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "_distortion.pyx":555
+  /* "src/_distortion.pyx":555
  *         self.lut_size = None
  *         self.pos = None
  *         self.LUT = None             # <<<<<<<<<<<<<<
@@ -9958,7 +9958,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion___init__(CYTHON_UNUSED PyOb
  */
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_LUT, Py_None) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 555; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "_distortion.pyx":556
+  /* "src/_distortion.pyx":556
  *         self.pos = None
  *         self.LUT = None
  *         self.delta0 = self.delta1 = None  # max size of an pixel on a regular grid ...             # <<<<<<<<<<<<<<
@@ -9968,7 +9968,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion___init__(CYTHON_UNUSED PyOb
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_delta0, Py_None) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 556; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_delta1, Py_None) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 556; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "_distortion.pyx":539
+  /* "src/_distortion.pyx":539
  * 
  *     """
  *     def __init__(self, detector="detector", shape=None):             # <<<<<<<<<<<<<<
@@ -9984,7 +9984,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion___init__(CYTHON_UNUSED PyOb
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
-  __Pyx_AddTraceback("_distortion.Distortion.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Distortion.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_i);
@@ -9993,7 +9993,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion___init__(CYTHON_UNUSED PyOb
   return __pyx_r;
 }
 
-/* "_distortion.pyx":558
+/* "src/_distortion.pyx":558
  *         self.delta0 = self.delta1 = None  # max size of an pixel on a regular grid ...
  * 
  *     def __repr__(self):             # <<<<<<<<<<<<<<
@@ -10002,20 +10002,20 @@ static PyObject *__pyx_pf_11_distortion_10Distortion___init__(CYTHON_UNUSED PyOb
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_10Distortion_3__repr__(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
-static PyMethodDef __pyx_mdef_11_distortion_10Distortion_3__repr__ = {"__repr__", (PyCFunction)__pyx_pw_11_distortion_10Distortion_3__repr__, METH_O, 0};
-static PyObject *__pyx_pw_11_distortion_10Distortion_3__repr__(PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_11_distortion_10Distortion_3__repr__(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
+static PyMethodDef __pyx_mdef_3src_11_distortion_10Distortion_3__repr__ = {"__repr__", (PyCFunction)__pyx_pw_3src_11_distortion_10Distortion_3__repr__, METH_O, 0};
+static PyObject *__pyx_pw_3src_11_distortion_10Distortion_3__repr__(PyObject *__pyx_self, PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__repr__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_11_distortion_10Distortion_2__repr__(__pyx_self, ((PyObject *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_11_distortion_10Distortion_2__repr__(__pyx_self, ((PyObject *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_10Distortion_2__repr__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_11_distortion_10Distortion_2__repr__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -10028,7 +10028,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_2__repr__(CYTHON_UNUSED PyO
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__repr__", 0);
 
-  /* "_distortion.pyx":559
+  /* "src/_distortion.pyx":559
  * 
  *     def __repr__(self):
  *         return os.linesep.join(["Distortion correction for detector:",             # <<<<<<<<<<<<<<
@@ -10045,7 +10045,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_2__repr__(CYTHON_UNUSED PyO
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-  /* "_distortion.pyx":560
+  /* "src/_distortion.pyx":560
  *     def __repr__(self):
  *         return os.linesep.join(["Distortion correction for detector:",
  *                                 self.detector.__repr__()])             # <<<<<<<<<<<<<<
@@ -10076,7 +10076,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_2__repr__(CYTHON_UNUSED PyO
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-  /* "_distortion.pyx":559
+  /* "src/_distortion.pyx":559
  * 
  *     def __repr__(self):
  *         return os.linesep.join(["Distortion correction for detector:",             # <<<<<<<<<<<<<<
@@ -10121,7 +10121,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_2__repr__(CYTHON_UNUSED PyO
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "_distortion.pyx":558
+  /* "src/_distortion.pyx":558
  *         self.delta0 = self.delta1 = None  # max size of an pixel on a regular grid ...
  * 
  *     def __repr__(self):             # <<<<<<<<<<<<<<
@@ -10136,7 +10136,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_2__repr__(CYTHON_UNUSED PyO
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
-  __Pyx_AddTraceback("_distortion.Distortion.__repr__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Distortion.__repr__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -10144,7 +10144,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_2__repr__(CYTHON_UNUSED PyO
   return __pyx_r;
 }
 
-/* "_distortion.pyx":562
+/* "src/_distortion.pyx":562
  *                                 self.detector.__repr__()])
  * 
  *     def calc_pos(self):             # <<<<<<<<<<<<<<
@@ -10153,20 +10153,20 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_2__repr__(CYTHON_UNUSED PyO
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_10Distortion_5calc_pos(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
-static PyMethodDef __pyx_mdef_11_distortion_10Distortion_5calc_pos = {"calc_pos", (PyCFunction)__pyx_pw_11_distortion_10Distortion_5calc_pos, METH_O, 0};
-static PyObject *__pyx_pw_11_distortion_10Distortion_5calc_pos(PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_11_distortion_10Distortion_5calc_pos(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
+static PyMethodDef __pyx_mdef_3src_11_distortion_10Distortion_5calc_pos = {"calc_pos", (PyCFunction)__pyx_pw_3src_11_distortion_10Distortion_5calc_pos, METH_O, 0};
+static PyObject *__pyx_pw_3src_11_distortion_10Distortion_5calc_pos(PyObject *__pyx_self, PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("calc_pos (wrapper)", 0);
-  __pyx_r = __pyx_pf_11_distortion_10Distortion_4calc_pos(__pyx_self, ((PyObject *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_11_distortion_10Distortion_4calc_pos(__pyx_self, ((PyObject *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
   PyObject *__pyx_v_pos_corners = NULL;
   PyObject *__pyx_v_d1 = NULL;
   PyObject *__pyx_v_d2 = NULL;
@@ -10196,7 +10196,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("calc_pos", 0);
 
-  /* "_distortion.pyx":563
+  /* "src/_distortion.pyx":563
  * 
  *     def calc_pos(self):
  *         if self.pos is None:             # <<<<<<<<<<<<<<
@@ -10210,7 +10210,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
   __pyx_t_3 = (__pyx_t_2 != 0);
   if (__pyx_t_3) {
 
-    /* "_distortion.pyx":564
+    /* "src/_distortion.pyx":564
  *     def calc_pos(self):
  *         if self.pos is None:
  *             with self._sem:             # <<<<<<<<<<<<<<
@@ -10252,7 +10252,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
           __Pyx_XGOTREF(__pyx_t_10);
           /*try:*/ {
 
-            /* "_distortion.pyx":565
+            /* "src/_distortion.pyx":565
  *         if self.pos is None:
  *             with self._sem:
  *                 if self.pos is None:             # <<<<<<<<<<<<<<
@@ -10266,7 +10266,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
             __pyx_t_2 = (__pyx_t_3 != 0);
             if (__pyx_t_2) {
 
-              /* "_distortion.pyx":566
+              /* "src/_distortion.pyx":566
  *             with self._sem:
  *                 if self.pos is None:
  *                     pos_corners = numpy.empty((self.shape[0] + 1, self.shape[1] + 1, 2), dtype=numpy.float64)             # <<<<<<<<<<<<<<
@@ -10327,7 +10327,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
               __pyx_v_pos_corners = __pyx_t_11;
               __pyx_t_11 = 0;
 
-              /* "_distortion.pyx":567
+              /* "src/_distortion.pyx":567
  *                 if self.pos is None:
  *                     pos_corners = numpy.empty((self.shape[0] + 1, self.shape[1] + 1, 2), dtype=numpy.float64)
  *                     d1 = expand2d(numpy.arange(self.shape[0] + 1.0), self.shape[1] + 1, False) - 0.5             # <<<<<<<<<<<<<<
@@ -10419,7 +10419,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
               __pyx_v_d1 = __pyx_t_7;
               __pyx_t_7 = 0;
 
-              /* "_distortion.pyx":568
+              /* "src/_distortion.pyx":568
  *                     pos_corners = numpy.empty((self.shape[0] + 1, self.shape[1] + 1, 2), dtype=numpy.float64)
  *                     d1 = expand2d(numpy.arange(self.shape[0] + 1.0), self.shape[1] + 1, False) - 0.5
  *                     d2 = expand2d(numpy.arange(self.shape[1] + 1.0), self.shape[0] + 1, True) - 0.5             # <<<<<<<<<<<<<<
@@ -10511,7 +10511,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
               __pyx_v_d2 = __pyx_t_11;
               __pyx_t_11 = 0;
 
-              /* "_distortion.pyx":569
+              /* "src/_distortion.pyx":569
  *                     d1 = expand2d(numpy.arange(self.shape[0] + 1.0), self.shape[1] + 1, False) - 0.5
  *                     d2 = expand2d(numpy.arange(self.shape[1] + 1.0), self.shape[0] + 1, True) - 0.5
  *                     p = self.detector.calc_cartesian_positions(d1, d2)             # <<<<<<<<<<<<<<
@@ -10553,7 +10553,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
               __pyx_v_p = __pyx_t_11;
               __pyx_t_11 = 0;
 
-              /* "_distortion.pyx":570
+              /* "src/_distortion.pyx":570
  *                     d2 = expand2d(numpy.arange(self.shape[1] + 1.0), self.shape[0] + 1, True) - 0.5
  *                     p = self.detector.calc_cartesian_positions(d1, d2)
  *                     if p[-1] is not None:             # <<<<<<<<<<<<<<
@@ -10567,7 +10567,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
               __pyx_t_3 = (__pyx_t_2 != 0);
               if (__pyx_t_3) {
 
-                /* "_distortion.pyx":571
+                /* "src/_distortion.pyx":571
  *                     p = self.detector.calc_cartesian_positions(d1, d2)
  *                     if p[-1] is not None:
  *                         logger.warning("makes little sense to correct for distortion non-flat detectors: %s"%self.detector)             # <<<<<<<<<<<<<<
@@ -10615,7 +10615,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
               }
               __pyx_L17:;
 
-              /* "_distortion.pyx":572
+              /* "src/_distortion.pyx":572
  *                     if p[-1] is not None:
  *                         logger.warning("makes little sense to correct for distortion non-flat detectors: %s"%self.detector)
  *                     pos_corners[:, :, 0], pos_corners[:, :, 1] = p[:2]             # <<<<<<<<<<<<<<
@@ -10679,7 +10679,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
               if (unlikely(PyObject_SetItem(__pyx_v_pos_corners, __pyx_tuple__8, __pyx_t_5) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 572; __pyx_clineno = __LINE__; goto __pyx_L8_error;}
               __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-              /* "_distortion.pyx":573
+              /* "src/_distortion.pyx":573
  *                         logger.warning("makes little sense to correct for distortion non-flat detectors: %s"%self.detector)
  *                     pos_corners[:, :, 0], pos_corners[:, :, 1] = p[:2]
  *                     pos_corners[:, :, 0] /= self.detector.pixel1             # <<<<<<<<<<<<<<
@@ -10703,7 +10703,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
               __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
               __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
 
-              /* "_distortion.pyx":574
+              /* "src/_distortion.pyx":574
  *                     pos_corners[:, :, 0], pos_corners[:, :, 1] = p[:2]
  *                     pos_corners[:, :, 0] /= self.detector.pixel1
  *                     pos_corners[:, :, 1] /= self.detector.pixel2             # <<<<<<<<<<<<<<
@@ -10727,7 +10727,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
               __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
               __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
 
-              /* "_distortion.pyx":575
+              /* "src/_distortion.pyx":575
  *                     pos_corners[:, :, 0] /= self.detector.pixel1
  *                     pos_corners[:, :, 1] /= self.detector.pixel2
  *                     pos = numpy.empty((self.shape[0], self.shape[1], 4, 2), dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -10785,7 +10785,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
               __pyx_v_pos = __pyx_t_1;
               __pyx_t_1 = 0;
 
-              /* "_distortion.pyx":576
+              /* "src/_distortion.pyx":576
  *                     pos_corners[:, :, 1] /= self.detector.pixel2
  *                     pos = numpy.empty((self.shape[0], self.shape[1], 4, 2), dtype=numpy.float32)
  *                     pos[:, :, 0, :] = pos_corners[:-1, :-1]             # <<<<<<<<<<<<<<
@@ -10797,7 +10797,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
               if (unlikely(PyObject_SetItem(__pyx_v_pos, __pyx_tuple__21, __pyx_t_1) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 576; __pyx_clineno = __LINE__; goto __pyx_L8_error;}
               __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-              /* "_distortion.pyx":577
+              /* "src/_distortion.pyx":577
  *                     pos = numpy.empty((self.shape[0], self.shape[1], 4, 2), dtype=numpy.float32)
  *                     pos[:, :, 0, :] = pos_corners[:-1, :-1]
  *                     pos[:, :, 1, :] = pos_corners[:-1, 1:]             # <<<<<<<<<<<<<<
@@ -10809,7 +10809,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
               if (unlikely(PyObject_SetItem(__pyx_v_pos, __pyx_tuple__28, __pyx_t_1) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 577; __pyx_clineno = __LINE__; goto __pyx_L8_error;}
               __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-              /* "_distortion.pyx":578
+              /* "src/_distortion.pyx":578
  *                     pos[:, :, 0, :] = pos_corners[:-1, :-1]
  *                     pos[:, :, 1, :] = pos_corners[:-1, 1:]
  *                     pos[:, :, 2, :] = pos_corners[1:, 1:]             # <<<<<<<<<<<<<<
@@ -10821,7 +10821,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
               if (unlikely(PyObject_SetItem(__pyx_v_pos, __pyx_tuple__35, __pyx_t_1) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 578; __pyx_clineno = __LINE__; goto __pyx_L8_error;}
               __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-              /* "_distortion.pyx":579
+              /* "src/_distortion.pyx":579
  *                     pos[:, :, 1, :] = pos_corners[:-1, 1:]
  *                     pos[:, :, 2, :] = pos_corners[1:, 1:]
  *                     pos[:, :, 3, :] = pos_corners[1:, :-1]             # <<<<<<<<<<<<<<
@@ -10833,7 +10833,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
               if (unlikely(PyObject_SetItem(__pyx_v_pos, __pyx_tuple__42, __pyx_t_1) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 579; __pyx_clineno = __LINE__; goto __pyx_L8_error;}
               __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-              /* "_distortion.pyx":580
+              /* "src/_distortion.pyx":580
  *                     pos[:, :, 2, :] = pos_corners[1:, 1:]
  *                     pos[:, :, 3, :] = pos_corners[1:, :-1]
  *                     self.pos = pos             # <<<<<<<<<<<<<<
@@ -10842,7 +10842,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
  */
               if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_pos, __pyx_v_pos) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 580; __pyx_clineno = __LINE__; goto __pyx_L8_error;}
 
-              /* "_distortion.pyx":581
+              /* "src/_distortion.pyx":581
  *                     pos[:, :, 3, :] = pos_corners[1:, :-1]
  *                     self.pos = pos
  *                     self.delta0 = int((numpy.ceil(pos_corners[1:, :, 0]) - numpy.floor(pos_corners[:-1, :, 0])).max())             # <<<<<<<<<<<<<<
@@ -10946,7 +10946,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
               if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_delta0, __pyx_t_11) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 581; __pyx_clineno = __LINE__; goto __pyx_L8_error;}
               __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
-              /* "_distortion.pyx":582
+              /* "src/_distortion.pyx":582
  *                     self.pos = pos
  *                     self.delta0 = int((numpy.ceil(pos_corners[1:, :, 0]) - numpy.floor(pos_corners[:-1, :, 0])).max())
  *                     self.delta1 = int((numpy.ceil(pos_corners[:, 1:, 1]) - numpy.floor(pos_corners[:, :-1, 1])).max())             # <<<<<<<<<<<<<<
@@ -11058,7 +11058,6 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
           __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
           goto __pyx_L15_try_end;
           __pyx_L8_error:;
-          __Pyx_XDECREF(__pyx_t_16); __pyx_t_16 = 0;
           __Pyx_XDECREF(__pyx_t_13); __pyx_t_13 = 0;
           __Pyx_XDECREF(__pyx_t_12); __pyx_t_12 = 0;
           __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -11066,8 +11065,9 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
           __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
           __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
           __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+          __Pyx_XDECREF(__pyx_t_16); __pyx_t_16 = 0;
 
-          /* "_distortion.pyx":564
+          /* "src/_distortion.pyx":564
  *     def calc_pos(self):
  *         if self.pos is None:
  *             with self._sem:             # <<<<<<<<<<<<<<
@@ -11075,7 +11075,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
  *                     pos_corners = numpy.empty((self.shape[0] + 1, self.shape[1] + 1, 2), dtype=numpy.float64)
  */
           /*except:*/ {
-            __Pyx_AddTraceback("_distortion.Distortion.calc_pos", __pyx_clineno, __pyx_lineno, __pyx_filename);
+            __Pyx_AddTraceback("src._distortion.Distortion.calc_pos", __pyx_clineno, __pyx_lineno, __pyx_filename);
             if (__Pyx_GetException(&__pyx_t_6, &__pyx_t_11, &__pyx_t_7) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 564; __pyx_clineno = __LINE__; goto __pyx_L10_except_error;}
             __Pyx_GOTREF(__pyx_t_6);
             __Pyx_GOTREF(__pyx_t_11);
@@ -11141,7 +11141,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
   }
   __pyx_L3:;
 
-  /* "_distortion.pyx":583
+  /* "src/_distortion.pyx":583
  *                     self.delta0 = int((numpy.ceil(pos_corners[1:, :, 0]) - numpy.floor(pos_corners[:-1, :, 0])).max())
  *                     self.delta1 = int((numpy.ceil(pos_corners[:, 1:, 1]) - numpy.floor(pos_corners[:, :-1, 1])).max())
  *         return self.pos             # <<<<<<<<<<<<<<
@@ -11155,7 +11155,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
   __pyx_t_7 = 0;
   goto __pyx_L0;
 
-  /* "_distortion.pyx":562
+  /* "src/_distortion.pyx":562
  *                                 self.detector.__repr__()])
  * 
  *     def calc_pos(self):             # <<<<<<<<<<<<<<
@@ -11173,7 +11173,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
   __Pyx_XDECREF(__pyx_t_12);
   __Pyx_XDECREF(__pyx_t_13);
   __Pyx_XDECREF(__pyx_t_16);
-  __Pyx_AddTraceback("_distortion.Distortion.calc_pos", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Distortion.calc_pos", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_pos_corners);
@@ -11186,7 +11186,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
   return __pyx_r;
 }
 
-/* "_distortion.pyx":587
+/* "src/_distortion.pyx":587
  *     @cython.wraparound(False)
  *     @cython.boundscheck(False)
  *     def calc_LUT_size(self):             # <<<<<<<<<<<<<<
@@ -11195,21 +11195,21 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_4calc_pos(CYTHON_UNUSED PyO
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_10Distortion_7calc_LUT_size(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
-static char __pyx_doc_11_distortion_10Distortion_6calc_LUT_size[] = "\n        Considering the \"half-CCD\" spline from ID11 which describes a (1025,2048) detector,\n        the physical location of pixels should go from:\n        [-17.48634 : 1027.0543, -22.768829 : 2028.3689]\n        We chose to discard pixels falling outside the [0:1025,0:2048] range with a lose of intensity\n\n        We keep self.pos: pos_corners will not be compatible with systems showing non adjacent pixels (like some xpads)\n\n        ";
-static PyMethodDef __pyx_mdef_11_distortion_10Distortion_7calc_LUT_size = {"calc_LUT_size", (PyCFunction)__pyx_pw_11_distortion_10Distortion_7calc_LUT_size, METH_O, __pyx_doc_11_distortion_10Distortion_6calc_LUT_size};
-static PyObject *__pyx_pw_11_distortion_10Distortion_7calc_LUT_size(PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_11_distortion_10Distortion_7calc_LUT_size(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
+static char __pyx_doc_3src_11_distortion_10Distortion_6calc_LUT_size[] = "\n        Considering the \"half-CCD\" spline from ID11 which describes a (1025,2048) detector,\n        the physical location of pixels should go from:\n        [-17.48634 : 1027.0543, -22.768829 : 2028.3689]\n        We chose to discard pixels falling outside the [0:1025,0:2048] range with a lose of intensity\n\n        We keep self.pos: pos_corners will not be compatible with systems showing non adjacent pixels (like some xpads)\n\n        ";
+static PyMethodDef __pyx_mdef_3src_11_distortion_10Distortion_7calc_LUT_size = {"calc_LUT_size", (PyCFunction)__pyx_pw_3src_11_distortion_10Distortion_7calc_LUT_size, METH_O, __pyx_doc_3src_11_distortion_10Distortion_6calc_LUT_size};
+static PyObject *__pyx_pw_3src_11_distortion_10Distortion_7calc_LUT_size(PyObject *__pyx_self, PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("calc_LUT_size (wrapper)", 0);
-  __pyx_r = __pyx_pf_11_distortion_10Distortion_6calc_LUT_size(__pyx_self, ((PyObject *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_11_distortion_10Distortion_6calc_LUT_size(__pyx_self, ((PyObject *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
   int __pyx_v_i;
   int __pyx_v_j;
   int __pyx_v_k;
@@ -11280,7 +11280,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
   __pyx_pybuffernd_lut_size.data = NULL;
   __pyx_pybuffernd_lut_size.rcbuffer = &__pyx_pybuffer_lut_size;
 
-  /* "_distortion.pyx":601
+  /* "src/_distortion.pyx":601
  *         cdef int[:, :] pos0min, pos1min, pos0max, pos1max
  *         cdef numpy.ndarray[numpy.int32_t, ndim = 2] lut_size
  *         if self.pos is None:             # <<<<<<<<<<<<<<
@@ -11294,7 +11294,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
   __pyx_t_3 = (__pyx_t_2 != 0);
   if (__pyx_t_3) {
 
-    /* "_distortion.pyx":602
+    /* "src/_distortion.pyx":602
  *         cdef numpy.ndarray[numpy.int32_t, ndim = 2] lut_size
  *         if self.pos is None:
  *             pos = self.calc_pos()             # <<<<<<<<<<<<<<
@@ -11346,7 +11346,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
   }
   /*else*/ {
 
-    /* "_distortion.pyx":604
+    /* "src/_distortion.pyx":604
  *             pos = self.calc_pos()
  *         else:
  *             pos = self.pos             # <<<<<<<<<<<<<<
@@ -11379,7 +11379,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
   }
   __pyx_L3:;
 
-  /* "_distortion.pyx":605
+  /* "src/_distortion.pyx":605
  *         else:
  *             pos = self.pos
  *         if self.lut_size is None:             # <<<<<<<<<<<<<<
@@ -11393,7 +11393,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
   __pyx_t_2 = (__pyx_t_3 != 0);
   if (__pyx_t_2) {
 
-    /* "_distortion.pyx":606
+    /* "src/_distortion.pyx":606
  *             pos = self.pos
  *         if self.lut_size is None:
  *             with self._sem:             # <<<<<<<<<<<<<<
@@ -11435,7 +11435,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
           __Pyx_XGOTREF(__pyx_t_12);
           /*try:*/ {
 
-            /* "_distortion.pyx":607
+            /* "src/_distortion.pyx":607
  *         if self.lut_size is None:
  *             with self._sem:
  *                 if self.lut_size is None:             # <<<<<<<<<<<<<<
@@ -11449,7 +11449,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
             __pyx_t_3 = (__pyx_t_2 != 0);
             if (__pyx_t_3) {
 
-              /* "_distortion.pyx":608
+              /* "src/_distortion.pyx":608
  *             with self._sem:
  *                 if self.lut_size is None:
  *                     shape0, shape1 = self.shape             # <<<<<<<<<<<<<<
@@ -11515,7 +11515,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
               __pyx_v_shape0 = __pyx_t_7;
               __pyx_v_shape1 = __pyx_t_14;
 
-              /* "_distortion.pyx":609
+              /* "src/_distortion.pyx":609
  *                 if self.lut_size is None:
  *                     shape0, shape1 = self.shape
  *                     pos0min = numpy.floor(pos[:, :, :, 0].min(axis=-1)).astype(numpy.int32).clip(0, self.shape[0])             # <<<<<<<<<<<<<<
@@ -11641,7 +11641,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
               __pyx_t_19.memview = NULL;
               __pyx_t_19.data = NULL;
 
-              /* "_distortion.pyx":610
+              /* "src/_distortion.pyx":610
  *                     shape0, shape1 = self.shape
  *                     pos0min = numpy.floor(pos[:, :, :, 0].min(axis=-1)).astype(numpy.int32).clip(0, self.shape[0])
  *                     pos1min = numpy.floor(pos[:, :, :, 1].min(axis=-1)).astype(numpy.int32).clip(0, self.shape[1])             # <<<<<<<<<<<<<<
@@ -11767,7 +11767,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
               __pyx_t_19.memview = NULL;
               __pyx_t_19.data = NULL;
 
-              /* "_distortion.pyx":611
+              /* "src/_distortion.pyx":611
  *                     pos0min = numpy.floor(pos[:, :, :, 0].min(axis=-1)).astype(numpy.int32).clip(0, self.shape[0])
  *                     pos1min = numpy.floor(pos[:, :, :, 1].min(axis=-1)).astype(numpy.int32).clip(0, self.shape[1])
  *                     pos0max = (numpy.ceil(pos[:, :, :, 0].max(axis=-1)).astype(numpy.int32) + 1).clip(0, self.shape[0])             # <<<<<<<<<<<<<<
@@ -11896,7 +11896,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
               __pyx_t_19.memview = NULL;
               __pyx_t_19.data = NULL;
 
-              /* "_distortion.pyx":612
+              /* "src/_distortion.pyx":612
  *                     pos1min = numpy.floor(pos[:, :, :, 1].min(axis=-1)).astype(numpy.int32).clip(0, self.shape[1])
  *                     pos0max = (numpy.ceil(pos[:, :, :, 0].max(axis=-1)).astype(numpy.int32) + 1).clip(0, self.shape[0])
  *                     pos1max = (numpy.ceil(pos[:, :, :, 1].max(axis=-1)).astype(numpy.int32) + 1).clip(0, self.shape[1])             # <<<<<<<<<<<<<<
@@ -12025,7 +12025,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
               __pyx_t_19.memview = NULL;
               __pyx_t_19.data = NULL;
 
-              /* "_distortion.pyx":613
+              /* "src/_distortion.pyx":613
  *                     pos0max = (numpy.ceil(pos[:, :, :, 0].max(axis=-1)).astype(numpy.int32) + 1).clip(0, self.shape[0])
  *                     pos1max = (numpy.ceil(pos[:, :, :, 1].max(axis=-1)).astype(numpy.int32) + 1).clip(0, self.shape[1])
  *                     lut_size = numpy.zeros(self.shape, dtype=numpy.int32)             # <<<<<<<<<<<<<<
@@ -12080,7 +12080,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
               __pyx_v_lut_size = ((PyArrayObject *)__pyx_t_15);
               __pyx_t_15 = 0;
 
-              /* "_distortion.pyx":614
+              /* "src/_distortion.pyx":614
  *                     pos1max = (numpy.ceil(pos[:, :, :, 1].max(axis=-1)).astype(numpy.int32) + 1).clip(0, self.shape[1])
  *                     lut_size = numpy.zeros(self.shape, dtype=numpy.int32)
  *                     with nogil:             # <<<<<<<<<<<<<<
@@ -12094,7 +12094,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
                   #endif
                   /*try:*/ {
 
-                    /* "_distortion.pyx":615
+                    /* "src/_distortion.pyx":615
  *                     lut_size = numpy.zeros(self.shape, dtype=numpy.int32)
  *                     with nogil:
  *                         for i in range(shape0):             # <<<<<<<<<<<<<<
@@ -12105,7 +12105,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
                     for (__pyx_t_7 = 0; __pyx_t_7 < __pyx_t_14; __pyx_t_7+=1) {
                       __pyx_v_i = __pyx_t_7;
 
-                      /* "_distortion.pyx":616
+                      /* "src/_distortion.pyx":616
  *                     with nogil:
  *                         for i in range(shape0):
  *                             for j in range(shape1):             # <<<<<<<<<<<<<<
@@ -12116,7 +12116,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
                       for (__pyx_t_25 = 0; __pyx_t_25 < __pyx_t_24; __pyx_t_25+=1) {
                         __pyx_v_j = __pyx_t_25;
 
-                        /* "_distortion.pyx":617
+                        /* "src/_distortion.pyx":617
  *                         for i in range(shape0):
  *                             for j in range(shape1):
  *                                 for k in range(pos0min[i, j], pos0max[i, j]):             # <<<<<<<<<<<<<<
@@ -12131,7 +12131,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
                         for (__pyx_t_31 = (*((int *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos0min.data + __pyx_t_29 * __pyx_v_pos0min.strides[0]) ) + __pyx_t_30 * __pyx_v_pos0min.strides[1]) ))); __pyx_t_31 < __pyx_t_28; __pyx_t_31+=1) {
                           __pyx_v_k = __pyx_t_31;
 
-                          /* "_distortion.pyx":618
+                          /* "src/_distortion.pyx":618
  *                             for j in range(shape1):
  *                                 for k in range(pos0min[i, j], pos0max[i, j]):
  *                                     for l in range(pos1min[i, j], pos1max[i, j]):             # <<<<<<<<<<<<<<
@@ -12146,7 +12146,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
                           for (__pyx_t_37 = (*((int *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos1min.data + __pyx_t_35 * __pyx_v_pos1min.strides[0]) ) + __pyx_t_36 * __pyx_v_pos1min.strides[1]) ))); __pyx_t_37 < __pyx_t_34; __pyx_t_37+=1) {
                             __pyx_v_l = __pyx_t_37;
 
-                            /* "_distortion.pyx":619
+                            /* "src/_distortion.pyx":619
  *                                 for k in range(pos0min[i, j], pos0max[i, j]):
  *                                     for l in range(pos1min[i, j], pos1max[i, j]):
  *                                         lut_size[k, l] += 1             # <<<<<<<<<<<<<<
@@ -12162,7 +12162,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
                     }
                   }
 
-                  /* "_distortion.pyx":614
+                  /* "src/_distortion.pyx":614
  *                     pos1max = (numpy.ceil(pos[:, :, :, 1].max(axis=-1)).astype(numpy.int32) + 1).clip(0, self.shape[1])
  *                     lut_size = numpy.zeros(self.shape, dtype=numpy.int32)
  *                     with nogil:             # <<<<<<<<<<<<<<
@@ -12180,7 +12180,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
                   }
               }
 
-              /* "_distortion.pyx":620
+              /* "src/_distortion.pyx":620
  *                                     for l in range(pos1min[i, j], pos1max[i, j]):
  *                                         lut_size[k, l] += 1
  *                     self.lut_size = lut_size.max()             # <<<<<<<<<<<<<<
@@ -12210,7 +12210,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
               if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_lut_size, __pyx_t_15) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 620; __pyx_clineno = __LINE__; goto __pyx_L9_error;}
               __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
 
-              /* "_distortion.pyx":621
+              /* "src/_distortion.pyx":621
  *                                         lut_size[k, l] += 1
  *                     self.lut_size = lut_size.max()
  *                     return lut_size             # <<<<<<<<<<<<<<
@@ -12237,7 +12237,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
           __Pyx_XDECREF(__pyx_t_15); __pyx_t_15 = 0;
           __PYX_XDEC_MEMVIEW(&__pyx_t_19, 1);
 
-          /* "_distortion.pyx":606
+          /* "src/_distortion.pyx":606
  *             pos = self.pos
  *         if self.lut_size is None:
  *             with self._sem:             # <<<<<<<<<<<<<<
@@ -12245,7 +12245,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
  *                     shape0, shape1 = self.shape
  */
           /*except:*/ {
-            __Pyx_AddTraceback("_distortion.Distortion.calc_LUT_size", __pyx_clineno, __pyx_lineno, __pyx_filename);
+            __Pyx_AddTraceback("src._distortion.Distortion.calc_LUT_size", __pyx_clineno, __pyx_lineno, __pyx_filename);
             if (__Pyx_GetException(&__pyx_t_15, &__pyx_t_1, &__pyx_t_4) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 606; __pyx_clineno = __LINE__; goto __pyx_L11_except_error;}
             __Pyx_GOTREF(__pyx_t_15);
             __Pyx_GOTREF(__pyx_t_1);
@@ -12331,7 +12331,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
   }
   __pyx_L4:;
 
-  /* "_distortion.pyx":587
+  /* "src/_distortion.pyx":587
  *     @cython.wraparound(False)
  *     @cython.boundscheck(False)
  *     def calc_LUT_size(self):             # <<<<<<<<<<<<<<
@@ -12356,7 +12356,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_lut_size.rcbuffer->pybuffer);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_pos.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("_distortion.Distortion.calc_LUT_size", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Distortion.calc_LUT_size", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   goto __pyx_L2;
   __pyx_L0:;
@@ -12374,7 +12374,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
   return __pyx_r;
 }
 
-/* "_distortion.pyx":626
+/* "src/_distortion.pyx":626
  *     @cython.boundscheck(False)
  *     @cython.cdivision(True)
  *     def calc_LUT(self):             # <<<<<<<<<<<<<<
@@ -12383,20 +12383,20 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_6calc_LUT_size(CYTHON_UNUSE
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_10Distortion_9calc_LUT(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
-static PyMethodDef __pyx_mdef_11_distortion_10Distortion_9calc_LUT = {"calc_LUT", (PyCFunction)__pyx_pw_11_distortion_10Distortion_9calc_LUT, METH_O, 0};
-static PyObject *__pyx_pw_11_distortion_10Distortion_9calc_LUT(PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_3src_11_distortion_10Distortion_9calc_LUT(PyObject *__pyx_self, PyObject *__pyx_v_self); /*proto*/
+static PyMethodDef __pyx_mdef_3src_11_distortion_10Distortion_9calc_LUT = {"calc_LUT", (PyCFunction)__pyx_pw_3src_11_distortion_10Distortion_9calc_LUT, METH_O, 0};
+static PyObject *__pyx_pw_3src_11_distortion_10Distortion_9calc_LUT(PyObject *__pyx_self, PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("calc_LUT (wrapper)", 0);
-  __pyx_r = __pyx_pf_11_distortion_10Distortion_8calc_LUT(__pyx_self, ((PyObject *)__pyx_v_self));
+  __pyx_r = __pyx_pf_3src_11_distortion_10Distortion_8calc_LUT(__pyx_self, ((PyObject *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
+static PyObject *__pyx_pf_3src_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
   int __pyx_v_i;
   int __pyx_v_j;
   int __pyx_v_ms;
@@ -12537,7 +12537,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyO
   __pyx_pybuffernd_outMax.data = NULL;
   __pyx_pybuffernd_outMax.rcbuffer = &__pyx_pybuffer_outMax;
 
-  /* "_distortion.pyx":630
+  /* "src/_distortion.pyx":630
  *             int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1, size
  *             int offset0, offset1, box_size0, box_size1
  *             numpy.int32_t k, idx = 0             # <<<<<<<<<<<<<<
@@ -12546,7 +12546,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyO
  */
   __pyx_v_idx = 0;
 
-  /* "_distortion.pyx":634
+  /* "src/_distortion.pyx":634
  *             float[:, :, :, :] pos
  *             numpy.ndarray[lut_point, ndim = 3] lut
  *             numpy.ndarray[numpy.int32_t, ndim = 2] outMax = numpy.zeros(self.shape, dtype=numpy.int32)             # <<<<<<<<<<<<<<
@@ -12593,7 +12593,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyO
   __pyx_v_outMax = ((PyArrayObject *)__pyx_t_5);
   __pyx_t_5 = 0;
 
-  /* "_distortion.pyx":636
+  /* "src/_distortion.pyx":636
  *             numpy.ndarray[numpy.int32_t, ndim = 2] outMax = numpy.zeros(self.shape, dtype=numpy.int32)
  *             float[:, :] buffer
  *         shape0, shape1 = self.shape             # <<<<<<<<<<<<<<
@@ -12659,7 +12659,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyO
   __pyx_v_shape0 = __pyx_t_8;
   __pyx_v_shape1 = __pyx_t_9;
 
-  /* "_distortion.pyx":638
+  /* "src/_distortion.pyx":638
  *         shape0, shape1 = self.shape
  * 
  *         if self.lut_size is None:             # <<<<<<<<<<<<<<
@@ -12673,7 +12673,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyO
   __pyx_t_11 = (__pyx_t_10 != 0);
   if (__pyx_t_11) {
 
-    /* "_distortion.pyx":639
+    /* "src/_distortion.pyx":639
  * 
  *         if self.lut_size is None:
  *             self.calc_LUT_size()             # <<<<<<<<<<<<<<
@@ -12705,7 +12705,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyO
   }
   __pyx_L5:;
 
-  /* "_distortion.pyx":640
+  /* "src/_distortion.pyx":640
  *         if self.lut_size is None:
  *             self.calc_LUT_size()
  *         if self.LUT is None:             # <<<<<<<<<<<<<<
@@ -12719,7 +12719,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyO
   __pyx_t_10 = (__pyx_t_11 != 0);
   if (__pyx_t_10) {
 
-    /* "_distortion.pyx":641
+    /* "src/_distortion.pyx":641
  *             self.calc_LUT_size()
  *         if self.LUT is None:
  *             with self._sem:             # <<<<<<<<<<<<<<
@@ -12761,7 +12761,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyO
           __Pyx_XGOTREF(__pyx_t_15);
           /*try:*/ {
 
-            /* "_distortion.pyx":642
+            /* "src/_distortion.pyx":642
  *         if self.LUT is None:
  *             with self._sem:
  *                 if self.LUT is None:             # <<<<<<<<<<<<<<
@@ -12775,7 +12775,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyO
             __pyx_t_11 = (__pyx_t_10 != 0);
             if (__pyx_t_11) {
 
-              /* "_distortion.pyx":643
+              /* "src/_distortion.pyx":643
  *             with self._sem:
  *                 if self.LUT is None:
  *                     pos = self.pos             # <<<<<<<<<<<<<<
@@ -12791,7 +12791,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyO
               __pyx_t_16.memview = NULL;
               __pyx_t_16.data = NULL;
 
-              /* "_distortion.pyx":644
+              /* "src/_distortion.pyx":644
  *                 if self.LUT is None:
  *                     pos = self.pos
  *                     lut = numpy.recarray(shape=(self.shape[0], self.shape[1], self.lut_size), dtype=[("idx", numpy.int32), ("coef", numpy.float32)])             # <<<<<<<<<<<<<<
@@ -12875,10 +12875,10 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyO
               {
                 __Pyx_BufFmt_StackElem __pyx_stack[2];
                 __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_lut.rcbuffer->pybuffer);
-                __pyx_t_9 = __Pyx_GetBufferAndValidate(&__pyx_pybuffernd_lut.rcbuffer->pybuffer, (PyObject*)__pyx_t_18, &__Pyx_TypeInfo_nn_struct___pyx_t_11_distortion_lut_point, PyBUF_FORMAT| PyBUF_STRIDES, 3, 0, __pyx_stack);
+                __pyx_t_9 = __Pyx_GetBufferAndValidate(&__pyx_pybuffernd_lut.rcbuffer->pybuffer, (PyObject*)__pyx_t_18, &__Pyx_TypeInfo_nn_struct___pyx_t_3src_11_distortion_lut_point, PyBUF_FORMAT| PyBUF_STRIDES, 3, 0, __pyx_stack);
                 if (unlikely(__pyx_t_9 < 0)) {
                   PyErr_Fetch(&__pyx_t_19, &__pyx_t_20, &__pyx_t_21);
-                  if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_lut.rcbuffer->pybuffer, (PyObject*)__pyx_v_lut, &__Pyx_TypeInfo_nn_struct___pyx_t_11_distortion_lut_point, PyBUF_FORMAT| PyBUF_STRIDES, 3, 0, __pyx_stack) == -1)) {
+                  if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_lut.rcbuffer->pybuffer, (PyObject*)__pyx_v_lut, &__Pyx_TypeInfo_nn_struct___pyx_t_3src_11_distortion_lut_point, PyBUF_FORMAT| PyBUF_STRIDES, 3, 0, __pyx_stack) == -1)) {
                     Py_XDECREF(__pyx_t_19); Py_XDECREF(__pyx_t_20); Py_XDECREF(__pyx_t_21);
                     __Pyx_RaiseBufferFallbackError();
                   } else {
@@ -12892,7 +12892,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyO
               __pyx_v_lut = ((PyArrayObject *)__pyx_t_4);
               __pyx_t_4 = 0;
 
-              /* "_distortion.pyx":645
+              /* "src/_distortion.pyx":645
  *                     pos = self.pos
  *                     lut = numpy.recarray(shape=(self.shape[0], self.shape[1], self.lut_size), dtype=[("idx", numpy.int32), ("coef", numpy.float32)])
  *                     size = self.shape[0] * self.shape[1] * self.lut_size * sizeof(lut_point)             # <<<<<<<<<<<<<<
@@ -12919,7 +12919,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyO
               __Pyx_GOTREF(__pyx_t_5);
               __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
               __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-              __pyx_t_3 = __Pyx_PyInt_FromSize_t((sizeof(struct __pyx_t_11_distortion_lut_point))); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 645; __pyx_clineno = __LINE__; goto __pyx_L11_error;}
+              __pyx_t_3 = __Pyx_PyInt_FromSize_t((sizeof(struct __pyx_t_3src_11_distortion_lut_point))); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 645; __pyx_clineno = __LINE__; goto __pyx_L11_error;}
               __Pyx_GOTREF(__pyx_t_3);
               __pyx_t_4 = PyNumber_Multiply(__pyx_t_5, __pyx_t_3); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 645; __pyx_clineno = __LINE__; goto __pyx_L11_error;}
               __Pyx_GOTREF(__pyx_t_4);
@@ -12929,7 +12929,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyO
               __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
               __pyx_v_size = __pyx_t_9;
 
-              /* "_distortion.pyx":646
+              /* "src/_distortion.pyx":646
  *                     lut = numpy.recarray(shape=(self.shape[0], self.shape[1], self.lut_size), dtype=[("idx", numpy.int32), ("coef", numpy.float32)])
  *                     size = self.shape[0] * self.shape[1] * self.lut_size * sizeof(lut_point)
  *                     memset(&lut[0, 0, 0], 0, size)             # <<<<<<<<<<<<<<
@@ -12939,9 +12939,9 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyO
               __pyx_t_22 = 0;
               __pyx_t_23 = 0;
               __pyx_t_24 = 0;
-              memset((&(*__Pyx_BufPtrStrided3d(struct __pyx_t_11_distortion_lut_point *, __pyx_pybuffernd_lut.rcbuffer->pybuffer.buf, __pyx_t_22, __pyx_pybuffernd_lut.diminfo[0].strides, __pyx_t_23, __pyx_pybuffernd_lut.diminfo[1].strides, __pyx_t_24, __pyx_pybuffernd_lut.diminfo[2].strides))), 0, __pyx_v_size);
+              memset((&(*__Pyx_BufPtrStrided3d(struct __pyx_t_3src_11_distortion_lut_point *, __pyx_pybuffernd_lut.rcbuffer->pybuffer.buf, __pyx_t_22, __pyx_pybuffernd_lut.diminfo[0].strides, __pyx_t_23, __pyx_pybuffernd_lut.diminfo[1].strides, __pyx_t_24, __pyx_pybuffernd_lut.diminfo[2].strides))), 0, __pyx_v_size);
 
-              /* "_distortion.pyx":647
+              /* "src/_distortion.pyx":647
  *                     size = self.shape[0] * self.shape[1] * self.lut_size * sizeof(lut_point)
  *                     memset(&lut[0, 0, 0], 0, size)
  *                     logger.info("LUT shape: (%i,%i,%i) %.3f MByte" % (lut.shape[0], lut.shape[1], lut.shape[2], size / 1.0e6))             # <<<<<<<<<<<<<<
@@ -13006,7 +13006,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyO
               __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
               __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-              /* "_distortion.pyx":648
+              /* "src/_distortion.pyx":648
  *                     memset(&lut[0, 0, 0], 0, size)
  *                     logger.info("LUT shape: (%i,%i,%i) %.3f MByte" % (lut.shape[0], lut.shape[1], lut.shape[2], size / 1.0e6))
  *                     buffer = numpy.empty((self.delta0, self.delta1), dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -13056,7 +13056,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyO
               __pyx_t_26.memview = NULL;
               __pyx_t_26.data = NULL;
 
-              /* "_distortion.pyx":649
+              /* "src/_distortion.pyx":649
  *                     logger.info("LUT shape: (%i,%i,%i) %.3f MByte" % (lut.shape[0], lut.shape[1], lut.shape[2], size / 1.0e6))
  *                     buffer = numpy.empty((self.delta0, self.delta1), dtype=numpy.float32)
  *                     buffer_size = self.delta0 * self.delta1 * sizeof(float)             # <<<<<<<<<<<<<<
@@ -13081,7 +13081,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyO
               __Pyx_DECREF(__pyx_t_25); __pyx_t_25 = 0;
               __pyx_v_buffer_size = __pyx_t_9;
 
-              /* "_distortion.pyx":650
+              /* "src/_distortion.pyx":650
  *                     buffer = numpy.empty((self.delta0, self.delta1), dtype=numpy.float32)
  *                     buffer_size = self.delta0 * self.delta1 * sizeof(float)
  *                     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (buffer.shape[1], buffer.shape[0], self.lut_size))             # <<<<<<<<<<<<<<
@@ -13141,7 +13141,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyO
               __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
               __Pyx_DECREF(__pyx_t_25); __pyx_t_25 = 0;
 
-              /* "_distortion.pyx":651
+              /* "src/_distortion.pyx":651
  *                     buffer_size = self.delta0 * self.delta1 * sizeof(float)
  *                     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (buffer.shape[1], buffer.shape[0], self.lut_size))
  *                     with nogil:             # <<<<<<<<<<<<<<
@@ -13155,7 +13155,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyO
                   #endif
                   /*try:*/ {
 
-                    /* "_distortion.pyx":653
+                    /* "src/_distortion.pyx":653
  *                     with nogil:
  *                         # i,j, idx are indexes of the raw image uncorrected
  *                         for i in range(shape0):             # <<<<<<<<<<<<<<
@@ -13166,7 +13166,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyO
                     for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_9; __pyx_t_8+=1) {
                       __pyx_v_i = __pyx_t_8;
 
-                      /* "_distortion.pyx":654
+                      /* "src/_distortion.pyx":654
  *                         # i,j, idx are indexes of the raw image uncorrected
  *                         for i in range(shape0):
  *                             for j in range(shape1):             # <<<<<<<<<<<<<<
@@ -13177,7 +13177,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_8calc_LUT(CYTHON_UNUSED PyO
                       for (__pyx_t_28 = 0; __pyx_t_28 < __pyx_t_27; __pyx_t_28+=1) {
                         __pyx_v_j = __pyx_t_28;
 
-                        /* "_distortion.pyx":656
+                        /* "src/_distortion.pyx":656
  *                             for j in range(shape1):
  *                                 # reinit of buffer
  *                                 buffer[:, :] = 0             # <<<<<<<<<<<<<<
@@ -13220,7 +13220,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         }
                         __PYX_XDEC_MEMVIEW(&__pyx_t_29, 0);
 
-                        /* "_distortion.pyx":657
+                        /* "src/_distortion.pyx":657
  *                                 # reinit of buffer
  *                                 buffer[:, :] = 0
  *                                 A0 = pos[i, j, 0, 0]             # <<<<<<<<<<<<<<
@@ -13233,7 +13233,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         __pyx_t_33 = 0;
                         __pyx_v_A0 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_30 * __pyx_v_pos.strides[0]) ) + __pyx_t_31 * __pyx_v_pos.strides[1]) ) + __pyx_t_32 * __pyx_v_pos.strides[2]) ) + __pyx_t_33 * __pyx_v_pos.strides[3]) )));
 
-                        /* "_distortion.pyx":658
+                        /* "src/_distortion.pyx":658
  *                                 buffer[:, :] = 0
  *                                 A0 = pos[i, j, 0, 0]
  *                                 A1 = pos[i, j, 0, 1]             # <<<<<<<<<<<<<<
@@ -13246,7 +13246,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         __pyx_t_37 = 1;
                         __pyx_v_A1 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_34 * __pyx_v_pos.strides[0]) ) + __pyx_t_35 * __pyx_v_pos.strides[1]) ) + __pyx_t_36 * __pyx_v_pos.strides[2]) ) + __pyx_t_37 * __pyx_v_pos.strides[3]) )));
 
-                        /* "_distortion.pyx":659
+                        /* "src/_distortion.pyx":659
  *                                 A0 = pos[i, j, 0, 0]
  *                                 A1 = pos[i, j, 0, 1]
  *                                 B0 = pos[i, j, 1, 0]             # <<<<<<<<<<<<<<
@@ -13259,7 +13259,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         __pyx_t_41 = 0;
                         __pyx_v_B0 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_38 * __pyx_v_pos.strides[0]) ) + __pyx_t_39 * __pyx_v_pos.strides[1]) ) + __pyx_t_40 * __pyx_v_pos.strides[2]) ) + __pyx_t_41 * __pyx_v_pos.strides[3]) )));
 
-                        /* "_distortion.pyx":660
+                        /* "src/_distortion.pyx":660
  *                                 A1 = pos[i, j, 0, 1]
  *                                 B0 = pos[i, j, 1, 0]
  *                                 B1 = pos[i, j, 1, 1]             # <<<<<<<<<<<<<<
@@ -13272,7 +13272,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         __pyx_t_45 = 1;
                         __pyx_v_B1 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_42 * __pyx_v_pos.strides[0]) ) + __pyx_t_43 * __pyx_v_pos.strides[1]) ) + __pyx_t_44 * __pyx_v_pos.strides[2]) ) + __pyx_t_45 * __pyx_v_pos.strides[3]) )));
 
-                        /* "_distortion.pyx":661
+                        /* "src/_distortion.pyx":661
  *                                 B0 = pos[i, j, 1, 0]
  *                                 B1 = pos[i, j, 1, 1]
  *                                 C0 = pos[i, j, 2, 0]             # <<<<<<<<<<<<<<
@@ -13285,7 +13285,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         __pyx_t_49 = 0;
                         __pyx_v_C0 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_46 * __pyx_v_pos.strides[0]) ) + __pyx_t_47 * __pyx_v_pos.strides[1]) ) + __pyx_t_48 * __pyx_v_pos.strides[2]) ) + __pyx_t_49 * __pyx_v_pos.strides[3]) )));
 
-                        /* "_distortion.pyx":662
+                        /* "src/_distortion.pyx":662
  *                                 B1 = pos[i, j, 1, 1]
  *                                 C0 = pos[i, j, 2, 0]
  *                                 C1 = pos[i, j, 2, 1]             # <<<<<<<<<<<<<<
@@ -13298,7 +13298,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         __pyx_t_53 = 1;
                         __pyx_v_C1 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_50 * __pyx_v_pos.strides[0]) ) + __pyx_t_51 * __pyx_v_pos.strides[1]) ) + __pyx_t_52 * __pyx_v_pos.strides[2]) ) + __pyx_t_53 * __pyx_v_pos.strides[3]) )));
 
-                        /* "_distortion.pyx":663
+                        /* "src/_distortion.pyx":663
  *                                 C0 = pos[i, j, 2, 0]
  *                                 C1 = pos[i, j, 2, 1]
  *                                 D0 = pos[i, j, 3, 0]             # <<<<<<<<<<<<<<
@@ -13311,7 +13311,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         __pyx_t_57 = 0;
                         __pyx_v_D0 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_54 * __pyx_v_pos.strides[0]) ) + __pyx_t_55 * __pyx_v_pos.strides[1]) ) + __pyx_t_56 * __pyx_v_pos.strides[2]) ) + __pyx_t_57 * __pyx_v_pos.strides[3]) )));
 
-                        /* "_distortion.pyx":664
+                        /* "src/_distortion.pyx":664
  *                                 C1 = pos[i, j, 2, 1]
  *                                 D0 = pos[i, j, 3, 0]
  *                                 D1 = pos[i, j, 3, 1]             # <<<<<<<<<<<<<<
@@ -13324,7 +13324,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         __pyx_t_61 = 1;
                         __pyx_v_D1 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_58 * __pyx_v_pos.strides[0]) ) + __pyx_t_59 * __pyx_v_pos.strides[1]) ) + __pyx_t_60 * __pyx_v_pos.strides[2]) ) + __pyx_t_61 * __pyx_v_pos.strides[3]) )));
 
-                        /* "_distortion.pyx":665
+                        /* "src/_distortion.pyx":665
  *                                 D0 = pos[i, j, 3, 0]
  *                                 D1 = pos[i, j, 3, 1]
  *                                 offset0 = (<int> floor(min(A0, B0, C0, D0)))             # <<<<<<<<<<<<<<
@@ -13354,7 +13354,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         }
                         __pyx_v_offset0 = ((int)floor(__pyx_t_66));
 
-                        /* "_distortion.pyx":666
+                        /* "src/_distortion.pyx":666
  *                                 D1 = pos[i, j, 3, 1]
  *                                 offset0 = (<int> floor(min(A0, B0, C0, D0)))
  *                                 offset1 = (<int> floor(min(A1, B1, C1, D1)))             # <<<<<<<<<<<<<<
@@ -13384,7 +13384,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         }
                         __pyx_v_offset1 = ((int)floor(__pyx_t_65));
 
-                        /* "_distortion.pyx":667
+                        /* "src/_distortion.pyx":667
  *                                 offset0 = (<int> floor(min(A0, B0, C0, D0)))
  *                                 offset1 = (<int> floor(min(A1, B1, C1, D1)))
  *                                 box_size0 = (<int> ceil(max(A0, B0, C0, D0))) - offset0             # <<<<<<<<<<<<<<
@@ -13414,7 +13414,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         }
                         __pyx_v_box_size0 = (((int)ceil(__pyx_t_64)) - __pyx_v_offset0);
 
-                        /* "_distortion.pyx":668
+                        /* "src/_distortion.pyx":668
  *                                 offset1 = (<int> floor(min(A1, B1, C1, D1)))
  *                                 box_size0 = (<int> ceil(max(A0, B0, C0, D0))) - offset0
  *                                 box_size1 = (<int> ceil(max(A1, B1, C1, D1))) - offset1             # <<<<<<<<<<<<<<
@@ -13444,7 +13444,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         }
                         __pyx_v_box_size1 = (((int)ceil(__pyx_t_63)) - __pyx_v_offset1);
 
-                        /* "_distortion.pyx":669
+                        /* "src/_distortion.pyx":669
  *                                 box_size0 = (<int> ceil(max(A0, B0, C0, D0))) - offset0
  *                                 box_size1 = (<int> ceil(max(A1, B1, C1, D1))) - offset1
  *                                 A0 -= <float> offset0             # <<<<<<<<<<<<<<
@@ -13453,7 +13453,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
  */
                         __pyx_v_A0 = (__pyx_v_A0 - ((float)__pyx_v_offset0));
 
-                        /* "_distortion.pyx":670
+                        /* "src/_distortion.pyx":670
  *                                 box_size1 = (<int> ceil(max(A1, B1, C1, D1))) - offset1
  *                                 A0 -= <float> offset0
  *                                 A1 -= <float> offset1             # <<<<<<<<<<<<<<
@@ -13462,7 +13462,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
  */
                         __pyx_v_A1 = (__pyx_v_A1 - ((float)__pyx_v_offset1));
 
-                        /* "_distortion.pyx":671
+                        /* "src/_distortion.pyx":671
  *                                 A0 -= <float> offset0
  *                                 A1 -= <float> offset1
  *                                 B0 -= <float> offset0             # <<<<<<<<<<<<<<
@@ -13471,7 +13471,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
  */
                         __pyx_v_B0 = (__pyx_v_B0 - ((float)__pyx_v_offset0));
 
-                        /* "_distortion.pyx":672
+                        /* "src/_distortion.pyx":672
  *                                 A1 -= <float> offset1
  *                                 B0 -= <float> offset0
  *                                 B1 -= <float> offset1             # <<<<<<<<<<<<<<
@@ -13480,7 +13480,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
  */
                         __pyx_v_B1 = (__pyx_v_B1 - ((float)__pyx_v_offset1));
 
-                        /* "_distortion.pyx":673
+                        /* "src/_distortion.pyx":673
  *                                 B0 -= <float> offset0
  *                                 B1 -= <float> offset1
  *                                 C0 -= <float> offset0             # <<<<<<<<<<<<<<
@@ -13489,7 +13489,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
  */
                         __pyx_v_C0 = (__pyx_v_C0 - ((float)__pyx_v_offset0));
 
-                        /* "_distortion.pyx":674
+                        /* "src/_distortion.pyx":674
  *                                 B1 -= <float> offset1
  *                                 C0 -= <float> offset0
  *                                 C1 -= <float> offset1             # <<<<<<<<<<<<<<
@@ -13498,7 +13498,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
  */
                         __pyx_v_C1 = (__pyx_v_C1 - ((float)__pyx_v_offset1));
 
-                        /* "_distortion.pyx":675
+                        /* "src/_distortion.pyx":675
  *                                 C0 -= <float> offset0
  *                                 C1 -= <float> offset1
  *                                 D0 -= <float> offset0             # <<<<<<<<<<<<<<
@@ -13507,7 +13507,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
  */
                         __pyx_v_D0 = (__pyx_v_D0 - ((float)__pyx_v_offset0));
 
-                        /* "_distortion.pyx":676
+                        /* "src/_distortion.pyx":676
  *                                 C1 -= <float> offset1
  *                                 D0 -= <float> offset0
  *                                 D1 -= <float> offset1             # <<<<<<<<<<<<<<
@@ -13516,7 +13516,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
  */
                         __pyx_v_D1 = (__pyx_v_D1 - ((float)__pyx_v_offset1));
 
-                        /* "_distortion.pyx":677
+                        /* "src/_distortion.pyx":677
  *                                 D0 -= <float> offset0
  *                                 D1 -= <float> offset1
  *                                 if B0 != A0:             # <<<<<<<<<<<<<<
@@ -13526,7 +13526,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         __pyx_t_11 = ((__pyx_v_B0 != __pyx_v_A0) != 0);
                         if (__pyx_t_11) {
 
-                          /* "_distortion.pyx":678
+                          /* "src/_distortion.pyx":678
  *                                 D1 -= <float> offset1
  *                                 if B0 != A0:
  *                                     pAB = (B1 - A1) / (B0 - A0)             # <<<<<<<<<<<<<<
@@ -13535,7 +13535,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
  */
                           __pyx_v_pAB = ((__pyx_v_B1 - __pyx_v_A1) / (__pyx_v_B0 - __pyx_v_A0));
 
-                          /* "_distortion.pyx":679
+                          /* "src/_distortion.pyx":679
  *                                 if B0 != A0:
  *                                     pAB = (B1 - A1) / (B0 - A0)
  *                                     cAB = A1 - pAB * A0             # <<<<<<<<<<<<<<
@@ -13547,7 +13547,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         }
                         /*else*/ {
 
-                          /* "_distortion.pyx":681
+                          /* "src/_distortion.pyx":681
  *                                     cAB = A1 - pAB * A0
  *                                 else:
  *                                     pAB = cAB = 0.0             # <<<<<<<<<<<<<<
@@ -13559,7 +13559,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         }
                         __pyx_L29:;
 
-                        /* "_distortion.pyx":682
+                        /* "src/_distortion.pyx":682
  *                                 else:
  *                                     pAB = cAB = 0.0
  *                                 if C0 != B0:             # <<<<<<<<<<<<<<
@@ -13569,7 +13569,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         __pyx_t_11 = ((__pyx_v_C0 != __pyx_v_B0) != 0);
                         if (__pyx_t_11) {
 
-                          /* "_distortion.pyx":683
+                          /* "src/_distortion.pyx":683
  *                                     pAB = cAB = 0.0
  *                                 if C0 != B0:
  *                                     pBC = (C1 - B1) / (C0 - B0)             # <<<<<<<<<<<<<<
@@ -13578,7 +13578,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
  */
                           __pyx_v_pBC = ((__pyx_v_C1 - __pyx_v_B1) / (__pyx_v_C0 - __pyx_v_B0));
 
-                          /* "_distortion.pyx":684
+                          /* "src/_distortion.pyx":684
  *                                 if C0 != B0:
  *                                     pBC = (C1 - B1) / (C0 - B0)
  *                                     cBC = B1 - pBC * B0             # <<<<<<<<<<<<<<
@@ -13590,7 +13590,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         }
                         /*else*/ {
 
-                          /* "_distortion.pyx":686
+                          /* "src/_distortion.pyx":686
  *                                     cBC = B1 - pBC * B0
  *                                 else:
  *                                     pBC = cBC = 0.0             # <<<<<<<<<<<<<<
@@ -13602,7 +13602,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         }
                         __pyx_L30:;
 
-                        /* "_distortion.pyx":687
+                        /* "src/_distortion.pyx":687
  *                                 else:
  *                                     pBC = cBC = 0.0
  *                                 if D0 != C0:             # <<<<<<<<<<<<<<
@@ -13612,7 +13612,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         __pyx_t_11 = ((__pyx_v_D0 != __pyx_v_C0) != 0);
                         if (__pyx_t_11) {
 
-                          /* "_distortion.pyx":688
+                          /* "src/_distortion.pyx":688
  *                                     pBC = cBC = 0.0
  *                                 if D0 != C0:
  *                                     pCD = (D1 - C1) / (D0 - C0)             # <<<<<<<<<<<<<<
@@ -13621,7 +13621,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
  */
                           __pyx_v_pCD = ((__pyx_v_D1 - __pyx_v_C1) / (__pyx_v_D0 - __pyx_v_C0));
 
-                          /* "_distortion.pyx":689
+                          /* "src/_distortion.pyx":689
  *                                 if D0 != C0:
  *                                     pCD = (D1 - C1) / (D0 - C0)
  *                                     cCD = C1 - pCD * C0             # <<<<<<<<<<<<<<
@@ -13633,7 +13633,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         }
                         /*else*/ {
 
-                          /* "_distortion.pyx":691
+                          /* "src/_distortion.pyx":691
  *                                     cCD = C1 - pCD * C0
  *                                 else:
  *                                     pCD = cCD = 0.0             # <<<<<<<<<<<<<<
@@ -13645,7 +13645,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         }
                         __pyx_L31:;
 
-                        /* "_distortion.pyx":692
+                        /* "src/_distortion.pyx":692
  *                                 else:
  *                                     pCD = cCD = 0.0
  *                                 if A0 != D0:             # <<<<<<<<<<<<<<
@@ -13655,7 +13655,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         __pyx_t_11 = ((__pyx_v_A0 != __pyx_v_D0) != 0);
                         if (__pyx_t_11) {
 
-                          /* "_distortion.pyx":693
+                          /* "src/_distortion.pyx":693
  *                                     pCD = cCD = 0.0
  *                                 if A0 != D0:
  *                                     pDA = (A1 - D1) / (A0 - D0)             # <<<<<<<<<<<<<<
@@ -13664,7 +13664,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
  */
                           __pyx_v_pDA = ((__pyx_v_A1 - __pyx_v_D1) / (__pyx_v_A0 - __pyx_v_D0));
 
-                          /* "_distortion.pyx":694
+                          /* "src/_distortion.pyx":694
  *                                 if A0 != D0:
  *                                     pDA = (A1 - D1) / (A0 - D0)
  *                                     cDA = D1 - pDA * D0             # <<<<<<<<<<<<<<
@@ -13676,7 +13676,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         }
                         /*else*/ {
 
-                          /* "_distortion.pyx":696
+                          /* "src/_distortion.pyx":696
  *                                     cDA = D1 - pDA * D0
  *                                 else:
  *                                     pDA = cDA = 0.0             # <<<<<<<<<<<<<<
@@ -13688,43 +13688,43 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         }
                         __pyx_L32:;
 
-                        /* "_distortion.pyx":697
+                        /* "src/_distortion.pyx":697
  *                                 else:
  *                                     pDA = cDA = 0.0
  *                                 integrate(buffer, B0, A0, pAB, cAB)             # <<<<<<<<<<<<<<
  *                                 integrate(buffer, A0, D0, pDA, cDA)
  *                                 integrate(buffer, D0, C0, pCD, cCD)
  */
-                        __pyx_f_11_distortion_integrate(__pyx_v_buffer, __pyx_v_B0, __pyx_v_A0, __pyx_v_pAB, __pyx_v_cAB);
+                        __pyx_f_3src_11_distortion_integrate(__pyx_v_buffer, __pyx_v_B0, __pyx_v_A0, __pyx_v_pAB, __pyx_v_cAB);
 
-                        /* "_distortion.pyx":698
+                        /* "src/_distortion.pyx":698
  *                                     pDA = cDA = 0.0
  *                                 integrate(buffer, B0, A0, pAB, cAB)
  *                                 integrate(buffer, A0, D0, pDA, cDA)             # <<<<<<<<<<<<<<
  *                                 integrate(buffer, D0, C0, pCD, cCD)
  *                                 integrate(buffer, C0, B0, pBC, cBC)
  */
-                        __pyx_f_11_distortion_integrate(__pyx_v_buffer, __pyx_v_A0, __pyx_v_D0, __pyx_v_pDA, __pyx_v_cDA);
+                        __pyx_f_3src_11_distortion_integrate(__pyx_v_buffer, __pyx_v_A0, __pyx_v_D0, __pyx_v_pDA, __pyx_v_cDA);
 
-                        /* "_distortion.pyx":699
+                        /* "src/_distortion.pyx":699
  *                                 integrate(buffer, B0, A0, pAB, cAB)
  *                                 integrate(buffer, A0, D0, pDA, cDA)
  *                                 integrate(buffer, D0, C0, pCD, cCD)             # <<<<<<<<<<<<<<
  *                                 integrate(buffer, C0, B0, pBC, cBC)
  *                                 area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
  */
-                        __pyx_f_11_distortion_integrate(__pyx_v_buffer, __pyx_v_D0, __pyx_v_C0, __pyx_v_pCD, __pyx_v_cCD);
+                        __pyx_f_3src_11_distortion_integrate(__pyx_v_buffer, __pyx_v_D0, __pyx_v_C0, __pyx_v_pCD, __pyx_v_cCD);
 
-                        /* "_distortion.pyx":700
+                        /* "src/_distortion.pyx":700
  *                                 integrate(buffer, A0, D0, pDA, cDA)
  *                                 integrate(buffer, D0, C0, pCD, cCD)
  *                                 integrate(buffer, C0, B0, pBC, cBC)             # <<<<<<<<<<<<<<
  *                                 area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
  *                                 for ms in range(box_size0):
  */
-                        __pyx_f_11_distortion_integrate(__pyx_v_buffer, __pyx_v_C0, __pyx_v_B0, __pyx_v_pBC, __pyx_v_cBC);
+                        __pyx_f_3src_11_distortion_integrate(__pyx_v_buffer, __pyx_v_C0, __pyx_v_B0, __pyx_v_pBC, __pyx_v_cBC);
 
-                        /* "_distortion.pyx":701
+                        /* "src/_distortion.pyx":701
  *                                 integrate(buffer, D0, C0, pCD, cCD)
  *                                 integrate(buffer, C0, B0, pBC, cBC)
  *                                 area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))             # <<<<<<<<<<<<<<
@@ -13733,7 +13733,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
  */
                         __pyx_v_area = (0.5 * (((__pyx_v_C0 - __pyx_v_A0) * (__pyx_v_D1 - __pyx_v_B1)) - ((__pyx_v_C1 - __pyx_v_A1) * (__pyx_v_D0 - __pyx_v_B0))));
 
-                        /* "_distortion.pyx":702
+                        /* "src/_distortion.pyx":702
  *                                 integrate(buffer, C0, B0, pBC, cBC)
  *                                 area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
  *                                 for ms in range(box_size0):             # <<<<<<<<<<<<<<
@@ -13744,7 +13744,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                         for (__pyx_t_68 = 0; __pyx_t_68 < __pyx_t_67; __pyx_t_68+=1) {
                           __pyx_v_ms = __pyx_t_68;
 
-                          /* "_distortion.pyx":703
+                          /* "src/_distortion.pyx":703
  *                                 area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
  *                                 for ms in range(box_size0):
  *                                     ml = ms + offset0             # <<<<<<<<<<<<<<
@@ -13753,7 +13753,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
  */
                           __pyx_v_ml = (__pyx_v_ms + __pyx_v_offset0);
 
-                          /* "_distortion.pyx":704
+                          /* "src/_distortion.pyx":704
  *                                 for ms in range(box_size0):
  *                                     ml = ms + offset0
  *                                     if ml < 0 or ml >= shape0:             # <<<<<<<<<<<<<<
@@ -13771,7 +13771,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                           __pyx_L36_bool_binop_done:;
                           if (__pyx_t_11) {
 
-                            /* "_distortion.pyx":705
+                            /* "src/_distortion.pyx":705
  *                                     ml = ms + offset0
  *                                     if ml < 0 or ml >= shape0:
  *                                         continue             # <<<<<<<<<<<<<<
@@ -13781,7 +13781,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                             goto __pyx_L33_continue;
                           }
 
-                          /* "_distortion.pyx":706
+                          /* "src/_distortion.pyx":706
  *                                     if ml < 0 or ml >= shape0:
  *                                         continue
  *                                     for ns in range(box_size1):             # <<<<<<<<<<<<<<
@@ -13792,7 +13792,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                           for (__pyx_t_70 = 0; __pyx_t_70 < __pyx_t_69; __pyx_t_70+=1) {
                             __pyx_v_ns = __pyx_t_70;
 
-                            /* "_distortion.pyx":708
+                            /* "src/_distortion.pyx":708
  *                                     for ns in range(box_size1):
  *                                         # ms,ns are indexes of the corrected image in short form, ml & nl are the same
  *                                         nl = ns + offset1             # <<<<<<<<<<<<<<
@@ -13801,7 +13801,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
  */
                             __pyx_v_nl = (__pyx_v_ns + __pyx_v_offset1);
 
-                            /* "_distortion.pyx":709
+                            /* "src/_distortion.pyx":709
  *                                         # ms,ns are indexes of the corrected image in short form, ml & nl are the same
  *                                         nl = ns + offset1
  *                                         if nl < 0 or nl >= shape1:             # <<<<<<<<<<<<<<
@@ -13819,7 +13819,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                             __pyx_L41_bool_binop_done:;
                             if (__pyx_t_11) {
 
-                              /* "_distortion.pyx":710
+                              /* "src/_distortion.pyx":710
  *                                         nl = ns + offset1
  *                                         if nl < 0 or nl >= shape1:
  *                                             continue             # <<<<<<<<<<<<<<
@@ -13829,7 +13829,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                               goto __pyx_L38_continue;
                             }
 
-                            /* "_distortion.pyx":711
+                            /* "src/_distortion.pyx":711
  *                                         if nl < 0 or nl >= shape1:
  *                                             continue
  *                                         value = buffer[ms, ns] / area             # <<<<<<<<<<<<<<
@@ -13840,7 +13840,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                             __pyx_t_72 = __pyx_v_ns;
                             __pyx_v_value = ((*((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_71 * __pyx_v_buffer.strides[0]) ) + __pyx_t_72 * __pyx_v_buffer.strides[1]) ))) / __pyx_v_area);
 
-                            /* "_distortion.pyx":712
+                            /* "src/_distortion.pyx":712
  *                                             continue
  *                                         value = buffer[ms, ns] / area
  *                                         if value <= 0:             # <<<<<<<<<<<<<<
@@ -13850,7 +13850,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                             __pyx_t_11 = ((__pyx_v_value <= 0.0) != 0);
                             if (__pyx_t_11) {
 
-                              /* "_distortion.pyx":713
+                              /* "src/_distortion.pyx":713
  *                                         value = buffer[ms, ns] / area
  *                                         if value <= 0:
  *                                             continue             # <<<<<<<<<<<<<<
@@ -13860,7 +13860,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                               goto __pyx_L38_continue;
                             }
 
-                            /* "_distortion.pyx":714
+                            /* "src/_distortion.pyx":714
  *                                         if value <= 0:
  *                                             continue
  *                                         k = outMax[ml, nl]             # <<<<<<<<<<<<<<
@@ -13871,7 +13871,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                             __pyx_t_74 = __pyx_v_nl;
                             __pyx_v_k = (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_int32_t *, __pyx_pybuffernd_outMax.rcbuffer->pybuffer.buf, __pyx_t_73, __pyx_pybuffernd_outMax.diminfo[0].strides, __pyx_t_74, __pyx_pybuffernd_outMax.diminfo[1].strides));
 
-                            /* "_distortion.pyx":715
+                            /* "src/_distortion.pyx":715
  *                                             continue
  *                                         k = outMax[ml, nl]
  *                                         lut[ml, nl, k].idx = idx             # <<<<<<<<<<<<<<
@@ -13881,9 +13881,9 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                             __pyx_t_75 = __pyx_v_ml;
                             __pyx_t_76 = __pyx_v_nl;
                             __pyx_t_77 = __pyx_v_k;
-                            (*__Pyx_BufPtrStrided3d(struct __pyx_t_11_distortion_lut_point *, __pyx_pybuffernd_lut.rcbuffer->pybuffer.buf, __pyx_t_75, __pyx_pybuffernd_lut.diminfo[0].strides, __pyx_t_76, __pyx_pybuffernd_lut.diminfo[1].strides, __pyx_t_77, __pyx_pybuffernd_lut.diminfo[2].strides)).idx = __pyx_v_idx;
+                            (*__Pyx_BufPtrStrided3d(struct __pyx_t_3src_11_distortion_lut_point *, __pyx_pybuffernd_lut.rcbuffer->pybuffer.buf, __pyx_t_75, __pyx_pybuffernd_lut.diminfo[0].strides, __pyx_t_76, __pyx_pybuffernd_lut.diminfo[1].strides, __pyx_t_77, __pyx_pybuffernd_lut.diminfo[2].strides)).idx = __pyx_v_idx;
 
-                            /* "_distortion.pyx":716
+                            /* "src/_distortion.pyx":716
  *                                         k = outMax[ml, nl]
  *                                         lut[ml, nl, k].idx = idx
  *                                         lut[ml, nl, k].coef = value             # <<<<<<<<<<<<<<
@@ -13893,9 +13893,9 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                             __pyx_t_78 = __pyx_v_ml;
                             __pyx_t_79 = __pyx_v_nl;
                             __pyx_t_80 = __pyx_v_k;
-                            (*__Pyx_BufPtrStrided3d(struct __pyx_t_11_distortion_lut_point *, __pyx_pybuffernd_lut.rcbuffer->pybuffer.buf, __pyx_t_78, __pyx_pybuffernd_lut.diminfo[0].strides, __pyx_t_79, __pyx_pybuffernd_lut.diminfo[1].strides, __pyx_t_80, __pyx_pybuffernd_lut.diminfo[2].strides)).coef = __pyx_v_value;
+                            (*__Pyx_BufPtrStrided3d(struct __pyx_t_3src_11_distortion_lut_point *, __pyx_pybuffernd_lut.rcbuffer->pybuffer.buf, __pyx_t_78, __pyx_pybuffernd_lut.diminfo[0].strides, __pyx_t_79, __pyx_pybuffernd_lut.diminfo[1].strides, __pyx_t_80, __pyx_pybuffernd_lut.diminfo[2].strides)).coef = __pyx_v_value;
 
-                            /* "_distortion.pyx":717
+                            /* "src/_distortion.pyx":717
  *                                         lut[ml, nl, k].idx = idx
  *                                         lut[ml, nl, k].coef = value
  *                                         outMax[ml, nl] = k + 1             # <<<<<<<<<<<<<<
@@ -13910,7 +13910,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                           __pyx_L33_continue:;
                         }
 
-                        /* "_distortion.pyx":718
+                        /* "src/_distortion.pyx":718
  *                                         lut[ml, nl, k].coef = value
  *                                         outMax[ml, nl] = k + 1
  *                                 idx += 1             # <<<<<<<<<<<<<<
@@ -13922,7 +13922,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                     }
                   }
 
-                  /* "_distortion.pyx":651
+                  /* "src/_distortion.pyx":651
  *                     buffer_size = self.delta0 * self.delta1 * sizeof(float)
  *                     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (buffer.shape[1], buffer.shape[0], self.lut_size))
  *                     with nogil:             # <<<<<<<<<<<<<<
@@ -13946,7 +13946,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
                   }
               }
 
-              /* "_distortion.pyx":719
+              /* "src/_distortion.pyx":719
  *                                         outMax[ml, nl] = k + 1
  *                                 idx += 1
  *                     self.LUT = lut.reshape(self.shape[0] * self.shape[1], self.lut_size)             # <<<<<<<<<<<<<<
@@ -14009,7 +14009,6 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
           __Pyx_XDECREF(__pyx_t_15); __pyx_t_15 = 0;
           goto __pyx_L18_try_end;
           __pyx_L11_error:;
-          __PYX_XDEC_MEMVIEW(&__pyx_t_16, 1);
           __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
           __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
           __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -14018,8 +14017,9 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
           __Pyx_XDECREF(__pyx_t_17); __pyx_t_17 = 0;
           __Pyx_XDECREF(__pyx_t_25); __pyx_t_25 = 0;
           __PYX_XDEC_MEMVIEW(&__pyx_t_26, 1);
+          __PYX_XDEC_MEMVIEW(&__pyx_t_16, 1);
 
-          /* "_distortion.pyx":641
+          /* "src/_distortion.pyx":641
  *             self.calc_LUT_size()
  *         if self.LUT is None:
  *             with self._sem:             # <<<<<<<<<<<<<<
@@ -14027,7 +14027,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
  *                     pos = self.pos
  */
           /*except:*/ {
-            __Pyx_AddTraceback("_distortion.Distortion.calc_LUT", __pyx_clineno, __pyx_lineno, __pyx_filename);
+            __Pyx_AddTraceback("src._distortion.Distortion.calc_LUT", __pyx_clineno, __pyx_lineno, __pyx_filename);
             if (__Pyx_GetException(&__pyx_t_25, &__pyx_t_17, &__pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 641; __pyx_clineno = __LINE__; goto __pyx_L13_except_error;}
             __Pyx_GOTREF(__pyx_t_25);
             __Pyx_GOTREF(__pyx_t_17);
@@ -14093,7 +14093,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
   }
   __pyx_L6:;
 
-  /* "_distortion.pyx":626
+  /* "src/_distortion.pyx":626
  *     @cython.boundscheck(False)
  *     @cython.cdivision(True)
  *     def calc_LUT(self):             # <<<<<<<<<<<<<<
@@ -14120,7 +14120,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_lut.rcbuffer->pybuffer);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_outMax.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("_distortion.Distortion.calc_LUT", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Distortion.calc_LUT", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   goto __pyx_L2;
   __pyx_L0:;
@@ -14136,7 +14136,7 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
   return __pyx_r;
 }
 
-/* "_distortion.pyx":723
+/* "src/_distortion.pyx":723
  *     @cython.wraparound(False)
  *     @cython.boundscheck(False)
  *     def correct(self, image):             # <<<<<<<<<<<<<<
@@ -14145,10 +14145,10 @@ __pyx_t_29.strides[1] = __pyx_v_buffer.strides[1];
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_10Distortion_11correct(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_11_distortion_10Distortion_10correct[] = "\n        Correct an image based on the look-up table calculated ...\n\n        @param image: 2D-array with the image\n        @return: corrected 2D image\n        ";
-static PyMethodDef __pyx_mdef_11_distortion_10Distortion_11correct = {"correct", (PyCFunction)__pyx_pw_11_distortion_10Distortion_11correct, METH_VARARGS|METH_KEYWORDS, __pyx_doc_11_distortion_10Distortion_10correct};
-static PyObject *__pyx_pw_11_distortion_10Distortion_11correct(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_11_distortion_10Distortion_11correct(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_3src_11_distortion_10Distortion_10correct[] = "\n        Correct an image based on the look-up table calculated ...\n\n        @param image: 2D-array with the image\n        @return: corrected 2D image\n        ";
+static PyMethodDef __pyx_mdef_3src_11_distortion_10Distortion_11correct = {"correct", (PyCFunction)__pyx_pw_3src_11_distortion_10Distortion_11correct, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_11_distortion_10Distortion_10correct};
+static PyObject *__pyx_pw_3src_11_distortion_10Distortion_11correct(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_self = 0;
   PyObject *__pyx_v_image = 0;
   int __pyx_lineno = 0;
@@ -14196,18 +14196,18 @@ static PyObject *__pyx_pw_11_distortion_10Distortion_11correct(PyObject *__pyx_s
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("correct", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 723; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("_distortion.Distortion.correct", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Distortion.correct", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_11_distortion_10Distortion_10correct(__pyx_self, __pyx_v_self, __pyx_v_image);
+  __pyx_r = __pyx_pf_3src_11_distortion_10Distortion_10correct(__pyx_self, __pyx_v_self, __pyx_v_image);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_image) {
+static PyObject *__pyx_pf_3src_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_image) {
   int __pyx_v_i;
   int __pyx_v_j;
   CYTHON_UNUSED int __pyx_v_lshape0;
@@ -14253,7 +14253,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
   __Pyx_RefNannySetupContext("correct", 0);
   __Pyx_INCREF(__pyx_v_image);
 
-  /* "_distortion.pyx":735
+  /* "src/_distortion.pyx":735
  *             lut_point[:, :] LUT
  *             float[:] lout, lin
  *         if self.LUT is None:             # <<<<<<<<<<<<<<
@@ -14267,7 +14267,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
   __pyx_t_3 = (__pyx_t_2 != 0);
   if (__pyx_t_3) {
 
-    /* "_distortion.pyx":736
+    /* "src/_distortion.pyx":736
  *             float[:] lout, lin
  *         if self.LUT is None:
  *             self.calc_LUT()             # <<<<<<<<<<<<<<
@@ -14299,7 +14299,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
   }
   __pyx_L3:;
 
-  /* "_distortion.pyx":737
+  /* "src/_distortion.pyx":737
  *         if self.LUT is None:
  *             self.calc_LUT()
  *         LUT = self.LUT             # <<<<<<<<<<<<<<
@@ -14308,14 +14308,14 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_LUT); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 737; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_6 = __Pyx_PyObject_to_MemoryviewSlice_dsds_nn_struct___pyx_t_11_distortion_lut_point(__pyx_t_1);
+  __pyx_t_6 = __Pyx_PyObject_to_MemoryviewSlice_dsds_nn_struct___pyx_t_3src_11_distortion_lut_point(__pyx_t_1);
   if (unlikely(!__pyx_t_6.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 737; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_LUT = __pyx_t_6;
   __pyx_t_6.memview = NULL;
   __pyx_t_6.data = NULL;
 
-  /* "_distortion.pyx":738
+  /* "src/_distortion.pyx":738
  *             self.calc_LUT()
  *         LUT = self.LUT
  *         lshape0 = LUT.shape[0]             # <<<<<<<<<<<<<<
@@ -14324,7 +14324,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
  */
   __pyx_v_lshape0 = (__pyx_v_LUT.shape[0]);
 
-  /* "_distortion.pyx":739
+  /* "src/_distortion.pyx":739
  *         LUT = self.LUT
  *         lshape0 = LUT.shape[0]
  *         lshape1 = LUT.shape[1]             # <<<<<<<<<<<<<<
@@ -14333,7 +14333,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
  */
   __pyx_v_lshape1 = (__pyx_v_LUT.shape[1]);
 
-  /* "_distortion.pyx":740
+  /* "src/_distortion.pyx":740
  *         lshape0 = LUT.shape[0]
  *         lshape1 = LUT.shape[1]
  *         img_shape = image.shape             # <<<<<<<<<<<<<<
@@ -14345,7 +14345,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
   __pyx_v_img_shape = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "_distortion.pyx":741
+  /* "src/_distortion.pyx":741
  *         lshape1 = LUT.shape[1]
  *         img_shape = image.shape
  *         if (img_shape[0] < self.shape[0]) or (img_shape[1] < self.shape[1]):             # <<<<<<<<<<<<<<
@@ -14385,7 +14385,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
   __pyx_L5_bool_binop_done:;
   if (__pyx_t_3) {
 
-    /* "_distortion.pyx":742
+    /* "src/_distortion.pyx":742
  *         img_shape = image.shape
  *         if (img_shape[0] < self.shape[0]) or (img_shape[1] < self.shape[1]):
  *             new_image = numpy.zeros(self.shape, dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -14421,7 +14421,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
     __pyx_v_new_image = __pyx_t_8;
     __pyx_t_8 = 0;
 
-    /* "_distortion.pyx":743
+    /* "src/_distortion.pyx":743
  *         if (img_shape[0] < self.shape[0]) or (img_shape[1] < self.shape[1]):
  *             new_image = numpy.zeros(self.shape, dtype=numpy.float32)
  *             new_image[:img_shape[0], :img_shape[1]] = image             # <<<<<<<<<<<<<<
@@ -14449,7 +14449,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
     if (unlikely(PyObject_SetItem(__pyx_v_new_image, __pyx_t_8, __pyx_v_image) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 743; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-    /* "_distortion.pyx":744
+    /* "src/_distortion.pyx":744
  *             new_image = numpy.zeros(self.shape, dtype=numpy.float32)
  *             new_image[:img_shape[0], :img_shape[1]] = image
  *             image = new_image             # <<<<<<<<<<<<<<
@@ -14459,7 +14459,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
     __Pyx_INCREF(__pyx_v_new_image);
     __Pyx_DECREF_SET(__pyx_v_image, __pyx_v_new_image);
 
-    /* "_distortion.pyx":745
+    /* "src/_distortion.pyx":745
  *             new_image[:img_shape[0], :img_shape[1]] = image
  *             image = new_image
  *             logger.warning("Patching image as image is %ix%i and spline is %ix%i" % (img_shape[1], img_shape[0], self.shape[1], self.shape[0]))             # <<<<<<<<<<<<<<
@@ -14533,7 +14533,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
   }
   __pyx_L4:;
 
-  /* "_distortion.pyx":747
+  /* "src/_distortion.pyx":747
  *             logger.warning("Patching image as image is %ix%i and spline is %ix%i" % (img_shape[1], img_shape[0], self.shape[1], self.shape[0]))
  * 
  *         out = numpy.zeros(self.shape, dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -14569,7 +14569,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
   __pyx_v_out = __pyx_t_7;
   __pyx_t_7 = 0;
 
-  /* "_distortion.pyx":748
+  /* "src/_distortion.pyx":748
  * 
  *         out = numpy.zeros(self.shape, dtype=numpy.float32)
  *         lout = out.ravel()             # <<<<<<<<<<<<<<
@@ -14603,7 +14603,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
   __pyx_t_11.memview = NULL;
   __pyx_t_11.data = NULL;
 
-  /* "_distortion.pyx":749
+  /* "src/_distortion.pyx":749
  *         out = numpy.zeros(self.shape, dtype=numpy.float32)
  *         lout = out.ravel()
  *         lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -14661,7 +14661,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
   __pyx_t_11.memview = NULL;
   __pyx_t_11.data = NULL;
 
-  /* "_distortion.pyx":750
+  /* "src/_distortion.pyx":750
  *         lout = out.ravel()
  *         lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
  *         size = lin.size             # <<<<<<<<<<<<<<
@@ -14677,7 +14677,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   __pyx_v_size = __pyx_t_12;
 
-  /* "_distortion.pyx":751
+  /* "src/_distortion.pyx":751
  *         lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
  *         size = lin.size
  *         for i in prange(lshape0, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
@@ -14694,9 +14694,9 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
         if (1 == 0) abort();
         {
             int __pyx_parallel_temp0 = 0xbad0bad0;
-            float __pyx_parallel_temp1 = __PYX_NAN();
+            int __pyx_parallel_temp1 = 0xbad0bad0;
             int __pyx_parallel_temp2 = 0xbad0bad0;
-            int __pyx_parallel_temp3 = 0xbad0bad0;
+            float __pyx_parallel_temp3 = __PYX_NAN();
             const char *__pyx_parallel_filename = NULL; int __pyx_parallel_lineno = 0, __pyx_parallel_clineno = 0;
             PyObject *__pyx_parallel_exc_type = NULL, *__pyx_parallel_exc_value = NULL, *__pyx_parallel_exc_tb = NULL;
             int __pyx_parallel_why;
@@ -14711,7 +14711,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
             if (__pyx_t_14 > 0)
             {
                 #ifdef _OPENMP
-                #pragma omp parallel private(__pyx_t_17, __pyx_t_19, __pyx_t_16, __pyx_t_21, __pyx_t_24, __pyx_t_15, __pyx_t_23, __pyx_t_3, __pyx_t_18, __pyx_t_20, __pyx_t_22) firstprivate(__pyx_t_5, __pyx_t_9, __pyx_t_10, __pyx_t_8, __pyx_t_7) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
+                #pragma omp parallel private(__pyx_t_20, __pyx_t_19, __pyx_t_24, __pyx_t_17, __pyx_t_21, __pyx_t_15, __pyx_t_16, __pyx_t_3, __pyx_t_23, __pyx_t_18, __pyx_t_22) firstprivate(__pyx_t_8, __pyx_t_10, __pyx_t_5, __pyx_t_7, __pyx_t_9) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
@@ -14721,18 +14721,18 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
                     Py_BEGIN_ALLOW_THREADS
                     #endif /* _OPENMP */
                     #ifdef _OPENMP
-                    #pragma omp for lastprivate(__pyx_v_j) lastprivate(__pyx_v_coef) lastprivate(__pyx_v_idx) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
+                    #pragma omp for lastprivate(__pyx_v_idx) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_j) lastprivate(__pyx_v_coef) schedule(static)
                     #endif /* _OPENMP */
                     for (__pyx_t_13 = 0; __pyx_t_13 < __pyx_t_14; __pyx_t_13++){
                         if (__pyx_parallel_why < 2)
                         {
                             __pyx_v_i = 0 + 1 * __pyx_t_13;
                             /* Initialize private variables to invalid values */
+                            __pyx_v_idx = ((int)0xbad0bad0);
                             __pyx_v_j = ((int)0xbad0bad0);
                             __pyx_v_coef = ((float)__PYX_NAN());
-                            __pyx_v_idx = ((int)0xbad0bad0);
 
-                            /* "_distortion.pyx":752
+                            /* "src/_distortion.pyx":752
  *         size = lin.size
  *         for i in prange(lshape0, nogil=True, schedule="static"):
  *             for j in range(lshape1):             # <<<<<<<<<<<<<<
@@ -14743,7 +14743,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
                             for (__pyx_t_16 = 0; __pyx_t_16 < __pyx_t_15; __pyx_t_16+=1) {
                               __pyx_v_j = __pyx_t_16;
 
-                              /* "_distortion.pyx":753
+                              /* "src/_distortion.pyx":753
  *         for i in prange(lshape0, nogil=True, schedule="static"):
  *             for j in range(lshape1):
  *                 idx = LUT[i, j].idx             # <<<<<<<<<<<<<<
@@ -14752,10 +14752,10 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
  */
                               __pyx_t_17 = __pyx_v_i;
                               __pyx_t_18 = __pyx_v_j;
-                              __pyx_t_19 = (*((struct __pyx_t_11_distortion_lut_point *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_LUT.data + __pyx_t_17 * __pyx_v_LUT.strides[0]) ) + __pyx_t_18 * __pyx_v_LUT.strides[1]) ))).idx;
+                              __pyx_t_19 = (*((struct __pyx_t_3src_11_distortion_lut_point *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_LUT.data + __pyx_t_17 * __pyx_v_LUT.strides[0]) ) + __pyx_t_18 * __pyx_v_LUT.strides[1]) ))).idx;
                               __pyx_v_idx = __pyx_t_19;
 
-                              /* "_distortion.pyx":754
+                              /* "src/_distortion.pyx":754
  *             for j in range(lshape1):
  *                 idx = LUT[i, j].idx
  *                 coef = LUT[i, j].coef             # <<<<<<<<<<<<<<
@@ -14764,10 +14764,10 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
  */
                               __pyx_t_20 = __pyx_v_i;
                               __pyx_t_21 = __pyx_v_j;
-                              __pyx_t_22 = (*((struct __pyx_t_11_distortion_lut_point *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_LUT.data + __pyx_t_20 * __pyx_v_LUT.strides[0]) ) + __pyx_t_21 * __pyx_v_LUT.strides[1]) ))).coef;
+                              __pyx_t_22 = (*((struct __pyx_t_3src_11_distortion_lut_point *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_LUT.data + __pyx_t_20 * __pyx_v_LUT.strides[0]) ) + __pyx_t_21 * __pyx_v_LUT.strides[1]) ))).coef;
                               __pyx_v_coef = __pyx_t_22;
 
-                              /* "_distortion.pyx":755
+                              /* "src/_distortion.pyx":755
  *                 idx = LUT[i, j].idx
  *                 coef = LUT[i, j].coef
  *                 if coef <= 0:             # <<<<<<<<<<<<<<
@@ -14777,7 +14777,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
                               __pyx_t_3 = ((__pyx_v_coef <= 0.0) != 0);
                               if (__pyx_t_3) {
 
-                                /* "_distortion.pyx":756
+                                /* "src/_distortion.pyx":756
  *                 coef = LUT[i, j].coef
  *                 if coef <= 0:
  *                     continue             # <<<<<<<<<<<<<<
@@ -14787,7 +14787,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
                                 goto __pyx_L14_continue;
                               }
 
-                              /* "_distortion.pyx":757
+                              /* "src/_distortion.pyx":757
  *                 if coef <= 0:
  *                     continue
  *                 if idx >= size:             # <<<<<<<<<<<<<<
@@ -14797,7 +14797,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
                               __pyx_t_3 = ((__pyx_v_idx >= __pyx_v_size) != 0);
                               if (__pyx_t_3) {
 
-                                /* "_distortion.pyx":758
+                                /* "src/_distortion.pyx":758
  *                     continue
  *                 if idx >= size:
  *                     with gil:             # <<<<<<<<<<<<<<
@@ -14810,7 +14810,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
                                     #endif
                                     /*try:*/ {
 
-                                      /* "_distortion.pyx":759
+                                      /* "src/_distortion.pyx":759
  *                 if idx >= size:
  *                     with gil:
  *                         logger.warning("Accessing %i >= %i !!!" % (idx, size))             # <<<<<<<<<<<<<<
@@ -14865,7 +14865,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
                                       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
                                       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-                                      /* "_distortion.pyx":760
+                                      /* "src/_distortion.pyx":760
  *                     with gil:
  *                         logger.warning("Accessing %i >= %i !!!" % (idx, size))
  *                         continue             # <<<<<<<<<<<<<<
@@ -14875,7 +14875,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
                                       goto __pyx_L18_continue;
                                     }
 
-                                    /* "_distortion.pyx":758
+                                    /* "src/_distortion.pyx":758
  *                     continue
  *                 if idx >= size:
  *                     with gil:             # <<<<<<<<<<<<<<
@@ -14899,7 +14899,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
                                 }
                               }
 
-                              /* "_distortion.pyx":761
+                              /* "src/_distortion.pyx":761
  *                         logger.warning("Accessing %i >= %i !!!" % (idx, size))
  *                         continue
  *                 lout[i] += lin[idx] * coef             # <<<<<<<<<<<<<<
@@ -14936,10 +14936,10 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
                             #pragma omp critical(__pyx_parallel_lastprivates0)
                             #endif /* _OPENMP */
                             {
-                                __pyx_parallel_temp0 = __pyx_v_j;
-                                __pyx_parallel_temp1 = __pyx_v_coef;
-                                __pyx_parallel_temp2 = __pyx_v_idx;
-                                __pyx_parallel_temp3 = __pyx_v_i;
+                                __pyx_parallel_temp0 = __pyx_v_idx;
+                                __pyx_parallel_temp1 = __pyx_v_i;
+                                __pyx_parallel_temp2 = __pyx_v_j;
+                                __pyx_parallel_temp3 = __pyx_v_coef;
                             }
                             __pyx_L24:;
                             #ifdef _OPENMP
@@ -14956,16 +14956,16 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
                     #endif
                     #endif /* _OPENMP */
                     /* Clean up any temporaries */
-                    __Pyx_XDECREF(__pyx_t_5);
-                    __pyx_t_5 = NULL;
-                    __Pyx_XDECREF(__pyx_t_9);
-                    __pyx_t_9 = NULL;
-                    __Pyx_XDECREF(__pyx_t_10);
-                    __pyx_t_10 = NULL;
                     __Pyx_XDECREF(__pyx_t_8);
                     __pyx_t_8 = NULL;
+                    __Pyx_XDECREF(__pyx_t_10);
+                    __pyx_t_10 = NULL;
+                    __Pyx_XDECREF(__pyx_t_5);
+                    __pyx_t_5 = NULL;
                     __Pyx_XDECREF(__pyx_t_7);
                     __pyx_t_7 = NULL;
+                    __Pyx_XDECREF(__pyx_t_9);
+                    __pyx_t_9 = NULL;
                     #ifdef WITH_THREAD
                     PyGILState_Release(__pyx_gilstate_save);
                     #endif
@@ -14979,10 +14979,10 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
               __pyx_parallel_why = 4;
             }
             if (__pyx_parallel_why) {
-              __pyx_v_j = __pyx_parallel_temp0;
-              __pyx_v_coef = __pyx_parallel_temp1;
-              __pyx_v_idx = __pyx_parallel_temp2;
-              __pyx_v_i = __pyx_parallel_temp3;
+              __pyx_v_idx = __pyx_parallel_temp0;
+              __pyx_v_i = __pyx_parallel_temp1;
+              __pyx_v_j = __pyx_parallel_temp2;
+              __pyx_v_coef = __pyx_parallel_temp3;
               switch (__pyx_parallel_why) {
                     case 3: goto __pyx_L7_return;
                     case 4:
@@ -15009,7 +15009,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
         #endif
       }
 
-      /* "_distortion.pyx":751
+      /* "src/_distortion.pyx":751
  *         lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
  *         size = lin.size
  *         for i in prange(lshape0, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
@@ -15039,7 +15039,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
       }
   }
 
-  /* "_distortion.pyx":762
+  /* "src/_distortion.pyx":762
  *                         continue
  *                 lout[i] += lin[idx] * coef
  *         return out[:img_shape[0], :img_shape[1]]             # <<<<<<<<<<<<<<
@@ -15072,7 +15072,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
   __pyx_t_10 = 0;
   goto __pyx_L0;
 
-  /* "_distortion.pyx":723
+  /* "src/_distortion.pyx":723
  *     @cython.wraparound(False)
  *     @cython.boundscheck(False)
  *     def correct(self, image):             # <<<<<<<<<<<<<<
@@ -15091,7 +15091,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
   __Pyx_XDECREF(__pyx_t_9);
   __Pyx_XDECREF(__pyx_t_10);
   __PYX_XDEC_MEMVIEW(&__pyx_t_11, 1);
-  __Pyx_AddTraceback("_distortion.Distortion.correct", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Distortion.correct", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_LUT, 1);
@@ -15106,7 +15106,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
   return __pyx_r;
 }
 
-/* "_distortion.pyx":765
+/* "src/_distortion.pyx":765
  * 
  *     @timeit
  *     def uncorrect(self, image):             # <<<<<<<<<<<<<<
@@ -15115,10 +15115,10 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_10correct(CYTHON_UNUSED PyO
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_10Distortion_13uncorrect(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_11_distortion_10Distortion_12uncorrect[] = "\n        Take an image which has been corrected and transform it into it's raw (with loss of information)\n\n        @param image: 2D-array with the image\n        @return: uncorrected 2D image and a mask (pixels in raw image\n        ";
-static PyMethodDef __pyx_mdef_11_distortion_10Distortion_13uncorrect = {"uncorrect", (PyCFunction)__pyx_pw_11_distortion_10Distortion_13uncorrect, METH_VARARGS|METH_KEYWORDS, __pyx_doc_11_distortion_10Distortion_12uncorrect};
-static PyObject *__pyx_pw_11_distortion_10Distortion_13uncorrect(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_11_distortion_10Distortion_13uncorrect(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_3src_11_distortion_10Distortion_12uncorrect[] = "\n        Take an image which has been corrected and transform it into it's raw (with loss of information)\n\n        @param image: 2D-array with the image\n        @return: uncorrected 2D image and a mask (pixels in raw image\n        ";
+static PyMethodDef __pyx_mdef_3src_11_distortion_10Distortion_13uncorrect = {"uncorrect", (PyCFunction)__pyx_pw_3src_11_distortion_10Distortion_13uncorrect, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_11_distortion_10Distortion_12uncorrect};
+static PyObject *__pyx_pw_3src_11_distortion_10Distortion_13uncorrect(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_self = 0;
   PyObject *__pyx_v_image = 0;
   int __pyx_lineno = 0;
@@ -15166,18 +15166,18 @@ static PyObject *__pyx_pw_11_distortion_10Distortion_13uncorrect(PyObject *__pyx
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("uncorrect", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 765; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("_distortion.Distortion.uncorrect", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Distortion.uncorrect", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_11_distortion_10Distortion_12uncorrect(__pyx_self, __pyx_v_self, __pyx_v_image);
+  __pyx_r = __pyx_pf_3src_11_distortion_10Distortion_12uncorrect(__pyx_self, __pyx_v_self, __pyx_v_image);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_image) {
+static PyObject *__pyx_pf_3src_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_image) {
   PyObject *__pyx_v_out = NULL;
   PyObject *__pyx_v_mask = NULL;
   PyObject *__pyx_v_lmask = NULL;
@@ -15203,7 +15203,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED P
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("uncorrect", 0);
 
-  /* "_distortion.pyx":772
+  /* "src/_distortion.pyx":772
  *         @return: uncorrected 2D image and a mask (pixels in raw image
  *         """
  *         if self.LUT is None:             # <<<<<<<<<<<<<<
@@ -15217,7 +15217,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED P
   __pyx_t_3 = (__pyx_t_2 != 0);
   if (__pyx_t_3) {
 
-    /* "_distortion.pyx":773
+    /* "src/_distortion.pyx":773
  *         """
  *         if self.LUT is None:
  *             self.calc_LUT()             # <<<<<<<<<<<<<<
@@ -15249,7 +15249,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED P
   }
   __pyx_L3:;
 
-  /* "_distortion.pyx":774
+  /* "src/_distortion.pyx":774
  *         if self.LUT is None:
  *             self.calc_LUT()
  *         out = numpy.zeros(self.shape, dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -15285,7 +15285,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED P
   __pyx_v_out = __pyx_t_7;
   __pyx_t_7 = 0;
 
-  /* "_distortion.pyx":775
+  /* "src/_distortion.pyx":775
  *             self.calc_LUT()
  *         out = numpy.zeros(self.shape, dtype=numpy.float32)
  *         mask = numpy.zeros(self.shape, dtype=numpy.int8)             # <<<<<<<<<<<<<<
@@ -15321,7 +15321,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED P
   __pyx_v_mask = __pyx_t_6;
   __pyx_t_6 = 0;
 
-  /* "_distortion.pyx":776
+  /* "src/_distortion.pyx":776
  *         out = numpy.zeros(self.shape, dtype=numpy.float32)
  *         mask = numpy.zeros(self.shape, dtype=numpy.int8)
  *         lmask = mask.ravel()             # <<<<<<<<<<<<<<
@@ -15351,7 +15351,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED P
   __pyx_v_lmask = __pyx_t_6;
   __pyx_t_6 = 0;
 
-  /* "_distortion.pyx":777
+  /* "src/_distortion.pyx":777
  *         mask = numpy.zeros(self.shape, dtype=numpy.int8)
  *         lmask = mask.ravel()
  *         lout = out.ravel()             # <<<<<<<<<<<<<<
@@ -15381,7 +15381,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED P
   __pyx_v_lout = __pyx_t_6;
   __pyx_t_6 = 0;
 
-  /* "_distortion.pyx":778
+  /* "src/_distortion.pyx":778
  *         lmask = mask.ravel()
  *         lout = out.ravel()
  *         lin = image.ravel()             # <<<<<<<<<<<<<<
@@ -15411,7 +15411,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED P
   __pyx_v_lin = __pyx_t_6;
   __pyx_t_6 = 0;
 
-  /* "_distortion.pyx":779
+  /* "src/_distortion.pyx":779
  *         lout = out.ravel()
  *         lin = image.ravel()
  *         tot = self.LUT.coef.sum(axis=-1)             # <<<<<<<<<<<<<<
@@ -15436,7 +15436,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED P
   __pyx_v_tot = __pyx_t_5;
   __pyx_t_5 = 0;
 
-  /* "_distortion.pyx":780
+  /* "src/_distortion.pyx":780
  *         lin = image.ravel()
  *         tot = self.LUT.coef.sum(axis=-1)
  *         for idx in range(self.LUT.shape[0]):             # <<<<<<<<<<<<<<
@@ -15500,7 +15500,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED P
     __Pyx_XDECREF_SET(__pyx_v_idx, __pyx_t_5);
     __pyx_t_5 = 0;
 
-    /* "_distortion.pyx":781
+    /* "src/_distortion.pyx":781
  *         tot = self.LUT.coef.sum(axis=-1)
  *         for idx in range(self.LUT.shape[0]):
  *             t = tot[idx]             # <<<<<<<<<<<<<<
@@ -15512,7 +15512,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED P
     __Pyx_XDECREF_SET(__pyx_v_t, __pyx_t_5);
     __pyx_t_5 = 0;
 
-    /* "_distortion.pyx":782
+    /* "src/_distortion.pyx":782
  *         for idx in range(self.LUT.shape[0]):
  *             t = tot[idx]
  *             if t <= 0:             # <<<<<<<<<<<<<<
@@ -15524,7 +15524,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED P
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     if (__pyx_t_3) {
 
-      /* "_distortion.pyx":783
+      /* "src/_distortion.pyx":783
  *             t = tot[idx]
  *             if t <= 0:
  *                 lmask[idx] = 1             # <<<<<<<<<<<<<<
@@ -15533,7 +15533,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED P
  */
       if (unlikely(PyObject_SetItem(__pyx_v_lmask, __pyx_v_idx, __pyx_int_1) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 783; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-      /* "_distortion.pyx":784
+      /* "src/_distortion.pyx":784
  *             if t <= 0:
  *                 lmask[idx] = 1
  *                 continue             # <<<<<<<<<<<<<<
@@ -15543,7 +15543,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED P
       goto __pyx_L4_continue;
     }
 
-    /* "_distortion.pyx":785
+    /* "src/_distortion.pyx":785
  *                 lmask[idx] = 1
  *                 continue
  *             val = lin[idx] / t             # <<<<<<<<<<<<<<
@@ -15558,7 +15558,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED P
     __Pyx_XDECREF_SET(__pyx_v_val, __pyx_t_6);
     __pyx_t_6 = 0;
 
-    /* "_distortion.pyx":786
+    /* "src/_distortion.pyx":786
  *                 continue
  *             val = lin[idx] / t
  *             lout[self.LUT[idx].idx] += val * self.LUT[idx].coef             # <<<<<<<<<<<<<<
@@ -15594,7 +15594,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED P
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-    /* "_distortion.pyx":780
+    /* "src/_distortion.pyx":780
  *         lin = image.ravel()
  *         tot = self.LUT.coef.sum(axis=-1)
  *         for idx in range(self.LUT.shape[0]):             # <<<<<<<<<<<<<<
@@ -15605,7 +15605,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED P
   }
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "_distortion.pyx":787
+  /* "src/_distortion.pyx":787
  *             val = lin[idx] / t
  *             lout[self.LUT[idx].idx] += val * self.LUT[idx].coef
  *         return out, mask             # <<<<<<<<<<<<<<
@@ -15625,7 +15625,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED P
   __pyx_t_7 = 0;
   goto __pyx_L0;
 
-  /* "_distortion.pyx":765
+  /* "src/_distortion.pyx":765
  * 
  *     @timeit
  *     def uncorrect(self, image):             # <<<<<<<<<<<<<<
@@ -15640,7 +15640,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED P
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
   __Pyx_XDECREF(__pyx_t_7);
-  __Pyx_AddTraceback("_distortion.Distortion.uncorrect", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.Distortion.uncorrect", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_out);
@@ -15657,7 +15657,7 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED P
   return __pyx_r;
 }
 
-/* "_distortion.pyx":796
+/* "src/_distortion.pyx":796
  * @cython.wraparound(False)
  * @cython.boundscheck(False)
  * def calc_size(float[:, :, :, :] pos not None, shape, numpy.int8_t[:, :] mask=None):             # <<<<<<<<<<<<<<
@@ -15666,10 +15666,10 @@ static PyObject *__pyx_pf_11_distortion_10Distortion_12uncorrect(CYTHON_UNUSED P
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_5calc_size(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_11_distortion_4calc_size[] = "\n    Calculate the number of items per output pixel\n\n    @param pos: 4D array with position in space\n    @param shape: shape of the output array\n    @return: number of input element per output elements\n    ";
-static PyMethodDef __pyx_mdef_11_distortion_5calc_size = {"calc_size", (PyCFunction)__pyx_pw_11_distortion_5calc_size, METH_VARARGS|METH_KEYWORDS, __pyx_doc_11_distortion_4calc_size};
-static PyObject *__pyx_pw_11_distortion_5calc_size(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_11_distortion_5calc_size(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_3src_11_distortion_4calc_size[] = "\n    Calculate the number of items per output pixel\n\n    @param pos: 4D array with position in space\n    @param shape: shape of the output array\n    @return: number of input element per output elements\n    ";
+static PyMethodDef __pyx_mdef_3src_11_distortion_5calc_size = {"calc_size", (PyCFunction)__pyx_pw_3src_11_distortion_5calc_size, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_11_distortion_4calc_size};
+static PyObject *__pyx_pw_3src_11_distortion_5calc_size(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   __Pyx_memviewslice __pyx_v_pos = { 0, 0, { 0 }, { 0 }, { 0 } };
   PyObject *__pyx_v_shape = 0;
   __Pyx_memviewslice __pyx_v_mask = { 0, 0, { 0 }, { 0 }, { 0 } };
@@ -15733,14 +15733,14 @@ static PyObject *__pyx_pw_11_distortion_5calc_size(PyObject *__pyx_self, PyObjec
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("calc_size", 0, 2, 3, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 796; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("_distortion.calc_size", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.calc_size", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(((PyObject *)__pyx_v_pos.memview) == Py_None)) {
     PyErr_Format(PyExc_TypeError, "Argument '%.200s' must not be None", "pos"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 796; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_r = __pyx_pf_11_distortion_4calc_size(__pyx_self, __pyx_v_pos, __pyx_v_shape, __pyx_v_mask);
+  __pyx_r = __pyx_pf_3src_11_distortion_4calc_size(__pyx_self, __pyx_v_pos, __pyx_v_shape, __pyx_v_mask);
 
   /* function exit code */
   goto __pyx_L0;
@@ -15751,7 +15751,7 @@ static PyObject *__pyx_pw_11_distortion_5calc_size(PyObject *__pyx_self, PyObjec
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_pos, PyObject *__pyx_v_shape, __Pyx_memviewslice __pyx_v_mask) {
+static PyObject *__pyx_pf_3src_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_pos, PyObject *__pyx_v_shape, __Pyx_memviewslice __pyx_v_mask) {
   int __pyx_v_i;
   int __pyx_v_j;
   int __pyx_v_k;
@@ -15843,7 +15843,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
   __pyx_pybuffernd_lut_size.data = NULL;
   __pyx_pybuffernd_lut_size.rcbuffer = &__pyx_pybuffer_lut_size;
 
-  /* "_distortion.pyx":806
+  /* "src/_distortion.pyx":806
  *     cdef:
  *         int i, j, k, l, shape0, shape1, min0, min1, max0, max1
  *         numpy.ndarray[numpy.int32_t, ndim = 2] lut_size = numpy.zeros(shape, dtype=numpy.int32)             # <<<<<<<<<<<<<<
@@ -15888,7 +15888,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
   __pyx_v_lut_size = ((PyArrayObject *)__pyx_t_5);
   __pyx_t_5 = 0;
 
-  /* "_distortion.pyx":808
+  /* "src/_distortion.pyx":808
  *         numpy.ndarray[numpy.int32_t, ndim = 2] lut_size = numpy.zeros(shape, dtype=numpy.int32)
  *         float A0, A1, B0, B1, C0, C1, D0, D1
  *         bint do_mask = mask is None             # <<<<<<<<<<<<<<
@@ -15897,7 +15897,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
  */
   __pyx_v_do_mask = (((PyObject *) __pyx_v_mask.memview) == Py_None);
 
-  /* "_distortion.pyx":809
+  /* "src/_distortion.pyx":809
  *         float A0, A1, B0, B1, C0, C1, D0, D1
  *         bint do_mask = mask is None
  *     shape0, shape1 = shape             # <<<<<<<<<<<<<<
@@ -15959,7 +15959,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
   __pyx_v_shape0 = __pyx_t_8;
   __pyx_v_shape1 = __pyx_t_9;
 
-  /* "_distortion.pyx":811
+  /* "src/_distortion.pyx":811
  *     shape0, shape1 = shape
  * 
  *     if do_mask:             # <<<<<<<<<<<<<<
@@ -15969,7 +15969,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
   __pyx_t_10 = (__pyx_v_do_mask != 0);
   if (__pyx_t_10) {
 
-    /* "_distortion.pyx":812
+    /* "src/_distortion.pyx":812
  * 
  *     if do_mask:
  *         assert mask.shape[0] == shape0             # <<<<<<<<<<<<<<
@@ -15985,7 +15985,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
     }
     #endif
 
-    /* "_distortion.pyx":813
+    /* "src/_distortion.pyx":813
  *     if do_mask:
  *         assert mask.shape[0] == shape0
  *         assert mask.shape[1] == shape1             # <<<<<<<<<<<<<<
@@ -16004,7 +16004,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
   }
   __pyx_L5:;
 
-  /* "_distortion.pyx":815
+  /* "src/_distortion.pyx":815
  *         assert mask.shape[1] == shape1
  * 
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -16018,7 +16018,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
       #endif
       /*try:*/ {
 
-        /* "_distortion.pyx":816
+        /* "src/_distortion.pyx":816
  * 
  *     with nogil:
  *         for i in range(shape0):             # <<<<<<<<<<<<<<
@@ -16029,7 +16029,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
         for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_9; __pyx_t_8+=1) {
           __pyx_v_i = __pyx_t_8;
 
-          /* "_distortion.pyx":817
+          /* "src/_distortion.pyx":817
  *     with nogil:
  *         for i in range(shape0):
  *             for j in range(shape1):             # <<<<<<<<<<<<<<
@@ -16040,7 +16040,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
           for (__pyx_t_12 = 0; __pyx_t_12 < __pyx_t_11; __pyx_t_12+=1) {
             __pyx_v_j = __pyx_t_12;
 
-            /* "_distortion.pyx":818
+            /* "src/_distortion.pyx":818
  *         for i in range(shape0):
  *             for j in range(shape1):
  *                 if do_mask and mask[i, j]:             # <<<<<<<<<<<<<<
@@ -16060,7 +16060,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
             __pyx_L14_bool_binop_done:;
             if (__pyx_t_10) {
 
-              /* "_distortion.pyx":819
+              /* "src/_distortion.pyx":819
  *             for j in range(shape1):
  *                 if do_mask and mask[i, j]:
  *                     continue             # <<<<<<<<<<<<<<
@@ -16070,7 +16070,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
               goto __pyx_L11_continue;
             }
 
-            /* "_distortion.pyx":820
+            /* "src/_distortion.pyx":820
  *                 if do_mask and mask[i, j]:
  *                     continue
  *                 A0 = pos[i, j, 0, 0]             # <<<<<<<<<<<<<<
@@ -16083,7 +16083,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
             __pyx_t_19 = 0;
             __pyx_v_A0 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_16 * __pyx_v_pos.strides[0]) ) + __pyx_t_17 * __pyx_v_pos.strides[1]) ) + __pyx_t_18 * __pyx_v_pos.strides[2]) ) + __pyx_t_19 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":821
+            /* "src/_distortion.pyx":821
  *                     continue
  *                 A0 = pos[i, j, 0, 0]
  *                 A1 = pos[i, j, 0, 1]             # <<<<<<<<<<<<<<
@@ -16096,7 +16096,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
             __pyx_t_23 = 1;
             __pyx_v_A1 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_20 * __pyx_v_pos.strides[0]) ) + __pyx_t_21 * __pyx_v_pos.strides[1]) ) + __pyx_t_22 * __pyx_v_pos.strides[2]) ) + __pyx_t_23 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":822
+            /* "src/_distortion.pyx":822
  *                 A0 = pos[i, j, 0, 0]
  *                 A1 = pos[i, j, 0, 1]
  *                 B0 = pos[i, j, 1, 0]             # <<<<<<<<<<<<<<
@@ -16109,7 +16109,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
             __pyx_t_27 = 0;
             __pyx_v_B0 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_24 * __pyx_v_pos.strides[0]) ) + __pyx_t_25 * __pyx_v_pos.strides[1]) ) + __pyx_t_26 * __pyx_v_pos.strides[2]) ) + __pyx_t_27 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":823
+            /* "src/_distortion.pyx":823
  *                 A1 = pos[i, j, 0, 1]
  *                 B0 = pos[i, j, 1, 0]
  *                 B1 = pos[i, j, 1, 1]             # <<<<<<<<<<<<<<
@@ -16122,7 +16122,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
             __pyx_t_31 = 1;
             __pyx_v_B1 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_28 * __pyx_v_pos.strides[0]) ) + __pyx_t_29 * __pyx_v_pos.strides[1]) ) + __pyx_t_30 * __pyx_v_pos.strides[2]) ) + __pyx_t_31 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":824
+            /* "src/_distortion.pyx":824
  *                 B0 = pos[i, j, 1, 0]
  *                 B1 = pos[i, j, 1, 1]
  *                 C0 = pos[i, j, 2, 0]             # <<<<<<<<<<<<<<
@@ -16135,7 +16135,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
             __pyx_t_35 = 0;
             __pyx_v_C0 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_32 * __pyx_v_pos.strides[0]) ) + __pyx_t_33 * __pyx_v_pos.strides[1]) ) + __pyx_t_34 * __pyx_v_pos.strides[2]) ) + __pyx_t_35 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":825
+            /* "src/_distortion.pyx":825
  *                 B1 = pos[i, j, 1, 1]
  *                 C0 = pos[i, j, 2, 0]
  *                 C1 = pos[i, j, 2, 1]             # <<<<<<<<<<<<<<
@@ -16148,7 +16148,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
             __pyx_t_39 = 1;
             __pyx_v_C1 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_36 * __pyx_v_pos.strides[0]) ) + __pyx_t_37 * __pyx_v_pos.strides[1]) ) + __pyx_t_38 * __pyx_v_pos.strides[2]) ) + __pyx_t_39 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":826
+            /* "src/_distortion.pyx":826
  *                 C0 = pos[i, j, 2, 0]
  *                 C1 = pos[i, j, 2, 1]
  *                 D0 = pos[i, j, 3, 0]             # <<<<<<<<<<<<<<
@@ -16161,7 +16161,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
             __pyx_t_43 = 0;
             __pyx_v_D0 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_40 * __pyx_v_pos.strides[0]) ) + __pyx_t_41 * __pyx_v_pos.strides[1]) ) + __pyx_t_42 * __pyx_v_pos.strides[2]) ) + __pyx_t_43 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":827
+            /* "src/_distortion.pyx":827
  *                 C1 = pos[i, j, 2, 1]
  *                 D0 = pos[i, j, 3, 0]
  *                 D1 = pos[i, j, 3, 1]             # <<<<<<<<<<<<<<
@@ -16174,7 +16174,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
             __pyx_t_47 = 1;
             __pyx_v_D1 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_44 * __pyx_v_pos.strides[0]) ) + __pyx_t_45 * __pyx_v_pos.strides[1]) ) + __pyx_t_46 * __pyx_v_pos.strides[2]) ) + __pyx_t_47 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":828
+            /* "src/_distortion.pyx":828
  *                 D0 = pos[i, j, 3, 0]
  *                 D1 = pos[i, j, 3, 1]
  *                 min0 = clip(<int> floor(min(A0, B0, C0, D0)), 0, shape0)             # <<<<<<<<<<<<<<
@@ -16202,9 +16202,9 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
             } else {
               __pyx_t_52 = __pyx_t_51;
             }
-            __pyx_v_min0 = __pyx_f_11_distortion_clip(((int)floor(__pyx_t_52)), 0, __pyx_v_shape0, 0);
+            __pyx_v_min0 = __pyx_f_3src_11_distortion_clip(((int)floor(__pyx_t_52)), 0, __pyx_v_shape0, 0);
 
-            /* "_distortion.pyx":829
+            /* "src/_distortion.pyx":829
  *                 D1 = pos[i, j, 3, 1]
  *                 min0 = clip(<int> floor(min(A0, B0, C0, D0)), 0, shape0)
  *                 min1 = clip(<int> floor(min(A1, B1, C1, D1)), 0, shape1)             # <<<<<<<<<<<<<<
@@ -16232,9 +16232,9 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
             } else {
               __pyx_t_51 = __pyx_t_50;
             }
-            __pyx_v_min1 = __pyx_f_11_distortion_clip(((int)floor(__pyx_t_51)), 0, __pyx_v_shape1, 0);
+            __pyx_v_min1 = __pyx_f_3src_11_distortion_clip(((int)floor(__pyx_t_51)), 0, __pyx_v_shape1, 0);
 
-            /* "_distortion.pyx":830
+            /* "src/_distortion.pyx":830
  *                 min0 = clip(<int> floor(min(A0, B0, C0, D0)), 0, shape0)
  *                 min1 = clip(<int> floor(min(A1, B1, C1, D1)), 0, shape1)
  *                 max0 = clip(<int> ceil(max(A0, B0, C0, D0)) + 1, 0, shape0)             # <<<<<<<<<<<<<<
@@ -16262,9 +16262,9 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
             } else {
               __pyx_t_50 = __pyx_t_49;
             }
-            __pyx_v_max0 = __pyx_f_11_distortion_clip((((int)ceil(__pyx_t_50)) + 1), 0, __pyx_v_shape0, 0);
+            __pyx_v_max0 = __pyx_f_3src_11_distortion_clip((((int)ceil(__pyx_t_50)) + 1), 0, __pyx_v_shape0, 0);
 
-            /* "_distortion.pyx":831
+            /* "src/_distortion.pyx":831
  *                 min1 = clip(<int> floor(min(A1, B1, C1, D1)), 0, shape1)
  *                 max0 = clip(<int> ceil(max(A0, B0, C0, D0)) + 1, 0, shape0)
  *                 max1 = clip(<int> ceil(max(A1, B1, C1, D1)) + 1, 0, shape1)             # <<<<<<<<<<<<<<
@@ -16292,9 +16292,9 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
             } else {
               __pyx_t_49 = __pyx_t_48;
             }
-            __pyx_v_max1 = __pyx_f_11_distortion_clip((((int)ceil(__pyx_t_49)) + 1), 0, __pyx_v_shape1, 0);
+            __pyx_v_max1 = __pyx_f_3src_11_distortion_clip((((int)ceil(__pyx_t_49)) + 1), 0, __pyx_v_shape1, 0);
 
-            /* "_distortion.pyx":832
+            /* "src/_distortion.pyx":832
  *                 max0 = clip(<int> ceil(max(A0, B0, C0, D0)) + 1, 0, shape0)
  *                 max1 = clip(<int> ceil(max(A1, B1, C1, D1)) + 1, 0, shape1)
  *                 for k in range(min0, max0):             # <<<<<<<<<<<<<<
@@ -16305,7 +16305,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
             for (__pyx_t_54 = __pyx_v_min0; __pyx_t_54 < __pyx_t_53; __pyx_t_54+=1) {
               __pyx_v_k = __pyx_t_54;
 
-              /* "_distortion.pyx":833
+              /* "src/_distortion.pyx":833
  *                 max1 = clip(<int> ceil(max(A1, B1, C1, D1)) + 1, 0, shape1)
  *                 for k in range(min0, max0):
  *                     for l in range(min1, max1):             # <<<<<<<<<<<<<<
@@ -16316,7 +16316,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
               for (__pyx_t_56 = __pyx_v_min1; __pyx_t_56 < __pyx_t_55; __pyx_t_56+=1) {
                 __pyx_v_l = __pyx_t_56;
 
-                /* "_distortion.pyx":834
+                /* "src/_distortion.pyx":834
  *                 for k in range(min0, max0):
  *                     for l in range(min1, max1):
  *                         lut_size[k, l] += 1             # <<<<<<<<<<<<<<
@@ -16333,7 +16333,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
         }
       }
 
-      /* "_distortion.pyx":815
+      /* "src/_distortion.pyx":815
  *         assert mask.shape[1] == shape1
  * 
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -16351,7 +16351,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
       }
   }
 
-  /* "_distortion.pyx":835
+  /* "src/_distortion.pyx":835
  *                     for l in range(min1, max1):
  *                         lut_size[k, l] += 1
  *     return lut_size             # <<<<<<<<<<<<<<
@@ -16363,7 +16363,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
   __pyx_r = ((PyObject *)__pyx_v_lut_size);
   goto __pyx_L0;
 
-  /* "_distortion.pyx":796
+  /* "src/_distortion.pyx":796
  * @cython.wraparound(False)
  * @cython.boundscheck(False)
  * def calc_size(float[:, :, :, :] pos not None, shape, numpy.int8_t[:, :] mask=None):             # <<<<<<<<<<<<<<
@@ -16382,7 +16382,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
     __Pyx_ErrFetch(&__pyx_type, &__pyx_value, &__pyx_tb);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_lut_size.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("_distortion.calc_size", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.calc_size", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   goto __pyx_L2;
   __pyx_L0:;
@@ -16396,7 +16396,7 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
   return __pyx_r;
 }
 
-/* "_distortion.pyx":841
+/* "src/_distortion.pyx":841
  * @cython.boundscheck(False)
  * @cython.cdivision(True)
  * def calc_LUT(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,             # <<<<<<<<<<<<<<
@@ -16405,10 +16405,10 @@ static PyObject *__pyx_pf_11_distortion_4calc_size(CYTHON_UNUSED PyObject *__pyx
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_7calc_LUT(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_11_distortion_6calc_LUT[] = "\n    @param pos: 4D position array\n    @param shape: output shape\n    @param bin_size: number of input element per output element (numpy array)\n    @param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel\n    @param mask: arry with bad pixels marked as True\n    @return: look-up table\n    ";
-static PyMethodDef __pyx_mdef_11_distortion_7calc_LUT = {"calc_LUT", (PyCFunction)__pyx_pw_11_distortion_7calc_LUT, METH_VARARGS|METH_KEYWORDS, __pyx_doc_11_distortion_6calc_LUT};
-static PyObject *__pyx_pw_11_distortion_7calc_LUT(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_11_distortion_7calc_LUT(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_3src_11_distortion_6calc_LUT[] = "\n    @param pos: 4D position array\n    @param shape: output shape\n    @param bin_size: number of input element per output element (numpy array)\n    @param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel\n    @param mask: arry with bad pixels marked as True\n    @return: look-up table\n    ";
+static PyMethodDef __pyx_mdef_3src_11_distortion_7calc_LUT = {"calc_LUT", (PyCFunction)__pyx_pw_3src_11_distortion_7calc_LUT, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_11_distortion_6calc_LUT};
+static PyObject *__pyx_pw_3src_11_distortion_7calc_LUT(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   __Pyx_memviewslice __pyx_v_pos = { 0, 0, { 0 }, { 0 }, { 0 } };
   PyObject *__pyx_v_shape = 0;
   PyObject *__pyx_v_bin_size = 0;
@@ -16490,14 +16490,14 @@ static PyObject *__pyx_pw_11_distortion_7calc_LUT(PyObject *__pyx_self, PyObject
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("calc_LUT", 0, 4, 5, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 841; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("_distortion.calc_LUT", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.calc_LUT", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(((PyObject *)__pyx_v_pos.memview) == Py_None)) {
     PyErr_Format(PyExc_TypeError, "Argument '%.200s' must not be None", "pos"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 841; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_r = __pyx_pf_11_distortion_6calc_LUT(__pyx_self, __pyx_v_pos, __pyx_v_shape, __pyx_v_bin_size, __pyx_v_max_pixel_size, __pyx_v_mask);
+  __pyx_r = __pyx_pf_3src_11_distortion_6calc_LUT(__pyx_self, __pyx_v_pos, __pyx_v_shape, __pyx_v_bin_size, __pyx_v_max_pixel_size, __pyx_v_mask);
 
   /* function exit code */
   goto __pyx_L0;
@@ -16508,7 +16508,7 @@ static PyObject *__pyx_pw_11_distortion_7calc_LUT(PyObject *__pyx_self, PyObject
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_6calc_LUT(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_pos, PyObject *__pyx_v_shape, PyObject *__pyx_v_bin_size, PyObject *__pyx_v_max_pixel_size, __Pyx_memviewslice __pyx_v_mask) {
+static PyObject *__pyx_pf_3src_11_distortion_6calc_LUT(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_pos, PyObject *__pyx_v_shape, PyObject *__pyx_v_bin_size, PyObject *__pyx_v_max_pixel_size, __Pyx_memviewslice __pyx_v_mask) {
   int __pyx_v_i;
   int __pyx_v_j;
   int __pyx_v_ms;
@@ -16648,7 +16648,7 @@ static PyObject *__pyx_pf_11_distortion_6calc_LUT(CYTHON_UNUSED PyObject *__pyx_
   __pyx_pybuffernd_tmp_ary.data = NULL;
   __pyx_pybuffernd_tmp_ary.rcbuffer = &__pyx_pybuffer_tmp_ary;
 
-  /* "_distortion.pyx":854
+  /* "src/_distortion.pyx":854
  *         int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1
  *         int offset0, offset1, box_size0, box_size1, size, k
  *         numpy.int32_t idx = 0             # <<<<<<<<<<<<<<
@@ -16657,7 +16657,7 @@ static PyObject *__pyx_pf_11_distortion_6calc_LUT(CYTHON_UNUSED PyObject *__pyx_
  */
   __pyx_v_idx = 0;
 
-  /* "_distortion.pyx":857
+  /* "src/_distortion.pyx":857
  *         float A0, A1, B0, B1, C0, C1, D0, D1, pAB, pBC, pCD, pDA, cAB, cBC, cCD, cDA, area, value
  *         lut_point[:, :, :] lut
  *         bint do_mask = mask is not None             # <<<<<<<<<<<<<<
@@ -16666,7 +16666,7 @@ static PyObject *__pyx_pf_11_distortion_6calc_LUT(CYTHON_UNUSED PyObject *__pyx_
  */
   __pyx_v_do_mask = (((PyObject *) __pyx_v_mask.memview) != Py_None);
 
-  /* "_distortion.pyx":858
+  /* "src/_distortion.pyx":858
  *         lut_point[:, :, :] lut
  *         bint do_mask = mask is not None
  *     size = bin_size.max()             # <<<<<<<<<<<<<<
@@ -16697,7 +16697,7 @@ static PyObject *__pyx_pf_11_distortion_6calc_LUT(CYTHON_UNUSED PyObject *__pyx_
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_size = __pyx_t_4;
 
-  /* "_distortion.pyx":859
+  /* "src/_distortion.pyx":859
  *         bint do_mask = mask is not None
  *     size = bin_size.max()
  *     shape0, shape1 = shape             # <<<<<<<<<<<<<<
@@ -16759,7 +16759,7 @@ static PyObject *__pyx_pf_11_distortion_6calc_LUT(CYTHON_UNUSED PyObject *__pyx_
   __pyx_v_shape0 = __pyx_t_4;
   __pyx_v_shape1 = __pyx_t_6;
 
-  /* "_distortion.pyx":860
+  /* "src/_distortion.pyx":860
  *     size = bin_size.max()
  *     shape0, shape1 = shape
  *     if do_mask:             # <<<<<<<<<<<<<<
@@ -16769,7 +16769,7 @@ static PyObject *__pyx_pf_11_distortion_6calc_LUT(CYTHON_UNUSED PyObject *__pyx_
   __pyx_t_7 = (__pyx_v_do_mask != 0);
   if (__pyx_t_7) {
 
-    /* "_distortion.pyx":861
+    /* "src/_distortion.pyx":861
  *     shape0, shape1 = shape
  *     if do_mask:
  *         assert shape0 == mask.shape[0]             # <<<<<<<<<<<<<<
@@ -16785,7 +16785,7 @@ static PyObject *__pyx_pf_11_distortion_6calc_LUT(CYTHON_UNUSED PyObject *__pyx_
     }
     #endif
 
-    /* "_distortion.pyx":862
+    /* "src/_distortion.pyx":862
  *     if do_mask:
  *         assert shape0 == mask.shape[0]
  *         assert shape1 == mask.shape[1]             # <<<<<<<<<<<<<<
@@ -16804,7 +16804,7 @@ static PyObject *__pyx_pf_11_distortion_6calc_LUT(CYTHON_UNUSED PyObject *__pyx_
   }
   __pyx_L5:;
 
-  /* "_distortion.pyx":863
+  /* "src/_distortion.pyx":863
  *         assert shape0 == mask.shape[0]
  *         assert shape1 == mask.shape[1]
  *     delta0, delta1 = max_pixel_size             # <<<<<<<<<<<<<<
@@ -16866,7 +16866,7 @@ static PyObject *__pyx_pf_11_distortion_6calc_LUT(CYTHON_UNUSED PyObject *__pyx_
   __pyx_v_delta0 = __pyx_t_6;
   __pyx_v_delta1 = __pyx_t_4;
 
-  /* "_distortion.pyx":864
+  /* "src/_distortion.pyx":864
  *         assert shape1 == mask.shape[1]
  *     delta0, delta1 = max_pixel_size
  *     cdef int[:, :] outMax = view.array(shape=(shape0, shape1), itemsize=sizeof(int), format="i")             # <<<<<<<<<<<<<<
@@ -16904,7 +16904,7 @@ static PyObject *__pyx_pf_11_distortion_6calc_LUT(CYTHON_UNUSED PyObject *__pyx_
   __pyx_t_9.memview = NULL;
   __pyx_t_9.data = NULL;
 
-  /* "_distortion.pyx":865
+  /* "src/_distortion.pyx":865
  *     delta0, delta1 = max_pixel_size
  *     cdef int[:, :] outMax = view.array(shape=(shape0, shape1), itemsize=sizeof(int), format="i")
  *     outMax[:, :] =0             # <<<<<<<<<<<<<<
@@ -16947,7 +16947,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
   }
   __PYX_XDEC_MEMVIEW(&__pyx_t_10, 1);
 
-  /* "_distortion.pyx":866
+  /* "src/_distortion.pyx":866
  *     cdef int[:, :] outMax = view.array(shape=(shape0, shape1), itemsize=sizeof(int), format="i")
  *     outMax[:, :] =0
  *     cdef float[:, :] buffer = view.array(shape=(delta0, delta1), itemsize=sizeof(float), format="f")             # <<<<<<<<<<<<<<
@@ -16985,7 +16985,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
   __pyx_t_11.memview = NULL;
   __pyx_t_11.data = NULL;
 
-  /* "_distortion.pyx":867
+  /* "src/_distortion.pyx":867
  *     outMax[:, :] =0
  *     cdef float[:, :] buffer = view.array(shape=(delta0, delta1), itemsize=sizeof(float), format="f")
  *     lut = view.array(shape=(shape0, shape1, size), itemsize=sizeof(lut_point), format="if")             # <<<<<<<<<<<<<<
@@ -17013,7 +17013,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
   __pyx_t_1 = 0;
   if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_shape, __pyx_t_12) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 867; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
-  __pyx_t_12 = __Pyx_PyInt_FromSize_t((sizeof(struct __pyx_t_11_distortion_lut_point))); if (unlikely(!__pyx_t_12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 867; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_12 = __Pyx_PyInt_FromSize_t((sizeof(struct __pyx_t_3src_11_distortion_lut_point))); if (unlikely(!__pyx_t_12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 867; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_12);
   if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_itemsize, __pyx_t_12) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 867; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
@@ -17021,26 +17021,26 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
   __pyx_t_12 = __Pyx_PyObject_Call(((PyObject *)((PyObject *)__pyx_array_type)), __pyx_empty_tuple, __pyx_t_2); if (unlikely(!__pyx_t_12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 867; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_12);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_13 = __Pyx_PyObject_to_MemoryviewSlice_dsdsds_nn_struct___pyx_t_11_distortion_lut_point(__pyx_t_12);
+  __pyx_t_13 = __Pyx_PyObject_to_MemoryviewSlice_dsdsds_nn_struct___pyx_t_3src_11_distortion_lut_point(__pyx_t_12);
   if (unlikely(!__pyx_t_13.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 867; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
   __pyx_v_lut = __pyx_t_13;
   __pyx_t_13.memview = NULL;
   __pyx_t_13.data = NULL;
 
-  /* "_distortion.pyx":868
+  /* "src/_distortion.pyx":868
  *     cdef float[:, :] buffer = view.array(shape=(delta0, delta1), itemsize=sizeof(float), format="f")
  *     lut = view.array(shape=(shape0, shape1, size), itemsize=sizeof(lut_point), format="if")
  *     lut_total_size = shape0 * shape1 * size * sizeof(lut_point)             # <<<<<<<<<<<<<<
  *     memset(&lut[0, 0, 0], 0, lut_total_size)
  *     logger.info("LUT shape: (%i,%i,%i) %.3f MByte" % (lut.shape[0], lut.shape[1], lut.shape[2], lut_total_size / 1.0e6))
  */
-  __pyx_t_12 = __Pyx_PyInt_FromSize_t((((__pyx_v_shape0 * __pyx_v_shape1) * __pyx_v_size) * (sizeof(struct __pyx_t_11_distortion_lut_point)))); if (unlikely(!__pyx_t_12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 868; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_12 = __Pyx_PyInt_FromSize_t((((__pyx_v_shape0 * __pyx_v_shape1) * __pyx_v_size) * (sizeof(struct __pyx_t_3src_11_distortion_lut_point)))); if (unlikely(!__pyx_t_12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 868; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_12);
   __pyx_v_lut_total_size = __pyx_t_12;
   __pyx_t_12 = 0;
 
-  /* "_distortion.pyx":869
+  /* "src/_distortion.pyx":869
  *     lut = view.array(shape=(shape0, shape1, size), itemsize=sizeof(lut_point), format="if")
  *     lut_total_size = shape0 * shape1 * size * sizeof(lut_point)
  *     memset(&lut[0, 0, 0], 0, lut_total_size)             # <<<<<<<<<<<<<<
@@ -17051,9 +17051,9 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
   __pyx_t_15 = 0;
   __pyx_t_16 = 0;
   __pyx_t_17 = __Pyx_PyInt_As_size_t(__pyx_v_lut_total_size); if (unlikely((__pyx_t_17 == (size_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 869; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  memset((&(*((struct __pyx_t_11_distortion_lut_point *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_lut.data + __pyx_t_14 * __pyx_v_lut.strides[0]) ) + __pyx_t_15 * __pyx_v_lut.strides[1]) ) + __pyx_t_16 * __pyx_v_lut.strides[2]) )))), 0, __pyx_t_17);
+  memset((&(*((struct __pyx_t_3src_11_distortion_lut_point *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_lut.data + __pyx_t_14 * __pyx_v_lut.strides[0]) ) + __pyx_t_15 * __pyx_v_lut.strides[1]) ) + __pyx_t_16 * __pyx_v_lut.strides[2]) )))), 0, __pyx_t_17);
 
-  /* "_distortion.pyx":870
+  /* "src/_distortion.pyx":870
  *     lut_total_size = shape0 * shape1 * size * sizeof(lut_point)
  *     memset(&lut[0, 0, 0], 0, lut_total_size)
  *     logger.info("LUT shape: (%i,%i,%i) %.3f MByte" % (lut.shape[0], lut.shape[1], lut.shape[2], lut_total_size / 1.0e6))             # <<<<<<<<<<<<<<
@@ -17118,7 +17118,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
 
-  /* "_distortion.pyx":871
+  /* "src/_distortion.pyx":871
  *     memset(&lut[0, 0, 0], 0, lut_total_size)
  *     logger.info("LUT shape: (%i,%i,%i) %.3f MByte" % (lut.shape[0], lut.shape[1], lut.shape[2], lut_total_size / 1.0e6))
  *     buffer_size = delta0 * delta1 * sizeof(float)             # <<<<<<<<<<<<<<
@@ -17127,7 +17127,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
  */
   __pyx_v_buffer_size = ((__pyx_v_delta0 * __pyx_v_delta1) * (sizeof(float)));
 
-  /* "_distortion.pyx":872
+  /* "src/_distortion.pyx":872
  *     logger.info("LUT shape: (%i,%i,%i) %.3f MByte" % (lut.shape[0], lut.shape[1], lut.shape[2], lut_total_size / 1.0e6))
  *     buffer_size = delta0 * delta1 * sizeof(float)
  *     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (delta1, delta0, size))             # <<<<<<<<<<<<<<
@@ -17187,7 +17187,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
 
-  /* "_distortion.pyx":873
+  /* "src/_distortion.pyx":873
  *     buffer_size = delta0 * delta1 * sizeof(float)
  *     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (delta1, delta0, size))
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -17201,7 +17201,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
       #endif
       /*try:*/ {
 
-        /* "_distortion.pyx":875
+        /* "src/_distortion.pyx":875
  *     with nogil:
  *         # i,j, idx are indexes of the raw image uncorrected
  *         for i in range(shape0):             # <<<<<<<<<<<<<<
@@ -17212,7 +17212,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
         for (__pyx_t_6 = 0; __pyx_t_6 < __pyx_t_4; __pyx_t_6+=1) {
           __pyx_v_i = __pyx_t_6;
 
-          /* "_distortion.pyx":876
+          /* "src/_distortion.pyx":876
  *         # i,j, idx are indexes of the raw image uncorrected
  *         for i in range(shape0):
  *             for j in range(shape1):             # <<<<<<<<<<<<<<
@@ -17223,7 +17223,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
           for (__pyx_t_21 = 0; __pyx_t_21 < __pyx_t_20; __pyx_t_21+=1) {
             __pyx_v_j = __pyx_t_21;
 
-            /* "_distortion.pyx":877
+            /* "src/_distortion.pyx":877
  *         for i in range(shape0):
  *             for j in range(shape1):
  *                 if do_mask and mask[i, j]:             # <<<<<<<<<<<<<<
@@ -17243,7 +17243,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
             __pyx_L16_bool_binop_done:;
             if (__pyx_t_7) {
 
-              /* "_distortion.pyx":878
+              /* "src/_distortion.pyx":878
  *             for j in range(shape1):
  *                 if do_mask and mask[i, j]:
  *                     continue             # <<<<<<<<<<<<<<
@@ -17253,7 +17253,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
               goto __pyx_L13_continue;
             }
 
-            /* "_distortion.pyx":880
+            /* "src/_distortion.pyx":880
  *                     continue
  *                 # reinit of buffer
  *                 buffer[:, :] = 0             # <<<<<<<<<<<<<<
@@ -17296,7 +17296,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             }
             __PYX_XDEC_MEMVIEW(&__pyx_t_25, 0);
 
-            /* "_distortion.pyx":881
+            /* "src/_distortion.pyx":881
  *                 # reinit of buffer
  *                 buffer[:, :] = 0
  *                 A0 = pos[i, j, 0, 0]             # <<<<<<<<<<<<<<
@@ -17309,7 +17309,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_29 = 0;
             __pyx_v_A0 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_26 * __pyx_v_pos.strides[0]) ) + __pyx_t_27 * __pyx_v_pos.strides[1]) ) + __pyx_t_28 * __pyx_v_pos.strides[2]) ) + __pyx_t_29 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":882
+            /* "src/_distortion.pyx":882
  *                 buffer[:, :] = 0
  *                 A0 = pos[i, j, 0, 0]
  *                 A1 = pos[i, j, 0, 1]             # <<<<<<<<<<<<<<
@@ -17322,7 +17322,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_33 = 1;
             __pyx_v_A1 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_30 * __pyx_v_pos.strides[0]) ) + __pyx_t_31 * __pyx_v_pos.strides[1]) ) + __pyx_t_32 * __pyx_v_pos.strides[2]) ) + __pyx_t_33 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":883
+            /* "src/_distortion.pyx":883
  *                 A0 = pos[i, j, 0, 0]
  *                 A1 = pos[i, j, 0, 1]
  *                 B0 = pos[i, j, 1, 0]             # <<<<<<<<<<<<<<
@@ -17335,7 +17335,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_37 = 0;
             __pyx_v_B0 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_34 * __pyx_v_pos.strides[0]) ) + __pyx_t_35 * __pyx_v_pos.strides[1]) ) + __pyx_t_36 * __pyx_v_pos.strides[2]) ) + __pyx_t_37 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":884
+            /* "src/_distortion.pyx":884
  *                 A1 = pos[i, j, 0, 1]
  *                 B0 = pos[i, j, 1, 0]
  *                 B1 = pos[i, j, 1, 1]             # <<<<<<<<<<<<<<
@@ -17348,7 +17348,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_41 = 1;
             __pyx_v_B1 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_38 * __pyx_v_pos.strides[0]) ) + __pyx_t_39 * __pyx_v_pos.strides[1]) ) + __pyx_t_40 * __pyx_v_pos.strides[2]) ) + __pyx_t_41 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":885
+            /* "src/_distortion.pyx":885
  *                 B0 = pos[i, j, 1, 0]
  *                 B1 = pos[i, j, 1, 1]
  *                 C0 = pos[i, j, 2, 0]             # <<<<<<<<<<<<<<
@@ -17361,7 +17361,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_45 = 0;
             __pyx_v_C0 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_42 * __pyx_v_pos.strides[0]) ) + __pyx_t_43 * __pyx_v_pos.strides[1]) ) + __pyx_t_44 * __pyx_v_pos.strides[2]) ) + __pyx_t_45 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":886
+            /* "src/_distortion.pyx":886
  *                 B1 = pos[i, j, 1, 1]
  *                 C0 = pos[i, j, 2, 0]
  *                 C1 = pos[i, j, 2, 1]             # <<<<<<<<<<<<<<
@@ -17374,7 +17374,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_49 = 1;
             __pyx_v_C1 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_46 * __pyx_v_pos.strides[0]) ) + __pyx_t_47 * __pyx_v_pos.strides[1]) ) + __pyx_t_48 * __pyx_v_pos.strides[2]) ) + __pyx_t_49 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":887
+            /* "src/_distortion.pyx":887
  *                 C0 = pos[i, j, 2, 0]
  *                 C1 = pos[i, j, 2, 1]
  *                 D0 = pos[i, j, 3, 0]             # <<<<<<<<<<<<<<
@@ -17387,7 +17387,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_53 = 0;
             __pyx_v_D0 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_50 * __pyx_v_pos.strides[0]) ) + __pyx_t_51 * __pyx_v_pos.strides[1]) ) + __pyx_t_52 * __pyx_v_pos.strides[2]) ) + __pyx_t_53 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":888
+            /* "src/_distortion.pyx":888
  *                 C1 = pos[i, j, 2, 1]
  *                 D0 = pos[i, j, 3, 0]
  *                 D1 = pos[i, j, 3, 1]             # <<<<<<<<<<<<<<
@@ -17400,7 +17400,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_57 = 1;
             __pyx_v_D1 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_54 * __pyx_v_pos.strides[0]) ) + __pyx_t_55 * __pyx_v_pos.strides[1]) ) + __pyx_t_56 * __pyx_v_pos.strides[2]) ) + __pyx_t_57 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":889
+            /* "src/_distortion.pyx":889
  *                 D0 = pos[i, j, 3, 0]
  *                 D1 = pos[i, j, 3, 1]
  *                 offset0 = (<int> floor(min(A0, B0, C0, D0)))             # <<<<<<<<<<<<<<
@@ -17430,7 +17430,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             }
             __pyx_v_offset0 = ((int)floor(__pyx_t_62));
 
-            /* "_distortion.pyx":890
+            /* "src/_distortion.pyx":890
  *                 D1 = pos[i, j, 3, 1]
  *                 offset0 = (<int> floor(min(A0, B0, C0, D0)))
  *                 offset1 = (<int> floor(min(A1, B1, C1, D1)))             # <<<<<<<<<<<<<<
@@ -17460,7 +17460,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             }
             __pyx_v_offset1 = ((int)floor(__pyx_t_61));
 
-            /* "_distortion.pyx":891
+            /* "src/_distortion.pyx":891
  *                 offset0 = (<int> floor(min(A0, B0, C0, D0)))
  *                 offset1 = (<int> floor(min(A1, B1, C1, D1)))
  *                 box_size0 = (<int> ceil(max(A0, B0, C0, D0))) - offset0             # <<<<<<<<<<<<<<
@@ -17490,7 +17490,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             }
             __pyx_v_box_size0 = (((int)ceil(__pyx_t_60)) - __pyx_v_offset0);
 
-            /* "_distortion.pyx":892
+            /* "src/_distortion.pyx":892
  *                 offset1 = (<int> floor(min(A1, B1, C1, D1)))
  *                 box_size0 = (<int> ceil(max(A0, B0, C0, D0))) - offset0
  *                 box_size1 = (<int> ceil(max(A1, B1, C1, D1))) - offset1             # <<<<<<<<<<<<<<
@@ -17520,7 +17520,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             }
             __pyx_v_box_size1 = (((int)ceil(__pyx_t_59)) - __pyx_v_offset1);
 
-            /* "_distortion.pyx":893
+            /* "src/_distortion.pyx":893
  *                 box_size0 = (<int> ceil(max(A0, B0, C0, D0))) - offset0
  *                 box_size1 = (<int> ceil(max(A1, B1, C1, D1))) - offset1
  *                 A0 -= <float> offset0             # <<<<<<<<<<<<<<
@@ -17529,7 +17529,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
  */
             __pyx_v_A0 = (__pyx_v_A0 - ((float)__pyx_v_offset0));
 
-            /* "_distortion.pyx":894
+            /* "src/_distortion.pyx":894
  *                 box_size1 = (<int> ceil(max(A1, B1, C1, D1))) - offset1
  *                 A0 -= <float> offset0
  *                 A1 -= <float> offset1             # <<<<<<<<<<<<<<
@@ -17538,7 +17538,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
  */
             __pyx_v_A1 = (__pyx_v_A1 - ((float)__pyx_v_offset1));
 
-            /* "_distortion.pyx":895
+            /* "src/_distortion.pyx":895
  *                 A0 -= <float> offset0
  *                 A1 -= <float> offset1
  *                 B0 -= <float> offset0             # <<<<<<<<<<<<<<
@@ -17547,7 +17547,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
  */
             __pyx_v_B0 = (__pyx_v_B0 - ((float)__pyx_v_offset0));
 
-            /* "_distortion.pyx":896
+            /* "src/_distortion.pyx":896
  *                 A1 -= <float> offset1
  *                 B0 -= <float> offset0
  *                 B1 -= <float> offset1             # <<<<<<<<<<<<<<
@@ -17556,7 +17556,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
  */
             __pyx_v_B1 = (__pyx_v_B1 - ((float)__pyx_v_offset1));
 
-            /* "_distortion.pyx":897
+            /* "src/_distortion.pyx":897
  *                 B0 -= <float> offset0
  *                 B1 -= <float> offset1
  *                 C0 -= <float> offset0             # <<<<<<<<<<<<<<
@@ -17565,7 +17565,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
  */
             __pyx_v_C0 = (__pyx_v_C0 - ((float)__pyx_v_offset0));
 
-            /* "_distortion.pyx":898
+            /* "src/_distortion.pyx":898
  *                 B1 -= <float> offset1
  *                 C0 -= <float> offset0
  *                 C1 -= <float> offset1             # <<<<<<<<<<<<<<
@@ -17574,7 +17574,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
  */
             __pyx_v_C1 = (__pyx_v_C1 - ((float)__pyx_v_offset1));
 
-            /* "_distortion.pyx":899
+            /* "src/_distortion.pyx":899
  *                 C0 -= <float> offset0
  *                 C1 -= <float> offset1
  *                 D0 -= <float> offset0             # <<<<<<<<<<<<<<
@@ -17583,7 +17583,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
  */
             __pyx_v_D0 = (__pyx_v_D0 - ((float)__pyx_v_offset0));
 
-            /* "_distortion.pyx":900
+            /* "src/_distortion.pyx":900
  *                 C1 -= <float> offset1
  *                 D0 -= <float> offset0
  *                 D1 -= <float> offset1             # <<<<<<<<<<<<<<
@@ -17592,7 +17592,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
  */
             __pyx_v_D1 = (__pyx_v_D1 - ((float)__pyx_v_offset1));
 
-            /* "_distortion.pyx":901
+            /* "src/_distortion.pyx":901
  *                 D0 -= <float> offset0
  *                 D1 -= <float> offset1
  *                 if B0 != A0:             # <<<<<<<<<<<<<<
@@ -17602,7 +17602,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_7 = ((__pyx_v_B0 != __pyx_v_A0) != 0);
             if (__pyx_t_7) {
 
-              /* "_distortion.pyx":902
+              /* "src/_distortion.pyx":902
  *                 D1 -= <float> offset1
  *                 if B0 != A0:
  *                     pAB = (B1 - A1) / (B0 - A0)             # <<<<<<<<<<<<<<
@@ -17611,7 +17611,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
  */
               __pyx_v_pAB = ((__pyx_v_B1 - __pyx_v_A1) / (__pyx_v_B0 - __pyx_v_A0));
 
-              /* "_distortion.pyx":903
+              /* "src/_distortion.pyx":903
  *                 if B0 != A0:
  *                     pAB = (B1 - A1) / (B0 - A0)
  *                     cAB = A1 - pAB * A0             # <<<<<<<<<<<<<<
@@ -17623,7 +17623,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             }
             /*else*/ {
 
-              /* "_distortion.pyx":905
+              /* "src/_distortion.pyx":905
  *                     cAB = A1 - pAB * A0
  *                 else:
  *                     pAB = cAB = 0.0             # <<<<<<<<<<<<<<
@@ -17635,7 +17635,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             }
             __pyx_L18:;
 
-            /* "_distortion.pyx":906
+            /* "src/_distortion.pyx":906
  *                 else:
  *                     pAB = cAB = 0.0
  *                 if C0 != B0:             # <<<<<<<<<<<<<<
@@ -17645,7 +17645,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_7 = ((__pyx_v_C0 != __pyx_v_B0) != 0);
             if (__pyx_t_7) {
 
-              /* "_distortion.pyx":907
+              /* "src/_distortion.pyx":907
  *                     pAB = cAB = 0.0
  *                 if C0 != B0:
  *                     pBC = (C1 - B1) / (C0 - B0)             # <<<<<<<<<<<<<<
@@ -17654,7 +17654,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
  */
               __pyx_v_pBC = ((__pyx_v_C1 - __pyx_v_B1) / (__pyx_v_C0 - __pyx_v_B0));
 
-              /* "_distortion.pyx":908
+              /* "src/_distortion.pyx":908
  *                 if C0 != B0:
  *                     pBC = (C1 - B1) / (C0 - B0)
  *                     cBC = B1 - pBC * B0             # <<<<<<<<<<<<<<
@@ -17666,7 +17666,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             }
             /*else*/ {
 
-              /* "_distortion.pyx":910
+              /* "src/_distortion.pyx":910
  *                     cBC = B1 - pBC * B0
  *                 else:
  *                     pBC = cBC = 0.0             # <<<<<<<<<<<<<<
@@ -17678,7 +17678,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             }
             __pyx_L19:;
 
-            /* "_distortion.pyx":911
+            /* "src/_distortion.pyx":911
  *                 else:
  *                     pBC = cBC = 0.0
  *                 if D0 != C0:             # <<<<<<<<<<<<<<
@@ -17688,7 +17688,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_7 = ((__pyx_v_D0 != __pyx_v_C0) != 0);
             if (__pyx_t_7) {
 
-              /* "_distortion.pyx":912
+              /* "src/_distortion.pyx":912
  *                     pBC = cBC = 0.0
  *                 if D0 != C0:
  *                     pCD = (D1 - C1) / (D0 - C0)             # <<<<<<<<<<<<<<
@@ -17697,7 +17697,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
  */
               __pyx_v_pCD = ((__pyx_v_D1 - __pyx_v_C1) / (__pyx_v_D0 - __pyx_v_C0));
 
-              /* "_distortion.pyx":913
+              /* "src/_distortion.pyx":913
  *                 if D0 != C0:
  *                     pCD = (D1 - C1) / (D0 - C0)
  *                     cCD = C1 - pCD * C0             # <<<<<<<<<<<<<<
@@ -17709,7 +17709,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             }
             /*else*/ {
 
-              /* "_distortion.pyx":915
+              /* "src/_distortion.pyx":915
  *                     cCD = C1 - pCD * C0
  *                 else:
  *                     pCD = cCD = 0.0             # <<<<<<<<<<<<<<
@@ -17721,7 +17721,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             }
             __pyx_L20:;
 
-            /* "_distortion.pyx":916
+            /* "src/_distortion.pyx":916
  *                 else:
  *                     pCD = cCD = 0.0
  *                 if A0 != D0:             # <<<<<<<<<<<<<<
@@ -17731,7 +17731,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_7 = ((__pyx_v_A0 != __pyx_v_D0) != 0);
             if (__pyx_t_7) {
 
-              /* "_distortion.pyx":917
+              /* "src/_distortion.pyx":917
  *                     pCD = cCD = 0.0
  *                 if A0 != D0:
  *                     pDA = (A1 - D1) / (A0 - D0)             # <<<<<<<<<<<<<<
@@ -17740,7 +17740,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
  */
               __pyx_v_pDA = ((__pyx_v_A1 - __pyx_v_D1) / (__pyx_v_A0 - __pyx_v_D0));
 
-              /* "_distortion.pyx":918
+              /* "src/_distortion.pyx":918
  *                 if A0 != D0:
  *                     pDA = (A1 - D1) / (A0 - D0)
  *                     cDA = D1 - pDA * D0             # <<<<<<<<<<<<<<
@@ -17752,7 +17752,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             }
             /*else*/ {
 
-              /* "_distortion.pyx":920
+              /* "src/_distortion.pyx":920
  *                     cDA = D1 - pDA * D0
  *                 else:
  *                     pDA = cDA = 0.0             # <<<<<<<<<<<<<<
@@ -17764,43 +17764,43 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             }
             __pyx_L21:;
 
-            /* "_distortion.pyx":921
+            /* "src/_distortion.pyx":921
  *                 else:
  *                     pDA = cDA = 0.0
  *                 integrate(buffer, B0, A0, pAB, cAB)             # <<<<<<<<<<<<<<
  *                 integrate(buffer, A0, D0, pDA, cDA)
  *                 integrate(buffer, D0, C0, pCD, cCD)
  */
-            __pyx_f_11_distortion_integrate(__pyx_v_buffer, __pyx_v_B0, __pyx_v_A0, __pyx_v_pAB, __pyx_v_cAB);
+            __pyx_f_3src_11_distortion_integrate(__pyx_v_buffer, __pyx_v_B0, __pyx_v_A0, __pyx_v_pAB, __pyx_v_cAB);
 
-            /* "_distortion.pyx":922
+            /* "src/_distortion.pyx":922
  *                     pDA = cDA = 0.0
  *                 integrate(buffer, B0, A0, pAB, cAB)
  *                 integrate(buffer, A0, D0, pDA, cDA)             # <<<<<<<<<<<<<<
  *                 integrate(buffer, D0, C0, pCD, cCD)
  *                 integrate(buffer, C0, B0, pBC, cBC)
  */
-            __pyx_f_11_distortion_integrate(__pyx_v_buffer, __pyx_v_A0, __pyx_v_D0, __pyx_v_pDA, __pyx_v_cDA);
+            __pyx_f_3src_11_distortion_integrate(__pyx_v_buffer, __pyx_v_A0, __pyx_v_D0, __pyx_v_pDA, __pyx_v_cDA);
 
-            /* "_distortion.pyx":923
+            /* "src/_distortion.pyx":923
  *                 integrate(buffer, B0, A0, pAB, cAB)
  *                 integrate(buffer, A0, D0, pDA, cDA)
  *                 integrate(buffer, D0, C0, pCD, cCD)             # <<<<<<<<<<<<<<
  *                 integrate(buffer, C0, B0, pBC, cBC)
  *                 area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
  */
-            __pyx_f_11_distortion_integrate(__pyx_v_buffer, __pyx_v_D0, __pyx_v_C0, __pyx_v_pCD, __pyx_v_cCD);
+            __pyx_f_3src_11_distortion_integrate(__pyx_v_buffer, __pyx_v_D0, __pyx_v_C0, __pyx_v_pCD, __pyx_v_cCD);
 
-            /* "_distortion.pyx":924
+            /* "src/_distortion.pyx":924
  *                 integrate(buffer, A0, D0, pDA, cDA)
  *                 integrate(buffer, D0, C0, pCD, cCD)
  *                 integrate(buffer, C0, B0, pBC, cBC)             # <<<<<<<<<<<<<<
  *                 area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
  *                 for ms in range(box_size0):
  */
-            __pyx_f_11_distortion_integrate(__pyx_v_buffer, __pyx_v_C0, __pyx_v_B0, __pyx_v_pBC, __pyx_v_cBC);
+            __pyx_f_3src_11_distortion_integrate(__pyx_v_buffer, __pyx_v_C0, __pyx_v_B0, __pyx_v_pBC, __pyx_v_cBC);
 
-            /* "_distortion.pyx":925
+            /* "src/_distortion.pyx":925
  *                 integrate(buffer, D0, C0, pCD, cCD)
  *                 integrate(buffer, C0, B0, pBC, cBC)
  *                 area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))             # <<<<<<<<<<<<<<
@@ -17809,7 +17809,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
  */
             __pyx_v_area = (0.5 * (((__pyx_v_C0 - __pyx_v_A0) * (__pyx_v_D1 - __pyx_v_B1)) - ((__pyx_v_C1 - __pyx_v_A1) * (__pyx_v_D0 - __pyx_v_B0))));
 
-            /* "_distortion.pyx":926
+            /* "src/_distortion.pyx":926
  *                 integrate(buffer, C0, B0, pBC, cBC)
  *                 area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
  *                 for ms in range(box_size0):             # <<<<<<<<<<<<<<
@@ -17820,7 +17820,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
             for (__pyx_t_64 = 0; __pyx_t_64 < __pyx_t_63; __pyx_t_64+=1) {
               __pyx_v_ms = __pyx_t_64;
 
-              /* "_distortion.pyx":927
+              /* "src/_distortion.pyx":927
  *                 area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
  *                 for ms in range(box_size0):
  *                     ml = ms + offset0             # <<<<<<<<<<<<<<
@@ -17829,7 +17829,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
  */
               __pyx_v_ml = (__pyx_v_ms + __pyx_v_offset0);
 
-              /* "_distortion.pyx":928
+              /* "src/_distortion.pyx":928
  *                 for ms in range(box_size0):
  *                     ml = ms + offset0
  *                     if ml < 0 or ml >= shape0:             # <<<<<<<<<<<<<<
@@ -17847,7 +17847,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
               __pyx_L25_bool_binop_done:;
               if (__pyx_t_7) {
 
-                /* "_distortion.pyx":929
+                /* "src/_distortion.pyx":929
  *                     ml = ms + offset0
  *                     if ml < 0 or ml >= shape0:
  *                         continue             # <<<<<<<<<<<<<<
@@ -17857,7 +17857,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
                 goto __pyx_L22_continue;
               }
 
-              /* "_distortion.pyx":930
+              /* "src/_distortion.pyx":930
  *                     if ml < 0 or ml >= shape0:
  *                         continue
  *                     for ns in range(box_size1):             # <<<<<<<<<<<<<<
@@ -17868,7 +17868,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
               for (__pyx_t_66 = 0; __pyx_t_66 < __pyx_t_65; __pyx_t_66+=1) {
                 __pyx_v_ns = __pyx_t_66;
 
-                /* "_distortion.pyx":932
+                /* "src/_distortion.pyx":932
  *                     for ns in range(box_size1):
  *                         # ms,ns are indexes of the corrected image in short form, ml & nl are the same
  *                         nl = ns + offset1             # <<<<<<<<<<<<<<
@@ -17877,7 +17877,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
  */
                 __pyx_v_nl = (__pyx_v_ns + __pyx_v_offset1);
 
-                /* "_distortion.pyx":933
+                /* "src/_distortion.pyx":933
  *                         # ms,ns are indexes of the corrected image in short form, ml & nl are the same
  *                         nl = ns + offset1
  *                         if nl < 0 or nl >= shape1:             # <<<<<<<<<<<<<<
@@ -17895,7 +17895,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
                 __pyx_L30_bool_binop_done:;
                 if (__pyx_t_7) {
 
-                  /* "_distortion.pyx":934
+                  /* "src/_distortion.pyx":934
  *                         nl = ns + offset1
  *                         if nl < 0 or nl >= shape1:
  *                             continue             # <<<<<<<<<<<<<<
@@ -17905,7 +17905,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
                   goto __pyx_L27_continue;
                 }
 
-                /* "_distortion.pyx":935
+                /* "src/_distortion.pyx":935
  *                         if nl < 0 or nl >= shape1:
  *                             continue
  *                         value = buffer[ms, ns] / area             # <<<<<<<<<<<<<<
@@ -17916,7 +17916,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
                 __pyx_t_68 = __pyx_v_ns;
                 __pyx_v_value = ((*((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_67 * __pyx_v_buffer.strides[0]) ) + __pyx_t_68 * __pyx_v_buffer.strides[1]) ))) / __pyx_v_area);
 
-                /* "_distortion.pyx":936
+                /* "src/_distortion.pyx":936
  *                             continue
  *                         value = buffer[ms, ns] / area
  *                         if value <= 0:             # <<<<<<<<<<<<<<
@@ -17926,7 +17926,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
                 __pyx_t_7 = ((__pyx_v_value <= 0.0) != 0);
                 if (__pyx_t_7) {
 
-                  /* "_distortion.pyx":937
+                  /* "src/_distortion.pyx":937
  *                         value = buffer[ms, ns] / area
  *                         if value <= 0:
  *                             continue             # <<<<<<<<<<<<<<
@@ -17936,7 +17936,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
                   goto __pyx_L27_continue;
                 }
 
-                /* "_distortion.pyx":938
+                /* "src/_distortion.pyx":938
  *                         if value <= 0:
  *                             continue
  *                         k = outMax[ml, nl]             # <<<<<<<<<<<<<<
@@ -17947,7 +17947,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
                 __pyx_t_70 = __pyx_v_nl;
                 __pyx_v_k = (*((int *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_outMax.data + __pyx_t_69 * __pyx_v_outMax.strides[0]) ) + __pyx_t_70 * __pyx_v_outMax.strides[1]) )));
 
-                /* "_distortion.pyx":939
+                /* "src/_distortion.pyx":939
  *                             continue
  *                         k = outMax[ml, nl]
  *                         lut[ml, nl, k].idx = idx             # <<<<<<<<<<<<<<
@@ -17957,9 +17957,9 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
                 __pyx_t_71 = __pyx_v_ml;
                 __pyx_t_72 = __pyx_v_nl;
                 __pyx_t_73 = __pyx_v_k;
-                (*((struct __pyx_t_11_distortion_lut_point *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_lut.data + __pyx_t_71 * __pyx_v_lut.strides[0]) ) + __pyx_t_72 * __pyx_v_lut.strides[1]) ) + __pyx_t_73 * __pyx_v_lut.strides[2]) ))).idx = __pyx_v_idx;
+                (*((struct __pyx_t_3src_11_distortion_lut_point *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_lut.data + __pyx_t_71 * __pyx_v_lut.strides[0]) ) + __pyx_t_72 * __pyx_v_lut.strides[1]) ) + __pyx_t_73 * __pyx_v_lut.strides[2]) ))).idx = __pyx_v_idx;
 
-                /* "_distortion.pyx":940
+                /* "src/_distortion.pyx":940
  *                         k = outMax[ml, nl]
  *                         lut[ml, nl, k].idx = idx
  *                         lut[ml, nl, k].coef = value             # <<<<<<<<<<<<<<
@@ -17969,9 +17969,9 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
                 __pyx_t_74 = __pyx_v_ml;
                 __pyx_t_75 = __pyx_v_nl;
                 __pyx_t_76 = __pyx_v_k;
-                (*((struct __pyx_t_11_distortion_lut_point *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_lut.data + __pyx_t_74 * __pyx_v_lut.strides[0]) ) + __pyx_t_75 * __pyx_v_lut.strides[1]) ) + __pyx_t_76 * __pyx_v_lut.strides[2]) ))).coef = __pyx_v_value;
+                (*((struct __pyx_t_3src_11_distortion_lut_point *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_lut.data + __pyx_t_74 * __pyx_v_lut.strides[0]) ) + __pyx_t_75 * __pyx_v_lut.strides[1]) ) + __pyx_t_76 * __pyx_v_lut.strides[2]) ))).coef = __pyx_v_value;
 
-                /* "_distortion.pyx":941
+                /* "src/_distortion.pyx":941
  *                         lut[ml, nl, k].idx = idx
  *                         lut[ml, nl, k].coef = value
  *                         outMax[ml, nl] = k + 1             # <<<<<<<<<<<<<<
@@ -17986,7 +17986,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
               __pyx_L22_continue:;
             }
 
-            /* "_distortion.pyx":942
+            /* "src/_distortion.pyx":942
  *                         lut[ml, nl, k].coef = value
  *                         outMax[ml, nl] = k + 1
  *                 idx += 1             # <<<<<<<<<<<<<<
@@ -17999,7 +17999,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
         }
       }
 
-      /* "_distortion.pyx":873
+      /* "src/_distortion.pyx":873
  *     buffer_size = delta0 * delta1 * sizeof(float)
  *     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (delta1, delta0, size))
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -18023,7 +18023,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
       }
   }
 
-  /* "_distortion.pyx":945
+  /* "src/_distortion.pyx":945
  * 
  *     # Hack to prevent memory leak !!!
  *     cdef numpy.ndarray[numpy.float64_t, ndim = 2] tmp_ary = numpy.empty(shape=(shape0*shape1, size), dtype=numpy.float64)             # <<<<<<<<<<<<<<
@@ -18076,7 +18076,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
   __pyx_v_tmp_ary = ((PyArrayObject *)__pyx_t_19);
   __pyx_t_19 = 0;
 
-  /* "_distortion.pyx":946
+  /* "src/_distortion.pyx":946
  *     # Hack to prevent memory leak !!!
  *     cdef numpy.ndarray[numpy.float64_t, ndim = 2] tmp_ary = numpy.empty(shape=(shape0*shape1, size), dtype=numpy.float64)
  *     memcpy(&tmp_ary[0, 0], &lut[0, 0, 0], tmp_ary.nbytes)             # <<<<<<<<<<<<<<
@@ -18092,9 +18092,9 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
   __Pyx_GOTREF(__pyx_t_19);
   __pyx_t_17 = __Pyx_PyInt_As_size_t(__pyx_t_19); if (unlikely((__pyx_t_17 == (size_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 946; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_19); __pyx_t_19 = 0;
-  memcpy((&(*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_tmp_ary.rcbuffer->pybuffer.buf, __pyx_t_80, __pyx_pybuffernd_tmp_ary.diminfo[0].strides, __pyx_t_81, __pyx_pybuffernd_tmp_ary.diminfo[1].strides))), (&(*((struct __pyx_t_11_distortion_lut_point *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_lut.data + __pyx_t_82 * __pyx_v_lut.strides[0]) ) + __pyx_t_83 * __pyx_v_lut.strides[1]) ) + __pyx_t_84 * __pyx_v_lut.strides[2]) )))), __pyx_t_17);
+  memcpy((&(*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_tmp_ary.rcbuffer->pybuffer.buf, __pyx_t_80, __pyx_pybuffernd_tmp_ary.diminfo[0].strides, __pyx_t_81, __pyx_pybuffernd_tmp_ary.diminfo[1].strides))), (&(*((struct __pyx_t_3src_11_distortion_lut_point *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_lut.data + __pyx_t_82 * __pyx_v_lut.strides[0]) ) + __pyx_t_83 * __pyx_v_lut.strides[1]) ) + __pyx_t_84 * __pyx_v_lut.strides[2]) )))), __pyx_t_17);
 
-  /* "_distortion.pyx":947
+  /* "src/_distortion.pyx":947
  *     cdef numpy.ndarray[numpy.float64_t, ndim = 2] tmp_ary = numpy.empty(shape=(shape0*shape1, size), dtype=numpy.float64)
  *     memcpy(&tmp_ary[0, 0], &lut[0, 0, 0], tmp_ary.nbytes)
  *     return numpy.core.records.array(tmp_ary.view(dtype=dtype_lut),             # <<<<<<<<<<<<<<
@@ -18133,7 +18133,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
   __pyx_t_3 = PyDict_New(); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 947; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
 
-  /* "_distortion.pyx":948
+  /* "src/_distortion.pyx":948
  *     memcpy(&tmp_ary[0, 0], &lut[0, 0, 0], tmp_ary.nbytes)
  *     return numpy.core.records.array(tmp_ary.view(dtype=dtype_lut),
  *                                     shape=(shape0 * shape1, size), dtype=dtype_lut,             # <<<<<<<<<<<<<<
@@ -18159,7 +18159,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
   if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_dtype, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 947; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "_distortion.pyx":949
+  /* "src/_distortion.pyx":949
  *     return numpy.core.records.array(tmp_ary.view(dtype=dtype_lut),
  *                                     shape=(shape0 * shape1, size), dtype=dtype_lut,
  *                                     copy=True)             # <<<<<<<<<<<<<<
@@ -18168,7 +18168,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
  */
   if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_copy, Py_True) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 947; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "_distortion.pyx":947
+  /* "src/_distortion.pyx":947
  *     cdef numpy.ndarray[numpy.float64_t, ndim = 2] tmp_ary = numpy.empty(shape=(shape0*shape1, size), dtype=numpy.float64)
  *     memcpy(&tmp_ary[0, 0], &lut[0, 0, 0], tmp_ary.nbytes)
  *     return numpy.core.records.array(tmp_ary.view(dtype=dtype_lut),             # <<<<<<<<<<<<<<
@@ -18184,7 +18184,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "_distortion.pyx":841
+  /* "src/_distortion.pyx":841
  * @cython.boundscheck(False)
  * @cython.cdivision(True)
  * def calc_LUT(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,             # <<<<<<<<<<<<<<
@@ -18210,7 +18210,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
     __Pyx_ErrFetch(&__pyx_type, &__pyx_value, &__pyx_tb);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_tmp_ary.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("_distortion.calc_LUT", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.calc_LUT", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   goto __pyx_L2;
   __pyx_L0:;
@@ -18228,7 +18228,7 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
   return __pyx_r;
 }
 
-/* "_distortion.pyx":955
+/* "src/_distortion.pyx":955
  * @cython.boundscheck(False)
  * @cython.cdivision(True)
  * def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,             # <<<<<<<<<<<<<<
@@ -18237,10 +18237,10 @@ __pyx_t_25.strides[1] = __pyx_v_buffer.strides[1];
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_9calc_CSR(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_11_distortion_8calc_CSR[] = "\n    @param pos: 4D position array\n    @param shape: output shape\n    @param bin_size: number of input element per output element (as numpy array)\n    @param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel\n    @return: look-up table in CSR format: 3-tuple of array";
-static PyMethodDef __pyx_mdef_11_distortion_9calc_CSR = {"calc_CSR", (PyCFunction)__pyx_pw_11_distortion_9calc_CSR, METH_VARARGS|METH_KEYWORDS, __pyx_doc_11_distortion_8calc_CSR};
-static PyObject *__pyx_pw_11_distortion_9calc_CSR(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_11_distortion_9calc_CSR(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_3src_11_distortion_8calc_CSR[] = "\n    @param pos: 4D position array\n    @param shape: output shape\n    @param bin_size: number of input element per output element (as numpy array)\n    @param max_pixel_size: (2-tuple of int) size of a buffer covering the largest pixel\n    @return: look-up table in CSR format: 3-tuple of array";
+static PyMethodDef __pyx_mdef_3src_11_distortion_9calc_CSR = {"calc_CSR", (PyCFunction)__pyx_pw_3src_11_distortion_9calc_CSR, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_11_distortion_8calc_CSR};
+static PyObject *__pyx_pw_3src_11_distortion_9calc_CSR(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   __Pyx_memviewslice __pyx_v_pos = { 0, 0, { 0 }, { 0 }, { 0 } };
   PyObject *__pyx_v_shape = 0;
   PyObject *__pyx_v_bin_size = 0;
@@ -18322,14 +18322,14 @@ static PyObject *__pyx_pw_11_distortion_9calc_CSR(PyObject *__pyx_self, PyObject
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("calc_CSR", 0, 4, 5, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 955; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("_distortion.calc_CSR", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.calc_CSR", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(((PyObject *)__pyx_v_pos.memview) == Py_None)) {
     PyErr_Format(PyExc_TypeError, "Argument '%.200s' must not be None", "pos"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 955; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_r = __pyx_pf_11_distortion_8calc_CSR(__pyx_self, __pyx_v_pos, __pyx_v_shape, __pyx_v_bin_size, __pyx_v_max_pixel_size, __pyx_v_mask);
+  __pyx_r = __pyx_pf_3src_11_distortion_8calc_CSR(__pyx_self, __pyx_v_pos, __pyx_v_shape, __pyx_v_bin_size, __pyx_v_max_pixel_size, __pyx_v_mask);
 
   /* function exit code */
   goto __pyx_L0;
@@ -18340,7 +18340,7 @@ static PyObject *__pyx_pw_11_distortion_9calc_CSR(PyObject *__pyx_self, PyObject
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_8calc_CSR(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_pos, PyObject *__pyx_v_shape, PyObject *__pyx_v_bin_size, PyObject *__pyx_v_max_pixel_size, __Pyx_memviewslice __pyx_v_mask) {
+static PyObject *__pyx_pf_3src_11_distortion_8calc_CSR(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_pos, PyObject *__pyx_v_shape, PyObject *__pyx_v_bin_size, PyObject *__pyx_v_max_pixel_size, __Pyx_memviewslice __pyx_v_mask) {
   int __pyx_v_i;
   int __pyx_v_j;
   int __pyx_v_k;
@@ -18489,7 +18489,7 @@ static PyObject *__pyx_pf_11_distortion_8calc_CSR(CYTHON_UNUSED PyObject *__pyx_
   __pyx_pybuffernd_data.data = NULL;
   __pyx_pybuffernd_data.rcbuffer = &__pyx_pybuffer_data;
 
-  /* "_distortion.pyx":964
+  /* "src/_distortion.pyx":964
  *     @return: look-up table in CSR format: 3-tuple of array"""
  *     cdef int i, j, k, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1, bins, lut_size, offset0, offset1, box_size0, box_size1
  *     shape0, shape1 = shape             # <<<<<<<<<<<<<<
@@ -18551,7 +18551,7 @@ static PyObject *__pyx_pf_11_distortion_8calc_CSR(CYTHON_UNUSED PyObject *__pyx_
   __pyx_v_shape0 = __pyx_t_5;
   __pyx_v_shape1 = __pyx_t_6;
 
-  /* "_distortion.pyx":965
+  /* "src/_distortion.pyx":965
  *     cdef int i, j, k, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1, bins, lut_size, offset0, offset1, box_size0, box_size1
  *     shape0, shape1 = shape
  *     delta0, delta1 = max_pixel_size             # <<<<<<<<<<<<<<
@@ -18613,7 +18613,7 @@ static PyObject *__pyx_pf_11_distortion_8calc_CSR(CYTHON_UNUSED PyObject *__pyx_
   __pyx_v_delta0 = __pyx_t_6;
   __pyx_v_delta1 = __pyx_t_5;
 
-  /* "_distortion.pyx":966
+  /* "src/_distortion.pyx":966
  *     shape0, shape1 = shape
  *     delta0, delta1 = max_pixel_size
  *     bins = shape0 * shape1             # <<<<<<<<<<<<<<
@@ -18622,7 +18622,7 @@ static PyObject *__pyx_pf_11_distortion_8calc_CSR(CYTHON_UNUSED PyObject *__pyx_
  */
   __pyx_v_bins = (__pyx_v_shape0 * __pyx_v_shape1);
 
-  /* "_distortion.pyx":968
+  /* "src/_distortion.pyx":968
  *     bins = shape0 * shape1
  *     cdef:
  *         numpy.int32_t idx = 0, tmp_index             # <<<<<<<<<<<<<<
@@ -18631,7 +18631,7 @@ static PyObject *__pyx_pf_11_distortion_8calc_CSR(CYTHON_UNUSED PyObject *__pyx_
  */
   __pyx_v_idx = 0;
 
-  /* "_distortion.pyx":972
+  /* "src/_distortion.pyx":972
  *         numpy.ndarray[numpy.int32_t, ndim = 1] indptr, indices
  *         numpy.ndarray[numpy.float32_t, ndim = 1] data
  *         int[:, :] outMax = view.array(shape=(shape0, shape1), itemsize=sizeof(int), format="i")             # <<<<<<<<<<<<<<
@@ -18669,7 +18669,7 @@ static PyObject *__pyx_pf_11_distortion_8calc_CSR(CYTHON_UNUSED PyObject *__pyx_
   __pyx_t_8.memview = NULL;
   __pyx_t_8.data = NULL;
 
-  /* "_distortion.pyx":974
+  /* "src/_distortion.pyx":974
  *         int[:, :] outMax = view.array(shape=(shape0, shape1), itemsize=sizeof(int), format="i")
  *         float[:, :] buffer
  *         bint do_mask = mask is not None             # <<<<<<<<<<<<<<
@@ -18678,7 +18678,7 @@ static PyObject *__pyx_pf_11_distortion_8calc_CSR(CYTHON_UNUSED PyObject *__pyx_
  */
   __pyx_v_do_mask = (((PyObject *) __pyx_v_mask.memview) != Py_None);
 
-  /* "_distortion.pyx":975
+  /* "src/_distortion.pyx":975
  *         float[:, :] buffer
  *         bint do_mask = mask is not None
  *     if do_mask:             # <<<<<<<<<<<<<<
@@ -18688,7 +18688,7 @@ static PyObject *__pyx_pf_11_distortion_8calc_CSR(CYTHON_UNUSED PyObject *__pyx_
   __pyx_t_9 = (__pyx_v_do_mask != 0);
   if (__pyx_t_9) {
 
-    /* "_distortion.pyx":976
+    /* "src/_distortion.pyx":976
  *         bint do_mask = mask is not None
  *     if do_mask:
  *         assert shape0 == mask.shape[0]             # <<<<<<<<<<<<<<
@@ -18704,7 +18704,7 @@ static PyObject *__pyx_pf_11_distortion_8calc_CSR(CYTHON_UNUSED PyObject *__pyx_
     }
     #endif
 
-    /* "_distortion.pyx":977
+    /* "src/_distortion.pyx":977
  *     if do_mask:
  *         assert shape0 == mask.shape[0]
  *         assert shape1 == mask.shape[1]             # <<<<<<<<<<<<<<
@@ -18723,7 +18723,7 @@ static PyObject *__pyx_pf_11_distortion_8calc_CSR(CYTHON_UNUSED PyObject *__pyx_
   }
   __pyx_L7:;
 
-  /* "_distortion.pyx":979
+  /* "src/_distortion.pyx":979
  *         assert shape1 == mask.shape[1]
  * 
  *     outMax[:, :] = 0             # <<<<<<<<<<<<<<
@@ -18766,7 +18766,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
   }
   __PYX_XDEC_MEMVIEW(&__pyx_t_10, 1);
 
-  /* "_distortion.pyx":980
+  /* "src/_distortion.pyx":980
  * 
  *     outMax[:, :] = 0
  *     indptr = numpy.empty(bins + 1, dtype=numpy.int32)             # <<<<<<<<<<<<<<
@@ -18821,7 +18821,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
   __pyx_v_indptr = ((PyArrayObject *)__pyx_t_11);
   __pyx_t_11 = 0;
 
-  /* "_distortion.pyx":981
+  /* "src/_distortion.pyx":981
  *     outMax[:, :] = 0
  *     indptr = numpy.empty(bins + 1, dtype=numpy.int32)
  *     indptr[0] = 0             # <<<<<<<<<<<<<<
@@ -18831,7 +18831,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
   __pyx_t_16 = 0;
   *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int32_t *, __pyx_pybuffernd_indptr.rcbuffer->pybuffer.buf, __pyx_t_16, __pyx_pybuffernd_indptr.diminfo[0].strides) = 0;
 
-  /* "_distortion.pyx":982
+  /* "src/_distortion.pyx":982
  *     indptr = numpy.empty(bins + 1, dtype=numpy.int32)
  *     indptr[0] = 0
  *     indptr[1:] = bin_size.cumsum(dtype=numpy.int32)             # <<<<<<<<<<<<<<
@@ -18856,7 +18856,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
   if (__Pyx_PyObject_SetSlice(((PyObject *)__pyx_v_indptr), __pyx_t_1, 1, 0, NULL, NULL, &__pyx_slice__78, 1, 0, 0) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 982; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "_distortion.pyx":983
+  /* "src/_distortion.pyx":983
  *     indptr[0] = 0
  *     indptr[1:] = bin_size.cumsum(dtype=numpy.int32)
  *     lut_size = indptr[bins]             # <<<<<<<<<<<<<<
@@ -18866,7 +18866,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
   __pyx_t_5 = __pyx_v_bins;
   __pyx_v_lut_size = (*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int32_t *, __pyx_pybuffernd_indptr.rcbuffer->pybuffer.buf, __pyx_t_5, __pyx_pybuffernd_indptr.diminfo[0].strides));
 
-  /* "_distortion.pyx":985
+  /* "src/_distortion.pyx":985
  *     lut_size = indptr[bins]
  * 
  *     indices = numpy.zeros(shape=lut_size, dtype=numpy.int32)             # <<<<<<<<<<<<<<
@@ -18917,7 +18917,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
   __pyx_v_indices = ((PyArrayObject *)__pyx_t_3);
   __pyx_t_3 = 0;
 
-  /* "_distortion.pyx":986
+  /* "src/_distortion.pyx":986
  * 
  *     indices = numpy.zeros(shape=lut_size, dtype=numpy.int32)
  *     data = numpy.zeros(shape=lut_size, dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -18968,7 +18968,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
   __pyx_v_data = ((PyArrayObject *)__pyx_t_11);
   __pyx_t_11 = 0;
 
-  /* "_distortion.pyx":988
+  /* "src/_distortion.pyx":988
  *     data = numpy.zeros(shape=lut_size, dtype=numpy.float32)
  * 
  *     indptr[1:] = bin_size.cumsum(dtype=numpy.int32)             # <<<<<<<<<<<<<<
@@ -18993,7 +18993,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
   if (__Pyx_PyObject_SetSlice(((PyObject *)__pyx_v_indptr), __pyx_t_7, 1, 0, NULL, NULL, &__pyx_slice__79, 1, 0, 0) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 988; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "_distortion.pyx":990
+  /* "src/_distortion.pyx":990
  *     indptr[1:] = bin_size.cumsum(dtype=numpy.int32)
  * 
  *     indices_size = lut_size * sizeof(numpy.int32)             # <<<<<<<<<<<<<<
@@ -19011,7 +19011,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
   __pyx_v_indices_size = __pyx_t_7;
   __pyx_t_7 = 0;
 
-  /* "_distortion.pyx":991
+  /* "src/_distortion.pyx":991
  * 
  *     indices_size = lut_size * sizeof(numpy.int32)
  *     data_size = lut_size * sizeof(numpy.float32)             # <<<<<<<<<<<<<<
@@ -19029,7 +19029,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
   __pyx_v_data_size = __pyx_t_7;
   __pyx_t_7 = 0;
 
-  /* "_distortion.pyx":992
+  /* "src/_distortion.pyx":992
  *     indices_size = lut_size * sizeof(numpy.int32)
  *     data_size = lut_size * sizeof(numpy.float32)
  *     indptr_size = bins * sizeof(numpy.int32)             # <<<<<<<<<<<<<<
@@ -19047,7 +19047,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
   __pyx_v_indptr_size = __pyx_t_7;
   __pyx_t_7 = 0;
 
-  /* "_distortion.pyx":994
+  /* "src/_distortion.pyx":994
  *     indptr_size = bins * sizeof(numpy.int32)
  * 
  *     logger.info("CSR matrix: %.3f MByte" % ((indices_size + data_size + indptr_size) / 1.0e6))             # <<<<<<<<<<<<<<
@@ -19098,7 +19098,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
   __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "_distortion.pyx":995
+  /* "src/_distortion.pyx":995
  * 
  *     logger.info("CSR matrix: %.3f MByte" % ((indices_size + data_size + indptr_size) / 1.0e6))
  *     buffer = view.array(shape=(delta0, delta1), itemsize=sizeof(float), format="f")             # <<<<<<<<<<<<<<
@@ -19136,7 +19136,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
   __pyx_t_18.memview = NULL;
   __pyx_t_18.data = NULL;
 
-  /* "_distortion.pyx":996
+  /* "src/_distortion.pyx":996
  *     logger.info("CSR matrix: %.3f MByte" % ((indices_size + data_size + indptr_size) / 1.0e6))
  *     buffer = view.array(shape=(delta0, delta1), itemsize=sizeof(float), format="f")
  *     buffer_size = delta0 * delta1 * sizeof(float)             # <<<<<<<<<<<<<<
@@ -19145,7 +19145,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
  */
   __pyx_v_buffer_size = ((__pyx_v_delta0 * __pyx_v_delta1) * (sizeof(float)));
 
-  /* "_distortion.pyx":997
+  /* "src/_distortion.pyx":997
  *     buffer = view.array(shape=(delta0, delta1), itemsize=sizeof(float), format="f")
  *     buffer_size = delta0 * delta1 * sizeof(float)
  *     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (buffer.shape[1], buffer.shape[0], lut_size))             # <<<<<<<<<<<<<<
@@ -19205,7 +19205,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "_distortion.pyx":998
+  /* "src/_distortion.pyx":998
  *     buffer_size = delta0 * delta1 * sizeof(float)
  *     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (buffer.shape[1], buffer.shape[0], lut_size))
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -19219,7 +19219,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
       #endif
       /*try:*/ {
 
-        /* "_distortion.pyx":1000
+        /* "src/_distortion.pyx":1000
  *     with nogil:
  *         # i,j, idx are indices of the raw image uncorrected
  *         for i in range(shape0):             # <<<<<<<<<<<<<<
@@ -19230,7 +19230,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
         for (__pyx_t_20 = 0; __pyx_t_20 < __pyx_t_6; __pyx_t_20+=1) {
           __pyx_v_i = __pyx_t_20;
 
-          /* "_distortion.pyx":1001
+          /* "src/_distortion.pyx":1001
  *         # i,j, idx are indices of the raw image uncorrected
  *         for i in range(shape0):
  *             for j in range(shape1):             # <<<<<<<<<<<<<<
@@ -19241,7 +19241,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
           for (__pyx_t_22 = 0; __pyx_t_22 < __pyx_t_21; __pyx_t_22+=1) {
             __pyx_v_j = __pyx_t_22;
 
-            /* "_distortion.pyx":1002
+            /* "src/_distortion.pyx":1002
  *         for i in range(shape0):
  *             for j in range(shape1):
  *                 if do_mask and mask[i, j]:             # <<<<<<<<<<<<<<
@@ -19261,7 +19261,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
             __pyx_L16_bool_binop_done:;
             if (__pyx_t_9) {
 
-              /* "_distortion.pyx":1003
+              /* "src/_distortion.pyx":1003
  *             for j in range(shape1):
  *                 if do_mask and mask[i, j]:
  *                     continue             # <<<<<<<<<<<<<<
@@ -19271,7 +19271,7 @@ __pyx_t_10.strides[1] = __pyx_v_outMax.strides[1];
               goto __pyx_L13_continue;
             }
 
-            /* "_distortion.pyx":1005
+            /* "src/_distortion.pyx":1005
  *                     continue
  *                 # reinit of buffer
  *                 buffer[:, :] = 0             # <<<<<<<<<<<<<<
@@ -19314,7 +19314,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             }
             __PYX_XDEC_MEMVIEW(&__pyx_t_26, 0);
 
-            /* "_distortion.pyx":1006
+            /* "src/_distortion.pyx":1006
  *                 # reinit of buffer
  *                 buffer[:, :] = 0
  *                 A0 = pos[i, j, 0, 0]             # <<<<<<<<<<<<<<
@@ -19327,7 +19327,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_30 = 0;
             __pyx_v_A0 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_27 * __pyx_v_pos.strides[0]) ) + __pyx_t_28 * __pyx_v_pos.strides[1]) ) + __pyx_t_29 * __pyx_v_pos.strides[2]) ) + __pyx_t_30 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":1007
+            /* "src/_distortion.pyx":1007
  *                 buffer[:, :] = 0
  *                 A0 = pos[i, j, 0, 0]
  *                 A1 = pos[i, j, 0, 1]             # <<<<<<<<<<<<<<
@@ -19340,7 +19340,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_34 = 1;
             __pyx_v_A1 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_31 * __pyx_v_pos.strides[0]) ) + __pyx_t_32 * __pyx_v_pos.strides[1]) ) + __pyx_t_33 * __pyx_v_pos.strides[2]) ) + __pyx_t_34 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":1008
+            /* "src/_distortion.pyx":1008
  *                 A0 = pos[i, j, 0, 0]
  *                 A1 = pos[i, j, 0, 1]
  *                 B0 = pos[i, j, 1, 0]             # <<<<<<<<<<<<<<
@@ -19353,7 +19353,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_38 = 0;
             __pyx_v_B0 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_35 * __pyx_v_pos.strides[0]) ) + __pyx_t_36 * __pyx_v_pos.strides[1]) ) + __pyx_t_37 * __pyx_v_pos.strides[2]) ) + __pyx_t_38 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":1009
+            /* "src/_distortion.pyx":1009
  *                 A1 = pos[i, j, 0, 1]
  *                 B0 = pos[i, j, 1, 0]
  *                 B1 = pos[i, j, 1, 1]             # <<<<<<<<<<<<<<
@@ -19366,7 +19366,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_42 = 1;
             __pyx_v_B1 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_39 * __pyx_v_pos.strides[0]) ) + __pyx_t_40 * __pyx_v_pos.strides[1]) ) + __pyx_t_41 * __pyx_v_pos.strides[2]) ) + __pyx_t_42 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":1010
+            /* "src/_distortion.pyx":1010
  *                 B0 = pos[i, j, 1, 0]
  *                 B1 = pos[i, j, 1, 1]
  *                 C0 = pos[i, j, 2, 0]             # <<<<<<<<<<<<<<
@@ -19379,7 +19379,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_46 = 0;
             __pyx_v_C0 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_43 * __pyx_v_pos.strides[0]) ) + __pyx_t_44 * __pyx_v_pos.strides[1]) ) + __pyx_t_45 * __pyx_v_pos.strides[2]) ) + __pyx_t_46 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":1011
+            /* "src/_distortion.pyx":1011
  *                 B1 = pos[i, j, 1, 1]
  *                 C0 = pos[i, j, 2, 0]
  *                 C1 = pos[i, j, 2, 1]             # <<<<<<<<<<<<<<
@@ -19392,7 +19392,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_50 = 1;
             __pyx_v_C1 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_47 * __pyx_v_pos.strides[0]) ) + __pyx_t_48 * __pyx_v_pos.strides[1]) ) + __pyx_t_49 * __pyx_v_pos.strides[2]) ) + __pyx_t_50 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":1012
+            /* "src/_distortion.pyx":1012
  *                 C0 = pos[i, j, 2, 0]
  *                 C1 = pos[i, j, 2, 1]
  *                 D0 = pos[i, j, 3, 0]             # <<<<<<<<<<<<<<
@@ -19405,7 +19405,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_54 = 0;
             __pyx_v_D0 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_51 * __pyx_v_pos.strides[0]) ) + __pyx_t_52 * __pyx_v_pos.strides[1]) ) + __pyx_t_53 * __pyx_v_pos.strides[2]) ) + __pyx_t_54 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":1013
+            /* "src/_distortion.pyx":1013
  *                 C1 = pos[i, j, 2, 1]
  *                 D0 = pos[i, j, 3, 0]
  *                 D1 = pos[i, j, 3, 1]             # <<<<<<<<<<<<<<
@@ -19418,7 +19418,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_58 = 1;
             __pyx_v_D1 = (*((float *) ( /* dim=3 */ (( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_pos.data + __pyx_t_55 * __pyx_v_pos.strides[0]) ) + __pyx_t_56 * __pyx_v_pos.strides[1]) ) + __pyx_t_57 * __pyx_v_pos.strides[2]) ) + __pyx_t_58 * __pyx_v_pos.strides[3]) )));
 
-            /* "_distortion.pyx":1014
+            /* "src/_distortion.pyx":1014
  *                 D0 = pos[i, j, 3, 0]
  *                 D1 = pos[i, j, 3, 1]
  *                 offset0 = (<int> floor(min(A0, B0, C0, D0)))             # <<<<<<<<<<<<<<
@@ -19448,7 +19448,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             }
             __pyx_v_offset0 = ((int)floor(__pyx_t_63));
 
-            /* "_distortion.pyx":1015
+            /* "src/_distortion.pyx":1015
  *                 D1 = pos[i, j, 3, 1]
  *                 offset0 = (<int> floor(min(A0, B0, C0, D0)))
  *                 offset1 = (<int> floor(min(A1, B1, C1, D1)))             # <<<<<<<<<<<<<<
@@ -19478,7 +19478,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             }
             __pyx_v_offset1 = ((int)floor(__pyx_t_62));
 
-            /* "_distortion.pyx":1016
+            /* "src/_distortion.pyx":1016
  *                 offset0 = (<int> floor(min(A0, B0, C0, D0)))
  *                 offset1 = (<int> floor(min(A1, B1, C1, D1)))
  *                 box_size0 = (<int> ceil(max(A0, B0, C0, D0))) - offset0             # <<<<<<<<<<<<<<
@@ -19508,7 +19508,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             }
             __pyx_v_box_size0 = (((int)ceil(__pyx_t_61)) - __pyx_v_offset0);
 
-            /* "_distortion.pyx":1017
+            /* "src/_distortion.pyx":1017
  *                 offset1 = (<int> floor(min(A1, B1, C1, D1)))
  *                 box_size0 = (<int> ceil(max(A0, B0, C0, D0))) - offset0
  *                 box_size1 = (<int> ceil(max(A1, B1, C1, D1))) - offset1             # <<<<<<<<<<<<<<
@@ -19538,7 +19538,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             }
             __pyx_v_box_size1 = (((int)ceil(__pyx_t_60)) - __pyx_v_offset1);
 
-            /* "_distortion.pyx":1018
+            /* "src/_distortion.pyx":1018
  *                 box_size0 = (<int> ceil(max(A0, B0, C0, D0))) - offset0
  *                 box_size1 = (<int> ceil(max(A1, B1, C1, D1))) - offset1
  *                 A0 -= <float> offset0             # <<<<<<<<<<<<<<
@@ -19547,7 +19547,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
  */
             __pyx_v_A0 = (__pyx_v_A0 - ((float)__pyx_v_offset0));
 
-            /* "_distortion.pyx":1019
+            /* "src/_distortion.pyx":1019
  *                 box_size1 = (<int> ceil(max(A1, B1, C1, D1))) - offset1
  *                 A0 -= <float> offset0
  *                 A1 -= <float> offset1             # <<<<<<<<<<<<<<
@@ -19556,7 +19556,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
  */
             __pyx_v_A1 = (__pyx_v_A1 - ((float)__pyx_v_offset1));
 
-            /* "_distortion.pyx":1020
+            /* "src/_distortion.pyx":1020
  *                 A0 -= <float> offset0
  *                 A1 -= <float> offset1
  *                 B0 -= <float> offset0             # <<<<<<<<<<<<<<
@@ -19565,7 +19565,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
  */
             __pyx_v_B0 = (__pyx_v_B0 - ((float)__pyx_v_offset0));
 
-            /* "_distortion.pyx":1021
+            /* "src/_distortion.pyx":1021
  *                 A1 -= <float> offset1
  *                 B0 -= <float> offset0
  *                 B1 -= <float> offset1             # <<<<<<<<<<<<<<
@@ -19574,7 +19574,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
  */
             __pyx_v_B1 = (__pyx_v_B1 - ((float)__pyx_v_offset1));
 
-            /* "_distortion.pyx":1022
+            /* "src/_distortion.pyx":1022
  *                 B0 -= <float> offset0
  *                 B1 -= <float> offset1
  *                 C0 -= <float> offset0             # <<<<<<<<<<<<<<
@@ -19583,7 +19583,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
  */
             __pyx_v_C0 = (__pyx_v_C0 - ((float)__pyx_v_offset0));
 
-            /* "_distortion.pyx":1023
+            /* "src/_distortion.pyx":1023
  *                 B1 -= <float> offset1
  *                 C0 -= <float> offset0
  *                 C1 -= <float> offset1             # <<<<<<<<<<<<<<
@@ -19592,7 +19592,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
  */
             __pyx_v_C1 = (__pyx_v_C1 - ((float)__pyx_v_offset1));
 
-            /* "_distortion.pyx":1024
+            /* "src/_distortion.pyx":1024
  *                 C0 -= <float> offset0
  *                 C1 -= <float> offset1
  *                 D0 -= <float> offset0             # <<<<<<<<<<<<<<
@@ -19601,7 +19601,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
  */
             __pyx_v_D0 = (__pyx_v_D0 - ((float)__pyx_v_offset0));
 
-            /* "_distortion.pyx":1025
+            /* "src/_distortion.pyx":1025
  *                 C1 -= <float> offset1
  *                 D0 -= <float> offset0
  *                 D1 -= <float> offset1             # <<<<<<<<<<<<<<
@@ -19610,7 +19610,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
  */
             __pyx_v_D1 = (__pyx_v_D1 - ((float)__pyx_v_offset1));
 
-            /* "_distortion.pyx":1026
+            /* "src/_distortion.pyx":1026
  *                 D0 -= <float> offset0
  *                 D1 -= <float> offset1
  *                 if B0 != A0:             # <<<<<<<<<<<<<<
@@ -19620,7 +19620,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_9 = ((__pyx_v_B0 != __pyx_v_A0) != 0);
             if (__pyx_t_9) {
 
-              /* "_distortion.pyx":1027
+              /* "src/_distortion.pyx":1027
  *                 D1 -= <float> offset1
  *                 if B0 != A0:
  *                     pAB = (B1 - A1) / (B0 - A0)             # <<<<<<<<<<<<<<
@@ -19629,7 +19629,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
  */
               __pyx_v_pAB = ((__pyx_v_B1 - __pyx_v_A1) / (__pyx_v_B0 - __pyx_v_A0));
 
-              /* "_distortion.pyx":1028
+              /* "src/_distortion.pyx":1028
  *                 if B0 != A0:
  *                     pAB = (B1 - A1) / (B0 - A0)
  *                     cAB = A1 - pAB * A0             # <<<<<<<<<<<<<<
@@ -19641,7 +19641,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             }
             /*else*/ {
 
-              /* "_distortion.pyx":1030
+              /* "src/_distortion.pyx":1030
  *                     cAB = A1 - pAB * A0
  *                 else:
  *                     pAB = cAB = 0.0             # <<<<<<<<<<<<<<
@@ -19653,7 +19653,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             }
             __pyx_L18:;
 
-            /* "_distortion.pyx":1031
+            /* "src/_distortion.pyx":1031
  *                 else:
  *                     pAB = cAB = 0.0
  *                 if C0 != B0:             # <<<<<<<<<<<<<<
@@ -19663,7 +19663,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_9 = ((__pyx_v_C0 != __pyx_v_B0) != 0);
             if (__pyx_t_9) {
 
-              /* "_distortion.pyx":1032
+              /* "src/_distortion.pyx":1032
  *                     pAB = cAB = 0.0
  *                 if C0 != B0:
  *                     pBC = (C1 - B1) / (C0 - B0)             # <<<<<<<<<<<<<<
@@ -19672,7 +19672,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
  */
               __pyx_v_pBC = ((__pyx_v_C1 - __pyx_v_B1) / (__pyx_v_C0 - __pyx_v_B0));
 
-              /* "_distortion.pyx":1033
+              /* "src/_distortion.pyx":1033
  *                 if C0 != B0:
  *                     pBC = (C1 - B1) / (C0 - B0)
  *                     cBC = B1 - pBC * B0             # <<<<<<<<<<<<<<
@@ -19684,7 +19684,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             }
             /*else*/ {
 
-              /* "_distortion.pyx":1035
+              /* "src/_distortion.pyx":1035
  *                     cBC = B1 - pBC * B0
  *                 else:
  *                     pBC = cBC = 0.0             # <<<<<<<<<<<<<<
@@ -19696,7 +19696,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             }
             __pyx_L19:;
 
-            /* "_distortion.pyx":1036
+            /* "src/_distortion.pyx":1036
  *                 else:
  *                     pBC = cBC = 0.0
  *                 if D0 != C0:             # <<<<<<<<<<<<<<
@@ -19706,7 +19706,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_9 = ((__pyx_v_D0 != __pyx_v_C0) != 0);
             if (__pyx_t_9) {
 
-              /* "_distortion.pyx":1037
+              /* "src/_distortion.pyx":1037
  *                     pBC = cBC = 0.0
  *                 if D0 != C0:
  *                     pCD = (D1 - C1) / (D0 - C0)             # <<<<<<<<<<<<<<
@@ -19715,7 +19715,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
  */
               __pyx_v_pCD = ((__pyx_v_D1 - __pyx_v_C1) / (__pyx_v_D0 - __pyx_v_C0));
 
-              /* "_distortion.pyx":1038
+              /* "src/_distortion.pyx":1038
  *                 if D0 != C0:
  *                     pCD = (D1 - C1) / (D0 - C0)
  *                     cCD = C1 - pCD * C0             # <<<<<<<<<<<<<<
@@ -19727,7 +19727,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             }
             /*else*/ {
 
-              /* "_distortion.pyx":1040
+              /* "src/_distortion.pyx":1040
  *                     cCD = C1 - pCD * C0
  *                 else:
  *                     pCD = cCD = 0.0             # <<<<<<<<<<<<<<
@@ -19739,7 +19739,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             }
             __pyx_L20:;
 
-            /* "_distortion.pyx":1041
+            /* "src/_distortion.pyx":1041
  *                 else:
  *                     pCD = cCD = 0.0
  *                 if A0 != D0:             # <<<<<<<<<<<<<<
@@ -19749,7 +19749,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             __pyx_t_9 = ((__pyx_v_A0 != __pyx_v_D0) != 0);
             if (__pyx_t_9) {
 
-              /* "_distortion.pyx":1042
+              /* "src/_distortion.pyx":1042
  *                     pCD = cCD = 0.0
  *                 if A0 != D0:
  *                     pDA = (A1 - D1) / (A0 - D0)             # <<<<<<<<<<<<<<
@@ -19758,7 +19758,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
  */
               __pyx_v_pDA = ((__pyx_v_A1 - __pyx_v_D1) / (__pyx_v_A0 - __pyx_v_D0));
 
-              /* "_distortion.pyx":1043
+              /* "src/_distortion.pyx":1043
  *                 if A0 != D0:
  *                     pDA = (A1 - D1) / (A0 - D0)
  *                     cDA = D1 - pDA * D0             # <<<<<<<<<<<<<<
@@ -19770,7 +19770,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             }
             /*else*/ {
 
-              /* "_distortion.pyx":1045
+              /* "src/_distortion.pyx":1045
  *                     cDA = D1 - pDA * D0
  *                 else:
  *                     pDA = cDA = 0.0             # <<<<<<<<<<<<<<
@@ -19782,43 +19782,43 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             }
             __pyx_L21:;
 
-            /* "_distortion.pyx":1046
+            /* "src/_distortion.pyx":1046
  *                 else:
  *                     pDA = cDA = 0.0
  *                 integrate(buffer, B0, A0, pAB, cAB)             # <<<<<<<<<<<<<<
  *                 integrate(buffer, A0, D0, pDA, cDA)
  *                 integrate(buffer, D0, C0, pCD, cCD)
  */
-            __pyx_f_11_distortion_integrate(__pyx_v_buffer, __pyx_v_B0, __pyx_v_A0, __pyx_v_pAB, __pyx_v_cAB);
+            __pyx_f_3src_11_distortion_integrate(__pyx_v_buffer, __pyx_v_B0, __pyx_v_A0, __pyx_v_pAB, __pyx_v_cAB);
 
-            /* "_distortion.pyx":1047
+            /* "src/_distortion.pyx":1047
  *                     pDA = cDA = 0.0
  *                 integrate(buffer, B0, A0, pAB, cAB)
  *                 integrate(buffer, A0, D0, pDA, cDA)             # <<<<<<<<<<<<<<
  *                 integrate(buffer, D0, C0, pCD, cCD)
  *                 integrate(buffer, C0, B0, pBC, cBC)
  */
-            __pyx_f_11_distortion_integrate(__pyx_v_buffer, __pyx_v_A0, __pyx_v_D0, __pyx_v_pDA, __pyx_v_cDA);
+            __pyx_f_3src_11_distortion_integrate(__pyx_v_buffer, __pyx_v_A0, __pyx_v_D0, __pyx_v_pDA, __pyx_v_cDA);
 
-            /* "_distortion.pyx":1048
+            /* "src/_distortion.pyx":1048
  *                 integrate(buffer, B0, A0, pAB, cAB)
  *                 integrate(buffer, A0, D0, pDA, cDA)
  *                 integrate(buffer, D0, C0, pCD, cCD)             # <<<<<<<<<<<<<<
  *                 integrate(buffer, C0, B0, pBC, cBC)
  *                 area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
  */
-            __pyx_f_11_distortion_integrate(__pyx_v_buffer, __pyx_v_D0, __pyx_v_C0, __pyx_v_pCD, __pyx_v_cCD);
+            __pyx_f_3src_11_distortion_integrate(__pyx_v_buffer, __pyx_v_D0, __pyx_v_C0, __pyx_v_pCD, __pyx_v_cCD);
 
-            /* "_distortion.pyx":1049
+            /* "src/_distortion.pyx":1049
  *                 integrate(buffer, A0, D0, pDA, cDA)
  *                 integrate(buffer, D0, C0, pCD, cCD)
  *                 integrate(buffer, C0, B0, pBC, cBC)             # <<<<<<<<<<<<<<
  *                 area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
  *                 for ms in range(box_size0):
  */
-            __pyx_f_11_distortion_integrate(__pyx_v_buffer, __pyx_v_C0, __pyx_v_B0, __pyx_v_pBC, __pyx_v_cBC);
+            __pyx_f_3src_11_distortion_integrate(__pyx_v_buffer, __pyx_v_C0, __pyx_v_B0, __pyx_v_pBC, __pyx_v_cBC);
 
-            /* "_distortion.pyx":1050
+            /* "src/_distortion.pyx":1050
  *                 integrate(buffer, D0, C0, pCD, cCD)
  *                 integrate(buffer, C0, B0, pBC, cBC)
  *                 area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))             # <<<<<<<<<<<<<<
@@ -19827,7 +19827,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
  */
             __pyx_v_area = (0.5 * (((__pyx_v_C0 - __pyx_v_A0) * (__pyx_v_D1 - __pyx_v_B1)) - ((__pyx_v_C1 - __pyx_v_A1) * (__pyx_v_D0 - __pyx_v_B0))));
 
-            /* "_distortion.pyx":1051
+            /* "src/_distortion.pyx":1051
  *                 integrate(buffer, C0, B0, pBC, cBC)
  *                 area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
  *                 for ms in range(box_size0):             # <<<<<<<<<<<<<<
@@ -19838,7 +19838,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
             for (__pyx_t_65 = 0; __pyx_t_65 < __pyx_t_64; __pyx_t_65+=1) {
               __pyx_v_ms = __pyx_t_65;
 
-              /* "_distortion.pyx":1052
+              /* "src/_distortion.pyx":1052
  *                 area = 0.5 * ((C0 - A0) * (D1 - B1) - (C1 - A1) * (D0 - B0))
  *                 for ms in range(box_size0):
  *                     ml = ms + offset0             # <<<<<<<<<<<<<<
@@ -19847,7 +19847,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
  */
               __pyx_v_ml = (__pyx_v_ms + __pyx_v_offset0);
 
-              /* "_distortion.pyx":1053
+              /* "src/_distortion.pyx":1053
  *                 for ms in range(box_size0):
  *                     ml = ms + offset0
  *                     if ml < 0 or ml >= shape0:             # <<<<<<<<<<<<<<
@@ -19865,7 +19865,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
               __pyx_L25_bool_binop_done:;
               if (__pyx_t_9) {
 
-                /* "_distortion.pyx":1054
+                /* "src/_distortion.pyx":1054
  *                     ml = ms + offset0
  *                     if ml < 0 or ml >= shape0:
  *                         continue             # <<<<<<<<<<<<<<
@@ -19875,7 +19875,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
                 goto __pyx_L22_continue;
               }
 
-              /* "_distortion.pyx":1055
+              /* "src/_distortion.pyx":1055
  *                     if ml < 0 or ml >= shape0:
  *                         continue
  *                     for ns in range(box_size1):             # <<<<<<<<<<<<<<
@@ -19886,7 +19886,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
               for (__pyx_t_67 = 0; __pyx_t_67 < __pyx_t_66; __pyx_t_67+=1) {
                 __pyx_v_ns = __pyx_t_67;
 
-                /* "_distortion.pyx":1057
+                /* "src/_distortion.pyx":1057
  *                     for ns in range(box_size1):
  *                         # ms,ns are indexes of the corrected image in short form, ml & nl are the same
  *                         nl = ns + offset1             # <<<<<<<<<<<<<<
@@ -19895,7 +19895,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
  */
                 __pyx_v_nl = (__pyx_v_ns + __pyx_v_offset1);
 
-                /* "_distortion.pyx":1058
+                /* "src/_distortion.pyx":1058
  *                         # ms,ns are indexes of the corrected image in short form, ml & nl are the same
  *                         nl = ns + offset1
  *                         if nl < 0 or nl >= shape1:             # <<<<<<<<<<<<<<
@@ -19913,7 +19913,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
                 __pyx_L30_bool_binop_done:;
                 if (__pyx_t_9) {
 
-                  /* "_distortion.pyx":1059
+                  /* "src/_distortion.pyx":1059
  *                         nl = ns + offset1
  *                         if nl < 0 or nl >= shape1:
  *                             continue             # <<<<<<<<<<<<<<
@@ -19923,7 +19923,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
                   goto __pyx_L27_continue;
                 }
 
-                /* "_distortion.pyx":1060
+                /* "src/_distortion.pyx":1060
  *                         if nl < 0 or nl >= shape1:
  *                             continue
  *                         value = buffer[ms, ns] / area             # <<<<<<<<<<<<<<
@@ -19934,7 +19934,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
                 __pyx_t_69 = __pyx_v_ns;
                 __pyx_v_value = ((*((float *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_buffer.data + __pyx_t_68 * __pyx_v_buffer.strides[0]) ) + __pyx_t_69 * __pyx_v_buffer.strides[1]) ))) / __pyx_v_area);
 
-                /* "_distortion.pyx":1061
+                /* "src/_distortion.pyx":1061
  *                             continue
  *                         value = buffer[ms, ns] / area
  *                         if value <= 0:             # <<<<<<<<<<<<<<
@@ -19944,7 +19944,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
                 __pyx_t_9 = ((__pyx_v_value <= 0.0) != 0);
                 if (__pyx_t_9) {
 
-                  /* "_distortion.pyx":1062
+                  /* "src/_distortion.pyx":1062
  *                         value = buffer[ms, ns] / area
  *                         if value <= 0:
  *                             continue             # <<<<<<<<<<<<<<
@@ -19954,7 +19954,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
                   goto __pyx_L27_continue;
                 }
 
-                /* "_distortion.pyx":1063
+                /* "src/_distortion.pyx":1063
  *                         if value <= 0:
  *                             continue
  *                         k = outMax[ml, nl]             # <<<<<<<<<<<<<<
@@ -19965,7 +19965,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
                 __pyx_t_71 = __pyx_v_nl;
                 __pyx_v_k = (*((int *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_outMax.data + __pyx_t_70 * __pyx_v_outMax.strides[0]) ) + __pyx_t_71 * __pyx_v_outMax.strides[1]) )));
 
-                /* "_distortion.pyx":1064
+                /* "src/_distortion.pyx":1064
  *                             continue
  *                         k = outMax[ml, nl]
  *                         tmp_index = indptr[ml * shape1 + nl]             # <<<<<<<<<<<<<<
@@ -19975,7 +19975,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
                 __pyx_t_72 = ((__pyx_v_ml * __pyx_v_shape1) + __pyx_v_nl);
                 __pyx_v_tmp_index = (*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int32_t *, __pyx_pybuffernd_indptr.rcbuffer->pybuffer.buf, __pyx_t_72, __pyx_pybuffernd_indptr.diminfo[0].strides));
 
-                /* "_distortion.pyx":1065
+                /* "src/_distortion.pyx":1065
  *                         k = outMax[ml, nl]
  *                         tmp_index = indptr[ml * shape1 + nl]
  *                         indices[tmp_index + k] = idx             # <<<<<<<<<<<<<<
@@ -19985,7 +19985,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
                 __pyx_t_73 = (__pyx_v_tmp_index + __pyx_v_k);
                 *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int32_t *, __pyx_pybuffernd_indices.rcbuffer->pybuffer.buf, __pyx_t_73, __pyx_pybuffernd_indices.diminfo[0].strides) = __pyx_v_idx;
 
-                /* "_distortion.pyx":1066
+                /* "src/_distortion.pyx":1066
  *                         tmp_index = indptr[ml * shape1 + nl]
  *                         indices[tmp_index + k] = idx
  *                         data[tmp_index + k] = value             # <<<<<<<<<<<<<<
@@ -19995,7 +19995,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
                 __pyx_t_74 = (__pyx_v_tmp_index + __pyx_v_k);
                 *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float32_t *, __pyx_pybuffernd_data.rcbuffer->pybuffer.buf, __pyx_t_74, __pyx_pybuffernd_data.diminfo[0].strides) = __pyx_v_value;
 
-                /* "_distortion.pyx":1067
+                /* "src/_distortion.pyx":1067
  *                         indices[tmp_index + k] = idx
  *                         data[tmp_index + k] = value
  *                         outMax[ml, nl] = k + 1             # <<<<<<<<<<<<<<
@@ -20010,7 +20010,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
               __pyx_L22_continue:;
             }
 
-            /* "_distortion.pyx":1068
+            /* "src/_distortion.pyx":1068
  *                         data[tmp_index + k] = value
  *                         outMax[ml, nl] = k + 1
  *                 idx += 1             # <<<<<<<<<<<<<<
@@ -20023,7 +20023,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
         }
       }
 
-      /* "_distortion.pyx":998
+      /* "src/_distortion.pyx":998
  *     buffer_size = delta0 * delta1 * sizeof(float)
  *     logger.info("Max pixel size: %ix%i; Max source pixel in target: %i" % (buffer.shape[1], buffer.shape[0], lut_size))
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -20047,7 +20047,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
       }
   }
 
-  /* "_distortion.pyx":1069
+  /* "src/_distortion.pyx":1069
  *                         outMax[ml, nl] = k + 1
  *                 idx += 1
  *     return (data, indices, indptr)             # <<<<<<<<<<<<<<
@@ -20070,7 +20070,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "_distortion.pyx":955
+  /* "src/_distortion.pyx":955
  * @cython.boundscheck(False)
  * @cython.cdivision(True)
  * def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,             # <<<<<<<<<<<<<<
@@ -20096,7 +20096,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_indices.rcbuffer->pybuffer);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_indptr.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("_distortion.calc_CSR", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.calc_CSR", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   goto __pyx_L2;
   __pyx_L0:;
@@ -20119,7 +20119,7 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
   return __pyx_r;
 }
 
-/* "_distortion.pyx":1074
+/* "src/_distortion.pyx":1074
  * @cython.wraparound(False)
  * @cython.boundscheck(False)
  * def correct_LUT(image, shape, lut_point[:, :] LUT not None, dummy=None, delta_dummy=None):             # <<<<<<<<<<<<<<
@@ -20128,10 +20128,10 @@ __pyx_t_26.strides[1] = __pyx_v_buffer.strides[1];
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_11correct_LUT(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_11_distortion_10correct_LUT[] = "\n    Correct an image based on the look-up table calculated ...\n\n    @param image: 2D-array with the image\n    @param shape: shape of output image\n    @param LUT: Look up table, here a 2D-array of struct\n    @param dummy: value for invalid pixels\n    @param delta_dummy: precision for invalid pixels\n    @return: corrected 2D image\n    ";
-static PyMethodDef __pyx_mdef_11_distortion_11correct_LUT = {"correct_LUT", (PyCFunction)__pyx_pw_11_distortion_11correct_LUT, METH_VARARGS|METH_KEYWORDS, __pyx_doc_11_distortion_10correct_LUT};
-static PyObject *__pyx_pw_11_distortion_11correct_LUT(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_11_distortion_11correct_LUT(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_3src_11_distortion_10correct_LUT[] = "\n    Correct an image based on the look-up table calculated ...\n\n    @param image: 2D-array with the image\n    @param shape: shape of output image\n    @param LUT: Look up table, here a 2D-array of struct\n    @param dummy: value for invalid pixels\n    @param delta_dummy: precision for invalid pixels\n    @return: corrected 2D image\n    ";
+static PyMethodDef __pyx_mdef_3src_11_distortion_11correct_LUT = {"correct_LUT", (PyCFunction)__pyx_pw_3src_11_distortion_11correct_LUT, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_11_distortion_10correct_LUT};
+static PyObject *__pyx_pw_3src_11_distortion_11correct_LUT(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_image = 0;
   PyObject *__pyx_v_shape = 0;
   __Pyx_memviewslice __pyx_v_LUT = { 0, 0, { 0 }, { 0 }, { 0 } };
@@ -20202,7 +20202,7 @@ static PyObject *__pyx_pw_11_distortion_11correct_LUT(PyObject *__pyx_self, PyOb
     }
     __pyx_v_image = values[0];
     __pyx_v_shape = values[1];
-    __pyx_v_LUT = __Pyx_PyObject_to_MemoryviewSlice_dsds_nn_struct___pyx_t_11_distortion_lut_point(values[2]); if (unlikely(!__pyx_v_LUT.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1074; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_LUT = __Pyx_PyObject_to_MemoryviewSlice_dsds_nn_struct___pyx_t_3src_11_distortion_lut_point(values[2]); if (unlikely(!__pyx_v_LUT.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1074; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
     __pyx_v_dummy = values[3];
     __pyx_v_delta_dummy = values[4];
   }
@@ -20210,14 +20210,14 @@ static PyObject *__pyx_pw_11_distortion_11correct_LUT(PyObject *__pyx_self, PyOb
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("correct_LUT", 0, 3, 5, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1074; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("_distortion.correct_LUT", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.correct_LUT", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(((PyObject *)__pyx_v_LUT.memview) == Py_None)) {
     PyErr_Format(PyExc_TypeError, "Argument '%.200s' must not be None", "LUT"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1074; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_r = __pyx_pf_11_distortion_10correct_LUT(__pyx_self, __pyx_v_image, __pyx_v_shape, __pyx_v_LUT, __pyx_v_dummy, __pyx_v_delta_dummy);
+  __pyx_r = __pyx_pf_3src_11_distortion_10correct_LUT(__pyx_self, __pyx_v_image, __pyx_v_shape, __pyx_v_LUT, __pyx_v_dummy, __pyx_v_delta_dummy);
 
   /* function exit code */
   goto __pyx_L0;
@@ -20228,7 +20228,7 @@ static PyObject *__pyx_pw_11_distortion_11correct_LUT(PyObject *__pyx_self, PyOb
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_image, PyObject *__pyx_v_shape, __Pyx_memviewslice __pyx_v_LUT, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy) {
+static PyObject *__pyx_pf_3src_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_image, PyObject *__pyx_v_shape, __Pyx_memviewslice __pyx_v_LUT, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy) {
   int __pyx_v_i;
   int __pyx_v_j;
   CYTHON_UNUSED int __pyx_v_lshape0;
@@ -20283,7 +20283,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
   __Pyx_RefNannySetupContext("correct_LUT", 0);
   __Pyx_INCREF(__pyx_v_image);
 
-  /* "_distortion.pyx":1089
+  /* "src/_distortion.pyx":1089
  *         float coef, sum, error, t, y, value, cdummy, cdelta_dummy
  *         float[:] lout, lin
  *         bint do_dummy = dummy is not None             # <<<<<<<<<<<<<<
@@ -20293,7 +20293,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
   __pyx_t_1 = (__pyx_v_dummy != Py_None);
   __pyx_v_do_dummy = __pyx_t_1;
 
-  /* "_distortion.pyx":1090
+  /* "src/_distortion.pyx":1090
  *         float[:] lout, lin
  *         bint do_dummy = dummy is not None
  *     if do_dummy:             # <<<<<<<<<<<<<<
@@ -20303,7 +20303,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
   __pyx_t_1 = (__pyx_v_do_dummy != 0);
   if (__pyx_t_1) {
 
-    /* "_distortion.pyx":1091
+    /* "src/_distortion.pyx":1091
  *         bint do_dummy = dummy is not None
  *     if do_dummy:
  *         cdummy = dummy             # <<<<<<<<<<<<<<
@@ -20313,7 +20313,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
     __pyx_t_2 = __pyx_PyFloat_AsFloat(__pyx_v_dummy); if (unlikely((__pyx_t_2 == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1091; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_v_cdummy = __pyx_t_2;
 
-    /* "_distortion.pyx":1092
+    /* "src/_distortion.pyx":1092
  *     if do_dummy:
  *         cdummy = dummy
  *         if delta_dummy is None:             # <<<<<<<<<<<<<<
@@ -20324,7 +20324,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
     __pyx_t_3 = (__pyx_t_1 != 0);
     if (__pyx_t_3) {
 
-      /* "_distortion.pyx":1093
+      /* "src/_distortion.pyx":1093
  *         cdummy = dummy
  *         if delta_dummy is None:
  *             cdelta_dummy = 0.0             # <<<<<<<<<<<<<<
@@ -20339,7 +20339,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
   }
   __pyx_L3:;
 
-  /* "_distortion.pyx":1094
+  /* "src/_distortion.pyx":1094
  *         if delta_dummy is None:
  *             cdelta_dummy = 0.0
  *     shape0, shape1 = shape             # <<<<<<<<<<<<<<
@@ -20401,7 +20401,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
   __pyx_v_shape0 = __pyx_t_8;
   __pyx_v_shape1 = __pyx_t_9;
 
-  /* "_distortion.pyx":1095
+  /* "src/_distortion.pyx":1095
  *             cdelta_dummy = 0.0
  *     shape0, shape1 = shape
  *     lshape0 = LUT.shape[0]             # <<<<<<<<<<<<<<
@@ -20410,7 +20410,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
  */
   __pyx_v_lshape0 = (__pyx_v_LUT.shape[0]);
 
-  /* "_distortion.pyx":1096
+  /* "src/_distortion.pyx":1096
  *     shape0, shape1 = shape
  *     lshape0 = LUT.shape[0]
  *     lshape1 = LUT.shape[1]             # <<<<<<<<<<<<<<
@@ -20419,7 +20419,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
  */
   __pyx_v_lshape1 = (__pyx_v_LUT.shape[1]);
 
-  /* "_distortion.pyx":1097
+  /* "src/_distortion.pyx":1097
  *     lshape0 = LUT.shape[0]
  *     lshape1 = LUT.shape[1]
  *     img_shape = image.shape             # <<<<<<<<<<<<<<
@@ -20431,7 +20431,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
   __pyx_v_img_shape = __pyx_t_5;
   __pyx_t_5 = 0;
 
-  /* "_distortion.pyx":1098
+  /* "src/_distortion.pyx":1098
  *     lshape1 = LUT.shape[1]
  *     img_shape = image.shape
  *     if (img_shape[0] < shape0) or (img_shape[1] < shape1):             # <<<<<<<<<<<<<<
@@ -20465,7 +20465,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
   __pyx_L8_bool_binop_done:;
   if (__pyx_t_3) {
 
-    /* "_distortion.pyx":1099
+    /* "src/_distortion.pyx":1099
  *     img_shape = image.shape
  *     if (img_shape[0] < shape0) or (img_shape[1] < shape1):
  *         new_image = numpy.zeros((shape0, shape1), dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -20511,7 +20511,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
     __pyx_v_new_image = __pyx_t_11;
     __pyx_t_11 = 0;
 
-    /* "_distortion.pyx":1100
+    /* "src/_distortion.pyx":1100
  *     if (img_shape[0] < shape0) or (img_shape[1] < shape1):
  *         new_image = numpy.zeros((shape0, shape1), dtype=numpy.float32)
  *         new_image[:img_shape[0], :img_shape[1]] = image             # <<<<<<<<<<<<<<
@@ -20539,7 +20539,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
     if (unlikely(PyObject_SetItem(__pyx_v_new_image, __pyx_t_11, __pyx_v_image) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1100; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
-    /* "_distortion.pyx":1101
+    /* "src/_distortion.pyx":1101
  *         new_image = numpy.zeros((shape0, shape1), dtype=numpy.float32)
  *         new_image[:img_shape[0], :img_shape[1]] = image
  *         image = new_image             # <<<<<<<<<<<<<<
@@ -20549,7 +20549,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
     __Pyx_INCREF(__pyx_v_new_image);
     __Pyx_DECREF_SET(__pyx_v_image, __pyx_v_new_image);
 
-    /* "_distortion.pyx":1102
+    /* "src/_distortion.pyx":1102
  *         new_image[:img_shape[0], :img_shape[1]] = image
  *         image = new_image
  *         logger.warning("Patching image as image is %ix%i and spline is %ix%i" % (img_shape[1], img_shape[0], shape1, shape0))             # <<<<<<<<<<<<<<
@@ -20617,7 +20617,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
   }
   __pyx_L7:;
 
-  /* "_distortion.pyx":1104
+  /* "src/_distortion.pyx":1104
  *         logger.warning("Patching image as image is %ix%i and spline is %ix%i" % (img_shape[1], img_shape[0], shape1, shape0))
  * 
  *     out = numpy.zeros(shape, dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -20651,7 +20651,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
   __pyx_v_out = __pyx_t_13;
   __pyx_t_13 = 0;
 
-  /* "_distortion.pyx":1105
+  /* "src/_distortion.pyx":1105
  * 
  *     out = numpy.zeros(shape, dtype=numpy.float32)
  *     lout = out.ravel()             # <<<<<<<<<<<<<<
@@ -20685,7 +20685,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
   __pyx_t_14.memview = NULL;
   __pyx_t_14.data = NULL;
 
-  /* "_distortion.pyx":1106
+  /* "src/_distortion.pyx":1106
  *     out = numpy.zeros(shape, dtype=numpy.float32)
  *     lout = out.ravel()
  *     lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -20743,7 +20743,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
   __pyx_t_14.memview = NULL;
   __pyx_t_14.data = NULL;
 
-  /* "_distortion.pyx":1107
+  /* "src/_distortion.pyx":1107
  *     lout = out.ravel()
  *     lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
  *     size = lin.size             # <<<<<<<<<<<<<<
@@ -20759,7 +20759,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
   __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
   __pyx_v_size = __pyx_t_9;
 
-  /* "_distortion.pyx":1108
+  /* "src/_distortion.pyx":1108
  *     lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
  *     size = lin.size
  *     for i in prange(lshape0, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
@@ -20775,11 +20775,11 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
         __pyx_t_9 = __pyx_v_lshape0;
         if (1 == 0) abort();
         {
-            float __pyx_parallel_temp0 = __PYX_NAN();
-            float __pyx_parallel_temp1 = __PYX_NAN();
-            int __pyx_parallel_temp2 = 0xbad0bad0;
+            int __pyx_parallel_temp0 = 0xbad0bad0;
+            int __pyx_parallel_temp1 = 0xbad0bad0;
+            float __pyx_parallel_temp2 = __PYX_NAN();
             int __pyx_parallel_temp3 = 0xbad0bad0;
-            int __pyx_parallel_temp4 = 0xbad0bad0;
+            float __pyx_parallel_temp4 = __PYX_NAN();
             float __pyx_parallel_temp5 = __PYX_NAN();
             float __pyx_parallel_temp6 = __PYX_NAN();
             float __pyx_parallel_temp7 = __PYX_NAN();
@@ -20798,7 +20798,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
             if (__pyx_t_15 > 0)
             {
                 #ifdef _OPENMP
-                #pragma omp parallel private(__pyx_t_23, __pyx_t_17, __pyx_t_3, __pyx_t_16, __pyx_t_21, __pyx_t_24, __pyx_t_19, __pyx_t_22, __pyx_t_20, __pyx_t_18, __pyx_t_1) firstprivate(__pyx_t_5, __pyx_t_13, __pyx_t_12, __pyx_t_11, __pyx_t_10) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
+                #pragma omp parallel private(__pyx_t_20, __pyx_t_19, __pyx_t_1, __pyx_t_23, __pyx_t_24, __pyx_t_21, __pyx_t_17, __pyx_t_22, __pyx_t_16, __pyx_t_3, __pyx_t_18) firstprivate(__pyx_t_10, __pyx_t_5, __pyx_t_13, __pyx_t_11, __pyx_t_12) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
@@ -20808,23 +20808,23 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
                     Py_BEGIN_ALLOW_THREADS
                     #endif /* _OPENMP */
                     #ifdef _OPENMP
-                    #pragma omp for lastprivate(__pyx_v_error) lastprivate(__pyx_v_t) lastprivate(__pyx_v_idx) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_j) lastprivate(__pyx_v_value) lastprivate(__pyx_v_y) lastprivate(__pyx_v_coef) lastprivate(__pyx_v_sum) schedule(static)
+                    #pragma omp for lastprivate(__pyx_v_idx) lastprivate(__pyx_v_j) lastprivate(__pyx_v_value) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_error) lastprivate(__pyx_v_sum) lastprivate(__pyx_v_t) lastprivate(__pyx_v_coef) lastprivate(__pyx_v_y) schedule(static)
                     #endif /* _OPENMP */
                     for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_15; __pyx_t_8++){
                         if (__pyx_parallel_why < 2)
                         {
                             __pyx_v_i = 0 + 1 * __pyx_t_8;
                             /* Initialize private variables to invalid values */
-                            __pyx_v_error = ((float)__PYX_NAN());
-                            __pyx_v_t = ((float)__PYX_NAN());
                             __pyx_v_idx = ((int)0xbad0bad0);
                             __pyx_v_j = ((int)0xbad0bad0);
                             __pyx_v_value = ((float)__PYX_NAN());
-                            __pyx_v_y = ((float)__PYX_NAN());
-                            __pyx_v_coef = ((float)__PYX_NAN());
+                            __pyx_v_error = ((float)__PYX_NAN());
                             __pyx_v_sum = ((float)__PYX_NAN());
+                            __pyx_v_t = ((float)__PYX_NAN());
+                            __pyx_v_coef = ((float)__PYX_NAN());
+                            __pyx_v_y = ((float)__PYX_NAN());
 
-                            /* "_distortion.pyx":1109
+                            /* "src/_distortion.pyx":1109
  *     size = lin.size
  *     for i in prange(lshape0, nogil=True, schedule="static"):
  *         sum = 0.0             # <<<<<<<<<<<<<<
@@ -20833,7 +20833,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
  */
                             __pyx_v_sum = 0.0;
 
-                            /* "_distortion.pyx":1110
+                            /* "src/_distortion.pyx":1110
  *     for i in prange(lshape0, nogil=True, schedule="static"):
  *         sum = 0.0
  *         error = 0.0  # Implement Kahan summation             # <<<<<<<<<<<<<<
@@ -20842,7 +20842,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
  */
                             __pyx_v_error = 0.0;
 
-                            /* "_distortion.pyx":1111
+                            /* "src/_distortion.pyx":1111
  *         sum = 0.0
  *         error = 0.0  # Implement Kahan summation
  *         for j in range(lshape1):             # <<<<<<<<<<<<<<
@@ -20853,7 +20853,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
                             for (__pyx_t_17 = 0; __pyx_t_17 < __pyx_t_16; __pyx_t_17+=1) {
                               __pyx_v_j = __pyx_t_17;
 
-                              /* "_distortion.pyx":1112
+                              /* "src/_distortion.pyx":1112
  *         error = 0.0  # Implement Kahan summation
  *         for j in range(lshape1):
  *             idx = LUT[i, j].idx             # <<<<<<<<<<<<<<
@@ -20862,10 +20862,10 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
  */
                               __pyx_t_18 = __pyx_v_i;
                               __pyx_t_19 = __pyx_v_j;
-                              __pyx_t_20 = (*((struct __pyx_t_11_distortion_lut_point *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_LUT.data + __pyx_t_18 * __pyx_v_LUT.strides[0]) ) + __pyx_t_19 * __pyx_v_LUT.strides[1]) ))).idx;
+                              __pyx_t_20 = (*((struct __pyx_t_3src_11_distortion_lut_point *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_LUT.data + __pyx_t_18 * __pyx_v_LUT.strides[0]) ) + __pyx_t_19 * __pyx_v_LUT.strides[1]) ))).idx;
                               __pyx_v_idx = __pyx_t_20;
 
-                              /* "_distortion.pyx":1113
+                              /* "src/_distortion.pyx":1113
  *         for j in range(lshape1):
  *             idx = LUT[i, j].idx
  *             coef = LUT[i, j].coef             # <<<<<<<<<<<<<<
@@ -20874,10 +20874,10 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
  */
                               __pyx_t_21 = __pyx_v_i;
                               __pyx_t_22 = __pyx_v_j;
-                              __pyx_t_23 = (*((struct __pyx_t_11_distortion_lut_point *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_LUT.data + __pyx_t_21 * __pyx_v_LUT.strides[0]) ) + __pyx_t_22 * __pyx_v_LUT.strides[1]) ))).coef;
+                              __pyx_t_23 = (*((struct __pyx_t_3src_11_distortion_lut_point *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_LUT.data + __pyx_t_21 * __pyx_v_LUT.strides[0]) ) + __pyx_t_22 * __pyx_v_LUT.strides[1]) ))).coef;
                               __pyx_v_coef = __pyx_t_23;
 
-                              /* "_distortion.pyx":1114
+                              /* "src/_distortion.pyx":1114
  *             idx = LUT[i, j].idx
  *             coef = LUT[i, j].coef
  *             if coef <= 0:             # <<<<<<<<<<<<<<
@@ -20887,7 +20887,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
                               __pyx_t_3 = ((__pyx_v_coef <= 0.0) != 0);
                               if (__pyx_t_3) {
 
-                                /* "_distortion.pyx":1115
+                                /* "src/_distortion.pyx":1115
  *             coef = LUT[i, j].coef
  *             if coef <= 0:
  *                 continue             # <<<<<<<<<<<<<<
@@ -20897,7 +20897,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
                                 goto __pyx_L17_continue;
                               }
 
-                              /* "_distortion.pyx":1116
+                              /* "src/_distortion.pyx":1116
  *             if coef <= 0:
  *                 continue
  *             if idx >= size:             # <<<<<<<<<<<<<<
@@ -20907,7 +20907,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
                               __pyx_t_3 = ((__pyx_v_idx >= __pyx_v_size) != 0);
                               if (__pyx_t_3) {
 
-                                /* "_distortion.pyx":1117
+                                /* "src/_distortion.pyx":1117
  *                 continue
  *             if idx >= size:
  *                 with gil:             # <<<<<<<<<<<<<<
@@ -20920,7 +20920,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
                                     #endif
                                     /*try:*/ {
 
-                                      /* "_distortion.pyx":1118
+                                      /* "src/_distortion.pyx":1118
  *             if idx >= size:
  *                 with gil:
  *                     logger.warning("Accessing %i >= %i !!!" % (idx, size))             # <<<<<<<<<<<<<<
@@ -20975,7 +20975,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
                                       __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
                                       __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
 
-                                      /* "_distortion.pyx":1119
+                                      /* "src/_distortion.pyx":1119
  *                 with gil:
  *                     logger.warning("Accessing %i >= %i !!!" % (idx, size))
  *                     continue             # <<<<<<<<<<<<<<
@@ -20985,7 +20985,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
                                       goto __pyx_L21_continue;
                                     }
 
-                                    /* "_distortion.pyx":1117
+                                    /* "src/_distortion.pyx":1117
  *                 continue
  *             if idx >= size:
  *                 with gil:             # <<<<<<<<<<<<<<
@@ -21009,7 +21009,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
                                 }
                               }
 
-                              /* "_distortion.pyx":1120
+                              /* "src/_distortion.pyx":1120
  *                     logger.warning("Accessing %i >= %i !!!" % (idx, size))
  *                     continue
  *             value = lin[idx]             # <<<<<<<<<<<<<<
@@ -21019,7 +21019,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
                               __pyx_t_24 = __pyx_v_idx;
                               __pyx_v_value = (*((float *) ( /* dim=0 */ (__pyx_v_lin.data + __pyx_t_24 * __pyx_v_lin.strides[0]) )));
 
-                              /* "_distortion.pyx":1121
+                              /* "src/_distortion.pyx":1121
  *                     continue
  *             value = lin[idx]
  *             if do_dummy and fabs(value - cdummy) <= cdelta_dummy:             # <<<<<<<<<<<<<<
@@ -21037,7 +21037,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
                               __pyx_L27_bool_binop_done:;
                               if (__pyx_t_3) {
 
-                                /* "_distortion.pyx":1122
+                                /* "src/_distortion.pyx":1122
  *             value = lin[idx]
  *             if do_dummy and fabs(value - cdummy) <= cdelta_dummy:
  *                 continue             # <<<<<<<<<<<<<<
@@ -21047,7 +21047,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
                                 goto __pyx_L17_continue;
                               }
 
-                              /* "_distortion.pyx":1123
+                              /* "src/_distortion.pyx":1123
  *             if do_dummy and fabs(value - cdummy) <= cdelta_dummy:
  *                 continue
  *             y = value * coef - error             # <<<<<<<<<<<<<<
@@ -21056,7 +21056,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
  */
                               __pyx_v_y = ((__pyx_v_value * __pyx_v_coef) - __pyx_v_error);
 
-                              /* "_distortion.pyx":1124
+                              /* "src/_distortion.pyx":1124
  *                 continue
  *             y = value * coef - error
  *             t = sum + y             # <<<<<<<<<<<<<<
@@ -21065,7 +21065,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
  */
                               __pyx_v_t = (__pyx_v_sum + __pyx_v_y);
 
-                              /* "_distortion.pyx":1125
+                              /* "src/_distortion.pyx":1125
  *             y = value * coef - error
  *             t = sum + y
  *             error = (t - sum) - y             # <<<<<<<<<<<<<<
@@ -21074,7 +21074,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
  */
                               __pyx_v_error = ((__pyx_v_t - __pyx_v_sum) - __pyx_v_y);
 
-                              /* "_distortion.pyx":1126
+                              /* "src/_distortion.pyx":1126
  *             t = sum + y
  *             error = (t - sum) - y
  *             sum = t             # <<<<<<<<<<<<<<
@@ -21085,7 +21085,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
                               __pyx_L17_continue:;
                             }
 
-                            /* "_distortion.pyx":1127
+                            /* "src/_distortion.pyx":1127
  *             error = (t - sum) - y
  *             sum = t
  *         if do_dummy and (sum == 0.0):             # <<<<<<<<<<<<<<
@@ -21103,7 +21103,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
                             __pyx_L30_bool_binop_done:;
                             if (__pyx_t_3) {
 
-                              /* "_distortion.pyx":1128
+                              /* "src/_distortion.pyx":1128
  *             sum = t
  *         if do_dummy and (sum == 0.0):
  *             sum = cdummy             # <<<<<<<<<<<<<<
@@ -21115,7 +21115,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
                             }
                             __pyx_L29:;
 
-                            /* "_distortion.pyx":1129
+                            /* "src/_distortion.pyx":1129
  *         if do_dummy and (sum == 0.0):
  *             sum = cdummy
  *         lout[i] += sum  # this += is for Cython's reduction             # <<<<<<<<<<<<<<
@@ -21149,15 +21149,15 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
                             #pragma omp critical(__pyx_parallel_lastprivates1)
                             #endif /* _OPENMP */
                             {
-                                __pyx_parallel_temp0 = __pyx_v_error;
-                                __pyx_parallel_temp1 = __pyx_v_t;
-                                __pyx_parallel_temp2 = __pyx_v_idx;
+                                __pyx_parallel_temp0 = __pyx_v_idx;
+                                __pyx_parallel_temp1 = __pyx_v_j;
+                                __pyx_parallel_temp2 = __pyx_v_value;
                                 __pyx_parallel_temp3 = __pyx_v_i;
-                                __pyx_parallel_temp4 = __pyx_v_j;
-                                __pyx_parallel_temp5 = __pyx_v_value;
-                                __pyx_parallel_temp6 = __pyx_v_y;
+                                __pyx_parallel_temp4 = __pyx_v_error;
+                                __pyx_parallel_temp5 = __pyx_v_sum;
+                                __pyx_parallel_temp6 = __pyx_v_t;
                                 __pyx_parallel_temp7 = __pyx_v_coef;
-                                __pyx_parallel_temp8 = __pyx_v_sum;
+                                __pyx_parallel_temp8 = __pyx_v_y;
                             }
                             __pyx_L33:;
                             #ifdef _OPENMP
@@ -21174,16 +21174,16 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
                     #endif
                     #endif /* _OPENMP */
                     /* Clean up any temporaries */
+                    __Pyx_XDECREF(__pyx_t_10);
+                    __pyx_t_10 = NULL;
                     __Pyx_XDECREF(__pyx_t_5);
                     __pyx_t_5 = NULL;
                     __Pyx_XDECREF(__pyx_t_13);
                     __pyx_t_13 = NULL;
-                    __Pyx_XDECREF(__pyx_t_12);
-                    __pyx_t_12 = NULL;
                     __Pyx_XDECREF(__pyx_t_11);
                     __pyx_t_11 = NULL;
-                    __Pyx_XDECREF(__pyx_t_10);
-                    __pyx_t_10 = NULL;
+                    __Pyx_XDECREF(__pyx_t_12);
+                    __pyx_t_12 = NULL;
                     #ifdef WITH_THREAD
                     PyGILState_Release(__pyx_gilstate_save);
                     #endif
@@ -21197,15 +21197,15 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
               __pyx_parallel_why = 4;
             }
             if (__pyx_parallel_why) {
-              __pyx_v_error = __pyx_parallel_temp0;
-              __pyx_v_t = __pyx_parallel_temp1;
-              __pyx_v_idx = __pyx_parallel_temp2;
+              __pyx_v_idx = __pyx_parallel_temp0;
+              __pyx_v_j = __pyx_parallel_temp1;
+              __pyx_v_value = __pyx_parallel_temp2;
               __pyx_v_i = __pyx_parallel_temp3;
-              __pyx_v_j = __pyx_parallel_temp4;
-              __pyx_v_value = __pyx_parallel_temp5;
-              __pyx_v_y = __pyx_parallel_temp6;
+              __pyx_v_error = __pyx_parallel_temp4;
+              __pyx_v_sum = __pyx_parallel_temp5;
+              __pyx_v_t = __pyx_parallel_temp6;
               __pyx_v_coef = __pyx_parallel_temp7;
-              __pyx_v_sum = __pyx_parallel_temp8;
+              __pyx_v_y = __pyx_parallel_temp8;
               switch (__pyx_parallel_why) {
                     case 3: goto __pyx_L10_return;
                     case 4:
@@ -21232,7 +21232,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
         #endif
       }
 
-      /* "_distortion.pyx":1108
+      /* "src/_distortion.pyx":1108
  *     lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
  *     size = lin.size
  *     for i in prange(lshape0, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
@@ -21262,7 +21262,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
       }
   }
 
-  /* "_distortion.pyx":1130
+  /* "src/_distortion.pyx":1130
  *             sum = cdummy
  *         lout[i] += sum  # this += is for Cython's reduction
  *     return out[:img_shape[0], :img_shape[1]]             # <<<<<<<<<<<<<<
@@ -21295,7 +21295,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
   __pyx_t_12 = 0;
   goto __pyx_L0;
 
-  /* "_distortion.pyx":1074
+  /* "src/_distortion.pyx":1074
  * @cython.wraparound(False)
  * @cython.boundscheck(False)
  * def correct_LUT(image, shape, lut_point[:, :] LUT not None, dummy=None, delta_dummy=None):             # <<<<<<<<<<<<<<
@@ -21313,7 +21313,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
   __Pyx_XDECREF(__pyx_t_12);
   __Pyx_XDECREF(__pyx_t_13);
   __PYX_XDEC_MEMVIEW(&__pyx_t_14, 1);
-  __Pyx_AddTraceback("_distortion.correct_LUT", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.correct_LUT", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_lout, 1);
@@ -21328,7 +21328,7 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
   return __pyx_r;
 }
 
-/* "_distortion.pyx":1135
+/* "src/_distortion.pyx":1135
  * @cython.wraparound(False)
  * @cython.boundscheck(False)
  * def correct_CSR(image, shape, LUT, dummy=None, delta_dummy=None):             # <<<<<<<<<<<<<<
@@ -21337,10 +21337,10 @@ static PyObject *__pyx_pf_11_distortion_10correct_LUT(CYTHON_UNUSED PyObject *__
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_13correct_CSR(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_11_distortion_12correct_CSR[] = "\n    Correct an image based on the look-up table calculated ...\n\n    @param image: 2D-array with the image\n    @param shape: shape of output image\n    @param LUT: Look up table, here a 3-tuple array of ndarray\n    @param dummy: value for invalid pixels\n    @param delta_dummy: precision for invalid pixels\n    @return: corrected 2D image\n    ";
-static PyMethodDef __pyx_mdef_11_distortion_13correct_CSR = {"correct_CSR", (PyCFunction)__pyx_pw_11_distortion_13correct_CSR, METH_VARARGS|METH_KEYWORDS, __pyx_doc_11_distortion_12correct_CSR};
-static PyObject *__pyx_pw_11_distortion_13correct_CSR(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_11_distortion_13correct_CSR(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_3src_11_distortion_12correct_CSR[] = "\n    Correct an image based on the look-up table calculated ...\n\n    @param image: 2D-array with the image\n    @param shape: shape of output image\n    @param LUT: Look up table, here a 3-tuple array of ndarray\n    @param dummy: value for invalid pixels\n    @param delta_dummy: precision for invalid pixels\n    @return: corrected 2D image\n    ";
+static PyMethodDef __pyx_mdef_3src_11_distortion_13correct_CSR = {"correct_CSR", (PyCFunction)__pyx_pw_3src_11_distortion_13correct_CSR, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_11_distortion_12correct_CSR};
+static PyObject *__pyx_pw_3src_11_distortion_13correct_CSR(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_image = 0;
   PyObject *__pyx_v_shape = 0;
   PyObject *__pyx_v_LUT = 0;
@@ -21419,18 +21419,18 @@ static PyObject *__pyx_pw_11_distortion_13correct_CSR(PyObject *__pyx_self, PyOb
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("correct_CSR", 0, 3, 5, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1135; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("_distortion.correct_CSR", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.correct_CSR", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_11_distortion_12correct_CSR(__pyx_self, __pyx_v_image, __pyx_v_shape, __pyx_v_LUT, __pyx_v_dummy, __pyx_v_delta_dummy);
+  __pyx_r = __pyx_pf_3src_11_distortion_12correct_CSR(__pyx_self, __pyx_v_image, __pyx_v_shape, __pyx_v_LUT, __pyx_v_dummy, __pyx_v_delta_dummy);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_image, PyObject *__pyx_v_shape, PyObject *__pyx_v_LUT, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy) {
+static PyObject *__pyx_pf_3src_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_image, PyObject *__pyx_v_shape, PyObject *__pyx_v_LUT, PyObject *__pyx_v_dummy, PyObject *__pyx_v_delta_dummy) {
   int __pyx_v_i;
   int __pyx_v_j;
   int __pyx_v_idx;
@@ -21485,7 +21485,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
   __Pyx_RefNannySetupContext("correct_CSR", 0);
   __Pyx_INCREF(__pyx_v_image);
 
-  /* "_distortion.pyx":1151
+  /* "src/_distortion.pyx":1151
  *         float[:] lout, lin, data
  *         numpy.int32_t[:] indices, indptr
  *         bint do_dummy = dummy is not None             # <<<<<<<<<<<<<<
@@ -21495,7 +21495,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
   __pyx_t_1 = (__pyx_v_dummy != Py_None);
   __pyx_v_do_dummy = __pyx_t_1;
 
-  /* "_distortion.pyx":1153
+  /* "src/_distortion.pyx":1153
  *         bint do_dummy = dummy is not None
  * 
  *     if do_dummy:             # <<<<<<<<<<<<<<
@@ -21505,7 +21505,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
   __pyx_t_1 = (__pyx_v_do_dummy != 0);
   if (__pyx_t_1) {
 
-    /* "_distortion.pyx":1154
+    /* "src/_distortion.pyx":1154
  * 
  *     if do_dummy:
  *         cdummy = dummy             # <<<<<<<<<<<<<<
@@ -21515,7 +21515,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
     __pyx_t_2 = __pyx_PyFloat_AsFloat(__pyx_v_dummy); if (unlikely((__pyx_t_2 == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1154; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_v_cdummy = __pyx_t_2;
 
-    /* "_distortion.pyx":1155
+    /* "src/_distortion.pyx":1155
  *     if do_dummy:
  *         cdummy = dummy
  *         if delta_dummy is None:             # <<<<<<<<<<<<<<
@@ -21526,7 +21526,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
     __pyx_t_3 = (__pyx_t_1 != 0);
     if (__pyx_t_3) {
 
-      /* "_distortion.pyx":1156
+      /* "src/_distortion.pyx":1156
  *         cdummy = dummy
  *         if delta_dummy is None:
  *             cdelta_dummy = 0.0             # <<<<<<<<<<<<<<
@@ -21541,7 +21541,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
   }
   __pyx_L3:;
 
-  /* "_distortion.pyx":1158
+  /* "src/_distortion.pyx":1158
  *             cdelta_dummy = 0.0
  * 
  *     data, indices, indptr = LUT             # <<<<<<<<<<<<<<
@@ -21622,7 +21622,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
   __pyx_t_11.memview = NULL;
   __pyx_t_11.data = NULL;
 
-  /* "_distortion.pyx":1159
+  /* "src/_distortion.pyx":1159
  * 
  *     data, indices, indptr = LUT
  *     shape0, shape1 = shape             # <<<<<<<<<<<<<<
@@ -21682,7 +21682,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
   __pyx_v_shape1 = __pyx_t_5;
   __pyx_t_5 = 0;
 
-  /* "_distortion.pyx":1160
+  /* "src/_distortion.pyx":1160
  *     data, indices, indptr = LUT
  *     shape0, shape1 = shape
  *     bins = indptr.size - 1             # <<<<<<<<<<<<<<
@@ -21701,7 +21701,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __pyx_v_bins = __pyx_t_12;
 
-  /* "_distortion.pyx":1161
+  /* "src/_distortion.pyx":1161
  *     shape0, shape1 = shape
  *     bins = indptr.size - 1
  *     img_shape = image.shape             # <<<<<<<<<<<<<<
@@ -21713,7 +21713,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
   __pyx_v_img_shape = __pyx_t_5;
   __pyx_t_5 = 0;
 
-  /* "_distortion.pyx":1162
+  /* "src/_distortion.pyx":1162
  *     bins = indptr.size - 1
  *     img_shape = image.shape
  *     if (img_shape[0] < shape0) or (img_shape[1] < shape1):             # <<<<<<<<<<<<<<
@@ -21741,7 +21741,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
   __pyx_L10_bool_binop_done:;
   if (__pyx_t_3) {
 
-    /* "_distortion.pyx":1163
+    /* "src/_distortion.pyx":1163
  *     img_shape = image.shape
  *     if (img_shape[0] < shape0) or (img_shape[1] < shape1):
  *         new_image = numpy.zeros(shape, dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -21775,7 +21775,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
     __pyx_v_new_image = __pyx_t_13;
     __pyx_t_13 = 0;
 
-    /* "_distortion.pyx":1164
+    /* "src/_distortion.pyx":1164
  *     if (img_shape[0] < shape0) or (img_shape[1] < shape1):
  *         new_image = numpy.zeros(shape, dtype=numpy.float32)
  *         new_image[:img_shape[0], :img_shape[1]] = image             # <<<<<<<<<<<<<<
@@ -21803,7 +21803,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
     if (unlikely(PyObject_SetItem(__pyx_v_new_image, __pyx_t_13, __pyx_v_image) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1164; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
 
-    /* "_distortion.pyx":1165
+    /* "src/_distortion.pyx":1165
  *         new_image = numpy.zeros(shape, dtype=numpy.float32)
  *         new_image[:img_shape[0], :img_shape[1]] = image
  *         image = new_image             # <<<<<<<<<<<<<<
@@ -21813,7 +21813,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
     __Pyx_INCREF(__pyx_v_new_image);
     __Pyx_DECREF_SET(__pyx_v_image, __pyx_v_new_image);
 
-    /* "_distortion.pyx":1166
+    /* "src/_distortion.pyx":1166
  *         new_image[:img_shape[0], :img_shape[1]] = image
  *         image = new_image
  *         logger.warning("Patching image as image is %ix%i and spline is %ix%i" % (img_shape[1], img_shape[0], shape1, shape0))             # <<<<<<<<<<<<<<
@@ -21877,7 +21877,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
   }
   __pyx_L9:;
 
-  /* "_distortion.pyx":1168
+  /* "src/_distortion.pyx":1168
  *         logger.warning("Patching image as image is %ix%i and spline is %ix%i" % (img_shape[1], img_shape[0], shape1, shape0))
  * 
  *     out = numpy.zeros(shape, dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -21911,7 +21911,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
   __pyx_v_out = __pyx_t_7;
   __pyx_t_7 = 0;
 
-  /* "_distortion.pyx":1169
+  /* "src/_distortion.pyx":1169
  * 
  *     out = numpy.zeros(shape, dtype=numpy.float32)
  *     lout = out.ravel()             # <<<<<<<<<<<<<<
@@ -21945,7 +21945,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
   __pyx_t_9.memview = NULL;
   __pyx_t_9.data = NULL;
 
-  /* "_distortion.pyx":1170
+  /* "src/_distortion.pyx":1170
  *     out = numpy.zeros(shape, dtype=numpy.float32)
  *     lout = out.ravel()
  *     lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -22003,7 +22003,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
   __pyx_t_9.memview = NULL;
   __pyx_t_9.data = NULL;
 
-  /* "_distortion.pyx":1171
+  /* "src/_distortion.pyx":1171
  *     lout = out.ravel()
  *     lin = numpy.ascontiguousarray(image.ravel(), dtype=numpy.float32)
  *     size = lin.size             # <<<<<<<<<<<<<<
@@ -22019,7 +22019,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   __pyx_v_size = __pyx_t_12;
 
-  /* "_distortion.pyx":1173
+  /* "src/_distortion.pyx":1173
  *     size = lin.size
  * 
  *     for i in prange(bins, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
@@ -22039,8 +22039,8 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
             float __pyx_parallel_temp1 = __PYX_NAN();
             float __pyx_parallel_temp2 = __PYX_NAN();
             int __pyx_parallel_temp3 = 0xbad0bad0;
-            int __pyx_parallel_temp4 = 0xbad0bad0;
-            float __pyx_parallel_temp5 = __PYX_NAN();
+            float __pyx_parallel_temp4 = __PYX_NAN();
+            int __pyx_parallel_temp5 = 0xbad0bad0;
             float __pyx_parallel_temp6 = __PYX_NAN();
             float __pyx_parallel_temp7 = __PYX_NAN();
             int __pyx_parallel_temp8 = 0xbad0bad0;
@@ -22058,7 +22058,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
             if (__pyx_t_15 > 0)
             {
                 #ifdef _OPENMP
-                #pragma omp parallel private(__pyx_t_3, __pyx_t_21, __pyx_t_16, __pyx_t_17, __pyx_t_19, __pyx_t_22, __pyx_t_18, __pyx_t_1, __pyx_t_20) firstprivate(__pyx_t_6, __pyx_t_4, __pyx_t_7, __pyx_t_13, __pyx_t_5) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
+                #pragma omp parallel private(__pyx_t_19, __pyx_t_16, __pyx_t_20, __pyx_t_1, __pyx_t_21, __pyx_t_22, __pyx_t_3, __pyx_t_18, __pyx_t_17) firstprivate(__pyx_t_5, __pyx_t_13, __pyx_t_6, __pyx_t_7, __pyx_t_4) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb)
                 #endif /* _OPENMP */
                 {
                     #ifdef _OPENMP
@@ -22068,23 +22068,23 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
                     Py_BEGIN_ALLOW_THREADS
                     #endif /* _OPENMP */
                     #ifdef _OPENMP
-                    #pragma omp for lastprivate(__pyx_v_y) lastprivate(__pyx_v_t) lastprivate(__pyx_v_error) lastprivate(__pyx_v_j) lastprivate(__pyx_v_idx) lastprivate(__pyx_v_value) lastprivate(__pyx_v_coef) lastprivate(__pyx_v_sum) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
+                    #pragma omp for lastprivate(__pyx_v_sum) lastprivate(__pyx_v_coef) lastprivate(__pyx_v_y) lastprivate(__pyx_v_j) lastprivate(__pyx_v_t) lastprivate(__pyx_v_idx) lastprivate(__pyx_v_error) lastprivate(__pyx_v_value) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) schedule(static)
                     #endif /* _OPENMP */
                     for (__pyx_t_14 = 0; __pyx_t_14 < __pyx_t_15; __pyx_t_14++){
                         if (__pyx_parallel_why < 2)
                         {
                             __pyx_v_i = 0 + 1 * __pyx_t_14;
                             /* Initialize private variables to invalid values */
-                            __pyx_v_y = ((float)__PYX_NAN());
-                            __pyx_v_t = ((float)__PYX_NAN());
-                            __pyx_v_error = ((float)__PYX_NAN());
-                            __pyx_v_j = ((int)0xbad0bad0);
-                            __pyx_v_idx = ((int)0xbad0bad0);
-                            __pyx_v_value = ((float)__PYX_NAN());
-                            __pyx_v_coef = ((float)__PYX_NAN());
                             __pyx_v_sum = ((float)__PYX_NAN());
+                            __pyx_v_coef = ((float)__PYX_NAN());
+                            __pyx_v_y = ((float)__PYX_NAN());
+                            __pyx_v_j = ((int)0xbad0bad0);
+                            __pyx_v_t = ((float)__PYX_NAN());
+                            __pyx_v_idx = ((int)0xbad0bad0);
+                            __pyx_v_error = ((float)__PYX_NAN());
+                            __pyx_v_value = ((float)__PYX_NAN());
 
-                            /* "_distortion.pyx":1174
+                            /* "src/_distortion.pyx":1174
  * 
  *     for i in prange(bins, nogil=True, schedule="static"):
  *         sum = 0.0    # Implement Kahan summation             # <<<<<<<<<<<<<<
@@ -22093,7 +22093,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
  */
                             __pyx_v_sum = 0.0;
 
-                            /* "_distortion.pyx":1175
+                            /* "src/_distortion.pyx":1175
  *     for i in prange(bins, nogil=True, schedule="static"):
  *         sum = 0.0    # Implement Kahan summation
  *         error = 0.0             # <<<<<<<<<<<<<<
@@ -22102,7 +22102,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
  */
                             __pyx_v_error = 0.0;
 
-                            /* "_distortion.pyx":1176
+                            /* "src/_distortion.pyx":1176
  *         sum = 0.0    # Implement Kahan summation
  *         error = 0.0
  *         for j in range(indptr[i], indptr[i + 1]):             # <<<<<<<<<<<<<<
@@ -22115,7 +22115,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
                             for (__pyx_t_19 = (*((__pyx_t_5numpy_int32_t *) ( /* dim=0 */ (__pyx_v_indptr.data + __pyx_t_18 * __pyx_v_indptr.strides[0]) ))); __pyx_t_19 < __pyx_t_17; __pyx_t_19+=1) {
                               __pyx_v_j = __pyx_t_19;
 
-                              /* "_distortion.pyx":1177
+                              /* "src/_distortion.pyx":1177
  *         error = 0.0
  *         for j in range(indptr[i], indptr[i + 1]):
  *             idx = indices[j]             # <<<<<<<<<<<<<<
@@ -22125,7 +22125,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
                               __pyx_t_20 = __pyx_v_j;
                               __pyx_v_idx = (*((__pyx_t_5numpy_int32_t *) ( /* dim=0 */ (__pyx_v_indices.data + __pyx_t_20 * __pyx_v_indices.strides[0]) )));
 
-                              /* "_distortion.pyx":1178
+                              /* "src/_distortion.pyx":1178
  *         for j in range(indptr[i], indptr[i + 1]):
  *             idx = indices[j]
  *             coef = data[j]             # <<<<<<<<<<<<<<
@@ -22135,7 +22135,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
                               __pyx_t_21 = __pyx_v_j;
                               __pyx_v_coef = (*((float *) ( /* dim=0 */ (__pyx_v_data.data + __pyx_t_21 * __pyx_v_data.strides[0]) )));
 
-                              /* "_distortion.pyx":1179
+                              /* "src/_distortion.pyx":1179
  *             idx = indices[j]
  *             coef = data[j]
  *             if coef <= 0:             # <<<<<<<<<<<<<<
@@ -22145,7 +22145,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
                               __pyx_t_3 = ((__pyx_v_coef <= 0.0) != 0);
                               if (__pyx_t_3) {
 
-                                /* "_distortion.pyx":1180
+                                /* "src/_distortion.pyx":1180
  *             coef = data[j]
  *             if coef <= 0:
  *                 continue             # <<<<<<<<<<<<<<
@@ -22155,7 +22155,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
                                 goto __pyx_L19_continue;
                               }
 
-                              /* "_distortion.pyx":1181
+                              /* "src/_distortion.pyx":1181
  *             if coef <= 0:
  *                 continue
  *             if idx >= size:             # <<<<<<<<<<<<<<
@@ -22165,7 +22165,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
                               __pyx_t_3 = ((__pyx_v_idx >= __pyx_v_size) != 0);
                               if (__pyx_t_3) {
 
-                                /* "_distortion.pyx":1182
+                                /* "src/_distortion.pyx":1182
  *                 continue
  *             if idx >= size:
  *                 with gil:             # <<<<<<<<<<<<<<
@@ -22178,7 +22178,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
                                     #endif
                                     /*try:*/ {
 
-                                      /* "_distortion.pyx":1183
+                                      /* "src/_distortion.pyx":1183
  *             if idx >= size:
  *                 with gil:
  *                     logger.warning("Accessing %i >= %i !!!" % (idx, size))             # <<<<<<<<<<<<<<
@@ -22233,7 +22233,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
                                       __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
                                       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-                                      /* "_distortion.pyx":1184
+                                      /* "src/_distortion.pyx":1184
  *                 with gil:
  *                     logger.warning("Accessing %i >= %i !!!" % (idx, size))
  *                     continue             # <<<<<<<<<<<<<<
@@ -22243,7 +22243,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
                                       goto __pyx_L23_continue;
                                     }
 
-                                    /* "_distortion.pyx":1182
+                                    /* "src/_distortion.pyx":1182
  *                 continue
  *             if idx >= size:
  *                 with gil:             # <<<<<<<<<<<<<<
@@ -22267,7 +22267,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
                                 }
                               }
 
-                              /* "_distortion.pyx":1185
+                              /* "src/_distortion.pyx":1185
  *                     logger.warning("Accessing %i >= %i !!!" % (idx, size))
  *                     continue
  *             value = lin[idx]             # <<<<<<<<<<<<<<
@@ -22277,7 +22277,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
                               __pyx_t_22 = __pyx_v_idx;
                               __pyx_v_value = (*((float *) ( /* dim=0 */ (__pyx_v_lin.data + __pyx_t_22 * __pyx_v_lin.strides[0]) )));
 
-                              /* "_distortion.pyx":1186
+                              /* "src/_distortion.pyx":1186
  *                     continue
  *             value = lin[idx]
  *             if do_dummy and fabs(value - cdummy) <= cdelta_dummy:             # <<<<<<<<<<<<<<
@@ -22295,7 +22295,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
                               __pyx_L29_bool_binop_done:;
                               if (__pyx_t_3) {
 
-                                /* "_distortion.pyx":1187
+                                /* "src/_distortion.pyx":1187
  *             value = lin[idx]
  *             if do_dummy and fabs(value - cdummy) <= cdelta_dummy:
  *                 continue             # <<<<<<<<<<<<<<
@@ -22305,7 +22305,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
                                 goto __pyx_L19_continue;
                               }
 
-                              /* "_distortion.pyx":1188
+                              /* "src/_distortion.pyx":1188
  *             if do_dummy and fabs(value - cdummy) <= cdelta_dummy:
  *                 continue
  *             y = value * coef - error             # <<<<<<<<<<<<<<
@@ -22314,7 +22314,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
  */
                               __pyx_v_y = ((__pyx_v_value * __pyx_v_coef) - __pyx_v_error);
 
-                              /* "_distortion.pyx":1189
+                              /* "src/_distortion.pyx":1189
  *                 continue
  *             y = value * coef - error
  *             t = sum + y             # <<<<<<<<<<<<<<
@@ -22323,7 +22323,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
  */
                               __pyx_v_t = (__pyx_v_sum + __pyx_v_y);
 
-                              /* "_distortion.pyx":1190
+                              /* "src/_distortion.pyx":1190
  *             y = value * coef - error
  *             t = sum + y
  *             error = (t - sum) - y             # <<<<<<<<<<<<<<
@@ -22332,7 +22332,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
  */
                               __pyx_v_error = ((__pyx_v_t - __pyx_v_sum) - __pyx_v_y);
 
-                              /* "_distortion.pyx":1191
+                              /* "src/_distortion.pyx":1191
  *             t = sum + y
  *             error = (t - sum) - y
  *             sum = t             # <<<<<<<<<<<<<<
@@ -22343,7 +22343,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
                               __pyx_L19_continue:;
                             }
 
-                            /* "_distortion.pyx":1192
+                            /* "src/_distortion.pyx":1192
  *             error = (t - sum) - y
  *             sum = t
  *         if do_dummy and (sum == 0.0):             # <<<<<<<<<<<<<<
@@ -22361,7 +22361,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
                             __pyx_L32_bool_binop_done:;
                             if (__pyx_t_3) {
 
-                              /* "_distortion.pyx":1193
+                              /* "src/_distortion.pyx":1193
  *             sum = t
  *         if do_dummy and (sum == 0.0):
  *             sum = cdummy             # <<<<<<<<<<<<<<
@@ -22373,7 +22373,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
                             }
                             __pyx_L31:;
 
-                            /* "_distortion.pyx":1194
+                            /* "src/_distortion.pyx":1194
  *         if do_dummy and (sum == 0.0):
  *             sum = cdummy
  *         lout[i] += sum  # this += is for Cython's reduction             # <<<<<<<<<<<<<<
@@ -22407,14 +22407,14 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
                             #pragma omp critical(__pyx_parallel_lastprivates2)
                             #endif /* _OPENMP */
                             {
-                                __pyx_parallel_temp0 = __pyx_v_y;
-                                __pyx_parallel_temp1 = __pyx_v_t;
-                                __pyx_parallel_temp2 = __pyx_v_error;
+                                __pyx_parallel_temp0 = __pyx_v_sum;
+                                __pyx_parallel_temp1 = __pyx_v_coef;
+                                __pyx_parallel_temp2 = __pyx_v_y;
                                 __pyx_parallel_temp3 = __pyx_v_j;
-                                __pyx_parallel_temp4 = __pyx_v_idx;
-                                __pyx_parallel_temp5 = __pyx_v_value;
-                                __pyx_parallel_temp6 = __pyx_v_coef;
-                                __pyx_parallel_temp7 = __pyx_v_sum;
+                                __pyx_parallel_temp4 = __pyx_v_t;
+                                __pyx_parallel_temp5 = __pyx_v_idx;
+                                __pyx_parallel_temp6 = __pyx_v_error;
+                                __pyx_parallel_temp7 = __pyx_v_value;
                                 __pyx_parallel_temp8 = __pyx_v_i;
                             }
                             __pyx_L35:;
@@ -22432,16 +22432,16 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
                     #endif
                     #endif /* _OPENMP */
                     /* Clean up any temporaries */
-                    __Pyx_XDECREF(__pyx_t_6);
-                    __pyx_t_6 = NULL;
-                    __Pyx_XDECREF(__pyx_t_4);
-                    __pyx_t_4 = NULL;
-                    __Pyx_XDECREF(__pyx_t_7);
-                    __pyx_t_7 = NULL;
-                    __Pyx_XDECREF(__pyx_t_13);
-                    __pyx_t_13 = NULL;
                     __Pyx_XDECREF(__pyx_t_5);
                     __pyx_t_5 = NULL;
+                    __Pyx_XDECREF(__pyx_t_13);
+                    __pyx_t_13 = NULL;
+                    __Pyx_XDECREF(__pyx_t_6);
+                    __pyx_t_6 = NULL;
+                    __Pyx_XDECREF(__pyx_t_7);
+                    __pyx_t_7 = NULL;
+                    __Pyx_XDECREF(__pyx_t_4);
+                    __pyx_t_4 = NULL;
                     #ifdef WITH_THREAD
                     PyGILState_Release(__pyx_gilstate_save);
                     #endif
@@ -22455,14 +22455,14 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
               __pyx_parallel_why = 4;
             }
             if (__pyx_parallel_why) {
-              __pyx_v_y = __pyx_parallel_temp0;
-              __pyx_v_t = __pyx_parallel_temp1;
-              __pyx_v_error = __pyx_parallel_temp2;
+              __pyx_v_sum = __pyx_parallel_temp0;
+              __pyx_v_coef = __pyx_parallel_temp1;
+              __pyx_v_y = __pyx_parallel_temp2;
               __pyx_v_j = __pyx_parallel_temp3;
-              __pyx_v_idx = __pyx_parallel_temp4;
-              __pyx_v_value = __pyx_parallel_temp5;
-              __pyx_v_coef = __pyx_parallel_temp6;
-              __pyx_v_sum = __pyx_parallel_temp7;
+              __pyx_v_t = __pyx_parallel_temp4;
+              __pyx_v_idx = __pyx_parallel_temp5;
+              __pyx_v_error = __pyx_parallel_temp6;
+              __pyx_v_value = __pyx_parallel_temp7;
               __pyx_v_i = __pyx_parallel_temp8;
               switch (__pyx_parallel_why) {
                     case 3: goto __pyx_L12_return;
@@ -22490,7 +22490,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
         #endif
       }
 
-      /* "_distortion.pyx":1173
+      /* "src/_distortion.pyx":1173
  *     size = lin.size
  * 
  *     for i in prange(bins, nogil=True, schedule="static"):             # <<<<<<<<<<<<<<
@@ -22520,7 +22520,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
       }
   }
 
-  /* "_distortion.pyx":1195
+  /* "src/_distortion.pyx":1195
  *             sum = cdummy
  *         lout[i] += sum  # this += is for Cython's reduction
  *     return out[:img_shape[0], :img_shape[1]]             # <<<<<<<<<<<<<<
@@ -22553,7 +22553,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
   __pyx_t_6 = 0;
   goto __pyx_L0;
 
-  /* "_distortion.pyx":1135
+  /* "src/_distortion.pyx":1135
  * @cython.wraparound(False)
  * @cython.boundscheck(False)
  * def correct_CSR(image, shape, LUT, dummy=None, delta_dummy=None):             # <<<<<<<<<<<<<<
@@ -22571,7 +22571,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
   __PYX_XDEC_MEMVIEW(&__pyx_t_10, 1);
   __PYX_XDEC_MEMVIEW(&__pyx_t_11, 1);
   __Pyx_XDECREF(__pyx_t_13);
-  __Pyx_AddTraceback("_distortion.correct_CSR", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.correct_CSR", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_lout, 1);
@@ -22590,7 +22590,7 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
   return __pyx_r;
 }
 
-/* "_distortion.pyx":1198
+/* "src/_distortion.pyx":1198
  * 
  * 
  * def uncorrect_LUT(image, shape, lut_point[:, :]LUT):             # <<<<<<<<<<<<<<
@@ -22599,10 +22599,10 @@ static PyObject *__pyx_pf_11_distortion_12correct_CSR(CYTHON_UNUSED PyObject *__
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_15uncorrect_LUT(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_11_distortion_14uncorrect_LUT[] = "\n    Take an image which has been corrected and transform it into it's raw (with loss of information)\n    @param image: 2D-array with the image\n    @param shape: shape of output image\n    @param LUT: Look up table, here a 2D-array of struct\n    @return: uncorrected 2D image and a mask (pixels in raw image not existing)\n    ";
-static PyMethodDef __pyx_mdef_11_distortion_15uncorrect_LUT = {"uncorrect_LUT", (PyCFunction)__pyx_pw_11_distortion_15uncorrect_LUT, METH_VARARGS|METH_KEYWORDS, __pyx_doc_11_distortion_14uncorrect_LUT};
-static PyObject *__pyx_pw_11_distortion_15uncorrect_LUT(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_11_distortion_15uncorrect_LUT(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_3src_11_distortion_14uncorrect_LUT[] = "\n    Take an image which has been corrected and transform it into it's raw (with loss of information)\n    @param image: 2D-array with the image\n    @param shape: shape of output image\n    @param LUT: Look up table, here a 2D-array of struct\n    @return: uncorrected 2D image and a mask (pixels in raw image not existing)\n    ";
+static PyMethodDef __pyx_mdef_3src_11_distortion_15uncorrect_LUT = {"uncorrect_LUT", (PyCFunction)__pyx_pw_3src_11_distortion_15uncorrect_LUT, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_11_distortion_14uncorrect_LUT};
+static PyObject *__pyx_pw_3src_11_distortion_15uncorrect_LUT(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_image = 0;
   PyObject *__pyx_v_shape = 0;
   __Pyx_memviewslice __pyx_v_LUT = { 0, 0, { 0 }, { 0 }, { 0 } };
@@ -22653,24 +22653,24 @@ static PyObject *__pyx_pw_11_distortion_15uncorrect_LUT(PyObject *__pyx_self, Py
     }
     __pyx_v_image = values[0];
     __pyx_v_shape = values[1];
-    __pyx_v_LUT = __Pyx_PyObject_to_MemoryviewSlice_dsds_nn_struct___pyx_t_11_distortion_lut_point(values[2]); if (unlikely(!__pyx_v_LUT.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1198; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_LUT = __Pyx_PyObject_to_MemoryviewSlice_dsds_nn_struct___pyx_t_3src_11_distortion_lut_point(values[2]); if (unlikely(!__pyx_v_LUT.memview)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1198; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("uncorrect_LUT", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1198; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("_distortion.uncorrect_LUT", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.uncorrect_LUT", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_11_distortion_14uncorrect_LUT(__pyx_self, __pyx_v_image, __pyx_v_shape, __pyx_v_LUT);
+  __pyx_r = __pyx_pf_3src_11_distortion_14uncorrect_LUT(__pyx_self, __pyx_v_image, __pyx_v_shape, __pyx_v_LUT);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_image, PyObject *__pyx_v_shape, __Pyx_memviewslice __pyx_v_LUT) {
+static PyObject *__pyx_pf_3src_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_image, PyObject *__pyx_v_shape, __Pyx_memviewslice __pyx_v_LUT) {
   int __pyx_v_idx;
   int __pyx_v_j;
   float __pyx_v_total;
@@ -22714,7 +22714,7 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("uncorrect_LUT", 0);
 
-  /* "_distortion.pyx":1208
+  /* "src/_distortion.pyx":1208
  *     cdef int idx, j
  *     cdef float total, coef
  *     out = numpy.zeros(shape, dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -22748,7 +22748,7 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
   __pyx_v_out = __pyx_t_5;
   __pyx_t_5 = 0;
 
-  /* "_distortion.pyx":1209
+  /* "src/_distortion.pyx":1209
  *     cdef float total, coef
  *     out = numpy.zeros(shape, dtype=numpy.float32)
  *     mask = numpy.zeros(shape, dtype=numpy.int8)             # <<<<<<<<<<<<<<
@@ -22782,7 +22782,7 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
   __pyx_v_mask = __pyx_t_4;
   __pyx_t_4 = 0;
 
-  /* "_distortion.pyx":1210
+  /* "src/_distortion.pyx":1210
  *     out = numpy.zeros(shape, dtype=numpy.float32)
  *     mask = numpy.zeros(shape, dtype=numpy.int8)
  *     cdef numpy.int8_t[:] lmask = mask.ravel()             # <<<<<<<<<<<<<<
@@ -22816,7 +22816,7 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
   __pyx_t_6.memview = NULL;
   __pyx_t_6.data = NULL;
 
-  /* "_distortion.pyx":1211
+  /* "src/_distortion.pyx":1211
  *     mask = numpy.zeros(shape, dtype=numpy.int8)
  *     cdef numpy.int8_t[:] lmask = mask.ravel()
  *     cdef float[:] lout = out.ravel()             # <<<<<<<<<<<<<<
@@ -22850,7 +22850,7 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
   __pyx_t_7.memview = NULL;
   __pyx_t_7.data = NULL;
 
-  /* "_distortion.pyx":1212
+  /* "src/_distortion.pyx":1212
  *     cdef numpy.int8_t[:] lmask = mask.ravel()
  *     cdef float[:] lout = out.ravel()
  *     cdef float[:] lin = numpy.ascontiguousarray(image, dtype=numpy.float32).ravel()             # <<<<<<<<<<<<<<
@@ -22909,7 +22909,7 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
   __pyx_t_9.memview = NULL;
   __pyx_t_9.data = NULL;
 
-  /* "_distortion.pyx":1214
+  /* "src/_distortion.pyx":1214
  *     cdef float[:] lin = numpy.ascontiguousarray(image, dtype=numpy.float32).ravel()
  * 
  *     for idx in range(LUT.shape[0]):             # <<<<<<<<<<<<<<
@@ -22920,7 +22920,7 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
   for (__pyx_t_11 = 0; __pyx_t_11 < __pyx_t_10; __pyx_t_11+=1) {
     __pyx_v_idx = __pyx_t_11;
 
-    /* "_distortion.pyx":1215
+    /* "src/_distortion.pyx":1215
  * 
  *     for idx in range(LUT.shape[0]):
  *         total = 0.0             # <<<<<<<<<<<<<<
@@ -22929,7 +22929,7 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
  */
     __pyx_v_total = 0.0;
 
-    /* "_distortion.pyx":1216
+    /* "src/_distortion.pyx":1216
  *     for idx in range(LUT.shape[0]):
  *         total = 0.0
  *         for j in range(LUT.shape[1]):             # <<<<<<<<<<<<<<
@@ -22940,7 +22940,7 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
     for (__pyx_t_13 = 0; __pyx_t_13 < __pyx_t_12; __pyx_t_13+=1) {
       __pyx_v_j = __pyx_t_13;
 
-      /* "_distortion.pyx":1217
+      /* "src/_distortion.pyx":1217
  *         total = 0.0
  *         for j in range(LUT.shape[1]):
  *             coef = LUT[idx, j].coef             # <<<<<<<<<<<<<<
@@ -22962,10 +22962,10 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
         __Pyx_RaiseBufferIndexError(__pyx_t_16);
         {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1217; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
-      __pyx_t_17 = (*((struct __pyx_t_11_distortion_lut_point *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_LUT.data + __pyx_t_14 * __pyx_v_LUT.strides[0]) ) + __pyx_t_15 * __pyx_v_LUT.strides[1]) ))).coef;
+      __pyx_t_17 = (*((struct __pyx_t_3src_11_distortion_lut_point *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_LUT.data + __pyx_t_14 * __pyx_v_LUT.strides[0]) ) + __pyx_t_15 * __pyx_v_LUT.strides[1]) ))).coef;
       __pyx_v_coef = __pyx_t_17;
 
-      /* "_distortion.pyx":1218
+      /* "src/_distortion.pyx":1218
  *         for j in range(LUT.shape[1]):
  *             coef = LUT[idx, j].coef
  *             if coef > 0:             # <<<<<<<<<<<<<<
@@ -22975,7 +22975,7 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
       __pyx_t_18 = ((__pyx_v_coef > 0.0) != 0);
       if (__pyx_t_18) {
 
-        /* "_distortion.pyx":1219
+        /* "src/_distortion.pyx":1219
  *             coef = LUT[idx, j].coef
  *             if coef > 0:
  *                 total += coef             # <<<<<<<<<<<<<<
@@ -22988,7 +22988,7 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
       __pyx_L7:;
     }
 
-    /* "_distortion.pyx":1220
+    /* "src/_distortion.pyx":1220
  *             if coef > 0:
  *                 total += coef
  *         if total <= 0:             # <<<<<<<<<<<<<<
@@ -22998,7 +22998,7 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
     __pyx_t_18 = ((__pyx_v_total <= 0.0) != 0);
     if (__pyx_t_18) {
 
-      /* "_distortion.pyx":1221
+      /* "src/_distortion.pyx":1221
  *                 total += coef
  *         if total <= 0:
  *             lmask[idx] = 1             # <<<<<<<<<<<<<<
@@ -23017,7 +23017,7 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
       }
       *((__pyx_t_5numpy_int8_t *) ( /* dim=0 */ (__pyx_v_lmask.data + __pyx_t_13 * __pyx_v_lmask.strides[0]) )) = 1;
 
-      /* "_distortion.pyx":1222
+      /* "src/_distortion.pyx":1222
  *         if total <= 0:
  *             lmask[idx] = 1
  *             continue             # <<<<<<<<<<<<<<
@@ -23027,7 +23027,7 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
       goto __pyx_L3_continue;
     }
 
-    /* "_distortion.pyx":1223
+    /* "src/_distortion.pyx":1223
  *             lmask[idx] = 1
  *             continue
  *         val = lin[idx] / total             # <<<<<<<<<<<<<<
@@ -23060,7 +23060,7 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
     __Pyx_XDECREF_SET(__pyx_v_val, __pyx_t_4);
     __pyx_t_4 = 0;
 
-    /* "_distortion.pyx":1224
+    /* "src/_distortion.pyx":1224
  *             continue
  *         val = lin[idx] / total
  *         for j in range(LUT.shape[1]):             # <<<<<<<<<<<<<<
@@ -23071,7 +23071,7 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
     for (__pyx_t_19 = 0; __pyx_t_19 < __pyx_t_12; __pyx_t_19+=1) {
       __pyx_v_j = __pyx_t_19;
 
-      /* "_distortion.pyx":1225
+      /* "src/_distortion.pyx":1225
  *         val = lin[idx] / total
  *         for j in range(LUT.shape[1]):
  *             coef = LUT[idx, j].coef             # <<<<<<<<<<<<<<
@@ -23093,10 +23093,10 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
         __Pyx_RaiseBufferIndexError(__pyx_t_23);
         {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1225; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
-      __pyx_t_17 = (*((struct __pyx_t_11_distortion_lut_point *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_LUT.data + __pyx_t_21 * __pyx_v_LUT.strides[0]) ) + __pyx_t_22 * __pyx_v_LUT.strides[1]) ))).coef;
+      __pyx_t_17 = (*((struct __pyx_t_3src_11_distortion_lut_point *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_LUT.data + __pyx_t_21 * __pyx_v_LUT.strides[0]) ) + __pyx_t_22 * __pyx_v_LUT.strides[1]) ))).coef;
       __pyx_v_coef = __pyx_t_17;
 
-      /* "_distortion.pyx":1226
+      /* "src/_distortion.pyx":1226
  *         for j in range(LUT.shape[1]):
  *             coef = LUT[idx, j].coef
  *             if coef > 0:             # <<<<<<<<<<<<<<
@@ -23106,7 +23106,7 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
       __pyx_t_18 = ((__pyx_v_coef > 0.0) != 0);
       if (__pyx_t_18) {
 
-        /* "_distortion.pyx":1227
+        /* "src/_distortion.pyx":1227
  *             coef = LUT[idx, j].coef
  *             if coef > 0:
  *                 lout[LUT[idx, j].idx] += val * coef             # <<<<<<<<<<<<<<
@@ -23135,7 +23135,7 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
           __Pyx_RaiseBufferIndexError(__pyx_t_25);
           {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1227; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         }
-        __pyx_t_26 = (*((struct __pyx_t_11_distortion_lut_point *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_LUT.data + __pyx_t_23 * __pyx_v_LUT.strides[0]) ) + __pyx_t_24 * __pyx_v_LUT.strides[1]) ))).idx;
+        __pyx_t_26 = (*((struct __pyx_t_3src_11_distortion_lut_point *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_LUT.data + __pyx_t_23 * __pyx_v_LUT.strides[0]) ) + __pyx_t_24 * __pyx_v_LUT.strides[1]) ))).idx;
         __pyx_t_25 = -1;
         if (__pyx_t_26 < 0) {
           __pyx_t_26 += __pyx_v_lout.shape[0];
@@ -23153,7 +23153,7 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
     __pyx_L3_continue:;
   }
 
-  /* "_distortion.pyx":1228
+  /* "src/_distortion.pyx":1228
  *             if coef > 0:
  *                 lout[LUT[idx, j].idx] += val * coef
  *     return out, mask             # <<<<<<<<<<<<<<
@@ -23173,7 +23173,7 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "_distortion.pyx":1198
+  /* "src/_distortion.pyx":1198
  * 
  * 
  * def uncorrect_LUT(image, shape, lut_point[:, :]LUT):             # <<<<<<<<<<<<<<
@@ -23192,7 +23192,7 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
   __PYX_XDEC_MEMVIEW(&__pyx_t_7, 1);
   __Pyx_XDECREF(__pyx_t_8);
   __PYX_XDEC_MEMVIEW(&__pyx_t_9, 1);
-  __Pyx_AddTraceback("_distortion.uncorrect_LUT", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.uncorrect_LUT", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_out);
@@ -23207,7 +23207,7 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
   return __pyx_r;
 }
 
-/* "_distortion.pyx":1231
+/* "src/_distortion.pyx":1231
  * 
  * 
  * def uncorrect_CSR(image, shape, LUT):             # <<<<<<<<<<<<<<
@@ -23216,10 +23216,10 @@ static PyObject *__pyx_pf_11_distortion_14uncorrect_LUT(CYTHON_UNUSED PyObject *
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_11_distortion_17uncorrect_CSR(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_11_distortion_16uncorrect_CSR[] = "\n    Take an image which has been corrected and transform it into it's raw (with loss of information)\n    @param image: 2D-array with the image\n    @param shape: shape of output image\n    @param LUT: Look up table, here a 3-tuple of ndarray\n    @return: uncorrected 2D image and a mask (pixels in raw image not existing)\n    ";
-static PyMethodDef __pyx_mdef_11_distortion_17uncorrect_CSR = {"uncorrect_CSR", (PyCFunction)__pyx_pw_11_distortion_17uncorrect_CSR, METH_VARARGS|METH_KEYWORDS, __pyx_doc_11_distortion_16uncorrect_CSR};
-static PyObject *__pyx_pw_11_distortion_17uncorrect_CSR(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_3src_11_distortion_17uncorrect_CSR(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_3src_11_distortion_16uncorrect_CSR[] = "\n    Take an image which has been corrected and transform it into it's raw (with loss of information)\n    @param image: 2D-array with the image\n    @param shape: shape of output image\n    @param LUT: Look up table, here a 3-tuple of ndarray\n    @return: uncorrected 2D image and a mask (pixels in raw image not existing)\n    ";
+static PyMethodDef __pyx_mdef_3src_11_distortion_17uncorrect_CSR = {"uncorrect_CSR", (PyCFunction)__pyx_pw_3src_11_distortion_17uncorrect_CSR, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_11_distortion_16uncorrect_CSR};
+static PyObject *__pyx_pw_3src_11_distortion_17uncorrect_CSR(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_image = 0;
   PyObject *__pyx_v_shape = 0;
   PyObject *__pyx_v_LUT = 0;
@@ -23276,18 +23276,18 @@ static PyObject *__pyx_pw_11_distortion_17uncorrect_CSR(PyObject *__pyx_self, Py
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("uncorrect_CSR", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1231; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
-  __Pyx_AddTraceback("_distortion.uncorrect_CSR", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.uncorrect_CSR", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_11_distortion_16uncorrect_CSR(__pyx_self, __pyx_v_image, __pyx_v_shape, __pyx_v_LUT);
+  __pyx_r = __pyx_pf_3src_11_distortion_16uncorrect_CSR(__pyx_self, __pyx_v_image, __pyx_v_shape, __pyx_v_LUT);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_image, PyObject *__pyx_v_shape, PyObject *__pyx_v_LUT) {
+static PyObject *__pyx_pf_3src_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_image, PyObject *__pyx_v_shape, PyObject *__pyx_v_LUT) {
   int __pyx_v_idx;
   int __pyx_v_j;
   int __pyx_v_nbins;
@@ -23336,7 +23336,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("uncorrect_CSR", 0);
 
-  /* "_distortion.pyx":1244
+  /* "src/_distortion.pyx":1244
  *         numpy.int8_t[:] lmask
  *         float[:] lout, lin, data
  *         numpy.int32_t[:] indices = LUT[1]             # <<<<<<<<<<<<<<
@@ -23352,7 +23352,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
   __pyx_t_2.memview = NULL;
   __pyx_t_2.data = NULL;
 
-  /* "_distortion.pyx":1245
+  /* "src/_distortion.pyx":1245
  *         float[:] lout, lin, data
  *         numpy.int32_t[:] indices = LUT[1]
  *         numpy.int32_t[:] indptr = LUT[2]             # <<<<<<<<<<<<<<
@@ -23368,7 +23368,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
   __pyx_t_3.memview = NULL;
   __pyx_t_3.data = NULL;
 
-  /* "_distortion.pyx":1246
+  /* "src/_distortion.pyx":1246
  *         numpy.int32_t[:] indices = LUT[1]
  *         numpy.int32_t[:] indptr = LUT[2]
  *     out = numpy.zeros(shape, dtype=numpy.float32)             # <<<<<<<<<<<<<<
@@ -23402,7 +23402,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
   __pyx_v_out = __pyx_t_7;
   __pyx_t_7 = 0;
 
-  /* "_distortion.pyx":1247
+  /* "src/_distortion.pyx":1247
  *         numpy.int32_t[:] indptr = LUT[2]
  *     out = numpy.zeros(shape, dtype=numpy.float32)
  *     lout = out.ravel()             # <<<<<<<<<<<<<<
@@ -23436,7 +23436,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
   __pyx_t_8.memview = NULL;
   __pyx_t_8.data = NULL;
 
-  /* "_distortion.pyx":1248
+  /* "src/_distortion.pyx":1248
  *     out = numpy.zeros(shape, dtype=numpy.float32)
  *     lout = out.ravel()
  *     lin = numpy.ascontiguousarray(image, dtype=numpy.float32).ravel()             # <<<<<<<<<<<<<<
@@ -23495,7 +23495,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
   __pyx_t_8.memview = NULL;
   __pyx_t_8.data = NULL;
 
-  /* "_distortion.pyx":1249
+  /* "src/_distortion.pyx":1249
  *     lout = out.ravel()
  *     lin = numpy.ascontiguousarray(image, dtype=numpy.float32).ravel()
  *     mask = numpy.zeros(shape, dtype=numpy.int8)             # <<<<<<<<<<<<<<
@@ -23529,7 +23529,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
   __pyx_v_mask = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "_distortion.pyx":1250
+  /* "src/_distortion.pyx":1250
  *     lin = numpy.ascontiguousarray(image, dtype=numpy.float32).ravel()
  *     mask = numpy.zeros(shape, dtype=numpy.int8)
  *     lmask = mask.ravel()             # <<<<<<<<<<<<<<
@@ -23563,7 +23563,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
   __pyx_t_10.memview = NULL;
   __pyx_t_10.data = NULL;
 
-  /* "_distortion.pyx":1251
+  /* "src/_distortion.pyx":1251
  *     mask = numpy.zeros(shape, dtype=numpy.int8)
  *     lmask = mask.ravel()
  *     data = LUT[0]             # <<<<<<<<<<<<<<
@@ -23579,7 +23579,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
   __pyx_t_8.memview = NULL;
   __pyx_t_8.data = NULL;
 
-  /* "_distortion.pyx":1252
+  /* "src/_distortion.pyx":1252
  *     lmask = mask.ravel()
  *     data = LUT[0]
  *     nbins = indptr.size - 1             # <<<<<<<<<<<<<<
@@ -23598,7 +23598,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_nbins = __pyx_t_11;
 
-  /* "_distortion.pyx":1253
+  /* "src/_distortion.pyx":1253
  *     data = LUT[0]
  *     nbins = indptr.size - 1
  *     for idx in range(nbins):             # <<<<<<<<<<<<<<
@@ -23609,7 +23609,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
   for (__pyx_t_12 = 0; __pyx_t_12 < __pyx_t_11; __pyx_t_12+=1) {
     __pyx_v_idx = __pyx_t_12;
 
-    /* "_distortion.pyx":1254
+    /* "src/_distortion.pyx":1254
  *     nbins = indptr.size - 1
  *     for idx in range(nbins):
  *         total = 0.0             # <<<<<<<<<<<<<<
@@ -23618,7 +23618,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
  */
     __pyx_v_total = 0.0;
 
-    /* "_distortion.pyx":1255
+    /* "src/_distortion.pyx":1255
  *     for idx in range(nbins):
  *         total = 0.0
  *         for j in range(indptr[idx], indptr[idx + 1]):             # <<<<<<<<<<<<<<
@@ -23649,7 +23649,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
     for (__pyx_t_16 = (*((__pyx_t_5numpy_int32_t *) ( /* dim=0 */ (__pyx_v_indptr.data + __pyx_t_14 * __pyx_v_indptr.strides[0]) ))); __pyx_t_16 < __pyx_t_15; __pyx_t_16+=1) {
       __pyx_v_j = __pyx_t_16;
 
-      /* "_distortion.pyx":1256
+      /* "src/_distortion.pyx":1256
  *         total = 0.0
  *         for j in range(indptr[idx], indptr[idx + 1]):
  *             coef = data[j]             # <<<<<<<<<<<<<<
@@ -23668,7 +23668,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
       }
       __pyx_v_coef = (*((float *) ( /* dim=0 */ (__pyx_v_data.data + __pyx_t_17 * __pyx_v_data.strides[0]) )));
 
-      /* "_distortion.pyx":1257
+      /* "src/_distortion.pyx":1257
  *         for j in range(indptr[idx], indptr[idx + 1]):
  *             coef = data[j]
  *             if coef > 0:             # <<<<<<<<<<<<<<
@@ -23678,7 +23678,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
       __pyx_t_19 = ((__pyx_v_coef > 0.0) != 0);
       if (__pyx_t_19) {
 
-        /* "_distortion.pyx":1258
+        /* "src/_distortion.pyx":1258
  *             coef = data[j]
  *             if coef > 0:
  *                 total += coef             # <<<<<<<<<<<<<<
@@ -23691,7 +23691,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
       __pyx_L7:;
     }
 
-    /* "_distortion.pyx":1259
+    /* "src/_distortion.pyx":1259
  *             if coef > 0:
  *                 total += coef
  *         if total <= 0:             # <<<<<<<<<<<<<<
@@ -23701,7 +23701,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
     __pyx_t_19 = ((__pyx_v_total <= 0.0) != 0);
     if (__pyx_t_19) {
 
-      /* "_distortion.pyx":1260
+      /* "src/_distortion.pyx":1260
  *                 total += coef
  *         if total <= 0:
  *             lmask[idx] = 1             # <<<<<<<<<<<<<<
@@ -23720,7 +23720,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
       }
       *((__pyx_t_5numpy_int8_t *) ( /* dim=0 */ (__pyx_v_lmask.data + __pyx_t_16 * __pyx_v_lmask.strides[0]) )) = 1;
 
-      /* "_distortion.pyx":1261
+      /* "src/_distortion.pyx":1261
  *         if total <= 0:
  *             lmask[idx] = 1
  *             continue             # <<<<<<<<<<<<<<
@@ -23730,7 +23730,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
       goto __pyx_L3_continue;
     }
 
-    /* "_distortion.pyx":1262
+    /* "src/_distortion.pyx":1262
  *             lmask[idx] = 1
  *             continue
  *         val = lin[idx] / total             # <<<<<<<<<<<<<<
@@ -23763,7 +23763,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
     __Pyx_XDECREF_SET(__pyx_v_val, __pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "_distortion.pyx":1263
+    /* "src/_distortion.pyx":1263
  *             continue
  *         val = lin[idx] / total
  *         for j in range(indptr[idx], indptr[idx + 1]):             # <<<<<<<<<<<<<<
@@ -23794,7 +23794,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
     for (__pyx_t_23 = (*((__pyx_t_5numpy_int32_t *) ( /* dim=0 */ (__pyx_v_indptr.data + __pyx_t_20 * __pyx_v_indptr.strides[0]) ))); __pyx_t_23 < __pyx_t_15; __pyx_t_23+=1) {
       __pyx_v_j = __pyx_t_23;
 
-      /* "_distortion.pyx":1264
+      /* "src/_distortion.pyx":1264
  *         val = lin[idx] / total
  *         for j in range(indptr[idx], indptr[idx + 1]):
  *             coef = data[j]             # <<<<<<<<<<<<<<
@@ -23813,7 +23813,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
       }
       __pyx_v_coef = (*((float *) ( /* dim=0 */ (__pyx_v_data.data + __pyx_t_24 * __pyx_v_data.strides[0]) )));
 
-      /* "_distortion.pyx":1265
+      /* "src/_distortion.pyx":1265
  *         for j in range(indptr[idx], indptr[idx + 1]):
  *             coef = data[j]
  *             if coef > 0:             # <<<<<<<<<<<<<<
@@ -23823,7 +23823,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
       __pyx_t_19 = ((__pyx_v_coef > 0.0) != 0);
       if (__pyx_t_19) {
 
-        /* "_distortion.pyx":1266
+        /* "src/_distortion.pyx":1266
  *             coef = data[j]
  *             if coef > 0:
  *                 lout[indices[j]] += val * coef             # <<<<<<<<<<<<<<
@@ -23864,7 +23864,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
     __pyx_L3_continue:;
   }
 
-  /* "_distortion.pyx":1267
+  /* "src/_distortion.pyx":1267
  *             if coef > 0:
  *                 lout[indices[j]] += val * coef
  *     return out, mask             # <<<<<<<<<<<<<<
@@ -23882,7 +23882,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
   __pyx_t_9 = 0;
   goto __pyx_L0;
 
-  /* "_distortion.pyx":1231
+  /* "src/_distortion.pyx":1231
  * 
  * 
  * def uncorrect_CSR(image, shape, LUT):             # <<<<<<<<<<<<<<
@@ -23902,7 +23902,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
   __PYX_XDEC_MEMVIEW(&__pyx_t_8, 1);
   __Pyx_XDECREF(__pyx_t_9);
   __PYX_XDEC_MEMVIEW(&__pyx_t_10, 1);
-  __Pyx_AddTraceback("_distortion.uncorrect_CSR", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("src._distortion.uncorrect_CSR", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_lmask, 1);
@@ -23919,7 +23919,7 @@ static PyObject *__pyx_pf_11_distortion_16uncorrect_CSR(CYTHON_UNUSED PyObject *
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":194
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":194
  *         # experimental exception made for __getbuffer__ and __releasebuffer__
  *         # -- the details of this may change.
  *         def __getbuffer__(ndarray self, Py_buffer* info, int flags):             # <<<<<<<<<<<<<<
@@ -23969,7 +23969,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __Pyx_GIVEREF(__pyx_v_info->obj);
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":200
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":200
  *             # of flags
  * 
  *             if info == NULL: return             # <<<<<<<<<<<<<<
@@ -23982,7 +23982,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     goto __pyx_L0;
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":203
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":203
  * 
  *             cdef int copy_shape, i, ndim
  *             cdef int endian_detector = 1             # <<<<<<<<<<<<<<
@@ -23991,7 +23991,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_endian_detector = 1;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":204
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":204
  *             cdef int copy_shape, i, ndim
  *             cdef int endian_detector = 1
  *             cdef bint little_endian = ((<char*>&endian_detector)[0] != 0)             # <<<<<<<<<<<<<<
@@ -24000,7 +24000,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_little_endian = ((((char *)(&__pyx_v_endian_detector))[0]) != 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":206
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":206
  *             cdef bint little_endian = ((<char*>&endian_detector)[0] != 0)
  * 
  *             ndim = PyArray_NDIM(self)             # <<<<<<<<<<<<<<
@@ -24009,7 +24009,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_ndim = PyArray_NDIM(__pyx_v_self);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":208
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":208
  *             ndim = PyArray_NDIM(self)
  * 
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):             # <<<<<<<<<<<<<<
@@ -24019,7 +24019,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_t_1 = (((sizeof(npy_intp)) != (sizeof(Py_ssize_t))) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":209
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":209
  * 
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):
  *                 copy_shape = 1             # <<<<<<<<<<<<<<
@@ -24031,7 +24031,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   /*else*/ {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":211
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":211
  *                 copy_shape = 1
  *             else:
  *                 copy_shape = 0             # <<<<<<<<<<<<<<
@@ -24042,7 +24042,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   __pyx_L4:;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":213
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":213
  *                 copy_shape = 0
  * 
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)             # <<<<<<<<<<<<<<
@@ -24056,7 +24056,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     goto __pyx_L6_bool_binop_done;
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":214
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":214
  * 
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_C_CONTIGUOUS)):             # <<<<<<<<<<<<<<
@@ -24068,7 +24068,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_L6_bool_binop_done:;
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":215
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":215
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_C_CONTIGUOUS)):
  *                 raise ValueError(u"ndarray is not C contiguous")             # <<<<<<<<<<<<<<
@@ -24082,7 +24082,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     {__pyx_filename = __pyx_f[1]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":217
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":217
  *                 raise ValueError(u"ndarray is not C contiguous")
  * 
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)             # <<<<<<<<<<<<<<
@@ -24096,7 +24096,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     goto __pyx_L9_bool_binop_done;
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":218
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":218
  * 
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_F_CONTIGUOUS)):             # <<<<<<<<<<<<<<
@@ -24108,7 +24108,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_L9_bool_binop_done:;
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":219
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":219
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_F_CONTIGUOUS)):
  *                 raise ValueError(u"ndarray is not Fortran contiguous")             # <<<<<<<<<<<<<<
@@ -24122,7 +24122,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     {__pyx_filename = __pyx_f[1]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":221
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":221
  *                 raise ValueError(u"ndarray is not Fortran contiguous")
  * 
  *             info.buf = PyArray_DATA(self)             # <<<<<<<<<<<<<<
@@ -24131,7 +24131,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->buf = PyArray_DATA(__pyx_v_self);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":222
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":222
  * 
  *             info.buf = PyArray_DATA(self)
  *             info.ndim = ndim             # <<<<<<<<<<<<<<
@@ -24140,7 +24140,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->ndim = __pyx_v_ndim;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":223
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":223
  *             info.buf = PyArray_DATA(self)
  *             info.ndim = ndim
  *             if copy_shape:             # <<<<<<<<<<<<<<
@@ -24150,7 +24150,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_t_1 = (__pyx_v_copy_shape != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":226
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":226
  *                 # Allocate new buffer for strides and shape info.
  *                 # This is allocated as one block, strides first.
  *                 info.strides = <Py_ssize_t*>stdlib.malloc(sizeof(Py_ssize_t) * <size_t>ndim * 2)             # <<<<<<<<<<<<<<
@@ -24159,7 +24159,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_info->strides = ((Py_ssize_t *)malloc((((sizeof(Py_ssize_t)) * ((size_t)__pyx_v_ndim)) * 2)));
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":227
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":227
  *                 # This is allocated as one block, strides first.
  *                 info.strides = <Py_ssize_t*>stdlib.malloc(sizeof(Py_ssize_t) * <size_t>ndim * 2)
  *                 info.shape = info.strides + ndim             # <<<<<<<<<<<<<<
@@ -24168,7 +24168,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_info->shape = (__pyx_v_info->strides + __pyx_v_ndim);
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":228
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":228
  *                 info.strides = <Py_ssize_t*>stdlib.malloc(sizeof(Py_ssize_t) * <size_t>ndim * 2)
  *                 info.shape = info.strides + ndim
  *                 for i in range(ndim):             # <<<<<<<<<<<<<<
@@ -24179,7 +24179,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     for (__pyx_t_5 = 0; __pyx_t_5 < __pyx_t_4; __pyx_t_5+=1) {
       __pyx_v_i = __pyx_t_5;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":229
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":229
  *                 info.shape = info.strides + ndim
  *                 for i in range(ndim):
  *                     info.strides[i] = PyArray_STRIDES(self)[i]             # <<<<<<<<<<<<<<
@@ -24188,7 +24188,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
       (__pyx_v_info->strides[__pyx_v_i]) = (PyArray_STRIDES(__pyx_v_self)[__pyx_v_i]);
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":230
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":230
  *                 for i in range(ndim):
  *                     info.strides[i] = PyArray_STRIDES(self)[i]
  *                     info.shape[i] = PyArray_DIMS(self)[i]             # <<<<<<<<<<<<<<
@@ -24201,7 +24201,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   /*else*/ {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":232
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":232
  *                     info.shape[i] = PyArray_DIMS(self)[i]
  *             else:
  *                 info.strides = <Py_ssize_t*>PyArray_STRIDES(self)             # <<<<<<<<<<<<<<
@@ -24210,7 +24210,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_info->strides = ((Py_ssize_t *)PyArray_STRIDES(__pyx_v_self));
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":233
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":233
  *             else:
  *                 info.strides = <Py_ssize_t*>PyArray_STRIDES(self)
  *                 info.shape = <Py_ssize_t*>PyArray_DIMS(self)             # <<<<<<<<<<<<<<
@@ -24221,7 +24221,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   __pyx_L11:;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":234
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":234
  *                 info.strides = <Py_ssize_t*>PyArray_STRIDES(self)
  *                 info.shape = <Py_ssize_t*>PyArray_DIMS(self)
  *             info.suboffsets = NULL             # <<<<<<<<<<<<<<
@@ -24230,7 +24230,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->suboffsets = NULL;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":235
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":235
  *                 info.shape = <Py_ssize_t*>PyArray_DIMS(self)
  *             info.suboffsets = NULL
  *             info.itemsize = PyArray_ITEMSIZE(self)             # <<<<<<<<<<<<<<
@@ -24239,7 +24239,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->itemsize = PyArray_ITEMSIZE(__pyx_v_self);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":236
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":236
  *             info.suboffsets = NULL
  *             info.itemsize = PyArray_ITEMSIZE(self)
  *             info.readonly = not PyArray_ISWRITEABLE(self)             # <<<<<<<<<<<<<<
@@ -24248,7 +24248,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_info->readonly = (!(PyArray_ISWRITEABLE(__pyx_v_self) != 0));
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":239
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":239
  * 
  *             cdef int t
  *             cdef char* f = NULL             # <<<<<<<<<<<<<<
@@ -24257,7 +24257,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_f = NULL;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":240
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":240
  *             cdef int t
  *             cdef char* f = NULL
  *             cdef dtype descr = self.descr             # <<<<<<<<<<<<<<
@@ -24269,7 +24269,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_v_descr = ((PyArray_Descr *)__pyx_t_3);
   __pyx_t_3 = 0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":244
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":244
  *             cdef int offset
  * 
  *             cdef bint hasfields = PyDataType_HASFIELDS(descr)             # <<<<<<<<<<<<<<
@@ -24278,7 +24278,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
   __pyx_v_hasfields = PyDataType_HASFIELDS(__pyx_v_descr);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":246
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":246
  *             cdef bint hasfields = PyDataType_HASFIELDS(descr)
  * 
  *             if not hasfields and not copy_shape:             # <<<<<<<<<<<<<<
@@ -24296,7 +24296,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_L15_bool_binop_done:;
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":248
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":248
  *             if not hasfields and not copy_shape:
  *                 # do not call releasebuffer
  *                 info.obj = None             # <<<<<<<<<<<<<<
@@ -24312,7 +24312,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   /*else*/ {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":251
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":251
  *             else:
  *                 # need to call releasebuffer
  *                 info.obj = self             # <<<<<<<<<<<<<<
@@ -24327,7 +24327,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   __pyx_L14:;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":253
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":253
  *                 info.obj = self
  * 
  *             if not hasfields:             # <<<<<<<<<<<<<<
@@ -24337,7 +24337,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   __pyx_t_1 = ((!(__pyx_v_hasfields != 0)) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":254
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":254
  * 
  *             if not hasfields:
  *                 t = descr.type_num             # <<<<<<<<<<<<<<
@@ -24347,7 +24347,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __pyx_t_4 = __pyx_v_descr->type_num;
     __pyx_v_t = __pyx_t_4;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":255
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":255
  *             if not hasfields:
  *                 t = descr.type_num
  *                 if ((descr.byteorder == c'>' and little_endian) or             # <<<<<<<<<<<<<<
@@ -24367,7 +24367,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     }
     __pyx_L20_next_or:;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":256
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":256
  *                 t = descr.type_num
  *                 if ((descr.byteorder == c'>' and little_endian) or
  *                     (descr.byteorder == c'<' and not little_endian)):             # <<<<<<<<<<<<<<
@@ -24385,7 +24385,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __pyx_L19_bool_binop_done:;
     if (__pyx_t_1) {
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":257
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":257
  *                 if ((descr.byteorder == c'>' and little_endian) or
  *                     (descr.byteorder == c'<' and not little_endian)):
  *                     raise ValueError(u"Non-native byte order not supported")             # <<<<<<<<<<<<<<
@@ -24399,7 +24399,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       {__pyx_filename = __pyx_f[1]; __pyx_lineno = 257; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":274
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":274
  *                 elif t == NPY_CDOUBLE:     f = "Zd"
  *                 elif t == NPY_CLONGDOUBLE: f = "Zg"
  *                 elif t == NPY_OBJECT:      f = "O"             # <<<<<<<<<<<<<<
@@ -24408,7 +24408,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     switch (__pyx_v_t) {
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":258
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":258
  *                     (descr.byteorder == c'<' and not little_endian)):
  *                     raise ValueError(u"Non-native byte order not supported")
  *                 if   t == NPY_BYTE:        f = "b"             # <<<<<<<<<<<<<<
@@ -24419,7 +24419,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_b;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":259
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":259
  *                     raise ValueError(u"Non-native byte order not supported")
  *                 if   t == NPY_BYTE:        f = "b"
  *                 elif t == NPY_UBYTE:       f = "B"             # <<<<<<<<<<<<<<
@@ -24430,7 +24430,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_B;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":260
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":260
  *                 if   t == NPY_BYTE:        f = "b"
  *                 elif t == NPY_UBYTE:       f = "B"
  *                 elif t == NPY_SHORT:       f = "h"             # <<<<<<<<<<<<<<
@@ -24441,7 +24441,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_h;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":261
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":261
  *                 elif t == NPY_UBYTE:       f = "B"
  *                 elif t == NPY_SHORT:       f = "h"
  *                 elif t == NPY_USHORT:      f = "H"             # <<<<<<<<<<<<<<
@@ -24452,7 +24452,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_H;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":262
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":262
  *                 elif t == NPY_SHORT:       f = "h"
  *                 elif t == NPY_USHORT:      f = "H"
  *                 elif t == NPY_INT:         f = "i"             # <<<<<<<<<<<<<<
@@ -24463,7 +24463,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_i;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":263
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":263
  *                 elif t == NPY_USHORT:      f = "H"
  *                 elif t == NPY_INT:         f = "i"
  *                 elif t == NPY_UINT:        f = "I"             # <<<<<<<<<<<<<<
@@ -24474,7 +24474,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_I;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":264
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":264
  *                 elif t == NPY_INT:         f = "i"
  *                 elif t == NPY_UINT:        f = "I"
  *                 elif t == NPY_LONG:        f = "l"             # <<<<<<<<<<<<<<
@@ -24485,7 +24485,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_l;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":265
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":265
  *                 elif t == NPY_UINT:        f = "I"
  *                 elif t == NPY_LONG:        f = "l"
  *                 elif t == NPY_ULONG:       f = "L"             # <<<<<<<<<<<<<<
@@ -24496,7 +24496,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_L;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":266
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":266
  *                 elif t == NPY_LONG:        f = "l"
  *                 elif t == NPY_ULONG:       f = "L"
  *                 elif t == NPY_LONGLONG:    f = "q"             # <<<<<<<<<<<<<<
@@ -24507,7 +24507,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_q;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":267
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":267
  *                 elif t == NPY_ULONG:       f = "L"
  *                 elif t == NPY_LONGLONG:    f = "q"
  *                 elif t == NPY_ULONGLONG:   f = "Q"             # <<<<<<<<<<<<<<
@@ -24518,7 +24518,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_Q;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":268
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":268
  *                 elif t == NPY_LONGLONG:    f = "q"
  *                 elif t == NPY_ULONGLONG:   f = "Q"
  *                 elif t == NPY_FLOAT:       f = "f"             # <<<<<<<<<<<<<<
@@ -24529,7 +24529,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_f;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":269
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":269
  *                 elif t == NPY_ULONGLONG:   f = "Q"
  *                 elif t == NPY_FLOAT:       f = "f"
  *                 elif t == NPY_DOUBLE:      f = "d"             # <<<<<<<<<<<<<<
@@ -24540,7 +24540,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_d;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":270
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":270
  *                 elif t == NPY_FLOAT:       f = "f"
  *                 elif t == NPY_DOUBLE:      f = "d"
  *                 elif t == NPY_LONGDOUBLE:  f = "g"             # <<<<<<<<<<<<<<
@@ -24551,7 +24551,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_g;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":271
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":271
  *                 elif t == NPY_DOUBLE:      f = "d"
  *                 elif t == NPY_LONGDOUBLE:  f = "g"
  *                 elif t == NPY_CFLOAT:      f = "Zf"             # <<<<<<<<<<<<<<
@@ -24562,7 +24562,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_Zf;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":272
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":272
  *                 elif t == NPY_LONGDOUBLE:  f = "g"
  *                 elif t == NPY_CFLOAT:      f = "Zf"
  *                 elif t == NPY_CDOUBLE:     f = "Zd"             # <<<<<<<<<<<<<<
@@ -24573,7 +24573,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_Zd;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":273
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":273
  *                 elif t == NPY_CFLOAT:      f = "Zf"
  *                 elif t == NPY_CDOUBLE:     f = "Zd"
  *                 elif t == NPY_CLONGDOUBLE: f = "Zg"             # <<<<<<<<<<<<<<
@@ -24584,7 +24584,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       __pyx_v_f = __pyx_k_Zg;
       break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":274
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":274
  *                 elif t == NPY_CDOUBLE:     f = "Zd"
  *                 elif t == NPY_CLONGDOUBLE: f = "Zg"
  *                 elif t == NPY_OBJECT:      f = "O"             # <<<<<<<<<<<<<<
@@ -24596,7 +24596,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       break;
       default:
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":276
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":276
  *                 elif t == NPY_OBJECT:      f = "O"
  *                 else:
  *                     raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)             # <<<<<<<<<<<<<<
@@ -24622,7 +24622,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
       break;
     }
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":277
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":277
  *                 else:
  *                     raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)
  *                 info.format = f             # <<<<<<<<<<<<<<
@@ -24631,7 +24631,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_info->format = __pyx_v_f;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":278
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":278
  *                     raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)
  *                 info.format = f
  *                 return             # <<<<<<<<<<<<<<
@@ -24643,7 +24643,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   }
   /*else*/ {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":280
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":280
  *                 return
  *             else:
  *                 info.format = <char*>stdlib.malloc(_buffer_format_string_len)             # <<<<<<<<<<<<<<
@@ -24652,7 +24652,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_info->format = ((char *)malloc(255));
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":281
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":281
  *             else:
  *                 info.format = <char*>stdlib.malloc(_buffer_format_string_len)
  *                 info.format[0] = c'^' # Native data types, manual alignment             # <<<<<<<<<<<<<<
@@ -24661,7 +24661,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     (__pyx_v_info->format[0]) = '^';
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":282
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":282
  *                 info.format = <char*>stdlib.malloc(_buffer_format_string_len)
  *                 info.format[0] = c'^' # Native data types, manual alignment
  *                 offset = 0             # <<<<<<<<<<<<<<
@@ -24670,7 +24670,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
  */
     __pyx_v_offset = 0;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":283
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":283
  *                 info.format[0] = c'^' # Native data types, manual alignment
  *                 offset = 0
  *                 f = _util_dtypestring(descr, info.format + 1,             # <<<<<<<<<<<<<<
@@ -24680,7 +24680,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     __pyx_t_7 = __pyx_f_5numpy__util_dtypestring(__pyx_v_descr, (__pyx_v_info->format + 1), (__pyx_v_info->format + 255), (&__pyx_v_offset)); if (unlikely(__pyx_t_7 == NULL)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 283; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_v_f = __pyx_t_7;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":286
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":286
  *                                       info.format + _buffer_format_string_len,
  *                                       &offset)
  *                 f[0] = c'\0' # Terminate format string             # <<<<<<<<<<<<<<
@@ -24690,7 +24690,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
     (__pyx_v_f[0]) = '\x00';
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":194
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":194
  *         # experimental exception made for __getbuffer__ and __releasebuffer__
  *         # -- the details of this may change.
  *         def __getbuffer__(ndarray self, Py_buffer* info, int flags):             # <<<<<<<<<<<<<<
@@ -24722,7 +24722,7 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":288
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":288
  *                 f[0] = c'\0' # Terminate format string
  * 
  *         def __releasebuffer__(ndarray self, Py_buffer* info):             # <<<<<<<<<<<<<<
@@ -24746,7 +24746,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("__releasebuffer__", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":289
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":289
  * 
  *         def __releasebuffer__(ndarray self, Py_buffer* info):
  *             if PyArray_HASFIELDS(self):             # <<<<<<<<<<<<<<
@@ -24756,7 +24756,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   __pyx_t_1 = (PyArray_HASFIELDS(__pyx_v_self) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":290
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":290
  *         def __releasebuffer__(ndarray self, Py_buffer* info):
  *             if PyArray_HASFIELDS(self):
  *                 stdlib.free(info.format)             # <<<<<<<<<<<<<<
@@ -24768,7 +24768,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   }
   __pyx_L3:;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":291
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":291
  *             if PyArray_HASFIELDS(self):
  *                 stdlib.free(info.format)
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):             # <<<<<<<<<<<<<<
@@ -24778,7 +24778,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   __pyx_t_1 = (((sizeof(npy_intp)) != (sizeof(Py_ssize_t))) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":292
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":292
  *                 stdlib.free(info.format)
  *             if sizeof(npy_intp) != sizeof(Py_ssize_t):
  *                 stdlib.free(info.strides)             # <<<<<<<<<<<<<<
@@ -24790,7 +24790,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   }
   __pyx_L4:;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":288
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":288
  *                 f[0] = c'\0' # Terminate format string
  * 
  *         def __releasebuffer__(ndarray self, Py_buffer* info):             # <<<<<<<<<<<<<<
@@ -24802,7 +24802,7 @@ static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_s
   __Pyx_RefNannyFinishContext();
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":768
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":768
  * ctypedef npy_cdouble     complex_t
  * 
  * cdef inline object PyArray_MultiIterNew1(a):             # <<<<<<<<<<<<<<
@@ -24819,7 +24819,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew1", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":769
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":769
  * 
  * cdef inline object PyArray_MultiIterNew1(a):
  *     return PyArray_MultiIterNew(1, <void*>a)             # <<<<<<<<<<<<<<
@@ -24833,7 +24833,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":768
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":768
  * ctypedef npy_cdouble     complex_t
  * 
  * cdef inline object PyArray_MultiIterNew1(a):             # <<<<<<<<<<<<<<
@@ -24852,7 +24852,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":771
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":771
  *     return PyArray_MultiIterNew(1, <void*>a)
  * 
  * cdef inline object PyArray_MultiIterNew2(a, b):             # <<<<<<<<<<<<<<
@@ -24869,7 +24869,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew2", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":772
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":772
  * 
  * cdef inline object PyArray_MultiIterNew2(a, b):
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)             # <<<<<<<<<<<<<<
@@ -24883,7 +24883,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":771
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":771
  *     return PyArray_MultiIterNew(1, <void*>a)
  * 
  * cdef inline object PyArray_MultiIterNew2(a, b):             # <<<<<<<<<<<<<<
@@ -24902,7 +24902,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":774
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":774
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
  * 
  * cdef inline object PyArray_MultiIterNew3(a, b, c):             # <<<<<<<<<<<<<<
@@ -24919,7 +24919,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew3", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":775
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":775
  * 
  * cdef inline object PyArray_MultiIterNew3(a, b, c):
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)             # <<<<<<<<<<<<<<
@@ -24933,7 +24933,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":774
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":774
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
  * 
  * cdef inline object PyArray_MultiIterNew3(a, b, c):             # <<<<<<<<<<<<<<
@@ -24952,7 +24952,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":777
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":777
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
  * 
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):             # <<<<<<<<<<<<<<
@@ -24969,7 +24969,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew4", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":778
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":778
  * 
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)             # <<<<<<<<<<<<<<
@@ -24983,7 +24983,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":777
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":777
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
  * 
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):             # <<<<<<<<<<<<<<
@@ -25002,7 +25002,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":780
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":780
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
  * 
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):             # <<<<<<<<<<<<<<
@@ -25019,7 +25019,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew5", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":781
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":781
  * 
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)             # <<<<<<<<<<<<<<
@@ -25033,7 +25033,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":780
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":780
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
  * 
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):             # <<<<<<<<<<<<<<
@@ -25052,7 +25052,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":783
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":783
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
  * 
  * cdef inline char* _util_dtypestring(dtype descr, char* f, char* end, int* offset) except NULL:             # <<<<<<<<<<<<<<
@@ -25084,7 +25084,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("_util_dtypestring", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":790
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":790
  *     cdef int delta_offset
  *     cdef tuple i
  *     cdef int endian_detector = 1             # <<<<<<<<<<<<<<
@@ -25093,7 +25093,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
   __pyx_v_endian_detector = 1;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":791
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":791
  *     cdef tuple i
  *     cdef int endian_detector = 1
  *     cdef bint little_endian = ((<char*>&endian_detector)[0] != 0)             # <<<<<<<<<<<<<<
@@ -25102,7 +25102,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
   __pyx_v_little_endian = ((((char *)(&__pyx_v_endian_detector))[0]) != 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":794
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":794
  *     cdef tuple fields
  * 
  *     for childname in descr.names:             # <<<<<<<<<<<<<<
@@ -25124,7 +25124,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __Pyx_XDECREF_SET(__pyx_v_childname, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":795
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":795
  * 
  *     for childname in descr.names:
  *         fields = descr.fields[childname]             # <<<<<<<<<<<<<<
@@ -25137,7 +25137,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __Pyx_XDECREF_SET(__pyx_v_fields, ((PyObject*)__pyx_t_3));
     __pyx_t_3 = 0;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":796
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":796
  *     for childname in descr.names:
  *         fields = descr.fields[childname]
  *         child, new_offset = fields             # <<<<<<<<<<<<<<
@@ -25176,7 +25176,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __Pyx_XDECREF_SET(__pyx_v_new_offset, __pyx_t_4);
     __pyx_t_4 = 0;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":798
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":798
  *         child, new_offset = fields
  * 
  *         if (end - f) - <int>(new_offset - offset[0]) < 15:             # <<<<<<<<<<<<<<
@@ -25193,7 +25193,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __pyx_t_6 = ((((__pyx_v_end - __pyx_v_f) - ((int)__pyx_t_5)) < 15) != 0);
     if (__pyx_t_6) {
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":799
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":799
  * 
  *         if (end - f) - <int>(new_offset - offset[0]) < 15:
  *             raise RuntimeError(u"Format string allocated too short, see comment in numpy.pxd")             # <<<<<<<<<<<<<<
@@ -25207,7 +25207,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       {__pyx_filename = __pyx_f[1]; __pyx_lineno = 799; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":801
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":801
  *             raise RuntimeError(u"Format string allocated too short, see comment in numpy.pxd")
  * 
  *         if ((child.byteorder == c'>' and little_endian) or             # <<<<<<<<<<<<<<
@@ -25227,7 +25227,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     }
     __pyx_L8_next_or:;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":802
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":802
  * 
  *         if ((child.byteorder == c'>' and little_endian) or
  *             (child.byteorder == c'<' and not little_endian)):             # <<<<<<<<<<<<<<
@@ -25245,7 +25245,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __pyx_L7_bool_binop_done:;
     if (__pyx_t_6) {
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":803
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":803
  *         if ((child.byteorder == c'>' and little_endian) or
  *             (child.byteorder == c'<' and not little_endian)):
  *             raise ValueError(u"Non-native byte order not supported")             # <<<<<<<<<<<<<<
@@ -25259,7 +25259,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       {__pyx_filename = __pyx_f[1]; __pyx_lineno = 803; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":813
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":813
  * 
  *         # Output padding bytes
  *         while offset[0] < new_offset:             # <<<<<<<<<<<<<<
@@ -25275,7 +25275,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       if (!__pyx_t_6) break;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":814
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":814
  *         # Output padding bytes
  *         while offset[0] < new_offset:
  *             f[0] = 120 # "x"; pad byte             # <<<<<<<<<<<<<<
@@ -25284,7 +25284,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
       (__pyx_v_f[0]) = 120;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":815
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":815
  *         while offset[0] < new_offset:
  *             f[0] = 120 # "x"; pad byte
  *             f += 1             # <<<<<<<<<<<<<<
@@ -25293,7 +25293,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
  */
       __pyx_v_f = (__pyx_v_f + 1);
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":816
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":816
  *             f[0] = 120 # "x"; pad byte
  *             f += 1
  *             offset[0] += 1             # <<<<<<<<<<<<<<
@@ -25304,7 +25304,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       (__pyx_v_offset[__pyx_t_8]) = ((__pyx_v_offset[__pyx_t_8]) + 1);
     }
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":818
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":818
  *             offset[0] += 1
  * 
  *         offset[0] += child.itemsize             # <<<<<<<<<<<<<<
@@ -25314,7 +25314,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __pyx_t_8 = 0;
     (__pyx_v_offset[__pyx_t_8]) = ((__pyx_v_offset[__pyx_t_8]) + __pyx_v_child->elsize);
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":820
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":820
  *         offset[0] += child.itemsize
  * 
  *         if not PyDataType_HASFIELDS(child):             # <<<<<<<<<<<<<<
@@ -25324,7 +25324,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     __pyx_t_6 = ((!(PyDataType_HASFIELDS(__pyx_v_child) != 0)) != 0);
     if (__pyx_t_6) {
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":821
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":821
  * 
  *         if not PyDataType_HASFIELDS(child):
  *             t = child.type_num             # <<<<<<<<<<<<<<
@@ -25336,7 +25336,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       __Pyx_XDECREF_SET(__pyx_v_t, __pyx_t_4);
       __pyx_t_4 = 0;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":822
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":822
  *         if not PyDataType_HASFIELDS(child):
  *             t = child.type_num
  *             if end - f < 5:             # <<<<<<<<<<<<<<
@@ -25346,7 +25346,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       __pyx_t_6 = (((__pyx_v_end - __pyx_v_f) < 5) != 0);
       if (__pyx_t_6) {
 
-        /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":823
+        /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":823
  *             t = child.type_num
  *             if end - f < 5:
  *                 raise RuntimeError(u"Format string allocated too short.")             # <<<<<<<<<<<<<<
@@ -25360,7 +25360,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         {__pyx_filename = __pyx_f[1]; __pyx_lineno = 823; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":826
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":826
  * 
  *             # Until ticket #99 is fixed, use integers to avoid warnings
  *             if   t == NPY_BYTE:        f[0] =  98 #"b"             # <<<<<<<<<<<<<<
@@ -25378,7 +25378,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":827
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":827
  *             # Until ticket #99 is fixed, use integers to avoid warnings
  *             if   t == NPY_BYTE:        f[0] =  98 #"b"
  *             elif t == NPY_UBYTE:       f[0] =  66 #"B"             # <<<<<<<<<<<<<<
@@ -25396,7 +25396,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":828
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":828
  *             if   t == NPY_BYTE:        f[0] =  98 #"b"
  *             elif t == NPY_UBYTE:       f[0] =  66 #"B"
  *             elif t == NPY_SHORT:       f[0] = 104 #"h"             # <<<<<<<<<<<<<<
@@ -25414,7 +25414,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":829
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":829
  *             elif t == NPY_UBYTE:       f[0] =  66 #"B"
  *             elif t == NPY_SHORT:       f[0] = 104 #"h"
  *             elif t == NPY_USHORT:      f[0] =  72 #"H"             # <<<<<<<<<<<<<<
@@ -25432,7 +25432,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":830
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":830
  *             elif t == NPY_SHORT:       f[0] = 104 #"h"
  *             elif t == NPY_USHORT:      f[0] =  72 #"H"
  *             elif t == NPY_INT:         f[0] = 105 #"i"             # <<<<<<<<<<<<<<
@@ -25450,7 +25450,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":831
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":831
  *             elif t == NPY_USHORT:      f[0] =  72 #"H"
  *             elif t == NPY_INT:         f[0] = 105 #"i"
  *             elif t == NPY_UINT:        f[0] =  73 #"I"             # <<<<<<<<<<<<<<
@@ -25468,7 +25468,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":832
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":832
  *             elif t == NPY_INT:         f[0] = 105 #"i"
  *             elif t == NPY_UINT:        f[0] =  73 #"I"
  *             elif t == NPY_LONG:        f[0] = 108 #"l"             # <<<<<<<<<<<<<<
@@ -25486,7 +25486,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":833
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":833
  *             elif t == NPY_UINT:        f[0] =  73 #"I"
  *             elif t == NPY_LONG:        f[0] = 108 #"l"
  *             elif t == NPY_ULONG:       f[0] = 76  #"L"             # <<<<<<<<<<<<<<
@@ -25504,7 +25504,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":834
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":834
  *             elif t == NPY_LONG:        f[0] = 108 #"l"
  *             elif t == NPY_ULONG:       f[0] = 76  #"L"
  *             elif t == NPY_LONGLONG:    f[0] = 113 #"q"             # <<<<<<<<<<<<<<
@@ -25522,7 +25522,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":835
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":835
  *             elif t == NPY_ULONG:       f[0] = 76  #"L"
  *             elif t == NPY_LONGLONG:    f[0] = 113 #"q"
  *             elif t == NPY_ULONGLONG:   f[0] = 81  #"Q"             # <<<<<<<<<<<<<<
@@ -25540,7 +25540,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":836
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":836
  *             elif t == NPY_LONGLONG:    f[0] = 113 #"q"
  *             elif t == NPY_ULONGLONG:   f[0] = 81  #"Q"
  *             elif t == NPY_FLOAT:       f[0] = 102 #"f"             # <<<<<<<<<<<<<<
@@ -25558,7 +25558,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":837
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":837
  *             elif t == NPY_ULONGLONG:   f[0] = 81  #"Q"
  *             elif t == NPY_FLOAT:       f[0] = 102 #"f"
  *             elif t == NPY_DOUBLE:      f[0] = 100 #"d"             # <<<<<<<<<<<<<<
@@ -25576,7 +25576,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":838
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":838
  *             elif t == NPY_FLOAT:       f[0] = 102 #"f"
  *             elif t == NPY_DOUBLE:      f[0] = 100 #"d"
  *             elif t == NPY_LONGDOUBLE:  f[0] = 103 #"g"             # <<<<<<<<<<<<<<
@@ -25594,7 +25594,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":839
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":839
  *             elif t == NPY_DOUBLE:      f[0] = 100 #"d"
  *             elif t == NPY_LONGDOUBLE:  f[0] = 103 #"g"
  *             elif t == NPY_CFLOAT:      f[0] = 90; f[1] = 102; f += 1 # Zf             # <<<<<<<<<<<<<<
@@ -25614,7 +25614,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":840
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":840
  *             elif t == NPY_LONGDOUBLE:  f[0] = 103 #"g"
  *             elif t == NPY_CFLOAT:      f[0] = 90; f[1] = 102; f += 1 # Zf
  *             elif t == NPY_CDOUBLE:     f[0] = 90; f[1] = 100; f += 1 # Zd             # <<<<<<<<<<<<<<
@@ -25634,7 +25634,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":841
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":841
  *             elif t == NPY_CFLOAT:      f[0] = 90; f[1] = 102; f += 1 # Zf
  *             elif t == NPY_CDOUBLE:     f[0] = 90; f[1] = 100; f += 1 # Zd
  *             elif t == NPY_CLONGDOUBLE: f[0] = 90; f[1] = 103; f += 1 # Zg             # <<<<<<<<<<<<<<
@@ -25654,7 +25654,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
         goto __pyx_L15;
       }
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":842
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":842
  *             elif t == NPY_CDOUBLE:     f[0] = 90; f[1] = 100; f += 1 # Zd
  *             elif t == NPY_CLONGDOUBLE: f[0] = 90; f[1] = 103; f += 1 # Zg
  *             elif t == NPY_OBJECT:      f[0] = 79 #"O"             # <<<<<<<<<<<<<<
@@ -25673,7 +25673,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       }
       /*else*/ {
 
-        /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":844
+        /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":844
  *             elif t == NPY_OBJECT:      f[0] = 79 #"O"
  *             else:
  *                 raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)             # <<<<<<<<<<<<<<
@@ -25696,7 +25696,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
       }
       __pyx_L15:;
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":845
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":845
  *             else:
  *                 raise ValueError(u"unknown dtype code in numpy.pxd (%d)" % t)
  *             f += 1             # <<<<<<<<<<<<<<
@@ -25708,7 +25708,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     }
     /*else*/ {
 
-      /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":849
+      /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":849
  *             # Cython ignores struct boundary information ("T{...}"),
  *             # so don't output it
  *             f = _util_dtypestring(child, f, end, offset)             # <<<<<<<<<<<<<<
@@ -25720,7 +25720,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
     }
     __pyx_L13:;
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":794
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":794
  *     cdef tuple fields
  * 
  *     for childname in descr.names:             # <<<<<<<<<<<<<<
@@ -25730,7 +25730,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":850
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":850
  *             # so don't output it
  *             f = _util_dtypestring(child, f, end, offset)
  *     return f             # <<<<<<<<<<<<<<
@@ -25740,7 +25740,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
   __pyx_r = __pyx_v_f;
   goto __pyx_L0;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":783
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":783
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
  * 
  * cdef inline char* _util_dtypestring(dtype descr, char* f, char* end, int* offset) except NULL:             # <<<<<<<<<<<<<<
@@ -25765,7 +25765,7 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *__pyx
   return __pyx_r;
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":966
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":966
  * 
  * 
  * cdef inline void set_array_base(ndarray arr, object base):             # <<<<<<<<<<<<<<
@@ -25780,7 +25780,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   int __pyx_t_2;
   __Pyx_RefNannySetupContext("set_array_base", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":968
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":968
  * cdef inline void set_array_base(ndarray arr, object base):
  *      cdef PyObject* baseptr
  *      if base is None:             # <<<<<<<<<<<<<<
@@ -25791,7 +25791,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   __pyx_t_2 = (__pyx_t_1 != 0);
   if (__pyx_t_2) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":969
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":969
  *      cdef PyObject* baseptr
  *      if base is None:
  *          baseptr = NULL             # <<<<<<<<<<<<<<
@@ -25803,7 +25803,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   }
   /*else*/ {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":971
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":971
  *          baseptr = NULL
  *      else:
  *          Py_INCREF(base) # important to do this before decref below!             # <<<<<<<<<<<<<<
@@ -25812,7 +25812,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
  */
     Py_INCREF(__pyx_v_base);
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":972
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":972
  *      else:
  *          Py_INCREF(base) # important to do this before decref below!
  *          baseptr = <PyObject*>base             # <<<<<<<<<<<<<<
@@ -25823,7 +25823,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   }
   __pyx_L3:;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":973
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":973
  *          Py_INCREF(base) # important to do this before decref below!
  *          baseptr = <PyObject*>base
  *      Py_XDECREF(arr.base)             # <<<<<<<<<<<<<<
@@ -25832,7 +25832,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
  */
   Py_XDECREF(__pyx_v_arr->base);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":974
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":974
  *          baseptr = <PyObject*>base
  *      Py_XDECREF(arr.base)
  *      arr.base = baseptr             # <<<<<<<<<<<<<<
@@ -25841,7 +25841,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
  */
   __pyx_v_arr->base = __pyx_v_baseptr;
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":966
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":966
  * 
  * 
  * cdef inline void set_array_base(ndarray arr, object base):             # <<<<<<<<<<<<<<
@@ -25853,7 +25853,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   __Pyx_RefNannyFinishContext();
 }
 
-/* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":976
+/* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":976
  *      arr.base = baseptr
  * 
  * cdef inline object get_array_base(ndarray arr):             # <<<<<<<<<<<<<<
@@ -25867,7 +25867,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("get_array_base", 0);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":977
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":977
  * 
  * cdef inline object get_array_base(ndarray arr):
  *     if arr.base is NULL:             # <<<<<<<<<<<<<<
@@ -25877,7 +25877,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   __pyx_t_1 = ((__pyx_v_arr->base == NULL) != 0);
   if (__pyx_t_1) {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":978
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":978
  * cdef inline object get_array_base(ndarray arr):
  *     if arr.base is NULL:
  *         return None             # <<<<<<<<<<<<<<
@@ -25891,7 +25891,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   }
   /*else*/ {
 
-    /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":980
+    /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":980
  *         return None
  *     else:
  *         return <object>arr.base             # <<<<<<<<<<<<<<
@@ -25902,7 +25902,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
     goto __pyx_L0;
   }
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":976
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":976
  *      arr.base = baseptr
  * 
  * cdef inline object get_array_base(ndarray arr):             # <<<<<<<<<<<<<<
@@ -36550,10 +36550,10 @@ static void __pyx_memoryview__slice_assign_scalar(char *__pyx_v_data, Py_ssize_t
 
   /* function exit code */
 }
-static struct __pyx_vtabstruct_11_distortion_Quad __pyx_vtable_11_distortion_Quad;
+static struct __pyx_vtabstruct_3src_11_distortion_Quad __pyx_vtable_3src_11_distortion_Quad;
 
-static PyObject *__pyx_tp_new_11_distortion_Quad(PyTypeObject *t, PyObject *a, PyObject *k) {
-  struct __pyx_obj_11_distortion_Quad *p;
+static PyObject *__pyx_tp_new_3src_11_distortion_Quad(PyTypeObject *t, PyObject *a, PyObject *k) {
+  struct __pyx_obj_3src_11_distortion_Quad *p;
   PyObject *o;
   if (likely((t->tp_flags & Py_TPFLAGS_IS_ABSTRACT) == 0)) {
     o = (*t->tp_alloc)(t, 0);
@@ -36561,18 +36561,18 @@ static PyObject *__pyx_tp_new_11_distortion_Quad(PyTypeObject *t, PyObject *a, P
     o = (PyObject *) PyBaseObject_Type.tp_new(t, __pyx_empty_tuple, 0);
   }
   if (unlikely(!o)) return 0;
-  p = ((struct __pyx_obj_11_distortion_Quad *)o);
-  p->__pyx_vtab = __pyx_vtabptr_11_distortion_Quad;
+  p = ((struct __pyx_obj_3src_11_distortion_Quad *)o);
+  p->__pyx_vtab = __pyx_vtabptr_3src_11_distortion_Quad;
   p->box.data = NULL;
   p->box.memview = NULL;
-  if (unlikely(__pyx_pw_11_distortion_4Quad_1__cinit__(o, a, k) < 0)) {
+  if (unlikely(__pyx_pw_3src_11_distortion_4Quad_1__cinit__(o, a, k) < 0)) {
     Py_DECREF(o); o = 0;
   }
   return o;
 }
 
-static void __pyx_tp_dealloc_11_distortion_Quad(PyObject *o) {
-  struct __pyx_obj_11_distortion_Quad *p = (struct __pyx_obj_11_distortion_Quad *)o;
+static void __pyx_tp_dealloc_3src_11_distortion_Quad(PyObject *o) {
+  struct __pyx_obj_3src_11_distortion_Quad *p = (struct __pyx_obj_3src_11_distortion_Quad *)o;
   #if PY_VERSION_HEX >= 0x030400a1
   if (unlikely(Py_TYPE(o)->tp_finalize) && (!PyType_IS_GC(Py_TYPE(o)) || !_PyGC_FINALIZED(o))) {
     if (PyObject_CallFinalizerFromDealloc(o)) return;
@@ -36582,30 +36582,30 @@ static void __pyx_tp_dealloc_11_distortion_Quad(PyObject *o) {
   (*Py_TYPE(o)->tp_free)(o);
 }
 
-static PyMethodDef __pyx_methods_11_distortion_Quad[] = {
-  {"reinit", (PyCFunction)__pyx_pw_11_distortion_4Quad_3reinit, METH_VARARGS|METH_KEYWORDS, 0},
-  {"get_box", (PyCFunction)__pyx_pw_11_distortion_4Quad_7get_box, METH_VARARGS|METH_KEYWORDS, 0},
-  {"get_offset0", (PyCFunction)__pyx_pw_11_distortion_4Quad_9get_offset0, METH_NOARGS, 0},
-  {"get_offset1", (PyCFunction)__pyx_pw_11_distortion_4Quad_11get_offset1, METH_NOARGS, 0},
-  {"get_box_size0", (PyCFunction)__pyx_pw_11_distortion_4Quad_13get_box_size0, METH_NOARGS, 0},
-  {"get_box_size1", (PyCFunction)__pyx_pw_11_distortion_4Quad_15get_box_size1, METH_NOARGS, 0},
-  {"init_slope", (PyCFunction)__pyx_pw_11_distortion_4Quad_17init_slope, METH_NOARGS, 0},
-  {"calc_area_AB", (PyCFunction)__pyx_pw_11_distortion_4Quad_19calc_area_AB, METH_VARARGS|METH_KEYWORDS, 0},
-  {"calc_area_BC", (PyCFunction)__pyx_pw_11_distortion_4Quad_21calc_area_BC, METH_VARARGS|METH_KEYWORDS, 0},
-  {"calc_area_CD", (PyCFunction)__pyx_pw_11_distortion_4Quad_23calc_area_CD, METH_VARARGS|METH_KEYWORDS, 0},
-  {"calc_area_DA", (PyCFunction)__pyx_pw_11_distortion_4Quad_25calc_area_DA, METH_VARARGS|METH_KEYWORDS, 0},
-  {"calc_area", (PyCFunction)__pyx_pw_11_distortion_4Quad_27calc_area, METH_NOARGS, 0},
-  {"populate_box", (PyCFunction)__pyx_pw_11_distortion_4Quad_29populate_box, METH_NOARGS, 0},
-  {"integrate", (PyCFunction)__pyx_pw_11_distortion_4Quad_31integrate, METH_VARARGS|METH_KEYWORDS, 0},
+static PyMethodDef __pyx_methods_3src_11_distortion_Quad[] = {
+  {"reinit", (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_3reinit, METH_VARARGS|METH_KEYWORDS, 0},
+  {"get_box", (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_7get_box, METH_VARARGS|METH_KEYWORDS, 0},
+  {"get_offset0", (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_9get_offset0, METH_NOARGS, 0},
+  {"get_offset1", (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_11get_offset1, METH_NOARGS, 0},
+  {"get_box_size0", (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_13get_box_size0, METH_NOARGS, 0},
+  {"get_box_size1", (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_15get_box_size1, METH_NOARGS, 0},
+  {"init_slope", (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_17init_slope, METH_NOARGS, 0},
+  {"calc_area_AB", (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_19calc_area_AB, METH_VARARGS|METH_KEYWORDS, 0},
+  {"calc_area_BC", (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_21calc_area_BC, METH_VARARGS|METH_KEYWORDS, 0},
+  {"calc_area_CD", (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_23calc_area_CD, METH_VARARGS|METH_KEYWORDS, 0},
+  {"calc_area_DA", (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_25calc_area_DA, METH_VARARGS|METH_KEYWORDS, 0},
+  {"calc_area", (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_27calc_area, METH_NOARGS, 0},
+  {"populate_box", (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_29populate_box, METH_NOARGS, 0},
+  {"integrate", (PyCFunction)__pyx_pw_3src_11_distortion_4Quad_31integrate, METH_VARARGS|METH_KEYWORDS, 0},
   {0, 0, 0, 0}
 };
 
-static PyTypeObject __pyx_type_11_distortion_Quad = {
+static PyTypeObject __pyx_type_3src_11_distortion_Quad = {
   PyVarObject_HEAD_INIT(0, 0)
-  "_distortion.Quad", /*tp_name*/
-  sizeof(struct __pyx_obj_11_distortion_Quad), /*tp_basicsize*/
+  "src._distortion.Quad", /*tp_name*/
+  sizeof(struct __pyx_obj_3src_11_distortion_Quad), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_11_distortion_Quad, /*tp_dealloc*/
+  __pyx_tp_dealloc_3src_11_distortion_Quad, /*tp_dealloc*/
   0, /*tp_print*/
   0, /*tp_getattr*/
   0, /*tp_setattr*/
@@ -36614,7 +36614,7 @@ static PyTypeObject __pyx_type_11_distortion_Quad = {
   #else
   0, /*reserved*/
   #endif
-  __pyx_pw_11_distortion_4Quad_5__repr__, /*tp_repr*/
+  __pyx_pw_3src_11_distortion_4Quad_5__repr__, /*tp_repr*/
   0, /*tp_as_number*/
   0, /*tp_as_sequence*/
   0, /*tp_as_mapping*/
@@ -36632,7 +36632,7 @@ static PyTypeObject __pyx_type_11_distortion_Quad = {
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_11_distortion_Quad, /*tp_methods*/
+  __pyx_methods_3src_11_distortion_Quad, /*tp_methods*/
   0, /*tp_members*/
   0, /*tp_getset*/
   0, /*tp_base*/
@@ -36642,7 +36642,7 @@ static PyTypeObject __pyx_type_11_distortion_Quad = {
   0, /*tp_dictoffset*/
   0, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_11_distortion_Quad, /*tp_new*/
+  __pyx_tp_new_3src_11_distortion_Quad, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -36774,7 +36774,7 @@ static PyBufferProcs __pyx_tp_as_buffer_array = {
 
 static PyTypeObject __pyx_type___pyx_array = {
   PyVarObject_HEAD_INIT(0, 0)
-  "_distortion.array", /*tp_name*/
+  "src._distortion.array", /*tp_name*/
   sizeof(struct __pyx_array_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_array, /*tp_dealloc*/
@@ -36879,7 +36879,7 @@ static PyMethodDef __pyx_methods_Enum[] = {
 
 static PyTypeObject __pyx_type___pyx_MemviewEnum = {
   PyVarObject_HEAD_INIT(0, 0)
-  "_distortion.Enum", /*tp_name*/
+  "src._distortion.Enum", /*tp_name*/
   sizeof(struct __pyx_MemviewEnum_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_Enum, /*tp_dealloc*/
@@ -37125,7 +37125,7 @@ static PyBufferProcs __pyx_tp_as_buffer_memoryview = {
 
 static PyTypeObject __pyx_type___pyx_memoryview = {
   PyVarObject_HEAD_INIT(0, 0)
-  "_distortion.memoryview", /*tp_name*/
+  "src._distortion.memoryview", /*tp_name*/
   sizeof(struct __pyx_memoryview_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_memoryview, /*tp_dealloc*/
@@ -37249,7 +37249,7 @@ static struct PyGetSetDef __pyx_getsets__memoryviewslice[] = {
 
 static PyTypeObject __pyx_type___pyx_memoryviewslice = {
   PyVarObject_HEAD_INIT(0, 0)
-  "_distortion._memoryviewslice", /*tp_name*/
+  "src._distortion._memoryviewslice", /*tp_name*/
   sizeof(struct __pyx_memoryviewslice_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc__memoryviewslice, /*tp_dealloc*/
@@ -37313,8 +37313,8 @@ static PyTypeObject __pyx_type___pyx_memoryviewslice = {
 };
 
 static PyMethodDef __pyx_methods[] = {
-  {"calc_area", (PyCFunction)__pyx_pw_11_distortion_1calc_area, METH_VARARGS|METH_KEYWORDS, __pyx_doc_11_distortion_calc_area},
-  {"clip", (PyCFunction)__pyx_pw_11_distortion_3clip, METH_VARARGS|METH_KEYWORDS, __pyx_doc_11_distortion_2clip},
+  {"calc_area", (PyCFunction)__pyx_pw_3src_11_distortion_1calc_area, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_11_distortion_calc_area},
+  {"clip", (PyCFunction)__pyx_pw_3src_11_distortion_3clip, METH_VARARGS|METH_KEYWORDS, __pyx_doc_3src_11_distortion_2clip},
   {0, 0, 0, 0}
 };
 
@@ -37463,7 +37463,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_detector, __pyx_k_detector, sizeof(__pyx_k_detector), 0, 0, 1, 1},
   {&__pyx_n_s_detector_factory, __pyx_k_detector_factory, sizeof(__pyx_k_detector_factory), 0, 0, 1, 1},
   {&__pyx_n_s_detectors, __pyx_k_detectors, sizeof(__pyx_k_detectors), 0, 0, 1, 1},
-  {&__pyx_n_s_distortion, __pyx_k_distortion, sizeof(__pyx_k_distortion), 0, 0, 1, 1},
   {&__pyx_n_s_do_dummy, __pyx_k_do_dummy, sizeof(__pyx_k_do_dummy), 0, 0, 1, 1},
   {&__pyx_n_s_do_mask, __pyx_k_do_mask, sizeof(__pyx_k_do_mask), 0, 0, 1, 1},
   {&__pyx_n_s_doc, __pyx_k_doc, sizeof(__pyx_k_doc), 0, 0, 1, 1},
@@ -37495,6 +37494,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_get_offset0, __pyx_k_get_offset0, sizeof(__pyx_k_get_offset0), 0, 0, 1, 1},
   {&__pyx_n_s_get_offset1, __pyx_k_get_offset1, sizeof(__pyx_k_get_offset1), 0, 0, 1, 1},
   {&__pyx_kp_s_got_differing_extents_in_dimensi, __pyx_k_got_differing_extents_in_dimensi, sizeof(__pyx_k_got_differing_extents_in_dimensi), 0, 0, 1, 0},
+  {&__pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_k_home_jerome_workspace_pyFAI_src, sizeof(__pyx_k_home_jerome_workspace_pyFAI_src), 0, 0, 1, 0},
   {&__pyx_n_s_i, __pyx_k_i, sizeof(__pyx_k_i), 0, 0, 1, 1},
   {&__pyx_n_s_i0, __pyx_k_i0, sizeof(__pyx_k_i0), 0, 0, 1, 1},
   {&__pyx_n_s_i1, __pyx_k_i1, sizeof(__pyx_k_i1), 0, 0, 1, 1},
@@ -37550,7 +37550,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_min1, __pyx_k_min1, sizeof(__pyx_k_min1), 0, 0, 1, 1},
   {&__pyx_n_s_min_val, __pyx_k_min_val, sizeof(__pyx_k_min_val), 0, 0, 1, 1},
   {&__pyx_n_s_ml, __pyx_k_ml, sizeof(__pyx_k_ml), 0, 0, 1, 1},
-  {&__pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_k_mntdirect__scisoft_users_kieffe, sizeof(__pyx_k_mntdirect__scisoft_users_kieffe), 0, 0, 1, 0},
   {&__pyx_n_s_mode, __pyx_k_mode, sizeof(__pyx_k_mode), 0, 0, 1, 1},
   {&__pyx_n_s_module, __pyx_k_module, sizeof(__pyx_k_module), 0, 0, 1, 1},
   {&__pyx_n_s_ms, __pyx_k_ms, sizeof(__pyx_k_ms), 0, 0, 1, 1},
@@ -37607,6 +37606,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_six, __pyx_k_six, sizeof(__pyx_k_six), 0, 0, 1, 1},
   {&__pyx_n_s_size, __pyx_k_size, sizeof(__pyx_k_size), 0, 0, 1, 1},
   {&__pyx_n_s_slope, __pyx_k_slope, sizeof(__pyx_k_slope), 0, 0, 1, 1},
+  {&__pyx_n_s_src__distortion, __pyx_k_src__distortion, sizeof(__pyx_k_src__distortion), 0, 0, 1, 1},
   {&__pyx_n_s_start, __pyx_k_start, sizeof(__pyx_k_start), 0, 0, 1, 1},
   {&__pyx_n_s_step, __pyx_k_step, sizeof(__pyx_k_step), 0, 0, 1, 1},
   {&__pyx_n_s_stop, __pyx_k_stop, sizeof(__pyx_k_stop), 0, 0, 1, 1},
@@ -37674,7 +37674,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "_distortion.pyx":572
+  /* "src/_distortion.pyx":572
  *                     if p[-1] is not None:
  *                         logger.warning("makes little sense to correct for distortion non-flat detectors: %s"%self.detector)
  *                     pos_corners[:, :, 0], pos_corners[:, :, 1] = p[:2]             # <<<<<<<<<<<<<<
@@ -37703,7 +37703,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__8);
   __Pyx_GIVEREF(__pyx_tuple__8);
 
-  /* "_distortion.pyx":573
+  /* "src/_distortion.pyx":573
  *                         logger.warning("makes little sense to correct for distortion non-flat detectors: %s"%self.detector)
  *                     pos_corners[:, :, 0], pos_corners[:, :, 1] = p[:2]
  *                     pos_corners[:, :, 0] /= self.detector.pixel1             # <<<<<<<<<<<<<<
@@ -37720,7 +37720,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__11);
   __Pyx_GIVEREF(__pyx_tuple__11);
 
-  /* "_distortion.pyx":574
+  /* "src/_distortion.pyx":574
  *                     pos_corners[:, :, 0], pos_corners[:, :, 1] = p[:2]
  *                     pos_corners[:, :, 0] /= self.detector.pixel1
  *                     pos_corners[:, :, 1] /= self.detector.pixel2             # <<<<<<<<<<<<<<
@@ -37737,7 +37737,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__14);
   __Pyx_GIVEREF(__pyx_tuple__14);
 
-  /* "_distortion.pyx":576
+  /* "src/_distortion.pyx":576
  *                     pos_corners[:, :, 1] /= self.detector.pixel2
  *                     pos = numpy.empty((self.shape[0], self.shape[1], 4, 2), dtype=numpy.float32)
  *                     pos[:, :, 0, :] = pos_corners[:-1, :-1]             # <<<<<<<<<<<<<<
@@ -37766,7 +37766,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__21);
   __Pyx_GIVEREF(__pyx_tuple__21);
 
-  /* "_distortion.pyx":577
+  /* "src/_distortion.pyx":577
  *                     pos = numpy.empty((self.shape[0], self.shape[1], 4, 2), dtype=numpy.float32)
  *                     pos[:, :, 0, :] = pos_corners[:-1, :-1]
  *                     pos[:, :, 1, :] = pos_corners[:-1, 1:]             # <<<<<<<<<<<<<<
@@ -37795,7 +37795,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__28);
   __Pyx_GIVEREF(__pyx_tuple__28);
 
-  /* "_distortion.pyx":578
+  /* "src/_distortion.pyx":578
  *                     pos[:, :, 0, :] = pos_corners[:-1, :-1]
  *                     pos[:, :, 1, :] = pos_corners[:-1, 1:]
  *                     pos[:, :, 2, :] = pos_corners[1:, 1:]             # <<<<<<<<<<<<<<
@@ -37824,7 +37824,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__35);
   __Pyx_GIVEREF(__pyx_tuple__35);
 
-  /* "_distortion.pyx":579
+  /* "src/_distortion.pyx":579
  *                     pos[:, :, 1, :] = pos_corners[:-1, 1:]
  *                     pos[:, :, 2, :] = pos_corners[1:, 1:]
  *                     pos[:, :, 3, :] = pos_corners[1:, :-1]             # <<<<<<<<<<<<<<
@@ -37853,7 +37853,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__42);
   __Pyx_GIVEREF(__pyx_tuple__42);
 
-  /* "_distortion.pyx":581
+  /* "src/_distortion.pyx":581
  *                     pos[:, :, 3, :] = pos_corners[1:, :-1]
  *                     self.pos = pos
  *                     self.delta0 = int((numpy.ceil(pos_corners[1:, :, 0]) - numpy.floor(pos_corners[:-1, :, 0])).max())             # <<<<<<<<<<<<<<
@@ -37879,7 +37879,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__48);
   __Pyx_GIVEREF(__pyx_tuple__48);
 
-  /* "_distortion.pyx":582
+  /* "src/_distortion.pyx":582
  *                     self.pos = pos
  *                     self.delta0 = int((numpy.ceil(pos_corners[1:, :, 0]) - numpy.floor(pos_corners[:-1, :, 0])).max())
  *                     self.delta1 = int((numpy.ceil(pos_corners[:, 1:, 1]) - numpy.floor(pos_corners[:, :-1, 1])).max())             # <<<<<<<<<<<<<<
@@ -37905,7 +37905,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__54);
   __Pyx_GIVEREF(__pyx_tuple__54);
 
-  /* "_distortion.pyx":564
+  /* "src/_distortion.pyx":564
  *     def calc_pos(self):
  *         if self.pos is None:
  *             with self._sem:             # <<<<<<<<<<<<<<
@@ -37916,7 +37916,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__55);
   __Pyx_GIVEREF(__pyx_tuple__55);
 
-  /* "_distortion.pyx":609
+  /* "src/_distortion.pyx":609
  *                 if self.lut_size is None:
  *                     shape0, shape1 = self.shape
  *                     pos0min = numpy.floor(pos[:, :, :, 0].min(axis=-1)).astype(numpy.int32).clip(0, self.shape[0])             # <<<<<<<<<<<<<<
@@ -37936,7 +37936,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__59);
   __Pyx_GIVEREF(__pyx_tuple__59);
 
-  /* "_distortion.pyx":610
+  /* "src/_distortion.pyx":610
  *                     shape0, shape1 = self.shape
  *                     pos0min = numpy.floor(pos[:, :, :, 0].min(axis=-1)).astype(numpy.int32).clip(0, self.shape[0])
  *                     pos1min = numpy.floor(pos[:, :, :, 1].min(axis=-1)).astype(numpy.int32).clip(0, self.shape[1])             # <<<<<<<<<<<<<<
@@ -37956,7 +37956,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__63);
   __Pyx_GIVEREF(__pyx_tuple__63);
 
-  /* "_distortion.pyx":611
+  /* "src/_distortion.pyx":611
  *                     pos0min = numpy.floor(pos[:, :, :, 0].min(axis=-1)).astype(numpy.int32).clip(0, self.shape[0])
  *                     pos1min = numpy.floor(pos[:, :, :, 1].min(axis=-1)).astype(numpy.int32).clip(0, self.shape[1])
  *                     pos0max = (numpy.ceil(pos[:, :, :, 0].max(axis=-1)).astype(numpy.int32) + 1).clip(0, self.shape[0])             # <<<<<<<<<<<<<<
@@ -37976,7 +37976,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__67);
   __Pyx_GIVEREF(__pyx_tuple__67);
 
-  /* "_distortion.pyx":612
+  /* "src/_distortion.pyx":612
  *                     pos1min = numpy.floor(pos[:, :, :, 1].min(axis=-1)).astype(numpy.int32).clip(0, self.shape[1])
  *                     pos0max = (numpy.ceil(pos[:, :, :, 0].max(axis=-1)).astype(numpy.int32) + 1).clip(0, self.shape[0])
  *                     pos1max = (numpy.ceil(pos[:, :, :, 1].max(axis=-1)).astype(numpy.int32) + 1).clip(0, self.shape[1])             # <<<<<<<<<<<<<<
@@ -37996,7 +37996,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__71);
   __Pyx_GIVEREF(__pyx_tuple__71);
 
-  /* "_distortion.pyx":606
+  /* "src/_distortion.pyx":606
  *             pos = self.pos
  *         if self.lut_size is None:
  *             with self._sem:             # <<<<<<<<<<<<<<
@@ -38010,7 +38010,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__73);
   __Pyx_GIVEREF(__pyx_tuple__73);
 
-  /* "_distortion.pyx":641
+  /* "src/_distortion.pyx":641
  *             self.calc_LUT_size()
  *         if self.LUT is None:
  *             with self._sem:             # <<<<<<<<<<<<<<
@@ -38021,7 +38021,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__74);
   __Pyx_GIVEREF(__pyx_tuple__74);
 
-  /* "_distortion.pyx":982
+  /* "src/_distortion.pyx":982
  *     indptr = numpy.empty(bins + 1, dtype=numpy.int32)
  *     indptr[0] = 0
  *     indptr[1:] = bin_size.cumsum(dtype=numpy.int32)             # <<<<<<<<<<<<<<
@@ -38032,7 +38032,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_slice__78);
   __Pyx_GIVEREF(__pyx_slice__78);
 
-  /* "_distortion.pyx":988
+  /* "src/_distortion.pyx":988
  *     data = numpy.zeros(shape=lut_size, dtype=numpy.float32)
  * 
  *     indptr[1:] = bin_size.cumsum(dtype=numpy.int32)             # <<<<<<<<<<<<<<
@@ -38043,7 +38043,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_slice__79);
   __Pyx_GIVEREF(__pyx_slice__79);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":215
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":215
  *             if ((flags & pybuf.PyBUF_C_CONTIGUOUS == pybuf.PyBUF_C_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_C_CONTIGUOUS)):
  *                 raise ValueError(u"ndarray is not C contiguous")             # <<<<<<<<<<<<<<
@@ -38054,7 +38054,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__80);
   __Pyx_GIVEREF(__pyx_tuple__80);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":219
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":219
  *             if ((flags & pybuf.PyBUF_F_CONTIGUOUS == pybuf.PyBUF_F_CONTIGUOUS)
  *                 and not PyArray_CHKFLAGS(self, NPY_F_CONTIGUOUS)):
  *                 raise ValueError(u"ndarray is not Fortran contiguous")             # <<<<<<<<<<<<<<
@@ -38065,7 +38065,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__81);
   __Pyx_GIVEREF(__pyx_tuple__81);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":257
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":257
  *                 if ((descr.byteorder == c'>' and little_endian) or
  *                     (descr.byteorder == c'<' and not little_endian)):
  *                     raise ValueError(u"Non-native byte order not supported")             # <<<<<<<<<<<<<<
@@ -38076,7 +38076,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__82);
   __Pyx_GIVEREF(__pyx_tuple__82);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":799
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":799
  * 
  *         if (end - f) - <int>(new_offset - offset[0]) < 15:
  *             raise RuntimeError(u"Format string allocated too short, see comment in numpy.pxd")             # <<<<<<<<<<<<<<
@@ -38087,7 +38087,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__83);
   __Pyx_GIVEREF(__pyx_tuple__83);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":803
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":803
  *         if ((child.byteorder == c'>' and little_endian) or
  *             (child.byteorder == c'<' and not little_endian)):
  *             raise ValueError(u"Non-native byte order not supported")             # <<<<<<<<<<<<<<
@@ -38098,7 +38098,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__84);
   __Pyx_GIVEREF(__pyx_tuple__84);
 
-  /* "../../../../../../usr/lib/python2.7/dist-packages/Cython/Includes/numpy/__init__.pxd":823
+  /* "../../../../usr/lib/python3/dist-packages/Cython/Includes/numpy/__init__.pxd":823
  *             t = child.type_num
  *             if end - f < 5:
  *                 raise RuntimeError(u"Format string allocated too short.")             # <<<<<<<<<<<<<<
@@ -38230,7 +38230,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__96);
   __Pyx_GIVEREF(__pyx_tuple__96);
 
-  /* "_distortion.pyx":45
+  /* "src/_distortion.pyx":45
  * import sys
  * import time
  * logger = logging.getLogger("pyFAI._distortion")             # <<<<<<<<<<<<<<
@@ -38241,7 +38241,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__97);
   __Pyx_GIVEREF(__pyx_tuple__97);
 
-  /* "_distortion.pyx":59
+  /* "src/_distortion.pyx":59
  * 
  * dtype_lut = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])
  * cdef bint NEED_DECREF = sys.version_info < (2, 7) and numpy.version.version < "1.5"             # <<<<<<<<<<<<<<
@@ -38252,7 +38252,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__98);
   __Pyx_GIVEREF(__pyx_tuple__98);
 
-  /* "_distortion.pyx":539
+  /* "src/_distortion.pyx":539
  * 
  *     """
  *     def __init__(self, detector="detector", shape=None):             # <<<<<<<<<<<<<<
@@ -38262,12 +38262,12 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__99 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_detector, __pyx_n_s_shape, __pyx_n_s_i); if (unlikely(!__pyx_tuple__99)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__99);
   __Pyx_GIVEREF(__pyx_tuple__99);
-  __pyx_codeobj__100 = (PyObject*)__Pyx_PyCode_New(3, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__99, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_init, 539, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__100)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__100 = (PyObject*)__Pyx_PyCode_New(3, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__99, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_init, 539, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__100)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_tuple__101 = PyTuple_Pack(2, ((PyObject*)__pyx_n_s_detector), ((PyObject *)Py_None)); if (unlikely(!__pyx_tuple__101)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__101);
   __Pyx_GIVEREF(__pyx_tuple__101);
 
-  /* "_distortion.pyx":558
+  /* "src/_distortion.pyx":558
  *         self.delta0 = self.delta1 = None  # max size of an pixel on a regular grid ...
  * 
  *     def __repr__(self):             # <<<<<<<<<<<<<<
@@ -38277,9 +38277,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__102 = PyTuple_Pack(1, __pyx_n_s_self); if (unlikely(!__pyx_tuple__102)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 558; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__102);
   __Pyx_GIVEREF(__pyx_tuple__102);
-  __pyx_codeobj__103 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__102, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_repr, 558, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__103)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 558; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__103 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__102, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_repr, 558, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__103)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 558; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "_distortion.pyx":562
+  /* "src/_distortion.pyx":562
  *                                 self.detector.__repr__()])
  * 
  *     def calc_pos(self):             # <<<<<<<<<<<<<<
@@ -38289,9 +38289,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__104 = PyTuple_Pack(6, __pyx_n_s_self, __pyx_n_s_pos_corners, __pyx_n_s_d1, __pyx_n_s_d2, __pyx_n_s_p, __pyx_n_s_pos); if (unlikely(!__pyx_tuple__104)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 562; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__104);
   __Pyx_GIVEREF(__pyx_tuple__104);
-  __pyx_codeobj__105 = (PyObject*)__Pyx_PyCode_New(1, 0, 6, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__104, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_calc_pos, 562, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__105)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 562; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__105 = (PyObject*)__Pyx_PyCode_New(1, 0, 6, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__104, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_calc_pos, 562, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__105)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 562; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "_distortion.pyx":587
+  /* "src/_distortion.pyx":587
  *     @cython.wraparound(False)
  *     @cython.boundscheck(False)
  *     def calc_LUT_size(self):             # <<<<<<<<<<<<<<
@@ -38301,9 +38301,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__106 = PyTuple_Pack(13, __pyx_n_s_self, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_l, __pyx_n_s_shape0, __pyx_n_s_shape1, __pyx_n_s_pos, __pyx_n_s_pos0min, __pyx_n_s_pos1min, __pyx_n_s_pos0max, __pyx_n_s_pos1max, __pyx_n_s_lut_size); if (unlikely(!__pyx_tuple__106)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 587; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__106);
   __Pyx_GIVEREF(__pyx_tuple__106);
-  __pyx_codeobj__107 = (PyObject*)__Pyx_PyCode_New(1, 0, 13, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__106, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_calc_LUT_size, 587, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__107)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 587; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__107 = (PyObject*)__Pyx_PyCode_New(1, 0, 13, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__106, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_calc_LUT_size, 587, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__107)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 587; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "_distortion.pyx":626
+  /* "src/_distortion.pyx":626
  *     @cython.boundscheck(False)
  *     @cython.cdivision(True)
  *     def calc_LUT(self):             # <<<<<<<<<<<<<<
@@ -38313,9 +38313,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__108 = PyTuple_Pack(43, __pyx_n_s_self, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_ms, __pyx_n_s_ml, __pyx_n_s_ns, __pyx_n_s_nl, __pyx_n_s_shape0, __pyx_n_s_shape1, __pyx_n_s_delta0, __pyx_n_s_delta1, __pyx_n_s_buffer_size, __pyx_n_s_i0, __pyx_n_s_i1, __pyx_n_s_size, __pyx_n_s_offset0, __pyx_n_s_offset1, __pyx_n_s_box_size0, __pyx_n_s_box_size1, __pyx_n_s_k, __pyx_n_s_idx, __pyx_n_s_A0, __pyx_n_s_A1, __pyx_n_s_B0, __pyx_n_s_B1, __pyx_n_s_C0, __pyx_n_s_C1, __pyx_n_s_D0, __pyx_n_s_D1, __pyx_n_s_pAB, __pyx_n_s_pBC, __pyx_n_s_pCD, __pyx_n_s_pDA, __pyx_n_s_cAB, __pyx_n_s_cBC, __pyx_n_s_cCD, __pyx_n_s_cDA, __pyx_n_s_area, __pyx_n_s_value, __pyx_n_s_pos, __pyx_n_s_lut, __pyx_n_s_outMax, __pyx_n_s_buffer); if (unlikely(!__pyx_tuple__108)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 626; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__108);
   __Pyx_GIVEREF(__pyx_tuple__108);
-  __pyx_codeobj__109 = (PyObject*)__Pyx_PyCode_New(1, 0, 43, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__108, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_calc_LUT, 626, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__109)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 626; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__109 = (PyObject*)__Pyx_PyCode_New(1, 0, 43, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__108, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_calc_LUT, 626, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__109)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 626; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "_distortion.pyx":723
+  /* "src/_distortion.pyx":723
  *     @cython.wraparound(False)
  *     @cython.boundscheck(False)
  *     def correct(self, image):             # <<<<<<<<<<<<<<
@@ -38325,9 +38325,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__110 = PyTuple_Pack(15, __pyx_n_s_self, __pyx_n_s_image, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_lshape0, __pyx_n_s_lshape1, __pyx_n_s_idx, __pyx_n_s_size, __pyx_n_s_coef, __pyx_n_s_LUT, __pyx_n_s_lout, __pyx_n_s_lin, __pyx_n_s_img_shape, __pyx_n_s_new_image, __pyx_n_s_out); if (unlikely(!__pyx_tuple__110)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 723; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__110);
   __Pyx_GIVEREF(__pyx_tuple__110);
-  __pyx_codeobj__111 = (PyObject*)__Pyx_PyCode_New(2, 0, 15, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__110, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_correct, 723, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__111)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 723; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__111 = (PyObject*)__Pyx_PyCode_New(2, 0, 15, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__110, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_correct, 723, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__111)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 723; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "_distortion.pyx":765
+  /* "src/_distortion.pyx":765
  * 
  *     @timeit
  *     def uncorrect(self, image):             # <<<<<<<<<<<<<<
@@ -38337,9 +38337,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__112 = PyTuple_Pack(11, __pyx_n_s_self, __pyx_n_s_image, __pyx_n_s_out, __pyx_n_s_mask, __pyx_n_s_lmask, __pyx_n_s_lout, __pyx_n_s_lin, __pyx_n_s_tot, __pyx_n_s_idx, __pyx_n_s_t, __pyx_n_s_val); if (unlikely(!__pyx_tuple__112)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 765; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__112);
   __Pyx_GIVEREF(__pyx_tuple__112);
-  __pyx_codeobj__113 = (PyObject*)__Pyx_PyCode_New(2, 0, 11, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__112, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_uncorrect, 765, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__113)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 765; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__113 = (PyObject*)__Pyx_PyCode_New(2, 0, 11, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__112, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_uncorrect, 765, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__113)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 765; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "_distortion.pyx":796
+  /* "src/_distortion.pyx":796
  * @cython.wraparound(False)
  * @cython.boundscheck(False)
  * def calc_size(float[:, :, :, :] pos not None, shape, numpy.int8_t[:, :] mask=None):             # <<<<<<<<<<<<<<
@@ -38349,9 +38349,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__114 = PyTuple_Pack(23, __pyx_n_s_pos, __pyx_n_s_shape, __pyx_n_s_mask, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_l, __pyx_n_s_shape0, __pyx_n_s_shape1, __pyx_n_s_min0, __pyx_n_s_min1, __pyx_n_s_max0, __pyx_n_s_max1, __pyx_n_s_lut_size, __pyx_n_s_A0, __pyx_n_s_A1, __pyx_n_s_B0, __pyx_n_s_B1, __pyx_n_s_C0, __pyx_n_s_C1, __pyx_n_s_D0, __pyx_n_s_D1, __pyx_n_s_do_mask); if (unlikely(!__pyx_tuple__114)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 796; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__114);
   __Pyx_GIVEREF(__pyx_tuple__114);
-  __pyx_codeobj__115 = (PyObject*)__Pyx_PyCode_New(3, 0, 23, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__114, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_calc_size, 796, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__115)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 796; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__115 = (PyObject*)__Pyx_PyCode_New(3, 0, 23, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__114, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_calc_size, 796, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__115)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 796; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "_distortion.pyx":841
+  /* "src/_distortion.pyx":841
  * @cython.boundscheck(False)
  * @cython.cdivision(True)
  * def calc_LUT(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,             # <<<<<<<<<<<<<<
@@ -38361,9 +38361,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__116 = PyTuple_Pack(49, __pyx_n_s_pos, __pyx_n_s_shape, __pyx_n_s_bin_size, __pyx_n_s_max_pixel_size, __pyx_n_s_mask, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_ms, __pyx_n_s_ml, __pyx_n_s_ns, __pyx_n_s_nl, __pyx_n_s_shape0, __pyx_n_s_shape1, __pyx_n_s_delta0, __pyx_n_s_delta1, __pyx_n_s_buffer_size, __pyx_n_s_i0, __pyx_n_s_i1, __pyx_n_s_offset0, __pyx_n_s_offset1, __pyx_n_s_box_size0, __pyx_n_s_box_size1, __pyx_n_s_size, __pyx_n_s_k, __pyx_n_s_idx, __pyx_n_s_A0, __pyx_n_s_A1, __pyx_n_s_B0, __pyx_n_s_B1, __pyx_n_s_C0, __pyx_n_s_C1, __pyx_n_s_D0, __pyx_n_s_D1, __pyx_n_s_pAB, __pyx_n_s_pBC, __pyx_n_s_pCD, __pyx_n_s_pDA, __pyx_n_s_cAB, __pyx_n_s_cBC, __pyx_n_s_cCD, __pyx_n_s_cDA, __pyx_n_s_area, __pyx_n_s_value, __pyx_n_s_lut, __pyx_n_s_do_mask, __pyx_n_s_outMax, __pyx_n_s_buffer, __pyx_n_s_lut_total_size, __pyx_n_s_tmp_ary); if (unlikely(!__pyx_tuple__116)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 841; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__116);
   __Pyx_GIVEREF(__pyx_tuple__116);
-  __pyx_codeobj__117 = (PyObject*)__Pyx_PyCode_New(5, 0, 49, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__116, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_calc_LUT, 841, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__117)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 841; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__117 = (PyObject*)__Pyx_PyCode_New(5, 0, 49, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__116, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_calc_LUT, 841, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__117)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 841; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "_distortion.pyx":955
+  /* "src/_distortion.pyx":955
  * @cython.boundscheck(False)
  * @cython.cdivision(True)
  * def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,             # <<<<<<<<<<<<<<
@@ -38373,9 +38373,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__118 = PyTuple_Pack(54, __pyx_n_s_pos, __pyx_n_s_shape, __pyx_n_s_bin_size, __pyx_n_s_max_pixel_size, __pyx_n_s_mask, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_ms, __pyx_n_s_ml, __pyx_n_s_ns, __pyx_n_s_nl, __pyx_n_s_shape0, __pyx_n_s_shape1, __pyx_n_s_delta0, __pyx_n_s_delta1, __pyx_n_s_buffer_size, __pyx_n_s_i0, __pyx_n_s_i1, __pyx_n_s_bins, __pyx_n_s_lut_size, __pyx_n_s_offset0, __pyx_n_s_offset1, __pyx_n_s_box_size0, __pyx_n_s_box_size1, __pyx_n_s_idx, __pyx_n_s_tmp_index, __pyx_n_s_A0, __pyx_n_s_A1, __pyx_n_s_B0, __pyx_n_s_B1, __pyx_n_s_C0, __pyx_n_s_C1, __pyx_n_s_D0, __pyx_n_s_D1, __pyx_n_s_pAB, __pyx_n_s_pBC, __pyx_n_s_pCD, __pyx_n_s_pDA, __pyx_n_s_cAB, __pyx_n_s_cBC, __pyx_n_s_cCD, __pyx_n_s_cDA, __pyx_n_s_area, __pyx_n_s_value, __pyx_n_s_indptr, __pyx_n_s_indices, __pyx_n_s_data, __pyx_n_s_outMax, __pyx_n_s_buffer, __pyx_n_s_do_mask, __pyx_n_s_indices_size, __pyx_n_s_data_size, __pyx_n_s_indptr_size); if (unlikely(!__pyx_tuple__118)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 955; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__118);
   __Pyx_GIVEREF(__pyx_tuple__118);
-  __pyx_codeobj__119 = (PyObject*)__Pyx_PyCode_New(5, 0, 54, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__118, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_calc_CSR, 955, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__119)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 955; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__119 = (PyObject*)__Pyx_PyCode_New(5, 0, 54, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__118, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_calc_CSR, 955, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__119)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 955; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "_distortion.pyx":1074
+  /* "src/_distortion.pyx":1074
  * @cython.wraparound(False)
  * @cython.boundscheck(False)
  * def correct_LUT(image, shape, lut_point[:, :] LUT not None, dummy=None, delta_dummy=None):             # <<<<<<<<<<<<<<
@@ -38385,9 +38385,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__120 = PyTuple_Pack(27, __pyx_n_s_image, __pyx_n_s_shape, __pyx_n_s_LUT, __pyx_n_s_dummy, __pyx_n_s_delta_dummy, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_lshape0, __pyx_n_s_lshape1, __pyx_n_s_idx, __pyx_n_s_size, __pyx_n_s_shape0, __pyx_n_s_shape1, __pyx_n_s_coef, __pyx_n_s_sum, __pyx_n_s_error, __pyx_n_s_t, __pyx_n_s_y, __pyx_n_s_value, __pyx_n_s_cdummy, __pyx_n_s_cdelta_dummy, __pyx_n_s_lout, __pyx_n_s_lin, __pyx_n_s_do_dummy, __pyx_n_s_img_shape, __pyx_n_s_new_image, __pyx_n_s_out); if (unlikely(!__pyx_tuple__120)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1074; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__120);
   __Pyx_GIVEREF(__pyx_tuple__120);
-  __pyx_codeobj__121 = (PyObject*)__Pyx_PyCode_New(5, 0, 27, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__120, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_correct_LUT, 1074, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__121)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1074; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__121 = (PyObject*)__Pyx_PyCode_New(5, 0, 27, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__120, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_correct_LUT, 1074, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__121)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1074; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "_distortion.pyx":1135
+  /* "src/_distortion.pyx":1135
  * @cython.wraparound(False)
  * @cython.boundscheck(False)
  * def correct_CSR(image, shape, LUT, dummy=None, delta_dummy=None):             # <<<<<<<<<<<<<<
@@ -38397,9 +38397,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__122 = PyTuple_Pack(30, __pyx_n_s_image, __pyx_n_s_shape, __pyx_n_s_LUT, __pyx_n_s_dummy, __pyx_n_s_delta_dummy, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_idx, __pyx_n_s_size, __pyx_n_s_bins, __pyx_n_s_coef, __pyx_n_s_tmp, __pyx_n_s_error, __pyx_n_s_sum, __pyx_n_s_y, __pyx_n_s_t, __pyx_n_s_value, __pyx_n_s_cdummy, __pyx_n_s_cdelta_dummy, __pyx_n_s_lout, __pyx_n_s_lin, __pyx_n_s_data, __pyx_n_s_indices, __pyx_n_s_indptr, __pyx_n_s_do_dummy, __pyx_n_s_shape0, __pyx_n_s_shape1, __pyx_n_s_img_shape, __pyx_n_s_new_image, __pyx_n_s_out); if (unlikely(!__pyx_tuple__122)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1135; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__122);
   __Pyx_GIVEREF(__pyx_tuple__122);
-  __pyx_codeobj__123 = (PyObject*)__Pyx_PyCode_New(5, 0, 30, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__122, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_correct_CSR, 1135, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__123)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1135; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__123 = (PyObject*)__Pyx_PyCode_New(5, 0, 30, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__122, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_correct_CSR, 1135, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__123)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1135; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "_distortion.pyx":1198
+  /* "src/_distortion.pyx":1198
  * 
  * 
  * def uncorrect_LUT(image, shape, lut_point[:, :]LUT):             # <<<<<<<<<<<<<<
@@ -38409,9 +38409,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__124 = PyTuple_Pack(13, __pyx_n_s_image, __pyx_n_s_shape, __pyx_n_s_LUT, __pyx_n_s_idx, __pyx_n_s_j, __pyx_n_s_total, __pyx_n_s_coef, __pyx_n_s_out, __pyx_n_s_mask, __pyx_n_s_lmask, __pyx_n_s_lout, __pyx_n_s_lin, __pyx_n_s_val); if (unlikely(!__pyx_tuple__124)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1198; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__124);
   __Pyx_GIVEREF(__pyx_tuple__124);
-  __pyx_codeobj__125 = (PyObject*)__Pyx_PyCode_New(3, 0, 13, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__124, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_uncorrect_LUT, 1198, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__125)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1198; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__125 = (PyObject*)__Pyx_PyCode_New(3, 0, 13, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__124, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_uncorrect_LUT, 1198, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__125)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1198; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "_distortion.pyx":1231
+  /* "src/_distortion.pyx":1231
  * 
  * 
  * def uncorrect_CSR(image, shape, LUT):             # <<<<<<<<<<<<<<
@@ -38421,7 +38421,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__126 = PyTuple_Pack(17, __pyx_n_s_image, __pyx_n_s_shape, __pyx_n_s_LUT, __pyx_n_s_idx, __pyx_n_s_j, __pyx_n_s_nbins, __pyx_n_s_total, __pyx_n_s_coef, __pyx_n_s_lmask, __pyx_n_s_lout, __pyx_n_s_lin, __pyx_n_s_data, __pyx_n_s_indices, __pyx_n_s_indptr, __pyx_n_s_out, __pyx_n_s_mask, __pyx_n_s_val); if (unlikely(!__pyx_tuple__126)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__126);
   __Pyx_GIVEREF(__pyx_tuple__126);
-  __pyx_codeobj__127 = (PyObject*)__Pyx_PyCode_New(3, 0, 17, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__126, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mntdirect__scisoft_users_kieffe, __pyx_n_s_uncorrect_CSR, 1231, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__127)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__127 = (PyObject*)__Pyx_PyCode_New(3, 0, 17, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__126, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_jerome_workspace_pyFAI_src, __pyx_n_s_uncorrect_CSR, 1231, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__127)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "View.MemoryView":276
  *         return self.name
@@ -38585,14 +38585,14 @@ PyMODINIT_FUNC PyInit__distortion(void)
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   #endif
-  if (__pyx_module_is_main__distortion) {
+  if (__pyx_module_is_main_src___distortion) {
     if (PyObject_SetAttrString(__pyx_m, "__name__", __pyx_n_s_main) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    if (!PyDict_GetItemString(modules, "_distortion")) {
-      if (unlikely(PyDict_SetItemString(modules, "_distortion", __pyx_m) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!PyDict_GetItemString(modules, "src._distortion")) {
+      if (unlikely(PyDict_SetItemString(modules, "src._distortion", __pyx_m) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
   }
   #endif
@@ -38609,23 +38609,23 @@ PyMODINIT_FUNC PyInit__distortion(void)
   /*--- Variable export code ---*/
   /*--- Function export code ---*/
   /*--- Type init code ---*/
-  __pyx_vtabptr_11_distortion_Quad = &__pyx_vtable_11_distortion_Quad;
-  __pyx_vtable_11_distortion_Quad.get_box = (float (*)(struct __pyx_obj_11_distortion_Quad *, int, int, int __pyx_skip_dispatch))__pyx_f_11_distortion_4Quad_get_box;
-  __pyx_vtable_11_distortion_Quad.get_offset0 = (int (*)(struct __pyx_obj_11_distortion_Quad *, int __pyx_skip_dispatch))__pyx_f_11_distortion_4Quad_get_offset0;
-  __pyx_vtable_11_distortion_Quad.get_offset1 = (int (*)(struct __pyx_obj_11_distortion_Quad *, int __pyx_skip_dispatch))__pyx_f_11_distortion_4Quad_get_offset1;
-  __pyx_vtable_11_distortion_Quad.get_box_size0 = (int (*)(struct __pyx_obj_11_distortion_Quad *, int __pyx_skip_dispatch))__pyx_f_11_distortion_4Quad_get_box_size0;
-  __pyx_vtable_11_distortion_Quad.get_box_size1 = (int (*)(struct __pyx_obj_11_distortion_Quad *, int __pyx_skip_dispatch))__pyx_f_11_distortion_4Quad_get_box_size1;
-  __pyx_vtable_11_distortion_Quad.init_slope = (PyObject *(*)(struct __pyx_obj_11_distortion_Quad *, int __pyx_skip_dispatch))__pyx_f_11_distortion_4Quad_init_slope;
-  __pyx_vtable_11_distortion_Quad.calc_area_AB = (float (*)(struct __pyx_obj_11_distortion_Quad *, float, float, int __pyx_skip_dispatch))__pyx_f_11_distortion_4Quad_calc_area_AB;
-  __pyx_vtable_11_distortion_Quad.calc_area_BC = (float (*)(struct __pyx_obj_11_distortion_Quad *, float, float, int __pyx_skip_dispatch))__pyx_f_11_distortion_4Quad_calc_area_BC;
-  __pyx_vtable_11_distortion_Quad.calc_area_CD = (float (*)(struct __pyx_obj_11_distortion_Quad *, float, float, int __pyx_skip_dispatch))__pyx_f_11_distortion_4Quad_calc_area_CD;
-  __pyx_vtable_11_distortion_Quad.calc_area_DA = (float (*)(struct __pyx_obj_11_distortion_Quad *, float, float, int __pyx_skip_dispatch))__pyx_f_11_distortion_4Quad_calc_area_DA;
-  __pyx_vtable_11_distortion_Quad.calc_area = (float (*)(struct __pyx_obj_11_distortion_Quad *, int __pyx_skip_dispatch))__pyx_f_11_distortion_4Quad_calc_area;
-  if (PyType_Ready(&__pyx_type_11_distortion_Quad) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 214; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_type_11_distortion_Quad.tp_print = 0;
-  if (__Pyx_SetVtable(__pyx_type_11_distortion_Quad.tp_dict, __pyx_vtabptr_11_distortion_Quad) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 214; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (PyObject_SetAttrString(__pyx_m, "Quad", (PyObject *)&__pyx_type_11_distortion_Quad) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 214; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_11_distortion_Quad = &__pyx_type_11_distortion_Quad;
+  __pyx_vtabptr_3src_11_distortion_Quad = &__pyx_vtable_3src_11_distortion_Quad;
+  __pyx_vtable_3src_11_distortion_Quad.get_box = (float (*)(struct __pyx_obj_3src_11_distortion_Quad *, int, int, int __pyx_skip_dispatch))__pyx_f_3src_11_distortion_4Quad_get_box;
+  __pyx_vtable_3src_11_distortion_Quad.get_offset0 = (int (*)(struct __pyx_obj_3src_11_distortion_Quad *, int __pyx_skip_dispatch))__pyx_f_3src_11_distortion_4Quad_get_offset0;
+  __pyx_vtable_3src_11_distortion_Quad.get_offset1 = (int (*)(struct __pyx_obj_3src_11_distortion_Quad *, int __pyx_skip_dispatch))__pyx_f_3src_11_distortion_4Quad_get_offset1;
+  __pyx_vtable_3src_11_distortion_Quad.get_box_size0 = (int (*)(struct __pyx_obj_3src_11_distortion_Quad *, int __pyx_skip_dispatch))__pyx_f_3src_11_distortion_4Quad_get_box_size0;
+  __pyx_vtable_3src_11_distortion_Quad.get_box_size1 = (int (*)(struct __pyx_obj_3src_11_distortion_Quad *, int __pyx_skip_dispatch))__pyx_f_3src_11_distortion_4Quad_get_box_size1;
+  __pyx_vtable_3src_11_distortion_Quad.init_slope = (PyObject *(*)(struct __pyx_obj_3src_11_distortion_Quad *, int __pyx_skip_dispatch))__pyx_f_3src_11_distortion_4Quad_init_slope;
+  __pyx_vtable_3src_11_distortion_Quad.calc_area_AB = (float (*)(struct __pyx_obj_3src_11_distortion_Quad *, float, float, int __pyx_skip_dispatch))__pyx_f_3src_11_distortion_4Quad_calc_area_AB;
+  __pyx_vtable_3src_11_distortion_Quad.calc_area_BC = (float (*)(struct __pyx_obj_3src_11_distortion_Quad *, float, float, int __pyx_skip_dispatch))__pyx_f_3src_11_distortion_4Quad_calc_area_BC;
+  __pyx_vtable_3src_11_distortion_Quad.calc_area_CD = (float (*)(struct __pyx_obj_3src_11_distortion_Quad *, float, float, int __pyx_skip_dispatch))__pyx_f_3src_11_distortion_4Quad_calc_area_CD;
+  __pyx_vtable_3src_11_distortion_Quad.calc_area_DA = (float (*)(struct __pyx_obj_3src_11_distortion_Quad *, float, float, int __pyx_skip_dispatch))__pyx_f_3src_11_distortion_4Quad_calc_area_DA;
+  __pyx_vtable_3src_11_distortion_Quad.calc_area = (float (*)(struct __pyx_obj_3src_11_distortion_Quad *, int __pyx_skip_dispatch))__pyx_f_3src_11_distortion_4Quad_calc_area;
+  if (PyType_Ready(&__pyx_type_3src_11_distortion_Quad) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 214; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_type_3src_11_distortion_Quad.tp_print = 0;
+  if (__Pyx_SetVtable(__pyx_type_3src_11_distortion_Quad.tp_dict, __pyx_vtabptr_3src_11_distortion_Quad) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 214; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyObject_SetAttrString(__pyx_m, "Quad", (PyObject *)&__pyx_type_3src_11_distortion_Quad) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 214; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_3src_11_distortion_Quad = &__pyx_type_3src_11_distortion_Quad;
   if (PyType_Ready(&__pyx_type___pyx_array) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 99; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_type___pyx_array.tp_print = 0;
   __pyx_array_type = &__pyx_type___pyx_array;
@@ -38670,7 +38670,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
   /*--- Function import code ---*/
   /*--- Execution code ---*/
 
-  /* "_distortion.pyx":25
+  /* "src/_distortion.pyx":25
  * #
  * 
  * __author__ = "Jerome Kieffer"             # <<<<<<<<<<<<<<
@@ -38679,7 +38679,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_author, __pyx_kp_s_Jerome_Kieffer) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "_distortion.pyx":26
+  /* "src/_distortion.pyx":26
  * 
  * __author__ = "Jerome Kieffer"
  * __license__ = "GPLv3+"             # <<<<<<<<<<<<<<
@@ -38688,7 +38688,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_license, __pyx_kp_s_GPLv3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "_distortion.pyx":27
+  /* "src/_distortion.pyx":27
  * __author__ = "Jerome Kieffer"
  * __license__ = "GPLv3+"
  * __date__ = "26/10/2015"             # <<<<<<<<<<<<<<
@@ -38697,7 +38697,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_date, __pyx_kp_s_26_10_2015) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "_distortion.pyx":28
+  /* "src/_distortion.pyx":28
  * __license__ = "GPLv3+"
  * __date__ = "26/10/2015"
  * __copyright__ = "2011-2015, ESRF"             # <<<<<<<<<<<<<<
@@ -38706,7 +38706,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_copyright, __pyx_kp_s_2011_2015_ESRF) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "_distortion.pyx":29
+  /* "src/_distortion.pyx":29
  * __date__ = "26/10/2015"
  * __copyright__ = "2011-2015, ESRF"
  * __contact__ = "jerome.kieffer@esrf.fr"             # <<<<<<<<<<<<<<
@@ -38715,7 +38715,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_contact, __pyx_kp_s_jerome_kieffer_esrf_fr) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "_distortion.pyx":33
+  /* "src/_distortion.pyx":33
  * import cython
  * cimport numpy
  * import numpy             # <<<<<<<<<<<<<<
@@ -38727,7 +38727,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_numpy, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "_distortion.pyx":39
+  /* "src/_distortion.pyx":39
  * from libc.string cimport memset, memcpy
  * from libc.math cimport floor, ceil, fabs
  * import logging             # <<<<<<<<<<<<<<
@@ -38739,7 +38739,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_logging, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "_distortion.pyx":40
+  /* "src/_distortion.pyx":40
  * from libc.math cimport floor, ceil, fabs
  * import logging
  * import threading             # <<<<<<<<<<<<<<
@@ -38751,7 +38751,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_threading, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "_distortion.pyx":41
+  /* "src/_distortion.pyx":41
  * import logging
  * import threading
  * import types             # <<<<<<<<<<<<<<
@@ -38763,7 +38763,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_types, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 41; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "_distortion.pyx":42
+  /* "src/_distortion.pyx":42
  * import threading
  * import types
  * import os             # <<<<<<<<<<<<<<
@@ -38775,7 +38775,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_os, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "_distortion.pyx":43
+  /* "src/_distortion.pyx":43
  * import types
  * import os
  * import sys             # <<<<<<<<<<<<<<
@@ -38787,7 +38787,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_sys, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 43; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "_distortion.pyx":44
+  /* "src/_distortion.pyx":44
  * import os
  * import sys
  * import time             # <<<<<<<<<<<<<<
@@ -38799,7 +38799,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_time, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 44; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "_distortion.pyx":45
+  /* "src/_distortion.pyx":45
  * import sys
  * import time
  * logger = logging.getLogger("pyFAI._distortion")             # <<<<<<<<<<<<<<
@@ -38817,7 +38817,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_logger, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 45; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "_distortion.pyx":46
+  /* "src/_distortion.pyx":46
  * import time
  * logger = logging.getLogger("pyFAI._distortion")
  * from .detectors import detector_factory             # <<<<<<<<<<<<<<
@@ -38838,7 +38838,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "_distortion.pyx":47
+  /* "src/_distortion.pyx":47
  * logger = logging.getLogger("pyFAI._distortion")
  * from .detectors import detector_factory
  * from .utils import timeit, expand2d             # <<<<<<<<<<<<<<
@@ -38866,7 +38866,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "_distortion.pyx":48
+  /* "src/_distortion.pyx":48
  * from .detectors import detector_factory
  * from .utils import timeit, expand2d
  * try:             # <<<<<<<<<<<<<<
@@ -38880,7 +38880,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
     __Pyx_XGOTREF(__pyx_t_5);
     /*try:*/ {
 
-      /* "_distortion.pyx":49
+      /* "src/_distortion.pyx":49
  * from .utils import timeit, expand2d
  * try:
  *     import six             # <<<<<<<<<<<<<<
@@ -38900,7 +38900,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "_distortion.pyx":50
+    /* "src/_distortion.pyx":50
  * try:
  *     import six
  * except ImportError:             # <<<<<<<<<<<<<<
@@ -38909,13 +38909,13 @@ PyMODINIT_FUNC PyInit__distortion(void)
  */
     __pyx_t_6 = PyErr_ExceptionMatches(__pyx_builtin_ImportError);
     if (__pyx_t_6) {
-      __Pyx_AddTraceback("_distortion", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("src._distortion", __pyx_clineno, __pyx_lineno, __pyx_filename);
       if (__Pyx_GetException(&__pyx_t_1, &__pyx_t_2, &__pyx_t_7) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L4_except_error;}
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_GOTREF(__pyx_t_7);
 
-      /* "_distortion.pyx":51
+      /* "src/_distortion.pyx":51
  *     import six
  * except ImportError:
  *     from .third_party import six             # <<<<<<<<<<<<<<
@@ -38955,7 +38955,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
     __pyx_L9_try_end:;
   }
 
-  /* "_distortion.pyx":52
+  /* "src/_distortion.pyx":52
  * except ImportError:
  *     from .third_party import six
  * import fabio             # <<<<<<<<<<<<<<
@@ -38967,7 +38967,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_fabio, __pyx_t_7) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 52; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "_distortion.pyx":58
+  /* "src/_distortion.pyx":58
  *     numpy.float32_t coef
  * 
  * dtype_lut = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])             # <<<<<<<<<<<<<<
@@ -39019,7 +39019,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_dtype_lut, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "_distortion.pyx":59
+  /* "src/_distortion.pyx":59
  * 
  * dtype_lut = numpy.dtype([("idx", numpy.int32), ("coef", numpy.float32)])
  * cdef bint NEED_DECREF = sys.version_info < (2, 7) and numpy.version.version < "1.5"             # <<<<<<<<<<<<<<
@@ -39054,9 +39054,9 @@ PyMODINIT_FUNC PyInit__distortion(void)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_10 = __pyx_t_11;
   __pyx_L12_bool_binop_done:;
-  __pyx_v_11_distortion_NEED_DECREF = __pyx_t_10;
+  __pyx_v_3src_11_distortion_NEED_DECREF = __pyx_t_10;
 
-  /* "_distortion.pyx":531
+  /* "src/_distortion.pyx":531
  * 
  * 
  * class Distortion(object):             # <<<<<<<<<<<<<<
@@ -39070,83 +39070,83 @@ PyMODINIT_FUNC PyInit__distortion(void)
   __Pyx_GIVEREF(__pyx_builtin_object);
   __pyx_t_1 = __Pyx_CalculateMetaclass(NULL, __pyx_t_2); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 531; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_7 = __Pyx_Py3MetaclassPrepare(__pyx_t_1, __pyx_t_2, __pyx_n_s_Distortion, __pyx_n_s_Distortion, (PyObject *) NULL, __pyx_n_s_distortion, __pyx_kp_s_This_class_applies_a_distortion); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 531; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_7 = __Pyx_Py3MetaclassPrepare(__pyx_t_1, __pyx_t_2, __pyx_n_s_Distortion, __pyx_n_s_Distortion, (PyObject *) NULL, __pyx_n_s_src__distortion, __pyx_kp_s_This_class_applies_a_distortion); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 531; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_7);
 
-  /* "_distortion.pyx":539
+  /* "src/_distortion.pyx":539
  * 
  *     """
  *     def __init__(self, detector="detector", shape=None):             # <<<<<<<<<<<<<<
  *         """
  *         @param detector: detector instance or detector name
  */
-  __pyx_t_9 = __Pyx_CyFunction_NewEx(&__pyx_mdef_11_distortion_10Distortion_1__init__, 0, __pyx_n_s_Distortion___init, NULL, __pyx_n_s_distortion, __pyx_d, ((PyObject *)__pyx_codeobj__100)); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_9 = __Pyx_CyFunction_NewEx(&__pyx_mdef_3src_11_distortion_10Distortion_1__init__, 0, __pyx_n_s_Distortion___init, NULL, __pyx_n_s_src__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__100)); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_9);
   __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_9, __pyx_tuple__101);
   if (PyObject_SetItem(__pyx_t_7, __pyx_n_s_init, __pyx_t_9) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-  /* "_distortion.pyx":558
+  /* "src/_distortion.pyx":558
  *         self.delta0 = self.delta1 = None  # max size of an pixel on a regular grid ...
  * 
  *     def __repr__(self):             # <<<<<<<<<<<<<<
  *         return os.linesep.join(["Distortion correction for detector:",
  *                                 self.detector.__repr__()])
  */
-  __pyx_t_9 = __Pyx_CyFunction_NewEx(&__pyx_mdef_11_distortion_10Distortion_3__repr__, 0, __pyx_n_s_Distortion___repr, NULL, __pyx_n_s_distortion, __pyx_d, ((PyObject *)__pyx_codeobj__103)); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 558; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_9 = __Pyx_CyFunction_NewEx(&__pyx_mdef_3src_11_distortion_10Distortion_3__repr__, 0, __pyx_n_s_Distortion___repr, NULL, __pyx_n_s_src__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__103)); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 558; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_9);
   if (PyObject_SetItem(__pyx_t_7, __pyx_n_s_repr, __pyx_t_9) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 558; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-  /* "_distortion.pyx":562
+  /* "src/_distortion.pyx":562
  *                                 self.detector.__repr__()])
  * 
  *     def calc_pos(self):             # <<<<<<<<<<<<<<
  *         if self.pos is None:
  *             with self._sem:
  */
-  __pyx_t_9 = __Pyx_CyFunction_NewEx(&__pyx_mdef_11_distortion_10Distortion_5calc_pos, 0, __pyx_n_s_Distortion_calc_pos, NULL, __pyx_n_s_distortion, __pyx_d, ((PyObject *)__pyx_codeobj__105)); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 562; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_9 = __Pyx_CyFunction_NewEx(&__pyx_mdef_3src_11_distortion_10Distortion_5calc_pos, 0, __pyx_n_s_Distortion_calc_pos, NULL, __pyx_n_s_src__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__105)); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 562; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_9);
   if (PyObject_SetItem(__pyx_t_7, __pyx_n_s_calc_pos, __pyx_t_9) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 562; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-  /* "_distortion.pyx":587
+  /* "src/_distortion.pyx":587
  *     @cython.wraparound(False)
  *     @cython.boundscheck(False)
  *     def calc_LUT_size(self):             # <<<<<<<<<<<<<<
  *         """
  *         Considering the "half-CCD" spline from ID11 which describes a (1025,2048) detector,
  */
-  __pyx_t_9 = __Pyx_CyFunction_NewEx(&__pyx_mdef_11_distortion_10Distortion_7calc_LUT_size, 0, __pyx_n_s_Distortion_calc_LUT_size, NULL, __pyx_n_s_distortion, __pyx_d, ((PyObject *)__pyx_codeobj__107)); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 587; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_9 = __Pyx_CyFunction_NewEx(&__pyx_mdef_3src_11_distortion_10Distortion_7calc_LUT_size, 0, __pyx_n_s_Distortion_calc_LUT_size, NULL, __pyx_n_s_src__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__107)); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 587; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_9);
   if (PyObject_SetItem(__pyx_t_7, __pyx_n_s_calc_LUT_size, __pyx_t_9) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 587; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-  /* "_distortion.pyx":626
+  /* "src/_distortion.pyx":626
  *     @cython.boundscheck(False)
  *     @cython.cdivision(True)
  *     def calc_LUT(self):             # <<<<<<<<<<<<<<
  *         cdef:
  *             int i, j, ms, ml, ns, nl, shape0, shape1, delta0, delta1, buffer_size, i0, i1, size
  */
-  __pyx_t_9 = __Pyx_CyFunction_NewEx(&__pyx_mdef_11_distortion_10Distortion_9calc_LUT, 0, __pyx_n_s_Distortion_calc_LUT, NULL, __pyx_n_s_distortion, __pyx_d, ((PyObject *)__pyx_codeobj__109)); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 626; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_9 = __Pyx_CyFunction_NewEx(&__pyx_mdef_3src_11_distortion_10Distortion_9calc_LUT, 0, __pyx_n_s_Distortion_calc_LUT, NULL, __pyx_n_s_src__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__109)); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 626; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_9);
   if (PyObject_SetItem(__pyx_t_7, __pyx_n_s_calc_LUT, __pyx_t_9) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 626; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-  /* "_distortion.pyx":723
+  /* "src/_distortion.pyx":723
  *     @cython.wraparound(False)
  *     @cython.boundscheck(False)
  *     def correct(self, image):             # <<<<<<<<<<<<<<
  *         """
  *         Correct an image based on the look-up table calculated ...
  */
-  __pyx_t_9 = __Pyx_CyFunction_NewEx(&__pyx_mdef_11_distortion_10Distortion_11correct, 0, __pyx_n_s_Distortion_correct, NULL, __pyx_n_s_distortion, __pyx_d, ((PyObject *)__pyx_codeobj__111)); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 723; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_9 = __Pyx_CyFunction_NewEx(&__pyx_mdef_3src_11_distortion_10Distortion_11correct, 0, __pyx_n_s_Distortion_correct, NULL, __pyx_n_s_src__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__111)); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 723; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_9);
   if (PyObject_SetItem(__pyx_t_7, __pyx_n_s_correct, __pyx_t_9) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 723; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-  /* "_distortion.pyx":764
+  /* "src/_distortion.pyx":764
  *         return out[:img_shape[0], :img_shape[1]]
  * 
  *     @timeit             # <<<<<<<<<<<<<<
@@ -39156,14 +39156,14 @@ PyMODINIT_FUNC PyInit__distortion(void)
   __pyx_t_8 = __Pyx_GetModuleGlobalName(__pyx_n_s_timeit); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 764; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_8);
 
-  /* "_distortion.pyx":765
+  /* "src/_distortion.pyx":765
  * 
  *     @timeit
  *     def uncorrect(self, image):             # <<<<<<<<<<<<<<
  *         """
  *         Take an image which has been corrected and transform it into it's raw (with loss of information)
  */
-  __pyx_t_12 = __Pyx_CyFunction_NewEx(&__pyx_mdef_11_distortion_10Distortion_13uncorrect, 0, __pyx_n_s_Distortion_uncorrect, NULL, __pyx_n_s_distortion, __pyx_d, ((PyObject *)__pyx_codeobj__113)); if (unlikely(!__pyx_t_12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 765; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_12 = __Pyx_CyFunction_NewEx(&__pyx_mdef_3src_11_distortion_10Distortion_13uncorrect, 0, __pyx_n_s_Distortion_uncorrect, NULL, __pyx_n_s_src__distortion, __pyx_d, ((PyObject *)__pyx_codeobj__113)); if (unlikely(!__pyx_t_12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 765; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_12);
   __pyx_t_13 = NULL;
   if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_8))) {
@@ -39194,7 +39194,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
   if (PyObject_SetItem(__pyx_t_7, __pyx_n_s_uncorrect, __pyx_t_9) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 765; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-  /* "_distortion.pyx":531
+  /* "src/_distortion.pyx":531
  * 
  * 
  * class Distortion(object):             # <<<<<<<<<<<<<<
@@ -39209,7 +39209,7 @@ PyMODINIT_FUNC PyInit__distortion(void)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "_distortion.pyx":796
+  /* "src/_distortion.pyx":796
  * @cython.wraparound(False)
  * @cython.boundscheck(False)
  * def calc_size(float[:, :, :, :] pos not None, shape, numpy.int8_t[:, :] mask=None):             # <<<<<<<<<<<<<<
@@ -39221,12 +39221,12 @@ PyMODINIT_FUNC PyInit__distortion(void)
   __pyx_k__75 = __pyx_t_15;
   __pyx_t_15.memview = NULL;
   __pyx_t_15.data = NULL;
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_11_distortion_5calc_size, NULL, __pyx_n_s_distortion); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 796; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_3src_11_distortion_5calc_size, NULL, __pyx_n_s_src__distortion); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 796; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_calc_size, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 796; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "_distortion.pyx":842
+  /* "src/_distortion.pyx":842
  * @cython.cdivision(True)
  * def calc_LUT(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
  *              numpy.int8_t[:, :] mask=None):             # <<<<<<<<<<<<<<
@@ -39239,19 +39239,19 @@ PyMODINIT_FUNC PyInit__distortion(void)
   __pyx_t_16.memview = NULL;
   __pyx_t_16.data = NULL;
 
-  /* "_distortion.pyx":841
+  /* "src/_distortion.pyx":841
  * @cython.boundscheck(False)
  * @cython.cdivision(True)
  * def calc_LUT(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,             # <<<<<<<<<<<<<<
  *              numpy.int8_t[:, :] mask=None):
  *     """
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_11_distortion_7calc_LUT, NULL, __pyx_n_s_distortion); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 841; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_3src_11_distortion_7calc_LUT, NULL, __pyx_n_s_src__distortion); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 841; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_calc_LUT, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 841; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "_distortion.pyx":956
+  /* "src/_distortion.pyx":956
  * @cython.cdivision(True)
  * def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,
  *              numpy.int8_t[:, :] mask=None):             # <<<<<<<<<<<<<<
@@ -39264,67 +39264,67 @@ PyMODINIT_FUNC PyInit__distortion(void)
   __pyx_t_17.memview = NULL;
   __pyx_t_17.data = NULL;
 
-  /* "_distortion.pyx":955
+  /* "src/_distortion.pyx":955
  * @cython.boundscheck(False)
  * @cython.cdivision(True)
  * def calc_CSR(float[:, :, :, :] pos not None, shape, bin_size, max_pixel_size,             # <<<<<<<<<<<<<<
  *              numpy.int8_t[:, :] mask=None):
  *     """
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_11_distortion_9calc_CSR, NULL, __pyx_n_s_distortion); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 955; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_3src_11_distortion_9calc_CSR, NULL, __pyx_n_s_src__distortion); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 955; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_calc_CSR, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 955; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "_distortion.pyx":1074
+  /* "src/_distortion.pyx":1074
  * @cython.wraparound(False)
  * @cython.boundscheck(False)
  * def correct_LUT(image, shape, lut_point[:, :] LUT not None, dummy=None, delta_dummy=None):             # <<<<<<<<<<<<<<
  *     """
  *     Correct an image based on the look-up table calculated ...
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_11_distortion_11correct_LUT, NULL, __pyx_n_s_distortion); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1074; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_3src_11_distortion_11correct_LUT, NULL, __pyx_n_s_src__distortion); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1074; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_correct_LUT, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1074; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "_distortion.pyx":1135
+  /* "src/_distortion.pyx":1135
  * @cython.wraparound(False)
  * @cython.boundscheck(False)
  * def correct_CSR(image, shape, LUT, dummy=None, delta_dummy=None):             # <<<<<<<<<<<<<<
  *     """
  *     Correct an image based on the look-up table calculated ...
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_11_distortion_13correct_CSR, NULL, __pyx_n_s_distortion); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1135; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_3src_11_distortion_13correct_CSR, NULL, __pyx_n_s_src__distortion); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1135; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_correct_CSR, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1135; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "_distortion.pyx":1198
+  /* "src/_distortion.pyx":1198
  * 
  * 
  * def uncorrect_LUT(image, shape, lut_point[:, :]LUT):             # <<<<<<<<<<<<<<
  *     """
  *     Take an image which has been corrected and transform it into it's raw (with loss of information)
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_11_distortion_15uncorrect_LUT, NULL, __pyx_n_s_distortion); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1198; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_3src_11_distortion_15uncorrect_LUT, NULL, __pyx_n_s_src__distortion); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1198; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_uncorrect_LUT, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1198; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "_distortion.pyx":1231
+  /* "src/_distortion.pyx":1231
  * 
  * 
  * def uncorrect_CSR(image, shape, LUT):             # <<<<<<<<<<<<<<
  *     """
  *     Take an image which has been corrected and transform it into it's raw (with loss of information)
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_11_distortion_17uncorrect_CSR, NULL, __pyx_n_s_distortion); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_3src_11_distortion_17uncorrect_CSR, NULL, __pyx_n_s_src__distortion); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_uncorrect_CSR, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "_distortion.pyx":1
+  /* "src/_distortion.pyx":1
  * #!/usr/bin/env python             # <<<<<<<<<<<<<<
  * # -*- coding: utf-8 -*-
  * #
@@ -39468,11 +39468,11 @@ PyMODINIT_FUNC PyInit__distortion(void)
   __PYX_XDEC_MEMVIEW(&__pyx_t_17, 1);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init _distortion", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init src._distortion", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     Py_DECREF(__pyx_m); __pyx_m = 0;
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init _distortion");
+    PyErr_SetString(PyExc_ImportError, "init src._distortion");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -42699,7 +42699,7 @@ __pyx_fail:
     return result;
 }
 
-static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsds_nn_struct___pyx_t_11_distortion_lut_point(PyObject *obj) {
+static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsds_nn_struct___pyx_t_3src_11_distortion_lut_point(PyObject *obj) {
     __Pyx_memviewslice result = { 0, 0, { 0 }, { 0 }, { 0 } };
     __Pyx_BufFmt_StackElem stack[2];
     int axes_specs[] = { (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED), (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED) };
@@ -42710,7 +42710,7 @@ static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsds_n
     }
     retcode = __Pyx_ValidateAndInit_memviewslice(axes_specs, 0,
                                                  PyBUF_RECORDS, 2,
-                                                 &__Pyx_TypeInfo_nn_struct___pyx_t_11_distortion_lut_point, stack,
+                                                 &__Pyx_TypeInfo_nn_struct___pyx_t_3src_11_distortion_lut_point, stack,
                                                  &result, obj);
     if (unlikely(retcode == -1))
         goto __pyx_fail;
@@ -43813,7 +43813,7 @@ __pyx_fail:
     return result;
 }
 
-static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsdsds_nn_struct___pyx_t_11_distortion_lut_point(PyObject *obj) {
+static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsdsds_nn_struct___pyx_t_3src_11_distortion_lut_point(PyObject *obj) {
     __Pyx_memviewslice result = { 0, 0, { 0 }, { 0 }, { 0 } };
     __Pyx_BufFmt_StackElem stack[2];
     int axes_specs[] = { (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED), (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED), (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED) };
@@ -43824,7 +43824,7 @@ static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsdsds
     }
     retcode = __Pyx_ValidateAndInit_memviewslice(axes_specs, 0,
                                                  PyBUF_RECORDS, 3,
-                                                 &__Pyx_TypeInfo_nn_struct___pyx_t_11_distortion_lut_point, stack,
+                                                 &__Pyx_TypeInfo_nn_struct___pyx_t_3src_11_distortion_lut_point, stack,
                                                  &result, obj);
     if (unlikely(retcode == -1))
         goto __pyx_fail;

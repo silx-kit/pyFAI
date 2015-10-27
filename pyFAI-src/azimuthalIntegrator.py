@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/09/2015"
+__date__ = "27/10/2015"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -1784,13 +1784,12 @@ class AzimuthalIntegrator(Geometry):
                                     mask=mask,
                                     dummy=dummy,
                                     delta_dummy=delta_dummy)
-
+        shape = data.shape
         mask = self.create_mask(data, mask, dummy, delta_dummy, mode="numpy")
         tth = self.twoThetaArray(data.shape)[mask]
         chi = self.chiArray(data.shape)[mask]
         data = data.astype(numpy.float32)[mask]
 
-        # ??? idem here
         if dark is None:
             dark = self.darkcurrent
         if dark is not None:
@@ -1801,8 +1800,9 @@ class AzimuthalIntegrator(Geometry):
         if flat is not None:
             data /= flat[mask]
 
-        if correctSolidAngle is not None:
-            data /= self.solidAngleArray(data.shape)[mask]
+        if correctSolidAngle:
+            print(data.shape, shape)
+            data /= self.solidAngleArray(shape)[mask]
 
         if dummy is None:
             I, binsChi, bins2Th, _, _ = histogram.histogram2d(pos0=chi, pos1=tth,
@@ -3408,7 +3408,7 @@ class AzimuthalIntegrator(Geometry):
         @param npt_rad: number of radial points
         @param npt_azim: number of azimuthal points
         @param unit: unit to be used for integration
-        @param method: pathway for integration and sort 
+        @param method: pathway for integration and sort
         @param percentile: which percentile use for cutting out
         @param mask: masked out pixels array
         @param restore_mask: masked pixels have the same value as input data provided
