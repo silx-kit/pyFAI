@@ -119,23 +119,24 @@ def display(data):
     six.moves.input()
 
 
-def build_detector(data):
+def build_detector(data, filename="filename.h5"):
     """
     """
     det = pyFAI.detectors.Xpad_flat()
-    det._pixel_corners = numpy.zeros((det.shape[0], det.shape[1], 4, 3))
+    det._pixel_corners = numpy.zeros((det.shape[0], det.shape[1], 4, 3), dtype="float32")
     det.uniform_pixel = False
+    det.flat = False
     for j in range(8):
         for i in range(7):
             k = j * 7 + i
             module = bilinear.convert_corner_2D_to_4D(3, *one_module(data[2 * k], data[2 * k + 1]))
             det._pixel_corners[(j * 120):(j + 1) * 120, i * 80:(i + 1) * 80, :, :] = module
-    det.save("filename.h5")
+    det.save(filename)
     return det
 
 if __name__ == "__main__":
     data = parse(sys.argv[1])
     print(data)
     print(data.shape)
-    build_detector(data)
+    build_detector(data, os.path.splitext(sys.argv[1])[0] + ".h5")
     display(data)

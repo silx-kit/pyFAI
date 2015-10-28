@@ -64,7 +64,7 @@ test_script:
   - "%CMD_IN_ENV% python setup.py test"
   - "mkdir empty_folder"
   - "cd empty_folder"
-  - "%CMD_IN_ENV% python ../run_tests.py"
+  - "python ../run_tests.py"
 
   # Move back to the project folder
   - "cd .."

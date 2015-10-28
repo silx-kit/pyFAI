@@ -30,6 +30,11 @@ __contact__ = "jerome.kieffer@esrf.fr"
 import cython
 import numpy
 cimport numpy
+# ctypedef fused floating:
+#     cython.float
+#     cython.double
+#     numpy.float32_t
+#     numpy.float64_t
 from cython cimport floating  # float32 or float64
 from cython.parallel import prange
 
@@ -37,7 +42,6 @@ import logging
 logger = logging.getLogger("pyFAI.bilinear")
 
 from .utils import timeit
-include "bilinear.pxi"
 
 
 @cython.boundscheck(False)
@@ -80,11 +84,11 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
 
         if p1 < 0:
             with gil:
-                print("f1= %s"%f1)
+                print("f1= %s" % f1)
 
         if p1 < 0:
             with gil:
-                print("f2= %s"%f2)
+                print("f2= %s" % f2)
 
         if p1 >= dim1:
             if p1>dim1:
@@ -149,7 +153,7 @@ def convert_corner_2D_to_4D(int ndim,
     @param d1: 2D position in dim1 (shape +1)
     @param d2: 2D position in dim2 (shape +1)
     @param d3: 2D position in dim3 (z) (shape +1)
-    @param pos: 4D array with position of pixels corners
+    @return: pos 4D array with position of pixels corners
     """
     cdef int shape0, shape1, i, j
     #  edges position are n+1 compared to number of pixels
@@ -177,5 +181,6 @@ def convert_corner_2D_to_4D(int ndim,
                 pos[i, j, 1, 0] += d3[i + 1, j]
                 pos[i, j, 2, 0] += d3[i + 1, j + 1]
                 pos[i, j, 3, 0] += d3[i, j + 1]
-
     return pos
+
+include "bilinear.pxi"
