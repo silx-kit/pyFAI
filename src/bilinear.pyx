@@ -23,7 +23,7 @@
 
 __author__ = "Jerome Kieffer"
 __license__ = "GPLv3+"
-__date__ = "08/05/2015"
+__date__ = "28/10/2015"
 __copyright__ = "2011-2015, ESRF"
 __contact__ = "jerome.kieffer@esrf.fr"
 
@@ -141,7 +141,7 @@ def calc_cartesian_positions(floating[::1] d1, floating[::1] d2,
 def convert_corner_2D_to_4D(int ndim,
                             floating[:, ::1] d1 not None,
                             floating[:, ::1] d2 not None,
-                            floating[:, ::1] d3 = None):
+                            floating[:, ::1] d3=None):
     """
     Convert 2 (or 3) arrays of corner position into a 4D array of pixel corner coordinates
 
@@ -155,8 +155,8 @@ def convert_corner_2D_to_4D(int ndim,
     #  edges position are n+1 compared to number of pixels
     shape0 = d1.shape[0] - 1
     shape1 = d2.shape[1] - 1
-    assert d1.shape[0]==d2.shape[0]
-    assert d1.shape[1]==d2.shape[1]
+    assert d1.shape[0] == d2.shape[0]
+    assert d1.shape[1] == d2.shape[1]
     cdef numpy.ndarray[numpy.float32_t, ndim = 4] pos = numpy.zeros((shape0, shape1, 4, ndim), dtype=numpy.float32)
     for i in prange(shape0, nogil=True, schedule="static"):
         for j in range(shape1):
@@ -168,7 +168,7 @@ def convert_corner_2D_to_4D(int ndim,
             pos[i, j, 2, ndim - 1] += d2[i + 1, j + 1]
             pos[i, j, 3, ndim - 2] += d1[i, j + 1]
             pos[i, j, 3, ndim - 1] += d2[i, j + 1]
-    if (d3 is not None) and ndim==3:
+    if (d3 is not None) and (ndim == 3):
         assert d1.shape[0] == d3.shape[0]
         assert d1.shape[1] == d3.shape[1]
         for i in prange(shape0, nogil=True, schedule="static"):
