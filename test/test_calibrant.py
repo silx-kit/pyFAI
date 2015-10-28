@@ -39,14 +39,18 @@ import unittest
 import logging
 import sys
 import os
-import six
+
 if __name__ == '__main__':
     import pkgutil
     __path__ = pkgutil.extend_path([os.path.dirname(__file__)], "pyFAI.test")
 from .utilstest import getLogger, UtilsTest
-
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
+try:
+    import six
+except:
+    from pyFAI.third_party import six 
+
 
 from pyFAI.calibrant import Calibrant, ALL_CALIBRANTS, Cell
 from pyFAI.detectors import ALL_DETECTORS
