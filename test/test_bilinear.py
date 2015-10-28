@@ -26,13 +26,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
+from __future__ import absolute_import, division, print_function
 __doc__ = "test suite for bilinear interpolator class"
 __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/10/2015"
+__date__ = "28/10/2015"
 
 
 import unittest
@@ -48,11 +48,6 @@ from .utilstest import getLogger, UtilsTest
 logger = getLogger(__file__)
 pyFAI = sys.modules["pyFAI"]
 from pyFAI import bilinear
-# from pyFAI.azimuthalIntegrator import AzimuthalIntegrator
-# if logger.getEffectiveLevel() <= logging.INFO:
-#    import pylab
-# from pyFAI import bilinear
-# bilinear = sys.modules["pyFAI.bilinear"]
 
 
 class TestBilinear(unittest.TestCase):
@@ -106,9 +101,10 @@ class TestConversion(unittest.TestCase):
         Nx = 1000
         Ny = 1024
         y, x = numpy.mgrid[:Ny + 1, :Nx + 1]
-        y = y.astype(float)
-        x = x.astype(float)
-        pos = bilinear.convert_corner_2D_to_4D(3, y, x)
+        y = y.astype("float64")
+        x = x.astype("float64")
+        print(y.dtype, x.dtype)
+        pos = bilinear.convert_corner_2D_to_4D(3, numpy.ascontiguousarray(y), numpy.ascontiguousarray(x))
         y1, x1, z1 = bilinear.calc_cartesian_positions(y.ravel(), x.ravel(), pos)
         self.assert_(numpy.allclose(y.ravel(), y1), "Maximum error on y is %s" % (abs(y.ravel() - y1).max()))
         self.assert_(numpy.allclose(x.ravel(), x1), "Maximum error on x is %s" % (abs(x.ravel() - x1).max()))
