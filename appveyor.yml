@@ -47,11 +47,12 @@ install:
   #pip install -i https://pypi.anaconda.org/carlkl/simple scipy
   - "%CMD_IN_ENV% pip install --trusted-host pypi.anaconda.org -i https://pypi.anaconda.org/carlkl/simple numpy scipy"
   - "%CMD_IN_ENV% pip install --trusted-host www.edna-site.org -r requirements_appveyor.txt"
-  - "%CMD_IN_ENV% python setup.py build bdist_wheel bdist_msi"
+  - "%CMD_IN_ENV% python setup.py build --no-openmp" #OpenMP is not available on python 3.4
+  - "%CMD_IN_ENV% python setup.py bdist_wheel bdist_msi"
   - ps: "ls dist"
 
-  # Install the genreated wheel package to test it
-  - "pip install --pre --no-index --find-links dist/ pyFAI"
+  # Install the generated wheel package to test it
+  - "%CMD_IN_ENV% pip install --pre --no-index --find-links dist/ pyFAI"
 
 # Not a .NET project, we build fabio in the install step instead
 build: false
@@ -59,11 +60,10 @@ build: false
 test_script:
   # Change to a non-source folder to make sure we run the tests on the
   # installed library.
-  - "python setup.py test"
+  - "%CMD_IN_ENV% python setup.py test"
   - "mkdir empty_folder"
   - "cd empty_folder"
-
-  - "python ../run_tests.py"
+  - "%CMD_IN_ENV% python ../run_tests.py"
 
   # Move back to the project folder
   - "cd .."
