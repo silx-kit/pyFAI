@@ -101,9 +101,9 @@ class TestConversion(unittest.TestCase):
         Nx = 1000
         Ny = 1024
         y, x = numpy.mgrid[:Ny + 1, :Nx + 1]
-        y = y.astype("float64")
-        x = x.astype("float64")
-        print(y.dtype, x.dtype)
+        y = y.astype(float)
+        x = x.astype(float)
+        #print(y.dtype, x.dtype)
         pos = bilinear.convert_corner_2D_to_4D(3, numpy.ascontiguousarray(y), numpy.ascontiguousarray(x))
         y1, x1, z1 = bilinear.calc_cartesian_positions(y.ravel(), x.ravel(), pos)
         self.assert_(numpy.allclose(y.ravel(), y1), "Maximum error on y is %s" % (abs(y.ravel() - y1).max()))
