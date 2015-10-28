@@ -1,7 +1,8 @@
 #List of dependencies used by pyFAI.
-# PIP installs them from pre-compiled wheels, optimized for Travis-CI Python environment.   
+# PIP installs them from pre-compiled wheels, optimized for Travis-CI Python environment.
 --find-links http://www.edna-site.org/pub/wheelhouse
 
+wheel
 numpy
 cython
 pillow
