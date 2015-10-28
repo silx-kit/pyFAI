@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    Project: Fast Azimuthal integration
-#             https://github.com/kif/pyFAI
+#             https://github.com/pyFAI/pyFAI
 #
 #    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
 #
@@ -108,7 +108,7 @@ def check_cython():
     except ImportError:
         return False
     else:
-        if Cython.Compiler.Version.version < "0.19":
+        if Cython.Compiler.Version.version < "0.21":
             return False
     return True
 
