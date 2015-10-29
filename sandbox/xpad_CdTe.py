@@ -44,6 +44,12 @@ import six
 logger = logging.getLogger("xpad")
 from pyFAI import bilinear
 
+pix = 130e-6
+dx = 80
+dy = 120
+nx = 7
+ny = 8
+
 
 def parse(fname):
     """
@@ -69,7 +75,7 @@ def parse(fname):
     return numpy.array(res)
 
 
-def one_module(p1, p2, dx=80, dy=120, pix=1.3e-4):
+def one_module(p1, p2):
     """
     @param p1: actual coordinate of the point close to the origin
     @param p2:  actual coordinate of the point close to the end of first line
@@ -126,59 +132,67 @@ def build_detector(data, filename="filename.h5"):
     det._pixel_corners = numpy.zeros((det.shape[0], det.shape[1], 4, 3), dtype="float32")
     det.uniform_pixel = False
     det.IS_FLAT = False
-    for j in range(8):
-        for i in range(7):
-            k = j * 7 + i
-
+    det._pixel1 = pix
+    det._pixel2 = pix
+    det.mask = None
+    for j in range(ny):
+        for i in range(nx):
+            k = j * nx + i
             module = bilinear.convert_corner_2D_to_4D(3, *one_module(data[2 * k], data[2 * k + 1]))
-            det._pixel_corners[(j * 120):(j + 1) * 120, i * 80:(i + 1) * 80, :, :] = module
+            det._pixel_corners[(j * dy):(j + 1) * dy, i * dx:(i + 1) * dx, :, :] = module
     det.save(filename)
     return det
 
 
-def validate(det):
+def validate(det, ref="d007_new.h5"):
     """
     """
+    if os.path.exists(ref):
+        refc = pyFAI.detectors.NexusDetector(ref).get_pixel_corners()
+    else:
+        refc = None
     from matplotlib import pyplot
-    refc = pyFAI.detectors.NexusDetector("d007_new.h5").get_pixel_corners()
+
     newc = det.get_pixel_corners()
     fig = pyplot.figure()
 
     p0z = fig.add_subplot(2, 3, 1)
-    p0z.plot(refc[:, 0, 0, 0], label="ref")
     p0z.plot(newc[:, 0, 0, 0], label="new")
     p0z.set_title("dim1_z")
-    p0z.legend()
 
     p0y = fig.add_subplot(2, 3, 2)
-    p0y.plot(refc[:, 0, 0, 1], label="ref")
     p0y.plot(newc[:, 0, 0, 1], label="new")
     p0y.set_title("dim1_y")
-    p0y.legend()
 
     p0x = fig.add_subplot(2, 3, 3)
-    p0x.plot(refc[:, 0, 0, 2], label="ref")
     p0x.plot(newc[:, 0, 0, 2], label="new")
     p0x.set_title("dim1_x")
-    p0x.legend()
 
     p1z = fig.add_subplot(2, 3, 4)
-    p1z.plot(refc[0, :, 0, 0], label="ref")
     p1z.plot(newc[0, :, 0, 0], label="new")
     p1z.set_title("dim2_z")
-    p1z.legend()
 
     p1y = fig.add_subplot(2, 3, 5)
-    p1y.plot(refc[0, :, 0, 1], label="ref")
     p1y.plot(newc[0, :, 0, 1], label="new")
     p1y.set_title("dim2_y")
-    p1y.legend()
 
     p1x = fig.add_subplot(2, 3, 6)
-    p1x.plot(refc[0, :, 0, 2], label="ref")
     p1x.plot(newc[0, :, 0, 2], label="new")
     p1x.set_title("dim2_x")
+
+    if refc is not None:
+        p0z.plot(refc[:, 0, 0, 0], label="ref")
+        p0y.plot(refc[:, 0, 0, 1], label="ref")
+        p0x.plot(refc[:, 0, 0, 2], label="ref")
+        p1z.plot(refc[0, :, 0, 0], label="ref")
+        p1y.plot(refc[0, :, 0, 1], label="ref")
+        p1x.plot(refc[0, :, 0, 2], label="ref")
+    p0z.legend()
+    p0y.legend()
+    p0x.legend()
+    p1y.legend()
     p1x.legend()
+    p1z.legend()
 
     fig.show()
     six.moves.input()
