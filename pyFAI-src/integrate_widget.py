@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/10/2015"
+__date__ = "29/10/2015"
 __satus__ = "development"
 
 import sys
@@ -132,7 +132,7 @@ class Browser(QtGui.QMainWindow):
 class AIWidget(QtGui.QWidget):
     """
     """
-    def __init__(self, input_data=None, output_path=None, output_format=None, slow_dim=None, fast_dim=None):
+    def __init__(self, input_data=None, output_path=None, output_format=None, slow_dim=None, fast_dim=None, json_file=".azimint.json"):
         self.units = {}
         self.ai = AzimuthalIntegrator()
         self.input_data = input_data
@@ -142,6 +142,7 @@ class AIWidget(QtGui.QWidget):
         self.fast_dim = fast_dim
         self.name = None
         self._sem = threading.Semaphore()
+        self.json_file = json_file
         QtGui.QWidget.__init__(self)
         try:
             uic.loadUi(UIC, self)
@@ -163,7 +164,7 @@ class AIWidget(QtGui.QWidget):
         self.saveButton = self.buttonBox.button(QtGui.QDialogButtonBox.Save)
         self.resetButton = self.buttonBox.button(QtGui.QDialogButtonBox.Reset)
         self.connect(self.okButton, SIGNAL("clicked()"), self.proceed)
-        self.connect(self.saveButton, SIGNAL("clicked()"), self.dump)
+        self.connect(self.saveButton, SIGNAL("clicked()"), self.save_config)
         self.connect(self.buttonBox, SIGNAL("helpRequested()"), self.help)
         self.connect(self.buttonBox, SIGNAL("rejected()"), self.die)
         self.connect(self.resetButton, SIGNAL("clicked()"), self.restore)
@@ -173,7 +174,7 @@ class AIWidget(QtGui.QWidget):
         self.connect(self.platform, SIGNAL("currentIndexChanged(int)"), self.platform_changed)
         self.set_validators()
         self.assign_unit()
-        self.restore()
+        self.restore(self.json_file)
         self.progressBar.setValue(0)
         self.hdf5_path = None
 
@@ -442,10 +443,10 @@ class AIWidget(QtGui.QWidget):
         Dump the status of the current widget to a file in JSON
 
         @param filename: path where to save the config
-        @type filename: str
+        @type filename: string
 
         """
-        logger.info("Dump!")
+        logger.info("Dump to %s" % filename)
         to_save = { "poni": str_(self.poni.text()).strip(),
                     "detector": str_(self.detector.currentText()).lower(),
                     "wavelength":float_(self.wavelength.text()),
@@ -505,7 +506,7 @@ class AIWidget(QtGui.QWidget):
         @type filename: str
 
         """
-        logger.debug("Restore")
+        logger.debug("Restore from %s" % filename)
         if not op.isfile(filename):
             logger.error("No such file: %s" % filename)
             return
@@ -758,4 +759,10 @@ class AIWidget(QtGui.QWidget):
             self.device.removeItem(i)
         self.device.addItems([i.name for i in platform.devices])
 
-
+    def save_config(self):
+        logger.debug("save_config")
+        json_file = str_(QtGui.QFileDialog.getSaveFileName(caption="Save configuration as json",
+                                                           directory=self.json_file,
+                                                           filter="Config (*.json)"))
+        if json_file:
+            self.dump(json_file)
