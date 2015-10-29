@@ -46,7 +46,7 @@ install:
   # Install the build and runtime dependencies of the project.
   #pip install -i https://pypi.anaconda.org/carlkl/simple scipy
   - "%CMD_IN_ENV% pip install --trusted-host pypi.anaconda.org -i https://pypi.anaconda.org/carlkl/simple numpy scipy"
-  - "%CMD_IN_ENV% pip install --trusted-host www.edna-site.org -i https://pypi.anaconda.org/carlkl/simple pyparsing --upgrade"
+  - "%CMD_IN_ENV% pip install --trusted-host www.edna-site.org -i http://www.edna-site.org/pub/wheelhouse pyparsing cython --upgrade"
   - "%CMD_IN_ENV% pip install --trusted-host www.edna-site.org -r requirements_appveyor.txt"
   - "del src\\histogram.c"
   - "%CMD_IN_ENV% python setup.py build --no-openmp" #OpenMP is not available on python 3.4

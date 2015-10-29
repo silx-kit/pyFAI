@@ -1,6 +1,7 @@
 os:
   - linux
 #  - osx
+
 language: python
 python:
   - "2.6"
@@ -13,6 +14,7 @@ python:
 #virtualenv:
 #    system_site_packages: NO !!!
 # the system python and the one from travis have been compiled with different options
+
 addons:
   apt:
     packages:
@@ -44,9 +46,10 @@ install:
   - "pip install --trusted-host www.edna-site.org -r requirements_travis.txt"
 #  - "python info_platform.py"
   - "python setup.py build"
-  - "pip install ."
+  - "python setup.py bdist_wheel"
+  - "pip install --pre --no-index --find-links dist/ pyFAI"
 
 # command to run tests
 script:
-  - "python setup.py build test"
-  - "(WD=$(pwd); cd /tmp && python $WD/run_tests.py -v)"
+  - "python setup.py test"
+  - "mkdir empty_folder; cd empty_folder; python ../run_tests.py -v; cd .."
