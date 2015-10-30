@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/10/2015"
+__date__ = "30/10/2015"
 
 import os
 import sys
@@ -91,6 +91,7 @@ def one_module(p1, p2):
     x /= numpy.linalg.norm(x)
     z = numpy.array([0., 0., 1.])
     y = numpy.cross(z, x)
+    z = numpy.cross(x, y)
     m = pix * numpy.vstack((x, y, z))
     vol_xyz = numpy.zeros((dy + 1, dx + 1, 3))
     vol_xyz[:, :, 1] = numpy.outer(numpy.arange(0, dy + 1), numpy.ones(dx + 1))
