@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/10/2015"
+__date__ = "30/10/2015"
 __satus__ = "development"
 
 import sys
@@ -132,7 +132,7 @@ class Browser(QtGui.QMainWindow):
 class AIWidget(QtGui.QWidget):
     """
     """
-    def __init__(self, input_data=None, output_path=None, output_format=None, slow_dim=None, fast_dim=None, json_file=".azimint.json"):
+    def __init__(self, input_data=None, output_path=None, output_format=None, slow_dim=None, fast_dim=None, json_file=None):
         self.units = {}
         self.ai = AzimuthalIntegrator()
         self.input_data = input_data
@@ -142,7 +142,7 @@ class AIWidget(QtGui.QWidget):
         self.fast_dim = fast_dim
         self.name = None
         self._sem = threading.Semaphore()
-        self.json_file = json_file
+        self.json_file = json_file or ".azimint.json"
         QtGui.QWidget.__init__(self)
         try:
             uic.loadUi(UIC, self)

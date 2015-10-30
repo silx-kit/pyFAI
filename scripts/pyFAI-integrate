@@ -95,7 +95,7 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
                       dest="gui", default=True, action="store_false",
                       help="Process the dataset without showing the user interface.")
     parser.add_argument("-j", "--json",
-                      dest="json", default=None,
+                      dest="json", default=".azimint.json",
                       help="Configuration file containing the processing to be done")
     parser.add_argument("args", metavar='FILE', type=str, nargs='*',
                         help="Files to be integrated")
