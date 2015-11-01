@@ -747,7 +747,7 @@ if __name__ == "__main__":
     if options.opencl_acc:
         b.bench_cpu1d_lut_ocl("ACC")
     if options.split_cpu:
-        b.bench_cpu1d
+        b.bench_cpu1d()
 
 #    b.bench_cpu1d_ocl_lut("CPU")
 #    b.bench_gpu1d("gpu", True)

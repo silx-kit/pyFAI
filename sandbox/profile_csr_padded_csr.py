@@ -36,7 +36,7 @@ print("Workgroup size = ", workgroup_size)
 out_cyt_bb = pyFAI.splitBBox.histoBBox1d(data, ai._ttha, ai._dttha, bins=1000)[1]
 
 
-t0 = time.time()                
+t0 = time.time()
 cyt_lut = pyFAI.splitBBoxLUT.HistoBBox1d(
                  ai._ttha,
                  ai._dttha,
@@ -45,17 +45,17 @@ cyt_lut = pyFAI.splitBBoxLUT.HistoBBox1d(
 t1 = time.time()
 print("Time to create cython lut: ", t1-t0)
 
-t0 = time.time()   
+t0 = time.time()
 cyt_lut.generate_csr()
 t1 = time.time()
 print("Time to generate CSR from cython lut: ", t1-t0)
 
-t0 = time.time()                
+t0 = time.time()
 cyt_lut.generate_csr_padded(workgroup_size)
 t1 = time.time()
 print("Time to generate CSR_Padded from cython lut: ", t1-t0)
 
-t0 = time.time()                
+t0 = time.time()
 cyt_csr = pyFAI.splitBBoxCSR.HistoBBox1d(
                  ai._ttha,
                  ai._dttha,
@@ -64,7 +64,7 @@ cyt_csr = pyFAI.splitBBoxCSR.HistoBBox1d(
 t1 = time.time()
 print("Time to create cython CSR: ", t1-t0)
 
-t0 = time.time()                
+t0 = time.time()
 cyt_csr_padded = pyFAI.splitBBoxCSR.HistoBBox1d(
                  ai._ttha,
                  ai._dttha,
@@ -99,7 +99,7 @@ print("ÖpenCL CSR on: ", ocl_csr.device)
 ocl_csr.log_profile()
 print("")
 print("================================================================================")
-ocl_csr.__del__
+ocl_csr.__del__()
 
 
 ocl_csr_padded = ocl_azim_csr.OCL_CSR_Integrator(cyt_csr_padded.lut, data.size, "GPU",profile=True, padded=True, block_size=workgroup_size)
