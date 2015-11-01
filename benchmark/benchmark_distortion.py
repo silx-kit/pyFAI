@@ -72,4 +72,4 @@ dis.calc_init()""" % (splinefile, method, device, wg)
             t = timeit.Timer("dis.correct(data)", setup)
             tmin = min([i / number for i in t.repeat(repeat=repeat, number=number)])
             print("%s %s (wg=%2s) t=%.3fms" % (method, device, wg, tmin * 1000.0))
-            gc.collect
+            gc.collect()

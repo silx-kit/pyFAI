@@ -26,7 +26,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/09/2013"
+__date__ = "01/11/2015"
 __status__ = "developement"
 __docformat__ = 'restructuredtext'
 
@@ -170,7 +170,7 @@ class Processor(object):
 
     def get_config(self):
         """
-        retrieves the configuration 
+        retrieves the configuration
         """
         to_save = { "poni": str(self.poni.text()).strip(),
                     "detector": str(self.detector.currentText()).lower(),
@@ -235,7 +235,6 @@ class Processor(object):
         """
         Reset and Process a dummy image to ensure eveything is initialized
         """
-        self.shapeIn
         self.ai.reset()
 
         if self.do_2D():

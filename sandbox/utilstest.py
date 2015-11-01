@@ -24,9 +24,7 @@
 # THE SOFTWARE.
 
 
-"""
-Adapter for utilstest from pyFAI.test
-"""
+"""Adapter for utilstest from pyFAI.test"""
 
 import sys
 import os
