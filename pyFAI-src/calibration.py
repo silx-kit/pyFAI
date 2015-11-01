@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/10/2015"
+__date__ = "01/11/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -783,7 +783,7 @@ class AbstractCalibration(object):
             words = ans.split()
             action = words[0]
             if action in [ "help", "?"]:
-                help == True
+                help = True
             if help:
                 for what in self.HELP.keys():
                     if action.startswith(what):
