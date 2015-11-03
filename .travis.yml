@@ -52,4 +52,4 @@ install:
 # command to run tests
 script:
   - "python setup.py test"
-  - "mkdir empty_folder; cd empty_folder; python ../run_tests.py -v; cd .."
+  - "python ../run_tests.py"
