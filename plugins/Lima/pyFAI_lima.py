@@ -13,7 +13,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/03/2015"
+__date__ = "01/11/2015"
 __satus__ = "development"
 
 import sys
@@ -218,4 +218,4 @@ on a set of files grabbed from a Basler camera using LImA."""
         sys.exit(app.exec_())
     else:
         raise Exception("No sense!")
-        pass
+
