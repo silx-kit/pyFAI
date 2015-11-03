@@ -3,8 +3,8 @@
 PyFAI is a library to deal with diffraction images for data reduction.
 This chapter describes the project from the computer engineering point of view.
 
-PyFAI is an open source project licensed under the GPL mainly written in Python (v2.6, 2.7) and heavily relying on the
-python scientific ecosystem: numpy, scipy and matplotlib. It provides high performances image treatment thanks to cython and
+PyFAI is an open source project licensed under the GPL mainly written in Python (v2.6 or newer, 3.2 or newer) and heavily relying on the
+Python scientific ecosystem: numpy, scipy and matplotlib. It provides high performances image treatment thanks to cython and
 OpenCL... but only a C-compiler is needed to build that.
 
 Programming language
@@ -73,10 +73,12 @@ dropped the support for OpenMP (clang v3.5 supports OpenMP under linux but not d
 Multiple solution exist, pick any of those:
 
 * Install a recent version of GCC (>=4.2)
-* Use Xcode without OpenMP, using the --no-openmp flag for setup.py. You will need Cython installed
+* Use Xcode without OpenMP, using the --no-openmp flag for setup.py. You will need Cython installed and remove the src/histogram.c
 
-C files are generated from cython source and distributed. Cython is only needed for developing new binary modules.
-If you want to generate your own C files, make sure your local Cython version supports memory-views (available from Cython v0.17 and newer),
+C files are generated from cython source and distributed. Cython is only needed
+for developing new binary modules.
+If you want to generate your own C files, make sure your local Cython version
+supports memory-views and fused-types (available from Cython v0.19 and newer),
 unless your Cython files will not be compiled or used.
 
 Building procedure
@@ -85,13 +87,16 @@ Building procedure
 As most of the python projects:
 ...............................
 
-::
-    python setup.py build install
+.. code::
+
+    python setup.py build
+    pip install . 
+    
 
 There are few specific options to setup.py:
 
 * --no-cython: do not use cython (even if present) and use the C source code provided by the development team
-* --no-openmp: if you compiler lacks OpenMP support, like Xcode on MacOSX
+* --no-openmp: if you compiler lacks OpenMP support, like Xcode on MacOSX. Delete also *src.histogram.c* and install cython.
 * --with-testimages: build the source distribution including all test images. Download 200MB of test images to create a self consistent tar-ball.
 
 
@@ -101,18 +106,19 @@ Test suites
 To run the test an internet connection is needed as 200MB of test images will be downloaded.
 ............................................................................................
 
-..
+.. code::
+
     python setup.py build test
 
 Setting the environment variable http_proxy can be necessary (depending on your network):
 
-..
+.. code::
 
    export http_proxy=http://proxy.site.org:3128
 
 Especially at ESRF, the configuration of the network proxy can be obtained by phoning on the hotline: 24-24.
 
-PyFAI comes with 30 test-suites (183 tests in total) representing a coverage of 67%.
+PyFAI comes with 31 test-suites (183 tests in total) representing a coverage of 60%.
 This ensures both non regression over time and ease the distribution under different platforms:
 pyFAI runs under Linux, MacOSX and Windows (in each case in 32 and 64 bits).
 Test may not pass on computer featuring less than 2GB of memory or 32 bit architectures.
@@ -128,19 +134,13 @@ Test may not pass on computer featuring less than 2GB of memory or 32 bit archit
 Continuous integration
 ----------------------
 Continuous integration is made by a home-made scripts which checks out the latest release and builds and runs the test every night.
-Nightly builds are available for debian7-64 bits in:
-
-..
-    http://www.edna-site.org/pub/debian/binary/
+`Nightly builds <http://www.edna-site.org/pub/debian/binary/>`_are available for debian7-64 bits in:
 
 In addition some "cloud-based" tools are used to ensure a larger coverage of operating systems/environment.
-They rely on a "wheelhouse" located on:
+They rely on a `"local wheelhouse" <http://www.edna-site.org/pub/debian/wheelhouse/>`_.
 
-..
-    http://www.edna-site.org/pub/debian/wheelhouse/
- 
 Those wheels are optimized for Travis-CI, AppVeyor and ReadTheDocs, using them is not recommended as your Python configuration may differ
-(and those libraries couls crash your system)
+(and those libraries could even crash your system).
 
 Travis-CI
 .........
