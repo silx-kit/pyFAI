@@ -73,7 +73,7 @@ Examples
 .. toctree::
    :maxdepth: 2
 
-   MultiGeometry
+   MultiGeometry/index
 
 Conclusion
 ==========
