@@ -52,4 +52,4 @@ install:
 # command to run tests
 script:
   - "python setup.py test"
-  - "python ../run_tests.py"
+  - "python ./run_tests.py"
