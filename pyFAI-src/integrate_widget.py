@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/10/2015"
+__date__ = "05/11/2015"
 __satus__ = "development"
 
 import sys
@@ -154,23 +154,24 @@ class AIWidget(QtGui.QWidget):
         self.detector.addItems([i.capitalize() for i in self.all_detectors])
         self.detector.setCurrentIndex(self.all_detectors.index("detector"))
         # connect file selection windows
-        self.connect(self.file_poni, SIGNAL("clicked()"), self.select_ponifile)
-        self.connect(self.file_splinefile, SIGNAL("clicked()"), self.select_splinefile)
-        self.connect(self.file_mask_file, SIGNAL("clicked()"), self.select_maskfile)
-        self.connect(self.file_dark_current, SIGNAL("clicked()"), self.select_darkcurrent)
-        self.connect(self.file_flat_field, SIGNAL("clicked()"), self.select_flatfield)
+        self.file_poni.clicked.connect(self.select_ponifile)
+        self.file_splinefile.clicked.connect(self.select_splinefile)
+        self.file_mask_file.clicked.connect(self.select_maskfile)
+        self.file_dark_current.clicked.connect(self.select_darkcurrent)
+        self.file_flat_field.clicked.connect(self.select_flatfield)
         # connect button bar
         self.okButton = self.buttonBox.button(QtGui.QDialogButtonBox.Ok)
         self.saveButton = self.buttonBox.button(QtGui.QDialogButtonBox.Save)
         self.resetButton = self.buttonBox.button(QtGui.QDialogButtonBox.Reset)
-        self.connect(self.okButton, SIGNAL("clicked()"), self.proceed)
-        self.connect(self.saveButton, SIGNAL("clicked()"), self.save_config)
-        self.connect(self.buttonBox, SIGNAL("helpRequested()"), self.help)
-        self.connect(self.buttonBox, SIGNAL("rejected()"), self.die)
-        self.connect(self.resetButton, SIGNAL("clicked()"), self.restore)
+        self.cancelButton = self.buttonBox.button(QtGui.QDialogButtonBox.Cancel)
+        self.okButton.clicked.connect(self.proceed)
+        self.saveButton.clicked.connect(self.save_config)
+        self.buttonBox.helpRequested.connect(self.help)
+        self.cancelButton.clicked.connect(self.die)
+        self.resetButton.clicked.connect(self.restore)
 
         self.connect(self.detector, SIGNAL("currentIndexChanged(int)"), self.detector_changed)
-        self.connect(self.do_OpenCL, SIGNAL("clicked()"), self.openCL_changed)
+        self.do_OpenCL.clicked.connect(self.openCL_changed)
         self.connect(self.platform, SIGNAL("currentIndexChanged(int)"), self.platform_changed)
         self.set_validators()
         self.assign_unit()
