@@ -196,7 +196,7 @@ class AIWidget(QtGui.QWidget):
             elif unit.REPR == "r_mm":
                 self.units[unit] = self.r_mm
             else:
-                logger.warning("Unit unknown to GUI %s" % unit)
+                logger.debug("Unit unknown to GUI %s" % unit)
 
 
     def set_validators(self):
@@ -490,13 +490,14 @@ class AIWidget(QtGui.QWidget):
                 break
         else:
             logger.warning("Undefined unit !!!")
-        try:
-            with open(filename, "w") as myFile:
-                json.dump(to_save, myFile, indent=4)
-        except IOError as error:
-            logger.error("Error while saving config: %s" % error)
-        else:
-            logger.debug("Saved")
+        if filename is not None:
+            try:
+                with open(filename, "w") as myFile:
+                    json.dump(to_save, myFile, indent=4)
+            except IOError as error:
+                logger.error("Error while saving config: %s" % error)
+            else:
+                logger.debug("Saved")
         return to_save
 
     def restore(self, filename=".azimint.json"):

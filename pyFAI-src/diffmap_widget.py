@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "22/10/2015"
+__date__ = "05/11/2015"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -43,16 +43,56 @@ Module with GUI for diffraction mapping experiments
 """
 # __all__ = ["date", "version_info", "strictversion", "hexversion"]
 
-from .gui_utils import QtGui, QtCore, QtUiTools, uic
+from .gui_utils import QtGui, QtCore, uic
 from .utils import float_, int_, str_, get_ui_file
+from .integrate_widget import AIWidget
+import logging
+logger = logging.getLogger("diffmap_widget")
 
-uif = "diffmap.ui"
+
+class IntegrateWidget(QtGui.QDialog):
+    def __init__(self, parent=None):
+        QtGui.QDialog.__init__(self)
+        self.widget = AIWidget()
+        self.layout = QtGui.QGridLayout(self)
+        self.layout.addWidget(self.widget)
+        self.widget.okButton.clicked.disconnect()
+        self.widget.cancelButton.clicked.disconnect()
+        self.widget.okButton.clicked.connect(self.accept)
+        self.widget.cancelButton.clicked.connect(self.reject)
+
+    def get_config(self):
+        return self.widget.dump()
 
 class DiffMapWidget(QtGui.QWidget):
+
+    uif = "diffmap.ui"
+
     def __init__(self):
         QtGui.QWidget.__init__(self)
+
+        self.integration_config = {}
+
         try:
-            uic.loadUi(get_ui_file(uif), self)
+            uic.loadUi(get_ui_file(self.uif), self)
         except AttributeError as error:
             logger.error("I looks like your installation suffers from this bug: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348")
             raise RuntimeError("Please upgrade your installation of PyQt (or apply the patch)")
+        self.aborted = False
+        self.create_connections()
+
+    def create_connections(self):
+        """Signal-slot connection
+        """
+        self.configureDiffraction.clicked.connect(self.configure_diffraction)
+
+    def configure_diffraction(self, *arg, **kwarg):
+        """
+        """
+        logger.info("in configure_diffraction")
+        iw = IntegrateWidget(self)
+        res = iw.exec_()
+        if res == QtGui.QDialog.Accepted:
+            self.integration_config = iw.get_config()
+        print(self.integration_config)
+

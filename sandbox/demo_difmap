@@ -29,8 +29,19 @@
 from __future__ import absolute_import, print_function, with_statement, division
 
 __doc__ = """Demonstrator for diffraction mapping """
-__date__ = "23/10/2015"
+__date__ = "05/11/2015"
 __license__ = "MIT"
 
-import unittest
+import sys
+# import utilstest
+
+from pyFAI.diffmap_widget import DiffMapWidget
+
+if __name__ == "__main__":
+    from PyQt4 import QtGui
+    app = QtGui.QApplication([])
+    window = DiffMapWidget()
+    window.show()
+    sys.exit(app.exec_())
+
 
