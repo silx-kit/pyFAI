@@ -30,24 +30,19 @@ References:
 Installation
 ------------
 
-pyFAI can be downloaded from the http://forge.epn-campus.eu/projects/azimuthal/files.
-Presently the source code has been distributed as a zip package and a compressed
-tarball. Download either one and unpack it.
-Developement is done on Github: https://github.com/pyFAI/pyFAI
+The latest release of pyFAI can be downloaded from
+`Github<https://github.com/pyFAI/pyFAI/archive/master.zip>`_.
+Presently the source code has been distributed as a zip package.
+Download it one and unpack it::
 
-e.g.
+    unzip master.zip
 
-::
-    tar xvzf pyFAI-0.11.0.tar.gz
+As developement is also done on Github,
+`development branch is also available <https://github.com/kif/pyFAI/archive/master.zip>`_
 
-or
+All files are unpacked into the directory pyFAI-master::
 
-::
-    unzip pyFAI-0.11.0.zip
-
-All files are unpacked into the directory pyFAI-0.11.0::
-
-    cd pyFAI-0.10.3
+    cd pyFAI-master
 
 Build it & test it::
 
@@ -72,15 +67,16 @@ installed version)::
 
     python setup.py install --user
 
-The newest development version can be obtained by checking it out from the git repository.::
+The newest development version can also be obtained by checking out from the git
+repository.::
 
     git clone https://github.com/pyFAI/pyFAI.git
     cd pyFAI
     python setup.py build bdist_wheel
     sudo pip install .
 
-If you want pyFAI to make use of your graphic card, please install pyopencl from:
-http://mathema.tician.de/software/pyopencl
+If you want pyFAI to make use of your graphic card, please install
+`pyopencl <http://mathema.tician.de/software/pyopencl>`_
 
 If you are using MS Windows you can also download a binary version packaged as executable
 installation files (Chose the one corresponding to your python version).
@@ -102,7 +98,7 @@ Documentation can be build using this command and Sphinx (installed on your comp
 Dependencies
 ------------
 
-Python 2.6, 2.7, 3.2, 3.3 or 3.4.
+Python 2.6, 2.7, 3.2, 3.3, 3.4 and 3.5.
 For full functionality of pyFAI the following modules need to be installed.
 
     * numpy 		- 	http://www.numpy.org
@@ -138,13 +134,19 @@ using apt-get these can be installed as::
 
     sudo apt-get install python-numpy python-scipy python-matplotlib  python-dev python-fabio python-pyopencl python-fftw python-qt4
 
-
-
 MacOSX
 ------
 
-You are advised to build pyFAI with the GCC compiler, clang (<3.5) laking the support of OpenMP.
-If you use Xcode5, append the "--no-openmp" option to deactivate multithreading in binary modules
+You are advised to build pyFAI with the GCC compiler, clang (<3.5) laking the
+support of OpenMP.
+If you use Xcode5, append the "--no-openmp" option to deactivate multithreading
+in binary modules.
+You will also need *cython* to re-generate the C-files and delete *src/histogram.c*
+before running::
+
+    pip install cython
+    python setup.py build --no-openmp
+
 
 Windows
 -------
@@ -152,7 +154,8 @@ Windows
 Under 32 bits windows, pyFAI can be built using The MinGW compiler. Unfortunately,
 pyFAI will be limited to small images as the memory consumption, limited to 2GB
 under windows, easy easily reached. The VisualStudio C++ compiler works as well.
-With 64 bits windows, the Visual Studio C++ compiler is the only one known to work correctly.
+With 64 bits windows, the Visual Studio C++ compiler is the only one known to
+work correctly.
 
 Dependencies for windows have been regrouped in our wheelhouse, just use::
 
