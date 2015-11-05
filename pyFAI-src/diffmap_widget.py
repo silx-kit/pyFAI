@@ -85,6 +85,7 @@ class DiffMapWidget(QtGui.QWidget):
         """Signal-slot connection
         """
         self.configureDiffraction.clicked.connect(self.configure_diffraction)
+        self.runButton.clicked.connect(self.start_processing)
 
     def configure_diffraction(self, *arg, **kwarg):
         """
@@ -95,4 +96,21 @@ class DiffMapWidget(QtGui.QWidget):
         if res == QtGui.QDialog.Accepted:
             self.integration_config = iw.get_config()
         print(self.integration_config)
+
+    def start_processing(self, *arg, **kwarg):
+        logger.info("in start_processing")
+        if not self.integration_config:
+            dialog = QtGui.QDialog(self)
+            lay = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom, dialog)
+            lab = QtGui.QLabel("You need to configure first the Azimuthal integration", dialog)
+            lay.addWidget(lab)
+            buttonBox = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel, QtCore.Qt.Horizontal, dialog)
+            lay.addWidget(buttonBox)
+            buttonBox.accepted.connect(dialog.accept)
+            buttonBox.rejected.connect(dialog.reject)
+            result = dialog.exec_()
+            if result == QtGui.QDialog.Accepted:
+                self.configure_diffraction()
+            else:
+                return
 

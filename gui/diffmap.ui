@@ -202,7 +202,7 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_5">
          <item>
-          <widget class="QPushButton" name="run">
+          <widget class="QPushButton" name="runButton">
            <property name="text">
             <string>Run</string>
            </property>
