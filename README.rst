@@ -145,6 +145,7 @@ You will also need *cython* to re-generate the C-files and delete *src/histogram
 before running::
 
     pip install cython
+    rm src/histogram.c
     python setup.py build --no-openmp
 
 
