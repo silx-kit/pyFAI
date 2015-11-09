@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "27/10/2015"
+__date__ = "09/11/2015"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -3348,27 +3348,28 @@ class AzimuthalIntegrator(Geometry):
             return
 
         dim1_unit = units.to_unit(dim1_unit)
-        header_keys = ["dist", "poni1", "poni2", "rot1", "rot2", "rot3",
-                       "chi_min", "chi_max",
-                       dim1_unit.REPR + "_min",
-                       dim1_unit.REPR + "_max",
-                       "pixelX", "pixelY",
-                       "dark", "flat", "polarization_factor", "normalization_factor"]
-        header = {"dist": str(self._dist),
-                  "poni1": str(self._poni1),
-                  "poni2": str(self._poni2),
-                  "rot1": str(self._rot1),
-                  "rot2": str(self._rot2),
-                  "rot3": str(self._rot3),
-                  "chi_min": str(dim2.min()),
-                  "chi_max": str(dim2.max()),
-                  dim1_unit.REPR + "_min": str(dim1.min()),
-                  dim1_unit.REPR + "_max": str(dim1.max()),
-                  "pixelX": str(self.pixel2),  # this is not a bug ... most people expect dim1 to be X
-                  "pixelY": str(self.pixel1),  # this is not a bug ... most people expect dim2 to be Y
-                  "polarization_factor": str(polarization_factor),
-                  "normalization_factor":str(normalization_factor)
-                  }
+        # TODO: propoerly manage ordered dict
+        try:
+            from collections import OrderedDict
+        except:
+            header = {}
+        else:
+            header = OrderedDict()
+
+        header["dist"] = str(self._dist)
+        header["poni1"] = str(self._poni1)
+        header["poni2"] = str(self._poni2)
+        header["rot1"] = str(self._rot1)
+        header["rot2"] = str(self._rot2)
+        header["rot3"] = str(self._rot3)
+        header["chi_min"] = str(dim2.min())
+        header["chi_max"] = str(dim2.max())
+        header[dim1_unit.REPR + "_min"] = str(dim1.min())
+        header[dim1_unit.REPR + "_max"] = str(dim1.max())
+        header["pixelX"] = str(self.pixel2)  # this is not a bug ... most people expect dim1 to be X
+        header["pixelY"] = str(self.pixel1)  # this is not a bug ... most people expect dim2 to be Y
+        header["polarization_factor"] = str(polarization_factor)
+        header["normalization_factor"] = str(normalization_factor)
 
         if self.splineFile:
             header["spline"] = str(self.splineFile)
@@ -3388,8 +3389,7 @@ class AzimuthalIntegrator(Geometry):
             header["key"] = f2d[key]
         try:
             img = fabio.edfimage.edfimage(data=I.astype("float32"),
-                                          header=header,
-                                          header_keys=header_keys)
+                                          header=header)
 
             if error is not None:
                 img.appendFrame(data=error, header={"EDF_DataBlockID": "1.Image.Error"})
