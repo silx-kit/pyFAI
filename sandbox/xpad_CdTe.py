@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/10/2015"
+__date__ = "09/11/2015"
 
 import os
 import sys
@@ -75,7 +75,7 @@ def parse(fname):
     return numpy.array(res)
 
 
-def one_module(p1, p2):
+def one_module(p1, p2, flat=False):
     """
     @param p1: actual coordinate of the point close to the origin
     @param p2:  actual coordinate of the point close to the end of first line
@@ -87,6 +87,9 @@ def one_module(p1, p2):
     """
     xyz1 = p1[1:4] / 1000.0  # in meter
     xyz2 = p2[1:4] / 1000.0  # in meter
+    if flat:
+        xyz1[2] = 0
+        xyz2[2] = 0
     x = xyz2 - xyz1
     x /= numpy.linalg.norm(x)
     z = numpy.array([0., 0., 1.])
@@ -126,20 +129,20 @@ def display(data):
     six.moves.input()
 
 
-def build_detector(data, filename="filename.h5"):
+def build_detector(data, filename="filename.h5", flat=False):
     """
     """
     det = pyFAI.detectors.Xpad_flat()
     det._pixel_corners = numpy.zeros((det.shape[0], det.shape[1], 4, 3), dtype="float32")
     det.uniform_pixel = False
-    det.IS_FLAT = False
+    det.IS_FLAT = flat
     det._pixel1 = pix
     det._pixel2 = pix
     det.mask = None
     for j in range(ny):
         for i in range(nx):
             k = j * nx + i
-            module = bilinear.convert_corner_2D_to_4D(3, *one_module(data[2 * k], data[2 * k + 1]))
+            module = bilinear.convert_corner_2D_to_4D(3, *one_module(data[2 * k], data[2 * k + 1], flat))
             det._pixel_corners[(j * dy):(j + 1) * dy, i * dx:(i + 1) * dx, :, :] = module
     det.save(filename)
     return det
@@ -198,12 +201,18 @@ def validate(det, ref="d007_new.h5"):
     fig.show()
     six.moves.input()
 
-
 if __name__ == "__main__":
-    data = parse(sys.argv[1])
+    from argparse import ArgumentParser
+    parser = ArgumentParser()
+    parser.add_argument("-f", "--flat", dest="flat", default=False, action="store_true",
+                        help="enforce the detector to be flat")
+    parser.add_argument("args", metavar='FILE', type=str, nargs='1',
+                         help="Metrology file to be processed (.csv)")
+    args = parser.parse_args()
+    data = parse(args.args)
     print(data)
     print(data.shape)
-    det = build_detector(data, os.path.splitext(sys.argv[1])[0] + ".h5")
+    det = build_detector(data, os.path.splitext(sys.argv[1])[0] + ".h5", flat=args.flat)
 
     validate(det)
     display(data)
