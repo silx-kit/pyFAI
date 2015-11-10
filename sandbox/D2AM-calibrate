@@ -121,9 +121,9 @@ class D2MultiCalib(MultiCalib):
             rec.extract_cpt(method=self.peakPicker)
             rec.refine()
             self.results[fn]["ai"] = rec.ai
-            self.results[fn]"recalib"] = rec
-        #todo:refinement all togeather with constains all distant the same and so on...
-        
+            self.results[fn]["recalib"] = rec
+        # todo:refinement all togeather with constains all distant the same and so on...
+
 
 
 # This is for debuging wtih rconsole
