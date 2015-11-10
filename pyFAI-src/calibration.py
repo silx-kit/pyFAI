@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "01/11/2015"
+__date__ = "10/11/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -1745,20 +1745,27 @@ class MultiCalib(object):
 #        lst.append("gaussian= %s" % self.gaussianWidth)
         return os.linesep.join(lst)
 
-    def parse(self):
+    def parse(self, exe=None, description=None, epilog=None):
         """
         parse options from command line
+        @param exe: name of the program (MX-calibrate)
+        @param description: Description of the program
         """
-        usage = "MX-Calibrate -w 1.54 -c CeO2 file1.cbf file2.cbf ..."
-        version = "MX-Calibrate from pyFAI version %s: %s" % (PyFAI_VERSION, PyFAI_DATE)
-        description = """
+        if exe is None:
+            exe = "MX-Calibrate"
+            usage = "%s -w 1.54 -c CeO2 file1.cbf file2.cbf ..." % exe
+            version = "%s from pyFAI version %s: %s" % (exe, PyFAI_VERSION, PyFAI_DATE)
+            description = """
         Calibrate automatically a set of frames taken at various sample-detector distance.
         Return the linear regression of the fit in funtion of the sample-setector distance.
         """
-        epilog = """This tool has been developed for ESRF MX-beamlines where an acceptable calibration is
+            epilog = """This tool has been developed for ESRF MX-beamlines where an acceptable calibration is
         usually present is the header of the image. PyFAI reads it and does a "recalib" on
         each of them before exporting a linear regression of all parameters versus this distance.
         """
+        else:
+            description = description or ""
+            epilog = epilog or ""
         parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
         parser.add_argument("-V", "--version", action='version', version=version)
         parser.add_argument("args", metavar="FILE", help="List of files to calibrate", nargs='+')
