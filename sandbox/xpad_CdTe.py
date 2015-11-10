@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "09/11/2015"
+__date__ = "10/11/2015"
 
 import os
 import sys
@@ -101,7 +101,7 @@ def one_module(p1, p2, flat=False):
     vol_xyz[:, :, 0] = numpy.outer(numpy.ones(dy + 1), numpy.arange(dx + 1))
     n = numpy.dot(vol_xyz, m) + xyz1
     return numpy.ascontiguousarray(n[:, :, 1]), numpy.ascontiguousarray(n[:, :, 0]), numpy.ascontiguousarray(n[:, :, 2])
-# TODO: Check inversion p3. Needs validation.
+    # NOTA Check inversion p3. actually not, + is OK.
 
 def display(data):
     """
@@ -205,14 +205,17 @@ if __name__ == "__main__":
     from argparse import ArgumentParser
     parser = ArgumentParser()
     parser.add_argument("-f", "--flat", dest="flat", default=False, action="store_true",
-                        help="enforce the detector to be flat")
+                        help="enforce the detector to be flat (advised)")
+    parser.add_argument("-o", "--output", dest="output", default=None,
+                        help="Nexus/HDF5 detector file")
     parser.add_argument("args", metavar='FILE', type=str, nargs='+',
                          help="Metrology file to be processed (.csv)")
     args = parser.parse_args()
     data = parse(args.args[0])
     print(data)
     print(data.shape)
-    det = build_detector(data, os.path.splitext(sys.argv[1])[0] + ".h5", flat=args.flat)
+    fname = args.output or os.path.splitext(args.args[0])[0] + ".h5"
+    det = build_detector(data, fname, flat=args.flat)
 
     validate(det)
     display(data)
