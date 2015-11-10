@@ -101,7 +101,7 @@ def one_module(p1, p2, flat=False):
     vol_xyz[:, :, 0] = numpy.outer(numpy.ones(dy + 1), numpy.arange(dx + 1))
     n = numpy.dot(vol_xyz, m) + xyz1
     return numpy.ascontiguousarray(n[:, :, 1]), numpy.ascontiguousarray(n[:, :, 0]), numpy.ascontiguousarray(n[:, :, 2])
-
+# TODO: Check inversion p3. Needs validation.
 
 def display(data):
     """
@@ -206,10 +206,10 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-f", "--flat", dest="flat", default=False, action="store_true",
                         help="enforce the detector to be flat")
-    parser.add_argument("args", metavar='FILE', type=str, nargs='1',
+    parser.add_argument("args", metavar='FILE', type=str, nargs='+',
                          help="Metrology file to be processed (.csv)")
     args = parser.parse_args()
-    data = parse(args.args)
+    data = parse(args.args[0])
     print(data)
     print(data.shape)
     det = build_detector(data, os.path.splitext(sys.argv[1])[0] + ".h5", flat=args.flat)

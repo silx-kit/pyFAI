@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/10/2015"
+__date__ = "10/11/2015"
 __status__ = "stable"
 __doc__ = """
 Module containing the description of all detectors with a factory to instantiate them
@@ -1300,8 +1300,8 @@ class ImXPadS10(Detector):
         for i in range(1, n):
             size[i * module_size - 1] = cls.BORDER_SIZE_RELATIVE
             size[i * module_size] = cls.BORDER_SIZE_RELATIVE
-        size[0] = cls.BORDER_SIZE_RELATIVE
-        size[-1] = cls.BORDER_SIZE_RELATIVE
+        # size[0] = cls.BORDER_SIZE_RELATIVE
+        # size[-1] = cls.BORDER_SIZE_RELATIVE
         return pixel_size * size
 
     def __init__(self, pixel1=130e-6, pixel2=130e-6):
@@ -1420,6 +1420,7 @@ class ImXPadS10(Detector):
 
     def from_control_points(self, points, border_relative_size=1.0):
         """
+        #DEPRECATED !!!! do not use !
         This methods allows the calculation of the pixel corners from a set
         of control points taked on each chip, 2 on each of them.
 
@@ -1553,6 +1554,21 @@ class Xpad_flat(ImXPadS10):
     def __repr__(self):
         return "Detector %s\t PixelSize= %.3e, %.3e m" % \
                 (self.name, self.pixel1, self.pixel2)
+
+    def calc_pixels_edges(self):
+        """
+        Calculate the position of the pixel edges, specific to the S540, d5 detector
+        """
+        if self._pixel_edges is None:
+            # all pixel have the same size along the vertical axis, some pixels are larger along the horizontal one
+            pixel_size1 = numpy.ones(self.MAX_SHAPE[0]) * self.PIXEL_SIZE[0]
+            pixel_size2 = self._calc_pixels_size(self.MAX_SHAPE[1], self.MODULE_SIZE[1], self.PIXEL_SIZE[1])
+            pixel_edges1 = numpy.zeros(self.MAX_SHAPE[0] + 1)
+            pixel_edges2 = numpy.zeros(self.MAX_SHAPE[1] + 1)
+            pixel_edges1[1:] = numpy.cumsum(pixel_size1)
+            pixel_edges2[1:] = numpy.cumsum(pixel_size2)
+            self._pixel_edges = pixel_edges1, pixel_edges2
+        return self._pixel_edges
 
 
     def calc_mask(self):
