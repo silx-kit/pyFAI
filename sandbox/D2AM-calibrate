@@ -1,0 +1,138 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+#    Project: Azimuthal integration
+#             https://github.com/pyFAI/pyFAI
+#
+#    Copyright (C) European Synchrotron Radiation Facility, Grenoble, France
+#
+#    Principal author:       Jérôme Kieffer (Jerome.Kieffer@ESRF.eu)
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+"""
+
+D2AM-calibrate is a tool to calibrate the distance of a detector from a set of powder diffraction patterns
+
+Usage:
+
+D2AM-calibrate -e 12 --c calibrant file1.edf file2.edf file3.edf
+
+calibrate the by hand the most distant frame then calibrate subsequently all frames
+
+"""
+
+__author__ = "Jerome Kieffer"
+__contact__ = "Jerome.Kieffer@ESRF.eu"
+__license__ = "GPLv3+"
+__copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
+__date__ = "10/11/2015"
+__satus__ = "development"
+
+import os, types, logging
+import pyFAI, pyFAI.calibration
+from pyFAI.calibration import MultiCalib
+
+try:
+    from rfoo.utils import rconsole
+    rconsole.spawn_server()
+except ImportError:
+    logging.debug("No socket opened for debugging. Please install rfoo")
+
+
+class D2MultiCalib(MultiCalib):
+    def process(self):
+        """
+        Processing specific to D2AM.
+        """
+        self.dataFiles.sort()
+        for fn in self.dataFiles:
+            fabimg = fabio.open(fn)
+            # Get metadata from header ....
+            wavelength = self.wavelength
+            dist = self.dist
+            if self.poni2:
+                centerX = self.poni2 / self.detector.pixel2
+            else:
+                centerX = None
+            if self.poni1:
+                centerY = self.poni1 / self.detector.pixel1
+            else:
+                centerY = None
+            if "_array_data.header_contents" in fabimg.header:
+                headers = fabimg.header["_array_data.header_contents"].lower().split()
+                if "detector_distance" in headers:
+                    dist = float(headers[headers.index("detector_distance") + 1])
+                if "wavelength" in headers:
+                    wavelength = float(headers[headers.index("wavelength") + 1]) * 1e-10
+                if "beam_xy" in headers:
+                    centerX = float(headers[headers.index("beam_xy") + 1][1:-1])
+                    centerY = float(headers[headers.index("beam_xy") + 2][:-1])
+            if dist is None:
+                digits = ""
+                for i in os.path.basename(fn):
+                    if i.isdigit() and not digits:
+                        digits += i
+                    elif i.isdigit():
+                        digits += i
+                    elif not i.isdigit() and digits:
+                        break
+                dist = int(digits) * 0.001
+            if centerX is None:
+                centerX = fabimg.data.shape[1] // 2
+            if centerY is None:
+                centerY = fabimg.data.shape[0] // 2
+            self.results[fn] = {"wavelength":wavelength, "dist":dist}
+            rec = Recalibration(dataFiles=[fn], darkFiles=self.darkFiles, flatFiles=self.flatFiles,
+                                                  detector=self.detector, calibrant=self.calibrant, wavelength=wavelength)
+            rec.outfile = os.path.splitext(fn)[0] + ".proc.edf"
+            rec.interactive = self.interactive
+            rec.gui = self.gui
+            rec.saturation = self.saturation
+            rec.mask = self.mask
+            rec.filter = self.filter
+            rec.cutBackground = self.cutBackground
+            rec.fixed = self.fixed
+            rec.max_rings = self.max_rings
+            rec.weighted = self.weighted
+            if centerY:
+                rec.ai.poni1 = centerY * self.detector.pixel1
+            if centerX:
+                rec.ai.poni2 = centerX * self.detector.pixel2
+            if dist:
+                rec.ai.dist = dist
+            # TODO: Define 3 rotation from headers
+            rec.ai.rot1 = 0
+            rec.ai.rot2 = value
+            rec.ai.rot3 = 0
+            rec.preprocess()
+            rec.extract_cpt(method=self.peakPicker)
+            rec.refine()
+            self.results[fn]["ai"] = rec.ai
+            self.results[fn]"recalib"] = rec
+        #todo:refinement all togeather with constains all distant the same and so on...
+        
+
+
+# This is for debuging wtih rconsole
+c = None
+if __name__ == "__main__":
+    c = D2MultiCalib()
+    c.parse("D2AM-calibrate", "Description", "epilog")
+    c.read_pixelsSize()
+    c.read_dSpacingFile()
+    c.process()
+    c.regression()
+    raw_input("Press enter to quit")
