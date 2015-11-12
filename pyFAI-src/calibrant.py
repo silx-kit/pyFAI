@@ -75,7 +75,7 @@ class Cell(object):
         self.beta = beta
         self.gamma = gamma
         self.lattice = lattice if lattice in self.lattices else "triclinic"
-        self._type = lattice_type if lattice_type in self.types else "P"
+
         self._volume = None
         self.S11 = None
         self.S12 = None
@@ -84,6 +84,9 @@ class Cell(object):
         self.S23 = None
         self.selection_rules = []
         "contains a list of functions returning True(allowed)/False(forbiden)/None(unknown)"
+        self._type = "P"
+        self.set_type(lattice_type)
+
 
     def __repr__(self, *args, **kwargs):
         return "%s %s cell a=%.4f b=%.4f c=%.4f alpha=%.3f beta=%.3f gamma=%.3f" % \
@@ -95,16 +98,9 @@ class Cell(object):
         Factory for cubic lattices
         @param a: unit cell length
         """
-        self = cls()
-        self.lattice = "cubic"
         a = float(a)
-        self.a = a
-        self.b = a
-        self.c = a
-        self.alpha = 90
-        self.beta = 90
-        self.gamma = 90
-        self.set_type(lattice_type)
+        self = cls(a, a, a, 90, 90, 90,
+                   lattice="cubic", lattice_type=lattice_type)
         return self
 
     @classmethod
@@ -114,16 +110,9 @@ class Cell(object):
         @param a: unit cell length
         @param c: unit cell length
         """
-        self = cls()
-        self.lattice = "tetragonal"
         a = float(a)
-        self.a = a
-        self.b = a
-        self.c = float(c)
-        self.alpha = 90
-        self.beta = 90
-        self.gamma = 90
-        self.set_type(lattice_type)
+        self = cls(a, a, float(c), 90, 90, 90,
+                   lattice="tetragonal", lattice_type=lattice_type)
         return self
 
     @classmethod
@@ -134,15 +123,8 @@ class Cell(object):
         @param b: unit cell length
         @param c: unit cell length
         """
-        self = cls()
-        self.lattice = "orthorhombic"
-        self.a = float(a)
-        self.b = float(b)
-        self.c = float(c)
-        self.alpha = 90
-        self.beta = 90
-        self.gamma = 90
-        self.set_type(lattice_type)
+        self = cls(float(a), float(b), float(c), 90, 90, 90,
+                   lattice="orthorhombic", lattice_type=lattice_type)
         return self
 
     @classmethod
@@ -152,16 +134,9 @@ class Cell(object):
         @param a: unit cell length
         @param c: unit cell length
         """
-        self = cls()
-        self.lattice = "hexagonal"
         a = float(a)
-        self.a = a
-        self.b = a
-        self.c = float(c)
-        self.alpha = 90
-        self.beta = 90
-        self.gamma = 120
-        self.set_type(lattice_type)
+        self = cls(a, a, float(c), 90, 90, 120,
+        lattice="hexagonal", lattice_type=lattice_type)
         return self
 
     @classmethod
@@ -173,15 +148,8 @@ class Cell(object):
         @param c: unit cell length
         @param beta: unit cell angle
         """
-        self = cls()
-        self.lattice = "monoclinic"
-        self.a = float(a)
-        self.b = float(b)
-        self.c = float(c)
-        self.alpha = 90
-        self.beta = float(beta)
-        self.gamma = 90
-        self.set_type(lattice_type)
+        self = cls(float(a), float(b), float(c), 90, float(beta), 90,
+                   lattice_type=lattice_type, lattice="monoclinic")
         return self
 
     @classmethod
@@ -191,17 +159,10 @@ class Cell(object):
         @param a: unit cell length
         @param alpha: unit cell angle
         """
-        self = cls()
-        self.lattice = "rhombohedral"
         a = float(a)
         alpha = float(a)
-        self.a = a
-        self.b = a
-        self.c = a
-        self.alpha = alpha
-        self.beta = alpha
-        self.gamma = alpha
-        self.set_type(lattice_type)
+        self = cls(a, a, a, alpha, alpha, alpha,
+                   lattice="rhombohedral", lattice_type=lattice_type)
         return self
 
     @classmethod
@@ -216,7 +177,6 @@ class Cell(object):
             )
         return self
 
-
     @property
     def volume(self):
         if self._volume is None:
@@ -228,13 +188,12 @@ class Cell(object):
                 self._volume *= sqrt(1 - cosa ** 2 - cosb ** 2 - cosg ** 2 + 2 * cosa * cosb * cosg)
         return self._volume
 
+
     def get_type(self):
         return self._type
-    def set_type(self, t):
-        self._type = t
-        self.selection_rules = [
-            lambda h, k, l: not(h == 0 and k == 0 and l == 0)
-            ]
+    def set_type(self, lattice_type):
+        self._type = lattice_type if lattice_type in self.types else "P"
+        self.selection_rules = [lambda h, k, l: not(h == 0 and k == 0 and l == 0)]
         if self._type == "I":
             self.selection_rules.append(lambda h, k, l: (h + k + l) % 2 == 0)
         if self._type == "F":
