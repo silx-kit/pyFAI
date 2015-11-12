@@ -204,7 +204,11 @@ class Cell(object):
 
     def d(self, hkl):
         """
-        Calculate the actual d-spacing for a 3-tuple of
+        Calculate the actual d-spacing for a 3-tuple of integer representing a 
+        family of Miller plans
+        
+        @param hkl: 3-tuple of integers
+        @return: the inter-planar distance
         """
         h, k, l = hkl
         if self.lattice in ["cubic", "tetragonal", "orthorhombic"]:
@@ -239,8 +243,9 @@ class Cell(object):
 
     def d_spacing(self, dmin=1.0):
         """
-        @param dmin: minimum value of
-        @return: dict d-spacing as string, list of tuple with Miller indices preceded with the numerical value
+        @param dmin: minimum value of spacing requested
+        @return: dict d-spacing as string, list of tuple with Miller indices 
+                preceded with the numerical value
         """
         hmax = int(ceil(self.a / dmin))
         kmax = int(ceil(self.b / dmin))
@@ -257,17 +262,6 @@ class Cell(object):
                     break
             if not valid:
                 continue
-
-#             if hkl == (0, 0, 0):
-#                 continue
-#             if self.type == "I" and ((h + k + l) % 2 != 0):
-#                 continue
-#             if self.type == "C" and ((h + k) % 2 != 0):
-#                 continue
-#             if self.type == "F" and ((h % 2 + k % 2 + l % 2) not in (0, 3)):
-#                 continue
-#             if self.type == "R" and ((h - k + l) % 3 != 0):
-#                 continue
 
             d = self.d(hkl)
             strd = "%.8e" % d
