@@ -28,7 +28,7 @@ __author__ = "Picca Frédéric-Emmanuel, Jérôme Kieffer",
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/10/2015"
+__date__ = "12/11/2015"
 
 import sys
 import os
@@ -79,11 +79,11 @@ class TestDetector(unittest.TestCase):
         self.assertEqual(z, None)
         self.assertEqual(z1, None)
         # check that a few pixel positions are ok.
-        self.assertAlmostEqual(y[0, 0], 2.5 * 130e-6 / 2.)
+        self.assertAlmostEqual(y[0, 0], 1 * 130e-6 / 2.)
         self.assertAlmostEqual(y[3, 0], y[2, 0] + 130e-6)
         self.assertAlmostEqual(y[119, 0], y[118, 0] + 130e-6 * 3.5 / 2.)
 
-        self.assertAlmostEqual(x[0, 0], 2.5 * 130e-6 / 2.)
+        self.assertAlmostEqual(x[0, 0], 1 * 130e-6 / 2.)
         self.assertAlmostEqual(x[0, 3], x[0, 2] + 130e-6)
         self.assertAlmostEqual(x[0, 79], x[0, 78] + 130e-6 * 3.5 / 2.)
 
