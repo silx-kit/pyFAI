@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/10/2015"
+__date__ = "12/11/2015"
 __status__ = "stable"
 
 install_warning = True
@@ -462,7 +462,7 @@ if install_warning:
     class InstallWarning(install):
         def __init__(self, *arg, **kwarg):
             print("The usage of 'python setup.py is deprecated. Please use 'pip install .' instead")
-            time.sleep(5)
+            time.sleep(0.5)
             install.__init__(self, *arg, **kwarg)
     cmdclass['install'] = InstallWarning
 

@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/11/2015"
+__date__ = "12/11/2015"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -85,6 +85,7 @@ class DiffMapWidget(QtGui.QWidget):
         """Signal-slot connection
         """
         self.configureDiffraction.clicked.connect(self.configure_diffraction)
+        self.outputFileSelector.clicked.connect(configure_output)
         self.runButton.clicked.connect(self.start_processing)
 
     def configure_diffraction(self, *arg, **kwarg):
@@ -97,20 +98,30 @@ class DiffMapWidget(QtGui.QWidget):
             self.integration_config = iw.get_config()
         print(self.integration_config)
 
+    def configure_output(self, *args, **kwargs):
+        """
+        called when clicking on "outputFileSelector"
+        """
+        fname = QtGui.QFileDialog.getSaveFileName(self, self, "Output file",
+                                                  QtCore.QDir.currentPath(),
+                                                  filter=self.tr("NeXuS file (*.nxs);;HDF5 file (*.h5);;HDF5 file (*.hdf5)"))
+        self.outputFile.setText(fname)
+
+
     def start_processing(self, *arg, **kwarg):
         logger.info("in start_processing")
         if not self.integration_config:
-            dialog = QtGui.QDialog(self)
-            lay = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom, dialog)
-            lab = QtGui.QLabel("You need to configure first the Azimuthal integration", dialog)
-            lay.addWidget(lab)
-            buttonBox = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel, QtCore.Qt.Horizontal, dialog)
-            lay.addWidget(buttonBox)
-            buttonBox.accepted.connect(dialog.accept)
-            buttonBox.rejected.connect(dialog.reject)
-            result = dialog.exec_()
-            if result == QtGui.QDialog.Accepted:
+            result = QtGui.QMessageBox.QMessageBox(self, "Azimuthal Integration",
+                                                   "You need to configure first the Azimuthal integration")
+            if result:
                 self.configure_diffraction()
+            else:
+                return
+        if not str(self.outputFile.text()):
+            result = QtGui.QMessageBox.QMessageBox(self, "Destination",
+                                                   "You need to configure first the destination file")
+            if result:
+                self.configure_output()
             else:
                 return
 
