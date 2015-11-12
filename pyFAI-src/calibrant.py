@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/10/2015"
+__date__ = "12/11/2015"
 __status__ = "production"
 
 
@@ -75,20 +75,22 @@ class Cell(object):
         self.beta = beta
         self.gamma = gamma
         self.lattice = lattice if lattice in self.lattices else "triclinic"
-        self.type = lattice_type if lattice_type in self.types else "P"
+        self._type = lattice_type if lattice_type in self.types else "P"
         self._volume = None
         self.S11 = None
         self.S12 = None
         self.S13 = None
         self.S22 = None
         self.S23 = None
+        self.selection_rules = []
+        "contains a list of functions returning True(allowed)/False(forbiden)/None(unknown)"
 
     def __repr__(self, *args, **kwargs):
         return "%s %s cell a=%.4f b=%.4f c=%.4f alpha=%.3f beta=%.3f gamma=%.3f" % \
             (self.types[self.type], self.lattice, self.a, self.b, self.c, self.alpha, self.beta, self.gamma)
 
     @classmethod
-    def cubic(cls, a):
+    def cubic(cls, a, lattice_type="P"):
         """
         Factory for cubic lattices
         @param a: unit cell length
@@ -102,10 +104,11 @@ class Cell(object):
         self.alpha = 90
         self.beta = 90
         self.gamma = 90
+        self.set_type(lattice_type)
         return self
 
     @classmethod
-    def tetragonal(cls, a, c):
+    def tetragonal(cls, a, c, lattice_type="P"):
         """
         Factory for tetragonal lattices
         @param a: unit cell length
@@ -120,10 +123,11 @@ class Cell(object):
         self.alpha = 90
         self.beta = 90
         self.gamma = 90
+        self.set_type(lattice_type)
         return self
 
     @classmethod
-    def orthorhombic(cls, a, b, c):
+    def orthorhombic(cls, a, b, c, lattice_type="P"):
         """
         Factory for tetragonal lattices
         @param a: unit cell length
@@ -138,10 +142,11 @@ class Cell(object):
         self.alpha = 90
         self.beta = 90
         self.gamma = 90
+        self.set_type(lattice_type)
         return self
 
     @classmethod
-    def hexagonal(cls, a, c):
+    def hexagonal(cls, a, c, lattice_type="P"):
         """
         Factory for hexagonal lattices
         @param a: unit cell length
@@ -156,10 +161,11 @@ class Cell(object):
         self.alpha = 90
         self.beta = 90
         self.gamma = 120
+        self.set_type(lattice_type)
         return self
 
     @classmethod
-    def monoclinic(cls, a, b, c, beta):
+    def monoclinic(cls, a, b, c, beta, lattice_type="P"):
         """
         Factory for hexagonal lattices
         @param a: unit cell length
@@ -175,10 +181,11 @@ class Cell(object):
         self.alpha = 90
         self.beta = float(beta)
         self.gamma = 90
+        self.set_type(lattice_type)
         return self
 
     @classmethod
-    def rhombohedral(cls, a, alpha):
+    def rhombohedral(cls, a, alpha, lattice_type="P"):
         """
         Factory for hexagonal lattices
         @param a: unit cell length
@@ -194,9 +201,21 @@ class Cell(object):
         self.alpha = alpha
         self.beta = alpha
         self.gamma = alpha
+        self.set_type(lattice_type)
         return self
 
-    # TODO: continue
+    @classmethod
+    def diamond(cls, a):
+        """
+        Factory for Diamond type FCC like Si and Ge
+        @param a: unit cell length
+        """
+        self = cls.cubic(a, lattice_type="F")
+        self.selection_rules.append(
+            lambda h, k, l:not((h % 2 == 0) and (k % 2 == 0) and (l % 2 == 0) and ((h + k + l) % 4 != 0))
+            )
+        return self
+
 
     @property
     def volume(self):
@@ -208,6 +227,21 @@ class Cell(object):
                 cosg = cos(self.gamma * pi / 180.)
                 self._volume *= sqrt(1 - cosa ** 2 - cosb ** 2 - cosg ** 2 + 2 * cosa * cosb * cosg)
         return self._volume
+
+    def get_type(self):
+        return self._type
+    def set_type(self, t):
+        self._type = t
+        self.selection_rules = [
+            lambda h, k, l: not(h == 0 and k == 0 and l == 0)
+            ]
+        if self._type == "I":
+            self.selection_rules.append(lambda h, k, l: (h + k + l) % 2 == 0)
+        if self._type == "F":
+            self.selection_rules.append(lambda h, k, l: (h % 2 + k % 2 + l % 2) in (0, 3))
+        if self._type == "R":
+            self.selection_rules.append(lambda h, k, l: ((h - k + l) % 3 == 0))
+    type = property(get_type, set_type)
 
     def d(self, hkl):
         """
@@ -256,17 +290,25 @@ class Cell(object):
         for hkl in itertools.product(range(-hmax, hmax + 1),
                                      range(-kmax, kmax + 1),
                                      range(-lmax, lmax + 1)):
-            h, k, l = hkl
-            if hkl == (0, 0, 0):
+            # Apply selection rule
+            valid = True
+            for rule in self.selection_rules:
+                valid = rule(*hkl)
+                if not valid:
+                    break
+            if not valid:
                 continue
-            if self.type == "I" and ((h + k + l) % 2 != 0):
-                continue
-            if self.type == "C" and ((h + k) % 2 != 0):
-                continue
-            if self.type == "F" and ((h % 2 + k % 2 + l % 2) not in (0, 3)):
-                continue
-            if self.type == "R" and ((h - k + l) % 3 != 0):
-                continue
+
+#             if hkl == (0, 0, 0):
+#                 continue
+#             if self.type == "I" and ((h + k + l) % 2 != 0):
+#                 continue
+#             if self.type == "C" and ((h + k) % 2 != 0):
+#                 continue
+#             if self.type == "F" and ((h % 2 + k % 2 + l % 2) not in (0, 3)):
+#                 continue
+#             if self.type == "R" and ((h - k + l) % 3 != 0):
+#                 continue
 
             d = self.d(hkl)
             strd = "%.8e" % d
