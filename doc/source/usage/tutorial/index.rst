@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 04/11/2015
+:Date: 13/11/2015
 :Keywords: Tutorials
 :Target: Advanced users
 
@@ -14,4 +14,5 @@ library and Python fluency.
 
    Calibrant/index
    multi-geometry
+   MakeCalibrant/make_calibrant
    
