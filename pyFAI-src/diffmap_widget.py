@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/11/2015"
+__date__ = "13/11/2015"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -63,6 +63,7 @@ class IntegrateWidget(QtGui.QDialog):
 
     def get_config(self):
         return self.widget.dump()
+
 
 class DiffMapWidget(QtGui.QWidget):
 
