@@ -37,7 +37,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/11/2015"
+__date__ = "13/11/2015"
 __status__ = "production"
 
 
@@ -61,12 +61,14 @@ class Cell(object):
     types = {"P":"Primitive", "I":"Body centered", "F":"Face centered", "C": "Side centered", "R": "Rhombohedral"}
 
     def __init__(self, a=1, b=1, c=1, alpha=90, beta=90, gamma=90, lattice="triclinic", lattice_type="P"):
-        """
+        """Constructor of the Cell class:
+
         Crystalographic units are Angstrom for distances and degrees for angles !
 
         @param a,b,c: unit cell length in Angstrom
         @param alpha, beta, gamma: unit cell angle in degrees
-
+        @param lattice: "cubic", "tetragonal", "hexagonal", "rhombohedral", "orthorhombic", "monoclinic", "triclinic"
+        @param lattice_type: P, I, F, C or R
         """
         self.a = a
         self.b = b
@@ -94,8 +96,8 @@ class Cell(object):
 
     @classmethod
     def cubic(cls, a, lattice_type="P"):
-        """
-        Factory for cubic lattices
+        """Factory for cubic lattices
+
         @param a: unit cell length
         """
         a = float(a)
@@ -105,8 +107,8 @@ class Cell(object):
 
     @classmethod
     def tetragonal(cls, a, c, lattice_type="P"):
-        """
-        Factory for tetragonal lattices
+        """Factory for tetragonal lattices
+
         @param a: unit cell length
         @param c: unit cell length
         """
@@ -117,8 +119,8 @@ class Cell(object):
 
     @classmethod
     def orthorhombic(cls, a, b, c, lattice_type="P"):
-        """
-        Factory for tetragonal lattices
+        """Factory for tetragonal lattices
+
         @param a: unit cell length
         @param b: unit cell length
         @param c: unit cell length
@@ -129,8 +131,8 @@ class Cell(object):
 
     @classmethod
     def hexagonal(cls, a, c, lattice_type="P"):
-        """
-        Factory for hexagonal lattices
+        """Factory for hexagonal lattices
+
         @param a: unit cell length
         @param c: unit cell length
         """
@@ -141,8 +143,8 @@ class Cell(object):
 
     @classmethod
     def monoclinic(cls, a, b, c, beta, lattice_type="P"):
-        """
-        Factory for hexagonal lattices
+        """Factory for hexagonal lattices
+
         @param a: unit cell length
         @param b: unit cell length
         @param c: unit cell length
@@ -154,8 +156,8 @@ class Cell(object):
 
     @classmethod
     def rhombohedral(cls, a, alpha, lattice_type="P"):
-        """
-        Factory for hexagonal lattices
+        """Factory for hexagonal lattices
+
         @param a: unit cell length
         @param alpha: unit cell angle
         """
@@ -167,14 +169,12 @@ class Cell(object):
 
     @classmethod
     def diamond(cls, a):
-        """
-        Factory for Diamond type FCC like Si and Ge
+        """Factory for Diamond type FCC like Si and Ge
+
         @param a: unit cell length
         """
         self = cls.cubic(a, lattice_type="F")
-        self.selection_rules.append(
-            lambda h, k, l:not((h % 2 == 0) and (k % 2 == 0) and (l % 2 == 0) and ((h + k + l) % 4 != 0))
-            )
+        self.selection_rules.append(lambda h, k, l: not((h % 2 == 0) and (k % 2 == 0) and (l % 2 == 0) and ((h + k + l) % 4 != 0)))
         return self
 
     @property
@@ -204,9 +204,9 @@ class Cell(object):
 
     def d(self, hkl):
         """
-        Calculate the actual d-spacing for a 3-tuple of integer representing a 
+        Calculate the actual d-spacing for a 3-tuple of integer representing a
         family of Miller plans
-        
+
         @param hkl: 3-tuple of integers
         @return: the inter-planar distance
         """
@@ -242,9 +242,12 @@ class Cell(object):
         return sqrt(1 / invd2)
 
     def d_spacing(self, dmin=1.0):
-        """
+        """Calculate all d-spacing down to dmin
+
+        applies selection rules
+
         @param dmin: minimum value of spacing requested
-        @return: dict d-spacing as string, list of tuple with Miller indices 
+        @return: dict d-spacing as string, list of tuple with Miller indices
                 preceded with the numerical value
         """
         hmax = int(ceil(self.a / dmin))
@@ -274,8 +277,7 @@ class Cell(object):
         return res
 
     def save(self, name, long_name=None, doi=None, dmin=1.0, dest_dir=None):
-        """
-        Save informations about the cell in a d-spacing file, usable as Calibrant
+        """Save informations about the cell in a d-spacing file, usable as Calibrant
 
         @param name: name of the calibrant
         @param doi: reference of the publication used to parametrize the cell
