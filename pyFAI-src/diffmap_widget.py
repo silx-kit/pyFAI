@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "13/11/2015"
+__date__ = "16/11/2015"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -64,6 +64,16 @@ class IntegrateWidget(QtGui.QDialog):
     def get_config(self):
         return self.widget.dump()
 
+# class ListModel(QtCore.QAbstractListModel):
+#     def __init__(self, *args, **kwargs):
+#         QtCore.QAbstractListModel.__init__(self, *args, **kwargs)
+#         self.__list = []
+#     def dropMimeData(self, *args, **kwargs):
+#         print("ListModel.dropMimeData %s %s" % (args, kwargs))
+#     def count(self):
+#         return(len(self.__list))
+#     def count(self):
+#         return(len(self.__list))
 
 class DiffMapWidget(QtGui.QWidget):
 
@@ -80,14 +90,44 @@ class DiffMapWidget(QtGui.QWidget):
             logger.error("I looks like your installation suffers from this bug: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348")
             raise RuntimeError("Please upgrade your installation of PyQt (or apply the patch)")
         self.aborted = False
+        self.listModel = QtGui.QStringListModel(self)
+        self.listFiles.setModel(self.listModel)
         self.create_connections()
+        self.set_validator()
+        self.update_number_of_frames()
+        self.update_number_of_points()
+
+    def set_validator(self):
+        validator = QtGui.QIntValidator(0, 999999, self)
+        self.fastMotorPts.setValidator(validator)
+        self.slowMotorPts.setValidator(validator)
+        self.offset.setValidator(validator)
 
     def create_connections(self):
         """Signal-slot connection
         """
         self.configureDiffraction.clicked.connect(self.configure_diffraction)
-        self.outputFileSelector.clicked.connect(configure_output)
+        self.outputFileSelector.clicked.connect(self.configure_output)
         self.runButton.clicked.connect(self.start_processing)
+        self.addFiles.clicked.connect(self.input_filer)
+
+        self.fastMotorPts.editingFinished.connect(self.update_number_of_points)
+        self.slowMotorPts.editingFinished.connect(self.update_number_of_points)
+        self.offset.editingFinished.connect(self.update_number_of_points)
+
+    def input_filer(self, *args, **kwargs):
+        """
+        Called when addFiles clicked: opens a file-brower and populates the 
+        listFiles object
+        """
+        fnames = QtGui.QFileDialog.getOpenFileNames(self,
+                         "Select one or more diffraction image files",
+                         QtCore.QDir.currentPath(),
+                         filter=self.tr("NeXuS files (*.nxs);;HDF5 files (*.h5);;HDF5 files (*.hdf5);;EDF image files (*.edf);;TIFF image files (*.tif);;CBF files (*.cbf);;MarCCD image files (*.mccd);;Any file (*)"))
+        for i in fnames:
+            self.listModel.addItem(i)
+        self.update_number_of_frames()
+
 
     def configure_diffraction(self, *arg, **kwarg):
         """
@@ -103,7 +143,7 @@ class DiffMapWidget(QtGui.QWidget):
         """
         called when clicking on "outputFileSelector"
         """
-        fname = QtGui.QFileDialog.getSaveFileName(self, self, "Output file",
+        fname = QtGui.QFileDialog.getSaveFileName(self, "Output file",
                                                   QtCore.QDir.currentPath(),
                                                   filter=self.tr("NeXuS file (*.nxs);;HDF5 file (*.h5);;HDF5 file (*.hdf5)"))
         self.outputFile.setText(fname)
@@ -112,17 +152,35 @@ class DiffMapWidget(QtGui.QWidget):
     def start_processing(self, *arg, **kwarg):
         logger.info("in start_processing")
         if not self.integration_config:
-            result = QtGui.QMessageBox.QMessageBox(self, "Azimuthal Integration",
+            result = QtGui.QMessageBox.warning(self, "Azimuthal Integration",
                                                    "You need to configure first the Azimuthal integration")
             if result:
                 self.configure_diffraction()
             else:
                 return
         if not str(self.outputFile.text()):
-            result = QtGui.QMessageBox.QMessageBox(self, "Destination",
+            result = QtGui.QMessageBox.warning(self, "Destination",
                                                    "You need to configure first the destination file")
             if result:
                 self.configure_output()
             else:
                 return
 
+    def update_number_of_frames(self):
+        cnt = len(self.listModel.stringList())
+        self.numberOfFrames.setText(str(cnt))
+
+    def update_number_of_points(self):
+        try:
+            slow = int(self.slowMotorPts.text())
+        except:
+            slow = 1
+        try:
+            fast = int(self.fastMotorPts.text())
+        except:
+            fast = 1
+        try:
+            offset = int(self.offset.text())
+        except:
+            offset = 0
+        self.numberOfPoints.setText(str(slow * fast - offset))

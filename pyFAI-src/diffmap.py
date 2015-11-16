@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/11/2015"
+__date__ = "16/11/2015"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -41,7 +41,8 @@ Module with GUI for diffraction mapping experiments
 
 
 """
-# __all__ = ["date", "version_info", "strictversion", "hexversion"]
+
+
 class DiffMap(object):
     """
     Basic class for diffraction mapping experiment using pyFAI
