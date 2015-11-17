@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/11/2015"
+__date__ = "17/11/2015"
 __satus__ = "development"
 
 import sys
@@ -282,19 +282,7 @@ class AIWidget(QtGui.QWidget):
             if self.do_2D.isChecked():
                 kwarg["npt_azim"] = int(str(self.nbpt_azim.text()).strip())
 
-            if self.do_OpenCL.isChecked():
-                platform = ocl.get_platform(self.platform.currentText())
-                pid = platform.id
-                did = platform.get_device(self.device.currentText()).id
-                if (pid is not None) and (did is not None):
-                    kwarg["method"] = "csr_ocl_%i,%i" % (pid, did)
-                else:
-                    kwarg["method"] = "csr_ocl"
-            else:
-                if len(self.input_data) > 5:
-                    kwarg["method"] = "csr"
-                else:
-                    kwarg["method"] = "splitbbox"
+            kwarg["method"] = self.get_method()
 
             if self.do_radial_range.isChecked():
                 try:
@@ -760,6 +748,25 @@ class AIWidget(QtGui.QWidget):
         for i in range(self.device.count())[-1::-1]:
             self.device.removeItem(i)
         self.device.addItems([i.name for i in platform.devices])
+
+    def get_method(self):
+        """
+        Return the method name for azimuthal intgration
+        """
+        if self.do_OpenCL.isChecked():
+            platform = ocl.get_platform(self.platform.currentText())
+            pid = platform.id
+            did = platform.get_device(self.device.currentText()).id
+            if (pid is not None) and (did is not None):
+                method = "csr_ocl_%i,%i" % (pid, did)
+            else:
+                method = "csr_ocl"
+        else:
+            if len(self.input_data) > 5:
+                method = "csr"
+            else:
+                method = "splitbbox"
+        return method
 
     def save_config(self):
         logger.debug("save_config")

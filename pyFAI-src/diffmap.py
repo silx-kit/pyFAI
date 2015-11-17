@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/11/2015"
+__date__ = "17/11/2015"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -213,7 +213,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         spath = self.hdf5path.split("/")
         assert len(spath) > 2
         nxs = Nexus(self.hdf5, mode="w")
-        entry = nxs.new_entry(entry=spath[0], program_name="pyFAI", title="diff_tomo")
+        entry = nxs.new_entry(entry=spath[0], program_name="pyFAI", title="diffmap")
         grp = entry
         for subgrp in spath[1:-2]:
             grp = nxs.new_class(grp, name=subgrp, class_type="NXcollection")

@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/11/2015"
+__date__ = "17/11/2015"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -41,13 +41,37 @@ Module with GUI for diffraction mapping experiments
 
 
 """
-# __all__ = ["date", "version_info", "strictversion", "hexversion"]
-
+from collections import namedtuple
 from .gui_utils import QtGui, QtCore, uic
 from .utils import float_, int_, str_, get_ui_file
 from .integrate_widget import AIWidget
+from .io import is_hdf5
 import logging
 logger = logging.getLogger("diffmap_widget")
+
+DataSetNT = namedtuple("DataSet", ("path", "h5", "nframes"))
+
+class DataSet(object):
+    def __init__(self, path, h5=None, nframes=None, shape=None):
+        self.path = path
+        self.h5 = h5
+        self.nframes = nframes
+        self.shape = shape
+
+    def as_tuple(self):
+        return DataSetNT(self.path, self.h5, self.nframes)
+
+    def is_hdf5(self):
+        """Return True if the object is hdf5"""
+        if self.h5 is None:
+            self.h5 = is_hdf5(self.path)
+        return bool(self.h5)
+#     def __getitem__(self, item):
+#         if item in ("path", "h5", "nframes", "shape"):
+#             return self.__getattribute__(item)
+
+class ListDataSet(list):
+    pass
 
 
 class IntegrateWidget(QtGui.QDialog):
@@ -62,18 +86,61 @@ class IntegrateWidget(QtGui.QDialog):
         self.widget.cancelButton.clicked.connect(self.reject)
 
     def get_config(self):
-        return self.widget.dump()
+        res = self.widget.dump()
+        res["method"] = self.widget.get_method()
+        return res
 
-# class ListModel(QtCore.QAbstractListModel):
-#     def __init__(self, *args, **kwargs):
-#         QtCore.QAbstractListModel.__init__(self, *args, **kwargs)
-#         self.__list = []
+
+class ListModel(QtCore.QAbstractTableModel):
+    def __init__(self, parent=None, actual_data=None):
+        QtCore.QAbstractTableModel.__init__(self, parent)
+        self._ref = actual_data
 #     def dropMimeData(self, *args, **kwargs):
 #         print("ListModel.dropMimeData %s %s" % (args, kwargs))
-#     def count(self):
-#         return(len(self.__list))
-#     def count(self):
-#         return(len(self.__list))
+    def rowCount(self, parent=None):
+        return len(self._ref)
+    def columnCount(self, parent=None):
+        return 3
+    def data(self, index, role=QtCore.Qt.DisplayRole):
+        if role == QtCore.Qt.DisplayRole:
+            if index.row() >= len(self._ref):
+                return
+            data = self._ref[index.row()]
+            if index.column() == 0:
+                return data.path
+            elif index.column() == 1:
+                return data.h5
+            if index.column() == 2:
+                return data.nframes
+
+    def setData(self, *args, **kwargs):
+        return True
+
+    def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
+        if orientation == QtCore.Qt.Horizontal:
+            if role == QtCore.Qt.DisplayRole:
+                if section == 0:
+                    return "File path"
+                elif section == 1:
+                    return "h5"
+                elif section == 2:
+                    return "#"
+            elif role == QtCore.Qt.WhatsThisRole:
+                if section == 0:
+                    return "Path of the file in the computer"
+                elif section == 1:
+                    return "Internal path in the HDF5 tree"
+                elif section == 2:
+                    return "Number of frames in the dataset"
+            elif role == QtCore.Qt.SizeHintRole:
+                if section == 0:
+                    return QtCore.QSize(200, 20)
+                elif section == 1:
+                    return QtCore.QSize(20, 20)
+                elif section == 2:
+                    return QtCore.QSize(20, 20)
+
+
 
 class DiffMapWidget(QtGui.QWidget):
 
@@ -83,6 +150,7 @@ class DiffMapWidget(QtGui.QWidget):
         QtGui.QWidget.__init__(self)
 
         self.integration_config = {}
+        self.list_dataset = []  # Contains all datasets to be treated.
 
         try:
             uic.loadUi(get_ui_file(self.uif), self)
@@ -90,8 +158,10 @@ class DiffMapWidget(QtGui.QWidget):
             logger.error("I looks like your installation suffers from this bug: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348")
             raise RuntimeError("Please upgrade your installation of PyQt (or apply the patch)")
         self.aborted = False
-        self.listModel = QtGui.QStringListModel(self)
+        self.listModel = ListModel(self, self.list_dataset)
         self.listFiles.setModel(self.listModel)
+        self.listFiles.hideColumn(1)
+        self.listFiles.hideColumn(2)
         self.create_connections()
         self.set_validator()
         self.update_number_of_frames()
@@ -110,10 +180,13 @@ class DiffMapWidget(QtGui.QWidget):
         self.outputFileSelector.clicked.connect(self.configure_output)
         self.runButton.clicked.connect(self.start_processing)
         self.addFiles.clicked.connect(self.input_filer)
+        self.sortButton.clicked.connect(self.sort_input)
 
         self.fastMotorPts.editingFinished.connect(self.update_number_of_points)
         self.slowMotorPts.editingFinished.connect(self.update_number_of_points)
         self.offset.editingFinished.connect(self.update_number_of_points)
+
+
 
     def input_filer(self, *args, **kwargs):
         """
@@ -123,10 +196,13 @@ class DiffMapWidget(QtGui.QWidget):
         fnames = QtGui.QFileDialog.getOpenFileNames(self,
                          "Select one or more diffraction image files",
                          QtCore.QDir.currentPath(),
-                         filter=self.tr("NeXuS files (*.nxs);;HDF5 files (*.h5);;HDF5 files (*.hdf5);;EDF image files (*.edf);;TIFF image files (*.tif);;CBF files (*.cbf);;MarCCD image files (*.mccd);;Any file (*)"))
+                         filter=self.tr("EDF image files (*.edf);;TIFF image files (*.tif);;CBF files (*.cbf);;MarCCD image files (*.mccd);;Any file (*)"))
+                         # filter=self.tr("NeXuS files (*.nxs);;HDF5 files (*.h5);;HDF5 files (*.hdf5);;EDF image files (*.edf);;TIFF image files (*.tif);;CBF files (*.cbf);;MarCCD image files (*.mccd);;Any file (*)"))
         for i in fnames:
-            self.listModel.addItem(i)
+            self.list_dataset.append(DataSet(i, None, None, None))
+        self.listModel.reset()
         self.update_number_of_frames()
+
 
 
     def configure_diffraction(self, *arg, **kwarg):
@@ -167,7 +243,7 @@ class DiffMapWidget(QtGui.QWidget):
                 return
 
     def update_number_of_frames(self):
-        cnt = len(self.listModel.stringList())
+        cnt = len(self.list_dataset)
         self.numberOfFrames.setText(str(cnt))
 
     def update_number_of_points(self):
@@ -183,4 +259,25 @@ class DiffMapWidget(QtGui.QWidget):
             offset = int(self.offset.text())
         except:
             offset = 0
-        self.numberOfPoints.setText(str(slow * fast - offset))
+        self.numberOfPoints.setText(str(slow * fast + offset))
+
+    def sort_input(self):
+        self.list_dataset.sort(key=lambda i: i.path)
+        self.listModel.reset()
+
+    def get_config(self):
+        """
+        Return a dict with the plugin configuration which is JSON-serializable 
+        """
+        res = {
+               "integration": self.integration_config,
+               "experiment_title": str_(self.experimentTitle.text()).strip(),
+               "fast_motor_name": str_(self.fastMotorName.text()).strip(),
+               "slow_motor_name": str_(self.slowMotorName.text()).strip(),
+               "fast_motor_points": int_(self.fastMotorPts.text()),
+               "slow_motor_points": int_(self.slowMotorPts.text()),
+               "offset": int_(self.offset.text()),
+               "output_file": str_(self.outputFile.text()).strip(),
+               "input_data": [i.as_tuple() for i in self.list_dataset]
+               }
+        return res
