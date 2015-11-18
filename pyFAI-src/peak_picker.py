@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/10/2015"
+__date__ = "18/11/2015"
 __status__ = "production"
 
 import os
@@ -83,7 +83,8 @@ class PeakPicker(object):
             " * Center-click + 1 or (click+1): erase closest point from current group"]
 
     def __init__(self, data, reconst=False, mask=None,
-                 pointfile=None, calibrant=None, wavelength=None, method="massif"):
+                 pointfile=None, calibrant=None, wavelength=None, detector=None,
+                 method="massif"):
         """
         @param data: input image as numpy array
         @param reconst: shall masked part or negative values be reconstructed (wipe out problems with pilatus gaps)
@@ -115,6 +116,7 @@ class PeakPicker(object):
         self.ref_action = None
         self.sb_action = None
         self.reconstruct = reconst
+        self.detector = detector
         self.mask = mask
         self.massif = None  # used for massif detection
         self.blob = None  # used for blob   detection
@@ -245,6 +247,7 @@ class PeakPicker(object):
         """
         if self.fig is None:
             self.fig = pyplot.figure()
+            self.fig.subplots_adjust(right=0.75)
             # add 3 subplots at the same position for debye-sherrer image, contour-plot and massif contour
             self.ax = self.fig.add_subplot(111)
             self.ct = self.fig.add_subplot(111)
@@ -265,22 +268,53 @@ class PeakPicker(object):
                 self.ref_action = a
                 self.mpl_connectId = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
 
-
-
         if log:
-            showData = numpy.log1p(self.data - self.data.min())
-            self.ax.set_title('Log colour scale (skipping lowest/highest per mille)')
+            data_disp = numpy.log1p(self.data - self.data.min())
+            txt = 'Log colour scale (skipping lowest/highest per mille)'
         else:
-            showData = self.data
-            self.ax.set_title('Linear colour scale (skipping lowest/highest per mille)')
+            data_disp = self.data
+            txt = 'Linear colour scale (skipping lowest/highest per mille)'
 
         # skip lowest and highest per mille of image values via vmin/vmax
-        showMin = percentile(showData, .1)
-        showMax = percentile(showData, 99.9)
-        im = self.ax.imshow(showData, vmin=showMin, vmax=showMax, origin="lower", interpolation="nearest")
+        sorted = data_disp.flatten()  # explicit copy
+        sorted.sort()
+        show_min = sorted[int(1e-3 * (sorted.size - 1))]
+        show_max = sorted[int(0.999 * (sorted.size - 1))]
+        im = self.ax.imshow(data_disp, vmin=show_min, vmax=show_max,
+                            origin="lower", interpolation="nearest",
+                            )
+        self.ax.set_ylabel('y in pixels')
+        self.ax.set_xlabel('x in pixels')
 
-        self.ax.autoscale_view(False, False, False)
-        self.fig.colorbar(im)  # , self.ax)
+        if self.detector:
+            s1, s2 = self.data.shape
+            s1 -= 1
+            s2 -= 1
+            self.ax.set_xlim(0, s2)
+            self.ax.set_ylim(0, s1)
+            d1 = numpy.array([0, s1, s1 , 0 ])
+            d2 = numpy.array([0, 0, s2, s2])
+            p1, p2, p3 = self.detector.calc_cartesian_positions(d1=d1, d2=d2)
+            ax = self.fig.add_subplot(1,1,1,
+                                      xbound=False,
+                                      ybound=False,
+                                      xlabel=r'dim2 ($\approx m$)',
+                                      ylabel=r'dim1 ($\approx m$)',
+                                      xlim=(p2.min(), p2.max()),
+                                      ylim=(p1.min(), p1.max()),
+                                      aspect='equal',
+                                      zorder=-1)
+            ax.xaxis.set_label_position('top')
+            ax.yaxis.set_label_position('right')
+            ax.yaxis.label.set_color('blue')
+            ax.xaxis.label.set_color('blue')
+            ax.tick_params(colors="blue", labelbottom='off', labeltop='on',
+                           labelleft='off', labelright='on')
+#             ax.autoscale_view(False, False, False)
+
+        else:
+            cbar = self.fig.colorbar(im, label=txt)
+#         self.ax.autoscale_view(False, False, False)
         update_fig(self.fig)
         if maximize:
             maximize_fig(self.fig)

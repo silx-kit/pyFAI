@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/11/2015"
+__date__ = "18/11/2015"
 __status__ = "production"
 
 import os, sys, time, logging, types, math
@@ -592,7 +592,7 @@ class AbstractCalibration(object):
         data = fabio.open(self.outfile).data
         self.peakPicker = PeakPicker(data, reconst=self.reconstruct, mask=self.mask,
                                      pointfile=self.pointfile, calibrant=self.calibrant,
-                                     wavelength=self.ai.wavelength)
+                                     wavelength=self.ai.wavelength, detector=self.detector)
         if not self.keep:
             self.peakPicker.points.reset()
             if not self.peakPicker.points.calibrant.wavelength:
