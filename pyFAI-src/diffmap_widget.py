@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/11/2015"
+__date__ = "18/11/2015"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -241,6 +241,8 @@ class DiffMapWidget(QtGui.QWidget):
                 self.configure_output()
             else:
                 return
+        config = self.get_config()
+        self.process(config)
 
     def update_number_of_frames(self):
         cnt = len(self.list_dataset)
@@ -270,7 +272,7 @@ class DiffMapWidget(QtGui.QWidget):
         Return a dict with the plugin configuration which is JSON-serializable 
         """
         res = {
-               "integration": self.integration_config,
+               "ai": self.integration_config,
                "experiment_title": str_(self.experimentTitle.text()).strip(),
                "fast_motor_name": str_(self.fastMotorName.text()).strip(),
                "slow_motor_name": str_(self.slowMotorName.text()).strip(),
@@ -281,3 +283,15 @@ class DiffMapWidget(QtGui.QWidget):
                "input_data": [i.as_tuple() for i in self.list_dataset]
                }
         return res
+
+    def process(self, config=None):
+        """
+        Called 
+        """
+        logger.info("process")
+        config_ai = config.get("ai",{})
+        diffmap = DiffMap(npt_fast=config.get("fast_motor_points",1), 
+                          npt_slow=config.get("slow_motor_points",1), 
+                          npt_rad=config_ai.get("nbpt_rad",1000), 
+                          npt_azim=config_ai.get("nbpt_azim",1) if config_ai.get("do_2D") else None))
+        

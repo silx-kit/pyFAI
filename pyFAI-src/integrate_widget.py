@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/11/2015"
+__date__ = "18/11/2015"
 __satus__ = "development"
 
 import sys
@@ -438,23 +438,23 @@ class AIWidget(QtGui.QWidget):
         logger.info("Dump to %s" % filename)
         to_save = { "poni": str_(self.poni.text()).strip(),
                     "detector": str_(self.detector.currentText()).lower(),
-                    "wavelength":float_(self.wavelength.text()),
+                    "wavelength":self._float("wavelength", None),
                     "splineFile":str_(self.splineFile.text()).strip(),
-                    "pixel1": float_(self.pixel1.text()),
-                    "pixel2":float_(self.pixel2.text()),
-                    "dist":float_(self.dist.text()),
-                    "poni1":float_(self.poni1.text()),
-                    "poni2":float_(self.poni2.text()),
-                    "rot1":float_(self.rot1.text()),
-                    "rot2":float_(self.rot2.text()),
-                    "rot3":float_(self.rot3.text()),
+                    "pixel1": self._float("pixel1", None),
+                    "pixel2":self._float("pixel2", None),
+                    "dist":self._float("dist", None),
+                    "poni1":self._float("poni1", None),
+                    "poni2":self._float("poni2", None),
+                    "rot1":self._float("rot1", None),
+                    "rot2":self._float("rot2", None),
+                    "rot3":self._float("rot3", None),
                     "do_dummy": bool(self.do_dummy.isChecked()),
                     "do_mask":  bool(self.do_mask.isChecked()),
                     "do_dark": bool(self.do_dark.isChecked()),
                     "do_flat": bool(self.do_flat.isChecked()),
                     "do_polarization":bool(self.do_polarization.isChecked()),
-                    "val_dummy":float_(self.val_dummy.text()),
-                    "delta_dummy":float_(self.delta_dummy.text()),
+                    "val_dummy":self._float("val_dummy", None),
+                    "delta_dummy":self._float("delta_dummy", None),
                     "mask_file":str_(self.mask_file.text()).strip(),
                     "dark_current":str_(self.dark_current.text()).strip(),
                     "flat_field":str_(self.flat_field.text()).strip(),
@@ -467,10 +467,10 @@ class AIWidget(QtGui.QWidget):
                     "do_radial_range": bool(self.do_radial_range.isChecked()),
                     "do_azimuthal_range": bool(self.do_azimuthal_range.isChecked()),
                     "do_poisson": bool(self.do_poisson.isChecked()),
-                    "radial_range_min":float_(self.radial_range_min.text()),
-                    "radial_range_max":float_(self.radial_range_max.text()),
-                    "azimuth_range_min":float_(self.azimuth_range_min.text()),
-                    "azimuth_range_max":float_(self.azimuth_range_max.text()),
+                    "radial_range_min":self._float("radial_range_min", None),
+                    "radial_range_max":self._float("radial_range_max", None),
+                    "azimuth_range_min":self._float("azimuth_range_min", None),
+                    "azimuth_range_max":self._float("azimuth_range_max", None),
                    }
         for unit, widget in self.units.items():
             if widget is not None and widget.isChecked():
@@ -656,60 +656,125 @@ class AIWidget(QtGui.QWidget):
                 logger.error("Unable to convert %s to float: %s" % (kw, txtval))
         return fval
 
-    def set_ai(self):
-        poni = str_(self.poni.text()).strip()
+    @staticmethod
+    def make_ai(config):
+        """Create an Azimuthal integrator from the configuration
+        Static method !
+        
+        @param config: dict with all parameters
+        @return: configured (but uninitialized) AzimuthalIntgrator 
+        """
+        poni = config.get("poni")
         if poni and op.isfile(poni):
-            self.ai = AzimuthalIntegrator.sload(poni)
-        detector = str_(self.detector.currentText()).lower().strip() or "detector"
-        self.ai.detector = detector_factory(detector)
+            ai = AzimuthalIntegrator.sload(poni)
+        detector = config.get("detector", "detector")
+        ai.detector = detector_factory(detector)
 
-        wavelength = str(self.wavelength.text()).strip()
+        wavelength = config.get("wavelength", 0)
         if wavelength:
-            try:
-                fwavelength = float(wavelength)
-            except ValueError:
-                logger.error("Unable to convert wavelength to float: %s" % wavelength)
-            else:
-                if fwavelength <= 0 or fwavelength > 1e-6:
-                    logger.warning("Wavelength is in meter ... unlikely value %s" % fwavelength)
-                self.ai.wavelength = fwavelength
+            if fwavelength <= 0 or fwavelength > 1e-6:
+                logger.warning("Wavelength is in meter ... unlikely value %s" % fwavelength)
+            ai.wavelength = fwavelength
 
-        splineFile = str_(self.splineFile.text()).strip()
-        if splineFile and op.isfile(splineFile):
-            self.ai.detector.splineFile = splineFile
+        splinefile = config.get(splineFile)
+        if splinefile and op.isfile(splinefile):
+            ai.detector.splineFile = splinefile
 
-        self.ai.pixel1 = self._float("pixel1", 1)
-        self.ai.pixel2 = self._float("pixel2", 1)
-        self.ai.dist = self._float("dist", 1)
-        self.ai.poni1 = self._float("poni1", 0)
-        self.ai.poni2 = self._float("poni2", 0)
-        self.ai.rot1 = self._float("rot1", 0)
-        self.ai.rot2 = self._float("rot2", 0)
-        self.ai.rot3 = self._float("rot3", 0)
+        ai.pixel1 = config.get("pixel1", 1)
+        ai.pixel2 = config.get("pixel2", 1)
+        ai.dist = config.get("dist", 1)
+        ai.poni1 = config.get("poni1", 0)
+        ai.poni2 = config.get("poni2", 0)
+        ai.rot1 = config.get("rot1", 0)
+        ai.rot2 = config.get("rot2", 0)
+        ai.rot3 = config.get("rot3", 0)
 
-        if self.chi_discontinuity_at_0.isChecked():
-            self.ai.setChiDiscAtZero()
+        if config.get("chi_discontinuity_at_0"):
+            ai.setChiDiscAtZero()
 
-        mask_file = str_(self.mask_file.text()).strip()
-        if mask_file  and bool(self.do_mask.isChecked()):
+        mask_file = config.get("mask_file")
+        if mask_file and config.get("do_mask"):
             if op.exists(mask_file):
                 try:
                     mask = fabio.open(mask_file).data
                 except Exception as error:
                     logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
                 else:
-                    self.ai.mask = mask
+                    ai.mask = mask
 #            elif mask_file==FROM_PYMCA:
-#                self.ai.mask = mask
-        dark_files = [i.strip() for i in str_(self.dark_current.text()).split(",")
-                      if op.isfile(i.strip())]
-        if dark_files and bool(self.do_dark.isChecked()):
-            self.ai.set_darkfiles(dark_files)
+#                ai.mask = mask
 
-        flat_files = [i.strip() for i in str_(self.flat_field.text()).split(",")
+        dark_files = [i.strip() for i in config.get(dark_current, "").split(",")
                       if op.isfile(i.strip())]
-        if flat_files and bool(self.do_flat.isChecked()):
-            self.ai.set_flatfiles(flat_files)
+        if dark_files and config.get("do_dark"):
+            ai.set_darkfiles(dark_files)
+
+        flat_files = [i.strip() for i in  onfig.get(flat_files, "").split(",")
+                      if op.isfile(i.strip())]
+        if flat_files and config.get("do_flat"):
+            ai.set_flatfiles(flat_files)
+
+        return ai
+
+    def set_ai(self):
+        """Setup the AzimuthalIntegrator
+        """
+        config = self.dump()
+        self.ai = self.make_ai(config)
+#         poni = str_(self.poni.text()).strip()
+#         if poni and op.isfile(poni):
+#             self.ai = AzimuthalIntegrator.sload(poni)
+#         detector = str_(self.detector.currentText()).lower().strip() or "detector"
+#         self.ai.detector = detector_factory(detector)
+#
+#         wavelength = str(self.wavelength.text()).strip()
+#         if wavelength:
+#             try:
+#                 fwavelength = float(wavelength)
+#             except ValueError:
+#                 logger.error("Unable to convert wavelength to float: %s" % wavelength)
+#             else:
+#                 if fwavelength <= 0 or fwavelength > 1e-6:
+#                     logger.warning("Wavelength is in meter ... unlikely value %s" % fwavelength)
+#                 self.ai.wavelength = fwavelength
+#
+#         splineFile = str_(self.splineFile.text()).strip()
+#         if splineFile and op.isfile(splineFile):
+#             self.ai.detector.splineFile = splineFile
+#
+#         self.ai.pixel1 = self._float("pixel1", 1)
+#         self.ai.pixel2 = self._float("pixel2", 1)
+#         self.ai.dist = self._float("dist", 1)
+#         self.ai.poni1 = self._float("poni1", 0)
+#         self.ai.poni2 = self._float("poni2", 0)
+#         self.ai.rot1 = self._float("rot1", 0)
+#         self.ai.rot2 = self._float("rot2", 0)
+#         self.ai.rot3 = self._float("rot3", 0)
+#
+#         if self.chi_discontinuity_at_0.isChecked():
+#             self.ai.setChiDiscAtZero()
+#
+#         mask_file = str_(self.mask_file.text()).strip()
+#         if mask_file  and bool(self.do_mask.isChecked()):
+#             if op.exists(mask_file):
+#                 try:
+#                     mask = fabio.open(mask_file).data
+#                 except Exception as error:
+#                     logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
+#                 else:
+#                     self.ai.mask = mask
+# #            elif mask_file==FROM_PYMCA:
+# #                self.ai.mask = mask
+#         dark_files = [i.strip() for i in str_(self.dark_current.text()).split(",")
+#                       if op.isfile(i.strip())]
+#         if dark_files and bool(self.do_dark.isChecked()):
+#             self.ai.set_darkfiles(dark_files)
+#
+#         flat_files = [i.strip() for i in str_(self.flat_field.text()).split(",")
+#                       if op.isfile(i.strip())]
+#         if flat_files and bool(self.do_flat.isChecked()):
+#             self.ai.set_flatfiles(flat_files)
+
 
     def detector_changed(self):
         logger.debug("detector_changed")
