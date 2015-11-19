@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/11/2015"
+__date__ = "19/11/2015"
 __status__ = "production"
 
 import os
@@ -278,8 +278,8 @@ class PeakPicker(object):
         # skip lowest and highest per mille of image values via vmin/vmax
         sorted = data_disp.flatten()  # explicit copy
         sorted.sort()
-        show_min = sorted[int(1e-3 * (sorted.size - 1))]
-        show_max = sorted[int(0.999 * (sorted.size - 1))]
+        show_min = sorted[int(round(1e-3 * (sorted.size - 1)))]
+        show_max = sorted[int(roud(0.999 * (sorted.size - 1)))]
         im = self.ax.imshow(data_disp, vmin=show_min, vmax=show_max,
                             origin="lower", interpolation="nearest",
                             )
@@ -295,7 +295,7 @@ class PeakPicker(object):
             d1 = numpy.array([0, s1, s1 , 0 ])
             d2 = numpy.array([0, 0, s2, s2])
             p1, p2, p3 = self.detector.calc_cartesian_positions(d1=d1, d2=d2)
-            ax = self.fig.add_subplot(1,1,1,
+            ax = self.fig.add_subplot(1, 1, 1,
                                       xbound=False,
                                       ybound=False,
                                       xlabel=r'dim2 ($\approx m$)',

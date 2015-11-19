@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/11/2015"
+__date__ = "19/11/2015"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -41,8 +41,20 @@ Module with GUI for diffraction mapping experiments
 
 
 """
+import os
+import time
+import posixpath
+import sys
+import collections
+import numpy
+import fabio
 
+from .units import to_unit
+from . import version as PyFAI_VERSION, date as PyFAI_DATE
+from .io import Nexus, get_isotime
 
+DIGITS = [str(i) for i in range(10)]
+Position = collections.namedtuple('Position', 'index, rot, trans')
 class DiffMap(object):
     """
     Basic class for diffraction mapping experiment using pyFAI
@@ -71,10 +83,12 @@ class DiffMap(object):
         self.dataset = None
         self.inputfiles = []
         self.timing = []
-        self.use_gpu = False
+        self.method = "csr"
         self.unit = to_unit("2th_deg")
         self.stats = False
         self._idx = -1
+        self.processed_file = []
+        self.nxs = None
 
     def __repr__(self):
         return "Diffraction Tomography with r=%s t: %s, d:%s" % \
@@ -317,7 +331,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         plt.grid(True)
         plt.show()
 
-    def get_pos(self, filename, idx=None):
+    def get_pos(self, filename=None, idx=None):
         """
         Calculate the position in the sinogram of the file according
         to it's number
@@ -344,50 +358,54 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.makeHDF5()
 
         t = time.time()
+        fimg = fabio.open(filename)
+        self.process_one_frame(fimg.data)
+        if fimg.nframes > 1:
+            for i in range(fimg.nframes - 1):
+                fimg = fimg.next()
+                self.process_one_frame(fimg.data)
+        t -= time.time()
+        print("Processing %30s took %6.1fms (%i frames)" %
+              (os.path.basename(filename), -1000.0 * t, fimg.nframes))
+        self.timing.append(-t)
+        self.processed_file.append(filename)
+
+    def process_one_frame(self, frame):
+        """
+        @param 
+        """
         self._idx += 1
-        pos = self.get_pos(filename, self._idx)
+        pos = self.get_pos(None, self._idx)
         shape = self.dataset.shape
         if pos.rot + 1 > shape[0]:
             self.dataset.resize((pos.rot + 1, shape[1], shape[2]))
         elif pos.index < 0 or pos.rot < 0 or pos.trans < 0:
             return
-        fimg = fabio.open(filename)
 
-        meth = "csr_ocl_gpu" if self.use_gpu else "csr"
-        tth, I = self.ai.integrate1d(fimg.data, self.npt_rad, safe=False,
-                                     method=meth, unit=self.unit)
+        tth, I = self.ai.integrate1d(frame, self.npt_rad, safe=False,
+                                     method=self.method, unit=self.unit)
         self.dataset[pos.rot, pos.trans, :] = I
 
-        if fimg.nframes > 1:
-            print("Case of multiframe images")
-            for i in range(fimg.nframes - 1):
-                fimg = fimg.next()
-                data = fimg.data
-                self._idx += 1
-                pos = self.get_pos(filename, self._idx)
-                if pos.rot + 1 > shape[0]:
-                    self.dataset.resize((pos.rot + 1, shape[1], shape[2]))
-                tth, I = self.ai.integrate1d(data, self.npt_rad, safe=False,
-                                             method=meth, unit=self.unit)
-                self.dataset[pos.rot, pos.trans, :] = I
-
-        t -= time.time()
-        print("Processing %30s took %6.1fms" %
-              (os.path.basename(filename), -1000 * t))
-        self.timing.append(-t)
 
     def process(self):
         if self.dataset is None:
             self.makeHDF5()
         self.init_ai()
         t0 = time.time()
-        self._idx = -1
+#         self._idx = -1
         for f in self.inputfiles:
             self.process_one_file(f)
-        self.nxs.close
         tot = time.time() - t0
         cnt = self._idx + 1
         print(("Execution time for %i frames: %.3fs;"
                " Average execution time: %.1fms") %
               (cnt, tot, 1000. * tot / cnt))
         self.nxs.close()
+
+
+    def get_use_gpu(self):
+        return ("gpu" in self.method)
+    def set_use_gpu(self, value):
+        self.method = "csr_ocl_gpu" if value else "csr"
+
+    use_gpu = property(get_use_gpu, set_use_gpu)

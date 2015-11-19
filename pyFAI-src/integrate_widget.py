@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/11/2015"
+__date__ = "19/11/2015"
 __satus__ = "development"
 
 import sys
@@ -132,6 +132,7 @@ class Browser(QtGui.QMainWindow):
 class AIWidget(QtGui.QWidget):
     """
     """
+    URL = "http://pyfai.readthedocs.org/en/latest/man/pyFAI-integrate.html"
     def __init__(self, input_data=None, output_path=None, output_format=None, slow_dim=None, fast_dim=None, json_file=None):
         self.units = {}
         self.ai = AzimuthalIntegrator()
@@ -424,18 +425,14 @@ class AIWidget(QtGui.QWidget):
 
     def help(self):
         logger.debug("Please, help")
-        self.help_browser = Browser("http://pyfai.readthedocs.org/en/latest/pyFAI.html")
+        self.help_browser = Browser(self.URL)
         self.help_browser.show()
 
-    def dump(self, filename=".azimint.json"):
+    def get_config(self):
+        """Read the configuration of the plugin and returns it as a dictionary
+        
+        @return: dict with all information.
         """
-        Dump the status of the current widget to a file in JSON
-
-        @param filename: path where to save the config
-        @type filename: string
-
-        """
-        logger.info("Dump to %s" % filename)
         to_save = { "poni": str_(self.poni.text()).strip(),
                     "detector": str_(self.detector.currentText()).lower(),
                     "wavelength":self._float("wavelength", None),
@@ -477,7 +474,19 @@ class AIWidget(QtGui.QWidget):
                 to_save["unit"] = unit.REPR
                 break
         else:
-            logger.warning("Undefined unit !!!")
+            logger.info("Undefined unit !!!")
+        return to_save
+
+    def dump(self, filename=".azimint.json"):
+        """
+        Dump the status of the current widget to a file in JSON
+
+        @param filename: path where to save the config
+        @type filename: string
+        @return: dict with configuration
+        """
+        logger.info("Dump to %s" % filename)
+        to_save = self.get_config()
         if filename is not None:
             try:
                 with open(filename, "w") as myFile:
@@ -489,18 +498,24 @@ class AIWidget(QtGui.QWidget):
         return to_save
 
     def restore(self, filename=".azimint.json"):
-        """
-        restore from JSON file the status of the current widget
+        """Restore from JSON file the status of the current widget
 
         @param filename: path where the config was saved
         @type filename: str
-
         """
         logger.debug("Restore from %s" % filename)
         if not op.isfile(filename):
             logger.error("No such file: %s" % filename)
             return
         data = json.load(open(filename))
+        self.set_config(data)
+
+    def set_config(self, dico):
+        """Setup the widget from its description 
+
+        @param dico: dictionary with description of the widget
+        @type dico: dict
+        """
         setup_data = {  "poni": self.poni.setText,
 #        "detector": self.all_detectors[self.detector.getCurrentIndex()],
                         "wavelength":lambda a:self.wavelength.setText(str_(a)),
@@ -538,15 +553,15 @@ class AIWidget(QtGui.QWidget):
                         "do_solid_angle": self.do_solid_angle.setChecked,
                    }
         for key, value in setup_data.items():
-            if key in data:
-                value(data[key])
-        if "unit" in data:
+            if key in dico:
+                value(dico[key])
+        if "unit" in dico:
             for unit, widget in self.units.items():
-                if unit.REPR == data["unit"] and widget is not None:
+                if unit.REPR == dico["unit"] and widget is not None:
                     widget.setChecked(True)
                     break
-        if "detector" in data:
-            detector = data["detector"].lower()
+        if "detector" in dico:
+            detector = dico["detector"].lower()
             if detector in self.all_detectors:
                 self.detector.setCurrentIndex(self.all_detectors.index(detector))
 
@@ -672,11 +687,11 @@ class AIWidget(QtGui.QWidget):
 
         wavelength = config.get("wavelength", 0)
         if wavelength:
-            if fwavelength <= 0 or fwavelength > 1e-6:
-                logger.warning("Wavelength is in meter ... unlikely value %s" % fwavelength)
-            ai.wavelength = fwavelength
+            if wavelength <= 0 or wavelength > 1e-6:
+                logger.warning("Wavelength is in meter ... unlikely value %s" % wavelength)
+            ai.wavelength = wavelength
 
-        splinefile = config.get(splineFile)
+        splinefile = config.get("splineFile")
         if splinefile and op.isfile(splinefile):
             ai.detector.splineFile = splinefile
 
@@ -704,12 +719,12 @@ class AIWidget(QtGui.QWidget):
 #            elif mask_file==FROM_PYMCA:
 #                ai.mask = mask
 
-        dark_files = [i.strip() for i in config.get(dark_current, "").split(",")
+        dark_files = [i.strip() for i in config.get("dark_current", "").split(",")
                       if op.isfile(i.strip())]
         if dark_files and config.get("do_dark"):
             ai.set_darkfiles(dark_files)
 
-        flat_files = [i.strip() for i in  onfig.get(flat_files, "").split(",")
+        flat_files = [i.strip() for i in config.get("flat_field", "").split(",")
                       if op.isfile(i.strip())]
         if flat_files and config.get("do_flat"):
             ai.set_flatfiles(flat_files)
@@ -721,60 +736,6 @@ class AIWidget(QtGui.QWidget):
         """
         config = self.dump()
         self.ai = self.make_ai(config)
-#         poni = str_(self.poni.text()).strip()
-#         if poni and op.isfile(poni):
-#             self.ai = AzimuthalIntegrator.sload(poni)
-#         detector = str_(self.detector.currentText()).lower().strip() or "detector"
-#         self.ai.detector = detector_factory(detector)
-#
-#         wavelength = str(self.wavelength.text()).strip()
-#         if wavelength:
-#             try:
-#                 fwavelength = float(wavelength)
-#             except ValueError:
-#                 logger.error("Unable to convert wavelength to float: %s" % wavelength)
-#             else:
-#                 if fwavelength <= 0 or fwavelength > 1e-6:
-#                     logger.warning("Wavelength is in meter ... unlikely value %s" % fwavelength)
-#                 self.ai.wavelength = fwavelength
-#
-#         splineFile = str_(self.splineFile.text()).strip()
-#         if splineFile and op.isfile(splineFile):
-#             self.ai.detector.splineFile = splineFile
-#
-#         self.ai.pixel1 = self._float("pixel1", 1)
-#         self.ai.pixel2 = self._float("pixel2", 1)
-#         self.ai.dist = self._float("dist", 1)
-#         self.ai.poni1 = self._float("poni1", 0)
-#         self.ai.poni2 = self._float("poni2", 0)
-#         self.ai.rot1 = self._float("rot1", 0)
-#         self.ai.rot2 = self._float("rot2", 0)
-#         self.ai.rot3 = self._float("rot3", 0)
-#
-#         if self.chi_discontinuity_at_0.isChecked():
-#             self.ai.setChiDiscAtZero()
-#
-#         mask_file = str_(self.mask_file.text()).strip()
-#         if mask_file  and bool(self.do_mask.isChecked()):
-#             if op.exists(mask_file):
-#                 try:
-#                     mask = fabio.open(mask_file).data
-#                 except Exception as error:
-#                     logger.error("Unable to load mask file %s, error %s" % (mask_file, error))
-#                 else:
-#                     self.ai.mask = mask
-# #            elif mask_file==FROM_PYMCA:
-# #                self.ai.mask = mask
-#         dark_files = [i.strip() for i in str_(self.dark_current.text()).split(",")
-#                       if op.isfile(i.strip())]
-#         if dark_files and bool(self.do_dark.isChecked()):
-#             self.ai.set_darkfiles(dark_files)
-#
-#         flat_files = [i.strip() for i in str_(self.flat_field.text()).split(",")
-#                       if op.isfile(i.strip())]
-#         if flat_files and bool(self.do_flat.isChecked()):
-#             self.ai.set_flatfiles(flat_files)
-
 
     def detector_changed(self):
         logger.debug("detector_changed")
@@ -827,7 +788,7 @@ class AIWidget(QtGui.QWidget):
             else:
                 method = "csr_ocl"
         else:
-            if len(self.input_data) > 5:
+            if self.input_data and len(self.input_data) > 5:
                 method = "csr"
             else:
                 method = "splitbbox"

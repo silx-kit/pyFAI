@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "18/11/2015"
+__date__ = "19/11/2015"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -41,10 +41,15 @@ Module with GUI for diffraction mapping experiments
 
 
 """
+import os
+import time
+import json
+import threading
 from collections import namedtuple
 from .gui_utils import QtGui, QtCore, uic
 from .utils import float_, int_, str_, get_ui_file
 from .integrate_widget import AIWidget
+from .diffmap import DiffMap
 from .io import is_hdf5
 import logging
 logger = logging.getLogger("diffmap_widget")
@@ -143,9 +148,11 @@ class ListModel(QtCore.QAbstractTableModel):
 
 
 class DiffMapWidget(QtGui.QWidget):
-
+    progressbarChanged = QtCore.pyqtSignal(int)
+#     progressbarAborted = QtCore.pyqtSignal()
     uif = "diffmap.ui"
-
+    json_file = ".diffmap.json"
+    URL = "http://pyfai.readthedocs.org/en/latest/man/scripts.html"
     def __init__(self):
         QtGui.QWidget.__init__(self)
 
@@ -158,6 +165,7 @@ class DiffMapWidget(QtGui.QWidget):
             logger.error("I looks like your installation suffers from this bug: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348")
             raise RuntimeError("Please upgrade your installation of PyQt (or apply the patch)")
         self.aborted = False
+        self.progressBar.setValue(0)
         self.listModel = ListModel(self, self.list_dataset)
         self.listFiles.setModel(self.listModel)
         self.listFiles.hideColumn(1)
@@ -166,6 +174,8 @@ class DiffMapWidget(QtGui.QWidget):
         self.set_validator()
         self.update_number_of_frames()
         self.update_number_of_points()
+        self.processing_thread = None
+        self.processing_sem = threading.Semaphore()
 
     def set_validator(self):
         validator = QtGui.QIntValidator(0, 999999, self)
@@ -181,12 +191,17 @@ class DiffMapWidget(QtGui.QWidget):
         self.runButton.clicked.connect(self.start_processing)
         self.addFiles.clicked.connect(self.input_filer)
         self.sortButton.clicked.connect(self.sort_input)
-
+        self.saveButton.clicked.connect(self.save_config)
+        self.abortButton.clicked.connect(self.do_abort)
         self.fastMotorPts.editingFinished.connect(self.update_number_of_points)
         self.slowMotorPts.editingFinished.connect(self.update_number_of_points)
         self.offset.editingFinished.connect(self.update_number_of_points)
+        self.progressbarChanged.connect(self.progressBar.setValue)
 
+#         self.progressbarAborted.connect(self.just_aborted)
 
+    def do_abort(self):
+        self.aborted = True
 
     def input_filer(self, *args, **kwargs):
         """
@@ -199,7 +214,7 @@ class DiffMapWidget(QtGui.QWidget):
                          filter=self.tr("EDF image files (*.edf);;TIFF image files (*.tif);;CBF files (*.cbf);;MarCCD image files (*.mccd);;Any file (*)"))
                          # filter=self.tr("NeXuS files (*.nxs);;HDF5 files (*.h5);;HDF5 files (*.hdf5);;EDF image files (*.edf);;TIFF image files (*.tif);;CBF files (*.cbf);;MarCCD image files (*.mccd);;Any file (*)"))
         for i in fnames:
-            self.list_dataset.append(DataSet(i, None, None, None))
+            self.list_dataset.append(DataSet(str_(i), None, None, None))
         self.listModel.reset()
         self.update_number_of_frames()
 
@@ -210,8 +225,11 @@ class DiffMapWidget(QtGui.QWidget):
         """
         logger.info("in configure_diffraction")
         iw = IntegrateWidget(self)
+        if self.integration_config:
+            iw.widget.set_config(self.integration_config)
         res = iw.exec_()
         if res == QtGui.QDialog.Accepted:
+            iw.widget.input_data = [i.path for i in self.list_dataset]
             self.integration_config = iw.get_config()
         print(self.integration_config)
 
@@ -242,7 +260,10 @@ class DiffMapWidget(QtGui.QWidget):
             else:
                 return
         config = self.get_config()
-        self.process(config)
+        self.progressBar.setRange(0, len(self.list_dataset))
+        self.aborted = False
+        self.processing_thread = threading.Thread(name="process", target=self.process, args=(config,))
+        self.processing_thread.start()
 
     def update_number_of_frames(self):
         cnt = len(self.list_dataset)
@@ -268,8 +289,7 @@ class DiffMapWidget(QtGui.QWidget):
         self.listModel.reset()
 
     def get_config(self):
-        """
-        Return a dict with the plugin configuration which is JSON-serializable 
+        """Return a dict with the plugin configuration which is JSON-serializable 
         """
         res = {
                "ai": self.integration_config,
@@ -284,14 +304,94 @@ class DiffMapWidget(QtGui.QWidget):
                }
         return res
 
+    def set_config(self, dico):
+        """Set up the widget from dictionary
+        
+        @param  dico: dictionary 
+        """
+        self.integration_config = dico.get("ai", {})
+        # TODO
+        setup_data = {"experiment_title": self.experimentTitle.setText,
+                      "fast_motor_name": self.fastMotorName.setText,
+                      "slow_motor_name":self.slowMotorName.setText,
+                      "fast_motor_points":lambda a:self.fastMotorPts.setText(str_(a)),
+                      "slow_motor_points":lambda a:self.slowMotorPts.setText(str_(a)),
+                      "offset":lambda a:self.offset.setText(str_(a)),
+                      "output_file":self.outputFile.setText
+                   }
+        for key, value in setup_data.items():
+            if key in dico:
+                value(dico[key])
+        self.list_dataset = [DataSet(*i) for i in dico.get("input_data", [])]
+        self.listModel = ListModel(self, self.list_dataset)
+        self.listFiles.setModel(self.listModel)
+        self.update_number_of_frames()
+        self.update_number_of_points()
+
+
+
+    def dump(self, fname=None):
+        """Save the configuration in a JSON file
+        
+        @param fname: file where the config is saved as JSON 
+        """
+        if fname is None:
+            fname = self.json_file
+        config = self.get_config()
+        with open(fname, "w") as fd:
+            fd.write(json.dumps(config, indent=2))
+        return config
+
+    def restore(self, fname=None):
+        """Restore the widget from saved config
+        
+        @param fname: file where the config is saved as JSON
+        """
+        if fname is None:
+            fname = self.json_file
+        if not os.path.exists(fname):
+            logger.warning("No such configuration file: %s" % fname)
+            return
+        with open(fname, "r") as fd:
+            dico = json.loads(fd.read())
+        self.set_config(dico)
+
+    def save_config(self):
+        logger.debug("save_config")
+        json_file = str_(QtGui.QFileDialog.getSaveFileName(caption="Save configuration as json",
+                                                           directory=self.json_file,
+                                                           filter="Config (*.json)"))
+        if json_file:
+            self.dump(json_file)
+
     def process(self, config=None):
         """
-        Called 
+        Called in a separate thread 
         """
         logger.info("process")
-        config_ai = config.get("ai",{})
-        diffmap = DiffMap(npt_fast=config.get("fast_motor_points",1), 
-                          npt_slow=config.get("slow_motor_points",1), 
-                          npt_rad=config_ai.get("nbpt_rad",1000), 
-                          npt_azim=config_ai.get("nbpt_azim",1) if config_ai.get("do_2D") else None))
-        
+        t0 = time.time()
+        with self.processing_sem:
+
+            if config is None:
+                config = self.dump()
+            config_ai = config.get("ai", {})
+            diffmap = DiffMap(npt_fast=config.get("fast_motor_points", 1),
+                              npt_slow=config.get("slow_motor_points", 1),
+                              npt_rad=config_ai.get("nbpt_rad", 1000),
+                              npt_azim=config_ai.get("nbpt_azim", 1) if config_ai.get("do_2D") else None)
+            diffmap.ai = AIWidget.make_ai(config_ai)
+            diffmap.hdf5 = config.get("output_file", "unamed.h5")
+            for i, fn in enumerate(self.list_dataset):
+                diffmap.process_one_file(fn.path)
+                self.progressbarChanged.emit(i)
+                if self.aborted:
+                    logger.warning("Aborted by user")
+                    self.progressbarChanged.emit(0)
+                    if diffmap.nxs:
+                        diffmap.nxs.close()
+
+                    return
+            if diffmap.nxs:
+                diffmap.nxs.close()
+        logger.warning("Processing finished in %.3fs" % (time.time() - t0))
+

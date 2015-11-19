@@ -29,7 +29,7 @@
 from __future__ import absolute_import, print_function, with_statement, division
 
 __doc__ = """Demonstrator for diffraction mapping """
-__date__ = "05/11/2015"
+__date__ = "19/11/2015"
 __license__ = "MIT"
 
 import sys
@@ -41,6 +41,7 @@ if __name__ == "__main__":
     from PyQt4 import QtGui
     app = QtGui.QApplication([])
     window = DiffMapWidget()
+    window.restore()
     window.show()
     sys.exit(app.exec_())
 
