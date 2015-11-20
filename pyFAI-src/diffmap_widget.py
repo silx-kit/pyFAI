@@ -45,38 +45,15 @@ import os
 import time
 import json
 import threading
-from collections import namedtuple
-from .gui_utils import QtGui, QtCore, uic
+import numpy
+from .gui_utils import QtGui, QtCore, uic, pyplot, update_fig
 from .utils import float_, int_, str_, get_ui_file
+from .units import to_unit
 from .integrate_widget import AIWidget
 from .diffmap import DiffMap
-from .io import is_hdf5
+from .tree import ListDataSet, DataSet
 import logging
 logger = logging.getLogger("diffmap_widget")
-
-DataSetNT = namedtuple("DataSet", ("path", "h5", "nframes"))
-
-class DataSet(object):
-    def __init__(self, path, h5=None, nframes=None, shape=None):
-        self.path = path
-        self.h5 = h5
-        self.nframes = nframes
-        self.shape = shape
-
-    def as_tuple(self):
-        return DataSetNT(self.path, self.h5, self.nframes)
-
-    def is_hdf5(self):
-        """Return True if the object is hdf5"""
-        if self.h5 is None:
-            self.h5 = is_hdf5(self.path)
-        return bool(self.h5)
-#     def __getitem__(self, item):
-#         if item in ("path", "h5", "nframes", "shape"):
-#             return self.__getattribute__(item)
-
-class ListDataSet(list):
-    pass
 
 
 class IntegrateWidget(QtGui.QDialog):
@@ -94,6 +71,72 @@ class IntegrateWidget(QtGui.QDialog):
         res = self.widget.dump()
         res["method"] = self.widget.get_method()
         return res
+
+
+class TreeModel(QtCore.QAbstractItemModel):
+    def __init__(self, win, root_item):
+        super(TreeModel, self).__init__(win)
+        self._root_item = root_item
+        self._win = win
+        self._current_branch = None
+
+    def set_root(self, new_root):
+#         self.beginResetModel()
+        self._root_item = new_root
+#         self.endResetModel()
+
+    def rowCount(self, parent):
+        if parent.column() > 0:
+            return 0
+        pitem = parent.internalPointer()
+        if not parent.isValid():
+            pitem = self._root_item
+        return len(pitem.children)
+
+    def columnCount(self, parent):
+        return 2
+
+    def flags(self, midx):
+#        if midx.column()==1:
+        return QtCore.Qt.ItemIsEnabled
+
+    def index(self, row, column, parent):
+        pitem = parent.internalPointer()
+        if not parent.isValid():
+            pitem = self._root_item
+        try:
+            item = pitem.children[row]
+        except IndexError:
+            return QtCore.QModelIndex()
+        return self.createIndex(row, column, item)
+
+    def data(self, midx, role):
+        """
+        What to display depending on model_index and role
+        """
+        leaf = midx.internalPointer()
+        if midx.column() == 0 and role == QtCore.Qt.DisplayRole:
+            return leaf.label
+
+#         if midx.column() == 1 and role == QtCore.Qt.DisplayRole:
+#             if leaf.order == 4:
+#                 if leaf.extra is None:
+#                     data = Photo(leaf.name).readExif()
+#                     leaf.extra = data["title"]
+#                 return leaf.extra
+
+    def headerData(self, section, orientation, role):
+        if role == QtCore.Qt.DisplayRole and orientation == QtCore.Qt.Horizontal:
+            return ["Path", "shape"][section]
+
+    def parent(self, midx):
+        pitem = midx.internalPointer().parent
+        if pitem is self._root_item:
+#             return self.createIndex(0, 0, self._root_item)
+            return QtCore.QModelIndex()
+        row_idx = pitem.parent.children.index(pitem)
+        return self.createIndex(row_idx, 0, pitem)
+
 
 
 class ListModel(QtCore.QAbstractTableModel):
@@ -148,7 +191,7 @@ class ListModel(QtCore.QAbstractTableModel):
 
 
 class DiffMapWidget(QtGui.QWidget):
-    progressbarChanged = QtCore.pyqtSignal(int)
+    progressbarChanged = QtCore.pyqtSignal(int, int)
 #     progressbarAborted = QtCore.pyqtSignal()
     uif = "diffmap.ui"
     json_file = ".diffmap.json"
@@ -157,7 +200,7 @@ class DiffMapWidget(QtGui.QWidget):
         QtGui.QWidget.__init__(self)
 
         self.integration_config = {}
-        self.list_dataset = []  # Contains all datasets to be treated.
+        self.list_dataset = ListDataSet()  # Contains all datasets to be treated.
 
         try:
             uic.loadUi(get_ui_file(self.uif), self)
@@ -166,8 +209,8 @@ class DiffMapWidget(QtGui.QWidget):
             raise RuntimeError("Please upgrade your installation of PyQt (or apply the patch)")
         self.aborted = False
         self.progressBar.setValue(0)
-        self.listModel = ListModel(self, self.list_dataset)
-        self.listFiles.setModel(self.listModel)
+        self.list_model = TreeModel(self, self.list_dataset.as_tree())
+        self.listFiles.setModel(self.list_model)
         self.listFiles.hideColumn(1)
         self.listFiles.hideColumn(2)
         self.create_connections()
@@ -176,6 +219,7 @@ class DiffMapWidget(QtGui.QWidget):
         self.update_number_of_points()
         self.processing_thread = None
         self.processing_sem = threading.Semaphore()
+        self.update_sem = threading.Semaphore()
 
         # Online visualization
         self.fig = None
@@ -183,6 +227,9 @@ class DiffMapWidget(QtGui.QWidget):
         self.aximg = None
         self.img = None
         self.plot = None
+        self.radial_data = None
+        self.data = None
+        self.last_idx = -1
 
 
     def set_validator(self):
@@ -204,7 +251,7 @@ class DiffMapWidget(QtGui.QWidget):
         self.fastMotorPts.editingFinished.connect(self.update_number_of_points)
         self.slowMotorPts.editingFinished.connect(self.update_number_of_points)
         self.offset.editingFinished.connect(self.update_number_of_points)
-        self.progressbarChanged.connect(self.progressBar.setValue)
+        self.progressbarChanged.connect(self.update_processing)
 
 #         self.progressbarAborted.connect(self.just_aborted)
 
@@ -223,8 +270,20 @@ class DiffMapWidget(QtGui.QWidget):
                          # filter=self.tr("NeXuS files (*.nxs);;HDF5 files (*.h5);;HDF5 files (*.hdf5);;EDF image files (*.edf);;TIFF image files (*.tif);;CBF files (*.cbf);;MarCCD image files (*.mccd);;Any file (*)"))
         for i in fnames:
             self.list_dataset.append(DataSet(str_(i), None, None, None))
-        self.listModel.reset()
+
+#         self.list_model.set_root(self.list_dataset.as_tree())
+        tree = self.list_dataset.as_tree()
+        print(tree)
+        t0 = time.time()
+        self.list_model.set_root(tree)
+#         self.list_model = TreeModel(self, tree)
+        print("set TreeModel: %.3fs" % (time.time() - t0))
+        t0 = time.time()
+        self.listFiles.setModel(self.list_model)
+        print("create setModel: %.3fs" % (time.time() - t0))
+        t0 = time.time()
         self.update_number_of_frames()
+        print("create update_number_of_frames: %.3fs" % (time.time() - t0))
 
 
 
@@ -270,6 +329,8 @@ class DiffMapWidget(QtGui.QWidget):
         config = self.get_config()
         self.progressBar.setRange(0, len(self.list_dataset))
         self.aborted = False
+        self.display_processing(config)
+        self.last_idx = -1
         self.processing_thread = threading.Thread(name="process", target=self.process, args=(config,))
         self.processing_thread.start()
 
@@ -294,7 +355,9 @@ class DiffMapWidget(QtGui.QWidget):
 
     def sort_input(self):
         self.list_dataset.sort(key=lambda i: i.path)
-        self.listModel.reset()
+#         self.list_model = TreeModel(self, self.list_dataset.as_tree())
+#         self.listFiles.setModel(self.list_model)
+        self.list_model.set_root(self.list_dataset.as_tree())
 
     def get_config(self):
         """Return a dict with the plugin configuration which is JSON-serializable 
@@ -330,9 +393,10 @@ class DiffMapWidget(QtGui.QWidget):
         for key, value in setup_data.items():
             if key in dico:
                 value(dico[key])
-        self.list_dataset = [DataSet(*i) for i in dico.get("input_data", [])]
-        self.listModel = ListModel(self, self.list_dataset)
-        self.listFiles.setModel(self.listModel)
+        self.list_dataset = ListDataSet(DataSet(*(str_(j) for j in i)) for i in dico.get("input_data", []))
+        self.list_model.set_root(self.list_dataset.as_tree())
+#         self.list_model = TreeModel(self, self.list_dataset.as_tree())
+#         self.listFiles.setModel(self.list_model)
         self.update_number_of_frames()
         self.update_number_of_points()
 
@@ -388,31 +452,70 @@ class DiffMapWidget(QtGui.QWidget):
                               npt_rad=config_ai.get("nbpt_rad", 1000),
                               npt_azim=config_ai.get("nbpt_azim", 1) if config_ai.get("do_2D") else None)
             diffmap.ai = AIWidget.make_ai(config_ai)
+            diffmap.method = config_ai.get("method", "csr")
             diffmap.hdf5 = config.get("output_file", "unamed.h5")
-            diffmap.init_ai()
+            self.radial_data = diffmap.init_ai()
+            self.data = diffmap.dataset
             for i, fn in enumerate(self.list_dataset):
                 diffmap.process_one_file(fn.path)
-                self.progressbarChanged.emit(i)
+                self.progressbarChanged.emit(i, diffmap._idx)
                 if self.aborted:
                     logger.warning("Aborted by user")
-                    self.progressbarChanged.emit(0)
+                    self.progressbarChanged.emit(0, 0)
                     if diffmap.nxs:
                         diffmap.nxs.close()
                     return
             if diffmap.nxs:
                 diffmap.nxs.close()
         logger.warning("Processing finished in %.3fs" % (time.time() - t0))
-        self.progressbarChanged.emit(len(self.list_dataset))
+        self.progressbarChanged.emit(len(self.list_dataset), 0)
 
-    def display_processing(self):
+    def display_processing(self, config):
         """Setup the display for visualizing the processing
         
+        @param config: configuration of the processing ongoing
         """
         self.fig = pyplot.figure()
-        self.axplt = self.fig.add_subplot(2, 1, 1)
-        self.aximg = self.fig.add_subplot(2, 1, 2)
-        self.img = self.aximg.imshow(ds.value.sum(axis=-1), interpolation="nearest")
-        self.plot = self.axplt.plot(ds.value.reshape(-1, 1400).sum(axis=0))
+        self.aximg = self.fig.add_subplot(2, 1, 1,
+                                          xlabel=config.get("fast_motor_name", "Fast motor"),
+                                          ylabel=config.get("slow_motor_name", "Slow motor"),
+                                          xlim=(0, config.get("fast_motor_points", 1)),
+                                          ylim=(0, config.get("slow_motor_points", 1)))
+        self.aximg.set_title(config.get("experiment_title", "Diffraction imaging"))
+
+        self.axplt = self.fig.add_subplot(2, 1, 2,
+                                          xlabel=to_unit(config.get("ai").get("unit")).label,
+                                          ylabel="Scattered intensity")
+        self.axplt.set_title("Average diffraction pattern")
+
+
         self.fig.show()
 
+    def update_processing(self, idx_file, idx_img):
+        """ Update the process bar and the images 
+        
+        """
+        self.progressBar.setValue(idx_file)
+        if self.update_sem._Semaphore__value < 1:
+            return
+        with self.update_sem:
+            try:
+                data = self.data.value
+            except ValueError:
+                logger.warning("Dataset not valid")
+                return
+            npt = self.radial_data.size
 
+            img = data.mean(axis=-1)
+            if self.last_idx < 0:
+                I = data[0, 0, :]
+                self.plot = self.axplt.plot(self.radial_data, I)[0]
+                self.img = self.aximg.imshow(img, interpolation="nearest")
+            else:
+                I = data.reshape(-1, npt)[:idx_img].mean(axis=0)
+                self.plot.set_ydata(I)
+                self.img.set_data(img)
+            self.last_idx = idx_img
+            self.fig.canvas.draw()
+            QtCore.QCoreApplication.processEvents()
+            time.sleep(0.1)

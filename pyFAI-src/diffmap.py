@@ -291,6 +291,10 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.ai.detector.set_maskfile(self.mask)
 
     def init_ai(self):
+        """Force initialization of azimuthal intgrator
+        
+        @return: radial position array
+        """
         if not self.ai:
             self.setup_ai()
         if not self.group:
@@ -319,6 +323,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.ai._ocl_csr_integr.output_dummy = 0.0
         else:
             self.ai._csr_integrator.output_dummy = 0.0
+        return tth
 
     def show_stats(self):
         if not self.stats:

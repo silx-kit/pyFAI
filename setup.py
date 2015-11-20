@@ -30,7 +30,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "12/11/2015"
+__date__ = "20/11/2015"
 __status__ = "stable"
 
 install_warning = True
@@ -204,7 +204,8 @@ ext_modules = [
     Extension('morphology'),
     Extension('marchingsquares'),
     Extension('watershed'),
-    Extension('histogram', can_use_openmp=True)
+    Extension('histogram', can_use_openmp=True),
+    Extension('_tree')
 ]
 
 if (os.name == "posix") and ("x86" in platform.machine()):

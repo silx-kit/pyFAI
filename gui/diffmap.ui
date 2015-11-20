@@ -40,7 +40,7 @@
         </layout>
        </item>
        <item>
-        <widget class="QTableView" name="listFiles"/>
+        <widget class="QTreeView" name="listFiles"/>
        </item>
        <item>
         <widget class="QCheckBox" name="multiframe">
