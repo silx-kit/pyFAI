@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/11/2015"
+__date__ = "20/11/2015"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -296,25 +296,29 @@ If the number of files is too large, use double quotes like "*.edf" """
         if not self.group:
             self.makeHDF5(rewrite=False)
         if self.ai.detector.shape:
-            data = numpy.empty(self.ai.detector.shape, dtype=numpy.float32)
-            meth = "csr_ocl_gpu" if self.use_gpu else "csr"
-            print("Initialization of the Azimuthal Integrator using method %s" % meth)
-            # enforce initialization of azimuthal integrator
-            tth, I = self.ai.integrate1d(data, self.npt_rad,
-                                         method=meth, unit=self.unit)
-            if self.dataset is None:
-                self.makeHDF5()
-            space, unit = str(self.unit).split("_")
-            if space not in self.group:
-                self.group[space] = tth
-                self.group[space].attrs["axes"] = 3
-                self.group[space].attrs["unit"] = unit
-                self.group[space].attrs["long_name"] = self.unit.label
-                self.group[space].attrs["interpretation"] = "scalar"
-            if self.use_gpu:
-                self.ai._ocl_csr_integr.output_dummy = 0.0
-            else:
-                self.ai._csr_integrator.output_dummy = 0.0
+            # shape of detector undefined: reading the first image to guess it
+            shape = self.ai.detector.shape
+        else:
+            fimg = fabio.open(self.inputfiles[0])
+            shape = fimg.data.shape
+        data = numpy.empty(shape, dtype=numpy.float32)
+        print("Initialization of the Azimuthal Integrator using method %s" % self.method)
+        # enforce initialization of azimuthal integrator
+        tth, I = self.ai.integrate1d(data, self.npt_rad,
+                                     method=self.method, unit=self.unit)
+        if self.dataset is None:
+            self.makeHDF5()
+        space, unit = str(self.unit).split("_")
+        if space not in self.group:
+            self.group[space] = tth
+            self.group[space].attrs["axes"] = 3
+            self.group[space].attrs["unit"] = unit
+            self.group[space].attrs["long_name"] = self.unit.label
+            self.group[space].attrs["interpretation"] = "scalar"
+        if self.use_gpu:
+            self.ai._ocl_csr_integr.output_dummy = 0.0
+        else:
+            self.ai._csr_integrator.output_dummy = 0.0
 
     def show_stats(self):
         if not self.stats:
@@ -372,7 +376,7 @@ If the number of files is too large, use double quotes like "*.edf" """
 
     def process_one_frame(self, frame):
         """
-        @param 
+        @param frame: 2d numpy array with an image to process
         """
         self._idx += 1
         pos = self.get_pos(None, self._idx)
@@ -407,5 +411,4 @@ If the number of files is too large, use double quotes like "*.edf" """
         return ("gpu" in self.method)
     def set_use_gpu(self, value):
         self.method = "csr_ocl_gpu" if value else "csr"
-
     use_gpu = property(get_use_gpu, set_use_gpu)

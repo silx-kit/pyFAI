@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/11/2015"
+__date__ = "20/11/2015"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -176,6 +176,14 @@ class DiffMapWidget(QtGui.QWidget):
         self.update_number_of_points()
         self.processing_thread = None
         self.processing_sem = threading.Semaphore()
+
+        # Online visualization
+        self.fig = None
+        self.axplt = None
+        self.aximg = None
+        self.img = None
+        self.plot = None
+
 
     def set_validator(self):
         validator = QtGui.QIntValidator(0, 999999, self)
@@ -381,6 +389,7 @@ class DiffMapWidget(QtGui.QWidget):
                               npt_azim=config_ai.get("nbpt_azim", 1) if config_ai.get("do_2D") else None)
             diffmap.ai = AIWidget.make_ai(config_ai)
             diffmap.hdf5 = config.get("output_file", "unamed.h5")
+            diffmap.init_ai()
             for i, fn in enumerate(self.list_dataset):
                 diffmap.process_one_file(fn.path)
                 self.progressbarChanged.emit(i)
@@ -389,9 +398,21 @@ class DiffMapWidget(QtGui.QWidget):
                     self.progressbarChanged.emit(0)
                     if diffmap.nxs:
                         diffmap.nxs.close()
-
                     return
             if diffmap.nxs:
                 diffmap.nxs.close()
         logger.warning("Processing finished in %.3fs" % (time.time() - t0))
+        self.progressbarChanged.emit(len(self.list_dataset))
+
+    def display_processing(self):
+        """Setup the display for visualizing the processing
+        
+        """
+        self.fig = pyplot.figure()
+        self.axplt = self.fig.add_subplot(2, 1, 1)
+        self.aximg = self.fig.add_subplot(2, 1, 2)
+        self.img = self.aximg.imshow(ds.value.sum(axis=-1), interpolation="nearest")
+        self.plot = self.axplt.plot(ds.value.reshape(-1, 1400).sum(axis=0))
+        self.fig.show()
+
 
