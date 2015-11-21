@@ -3,7 +3,7 @@
 
 """
 
-Bootstrap helps you to test pyFAI scripts without installing them 
+Bootstrap helps you to test pyFAI scripts without installing them
 by patching your PYTHONPATH on the fly
 
 example: ./bootstrap.py pyFAI-integrate test/testimages/Pilatus1M.edf
@@ -13,15 +13,17 @@ example: ./bootstrap.py pyFAI-integrate test/testimages/Pilatus1M.edf
 __authors__ = ["Frédéric-Emmanuel Picca", "Jérôme Kieffer"]
 __contact__ = "jerome.kieffer@esrf.eu"
 __license__ = "GPLv3+"
-__date__ = "23/01/2015"
+__date__ = "21/11/2015"
 
-TARGET = "pyFAI"
 
 import sys
 import os
 import shutil
 import distutils.util
 import subprocess
+
+
+TARGET = os.path.basename(os.path.dirname(os.path.abspath(__file__))).split("-")[0]
 
 
 def _copy(infile, outfile):
@@ -60,7 +62,7 @@ def _get_available_scripts(path):
 
 def _copy_files(source, dest, extn):
     """
-    copy all files with a given extension from source to destination 
+    copy all files with a given extension from source to destination
     """
     if not os.path.isdir(dest):
         os.makedirs(dest)
@@ -90,9 +92,9 @@ if (not os.path.isdir(SCRIPTSPATH)) or (not os.path.isdir(LIBPATH)):
     build = subprocess.Popen([sys.executable, "setup.py", "build"],
                      shell=False, cwd=os.path.dirname(__file__))
     print("Build process ended with rc= %s" % build.wait())
-_copy_files("openCL", os.path.join(LIBPATH, "pyFAI", "openCL"), ".cl")
-_copy_files("gui", os.path.join(LIBPATH, "pyFAI", "gui"), ".ui")
-_copy_files("calibration", os.path.join(LIBPATH, "pyFAI", "calibration"), ".D")
+_copy_files("openCL", os.path.join(LIBPATH, TARGET, "openCL"), ".cl")
+_copy_files("gui", os.path.join(LIBPATH, TARGET, "gui"), ".ui")
+_copy_files("calibration", os.path.join(LIBPATH, TARGET, "calibration"), ".D")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
