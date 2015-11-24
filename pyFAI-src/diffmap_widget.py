@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/11/2015"
+__date__ = "24/11/2015"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -165,8 +165,8 @@ class DiffMapWidget(QtGui.QWidget):
         self.progressBar.setValue(0)
         self.list_model = TreeModel(self, self.list_dataset.as_tree())
         self.listFiles.setModel(self.list_model)
-        self.listFiles.hideColumn(1)
-        self.listFiles.hideColumn(2)
+        self.listFiles.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.listFiles.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.create_connections()
         self.set_validator()
         self.update_number_of_frames()
@@ -212,8 +212,7 @@ class DiffMapWidget(QtGui.QWidget):
         self.progressbarChanged.connect(self.update_processing)
         self.rMin.editingFinished.connect(self.update_slice)
         self.rMax.editingFinished.connect(self.update_slice)
-
-#         self.progressbarAborted.connect(self.just_aborted)
+#         self.listFiles.expanded.connect(lambda:self.listFiles.resizeColumnToContents(0))
 
     def _menu_file(self):
         # Drop-down file menu
@@ -226,6 +225,10 @@ class DiffMapWidget(QtGui.QWidget):
         action_sort = QtGui.QAction("sort files", self.files)
         self.files_menu.addAction(action_sort)
         action_sort.triggered.connect(self.sort_input)
+
+        action_clear = QtGui.QAction("clear selected files", self.files)
+        self.files_menu.addAction(action_clear)
+        action_clear.triggered.connect(self.clear_selection)
 
         self.files.setMenu(self.files_menu)
 
@@ -246,9 +249,17 @@ class DiffMapWidget(QtGui.QWidget):
         for i in fnames:
             self.list_dataset.append(DataSet(str_(i), None, None, None))
 
-        tree = self.list_dataset.as_tree()
-        self.update_model(tree)
+        self.list_model.update(self.list_dataset.as_tree())
         self.update_number_of_frames()
+        self.listFiles.resizeColumnToContents(0)
+
+    def clear_selection(self, *args, **kwargs):
+        """called to remove selected files from the list
+        """
+        print(self.listFiles.selectedIndexes())
+        logger.warning("remove all files for now !! not yet implemented")
+        self.list_dataset.empty()
+        self.list_model.update(self.list_dataset.as_tree())
 
     def configure_diffraction(self, *arg, **kwarg):
         """
@@ -271,7 +282,6 @@ class DiffMapWidget(QtGui.QWidget):
                                                   QtCore.QDir.currentPath(),
                                                   filter=self.tr("NeXuS file (*.nxs);;HDF5 file (*.h5);;HDF5 file (*.hdf5)"))
         self.outputFile.setText(fname)
-
 
     def start_processing(self, *arg, **kwarg):
         logger.info("in start_processing")
@@ -318,7 +328,7 @@ class DiffMapWidget(QtGui.QWidget):
 
     def sort_input(self):
         self.list_dataset.sort(key=lambda i: i.path)
-        self.update_model(self.list_dataset.as_tree())
+        self.list_model.update(self.list_dataset.as_tree())
 
     def get_config(self):
         """Return a dict with the plugin configuration which is JSON-serializable 
@@ -355,7 +365,7 @@ class DiffMapWidget(QtGui.QWidget):
             if key in dico:
                 value(dico[key])
         self.list_dataset = ListDataSet(DataSet(*(str_(j) for j in i)) for i in dico.get("input_data", []))
-        self.update_model(self.list_dataset.as_tree())
+        self.list_model.update(self.list_dataset.as_tree())
         self.update_number_of_frames()
         self.update_number_of_points()
 
@@ -503,9 +513,4 @@ class DiffMapWidget(QtGui.QWidget):
         stop = (self.radial_data <= qmax).sum()
         self.slice = slice(start, stop)
         self.update_processing(-1, self.last_idx)
-    @timeit
-    def update_model(self, new):
-        self.list_model.update(new)
-        self.listFiles.repaint ()
-        QtCore.QCoreApplication.processEvents()
 

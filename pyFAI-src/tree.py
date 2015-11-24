@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "23/11/2015"
+__date__ = "24/11/2015"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -201,3 +201,7 @@ class ListDataSet(list):
                     child = TreeItem(item, element)
                 element = child
         return root
+
+    def empty(self):
+        while self:
+            self.pop()
