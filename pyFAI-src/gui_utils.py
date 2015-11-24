@@ -33,11 +33,17 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/02/2015"
+__date__ = "23/11/2015"
 __status__ = "production"
 
 import sys
 import matplotlib
+matplotlib.rcParams['backend'] = 'Qt4Agg'
+import matplotlib.pyplot
+matplotlib.pyplot.switch_backend('Qt4Agg')
+# Dear reader, I apologize for something that ugly !
+# Any cleaner version would be appreciated
+
 import matplotlib.cm
 has_Qt = True
 if ('PySide' in sys.modules):

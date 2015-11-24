@@ -23,7 +23,8 @@
 #
 
 from __future__ import absolute_import, print_function, with_statement, division
-import sys, logging
+import sys
+import logging
 logging.basicConfig()
 from ._version import version, version_info, hexversion, date
 
@@ -32,8 +33,9 @@ if sys.version_info < (2, 6):
     logger.error("pyFAI required a python version >= 2.6")
     raise RuntimeError("pyFAI required a python version >= 2.6, now we are running: %s" % sys.version)
 
-from . import utils
+
 from .azimuthalIntegrator import AzimuthalIntegrator
+from . import utils
 load = AzimuthalIntegrator.sload
 
 def tests(deprecation=False):

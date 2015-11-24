@@ -17,12 +17,13 @@ cdef class TreeItem(object):
     cdef public TreeItem parent
     cdef public str label
     cdef public int order
+    cdef public str type #can by "dir", "file", "group" or "dataset"  
     cdef public object extra
 
-    def __init__(self, label=None, parent=None):
+    def __init__(self, str label=None, TreeItem parent=None):
         self.children = []
         self.parent = parent
-        self.label = label
+        self.label = label or ""
         if parent:
             parent.add_child(self)
             self.order = parent.order + 1
@@ -32,8 +33,20 @@ cdef class TreeItem(object):
 
     cpdef add_child(self, TreeItem child):
         self.children.append(child)
+        child.parent = self
 
-    cpdef bint has_child(self,str label):
+    cpdef update(self, TreeItem new_root):
+        """
+        Add new children in tree
+        """
+        for new_child in new_root.children:
+            child = self.get(new_child.label)
+            if child:
+                child.update(new_child)
+            else:
+                self.add_child(new_child)
+                
+    cpdef bint has_child(self, str label):
         return label in [i.label for i in self.children]
 
     cpdef TreeItem get(self, str label):
@@ -45,12 +58,12 @@ cdef class TreeItem(object):
         if self.parent:
             return "TreeItem %s->%s with children: " % (self.parent.label, self.label) + ", ".join([i.label for i in self.children])
         else:
-            return "TreeItem %s with children: " % (self.label) + ", ".join([i.label for i in self.children])
+            return "Root TreeItem %s with children: %s" % (self.label, ", ".join([i.label for i in self.children]))
 
     def sort(self):
         for child in self.children:
             child.sort()
-        self.children.sort(key=lambda x:x.label)
+        self.children.sort(key=lambda x: x.label)
 
     cpdef TreeItem next(self):
         cdef int idx
@@ -90,7 +103,7 @@ cdef class TreeItem(object):
             cdef TreeItem child
             if self.children:
                 for child in self.children:
-                    s += child.size()
+                    s += child.size
                 return s
             else:
                 return 1
@@ -99,8 +112,9 @@ cdef class TreeItem(object):
         def __get__(self):
             if self.order <= 1:
                 return self.label or ""
-            elif self.order == 4:
-                return self.parent.name + os.sep + self.label
+            if self.parent.type == "file":
+                return self.parent.name + ":" + self.label
+            elif self.parent.type == "group":
+                return self.parent.name + "/" + self.label
             else:
-                return self.parent.name + "-" + self.label
-
+                return self.parent.name + os.sep + self.label

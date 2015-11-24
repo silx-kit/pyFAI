@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/11/2015"
+__date__ = "23/11/2015"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -52,10 +52,11 @@ DataSetNT = namedtuple("DataSet", ("path", "h5", "nframes"))
 try:
     from ._tree import TreeItem
 except:
-    logger.warning("pyFAI._tree did not import")
+    logger.ERROR("pyFAI._tree did not import")
     class TreeItem(object):
         """
-        Node of a tree ...
+        Node of a tree ... Needs synchronization with Cython code
+        Deprecated !
 
         Contains:
         self.order: depth from root
@@ -187,12 +188,13 @@ class ListDataSet(list):
         @return: Root of the tree
         """
         prefix = self.commonroot()
-        root = TreeItem(prefix)
+        root = TreeItem()
+        common = TreeItem(prefix, root)
         lprefix = len(prefix) if prefix else 0
         for dataset in self:
             base = dataset.path[lprefix:]
             elts = base.split(sep)
-            element = root
+            element = common
             for item in elts:
                 child = element.get(item)
                 if not child:

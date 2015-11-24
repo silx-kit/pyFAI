@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/11/2015"
+__date__ = "23/11/2015"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -47,7 +47,7 @@ import json
 import threading
 import numpy
 from .gui_utils import QtGui, QtCore, uic, pyplot, update_fig
-from .utils import float_, int_, str_, get_ui_file
+from .utils import float_, int_, str_, get_ui_file, timeit
 from .units import to_unit
 from .integrate_widget import AIWidget
 from .diffmap import DiffMap
@@ -80,16 +80,26 @@ class TreeModel(QtCore.QAbstractItemModel):
         self._win = win
         self._current_branch = None
 
-    def set_root(self, new_root):
-#         self.beginResetModel()
-        self._root_item = new_root
-#         self.endResetModel()
+    @timeit
+    def update(self, new_root):
+        self.beginResetModel()
+        new_labels = [i.label for i in new_root.children]
+        old_lables = [i.label for i in self._root_item.children]
+        if new_labels == old_lables:
+            print("update labels")
+            self._root_item.update(new_root)
+        else:
+            print("replace labels")
+            self._root_item.children = []
+            for child in new_root.children:
+                self._root_item.add_child(child)
+        self.endResetModel()
 
     def rowCount(self, parent):
         if parent.column() > 0:
             return 0
         pitem = parent.internalPointer()
-        if not parent.isValid():
+        if (pitem is None) or (not parent.isValid()):
             pitem = self._root_item
         return len(pitem.children)
 
@@ -118,76 +128,20 @@ class TreeModel(QtCore.QAbstractItemModel):
         if midx.column() == 0 and role == QtCore.Qt.DisplayRole:
             return leaf.label
 
-#         if midx.column() == 1 and role == QtCore.Qt.DisplayRole:
-#             if leaf.order == 4:
-#                 if leaf.extra is None:
-#                     data = Photo(leaf.name).readExif()
-#                     leaf.extra = data["title"]
-#                 return leaf.extra
-
     def headerData(self, section, orientation, role):
         if role == QtCore.Qt.DisplayRole and orientation == QtCore.Qt.Horizontal:
             return ["Path", "shape"][section]
 
     def parent(self, midx):
-        pitem = midx.internalPointer().parent
+        item = midx.internalPointer()
+        if (item is None) or (item is self._root_item):
+            print(midx, midx.row(), midx.column())
+            return  # QtCore.QModelIndex()
+        pitem = item.parent
         if pitem is self._root_item:
-#             return self.createIndex(0, 0, self._root_item)
             return QtCore.QModelIndex()
         row_idx = pitem.parent.children.index(pitem)
         return self.createIndex(row_idx, 0, pitem)
-
-
-
-class ListModel(QtCore.QAbstractTableModel):
-    def __init__(self, parent=None, actual_data=None):
-        QtCore.QAbstractTableModel.__init__(self, parent)
-        self._ref = actual_data
-#     def dropMimeData(self, *args, **kwargs):
-#         print("ListModel.dropMimeData %s %s" % (args, kwargs))
-    def rowCount(self, parent=None):
-        return len(self._ref)
-    def columnCount(self, parent=None):
-        return 3
-    def data(self, index, role=QtCore.Qt.DisplayRole):
-        if role == QtCore.Qt.DisplayRole:
-            if index.row() >= len(self._ref):
-                return
-            data = self._ref[index.row()]
-            if index.column() == 0:
-                return data.path
-            elif index.column() == 1:
-                return data.h5
-            if index.column() == 2:
-                return data.nframes
-
-    def setData(self, *args, **kwargs):
-        return True
-
-    def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
-        if orientation == QtCore.Qt.Horizontal:
-            if role == QtCore.Qt.DisplayRole:
-                if section == 0:
-                    return "File path"
-                elif section == 1:
-                    return "h5"
-                elif section == 2:
-                    return "#"
-            elif role == QtCore.Qt.WhatsThisRole:
-                if section == 0:
-                    return "Path of the file in the computer"
-                elif section == 1:
-                    return "Internal path in the HDF5 tree"
-                elif section == 2:
-                    return "Number of frames in the dataset"
-            elif role == QtCore.Qt.SizeHintRole:
-                if section == 0:
-                    return QtCore.QSize(200, 20)
-                elif section == 1:
-                    return QtCore.QSize(20, 20)
-                elif section == 2:
-                    return QtCore.QSize(20, 20)
-
 
 
 class DiffMapWidget(QtGui.QWidget):
@@ -228,9 +182,11 @@ class DiffMapWidget(QtGui.QWidget):
         self.img = None
         self.plot = None
         self.radial_data = None
-        self.data = None
+        self.data_h5 = None  # one in hdf5 dataset while processing.
+        self.data_np = None  # The numpy one is used only at the end.
         self.last_idx = -1
-
+        self.slice = slice(0, -1, 1)  # Default slicing
+        self._menu_file()
 
     def set_validator(self):
         validator = QtGui.QIntValidator(0, 999999, self)
@@ -238,22 +194,41 @@ class DiffMapWidget(QtGui.QWidget):
         self.slowMotorPts.setValidator(validator)
         self.offset.setValidator(validator)
 
+        float_valid = QtGui.QDoubleValidator(self)
+        self.rMin.setValidator(float_valid)
+        self.rMax.setValidator(float_valid)
+
     def create_connections(self):
         """Signal-slot connection
         """
         self.configureDiffraction.clicked.connect(self.configure_diffraction)
         self.outputFileSelector.clicked.connect(self.configure_output)
         self.runButton.clicked.connect(self.start_processing)
-        self.addFiles.clicked.connect(self.input_filer)
-        self.sortButton.clicked.connect(self.sort_input)
         self.saveButton.clicked.connect(self.save_config)
         self.abortButton.clicked.connect(self.do_abort)
         self.fastMotorPts.editingFinished.connect(self.update_number_of_points)
         self.slowMotorPts.editingFinished.connect(self.update_number_of_points)
         self.offset.editingFinished.connect(self.update_number_of_points)
         self.progressbarChanged.connect(self.update_processing)
+        self.rMin.editingFinished.connect(self.update_slice)
+        self.rMax.editingFinished.connect(self.update_slice)
 
 #         self.progressbarAborted.connect(self.just_aborted)
+
+    def _menu_file(self):
+        # Drop-down file menu
+        self.files_menu = QtGui.QMenu("Files")
+
+        action_more = QtGui.QAction("add files", self.files)
+        self.files_menu.addAction(action_more)
+        action_more.triggered.connect(self.input_filer)
+
+        action_sort = QtGui.QAction("sort files", self.files)
+        self.files_menu.addAction(action_sort)
+        action_sort.triggered.connect(self.sort_input)
+
+        self.files.setMenu(self.files_menu)
+
 
     def do_abort(self):
         self.aborted = True
@@ -271,21 +246,9 @@ class DiffMapWidget(QtGui.QWidget):
         for i in fnames:
             self.list_dataset.append(DataSet(str_(i), None, None, None))
 
-#         self.list_model.set_root(self.list_dataset.as_tree())
         tree = self.list_dataset.as_tree()
-        print(tree)
-        t0 = time.time()
-        self.list_model.set_root(tree)
-#         self.list_model = TreeModel(self, tree)
-        print("set TreeModel: %.3fs" % (time.time() - t0))
-        t0 = time.time()
-        self.listFiles.setModel(self.list_model)
-        print("create setModel: %.3fs" % (time.time() - t0))
-        t0 = time.time()
+        self.update_model(tree)
         self.update_number_of_frames()
-        print("create update_number_of_frames: %.3fs" % (time.time() - t0))
-
-
 
     def configure_diffraction(self, *arg, **kwarg):
         """
@@ -298,7 +261,7 @@ class DiffMapWidget(QtGui.QWidget):
         if res == QtGui.QDialog.Accepted:
             iw.widget.input_data = [i.path for i in self.list_dataset]
             self.integration_config = iw.get_config()
-        print(self.integration_config)
+        print(json.dumps(self.integration_config, indent=2))
 
     def configure_output(self, *args, **kwargs):
         """
@@ -336,7 +299,7 @@ class DiffMapWidget(QtGui.QWidget):
 
     def update_number_of_frames(self):
         cnt = len(self.list_dataset)
-        self.numberOfFrames.setText(str(cnt))
+        self.numberOfFrames.setText("list: %s, tree: %s" % (cnt, self.list_model._root_item.size))
 
     def update_number_of_points(self):
         try:
@@ -355,9 +318,7 @@ class DiffMapWidget(QtGui.QWidget):
 
     def sort_input(self):
         self.list_dataset.sort(key=lambda i: i.path)
-#         self.list_model = TreeModel(self, self.list_dataset.as_tree())
-#         self.listFiles.setModel(self.list_model)
-        self.list_model.set_root(self.list_dataset.as_tree())
+        self.update_model(self.list_dataset.as_tree())
 
     def get_config(self):
         """Return a dict with the plugin configuration which is JSON-serializable 
@@ -394,9 +355,7 @@ class DiffMapWidget(QtGui.QWidget):
             if key in dico:
                 value(dico[key])
         self.list_dataset = ListDataSet(DataSet(*(str_(j) for j in i)) for i in dico.get("input_data", []))
-        self.list_model.set_root(self.list_dataset.as_tree())
-#         self.list_model = TreeModel(self, self.list_dataset.as_tree())
-#         self.listFiles.setModel(self.list_model)
+        self.update_model(self.list_dataset.as_tree())
         self.update_number_of_frames()
         self.update_number_of_points()
 
@@ -443,9 +402,7 @@ class DiffMapWidget(QtGui.QWidget):
         logger.info("process")
         t0 = time.time()
         with self.processing_sem:
-
-            if config is None:
-                config = self.dump()
+            config = self.dump()
             config_ai = config.get("ai", {})
             diffmap = DiffMap(npt_fast=config.get("fast_motor_points", 1),
                               npt_slow=config.get("slow_motor_points", 1),
@@ -455,7 +412,7 @@ class DiffMapWidget(QtGui.QWidget):
             diffmap.method = config_ai.get("method", "csr")
             diffmap.hdf5 = config.get("output_file", "unamed.h5")
             self.radial_data = diffmap.init_ai()
-            self.data = diffmap.dataset
+            self.data_h5 = diffmap.dataset
             for i, fn in enumerate(self.list_dataset):
                 diffmap.process_one_file(fn.path)
                 self.progressbarChanged.emit(i, diffmap._idx)
@@ -463,9 +420,11 @@ class DiffMapWidget(QtGui.QWidget):
                     logger.warning("Aborted by user")
                     self.progressbarChanged.emit(0, 0)
                     if diffmap.nxs:
+                        self.data_np = diffmap.dataset.value
                         diffmap.nxs.close()
                     return
             if diffmap.nxs:
+                self.data_np = diffmap.dataset.value
                 diffmap.nxs.close()
         logger.warning("Processing finished in %.3fs" % (time.time() - t0))
         self.progressbarChanged.emit(len(self.list_dataset), 0)
@@ -475,43 +434,48 @@ class DiffMapWidget(QtGui.QWidget):
         
         @param config: configuration of the processing ongoing
         """
-        self.fig = pyplot.figure()
-        self.aximg = self.fig.add_subplot(2, 1, 1,
+        self.fig = pyplot.figure(figsize=(12, 5))
+        self.aximg = self.fig.add_subplot(1, 2, 1,
                                           xlabel=config.get("fast_motor_name", "Fast motor"),
                                           ylabel=config.get("slow_motor_name", "Slow motor"),
                                           xlim=(0, config.get("fast_motor_points", 1)),
                                           ylim=(0, config.get("slow_motor_points", 1)))
         self.aximg.set_title(config.get("experiment_title", "Diffraction imaging"))
 
-        self.axplt = self.fig.add_subplot(2, 1, 2,
+        self.axplt = self.fig.add_subplot(1, 2, 2,
                                           xlabel=to_unit(config.get("ai").get("unit")).label,
                                           ylabel="Scattered intensity")
         self.axplt.set_title("Average diffraction pattern")
-
-
         self.fig.show()
 
     def update_processing(self, idx_file, idx_img):
         """ Update the process bar and the images 
         
+        @param idx_file: file number
+        @parm idx_img: frame number
         """
-        self.progressBar.setValue(idx_file)
+        if idx_file >= 0:
+            self.progressBar.setValue(idx_file)
         if self.update_sem._Semaphore__value < 1:
             return
         with self.update_sem:
             try:
-                data = self.data.value
+                data = self.data_h5.value
             except ValueError:
-                logger.warning("Dataset not valid")
+                data = self.data_np
+            if self.radial_data is None:
                 return
+
             npt = self.radial_data.size
 
-            img = data.mean(axis=-1)
             if self.last_idx < 0:
+                self.update_slice()
                 I = data[0, 0, :]
+                img = data[:, :, self.slice].mean(axis=2)
                 self.plot = self.axplt.plot(self.radial_data, I)[0]
                 self.img = self.aximg.imshow(img, interpolation="nearest")
             else:
+                img = data[:, :, self.slice].mean(axis=2)
                 I = data.reshape(-1, npt)[:idx_img].mean(axis=0)
                 self.plot.set_ydata(I)
                 self.img.set_data(img)
@@ -519,3 +483,29 @@ class DiffMapWidget(QtGui.QWidget):
             self.fig.canvas.draw()
             QtCore.QCoreApplication.processEvents()
             time.sleep(0.1)
+
+    def update_slice(self, *args):
+        """
+        Update the slice
+        """
+        if self.radial_data is None:
+            return
+        try:
+            qmin = float(self.rMin.text())
+        except:
+            qmin = 0
+        try:
+            qmax = float(self.rMax.text())
+        except:
+            qmax = 1e300
+
+        start = (self.radial_data < qmin).sum()
+        stop = (self.radial_data <= qmax).sum()
+        self.slice = slice(start, stop)
+        self.update_processing(-1, self.last_idx)
+    @timeit
+    def update_model(self, new):
+        self.list_model.update(new)
+        self.listFiles.repaint ()
+        QtCore.QCoreApplication.processEvents()
+

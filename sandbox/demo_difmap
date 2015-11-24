@@ -29,11 +29,20 @@
 from __future__ import absolute_import, print_function, with_statement, division
 
 __doc__ = """Demonstrator for diffraction mapping """
-__date__ = "19/11/2015"
+__date__ = "23/11/2015"
 __license__ = "MIT"
-
 import sys
-# import utilstest
+import logging
+logger = logging.getLogger("demo_diffmap")
+try:
+    from rfoo.utils import rconsole
+    rconsole.spawn_server()
+    logger.debug("Socket opened for debugging using rfoo")
+except ImportError:
+    logger.debug("No socket opened for debugging -> please install rfoo")
+
+
+window = None
 
 from pyFAI.diffmap_widget import DiffMapWidget
 
@@ -44,5 +53,3 @@ if __name__ == "__main__":
     window.restore()
     window.show()
     sys.exit(app.exec_())
-
-
