@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/11/2015"
+__date__ = "25/11/2015"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -50,11 +50,13 @@ import numpy
 import fabio
 
 from .units import to_unit
-from . import version as PyFAI_VERSION, date as PyFAI_DATE
+from . import version as PyFAI_VERSION, date as PyFAI_DATE, load
 from .io import Nexus, get_isotime
 
 DIGITS = [str(i) for i in range(10)]
 Position = collections.namedtuple('Position', 'index, rot, trans')
+
+
 class DiffMap(object):
     """
     Basic class for diffraction mapping experiment using pyFAI
@@ -78,7 +80,7 @@ class DiffMap(object):
         self.mask = None
         self.I0 = None
         self.hdf5 = None
-        self.hdf5path = "diff_tomo/data/sinogram"
+        self.hdf5path = "diff_map/data/map"
         self.group = None
         self.dataset = None
         self.inputfiles = []
@@ -94,9 +96,32 @@ class DiffMap(object):
         return "Diffraction Tomography with r=%s t: %s, d:%s" % \
             (self.npt_slow, self.npt_fast, self.npt_rad)
 
+    @staticmethod
+    def to_tuple(name):
+        """
+        Extract numbers as tuple:
+        
+        to_tuple("slice06/IRIS4_1_14749.edf")
+        --> (6, 4, 1, 14749)
+    
+        @param name: input string, often a filename
+        """
+        res = []
+        cur = ""
+        for c in name:
+            if c in DIGITS:
+                cur = cur + c
+            elif cur:
+                res.append(cur)
+                cur = ""
+        return tuple(int(i) for i in res)
+
+
     def parse(self):
         """
-        parse options from command line
+        parse options from command line: setup the object
+        
+        @return: dictionary able to setup a DiffMapWidget
         """
         description = """Azimuthal integration for diffraction tomography.
 
@@ -153,6 +178,10 @@ If the number of files is too large, use double quotes like "*.edf" """
                             help="process using OpenCL on GPU ", default=False)
         parser.add_argument("-S", "--stats", dest="stats", action="store_true",
                             help="show statistics at the end", default=False)
+        parser.add_argument("--gui", dest="gui", action="store_true",
+                            help="Use the Graphical User Interface", default=True)
+        parser.add_argument("--no-gui", dest="gui", action="store_false",
+                            help="Do not use the Graphical User Interface", default=True)
 
         options = parser.parse_args()
         args = options.args
@@ -188,7 +217,7 @@ If the number of files is too large, use double quotes like "*.edf" """
                 self.inputfiles += [os.path.abspath(os.path.join(f, g)) for g in os.listdir(f) if g.endswith(options.extension) and g.startswith(options.prefix)]
             else:
                 self.inputfiles += [os.path.abspath(f) for f in glob.glob(f)]
-        self.inputfiles.sort(key=to_tuple)
+        self.inputfiles.sort(key=self.to_tuple)
         if not self.inputfiles:
             raise RuntimeError("No input files to process, try --help")
         if options.mask:
@@ -215,6 +244,29 @@ If the number of files is too large, use double quotes like "*.edf" """
         else:
             self.offset = 0
         self.stats = options.stats
+        if self.with_config:
+            res = {"ai": {"poni":self.poni,
+                          "nbpt_rad":self.npt_rad,
+                          "mask_file":self.mask,
+                          "dark_current":self.dark,
+                          "flat_field":self.flat,
+    #                       "wavelength": ,
+                          "do_mask":  self.mask is not None,
+                          "do_dark": self.dark is not None,
+                          "do_flat": self.flat is not None,
+                          "do_2D":False,
+                          "do_solid_angle": True, },
+                   "experiment_title": "Diffraction mapping",
+                   "fast_motor_name": "fast",
+                   "slow_motor_name": "slow",
+                   "fast_motor_points": self.npt_fast,
+                   "slow_motor_points": self.npt_slow,
+                   "offset": self.offset,
+                   "output_file": self.hdf5,
+                   "input_data": [(i, None) for i in self.inputfiles]
+                   }
+            return options, res
+        return options
 
     def makeHDF5(self, rewrite=False):
         """
@@ -278,7 +330,7 @@ If the number of files is too large, use double quotes like "*.edf" """
     def setup_ai(self):
         print("Setup of Azimuthal integrator ...")
         if self.poni:
-            self.ai = pyFAI.load(self.poni)
+            self.ai = load(self.poni)
         else:
             logger.error(("Unable to setup Azimuthal integrator:"
                           " no poni file provided"))
@@ -329,16 +381,17 @@ If the number of files is too large, use double quotes like "*.edf" """
         if not self.stats:
             return
         try:
-            import matplotlib.pyplot as plt
+            from .gui_utils import pyplot as plt
         except ImportError:
             logger.error("Unable to start matplotlib for display")
             return
-
-        plt.hist(self.timing, 500, facecolor='green', alpha=0.75)
-        plt.xlabel('Execution time in sec')
-        plt.title("Execution time")
-        plt.grid(True)
-        plt.show()
+        fig = plt.figure()
+        ax = fig.add_subplot(1, 1, 1)
+        ax.hist(self.timing, 500, facecolor='green', alpha=0.75)
+        ax.set_xlabel('Execution time in sec')
+        ax.set_title("Execution time")
+        axe.grid(True)
+        fig.show()
 
     def get_pos(self, filename=None, idx=None):
         """
