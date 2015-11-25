@@ -46,7 +46,7 @@ import time
 import json
 import threading
 import numpy
-from .gui_utils import QtGui, QtCore, uic, pyplot, update_fig
+from .gui_utils import QtGui, QtCore, Signal, uic, pyplot, update_fig
 from .utils import float_, int_, str_, get_ui_file, timeit
 from .units import to_unit
 from .integrate_widget import AIWidget
@@ -145,8 +145,8 @@ class TreeModel(QtCore.QAbstractItemModel):
 
 
 class DiffMapWidget(QtGui.QWidget):
-    progressbarChanged = QtCore.pyqtSignal(int, int)
-#     progressbarAborted = QtCore.pyqtSignal()
+    progressbarChanged = Signal(int, int)
+#     progressbarAborted = Signal()
     uif = "diffmap.ui"
     json_file = ".diffmap.json"
     URL = "http://pyfai.readthedocs.org/en/latest/man/scripts.html"

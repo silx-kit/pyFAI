@@ -45,6 +45,8 @@ if ('PySide' in sys.modules):
     from PySide import QtGui, QtCore, QtUiTools, QtWebKit
     from PySide.QtCore import SIGNAL, Signal
 
+    from .third_party.pyside_dynamic import loadUi as _loadUi
+
 
     #we need to handle uic !!!
     """
@@ -74,19 +76,12 @@ imports of custom widgets.
 
             Totally untested !
             """
-            loader = QtUiTools.QUiLoader()
-            file = QtCore.QFile(uifile)
-            file.open(QtCore.QFile.ReadOnly)
-            myWidget = loader.load(file, self)
-            file.close()
-            if baseinstance is not None:
-                baseinstance = myWidget
-            else:
-                return myWidget
+            return _loadUi(uifile, baseinstance,
+                           customWidgets={'Line': QtGui.QFrame})
 
     sys.modules["PySide.uic"] = uic
     matplotlib.rcParams['backend.qt4'] = 'PySide'
-    Qt_version = PySide.QtCore.__version_info__
+    Qt_version = QtCore.__version_info__
 else:
     try:
         from PyQt4 import QtGui, QtCore, uic, QtWebKit
