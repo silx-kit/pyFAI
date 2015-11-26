@@ -14,7 +14,9 @@ Diff_tomo is a script (based on pyFAI and h5py) which allows the reduction of th
 and the many diffraction angles (thousands). The resulting dataset can be opened using PyMca roitool
 where the 1d dataset has to be selected as last dimension. This file is not (yet) NeXus compliant.
 
-This tool can be used for mapping experiments if one considers the slow scan direction as the rotation.
+This tool can be used for mapping experiments if one considers the slow scan
+direction as the rotation, but a tool named *diff_map* operates in a similar way,
+ provides a Graphical interface and is more flexible
 
 tips: If the number of files is too large, use double quotes around "*.edf"
 

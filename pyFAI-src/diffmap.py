@@ -37,7 +37,7 @@ __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
 
-Module with GUI for diffraction mapping experiments 
+Module with GUI for diffraction mapping experiments
 
 
 """
@@ -76,7 +76,7 @@ class DiffMap(object):
     """
     Basic class for diffraction mapping experiment using pyFAI
     """
-    def __init__(self, npt_fast=1, npt_slow=1, npt_rad=1000, npt_azim=None):
+    def __init__(self, npt_fast=0, npt_slow=1, npt_rad=1000, npt_azim=None):
         """Constructor of the class DiffMap for diffraction mapping
 
         @param npt_fast: number of translations
@@ -119,10 +119,10 @@ class DiffMap(object):
     def to_tuple(name):
         """
         Extract numbers as tuple:
-        
+
         to_tuple("slice06/IRIS4_1_14749.edf")
         --> (6, 4, 1, 14749)
-    
+
         @param name: input string, often a filename
         """
         res = []
@@ -139,7 +139,7 @@ class DiffMap(object):
     def parse(self, with_config=False):
         """
         parse options from command line: setup the object
-        
+
         @return: dictionary able to setup a DiffMapWidget
         """
         description = """Azimuthal integration for diffraction imaging.
@@ -148,31 +148,31 @@ Diffraction mapping is an experiment where 2D diffraction patterns are recorded
 while performing a 2D scan.
 
 Diff_map is a graphical application (based on pyFAI and h5py) which allows the reduction of this
-4D dataset into a 3D dataset containing the two motion dimensions  
+4D dataset into a 3D dataset containing the two motion dimensions
 and the many diffraction angles (thousands). The resulting dataset can be opened using PyMca roitool
-where the 1d dataset has to be selected as last dimension. 
+where the 1d dataset has to be selected as last dimension.
 This result file aims at being NeXus compliant.
 
 This tool can be used for diffraction tomography experiment as well, considering the slow scan direction as the rotation.
         """
         epilog = """Bugs: Many, see hereafter:
-1)If the number of files is too large, use double quotes "*.edf" 
-2)There is a known bug on Debian7 where importing a large number of file can  
-take much longer than the integration itself: consider passing files in the 
-command line 
+1)If the number of files is too large, use double quotes "*.edf"
+2)There is a known bug on Debian7 where importing a large number of file can
+take much longer than the integration itself: consider passing files in the
+command line
         """
         usage = """diff_map [options] -p ponifile imagefiles*
 If the number of files is too large, use double quotes like "*.edf" """
         version = "diff_tomo from pyFAI  version %s: %s" % (PyFAI_VERSION, PyFAI_DATE)
         parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
         parser.add_argument("-V", "--version", action='version', version=version)
-        parser.add_argument("args", metavar="FILE", help="List of files to integrate", nargs='+')
+        parser.add_argument("args", metavar="FILE", help="List of files to integrate. Mandatory without GUI", nargs='*')
         parser.add_argument("-o", "--output", dest="outfile",
-                            help="HDF5 File where processed sinogram was saved, by default diff_tomo.h5",
-                            metavar="FILE", default="diff_tomo.h5")
+                            help="HDF5 File where processed map will be saved. Mandatory without GUI",
+                            metavar="FILE", default=None)
         parser.add_argument("-v", "--verbose",
                             action="store_true", dest="verbose", default=False,
-                            help="switch to verbose/debug mode, defaut: quiet")
+                            help="switch to verbose/debug mode, default: quiet")
         parser.add_argument("-P", "--prefix", dest="prefix",
                             help="Prefix or common base for all files",
                             metavar="FILE", default="", type=str)
@@ -184,13 +184,13 @@ If the number of files is too large, use double quotes like "*.edf" """
         parser.add_argument("-r", "--slow", dest="slow",
                             help="number of points for slow motion. Mandatory without GUI", default=None)
         parser.add_argument("-c", "--npt", dest="npt_rad",
-                            help="number of points in diffraction powder pattern, Mandatory without GUI",
+                            help="number of points in diffraction powder pattern. Mandatory without GUI",
                             default=None)
         parser.add_argument("-d", "--dark", dest="dark", metavar="FILE",
-                            help="list of dark images to average and subtract",
+                            help="list of dark images to average and subtract (comma separated list)",
                             default=None)
         parser.add_argument("-f", "--flat", dest="flat", metavar="FILE",
-                            help="list of flat images to average and divide",
+                            help="list of flat images to average and divide (comma separated list)",
                             default=None)
         parser.add_argument("-m", "--mask", dest="mask", metavar="FILE",
                             help="file containing the mask, no mask by default", default=None)
@@ -207,19 +207,30 @@ If the number of files is too large, use double quotes like "*.edf" """
                             help="Use the Graphical User Interface", default=True)
         parser.add_argument("--no-gui", dest="gui", action="store_false",
                             help="Do not use the Graphical User Interface", default=True)
-
+        parser.add_argument("--config", dest="config", default=None,
+                            help="provide a JSON configuration file")
         options = parser.parse_args()
         args = options.args
-
+        if (options.config is not None) and os.path.exists(options.config):
+            with open(options.config, "r") as fd:
+                config = json.loads(fd.read())
+        else:
+            config = {}
+        if "ai" not in config:
+            config["ai"] = {}
         if options.verbose:
             logger.setLevel(logging.DEBUG)
-        self.hdf5 = options.outfile
+        if options.outfile:
+            self.hdf5 = options.outfile
+            config["output_file"] = self.hdf5,
         if options.dark:
             dark_files = [os.path.abspath(urlparse(f).path)
                           for f in options.dark.split(",")
                           if os.path.isfile(urlparse(f).path)]
             if dark_files:
                 self.dark = dark_files
+                config["ai"]["dark_current"] = ",".join(dark_files)
+                config["ai"]["do_dark"] = True
             else:
                 raise RuntimeError("No such dark files")
 
@@ -229,11 +240,15 @@ If the number of files is too large, use double quotes like "*.edf" """
                           if os.path.isfile(urlparse(f).path)]
             if flat_files:
                 self.flat = flat_files
+                config["ai"]["flat_field"] = ",".join(flat_files)
+                config["ai"]["do_flat"] = True
             else:
                 raise RuntimeError("No such flat files")
 
         if ocl and options.gpu:
             self.method = "csr_ocl_%i,%i" % ocl.select_device(type="gpu")
+            config["ai"]["do_OpenCL"] = True
+            config["ai"]["method"] = self.method
 
         self.inputfiles = []
         for fn in args:
@@ -245,63 +260,64 @@ If the number of files is too large, use double quotes like "*.edf" """
             else:
                 self.inputfiles += [os.path.abspath(f) for f in glob.glob(f)]
         self.inputfiles.sort(key=self.to_tuple)
-        if not self.inputfiles:
-            raise RuntimeError("No input files to process, try --help")
+        config["input_data"] = [(i, None) for i in self.inputfiles]
+
         if options.mask:
             mask = urlparse(options.mask).path
             if os.path.isfile(mask):
                 logger.info("Reading Mask file from: %s" % mask)
                 self.mask = os.path.abspath(mask)
+                config["ai"]["mask_file"] = self.mask
+                config["ai"]["do_mask"] = True
             else:
                 logger.warning("No such mask file %s" % mask)
         if options.poni:
             if os.path.isfile(options.poni):
                 logger.info("Reading PONI file from: %s" % options.poni)
                 self.poni = options.poni
+                config["ai"]["poni"] = self.poni
             else:
                 logger.warning("No such poni file %s" % options.poni)
         if options.fast is not None:
             self.npt_fast = int(options.fast)
+            config["fast_motor_points"]= self.npt_fast
         if options.slow is not None:
             self.npt_slow = int(options.slow)
+            config["slow_motor_points"]= self.npt_slow
         if options.npt_rad is not None:
             self.npt_rad = int(options.npt_rad)
+            config["ai"]["nbpt_rad"]= self.npt_rad,
         if options.offset is not None:
             self.offset = int(options.offset)
+            config["offset"]= self.offset,
         else:
             self.offset = 0
         self.stats = options.stats
+
         if with_config:
-            res = {"ai": {"poni": self.poni,
-                          "nbpt_rad": self.npt_rad,
-                          "mask_file": self.mask or "",
-                          "dark_current": ",".join(self.dark) if self.dark else "",
-                          "flat_field": ",".join(self.flat) if self.flat else "",
-                          "do_mask": self.mask is not None,
-                          "do_dark": self.dark is not None,
-                          "do_flat": self.flat is not None,
-                          "do_2D":False,
-                          "do_solid_angle": True,
-                          "do_OpenCL": (ocl and options.gpu),
-                          "unit": "2th_deg"
-                           },
-                   "experiment_title": self.experiment_title,
-                   "fast_motor_name": self.fast_motor_name,
-                   "slow_motor_name": self.slow_motor_name,
-                   "fast_motor_points": self.npt_fast,
-                   "slow_motor_points": self.npt_slow,
-                   "offset": self.offset,
-                   "output_file": self.hdf5,
-                   "input_data": [(i, None) for i in self.inputfiles]
-                   }
-            return options, res
+            if "do_2D" not in config["ai"]:
+                config["ai"]["do_2D"] = False
+            if "do_solid_angle" not in config["ai"]:
+                config["ai"]["do_solid_angle"] = True
+            if "unit" not in config["ai"]:
+                config["ai"]["unit"] = "2th_deg"
+            if "experiment_title" not in config:
+                config["experiment_title"] = self.experiment_title
+            if "fast_motor_name" not in config:
+                config["fast_motor_name"] = self.fast_motor_name
+            if "slow_motor_name" not in config:
+                config["slow_motor_name"] = self.slow_motor_name
+            return options, config
         return options
 
     def makeHDF5(self, rewrite=False):
         """
         Create the HDF5 structure if needed ...
         """
-        print("Initialization of HDF5 file")
+        if self.hdf5 is None:
+            raise RuntimeError("No output HDF5 file provided")
+
+        logger.info("Initialization of HDF5 file")
         if os.path.exists(self.hdf5) and rewrite:
             os.unlink(self.hdf5)
 
@@ -373,7 +389,7 @@ If the number of files is too large, use double quotes like "*.edf" """
 
     def init_ai(self):
         """Force initialization of azimuthal intgrator
-        
+
         @return: radial position array
         """
         if not self.ai:
@@ -429,7 +445,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         """
         Calculate the position in the sinogram of the file according
         to it's number
-        
+
         @param filename: name of current frame
         @param idx: index of current frame
         @return: namedtuple: index, rot, trans
