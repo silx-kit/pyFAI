@@ -27,7 +27,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/11/2015"
+__date__ = "26/11/2015"
 __status__ = "production"
 
 import os
@@ -279,7 +279,7 @@ class PeakPicker(object):
         sorted = data_disp.flatten()  # explicit copy
         sorted.sort()
         show_min = sorted[int(round(1e-3 * (sorted.size - 1)))]
-        show_max = sorted[int(roud(0.999 * (sorted.size - 1)))]
+        show_max = sorted[int(round(0.999 * (sorted.size - 1)))]
         im = self.ax.imshow(data_disp, vmin=show_min, vmax=show_max,
                             origin="lower", interpolation="nearest",
                             )

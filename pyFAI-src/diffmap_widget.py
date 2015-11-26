@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/11/2015"
+__date__ = "26/11/2015"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -53,7 +53,7 @@ from .integrate_widget import AIWidget
 from .diffmap import DiffMap
 from .tree import ListDataSet, DataSet
 import logging
-logger = logging.getLogger("diffmap_widget")
+logger = logging.getLogger("pyFAI.diffmap_widget")
 
 
 class IntegrateWidget(QtGui.QDialog):
@@ -63,6 +63,7 @@ class IntegrateWidget(QtGui.QDialog):
         self.layout = QtGui.QGridLayout(self)
         self.layout.addWidget(self.widget)
         self.widget.okButton.clicked.disconnect()
+        self.widget.do_2D.setEnabled(False)
         self.widget.cancelButton.clicked.disconnect()
         self.widget.okButton.clicked.connect(self.accept)
         self.widget.cancelButton.clicked.connect(self.reject)
@@ -104,7 +105,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         return len(pitem.children)
 
     def columnCount(self, parent):
-        return 2
+        return 1
 
     def flags(self, midx):
 #        if midx.column()==1:
@@ -130,7 +131,8 @@ class TreeModel(QtCore.QAbstractItemModel):
 
     def headerData(self, section, orientation, role):
         if role == QtCore.Qt.DisplayRole and orientation == QtCore.Qt.Horizontal:
-            return ["Path", "shape"][section]
+            # return ["Path", "shape"][section]
+            return ["Path"][section]
 
     def parent(self, midx):
         item = midx.internalPointer()
@@ -175,6 +177,10 @@ class DiffMapWidget(QtGui.QWidget):
         self.processing_sem = threading.Semaphore()
         self.update_sem = threading.Semaphore()
 
+        # disable some widgets:
+        self.multiframe.setVisible(False)
+        self.label_10.setVisible(False)
+        self.frameShape.setVisible(False)
         # Online visualization
         self.fig = None
         self.axplt = None
@@ -368,8 +374,7 @@ class DiffMapWidget(QtGui.QWidget):
         self.list_model.update(self.list_dataset.as_tree())
         self.update_number_of_frames()
         self.update_number_of_points()
-
-
+        self.listFiles.resizeColumnToContents(0)
 
     def dump(self, fname=None):
         """Save the configuration in a JSON file
@@ -418,6 +423,8 @@ class DiffMapWidget(QtGui.QWidget):
                               npt_slow=config.get("slow_motor_points", 1),
                               npt_rad=config_ai.get("nbpt_rad", 1000),
                               npt_azim=config_ai.get("nbpt_azim", 1) if config_ai.get("do_2D") else None)
+            diffmap.inputfiles = [i.path for i in self.list_dataset]  # in case generic detector without shape
+            print(config_ai)
             diffmap.ai = AIWidget.make_ai(config_ai)
             diffmap.method = config_ai.get("method", "csr")
             diffmap.hdf5 = config.get("output_file", "unamed.h5")
@@ -448,8 +455,8 @@ class DiffMapWidget(QtGui.QWidget):
         self.aximg = self.fig.add_subplot(1, 2, 1,
                                           xlabel=config.get("fast_motor_name", "Fast motor"),
                                           ylabel=config.get("slow_motor_name", "Slow motor"),
-                                          xlim=(0, config.get("fast_motor_points", 1)),
-                                          ylim=(0, config.get("slow_motor_points", 1)))
+                                          xlim=(-0.5, config.get("fast_motor_points", 1) - 0.5),
+                                          ylim=(-0.5, config.get("slow_motor_points", 1) - 0.5))
         self.aximg.set_title(config.get("experiment_title", "Diffraction imaging"))
 
         self.axplt = self.fig.add_subplot(1, 2, 2,

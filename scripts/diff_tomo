@@ -33,7 +33,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/11/2015"
+__date__ = "26/11/2015"
 __satus__ = "Production"
 
 import logging
@@ -73,6 +73,9 @@ class DiffTomo(DiffMap):
         """
         DiffMap.__init__(self, npt_slow=nRot, npt_fast=nTrans, npt_rad=nDiff)
         self.hdf5path = "diff_tomo/data/sinogram"
+        self.experiment_title = "Diffraction Tomography"
+        self.slow_motor_name = "rotation"
+        self.fast_motor_name = "translation"
 
     def parse(self, *args, **kwargs):
         """

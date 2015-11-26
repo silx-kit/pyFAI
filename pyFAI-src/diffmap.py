@@ -32,7 +32,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/11/2015"
+__date__ = "26/11/2015"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 __doc__ = """
@@ -46,12 +46,27 @@ import time
 import posixpath
 import sys
 import collections
+import logging
+logger = logging.getLogger("pyFAI.diffmap")
 import numpy
 import fabio
 
+from .opencl import ocl
 from .units import to_unit
 from . import version as PyFAI_VERSION, date as PyFAI_DATE, load
 from .io import Nexus, get_isotime
+
+try:
+    from argparse import ArgumentParser
+except ImportError:
+    from pyFAI.third_party.argparse import ArgumentParser
+
+if sys.version_info[0] < 3:
+    bytes = str
+    from urlparse import urlparse
+else:
+    from urllib.parse import urlparse
+
 
 DIGITS = [str(i) for i in range(10)]
 Position = collections.namedtuple('Position', 'index, rot, trans')
@@ -72,6 +87,8 @@ class DiffMap(object):
         self.npt_fast = npt_fast
         self.npt_slow = npt_slow
         self.npt_rad = npt_rad
+        self.slow_motor_name = "slow"
+        self.fast_motor_name = "fast"
         self.offset = 0
         self.poni = None
         self.ai = None
@@ -91,10 +108,12 @@ class DiffMap(object):
         self._idx = -1
         self.processed_file = []
         self.nxs = None
+        self.experiment_title = "Diffraction Mapping"
+
 
     def __repr__(self):
-        return "Diffraction Tomography with r=%s t: %s, d:%s" % \
-            (self.npt_slow, self.npt_fast, self.npt_rad)
+        return "%s experiment with ntp_slow: %s ntp_fast: %s, npt_diff: %s" % \
+            (self.experiment_title, self.npt_slow, self.npt_fast, self.npt_rad)
 
     @staticmethod
     def to_tuple(name):
@@ -117,31 +136,35 @@ class DiffMap(object):
         return tuple(int(i) for i in res)
 
 
-    def parse(self):
+    def parse(self, with_config=False):
         """
         parse options from command line: setup the object
         
         @return: dictionary able to setup a DiffMapWidget
         """
-        description = """Azimuthal integration for diffraction tomography.
+        description = """Azimuthal integration for diffraction imaging.
 
-Diffraction tomography is an experiment where 2D diffraction patterns are recorded
-while performing a 2D scan, one (the slowest) in rotation around the sample center
-and the other (the fastest) along a translation through the sample.
-Diff_tomo is a script (based on pyFAI and h5py) which allows the reduction of this
-4D dataset into a 3D dataset containing the rotations angle (hundreds), the translation step (hundreds)
+Diffraction mapping is an experiment where 2D diffraction patterns are recorded
+while performing a 2D scan,
+Diff_map is a graphical application (based on pyFAI and h5py) which allows the reduction of this
+4D dataset into a 3D dataset containing the two motion dimensions  
 and the many diffraction angles (thousands). The resulting dataset can be opened using PyMca roitool
 where the 1d dataset has to be selected as last dimension. This file is not (yet) NeXus compliant.
 
-This tool can be used for mapping experiments if one considers the slow scan direction as the rotation.
+This tool can be used for diffraction tomography experiment as well, considering the slow scan direction as the rotation.
         """
-        epilog = """If the number of files is too large, use double quotes "*.edf" """
-        usage = """diff_tomo [options] -p ponifile imagefiles*
+        epilog = """Bugs: Many, see hereafter:
+1)If the number of files is too large, use double quotes "*.edf" 
+2)There is a known bug on Debian7 where importing a large number of file can  
+take much longer than the integration itself: consider passing files in the 
+command line 
+        """
+        usage = """diff_map [options] -p ponifile imagefiles*
 If the number of files is too large, use double quotes like "*.edf" """
         version = "diff_tomo from pyFAI  version %s: %s" % (PyFAI_VERSION, PyFAI_DATE)
         parser = ArgumentParser(usage=usage, description=description, epilog=epilog)
         parser.add_argument("-V", "--version", action='version', version=version)
-        parser.add_argument("args", metavar="FILE", help="List of files to calibrate", nargs='+')
+        parser.add_argument("args", metavar="FILE", help="List of files to integrate", nargs='+')
         parser.add_argument("-o", "--output", dest="outfile",
                             help="HDF5 File where processed sinogram was saved, by default diff_tomo.h5",
                             metavar="FILE", default="diff_tomo.h5")
@@ -154,12 +177,12 @@ If the number of files is too large, use double quotes like "*.edf" """
         parser.add_argument("-e", "--extension", dest="extension",
                             help="Process all files with this extension",
                             default="")
-        parser.add_argument("-t", "--nTrans", dest="nTrans",
-                            help="number of points in translation. Mandatory", default=None)
-        parser.add_argument("-r", "--nRot", dest="nRot",
-                            help="number of points in rotation. Mandatory", default=None)
-        parser.add_argument("-c", "--nDiff", dest="nDiff",
-                            help="number of points in diffraction powder pattern, Mandatory",
+        parser.add_argument("-t", "--fast", dest="fast",
+                            help="number of points for the fast motion. Mandatory without GUI", default=None)
+        parser.add_argument("-r", "--slow", dest="slow",
+                            help="number of points for slow motion. Mandatory without GUI", default=None)
+        parser.add_argument("-c", "--npt", dest="npt_rad",
+                            help="number of points in diffraction powder pattern, Mandatory without GUI",
                             default=None)
         parser.add_argument("-d", "--dark", dest="dark", metavar="FILE",
                             help="list of dark images to average and subtract",
@@ -170,7 +193,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         parser.add_argument("-m", "--mask", dest="mask", metavar="FILE",
                             help="file containing the mask, no mask by default", default=None)
         parser.add_argument("-p", "--poni", dest="poni", metavar="FILE",
-                            help="file containing the diffraction parameter (poni-file), Mandatory",
+                            help="file containing the diffraction parameter (poni-file), Mandatory without GUI",
                             default=None)
         parser.add_argument("-O", "--offset", dest="offset",
                             help="do not process the first files", default=None)
@@ -207,7 +230,9 @@ If the number of files is too large, use double quotes like "*.edf" """
             else:
                 raise RuntimeError("No such flat files")
 
-        self.use_gpu = options.gpu
+        if ocl and options.gpu:
+            self.method = "csr_ocl_%i,%i" % ocl.select_device(type="gpu")
+
         self.inputfiles = []
         for fn in args:
             f = urlparse(fn).path
@@ -233,10 +258,10 @@ If the number of files is too large, use double quotes like "*.edf" """
                 self.poni = options.poni
             else:
                 logger.warning("No such poni file %s" % options.poni)
-        if options.nTrans is not None:
-            self.npt_fast = int(options.nTrans)
-        if options.nRot is not None:
-            self.npt_slow = int(options.nRot)
+        if options.fast is not None:
+            self.npt_fast = int(options.fast)
+        if options.slow is not None:
+            self.npt_slow = int(options.slow)
         if options.npt_rad is not None:
             self.npt_rad = int(options.npt_rad)
         if options.offset is not None:
@@ -244,21 +269,23 @@ If the number of files is too large, use double quotes like "*.edf" """
         else:
             self.offset = 0
         self.stats = options.stats
-        if self.with_config:
-            res = {"ai": {"poni":self.poni,
-                          "nbpt_rad":self.npt_rad,
-                          "mask_file":self.mask,
-                          "dark_current":self.dark,
-                          "flat_field":self.flat,
-    #                       "wavelength": ,
-                          "do_mask":  self.mask is not None,
+        if with_config:
+            res = {"ai": {"poni": self.poni,
+                          "nbpt_rad": self.npt_rad,
+                          "mask_file": self.mask or "",
+                          "dark_current": ",".join(self.dark) if self.dark else "",
+                          "flat_field": ",".join(self.flat) if self.flat else "",
+                          "do_mask": self.mask is not None,
                           "do_dark": self.dark is not None,
                           "do_flat": self.flat is not None,
                           "do_2D":False,
-                          "do_solid_angle": True, },
-                   "experiment_title": "Diffraction mapping",
-                   "fast_motor_name": "fast",
-                   "slow_motor_name": "slow",
+                          "do_solid_angle": True,
+                          "do_OpenCL": (ocl and options.gpu),
+                          "unit": "2th_deg"
+                           },
+                   "experiment_title": self.experiment_title,
+                   "fast_motor_name": self.fast_motor_name,
+                   "slow_motor_name": self.slow_motor_name,
                    "fast_motor_points": self.npt_fast,
                    "slow_motor_points": self.npt_slow,
                    "offset": self.offset,
@@ -298,11 +325,11 @@ If the number of files is too large, use double quotes like "*.edf" """
         processgrp["PONIfile"] = numpy.str_(self.poni)
 
         processgrp["dim0"] = self.npt_slow
-        processgrp["dim0"].attrs["axis"] = "Rotation"
+        processgrp["dim0"].attrs["axis"] = self.slow_motor_name
         processgrp["dim1"] = self.npt_fast
-        processgrp["dim1"].attrs["axis"] = "Translation"
+        processgrp["dim1"].attrs["axis"] = self.fast_motor_name
         processgrp["dim2"] = self.npt_rad
-        processgrp["dim2"].attrs["axis"] = "Diffraction"
+        processgrp["dim2"].attrs["axis"] = "diffraction"
         for k, v in self.ai.getPyFAI().items():
             if "__len__" in dir(v):
                 processgrp[k] = numpy.str_(v)
@@ -324,7 +351,7 @@ If the number of files is too large, use double quotes like "*.edf" """
             self.dataset.attrs["interpretation"] = "spectrum"
             self.dataset.attrs["axes"] = str(self.unit).split("_")[0]
             self.dataset.attrs["creator"] = "pyFAI"
-            self.dataset.attrs["long_name"] = "Diffraction imaging experiment"
+            self.dataset.attrs["long_name"] = str(self)
         self.nxs = nxs
 
     def setup_ai(self):
@@ -360,6 +387,7 @@ If the number of files is too large, use double quotes like "*.edf" """
         data = numpy.empty(shape, dtype=numpy.float32)
         print("Initialization of the Azimuthal Integrator using method %s" % self.method)
         # enforce initialization of azimuthal integrator
+        print(self.ai)
         tth, I = self.ai.integrate1d(data, self.npt_rad,
                                      method=self.method, unit=self.unit)
         if self.dataset is None:
@@ -388,10 +416,12 @@ If the number of files is too large, use double quotes like "*.edf" """
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1)
         ax.hist(self.timing, 500, facecolor='green', alpha=0.75)
-        ax.set_xlabel('Execution time in sec')
+        ax.set_xlabel('Execution time (seconds)')
+        ax.set_ylabel('Occurence')
         ax.set_title("Execution time")
-        axe.grid(True)
+        ax.grid(True)
         fig.show()
+        raw_input("Enter to quit")
 
     def get_pos(self, filename=None, idx=None):
         """

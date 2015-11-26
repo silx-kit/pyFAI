@@ -36,7 +36,7 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "GPLv3+"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/11/2015"
+__date__ = "26/11/2015"
 __satus__ = "development"
 
 import sys
@@ -468,6 +468,7 @@ class AIWidget(QtGui.QWidget):
                     "radial_range_max":self._float("radial_range_max", None),
                     "azimuth_range_min":self._float("azimuth_range_min", None),
                     "azimuth_range_max":self._float("azimuth_range_max", None),
+                    "do_OpenCL": bool(self.do_OpenCL.isChecked())
                    }
         for unit, widget in self.units.items():
             if widget is not None and widget.isChecked():
@@ -551,9 +552,10 @@ class AIWidget(QtGui.QWidget):
                         "azimuth_range_min":lambda a:self.azimuth_range_min.setText(str_(a)),
                         "azimuth_range_max":lambda a:self.azimuth_range_max.setText(str_(a)),
                         "do_solid_angle": self.do_solid_angle.setChecked,
+                        "do_OpenCL": self.do_OpenCL.setChecked
                    }
         for key, value in setup_data.items():
-            if key in dico:
+            if key in dico and (value is not None):
                 value(dico[key])
         if "unit" in dico:
             for unit, widget in self.units.items():
@@ -564,6 +566,8 @@ class AIWidget(QtGui.QWidget):
             detector = dico["detector"].lower()
             if detector in self.all_detectors:
                 self.detector.setCurrentIndex(self.all_detectors.index(detector))
+        if setup_data.get("do_OpenCL"):
+            self.openCL_changed()
 
     def select_ponifile(self):
         ponifile = QtGui.QFileDialog.getOpenFileName()
@@ -682,8 +686,9 @@ class AIWidget(QtGui.QWidget):
         poni = config.get("poni")
         if poni and op.isfile(poni):
             ai = AzimuthalIntegrator.sload(poni)
-        detector = config.get("detector", "detector")
-        ai.detector = detector_factory(detector)
+        detector = config.get("detector", None)
+        if detector:
+            ai.detector = detector_factory(detector)
 
         wavelength = config.get("wavelength", 0)
         if wavelength:
@@ -695,15 +700,10 @@ class AIWidget(QtGui.QWidget):
         if splinefile and op.isfile(splinefile):
             ai.detector.splineFile = splinefile
 
-        ai.pixel1 = config.get("pixel1", 1)
-        ai.pixel2 = config.get("pixel2", 1)
-        ai.dist = config.get("dist", 1)
-        ai.poni1 = config.get("poni1", 0)
-        ai.poni2 = config.get("poni2", 0)
-        ai.rot1 = config.get("rot1", 0)
-        ai.rot2 = config.get("rot2", 0)
-        ai.rot3 = config.get("rot3", 0)
-
+        for key in ("pixel1", "pixel2", "dist", "poni1", "poni2", "rot1", "rot2", "rot3"):
+            value = config.get(key)
+            if value is not None:
+                ai.__setattr__(key, value)
         if config.get("chi_discontinuity_at_0"):
             ai.setChiDiscAtZero()
 
