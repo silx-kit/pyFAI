@@ -145,11 +145,13 @@ class DiffMap(object):
         description = """Azimuthal integration for diffraction imaging.
 
 Diffraction mapping is an experiment where 2D diffraction patterns are recorded
-while performing a 2D scan,
+while performing a 2D scan.
+
 Diff_map is a graphical application (based on pyFAI and h5py) which allows the reduction of this
 4D dataset into a 3D dataset containing the two motion dimensions  
 and the many diffraction angles (thousands). The resulting dataset can be opened using PyMca roitool
-where the 1d dataset has to be selected as last dimension. This file is not (yet) NeXus compliant.
+where the 1d dataset has to be selected as last dimension. 
+This result file aims at being NeXus compliant.
 
 This tool can be used for diffraction tomography experiment as well, considering the slow scan direction as the rotation.
         """
