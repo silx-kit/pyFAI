@@ -32,20 +32,17 @@ __author__ = "Jerome Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "26/11/2015"
+__date__ = "03/12/2015"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
-__doc__ = """
+__doc__ = """Module with GUI for diffraction mapping experiments"""
 
-Module with GUI for diffraction mapping experiments
-
-
-"""
 import os
 import time
 import posixpath
 import sys
 import collections
+import glob
 import logging
 logger = logging.getLogger("pyFAI.diffmap")
 import numpy
@@ -59,7 +56,7 @@ from .io import Nexus, get_isotime
 try:
     from argparse import ArgumentParser
 except ImportError:
-    from pyFAI.third_party.argparse import ArgumentParser
+    from .third_party.argparse import ArgumentParser
 
 if sys.version_info[0] < 3:
     bytes = str
